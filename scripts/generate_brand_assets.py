@@ -75,7 +75,7 @@ def make_social_preview(symbol: Image.Image) -> Image.Image:
 
     draw.text(
         (74, 190),
-        "AI-NATIVE PRIVATE CREDIT ORIGINATION & MARKET ACCESS",
+        "AI-DRIVEN PRIVATE CREDIT ORIGINATION & MARKET ACCESS",
         font=font(14, bold=True),
         fill=(166, 171, 174, 255),
         spacing=4,
