@@ -256,21 +256,20 @@ summary:focus-visible {
   width: 100%;
   align-items: start;
   column-gap: clamp(48px, 5vw, 76px);
-  grid-template-areas:
-    "eyebrow eyebrow"
-    "title support";
   grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
-  row-gap: 30px;
 }
 
 .premium-hero .premium-eyebrow {
-  grid-area: eyebrow;
   max-width: 650px;
   color: #969ba4;
 }
 
+.premium-hero__primary {
+  display: grid;
+  gap: 30px;
+}
+
 .premium-hero__copy h1 {
-  grid-area: title;
   margin: 0;
   max-width: 920px;
   font-family: var(--font-sans);
@@ -293,7 +292,6 @@ summary:focus-visible {
 }
 
 .premium-hero__support {
-  grid-area: support;
   padding-top: 21px;
   border-top: 1px solid rgb(255 255 255 / 18%);
 }
@@ -307,19 +305,10 @@ summary:focus-visible {
   line-height: 1.45;
 }
 
-.premium-hero__post-copy {
-  display: grid;
-  gap: 26px;
-}
-
 .premium-hero__brand-statement {
-  display: flex;
-  width: 100%;
-  padding-top: 22px;
-  border-top: 1px solid rgb(255 255 255 / 14%);
-  align-items: center;
-  justify-content: space-between;
-  gap: 28px;
+  display: grid;
+  width: fit-content;
+  gap: 7px;
 }
 
 .premium-hero__brand-statement > span {
@@ -2361,12 +2350,8 @@ summary:focus-visible {
 
 @media (max-width: 980px) {
   .premium-hero__copy {
-    grid-template-areas:
-      "eyebrow"
-      "title"
-      "support";
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 28px;
+    row-gap: 36px;
   }
 
   .premium-hero__copy h1 {
@@ -2585,7 +2570,6 @@ summary:focus-visible {
 
   .premium-hero__brand-statement {
     align-items: flex-start;
-    flex-direction: column;
     gap: 8px;
   }
 
