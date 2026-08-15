@@ -56,29 +56,28 @@ summary:focus-visible {
 }
 
 .brand-mark {
-  min-height: 40px;
+  min-height: 36px;
 }
 
 .brand-mark__asset-frame {
   position: relative;
-  display: block;
-  width: 188px;
-  height: 52px;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  width: 170px;
+  height: 55px;
+  overflow: visible;
 }
 
 .brand-mark__asset {
-  position: absolute;
-  top: -52px;
-  left: -26px;
-  width: 240px;
+  position: static;
+  width: 170px;
   max-width: none;
   height: auto;
 }
 
 .brand-mark[data-size="hero"] .brand-mark__asset-frame {
-  width: 188px;
-  height: 52px;
+  width: 176px;
+  height: 57px;
 }
 
 .brand-mark__inverted {
@@ -98,12 +97,10 @@ summary:focus-visible {
 }
 
 .brand-mark__symbol-asset {
-  position: absolute;
-  top: -47px;
-  left: -24px;
-  width: 220px;
+  position: static;
+  width: 52px;
   max-width: none;
-  height: auto;
+  height: 52px;
 }
 
 .brand-mark__inverted-copy {
@@ -2442,14 +2439,12 @@ summary:focus-visible {
   }
 
   .brand-mark__asset-frame {
-    width: 154px;
-    height: 44px;
+    width: 148px;
+    height: 48px;
   }
 
   .brand-mark__asset {
-    top: -43px;
-    left: -20px;
-    width: 196px;
+    width: 148px;
   }
 
   .premium-hero__inner {

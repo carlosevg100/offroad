@@ -8,7 +8,7 @@ import type {AppLocale} from "@/i18n/routing";
 
 import {createAccount, sendMagicLink, signInWithPassword} from "./actions";
 
-export const metadata: Metadata = {title: "Access", robots: {index: false, follow: false}};
+export const metadata: Metadata = {title: "Institutional Access", robots: {index: false, follow: false}};
 
 type Props = {
   params: Promise<{locale: string}>;

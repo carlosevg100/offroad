@@ -24,12 +24,12 @@ export function BrandMark({inverted = false, locale, size = "default"}: BrandMar
           <span className="brand-mark__symbol-frame">
             <Image
               className="brand-mark__symbol-asset"
-              src="/brand/offroad-capital-logo.png"
+              src="/brand/offroad-symbol.png"
               alt=""
-              width={1536}
+              width={1024}
               height={1024}
               loading="eager"
-              sizes="220px"
+              sizes="52px"
             />
           </span>
           <span className="brand-mark__inverted-copy"><strong>Offroad</strong><span>Capital</span></span>
@@ -38,12 +38,12 @@ export function BrandMark({inverted = false, locale, size = "default"}: BrandMar
         <span className="brand-mark__asset-frame" aria-hidden="true">
           <Image
             className="brand-mark__asset"
-            src="/brand/offroad-capital-logo.png"
+            src="/brand/offroad-capital-wordmark.png"
             alt=""
-            width={1536}
-            height={1024}
+            width={1227}
+            height={391}
             loading="eager"
-            sizes={size === "hero" ? "(max-width: 700px) 90vw, 760px" : "220px"}
+            sizes={size === "hero" ? "(max-width: 700px) 170px, 176px" : "170px"}
           />
         </span>
       )}

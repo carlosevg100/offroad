@@ -1,8 +1,11 @@
 import {AlertTriangle, ArrowLeft} from "lucide-react";
+import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
 type Props = {params: Promise<{locale: string}>};
+
+export const metadata: Metadata = {title: "Authentication Error", robots: {index: false, follow: false}};
 
 export default async function AuthErrorPage({params}: Props) {
   const {locale} = await params;

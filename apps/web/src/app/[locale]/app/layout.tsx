@@ -1,4 +1,5 @@
 import {CircleGauge, FileLock2, LogOut, Plus, Route, ShieldCheck} from "lucide-react";
+import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
@@ -9,6 +10,7 @@ import {requireWorkspace} from "@/lib/auth/workspace";
 import {signOut} from "./actions";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {title: "Workspace", robots: {index: false, follow: false}};
 
 type Props = {children: React.ReactNode; params: Promise<{locale: string}>};
 

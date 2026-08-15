@@ -7,6 +7,7 @@ import {
 import {rankMandates, type Mandate} from "@offroad/matching-core";
 import {supermarketFixture} from "@offroad/testing-fixtures";
 import {ArrowLeft, ArrowRight, CheckCircle2, EyeOff, FileCheck2, Route, ShieldCheck} from "lucide-react";
+import type {Metadata} from "next";
 import Link from "next/link";
 import {getFormatter, getTranslations} from "next-intl/server";
 
@@ -14,6 +15,8 @@ import {BrandMark} from "@/components/brand-mark";
 import type {AppLocale} from "@/i18n/routing";
 
 type Props = {params: Promise<{locale: string}>};
+
+export const metadata: Metadata = {title: "Platform Demo"};
 
 const mandates: Mandate[] = [
   {id: "aurora", fundName: "Aurora Credit", currencies: ["BRL"], geographies: ["BR"], sectors: ["food_retail"], ticketMin: "30", ticketMax: "100", termMonthsMin: 24, termMonthsMax: 60, structures: ["senior_secured"], collateralTypes: ["receivables"], confidence: 0.95, freshnessDays: 12},
