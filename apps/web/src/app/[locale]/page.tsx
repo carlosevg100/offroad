@@ -85,7 +85,11 @@ export default async function HomePage({params}: Props) {
               </div>
             </div>
 
-            <div className="premium-hero__flow-stack">
+            <div className="premium-hero__post-copy">
+              <div className="premium-hero__brand-statement">
+                <span>{t("heroBrandLead")}</span>
+                <strong>{t("heroBrandSignoff")}</strong>
+              </div>
               <CapitalFlow
                 labels={{
                   benefits: [t("flowBenefitFlow"), t("flowBenefitEvidence"), t("flowBenefitStructure"), t("flowBenefitMandate")],
@@ -123,10 +127,6 @@ export default async function HomePage({params}: Props) {
                   title: t("flowTitle"),
                 }}
               />
-              <div className="premium-hero__brand-statement">
-                <span>{t("heroBrandLead")}</span>
-                <strong>{t("heroBrandSignoff")}</strong>
-              </div>
             </div>
           </div>
         </section>
