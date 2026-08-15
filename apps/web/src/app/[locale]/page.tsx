@@ -30,6 +30,8 @@ export default async function HomePage({params}: Props) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Home"});
   const demoHref = `/${locale}/demo`;
+  const loginHref = `/${locale}/login#access-form`;
+  const createAccountHref = `/${locale}/login?intent=create-account#access-form`;
 
   const filmLabels = {
     eyebrow: t("filmEyebrow"),
@@ -63,19 +65,27 @@ export default async function HomePage({params}: Props) {
                 {" "}
                 <span className="premium-hero__title-line">{t("heroTitleLine2")}</span>
               </h1>
-              <p className="premium-hero__lead">{t("heroBody")}</p>
-              <p className="premium-hero__signature">{t("heroSignature")}</p>
-              <div className="premium-hero__brand-statement">
-                <span>{t("heroBrandLead")}</span>
-                <strong>{t("heroBrandSignoff")}</strong>
-              </div>
-              <div className="premium-hero__actions">
-                <Link className="button button--light" href={demoHref}>
-                  {t("heroPrimary")} <ArrowUpRight aria-hidden="true" size={16} />
-                </Link>
-                <a className="premium-text-link" href={`mailto:${brand.email}`}>
-                  {t("heroSecondary")} <ArrowRight aria-hidden="true" size={15} />
-                </a>
+              <div className="premium-hero__support">
+                <p className="premium-hero__lead">{t("heroBody")}</p>
+                <p className="premium-hero__signature">{t("heroSignature")}</p>
+                <div className="premium-hero__brand-statement">
+                  <span>{t("heroBrandLead")}</span>
+                  <strong>{t("heroBrandSignoff")}</strong>
+                </div>
+                <div className="premium-hero__actions">
+                  <Link className="button button--light" href={demoHref}>
+                    {t("heroPrimary")} <ArrowUpRight aria-hidden="true" size={16} />
+                  </Link>
+                  <a className="premium-text-link" href={`mailto:${brand.email}`}>
+                    {t("heroSecondary")} <ArrowRight aria-hidden="true" size={15} />
+                  </a>
+                </div>
+                <div className="premium-hero__account">
+                  <span>{t("heroAccountLabel")}</span>
+                  <Link href={createAccountHref}>{t("heroCreateAccount")}</Link>
+                  <i aria-hidden="true" />
+                  <Link href={loginHref}>{t("heroLogin")}</Link>
+                </div>
               </div>
             </div>
 

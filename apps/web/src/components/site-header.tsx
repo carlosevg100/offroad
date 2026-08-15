@@ -13,7 +13,8 @@ type SiteHeaderProps = {
 export function SiteHeader({locale}: SiteHeaderProps) {
   const t = useTranslations("Navigation");
   const demoHref = `/${locale}/demo`;
-  const accessHref = `/${locale}/login`;
+  const loginHref = `/${locale}/login#access-form`;
+  const createAccountHref = `/${locale}/login?intent=create-account#access-form`;
 
   return (
     <header className="site-header">
@@ -45,8 +46,11 @@ export function SiteHeader({locale}: SiteHeaderProps) {
               {t("english")}
             </Link>
           </div>
-          <Link className="access-link" href={accessHref}>
-            {t("access")}
+          <Link className="access-link" href={createAccountHref}>
+            {t("createAccount")}
+          </Link>
+          <Link className="access-link" href={loginHref}>
+            {t("login")}
           </Link>
           <Link className="button button--small" href={demoHref}>
             <span>{t("demo")}</span>
@@ -60,7 +64,8 @@ export function SiteHeader({locale}: SiteHeaderProps) {
               <a href="#como-funciona">{t("how")}</a>
               <a href="#para-quem">{t("audiences")}</a>
               <a href="#seguranca">{t("trust")}</a>
-              <Link href={accessHref}>{t("access")}</Link>
+              <Link href={createAccountHref}>{t("createAccount")}</Link>
+              <Link href={loginHref}>{t("login")}</Link>
               <Link href={demoHref}>{t("demo")}</Link>
             </div>
           </details>
