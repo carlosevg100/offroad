@@ -56,6 +56,21 @@ export function SiteHeader({locale}: SiteHeaderProps) {
             <span>{t("demo")}</span>
             <ArrowUpRight aria-hidden="true" size={15} />
           </Link>
+          <div className="mobile-locale-switcher" aria-label={t("language")}>
+            <Link
+              href="/pt-BR"
+              aria-current={locale === "pt-BR" ? "page" : undefined}
+            >
+              {t("portuguese")}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link
+              href="/en-US"
+              aria-current={locale === "en-US" ? "page" : undefined}
+            >
+              {t("english")}
+            </Link>
+          </div>
           <details className="mobile-nav">
             <summary aria-label={t("menu")}>
               <Menu aria-hidden="true" size={20} />
