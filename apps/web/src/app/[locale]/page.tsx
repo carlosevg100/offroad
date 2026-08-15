@@ -15,6 +15,7 @@ import {getTranslations} from "next-intl/server";
 
 import {BrandMark} from "@/components/brand-mark";
 import {CapitalFlow} from "@/components/capital-flow";
+import {HeroValueRotator} from "@/components/hero-value-rotator";
 import {ProductFilm} from "@/components/product-film";
 import {SiteHeader} from "@/components/site-header";
 import {brand} from "@/config/brand";
@@ -66,10 +67,17 @@ export default async function HomePage({params}: Props) {
                   {" "}
                   <span className="premium-hero__title-line">{t("heroTitleLine2")}</span>
                 </h1>
-                <div className="premium-hero__brand-statement">
-                  <span>{t("heroBrandLead")}</span>
-                  <strong>{t("heroBrandSignoff")}</strong>
-                </div>
+                <HeroValueRotator
+                  lead={t("heroValueLead")}
+                  tail={t("heroValueTail")}
+                  items={[
+                    {label: t("heroValueSimple"), message: t("heroValueSimpleMessage")},
+                    {label: t("heroValueOrganized"), message: t("heroValueOrganizedMessage")},
+                    {label: t("heroValueStructured"), message: t("heroValueStructuredMessage")},
+                    {label: t("heroValueEfficient"), message: t("heroValueEfficientMessage")},
+                    {label: t("heroValueTargeted"), message: t("heroValueTargetedMessage")},
+                  ]}
+                />
               </div>
               <div className="premium-hero__support">
                 <p className="premium-hero__lead">{t("heroBody")}</p>
