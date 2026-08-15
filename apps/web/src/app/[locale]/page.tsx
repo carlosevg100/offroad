@@ -59,12 +59,18 @@ export default async function HomePage({params}: Props) {
         <section className="premium-hero">
           <div className="section-shell premium-hero__inner">
             <div className="premium-hero__copy">
-              <p className="premium-eyebrow">{t("eyebrow")}</p>
-              <h1>
-                <span className="premium-hero__title-line">{t("heroTitleLine1")}</span>
-                {" "}
-                <span className="premium-hero__title-line">{t("heroTitleLine2")}</span>
-              </h1>
+              <div className="premium-hero__primary">
+                <p className="premium-eyebrow">{t("eyebrow")}</p>
+                <h1>
+                  <span className="premium-hero__title-line">{t("heroTitleLine1")}</span>
+                  {" "}
+                  <span className="premium-hero__title-line">{t("heroTitleLine2")}</span>
+                </h1>
+                <div className="premium-hero__brand-statement">
+                  <span>{t("heroBrandLead")}</span>
+                  <strong>{t("heroBrandSignoff")}</strong>
+                </div>
+              </div>
               <div className="premium-hero__support">
                 <p className="premium-hero__lead">{t("heroBody")}</p>
                 <p className="premium-hero__signature">{t("heroSignature")}</p>
@@ -85,11 +91,7 @@ export default async function HomePage({params}: Props) {
               </div>
             </div>
 
-            <div className="premium-hero__post-copy">
-              <div className="premium-hero__brand-statement">
-                <span>{t("heroBrandLead")}</span>
-                <strong>{t("heroBrandSignoff")}</strong>
-              </div>
+            <div className="premium-hero__flow-stage">
               <CapitalFlow
                 labels={{
                   benefits: [t("flowBenefitFlow"), t("flowBenefitEvidence"), t("flowBenefitStructure"), t("flowBenefitMandate")],
