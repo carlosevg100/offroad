@@ -8,6 +8,8 @@ type HeroValueItem = {
 };
 
 type HeroValueRotatorProps = {
+  brandLead: string;
+  brandSignoff: string;
   items: ReadonlyArray<HeroValueItem>;
   lead: string;
   tail: string;
@@ -16,7 +18,7 @@ type HeroValueRotatorProps = {
 const ROTATION_INTERVAL_MS = 3000;
 const TRANSITION_DURATION_MS = 560;
 
-export function HeroValueRotator({items, lead, tail}: HeroValueRotatorProps) {
+export function HeroValueRotator({brandLead, brandSignoff, items, lead, tail}: HeroValueRotatorProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [previousIndex, setPreviousIndex] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -91,6 +93,11 @@ export function HeroValueRotator({items, lead, tail}: HeroValueRotatorProps) {
           {activeItem.message}
         </span>
       </div>
+
+      <p className="hero-value-rotator__brand">
+        <span>{brandLead}</span>
+        <strong>{brandSignoff}</strong>
+      </p>
     </div>
   );
 }

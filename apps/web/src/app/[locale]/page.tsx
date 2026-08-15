@@ -68,6 +68,8 @@ export default async function HomePage({params}: Props) {
                   <span className="premium-hero__title-line">{t("heroTitleLine2")}</span>
                 </h1>
                 <HeroValueRotator
+                  brandLead={t("heroBrandLead")}
+                  brandSignoff={t("heroBrandSignoff")}
                   lead={t("heroValueLead")}
                   tail={t("heroValueTail")}
                   items={[
