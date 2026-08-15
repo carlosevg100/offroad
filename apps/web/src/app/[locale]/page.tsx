@@ -57,12 +57,9 @@ export default async function HomePage({params}: Props) {
           <div className="section-shell premium-hero__inner">
             <div className="premium-hero__copy">
               <p className="premium-eyebrow">{t("eyebrow")}</p>
-              <h1>
-                <span>{t("heroLine1")}</span>
-                <span>{t("heroLine2")}</span>
-                <span>{t("heroLine3")}</span>
-              </h1>
+              <h1>{t("heroTitle")}</h1>
               <p className="premium-hero__lead">{t("heroBody")}</p>
+              <p className="premium-hero__signature">{t("heroSignature")}</p>
               <div className="premium-hero__actions">
                 <Link className="button button--light" href={demoHref}>
                   {t("heroPrimary")} <ArrowUpRight aria-hidden="true" size={16} />
@@ -71,18 +68,18 @@ export default async function HomePage({params}: Props) {
                   {t("heroSecondary")} <ArrowRight aria-hidden="true" size={15} />
                 </a>
               </div>
-              <p className="premium-hero__note">{t("heroNote")}</p>
             </div>
 
             <MarketNetwork
               labels={{
                 capital: t("networkCapital"),
                 capitalValue: t("networkCapitalValue"),
+                brandLead: t("heroBrandLead"),
+                brandSignoff: t("heroBrandSignoff"),
                 company: t("networkCompany"),
                 companyValue: t("networkCompanyValue"),
                 core: t("networkCore"),
                 coreValue: t("networkCoreValue"),
-                footer: t("networkFooter"),
                 originator: t("networkOriginator"),
                 originatorValue: t("networkOriginatorValue"),
                 pathCapital: t("networkPathCapital"),
@@ -248,11 +245,12 @@ export default async function HomePage({params}: Props) {
 type MarketNetworkLabels = {
   capital: string;
   capitalValue: string;
+  brandLead: string;
+  brandSignoff: string;
   company: string;
   companyValue: string;
   core: string;
   coreValue: string;
-  footer: string;
   originator: string;
   originatorValue: string;
   pathCapital: string;
@@ -304,7 +302,10 @@ function MarketNetwork({labels}: {labels: MarketNetworkLabels}) {
         <span className="market-network__path-label market-network__path-label--originator">{labels.pathOriginator}</span>
         <span className="market-network__path-label market-network__path-label--capital">{labels.pathCapital}</span>
       </div>
-      <footer><span>{labels.footer}</span><strong>STRUCTURE · EVIDENCE · FIT</strong></footer>
+      <footer className="market-network__brand">
+        <span>{labels.brandLead}</span>
+        <strong>{labels.brandSignoff}</strong>
+      </footer>
     </aside>
   );
 }

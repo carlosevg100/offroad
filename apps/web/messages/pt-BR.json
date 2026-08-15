@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "{brand} - Originação e acesso ao mercado de private credit",
-    "description": "A Offroad conecta empresas, originadores e gestores em um fluxo institucional de crédito privado: estrutura a demanda, qualifica a originação e aproxima oportunidades dos mandatos mais aderentes."
+    "description": "Informações da empresa se transformam em uma oportunidade estruturada de crédito privado em minutos, pronta para o mercado e para a análise de investidores."
   },
   "Navigation": {
     "how": "Como funciona",
@@ -18,10 +18,11 @@
   },
   "Home": {
     "eyebrow": "OFFROAD CAPITAL | AI-NATIVE PRIVATE CREDIT ORIGINATION & MARKET ACCESS",
-    "heroLine1": "Mais acesso.",
-    "heroLine2": "Melhor originação.",
-    "heroLine3": "Capital mais aderente.",
-    "heroBody": "A Offroad conecta empresas, originadores e gestores em um fluxo institucional de crédito privado — estrutura necessidades de capital, qualifica oportunidades e aproxima cada operação dos mandatos com maior aderência.",
+    "heroTitle": "Originação de crédito privado além dos canais tradicionais.",
+    "heroBody": "Informações da empresa se transformam em uma oportunidade estruturada de crédito privado em minutos. Empresas chegam preparadas ao mercado. Investidores acessam um novo fluxo de oportunidades aderentes aos seus mandatos e prontas para análise.",
+    "heroSignature": "Estruturada para o mercado. Aderente ao mandato.",
+    "heroBrandLead": "The best opportunities are rarely on the obvious path.",
+    "heroBrandSignoff": "Go Offroad.",
     "heroSupport": "Empresas melhor preparadas. Originadores mais eficientes. Gestores com oportunidades mais aderentes.",
     "heroPrimary": "Ver a plataforma em ação",
     "heroSecondary": "Falar com a Offroad",
