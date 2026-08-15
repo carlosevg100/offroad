@@ -9,10 +9,10 @@
   --line: #d9dad4;
   --soft: #e9e9e4;
   --accent: #06243d;
-  --accent-bright: #91f000;
-  --accent-soft: #ebf8dc;
-  --signal: #6657c8;
-  --signal-soft: #eeebff;
+  --accent-bright: #8faab5;
+  --accent-soft: #e7eef1;
+  --signal: #607d8b;
+  --signal-soft: #e8eef1;
   --warning: #a56a18;
   --warning-soft: #fff4df;
   --risk: #a33a32;
@@ -210,7 +210,7 @@ summary:focus-visible {
 
 .button:hover {
   background: var(--accent);
-  box-shadow: 0 14px 30px rgb(49 92 75 / 18%);
+  box-shadow: 0 14px 30px rgb(77 105 119 / 18%);
   transform: translateY(-2px);
 }
 
@@ -389,7 +389,7 @@ summary:focus-visible {
   position: absolute;
   z-index: -1;
   inset: 24px -18px -20px 20px;
-  border: 1px solid rgb(49 92 75 / 10%);
+  border: 1px solid rgb(77 105 119 / 10%);
   border-radius: 26px;
   content: "";
   transform: rotate(-2.4deg);
@@ -869,8 +869,8 @@ summary:focus-visible {
 }
 
 .audience-card:hover {
-  border-color: rgb(123 182 155 / 45%);
-  background: linear-gradient(145deg, rgb(123 182 155 / 10%), rgb(255 255 255 / 2%));
+  border-color: rgb(126 156 170 / 45%);
+  background: linear-gradient(145deg, rgb(126 156 170 / 10%), rgb(255 255 255 / 2%));
   transform: translateY(-4px);
 }
 
@@ -943,13 +943,13 @@ summary:focus-visible {
 .trust-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-top: 1px solid rgb(49 92 75 / 22%);
+  border-top: 1px solid rgb(77 105 119 / 22%);
 }
 
 .trust-item {
   min-height: 285px;
   padding: 26px 24px 12px 0;
-  border-right: 1px solid rgb(49 92 75 / 22%);
+  border-right: 1px solid rgb(77 105 119 / 22%);
 }
 
 .trust-item + .trust-item {
@@ -1050,7 +1050,7 @@ summary:focus-visible {
   inset: -40%;
   background:
     repeating-radial-gradient(ellipse at 80% 50%, transparent 0 46px, rgb(255 255 255 / 6%) 47px 48px),
-    radial-gradient(circle at 75% 52%, rgb(123 182 155 / 24%), transparent 36%);
+    radial-gradient(circle at 75% 52%, rgb(126 156 170 / 24%), transparent 36%);
   transform: rotate(-8deg);
 }
 
@@ -1380,7 +1380,7 @@ summary:focus-visible {
   }
 
   .trust-item:nth-child(n + 3) {
-    border-top: 1px solid rgb(49 92 75 / 22%);
+    border-top: 1px solid rgb(77 105 119 / 22%);
   }
 
   .trust-item:nth-child(3) {
@@ -1498,7 +1498,7 @@ summary:focus-visible {
   }
 
   .trust-item:nth-child(n + 3) {
-    border-color: rgb(49 92 75 / 22%);
+    border-color: rgb(77 105 119 / 22%);
   }
 
   .boundary__matrix > div {
@@ -1659,7 +1659,7 @@ summary:focus-visible {
   justify-content: space-between;
   min-height: 100svh;
   background:
-    radial-gradient(circle at 85% 18%, rgb(123 182 155 / 16%), transparent 29%),
+    radial-gradient(circle at 85% 18%, rgb(126 156 170 / 16%), transparent 29%),
     linear-gradient(145deg, var(--night), #15211b 62%, #263c32);
   color: var(--paper);
 }
@@ -1756,7 +1756,7 @@ summary:focus-visible {
   min-height: 100svh;
   padding: 28px clamp(24px, 5vw, 72px) 80px;
   background:
-    radial-gradient(circle at 80% 12%, rgb(49 92 75 / 8%), transparent 25%),
+    radial-gradient(circle at 80% 12%, rgb(77 105 119 / 8%), transparent 25%),
     var(--canvas);
 }
 
@@ -2246,7 +2246,7 @@ summary:focus-visible {
 }
 
 .opportunity-rail button[aria-current="page"] {
-  background: rgb(123 182 155 / 14%);
+  background: rgb(126 156 170 / 14%);
   color: var(--accent-bright);
 }
 
