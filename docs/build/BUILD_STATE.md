@@ -6,7 +6,7 @@ Repositório: `carlosevg100/offroad`
 
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|
-| B0 Fundação | in_review | monorepo, docs, CI, templates, Blueprint versionado, `main` inicializada e gate local verde | push da branch, PR e execução do GitHub Actions |
+| B0 Fundação | in_review | monorepo, docs, CI, templates, Blueprint versionado, PR #1 e gate local/GitHub Actions verdes | review e merge do PR #1 |
 | B1 Website | in_review | landing bilíngue, demo sintética, design tokens, metadata e QA responsivo implementados | automação de acessibilidade e aprovação editorial/legal |
 | B2 Auth | in_review | Supabase SSR, login/cadastro, PKCE/OTP confirm, onboarding e proteção de rotas | QA com usuários reais e políticas de ciclo de conta |
 | B3 Domínio/RLS | in_review | 28 tabelas públicas, RLS + FORCE RLS em todas, 57 policies e teste tenant A/B/anon aprovado | revisão externa do threat model e novos casos negativos por feature |
