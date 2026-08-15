@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
     "@offroad/matching-core",
     "@offroad/testing-fixtures",
   ],
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{type: "host", value: "www.offroad.capital"}],
+        destination: "https://offroad.capital/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

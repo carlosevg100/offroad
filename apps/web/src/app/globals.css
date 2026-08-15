@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --canvas: #f4f4ef;
+  --canvas: #f4f3ef;
   --paper: #ffffff;
-  --ink: #11110f;
-  --ink-soft: #25251f;
-  --muted: #72726b;
-  --line: #ddddd5;
-  --soft: #e9e9e2;
-  --accent: #315c4b;
-  --accent-bright: #7bb69b;
-  --accent-soft: #e7f0eb;
+  --ink: #071a2b;
+  --ink-soft: #223544;
+  --muted: #6d7476;
+  --line: #d9dad4;
+  --soft: #e9e9e4;
+  --accent: #06243d;
+  --accent-bright: #91f000;
+  --accent-soft: #ebf8dc;
   --signal: #6657c8;
   --signal-soft: #eeebff;
   --warning: #a56a18;
   --warning-soft: #fff4df;
   --risk: #a33a32;
   --risk-soft: #fbeae8;
-  --success: #2f7555;
-  --night: #101613;
-  --night-soft: #18211d;
+  --success: #36744f;
+  --night: #071720;
+  --night-soft: #0b2232;
   --font-sans: var(--font-interface), Inter, Arial, sans-serif;
   --font-serif: var(--font-editorial), Newsreader, Georgia, serif;
   --shadow-soft: 0 24px 70px rgb(17 17 15 / 8%);

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import {brand} from "@/config/brand";
 import type {AppLocale} from "@/i18n/routing";
@@ -6,25 +7,29 @@ import type {AppLocale} from "@/i18n/routing";
 type BrandMarkProps = {
   inverted?: boolean;
   locale: AppLocale;
+  size?: "default" | "hero";
 };
 
-export function BrandMark({inverted = false, locale}: BrandMarkProps) {
+export function BrandMark({inverted = false, locale, size = "default"}: BrandMarkProps) {
   return (
     <Link
       className="brand-mark"
       data-inverted={inverted || undefined}
+      data-size={size}
       href={`/${locale}`}
       aria-label={brand.name}
     >
-      <svg
-        className="brand-mark__symbol"
-        viewBox="0 0 32 32"
-        aria-hidden="true"
-      >
-        <path d="M5.5 23.5 12.9 8h6.2l7.4 15.5h-5.7l-1.6-3.6h-6.5l-1.6 3.6H5.5Zm9-8h3l-1.5-3.7-1.5 3.7Z" />
-        <path className="brand-mark__trail" d="M4.5 27h23" />
-      </svg>
-      <span>{brand.name}</span>
+      <span className="brand-mark__asset-frame" aria-hidden="true">
+        <Image
+          className="brand-mark__asset"
+          src="/brand/offroad-capital-logo.png"
+          alt=""
+          width={1536}
+          height={1024}
+          loading="eager"
+          sizes={size === "hero" ? "(max-width: 700px) 90vw, 760px" : "220px"}
+        />
+      </span>
     </Link>
   );
 }

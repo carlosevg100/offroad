@@ -8,6 +8,7 @@ import {brand} from "@/config/brand";
 import {routing} from "@/i18n/routing";
 
 import "../globals.css";
+import "../offroad-forward.css";
 
 const inter = Inter({
   subsets: ["latin"],

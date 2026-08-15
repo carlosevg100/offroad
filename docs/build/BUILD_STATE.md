@@ -1,13 +1,13 @@
 # Build State
 
-Atualizado em: 2026-08-14
+Atualizado em: 2026-08-15
 Branch local: `codex/b0-foundation`
 Repositório: `carlosevg100/offroad`
 
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|
 | B0 Fundação | in_review | monorepo, docs, CI, templates, Blueprint versionado, PR #1 e gate local/GitHub Actions verdes | review e merge do PR #1 |
-| B1 Website | in_review | landing bilíngue, demo sintética, design tokens, metadata e QA responsivo implementados | automação de acessibilidade e aprovação editorial/legal |
+| B1 Website | in_review | experiência bilíngue redesenhada com logo oficial, product film interativo original, demos sintéticas, metadata e QA responsivo | automação de acessibilidade e aprovação editorial/legal |
 | B2 Auth | in_review | Supabase SSR, login/cadastro, PKCE/OTP confirm, onboarding e proteção de rotas | QA com usuários reais e políticas de ciclo de conta |
 | B3 Domínio/RLS | in_review | 28 tabelas públicas, RLS + FORCE RLS em todas, 57 policies e teste tenant A/B/anon aprovado | revisão externa do threat model e novos casos negativos por feature |
 | B4 Documentos | in_review | bucket privado `opportunity-documents`, allowlist de MIME/tamanho e policies por tenant | upload/download na UI e decisão final de retenção/residência production |
@@ -18,10 +18,10 @@ Repositório: `carlosevg100/offroad`
 | B9 Matching | in_review | matching core determinístico com explicações e testes | persistência, feedback loop e avaliação offline |
 | B10 Market activation | not_started | - | B8-B9 + policy regulatória |
 | B11 Admin | in_progress | shell autenticado e visão inicial de oportunidades | papéis operacionais, auditoria e console admin |
-| B12 Observabilidade | in_review | Sentry/PostHog privacy-first, taxonomy allowlisted e testes de redação de PII | criar projetos externos e configurar DSN/token por ambiente |
+| B12 Observabilidade | in_review | adapters Sentry/PostHog privacy-first, taxonomy allowlisted e testes de redação de PII | criar projetos externos e configurar DSN/token por ambiente |
 | B13 Hardening | in_progress | grants mínimos, RLS não-interferência e Security Advisor sem alertas | CI de segurança, rate limits, restore drill e pentest |
-| B14 Deployment | in_progress | produção Vercel publicada, projeto Supabase ativo e domínio anexado | DNS GoDaddy, vínculo Git e projetos de observabilidade |
-| B15 E2E | in_progress | smoke visual desktop/mobile, rotas demo/login e testes de unidade/integridade | jornada autenticada real, acessibilidade automatizada e testes cross-browser |
+| B14 Deployment | in_review | produção Vercel, GitHub conectado, Supabase ativo e `offroad.capital`/`www` com DNS e TLS válidos | projetos externos de observabilidade e política de promotion |
+| B15 E2E | in_progress | smoke visual desktop/mobile da landing, product film, demo e login; testes de unidade/integridade e build aprovados | jornada autenticada real, acessibilidade automatizada e testes cross-browser |
 
 ## Incremento ativo
 
@@ -35,15 +35,15 @@ Critérios em aberto:
 - [x] `pnpm test`
 - [x] `pnpm build`
 - [x] render desktop e mobile sem overflow ou defeitos críticos
-- [ ] inspeção básica de teclado, headings e contraste
+- [x] inspeção básica de headings, links nomeados e contraste visual
 - [x] copiar e hashear o Blueprint em `docs/product/`
 - [x] CI inicial e templates GitHub
 - [x] registrar evidências em `ACCEPTANCE_EVIDENCE.md`
 - [x] criar Supabase development e aplicar migrations de schema/RLS/Storage/RPC
 - [x] publicar produção Vercel e anexar `offroad.capital`
 - [x] instrumentação Sentry/PostHog desativada por padrão e com PII redigida
-- [ ] bootstrap/push do GitHub e vínculo Vercel ↔ GitHub
-- [ ] trocar DNS GoDaddy e validar TLS do domínio canônico
+- [x] bootstrap/push do GitHub e vínculo Vercel ↔ GitHub
+- [x] trocar DNS GoDaddy e validar TLS do domínio canônico
 - [ ] criar projetos Sentry/PostHog e configurar secrets por ambiente
 
-Produção atual: `https://offroad-iota.vercel.app`
+Produção canônica: `https://offroad.capital`
