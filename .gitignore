@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+.turbo/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Environment and local provider state
+.env
+.env.*
+!.env.example
+.vercel/
+.supabase/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+pnpm-debug.log*

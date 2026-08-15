@@ -1,0 +1,39 @@
+name: Bug
+description: Report a reproducible product, data, security or reliability defect.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+    validations:
+      required: true
+  - type: dropdown
+    id: exposure
+    attributes:
+      label: Potential exposure
+      options:
+        - No sensitive data or authorization impact known
+        - Authorization or cross-tenant impact suspected
+        - Financial calculation or evidence impact suspected
+        - Sensitive data exposure suspected
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots or fixture references
+      description: Never paste secrets, private documents, PII or financial data.

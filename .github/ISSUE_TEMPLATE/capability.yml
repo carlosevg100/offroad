@@ -1,0 +1,40 @@
+name: Capability
+description: Build a product capability against a gate and objective acceptance criteria.
+title: "[Capability]: "
+labels: ["capability"]
+body:
+  - type: input
+    id: gate
+    attributes:
+      label: Gate and task ID
+      placeholder: B3.7
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User or system outcome
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and blockers
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Objective acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Security, privacy, authorization and data impact
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Required tests and evidence
+    validations:
+      required: true
