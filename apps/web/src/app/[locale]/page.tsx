@@ -68,10 +68,6 @@ export default async function HomePage({params}: Props) {
               <div className="premium-hero__support">
                 <p className="premium-hero__lead">{t("heroBody")}</p>
                 <p className="premium-hero__signature">{t("heroSignature")}</p>
-                <div className="premium-hero__brand-statement">
-                  <span>{t("heroBrandLead")}</span>
-                  <strong>{t("heroBrandSignoff")}</strong>
-                </div>
                 <div className="premium-hero__actions">
                   <Link className="button button--light" href={demoHref}>
                     {t("heroPrimary")} <ArrowUpRight aria-hidden="true" size={16} />
@@ -89,43 +85,49 @@ export default async function HomePage({params}: Props) {
               </div>
             </div>
 
-            <CapitalFlow
-              labels={{
-                benefits: [t("flowBenefitFlow"), t("flowBenefitEvidence"), t("flowBenefitStructure"), t("flowBenefitMandate")],
-                challenges: [t("flowChallengeScattered"), t("flowChallengeCapacity"), t("flowChallengeCase")],
-                companyBody: t("flowCompanyBody"),
-                companyEyebrow: t("flowCompanyEyebrow"),
-                companyTitle: t("flowCompanyTitle"),
-                documents: [t("flowDocumentFinancials"), t("flowDocumentForecasts"), t("flowDocumentDebt"), t("flowDocumentCollateral"), t("flowDocumentMaterials")],
-                finalStatus: t("flowFinalStatus"),
-                inputLabel: t("flowInputLabel"),
-                investorBody: t("flowInvestorBody"),
-                investorEyebrow: t("flowInvestorEyebrow"),
-                investorTitle: t("flowInvestorTitle"),
-                investorTypes: [t("flowInvestorFund"), t("flowInvestorFidc"), t("flowInvestorFactor"), t("flowInvestorAlternative")],
-                mandateLabels: [t("flowMandateAligned"), t("flowSectorAligned"), t("flowTicketAligned"), t("flowSecurityAccepted")],
-                offroadEyebrow: t("flowOffroadEyebrow"),
-                offroadSignature: t("heroSignature"),
-                offroadTitle: t("flowOffroadTitle"),
-                opportunityLabel: t("flowOpportunityLabel"),
-                outputFields: [
-                  {label: t("flowOutputFacility"), value: t("flowOutputFacilityValue")},
-                  {label: t("flowOutputSize"), value: t("flowOutputSizeValue")},
-                  {label: t("flowOutputUse"), value: t("flowOutputUseValue")},
-                  {label: t("flowOutputTenor"), value: t("flowOutputTenorValue")},
-                  {label: t("flowOutputAmortization"), value: t("flowOutputAmortizationValue")},
-                  {label: t("flowOutputPricing"), value: t("flowOutputPricingValue")},
-                  {label: t("flowOutputSecurity"), value: t("flowOutputSecurityValue")},
-                  {label: t("flowOutputCovenants"), value: t("flowOutputCovenantsValue")},
-                ],
-                outputTitle: t("flowOutputTitle"),
-                processSteps: [t("flowProcessOrganize"), t("flowProcessCapacity"), t("flowProcessStructure"), t("flowProcessMaterials"), t("flowProcessMandates")],
-                purposes: [t("flowPurposeGrowth"), t("flowPurposeCapex"), t("flowPurposeAcquisition"), t("flowPurposeEquipment"), t("flowPurposeRefinance"), t("flowPurposeOther")],
-                sourceLabels: [t("flowSourceCompany"), t("flowSourceOriginator")],
-                status: t("flowStatus"),
-                title: t("flowTitle"),
-              }}
-            />
+            <div className="premium-hero__flow-stack">
+              <CapitalFlow
+                labels={{
+                  benefits: [t("flowBenefitFlow"), t("flowBenefitEvidence"), t("flowBenefitStructure"), t("flowBenefitMandate")],
+                  challenges: [t("flowChallengeScattered"), t("flowChallengeCapacity"), t("flowChallengeCase")],
+                  companyBody: t("flowCompanyBody"),
+                  companyEyebrow: t("flowCompanyEyebrow"),
+                  companyTitle: t("flowCompanyTitle"),
+                  documents: [t("flowDocumentFinancials"), t("flowDocumentForecasts"), t("flowDocumentDebt"), t("flowDocumentCollateral"), t("flowDocumentMaterials")],
+                  finalStatus: t("flowFinalStatus"),
+                  inputLabel: t("flowInputLabel"),
+                  investorBody: t("flowInvestorBody"),
+                  investorEyebrow: t("flowInvestorEyebrow"),
+                  investorTitle: t("flowInvestorTitle"),
+                  investorTypes: [t("flowInvestorFund"), t("flowInvestorFidc"), t("flowInvestorFactor"), t("flowInvestorAlternative")],
+                  mandateLabels: [t("flowMandateAligned"), t("flowSectorAligned"), t("flowTicketAligned"), t("flowSecurityAccepted")],
+                  offroadEyebrow: t("flowOffroadEyebrow"),
+                  offroadSignature: t("heroSignature"),
+                  offroadTitle: t("flowOffroadTitle"),
+                  opportunityLabel: t("flowOpportunityLabel"),
+                  outputFields: [
+                    {label: t("flowOutputFacility"), value: t("flowOutputFacilityValue")},
+                    {label: t("flowOutputSize"), value: t("flowOutputSizeValue")},
+                    {label: t("flowOutputUse"), value: t("flowOutputUseValue")},
+                    {label: t("flowOutputTenor"), value: t("flowOutputTenorValue")},
+                    {label: t("flowOutputAmortization"), value: t("flowOutputAmortizationValue")},
+                    {label: t("flowOutputPricing"), value: t("flowOutputPricingValue")},
+                    {label: t("flowOutputSecurity"), value: t("flowOutputSecurityValue")},
+                    {label: t("flowOutputCovenants"), value: t("flowOutputCovenantsValue")},
+                  ],
+                  outputTitle: t("flowOutputTitle"),
+                  processSteps: [t("flowProcessOrganize"), t("flowProcessCapacity"), t("flowProcessStructure"), t("flowProcessMaterials"), t("flowProcessMandates")],
+                  purposes: [t("flowPurposeGrowth"), t("flowPurposeCapex"), t("flowPurposeAcquisition"), t("flowPurposeEquipment"), t("flowPurposeRefinance"), t("flowPurposeOther")],
+                  sourceLabels: [t("flowSourceCompany"), t("flowSourceOriginator")],
+                  status: t("flowStatus"),
+                  title: t("flowTitle"),
+                }}
+              />
+              <div className="premium-hero__brand-statement">
+                <span>{t("heroBrandLead")}</span>
+                <strong>{t("heroBrandSignoff")}</strong>
+              </div>
+            </div>
           </div>
         </section>
 
