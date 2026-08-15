@@ -61,50 +61,78 @@ export default async function HomePage({params}: Props) {
                 <span>{t("heroLine1")}</span>
                 <span>{t("heroLine2")}</span>
                 <span>{t("heroLine3")}</span>
-                <span className="premium-hero__accent">{t("heroLine4")}</span>
               </h1>
               <p className="premium-hero__lead">{t("heroBody")}</p>
               <div className="premium-hero__actions">
                 <Link className="button button--light" href={demoHref}>
                   {t("heroPrimary")} <ArrowUpRight aria-hidden="true" size={16} />
                 </Link>
-                <a className="premium-text-link" href="#como-funciona">
+                <a className="premium-text-link" href={`mailto:${brand.email}`}>
                   {t("heroSecondary")} <ArrowRight aria-hidden="true" size={15} />
                 </a>
               </div>
               <p className="premium-hero__note">{t("heroNote")}</p>
             </div>
 
-            <CreditReadinessPanel label={t("productPreview")} />
-          </div>
-          <div className="premium-hero__rail" aria-hidden="true">
-            <span>STRUCTURE</span><i /><span>EVIDENCE</span><i /><span>MATCH</span><i /><span>ACCESS</span>
+            <MarketNetwork
+              labels={{
+                capital: t("networkCapital"),
+                capitalValue: t("networkCapitalValue"),
+                company: t("networkCompany"),
+                companyValue: t("networkCompanyValue"),
+                core: t("networkCore"),
+                coreValue: t("networkCoreValue"),
+                footer: t("networkFooter"),
+                originator: t("networkOriginator"),
+                originatorValue: t("networkOriginatorValue"),
+                pathCapital: t("networkPathCapital"),
+                pathCompany: t("networkPathCompany"),
+                pathOriginator: t("networkPathOriginator"),
+                status: t("networkStatus"),
+                title: t("networkTitle"),
+              }}
+            />
           </div>
         </section>
 
-        <section className="audience-rail" id="para-quem" aria-label={t("audienceKicker")}>
+        <section className="audience-rail" aria-label={t("audienceKicker")}>
           <div className="section-shell">
-            <span>{t("participantIntro")}</span>
-            <div><Building2 aria-hidden="true" size={15} />{t("companyAudienceLabel")}</div>
-            <div><UserRoundCheck aria-hidden="true" size={15} />{t("originatorAudienceLabel")}</div>
-            <div><Landmark aria-hidden="true" size={15} />{t("capitalAudienceLabel")}</div>
+            <a href="#empresas"><Building2 aria-hidden="true" size={16} /><span>{t("companyAudienceLabel")}</span><strong>{t("companyAudienceBenefit")}</strong></a>
+            <a href="#originadores"><UserRoundCheck aria-hidden="true" size={16} /><span>{t("originatorAudienceLabel")}</span><strong>{t("originatorAudienceBenefit")}</strong></a>
+            <a href="#capital"><Landmark aria-hidden="true" size={16} /><span>{t("capitalAudienceLabel")}</span><strong>{t("capitalAudienceBenefit")}</strong></a>
           </div>
         </section>
 
-        <section className="premium-statement section-shell">
-          <p className="premium-kicker">{t("statementKicker")}</p>
-          <div className="premium-statement__grid">
-            <h2>{t("statementTitle")}</h2>
-            <div>
-              <p>{t("statementBody")}</p>
-              <p>{t("statementAside")}</p>
-            </div>
+        <section className="premium-audiences section-shell" id="para-quem">
+          <header className="premium-section-heading">
+            <p className="premium-kicker">{t("audienceKicker")}</p>
+            <h2>{t("audienceTitle")}</h2>
+          </header>
+          <div className="premium-audiences__grid">
+            <article id="empresas">
+              <header><span>01</span><Building2 aria-hidden="true" size={18} /></header>
+              <p>{t("companyAudienceLabel")}</p>
+              <h3>{t("companyAudienceTitle")}</h3>
+              <div><Check aria-hidden="true" size={14} />{t("companyAudienceBody")}</div>
+            </article>
+            <article id="originadores">
+              <header><span>02</span><UserRoundCheck aria-hidden="true" size={18} /></header>
+              <p>{t("originatorAudienceLabel")}</p>
+              <h3>{t("originatorAudienceTitle")}</h3>
+              <div><Check aria-hidden="true" size={14} />{t("originatorAudienceBody")}</div>
+            </article>
+            <article id="capital">
+              <header><span>03</span><Landmark aria-hidden="true" size={18} /></header>
+              <p>{t("capitalAudienceLabel")}</p>
+              <h3>{t("capitalAudienceTitle")}</h3>
+              <div><Check aria-hidden="true" size={14} />{t("capitalAudienceBody")}</div>
+            </article>
           </div>
         </section>
 
         <section className="premium-film-section" id="como-funciona">
           <div className="section-shell">
-            <ProductFilm labels={filmLabels} />
+            <ProductFilm labels={filmLabels} locale={locale === "pt-BR" ? "pt-BR" : "en-US"} />
           </div>
         </section>
 
@@ -115,35 +143,35 @@ export default async function HomePage({params}: Props) {
           </header>
           <div className="premium-modules__grid">
             <article className="premium-module">
-              <header><span>01 / INTAKE</span><FileCheck2 aria-hidden="true" size={18} /></header>
+              <header><span>01 / {t("moduleIntakeLabel")}</span><FileCheck2 aria-hidden="true" size={18} /></header>
               <h3>{t("productIntakeTitle")}</h3>
               <p>{t("productIntakeBody")}</p>
               <div className="module-documents" aria-hidden="true">
-                {["FY25 Financials.xlsx", "Deal proposal.pdf", "Debt schedule.xlsx"].map((document, index) => (
-                  <div key={document}><span>0{index + 1}</span><strong>{document}</strong><Check size={13} /></div>
+                {[t("moduleFinancials"), t("moduleProposal"), t("moduleDebt")].map((document, index) => (
+                  <div key={document}><span>0{index + 1}</span><strong>{document}</strong><Check aria-hidden="true" size={13} /></div>
                 ))}
               </div>
             </article>
 
             <article className="premium-module">
-              <header><span>02 / ANALYSIS</span><DatabaseZap aria-hidden="true" size={18} /></header>
+              <header><span>02 / {t("moduleAnalysisLabel")}</span><DatabaseZap aria-hidden="true" size={18} /></header>
               <h3>{t("productAnalysisTitle")}</h3>
               <p>{t("productAnalysisBody")}</p>
               <div className="module-analysis" aria-hidden="true">
-                <div><span>EBITDA margin</span><strong>16.9%</strong></div>
+                <div><span>{t("moduleMargin")}</span><strong>16,9%</strong></div>
                 <div><span>DSCR / downside</span><strong>1.74x</strong></div>
-                <div><span>Evidence coverage</span><strong>94%</strong></div>
+                <div><span>{t("moduleCoverage")}</span><strong>94%</strong></div>
               </div>
             </article>
 
             <article className="premium-module premium-module--dark">
-              <header><span>03 / CONTROL</span><ShieldCheck aria-hidden="true" size={18} /></header>
+              <header><span>03 / {t("moduleControlLabel")}</span><ShieldCheck aria-hidden="true" size={18} /></header>
               <h3>{t("productAgentTitle")}</h3>
               <p>{t("productAgentBody")}</p>
               <div className="module-control" aria-hidden="true">
-                <div><i /><span>Evidence review</span><strong>Approved</strong></div>
-                <div><i /><span>Structure policy</span><strong>Passed</strong></div>
-                <div><i data-muted /><span>Market disclosure</span><strong>Pending</strong></div>
+                <div><i /><span>{t("moduleEvidenceReview")}</span><strong>{t("moduleApproved")}</strong></div>
+                <div><i /><span>{t("moduleStructurePolicy")}</span><strong>{t("modulePassed")}</strong></div>
+                <div><i data-muted /><span>{t("moduleMarketDisclosure")}</span><strong>{t("modulePending")}</strong></div>
               </div>
             </article>
           </div>
@@ -217,30 +245,66 @@ export default async function HomePage({params}: Props) {
   );
 }
 
-function CreditReadinessPanel({label}: {label: string}) {
+type MarketNetworkLabels = {
+  capital: string;
+  capitalValue: string;
+  company: string;
+  companyValue: string;
+  core: string;
+  coreValue: string;
+  footer: string;
+  originator: string;
+  originatorValue: string;
+  pathCapital: string;
+  pathCompany: string;
+  pathOriginator: string;
+  status: string;
+  title: string;
+};
+
+function MarketNetwork({labels}: {labels: MarketNetworkLabels}) {
   return (
-    <aside className="credit-readiness" aria-label={label}>
-      <header><span>OPPORTUNITY / 024</span><strong>PRIVATE CREDIT</strong></header>
-      <div className="credit-readiness__company">
-        <div><span>RH</span><div><strong>Rede Horizonte</strong><small>Food retail · Brazil</small></div></div>
-        <span>IN REVIEW</span>
-      </div>
-      <div className="credit-readiness__core">
-        <div className="credit-readiness__donut">
-          <div><strong>84</strong><span>READINESS</span></div>
+    <aside className="market-network" aria-label={labels.title}>
+      <header>
+        <span>{labels.title}</span>
+        <strong><i />{labels.status}</strong>
+      </header>
+      <div className="market-network__stage">
+        <svg aria-hidden="true" className="market-network__paths" viewBox="0 0 560 420">
+          <path d="M132 86 C238 86 196 183 266 205" />
+          <path d="M145 338 C236 338 205 252 267 225" />
+          <path d="M432 213 C385 213 350 213 316 213" />
+          <circle r="3">
+            <animateMotion dur="4.6s" path="M132 86 C238 86 196 183 266 205" repeatCount="indefinite" />
+          </circle>
+          <circle r="3">
+            <animateMotion begin="-1.4s" dur="5.2s" path="M145 338 C236 338 205 252 267 225" repeatCount="indefinite" />
+          </circle>
+          <circle r="3">
+            <animateMotion begin="-.8s" dur="3.8s" path="M432 213 C385 213 350 213 316 213" repeatCount="indefinite" />
+          </circle>
+        </svg>
+
+        <div className="market-network__node market-network__node--company">
+          <Building2 aria-hidden="true" size={16} /><span>{labels.company}</span><strong>{labels.companyValue}</strong>
         </div>
-        <div className="credit-readiness__legend">
-          <div><i /><span>Financial evidence</span><strong>92%</strong></div>
-          <div><i /><span>Structure fit</span><strong>86%</strong></div>
-          <div><i /><span>Market fit</span><strong>74%</strong></div>
+        <div className="market-network__node market-network__node--originator">
+          <UserRoundCheck aria-hidden="true" size={16} /><span>{labels.originator}</span><strong>{labels.originatorValue}</strong>
         </div>
+        <div className="market-network__node market-network__node--capital">
+          <Landmark aria-hidden="true" size={16} /><span>{labels.capital}</span><strong>{labels.capitalValue}</strong>
+        </div>
+
+        <div className="market-network__core">
+          <span>{labels.core}</span>
+          <strong>{labels.coreValue}</strong>
+        </div>
+
+        <span className="market-network__path-label market-network__path-label--company">{labels.pathCompany}</span>
+        <span className="market-network__path-label market-network__path-label--originator">{labels.pathOriginator}</span>
+        <span className="market-network__path-label market-network__path-label--capital">{labels.pathCapital}</span>
       </div>
-      <div className="credit-readiness__metrics">
-        <div><span>REVENUE / LTM</span><strong>R$ 184.7m</strong></div>
-        <div><span>DOWNSIDE DSCR</span><strong>1.74x</strong></div>
-        <div><span>CAPACITY</span><strong>R$ 54–68m</strong></div>
-      </div>
-      <footer><span><i /> VERIFIED EVIDENCE</span><strong>SYNTHETIC DATA</strong></footer>
+      <footer><span>{labels.footer}</span><strong>STRUCTURE · EVIDENCE · FIT</strong></footer>
     </aside>
   );
 }
