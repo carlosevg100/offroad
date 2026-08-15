@@ -1,13 +1,13 @@
 # Build State
 
 Atualizado em: 2026-08-15
-Branch local: `codex/b0-foundation`
+Branch local: `codex/premium-design-reset`
 Repositório: `carlosevg100/offroad`
 
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|
-| B0 Fundação | in_review | monorepo, docs, CI, templates, Blueprint versionado, PR #1 e gate local/GitHub Actions verdes | review e merge do PR #1 |
-| B1 Website | in_review | experiência bilíngue redesenhada com logo oficial, product film interativo original, demos sintéticas, metadata e QA responsivo | automação de acessibilidade e aprovação editorial/legal |
+| B0 Fundação | accepted | monorepo, docs, CI, templates e Blueprint versionado; PR #1 incorporado em `main` | manutenção contínua |
+| B1 Website | in_review | experiência bilíngue premium em preto/cinza, copy institucional aprovada, readiness dashboard, product film original, logo oficial, metadata e QA responsivo | automação de acessibilidade e aprovação editorial/legal |
 | B2 Auth | in_review | Supabase SSR, login/cadastro, PKCE/OTP confirm, onboarding e proteção de rotas | QA com usuários reais e políticas de ciclo de conta |
 | B3 Domínio/RLS | in_review | 28 tabelas públicas, RLS + FORCE RLS em todas, 57 policies e teste tenant A/B/anon aprovado | revisão externa do threat model e novos casos negativos por feature |
 | B4 Documentos | in_review | bucket privado `opportunity-documents`, allowlist de MIME/tamanho e policies por tenant | upload/download na UI e decisão final de retenção/residência production |
