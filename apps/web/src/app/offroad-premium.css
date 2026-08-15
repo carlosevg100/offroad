@@ -242,12 +242,12 @@ summary:focus-visible {
   min-height: min(740px, calc(100svh - 68px));
   padding-block: clamp(64px, 7vw, 96px);
   align-items: center;
-  grid-template-columns: minmax(0, 0.94fr) minmax(480px, 1.06fr);
-  gap: clamp(50px, 6vw, 96px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(460px, 0.9fr);
+  gap: clamp(40px, 4.5vw, 72px);
 }
 
 .premium-hero__copy {
-  max-width: 660px;
+  max-width: 720px;
 }
 
 .premium-hero .premium-eyebrow {
@@ -257,28 +257,35 @@ summary:focus-visible {
 
 .premium-hero__copy h1 {
   margin: 28px 0 27px;
+  max-width: 720px;
   font-family: var(--font-sans);
-  font-size: clamp(48px, 4.65vw, 72px);
+  font-size: clamp(48px, 4.3vw, 68px);
   font-weight: 560;
   letter-spacing: -0.058em;
   line-height: 1.01;
-}
-
-.premium-hero__copy h1 span {
-  display: block;
+  text-wrap: balance;
 }
 
 .premium-hero__lead {
-  max-width: 620px;
+  max-width: 690px;
   margin: 0;
   color: #bec8cf;
   font-size: clamp(14px, 1.15vw, 16px);
   line-height: 1.68;
 }
 
+.premium-hero__signature {
+  margin: 22px 0 0;
+  color: #edf2f4;
+  font-size: clamp(14px, 1.15vw, 16px);
+  font-weight: 630;
+  letter-spacing: -0.015em;
+  line-height: 1.45;
+}
+
 .premium-hero__actions {
   display: flex;
-  margin-top: 38px;
+  margin-top: 30px;
   align-items: center;
   gap: 26px;
 }
@@ -510,9 +517,44 @@ summary:focus-visible {
   border-top: 1px solid rgb(207 221 228 / 10%);
 }
 
-.market-network > footer strong {
-  color: #8295a0;
-  font-weight: 500;
+.market-network__brand {
+  min-height: 74px;
+  background: rgb(10 16 22 / 38%);
+  gap: 24px;
+  text-transform: none;
+}
+
+.market-network__brand span {
+  max-width: 330px;
+  color: #83939e;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.market-network__brand strong {
+  position: relative;
+  color: #dce8ec;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 680;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  white-space: nowrap;
+  animation: go-offroad 4.8s ease-in-out infinite;
+}
+
+.market-network__brand strong::after {
+  position: absolute;
+  right: 0;
+  bottom: -9px;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #8faab5, transparent);
+  content: "";
+  transform-origin: center;
+  animation: go-offroad-line 4.8s ease-in-out infinite;
 }
 
 @keyframes network-status {
@@ -521,6 +563,15 @@ summary:focus-visible {
 
 @keyframes network-core {
   50% { box-shadow: 0 0 0 18px rgb(128 157 171 / 2%), 0 30px 78px rgb(0 0 0 / 31%); }
+}
+
+@keyframes go-offroad {
+  50% { color: #f4f8f9; }
+}
+
+@keyframes go-offroad-line {
+  0%, 100% { opacity: 0.38; transform: scaleX(0.52); }
+  50% { opacity: 0.9; transform: scaleX(1); }
 }
 
 .audience-rail {
@@ -2051,8 +2102,18 @@ summary:focus-visible {
     display: none;
   }
 
-  .market-network > footer strong {
-    display: none;
+  .market-network__brand {
+    display: grid;
+    min-height: 94px;
+    padding-block: 14px;
+    align-content: center;
+    justify-content: stretch;
+    gap: 8px;
+  }
+
+  .market-network__brand strong {
+    width: max-content;
+    font-size: 17px;
   }
 
   .audience-rail .section-shell {
@@ -2214,6 +2275,8 @@ summary:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .market-network__core,
   .market-network > header i,
+  .market-network__brand strong,
+  .market-network__brand strong::after,
   .film-stage,
   .product-film__playback span[data-current] i {
     animation: none !important;

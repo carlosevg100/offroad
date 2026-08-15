@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "{brand} - Private credit origination and market access",
-    "description": "Offroad connects companies, originators, and investment managers in an institutional private credit flow: structuring demand, qualifying origination, and aligning opportunities with the right mandates."
+    "description": "Borrower information becomes a structured private credit opportunity in minutes, ready for companies to take to market and for investors to assess against their mandates."
   },
   "Navigation": {
     "how": "How it works",
@@ -18,10 +18,11 @@
   },
   "Home": {
     "eyebrow": "OFFROAD CAPITAL | AI-NATIVE PRIVATE CREDIT ORIGINATION & MARKET ACCESS",
-    "heroLine1": "More access.",
-    "heroLine2": "Better origination.",
-    "heroLine3": "Better-aligned capital.",
-    "heroBody": "Offroad connects companies, originators, and investment managers in an institutional private credit flow — structuring capital needs, qualifying opportunities, and bringing each transaction closer to the best-aligned mandates.",
+    "heroTitle": "Private credit origination beyond traditional channels.",
+    "heroBody": "Borrower information becomes a structured private credit opportunity in minutes. Companies reach the market prepared. Investors access new deal flow aligned with their mandates, ready to assess.",
+    "heroSignature": "Structured for the market. Matched to the mandate.",
+    "heroBrandLead": "The best opportunities are rarely on the obvious path.",
+    "heroBrandSignoff": "Go Offroad.",
     "heroSupport": "Better-prepared companies. More efficient originators. Better-aligned opportunities for investment managers.",
     "heroPrimary": "See the platform in action",
     "heroSecondary": "Talk to Offroad",

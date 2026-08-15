@@ -4,7 +4,7 @@ export const brand = {
   domain: "offroad.capital",
   url: "https://offroad.capital",
   category: "AI-Native Private Credit Origination & Market Access",
-  signature: "More access. Better origination. Better-aligned capital.",
+  signature: "Structured for the market. Matched to the mandate.",
   email: "hello@offroad.capital",
 } as const;
 
