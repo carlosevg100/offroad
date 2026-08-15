@@ -139,6 +139,7 @@ summary:focus-visible {
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .locale-switcher {
@@ -163,6 +164,7 @@ summary:focus-visible {
 .site-header .button--small {
   min-height: 38px;
   padding-inline: 17px;
+  white-space: nowrap;
 }
 
 .button:hover {
