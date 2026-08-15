@@ -40,7 +40,7 @@ export default async function LoginPage({params, searchParams}: Props) {
           <ArrowLeft aria-hidden="true" size={14} /> {t("back")}
         </Link>
 
-        <form className="auth-form">
+        <form className="auth-form" id="access-form">
           <input name="locale" type="hidden" value={locale} />
           {state.sent === "1" ? <p className="form-notice form-notice--success" role="status">{t("magicSent")}</p> : null}
           {state.error ? <p className="form-notice form-notice--error" role="alert">{state.error === "provider" ? t("providerMissing") : t("error")}</p> : null}
