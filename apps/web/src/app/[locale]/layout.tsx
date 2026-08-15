@@ -1,7 +1,6 @@
 import type {Metadata} from "next";
 import {Inter, Newsreader} from "next/font/google";
 import {hasLocale} from "next-intl";
-import {getTranslations} from "next-intl/server";
 import {notFound} from "next/navigation";
 
 import {brand} from "@/config/brand";
@@ -38,15 +37,13 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
     notFound();
   }
 
-  const t = await getTranslations({locale, namespace: "Metadata"});
-
   return {
     metadataBase: new URL(brand.url),
     title: {
-      default: t("title", {brand: brand.name}),
+      default: brand.browserTitle,
       template: `%s | ${brand.name}`,
     },
-    description: t("description"),
+    description: brand.description,
     applicationName: brand.name,
     authors: [{name: brand.name}],
     creator: brand.name,
@@ -58,18 +55,36 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
         "en-US": "/en-US",
       },
     },
+    manifest: "/site.webmanifest?v=2",
+    icons: {
+      icon: [
+        {url: "/favicon.ico?v=2", sizes: "16x16 32x32 48x48", type: "image/x-icon"},
+        {url: "/icon.svg?v=2", sizes: "any", type: "image/svg+xml"},
+        {url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png"},
+        {url: "/icon-512.png?v=2", sizes: "512x512", type: "image/png"},
+      ],
+      apple: [{url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png"}],
+      shortcut: [{url: "/favicon.ico?v=2", type: "image/x-icon"}],
+    },
     openGraph: {
       type: "website",
       locale,
       url: `/${locale}`,
       siteName: brand.name,
-      title: t("title", {brand: brand.name}),
-      description: t("description"),
+      title: brand.browserTitle,
+      description: brand.description,
+      images: [{
+        url: "/social-preview.png?v=2",
+        width: 1200,
+        height: 630,
+        alt: `${brand.name}. ${brand.socialHeadline}`,
+      }],
     },
     twitter: {
       card: "summary_large_image",
-      title: t("title", {brand: brand.name}),
-      description: t("description"),
+      title: brand.browserTitle,
+      description: brand.description,
+      images: [{url: "/social-preview.png?v=2", alt: `${brand.name}. ${brand.socialHeadline}`}],
     },
     robots: {
       index: false,
@@ -86,12 +101,65 @@ export default async function LocaleLayout({children, params}: Props) {
     notFound();
   }
 
+  const organizationId = `${brand.url}/#organization`;
+  const websiteId = `${brand.url}/#website`;
+  const applicationId = `${brand.url}/#software-application`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": organizationId,
+        name: brand.name,
+        url: brand.url,
+        logo: `${brand.url}/brand/offroad-capital-logo.png`,
+        image: `${brand.url}/social-preview.png`,
+        email: brand.email,
+        description: brand.description,
+      },
+      {
+        "@type": "WebSite",
+        "@id": websiteId,
+        name: brand.name,
+        url: brand.url,
+        description: brand.description,
+        inLanguage: ["en-US", "pt-BR"],
+        publisher: {"@id": organizationId},
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": applicationId,
+        name: brand.name,
+        url: brand.url,
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        description: "Offroad Capital organizes and reconciles borrower information, structures private credit opportunities, prepares standardized investor materials, and matches opportunities with aligned private credit mandates.",
+        featureList: [
+          "Organizes and reconciles borrower information",
+          "Structures private credit opportunities",
+          "Prepares standardized investor materials",
+          "Matches opportunities with aligned private credit mandates",
+        ],
+        image: `${brand.url}/social-preview.png`,
+        provider: {"@id": organizationId},
+      },
+    ],
+  };
+
   return (
     <html
       lang={locale}
       className={`${inter.variable} ${newsreader.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

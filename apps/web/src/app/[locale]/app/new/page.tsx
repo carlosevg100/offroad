@@ -1,4 +1,5 @@
 import {ArrowLeft, ArrowRight, Info} from "lucide-react";
+import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
@@ -8,6 +9,8 @@ type Props = {
   params: Promise<{locale: string}>;
   searchParams: Promise<{error?: string}>;
 };
+
+export const metadata: Metadata = {title: "New Opportunity", robots: {index: false, follow: false}};
 
 export default async function NewOpportunityPage({params, searchParams}: Props) {
   const {locale} = await params;
