@@ -14,6 +14,7 @@ import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
 import {BrandMark} from "@/components/brand-mark";
+import {CapitalFlow} from "@/components/capital-flow";
 import {ProductFilm} from "@/components/product-film";
 import {SiteHeader} from "@/components/site-header";
 import {brand} from "@/config/brand";
@@ -57,9 +58,17 @@ export default async function HomePage({params}: Props) {
           <div className="section-shell premium-hero__inner">
             <div className="premium-hero__copy">
               <p className="premium-eyebrow">{t("eyebrow")}</p>
-              <h1>{t("heroTitle")}</h1>
+              <h1>
+                <span className="premium-hero__title-line">{t("heroTitleLine1")}</span>
+                {" "}
+                <span className="premium-hero__title-line">{t("heroTitleLine2")}</span>
+              </h1>
               <p className="premium-hero__lead">{t("heroBody")}</p>
               <p className="premium-hero__signature">{t("heroSignature")}</p>
+              <div className="premium-hero__brand-statement">
+                <span>{t("heroBrandLead")}</span>
+                <strong>{t("heroBrandSignoff")}</strong>
+              </div>
               <div className="premium-hero__actions">
                 <Link className="button button--light" href={demoHref}>
                   {t("heroPrimary")} <ArrowUpRight aria-hidden="true" size={16} />
@@ -70,23 +79,41 @@ export default async function HomePage({params}: Props) {
               </div>
             </div>
 
-            <MarketNetwork
+            <CapitalFlow
               labels={{
-                capital: t("networkCapital"),
-                capitalValue: t("networkCapitalValue"),
-                brandLead: t("heroBrandLead"),
-                brandSignoff: t("heroBrandSignoff"),
-                company: t("networkCompany"),
-                companyValue: t("networkCompanyValue"),
-                core: t("networkCore"),
-                coreValue: t("networkCoreValue"),
-                originator: t("networkOriginator"),
-                originatorValue: t("networkOriginatorValue"),
-                pathCapital: t("networkPathCapital"),
-                pathCompany: t("networkPathCompany"),
-                pathOriginator: t("networkPathOriginator"),
-                status: t("networkStatus"),
-                title: t("networkTitle"),
+                benefits: [t("flowBenefitFlow"), t("flowBenefitEvidence"), t("flowBenefitStructure"), t("flowBenefitMandate")],
+                challenges: [t("flowChallengeScattered"), t("flowChallengeCapacity"), t("flowChallengeCase")],
+                companyBody: t("flowCompanyBody"),
+                companyEyebrow: t("flowCompanyEyebrow"),
+                companyTitle: t("flowCompanyTitle"),
+                documents: [t("flowDocumentFinancials"), t("flowDocumentForecasts"), t("flowDocumentDebt"), t("flowDocumentCollateral"), t("flowDocumentMaterials")],
+                finalStatus: t("flowFinalStatus"),
+                inputLabel: t("flowInputLabel"),
+                investorBody: t("flowInvestorBody"),
+                investorEyebrow: t("flowInvestorEyebrow"),
+                investorTitle: t("flowInvestorTitle"),
+                investorTypes: [t("flowInvestorFund"), t("flowInvestorFidc"), t("flowInvestorFactor"), t("flowInvestorAlternative")],
+                mandateLabels: [t("flowMandateAligned"), t("flowSectorAligned"), t("flowTicketAligned"), t("flowSecurityAccepted")],
+                offroadEyebrow: t("flowOffroadEyebrow"),
+                offroadSignature: t("heroSignature"),
+                offroadTitle: t("flowOffroadTitle"),
+                opportunityLabel: t("flowOpportunityLabel"),
+                outputFields: [
+                  {label: t("flowOutputFacility"), value: t("flowOutputFacilityValue")},
+                  {label: t("flowOutputSize"), value: t("flowOutputSizeValue")},
+                  {label: t("flowOutputUse"), value: t("flowOutputUseValue")},
+                  {label: t("flowOutputTenor"), value: t("flowOutputTenorValue")},
+                  {label: t("flowOutputAmortization"), value: t("flowOutputAmortizationValue")},
+                  {label: t("flowOutputPricing"), value: t("flowOutputPricingValue")},
+                  {label: t("flowOutputSecurity"), value: t("flowOutputSecurityValue")},
+                  {label: t("flowOutputCovenants"), value: t("flowOutputCovenantsValue")},
+                ],
+                outputTitle: t("flowOutputTitle"),
+                processSteps: [t("flowProcessOrganize"), t("flowProcessCapacity"), t("flowProcessStructure"), t("flowProcessMaterials"), t("flowProcessMandates")],
+                purposes: [t("flowPurposeGrowth"), t("flowPurposeCapex"), t("flowPurposeAcquisition"), t("flowPurposeEquipment"), t("flowPurposeRefinance"), t("flowPurposeOther")],
+                sourceLabels: [t("flowSourceCompany"), t("flowSourceOriginator")],
+                status: t("flowStatus"),
+                title: t("flowTitle"),
               }}
             />
           </div>
@@ -239,74 +266,6 @@ export default async function HomePage({params}: Props) {
         </div>
       </footer>
     </>
-  );
-}
-
-type MarketNetworkLabels = {
-  capital: string;
-  capitalValue: string;
-  brandLead: string;
-  brandSignoff: string;
-  company: string;
-  companyValue: string;
-  core: string;
-  coreValue: string;
-  originator: string;
-  originatorValue: string;
-  pathCapital: string;
-  pathCompany: string;
-  pathOriginator: string;
-  status: string;
-  title: string;
-};
-
-function MarketNetwork({labels}: {labels: MarketNetworkLabels}) {
-  return (
-    <aside className="market-network" aria-label={labels.title}>
-      <header>
-        <span>{labels.title}</span>
-        <strong><i />{labels.status}</strong>
-      </header>
-      <div className="market-network__stage">
-        <svg aria-hidden="true" className="market-network__paths" viewBox="0 0 560 420">
-          <path d="M132 86 C238 86 196 183 266 205" />
-          <path d="M145 338 C236 338 205 252 267 225" />
-          <path d="M432 213 C385 213 350 213 316 213" />
-          <circle r="3">
-            <animateMotion dur="4.6s" path="M132 86 C238 86 196 183 266 205" repeatCount="indefinite" />
-          </circle>
-          <circle r="3">
-            <animateMotion begin="-1.4s" dur="5.2s" path="M145 338 C236 338 205 252 267 225" repeatCount="indefinite" />
-          </circle>
-          <circle r="3">
-            <animateMotion begin="-.8s" dur="3.8s" path="M432 213 C385 213 350 213 316 213" repeatCount="indefinite" />
-          </circle>
-        </svg>
-
-        <div className="market-network__node market-network__node--company">
-          <Building2 aria-hidden="true" size={16} /><span>{labels.company}</span><strong>{labels.companyValue}</strong>
-        </div>
-        <div className="market-network__node market-network__node--originator">
-          <UserRoundCheck aria-hidden="true" size={16} /><span>{labels.originator}</span><strong>{labels.originatorValue}</strong>
-        </div>
-        <div className="market-network__node market-network__node--capital">
-          <Landmark aria-hidden="true" size={16} /><span>{labels.capital}</span><strong>{labels.capitalValue}</strong>
-        </div>
-
-        <div className="market-network__core">
-          <span>{labels.core}</span>
-          <strong>{labels.coreValue}</strong>
-        </div>
-
-        <span className="market-network__path-label market-network__path-label--company">{labels.pathCompany}</span>
-        <span className="market-network__path-label market-network__path-label--originator">{labels.pathOriginator}</span>
-        <span className="market-network__path-label market-network__path-label--capital">{labels.pathCapital}</span>
-      </div>
-      <footer className="market-network__brand">
-        <span>{labels.brandLead}</span>
-        <strong>{labels.brandSignoff}</strong>
-      </footer>
-    </aside>
   );
 }
 
