@@ -8,7 +8,7 @@ Repositório: `carlosevg100/offroad`
 |---|---|---|---|
 | B0 Fundação | accepted | monorepo, docs, CI, templates e Blueprint versionado; PR #1 incorporado em `main` | manutenção contínua |
 | B1 Website | in_review | experiência bilíngue premium em grafite/azul institucional, proposta de valor explícita para empresas, originadores e gestores, mapa animado do mercado, product film localizado, logo oficial, metadata e QA responsivo | automação de acessibilidade e aprovação editorial/legal |
-| B2 Auth | in_review | cadastro password-first por empresa, originador ou investidor; confirmação e recovery com OTP de 6 dígitos; templates bilíngues e onboarding persistente | ativar SMTP Resend e executar QA com caixas postais reais |
+| B2 Auth | in_review | cadastro password-first por empresa, originador ou investidor; confirmação e recovery com OTP de 6 dígitos; templates bilíngues, SMTP Resend autenticado e onboarding persistente | executar a primeira jornada autenticada com usuário real |
 | B3 Domínio/RLS | accepted | RLS + FORCE RLS, policies por organização e função, teste remoto tenant A/B/provider/anon e Security Advisor sem alertas | revisão externa do threat model por gate |
 | B4 Documentos | in_review | bucket privado `opportunity-documents`, upload autenticado no onboarding, allowlist de MIME/tamanho e policies por tenant | QA de upload com usuário real e decisão final de retenção/residência production |
 | B5 Financial core | in_review | pacote decimal exato e golden tests determinísticos | modelos avançados, versionamento e validação independente |
@@ -21,7 +21,7 @@ Repositório: `carlosevg100/offroad`
 | B12 Observabilidade | in_review | adapters Sentry/PostHog privacy-first, taxonomy allowlisted e testes de redação de PII | criar projetos externos e configurar DSN/token por ambiente |
 | B13 Hardening | in_progress | grants mínimos, RLS não-interferência e Security Advisor sem alertas | CI de segurança, rate limits, restore drill e pentest |
 | B14 Deployment | in_review | produção Vercel, GitHub conectado, Supabase ativo e `offroad.capital`/`www` com DNS e TLS válidos | projetos externos de observabilidade e política de promotion |
-| B15 E2E | in_progress | smoke visual desktop/tablet/mobile do cadastro e recovery; lint, typecheck, 18 testes, build e teste RLS remoto aprovados | jornada autenticada completa após SMTP, acessibilidade automatizada e testes cross-browser |
+| B15 E2E | in_progress | smoke visual desktop/tablet/mobile do cadastro e recovery; lint, typecheck, 18 testes, build, teste RLS remoto e entrega transacional Resend aprovados | jornada autenticada completa, acessibilidade automatizada e testes cross-browser |
 
 ## Incremento ativo
 
@@ -47,7 +47,7 @@ Critérios em aberto:
 - [x] implementar cadastro e recovery por e-mail, senha e código de seis dígitos
 - [x] implementar onboarding distinto para empresa, assessor/originador e investidor
 - [x] aplicar e validar policies de não interferência entre originadores e provedores de capital
-- [ ] conectar SMTP Resend e validar entrega real dos códigos
+- [x] conectar SMTP Resend, verificar domínio e validar entrega transacional
 - [ ] criar projetos Sentry/PostHog e configurar secrets por ambiente
 
 Produção canônica: `https://offroad.capital`
