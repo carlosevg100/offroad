@@ -14,7 +14,7 @@ export function SiteHeader({locale}: SiteHeaderProps) {
   const t = useTranslations("Navigation");
   const demoHref = `/${locale}/demo`;
   const loginHref = `/${locale}/login#access-form`;
-  const createAccountHref = `/${locale}/login?intent=create-account#access-form`;
+  const createAccountHref = `/${locale}/signup`;
 
   return (
     <header className="site-header">

@@ -32,7 +32,7 @@ export default async function HomePage({params}: Props) {
   const t = await getTranslations({locale, namespace: "Home"});
   const demoHref = `/${locale}/demo`;
   const loginHref = `/${locale}/login#access-form`;
-  const createAccountHref = `/${locale}/login?intent=create-account#access-form`;
+  const createAccountHref = `/${locale}/signup`;
 
   const filmLabels = {
     eyebrow: t("filmEyebrow"),
