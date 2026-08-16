@@ -3019,6 +3019,18 @@ summary:focus-visible {
   gap: 16px;
 }
 
+.registration-fields .field {
+  align-content: start;
+}
+
+.auth-verification-note {
+  margin: -7px 0 0;
+  color: #6f757e;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .auth-legal {
   margin: -4px 0 0;
   text-align: center;

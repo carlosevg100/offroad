@@ -1,4 +1,4 @@
-import {ArrowLeft, ArrowRight, Building2, Landmark, Network} from "lucide-react";
+import {ArrowLeft, Building2, Landmark, Network} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
@@ -67,7 +67,8 @@ export default async function SignupPage({params, searchParams}: Props) {
           <label className="field"><span>{t("confirmPassword")}</span><input autoComplete="new-password" maxLength={128} minLength={10} name="confirm_password" required type="password" /></label>
         </div>
 
-        <button className="button auth-form__primary" type="submit">{t("continue")} <ArrowRight aria-hidden="true" size={15} /></button>
+        <button className="button auth-form__primary" type="submit">{t("continue")}</button>
+        <p className="auth-verification-note">{t("verificationNotice")}</p>
         <p className="auth-legal">{t("legal")}</p>
       </form>
     </AuthShell>
