@@ -6,7 +6,7 @@ import type {AppLocale} from "@/i18n/routing";
 type Props = {
   children: React.ReactNode;
   locale: AppLocale;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   body: string;
   assurance: string;
@@ -18,7 +18,7 @@ export function AuthShell({children, locale, eyebrow, title, body, assurance}: P
       <section className="auth-panel auth-panel--context">
         <BrandMark inverted locale={locale} />
         <div className="auth-panel__copy">
-          <p className="section-kicker section-kicker--light">{eyebrow}</p>
+          {eyebrow ? <p className="section-kicker section-kicker--light">{eyebrow}</p> : null}
           <h1>{title}</h1>
           <p>{body}</p>
         </div>

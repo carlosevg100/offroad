@@ -274,9 +274,8 @@
     "errorBody": "It may have expired or already been used. Request a new access link."
   },
   "Signup": {
-    "contextEyebrow": "One entry point for every participant",
     "contextTitle": "Access the Offroad Capital platform.",
-    "contextBody": "Companies structure capital needs. Advisors originate more consistently. Investors receive opportunities aligned with their mandates.",
+    "contextBody": "Companies gain structured access to private credit beyond traditional channels. Advisors originate more consistently. Investors receive opportunities aligned with their mandates.",
     "assurance": "Your profile shapes the experience. Authority, mandates, and data access remain subject to verification.",
     "back": "I already have an account",
     "eyebrow": "Create account",

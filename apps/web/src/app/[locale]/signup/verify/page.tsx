@@ -18,7 +18,7 @@ export default async function VerifySignupPage({params, searchParams}: Props) {
   const t = await getTranslations({locale, namespace: "Signup"});
 
   return (
-    <AuthShell assurance={t("assurance")} body={t("verifyContextBody")} eyebrow={t("contextEyebrow")} locale={locale as AppLocale} title={t("verifyContextTitle")}>
+    <AuthShell assurance={t("assurance")} body={t("verifyContextBody")} locale={locale as AppLocale} title={t("verifyContextTitle")}>
       <Link className="text-link auth-back" href={`/${locale}/signup`}><ArrowLeft aria-hidden="true" size={14} /> {t("changeEmail")}</Link>
       <form action={verifyRegistrationCode} className="auth-form auth-form--verification">
         <input name="locale" type="hidden" value={locale} />
