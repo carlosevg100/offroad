@@ -226,45 +226,66 @@ export type Database = {
       }
       capital_requests: {
         Row: {
+          collateral_summary: string | null
           company_id: string
           created_at: string
           created_by: string
           currency: string
           desired_term_months: number | null
+          desired_timing: string | null
+          expected_outcome: string | null
           id: string
           organization_id: string
           output_locale: string
           purpose: string
+          purpose_category: string | null
+          rationale: string | null
+          repayment_source: string | null
           requested_amount: number
           status: string
+          strategic_importance: string | null
           updated_at: string
         }
         Insert: {
+          collateral_summary?: string | null
           company_id: string
           created_at?: string
           created_by: string
           currency: string
           desired_term_months?: number | null
+          desired_timing?: string | null
+          expected_outcome?: string | null
           id?: string
           organization_id: string
           output_locale?: string
           purpose: string
+          purpose_category?: string | null
+          rationale?: string | null
+          repayment_source?: string | null
           requested_amount: number
           status?: string
+          strategic_importance?: string | null
           updated_at?: string
         }
         Update: {
+          collateral_summary?: string | null
           company_id?: string
           created_at?: string
           created_by?: string
           currency?: string
           desired_term_months?: number | null
+          desired_timing?: string | null
+          expected_outcome?: string | null
           id?: string
           organization_id?: string
           output_locale?: string
           purpose?: string
+          purpose_category?: string | null
+          rationale?: string | null
+          repayment_source?: string | null
           requested_amount?: number
           status?: string
+          strategic_importance?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -283,13 +304,17 @@ export type Database = {
           created_by: string
           description: string | null
           display_name: string | null
+          headquarters_city: string | null
+          headquarters_state: string | null
           id: string
           jurisdiction_code: string
           legal_identifier_hash: string | null
+          legal_identifier_last4: string | null
           legal_name: string
           organization_id: string
           reporting_currency: string
           sector: string | null
+          subsector: string | null
           updated_at: string
           verification_status: string
           website: string | null
@@ -299,13 +324,17 @@ export type Database = {
           created_by: string
           description?: string | null
           display_name?: string | null
+          headquarters_city?: string | null
+          headquarters_state?: string | null
           id?: string
           jurisdiction_code: string
           legal_identifier_hash?: string | null
+          legal_identifier_last4?: string | null
           legal_name: string
           organization_id: string
           reporting_currency?: string
           sector?: string | null
+          subsector?: string | null
           updated_at?: string
           verification_status?: string
           website?: string | null
@@ -315,13 +344,17 @@ export type Database = {
           created_by?: string
           description?: string | null
           display_name?: string | null
+          headquarters_city?: string | null
+          headquarters_state?: string | null
           id?: string
           jurisdiction_code?: string
           legal_identifier_hash?: string | null
+          legal_identifier_last4?: string | null
           legal_name?: string
           organization_id?: string
           reporting_currency?: string
           sector?: string | null
+          subsector?: string | null
           updated_at?: string
           verification_status?: string
           website?: string | null
@@ -1072,37 +1105,55 @@ export type Database = {
       }
       organizations: {
         Row: {
+          city: string | null
           country_code: string | null
           created_at: string
           created_by: string
+          description: string | null
           id: string
           legal_name: string | null
           name: string
           organization_type: string
+          provider_type: string | null
+          sector: string | null
+          state_code: string | null
+          subsector: string | null
           updated_at: string
           verification_status: string
           website: string | null
         }
         Insert: {
+          city?: string | null
           country_code?: string | null
           created_at?: string
           created_by: string
+          description?: string | null
           id?: string
           legal_name?: string | null
           name: string
           organization_type: string
+          provider_type?: string | null
+          sector?: string | null
+          state_code?: string | null
+          subsector?: string | null
           updated_at?: string
           verification_status?: string
           website?: string | null
         }
         Update: {
+          city?: string | null
           country_code?: string | null
           created_at?: string
           created_by?: string
+          description?: string | null
           id?: string
           legal_name?: string | null
           name?: string
           organization_type?: string
+          provider_type?: string | null
+          sector?: string | null
+          state_code?: string | null
+          subsector?: string | null
           updated_at?: string
           verification_status?: string
           website?: string | null
@@ -1235,6 +1286,69 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      provider_contacts: {
+        Row: {
+          created_at: string
+          created_by: string
+          email: string
+          full_name: string
+          fund_id: string | null
+          id: string
+          is_primary: boolean
+          job_title: string | null
+          organization_id: string
+          phone: string | null
+          routing_criteria: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          email: string
+          full_name: string
+          fund_id?: string | null
+          id?: string
+          is_primary?: boolean
+          job_title?: string | null
+          organization_id: string
+          phone?: string | null
+          routing_criteria?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          email?: string
+          full_name?: string
+          fund_id?: string | null
+          id?: string
+          is_primary?: boolean
+          job_title?: string | null
+          organization_id?: string
+          phone?: string | null
+          routing_criteria?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_contacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_contacts_organization_id_fund_id_fkey"
+            columns: ["organization_id", "fund_id"]
+            isOneToOne: false
+            referencedRelation: "funds"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
       }
       published_opportunity_projections: {
         Row: {
@@ -1545,6 +1659,15 @@ export type Database = {
           p_purpose: string
           p_requested_amount: number
           p_sector: string
+        }
+        Returns: string
+      }
+      initialize_professional_onboarding: {
+        Args: {
+          p_full_name: string
+          p_job_title?: string
+          p_journey: string
+          p_locale?: string
         }
         Returns: string
       }

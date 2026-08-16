@@ -26,3 +26,4 @@ test-results/
 # Logs
 *.log
 pnpm-debug.log*
+.env*.local

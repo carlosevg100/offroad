@@ -2,6 +2,9 @@ import {ArrowLeft, ArrowRight, Info} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
+import {redirect} from "next/navigation";
+
+import {requireWorkspace} from "@/lib/auth/workspace";
 
 import {createOpportunity} from "./actions";
 
@@ -16,6 +19,8 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
   const {locale} = await params;
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "App"});
+  const {organization} = await requireWorkspace(locale);
+  if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
 
   return (
     <main className="app-canvas intake-page">

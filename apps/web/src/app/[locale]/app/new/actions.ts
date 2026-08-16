@@ -13,6 +13,7 @@ export async function createOpportunity(formData: FormData) {
   const rawLocale = value(formData, "locale");
   const locale = routing.locales.includes(rawLocale as AppLocale) ? rawLocale as AppLocale : routing.defaultLocale;
   const {supabase, organization} = await requireWorkspace(locale);
+  if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
   const amount = value(formData, "requested_amount").replace(",", ".");
   const term = Number(value(formData, "desired_term_months"));
 

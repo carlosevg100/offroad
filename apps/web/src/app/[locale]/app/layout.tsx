@@ -1,4 +1,4 @@
-import {CircleGauge, FileLock2, LogOut, Plus, Route, ShieldCheck} from "lucide-react";
+import {CircleGauge, FileLock2, Landmark, LogOut, Plus, Route, ShieldCheck} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
@@ -18,6 +18,7 @@ export default async function ApplicationLayout({children, params}: Props) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "App"});
   const {organization, membership, email} = await requireWorkspace(locale);
+  const canOriginate = organization.organization_type !== "capital_provider";
 
   return (
     <div className="application-shell">
@@ -30,9 +31,11 @@ export default async function ApplicationLayout({children, params}: Props) {
         </div>
         <nav aria-label={t("workspace")} className="app-nav">
           <Link href={`/${locale}/app`}><CircleGauge aria-hidden="true" size={17} />{t("overview")}</Link>
-          <Link href={`/${locale}/app/new`}><Plus aria-hidden="true" size={17} />{t("newOpportunity")}</Link>
+          {canOriginate
+            ? <Link href={`/${locale}/app/new`}><Plus aria-hidden="true" size={17} />{organization.organization_type === "company" ? t("newCapitalNeed") : t("newOpportunity")}</Link>
+            : <Link href={`/${locale}/app#funds`}><Landmark aria-hidden="true" size={17} />{t("fundsAndMandates")}</Link>}
           <Link href={`/${locale}/demo`}><Route aria-hidden="true" size={17} />{t("demo")}</Link>
-          <Link href={`/${locale}/security`}><ShieldCheck aria-hidden="true" size={17} />{t("security")}</Link>
+          <Link href={`/${locale}/#seguranca`}><ShieldCheck aria-hidden="true" size={17} />{t("security")}</Link>
         </nav>
         <div className="app-sidebar__footer">
           <div><FileLock2 aria-hidden="true" size={15} /><span>{email}</span></div>

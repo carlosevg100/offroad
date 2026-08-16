@@ -36,5 +36,14 @@ export async function requireWorkspace(locale: string) {
     .single();
 
   if (!organization) redirect(`/${locale}/onboarding`);
-  return {...user, membership, organization};
+
+  const {data: onboarding} = await user.supabase
+    .from("onboarding_progress")
+    .select("journey, current_step, completed_at")
+    .eq("organization_id", organization.id)
+    .eq("user_id", user.userId)
+    .maybeSingle();
+  if (!onboarding?.completed_at) redirect(`/${locale}/onboarding`);
+
+  return {...user, membership, organization, onboarding};
 }
