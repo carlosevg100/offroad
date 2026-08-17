@@ -1,4 +1,21 @@
-import {ArrowLeft, ArrowRight, Building2, Check, FileText, Landmark, Network} from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bell,
+  Building2,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  CircleGauge,
+  FileText,
+  FolderOpen,
+  HelpCircle,
+  Landmark,
+  LockKeyhole,
+  Network,
+  PanelLeft,
+  Search,
+} from "lucide-react";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 import {redirect} from "next/navigation";
@@ -85,8 +102,11 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       ? ["organization", "company", "funding", "documents", "review"]
       : ["organization", "fund", "mandate", "contacts", "review"];
   const currentIndex = Math.max(0, steps.indexOf(currentStep));
+  const completedCount = currentIndex;
+  const completionPercent = Math.max(12, Math.round((completedCount / steps.length) * 100));
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
   const JourneyIcon = journey === "company" ? Building2 : journey === "originator" ? Network : Landmark;
+  const projectTitle = journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject");
 
   let documents: Array<{id: string; original_name: string; byte_size: number | null}> = [];
   const opportunityId = text(answers.opportunity_id);
@@ -98,31 +118,67 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const errorMessage = state.error === "documents" ? t("documentsRequired") : state.error ? t("error") : null;
 
   return (
-    <main className="professional-onboarding">
-      <header className="onboarding-header">
-        <BrandMark locale={locale as AppLocale} />
-        <div className="onboarding-header__context"><JourneyIcon aria-hidden="true" size={16} /><span>{journeyTitle}</span></div>
-      </header>
+    <main className="workspace-onboarding">
+      <aside className="workspace-sidebar">
+        <div className="workspace-sidebar__brand"><BrandMark inverted locale={locale as AppLocale} /></div>
 
-      <div className="onboarding-layout">
-        <aside className="onboarding-progress" aria-label={t("progressLabel")}>
-          <p className="section-kicker">{t("eyebrow")}</p>
-          <h1>{t("title")}</h1>
-          <p>{t("body")}</p>
-          <ol>
-            {steps.map((step, index) => (
-              <li className={index === currentIndex ? "is-current" : index < currentIndex ? "is-complete" : ""} key={step}>
-                <span>{index < currentIndex ? <Check aria-hidden="true" size={13} /> : String(index + 1).padStart(2, "0")}</span>
-                <div><strong>{t(`steps.${journey}.${step}.title`)}</strong><small>{t(`steps.${journey}.${step}.short`)}</small></div>
-              </li>
-            ))}
-          </ol>
-        </aside>
+        <button className="workspace-switcher" type="button">
+          <span className="workspace-switcher__icon"><JourneyIcon aria-hidden="true" size={15} /></span>
+          <span><small>{t("workspace.workspaceLabel")}</small><strong>{organization.name}</strong></span>
+          <ChevronDown aria-hidden="true" size={14} />
+        </button>
 
-        <section className="onboarding-stage">
+        <button className="workspace-search" type="button">
+          <Search aria-hidden="true" size={14} />
+          <span>{t("workspace.search")}</span>
+          <kbd>⌘ K</kbd>
+        </button>
+
+        <nav className="workspace-tree" aria-label={t("workspace.navigationLabel")}>
+          <div className="workspace-tree__group">
+            <p>{t("workspace.workspaceLabel")}</p>
+            <div className="workspace-tree__item is-muted"><CircleGauge aria-hidden="true" size={15} /><span>{t("workspace.overview")}</span></div>
+            <div className="workspace-tree__item"><Bell aria-hidden="true" size={15} /><span>{t("workspace.notifications")}</span><small>0</small></div>
+          </div>
+
+          <div className="workspace-tree__group workspace-tree__projects">
+            <p>{t("workspace.projects")}</p>
+            <div className="workspace-project">
+              <div className="workspace-project__header"><ChevronDown aria-hidden="true" size={13} /><FolderOpen aria-hidden="true" size={15} /><strong>{projectTitle}</strong></div>
+              <div className="workspace-project__nodes">
+                {steps.map((step, index) => (
+                  <div className={index === currentIndex ? "workspace-project__node is-current" : index < currentIndex ? "workspace-project__node is-complete" : "workspace-project__node is-locked"} key={step}>
+                    <span>{index < currentIndex ? <Check aria-hidden="true" size={10} /> : index > currentIndex ? <LockKeyhole aria-hidden="true" size={10} /> : <ChevronRight aria-hidden="true" size={10} />}</span>
+                    <strong>{t(`workspace.nodes.${journey}.${step}`)}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <div className="workspace-sidebar__footer">
+          <div className="workspace-sidebar__status"><span /><div><strong>{t("workspace.privateWorkspace")}</strong><small>{t("workspace.privateWorkspaceBody")}</small></div></div>
+        </div>
+      </aside>
+
+      <section className="workspace-shell">
+        <header className="workspace-topbar">
+          <div className="workspace-breadcrumb"><PanelLeft aria-hidden="true" size={16} /><span>{organization.name}</span><ChevronRight aria-hidden="true" size={12} /><strong>{projectTitle}</strong><ChevronRight aria-hidden="true" size={12} /><em>{t(`workspace.nodes.${journey}.${currentStep}`)}</em></div>
+          <div className="workspace-topbar__actions"><span className="workspace-saved"><Check aria-hidden="true" size={12} />{t("workspace.saved")}</span><button aria-label={t("workspace.help")} type="button"><HelpCircle aria-hidden="true" size={16} /></button><button aria-label={t("workspace.notifications")} type="button"><Bell aria-hidden="true" size={16} /></button></div>
+        </header>
+
+        <div className="workspace-scroll">
+          <header className="workspace-welcome">
+            <div><p className="section-kicker">{journeyTitle}</p><h1>{t("workspace.welcomeTitle")}</h1><p>{t("workspace.welcomeBody")}</p></div>
+            <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div>
+          </header>
+
+          <div className="workspace-editor-layout">
+            <section className="onboarding-stage workspace-editor">
           <header className="onboarding-stage__header">
-            <span>{t("stepCounter", {current: currentIndex + 1, total: steps.length})}</span>
-            <h2>{t(`steps.${journey}.${currentStep}.title`)}</h2>
+            <span>{t("workspace.currentActivity")}</span>
+            <h2>{t(`workspace.nodes.${journey}.${currentStep}`)}</h2>
             <p>{t(`steps.${journey}.${currentStep}.body`)}</p>
           </header>
           {errorMessage ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
@@ -191,7 +247,21 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
           {currentStep === "documents" ? (
             <div className="onboarding-stage__form">
-              <OnboardingDocumentUploader copy={{title: t("uploadTitle"), body: t("uploadBody"), choose: t("uploadChoose"), uploading: t("uploading"), error: t("uploadError"), categories: t("uploadCategories")}} initialDocuments={documents} opportunityId={opportunityId} organizationId={organization.id} userId={userId} />
+              <OnboardingDocumentUploader copy={{
+                title: t("uploadTitle"),
+                body: t("uploadBody"),
+                choose: t("uploadChoose"),
+                drop: t("uploadDrop"),
+                uploading: t("uploading"),
+                error: t("uploadError"),
+                categories: t("uploadCategories"),
+                received: t("uploadReceived"),
+                guidanceTitle: t("uploadGuidanceTitle"),
+                guidanceBody: t("uploadGuidanceBody"),
+                essential: {title: t("uploadGuidance.essential.title"), items: [t("uploadGuidance.essential.financials"), t("uploadGuidance.essential.trialBalances"), t("uploadGuidance.essential.debtSchedule")]},
+                recommended: {title: t("uploadGuidance.recommended.title"), items: [t("uploadGuidance.recommended.projections"), t("uploadGuidance.recommended.presentation"), t("uploadGuidance.recommended.transaction")]},
+                complementary: {title: t("uploadGuidance.complementary.title"), items: [t("uploadGuidance.complementary.contracts"), t("uploadGuidance.complementary.cim"), t("uploadGuidance.complementary.other")]},
+              }} initialDocuments={documents} opportunityId={opportunityId} organizationId={organization.id} userId={userId} />
               <form action={finishDocumentsStep}><input name="locale" type="hidden" value={locale} /><StepActions continueLabel={t("review")} locale={locale} /></form>
             </div>
           ) : null}
@@ -274,8 +344,32 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               </div>
             </form>
           ) : null}
-        </section>
-      </div>
+            </section>
+
+            <aside className="workspace-inspector">
+              <section className="workspace-inspector__panel">
+                <div className="workspace-inspector__heading"><div><span>{t("workspace.casePreparation")}</span><strong>{t("workspace.inConstruction")}</strong></div><span className="workspace-inspector__percent">{completionPercent}%</span></div>
+                <div className="workspace-inspector__bar"><i style={{width: `${completionPercent}%`}} /></div>
+                <div className="workspace-checklist">
+                  {steps.map((step, index) => (
+                    <div className={index < currentIndex ? "is-complete" : index === currentIndex ? "is-current" : ""} key={step}>
+                      <span>{index < currentIndex ? <Check aria-hidden="true" size={11} /> : null}</span>
+                      <p><strong>{t(`workspace.nodes.${journey}.${step}`)}</strong><small>{index < currentIndex ? t("workspace.complete") : index === currentIndex ? t("workspace.now") : t("workspace.later")}</small></p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="workspace-inspector__panel workspace-inspector__guidance">
+                <span>{t("workspace.guidanceEyebrow")}</span>
+                <h3>{t("workspace.guidanceTitle")}</h3>
+                <p>{t("workspace.guidanceBody")}</p>
+                <div><Check aria-hidden="true" size={13} /><span>{t("workspace.autoSave")}</span></div>
+              </section>
+            </aside>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
