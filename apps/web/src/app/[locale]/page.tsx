@@ -106,8 +106,7 @@ export default async function HomePage({params}: Props) {
         </section>
 
         <section className="premium-audiences section-shell" id="para-quem">
-          <header className="premium-section-heading">
-            <p className="premium-kicker">{t("audienceKicker")}</p>
+          <header className="premium-audiences__capabilities">
             <CapabilityReel
               label={t("capabilityReelLabel")}
               items={[
@@ -122,6 +121,7 @@ export default async function HomePage({params}: Props) {
               ]}
             />
           </header>
+          <p className="premium-kicker premium-audiences__kicker">{t("audienceKicker")}</p>
           <div className="premium-audiences__grid">
             <article id="empresas">
               <header><span>01</span><Building2 aria-hidden="true" size={18} /></header>
