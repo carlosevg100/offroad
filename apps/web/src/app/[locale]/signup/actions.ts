@@ -3,7 +3,11 @@
 import {cookies} from "next/headers";
 import {redirect} from "next/navigation";
 
-import {initializeRegistrationWorkspace, registrationSchema} from "@/lib/auth/registration";
+import {
+  canContinuePendingRegistration,
+  initializeRegistrationWorkspace,
+  registrationSchema,
+} from "@/lib/auth/registration";
 import {createClient} from "@/lib/supabase/server";
 
 const emailCookie = "offroad_signup_email";
@@ -22,6 +26,23 @@ function field(formData: FormData, name: string) {
   return String(formData.get(name) ?? "");
 }
 
+function verificationPath(locale: string, pending = false) {
+  return `/${locale}/signup/verify${pending ? "?pending=1" : ""}`;
+}
+
+async function rememberSignupEmail(locale: string, email: string) {
+  const cookieStore = await cookies();
+  cookieStore.set(emailCookie, email, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: `/${locale}`,
+    maxAge: 15 * 60,
+    priority: "high",
+  });
+  return cookieStore;
+}
+
 export async function startRegistration(formData: FormData) {
   const parsed = registrationSchema.safeParse({
     locale: field(formData, "locale"),
@@ -34,6 +55,12 @@ export async function startRegistration(formData: FormData) {
   });
   const locale = field(formData, "locale") === "en-US" ? "en-US" : "pt-BR";
   if (!parsed.success) redirect(`/${locale}/signup?error=validation`);
+
+  const cookieStore = await cookies();
+  const pendingEmail = cookieStore.get(emailCookie)?.value;
+  if (canContinuePendingRegistration(pendingEmail, parsed.data.email)) {
+    redirect(verificationPath(locale, true));
+  }
 
   const supabase = await createClient();
   if (!supabase) redirect(`/${locale}/signup?error=provider`);
@@ -53,6 +80,10 @@ export async function startRegistration(formData: FormData) {
 
   if (error) {
     console.error("signup_failed", {code: error.code, status: error.status});
+    if (canContinuePendingRegistration(pendingEmail, parsed.data.email, error.code)) {
+      await rememberSignupEmail(locale, parsed.data.email);
+      redirect(verificationPath(locale, true));
+    }
     redirect(`/${locale}/signup?error=${registrationErrorReason[error.code ?? ""] ?? "registration"}`);
   }
 
@@ -62,16 +93,8 @@ export async function startRegistration(formData: FormData) {
     redirect(`/${locale}/onboarding`);
   }
 
-  const cookieStore = await cookies();
-  cookieStore.set(emailCookie, parsed.data.email, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: `/${locale}`,
-    maxAge: 15 * 60,
-    priority: "high",
-  });
-  redirect(`/${locale}/signup/verify`);
+  await rememberSignupEmail(locale, parsed.data.email);
+  redirect(verificationPath(locale));
 }
 
 export async function verifyRegistrationCode(formData: FormData) {
@@ -102,6 +125,15 @@ export async function resendRegistrationCode(formData: FormData) {
   const supabase = await createClient();
   if (!supabase) redirect(`/${locale}/signup/verify?error=provider`);
   const {error} = await supabase.auth.resend({type: "signup", email});
-  if (error) redirect(`/${locale}/signup/verify?error=resend`);
+  if (error) {
+    const reason = canContinuePendingRegistration(undefined, email, error.code) ? "resend_rate_limit" : "resend";
+    redirect(`/${locale}/signup/verify?error=${reason}`);
+  }
   redirect(`/${locale}/signup/verify?sent=1`);
+}
+
+export async function restartRegistration(formData: FormData) {
+  const locale = field(formData, "locale") === "en-US" ? "en-US" : "pt-BR";
+  (await cookies()).delete(emailCookie);
+  redirect(`/${locale}/signup`);
 }

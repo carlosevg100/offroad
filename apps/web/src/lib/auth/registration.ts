@@ -7,6 +7,20 @@ export type RegistrationJourney = (typeof registrationJourneys)[number];
 
 export const passwordSchema = z.string().min(8).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[\p{P}\p{S}]/u);
 
+const confirmationAlreadyRequestedErrors = new Set([
+  "over_email_send_rate_limit",
+  "over_request_rate_limit",
+]);
+
+export function canContinuePendingRegistration(
+  pendingEmail: string | undefined,
+  submittedEmail: string,
+  errorCode?: string,
+) {
+  return pendingEmail === submittedEmail
+    || (errorCode ? confirmationAlreadyRequestedErrors.has(errorCode) : false);
+}
+
 export const registrationSchema = z.object({
   locale: z.enum(["pt-BR", "en-US"]),
   journey: z.enum(registrationJourneys),

@@ -312,6 +312,7 @@
     "passwordSpecial": "Um caractere especial",
     "passwordValid": "Senha válida",
     "continue": "Criar conta",
+    "creatingAccount": "Criando conta...",
     "verificationNotice": "* Enviaremos um código de verificação para o e-mail informado.",
     "legal": "Ao continuar, você declara que as informações são verdadeiras e que está autorizado a representar a organização indicada.",
     "error": "Não foi possível criar a conta. Revise os dados ou tente novamente.",
@@ -332,8 +333,10 @@
     "notReceived": "Não recebeu o código?",
     "resend": "Reenviar",
     "resent": "Um novo código foi enviado.",
+    "codeAlreadySent": "Sua conta foi iniciada e o código já foi enviado. Digite o código mais recente recebido.",
     "codeError": "Código inválido ou expirado. Revise os seis dígitos ou solicite outro.",
-    "resendError": "Ainda não foi possível reenviar. Aguarde um minuto e tente novamente."
+    "resendError": "Não foi possível reenviar o código. Tente novamente em alguns instantes.",
+    "resendRateLimit": "O código anterior ainda é válido. Aguarde um minuto antes de solicitar outro."
   },
   "Recovery": {
     "contextEyebrow": "Recuperação de acesso",

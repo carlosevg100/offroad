@@ -8,6 +8,7 @@ import type {AppLocale} from "@/i18n/routing";
 
 import {startRegistration} from "./actions";
 import {PasswordFields} from "./password-fields";
+import {SignupSubmitButton} from "./submit-button";
 
 export const metadata: Metadata = {title: "Create Account", robots: {index: false, follow: false}};
 
@@ -89,7 +90,7 @@ export default async function SignupPage({params, searchParams}: Props) {
           />
         </div>
 
-        <button className="button auth-form__primary" type="submit">{t("continue")}</button>
+        <SignupSubmitButton idleLabel={t("continue")} pendingLabel={t("creatingAccount")} />
         <p className="auth-verification-note">{t("verificationNotice")}</p>
         <p className="auth-legal">{t("legal")}</p>
       </form>

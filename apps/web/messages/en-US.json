@@ -312,6 +312,7 @@
     "passwordSpecial": "One special character",
     "passwordValid": "Valid password",
     "continue": "Create account",
+    "creatingAccount": "Creating account...",
     "verificationNotice": "* We will send a verification code to the email provided.",
     "legal": "By continuing, you confirm that the information is accurate and that you are authorized to represent the organization indicated.",
     "error": "We could not create the account. Review the details or try again.",
@@ -332,8 +333,10 @@
     "notReceived": "Did not receive the code?",
     "resend": "Resend",
     "resent": "A new code has been sent.",
+    "codeAlreadySent": "Your account was started and the code has already been sent. Enter the most recent code received.",
     "codeError": "The code is invalid or expired. Review the six digits or request another.",
-    "resendError": "We could not resend yet. Wait one minute and try again."
+    "resendError": "We could not resend the code. Try again in a few moments.",
+    "resendRateLimit": "The previous code is still valid. Wait one minute before requesting another."
   },
   "Recovery": {
     "contextEyebrow": "Access recovery",

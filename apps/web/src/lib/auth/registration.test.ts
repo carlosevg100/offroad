@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {registrationSchema} from "./registration";
+import {canContinuePendingRegistration, registrationSchema} from "./registration";
 
 const validRegistration = {
   locale: "pt-BR" as const,
@@ -23,5 +23,20 @@ describe("registrationSchema", () => {
     expect(registrationSchema.safeParse({...validRegistration, password: "Capitalá", confirmPassword: "Capitalá"}).success).toBe(false);
     expect(registrationSchema.safeParse({...validRegistration, password: "Cap@26", confirmPassword: "Cap@26"}).success).toBe(false);
     expect(registrationSchema.safeParse({...validRegistration, confirmPassword: "Different@26"}).success).toBe(false);
+  });
+});
+
+describe("canContinuePendingRegistration", () => {
+  it("continues when the same signup was already started in this browser", () => {
+    expect(canContinuePendingRegistration("carla@empresa.com.br", "carla@empresa.com.br")).toBe(true);
+  });
+
+  it("continues when Supabase reports that the confirmation was just requested", () => {
+    expect(canContinuePendingRegistration(undefined, "carla@empresa.com.br", "over_email_send_rate_limit")).toBe(true);
+    expect(canContinuePendingRegistration(undefined, "carla@empresa.com.br", "over_request_rate_limit")).toBe(true);
+  });
+
+  it("does not hide unrelated registration errors", () => {
+    expect(canContinuePendingRegistration(undefined, "carla@empresa.com.br", "weak_password")).toBe(false);
   });
 });

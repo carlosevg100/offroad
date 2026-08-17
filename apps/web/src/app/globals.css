@@ -1711,6 +1711,16 @@ summary:focus-visible {
   top: 36px;
 }
 
+.auth-back--button {
+  appearance: none;
+  border-top: 0;
+  border-inline: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .auth-form {
   display: grid;
   width: min(100%, 470px);
@@ -1720,6 +1730,12 @@ summary:focus-visible {
 
 .auth-form__primary {
   width: 100%;
+}
+
+.auth-form__primary:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
 }
 
 .auth-form__secondary {
