@@ -177,10 +177,14 @@ export async function processDocumentIntake(formData: FormData) {
     created_by: context.userId,
   }));
 
-  const {data: insertedCandidates, error: candidatesError} = await context.supabase.from("intake_field_candidates").insert(candidateRows).select("id, extractor_key");
-  if (candidatesError || !insertedCandidates) {
-    await context.supabase.from("document_intake_sessions").update({status: "failed", result_summary: {error: "candidate_persistence_failed"}}).eq("organization_id", context.organizationId).eq("id", sessionId);
-    redirect(`/${locale}/onboarding?error=processing`);
+  let insertedCandidates: Array<{id: string; extractor_key: string}> = [];
+  if (candidateRows.length) {
+    const result = await context.supabase.from("intake_field_candidates").insert(candidateRows).select("id, extractor_key");
+    if (result.error || !result.data) {
+      await context.supabase.from("document_intake_sessions").update({status: "failed", result_summary: {error: "candidate_persistence_failed"}}).eq("organization_id", context.organizationId).eq("id", sessionId);
+      redirect(`/${locale}/onboarding?error=processing`);
+    }
+    insertedCandidates = result.data;
   }
   const candidateIds = new Map(insertedCandidates.map((candidate) => [candidate.extractor_key, candidate.id]));
   const issueRows = compilation.issues.map((issue) => ({

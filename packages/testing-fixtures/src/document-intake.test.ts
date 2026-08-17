@@ -42,4 +42,12 @@ describe("Rede Horizonte document-first intake fixture", () => {
     expect(mismatched.fixtureMatched).toBe(false);
     expect(mismatched.candidates.some((candidate) => candidate.sourceName === redeHorizonteRequiredFiles[0])).toBe(false);
   });
+
+  it("keeps unknown document sets safe and free of fixture-specific claims", () => {
+    const unknown = buildRedeHorizonteDocumentIntake([{id: "unknown", original_name: "outro-balancete.xlsx", sha256: "f".repeat(64)}]);
+    expect(unknown.candidates).toEqual([]);
+    expect(unknown.missingFiles).toEqual([]);
+    expect(unknown.issues).toHaveLength(1);
+    expect(unknown.issues[0]?.description).toContain("nenhum campo foi proposto");
+  });
 });
