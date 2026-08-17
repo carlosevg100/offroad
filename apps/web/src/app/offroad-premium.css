@@ -1298,6 +1298,131 @@ summary:focus-visible {
   color: #747b82;
 }
 
+.capability-reel {
+  position: relative;
+  display: grid;
+  min-height: 154px;
+  padding-block: 20px;
+  border-block: 1px solid #dfe1df;
+  align-items: center;
+  grid-column: 2;
+  grid-template-columns: 70px minmax(0, 1fr) auto;
+  gap: 24px;
+  overflow: hidden;
+}
+
+.capability-reel::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 94px;
+  height: 1px;
+  background: linear-gradient(90deg, #696d6d, #d3d5d3 42%, transparent 82%);
+  content: "";
+  transform-origin: left;
+  animation: capability-reel-progress 4.2s linear infinite;
+}
+
+.capability-reel__mark {
+  position: relative;
+  display: grid;
+  width: 66px;
+  height: 66px;
+  border: 1px solid #ced1cf;
+  place-items: center;
+  background:
+    radial-gradient(circle at 32% 28%, rgb(255 255 255 / 92%), transparent 54%),
+    linear-gradient(145deg, #f4f5f4, #d7d9d7);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 90%),
+    0 12px 30px rgb(28 31 31 / 8%);
+  color: #5e6262;
+}
+
+.capability-reel__mark::after {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgb(114 119 118 / 16%);
+  content: "";
+}
+
+.capability-reel__mark span {
+  position: relative;
+  z-index: 1;
+  font-size: 42px;
+  font-weight: 280;
+  line-height: 1;
+  transform: translateY(-2px);
+}
+
+.capability-reel__viewport {
+  height: 110px;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 34%), #000 38%, #000 100%);
+}
+
+.capability-reel__stage {
+  display: grid;
+  min-height: 100%;
+  align-content: center;
+  gap: 10px;
+  animation: capability-reel-enter 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.capability-reel__previous,
+.capability-reel__current {
+  margin: 0;
+}
+
+.capability-reel__previous {
+  color: #8f9390;
+  font-size: 14px;
+  font-weight: 460;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  opacity: 0.56;
+}
+
+.capability-reel__current {
+  max-width: 780px;
+  color: #242829;
+  font-size: clamp(19px, 1.65vw, 24px);
+  font-weight: 540;
+  letter-spacing: -0.035em;
+  line-height: 1.22;
+}
+
+.capability-reel__counter {
+  align-self: end;
+  padding-bottom: 8px;
+  color: #9a9e9c;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+@keyframes capability-reel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes capability-reel-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
 .premium-statement h2 {
   max-width: 850px;
   font-size: clamp(38px, 4.5vw, 62px);
@@ -2585,6 +2710,45 @@ summary:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .capability-reel {
+    min-height: 238px;
+    grid-column: 1;
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .capability-reel::after {
+    left: 70px;
+  }
+
+  .capability-reel__mark {
+    width: 52px;
+    height: 52px;
+  }
+
+  .capability-reel__mark span {
+    font-size: 34px;
+  }
+
+  .capability-reel__viewport {
+    height: 196px;
+  }
+
+  .capability-reel__previous {
+    font-size: 11px;
+  }
+
+  .capability-reel__current {
+    font-size: 18px;
+  }
+
+  .capability-reel__counter {
+    position: absolute;
+    right: 0;
+    bottom: 8px;
+    padding: 0;
+  }
+
   .capital-flow__narrative {
     min-height: 0;
     padding: 16px;
@@ -3644,5 +3808,14 @@ summary:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .spin {
     animation: none;
+  }
+
+  .capability-reel::after,
+  .capability-reel__stage {
+    animation: none;
+  }
+
+  .capability-reel__previous {
+    display: none;
   }
 }

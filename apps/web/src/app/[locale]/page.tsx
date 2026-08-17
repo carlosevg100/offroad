@@ -14,6 +14,7 @@ import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
 import {BrandMark} from "@/components/brand-mark";
+import {CapabilityReel} from "@/components/capability-reel";
 import {HeroBackgroundVideo} from "@/components/hero-background-video";
 import {HeroValueRotator} from "@/components/hero-value-rotator";
 import {ProductFilm} from "@/components/product-film";
@@ -108,6 +109,19 @@ export default async function HomePage({params}: Props) {
           <header className="premium-section-heading">
             <p className="premium-kicker">{t("audienceKicker")}</p>
             <EditorialTitle primary={t("audienceTitle")} secondary={t("audienceTitleMuted")} />
+            <CapabilityReel
+              label={t("capabilityReelLabel")}
+              items={[
+                t("capabilityUpload"),
+                t("capabilityIntelligence"),
+                t("capabilityGaps"),
+                t("capabilityMaterials"),
+                t("capabilityTermSheet"),
+                t("capabilityEvidence"),
+                t("capabilityMatching"),
+                t("capabilityIntroduction"),
+              ]}
+            />
           </header>
           <div className="premium-audiences__grid">
             <article id="empresas">
