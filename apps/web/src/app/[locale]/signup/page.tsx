@@ -7,6 +7,7 @@ import {AuthShell} from "@/components/auth-shell";
 import type {AppLocale} from "@/i18n/routing";
 
 import {startRegistration} from "./actions";
+import {PasswordFields} from "./password-fields";
 
 export const metadata: Metadata = {title: "Create Account", robots: {index: false, follow: false}};
 
@@ -62,8 +63,17 @@ export default async function SignupPage({params, searchParams}: Props) {
           <label className="field"><span>{t("fullName")}</span><input autoComplete="name" maxLength={160} minLength={2} name="full_name" required /></label>
           <label className="field"><span>{t("jobTitle")}</span><input autoComplete="organization-title" maxLength={120} minLength={2} name="job_title" required /></label>
           <label className="field field--wide"><span>{t("email")}</span><input autoComplete="email" maxLength={254} name="email" required type="email" /></label>
-          <label className="field"><span>{t("password")}</span><input autoComplete="new-password" maxLength={128} minLength={10} name="password" required type="password" /><small>{t("passwordHint")}</small></label>
-          <label className="field"><span>{t("confirmPassword")}</span><input autoComplete="new-password" maxLength={128} minLength={10} name="confirm_password" required type="password" /></label>
+          <PasswordFields
+            confirmLabel={t("confirmPassword")}
+            labels={{
+              length: t("passwordLength"),
+              lowercase: t("passwordLowercase"),
+              uppercase: t("passwordUppercase"),
+              special: t("passwordSpecial"),
+            }}
+            passwordLabel={t("password")}
+            validLabel={t("passwordValid")}
+          />
         </div>
 
         <button className="button auth-form__primary" type="submit">{t("continue")}</button>

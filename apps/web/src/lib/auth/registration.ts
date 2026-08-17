@@ -11,7 +11,7 @@ export const registrationSchema = z.object({
   fullName: z.string().trim().min(2).max(160),
   jobTitle: z.string().trim().min(2).max(120),
   email: z.email().trim().toLowerCase().max(254),
-  password: z.string().min(10).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[0-9]/),
+  password: z.string().min(8).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[\p{P}\p{S}]/u),
   confirmPassword: z.string(),
 }).refine((value) => value.password === value.confirmPassword, {
   path: ["confirmPassword"],
