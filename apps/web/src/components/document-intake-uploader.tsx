@@ -21,6 +21,11 @@ const allowedExtensions = new Set(["pdf", "csv", "xls", "xlsx", "doc", "docx", "
 function safeName(name: string) {
   return name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-+/g, "-").slice(-140);
 }
+
+async function sha256(file: File) {
+  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 export function DocumentIntakeUploader({organizationId, sessionId, userId, initialDocuments, locale}: Props) {
   const isPt = locale === "pt-BR";
   const router = useRouter();
@@ -48,6 +53,7 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, initi
         continue;
       }
       const objectPath = `${organizationId}/${sessionId}/${crypto.randomUUID()}-${safeName(file.name)}`;
+      const fileHash = await sha256(file);
       const {error: uploadError} = await supabase.storage.from("opportunity-documents").upload(objectPath, file, {upsert: false, contentType: file.type || "application/octet-stream"});
       if (uploadError) {
         setError(isPt ? "Falha no envio de um dos documentos. Tente novamente." : "A document could not be uploaded. Please try again.");
@@ -62,6 +68,7 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, initi
         original_name: file.name,
         mime_type: file.type || null,
         byte_size: file.size,
+        sha256: fileHash,
         classification: "restricted",
         processing_status: "quarantined",
         created_by: userId,
