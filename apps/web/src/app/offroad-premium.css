@@ -331,15 +331,20 @@ html[lang="pt-BR"] .premium-hero__copy h1 {
 .premium-hero__lead {
   max-width: 390px;
   margin: 0;
-  color: #c4c7ca;
+  color: #e5e7e7;
   font-size: 14px;
   line-height: 1.72;
 }
 
 .premium-hero__support {
-  padding-top: 21px;
-  border-top: 1px solid rgb(255 255 255 / 18%);
-  text-shadow: 0 2px 18px rgb(0 0 0 / 46%);
+  padding: 22px 14px 20px;
+  border-top: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 2px;
+  background: linear-gradient(135deg, rgb(8 12 15 / 74%), rgb(8 12 15 / 48%));
+  box-shadow: 0 18px 52px rgb(0 0 0 / 18%);
+  text-shadow: 0 2px 16px rgb(0 0 0 / 62%);
+  backdrop-filter: blur(9px) saturate(0.82);
+  -webkit-backdrop-filter: blur(9px) saturate(0.82);
 }
 
 .premium-hero__signature {
@@ -460,7 +465,16 @@ html[lang="pt-BR"] .premium-hero__copy h1 {
   display: flex;
   margin-top: 28px;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
+}
+
+.premium-hero__actions .button {
+  padding-inline: 16px;
+  white-space: nowrap;
+}
+
+.premium-hero__actions .premium-text-link {
+  white-space: nowrap;
 }
 
 .premium-hero__account {
