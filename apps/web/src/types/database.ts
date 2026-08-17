@@ -445,6 +445,72 @@ export type Database = {
           },
         ]
       }
+      document_intake_sessions: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          extraction_version: string
+          id: string
+          journey: string
+          locale: string
+          opportunity_id: string | null
+          organization_id: string
+          processing_completed_at: string | null
+          processing_started_at: string | null
+          result_summary: Json
+          started_by: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          extraction_version?: string
+          id?: string
+          journey: string
+          locale?: string
+          opportunity_id?: string | null
+          organization_id: string
+          processing_completed_at?: string | null
+          processing_started_at?: string | null
+          result_summary?: Json
+          started_by: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          extraction_version?: string
+          id?: string
+          journey?: string
+          locale?: string
+          opportunity_id?: string | null
+          organization_id?: string
+          processing_completed_at?: string | null
+          processing_started_at?: string | null
+          result_summary?: Json
+          started_by?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_intake_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_intake_sessions_organization_id_opportunity_id_fkey"
+            columns: ["organization_id", "opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       evidence_facts: {
         Row: {
           confidence: number | null
@@ -681,6 +747,179 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      intake_field_candidates: {
+        Row: {
+          confidence: number
+          created_at: string
+          created_by: string
+          currency: string | null
+          evidence_rank: number
+          extraction_method: string
+          extractor_key: string
+          field_group: string
+          field_path: string
+          id: string
+          information_class: string
+          intake_session_id: string
+          is_primary: boolean
+          label: string
+          normalized_value: Json
+          organization_id: string
+          period_end: string | null
+          period_start: string | null
+          raw_value: string | null
+          review_state: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_comment: string | null
+          source_anchor: Json
+          source_document_id: string | null
+          unit: string | null
+          updated_at: string
+          value_type: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          created_by: string
+          currency?: string | null
+          evidence_rank: number
+          extraction_method: string
+          extractor_key: string
+          field_group: string
+          field_path: string
+          id?: string
+          information_class: string
+          intake_session_id: string
+          is_primary?: boolean
+          label: string
+          normalized_value: Json
+          organization_id: string
+          period_end?: string | null
+          period_start?: string | null
+          raw_value?: string | null
+          review_state?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_comment?: string | null
+          source_anchor: Json
+          source_document_id?: string | null
+          unit?: string | null
+          updated_at?: string
+          value_type: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          created_by?: string
+          currency?: string | null
+          evidence_rank?: number
+          extraction_method?: string
+          extractor_key?: string
+          field_group?: string
+          field_path?: string
+          id?: string
+          information_class?: string
+          intake_session_id?: string
+          is_primary?: boolean
+          label?: string
+          normalized_value?: Json
+          organization_id?: string
+          period_end?: string | null
+          period_start?: string | null
+          raw_value?: string | null
+          review_state?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_comment?: string | null
+          source_anchor?: Json
+          source_document_id?: string | null
+          unit?: string | null
+          updated_at?: string
+          value_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_field_candidates_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "intake_field_candidates_organization_id_source_document_id_fkey"
+            columns: ["organization_id", "source_document_id"]
+            isOneToOne: false
+            referencedRelation: "source_documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      intake_issues: {
+        Row: {
+          candidate_ids: string[]
+          created_at: string
+          description: string
+          field_group: string | null
+          field_path: string | null
+          id: string
+          intake_session_id: string
+          issue_type: string
+          organization_id: string
+          priority: string
+          resolution_hint: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_ids?: string[]
+          created_at?: string
+          description: string
+          field_group?: string | null
+          field_path?: string | null
+          id?: string
+          intake_session_id: string
+          issue_type: string
+          organization_id: string
+          priority: string
+          resolution_hint?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_ids?: string[]
+          created_at?: string
+          description?: string
+          field_group?: string | null
+          field_path?: string | null
+          id?: string
+          intake_session_id?: string
+          issue_type?: string
+          organization_id?: string
+          priority?: string
+          resolution_hint?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_issues_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -1491,10 +1730,13 @@ export type Database = {
           classification: string
           created_at: string
           created_by: string
+          document_kind: string | null
+          evidence_rank: number | null
           id: string
+          intake_session_id: string | null
           mime_type: string | null
           object_path: string
-          opportunity_id: string
+          opportunity_id: string | null
           organization_id: string
           original_name: string
           processing_status: string
@@ -1507,10 +1749,13 @@ export type Database = {
           classification?: string
           created_at?: string
           created_by: string
+          document_kind?: string | null
+          evidence_rank?: number | null
           id?: string
+          intake_session_id?: string | null
           mime_type?: string | null
           object_path: string
-          opportunity_id: string
+          opportunity_id?: string | null
           organization_id: string
           original_name: string
           processing_status?: string
@@ -1523,10 +1768,13 @@ export type Database = {
           classification?: string
           created_at?: string
           created_by?: string
+          document_kind?: string | null
+          evidence_rank?: number | null
           id?: string
+          intake_session_id?: string | null
           mime_type?: string | null
           object_path?: string
-          opportunity_id?: string
+          opportunity_id?: string | null
           organization_id?: string
           original_name?: string
           processing_status?: string
@@ -1534,6 +1782,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "source_documents_intake_session_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "source_documents_organization_id_opportunity_id_fkey"
             columns: ["organization_id", "opportunity_id"]
