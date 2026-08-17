@@ -8,8 +8,8 @@ const validRegistration = {
   fullName: "Carla Mendes",
   jobTitle: "CFO",
   email: "carla@empresa.com.br",
-  password: "Capital2026",
-  confirmPassword: "Capital2026",
+  password: "Capital@",
+  confirmPassword: "Capital@",
 };
 
 describe("registrationSchema", () => {
@@ -18,7 +18,10 @@ describe("registrationSchema", () => {
   });
 
   it("requires a strong matching password", () => {
-    expect(registrationSchema.safeParse({...validRegistration, password: "capital2026", confirmPassword: "capital2026"}).success).toBe(false);
-    expect(registrationSchema.safeParse({...validRegistration, confirmPassword: "Different2026"}).success).toBe(false);
+    expect(registrationSchema.safeParse({...validRegistration, password: "capital@26", confirmPassword: "capital@26"}).success).toBe(false);
+    expect(registrationSchema.safeParse({...validRegistration, password: "Capital26", confirmPassword: "Capital26"}).success).toBe(false);
+    expect(registrationSchema.safeParse({...validRegistration, password: "Capitalá", confirmPassword: "Capitalá"}).success).toBe(false);
+    expect(registrationSchema.safeParse({...validRegistration, password: "Cap@26", confirmPassword: "Cap@26"}).success).toBe(false);
+    expect(registrationSchema.safeParse({...validRegistration, confirmPassword: "Different@26"}).success).toBe(false);
   });
 });
