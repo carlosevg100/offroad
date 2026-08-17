@@ -623,6 +623,7 @@ needed.
 | `20260817202038_document_first_intake.sql` | Intake sessions, candidates, issues, storage scope |
 | `20260817202807_document_first_intake_indexes.sql` | Intake query indexes |
 | `20260817203931_scope_document_hash_uniqueness.sql` | Hash uniqueness scoped to session/opportunity |
+| `20260817232443_hardening_force_rls_and_org_type_guard.sql` | FORCE RLS on intake tables; no self-service `offroad` organizations; intake sessions only for borrower-side tenants |
 
 File names match the versions recorded in `supabase_migrations.schema_migrations`
 of the hosted project (the migrations were applied through the Supabase MCP tool,
