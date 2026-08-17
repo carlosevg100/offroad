@@ -4,7 +4,7 @@ const locale = z.enum(["pt-BR", "en-US"]);
 
 export const productEventSchemas = {
   marketing_demo_viewed: z.object({locale, origin: z.enum(["landing", "workspace"])}).strict(),
-  auth_started: z.object({locale, method: z.enum(["password", "magic_link", "signup"])}).strict(),
+  auth_started: z.object({locale, method: z.enum(["password", "signup", "email_code", "recovery_code"])}).strict(),
   onboarding_completed: z.object({locale, journey: z.enum(["company", "originator", "capital_provider"])}).strict(),
   workspace_viewed: z.object({
     locale,

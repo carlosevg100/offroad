@@ -1,6 +1,6 @@
 # Offroad Capital
 
-Monorepo oficial da Offroad Capital, uma plataforma AI-native de originação e acesso ao mercado de private credit.
+Monorepo oficial da Offroad Capital, uma plataforma AI-driven de originação e acesso ao mercado de private credit.
 
 ## Estado atual
 
