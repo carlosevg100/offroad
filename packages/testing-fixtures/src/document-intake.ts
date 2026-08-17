@@ -51,6 +51,17 @@ export const redeHorizonteRequiredFiles = [
   "07_Memorial_Descritivo_Expansao_3_Lojas.pdf",
 ] as const;
 
+export const redeHorizonteFileHashes: Record<(typeof redeHorizonteRequiredFiles)[number], string> = {
+  "00_Ficha_Cadastral_Rede_Horizonte.docx": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+  "01_Carta_CFO_Pedido_e_Racional_Expansao.docx": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+  "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+  "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+  "04_Mapa_Divida_Garantias_Jul2026.xlsx": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+  "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+  "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf": "9dca71cb1fc06e3b8c85dea44ca8452e7c20ba4b492c0e69f8abce0c05c19b15",
+  "07_Memorial_Descritivo_Expansao_3_Lojas.pdf": "d1469dbf6a75d82494544bd149f793f23fe7bcc6030c5b2608f2ad8b46e23fc5",
+};
+
 const ficha = redeHorizonteRequiredFiles[0];
 const carta = redeHorizonteRequiredFiles[1];
 const auditadas = redeHorizonteRequiredFiles[2];
@@ -112,8 +123,8 @@ const issues: IntakeIssueDraft[] = [
   {type: "missing", priority: "complementary", fieldGroup: "company", title: "Organograma societário e principais executivos", description: "Informação complementar para o perfil institucional e o material de investidores.", resolutionHint: "Enviar organograma atualizado e minibiografias."},
 ];
 
-export function buildRedeHorizonteDocumentIntake(availableDocuments: Array<{id: string; original_name: string}>) {
-  const byName = new Map(availableDocuments.map((document) => [document.original_name, document.id]));
+export function buildRedeHorizonteDocumentIntake(availableDocuments: Array<{id: string; original_name: string; sha256: string | null}>) {
+  const byName = new Map(availableDocuments.filter((document) => redeHorizonteFileHashes[document.original_name as keyof typeof redeHorizonteFileHashes] === document.sha256).map((document) => [document.original_name, document.id]));
   const presentCandidates = candidates.filter((candidate) => byName.has(candidate.sourceName));
   const presentKeys = new Set(presentCandidates.map((candidate) => candidate.key));
   const missingFiles = redeHorizonteRequiredFiles.filter((name) => !byName.has(name));

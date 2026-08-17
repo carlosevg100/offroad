@@ -1,9 +1,9 @@
 import {describe, expect, it} from "vitest";
 
-import {buildRedeHorizonteDocumentIntake, redeHorizonteRequiredFiles} from "./document-intake";
+import {buildRedeHorizonteDocumentIntake, redeHorizonteFileHashes, redeHorizonteRequiredFiles} from "./document-intake";
 
 describe("Rede Horizonte document-first intake fixture", () => {
-  const result = buildRedeHorizonteDocumentIntake(redeHorizonteRequiredFiles.map((original_name, index) => ({id: `document-${index}`, original_name})));
+  const result = buildRedeHorizonteDocumentIntake(redeHorizonteRequiredFiles.map((original_name, index) => ({id: `document-${index}`, original_name, sha256: redeHorizonteFileHashes[original_name]})));
   const value = (path: string) => result.candidates.find((candidate) => candidate.fieldPath === path && candidate.isPrimary)?.normalizedValue;
 
   it("reconciles the mandatory transaction and leverage facts", () => {
@@ -31,9 +31,15 @@ describe("Rede Horizonte document-first intake fixture", () => {
   });
 
   it("surfaces missing documents rather than inventing their contents", () => {
-    const partial = buildRedeHorizonteDocumentIntake([{id: "one", original_name: redeHorizonteRequiredFiles[0]}]);
+    const partial = buildRedeHorizonteDocumentIntake([{id: "one", original_name: redeHorizonteRequiredFiles[0], sha256: redeHorizonteFileHashes[redeHorizonteRequiredFiles[0]]}]);
     expect(partial.fixtureMatched).toBe(false);
     expect(partial.missingFiles).toHaveLength(7);
     expect(partial.issues.filter((issue) => issue.title.startsWith("Documento esperado não recebido"))).toHaveLength(7);
+  });
+
+  it("refuses a same-name file when its content hash differs", () => {
+    const mismatched = buildRedeHorizonteDocumentIntake(redeHorizonteRequiredFiles.map((original_name, index) => ({id: `document-${index}`, original_name, sha256: index === 0 ? "0".repeat(64) : redeHorizonteFileHashes[original_name]})));
+    expect(mismatched.fixtureMatched).toBe(false);
+    expect(mismatched.candidates.some((candidate) => candidate.sourceName === redeHorizonteRequiredFiles[0])).toBe(false);
   });
 });

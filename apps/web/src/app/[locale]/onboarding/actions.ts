@@ -145,7 +145,7 @@ export async function processDocumentIntake(formData: FormData) {
 
   const {data: session} = await context.supabase.from("document_intake_sessions").select("id, status").eq("organization_id", context.organizationId).eq("id", sessionId).maybeSingle();
   if (!session) redirect(`/${locale}/onboarding?error=step`);
-  const {data: documents} = await context.supabase.from("source_documents").select("id, original_name").eq("organization_id", context.organizationId).eq("intake_session_id", sessionId).order("created_at");
+  const {data: documents} = await context.supabase.from("source_documents").select("id, original_name, sha256").eq("organization_id", context.organizationId).eq("intake_session_id", sessionId).order("created_at");
   if (!documents?.length) redirect(`/${locale}/onboarding?error=documents`);
 
   await context.supabase.from("document_intake_sessions").update({status: "processing", processing_started_at: new Date().toISOString()}).eq("organization_id", context.organizationId).eq("id", sessionId);
