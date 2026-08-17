@@ -324,6 +324,12 @@ summary:focus-visible {
   display: block;
 }
 
+@media (min-width: 1101px) {
+  .premium-hero__title-line {
+    white-space: nowrap;
+  }
+}
+
 .premium-hero__lead {
   max-width: 390px;
   margin: 0;
@@ -1267,6 +1273,29 @@ summary:focus-visible {
   font-weight: 560;
   letter-spacing: -0.055em;
   line-height: 1.02;
+}
+
+.premium-editorial-title__primary,
+.premium-editorial-title__secondary {
+  display: inline;
+}
+
+.premium-editorial-title__primary {
+  color: #171a1d;
+}
+
+.premium-editorial-title__secondary {
+  color: #a5a7a2;
+}
+
+.premium-section-heading--dark .premium-editorial-title__primary,
+.premium-cta .premium-editorial-title__primary {
+  color: #f2f3f2;
+}
+
+.premium-section-heading--dark .premium-editorial-title__secondary,
+.premium-cta .premium-editorial-title__secondary {
+  color: #747b82;
 }
 
 .premium-statement h2 {
@@ -2476,7 +2505,7 @@ summary:focus-visible {
   }
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1100px) {
   .premium-hero::before {
     background:
       linear-gradient(90deg, rgb(11 15 18 / 56%) 0%, rgb(11 15 18 / 40%) 100%),

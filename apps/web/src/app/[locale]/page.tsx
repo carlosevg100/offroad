@@ -107,7 +107,7 @@ export default async function HomePage({params}: Props) {
         <section className="premium-audiences section-shell" id="para-quem">
           <header className="premium-section-heading">
             <p className="premium-kicker">{t("audienceKicker")}</p>
-            <h2>{t("audienceTitle")}</h2>
+            <EditorialTitle primary={t("audienceTitle")} secondary={t("audienceTitleMuted")} />
           </header>
           <div className="premium-audiences__grid">
             <article id="empresas">
@@ -140,7 +140,7 @@ export default async function HomePage({params}: Props) {
         <section className="premium-modules section-shell">
           <header className="premium-section-heading">
             <p className="premium-kicker">{t("productKicker")}</p>
-            <h2>{t("productTitle")}</h2>
+            <EditorialTitle primary={t("productTitle")} secondary={t("productTitleMuted")} />
           </header>
           <div className="premium-modules__grid">
             <article className="premium-module">
@@ -182,7 +182,7 @@ export default async function HomePage({params}: Props) {
           <div className="section-shell">
             <header className="premium-section-heading premium-section-heading--dark">
               <p className="premium-kicker">{t("journeyKicker")}</p>
-              <h2>{t("journeyTitle")}</h2>
+              <EditorialTitle primary={t("journeyTitle")} secondary={t("journeyTitleMuted")} />
             </header>
             <div className="premium-journey__grid">
               {journeyKeys.map((key, index) => (
@@ -200,7 +200,7 @@ export default async function HomePage({params}: Props) {
         <section className="premium-trust section-shell" id="seguranca">
           <header className="premium-section-heading">
             <p className="premium-kicker">{t("trustKicker")}</p>
-            <h2>{t("trustTitle")}</h2>
+            <EditorialTitle primary={t("trustTitle")} secondary={t("trustTitleMuted")} />
           </header>
           <div className="premium-trust__grid">
             <TrustItem icon={FileCheck2} title={t("trustEvidenceTitle")} body={t("trustEvidenceBody")} number="01" />
@@ -213,7 +213,7 @@ export default async function HomePage({params}: Props) {
         <section className="premium-boundary section-shell">
           <div>
             <p className="premium-kicker">{t("boundaryLabel")}</p>
-            <h2>{t("boundaryTitle")}</h2>
+            <EditorialTitle primary={t("boundaryTitle")} secondary={t("boundaryTitleMuted")} />
           </div>
           <div className="premium-boundary__matrix">
             <article><span>{t("boundaryProduct")}</span><p>{t("boundaryProductValue")}</p></article>
@@ -224,7 +224,7 @@ export default async function HomePage({params}: Props) {
         <section className="premium-cta" id="contato">
           <div className="section-shell">
             <p className="premium-kicker">{t("ctaKicker")}</p>
-            <h2>{t("ctaTitle")}</h2>
+            <EditorialTitle primary={t("ctaTitle")} secondary={t("ctaTitleMuted")} />
             <p>{t("ctaBody")}</p>
             <div>
               <Link className="button button--light" href={demoHref}>{t("ctaPrimary")}<ArrowUpRight aria-hidden="true" size={16} /></Link>
@@ -252,6 +252,20 @@ type TrustItemProps = {
   number: string;
   title: string;
 };
+
+type EditorialTitleProps = {
+  primary: string;
+  secondary: string;
+};
+
+function EditorialTitle({primary, secondary}: EditorialTitleProps) {
+  return (
+    <h2 className="premium-editorial-title">
+      <span className="premium-editorial-title__primary">{primary}</span>{" "}
+      <span className="premium-editorial-title__secondary">{secondary}</span>
+    </h2>
+  );
+}
 
 function TrustItem({body, icon: Icon, number, title}: TrustItemProps) {
   return (
