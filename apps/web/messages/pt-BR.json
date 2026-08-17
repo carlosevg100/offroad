@@ -315,6 +315,11 @@
     "verificationNotice": "* Enviaremos um código de verificação para o e-mail informado.",
     "legal": "Ao continuar, você declara que as informações são verdadeiras e que está autorizado a representar a organização indicada.",
     "error": "Não foi possível criar a conta. Revise os dados ou tente novamente.",
+    "passwordError": "A senha precisa cumprir todos os requisitos indicados abaixo.",
+    "rateLimitError": "Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.",
+    "emailError": "Informe um endereço de e-mail válido.",
+    "emailExistsError": "Este e-mail já possui uma conta. Entre na plataforma ou recupere sua senha.",
+    "deliveryError": "Não foi possível enviar o código para este e-mail. Tente novamente ou fale com a Offroad.",
     "providerMissing": "O ambiente de identidade ainda não está configurado.",
     "verifyContextTitle": "Confirme sua identidade digital.",
     "verifyContextBody": "A verificação do e-mail é a primeira camada de segurança antes da criação do ambiente institucional.",
@@ -358,9 +363,9 @@
     "updateBody": "A nova senha substitui imediatamente a anterior.",
     "password": "Nova senha",
     "confirmPassword": "Confirmar nova senha",
-    "passwordHint": "Mínimo de 10 caracteres, com letras maiúsculas, minúsculas e números.",
+    "passwordHint": "Mínimo de 8 caracteres, com letra maiúscula, letra minúscula e caractere especial.",
     "update": "Atualizar senha",
-    "passwordError": "As senhas devem coincidir e conter ao menos 10 caracteres, letras maiúsculas, minúsculas e números."
+    "passwordError": "As senhas devem coincidir e conter ao menos 8 caracteres, letra maiúscula, letra minúscula e caractere especial."
   },
   "Onboarding": {
     "eyebrow": "Configuração institucional",

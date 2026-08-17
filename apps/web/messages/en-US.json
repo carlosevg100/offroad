@@ -315,6 +315,11 @@
     "verificationNotice": "* We will send a verification code to the email provided.",
     "legal": "By continuing, you confirm that the information is accurate and that you are authorized to represent the organization indicated.",
     "error": "We could not create the account. Review the details or try again.",
+    "passwordError": "The password must meet every requirement shown below.",
+    "rateLimitError": "Too many attempts in a short period. Wait a few minutes and try again.",
+    "emailError": "Enter a valid email address.",
+    "emailExistsError": "This email already has an account. Log in or recover your password.",
+    "deliveryError": "We could not send a code to this email. Try again or contact Offroad.",
     "providerMissing": "The identity environment has not been configured yet.",
     "verifyContextTitle": "Confirm your digital identity.",
     "verifyContextBody": "Email verification is the first security layer before the institutional environment is created.",
@@ -358,9 +363,9 @@
     "updateBody": "The new password immediately replaces the previous one.",
     "password": "New password",
     "confirmPassword": "Confirm new password",
-    "passwordHint": "At least 10 characters, including uppercase and lowercase letters and numbers.",
+    "passwordHint": "At least 8 characters, including an uppercase letter, a lowercase letter, and a special character.",
     "update": "Update password",
-    "passwordError": "Passwords must match and contain at least 10 characters, uppercase and lowercase letters, and numbers."
+    "passwordError": "Passwords must match and contain at least 8 characters, an uppercase letter, a lowercase letter, and a special character."
   },
   "Onboarding": {
     "eyebrow": "Institutional setup",
