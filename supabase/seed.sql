@@ -1,0 +1,6 @@
+-- Intentionally empty.
+--
+-- `supabase/config.toml` points `db.seed.sql_paths` at this file so that
+-- `supabase start` / `supabase db reset` (local stack and CI) succeed without seed data.
+-- Production data is never seeded from this repository. Synthetic fixtures for tests live in
+-- `packages/testing-fixtures`; if a local seed is ever needed, keep it synthetic and labeled.
