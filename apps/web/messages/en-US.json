@@ -388,6 +388,8 @@
       "privateWorkspaceBody": "Restricted to your organization",
       "saved": "Saved",
       "help": "Help",
+      "edit": "Edit",
+      "addDocuments": "Add files",
       "welcomeTitle": "Let's prepare your first case.",
       "welcomeBody": "Start with the essentials. Offroad organizes the rest and shows exactly what is missing to turn information into a market-ready opportunity.",
       "readiness": "Case readiness",
@@ -501,6 +503,7 @@
     "activateMandate": "Activate mandate",
     "submitOpportunity": "Submit opportunity",
     "error": "We could not save this step. Review the fields and try again.",
+    "validationError": "Review the required fields and save again.",
     "steps": {
       "company": {"organization": {"title": "Company", "short": "Basic information", "body": "Identify the company and responsible contact."}, "funding": {"title": "Capital need", "short": "Purpose and amount", "body": "Explain the plan, why it matters, and how much capital is needed."}, "documents": {"title": "Documents", "short": "History and projections", "body": "Add the materials that help explain the business and capital need."}, "review": {"title": "Review", "short": "Confirm and submit", "body": "Confirm the information before submitting the opportunity for preparation."}},
       "originator": {"organization": {"title": "Advisory firm", "short": "Institutional profile", "body": "Register the advisory firm, boutique, or organization responsible for origination."}, "company": {"title": "Advised company", "short": "Relationship and authority", "body": "Identify the company, contact, and basis of your authorization to act."}, "funding": {"title": "Capital need", "short": "Purpose and amount", "body": "Describe the transaction to be prepared on the company's behalf."}, "documents": {"title": "Documents", "short": "History and projections", "body": "Add the materials received from the company."}, "review": {"title": "Review", "short": "Confirm and submit", "body": "Review the opportunity and authority record before submission."}},

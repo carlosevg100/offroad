@@ -12,6 +12,12 @@ import type {Json} from "@/types/database";
 type Journey = "company" | "originator" | "capital_provider";
 type AnswerMap = Record<string, Json | undefined>;
 
+const journeySteps: Record<Journey, string[]> = {
+  company: ["organization", "funding", "documents", "review"],
+  originator: ["organization", "company", "funding", "documents", "review"],
+  capital_provider: ["organization", "fund", "mandate", "contacts", "review"],
+};
+
 function value(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
 }
@@ -72,11 +78,15 @@ async function updateProgress(
   patch: AnswerMap,
   locale: AppLocale,
 ) {
-  if (context.currentStep !== step) redirect(`/${locale}/onboarding?error=step`);
+  if (context.currentStep !== step) redirect(`/${locale}/onboarding`);
   const answers = {...context.answers, ...patch};
+  const editReturnStep = typeof context.answers.edit_return_step === "string" && journeySteps[context.journey].includes(context.answers.edit_return_step)
+    ? context.answers.edit_return_step
+    : null;
+  delete answers.edit_return_step;
   const {error} = await context.supabase
     .from("onboarding_progress")
-    .update({answers, current_step: nextStep})
+    .update({answers, current_step: editReturnStep && editReturnStep !== step ? editReturnStep : nextStep})
     .eq("organization_id", context.organizationId)
     .eq("user_id", context.userId)
     .eq("journey", context.journey);
@@ -446,7 +456,7 @@ export async function saveContactStep(formData: FormData) {
 export async function completeOnboarding(formData: FormData) {
   const locale = localeFrom(formData);
   const context = await onboardingContext(locale);
-  if (context.currentStep !== "review") redirect(`/${locale}/onboarding?error=step`);
+  if (context.currentStep !== "review") redirect(`/${locale}/onboarding`);
   if (context.journey === "capital_provider") {
     const mandateId = typeof context.answers.mandate_id === "string" ? context.answers.mandate_id : null;
     if (!mandateId) redirect(`/${locale}/onboarding?error=mandate`);
@@ -462,6 +472,52 @@ export async function completeOnboarding(formData: FormData) {
   const {error} = await context.supabase.from("onboarding_progress").update({current_step: "complete", completed_at: new Date().toISOString()}).eq("organization_id", context.organizationId).eq("user_id", context.userId).eq("journey", context.journey);
   if (error) redirect(`/${locale}/onboarding?error=save`);
   redirect(`/${locale}/app?welcome=1`);
+}
+
+function sectionIsAvailable(journey: Journey, target: string, answers: AnswerMap) {
+  if (target === "organization") return true;
+  if (journey === "company") {
+    if (target === "funding") return typeof answers.company_id === "string";
+    if (target === "documents") return typeof answers.opportunity_id === "string";
+    if (target === "review") return Number(answers.documents_uploaded ?? 0) > 0;
+  }
+  if (journey === "originator") {
+    if (target === "company") return typeof answers.organization === "object";
+    if (target === "funding") return typeof answers.company_id === "string";
+    if (target === "documents") return typeof answers.opportunity_id === "string";
+    if (target === "review") return Number(answers.documents_uploaded ?? 0) > 0;
+  }
+  if (journey === "capital_provider") {
+    if (target === "fund") return typeof answers.organization === "object";
+    if (target === "mandate") return typeof answers.fund_id === "string";
+    if (target === "contacts") return typeof answers.mandate_id === "string";
+    if (target === "review") return typeof answers.contact_id === "string";
+  }
+  return false;
+}
+
+export async function openOnboardingSection(formData: FormData) {
+  const locale = localeFrom(formData);
+  const context = await onboardingContext(locale);
+  const target = value(formData, "target_step");
+  if (!journeySteps[context.journey].includes(target) || !sectionIsAvailable(context.journey, target, context.answers)) {
+    redirect(`/${locale}/onboarding`);
+  }
+  if (target === context.currentStep) redirect(`/${locale}/onboarding`);
+
+  const existingReturnStep = typeof context.answers.edit_return_step === "string" && journeySteps[context.journey].includes(context.answers.edit_return_step)
+    ? context.answers.edit_return_step
+    : null;
+  const returnStep = existingReturnStep ?? context.currentStep;
+  const answers = {...context.answers, edit_return_step: returnStep};
+  const {error} = await context.supabase
+    .from("onboarding_progress")
+    .update({current_step: target, answers})
+    .eq("organization_id", context.organizationId)
+    .eq("user_id", context.userId)
+    .eq("journey", context.journey);
+  if (error) redirect(`/${locale}/onboarding?error=save`);
+  redirect(`/${locale}/onboarding`);
 }
 
 export async function previousOnboardingStep(formData: FormData) {

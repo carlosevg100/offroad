@@ -388,6 +388,8 @@
       "privateWorkspaceBody": "Acesso restrito à sua organização",
       "saved": "Salvo",
       "help": "Ajuda",
+      "edit": "Editar",
+      "addDocuments": "Adicionar",
       "welcomeTitle": "Vamos preparar seu primeiro case.",
       "welcomeBody": "Comece pelo essencial. A Offroad organiza o restante e mostra exatamente o que falta para transformar informações em uma oportunidade preparada para o mercado.",
       "readiness": "Preparação do case",
@@ -501,6 +503,7 @@
     "activateMandate": "Ativar mandato",
     "submitOpportunity": "Enviar oportunidade",
     "error": "Não foi possível salvar esta etapa. Revise os campos e tente novamente.",
+    "validationError": "Revise os campos obrigatórios e tente salvar novamente.",
     "steps": {
       "company": {"organization": {"title": "Empresa", "short": "Dados básicos", "body": "Identifique a empresa e o contato responsável."}, "funding": {"title": "Necessidade de capital", "short": "Objetivo e montante", "body": "Explique de forma simples o plano, sua importância e o capital necessário."}, "documents": {"title": "Documentos", "short": "Histórico e projeções", "body": "Adicione os materiais que ajudam a entender o negócio e a necessidade."}, "review": {"title": "Revisão", "short": "Confirmar e enviar", "body": "Confirme os dados antes de enviar a oportunidade para preparação."}},
       "originator": {"organization": {"title": "Assessoria", "short": "Perfil institucional", "body": "Cadastre a boutique, assessoria ou organização responsável pela originação."}, "company": {"title": "Empresa assessorada", "short": "Relação e autoridade", "body": "Identifique a empresa, o contato e a base da sua autorização para atuar."}, "funding": {"title": "Necessidade de capital", "short": "Objetivo e montante", "body": "Descreva a operação que será preparada em nome da empresa."}, "documents": {"title": "Documentos", "short": "Histórico e projeções", "body": "Adicione os materiais recebidos da empresa."}, "review": {"title": "Revisão", "short": "Confirmar e enviar", "body": "Revise a oportunidade e o registro de autoridade antes do envio."}},

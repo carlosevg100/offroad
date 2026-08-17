@@ -3710,7 +3710,7 @@ summary:focus-visible {
   padding: 16px 0;
   border-bottom: 1px solid #e1e3e6;
   align-items: center;
-  grid-template-columns: 40px 1fr 24px;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
   gap: 12px;
 }
 
@@ -3732,6 +3732,31 @@ summary:focus-visible {
 
 .onboarding-review article > svg {
   color: var(--accent);
+}
+
+.onboarding-edit-action {
+  display: inline-flex;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid #d9dcd8;
+  border-radius: 5px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fafbf9;
+  color: #62696b;
+  font: inherit;
+  font-size: 8px;
+  font-weight: 620;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.onboarding-edit-action:hover {
+  border-color: #8ea35f;
+  background: #f5f8ef;
+  color: #4d5e30;
 }
 
 .onboarding-submit-note {
@@ -4137,14 +4162,39 @@ summary:focus-visible {
 }
 
 .workspace-project__node {
+  display: block;
   min-height: 32px;
-  padding: 0 8px;
   border-radius: 5px;
-  grid-template-columns: 16px minmax(0, 1fr);
-  gap: 5px;
 }
 
-.workspace-project__node > span {
+.workspace-project__node button {
+  display: grid;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 5px;
+  align-items: center;
+  background: transparent;
+  color: inherit;
+  grid-template-columns: 16px minmax(0, 1fr) 14px;
+  gap: 5px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workspace-project__node button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.workspace-project__node button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 5%);
+  color: #f4f5f2;
+}
+
+.workspace-project__node button > span {
   display: grid;
   width: 14px;
   height: 14px;
@@ -4157,7 +4207,7 @@ summary:focus-visible {
   color: #f7f8f5;
 }
 
-.workspace-project__node.is-current > span {
+.workspace-project__node.is-current button > span {
   color: #b7cf7a;
 }
 
@@ -4165,8 +4215,22 @@ summary:focus-visible {
   color: #9ba69a;
 }
 
-.workspace-project__node.is-complete > span {
+.workspace-project__node.is-complete button > span {
   color: #9bbd53;
+}
+
+.workspace-project__node.is-available {
+  color: #9aa1a9;
+}
+
+.workspace-project__node button > svg:last-child {
+  color: #6f777f;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.workspace-project__node button:hover > svg:last-child {
+  opacity: 1;
 }
 
 .workspace-project__node.is-locked {

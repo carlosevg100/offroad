@@ -14,6 +14,8 @@ import {
   LockKeyhole,
   Network,
   PanelLeft,
+  PencilLine,
+  Plus,
   Search,
 } from "lucide-react";
 import type {Metadata} from "next";
@@ -29,6 +31,7 @@ import type {Json} from "@/types/database";
 import {
   completeOnboarding,
   finishDocumentsStep,
+  openOnboardingSection,
   previousOnboardingStep,
   saveAdvisedCompanyStep,
   saveContactStep,
@@ -68,6 +71,15 @@ function StepActions({locale, back = true, continueLabel}: {locale: string; back
   );
 }
 
+function EditSectionButton({locale, target, label, add = false}: {locale: string; target: string; label: string; add?: boolean}) {
+  return (
+    <button className="onboarding-edit-action" formAction={openOnboardingSection} formNoValidate name="target_step" type="submit" value={target}>
+      <span className="sr-only">{locale}</span>
+      {add ? <Plus aria-hidden="true" size={13} /> : <PencilLine aria-hidden="true" size={13} />}<span>{label}</span>
+    </button>
+  );
+}
+
 export default async function OnboardingPage({params, searchParams}: Props) {
   const {locale} = await params;
   const state = await searchParams;
@@ -102,7 +114,12 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       ? ["organization", "company", "funding", "documents", "review"]
       : ["organization", "fund", "mandate", "contacts", "review"];
   const currentIndex = Math.max(0, steps.indexOf(currentStep));
-  const completedCount = currentIndex;
+  const furthestAvailableIndex = journey === "company"
+    ? Number(answers.documents_uploaded ?? 0) > 0 ? 3 : typeof answers.opportunity_id === "string" ? 2 : typeof answers.company_id === "string" ? 1 : 0
+    : journey === "originator"
+      ? Number(answers.documents_uploaded ?? 0) > 0 ? 4 : typeof answers.opportunity_id === "string" ? 3 : typeof answers.company_id === "string" ? 2 : typeof answers.organization === "object" ? 1 : 0
+      : typeof answers.contact_id === "string" ? 4 : typeof answers.mandate_id === "string" ? 3 : typeof answers.fund_id === "string" ? 2 : typeof answers.organization === "object" ? 1 : 0;
+  const completedCount = furthestAvailableIndex;
   const completionPercent = Math.max(12, Math.round((completedCount / steps.length) * 100));
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
   const JourneyIcon = journey === "company" ? Building2 : journey === "originator" ? Network : Landmark;
@@ -115,7 +132,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
     documents = result.data ?? [];
   }
 
-  const errorMessage = state.error === "documents" ? t("documentsRequired") : state.error ? t("error") : null;
+  const errorMessage = state.error === "documents" ? t("documentsRequired") : state.error === "save" ? t("error") : state.error === "validation" ? t("validationError") : null;
 
   return (
     <main className="workspace-onboarding">
@@ -147,10 +164,15 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               <div className="workspace-project__header"><ChevronDown aria-hidden="true" size={13} /><FolderOpen aria-hidden="true" size={15} /><strong>{projectTitle}</strong></div>
               <div className="workspace-project__nodes">
                 {steps.map((step, index) => (
-                  <div className={index === currentIndex ? "workspace-project__node is-current" : index < currentIndex ? "workspace-project__node is-complete" : "workspace-project__node is-locked"} key={step}>
-                    <span>{index < currentIndex ? <Check aria-hidden="true" size={10} /> : index > currentIndex ? <LockKeyhole aria-hidden="true" size={10} /> : <ChevronRight aria-hidden="true" size={10} />}</span>
-                    <strong>{t(`workspace.nodes.${journey}.${step}`)}</strong>
-                  </div>
+                  <form action={openOnboardingSection} className={index === currentIndex ? "workspace-project__node is-current" : index < furthestAvailableIndex ? "workspace-project__node is-complete" : index === furthestAvailableIndex ? "workspace-project__node is-available" : "workspace-project__node is-locked"} key={step}>
+                    <input name="locale" type="hidden" value={locale} />
+                    <input name="target_step" type="hidden" value={step} />
+                    <button aria-current={index === currentIndex ? "page" : undefined} disabled={index === currentIndex || index > furthestAvailableIndex} type="submit">
+                      <span>{index < furthestAvailableIndex ? <Check aria-hidden="true" size={10} /> : index > furthestAvailableIndex ? <LockKeyhole aria-hidden="true" size={10} /> : <ChevronRight aria-hidden="true" size={10} />}</span>
+                      <strong>{t(`workspace.nodes.${journey}.${step}`)}</strong>
+                      {index !== currentIndex && index <= furthestAvailableIndex ? <PencilLine aria-hidden="true" size={11} /> : null}
+                    </button>
+                  </form>
                 ))}
               </div>
             </div>
@@ -323,17 +345,17 @@ export default async function OnboardingPage({params, searchParams}: Props) {
             <form action={completeOnboarding} className="onboarding-stage__form">
               <input name="locale" type="hidden" value={locale} />
               <div className="onboarding-review">
-                <article><span>01</span><div><strong>{organization.name}</strong><p>{organization.legal_name || t("notProvided")}</p></div><Check aria-hidden="true" size={17} /></article>
+                <article><span>01</span><div><strong>{organization.name}</strong><p>{organization.legal_name || t("notProvided")}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="organization" /></article>
                 {journey === "capital_provider" ? (
                   <>
-                    <article><span>02</span><div><strong>{text(fundAnswers.name)}</strong><p>{text(fundAnswers.strategy)}</p></div><Check aria-hidden="true" size={17} /></article>
-                    <article><span>03</span><div><strong>{t("mandateReady")}</strong><p>{t("mandateReviewBody")}</p></div><Check aria-hidden="true" size={17} /></article>
-                    <article><span>04</span><div><strong>{text(contactAnswers.full_name)}</strong><p>{text(contactAnswers.email)}</p></div><Check aria-hidden="true" size={17} /></article>
+                    <article><span>02</span><div><strong>{text(fundAnswers.name)}</strong><p>{text(fundAnswers.strategy)}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="fund" /></article>
+                    <article><span>03</span><div><strong>{t("mandateReady")}</strong><p>{t("mandateReviewBody")}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="mandate" /></article>
+                    <article><span>04</span><div><strong>{text(contactAnswers.full_name)}</strong><p>{text(contactAnswers.email)}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="contacts" /></article>
                   </>
                 ) : (
                   <>
-                    <article><span>02</span><div><strong>{text(fundingAnswers.purpose_summary)}</strong><p>{text(fundingAnswers.currency)} {text(fundingAnswers.requested_amount)}</p></div><Check aria-hidden="true" size={17} /></article>
-                    <article><span>03</span><div><strong>{t("documentsReady", {count: Number(answers.documents_uploaded ?? 0)})}</strong><p>{t("documentsReviewBody")}</p></div><Check aria-hidden="true" size={17} /></article>
+                    <article><span>02</span><div><strong>{text(fundingAnswers.purpose_summary)}</strong><p>{text(fundingAnswers.currency)} {text(fundingAnswers.requested_amount)}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="funding" /></article>
+                    <article><span>03</span><div><strong>{t("documentsReady", {count: Number(answers.documents_uploaded ?? 0)})}</strong><p>{t("documentsReviewBody")}</p></div><EditSectionButton add label={t("workspace.addDocuments")} locale={locale} target="documents" /></article>
                   </>
                 )}
               </div>
