@@ -3750,6 +3750,7 @@ summary:focus-visible {
   font-weight: 620;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -4167,7 +4168,7 @@ summary:focus-visible {
   border-radius: 5px;
 }
 
-.workspace-project__node button {
+.workspace-node-control {
   display: grid;
   width: 100%;
   min-height: 32px;
@@ -4181,20 +4182,16 @@ summary:focus-visible {
   gap: 5px;
   font: inherit;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.workspace-project__node button:disabled {
-  opacity: 1;
-  cursor: default;
-}
-
-.workspace-project__node button:hover:not(:disabled) {
+.workspace-project__node a.workspace-node-control:hover {
   background: rgb(255 255 255 / 5%);
   color: #f4f5f2;
 }
 
-.workspace-project__node button > span {
+.workspace-node-control > span {
   display: grid;
   width: 14px;
   height: 14px;
@@ -4207,7 +4204,7 @@ summary:focus-visible {
   color: #f7f8f5;
 }
 
-.workspace-project__node.is-current button > span {
+.workspace-project__node.is-current .workspace-node-control > span {
   color: #b7cf7a;
 }
 
@@ -4215,7 +4212,7 @@ summary:focus-visible {
   color: #9ba69a;
 }
 
-.workspace-project__node.is-complete button > span {
+.workspace-project__node.is-complete .workspace-node-control > span {
   color: #9bbd53;
 }
 
@@ -4223,13 +4220,13 @@ summary:focus-visible {
   color: #9aa1a9;
 }
 
-.workspace-project__node button > svg:last-child {
+.workspace-node-control > svg:last-child {
   color: #6f777f;
   opacity: 0;
   transition: opacity 140ms ease;
 }
 
-.workspace-project__node button:hover > svg:last-child {
+.workspace-project__node a.workspace-node-control:hover > svg:last-child {
   opacity: 1;
 }
 

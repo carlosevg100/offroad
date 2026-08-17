@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
+import Link from "next/link";
 import {redirect} from "next/navigation";
 
 import {BrandMark} from "@/components/brand-mark";
@@ -31,7 +32,6 @@ import type {Json} from "@/types/database";
 import {
   completeOnboarding,
   finishDocumentsStep,
-  openOnboardingSection,
   previousOnboardingStep,
   saveAdvisedCompanyStep,
   saveContactStep,
@@ -44,7 +44,7 @@ import {
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "Institutional Profile", robots: {index: false, follow: false}};
 
-type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string}>};
+type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
 
@@ -57,26 +57,41 @@ function text(answer: Json | undefined) {
   return typeof answer === "string" || typeof answer === "number" ? String(answer) : "";
 }
 
-function StepActions({locale, back = true, continueLabel}: {locale: string; back?: boolean; continueLabel: string}) {
+function FormContext({locale, returnStep}: {locale: string; returnStep: string}) {
+  return (
+    <>
+      <input name="locale" type="hidden" value={locale} />
+      {returnStep ? <input name="return_step" type="hidden" value={returnStep} /> : null}
+    </>
+  );
+}
+
+function StepActions({locale, returnStep, back = true, continueLabel}: {locale: string; returnStep: string; back?: boolean; continueLabel: string}) {
   return (
     <div className="onboarding-actions">
       {back ? (
-        <button className="button button--ghost" formAction={previousOnboardingStep} formNoValidate>
-          <ArrowLeft aria-hidden="true" size={15} />
-          <span className="sr-only">{locale === "pt-BR" ? "Voltar" : "Back"}</span>
-        </button>
+        returnStep ? (
+          <Link className="button button--ghost" href={`/${locale}/onboarding?section=${returnStep}`}>
+            <ArrowLeft aria-hidden="true" size={15} />
+            <span className="sr-only">{locale === "pt-BR" ? "Voltar" : "Back"}</span>
+          </Link>
+        ) : (
+          <button className="button button--ghost" formAction={previousOnboardingStep} formNoValidate>
+            <ArrowLeft aria-hidden="true" size={15} />
+            <span className="sr-only">{locale === "pt-BR" ? "Voltar" : "Back"}</span>
+          </button>
+        )
       ) : <span />}
       <button className="button" type="submit">{continueLabel}<ArrowRight aria-hidden="true" size={15} /></button>
     </div>
   );
 }
 
-function EditSectionButton({locale, target, label, add = false}: {locale: string; target: string; label: string; add?: boolean}) {
+function EditSectionLink({locale, target, label, add = false}: {locale: string; target: string; label: string; add?: boolean}) {
   return (
-    <button className="onboarding-edit-action" formAction={openOnboardingSection} formNoValidate name="target_step" type="submit" value={target}>
-      <span className="sr-only">{locale}</span>
+    <Link className="onboarding-edit-action" href={`/${locale}/onboarding?section=${target}`}>
       {add ? <Plus aria-hidden="true" size={13} /> : <PencilLine aria-hidden="true" size={13} />}<span>{label}</span>
-    </button>
+    </Link>
   );
 }
 
@@ -100,7 +115,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   if (progress.completed_at) redirect(`/${locale}/app`);
 
   const journey = progress.journey as Journey;
-  const currentStep = progress.current_step;
+  const persistedStep = progress.current_step;
   const answers = (progress.answers ?? {}) as AnswerMap;
   const organizationAnswers = answerObject(answers, "organization");
   const companyAnswers = answerObject(answers, "advised_company");
@@ -113,12 +128,19 @@ export default async function OnboardingPage({params, searchParams}: Props) {
     : journey === "originator"
       ? ["organization", "company", "funding", "documents", "review"]
       : ["organization", "fund", "mandate", "contacts", "review"];
-  const currentIndex = Math.max(0, steps.indexOf(currentStep));
   const furthestAvailableIndex = journey === "company"
     ? Number(answers.documents_uploaded ?? 0) > 0 ? 3 : typeof answers.opportunity_id === "string" ? 2 : typeof answers.company_id === "string" ? 1 : 0
     : journey === "originator"
       ? Number(answers.documents_uploaded ?? 0) > 0 ? 4 : typeof answers.opportunity_id === "string" ? 3 : typeof answers.company_id === "string" ? 2 : typeof answers.organization === "object" ? 1 : 0
       : typeof answers.contact_id === "string" ? 4 : typeof answers.mandate_id === "string" ? 3 : typeof answers.fund_id === "string" ? 2 : typeof answers.organization === "object" ? 1 : 0;
+  const requestedSection = typeof state.section === "string"
+    && steps.includes(state.section)
+    && steps.indexOf(state.section) <= furthestAvailableIndex
+    ? state.section
+    : null;
+  const currentStep = requestedSection ?? persistedStep;
+  const returnStep = currentStep !== persistedStep ? persistedStep : "";
+  const currentIndex = Math.max(0, steps.indexOf(currentStep));
   const completedCount = furthestAvailableIndex;
   const completionPercent = Math.max(12, Math.round((completedCount / steps.length) * 100));
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
@@ -163,17 +185,28 @@ export default async function OnboardingPage({params, searchParams}: Props) {
             <div className="workspace-project">
               <div className="workspace-project__header"><ChevronDown aria-hidden="true" size={13} /><FolderOpen aria-hidden="true" size={15} /><strong>{projectTitle}</strong></div>
               <div className="workspace-project__nodes">
-                {steps.map((step, index) => (
-                  <form action={openOnboardingSection} className={index === currentIndex ? "workspace-project__node is-current" : index < furthestAvailableIndex ? "workspace-project__node is-complete" : index === furthestAvailableIndex ? "workspace-project__node is-available" : "workspace-project__node is-locked"} key={step}>
-                    <input name="locale" type="hidden" value={locale} />
-                    <input name="target_step" type="hidden" value={step} />
-                    <button aria-current={index === currentIndex ? "page" : undefined} disabled={index === currentIndex || index > furthestAvailableIndex} type="submit">
+                {steps.map((step, index) => {
+                  const nodeClassName = index === currentIndex ? "workspace-project__node is-current" : index < furthestAvailableIndex ? "workspace-project__node is-complete" : index === furthestAvailableIndex ? "workspace-project__node is-available" : "workspace-project__node is-locked";
+                  const nodeContents = (
+                    <>
                       <span>{index < furthestAvailableIndex ? <Check aria-hidden="true" size={10} /> : index > furthestAvailableIndex ? <LockKeyhole aria-hidden="true" size={10} /> : <ChevronRight aria-hidden="true" size={10} />}</span>
                       <strong>{t(`workspace.nodes.${journey}.${step}`)}</strong>
                       {index !== currentIndex && index <= furthestAvailableIndex ? <PencilLine aria-hidden="true" size={11} /> : null}
-                    </button>
-                  </form>
-                ))}
+                    </>
+                  );
+
+                  return (
+                    <div className={nodeClassName} key={step}>
+                      {index <= furthestAvailableIndex ? (
+                        <Link aria-current={index === currentIndex ? "page" : undefined} className="workspace-node-control" href={`/${locale}/onboarding?section=${step}`}>
+                          {nodeContents}
+                        </Link>
+                      ) : (
+                        <span className="workspace-node-control">{nodeContents}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -207,7 +240,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
           {currentStep === "organization" ? (
             <form action={saveOrganizationStep} className="onboarding-stage__form">
-              <input name="locale" type="hidden" value={locale} />
+              <FormContext locale={locale} returnStep={returnStep} />
               <div className="form-grid form-grid--onboarding">
                 <label className="field field--wide"><span>{journey === "company" ? t("companyName") : t("organizationName")}</span><input defaultValue={organization.name.includes("em cadastro") ? "" : organization.name} maxLength={160} minLength={2} name="organization_name" required /></label>
                 <label className="field"><span>{t("legalName")}</span><input defaultValue={organization.legal_name ?? ""} maxLength={200} name="legal_name" /></label>
@@ -222,13 +255,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 {journey === "capital_provider" ? <label className="field"><span>{t("providerType")}</span><select defaultValue={organization.provider_type ?? "fund_manager"} name="provider_type"><option value="fund_manager">{t("providerTypes.fundManager")}</option><option value="fidc_manager">{t("providerTypes.fidcManager")}</option><option value="factor">{t("providerTypes.factor")}</option><option value="bank">{t("providerTypes.bank")}</option><option value="family_office">{t("providerTypes.familyOffice")}</option><option value="alternative_lender">{t("providerTypes.alternative")}</option><option value="other">{t("providerTypes.other")}</option></select></label> : null}
                 {journey !== "company" ? <label className="field field--wide"><span>{t("description")}</span><textarea defaultValue={organization.description ?? ""} maxLength={2000} name="description" rows={4} /></label> : null}
               </div>
-              <StepActions back={false} continueLabel={t("continue")} locale={locale} />
+              <StepActions back={false} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
           {currentStep === "company" ? (
             <form action={saveAdvisedCompanyStep} className="onboarding-stage__form">
-              <input name="locale" type="hidden" value={locale} />
+              <FormContext locale={locale} returnStep={returnStep} />
               <div className="form-grid form-grid--onboarding">
                 <label className="field"><span>{t("companyName")}</span><input defaultValue={text(companyAnswers.display_name)} maxLength={160} minLength={2} name="company_name" required /></label>
                 <label className="field"><span>{t("legalName")}</span><input defaultValue={text(companyAnswers.legal_name)} maxLength={200} minLength={2} name="company_legal_name" required /></label>
@@ -243,13 +276,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field"><span>{t("companyContact")}</span><input defaultValue={text(companyAnswers.contact_name)} name="company_contact_name" /></label>
                 <label className="field"><span>{t("companyContactEmail")}</span><input defaultValue={text(companyAnswers.contact_email)} name="company_contact_email" type="email" /></label>
               </div>
-              <StepActions continueLabel={t("continue")} locale={locale} />
+              <StepActions continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
           {currentStep === "funding" ? (
             <form action={saveFundingStep} className="onboarding-stage__form">
-              <input name="locale" type="hidden" value={locale} />
+              <FormContext locale={locale} returnStep={returnStep} />
               <div className="form-grid form-grid--onboarding">
                 <label className="field"><span>{t("purposeCategory")}</span><select defaultValue={text(fundingAnswers.purpose_category) || "growth"} name="purpose_category"><option value="working_capital">{t("purposes.workingCapital")}</option><option value="growth">{t("purposes.growth")}</option><option value="capex">Capex</option><option value="acquisition">{t("purposes.acquisition")}</option><option value="equipment">{t("purposes.equipment")}</option><option value="refinance">{t("purposes.refinance")}</option><option value="other">{t("purposes.other")}</option></select></label>
                 <label className="field"><span>{t("desiredTiming")}</span><input defaultValue={text(fundingAnswers.desired_timing)} maxLength={500} name="desired_timing" /></label>
@@ -263,7 +296,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field field--wide"><span>{t("expectedOutcome")}</span><textarea defaultValue={text(fundingAnswers.expected_outcome)} maxLength={3000} name="expected_outcome" rows={3} /></label>
                 <label className="field field--wide"><span>{t("collateral")}</span><textarea defaultValue={text(fundingAnswers.collateral_summary)} maxLength={2000} name="collateral_summary" rows={3} /></label>
               </div>
-              <StepActions continueLabel={t("continue")} locale={locale} />
+              <StepActions continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
@@ -284,25 +317,25 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 recommended: {title: t("uploadGuidance.recommended.title"), items: [t("uploadGuidance.recommended.projections"), t("uploadGuidance.recommended.presentation"), t("uploadGuidance.recommended.transaction")]},
                 complementary: {title: t("uploadGuidance.complementary.title"), items: [t("uploadGuidance.complementary.contracts"), t("uploadGuidance.complementary.cim"), t("uploadGuidance.complementary.other")]},
               }} initialDocuments={documents} opportunityId={opportunityId} organizationId={organization.id} userId={userId} />
-              <form action={finishDocumentsStep}><input name="locale" type="hidden" value={locale} /><StepActions continueLabel={t("review")} locale={locale} /></form>
+              <form action={finishDocumentsStep}><FormContext locale={locale} returnStep={returnStep} /><StepActions continueLabel={t("review")} locale={locale} returnStep={returnStep} /></form>
             </div>
           ) : null}
 
           {currentStep === "fund" ? (
             <form action={saveFundStep} className="onboarding-stage__form">
-              <input name="locale" type="hidden" value={locale} />
+              <FormContext locale={locale} returnStep={returnStep} />
               <div className="form-grid form-grid--onboarding">
                 <label className="field field--wide"><span>{t("fundName")}</span><input defaultValue={text(fundAnswers.name)} maxLength={200} minLength={2} name="fund_name" required /></label>
                 <label className="field field--wide"><span>{t("fundStrategy")}</span><textarea defaultValue={text(fundAnswers.strategy)} maxLength={2000} minLength={2} name="strategy" required rows={5} /></label>
               </div>
               <div className="onboarding-note"><FileText aria-hidden="true" size={18} /><p>{t("multipleFundsNote")}</p></div>
-              <StepActions continueLabel={t("continue")} locale={locale} />
+              <StepActions continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
           {currentStep === "mandate" ? (
             <form action={saveMandateStep} className="onboarding-stage__form">
-              <input name="locale" type="hidden" value={locale} />
+              <FormContext locale={locale} returnStep={returnStep} />
               <div className="form-grid form-grid--onboarding">
                 <label className="field"><span>{t("currencies")}</span><input defaultValue={Array.isArray(mandateAnswers.currencies) ? mandateAnswers.currencies.join(", ") : "BRL"} name="currencies" required /></label>
                 <label className="field"><span>{t("geographies")}</span><input defaultValue={Array.isArray(mandateAnswers.geographies) ? mandateAnswers.geographies.join(", ") : "Brasil"} name="geographies" required /></label>
@@ -320,13 +353,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field"><span>{t("validUntil")}</span><input name="valid_until" type="date" /></label>
                 <label className="field field--wide"><span>{t("exclusions")}</span><textarea maxLength={3000} name="exclusions" rows={3} /></label>
               </div>
-              <StepActions continueLabel={t("continue")} locale={locale} />
+              <StepActions continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
           {currentStep === "contacts" ? (
             <form action={saveContactStep} className="onboarding-stage__form">
-              <input name="locale" type="hidden" value={locale} />
+              <FormContext locale={locale} returnStep={returnStep} />
               <div className="form-grid form-grid--onboarding">
                 <label className="field"><span>{t("contactName")}</span><input defaultValue={text(contactAnswers.full_name)} name="contact_name" required /></label>
                 <label className="field"><span>{t("contactTitle")}</span><input name="contact_title" /></label>
@@ -337,25 +370,25 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field"><span>{t("routingTicket")}</span><input name="routing_ticket" /></label>
                 <label className="field"><span>{t("routingOperations")}</span><input name="routing_operations" placeholder={t("commaSeparated")} /></label>
               </div>
-              <StepActions continueLabel={t("review")} locale={locale} />
+              <StepActions continueLabel={t("review")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
           {currentStep === "review" ? (
             <form action={completeOnboarding} className="onboarding-stage__form">
-              <input name="locale" type="hidden" value={locale} />
+              <FormContext locale={locale} returnStep="" />
               <div className="onboarding-review">
-                <article><span>01</span><div><strong>{organization.name}</strong><p>{organization.legal_name || t("notProvided")}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="organization" /></article>
+                <article><span>01</span><div><strong>{organization.name}</strong><p>{organization.legal_name || t("notProvided")}</p></div><EditSectionLink label={t("workspace.edit")} locale={locale} target="organization" /></article>
                 {journey === "capital_provider" ? (
                   <>
-                    <article><span>02</span><div><strong>{text(fundAnswers.name)}</strong><p>{text(fundAnswers.strategy)}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="fund" /></article>
-                    <article><span>03</span><div><strong>{t("mandateReady")}</strong><p>{t("mandateReviewBody")}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="mandate" /></article>
-                    <article><span>04</span><div><strong>{text(contactAnswers.full_name)}</strong><p>{text(contactAnswers.email)}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="contacts" /></article>
+                    <article><span>02</span><div><strong>{text(fundAnswers.name)}</strong><p>{text(fundAnswers.strategy)}</p></div><EditSectionLink label={t("workspace.edit")} locale={locale} target="fund" /></article>
+                    <article><span>03</span><div><strong>{t("mandateReady")}</strong><p>{t("mandateReviewBody")}</p></div><EditSectionLink label={t("workspace.edit")} locale={locale} target="mandate" /></article>
+                    <article><span>04</span><div><strong>{text(contactAnswers.full_name)}</strong><p>{text(contactAnswers.email)}</p></div><EditSectionLink label={t("workspace.edit")} locale={locale} target="contacts" /></article>
                   </>
                 ) : (
                   <>
-                    <article><span>02</span><div><strong>{text(fundingAnswers.purpose_summary)}</strong><p>{text(fundingAnswers.currency)} {text(fundingAnswers.requested_amount)}</p></div><EditSectionButton label={t("workspace.edit")} locale={locale} target="funding" /></article>
-                    <article><span>03</span><div><strong>{t("documentsReady", {count: Number(answers.documents_uploaded ?? 0)})}</strong><p>{t("documentsReviewBody")}</p></div><EditSectionButton add label={t("workspace.addDocuments")} locale={locale} target="documents" /></article>
+                    <article><span>02</span><div><strong>{text(fundingAnswers.purpose_summary)}</strong><p>{text(fundingAnswers.currency)} {text(fundingAnswers.requested_amount)}</p></div><EditSectionLink label={t("workspace.edit")} locale={locale} target="funding" /></article>
+                    <article><span>03</span><div><strong>{t("documentsReady", {count: Number(answers.documents_uploaded ?? 0)})}</strong><p>{t("documentsReviewBody")}</p></div><EditSectionLink add label={t("workspace.addDocuments")} locale={locale} target="documents" /></article>
                   </>
                 )}
               </div>
