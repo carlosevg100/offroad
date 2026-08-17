@@ -324,10 +324,6 @@ summary:focus-visible {
   display: block;
 }
 
-html[lang="pt-BR"] .premium-hero__copy h1 {
-  font-size: clamp(32px, 2.35vw, 34px);
-}
-
 .premium-hero__lead {
   max-width: 390px;
   margin: 0;
@@ -2710,10 +2706,6 @@ html[lang="pt-BR"] .premium-hero__copy h1 {
     font-size: clamp(29px, 7.9vw, 34px);
     letter-spacing: -0.025em;
     line-height: 1.05;
-  }
-
-  html[lang="pt-BR"] .premium-hero__copy h1 {
-    font-size: clamp(28px, 7.5vw, 32px);
   }
 
   .premium-hero__lead {
