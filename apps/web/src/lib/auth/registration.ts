@@ -5,13 +5,15 @@ import type {Database} from "@/types/database";
 export const registrationJourneys = ["company", "originator", "capital_provider"] as const;
 export type RegistrationJourney = (typeof registrationJourneys)[number];
 
+export const passwordSchema = z.string().min(8).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[\p{P}\p{S}]/u);
+
 export const registrationSchema = z.object({
   locale: z.enum(["pt-BR", "en-US"]),
   journey: z.enum(registrationJourneys),
   fullName: z.string().trim().min(2).max(160),
   jobTitle: z.string().trim().min(2).max(120),
   email: z.email().trim().toLowerCase().max(254),
-  password: z.string().min(8).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[\p{P}\p{S}]/u),
+  password: passwordSchema,
   confirmPassword: z.string(),
 }).refine((value) => value.password === value.confirmPassword, {
   path: ["confirmPassword"],

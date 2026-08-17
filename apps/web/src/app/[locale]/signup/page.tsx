@@ -20,6 +20,19 @@ export default async function SignupPage({params, searchParams}: Props) {
   const {locale} = await params;
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "Signup"});
+  const errorMessage = state.error === "provider"
+    ? t("providerMissing")
+    : state.error === "password"
+      ? t("passwordError")
+      : state.error === "rate_limit"
+        ? t("rateLimitError")
+        : state.error === "email"
+          ? t("emailError")
+          : state.error === "email_exists"
+            ? t("emailExistsError")
+            : state.error === "delivery"
+              ? t("deliveryError")
+              : t("error");
 
   return (
     <AuthShell
@@ -38,7 +51,7 @@ export default async function SignupPage({params, searchParams}: Props) {
           <h2>{t("title")}</h2>
           <p>{t("body")}</p>
         </div>
-        {state.error ? <p className="form-notice form-notice--error" role="alert">{state.error === "provider" ? t("providerMissing") : t("error")}</p> : null}
+        {state.error ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
         <fieldset className="registration-roles">
           <legend>{t("roleLegend")}</legend>

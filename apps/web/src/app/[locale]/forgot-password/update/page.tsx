@@ -22,8 +22,8 @@ export default async function UpdatePasswordPage({params, searchParams}: Props) 
         <LockKeyhole aria-hidden="true" className="auth-form__icon" size={26} />
         <div className="auth-form__heading"><p className="section-kicker">{t("updateEyebrow")}</p><h2>{t("updateTitle")}</h2><p>{t("updateBody")}</p></div>
         {state.error ? <p className="form-notice form-notice--error" role="alert">{t("passwordError")}</p> : null}
-        <label className="field"><span>{t("password")}</span><input autoComplete="new-password" maxLength={128} minLength={10} name="password" required type="password" /><small>{t("passwordHint")}</small></label>
-        <label className="field"><span>{t("confirmPassword")}</span><input autoComplete="new-password" maxLength={128} minLength={10} name="confirm_password" required type="password" /></label>
+        <label className="field"><span>{t("password")}</span><input autoComplete="new-password" maxLength={128} minLength={8} name="password" pattern={"(?=.*[a-z])(?=.*[A-Z])(?=.*[\\p{P}\\p{S}]).{8,128}"} required type="password" /><small>{t("passwordHint")}</small></label>
+        <label className="field"><span>{t("confirmPassword")}</span><input autoComplete="new-password" maxLength={128} minLength={8} name="confirm_password" required type="password" /></label>
         <button className="button auth-form__primary" type="submit">{t("update")} <ArrowRight aria-hidden="true" size={15} /></button>
       </form>
     </AuthShell>

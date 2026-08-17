@@ -8,6 +8,16 @@ import {createClient} from "@/lib/supabase/server";
 
 const emailCookie = "offroad_signup_email";
 
+const registrationErrorReason: Record<string, string> = {
+  email_address_invalid: "email",
+  email_address_not_authorized: "delivery",
+  email_exists: "email_exists",
+  over_email_send_rate_limit: "rate_limit",
+  over_request_rate_limit: "rate_limit",
+  user_already_exists: "email_exists",
+  weak_password: "password",
+};
+
 function field(formData: FormData, name: string) {
   return String(formData.get(name) ?? "");
 }
@@ -41,7 +51,10 @@ export async function startRegistration(formData: FormData) {
     },
   });
 
-  if (error) redirect(`/${locale}/signup?error=registration`);
+  if (error) {
+    console.error("signup_failed", {code: error.code, status: error.status});
+    redirect(`/${locale}/signup?error=${registrationErrorReason[error.code ?? ""] ?? "registration"}`);
+  }
 
   if (data.session) {
     const initialized = await initializeRegistrationWorkspace(supabase);

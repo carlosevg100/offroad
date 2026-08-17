@@ -4,6 +4,7 @@ import {cookies} from "next/headers";
 import {redirect} from "next/navigation";
 import {z} from "zod";
 
+import {passwordSchema} from "@/lib/auth/registration";
 import {createClient} from "@/lib/supabase/server";
 
 const recoveryCookie = "offroad_recovery_email";
@@ -50,7 +51,7 @@ export async function updatePassword(formData: FormData) {
   const locale = localeValue(formData);
   const password = String(formData.get("password") ?? "");
   const confirmation = String(formData.get("confirm_password") ?? "");
-  if (password !== confirmation || password.length < 10 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+  if (password !== confirmation || !passwordSchema.safeParse(password).success) {
     redirect(`/${locale}/forgot-password/update?error=password`);
   }
 
