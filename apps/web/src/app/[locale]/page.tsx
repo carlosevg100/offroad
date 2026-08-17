@@ -15,6 +15,7 @@ import {getTranslations} from "next-intl/server";
 
 import {BrandMark} from "@/components/brand-mark";
 import {CapitalFlow} from "@/components/capital-flow";
+import {HeroBackgroundVideo} from "@/components/hero-background-video";
 import {HeroValueRotator} from "@/components/hero-value-rotator";
 import {ProductFilm} from "@/components/product-film";
 import {SiteHeader} from "@/components/site-header";
@@ -58,6 +59,7 @@ export default async function HomePage({params}: Props) {
       <SiteHeader locale={locale as AppLocale} />
       <main id="main-content" className="home-page">
         <section className="premium-hero">
+          <HeroBackgroundVideo />
           <div className="section-shell premium-hero__inner">
             <div className="premium-hero__copy">
               <div className="premium-hero__primary">
