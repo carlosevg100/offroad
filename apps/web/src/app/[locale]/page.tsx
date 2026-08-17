@@ -104,14 +104,6 @@ export default async function HomePage({params}: Props) {
           </div>
         </section>
 
-        <section className="audience-rail" aria-label={t("audienceKicker")}>
-          <div className="section-shell">
-            <a href="#empresas"><Building2 aria-hidden="true" size={16} /><span>{t("companyAudienceLabel")}</span><strong>{t("companyAudienceBenefit")}</strong></a>
-            <a href="#originadores"><UserRoundCheck aria-hidden="true" size={16} /><span>{t("originatorAudienceLabel")}</span><strong>{t("originatorAudienceBenefit")}</strong></a>
-            <a href="#capital"><Landmark aria-hidden="true" size={16} /><span>{t("capitalAudienceLabel")}</span><strong>{t("capitalAudienceBenefit")}</strong></a>
-          </div>
-        </section>
-
         <section className="premium-audiences section-shell" id="para-quem">
           <header className="premium-section-heading">
             <p className="premium-kicker">{t("audienceKicker")}</p>
