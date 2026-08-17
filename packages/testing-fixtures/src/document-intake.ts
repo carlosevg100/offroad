@@ -129,6 +129,21 @@ export function buildRedeHorizonteDocumentIntake(availableDocuments: Array<{id: 
   const presentKeys = new Set(presentCandidates.map((candidate) => candidate.key));
   const missingFiles = redeHorizonteRequiredFiles.filter((name) => !byName.has(name));
 
+  if (byName.size === 0) {
+    return {
+      fixtureMatched: false,
+      missingFiles: [],
+      candidates: [],
+      issues: [{
+        type: "missing" as const,
+        priority: "critical" as const,
+        title: "Documentos recebidos, extração automática ainda não disponível",
+        description: "Os arquivos foram preservados, mas nenhum campo foi proposto porque este conjunto documental ainda não possui um extrator validado.",
+        resolutionHint: "Adicione outros documentos ou prossiga pelo preenchimento manual. Nenhuma informação foi inferida sem evidência.",
+      }],
+    };
+  }
+
   return {
     fixtureMatched: missingFiles.length === 0,
     missingFiles,

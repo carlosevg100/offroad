@@ -140,17 +140,33 @@ function EditSectionLink({locale, target, label, add = false}: {locale: string; 
   );
 }
 
-export function IntakeStartChoice({locale}: {locale: string}) {
+type IntakeStartChoiceProps = {
+  locale: string;
+  context?: "onboarding" | "case";
+  startAction?: (formData: FormData) => Promise<void>;
+  manualAction?: (formData: FormData) => Promise<void>;
+};
+
+type IntakeReviewActionSet = {
+  accept: (formData: FormData) => Promise<void>;
+  confirm: (formData: FormData) => Promise<void>;
+  process: (formData: FormData) => Promise<void>;
+  resolve: (formData: FormData) => Promise<void>;
+  review: (formData: FormData) => Promise<void>;
+};
+
+export function IntakeStartChoice({locale, context = "onboarding", startAction = startDocumentIntake, manualAction = chooseManualIntake}: IntakeStartChoiceProps) {
   const isPt = locale === "pt-BR";
+  const isCase = context === "case";
   return (
     <section className="intake-start">
       <header>
-        <span className="section-kicker">{isPt ? "INÍCIO DO CADASTRO" : "START REGISTRATION"}</span>
-        <h2>{isPt ? "Como você deseja iniciar o cadastro?" : "How would you like to start?"}</h2>
+        <span className="section-kicker">{isCase ? (isPt ? "NOVO CASE" : "NEW CASE") : (isPt ? "INÍCIO DO CADASTRO" : "START REGISTRATION")}</span>
+        <h2>{isCase ? (isPt ? "Como você deseja iniciar o novo case?" : "How would you like to start the new case?") : (isPt ? "Como você deseja iniciar o cadastro?" : "How would you like to start?")}</h2>
         <p>{isPt ? "Escolha a forma mais conveniente. Você poderá revisar cada informação antes de criar o case." : "Choose the most convenient path. You will review every item before the case is created."}</p>
       </header>
       <div className="intake-start__options">
-        <form action={startDocumentIntake} className="intake-start__card is-recommended">
+        <form action={startAction} className="intake-start__card is-recommended">
           <input name="locale" type="hidden" value={locale} />
           <span className="intake-start__badge"><Sparkles aria-hidden="true" size={12} />{isPt ? "RECOMENDADO" : "RECOMMENDED"}</span>
           <div className="intake-start__icon"><UploadCloud aria-hidden="true" size={25} /></div>
@@ -163,7 +179,7 @@ export function IntakeStartChoice({locale}: {locale: string}) {
           </ul>
           <button className="button" type="submit">{isPt ? "Enviar documentos" : "Upload documents"}<ArrowRight size={15} /></button>
         </form>
-        <form action={chooseManualIntake} className="intake-start__card">
+        <form action={manualAction} className="intake-start__card">
           <input name="locale" type="hidden" value={locale} />
           <div className="intake-start__icon"><PencilLine aria-hidden="true" size={24} /></div>
           <h3>{isPt ? "Preencher manualmente" : "Fill in manually"}</h3>
@@ -176,13 +192,14 @@ export function IntakeStartChoice({locale}: {locale: string}) {
   );
 }
 
-export function IntakeReview({locale, session, documents, candidates, issues}: {locale: string; session: IntakeSession; documents: IntakeDocument[]; candidates: IntakeCandidate[]; issues: IntakeIssue[]}) {
+export function IntakeReview({locale, session, documents, candidates, issues, actions, manualHref}: {locale: string; session: IntakeSession; documents: IntakeDocument[]; candidates: IntakeCandidate[]; issues: IntakeIssue[]; actions?: IntakeReviewActionSet; manualHref?: string}) {
   const isPt = locale === "pt-BR";
   const documentById = new Map(documents.map((document) => [document.id, document]));
   const openIssues = issues.filter((issue) => issue.status === "open");
   const conflictCandidateIds = new Set(openIssues.flatMap((issue) => issue.candidate_ids));
   const reviewed = candidates.filter((candidate) => ["accepted", "edited", "rejected", "not_applicable"].includes(candidate.review_state)).length;
   const accepted = candidates.filter((candidate) => ["accepted", "edited"].includes(candidate.review_state) && candidate.is_primary).length;
+  const actionSet = actions ?? {accept: acceptHighConfidenceCandidates, confirm: confirmDocumentIntake, process: processDocumentIntake, resolve: resolveIntakeIssue, review: reviewIntakeCandidate};
   const anchorText = (candidate: IntakeCandidate) => {
     const anchor = candidate.source_anchor && typeof candidate.source_anchor === "object" && !Array.isArray(candidate.source_anchor) ? candidate.source_anchor : {};
     return [anchor.page ? `${isPt ? "página" : "page"} ${anchor.page}` : "", anchor.sheet ? `${isPt ? "aba" : "sheet"} ${anchor.sheet}` : "", anchor.cell ? `${isPt ? "célula" : "cell"} ${anchor.cell}` : "", anchor.section ? String(anchor.section) : ""].filter(Boolean).join(" · ");
@@ -197,8 +214,8 @@ export function IntakeReview({locale, session, documents, candidates, issues}: {
 
       <div className="intake-review__toolbar">
         <div><History size={14} /><span>{reviewed}/{candidates.length} {isPt ? "campos revisados" : "fields reviewed"}</span></div>
-        <form action={acceptHighConfidenceCandidates}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--small" type="submit"><Check size={13} />{isPt ? "Aceitar sugestões confiáveis" : "Accept high-confidence suggestions"}</button></form>
-        <form action={processDocumentIntake}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--ghost button--small" type="submit">{isPt ? "Reprocessar" : "Reprocess"}</button></form>
+        <form action={actionSet.accept}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--small" type="submit"><Check size={13} />{isPt ? "Aceitar sugestões confiáveis" : "Accept high-confidence suggestions"}</button></form>
+        <form action={actionSet.process}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--ghost button--small" type="submit">{isPt ? "Reprocessar" : "Reprocess"}</button></form>
       </div>
 
       {openIssues.length ? (
@@ -209,7 +226,7 @@ export function IntakeReview({locale, session, documents, candidates, issues}: {
               <article className={`priority-${issue.priority}`} key={issue.id}>
                 <span>{issue.priority === "critical" ? (isPt ? "CRÍTICO" : "CRITICAL") : issue.priority === "analysis" ? (isPt ? "ANÁLISE" : "ANALYSIS") : issue.priority === "diligence" ? (isPt ? "DILIGÊNCIA" : "DILIGENCE") : (isPt ? "COMPLEMENTAR" : "COMPLEMENTARY")}</span>
                 <div><strong>{issue.title}</strong><p>{issue.description}</p>{issue.resolution_hint ? <small>{issue.resolution_hint}</small> : null}</div>
-                <form action={resolveIntakeIssue}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><input name="issue_id" type="hidden" value={issue.id} /><button name="issue_status" type="submit" value="resolved">{isPt ? "Marcar revisado" : "Mark reviewed"}</button></form>
+                <form action={actionSet.resolve}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><input name="issue_id" type="hidden" value={issue.id} /><button name="issue_status" type="submit" value="resolved">{isPt ? "Marcar revisado" : "Mark reviewed"}</button></form>
               </article>
             ))}
           </div>
@@ -229,7 +246,7 @@ export function IntakeReview({locale, session, documents, candidates, issues}: {
                   const isConflict = conflictCandidateIds.has(candidate.id);
                   const state = candidate.review_state === "accepted" || candidate.review_state === "edited" ? "is-confirmed" : candidate.review_state === "rejected" || candidate.review_state === "not_applicable" ? "is-muted" : isConflict ? "is-conflict" : candidate.confidence < 0.85 ? "is-low-confidence" : "is-proposed";
                   return (
-                    <form action={reviewIntakeCandidate} className={`intake-field ${state}`} key={candidate.id}>
+                    <form action={actionSet.review} className={`intake-field ${state}`} key={candidate.id}>
                       <input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><input name="candidate_id" type="hidden" value={candidate.id} />
                       <div className="intake-field__status"><i />{candidate.review_state === "edited" ? (isPt ? "EDITADO" : "EDITED") : candidate.review_state === "accepted" ? (isPt ? "CONFIRMADO" : "CONFIRMED") : candidate.review_state === "rejected" ? (isPt ? "REJEITADO" : "REJECTED") : candidate.review_state === "not_applicable" ? "N/A" : isConflict ? (isPt ? "CONFLITO" : "CONFLICT") : `${Math.round(Number(candidate.confidence) * 100)}%`}</div>
                       <label><span>{candidate.label}</span><input defaultValue={editableCandidateValue(candidate)} name="normalized_value" step={candidate.value_type === "number" ? "any" : undefined} type={candidate.value_type === "number" ? "number" : "text"} /><small>{displayCandidateValue(candidate, locale)}</small></label>
@@ -249,14 +266,20 @@ export function IntakeReview({locale, session, documents, candidates, issues}: {
         })}
       </div>
 
-      <section className="intake-confirm">
+      {!candidates.length ? (
+        <section className="intake-review__empty">
+          <FileText aria-hidden="true" size={22} />
+          <div><strong>{isPt ? "Os documentos estão seguros, mas nenhum campo foi proposto" : "Your documents are safe, but no fields were proposed"}</strong><p>{isPt ? "Este conjunto ainda não pôde ser processado automaticamente. Nenhum dado foi inventado. Você pode adicionar outros arquivos, reprocessar ou iniciar o preenchimento manual." : "This set could not yet be processed automatically. No data was invented. You can add more files, reprocess, or start the manual form."}</p></div>
+          {manualHref ? <Link className="button button--ghost" href={manualHref}>{isPt ? "Preencher manualmente" : "Fill in manually"}<ArrowRight size={14} /></Link> : null}
+        </section>
+      ) : <section className="intake-confirm">
         <div><span className="section-kicker">{isPt ? "CONFIRMAÇÃO FINAL" : "FINAL CONFIRMATION"}</span><h3>{isPt ? "Crie o case com uma base revisada" : "Create the case from a reviewed base"}</h3><p>{isPt ? `${accepted} campos principais estão confirmados. Pendências continuarão visíveis no checklist do case.` : `${accepted} primary fields are confirmed. Open items will remain visible in the case checklist.`}</p></div>
-        <form action={confirmDocumentIntake}>
+        <form action={actionSet.confirm}>
           <input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} />
           <label><input name="confirmation" required type="checkbox" value="confirmed" /><span>{isPt ? "Revisei as informações e confirmo que os dados aceitos podem ser usados para criar esta oportunidade." : "I reviewed the information and confirm that accepted data may be used to create this opportunity."}</span></label>
           <button className="button" type="submit">{isPt ? "Confirmar e criar case" : "Confirm and create case"}<ArrowRight size={15} /></button>
         </form>
-      </section>
+      </section>}
     </div>
   );
 }
