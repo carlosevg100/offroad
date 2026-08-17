@@ -28,3 +28,5 @@ export const supermarketFixture = {
     {id: "debt-jul-2026", label: "Mapa de dívida jul/2026", status: "verified"},
   ],
 } as const;
+
+export * from "./document-intake";

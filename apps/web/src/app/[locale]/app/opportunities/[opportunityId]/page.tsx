@@ -1,4 +1,5 @@
 import {Activity, ArrowLeft, Bot, CheckCircle2, CircleDashed, Database, FileText, Gauge, Layers3, Network} from "lucide-react";
+import type {Metadata} from "next";
 import Link from "next/link";
 import {getFormatter, getTranslations} from "next-intl/server";
 import {notFound} from "next/navigation";
@@ -6,6 +7,8 @@ import {notFound} from "next/navigation";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
 type Props = {params: Promise<{locale: string; opportunityId: string}>};
+
+export const metadata: Metadata = {title: "Opportunity", robots: {index: false, follow: false}};
 
 export default async function OpportunityPage({params}: Props) {
   const {locale, opportunityId} = await params;

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+  <body style="margin:0;background:#f3f4f5;color:#17191d;font-family:Arial,sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:40px 16px">
+      <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#fff;border:1px solid #dfe1e4">
+          <tr><td style="padding:36px">
+            <p style="margin:0 0 28px;font-size:12px;letter-spacing:.12em;color:#626870">OFFROAD CAPITAL</p>
+            {{ if eq .Data.locale "en-US" }}
+            <h1 style="margin:0 0 16px;font-size:26px;line-height:1.2">Reset your password</h1>
+            <p style="margin:0 0 28px;color:#626870;font-size:15px;line-height:1.6">Use the code below to continue. It expires in 10 minutes.</p>
+            {{ else }}
+            <h1 style="margin:0 0 16px;font-size:26px;line-height:1.2">Redefina sua senha</h1>
+            <p style="margin:0 0 28px;color:#626870;font-size:15px;line-height:1.6">Use o código abaixo para continuar. Ele expira em 10 minutos.</p>
+            {{ end }}
+            <p style="margin:0;padding:20px;background:#17191d;color:#fff;text-align:center;font-size:30px;font-weight:700;letter-spacing:.24em">{{ .Token }}</p>
+            {{ if eq .Data.locale "en-US" }}
+            <p style="margin:28px 0 0;color:#8a9098;font-size:12px;line-height:1.6">If you did not request a new password, ignore this message. Never share this code.</p>
+            {{ else }}
+            <p style="margin:28px 0 0;color:#8a9098;font-size:12px;line-height:1.6">Se você não solicitou uma nova senha, ignore esta mensagem. Nunca compartilhe este código.</p>
+            {{ end }}
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>

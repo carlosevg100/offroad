@@ -19,17 +19,34 @@ export function BrandMark({inverted = false, locale, size = "default"}: BrandMar
       href={`/${locale}`}
       aria-label={brand.name}
     >
-      <span className="brand-mark__asset-frame" aria-hidden="true">
-        <Image
-          className="brand-mark__asset"
-          src="/brand/offroad-capital-logo.png"
-          alt=""
-          width={1536}
-          height={1024}
-          loading="eager"
-          sizes={size === "hero" ? "(max-width: 700px) 90vw, 760px" : "220px"}
-        />
-      </span>
+      {inverted ? (
+        <span className="brand-mark__inverted" aria-hidden="true">
+          <span className="brand-mark__symbol-frame">
+            <Image
+              className="brand-mark__symbol-asset"
+              src="/brand/offroad-symbol.png"
+              alt=""
+              width={1024}
+              height={1024}
+              loading="eager"
+              sizes="52px"
+            />
+          </span>
+          <span className="brand-mark__inverted-copy"><strong>Offroad</strong><span>Capital</span></span>
+        </span>
+      ) : (
+        <span className="brand-mark__asset-frame" aria-hidden="true">
+          <Image
+            className="brand-mark__asset"
+            src="/brand/offroad-capital-wordmark.png"
+            alt=""
+            width={1227}
+            height={391}
+            loading="eager"
+            sizes={size === "hero" ? "(max-width: 700px) 170px, 176px" : "170px"}
+          />
+        </span>
+      )}
     </Link>
   );
 }

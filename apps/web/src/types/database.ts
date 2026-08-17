@@ -226,45 +226,66 @@ export type Database = {
       }
       capital_requests: {
         Row: {
+          collateral_summary: string | null
           company_id: string
           created_at: string
           created_by: string
           currency: string
           desired_term_months: number | null
+          desired_timing: string | null
+          expected_outcome: string | null
           id: string
           organization_id: string
           output_locale: string
           purpose: string
+          purpose_category: string | null
+          rationale: string | null
+          repayment_source: string | null
           requested_amount: number
           status: string
+          strategic_importance: string | null
           updated_at: string
         }
         Insert: {
+          collateral_summary?: string | null
           company_id: string
           created_at?: string
           created_by: string
           currency: string
           desired_term_months?: number | null
+          desired_timing?: string | null
+          expected_outcome?: string | null
           id?: string
           organization_id: string
           output_locale?: string
           purpose: string
+          purpose_category?: string | null
+          rationale?: string | null
+          repayment_source?: string | null
           requested_amount: number
           status?: string
+          strategic_importance?: string | null
           updated_at?: string
         }
         Update: {
+          collateral_summary?: string | null
           company_id?: string
           created_at?: string
           created_by?: string
           currency?: string
           desired_term_months?: number | null
+          desired_timing?: string | null
+          expected_outcome?: string | null
           id?: string
           organization_id?: string
           output_locale?: string
           purpose?: string
+          purpose_category?: string | null
+          rationale?: string | null
+          repayment_source?: string | null
           requested_amount?: number
           status?: string
+          strategic_importance?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -283,13 +304,17 @@ export type Database = {
           created_by: string
           description: string | null
           display_name: string | null
+          headquarters_city: string | null
+          headquarters_state: string | null
           id: string
           jurisdiction_code: string
           legal_identifier_hash: string | null
+          legal_identifier_last4: string | null
           legal_name: string
           organization_id: string
           reporting_currency: string
           sector: string | null
+          subsector: string | null
           updated_at: string
           verification_status: string
           website: string | null
@@ -299,13 +324,17 @@ export type Database = {
           created_by: string
           description?: string | null
           display_name?: string | null
+          headquarters_city?: string | null
+          headquarters_state?: string | null
           id?: string
           jurisdiction_code: string
           legal_identifier_hash?: string | null
+          legal_identifier_last4?: string | null
           legal_name: string
           organization_id: string
           reporting_currency?: string
           sector?: string | null
+          subsector?: string | null
           updated_at?: string
           verification_status?: string
           website?: string | null
@@ -315,13 +344,17 @@ export type Database = {
           created_by?: string
           description?: string | null
           display_name?: string | null
+          headquarters_city?: string | null
+          headquarters_state?: string | null
           id?: string
           jurisdiction_code?: string
           legal_identifier_hash?: string | null
+          legal_identifier_last4?: string | null
           legal_name?: string
           organization_id?: string
           reporting_currency?: string
           sector?: string | null
+          subsector?: string | null
           updated_at?: string
           verification_status?: string
           website?: string | null
@@ -409,6 +442,72 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_intake_sessions: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          extraction_version: string
+          id: string
+          journey: string
+          locale: string
+          opportunity_id: string | null
+          organization_id: string
+          processing_completed_at: string | null
+          processing_started_at: string | null
+          result_summary: Json
+          started_by: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          extraction_version?: string
+          id?: string
+          journey: string
+          locale?: string
+          opportunity_id?: string | null
+          organization_id: string
+          processing_completed_at?: string | null
+          processing_started_at?: string | null
+          result_summary?: Json
+          started_by: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          extraction_version?: string
+          id?: string
+          journey?: string
+          locale?: string
+          opportunity_id?: string | null
+          organization_id?: string
+          processing_completed_at?: string | null
+          processing_started_at?: string | null
+          result_summary?: Json
+          started_by?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_intake_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_intake_sessions_organization_id_opportunity_id_fkey"
+            columns: ["organization_id", "opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -648,6 +747,179 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      intake_field_candidates: {
+        Row: {
+          confidence: number
+          created_at: string
+          created_by: string
+          currency: string | null
+          evidence_rank: number
+          extraction_method: string
+          extractor_key: string
+          field_group: string
+          field_path: string
+          id: string
+          information_class: string
+          intake_session_id: string
+          is_primary: boolean
+          label: string
+          normalized_value: Json
+          organization_id: string
+          period_end: string | null
+          period_start: string | null
+          raw_value: string | null
+          review_state: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_comment: string | null
+          source_anchor: Json
+          source_document_id: string | null
+          unit: string | null
+          updated_at: string
+          value_type: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          created_by: string
+          currency?: string | null
+          evidence_rank: number
+          extraction_method: string
+          extractor_key: string
+          field_group: string
+          field_path: string
+          id?: string
+          information_class: string
+          intake_session_id: string
+          is_primary?: boolean
+          label: string
+          normalized_value: Json
+          organization_id: string
+          period_end?: string | null
+          period_start?: string | null
+          raw_value?: string | null
+          review_state?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_comment?: string | null
+          source_anchor: Json
+          source_document_id?: string | null
+          unit?: string | null
+          updated_at?: string
+          value_type: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          created_by?: string
+          currency?: string | null
+          evidence_rank?: number
+          extraction_method?: string
+          extractor_key?: string
+          field_group?: string
+          field_path?: string
+          id?: string
+          information_class?: string
+          intake_session_id?: string
+          is_primary?: boolean
+          label?: string
+          normalized_value?: Json
+          organization_id?: string
+          period_end?: string | null
+          period_start?: string | null
+          raw_value?: string | null
+          review_state?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_comment?: string | null
+          source_anchor?: Json
+          source_document_id?: string | null
+          unit?: string | null
+          updated_at?: string
+          value_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_field_candidates_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "intake_field_candidates_organization_id_source_document_id_fkey"
+            columns: ["organization_id", "source_document_id"]
+            isOneToOne: false
+            referencedRelation: "source_documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      intake_issues: {
+        Row: {
+          candidate_ids: string[]
+          created_at: string
+          description: string
+          field_group: string | null
+          field_path: string | null
+          id: string
+          intake_session_id: string
+          issue_type: string
+          organization_id: string
+          priority: string
+          resolution_hint: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_ids?: string[]
+          created_at?: string
+          description: string
+          field_group?: string | null
+          field_path?: string | null
+          id?: string
+          intake_session_id: string
+          issue_type: string
+          organization_id: string
+          priority: string
+          resolution_hint?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_ids?: string[]
+          created_at?: string
+          description?: string
+          field_group?: string | null
+          field_path?: string | null
+          id?: string
+          intake_session_id?: string
+          issue_type?: string
+          organization_id?: string
+          priority?: string
+          resolution_hint?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_issues_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -1072,37 +1344,55 @@ export type Database = {
       }
       organizations: {
         Row: {
+          city: string | null
           country_code: string | null
           created_at: string
           created_by: string
+          description: string | null
           id: string
           legal_name: string | null
           name: string
           organization_type: string
+          provider_type: string | null
+          sector: string | null
+          state_code: string | null
+          subsector: string | null
           updated_at: string
           verification_status: string
           website: string | null
         }
         Insert: {
+          city?: string | null
           country_code?: string | null
           created_at?: string
           created_by: string
+          description?: string | null
           id?: string
           legal_name?: string | null
           name: string
           organization_type: string
+          provider_type?: string | null
+          sector?: string | null
+          state_code?: string | null
+          subsector?: string | null
           updated_at?: string
           verification_status?: string
           website?: string | null
         }
         Update: {
+          city?: string | null
           country_code?: string | null
           created_at?: string
           created_by?: string
+          description?: string | null
           id?: string
           legal_name?: string | null
           name?: string
           organization_type?: string
+          provider_type?: string | null
+          sector?: string | null
+          state_code?: string | null
+          subsector?: string | null
           updated_at?: string
           verification_status?: string
           website?: string | null
@@ -1235,6 +1525,69 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      provider_contacts: {
+        Row: {
+          created_at: string
+          created_by: string
+          email: string
+          full_name: string
+          fund_id: string | null
+          id: string
+          is_primary: boolean
+          job_title: string | null
+          organization_id: string
+          phone: string | null
+          routing_criteria: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          email: string
+          full_name: string
+          fund_id?: string | null
+          id?: string
+          is_primary?: boolean
+          job_title?: string | null
+          organization_id: string
+          phone?: string | null
+          routing_criteria?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          email?: string
+          full_name?: string
+          fund_id?: string | null
+          id?: string
+          is_primary?: boolean
+          job_title?: string | null
+          organization_id?: string
+          phone?: string | null
+          routing_criteria?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_contacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_contacts_organization_id_fund_id_fkey"
+            columns: ["organization_id", "fund_id"]
+            isOneToOne: false
+            referencedRelation: "funds"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
       }
       published_opportunity_projections: {
         Row: {
@@ -1377,10 +1730,13 @@ export type Database = {
           classification: string
           created_at: string
           created_by: string
+          document_kind: string | null
+          evidence_rank: number | null
           id: string
+          intake_session_id: string | null
           mime_type: string | null
           object_path: string
-          opportunity_id: string
+          opportunity_id: string | null
           organization_id: string
           original_name: string
           processing_status: string
@@ -1393,10 +1749,13 @@ export type Database = {
           classification?: string
           created_at?: string
           created_by: string
+          document_kind?: string | null
+          evidence_rank?: number | null
           id?: string
+          intake_session_id?: string | null
           mime_type?: string | null
           object_path: string
-          opportunity_id: string
+          opportunity_id?: string | null
           organization_id: string
           original_name: string
           processing_status?: string
@@ -1409,10 +1768,13 @@ export type Database = {
           classification?: string
           created_at?: string
           created_by?: string
+          document_kind?: string | null
+          evidence_rank?: number | null
           id?: string
+          intake_session_id?: string | null
           mime_type?: string | null
           object_path?: string
-          opportunity_id?: string
+          opportunity_id?: string | null
           organization_id?: string
           original_name?: string
           processing_status?: string
@@ -1420,6 +1782,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "source_documents_intake_session_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "source_documents_organization_id_opportunity_id_fkey"
             columns: ["organization_id", "opportunity_id"]
@@ -1545,6 +1914,15 @@ export type Database = {
           p_purpose: string
           p_requested_amount: number
           p_sector: string
+        }
+        Returns: string
+      }
+      initialize_professional_onboarding: {
+        Args: {
+          p_full_name: string
+          p_job_title?: string
+          p_journey: string
+          p_locale?: string
         }
         Returns: string
       }

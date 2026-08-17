@@ -37,15 +37,29 @@ insert into auth.users (
     now(),
     false,
     false
+  ),
+  (
+    '10000000-0000-4000-8000-000000000003',
+    'authenticated',
+    'authenticated',
+    'rls-provider@example.invalid',
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now(),
+    false,
+    false
   );
 
 insert into public.organizations (id, organization_type, name, created_by) values
   ('20000000-0000-4000-8000-000000000001', 'company', 'RLS Tenant A', '10000000-0000-4000-8000-000000000001'),
-  ('20000000-0000-4000-8000-000000000002', 'company', 'RLS Tenant B', '10000000-0000-4000-8000-000000000002');
+  ('20000000-0000-4000-8000-000000000002', 'company', 'RLS Tenant B', '10000000-0000-4000-8000-000000000002'),
+  ('20000000-0000-4000-8000-000000000003', 'capital_provider', 'RLS Provider', '10000000-0000-4000-8000-000000000003');
 
 insert into public.organization_memberships (organization_id, user_id, role, status, joined_at) values
   ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'owner', 'active', now()),
-  ('20000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 'owner', 'active', now());
+  ('20000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 'owner', 'active', now()),
+  ('20000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000003', 'owner', 'active', now());
 
 insert into public.companies (
   id,
@@ -105,6 +119,19 @@ begin
   exception
     when insufficient_privilege then null;
   end;
+
+  begin
+    insert into public.funds (organization_id, name, strategy, created_by)
+    values (
+      '20000000-0000-4000-8000-000000000001',
+      'Forbidden Company Fund',
+      'Private credit',
+      '10000000-0000-4000-8000-000000000001'
+    );
+    raise exception 'company tenant inserted a capital-provider fund';
+  exception
+    when insufficient_privilege then null;
+  end;
 end;
 $$;
 
@@ -122,6 +149,41 @@ begin
     or (select count(*) from public.companies) <> 1 then
     raise exception 'tenant B isolation failed';
   end if;
+end;
+$$;
+
+reset role;
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000003","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+begin
+  if (select count(*) from public.organizations) <> 1 then
+    raise exception 'capital provider isolation failed';
+  end if;
+
+  begin
+    insert into public.companies (
+      organization_id,
+      legal_name,
+      jurisdiction_code,
+      reporting_currency,
+      created_by
+    ) values (
+      '20000000-0000-4000-8000-000000000003',
+      'Forbidden Provider Company',
+      'BR',
+      'BRL',
+      '10000000-0000-4000-8000-000000000003'
+    );
+    raise exception 'capital provider inserted a borrower company';
+  exception
+    when insufficient_privilege then null;
+  end;
 end;
 $$;
 
