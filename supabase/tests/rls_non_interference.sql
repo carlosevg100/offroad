@@ -132,6 +132,35 @@ begin
   exception
     when insufficient_privilege then null;
   end;
+
+  -- Self-service organizations can never be created as the internal "offroad" type.
+  begin
+    insert into public.organizations (organization_type, name, created_by)
+    values ('offroad', 'Forbidden Internal Org', '10000000-0000-4000-8000-000000000001');
+    raise exception 'tenant A created an offroad-type organization';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- ...nor promoted to it by their own owner/admin.
+  begin
+    update public.organizations
+    set organization_type = 'offroad'
+    where id = '20000000-0000-4000-8000-000000000001';
+    raise exception 'tenant A promoted its organization to offroad';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- A borrower-side tenant can start a document intake session (fixed id reused below).
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (
+    '40000000-0000-4000-8000-000000000001',
+    '20000000-0000-4000-8000-000000000001',
+    '10000000-0000-4000-8000-000000000001',
+    'company',
+    'pt-BR'
+  );
 end;
 $$;
 
@@ -144,11 +173,43 @@ select set_config(
 );
 
 do $$
+declare
+  affected_rows integer;
 begin
   if (select count(*) from public.organizations) <> 1
     or (select count(*) from public.companies) <> 1 then
     raise exception 'tenant B isolation failed';
   end if;
+
+  -- Tenant B cannot see, update, or attach candidates to tenant A's intake session.
+  if (select count(*) from public.document_intake_sessions) <> 0 then
+    raise exception 'tenant B can read tenant A intake sessions';
+  end if;
+
+  update public.document_intake_sessions
+  set status = 'cancelled'
+  where id = '40000000-0000-4000-8000-000000000001';
+  get diagnostics affected_rows = row_count;
+  if affected_rows <> 0 then
+    raise exception 'tenant B updated tenant A intake session';
+  end if;
+
+  begin
+    insert into public.intake_field_candidates (
+      organization_id, intake_session_id, extractor_key, field_path, field_group, label,
+      normalized_value, value_type, information_class, evidence_rank, source_anchor,
+      confidence, extraction_method, created_by
+    ) values (
+      '20000000-0000-4000-8000-000000000001',
+      '40000000-0000-4000-8000-000000000001',
+      'forbidden', 'company.legal_name', 'company', 'Forbidden',
+      '"x"'::jsonb, 'text', 'company_document', 6, '{}'::jsonb,
+      0.5, 'user_entry', '10000000-0000-4000-8000-000000000002'
+    );
+    raise exception 'tenant B inserted a candidate into tenant A session';
+  exception
+    when insufficient_privilege then null;
+  end;
 end;
 $$;
 
@@ -184,6 +245,20 @@ begin
   exception
     when insufficient_privilege then null;
   end;
+
+  -- Capital providers do not run document-first intake (borrower-side journey only).
+  begin
+    insert into public.document_intake_sessions (organization_id, started_by, journey, locale)
+    values (
+      '20000000-0000-4000-8000-000000000003',
+      '10000000-0000-4000-8000-000000000003',
+      'company',
+      'pt-BR'
+    );
+    raise exception 'capital provider started a document intake session';
+  exception
+    when insufficient_privilege then null;
+  end;
 end;
 $$;
 
@@ -203,6 +278,25 @@ end;
 $$;
 
 reset role;
+
+-- Schema invariants: every public table has RLS enabled and forced (owners included).
+do $$
+declare
+  offending text;
+begin
+  select string_agg(c.relname, ', ' order by c.relname) into offending
+  from pg_class c
+  join pg_namespace n on n.oid = c.relnamespace
+  where n.nspname = 'public'
+    and c.relkind = 'r'
+    and not (c.relrowsecurity and c.relforcerowsecurity);
+
+  if offending is not null then
+    raise exception 'tables without enabled+forced RLS: %', offending;
+  end if;
+end;
+$$;
+
 rollback;
 
 select 'rls_non_interference_passed' as result;

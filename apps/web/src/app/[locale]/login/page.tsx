@@ -48,7 +48,8 @@ export default async function LoginPage({params, searchParams}: Props) {
           </label>
           <label className="field">
             <span>{t("password")}</span>
-            <input autoComplete="current-password" minLength={10} name="password" required type="password" />
+            {/* No client-side length rule here: the login form must accept every password Auth accepts. Policy is enforced at signup/recovery and by Supabase Auth. */}
+            <input autoComplete="current-password" name="password" required type="password" />
           </label>
 
           <div className="auth-form__utility">

@@ -639,9 +639,13 @@ RLS test on each PR. See `AGENTS.md` §6.
 
 ### Current controls
 
-- RLS and FORCE RLS on private tables.
+- RLS and FORCE RLS on every public table (the CI database job asserts it).
 - Organization-scoped reads and writes.
-- Role and organization-type checks.
+- Role and organization-type checks; self-service organizations are limited to
+  `company` / `originator` / `capital_provider` — the internal `offroad` type
+  cannot be created or promoted through the Data API.
+- Document intake sessions can only be started by borrower-side tenants
+  (`company`, `originator`, `offroad`).
 - Private object storage and signed URLs (currently 15-minute evidence links).
 - Composite foreign keys that include `organization_id` for sensitive joins.
 - Audit triggers on material tables.
@@ -654,9 +658,19 @@ RLS test on each PR. See `AGENTS.md` §6.
 
 ### Security test
 
-`supabase/tests/rls_non_interference.sql` verifies separation across two tenants,
-capital-provider behavior, and anonymous access. Run it against an isolated or
-explicitly approved environment; it is designed to roll back its test data.
+`supabase/tests/rls_non_interference.sql` verifies separation across two tenants
+(organizations, companies, document intake sessions/candidates), the
+organization-type guards (no self-service `offroad`, capital providers cannot
+start intake), anonymous access, and the schema invariant that every public
+table has RLS enabled and forced. CI runs it against a fresh local stack on every
+PR; it can also run against the hosted project because it rolls back its data.
+
+Known limitations of the authorization model today (not bugs, but facts to keep
+in mind): `private.can_access_opportunity` grants any active organization member
+full access regardless of `role` (only `owner`/`admin` differ, via
+`can_manage_organization`); the fine-grained permission vocabulary only constrains
+non-members with `opportunity_assignments`. `has_aal2()` is unreachable until MFA
+exists, so publishing projections and activating disclosure grants fail closed.
 
 ### Known security gaps before handling real scale
 
