@@ -108,7 +108,6 @@ export default async function HomePage({params}: Props) {
         <section className="premium-audiences section-shell" id="para-quem">
           <header className="premium-section-heading">
             <p className="premium-kicker">{t("audienceKicker")}</p>
-            <EditorialTitle primary={t("audienceTitle")} secondary={t("audienceTitleMuted")} />
             <CapabilityReel
               label={t("capabilityReelLabel")}
               items={[
