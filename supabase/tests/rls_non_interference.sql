@@ -419,6 +419,360 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------------------------
+-- P1 pipeline (F1): processing runs, job queue and worker commands.
+-- Two credentials, neither sufficient alone: a hashed worker token to claim, a per-job
+-- capability token afterwards. The worker account is a member of no organization.
+-- ---------------------------------------------------------------------------------------------
+
+reset role;
+
+insert into auth.users (
+  id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, is_sso_user, is_anonymous
+) values (
+  '10000000-0000-4000-8000-000000000004',
+  'authenticated',
+  'authenticated',
+  'rls-worker@example.invalid',
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now(),
+  false,
+  false
+);
+
+insert into private.worker_tokens (label, token_sha256)
+values ('rls-test-worker', extensions.digest(repeat('w', 64), 'sha256'));
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+-- Tenant A opens a run for one document of an open session.
+do $$
+declare
+  org constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '40000000-0000-4000-8000-000000000003';
+  document_id constant uuid := '50000000-0000-4000-8000-000000000003';
+  result jsonb;
+begin
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+
+  insert into public.source_documents (
+    id, organization_id, intake_session_id, bucket_id, object_path, original_name, mime_type,
+    sha256, byte_size, classification, processing_status, created_by
+  ) values (
+    document_id, org, session_id, 'opportunity-documents',
+    org::text || '/' || session_id::text || '/df.pdf', 'df.pdf', 'application/pdf',
+    repeat('d', 64), 4096, 'restricted', 'quarantined', '10000000-0000-4000-8000-000000000001'
+  );
+
+  result := public.begin_processing_run(
+    org,
+    session_id,
+    'upload',
+    jsonb_build_array(jsonb_build_object(
+      'source_document_id', document_id,
+      'download_url', 'https://example.invalid/signed-download',
+      'layer_object_path', org::text || '/' || session_id::text || '/df.layer.json',
+      'layer_upload_url', 'https://example.invalid/signed-upload'
+    )),
+    'pipeline-test-v1',
+    '{"max_cost_usd": 15}'::jsonb
+  );
+
+  if (result->>'job_count')::integer <> 1 then
+    raise exception 'begin_processing_run did not queue one job per document';
+  end if;
+  if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
+    raise exception 'begin_processing_run did not mark the session processing';
+  end if;
+  if (select count(*) from public.processing_runs where intake_session_id = session_id) <> 1 then
+    raise exception 'tenant cannot read its own processing run';
+  end if;
+
+  -- progress is visible, the payload (signed URLs) is not
+  if (select count(*) from public.processing_jobs where intake_session_id = session_id) <> 1 then
+    raise exception 'tenant cannot read its own job progress';
+  end if;
+  begin
+    perform (select payload::text from public.processing_jobs where intake_session_id = session_id limit 1);
+    raise exception 'tenant unexpectedly read the job payload';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- runs are advanced by commands only
+  begin
+    update public.processing_runs set status = 'succeeded' where intake_session_id = session_id;
+    raise exception 'tenant unexpectedly updated a processing run';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- a document that does not belong to the session cannot be queued
+  begin
+    perform public.begin_processing_run(
+      org,
+      session_id,
+      'manual',
+      jsonb_build_array(jsonb_build_object('source_document_id', '50000000-0000-4000-8000-000000000001')),
+      'pipeline-test-v1'
+    );
+    raise exception 'begin_processing_run queued a document from another scope';
+  exception
+    when sqlstate 'P0002' then null;
+  end;
+end;
+$$;
+
+-- Tenant B sees nothing of tenant A's run.
+reset role;
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+begin
+  if (select count(*) from public.processing_runs) <> 0 then
+    raise exception 'tenant B read processing runs of tenant A';
+  end if;
+  if (select count(*) from public.processing_jobs) <> 0 then
+    raise exception 'tenant B read processing jobs of tenant A';
+  end if;
+  if (select count(*) from public.document_profiles) <> 0 then
+    raise exception 'tenant B read document profiles of tenant A';
+  end if;
+  if (select count(*) from public.document_layers) <> 0 then
+    raise exception 'tenant B read document layers of tenant A';
+  end if;
+end;
+$$;
+
+-- The worker: no membership anywhere, works only through the commands.
+reset role;
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  claim jsonb;
+  job_id uuid;
+  capability text;
+  result jsonb;
+begin
+  -- RLS gives the worker account nothing on its own
+  if (select count(*) from public.processing_runs) <> 0 then
+    raise exception 'worker account read processing runs through RLS';
+  end if;
+
+  -- an unknown credential cannot claim
+  begin
+    perform public.worker_claim_job(repeat('x', 64));
+    raise exception 'worker_claim_job accepted an unknown credential';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  claim := public.worker_claim_job(repeat('w', 64), 600);
+  if not (claim->>'claimed')::boolean then
+    raise exception 'worker could not claim the queued job';
+  end if;
+  job_id := (claim->>'job_id')::uuid;
+  capability := claim->>'capability_token';
+  if capability is null or char_length(capability) < 32 then
+    raise exception 'claim did not issue a capability token';
+  end if;
+  if claim->'payload'->>'download_url' is null then
+    raise exception 'job payload did not reach the worker';
+  end if;
+
+  -- a wrong capability cannot write anything
+  begin
+    perform public.worker_record_document_result(job_id, repeat('y', 64), null, null, null);
+    raise exception 'worker_record_document_result accepted a wrong capability';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  perform public.worker_heartbeat(job_id, capability, 900);
+  perform public.worker_write_stage_result(
+    job_id, capability, 'gatekeeping', 'succeeded', '{"scanner":"clamav-test"}'::jsonb, '{"input_tokens": 120}'::jsonb
+  );
+
+  result := public.worker_record_document_result(
+    job_id,
+    capability,
+    '{"verdict":"clean","scanner":"clamav-test"}'::jsonb,
+    jsonb_build_object(
+      'document_kind', 'audited_financial_statements',
+      'information_class', 'audited',
+      'evidence_rank', 1,
+      'confidence', 0.97,
+      'entity_name', 'Tenant A Company',
+      'period_start', '2023-01-01',
+      'period_end', '2025-12-31',
+      'currency', 'BRL',
+      'scale', 1000000,
+      'accounting_basis', 'audited',
+      'language', 'pt',
+      'suggested_folder', 'financial',
+      'suggested_name', '2025-12_Demonstracoes_financeiras_auditadas',
+      'classifier', jsonb_build_object('provider', 'openai', 'model', 'gpt-5.6-terra')
+    ),
+    jsonb_build_object(
+      'layer_kind', 'pdf',
+      'object_path', '20000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000003/df.layer.json',
+      'sha256', repeat('c', 64),
+      'byte_size', 2048,
+      'parser_versions', jsonb_build_object('pdf', 'pdfjs-test'),
+      'stats', jsonb_build_object('pageCount', 60)
+    )
+  );
+  if result->>'profile_id' is null or result->>'layer_id' is null then
+    raise exception 'worker did not persist the profile and the layer';
+  end if;
+
+  result := public.worker_complete_job(job_id, capability, '{"documents":1}'::jsonb);
+  if (result->>'pending_jobs')::integer <> 0 then
+    raise exception 'run still had pending jobs after the only job completed';
+  end if;
+
+  -- the capability dies with the job
+  begin
+    perform public.worker_heartbeat(job_id, capability, 600);
+    raise exception 'capability token still worked after the job completed';
+  exception
+    when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+reset role;
+
+do $$
+declare
+  session_id constant uuid := '40000000-0000-4000-8000-000000000003';
+  document_id constant uuid := '50000000-0000-4000-8000-000000000003';
+begin
+  if (select status from public.processing_runs where intake_session_id = session_id) <> 'succeeded' then
+    raise exception 'the run did not reach succeeded after its jobs finished';
+  end if;
+  if (select jsonb_array_length(stages) from public.processing_runs where intake_session_id = session_id) <> 1 then
+    raise exception 'the stage timeline was not recorded on the run';
+  end if;
+  if (select usage->>'input_tokens' from public.processing_runs where intake_session_id = session_id) <> '120' then
+    raise exception 'usage was not accumulated on the run';
+  end if;
+  if (select processing_status from public.source_documents where id = document_id) <> 'ready' then
+    raise exception 'the document was not marked ready';
+  end if;
+  if (select scan_result->>'verdict' from public.source_documents where id = document_id) <> 'clean' then
+    raise exception 'the scan verdict was not stored';
+  end if;
+  if (select document_kind from public.document_profiles where source_document_id = document_id) <> 'audited_financial_statements' then
+    raise exception 'the document profile was not classified';
+  end if;
+
+  -- a human decision must survive a reprocessing run
+  update public.document_profiles set review_state = 'accepted' where source_document_id = document_id;
+end;
+$$;
+
+-- Reprocess the same document: the proposal changes nothing that a human already accepted.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  org constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '40000000-0000-4000-8000-000000000003';
+  document_id constant uuid := '50000000-0000-4000-8000-000000000003';
+  result jsonb;
+begin
+  result := public.begin_processing_run(
+    org,
+    session_id,
+    'reprocess',
+    jsonb_build_array(jsonb_build_object(
+      'source_document_id', document_id,
+      'download_url', 'https://example.invalid/signed-download-2',
+      'layer_object_path', org::text || '/' || session_id::text || '/df.layer.json',
+      'layer_upload_url', 'https://example.invalid/signed-upload-2'
+    )),
+    'pipeline-test-v1'
+  );
+  if (result->>'run_no')::integer <> 2 then
+    raise exception 'the reprocessing run did not increment run_no';
+  end if;
+end;
+$$;
+
+reset role;
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  claim jsonb;
+  job_id uuid;
+  capability text;
+begin
+  claim := public.worker_claim_job(repeat('w', 64), 600);
+  job_id := (claim->>'job_id')::uuid;
+  capability := claim->>'capability_token';
+
+  perform public.worker_record_document_result(
+    job_id,
+    capability,
+    '{"verdict":"clean"}'::jsonb,
+    jsonb_build_object(
+      'document_kind', 'other',
+      'information_class', 'company_document',
+      'evidence_rank', 7,
+      'confidence', 0.4
+    ),
+    null
+  );
+  perform public.worker_complete_job(job_id, capability, '{}'::jsonb);
+end;
+$$;
+
+reset role;
+
+do $$
+declare
+  document_id constant uuid := '50000000-0000-4000-8000-000000000003';
+begin
+  if (select document_kind from public.document_profiles where source_document_id = document_id) <> 'audited_financial_statements' then
+    raise exception 'a reprocessing proposal overwrote a human-accepted document profile';
+  end if;
+  if (select review_state from public.document_profiles where source_document_id = document_id) <> 'accepted' then
+    raise exception 'a reprocessing proposal reset a human review state';
+  end if;
+end;
+$$;
+
 reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
