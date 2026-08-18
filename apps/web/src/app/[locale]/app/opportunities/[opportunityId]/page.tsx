@@ -53,10 +53,10 @@ export default async function OpportunityPage({params}: Props) {
             <CheckCircle2 aria-hidden="true" size={30} />
           </div>
           <div className="workbench-metrics">
-            <article><span>{t("documents")}</span><strong>{documentCount ?? 0}</strong><small>private bucket</small></article>
-            <article><span>Evidence facts</span><strong>{factCount ?? 0}</strong><small>source anchored</small></article>
-            <article><span>{t("structure")}</span><strong>{scenarioCount ?? 0}</strong><small>versioned</small></article>
-            <article><span>{t("outputs")}</span><strong>{outputCount ?? 0}</strong><small>evidence compiled</small></article>
+            <article><span>{t("documents")}</span><strong>{documentCount ?? 0}</strong><small>{t("metricNotes.privateBucket")}</small></article>
+            <article><span>{t("evidenceFacts")}</span><strong>{factCount ?? 0}</strong><small>{t("metricNotes.sourceAnchored")}</small></article>
+            <article><span>{t("structure")}</span><strong>{scenarioCount ?? 0}</strong><small>{t("metricNotes.versioned")}</small></article>
+            <article><span>{t("outputs")}</span><strong>{outputCount ?? 0}</strong><small>{t("metricNotes.evidenceCompiled")}</small></article>
           </div>
           <div className="workbench-placeholder"><Activity aria-hidden="true" size={20} /><p>{t("syntheticNotice")}</p></div>
         </section>

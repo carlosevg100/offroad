@@ -1,5 +1,4 @@
 import {
-  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Bell,
@@ -11,7 +10,6 @@ import {
   FileText,
   FolderOpen,
   HelpCircle,
-  History,
   Landmark,
   LockKeyhole,
   Network,
@@ -19,9 +17,6 @@ import {
   PencilLine,
   Plus,
   Search,
-  ShieldCheck,
-  Sparkles,
-  UploadCloud,
 } from "lucide-react";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
@@ -29,11 +24,15 @@ import Link from "next/link";
 import {redirect} from "next/navigation";
 
 import {BrandMark} from "@/components/brand-mark";
-import {DocumentIntakeUploader} from "@/components/document-intake-uploader";
+import {IntakeCollect} from "@/components/intake/intake-collect";
+import {IntakeReview} from "@/components/intake/intake-review";
+import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {OnboardingDocumentUploader} from "@/components/onboarding-document-uploader";
 import type {AppLocale} from "@/i18n/routing";
+import {loadIntakeReview} from "@/lib/intake/server";
+import type {IntakeErrorCode} from "@/lib/intake/types";
 import {createClient} from "@/lib/supabase/server";
-import type {Database, Json} from "@/types/database";
+import type {Json} from "@/types/database";
 
 import {
   acceptHighConfidenceCandidates,
@@ -60,10 +59,7 @@ export const metadata: Metadata = {title: "Institutional Profile", robots: {inde
 type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
-type IntakeSession = Database["public"]["Tables"]["document_intake_sessions"]["Row"];
-type IntakeCandidate = Database["public"]["Tables"]["intake_field_candidates"]["Row"];
-type IntakeIssue = Database["public"]["Tables"]["intake_issues"]["Row"];
-type IntakeDocument = Pick<Database["public"]["Tables"]["source_documents"]["Row"], "id" | "original_name" | "byte_size" | "object_path"> & {signedUrl?: string};
+const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step"];
 
 function answerObject(answers: AnswerMap, key: string): AnswerMap {
   const value = answers[key];
@@ -72,34 +68,6 @@ function answerObject(answers: AnswerMap, key: string): AnswerMap {
 
 function text(answer: Json | undefined) {
   return typeof answer === "string" || typeof answer === "number" ? String(answer) : "";
-}
-
-function displayCandidateValue(candidate: IntakeCandidate, locale: string) {
-  const value = candidate.normalized_value;
-  if (typeof value === "number") {
-    if (candidate.currency) return new Intl.NumberFormat(locale, {style: "currency", currency: candidate.currency, maximumFractionDigits: 0}).format(value);
-    if (candidate.unit === "x") return `${new Intl.NumberFormat(locale, {maximumFractionDigits: 2}).format(value)}x`;
-    return new Intl.NumberFormat(locale, {maximumFractionDigits: 4}).format(value);
-  }
-  if (typeof value === "boolean") return value ? (locale === "pt-BR" ? "Sim" : "Yes") : (locale === "pt-BR" ? "Não" : "No");
-  if (Array.isArray(value)) return value.join(", ");
-  return typeof value === "string" ? value : JSON.stringify(value);
-}
-
-function editableCandidateValue(candidate: IntakeCandidate) {
-  const value = candidate.normalized_value;
-  if (Array.isArray(value)) return value.join(", ");
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
-  return JSON.stringify(value);
-}
-
-const intakeGroups = ["company", "transaction", "historical_financials", "interim_financials", "project", "projections", "leverage", "collateral"] as const;
-
-function intakeGroupLabel(group: string, locale: string) {
-  const labels: Record<string, [string, string]> = {
-    company: ["Empresa", "Company"], transaction: ["Operação", "Transaction"], historical_financials: ["Histórico financeiro", "Historical financials"], interim_financials: ["Informações intermediárias", "Interim financials"], project: ["Projeto financiado", "Financed project"], projections: ["Projeções", "Projections"], leverage: ["Impacto na alavancagem", "Leverage impact"], collateral: ["Garantias", "Collateral"],
-  };
-  return labels[group]?.[locale === "pt-BR" ? 0 : 1] ?? group;
 }
 
 function FormContext({locale, returnStep}: {locale: string; returnStep: string}) {
@@ -111,19 +79,19 @@ function FormContext({locale, returnStep}: {locale: string; returnStep: string})
   );
 }
 
-function StepActions({locale, returnStep, back = true, continueLabel}: {locale: string; returnStep: string; back?: boolean; continueLabel: string}) {
+function StepActions({locale, returnStep, back = true, backLabel, continueLabel}: {locale: string; returnStep: string; back?: boolean; backLabel: string; continueLabel: string}) {
   return (
     <div className="onboarding-actions">
       {back ? (
         returnStep ? (
           <Link className="button button--ghost" href={`/${locale}/onboarding?section=${returnStep}`}>
             <ArrowLeft aria-hidden="true" size={15} />
-            <span className="sr-only">{locale === "pt-BR" ? "Voltar" : "Back"}</span>
+            <span className="sr-only">{backLabel}</span>
           </Link>
         ) : (
           <button className="button button--ghost" formAction={previousOnboardingStep} formNoValidate>
             <ArrowLeft aria-hidden="true" size={15} />
-            <span className="sr-only">{locale === "pt-BR" ? "Voltar" : "Back"}</span>
+            <span className="sr-only">{backLabel}</span>
           </button>
         )
       ) : <span />}
@@ -140,154 +108,13 @@ function EditSectionLink({locale, target, label, add = false}: {locale: string; 
   );
 }
 
-type IntakeStartChoiceProps = {
-  locale: string;
-  context?: "onboarding" | "case";
-  startAction?: (formData: FormData) => Promise<void>;
-  manualAction?: (formData: FormData) => Promise<void>;
-};
-
-type IntakeReviewActionSet = {
-  accept: (formData: FormData) => Promise<void>;
-  confirm: (formData: FormData) => Promise<void>;
-  process: (formData: FormData) => Promise<void>;
-  resolve: (formData: FormData) => Promise<void>;
-  review: (formData: FormData) => Promise<void>;
-};
-
-export function IntakeStartChoice({locale, context = "onboarding", startAction = startDocumentIntake, manualAction = chooseManualIntake}: IntakeStartChoiceProps) {
-  const isPt = locale === "pt-BR";
-  const isCase = context === "case";
-  return (
-    <section className="intake-start">
-      <header>
-        <span className="section-kicker">{isCase ? (isPt ? "NOVO CASE" : "NEW CASE") : (isPt ? "INÍCIO DO CADASTRO" : "START REGISTRATION")}</span>
-        <h2>{isCase ? (isPt ? "Como você deseja iniciar o novo case?" : "How would you like to start the new case?") : (isPt ? "Como você deseja iniciar o cadastro?" : "How would you like to start?")}</h2>
-        <p>{isPt ? "Escolha a forma mais conveniente. Você poderá revisar cada informação antes de criar o case." : "Choose the most convenient path. You will review every item before the case is created."}</p>
-      </header>
-      <div className="intake-start__options">
-        <form action={startAction} className="intake-start__card is-recommended">
-          <input name="locale" type="hidden" value={locale} />
-          <span className="intake-start__badge"><Sparkles aria-hidden="true" size={12} />{isPt ? "RECOMENDADO" : "RECOMMENDED"}</span>
-          <div className="intake-start__icon"><UploadCloud aria-hidden="true" size={25} /></div>
-          <h3>{isPt ? "Começar com documentos" : "Start with documents"}</h3>
-          <p>{isPt ? "Envie o que já existe. A Offroad identifica, organiza e preenche o cadastro com a evidência de cada campo." : "Upload what you already have. Offroad identifies, organizes and pre-fills the registration with field-level evidence."}</p>
-          <ul>
-            <li><Check size={12} />{isPt ? "Menos digitação" : "Less typing"}</li>
-            <li><Check size={12} />{isPt ? "Conflitos visíveis" : "Visible conflicts"}</li>
-            <li><Check size={12} />{isPt ? "Fonte rastreável" : "Traceable sources"}</li>
-          </ul>
-          <button className="button" type="submit">{isPt ? "Enviar documentos" : "Upload documents"}<ArrowRight size={15} /></button>
-        </form>
-        <form action={manualAction} className="intake-start__card">
-          <input name="locale" type="hidden" value={locale} />
-          <div className="intake-start__icon"><PencilLine aria-hidden="true" size={24} /></div>
-          <h3>{isPt ? "Preencher manualmente" : "Fill in manually"}</h3>
-          <p>{isPt ? "Informe os dados em etapas e adicione os documentos depois. Ideal quando você ainda está reunindo os materiais." : "Enter information step by step and add documents later. Best when materials are still being collected."}</p>
-          <button className="button button--ghost" type="submit">{isPt ? "Iniciar preenchimento" : "Start form"}<ArrowRight size={15} /></button>
-        </form>
-      </div>
-      <div className="intake-start__security"><ShieldCheck size={15} /><span>{isPt ? "Documentos privados, acesso restrito à sua organização e confirmação obrigatória antes do envio." : "Private documents, organization-restricted access and mandatory confirmation before submission."}</span></div>
-    </section>
-  );
-}
-
-export function IntakeReview({locale, session, documents, candidates, issues, actions, manualHref}: {locale: string; session: IntakeSession; documents: IntakeDocument[]; candidates: IntakeCandidate[]; issues: IntakeIssue[]; actions?: IntakeReviewActionSet; manualHref?: string}) {
-  const isPt = locale === "pt-BR";
-  const documentById = new Map(documents.map((document) => [document.id, document]));
-  const openIssues = issues.filter((issue) => issue.status === "open");
-  const conflictCandidateIds = new Set(openIssues.flatMap((issue) => issue.candidate_ids));
-  const reviewed = candidates.filter((candidate) => ["accepted", "edited", "rejected", "not_applicable"].includes(candidate.review_state)).length;
-  const accepted = candidates.filter((candidate) => ["accepted", "edited"].includes(candidate.review_state) && candidate.is_primary).length;
-  const actionSet = actions ?? {accept: acceptHighConfidenceCandidates, confirm: confirmDocumentIntake, process: processDocumentIntake, resolve: resolveIntakeIssue, review: reviewIntakeCandidate};
-  const anchorText = (candidate: IntakeCandidate) => {
-    const anchor = candidate.source_anchor && typeof candidate.source_anchor === "object" && !Array.isArray(candidate.source_anchor) ? candidate.source_anchor : {};
-    return [anchor.page ? `${isPt ? "página" : "page"} ${anchor.page}` : "", anchor.sheet ? `${isPt ? "aba" : "sheet"} ${anchor.sheet}` : "", anchor.cell ? `${isPt ? "célula" : "cell"} ${anchor.cell}` : "", anchor.section ? String(anchor.section) : ""].filter(Boolean).join(" · ");
-  };
-
-  return (
-    <div className="intake-review">
-      <header className="intake-review__hero">
-        <div><span className="section-kicker">{isPt ? "REVISÃO ASSISTIDA" : "ASSISTED REVIEW"}</span><h3>{isPt ? "Revise as informações encontradas" : "Review the information found"}</h3><p>{isPt ? "Nada foi enviado ao mercado. Confirme, edite ou rejeite cada sugestão; a fonte original permanece vinculada." : "Nothing has been sent to market. Confirm, edit or reject each suggestion; the original source remains linked."}</p></div>
-        <div className="intake-review__stats"><span><strong>{documents.length}</strong>{isPt ? "documentos" : "documents"}</span><span><strong>{candidates.length}</strong>{isPt ? "campos" : "fields"}</span><span><strong>{openIssues.length}</strong>{isPt ? "pontos de atenção" : "open items"}</span></div>
-      </header>
-
-      <div className="intake-review__toolbar">
-        <div><History size={14} /><span>{reviewed}/{candidates.length} {isPt ? "campos revisados" : "fields reviewed"}</span></div>
-        <form action={actionSet.accept}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--small" type="submit"><Check size={13} />{isPt ? "Aceitar sugestões confiáveis" : "Accept high-confidence suggestions"}</button></form>
-        <form action={actionSet.process}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--ghost button--small" type="submit">{isPt ? "Reprocessar" : "Reprocess"}</button></form>
-      </div>
-
-      {openIssues.length ? (
-        <section className="intake-issues">
-          <header><AlertTriangle size={16} /><div><strong>{isPt ? "Conflitos e informações faltantes" : "Conflicts and missing information"}</strong><p>{isPt ? "Esses pontos não foram resolvidos automaticamente." : "These items were not resolved automatically."}</p></div></header>
-          <div className="intake-issues__list">
-            {openIssues.map((issue) => (
-              <article className={`priority-${issue.priority}`} key={issue.id}>
-                <span>{issue.priority === "critical" ? (isPt ? "CRÍTICO" : "CRITICAL") : issue.priority === "analysis" ? (isPt ? "ANÁLISE" : "ANALYSIS") : issue.priority === "diligence" ? (isPt ? "DILIGÊNCIA" : "DILIGENCE") : (isPt ? "COMPLEMENTAR" : "COMPLEMENTARY")}</span>
-                <div><strong>{issue.title}</strong><p>{issue.description}</p>{issue.resolution_hint ? <small>{issue.resolution_hint}</small> : null}</div>
-                <form action={actionSet.resolve}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><input name="issue_id" type="hidden" value={issue.id} /><button name="issue_status" type="submit" value="resolved">{isPt ? "Marcar revisado" : "Mark reviewed"}</button></form>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <div className="intake-review__groups">
-        {intakeGroups.map((group, groupIndex) => {
-          const groupCandidates = candidates.filter((candidate) => candidate.field_group === group);
-          if (!groupCandidates.length) return null;
-          return (
-            <details className="intake-group" key={group} open={groupIndex < 2 || groupCandidates.some((candidate) => conflictCandidateIds.has(candidate.id))}>
-              <summary><span>{String(groupIndex + 1).padStart(2, "0")}</span><strong>{intakeGroupLabel(group, locale)}</strong><small>{groupCandidates.length} {isPt ? "campos" : "fields"}</small><ChevronDown size={15} /></summary>
-              <div className="intake-group__fields">
-                {groupCandidates.map((candidate) => {
-                  const source = candidate.source_document_id ? documentById.get(candidate.source_document_id) : null;
-                  const isConflict = conflictCandidateIds.has(candidate.id);
-                  const state = candidate.review_state === "accepted" || candidate.review_state === "edited" ? "is-confirmed" : candidate.review_state === "rejected" || candidate.review_state === "not_applicable" ? "is-muted" : isConflict ? "is-conflict" : candidate.confidence < 0.85 ? "is-low-confidence" : "is-proposed";
-                  return (
-                    <form action={actionSet.review} className={`intake-field ${state}`} key={candidate.id}>
-                      <input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><input name="candidate_id" type="hidden" value={candidate.id} />
-                      <div className="intake-field__status"><i />{candidate.review_state === "edited" ? (isPt ? "EDITADO" : "EDITED") : candidate.review_state === "accepted" ? (isPt ? "CONFIRMADO" : "CONFIRMED") : candidate.review_state === "rejected" ? (isPt ? "REJEITADO" : "REJECTED") : candidate.review_state === "not_applicable" ? "N/A" : isConflict ? (isPt ? "CONFLITO" : "CONFLICT") : `${Math.round(Number(candidate.confidence) * 100)}%`}</div>
-                      <label><span>{candidate.label}</span><input defaultValue={editableCandidateValue(candidate)} name="normalized_value" step={candidate.value_type === "number" ? "any" : undefined} type={candidate.value_type === "number" ? "number" : "text"} /><small>{displayCandidateValue(candidate, locale)}</small></label>
-                      <div className="intake-field__evidence">
-                        <span>{candidate.information_class.replaceAll("_", " ")} · {anchorText(candidate)}</span>
-                        {source?.signedUrl ? <a href={source.signedUrl} rel="noreferrer" target="_blank">{isPt ? "Ver evidência" : "View evidence"}<ArrowRight size={11} /></a> : null}
-                      </div>
-                      {candidate.raw_value && candidate.raw_value !== displayCandidateValue(candidate, locale) ? <small className="intake-field__raw">{isPt ? "Original" : "Original"}: {candidate.raw_value}</small> : null}
-                      <input className="intake-field__comment" name="comment" placeholder={isPt ? "Comentário opcional" : "Optional comment"} />
-                      <div className="intake-field__actions"><button name="decision" type="submit" value="accept"><Check size={12} />{isPt ? "Aceitar" : "Accept"}</button><button name="decision" type="submit" value="edit">{isPt ? "Salvar edição" : "Save edit"}</button><button name="decision" type="submit" value="reject">{isPt ? "Rejeitar" : "Reject"}</button><button name="decision" type="submit" value="not_applicable">N/A</button></div>
-                    </form>
-                  );
-                })}
-              </div>
-            </details>
-          );
-        })}
-      </div>
-
-      {!candidates.length ? (
-        <section className="intake-review__empty">
-          <FileText aria-hidden="true" size={22} />
-          <div><strong>{isPt ? "Os documentos estão seguros, mas nenhum campo foi proposto" : "Your documents are safe, but no fields were proposed"}</strong><p>{isPt ? "Este conjunto ainda não pôde ser processado automaticamente. Nenhum dado foi inventado. Você pode adicionar outros arquivos, reprocessar ou iniciar o preenchimento manual." : "This set could not yet be processed automatically. No data was invented. You can add more files, reprocess, or start the manual form."}</p></div>
-          {manualHref ? <Link className="button button--ghost" href={manualHref}>{isPt ? "Preencher manualmente" : "Fill in manually"}<ArrowRight size={14} /></Link> : null}
-        </section>
-      ) : <section className="intake-confirm">
-        <div><span className="section-kicker">{isPt ? "CONFIRMAÇÃO FINAL" : "FINAL CONFIRMATION"}</span><h3>{isPt ? "Crie o case com uma base revisada" : "Create the case from a reviewed base"}</h3><p>{isPt ? `${accepted} campos principais estão confirmados. Pendências continuarão visíveis no checklist do case.` : `${accepted} primary fields are confirmed. Open items will remain visible in the case checklist.`}</p></div>
-        <form action={actionSet.confirm}>
-          <input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} />
-          <label><input name="confirmation" required type="checkbox" value="confirmed" /><span>{isPt ? "Revisei as informações e confirmo que os dados aceitos podem ser usados para criar esta oportunidade." : "I reviewed the information and confirm that accepted data may be used to create this opportunity."}</span></label>
-          <button className="button" type="submit">{isPt ? "Confirmar e criar case" : "Confirm and create case"}<ArrowRight size={15} /></button>
-        </form>
-      </section>}
-    </div>
-  );
-}
-
 export default async function OnboardingPage({params, searchParams}: Props) {
   const {locale} = await params;
   const state = await searchParams;
-  const t = await getTranslations({locale, namespace: "Onboarding"});
+  const [t, tIntake] = await Promise.all([
+    getTranslations({locale, namespace: "Onboarding"}),
+    getTranslations({locale, namespace: "Intake"}),
+  ]);
   const supabase = await createClient();
   if (!supabase) redirect(`/${locale}/login?error=provider`);
 
@@ -344,34 +171,24 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const projectTitle = journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject");
 
   let documents: Array<{id: string; original_name: string; byte_size: number | null}> = [];
-  let intakeSession: IntakeSession | null = null;
-  let intakeDocuments: IntakeDocument[] = [];
-  let intakeCandidates: IntakeCandidate[] = [];
-  let intakeIssues: IntakeIssue[] = [];
   const opportunityId = text(answers.opportunity_id);
-  if (isDocumentFirst && intakeSessionId) {
-    const [sessionResult, documentsResult, candidatesResult, issuesResult] = await Promise.all([
-      supabase.from("document_intake_sessions").select("*").eq("organization_id", organization.id).eq("id", intakeSessionId).maybeSingle(),
-      supabase.from("source_documents").select("id, original_name, byte_size, object_path").eq("organization_id", organization.id).eq("intake_session_id", intakeSessionId).order("created_at"),
-      supabase.from("intake_field_candidates").select("*").eq("organization_id", organization.id).eq("intake_session_id", intakeSessionId).order("field_group").order("field_path").order("evidence_rank"),
-      supabase.from("intake_issues").select("*").eq("organization_id", organization.id).eq("intake_session_id", intakeSessionId).order("priority").order("created_at"),
-    ]);
-    intakeSession = sessionResult.data;
-    intakeDocuments = documentsResult.data ?? [];
-    intakeCandidates = candidatesResult.data ?? [];
-    intakeIssues = issuesResult.data ?? [];
-    const signedEntries = await Promise.all(intakeDocuments.map(async (document) => {
-      const {data} = await supabase.storage.from("opportunity-documents").createSignedUrl(document.object_path, 900);
-      return [document.id, data?.signedUrl] as const;
-    }));
-    const signedById = new Map(signedEntries);
-    intakeDocuments = intakeDocuments.map((document) => ({...document, signedUrl: signedById.get(document.id)}));
-  } else if (currentStep === "documents" && opportunityId) {
+  const intakeReview = isDocumentFirst && intakeSessionId
+    ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId})
+    : null;
+  if (!intakeReview && currentStep === "documents" && opportunityId) {
     const result = await supabase.from("source_documents").select("id, original_name, byte_size").eq("organization_id", organization.id).eq("opportunity_id", opportunityId).order("created_at");
     documents = result.data ?? [];
   }
 
-  const errorMessage = state.error === "documents" ? t("documentsRequired") : state.error === "save" ? t("error") : state.error === "processing" ? (locale === "pt-BR" ? "Não foi possível concluir o processamento. Seus documentos continuam salvos; tente processar novamente." : "Processing could not be completed. Your documents remain saved; try again.") : state.error === "confirmation" ? (locale === "pt-BR" ? "Confirme os campos essenciais e a declaração final antes de criar o case." : "Confirm the essential fields and final declaration before creating the case.") : state.error === "validation" ? t("validationError") : null;
+  const errorMessage = state.error === "documents"
+    ? t("documentsRequired")
+    : state.error === "validation"
+      ? t("validationError")
+      : state.error && intakeErrorCodes.includes(state.error)
+        ? tIntake(`errors.${state.error as IntakeErrorCode}`)
+        : state.error
+          ? t("error")
+          : null;
 
   return (
     <main className="workspace-onboarding">
@@ -455,7 +272,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           </header>
           {errorMessage ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
-          {currentStep === "organization" && journey !== "capital_provider" && !intakeMode ? <IntakeStartChoice locale={locale} /> : null}
+          {currentStep === "organization" && journey !== "capital_provider" && !intakeMode ? <IntakeStartChoice actions={{start: startDocumentIntake, manual: chooseManualIntake}} context="onboarding" locale={locale} /> : null}
 
           {currentStep === "organization" && (journey === "capital_provider" || intakeMode === "manual") ? (
             <form action={saveOrganizationStep} className="onboarding-stage__form">
@@ -474,7 +291,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 {journey === "capital_provider" ? <label className="field"><span>{t("providerType")}</span><select defaultValue={organization.provider_type ?? "fund_manager"} name="provider_type"><option value="fund_manager">{t("providerTypes.fundManager")}</option><option value="fidc_manager">{t("providerTypes.fidcManager")}</option><option value="factor">{t("providerTypes.factor")}</option><option value="bank">{t("providerTypes.bank")}</option><option value="family_office">{t("providerTypes.familyOffice")}</option><option value="alternative_lender">{t("providerTypes.alternative")}</option><option value="other">{t("providerTypes.other")}</option></select></label> : null}
                 {journey !== "company" ? <label className="field field--wide"><span>{t("description")}</span><textarea defaultValue={organization.description ?? ""} maxLength={2000} name="description" rows={4} /></label> : null}
               </div>
-              <StepActions back={false} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
+              <StepActions back={false} backLabel={tIntake("errors.back")} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
@@ -495,7 +312,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field"><span>{t("companyContact")}</span><input defaultValue={text(companyAnswers.contact_name)} name="company_contact_name" /></label>
                 <label className="field"><span>{t("companyContactEmail")}</span><input defaultValue={text(companyAnswers.contact_email)} name="company_contact_email" type="email" /></label>
               </div>
-              <StepActions continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
+              <StepActions backLabel={tIntake("errors.back")} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
@@ -515,22 +332,30 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field field--wide"><span>{t("expectedOutcome")}</span><textarea defaultValue={text(fundingAnswers.expected_outcome)} maxLength={3000} name="expected_outcome" rows={3} /></label>
                 <label className="field field--wide"><span>{t("collateral")}</span><textarea defaultValue={text(fundingAnswers.collateral_summary)} maxLength={2000} name="collateral_summary" rows={3} /></label>
               </div>
-              <StepActions continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
+              <StepActions backLabel={tIntake("errors.back")} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
           {currentStep === "documents" && isDocumentFirst ? (
-            !intakeSession ? <p className="form-notice form-notice--error">{locale === "pt-BR" ? "Não foi possível abrir esta sessão de documentos." : "This document session could not be opened."}</p> : intakeSession.status === "review_ready" ? (
-              <IntakeReview candidates={intakeCandidates} documents={intakeDocuments} issues={intakeIssues} locale={locale} session={intakeSession} />
+            !intakeReview?.session ? <p className="form-notice form-notice--error">{tIntake("errors.session")}</p> : intakeReview.session.status === "review_ready" ? (
+              <IntakeReview
+                actions={{accept: acceptHighConfidenceCandidates, confirm: confirmDocumentIntake, process: processDocumentIntake, resolve: resolveIntakeIssue, review: reviewIntakeCandidate}}
+                candidates={intakeReview.candidates}
+                documents={intakeReview.documents}
+                issues={intakeReview.issues}
+                locale={locale}
+                session={intakeReview.session}
+              />
             ) : (
-              <div className="onboarding-stage__form intake-collect">
-                <div className="intake-collect__intro"><span className="section-kicker">{locale === "pt-BR" ? "DOCUMENTOS PRIMEIRO" : "DOCUMENTS FIRST"}</span><h3>{locale === "pt-BR" ? "Envie o que você já tem" : "Upload what you already have"}</h3><p>{locale === "pt-BR" ? "Não é necessário organizar os arquivos antes. Identificaremos o tipo, o período e a classe de cada informação." : "You do not need to organize files first. We will identify document type, period and information class."}</p></div>
-                <DocumentIntakeUploader initialDocuments={intakeDocuments} locale={locale} organizationId={organization.id} sessionId={intakeSession.id} userId={userId} />
-                <div className="intake-collect__process">
-                  <div><ShieldCheck size={15} /><span>{locale === "pt-BR" ? "O processamento não envia nem publica informações." : "Processing does not send or publish information."}</span></div>
-                  <form action={processDocumentIntake}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={intakeSession.id} /><button className="button" disabled={!intakeDocuments.length} type="submit">{locale === "pt-BR" ? "Analisar documentos" : "Analyze documents"}<ArrowRight size={15} /></button></form>
-                </div>
-              </div>
+              <IntakeCollect
+                className="onboarding-stage__form"
+                documents={intakeReview.documents}
+                locale={locale}
+                organizationId={organization.id}
+                processAction={processDocumentIntake}
+                session={intakeReview.session}
+                userId={userId}
+              />
             )
           ) : currentStep === "documents" ? (
             <div className="onboarding-stage__form">
@@ -549,7 +374,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 recommended: {title: t("uploadGuidance.recommended.title"), items: [t("uploadGuidance.recommended.projections"), t("uploadGuidance.recommended.presentation"), t("uploadGuidance.recommended.transaction")]},
                 complementary: {title: t("uploadGuidance.complementary.title"), items: [t("uploadGuidance.complementary.contracts"), t("uploadGuidance.complementary.cim"), t("uploadGuidance.complementary.other")]},
               }} initialDocuments={documents} opportunityId={opportunityId} organizationId={organization.id} userId={userId} />
-              <form action={finishDocumentsStep}><FormContext locale={locale} returnStep={returnStep} /><StepActions continueLabel={t("review")} locale={locale} returnStep={returnStep} /></form>
+              <form action={finishDocumentsStep}><FormContext locale={locale} returnStep={returnStep} /><StepActions backLabel={tIntake("errors.back")} continueLabel={t("review")} locale={locale} returnStep={returnStep} /></form>
             </div>
           ) : null}
 
@@ -561,7 +386,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field field--wide"><span>{t("fundStrategy")}</span><textarea defaultValue={text(fundAnswers.strategy)} maxLength={2000} minLength={2} name="strategy" required rows={5} /></label>
               </div>
               <div className="onboarding-note"><FileText aria-hidden="true" size={18} /><p>{t("multipleFundsNote")}</p></div>
-              <StepActions continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
+              <StepActions backLabel={tIntake("errors.back")} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
@@ -585,7 +410,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field"><span>{t("validUntil")}</span><input name="valid_until" type="date" /></label>
                 <label className="field field--wide"><span>{t("exclusions")}</span><textarea maxLength={3000} name="exclusions" rows={3} /></label>
               </div>
-              <StepActions continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
+              <StepActions backLabel={tIntake("errors.back")} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
@@ -602,7 +427,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field"><span>{t("routingTicket")}</span><input name="routing_ticket" /></label>
                 <label className="field"><span>{t("routingOperations")}</span><input name="routing_operations" placeholder={t("commaSeparated")} /></label>
               </div>
-              <StepActions continueLabel={t("review")} locale={locale} returnStep={returnStep} />
+              <StepActions backLabel={tIntake("errors.back")} continueLabel={t("review")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 

@@ -4,19 +4,33 @@ import {FileCheck2, FileSpreadsheet, FileText, FileUp, Image as ImageIcon, Loade
 import {useRouter} from "next/navigation";
 import {useRef, useState} from "react";
 
+import type {IntakeDocumentSummary} from "@/lib/intake/types";
 import {createClient} from "@/lib/supabase/client";
 
-type DocumentItem = {id: string; original_name: string; byte_size: number | null};
+export type DocumentIntakeUploaderCopy = {
+  startError: string;
+  invalidFile: string;
+  uploadError: string;
+  registerError: string;
+  uploading: string;
+  dropTitle: string;
+  dropBody: string;
+  select: string;
+  formats: string;
+  received: string;
+};
 
 type Props = {
   organizationId: string;
   sessionId: string;
   userId: string;
-  initialDocuments: DocumentItem[];
-  locale: string;
+  initialDocuments: IntakeDocumentSummary[];
+  copy: DocumentIntakeUploaderCopy;
 };
 
 const allowedExtensions = new Set(["pdf", "csv", "xls", "xlsx", "doc", "docx", "ppt", "pptx", "txt", "jpg", "jpeg", "png", "webp"]);
+const MAX_BYTES = 52_428_800;
+const MAX_FILES_PER_BATCH = 20;
 
 function safeName(name: string) {
   return name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-+/g, "-").slice(-140);
@@ -26,8 +40,14 @@ async function sha256(file: File) {
   const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
-export function DocumentIntakeUploader({organizationId, sessionId, userId, initialDocuments, locale}: Props) {
-  const isPt = locale === "pt-BR";
+
+/**
+ * Session-scoped drag-and-drop upload. Files go straight from the browser to the private
+ * bucket under `{organizationId}/{sessionId}/…`, hashed with SHA-256, and are registered in
+ * `source_documents` (RLS-protected). Copy comes from the server so the component stays
+ * locale-agnostic.
+ */
+export function DocumentIntakeUploader({organizationId, sessionId, userId, initialDocuments, copy}: Props) {
   const router = useRouter();
   const [documents, setDocuments] = useState(initialDocuments);
   const [uploading, setUploading] = useState(false);
@@ -39,24 +59,24 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, initi
     if (!files?.length) return;
     const supabase = createClient();
     if (!supabase) {
-      setError(isPt ? "Não foi possível iniciar o envio." : "The upload could not be started.");
+      setError(copy.startError);
       return;
     }
     setUploading(true);
     setError("");
     const next = [...documents];
 
-    for (const file of Array.from(files).slice(0, 20)) {
+    for (const file of Array.from(files).slice(0, MAX_FILES_PER_BATCH)) {
       const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-      if (!allowedExtensions.has(extension) || file.size > 52_428_800) {
-        setError(isPt ? "Um ou mais arquivos têm formato não suportado ou excedem 50 MB." : "One or more files use an unsupported format or exceed 50 MB.");
+      if (!allowedExtensions.has(extension) || file.size > MAX_BYTES) {
+        setError(copy.invalidFile);
         continue;
       }
       const objectPath = `${organizationId}/${sessionId}/${crypto.randomUUID()}-${safeName(file.name)}`;
       const fileHash = await sha256(file);
       const {error: uploadError} = await supabase.storage.from("opportunity-documents").upload(objectPath, file, {upsert: false, contentType: file.type || "application/octet-stream"});
       if (uploadError) {
-        setError(isPt ? "Falha no envio de um dos documentos. Tente novamente." : "A document could not be uploaded. Please try again.");
+        setError(copy.uploadError);
         continue;
       }
       const {data, error: insertError} = await supabase.from("source_documents").insert({
@@ -75,7 +95,7 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, initi
       }).select("id, original_name, byte_size").single();
       if (insertError || !data) {
         await supabase.storage.from("opportunity-documents").remove([objectPath]);
-        setError(isPt ? "O arquivo chegou, mas não pôde ser registrado com segurança." : "The file arrived but could not be registered securely.");
+        setError(copy.registerError);
         continue;
       }
       next.push(data);
@@ -104,17 +124,17 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, initi
           <span>{uploading ? <LoaderCircle className="spin" size={28} /> : <FileUp size={28} />}</span>
           <i><FileText size={18} /></i><i><FileSpreadsheet size={18} /></i><i><Presentation size={18} /></i><i><ImageIcon size={18} /></i>
         </div>
-        <h3>{uploading ? (isPt ? "Enviando com segurança" : "Uploading securely") : (isPt ? "Arraste seus documentos para começar" : "Drop your documents to get started")}</h3>
-        <p>{isPt ? "Ou selecione arquivos do seu computador. Você pode enviar tudo de uma vez." : "Or select files from your computer. You can upload everything at once."}</p>
-        <button onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }} type="button">{isPt ? "Selecionar documentos" : "Select documents"}</button>
-        <small>PDF · Excel · CSV · Word · PowerPoint · Imagens · Texto · 50 MB por arquivo</small>
+        <h3>{uploading ? copy.uploading : copy.dropTitle}</h3>
+        <p>{copy.dropBody}</p>
+        <button onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }} type="button">{copy.select}</button>
+        <small>{copy.formats}</small>
       </div>
 
       {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
 
       {documents.length ? (
         <div className="intake-upload__files">
-          <header><strong>{isPt ? "Documentos recebidos" : "Documents received"}</strong><span>{documents.length}</span></header>
+          <header><strong>{copy.received}</strong><span>{documents.length}</span></header>
           {documents.map((document) => (
             <div key={document.id}><FileCheck2 aria-hidden="true" size={16} /><span>{document.original_name}</span><small>{document.byte_size ? `${(document.byte_size / 1_000_000).toFixed(1)} MB` : ""}</small></div>
           ))}

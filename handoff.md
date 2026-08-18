@@ -413,11 +413,20 @@ The review model supports:
 
 Important files:
 
-- `apps/web/src/components/document-intake-uploader.tsx`
-- `apps/web/src/app/[locale]/app/new/page.tsx`
-- `apps/web/src/app/[locale]/app/new/actions.ts`
-- reusable review UI currently located in
-  `apps/web/src/app/[locale]/onboarding/page.tsx`
+- `apps/web/src/lib/intake/server.ts` — the intake operations shared by both
+  entry points (start, process, accept, review, resolve, confirm, load); tenant
+  scope always comes from the verified session.
+- `apps/web/src/lib/intake/case.ts` — pure builders (candidate/issue/evidence
+  rows, `deriveCase`, bounded opportunity title) and `format.ts` (locale-aware
+  number parsing and value rendering), both unit-tested.
+- `apps/web/src/components/intake/` — `IntakeStartChoice`, `IntakeCollect`,
+  `IntakeReview`, `DocumentIntakeUploader` (client). Copy comes from the
+  `Intake` namespace of the message catalogs; nothing is inlined.
+- `apps/web/src/app/[locale]/app/new/{page,actions}.ts(x)` and
+  `apps/web/src/app/[locale]/onboarding/{page,actions}.ts(x)` — thin wrappers
+  that resolve the scope, pick the session and translate outcomes into
+  redirects. Onboarding adds its own bookkeeping (organization profile,
+  `onboarding_progress` answers) after the shared confirmation.
 - `packages/testing-fixtures/src/document-intake.ts`
 
 ### Current extraction limitation
@@ -882,12 +891,17 @@ deployment.
    arbitrary files are not yet extracted.
 2. **Parsing security.** Uploaded files are stored privately, but the full
    hostile-file pipeline is not present.
-3. **Transactionality.** Parts of document review confirmation persist related
-   rows through sequential server actions. Move final promotion into an atomic
-   Postgres RPC before broader usage.
-4. **Reusable component placement.** `IntakeStartChoice` and `IntakeReview` are
-   exported from the onboarding page and imported by the new-case page. Extract
-   them into a dedicated component module before further growth.
+3. **Transactionality.** Confirmation creates company/request/opportunity
+   atomically through `create_opportunity_intake`, but the follow-up writes
+   (company details, evidence facts, document links, session closure) are still
+   sequential in `confirmIntakeCase`. A single Postgres function
+   (`confirm_document_intake`, idempotent per session) replaces this next.
+4. ~~Reusable component placement.~~ Resolved on 18 Aug 2026: intake UI lives in
+   `src/components/intake/*`, shared logic in `src/lib/intake/*`, and both entry
+   points (onboarding, workspace) call the same operations. Copy moved to the
+   `Intake` message namespace; the fixture-specific rationale/title text that
+   used to be hardcoded in the onboarding confirmation was removed (all case
+   values are now derived from confirmed candidates or left null).
 5. **Opportunity room is mostly a shell.** Rail buttons and inspectors are
    currently summary/placeholder surfaces.
 6. **Provider experience is registration-first.** Funds, mandates, and contacts

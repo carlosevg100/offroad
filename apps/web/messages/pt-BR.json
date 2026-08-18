@@ -592,7 +592,27 @@
     "missing": "O que falta",
     "recommended": "O que recomendamos",
     "approval": "O que exige aprovação",
-    "syntheticNotice": "Controles ativos; dados reais aparecem somente depois da ingestão e revisão."
+    "syntheticNotice": "Controles ativos; dados reais aparecem somente depois da ingestão e revisão.",
+    "sectors": {
+      "foodRetail": "Varejo alimentar",
+      "logistics": "Logística",
+      "manufacturing": "Indústria",
+      "technology": "Tecnologia",
+      "healthcare": "Saúde"
+    },
+    "useOfProceeds": {
+      "growthCapex": "Capex de crescimento",
+      "workingCapital": "Capital de giro",
+      "refinancing": "Refinanciamento",
+      "acquisition": "Aquisição"
+    },
+    "evidenceFacts": "Fatos de evidência",
+    "metricNotes": {
+      "privateBucket": "bucket privado",
+      "sourceAnchored": "ancorados na fonte",
+      "versioned": "versionados",
+      "evidenceCompiled": "compilados com evidência"
+    }
   },
   "Demo": {
     "eyebrow": "Demonstração com dados sintéticos",
@@ -622,5 +642,117 @@
     "mismatch": "Restrição",
     "permissioned": "Identidade e documentos permanecem protegidos até que exista autorização válida para compartilhamento.",
     "synthetic": "Todos os nomes, números e mandatos desta tela são sintéticos e servem apenas para validação do produto."
+  },
+  "Intake": {
+    "start": {
+      "kickerOnboarding": "INÍCIO DO CADASTRO",
+      "kickerCase": "NOVO CASE",
+      "titleOnboarding": "Como você deseja iniciar o cadastro?",
+      "titleCase": "Como você deseja iniciar o novo case?",
+      "body": "Escolha a forma mais conveniente. Você poderá revisar cada informação antes de criar o case.",
+      "recommended": "RECOMENDADO",
+      "documentsTitle": "Começar com documentos",
+      "documentsBody": "Envie o que já existe. A Offroad identifica, organiza e preenche o cadastro com a evidência de cada campo.",
+      "benefitTyping": "Menos digitação",
+      "benefitConflicts": "Conflitos visíveis",
+      "benefitSources": "Fonte rastreável",
+      "documentsCta": "Enviar documentos",
+      "manualTitle": "Preencher manualmente",
+      "manualBody": "Informe os dados em etapas e adicione os documentos depois. Ideal quando você ainda está reunindo os materiais.",
+      "manualCta": "Iniciar preenchimento",
+      "security": "Documentos privados, acesso restrito à sua organização e confirmação obrigatória antes do envio."
+    },
+    "collect": {
+      "kicker": "DOCUMENTOS PRIMEIRO",
+      "title": "Envie o que você já tem",
+      "body": "Não é necessário renomear ou organizar os arquivos. O sistema preserva o documento original e vincula cada sugestão à sua evidência.",
+      "notice": "Nada é enviado ao mercado durante esta etapa.",
+      "analyze": "Analisar documentos",
+      "retry": "Tentar processar novamente",
+      "failedTitle": "O processamento não foi concluído",
+      "failedBody": "Seus documentos continuam salvos e nenhuma informação foi inferida. Tente novamente ou siga pelo preenchimento manual.",
+      "processingTitle": "Processamento em andamento",
+      "processingBody": "Se esta tela não mudar em alguns instantes, tente processar novamente."
+    },
+    "uploader": {
+      "startError": "Não foi possível iniciar o envio.",
+      "invalidFile": "Um ou mais arquivos têm formato não suportado ou excedem 50 MB.",
+      "uploadError": "Falha no envio de um dos documentos. Tente novamente.",
+      "registerError": "O arquivo chegou, mas não pôde ser registrado com segurança.",
+      "uploading": "Enviando com segurança",
+      "dropTitle": "Arraste seus documentos para começar",
+      "dropBody": "Ou selecione arquivos do seu computador. Você pode enviar tudo de uma vez.",
+      "select": "Selecionar documentos",
+      "formats": "PDF · Excel · CSV · Word · PowerPoint · Imagens · Texto · 50 MB por arquivo",
+      "received": "Documentos recebidos"
+    },
+    "review": {
+      "kicker": "REVISÃO ASSISTIDA",
+      "title": "Revise as informações encontradas",
+      "body": "Nada foi enviado ao mercado. Confirme, edite ou rejeite cada sugestão; a fonte original permanece vinculada.",
+      "documents": "documentos",
+      "fields": "campos",
+      "openItems": "pontos de atenção",
+      "reviewedCounter": "{reviewed}/{total} campos revisados",
+      "acceptHighConfidence": "Aceitar sugestões confiáveis",
+      "reprocess": "Reprocessar",
+      "issuesTitle": "Conflitos e informações faltantes",
+      "issuesBody": "Esses pontos não foram resolvidos automaticamente.",
+      "markReviewed": "Marcar revisado",
+      "priority": {
+        "critical": "CRÍTICO",
+        "analysis": "ANÁLISE",
+        "diligence": "DILIGÊNCIA",
+        "complementary": "COMPLEMENTAR"
+      },
+      "state": {
+        "edited": "EDITADO",
+        "accepted": "CONFIRMADO",
+        "rejected": "REJEITADO",
+        "notApplicable": "N/A",
+        "conflict": "CONFLITO"
+      },
+      "viewEvidence": "Ver evidência",
+      "original": "Original",
+      "commentPlaceholder": "Comentário opcional",
+      "accept": "Aceitar",
+      "saveEdit": "Salvar edição",
+      "reject": "Rejeitar",
+      "notApplicable": "N/A",
+      "emptyTitle": "Os documentos estão seguros, mas nenhum campo foi proposto",
+      "emptyBody": "Este conjunto ainda não pôde ser processado automaticamente. Nenhum dado foi inventado. Você pode adicionar outros arquivos, reprocessar ou iniciar o preenchimento manual.",
+      "fillManually": "Preencher manualmente",
+      "confirmKicker": "CONFIRMAÇÃO FINAL",
+      "confirmTitle": "Crie o case com uma base revisada",
+      "confirmBody": "{count} campos principais estão confirmados. Pendências continuarão visíveis no checklist do case.",
+      "confirmDeclaration": "Revisei as informações e confirmo que os dados aceitos podem ser usados para criar esta oportunidade.",
+      "confirmCta": "Confirmar e criar case",
+      "yes": "Sim",
+      "no": "Não",
+      "page": "página",
+      "sheet": "aba",
+      "cell": "célula",
+      "groups": {
+        "company": "Empresa",
+        "transaction": "Operação",
+        "historical_financials": "Histórico financeiro",
+        "interim_financials": "Informações intermediárias",
+        "project": "Projeto financiado",
+        "projections": "Projeções",
+        "leverage": "Impacto na alavancagem",
+        "collateral": "Garantias"
+      }
+    },
+    "errors": {
+      "documents": "Adicione pelo menos um documento para iniciar a análise.",
+      "processing": "Não foi possível concluir o processamento. Seus arquivos continuam salvos; tente novamente.",
+      "confirmation": "Confirme os campos essenciais e a declaração final antes de criar o case.",
+      "validation": "Revise o valor informado e tente novamente.",
+      "session": "Não foi possível abrir a sessão documental.",
+      "save": "Não foi possível salvar esta etapa. Tente novamente.",
+      "step": "Esta etapa não está disponível no momento.",
+      "sessionNotFound": "Esta sessão não foi encontrada ou não pertence ao seu ambiente.",
+      "back": "Voltar"
+    }
   }
 }
