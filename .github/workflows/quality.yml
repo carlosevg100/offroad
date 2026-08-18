@@ -53,7 +53,10 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned: resolving "latest" hits the GitHub API and can be rate-limited on busy days.
+          version: 2.114.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       # Boots a fresh local stack and applies every file in supabase/migrations from
       # scratch. This proves the migration history is replayable and that no policy,
@@ -108,7 +111,10 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned: resolving "latest" hits the GitHub API and can be rate-limited on busy days.
+          version: 2.114.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       # Full local stack: Auth (OTP e-mails land in the local mail sink), PostgREST, Storage, Kong.
       - name: Start local Supabase and apply migrations
