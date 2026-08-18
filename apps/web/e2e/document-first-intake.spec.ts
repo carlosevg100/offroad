@@ -32,8 +32,8 @@ test.describe("Document-first intake (company journey)", () => {
 
   test.beforeAll(async ({browser}) => {
     assertDataRoomPresent();
+    // Contexts created from the `browser` fixture inherit the config's trace/video/screenshot options.
     context = await browser.newContext();
-    await context.tracing.start({screenshots: true, snapshots: true, sources: true});
     page = await context.newPage();
   });
 
@@ -43,8 +43,7 @@ test.describe("Document-first intake (company journey)", () => {
     }
   });
 
-  test.afterAll(async ({}, testInfo) => {
-    await context?.tracing.stop({path: testInfo.outputPath("journey-trace.zip")}).catch(() => undefined);
+  test.afterAll(async () => {
     await context?.close();
   });
 
