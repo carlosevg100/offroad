@@ -11,6 +11,7 @@ import {
   confirmIntakeCase,
   loadIntakeSession,
   processIntakeSession,
+  removeIntakeDocument as removeDocument,
   resolveIntakeIssue as resolveIssue,
   reviewIntakeCandidate as reviewCandidate,
   startIntakeSession,
@@ -166,6 +167,13 @@ export async function reviewIntakeCandidate(formData: FormData) {
   const locale = localeFrom(formData);
   const {runtime} = await onboardingIntakeRuntime(locale, formData);
   const outcome = await reviewCandidate(runtime, {candidateId: value(formData, "candidate_id"), decision: value(formData, "decision"), rawValue: value(formData, "normalized_value"), comment: value(formData, "comment")});
+  redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
+}
+
+export async function removeIntakeDocument(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const outcome = await removeDocument(runtime, value(formData, "document_id"));
   redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
 }
 

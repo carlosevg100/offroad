@@ -177,6 +177,18 @@ declare
   n integer;
   title_length integer;
 begin
+  -- Documents: one in the session that will be confirmed (becomes evidence), one in an open session (removable).
+  insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, classification, processing_status, created_by)
+  values ('50000000-0000-4000-8000-000000000001', org, session_id, 'opportunity-documents', org::text || '/' || session_id::text || '/a.pdf', 'a.pdf', repeat('a', 64), 10, 'restricted', 'quarantined', '10000000-0000-4000-8000-000000000001');
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values ('40000000-0000-4000-8000-000000000002', org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+  insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, classification, processing_status, created_by)
+  values ('50000000-0000-4000-8000-000000000002', org, '40000000-0000-4000-8000-000000000002', 'opportunity-documents', org::text || '/40000000-0000-4000-8000-000000000002/b.pdf', 'b.pdf', repeat('b', 64), 10, 'restricted', 'quarantined', '10000000-0000-4000-8000-000000000001');
+
+  delete from public.source_documents where id = '50000000-0000-4000-8000-000000000002';
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'owner could not remove a document from an open intake session'; end if;
+
   perform public.begin_intake_processing(org, session_id);
   if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
     raise exception 'begin_intake_processing did not mark the session processing';
@@ -272,6 +284,14 @@ begin
   exception
     when sqlstate '55000' then null;
   end;
+
+  -- Once confirmed, the document is evidence: it is linked to the opportunity and cannot be deleted.
+  if (select opportunity_id from public.source_documents where id = '50000000-0000-4000-8000-000000000001') is distinct from first_opportunity then
+    raise exception 'confirmation did not link the session document to the opportunity';
+  end if;
+  delete from public.source_documents where id = '50000000-0000-4000-8000-000000000001';
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'evidence document was deleted after confirmation'; end if;
 end;
 $$;
 
@@ -321,6 +341,12 @@ begin
   exception
     when insufficient_privilege then null;
   end;
+
+  delete from public.source_documents where id = '50000000-0000-4000-8000-000000000001';
+  get diagnostics affected_rows = row_count;
+  if affected_rows <> 0 then
+    raise exception 'tenant B deleted tenant A document';
+  end if;
 
   -- ...nor drive tenant A's session through the intake commands.
   begin

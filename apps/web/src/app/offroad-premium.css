@@ -274,8 +274,24 @@
 }
 
 .intake-upload__files > div:last-child {border-bottom: 0;}
+.intake-upload__files > div:has(.intake-upload__remove) {grid-template-columns: auto minmax(0, 1fr) auto auto;}
 .intake-upload__files > div span {overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap;}
 .intake-upload__files > div small {color: #8b9499; font-size: 10px;}
+.intake-upload__remove {display: flex;}
+.intake-upload__remove button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #8b9499;
+  cursor: pointer;
+}
+.intake-upload__remove button:hover,
+.intake-upload__remove button:focus-visible {border-color: #d7dbdd; color: #17191d; outline: none;}
 
 .intake-collect__process {
   display: flex;

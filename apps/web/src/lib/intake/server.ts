@@ -1,10 +1,13 @@
+import {createHash} from "node:crypto";
+
 import {buildRedeHorizonteDocumentIntake} from "@offroad/testing-fixtures";
 import type {PostgrestError, SupabaseClient} from "@supabase/supabase-js";
+import {getTranslations} from "next-intl/server";
 
 import type {AppLocale} from "@/i18n/routing";
 import type {Database, Json} from "@/types/database";
 
-import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilation, type DerivedCase} from "./case";
+import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilation, type DerivedCase, type IntakeIssuePayload} from "./case";
 import {parseList, parseLocalizedNumber} from "./format";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 
@@ -29,6 +32,7 @@ const fail = <T = null,>(error: IntakeErrorCode): IntakeOutcome<T> => ({ok: fals
 export function intakeErrorFrom(error: PostgrestError | null | undefined, fallback: IntakeErrorCode = "save"): IntakeErrorCode {
   const message = error?.message ?? "";
   if (message.includes("duplicate_opportunity")) return "duplicate";
+  if (message.includes("document_not_removable")) return "remove";
   if (message.includes("intake_case_incomplete") || message.includes("intake_session_not_ready") || message.includes("intake_session_already_confirmed")) return "confirmation";
   if (message.includes("intake_session_not_found") || message.includes("organization_access_denied") || message.includes("authentication_required")) return "session";
   if (message.includes("invalid_review_decision") || message.includes("edit_requires_value") || message.includes("intake_candidate_not_found") || message.includes("invalid_intake_payload") || message.includes("intake_case_out_of_bounds")) return "validation";
@@ -90,15 +94,89 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
   const begin = await supabase.rpc("begin_intake_processing", {p_organization_id: organizationId, p_session_id: sessionId});
   if (begin.error) return fail(intakeErrorFrom(begin.error, "processing"));
 
-  const compilation = buildRedeHorizonteDocumentIntake(documents);
+  // Content verification: recompute SHA-256 from the stored objects so the extractor and the
+  // audit trail rely on server-verified hashes, never on the browser's claim.
+  const verification = await verifyIntakeDocuments(runtime);
+  if (!verification.ok) {
+    await markSessionFailed(runtime, "verification_failed");
+    return fail("processing");
+  }
+  const verifiedDocuments = documents.map((document) => ({...document, sha256: verification.value.hashes.get(document.id) ?? document.sha256}));
+
+  const compilation = buildRedeHorizonteDocumentIntake(verifiedDocuments);
   const candidates = buildCandidatePayload(compilation);
-  const issues = buildIssuePayload(compilation);
-  const summary = summarizeCompilation(compilation, {documents: documents.length, candidates: candidates.length, issues: issues.length});
+  const issues: IntakeIssuePayload[] = [...buildIssuePayload(compilation), ...verification.value.mismatchIssues];
+  const summary = {...summarizeCompilation(compilation, {documents: documents.length, candidates: candidates.length, issues: issues.length}), verified_documents: verification.value.verified, hash_mismatches: verification.value.mismatchIssues.length};
   const complete = await supabase.rpc("complete_intake_processing", {p_organization_id: organizationId, p_session_id: sessionId, p_candidates: candidates as Json, p_issues: issues as Json, p_summary: summary as Json});
   if (complete.error) {
     await markSessionFailed(runtime, "persistence_failed");
     return fail(intakeErrorFrom(complete.error, "processing"));
   }
+  return ok(null);
+}
+
+export function sha256HexOf(bytes: Uint8Array) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+type VerificationResult = {hashes: Map<string, string>; verified: number; mismatchIssues: IntakeIssuePayload[]};
+
+/**
+ * Downloads every document of the session that has not been verified yet, recomputes its
+ * SHA-256 and stores the verified value (`sha256_verified_at`). A mismatch with the browser's
+ * claim keeps the file, records the server hash and surfaces an explicit integrity issue.
+ */
+export async function verifyIntakeDocuments(runtime: IntakeRuntime): Promise<IntakeOutcome<VerificationResult>> {
+  const {supabase, organizationId, sessionId, locale} = runtime;
+  const {data: documents, error} = await supabase.from("source_documents").select("id, original_name, object_path, sha256, sha256_verified_at").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("created_at");
+  if (error || !documents) return fail("processing");
+  const t = await getTranslations({locale, namespace: "Intake.issues"});
+  const hashes = new Map<string, string>();
+  const mismatchIssues: IntakeIssuePayload[] = [];
+  let verified = 0;
+
+  for (const document of documents) {
+    if (document.sha256_verified_at && document.sha256) {
+      hashes.set(document.id, document.sha256);
+      continue;
+    }
+    const {data: blob, error: downloadError} = await supabase.storage.from("opportunity-documents").download(document.object_path);
+    if (downloadError || !blob) return fail("processing");
+    const serverHash = sha256HexOf(new Uint8Array(await blob.arrayBuffer()));
+    const now = new Date().toISOString();
+    const {error: updateError} = await supabase.from("source_documents").update({sha256: serverHash, sha256_verified_at: now, processing_status: "clean"}).eq("organization_id", organizationId).eq("id", document.id);
+    if (updateError) return fail("processing");
+    hashes.set(document.id, serverHash);
+    verified += 1;
+    if (document.sha256 && document.sha256 !== serverHash) {
+      mismatchIssues.push({
+        issue_type: "validation",
+        priority: "diligence",
+        field_group: null,
+        field_path: null,
+        candidate_keys: [],
+        title: t("hashMismatchTitle", {name: document.original_name}),
+        description: t("hashMismatchBody"),
+        resolution_hint: t("hashMismatchHint"),
+      });
+    }
+  }
+  return ok({hashes, verified, mismatchIssues});
+}
+
+/**
+ * Removes a document while the session is still open: the row goes first (RLS decides — only
+ * intake documents of a non-confirmed session, not yet linked to an opportunity), then the
+ * object. A leftover object without a row is harmless (private bucket, unreachable by the app).
+ */
+export async function removeIntakeDocument(runtime: IntakeRuntime, documentId: string): Promise<IntakeOutcome> {
+  const {supabase, organizationId, sessionId} = runtime;
+  if (!documentId) return fail("validation");
+  const {data: document} = await supabase.from("source_documents").select("id, object_path").eq("organization_id", organizationId).eq("intake_session_id", sessionId).eq("id", documentId).maybeSingle();
+  if (!document) return fail("remove");
+  const {data: deleted, error} = await supabase.from("source_documents").delete().eq("organization_id", organizationId).eq("intake_session_id", sessionId).eq("id", documentId).select("id");
+  if (error || !deleted?.length) return fail("remove");
+  await supabase.storage.from("opportunity-documents").remove([document.object_path]);
   return ok(null);
 }
 

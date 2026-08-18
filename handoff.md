@@ -396,8 +396,13 @@ Before a long form, the user chooses:
 2. **Fill in manually.**
 
 The document path supports PDF, CSV, XLS/XLSX, DOC/DOCX, PPT/PPTX, TXT, JPG,
-JPEG, PNG, and WebP, up to 50 MB per file. Browser-side SHA-256 is recorded before
-the file metadata is persisted.
+JPEG, PNG, and WebP, up to 50 MB per file. A browser-side SHA-256 is recorded when
+the file metadata is persisted; when the session is processed the server downloads
+each object, recomputes the hash, stores the verified value
+(`source_documents.sha256_verified_at`) and raises an explicit integrity issue if
+the browser's claim differed. Documents can be removed while the session is open
+(before confirmation); once confirmed they are evidence and cannot be deleted
+through the Data API.
 
 The review model supports:
 
@@ -433,8 +438,8 @@ Important files:
 
 The only fully validated automatic compilation today is the supplied Rede
 Horizonte document package. Files are matched by **filename and exact SHA-256
-content hash**. A same-name/different-content file is rejected as a fixture
-source. Unknown sets remain safely stored and produce a visible “no fields
+content hash, recomputed server-side from the stored object**. A
+same-name/different-content file is rejected as a fixture source. Unknown sets remain safely stored and produce a visible “no fields
 proposed” state rather than fabricated information.
 
 This is a production-safe vertical acceptance slice, not a general extraction
@@ -639,6 +644,7 @@ needed.
 | `20260817203931_scope_document_hash_uniqueness.sql` | Hash uniqueness scoped to session/opportunity |
 | `20260817232443_hardening_force_rls_and_org_type_guard.sql` | FORCE RLS on intake tables; no self-service `offroad` organizations; intake sessions only for borrower-side tenants |
 | `20260818033220_atomic_intake_commands.sql` | Atomic intake commands: `begin_intake_processing`, `complete_intake_processing`, `review_intake_candidate`, `confirm_document_intake` (idempotent); bounded opportunity title in `create_opportunity_intake` |
+| `20260818034457_intake_document_removal_and_verification.sql` | Delete policy for intake documents of open sessions; `source_documents.sha256_verified_at` |
 
 File names match the versions recorded in `supabase_migrations.schema_migrations`
 of the hosted project (the migrations were applied through the Supabase MCP tool,
@@ -927,11 +933,13 @@ deployment.
 
 ### P0 — Stabilize the current vertical slice
 
-1. Extract reusable document-intake UI into `src/components`.
-2. Make intake confirmation atomic with one RPC and idempotency key.
+1. ~~Extract reusable document-intake UI into `src/components`.~~ Done (18 Aug 2026).
+2. ~~Make intake confirmation atomic with one RPC and idempotency key.~~ Done (18 Aug 2026).
 3. Add authenticated E2E for signup, OTP, onboarding, new case, document upload,
    review, and case creation.
-4. Add delete/replace/version behavior for uploaded documents.
+4. ~~Add delete behavior for uploaded documents and server-side hash
+   verification.~~ Done (18 Aug 2026); replace = remove + upload; versioning of
+   evidence documents remains for the general pipeline.
 5. Update build-state, acceptance-evidence, and risk ledgers.
 
 ### P1 — Build the general evidence pipeline

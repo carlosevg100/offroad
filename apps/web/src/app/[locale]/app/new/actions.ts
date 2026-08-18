@@ -9,6 +9,7 @@ import {
   confirmIntakeCase,
   loadIntakeSession,
   processIntakeSession,
+  removeIntakeDocument,
   resolveIntakeIssue,
   reviewIntakeCandidate,
   startIntakeSession,
@@ -84,6 +85,14 @@ export async function resolveWorkspaceIntakeIssue(formData: FormData) {
   const sessionId = value(formData, "session_id");
   const runtime = await workspaceRuntime(locale, sessionId);
   const outcome = await resolveIntakeIssue(runtime, {issueId: value(formData, "issue_id"), status: value(formData, "issue_status")});
+  redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
+}
+
+export async function removeWorkspaceIntakeDocument(formData: FormData) {
+  const locale = localeFrom(formData);
+  const sessionId = value(formData, "session_id");
+  const runtime = await workspaceRuntime(locale, sessionId);
+  const outcome = await removeIntakeDocument(runtime, value(formData, "document_id"));
   redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
 }
 

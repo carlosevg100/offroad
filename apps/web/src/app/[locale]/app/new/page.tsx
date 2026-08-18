@@ -18,6 +18,7 @@ import {
   confirmWorkspaceDocumentIntake,
   createOpportunity,
   processWorkspaceDocumentIntake,
+  removeWorkspaceIntakeDocument,
   resolveWorkspaceIntakeIssue,
   reviewWorkspaceIntakeCandidate,
   startWorkspaceDocumentIntake,
@@ -29,9 +30,11 @@ type Props = {
 };
 
 export const dynamic = "force-dynamic";
+// Processing downloads and hashes every document server-side; allow more than the default budget.
+export const maxDuration = 60;
 export const metadata: Metadata = {title: "New Opportunity", robots: {index: false, follow: false}};
 
-const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate"];
+const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate", "remove"];
 
 export default async function NewOpportunityPage({params, searchParams}: Props) {
   const {locale} = await params;
@@ -83,6 +86,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             manualHref={manualHref}
             organizationId={organization.id}
             processAction={processWorkspaceDocumentIntake}
+            removeAction={removeWorkspaceIntakeDocument}
             session={review.session}
             userId={userId}
           />

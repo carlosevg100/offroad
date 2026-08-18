@@ -684,7 +684,8 @@
       "dropBody": "Or select files from your computer. You can upload everything at once.",
       "select": "Select documents",
       "formats": "PDF · Excel · CSV · Word · PowerPoint · Images · Text · 50 MB per file",
-      "received": "Documents received"
+      "received": "Documents received",
+      "remove": "Remove document"
     },
     "review": {
       "kicker": "ASSISTED REVIEW",
@@ -743,6 +744,11 @@
         "collateral": "Collateral"
       }
     },
+    "issues": {
+      "hashMismatchTitle": "Integrity verified with a mismatch: {name}",
+      "hashMismatchBody": "The SHA-256 computed on the server differs from the one reported by the browser at upload. The file was preserved and the verified hash is now authoritative.",
+      "hashMismatchHint": "If this is not the expected file, remove it and upload it again."
+    },
     "errors": {
       "documents": "Add at least one document to start the analysis.",
       "processing": "Processing could not be completed. Your files remain saved; please try again.",
@@ -752,6 +758,7 @@
       "save": "This step could not be saved. Please try again.",
       "step": "This step is not available right now.",
       "duplicate": "An equivalent case (same company, purpose, amount and currency) already exists in this organization. Open the existing case or adjust the data.",
+      "remove": "The document could not be removed. It may already be linked to a case.",
       "sessionNotFound": "This session was not found or does not belong to your workspace.",
       "back": "Back"
     }

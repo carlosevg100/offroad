@@ -13,6 +13,8 @@ type Props = {
   organizationId: string;
   userId: string;
   processAction: (formData: FormData) => Promise<void>;
+  /** Removes one uploaded document while the session is open (`document_id`, `session_id`, `locale`). */
+  removeAction?: (formData: FormData) => Promise<void>;
   /** Where to send the user if they prefer to type instead (optional). */
   manualHref?: string;
   /** Wrapper class differs between onboarding (`onboarding-stage__form`) and workspace (`intake-form`). */
@@ -23,7 +25,7 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, manualHref, className}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -58,9 +60,12 @@ export async function IntakeCollect({locale, session, documents, organizationId,
           select: t("uploader.select"),
           formats: t("uploader.formats"),
           received: t("uploader.received"),
+          remove: t("uploader.remove"),
         }}
         initialDocuments={documents}
+        locale={locale}
         organizationId={organizationId}
+        removeAction={session.status === "confirmed" ? undefined : removeAction}
         sessionId={session.id}
         userId={userId}
       />
