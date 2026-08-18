@@ -133,8 +133,24 @@ jobs:
       - name: Build the web app against the local stack
         run: pnpm --filter web build
 
+      # `--with-deps` runs apt-get, which stalled on the Azure mirror three times
+      # (PR #57 ~30 min, PR #58 twice ~15 min each), always right after
+      # "Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist". The same logs show the
+      # Chromium libraries (libnss3, libgbm1, libxkbcommon0, libpango, …) are already
+      # present on the runner image, so we install the browser only and let a missing
+      # library fail loudly instead of hanging. The cache skips the download entirely
+      # on repeat runs, and the timeout turns any future stall into a fast failure.
+      - name: Cache Playwright browser
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install Playwright browser
-        run: pnpm --filter web exec playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter web exec playwright install chromium
+        timeout-minutes: 6
 
       - name: Run end-to-end tests
         run: pnpm --filter web exec playwright test
