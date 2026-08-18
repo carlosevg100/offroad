@@ -985,13 +985,24 @@ staging (D-009) and residency (D-003).
 
 ### P1 — Build the general evidence pipeline
 
-1. Approve storage residency and isolated worker architecture.
-2. Implement server-side file validation and quarantine scanning.
-3. Add native parsers and spreadsheet-preserving extraction.
-4. Add OCR/layout extraction.
-5. Add schema-constrained AI extraction into candidates, never direct facts.
-6. Add processing manifests, versioning, retries, and reprocessing.
-7. Create adversarial and hostile-file fixtures.
+Detailed plan (proposed 18 Aug 2026, awaiting founder decisions D-003/D-010–D-014):
+[`docs/build/P1_INTELLIGENCE_PLAN.md`](docs/build/P1_INTELLIGENCE_PLAN.md) — case
+file ("Arquivo do Case"), anchored extraction with deterministic verifier,
+spreading, reconciliation rules R1–R17, case brief with claims, financial-core
+completion, provenance-bearing outputs, evals harness, isolated worker, model
+policy and costs, phases F0–F7. Summary of the phases:
+
+1. F0 — ontology, document-intelligence contracts, model gateway, evals harness
+   (Rede Horizonte gabarito becomes gold case G1), ADR-0008.
+2. F1 — isolated worker (D-003), quarantine/scan, deterministic layers for
+   PDF/XLSX/XLS/CSV/DOCX/PPTX, document profiles, organized document index.
+3. F2 — anchored LLM extraction + verifier for native formats, incremental
+   runs, auto-accept policy (D-014), replaces the fixture path in production.
+4. F3 — spreads, reconciliation exceptions, financial-core functions, XLSX export.
+5. F4 — case brief, management questions, red-flag candidates, readiness score.
+6. F5 — outputs with provenance (readiness report, credit profile, diligence
+   roadmap, proposed structure/indicative term sheet, teaser, lender package).
+7. F6 — scanned PDFs/images (OCR, D-011) and the case Copilot with narrow tools.
 
 ### P2 — Complete the borrower/advisor credit workflow
 
