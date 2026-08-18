@@ -14,6 +14,11 @@ export const listPrices: Record<string, ModelPrice> = {
   "claude-sonnet-5": {input: 3, output: 15, cachedInput: 0.3, source: "anthropic model table (promo 2/10 until 2026-08-31 not applied)", recordedOn: "2026-08-18"},
   "gpt-5.6-sol": {input: 5, output: 30, cachedInput: 0.5, source: "third-party price pages; confirm on official table", recordedOn: "2026-08-18"},
   "gpt-5.6-terra": {input: 2, output: 12, cachedInput: 0.2, source: "third-party price pages; confirm on official table", recordedOn: "2026-08-18"},
+  // sweep candidates (never production paths — see policy.sweepCandidateModels)
+  "gpt-5.6-luna": {input: 0.2, output: 1.2, cachedInput: 0.02, source: "third-party price pages; confirm on official table", recordedOn: "2026-08-18"},
+  "gpt-4.1": {input: 2, output: 8, cachedInput: 0.5, source: "third-party price pages; confirm on official table", recordedOn: "2026-08-18"},
+  "gpt-4o": {input: 1.25, output: 5, cachedInput: 0.625, source: "third-party price pages; confirm on official table", recordedOn: "2026-08-18"},
+  "claude-sonnet-4-6": {input: 3, output: 15, cachedInput: 0.3, source: "anthropic model table", recordedOn: "2026-08-18"},
 };
 
 export function estimateCostUsd(model: string, usage: Usage, prices: Record<string, ModelPrice> = listPrices): number {

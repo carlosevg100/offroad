@@ -1,6 +1,6 @@
 # ADR 0008 — Arquitetura da inteligência documental (P1): pipeline puro, extração ancorada verificada, gateway multi-provedor, evals como gate
 
-Status: accepted (fundador, 18/08/2026 — "plano ok", com a restrição de modelos abaixo)
+Status: accepted (fundador, 18/08/2026 — "plano ok"; restrições de modelo e residência incorporadas: sem Haiku, sem usar modelo mais poderoso do que o necessário, worker em AWS Fargate `sa-east-1`)
 Data: 2026-08-18
 Plano de referência: `docs/build/P1_INTELLIGENCE_PLAN.md`
 
@@ -36,7 +36,17 @@ arquitetura de execução.
    períodos/entidades, ranks de evidência 1–7, materialidade e política de auto-aceite,
    regras R1–R17, definições financeiras). Prompts são renderizados a partir dela;
    mudanças passam por PR com evals; a v1 aguarda revisão de especialista (D-013).
-4. **Um gateway multi-provedor, sem Haiku.** `packages/model-gateway` é a única porta
+4. **Tiering por evidência, não por precaução.** Cada tarefa declara uma escada
+   barato → forte (`extract_fields`: Sonnet 5 `medium` → Opus 5 `high` → GPT-5.6 Sol
+   `high`). O pipeline só sobe um degrau quando o verificador aponta fraqueza no
+   documento (âncoras não verificadas em campos materiais, divergência do shadow,
+   saída inválida, conflito) — nunca porque um valor "parece estranho". Modelos de
+   geração anterior (GPT-4o, GPT-4.1, Luna, Sonnet 4.6) ficam fora de produção: a
+   economia é de ≈ US$ 1,5 por case, enquanto cache de prompt e a passada
+   "localizar → extrair" economizam mais do que isso sem custo de qualidade; eles
+   permanecem testáveis no sweep de evals (`experimentalModels`) para que a decisão
+   seja revisitada com dado, por tipo de documento.
+5. **Um gateway multi-provedor, sem Haiku.** `packages/model-gateway` é a única porta
    para LLMs: Anthropic (Opus 5, Sonnet 5) e OpenAI (GPT-5.6) via API, política por
    tarefa (primário / shadow com outro provedor / fallback), allowlist com denylist por
    padrão (Haiku, mini, nano, luna, famílias antigas), structured outputs validados por
@@ -44,19 +54,19 @@ arquitetura de execução.
    de tabela, mascaramento de CPF/e-mail antes da saída, `store:false` na OpenAI,
    cassetes para testes determinísticos, logs sem conteúdo. Fable 5 fica fora até haver
    política de retenção de 30 dias aceita (D-010).
-5. **Evals como gate de release.** `packages/evals` + gold sets em
+6. **Evals como gate de release.** `packages/evals` + gold sets em
    `packages/testing-fixtures/gold/*` (G1 = Rede Horizonte a partir do gabarito
    sintético). Métricas do plano §14.2 (recall material, precisão, alucinação = aceito
    automaticamente sem âncora verificada, classificação, exceções, cálculos, critérios
    de aceite). Nenhuma mudança de prompt, modelo, parser ou ontologia entra sem eval;
    a linha de base do fixture (47,7% de recall material, 100% de precisão, 7/12
    exceções) está registrada e deve ser superada, nunca reescrita.
-6. **Escopo dual sessão/oportunidade e capacidades sem service-role.** Perfis, camadas,
+7. **Escopo dual sessão/oportunidade e capacidades sem service-role.** Perfis, camadas,
    spreads e brief nascem no escopo da `document_intake_session` e são promovidos à
    oportunidade na confirmação; o worker escreve por RPCs estreitas com token de
    capacidade por job e lê/grava objetos por URLs assinadas — nenhum componente recebe
    a service-role key (detalhe em F1).
-7. **Sem framework agentic no P1.** O pipeline é um DAG determinístico com chamadas
+8. **Sem framework agentic no P1.** O pipeline é um DAG determinístico com chamadas
    estruturadas; um job só vira agente autônomo quando eval provar ganho (Blueprint
    §38.3). Vercel Workflows/LangGraph ficam fora até haver orquestração entre serviços.
 
@@ -68,6 +78,6 @@ arquitetura de execução.
   proposto pelo modelo, verificado pelo código, confirmado por pessoa.
 - Trocar de modelo/provedor é configuração + eval, não reescrita; a dependência de um
   provedor externo (EUA) fica explícita e governada por D-010.
-- Custo previsto de US$ 6–12 por case a preço de tabela; budgets e kill switch por run.
+- Custo previsto de US$ 6–10 por case a preço de tabela e US$ 3–5 com cache de prompt e seleção de páginas; budgets e kill switch por run.
 - Novos grupos de campos (`debt`, `customers`, `management_questions`) exigem
   migration da check constraint de `intake_field_candidates` antes de persistir.

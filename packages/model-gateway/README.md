@@ -6,10 +6,17 @@ The only door to LLM providers (P1 plan §13.3, §15). Nothing in the monorepo c
 
 ## What it enforces
 
-- **Model policy** — per task: primary, shadow (second opinion, other provider) and
-  fallback. Allowlist: `claude-opus-5`, `claude-sonnet-5`, `gpt-5.6-sol`,
-  `gpt-5.6-terra`. **Haiku is denied by pattern** (founder decision, 18 Aug 2026),
-  as are mini/nano/luna and older families. Overrides must stay inside the allowlist.
+- **Model policy** — per task: primary, shadow (second opinion, other provider),
+  fallback and an **escalation ladder**. Production allowlist: `claude-opus-5`,
+  `claude-sonnet-5`, `gpt-5.6-sol`, `gpt-5.6-terra`. **Haiku, mini and nano are denied
+  by pattern** (founder decision, 18 Aug 2026) and can never be used, not even in a
+  sweep. Everything else (GPT-4o, GPT-4.1, Luna, Sonnet 4.6) is simply outside the
+  production allowlist and reachable only through `experimentalModels`, which the
+  evals sweep sets. Overrides are checked against the same rules.
+- **Escalate on evidence, not precaution** — `nextEscalation(task, current)` returns the
+  next step of the ladder (`extract_fields`: Sonnet 5 `medium` → Opus 5 `high` →
+  GPT-5.6 Sol `high`). The pipeline calls it when the verifier reports weak evidence
+  for a material document, never because a value "looks wrong".
 - **Structured outputs** — the request carries a zod schema; Anthropic receives it as
   `output_config.format` (`zodOutputFormat`), OpenAI as a strict `json_schema`
   (optional fields become nullable and nulls are stripped before validation). The

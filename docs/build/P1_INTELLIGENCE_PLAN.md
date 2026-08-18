@@ -38,7 +38,7 @@
 
 Primeiro valor real (qualquer data room extraído com âncoras, revisável) em ~5 semanas; conjunto completo em ~3–4 meses de construção focada com dois agentes. Estimativas são de engenharia, não promessas.
 
-**Modelos.** Decisão do fundador (18/08/2026): **sem Haiku**; neste primeiro momento usamos **Claude Opus 5 / Sonnet 5** e **OpenAI GPT-5.x** (família 5.6), **sempre via API**, atrás de um único ModelGateway multi-provedor. Política por tarefa na parte 15: Sonnet 5 em effort baixo para classificar/localizar; Sonnet 5 ou Opus 5 para extrair; Opus 5 para conciliar, entender e redigir; GPT-5.6 como segunda opinião (shadow/árbitro de divergência) e como fallback — e candidato a assumir tarefas onde os evals mostrarem que é melhor ou mais barato.
+**Modelos.** Decisões do fundador (18/08/2026): **sem Haiku nem sub-tiers baratos**, e **não usar modelo mais poderoso do que o necessário**. Provedores: **Anthropic (Opus 5, Sonnet 5)** e **OpenAI (GPT-5.6)**, sempre via API, atrás de um ModelGateway multi-provedor. Na prática (parte 15): GPT-5.6 Terra classifica e localiza; **Sonnet 5 extrai** e escala para Opus 5/Sol só quando o verificador aponta fraqueza no documento; **Opus 5 concilia, entende e redige**; GPT-5.6 Sol audita (provedor diferente de quem gerou). Modelos de geração anterior (GPT-4o, GPT-4.1) ficam fora de produção — economizam ≈ US$ 1,5 por case, enquanto cache de prompt e seleção de páginas economizam mais do que isso sem custo de qualidade — mas podem ser testados no sweep de evals.
 
 **Custo.** Modelos: ~US$ 5–12 por case (10 documentos, ~250 páginas/abas) a preço de tabela; menos com cache de prompt e Batch API nas etapas não interativas. Infra: worker isolado em São Paulo ~US$ 40–60/mês (AWS Fargate) ou ~US$ 10–20/mês (Fly.io GRU). Detalhe na parte 15.
 
@@ -504,21 +504,58 @@ Shadow (nova versão roda ao lado, sem efeito) → canary (flag por organizaçã
 
 ## 15. Modelos e custos
 
-Decisão do fundador (18/08/2026): **Haiku não é usado em nenhuma tarefa**; provedores são **Anthropic (Opus 5, Sonnet 5)** e **OpenAI (GPT-5.6: Sol/Terra/Luna)**, ambos via API. A tabela abaixo é a política inicial (configuração versionada no gateway); os evals da parte 14 decidem trocas por tarefa — inclusive migrar uma tarefa inteira para GPT-5.6 se ele for melhor ou mais barato com a mesma qualidade.
+Duas decisões do fundador (18/08/2026) governam esta parte:
 
-| Tarefa | Modelo padrão | Effort | Por quê | Shadow / fallback |
+1. **Sem Haiku e sem sub-tiers baratos** em caminho de produção — a barra de qualidade é o produto.
+2. **Não usar modelo mais poderoso do que o necessário** — extração roda no modelo *da geração atual* mais barato que passa nos limiares, e escala só com evidência; interpretação, cérebro e redação rodam no tier forte.
+
+### 15.1 O que custa cada opção (medido, não estimado)
+
+Custo por documento de extração (≈50k tokens de entrada com a camada e a ontologia, ≈6k de saída), a preço de tabela em 18/08/2026:
+
+| Modelo | US$/doc | US$/case (10 docs) | US$/mês (20 cases) | Contexto | Observação |
+|---|---|---|---|---|---|
+| GPT-4o (2024) | 0,092 | 0,93 | 18,50 | 128K | mais barato, geração antiga |
+| GPT-4.1 (2025) | 0,148 | 1,48 | 29,60 | 1M | geração antiga |
+| Sonnet 5 (promo até 31/08) | 0,160 | 1,60 | 32,00 | 1M | — |
+| GPT-5.6 Terra | 0,172 | 1,72 | 34,40 | 1,05M | — |
+| Sonnet 5 (tabela) | 0,240 | 2,40 | 48,00 | 1M | padrão de extração |
+| Opus 5 | 0,400 | 4,00 | 80,00 | 1M | escalonamento e cérebro |
+| GPT-5.6 Sol | 0,430 | 4,30 | 86,00 | 1,05M | auditor e segunda opinião |
+
+**A conclusão que decide:** trocar Sonnet 5 por GPT-4o economiza **≈ US$ 1,5 por case** (US$ 30/mês em 20 cases). O mesmo Sonnet 5 **com cache de prompt e a passada "localizar → extrair"** (só as páginas relevantes) custa **US$ 0,107/doc** — praticamente o preço do GPT-4o cru, com o modelo forte. Ou seja: **a economia real vem da arquitetura, não de rebaixar o modelo.** Como o verificador rejeita o que não tem âncora, um modelo mais fraco não gera número errado — gera *menos campos aproveitáveis* e mais revisão humana, que é o recurso caro. Por isso GPT-4o e GPT-4.1 ficam **fora do caminho de produção** (mas dentro do sweep, abaixo).
+
+### 15.2 Política inicial por tarefa
+
+Configuração versionada em `packages/model-gateway/src/policy.ts`; os evals decidem trocas.
+
+| Tarefa | Padrão | Effort | Por quê | Shadow / fallback |
 |---|---|---|---|---|
-| Classificação, localização de páginas, limpeza | Sonnet 5 | low | schema fechado; custo irrelevante nas primeiras páginas | GPT-5.6 Terra (shadow em amostra); fallback GPT-5.6 Terra |
-| Extração ancorada (geral) | Sonnet 5 | medium | melhor custo/qualidade em leitura estruturada | shadow GPT-5.6 Terra/Sol em documentos M; fallback Opus 5 |
-| Extração de DFs/tabelas complexas; árbitro de divergência | Opus 5 | high | precisão em tabelas densas e notas | shadow GPT-5.6 Sol; fallback GPT-5.6 Sol |
+| Classificação e localização de páginas | GPT-5.6 Terra | low | schema fechado, prompt pequeno, verificável por amostragem | shadow Sonnet 5; fallback Sonnet 5 |
+| **Extração ancorada (geral)** | Sonnet 5 | medium | melhor custo/qualidade em leitura estruturada; escala sob evidência | shadow GPT-5.6 Terra em documentos materiais; fallback GPT-5.6 Terra |
+| Extração de DFs/tabelas complexas | Opus 5 | high | precisão em tabelas densas e notas | shadow/fallback GPT-5.6 Sol |
 | Mapeamento de contas (spreading) | Sonnet 5 | medium | volume alto, tarefa delimitada | Opus 5 |
-| Explicação de exceções, brief, perguntas, red flags | Opus 5 | high | raciocínio de crédito | GPT-5.6 Sol como segunda opinião em amostra; Fable 5 só após retenção aceita + eval |
-| Redação de materiais a partir de claims (PT e EN) | Opus 5 | high | qualidade de prosa e fidelidade a claims | Sonnet 5 para rascunhos; GPT-5.6 Sol fallback |
-| Auditor de evidência (passe LLM) | GPT-5.6 Sol (provedor distinto do gerador) | high | independência real da geração | Opus 5 com config distinta |
-| Visão em páginas escaneadas/slides | mesmo modelo da tarefa (multimodal) | medium | evita provedor extra | OCR (F6) |
-| Embeddings/retrieval semântico | não usado no P1 (retrieval por estrutura) | — | evitar complexidade sem ganho medido | P2 |
+| Explicação de exceções, brief, perguntas, red flags | Opus 5 | high | raciocínio de crédito (é aqui que o tier forte se paga) | GPT-5.6 Sol como segunda opinião; Fable 5 só após retenção aceita |
+| Redação de materiais a partir de claims (PT e EN) | Opus 5 | high | fidelidade a claims e prosa institucional | Sonnet 5 em rascunhos; GPT-5.6 Sol fallback |
+| Auditor de evidência | GPT-5.6 Sol | high | independência real: provedor diferente de quem gerou | Opus 5 com config distinta |
+| Visão em páginas escaneadas/slides | o mesmo modelo da tarefa (multimodal) | medium | evita provedor extra | OCR (F6) |
+| Embeddings/retrieval semântico | não usado no P1 | — | retrieval por estrutura basta | P2 |
 
-**Custo por case (10 documentos, ~250 páginas/abas):** classificação < US$ 0,10 · extração US$ 1,5–3 · shadow com outro provedor em 3 documentos M US$ 0,6–1,5 · spreading US$ 0,3 · explicações US$ 0,3 · brief US$ 1 · materiais (4 outputs PT+EN) US$ 2 · auditor US$ 0,5–1 · híbrido/visão US$ 0,3–1 ⇒ **≈ US$ 6–12** (≈ R$ 35–70) na tabela; −30–50% com cache e Batch. Uma organização com 20 cases/mês ⇒ US$ 120–250/mês de modelo. Latência alvo: documento 0,5–2 min; case completo (paralelo 4) < 10 min; brief < 3 min; regeneração incremental proporcional ao que mudou.
+### 15.3 Escalonamento por evidência (em vez de "usar o forte por precaução")
+
+Cada tarefa declara uma escada barato → forte. O pipeline só sobe um degrau quando o **verificador** aponta fraqueza no documento — âncoras não verificadas em campos materiais, divergência do shadow, saída inválida, conflito aberto — nunca porque um valor "parece estranho":
+
+- `extract_fields`: Sonnet 5 `medium` → Opus 5 `high` → GPT-5.6 Sol `high`
+- `extract_complex`: Opus 5 `high` → Opus 5 `max`
+- `map_accounts`: Sonnet 5 `medium` → Opus 5 `high`
+
+Assim o custo alto incide só nos documentos difíceis (tipicamente 1–2 por case), e o motivo do escalonamento fica registrado no run e alimenta os evals.
+
+### 15.4 Sweep: provar ou refutar o modelo mais barato
+
+`sweepCandidateModels` (GPT-4o, GPT-4.1, GPT-5.6 Luna, Sonnet 4.6) **não são permitidos em produção**, mas o harness de evals pode exercitá-los com `experimentalModels` para responder com dado, por tipo de documento: rodar G1..G6 no mesmo pipeline variando só o modelo e comparar qualidade × custo (`compareSweep` / `renderSweepMarkdown`). A regra de promoção: entre as configurações que passam em **todos** os limiares, vence a mais barata; uma candidata fora da allowlist só entra em produção com o mesmo resultado nos outros gold sets (incluindo o adversarial) e decisão do fundador — a allowlist expressa uma decisão de qualidade, não um limite técnico. Haiku, mini e nano continuam proibidos até no sweep.
+
+**Custo por case (10 documentos, ~250 páginas/abas):** classificação < US$ 0,05 · extração US$ 1,1–2,4 · shadow com outro provedor em 3 documentos materiais US$ 0,5–1,3 · escalonamento em 1–2 documentos US$ 0,4–0,8 · spreading US$ 0,3 · explicações US$ 0,3 · brief US$ 1 · materiais (4 outputs PT+EN) US$ 2 · auditor US$ 0,5–1 · híbrido/visão US$ 0,3–1 ⇒ **≈ US$ 6–10** (≈ R$ 35–60) na tabela; **−40–60% com cache de prompt, seleção de páginas e Batch**, o que coloca um case na faixa de US$ 3–5. Uma organização com 20 cases/mês ⇒ US$ 70–200/mês de modelo. Latência alvo: documento 0,5–2 min; case completo (paralelo 4) < 10 min; brief < 3 min; regeneração incremental proporcional ao que mudou.
 
 ---
 
@@ -565,7 +602,7 @@ Cada fase é dividida em PRs pequenos (≈ 6–10 por fase), um assunto por PR, 
 ## 18. Decisões que só o fundador pode tomar (com recomendação)
 | ID | Decisão | Recomendação do CTO |
 |---|---|---|
-| D-003 | Onde roda o worker isolado (residência) | AWS ECS Fargate `sa-east-1`; Fly.io `gru` como alternativa temporária se a conta AWS atrasar |
+| D-003 | Onde roda o worker isolado (residência) | **Decidido em 18/08/2026: AWS ECS Fargate em `sa-east-1` (São Paulo).** Falta apenas provisionar conta/ECR/secrets |
 | D-010 | Provedores de LLM, retenção/ZDR, transferência internacional, sem treinamento | **Decidido em 18/08/2026:** Anthropic (Opus 5, Sonnet 5) e OpenAI (GPT-5.6) via API; sem Haiku. Pendente: DPA e ZDR/retenção em cada provedor, base legal de transferência internacional (LGPD), proibição contratual de treinamento; Fable 5 fora até haver política de retenção aceita |
 | D-011 | OCR para escaneados: self-hosted ou provedor | Tesseract no worker + visão do Claude para conferência; provedor só se os evals mostrarem necessidade |
 | D-012 | Orçamento de modelo por case e por mês | teto inicial US$ 15/case e US$ 500/mês, alertas em 70% |
