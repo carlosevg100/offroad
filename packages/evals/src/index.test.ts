@@ -7,6 +7,8 @@ import {resolveFieldPath} from "@offroad/credit-ontology";
 import {
   buildRedeHorizonteGoldFields,
   checkThresholds,
+  compareSweep,
+  renderSweepMarkdown,
   evaluateSnapshot,
   goldDocumentPath,
   loadGoldCase,
@@ -151,3 +153,45 @@ describe("value matching", () => {
     expect(valuesMatch("2027-04-01", "2027-04-01", "date", {kind: "exact"})).toBe(true);
   });
 });
+
+describe("model sweep comparison", () => {
+  const base = evaluateSnapshot(gold, snapshotFromFixture(fixtureDocuments));
+  const perfect = (costUsd: number): typeof base => ({
+    ...base,
+    fields: {...base.fields, material: {expected: 65, matched: 65, recall: 1}, precision: {comparable: 65, correct: 65, value: 1}},
+    classification: {expected: 8, correct: 8, accuracy: 1},
+    exceptions: {...base.exceptions, recall: 1, falsePositives: 0},
+    usage: {costUsd, calls: 10},
+  });
+
+  it("recommends the cheapest allowlisted configuration that clears every threshold", () => {
+    const comparison = compareSweep([
+      {label: "extract:opus-5@high", provider: "anthropic", model: "claude-opus-5", report: perfect(4.0), productionAllowed: true},
+      {label: "extract:sonnet-5@medium", provider: "anthropic", model: "claude-sonnet-5", report: perfect(2.4), productionAllowed: true},
+      {label: "extract:gpt-4o", provider: "openai", model: "gpt-4o", report: {...base, usage: {costUsd: 0.9, calls: 10}}, productionAllowed: false},
+    ]);
+    expect(comparison.recommended?.label).toBe("extract:sonnet-5@medium");
+    expect(comparison.verdicts.find((v) => v.label === "extract:gpt-4o")?.passesThresholds).toBe(false);
+    expect(comparison.cheapestQualified).toBeUndefined();
+    const markdown = renderSweepMarkdown(comparison);
+    expect(markdown).toContain("**Recommended (cheapest qualifying, already allowlisted):** extract:sonnet-5@medium");
+    expect(markdown).toContain("| extract:gpt-4o | sweep only |");
+  });
+
+  it("surfaces a cheaper non-allowlisted candidate as evidence, without promoting it", () => {
+    const comparison = compareSweep([
+      {label: "extract:sonnet-5@medium", provider: "anthropic", model: "claude-sonnet-5", report: perfect(2.4), productionAllowed: true},
+      {label: "extract:gpt-4.1", provider: "openai", model: "gpt-4.1", report: perfect(1.48), productionAllowed: false},
+    ]);
+    expect(comparison.recommended?.label).toBe("extract:sonnet-5@medium");
+    expect(comparison.cheapestQualified?.label).toBe("extract:gpt-4.1");
+    expect(renderSweepMarkdown(comparison)).toContain("requires the same result on the other gold sets");
+  });
+
+  it("refuses to recommend anything when no configuration qualifies", () => {
+    const comparison = compareSweep([{label: "fixture", provider: "none", model: "fixture", report: base, productionAllowed: true}]);
+    expect(comparison.recommended).toBeUndefined();
+    expect(renderSweepMarkdown(comparison)).toContain("**No allowlisted configuration cleared every threshold.**");
+  });
+});
+
