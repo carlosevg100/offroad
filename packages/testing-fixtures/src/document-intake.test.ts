@@ -1,6 +1,13 @@
+import {createHash} from "node:crypto";
+import {readFileSync} from "node:fs";
+import {dirname, join} from "node:path";
+import {fileURLToPath} from "node:url";
+
 import {describe, expect, it} from "vitest";
 
 import {buildRedeHorizonteDocumentIntake, redeHorizonteFileHashes, redeHorizonteRequiredFiles} from "./document-intake";
+
+const assetsDirectory = join(dirname(fileURLToPath(import.meta.url)), "..", "assets", "rede-horizonte");
 
 describe("Rede Horizonte document-first intake fixture", () => {
   const result = buildRedeHorizonteDocumentIntake(redeHorizonteRequiredFiles.map((original_name, index) => ({id: `document-${index}`, original_name, sha256: redeHorizonteFileHashes[original_name]})));
@@ -49,5 +56,12 @@ describe("Rede Horizonte document-first intake fixture", () => {
     expect(unknown.missingFiles).toEqual([]);
     expect(unknown.issues).toHaveLength(1);
     expect(unknown.issues[0]?.description).toContain("nenhum campo foi proposto");
+  });
+
+  it("matches the versioned synthetic data room byte for byte", () => {
+    for (const name of redeHorizonteRequiredFiles) {
+      const digest = createHash("sha256").update(readFileSync(join(assetsDirectory, name))).digest("hex");
+      expect(digest, name).toBe(redeHorizonteFileHashes[name]);
+    }
   });
 });
