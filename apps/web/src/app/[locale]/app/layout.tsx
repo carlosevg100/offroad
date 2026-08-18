@@ -24,12 +24,13 @@ export default async function ApplicationLayout({children, params}: Props) {
     <div className="application-shell">
       <aside className="app-sidebar">
         <div className="app-sidebar__brand"><BrandMark inverted locale={locale as AppLocale} /></div>
-        <button className="app-workspace-id" type="button">
+        {/* Workspace switching and command search are not implemented yet: shown as design intent, disabled honestly. */}
+        <button aria-disabled="true" className="app-workspace-id" disabled title={t("comingSoon")} type="button">
           <span className="app-workspace-id__icon">{canOriginate ? <Building2 aria-hidden="true" size={15} /> : <Landmark aria-hidden="true" size={15} />}</span>
           <span><small>{t("workspace")}</small><strong>{organization.name}</strong><em>{membership.role}</em></span>
           <ChevronDown aria-hidden="true" size={14} />
         </button>
-        <button className="app-search" type="button"><Search aria-hidden="true" size={14} /><span>{t("search")}</span><kbd>⌘ K</kbd></button>
+        <button aria-disabled="true" className="app-search" disabled title={t("comingSoon")} type="button"><Search aria-hidden="true" size={14} /><span>{t("search")}</span><kbd>⌘ K</kbd></button>
         <nav aria-label={t("workspace")} className="app-nav">
           <div className="app-nav__group">
             <p>{t("workspaceNav")}</p>

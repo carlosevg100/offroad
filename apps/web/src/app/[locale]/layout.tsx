@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import {Inter, Newsreader} from "next/font/google";
-import {hasLocale} from "next-intl";
+import {hasLocale, NextIntlClientProvider} from "next-intl";
+import {getMessages} from "next-intl/server";
 import {notFound} from "next/navigation";
 
 import {brand} from "@/config/brand";
@@ -101,6 +102,10 @@ export default async function LocaleLayout({children, params}: Props) {
     notFound();
   }
 
+  // Only the error copy crosses to the client (error boundaries cannot use server translations).
+  const messages = await getMessages({locale});
+  const clientMessages = {Errors: messages.Errors};
+
   const organizationId = `${brand.url}/#organization`;
   const websiteId = `${brand.url}/#website`;
   const applicationId = `${brand.url}/#software-application`;
@@ -158,7 +163,9 @@ export default async function LocaleLayout({children, params}: Props) {
             __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
           }}
         />
-        {children}
+        <NextIntlClientProvider locale={locale} messages={clientMessages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

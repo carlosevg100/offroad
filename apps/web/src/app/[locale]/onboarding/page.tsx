@@ -198,13 +198,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       <aside className="workspace-sidebar">
         <div className="workspace-sidebar__brand"><BrandMark inverted locale={locale as AppLocale} /></div>
 
-        <button className="workspace-switcher" type="button">
+        <button aria-disabled="true" className="workspace-switcher" disabled title={t("workspace.comingSoon")} type="button">
           <span className="workspace-switcher__icon"><JourneyIcon aria-hidden="true" size={15} /></span>
           <span><small>{t("workspace.workspaceLabel")}</small><strong>{organization.name}</strong></span>
           <ChevronDown aria-hidden="true" size={14} />
         </button>
 
-        <button className="workspace-search" type="button">
+        <button aria-disabled="true" className="workspace-search" disabled title={t("workspace.comingSoon")} type="button">
           <Search aria-hidden="true" size={14} />
           <span>{t("workspace.search")}</span>
           <kbd>⌘ K</kbd>
@@ -257,7 +257,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       <section className="workspace-shell">
         <header className="workspace-topbar">
           <div className="workspace-breadcrumb"><PanelLeft aria-hidden="true" size={16} /><span>{organization.name}</span><ChevronRight aria-hidden="true" size={12} /><strong>{projectTitle}</strong><ChevronRight aria-hidden="true" size={12} /><em>{t(`workspace.nodes.${journey}.${currentStep}`)}</em></div>
-          <div className="workspace-topbar__actions"><span className="workspace-saved"><Check aria-hidden="true" size={12} />{t("workspace.saved")}</span><button aria-label={t("workspace.help")} type="button"><HelpCircle aria-hidden="true" size={16} /></button><button aria-label={t("workspace.notifications")} type="button"><Bell aria-hidden="true" size={16} /></button></div>
+          <div className="workspace-topbar__actions"><span className="workspace-saved"><Check aria-hidden="true" size={12} />{t("workspace.saved")}</span><button aria-disabled="true" aria-label={t("workspace.help")} disabled title={t("workspace.comingSoon")} type="button"><HelpCircle aria-hidden="true" size={16} /></button><button aria-disabled="true" aria-label={t("workspace.notifications")} disabled title={t("workspace.comingSoon")} type="button"><Bell aria-hidden="true" size={16} /></button></div>
         </header>
 
         <div className="workspace-scroll">
