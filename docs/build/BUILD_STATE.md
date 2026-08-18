@@ -10,7 +10,7 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 | B1 Website | in_review | experiência bilíngue premium em grafite/azul institucional, proposta de valor explícita para empresas, originadores e gestores, mapa animado do mercado, product film localizado, logo oficial, metadata e QA responsivo | automação de acessibilidade e aprovação editorial/legal |
 | B2 Auth | accepted | cadastro por perfil com código de 6 dígitos, recovery, onboarding persistente; jornada autenticada coberta por E2E em CI (signup → código → onboarding → login) | MFA/AAL2 e step-up para ações sensíveis |
 | B3 Domínio/RLS | accepted | RLS + FORCE RLS em 32/32 tabelas; sem `offroad` self-service; teste de não interferência (tenants, intake, comandos RPC, delete de documentos) em CI e executado remotamente; Security Advisor sem alertas | papéis internos granulares (`can_access_opportunity` por permissão) e revisão externa do threat model |
-| B4 Documentos | in_review | bucket privado, upload direto com SHA-256 recalculado no servidor (`sha256_verified_at`), remoção enquanto a sessão está aberta, revisão assistida, fixture Rede Horizonte por hash, sessão/candidatos/issues em comandos atômicos, E2E do fluxo | extrator geral (parsers/OCR/LLM → mesmo contrato de candidatos), validação MIME/magic bytes server-side, quarentena/malware, residência/worker isolado |
+| B4 Documentos | in_review | bucket privado, upload direto com SHA-256 recalculado no servidor (`sha256_verified_at`), remoção enquanto a sessão está aberta, revisão assistida, fixture Rede Horizonte por hash, sessão/candidatos/issues em comandos atômicos, E2E do fluxo; **P1 F0**: ontologia, núcleo de verificação de âncoras, gateway multi-provedor e harness de evals com gold case G1 (pacotes puros, ainda não ligados ao fluxo) | F1: worker isolado (D-003), portaria/quarentena, camadas por formato, perfis; F2: extração ancorada substitui o fixture atrás de flag |
 | B5 Financial core | in_review | pacote decimal exato e golden tests determinísticos | modelos avançados, versionamento e validação independente |
 | B6 Crédito/estrutura | in_progress | contratos de domínio, criação atômica de company/pedido/oportunidade + fatos de evidência aprovados; sala de crédito com contadores reais e placeholders honestos | spreading/reconciliação, capacidade, structuring workbench |
 | B7 Agent Kernel | not_started | - | B3-B6 |
@@ -37,6 +37,16 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [x] páginas de erro/404 localizadas; placeholders desabilitados com "Em breve"; código morto removido
 - [x] ADRs 0004–0007, ledgers e `handoff.md` atualizados
 - [ ] criar projetos Sentry/PostHog e configurar secrets por ambiente
-- [ ] extrator geral de documentos (P1) — plano detalhado em [`P1_INTELLIGENCE_PLAN.md`](P1_INTELLIGENCE_PLAN.md) (aguarda D-003, D-010–D-014)
+- [ ] extrator geral de documentos (P1) — plano detalhado em [`P1_INTELLIGENCE_PLAN.md`](P1_INTELLIGENCE_PLAN.md); ADR 0008
+
+## P1 — Fase F0 (fundações da inteligência) — 18/08/2026
+
+- [x] `packages/credit-ontology`: taxonomia, catálogo de campos (cobre os 38 do fixture + expansões), plano de contas, períodos/entidades, ranks, política de auto-aceite v1, regras R1–R17, definições (PR #52)
+- [x] `packages/document-intelligence`: contratos de camada/perfil/candidato/exceção/brief, índice de camadas, verificador de âncora (7 checagens), normalizador Decimal (PR #53)
+- [x] `packages/model-gateway`: Anthropic + OpenAI via API, política sem Haiku, structured outputs validados, budgets, fallback, redação, cassetes, logs sem conteúdo (PR #54)
+- [x] `packages/evals` + gold case G1 (Rede Horizonte a partir do gabarito sintético) + baseline do fixture: precisão 100%, recall material 47,7%, exceções 7/12 (PR #55)
+- [x] ADR 0008 (arquitetura da inteligência documental)
+- [ ] F1: worker isolado (D-003), portaria, camadas PDF/XLSX/XLS/CSV/DOCX/PPTX, perfis, índice organizado, migrations de runs/jobs/perfis/camadas
+- [ ] revisão da ontologia por especialista (D-013); DPA/ZDR nos provedores (D-010)
 
 Produção canônica: `https://offroad.capital`

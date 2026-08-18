@@ -279,11 +279,15 @@ offroad/
 │   ├── src/app/globals.css           Base and legacy product styles
 │   └── src/app/offroad-premium.css   Current premium visual layer
 ├── packages/
+│   ├── credit-ontology/              What the intelligence looks for: taxonomy, fields, chart of accounts, rules R1–R17, policies (P1 F0)
+│   ├── document-intelligence/        Pure pipeline core: layer/candidate/exception/brief contracts, anchor verifier, normalizer (P1 F0)
+│   ├── model-gateway/                Only door to LLMs: Anthropic + OpenAI via API, no-Haiku policy, budgets, cassettes (P1 F0)
+│   ├── evals/                        Evaluation harness, metrics, baseline CLI (P1 F0)
 │   ├── domain-contracts/             Zod contracts and shared domain schemas
 │   ├── evidence-compiler/            Claim coverage and support rules
 │   ├── financial-core/               Decimal financial calculations
 │   ├── matching-core/                Deterministic mandate filters/ranking
-│   └── testing-fixtures/             Synthetic fixtures + assets/rede-horizonte (8 files)
+│   └── testing-fixtures/             Synthetic fixtures + assets/rede-horizonte (8 files) + gold/rede-horizonte (G1 expectations)
 ├── supabase/
 │   ├── migrations/                   Ordered schema and security history
 │   ├── templates/                    Auth confirmation/recovery emails
@@ -291,7 +295,7 @@ offroad/
 │   └── config.toml                   Local Supabase/Auth/Storage configuration
 ├── docs/
 │   ├── product/                      Versioned Blueprint v3.0 PDF
-│   ├── adr/                          Architecture decisions (0001–0007)
+│   ├── adr/                          Architecture decisions (0001–0008)
 │   └── build/                        Plan, state, evidence, risks, decisions, access
 ├── AGENTS.md / CLAUDE.md             Operating rules for agents and humans
 ├── .github/                          CI (check, database, e2e), CODEOWNERS, templates
@@ -992,8 +996,10 @@ spreading, reconciliation rules R1–R17, case brief with claims, financial-core
 completion, provenance-bearing outputs, evals harness, isolated worker, model
 policy and costs, phases F0–F7. Summary of the phases:
 
-1. F0 — ontology, document-intelligence contracts, model gateway, evals harness
-   (Rede Horizonte gabarito becomes gold case G1), ADR-0008.
+1. F0 — **done 18 Aug 2026 (PRs #52–#55, ADR 0008)**: `credit-ontology`,
+   `document-intelligence` (anchor verifier + normalizer), `model-gateway`
+   (Anthropic + OpenAI via API, no Haiku), `evals` + gold case G1 with the
+   fixture baseline (precision 100%, material recall 47.7%, exceptions 7/12).
 2. F1 — isolated worker (D-003), quarantine/scan, deterministic layers for
    PDF/XLSX/XLS/CSV/DOCX/PPTX, document profiles, organized document index.
 3. F2 — anchored LLM extraction + verifier for native formats, incremental
