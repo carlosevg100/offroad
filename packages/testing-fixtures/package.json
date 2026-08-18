@@ -16,6 +16,6 @@
     "test": "vitest run --exclude 'dist/**' --passWithNoTests"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43"
+    "@types/node": "^26.2.0"
   }
 }
