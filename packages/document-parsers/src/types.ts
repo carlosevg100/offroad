@@ -40,6 +40,12 @@ export type ParseResult = {
   layer: DocumentLayer;
   /** Recorded on `document_layers.parser_versions` so a re-parse is comparable. */
   parserVersions: Record<string, string>;
+  /**
+   * Present when the file had to be converted before it could be read (a `.doc` turned into
+   * `.docx`, say). It is recorded because a converted document puts one more program between
+   * the anchor and the original file, and a reviewer should be able to see that.
+   */
+  conversion?: {from: string; to: string; by: string; version: string};
   warnings: ParserWarning[];
   detected: {
     kind: LayerKind;
@@ -70,6 +76,8 @@ export const parserLimits = {
   /** Decompressed/compressed ratio that marks a zip bomb. */
   maxZipRatio: 250,
   maxZipEntryBytes: 200 * 1024 * 1024,
+  /** OCR costs real time per page; beyond this the rest is left scanned and reported. */
+  maxOcrPages: 200,
 } as const;
 
 export class ParserError extends Error {

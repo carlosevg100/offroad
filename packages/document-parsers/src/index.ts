@@ -12,26 +12,39 @@
  *     cached value is reported, a truncation is reported. Silence would let the extractor
  *     believe it saw the whole document.
  *
- * The heavy, Node-only dependencies live in this package (and never in
- * `@offroad/document-intelligence`) so the web app keeps importing the contracts alone.
+ * Coverage is nonetheless the point of the product: a company sends what it has, which is
+ * PDFs, spreadsheets old and new, Word letters, decks and photographs of paper. Everything
+ * that can be read in process is read here; the two jobs that need the outside world —
+ * converting a legacy binary Office file and reading glyphs out of an image — arrive as
+ * capabilities the worker lends to this library (see `./capabilities`), so the package stays
+ * pure and testable while the container carries LibreOffice and an OCR engine.
  */
 import {fileTypeFromBuffer} from "file-type";
-import {ParserError, parserLimits, type ParseInput, type ParseResult} from "./types";
+import type {LayerPage} from "@offroad/document-intelligence";
+import {ParserError, parserLimits, type ParseInput, type ParseResult, type ParserWarning} from "./types";
+import type {OcrEngine, ParseCapabilities} from "./capabilities";
 import {parsePdf} from "./pdf";
 import {parseXlsx} from "./xlsx";
+import {parseLegacySpreadsheet} from "./legacy-spreadsheet";
 import {parseCsv} from "./csv";
 import {parseDocx} from "./docx";
 import {parsePptx} from "./pptx";
+import {parseImageWithOcr, pagesFromOcr} from "./ocr";
+import {cfbMimeTypes, detectCfbSubtype} from "./cfb";
 
-export const documentParsersVersion = "2026.08.18-parsers-v1";
+export const documentParsersVersion = "2026.08.18-parsers-v2";
 
 export * from "./types";
 export * from "./scale";
+export * from "./capabilities";
 export {parsePdf, pdfParserVersion} from "./pdf";
 export {parseXlsx, xlsxParserVersion, excelSerialToIso} from "./xlsx";
+export {parseLegacySpreadsheet, legacySpreadsheetParserVersion} from "./legacy-spreadsheet";
 export {parseCsv, csvParserVersion, columnLetters} from "./csv";
 export {parseDocx, docxParserVersion} from "./docx";
 export {parsePptx, pptxParserVersion} from "./pptx";
+export {parseImageWithOcr, pagesFromOcr, ocrLayerVersion} from "./ocr";
+export {detectCfbSubtype, cfbMimeTypes, type CfbSubtype} from "./cfb";
 
 const ooxml = {
   xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -39,22 +52,30 @@ const ooxml = {
   pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 } as const;
 
-/**
- * Legacy binary Office formats. The product accepts them at upload, and the honest answer
- * today is that we do not parse them: the only npm parser for `.xls` is SheetJS 0.18.5,
- * which carries unfixed advisories on npm (the patched builds are published outside it), and
- * nothing maintained reads `.doc`/`.ppt`. Feeding a hostile file to an unmaintained parser
- * inside the worker is a worse outcome than telling the sender to re-save as `.xlsx`, so the
- * document is refused with a message a person can act on.
- */
-const legacyBinary: Record<string, string> = {
-  "application/vnd.ms-excel": "xls",
-  "application/msword": "doc",
-  "application/vnd.ms-powerpoint": "ppt",
-  "application/x-cfb": "office-97",
-};
+/** Spreadsheet dialects SheetJS reads directly — no conversion step needed. */
+const legacySpreadsheetMimes = new Set([
+  "application/vnd.ms-excel",
+  "application/vnd.ms-excel.sheet.binary.macroenabled.12",
+  "application/vnd.oasis.opendocument.spreadsheet",
+  "application/x-dbf",
+]);
 
-const textLike = new Set(["csv", "tsv", "txt"]);
+/**
+ * Formats that need another program to become readable. The worker's converter turns them
+ * into the modern equivalent (`.doc` → `.docx`, `.ppt` → `.pptx`, `.rtf`/`.odt` → `.docx`),
+ * and the result goes back through the normal dispatch.
+ */
+const convertibleMimes = new Set([
+  "application/msword",
+  "application/vnd.ms-powerpoint",
+  "application/rtf",
+  "text/rtf",
+  "application/vnd.oasis.opendocument.text",
+  "application/vnd.oasis.opendocument.presentation",
+  "application/vnd.wordperfect",
+]);
+
+const textLike = new Set(["csv", "tsv", "txt", "prn"]);
 
 export type DetectedType = {mime: string; extension: string; mismatch: boolean};
 
@@ -65,13 +86,24 @@ export type DetectedType = {mime: string; extension: string; mismatch: boolean};
 export async function detectType(input: ParseInput): Promise<DetectedType> {
   const sniffed = await fileTypeFromBuffer(input.bytes);
   const extension = (input.fileName.split(".").pop() ?? "").toLowerCase();
+  const declared = input.mimeType?.toLowerCase();
 
   if (sniffed) {
-    const declared = input.mimeType?.toLowerCase();
+    // Office 97–2003 files share one container, so the magic bytes say "CFB" and nothing
+    // more; the main stream inside says whether it is a workbook, a letter or a deck.
+    let mime = sniffed.mime;
+    let ext = sniffed.ext;
+    if (mime === "application/x-cfb") {
+      const subtype = detectCfbSubtype(input.bytes);
+      if (subtype !== "unknown") {
+        mime = cfbMimeTypes[subtype];
+        ext = subtype;
+      }
+    }
     return {
-      mime: sniffed.mime,
-      extension: sniffed.ext,
-      mismatch: Boolean(declared && declared !== sniffed.mime && !isBenignMismatch(declared, sniffed.mime)),
+      mime,
+      extension: ext,
+      mismatch: Boolean(declared && declared !== mime && !isBenignMismatch(declared, mime)),
     };
   }
 
@@ -79,7 +111,6 @@ export async function detectType(input: ParseInput): Promise<DetectedType> {
   // fact that the bytes decode as text.
   if (textLike.has(extension) && looksTextual(input.bytes)) {
     const mime = extension === "txt" ? "text/plain" : "text/csv";
-    const declared = input.mimeType?.toLowerCase();
     return {mime, extension, mismatch: Boolean(declared && declared !== mime && !isBenignMismatch(declared, mime))};
   }
 
@@ -90,31 +121,31 @@ export async function detectType(input: ParseInput): Promise<DetectedType> {
  * Parses any supported document. Throws `ParserError` with a code the caller turns into an
  * intake issue; it never returns a half-empty layer pretending the file was read.
  */
-export async function parseDocument(input: ParseInput): Promise<ParseResult> {
+export async function parseDocument(input: ParseInput, capabilities: ParseCapabilities = {}): Promise<ParseResult> {
   if (input.bytes.byteLength === 0) throw new ParserError("the file is empty", "no_text");
   if (input.bytes.byteLength > parserLimits.maxBytes) {
     throw new ParserError(`the file is larger than ${parserLimits.maxBytes} bytes`, "limit_reached");
   }
 
   const detected = await detectType(input);
+  const result = await dispatch(input, detected, capabilities);
 
-  if (legacyBinary[detected.mime]) {
-    throw new ParserError(
-      `legacy ${legacyBinary[detected.mime]} format is not processed; re-save the file as .xlsx, .docx or .pptx`,
-      "unsupported_legacy_format",
-    );
-  }
-
-  const result = await dispatch(input, detected);
   // Keep what the bytes said, including a mismatch with the declared type: the gate turns
   // that into a quality flag on the document profile.
-  return {...result, detected: {...result.detected, mime: detected.mime, extension: detected.extension, mismatch: detected.mismatch}};
+  return {
+    ...result,
+    detected: {...result.detected, mime: detected.mime, extension: detected.extension, mismatch: detected.mismatch},
+  };
 }
 
-async function dispatch(input: ParseInput, detected: DetectedType): Promise<ParseResult> {
+async function dispatch(
+  input: ParseInput,
+  detected: DetectedType,
+  capabilities: ParseCapabilities,
+): Promise<ParseResult> {
   switch (detected.mime) {
     case "application/pdf":
-      return parsePdf(input);
+      return parsePdfWithOcrFallback(input, capabilities.ocr);
     case ooxml.xlsx:
       return parseXlsx(input);
     case ooxml.docx:
@@ -128,34 +159,130 @@ async function dispatch(input: ParseInput, detected: DetectedType): Promise<Pars
       break;
   }
 
-  if (detected.mime.startsWith("image/")) return imageLayer(input, detected);
+  if (legacySpreadsheetMimes.has(detected.mime)) return parseLegacySpreadsheet(input);
+  if (detected.mime.startsWith("image/")) {
+    return parseImageWithOcr(
+      {
+        bytes: input.bytes,
+        documentId: input.documentId,
+        documentVersion: input.documentVersion,
+        mime: detected.mime,
+        extension: detected.extension,
+        mismatch: detected.mismatch,
+      },
+      capabilities.ocr,
+    );
+  }
+  if (convertibleMimes.has(detected.mime)) return convertThenParse(input, detected, capabilities);
 
   throw new ParserError(
-    `unsupported file type "${detected.mime}"; send PDF, XLSX, CSV, DOCX or PPTX`,
+    `unsupported file type "${detected.mime}"; send PDF, a spreadsheet, a document, a presentation or an image`,
     "unsupported_format",
   );
 }
 
 /**
- * An image is a document with exactly one page and no text layer. Representing it as a
- * scanned page keeps the pipeline honest: the document exists, carries a page-level anchor,
- * and is blocked from auto-acceptance until OCR (F6).
+ * Legacy binary Office and OpenDocument text/presentation files go through the worker's
+ * converter and come back as OOXML, which the parsers above read natively.
  */
-function imageLayer(input: ParseInput, detected: DetectedType): ParseResult {
+async function convertThenParse(
+  input: ParseInput,
+  detected: DetectedType,
+  capabilities: ParseCapabilities,
+): Promise<ParseResult> {
+  const converter = capabilities.converter;
+  if (!converter?.supports(detected.mime)) {
+    throw new ParserError(
+      `"${detected.mime}" needs conversion and no converter is available in this environment`,
+      "unsupported_legacy_format",
+    );
+  }
+
+  let converted;
+  try {
+    converted = await converter.convert({bytes: input.bytes, mime: detected.mime, fileName: input.fileName});
+  } catch (error) {
+    throw new ParserError(`the file could not be converted: ${(error as Error).message}`, "unsupported_legacy_format");
+  }
+
+  if (converted.bytes.byteLength === 0) {
+    throw new ParserError("the converter returned an empty file", "unsupported_legacy_format");
+  }
+
+  const convertedInput: ParseInput = {...input, bytes: converted.bytes, fileName: converted.fileName, mimeType: converted.mime};
+  const convertedType = await detectType(convertedInput);
+
+  if (convertibleMimes.has(convertedType.mime)) {
+    throw new ParserError("the converter produced another format that still needs conversion", "unsupported_legacy_format");
+  }
+
+  // One hop only: the converted file may not ask for another conversion.
+  const afterConversion: ParseCapabilities = capabilities.ocr ? {ocr: capabilities.ocr} : {};
+  const result = await dispatch(convertedInput, convertedType, afterConversion);
+
   return {
-    layer: {
-      documentId: input.documentId,
-      documentVersion: input.documentVersion,
-      kind: "image",
-      pages: [{n: 1, blocks: [], tables: [], scanned: true}],
-      scaleDeclarations: [],
-      stats: {pageCount: 1},
-    },
-    parserVersions: {image: "image-1.0.0"},
+    ...result,
+    parserVersions: {...result.parserVersions, [converter.name]: converter.version},
+    conversion: {from: detected.mime, to: convertedType.mime, by: converter.name, version: converter.version},
     warnings: [
-      {code: "no_text", message: "the document is an image and needs OCR before extraction", where: "p1"},
+      ...result.warnings,
+      {
+        code: "parse_error",
+        message: `read after conversion from ${detected.mime} to ${convertedType.mime} by ${converter.name} ${converter.version}`,
+      },
     ],
-    detected: {kind: "image", mime: detected.mime, extension: detected.extension, mismatch: detected.mismatch},
+  };
+}
+
+/**
+ * A PDF whose pages carry no text layer is a scan. With an OCR engine those pages are read;
+ * without one they stay empty and flagged. Either way the page keeps `scanned: true`, which
+ * is what blocks automatic acceptance downstream.
+ */
+async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | undefined): Promise<ParseResult> {
+  const result = await parsePdf(input);
+  const pages = result.layer.pages ?? [];
+  const scanned = pages.filter((page) => page.scanned);
+
+  if (scanned.length === 0 || !engine?.recognizePdfPage) return result;
+
+  const readable = scanned.slice(0, parserLimits.maxOcrPages);
+  const warnings: ParserWarning[] = [...result.warnings];
+  if (scanned.length > readable.length) {
+    warnings.push({
+      code: "limit_reached",
+      message: `${scanned.length - readable.length} scanned page(s) beyond the OCR limit of ${parserLimits.maxOcrPages} were left unread`,
+    });
+  }
+
+  const byNumber = new Map<number, LayerPage>();
+  for (const page of readable) {
+    try {
+      const recognized = await engine.recognizePdfPage({bytes: input.bytes, pageNumber: page.n});
+      const built = pagesFromOcr([{pageNumber: page.n, result: recognized}]);
+      const [ocrPage] = built.pages;
+      if (ocrPage) byNumber.set(page.n, ocrPage);
+      warnings.push(...built.warnings);
+    } catch (error) {
+      warnings.push({code: "parse_error", message: `OCR failed: ${(error as Error).message}`, where: `p${page.n}`});
+    }
+  }
+
+  if (byNumber.size === 0) return {...result, warnings};
+
+  const merged = pages.map((page) => byNumber.get(page.n) ?? page);
+
+  return {
+    ...result,
+    layer: {...result.layer, pages: merged},
+    parserVersions: {...result.parserVersions, [engine.name]: engine.version},
+    warnings: [
+      ...warnings,
+      {
+        code: "scanned_page",
+        message: `${byNumber.size} page(s) were read by OCR (${engine.name}); every value from them needs review`,
+      },
+    ],
   };
 }
 
@@ -165,6 +292,10 @@ function isBenignMismatch(declared: string, sniffed: string): boolean {
     "text/csv": ["application/csv", "text/plain", "application/vnd.ms-excel"],
     "text/plain": ["text/csv"],
     "application/zip": [ooxml.xlsx, ooxml.docx, ooxml.pptx],
+    "application/x-cfb": ["application/vnd.ms-excel", "application/msword", "application/vnd.ms-powerpoint"],
+    "application/vnd.ms-excel": ["application/x-cfb"],
+    "application/msword": ["application/x-cfb"],
+    "application/vnd.ms-powerpoint": ["application/x-cfb"],
   };
   if (equivalents[declared]?.includes(sniffed)) return true;
   if (equivalents[sniffed]?.includes(declared)) return true;
