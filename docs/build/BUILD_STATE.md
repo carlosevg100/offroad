@@ -37,6 +37,6 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [x] páginas de erro/404 localizadas; placeholders desabilitados com "Em breve"; código morto removido
 - [x] ADRs 0004–0007, ledgers e `handoff.md` atualizados
 - [ ] criar projetos Sentry/PostHog e configurar secrets por ambiente
-- [ ] extrator geral de documentos (P1)
+- [ ] extrator geral de documentos (P1) — plano detalhado em [`P1_INTELLIGENCE_PLAN.md`](P1_INTELLIGENCE_PLAN.md) (aguarda D-003, D-010–D-014)
 
 Produção canônica: `https://offroad.capital`
