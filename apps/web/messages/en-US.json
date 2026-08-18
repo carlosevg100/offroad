@@ -592,7 +592,27 @@
     "missing": "What is missing",
     "recommended": "What we recommend",
     "approval": "What requires approval",
-    "syntheticNotice": "Controls are active; real data appears only after ingestion and review."
+    "syntheticNotice": "Controls are active; real data appears only after ingestion and review.",
+    "sectors": {
+      "foodRetail": "Food retail",
+      "logistics": "Logistics",
+      "manufacturing": "Manufacturing",
+      "technology": "Technology",
+      "healthcare": "Healthcare"
+    },
+    "useOfProceeds": {
+      "growthCapex": "Growth capex",
+      "workingCapital": "Working capital",
+      "refinancing": "Refinancing",
+      "acquisition": "Acquisition finance"
+    },
+    "evidenceFacts": "Evidence facts",
+    "metricNotes": {
+      "privateBucket": "private bucket",
+      "sourceAnchored": "source anchored",
+      "versioned": "versioned",
+      "evidenceCompiled": "evidence compiled"
+    }
   },
   "Demo": {
     "eyebrow": "Demonstration with synthetic data",
@@ -622,5 +642,117 @@
     "mismatch": "Constraint",
     "permissioned": "Identity and documents remain protected until valid information-sharing authorization is in place.",
     "synthetic": "Every name, number, and mandate on this screen is synthetic and exists only for product validation."
+  },
+  "Intake": {
+    "start": {
+      "kickerOnboarding": "START REGISTRATION",
+      "kickerCase": "NEW CASE",
+      "titleOnboarding": "How would you like to start?",
+      "titleCase": "How would you like to start the new case?",
+      "body": "Choose the most convenient path. You will review every item before the case is created.",
+      "recommended": "RECOMMENDED",
+      "documentsTitle": "Start with documents",
+      "documentsBody": "Upload what you already have. Offroad identifies, organizes and pre-fills the registration with field-level evidence.",
+      "benefitTyping": "Less typing",
+      "benefitConflicts": "Visible conflicts",
+      "benefitSources": "Traceable sources",
+      "documentsCta": "Upload documents",
+      "manualTitle": "Fill in manually",
+      "manualBody": "Enter information step by step and add documents later. Best when materials are still being collected.",
+      "manualCta": "Start form",
+      "security": "Private documents, organization-restricted access and mandatory confirmation before submission."
+    },
+    "collect": {
+      "kicker": "DOCUMENTS FIRST",
+      "title": "Upload what you already have",
+      "body": "You do not need to rename or organize files. The original document is preserved and every suggestion remains linked to its evidence.",
+      "notice": "Nothing is sent to market during this step.",
+      "analyze": "Analyze documents",
+      "retry": "Try processing again",
+      "failedTitle": "Processing did not complete",
+      "failedBody": "Your documents remain saved and nothing was inferred. Try again or continue with the manual form.",
+      "processingTitle": "Processing in progress",
+      "processingBody": "If this screen does not change shortly, try processing again."
+    },
+    "uploader": {
+      "startError": "The upload could not be started.",
+      "invalidFile": "One or more files use an unsupported format or exceed 50 MB.",
+      "uploadError": "A document could not be uploaded. Please try again.",
+      "registerError": "The file arrived but could not be registered securely.",
+      "uploading": "Uploading securely",
+      "dropTitle": "Drop your documents to get started",
+      "dropBody": "Or select files from your computer. You can upload everything at once.",
+      "select": "Select documents",
+      "formats": "PDF · Excel · CSV · Word · PowerPoint · Images · Text · 50 MB per file",
+      "received": "Documents received"
+    },
+    "review": {
+      "kicker": "ASSISTED REVIEW",
+      "title": "Review the information found",
+      "body": "Nothing has been sent to market. Confirm, edit or reject each suggestion; the original source remains linked.",
+      "documents": "documents",
+      "fields": "fields",
+      "openItems": "open items",
+      "reviewedCounter": "{reviewed}/{total} fields reviewed",
+      "acceptHighConfidence": "Accept high-confidence suggestions",
+      "reprocess": "Reprocess",
+      "issuesTitle": "Conflicts and missing information",
+      "issuesBody": "These items were not resolved automatically.",
+      "markReviewed": "Mark reviewed",
+      "priority": {
+        "critical": "CRITICAL",
+        "analysis": "ANALYSIS",
+        "diligence": "DILIGENCE",
+        "complementary": "COMPLEMENTARY"
+      },
+      "state": {
+        "edited": "EDITED",
+        "accepted": "CONFIRMED",
+        "rejected": "REJECTED",
+        "notApplicable": "N/A",
+        "conflict": "CONFLICT"
+      },
+      "viewEvidence": "View evidence",
+      "original": "Original",
+      "commentPlaceholder": "Optional comment",
+      "accept": "Accept",
+      "saveEdit": "Save edit",
+      "reject": "Reject",
+      "notApplicable": "N/A",
+      "emptyTitle": "Your documents are safe, but no fields were proposed",
+      "emptyBody": "This set could not yet be processed automatically. No data was invented. You can add more files, reprocess, or start the manual form.",
+      "fillManually": "Fill in manually",
+      "confirmKicker": "FINAL CONFIRMATION",
+      "confirmTitle": "Create the case from a reviewed base",
+      "confirmBody": "{count} primary fields are confirmed. Open items will remain visible in the case checklist.",
+      "confirmDeclaration": "I reviewed the information and confirm that accepted data may be used to create this opportunity.",
+      "confirmCta": "Confirm and create case",
+      "yes": "Yes",
+      "no": "No",
+      "page": "page",
+      "sheet": "sheet",
+      "cell": "cell",
+      "groups": {
+        "company": "Company",
+        "transaction": "Transaction",
+        "historical_financials": "Historical financials",
+        "interim_financials": "Interim financials",
+        "project": "Financed project",
+        "projections": "Projections",
+        "leverage": "Leverage impact",
+        "collateral": "Collateral"
+      }
+    },
+    "errors": {
+      "documents": "Add at least one document to start the analysis.",
+      "processing": "Processing could not be completed. Your files remain saved; please try again.",
+      "confirmation": "Confirm the required fields and final declaration before creating the case.",
+      "validation": "Review the entered value and try again.",
+      "session": "The document session could not be opened.",
+      "save": "This step could not be saved. Please try again.",
+      "step": "This step is not available right now.",
+      "sessionNotFound": "This session was not found or does not belong to your workspace.",
+      "back": "Back"
+    }
   }
 }
