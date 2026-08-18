@@ -104,6 +104,22 @@ importers:
         specifier: workspace:*
         version: link:../testing-fixtures
 
+  packages/document-intelligence:
+    dependencies:
+      '@offroad/credit-ontology':
+        specifier: workspace:*
+        version: link:../credit-ontology
+      decimal.js:
+        specifier: 10.6.0
+        version: 10.6.0
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+
   packages/domain-contracts:
     dependencies:
       zod:
