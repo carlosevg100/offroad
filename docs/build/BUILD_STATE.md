@@ -46,7 +46,14 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [x] `packages/model-gateway`: Anthropic + OpenAI via API, política sem Haiku, structured outputs validados, budgets, fallback, redação, cassetes, logs sem conteúdo (PR #54)
 - [x] `packages/evals` + gold case G1 (Rede Horizonte a partir do gabarito sintético) + baseline do fixture: precisão 100%, recall material 47,7%, exceções 7/12 (PR #55)
 - [x] ADR 0008 (arquitetura da inteligência documental)
-- [ ] F1: worker isolado (D-003), portaria, camadas PDF/XLSX/XLS/CSV/DOCX/PPTX, perfis, índice organizado, migrations de runs/jobs/perfis/camadas
 - [ ] revisão da ontologia por especialista (D-013); DPA/ZDR nos provedores (D-010)
+
+## P1 — Fase F1 (pipeline de documentos) — 18/08/2026
+
+- [x] F1-1 estado do pipeline: `processing_runs`, `processing_jobs`, `document_profiles` e `document_layers`; versão e resultado de portaria em `source_documents`; campos de verificação de âncora nos candidatos e metadados de reconciliação nas issues; buckets privados `document-layers` e `case-artifacts`; comando `begin_processing_run` (app) e seis comandos do worker — credencial de worker com hash para *claim* e capability token por job para o resto, **sem service-role** e sem `organization_id` vindo do chamador (migration `20260818171246`)
+- [x] F1-1b endurecimento de privilégios encontrado pelo advisor: `anon` deixa de ter qualquer privilégio no schema `public`, as *default privileges* do bootstrap Supabase são revogadas (era a origem do vazamento desde `20260817202038`), os comandos `security definer` passam para `private` com wrappers `security invoker` em `public` (AGENTS.md §6) e os FKs do pipeline ganham índices de cobertura (migrations `20260818172243` e `20260818172357`)
+- [ ] F1-2 parsers determinísticos → camadas (PDF nativo, XLSX/XLS/CSV, DOCX, PPTX) com ids estáveis e declaração de escala
+- [ ] F1-3 `apps/document-worker` (contêiner, fila, portaria/ClamAV, perfil pelo gateway) + deploy AWS ECS Fargate `sa-east-1` (D-003 aprovado)
+- [ ] F1-4 UI: aba Documentos com índice organizado e tela de processamento por etapas (Realtime), paridade PT/EN
 
 Produção canônica: `https://offroad.capital`

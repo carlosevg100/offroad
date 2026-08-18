@@ -704,6 +704,22 @@ RLS test on each PR. See `AGENTS.md` §6.
 - Audit triggers on material tables.
 - Minimal Data API grants.
 - Server-side protected-route guards using verified claims.
+- `anon` holds no privilege at all inside `public` — no table, column, sequence or
+  function. The Supabase bootstrap default privileges that kept granting every new
+  object to `anon` and `authenticated` were revoked in `20260818172243`; before
+  that, every table created after `20260815022143` was born with
+  `anon=arwdDxtm` (only RLS was stopping it). Two schema invariants in the RLS
+  test now assert this permanently.
+- `security definer` functions live in `private` (AGENTS.md §6); `public` exposes
+  `security invoker` wrappers with the same signature, so reaching an
+  implementation requires a grant on the wrapper **and** on the private function.
+- The document worker uses no service-role key. It signs in as a dedicated service
+  account that belongs to no organization, claims a job with a hashed worker
+  credential (`private.worker_tokens`), and every later call carries a per-job
+  capability token issued at claim time and stored only as a hash. None of its
+  commands accepts an `organization_id`: scope always comes from the claimed job.
+  Signed URLs are minted by the app and travel in `processing_jobs.payload`, a
+  column that members cannot read (column-level grant).
 - Security headers: no sniff, frame deny, strict referrer policy, restricted
   permissions policy.
 - Signup and recovery cookies are HTTP-only.
@@ -714,9 +730,19 @@ RLS test on each PR. See `AGENTS.md` §6.
 `supabase/tests/rls_non_interference.sql` verifies separation across two tenants
 (organizations, companies, document intake sessions/candidates), the
 organization-type guards (no self-service `offroad`, capital providers cannot
-start intake), anonymous access, and the schema invariant that every public
-table has RLS enabled and forced. CI runs it against a fresh local stack on every
-PR; it can also run against the hosted project because it rolls back its data.
+start intake), anonymous access, the F1 worker model (unknown credential and wrong
+capability refused, capability dies with the job, payload unreadable by members,
+a document from another scope cannot be queued, a reprocess never overwrites an
+accepted profile), and three schema invariants: every public table has RLS enabled
+and forced, `anon` holds no privilege in `public`, and no `security definer`
+function lives in `public`. CI runs it against a fresh local stack on every PR; it
+can also run against the hosted project because it rolls back its data.
+
+**Run it against the project too when you change schema.** A fresh local stack and
+the hosted project are not identical: the project carries bootstrap default
+privileges the local stack does not, which is exactly how the `anon` grants above
+survived a green CI. The invariants are asserted now, but the habit is the real
+control.
 
 Known limitations of the authorization model today (not bugs, but facts to keep
 in mind): `private.can_access_opportunity` grants any active organization member
