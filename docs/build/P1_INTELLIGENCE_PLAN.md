@@ -530,6 +530,14 @@ Cada fase termina com `pnpm check` verde, migrations aplicadas via MCP e alinhad
 
 **F1 — Portaria, worker, perfis, arquivo do case (2 sem):** `apps/document-worker` (contêiner, fila, ClamAV, camadas PDF/XLSX/XLS/CSV/DOCX/PPTX), migrations (`processing_runs/jobs`, `document_profiles`, `document_layers`, colunas), RPCs de run e do worker, classificação com Sonnet 5 (`low`) e shadow GPT-5.6 em amostra, aba Documentos com índice organizado, tela de processamento por etapas (Realtime), deploy do worker (D-003), testes RLS novos. Gate: G1–G3 (o que existir) classificados ≥ 95%; G6 rejeitados 100%; nenhum service-role; custo por run registrado.
 
+> **F1-1 concluída em 18/08/2026** (PR #58): estado e comandos no banco, com o modelo de duas
+> credenciais (token de worker com hash para *claim*, capability token por job depois) e sem
+> service-role. Aplicar no projeto revelou um vazamento de privilégios anterior à fase — as
+> *default privileges* do bootstrap Supabase davam `arwdDxtm` a `anon` em toda tabela criada
+> depois de `20260815022143` e `execute` em todas as funções de `public` —, corrigido em
+> `20260818172243` junto com a mudança das funções `security definer` para o schema `private`.
+> Duas invariantes novas no teste de RLS impedem a reincidência. Segue F1-2 (parsers).
+
 **F2 — Extração ancorada (2–3 sem):** extrator + verificador para todos os formatos nativos, modo híbrido e degradado, incrementalidade (`complete_processing_run` v2), shadow pass, política de auto-aceite v1, revisão com âncora ✓/✗ e visor de fonte (PDF página/planilha célula), G2 e G6 completos, telemetria de correção. Gate: métricas da parte 14.2 em G1/G2/G6; E2E do caminho novo; flag ligada para tenants de teste → promoção a padrão.
 
 **F3 — Spreads, conciliação, financial-core (2–3 sem):** mapeamento canônico, `financial_periods/line_items` no escopo da sessão, aba Financeiro, export XLSX com fontes, motor de regras + Reconciliation Controller, aba Conciliação (S06), funções do financial-core com fixtures, `calculation_runs` com trace, G3. Gate: RF-01..07 do G1 detectados; identidades fecham nos gold sets; nenhuma regressão de cálculo.

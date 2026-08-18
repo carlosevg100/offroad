@@ -56,6 +56,18 @@ arquitetura de execução.
    oportunidade na confirmação; o worker escreve por RPCs estreitas com token de
    capacidade por job e lê/grava objetos por URLs assinadas — nenhum componente recebe
    a service-role key (detalhe em F1).
+
+   *Implementado na F1-1 (18/08/2026, migrations `20260818171246` e `20260818172243`).*
+   Duas credenciais independentes, nenhuma suficiente sozinha: o worker autentica como
+   conta de serviço que não pertence a nenhuma organização (então a RLS por si não lhe dá
+   nada), reivindica um job com a credencial de worker guardada apenas como hash
+   (`private.worker_tokens`) e, daí em diante, usa o capability token daquele job — também
+   guardado só como hash, com validade presa ao lease. Nenhum comando aceita
+   `organization_id` do chamador: o escopo vem sempre do job reivindicado. As URLs
+   assinadas são emitidas pelo app e viajam no `payload` do job, coluna que os membros da
+   organização não podem ler. As implementações `security definer` vivem em `private` e o
+   `public` expõe apenas wrappers `security invoker` de mesma assinatura (AGENTS.md §6):
+   chegar à implementação exige grant no wrapper **e** na função privada.
 7. **Sem framework agentic no P1.** O pipeline é um DAG determinístico com chamadas
    estruturadas; um job só vira agente autônomo quando eval provar ganho (Blueprint
    §38.3). Vercel Workflows/LangGraph ficam fora até haver orquestração entre serviços.
