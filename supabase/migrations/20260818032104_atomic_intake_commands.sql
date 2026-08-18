@@ -341,6 +341,9 @@ begin
   if v_legal_name = '' or v_purpose = '' or v_amount is null or v_amount <= 0 then
     raise exception 'intake_case_incomplete' using errcode = '22023';
   end if;
+  if char_length(v_legal_name) not between 2 and 200 or char_length(v_purpose) not between 3 and 500 then
+    raise exception 'intake_case_out_of_bounds' using errcode = '22023';
+  end if;
   if v_display_name = '' then
     v_display_name := v_legal_name;
   end if;

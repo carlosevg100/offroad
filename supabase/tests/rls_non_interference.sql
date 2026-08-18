@@ -189,7 +189,7 @@ begin
         'raw_value', 'RLS Empresa A Ltda.', 'normalized_value', to_jsonb('RLS Empresa A Ltda.'::text), 'value_type', 'text',
         'information_class', 'company_document', 'evidence_rank', 6, 'source_anchor', '{"page":1}'::jsonb, 'confidence', 0.99, 'extraction_method', 'native_text', 'is_primary', true),
       jsonb_build_object('extractor_key', 'purpose', 'field_path', 'transaction.purpose', 'field_group', 'transaction', 'label', 'Finalidade',
-        'raw_value', 'x', 'normalized_value', to_jsonb(repeat('Finalidade muito longa ', 30)), 'value_type', 'text',
+        'raw_value', 'x', 'normalized_value', to_jsonb(rtrim(repeat('Finalidade longa ', 18))), 'value_type', 'text',
         'information_class', 'company_document', 'evidence_rank', 6, 'source_anchor', '{"page":1}'::jsonb, 'confidence', 0.98, 'extraction_method', 'native_text', 'is_primary', true),
       jsonb_build_object('extractor_key', 'requested', 'field_path', 'transaction.requested_amount', 'field_group', 'transaction', 'label', 'Valor solicitado',
         'raw_value', 'R$ 12 milhões', 'normalized_value', to_jsonb(12000000), 'value_type', 'number', 'unit', 'currency', 'currency', 'BRL',

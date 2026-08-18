@@ -31,7 +31,7 @@ export function intakeErrorFrom(error: PostgrestError | null | undefined, fallba
   if (message.includes("duplicate_opportunity")) return "duplicate";
   if (message.includes("intake_case_incomplete") || message.includes("intake_session_not_ready") || message.includes("intake_session_already_confirmed")) return "confirmation";
   if (message.includes("intake_session_not_found") || message.includes("organization_access_denied") || message.includes("authentication_required")) return "session";
-  if (message.includes("invalid_review_decision") || message.includes("edit_requires_value") || message.includes("intake_candidate_not_found") || message.includes("invalid_intake_payload")) return "validation";
+  if (message.includes("invalid_review_decision") || message.includes("edit_requires_value") || message.includes("intake_candidate_not_found") || message.includes("invalid_intake_payload") || message.includes("intake_case_out_of_bounds")) return "validation";
   return fallback;
 }
 
