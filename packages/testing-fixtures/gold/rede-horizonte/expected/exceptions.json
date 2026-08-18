@@ -1,0 +1,202 @@
+[
+  {
+    "id": "RF-01",
+    "type": "plausibility",
+    "severity": "high",
+    "description": "Borrowing base de R$53,76m fica R$0,24m abaixo da dívida pretendida de R$54m.",
+    "keywords": [
+      "abaixo da dívida",
+      "abaixo do montante",
+      "borrowing base insuficiente",
+      "capacidade de garantias inferior",
+      "shortfall",
+      "0,24"
+    ],
+    "evidenceDocuments": [
+      "04_Mapa_Divida_Garantias_Jul2026.xlsx"
+    ],
+    "expectedTreatment": "Pedir reforço/folga, avaliação e atualização mensal"
+  },
+  {
+    "id": "RF-02",
+    "type": "validation",
+    "severity": "high",
+    "description": "CD e parte dos equipamentos já garantem contratos existentes.",
+    "keywords": [
+      "gravame",
+      "onerad",
+      "já garantem",
+      "already pledged",
+      "encumbr"
+    ],
+    "evidenceDocuments": [
+      "04_Mapa_Divida_Garantias_Jul2026.xlsx"
+    ],
+    "expectedTreatment": "Condição precedente de liberação ou compartilhamento"
+  },
+  {
+    "id": "RF-03",
+    "type": "plausibility",
+    "severity": "high",
+    "description": "EBITDA do projeto é baixo no primeiro ano e depende de 18 meses de maturação.",
+    "keywords": [
+      "ramp-up",
+      "ramp up",
+      "maturação",
+      "18 meses",
+      "primeiro ano"
+    ],
+    "evidenceDocuments": [
+      "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx"
+    ],
+    "expectedTreatment": "Desembolso por marco e covenant de liquidez"
+  },
+  {
+    "id": "RF-04",
+    "type": "plausibility",
+    "severity": "high",
+    "description": "Seis meses de atraso, capex +10% e margem -2 p.p. comprimem o DSCR.",
+    "keywords": [
+      "downside",
+      "atraso",
+      "sensibilidade",
+      "cenário de estresse",
+      "comprimem o dscr"
+    ],
+    "evidenceDocuments": [
+      "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx"
+    ],
+    "expectedTreatment": "Exigir equity primeiro e reserva de contingência"
+  },
+  {
+    "id": "RF-05",
+    "ruleId": "R4",
+    "type": "source_conflict",
+    "severity": "medium",
+    "description": "Dívida auditada em dez/2025 é R$65m; mapa de jul/2026 mostra R$68m.",
+    "keywords": [
+      "65 milhões e r$ 68 milhões",
+      "65m",
+      "68m",
+      "datas diferentes",
+      "data-base"
+    ],
+    "evidenceDocuments": [
+      "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+      "04_Mapa_Divida_Garantias_Jul2026.xlsx"
+    ],
+    "expectedTreatment": "Explicar diferença por data-base e obter cartas de saldo"
+  },
+  {
+    "id": "RF-06",
+    "ruleId": "R11",
+    "type": "source_conflict",
+    "severity": "low",
+    "description": "Carta do CFO diz projeto de cerca de R$50m; planilha soma R$49m.",
+    "keywords": [
+      "49 milhões",
+      "50 milhões",
+      "arredond",
+      "custo do projeto"
+    ],
+    "evidenceDocuments": [
+      "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+      "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx"
+    ],
+    "expectedTreatment": "Usar R$49m como base detalhada e registrar arredondamento"
+  },
+  {
+    "id": "RF-07",
+    "ruleId": "R16",
+    "type": "quality",
+    "severity": "medium",
+    "description": "Jul/2026 e projeções não são auditados; parecer tem procedimentos limitados.",
+    "keywords": [
+      "não auditado",
+      "nao auditado",
+      "procedimentos limitados",
+      "revisão limitada",
+      "unaudited"
+    ],
+    "evidenceDocuments": [
+      "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf"
+    ],
+    "expectedTreatment": "Classificar confiança por fonte e solicitar fechamento final"
+  },
+  {
+    "id": "MI-01",
+    "type": "missing",
+    "severity": "high",
+    "description": "Cartas de saldo e payoff da dívida a refinanciar (R$19m).",
+    "keywords": [
+      "cartas de saldo",
+      "payoff",
+      "carta de saldo"
+    ],
+    "evidenceDocuments": [
+      "04_Mapa_Divida_Garantias_Jul2026.xlsx"
+    ],
+    "expectedTreatment": "Solicitar cartas emitidas pelos credores com data-base recente"
+  },
+  {
+    "id": "MI-02",
+    "type": "missing",
+    "severity": "high",
+    "description": "Comprovação do aporte dos acionistas (R$10m).",
+    "keywords": [
+      "aporte dos acionistas",
+      "comprovação do aporte",
+      "equity"
+    ],
+    "evidenceDocuments": [
+      "01_Carta_CFO_Pedido_e_Racional_Expansao.docx"
+    ],
+    "expectedTreatment": "Extratos, ata ou compromisso formal de aporte"
+  },
+  {
+    "id": "MI-03",
+    "type": "missing",
+    "severity": "medium",
+    "description": "Laudos de avaliação atualizados das garantias.",
+    "keywords": [
+      "laudo",
+      "avaliação atualizada",
+      "appraisal"
+    ],
+    "evidenceDocuments": [
+      "04_Mapa_Divida_Garantias_Jul2026.xlsx"
+    ],
+    "expectedTreatment": "Laudos, relação de bens e titularidade"
+  },
+  {
+    "id": "MI-04",
+    "type": "missing",
+    "severity": "medium",
+    "description": "Contratos, licenças e orçamentos das novas lojas.",
+    "keywords": [
+      "licenças",
+      "orçamentos",
+      "contratos de locação",
+      "alvará"
+    ],
+    "evidenceDocuments": [
+      "07_Memorial_Descritivo_Expansao_3_Lojas.pdf"
+    ],
+    "expectedTreatment": "Contratos de locação, licenças, projetos e orçamentos"
+  },
+  {
+    "id": "MI-05",
+    "type": "missing",
+    "severity": "low",
+    "description": "Organograma societário e principais executivos.",
+    "keywords": [
+      "organograma",
+      "executivos",
+      "quadro societário"
+    ],
+    "evidenceDocuments": [
+      "00_Ficha_Cadastral_Rede_Horizonte.docx"
+    ],
+    "expectedTreatment": "Organograma atualizado e minibiografias"
+  }
+]
