@@ -140,12 +140,15 @@ export async function startDocumentIntake(formData: FormData) {
   const context = await onboardingContext(locale);
   if (context.journey === "capital_provider") redirect(onboardingUrl(locale));
   const outcome = await startIntakeSession({supabase: context.supabase, organizationId: context.organizationId, userId: context.userId, locale, journey: context.journey});
-  if (!outcome.ok) redirect(onboardingUrl(locale, "save"));
+  if (!outcome.ok) redirect(onboardingUrl(locale, outcome.error));
   const {error} = await context.supabase.from("onboarding_progress").update({
     answers: {...context.answers, intake_mode: "documents", intake_session_id: outcome.value},
     current_step: "documents",
   }).eq("organization_id", context.organizationId).eq("user_id", context.userId).eq("journey", context.journey);
-  if (error) redirect(onboardingUrl(locale, "save"));
+  if (error) {
+    console.error("intake_step_failed", {step: "onboarding_progress_documents", code: error.code, message: error.message});
+    redirect(onboardingUrl(locale, "save"));
+  }
   redirect(onboardingUrl(locale));
 }
 

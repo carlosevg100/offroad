@@ -434,6 +434,20 @@ Important files:
   `onboarding_progress` answers) after the shared confirmation.
 - `packages/testing-fixtures/src/document-intake.ts`
 
+### Verified end to end (18 Aug 2026)
+
+The Playwright suite in `apps/web/e2e` runs the whole journey on a fresh local
+Supabase stack in CI: signup → 6-digit code → onboarding documents-first →
+upload of the 8 synthetic files → server-side hash verification → fixture match
+(38 candidates, 8 issues) → accept high-confidence (37) → atomic confirmation →
+onboarding submit → workspace pipeline → credit room (8 documents, 37 evidence
+facts) → workspace unknown-document set (remove + re-upload + honest empty
+state) → sign-out and password login. Its first run caught a real defect that
+had shipped: creating an intake session failed under RLS because the sessions
+SELECT policy looked the row up through a STABLE function during
+`insert … returning` (fixed by `20260818043539_intake_session_policies_membership`).
+Before that fix the hosted project had zero intake sessions.
+
 ### Current extraction limitation
 
 The only fully validated automatic compilation today is the supplied Rede
@@ -645,6 +659,7 @@ needed.
 | `20260817232443_hardening_force_rls_and_org_type_guard.sql` | FORCE RLS on intake tables; no self-service `offroad` organizations; intake sessions only for borrower-side tenants |
 | `20260818033220_atomic_intake_commands.sql` | Atomic intake commands: `begin_intake_processing`, `complete_intake_processing`, `review_intake_candidate`, `confirm_document_intake` (idempotent); bounded opportunity title in `create_opportunity_intake` |
 | `20260818034457_intake_document_removal_and_verification.sql` | Delete policy for intake documents of open sessions; `source_documents.sha256_verified_at` |
+| `20260818043539_intake_session_policies_membership.sql` | Sessions SELECT/UPDATE policies use the tenant/type check only — fixes `insert … returning` failing under the STABLE self-lookup (session creation was broken) |
 
 File names match the versions recorded in `supabase_migrations.schema_migrations`
 of the hosted project (the migrations were applied through the Supabase MCP tool,
@@ -876,7 +891,7 @@ pnpm --dir apps/web dev
 5. Run `pnpm check`.
 6. Push the branch and open a PR to `main`.
 7. Wait for GitHub `Lint, typecheck, test, build`, `Database (migrations, RLS,
-   lint)` and Vercel preview checks.
+   lint)`, `E2E (local Supabase + Playwright)` and Vercel preview checks.
 8. Review the preview at desktop and mobile sizes.
 9. Merge only after checks pass (squash merge, linear history).
 10. Wait for the Vercel production deployment status.
@@ -886,8 +901,10 @@ pnpm --dir apps/web dev
 GitHub Actions is defined in `.github/workflows/quality.yml`: the `check` job runs
 `pnpm check`; the `database` job boots a local Supabase stack, applies every
 migration from scratch, runs `supabase/tests/rls_non_interference.sql`, and lints
-the `public`/`private` schemas. Both run on pull requests to `main` and on pushes
-to `main`. Production is deployed from `main` through Vercel Git integration.
+the `public`/`private` schemas; the `e2e` job boots the same stack, builds the
+app against it and runs the Playwright journey (`apps/web/e2e`), uploading the
+report/trace as an artifact. All three run on pull requests to `main` and on
+pushes to `main`; `check`, `database` and `e2e` are required by branch protection. Production is deployed from `main` through Vercel Git integration.
 `www.offroad.capital` redirects permanently to the apex domain. `main` is
 protected: PR required, checks required and strict, linear history, no force
 push. Dependabot ignores major upgrades of the toolchain (TypeScript, ESLint,
@@ -922,8 +939,8 @@ deployment.
    persist, but full discovery and matching workflows are not wired.
 7. **Domain cores are foundational.** They demonstrate boundaries and tests but
    are not a complete credit engine.
-8. **No authenticated browser automation.** Real-account flows were manually
-   exercised, but CI does not yet cover them end-to-end.
+8. ~~No authenticated browser automation.~~ Resolved on 18 Aug 2026: the CI
+   `e2e` job runs the borrower journey against a local stack (see §9).
 9. **Old ledgers lag reality.** Build-state and acceptance-evidence docs need a
    current update after the document-first release.
 10. **Observability disabled.** Good safe defaults exist, but no production
@@ -935,8 +952,8 @@ deployment.
 
 1. ~~Extract reusable document-intake UI into `src/components`.~~ Done (18 Aug 2026).
 2. ~~Make intake confirmation atomic with one RPC and idempotency key.~~ Done (18 Aug 2026).
-3. Add authenticated E2E for signup, OTP, onboarding, new case, document upload,
-   review, and case creation.
+3. ~~Add authenticated E2E for signup, OTP, onboarding, new case, document upload,
+   review, and case creation.~~ Done (18 Aug 2026).
 4. ~~Add delete behavior for uploaded documents and server-side hash
    verification.~~ Done (18 Aug 2026); replace = remove + upload; versioning of
    evidence documents remains for the general pipeline.

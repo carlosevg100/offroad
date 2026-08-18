@@ -53,7 +53,10 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned: resolving "latest" hits the GitHub API and can be rate-limited on busy days.
+          version: 2.114.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       # Boots a fresh local stack and applies every file in supabase/migrations from
       # scratch. This proves the migration history is replayable and that no policy,
@@ -76,6 +79,78 @@ jobs:
 
       - name: Schema lint (public, private)
         run: supabase db lint --local --schema public,private --level warning --fail-on error
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup
+
+  e2e:
+    name: E2E (local Supabase + Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          # Pinned: resolving "latest" hits the GitHub API and can be rate-limited on busy days.
+          version: 2.114.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # Full local stack: Auth (OTP e-mails land in the local mail sink), PostgREST, Storage, Kong.
+      - name: Start local Supabase and apply migrations
+        run: supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
+
+      - name: Export local Supabase configuration for the app and the tests
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          echo "NEXT_PUBLIC_SUPABASE_URL=${API_URL}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-${ANON_KEY}}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000" >> "$GITHUB_ENV"
+          echo "E2E_MAIL_URL=${MAILPIT_URL:-${INBUCKET_URL:-http://127.0.0.1:54324}}" >> "$GITHUB_ENV"
+
+      # NEXT_PUBLIC_* values are inlined at build time, so the build must run after the export above.
+      - name: Build the web app against the local stack
+        run: pnpm --filter web build
+
+      - name: Install Playwright browser
+        run: pnpm --filter web exec playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: pnpm --filter web exec playwright test
+        env:
+          CI: "true"
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Stop local Supabase
         if: always()

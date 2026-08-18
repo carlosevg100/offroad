@@ -39,6 +39,15 @@ export function intakeErrorFrom(error: PostgrestError | null | undefined, fallba
   return fallback;
 }
 
+/**
+ * Structured server log for intake failures. Only the Postgres error code and message are
+ * logged (never row data, ids, or user input) so production logs stay free of confidential
+ * content while remaining actionable.
+ */
+function logIntakeFailure(step: string, error: {code?: string; message?: string} | null | undefined) {
+  console.error("intake_step_failed", {step, code: error?.code ?? null, message: error?.message ?? null});
+}
+
 export async function loadIntakeSession(runtime: IntakeRuntime) {
   const {data} = await runtime.supabase.from("document_intake_sessions").select("*").eq("organization_id", runtime.organizationId).eq("id", runtime.sessionId).maybeSingle();
   return data;
@@ -70,7 +79,11 @@ export async function loadIntakeReview(runtime: IntakeRuntime): Promise<{session
 /** Starts a session for the tenant. `journey` follows the organization type. */
 export async function startIntakeSession(input: {supabase: SupabaseClient<Database>; organizationId: string; userId: string; locale: AppLocale; journey: "company" | "originator"}) {
   const {data, error} = await input.supabase.from("document_intake_sessions").insert({organization_id: input.organizationId, started_by: input.userId, journey: input.journey, locale: input.locale}).select("id").single();
-  return error || !data ? fail<string>("session") : ok(data.id);
+  if (error || !data) {
+    logIntakeFailure("start_session", error);
+    return fail<string>("session");
+  }
+  return ok(data.id);
 }
 
 async function markSessionFailed(runtime: IntakeRuntime, reason: string) {
@@ -92,12 +105,16 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
   if (!documents?.length) return fail("documents");
 
   const begin = await supabase.rpc("begin_intake_processing", {p_organization_id: organizationId, p_session_id: sessionId});
-  if (begin.error) return fail(intakeErrorFrom(begin.error, "processing"));
+  if (begin.error) {
+    logIntakeFailure("begin_processing", begin.error);
+    return fail(intakeErrorFrom(begin.error, "processing"));
+  }
 
   // Content verification: recompute SHA-256 from the stored objects so the extractor and the
   // audit trail rely on server-verified hashes, never on the browser's claim.
   const verification = await verifyIntakeDocuments(runtime);
   if (!verification.ok) {
+    logIntakeFailure("verify_documents", null);
     await markSessionFailed(runtime, "verification_failed");
     return fail("processing");
   }
@@ -109,6 +126,7 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
   const summary = {...summarizeCompilation(compilation, {documents: documents.length, candidates: candidates.length, issues: issues.length}), verified_documents: verification.value.verified, hash_mismatches: verification.value.mismatchIssues.length};
   const complete = await supabase.rpc("complete_intake_processing", {p_organization_id: organizationId, p_session_id: sessionId, p_candidates: candidates as Json, p_issues: issues as Json, p_summary: summary as Json});
   if (complete.error) {
+    logIntakeFailure("complete_processing", complete.error);
     await markSessionFailed(runtime, "persistence_failed");
     return fail(intakeErrorFrom(complete.error, "processing"));
   }
@@ -141,11 +159,17 @@ export async function verifyIntakeDocuments(runtime: IntakeRuntime): Promise<Int
       continue;
     }
     const {data: blob, error: downloadError} = await supabase.storage.from("opportunity-documents").download(document.object_path);
-    if (downloadError || !blob) return fail("processing");
+    if (downloadError || !blob) {
+      logIntakeFailure("download_document", {message: downloadError?.message});
+      return fail("processing");
+    }
     const serverHash = sha256HexOf(new Uint8Array(await blob.arrayBuffer()));
     const now = new Date().toISOString();
     const {error: updateError} = await supabase.from("source_documents").update({sha256: serverHash, sha256_verified_at: now, processing_status: "clean"}).eq("organization_id", organizationId).eq("id", document.id);
-    if (updateError) return fail("processing");
+    if (updateError) {
+      logIntakeFailure("store_verified_hash", updateError);
+      return fail("processing");
+    }
     hashes.set(document.id, serverHash);
     verified += 1;
     if (document.sha256 && document.sha256 !== serverHash) {
@@ -216,7 +240,7 @@ export async function reviewIntakeCandidate(runtime: IntakeRuntime, input: Revie
     }
   }
 
-  const {error} = await supabase.rpc("review_intake_candidate", {
+  const {error: reviewError} = await supabase.rpc("review_intake_candidate", {
     p_organization_id: organizationId,
     p_session_id: sessionId,
     p_candidate_id: input.candidateId,
@@ -224,7 +248,8 @@ export async function reviewIntakeCandidate(runtime: IntakeRuntime, input: Revie
     ...(normalized === undefined ? {} : {p_normalized_value: normalized}),
     ...(input.comment.trim() ? {p_comment: input.comment.trim()} : {}),
   });
-  return error ? fail(intakeErrorFrom(error, "save")) : ok(null);
+  if (reviewError) logIntakeFailure("review_candidate", reviewError);
+  return reviewError ? fail(intakeErrorFrom(reviewError, "save")) : ok(null);
 }
 
 export async function resolveIntakeIssue(runtime: IntakeRuntime, input: {issueId: string; status: string}): Promise<IntakeOutcome> {
@@ -262,7 +287,10 @@ export async function confirmIntakeCase(runtime: IntakeRuntime): Promise<IntakeO
   }
 
   const {data, error} = await supabase.rpc("confirm_document_intake", {p_organization_id: organizationId, p_session_id: sessionId, p_output_locale: locale});
-  if (error || !data || typeof data !== "object" || Array.isArray(data)) return fail(intakeErrorFrom(error, "save"));
+  if (error || !data || typeof data !== "object" || Array.isArray(data)) {
+    logIntakeFailure("confirm_case", error);
+    return fail(intakeErrorFrom(error, "save"));
+  }
   const result = data as Record<string, Json | undefined>;
   const opportunityId = typeof result.opportunity_id === "string" ? result.opportunity_id : "";
   const companyId = typeof result.company_id === "string" ? result.company_id : "";
