@@ -19,8 +19,8 @@ export function assertDataRoomPresent() {
 /** Expected review numbers for the full package (see packages/testing-fixtures/src/document-intake.ts). */
 export const dataRoomExpectations = {
   documents: redeHorizonteRequiredFiles.length,
-  candidates: 34,
+  candidates: 38,
   openIssues: 8,
-  /** Primary candidates with confidence ≥ 0.95 accepted by the "high confidence" action. */
-  acceptedAfterBulkAccept: 33,
+  /** Primary candidates with confidence ≥ 0.95 accepted by the "high confidence" action (37 primaries; only the CFO-letter cost estimate is a non-primary alternative). */
+  acceptedAfterBulkAccept: 37,
 } as const;
