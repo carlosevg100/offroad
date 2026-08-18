@@ -4,9 +4,9 @@ Este registro não contém secrets.
 
 | Provider | Recurso | Papel mínimo | Motivo | Ambiente | Responsável | Status |
 |---|---|---|---|---|---|---|
-| GitHub | `carlosevg100/offroad` | repo + workflow | branches, PRs e Actions | all | carlosevg100 | CLI autenticada; `main` inicializada; PR da fundação em preparação |
+| GitHub | `carlosevg100/offroad` | repo + workflow | branches, PRs e Actions | all | carlosevg100 | CLI autenticada; `main` protegida (PR + `check`/`database`/`e2e`/Vercel obrigatórios); 49 PRs até 18/08/2026 |
 | Vercel | `carlosevg100-9887s-projects/offroad` | project member/owner atual | preview e frontend | production/preview | carlosevg100 | projeto criado; produção publicada; domínio anexado; Git integration ativa |
-| Supabase | `Mr. Pickles/offroad-development` (`ifnogpksgdadruooqydi`) | project admin limitado | Postgres, Auth, Storage e RLS | development | carlosevg100 | concluído em `sa-east-1`; custo informado de US$ 10/mês autorizado |
+| Supabase | `Mr. Pickles/offroad-development` (`ifnogpksgdadruooqydi`) | project admin limitado (MCP) | Postgres, Auth, Storage e RLS | **produção** (único projeto) | carlosevg100 | 14 migrations aplicadas via MCP; nomes de arquivo alinhados às versões registradas; CLI local instalada mas não vinculada |
 | Resend | `offroad.capital` / SMTP transacional | API key restrita a envio + domínio verificado | entrega de OTP de cadastro e recuperação via SMTP | production/preview | carlosevg100 | domínio verificado em `sa-east-1`; DKIM, SPF e MX aprovados; SMTP customizado ativo no Supabase |
 | GoDaddy | `offroad.capital` DNS | DNS editor | configurar targets dedicados exibidos pela Vercel | production | carlosevg100 | DNS concluído e TLS canônico validado |
 | Railway | projeto Offroad | project member | runtime stateless futuro | staging | usuário | CLI sem login; não necessário no gate atual |

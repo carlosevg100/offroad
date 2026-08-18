@@ -1,6 +1,7 @@
 # Offroad Capital — Product and Engineering Handoff
 
-> Current as of 17 August 2026, production merge `30b87f7` (PR #40).
+> Current as of 18 August 2026, `main` after PRs #41, #44, #46, #47, #48, #49
+> and this documentation PR (previous baseline: `30b87f7`, PR #40).
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
@@ -143,10 +144,17 @@ framing: **“Originação de crédito privado impulsionada por IA.”**
 - New-case choice between document-first intake and manual entry.
 - Private multi-format upload and an evidence-oriented assisted-review UI.
 - Accept, edit, reject, N/A, comments, source link, confidence, and issue review.
-- Content-hash-verified Rede Horizonte acceptance package.
-- Core database model, RLS, audit triggers, private storage, and typed client.
+- Rede Horizonte acceptance package matched by filename and **server-verified**
+  SHA-256; document removal while the session is open.
+- Atomic, idempotent intake commands in Postgres (processing, review,
+  confirmation); every case value derived from confirmed candidates.
+- Core database model, RLS + FORCE RLS on all tables, audit triggers, private
+  storage, and typed client.
 - Initial deterministic financial, matching, evidence, and domain packages.
-- Vercel preview/production deployment and GitHub quality gate.
+- Vercel preview/production deployment; GitHub quality gate with three required
+  jobs (`check`, `database`, `e2e`) — the E2E job runs the whole borrower
+  journey on a local Supabase stack.
+- Localized 404/error pages; placeholder controls disabled honestly.
 
 ### What is not operational yet
 
@@ -163,7 +171,8 @@ framing: **“Originação de crédito privado impulsionada por IA.”**
 - Agent kernel, tool gateway, orchestration, evaluations, budgets, or kill switch.
 - Offroad internal admin, four-eyes queues, assignment controls, and break-glass.
 - Sentry/PostHog projects, alerting, SLO dashboards, Railway workers, or queues.
-- Automated authenticated E2E, accessibility, and full cross-browser suite.
+- Automated accessibility and cross-browser suites; E2E for the originator and
+  capital-provider journeys (the company journey is covered).
 - MFA/AAL2 product flow; local Supabase MFA is currently disabled.
 - Public indexing; metadata intentionally remains `noindex`/`nofollow`.
 
@@ -257,11 +266,13 @@ offroad/
 ├── apps/web/                         Next.js application
 │   ├── messages/                     PT-BR and EN-US message catalogs
 │   ├── public/                       Brand, icons, social image, hero media
-│   ├── src/app/[locale]/             Public, auth, onboarding, app routes
-│   ├── src/components/               Product/site interaction components
+│   ├── e2e/                          Playwright journey (runs in CI on a local stack)
+│   ├── src/app/[locale]/             Public, auth, onboarding, app routes, error/not-found
+│   ├── src/components/               Site components; intake/ = document-first UI
 │   ├── src/config/brand.ts           Central public identity and metadata
 │   ├── src/i18n/                     Locale routing and request config
 │   ├── src/lib/auth/                 Registration and workspace guards
+│   ├── src/lib/intake/               Intake operations, builders, parsing, upload client
 │   ├── src/lib/observability/        Allowlist and privacy scrubbers
 │   ├── src/lib/supabase/             Browser/server/proxy clients
 │   ├── src/types/database.ts         Generated Supabase TypeScript types
@@ -272,7 +283,7 @@ offroad/
 │   ├── evidence-compiler/            Claim coverage and support rules
 │   ├── financial-core/               Decimal financial calculations
 │   ├── matching-core/                Deterministic mandate filters/ranking
-│   └── testing-fixtures/             Synthetic and Rede Horizonte fixtures
+│   └── testing-fixtures/             Synthetic fixtures + assets/rede-horizonte (8 files)
 ├── supabase/
 │   ├── migrations/                   Ordered schema and security history
 │   ├── templates/                    Auth confirmation/recovery emails
@@ -280,21 +291,22 @@ offroad/
 │   └── config.toml                   Local Supabase/Auth/Storage configuration
 ├── docs/
 │   ├── product/                      Versioned Blueprint v3.0 PDF
-│   ├── adr/                          Architecture decisions
-│   └── build/                        Plan, risks, access, evidence, old state
-├── .github/                          CI, CODEOWNERS, PR and issue templates
+│   ├── adr/                          Architecture decisions (0001–0007)
+│   └── build/                        Plan, state, evidence, risks, decisions, access
+├── AGENTS.md / CLAUDE.md             Operating rules for agents and humans
+├── .github/                          CI (check, database, e2e), CODEOWNERS, templates
 ├── .env.example                      Public environment variable contract
 ├── package.json                      Monorepo commands and versions
 ├── pnpm-workspace.yaml
 └── turbo.json
 ```
 
-### Existing documentation caveat
+### Documentation status
 
-`docs/build/BUILD_STATE.md` and `docs/build/ACCEPTANCE_EVIDENCE.md` contain useful
-history but were last materially updated before the document-first release.
-Use this handoff plus current migrations/code for present state, then update the
-ledgers when taking ownership.
+`docs/build/*` was refreshed on 18 Aug 2026 to this baseline (state, evidence,
+risks, decisions, access). ADRs 0004–0007 record the positioning, palette,
+migration/CI workflow and intake decisions. Keep ledgers and this file in the
+same PR as the change (AGENTS.md §5).
 
 ## 8. Route map and user experiences
 
@@ -869,8 +881,9 @@ This runs, in order:
 3. Vitest tests;
 4. production build.
 
-At the handoff baseline, the full gate passes and the suite contains 27 tests
-across the web app and domain packages.
+At this baseline the full gate passes with 45 unit tests across the web app and
+domain packages (Vitest), plus the CI-only database job (migrations from
+scratch, RLS test, schema lint) and the E2E job (Playwright journey).
 
 Useful focused commands:
 
@@ -933,18 +946,23 @@ deployment.
    `Intake` message namespace; the fixture-specific rationale/title text that
    used to be hardcoded in the onboarding confirmation was removed (all case
    values are now derived from confirmed candidates or left null).
-5. **Opportunity room is mostly a shell.** Rail buttons and inspectors are
-   currently summary/placeholder surfaces.
+5. **Opportunity room is mostly a shell.** Only the snapshot counters are real;
+   the other rail entries, the workspace switcher and ⌘K are rendered disabled
+   with a "coming soon" title until they ship (honest placeholders).
 6. **Provider experience is registration-first.** Funds, mandates, and contacts
    persist, but full discovery and matching workflows are not wired.
 7. **Domain cores are foundational.** They demonstrate boundaries and tests but
    are not a complete credit engine.
 8. ~~No authenticated browser automation.~~ Resolved on 18 Aug 2026: the CI
    `e2e` job runs the borrower journey against a local stack (see §9).
-9. **Old ledgers lag reality.** Build-state and acceptance-evidence docs need a
-   current update after the document-first release.
+9. ~~Old ledgers lag reality.~~ Refreshed on 18 Aug 2026 (see §7).
 10. **Observability disabled.** Good safe defaults exist, but no production
-    monitoring signal exists until external projects are created.
+    monitoring signal exists until external projects are created; the PostHog
+    taxonomy is defined but `captureProductEvent` is not called anywhere yet.
+11. **Small hygiene items.** Dead CSS blocks for removed components remain in
+    `globals.css`/`offroad-premium.css`; `complete_onboarding` RPC exists but is
+    unused by the app (kept as an atomic bootstrap alternative); `roles` other
+    than owner/admin are not distinguished at the data layer (§12).
 
 ## 20. Recommended next execution sequence
 
@@ -958,6 +976,12 @@ deployment.
    verification.~~ Done (18 Aug 2026); replace = remove + upload; versioning of
    evidence documents remains for the general pipeline.
 5. Update build-state, acceptance-evidence, and risk ledgers.
+
+### P0 status (18 Aug 2026)
+
+Items 1, 2, 3, 4 and 5 are done (PRs #41–#49 plus this documentation PR).
+Remaining before P1 work starts: create Sentry/PostHog projects (D-005), decide
+staging (D-009) and residency (D-003).
 
 ### P1 — Build the general evidence pipeline
 
@@ -1092,7 +1116,9 @@ A task is complete only when the relevant layers are complete:
 | Public homepage | `apps/web/src/app/[locale]/page.tsx` |
 | Auth and onboarding | `apps/web/src/app/[locale]/signup`, `onboarding` |
 | Workspace | `apps/web/src/app/[locale]/app` |
-| Document intake | `apps/web/src/app/[locale]/app/new` |
+| Document intake | `apps/web/src/lib/intake/`, `apps/web/src/components/intake/`, routes under `onboarding` and `app/new` |
+| End-to-end suite | `apps/web/e2e/`, `apps/web/playwright.config.ts` |
+| Synthetic data room | `packages/testing-fixtures/assets/rede-horizonte/` |
 | Supabase schema | `supabase/migrations/` |
 | Generated DB types | `apps/web/src/types/database.ts` |
 | RLS test | `supabase/tests/rls_non_interference.sql` |

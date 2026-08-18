@@ -66,8 +66,10 @@ Turbopack is default; `next lint` no longer exists (ESLint CLI flat config); roo
 - Never commit to `main`. Branch from an up-to-date `origin/main` with a focused name
   (`feat/…`, `fix/…`, `chore/…`, `docs/…`). One concern per PR; keep PRs small and green.
 - Fill the PR template (context, scope, evidence, security/privacy, data/migrations, risk).
-- Merge only after `Quality` (lint/typecheck/test/build **and** database job) and Vercel
-  checks pass; use squash merge; keep linear history; never force-push shared branches.
+- Merge only after the three `Quality` jobs — `check` (lint/typecheck/test/build),
+  `database` (migrations from scratch + RLS test + lint) and `e2e` (Playwright journey on a
+  local stack) — and the Vercel check pass; use squash merge; keep linear history; never
+  force-push shared branches.
 - After merge: wait for the Vercel production deployment, verify
   `https://offroad.capital/pt-BR` and the affected routes, then sync local `main`.
 - Update `docs/build/BUILD_STATE.md`, `docs/build/ACCEPTANCE_EVIDENCE.md`, and
@@ -130,7 +132,7 @@ the `private` schema, `set search_path = ''`, revoked from `public`, granted nar
 | Domain/package logic | Vitest unit tests with boundary cases and traces |
 | Server action / lib code | Vitest unit tests for pure parts; SQL or E2E for persistence |
 | Schema / policy / RPC | Extend `supabase/tests/rls_non_interference.sql`; advisors clean |
-| UI flow | Playwright E2E (`apps/web/e2e`) when the flow is user-critical |
+| UI flow | Playwright E2E (`apps/web/e2e`) when the flow is user-critical; the journey runs in CI against a local Supabase stack, and its selectors are the product's own classes/roles — keep them stable |
 | Copy | Message-catalog parity test stays green |
 
 Do not claim completion from the UI alone: verify persistence, authorization, tests, build,

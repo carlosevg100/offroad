@@ -5873,3 +5873,31 @@ button.app-workspace-id strong {
     display: none;
   }
 }
+
+/* Error and not-found pages (localized boundaries under /[locale]) */
+.error-page {
+  display: grid;
+  place-items: center;
+  min-height: 70vh;
+  padding: 48px 24px;
+}
+.error-page__card {
+  display: grid;
+  gap: 14px;
+  max-width: 560px;
+  padding: 36px 40px;
+  border: 1px solid #d7dbdd;
+  background: #fff;
+}
+.error-page__card h1 {margin: 0; font-size: 26px; line-height: 1.2;}
+.error-page__card p {margin: 0; color: #566169; line-height: 1.6;}
+.error-page__card small {color: #8b9499; font-size: 11px; word-break: break-all;}
+.error-page__actions {display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;}
+
+/* Honest placeholders: controls that exist in the design but have no behaviour yet */
+button[disabled].app-workspace-id,
+button[disabled].app-search,
+button[disabled].workspace-switcher,
+button[disabled].workspace-search,
+.opportunity-rail button[disabled],
+.workspace-topbar__actions button[disabled] {cursor: default; opacity: .55;}

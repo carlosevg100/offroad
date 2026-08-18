@@ -44,7 +44,8 @@ export default async function OpportunityPage({params}: Props) {
       </header>
       <div className="credit-room__body">
         <nav aria-label={t("creditRoom")} className="opportunity-rail">
-          {rails.map(([Icon, label], index) => <button aria-current={index === 0 ? "page" : undefined} key={label} type="button"><Icon aria-hidden="true" size={17} /><span>{label}</span></button>)}
+          {/* Only the snapshot exists today; the other workbenches are design intent and stay disabled until they ship. */}
+          {rails.map(([Icon, label], index) => <button aria-current={index === 0 ? "page" : undefined} aria-disabled={index === 0 ? undefined : "true"} disabled={index !== 0} key={label} title={index === 0 ? undefined : t("comingSoon")} type="button"><Icon aria-hidden="true" size={17} /><span>{label}</span></button>)}
         </nav>
         <section className="workbench-canvas">
           <div className="agent-activity"><Bot aria-hidden="true" size={17} /><span>{t("activity")}</span><strong>{t("syntheticNotice")}</strong><CircleDashed aria-hidden="true" size={16} /></div>

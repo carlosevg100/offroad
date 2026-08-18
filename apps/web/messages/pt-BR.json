@@ -1,7 +1,12 @@
 {
-  "Metadata": {
-    "title": "Offroad Capital | Private Credit Origination",
-    "description": "Offroad Capital structures company financing needs into private credit opportunities and connects them with investors whose mandates are aligned with each transaction."
+  "Errors": {
+    "notFoundTitle": "Página não encontrada",
+    "notFoundBody": "O endereço não existe ou não está disponível neste ambiente.",
+    "errorTitle": "Algo não funcionou como esperado",
+    "errorBody": "Nenhuma informação foi perdida. Tente novamente; se o problema persistir, entre em contato com a Offroad.",
+    "retry": "Tentar novamente",
+    "home": "Ir para a página inicial",
+    "reference": "Referência do erro"
   },
   "Navigation": {
     "how": "Como funciona",
@@ -403,6 +408,7 @@
       "guidanceTitle": "Comece com o que você tem.",
       "guidanceBody": "Você não precisa reunir tudo de uma vez. A cada avanço, indicamos as informações essenciais e o próximo passo mais útil.",
       "autoSave": "Seu progresso é salvo a cada bloco.",
+      "comingSoon": "Em breve",
       "nodes": {
         "company": {"organization": "Perfil institucional", "funding": "Contexto da operação", "documents": "Data room", "review": "Preparação para mercado"},
         "originator": {"organization": "Perfil da assessoria", "company": "Empresa assessorada", "funding": "Contexto da operação", "documents": "Data room", "review": "Preparação para mercado"},
@@ -607,6 +613,7 @@
       "acquisition": "Aquisição"
     },
     "evidenceFacts": "Fatos de evidência",
+    "comingSoon": "Em breve",
     "metricNotes": {
       "privateBucket": "bucket privado",
       "sourceAnchored": "ancorados na fonte",
