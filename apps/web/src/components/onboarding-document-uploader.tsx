@@ -3,9 +3,11 @@
 import {Check, FileCheck2, FileSpreadsheet, FileText, FileUp, LoaderCircle} from "lucide-react";
 import {useRef, useState} from "react";
 
+import type {IntakeDocumentSummary} from "@/lib/intake/types";
+import {DOCUMENT_ACCEPT, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
-type DocumentItem = {id: string; original_name: string; byte_size: number | null};
+type DocumentItem = IntakeDocumentSummary;
 
 type Props = {
   organizationId: string;
@@ -29,17 +31,6 @@ type Props = {
   };
 };
 
-const allowedTypes = new Set([
-  "application/pdf",
-  "text/csv",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
-
-function safeName(name: string) {
-  return name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-+/g, "-").slice(-140);
-}
-
 export function OnboardingDocumentUploader({organizationId, opportunityId, userId, initialDocuments, copy}: Props) {
   const [documents, setDocuments] = useState(initialDocuments);
   const [uploading, setUploading] = useState(false);
@@ -56,39 +47,11 @@ export function OnboardingDocumentUploader({organizationId, opportunityId, userI
     }
     setUploading(true);
     setError("");
-    const next = [...documents];
-
-    for (const file of Array.from(files).slice(0, 12)) {
-      if (!allowedTypes.has(file.type) || file.size > 52_428_800) {
-        setError(copy.error);
-        continue;
-      }
-      const objectPath = `${organizationId}/${opportunityId}/${crypto.randomUUID()}-${safeName(file.name)}`;
-      const {error: uploadError} = await supabase.storage.from("opportunity-documents").upload(objectPath, file, {upsert: false, contentType: file.type});
-      if (uploadError) {
-        setError(copy.error);
-        continue;
-      }
-      const {data, error: insertError} = await supabase.from("source_documents").insert({
-        organization_id: organizationId,
-        opportunity_id: opportunityId,
-        bucket_id: "opportunity-documents",
-        object_path: objectPath,
-        original_name: file.name,
-        mime_type: file.type,
-        byte_size: file.size,
-        classification: "restricted",
-        processing_status: "quarantined",
-        created_by: userId,
-      }).select("id, original_name, byte_size").single();
-      if (insertError || !data) {
-        await supabase.storage.from("opportunity-documents").remove([objectPath]);
-        setError(copy.error);
-        continue;
-      }
-      next.push(data);
-    }
-    setDocuments(next);
+    // Same path as the document-first uploader: SHA-256 in the browser (re-verified server-side later),
+    // private bucket under {organization}/{opportunity}/…, RLS-protected registration.
+    const result = await uploadDocuments({supabase, files: Array.from(files), organizationId, userId, scope: {kind: "opportunity", opportunityId}});
+    setDocuments((current) => [...current, ...result.uploaded]);
+    if (result.failure) setError(copy.error);
     setUploading(false);
   }
 
@@ -119,7 +82,7 @@ export function OnboardingDocumentUploader({organizationId, opportunityId, userI
         role="button"
         tabIndex={0}
       >
-        <input accept=".pdf,.csv,.xlsx,.docx" multiple onChange={(event) => upload(event.target.files)} ref={inputRef} type="file" />
+        <input accept={DOCUMENT_ACCEPT} multiple onChange={(event) => void upload(event.target.files)} ref={inputRef} type="file" />
         <div className="document-dropzone__visual">
           <i aria-hidden="true" />
           <span>{uploading ? <LoaderCircle aria-hidden="true" className="spin" size={24} /> : <FileUp aria-hidden="true" size={24} />}</span>

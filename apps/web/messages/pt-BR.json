@@ -684,7 +684,8 @@
       "dropBody": "Ou selecione arquivos do seu computador. Você pode enviar tudo de uma vez.",
       "select": "Selecionar documentos",
       "formats": "PDF · Excel · CSV · Word · PowerPoint · Imagens · Texto · 50 MB por arquivo",
-      "received": "Documentos recebidos"
+      "received": "Documentos recebidos",
+      "remove": "Remover documento"
     },
     "review": {
       "kicker": "REVISÃO ASSISTIDA",
@@ -743,6 +744,11 @@
         "collateral": "Garantias"
       }
     },
+    "issues": {
+      "hashMismatchTitle": "Integridade verificada com divergência: {name}",
+      "hashMismatchBody": "O SHA-256 calculado no servidor difere do informado pelo navegador no envio. O arquivo foi preservado e o hash verificado passou a valer.",
+      "hashMismatchHint": "Se o arquivo não for o esperado, remova-o e envie novamente."
+    },
     "errors": {
       "documents": "Adicione pelo menos um documento para iniciar a análise.",
       "processing": "Não foi possível concluir o processamento. Seus arquivos continuam salvos; tente novamente.",
@@ -752,6 +758,7 @@
       "save": "Não foi possível salvar esta etapa. Tente novamente.",
       "step": "Esta etapa não está disponível no momento.",
       "duplicate": "Já existe um case equivalente (mesma empresa, finalidade, valor e moeda) nesta organização. Abra o case existente ou ajuste os dados.",
+      "remove": "Não foi possível remover o documento. Ele pode já estar vinculado a um case.",
       "sessionNotFound": "Esta sessão não foi encontrada ou não pertence ao seu ambiente.",
       "back": "Voltar"
     }

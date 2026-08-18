@@ -42,6 +42,7 @@ import {
   finishDocumentsStep,
   previousOnboardingStep,
   processDocumentIntake,
+  removeIntakeDocument,
   resolveIntakeIssue,
   reviewIntakeCandidate,
   saveAdvisedCompanyStep,
@@ -54,12 +55,14 @@ import {
 } from "./actions";
 
 export const dynamic = "force-dynamic";
+// Document processing downloads and hashes every file server-side; allow more than the default budget.
+export const maxDuration = 60;
 export const metadata: Metadata = {title: "Institutional Profile", robots: {index: false, follow: false}};
 
 type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
-const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate"];
+const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate", "remove"];
 
 function answerObject(answers: AnswerMap, key: string): AnswerMap {
   const value = answers[key];
@@ -353,6 +356,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 locale={locale}
                 organizationId={organization.id}
                 processAction={processDocumentIntake}
+                removeAction={removeIntakeDocument}
                 session={intakeReview.session}
                 userId={userId}
               />

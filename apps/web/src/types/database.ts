@@ -1741,6 +1741,7 @@ export type Database = {
           original_name: string
           processing_status: string
           sha256: string | null
+          sha256_verified_at: string | null
           updated_at: string
         }
         Insert: {
@@ -1760,6 +1761,7 @@ export type Database = {
           original_name: string
           processing_status?: string
           sha256?: string | null
+          sha256_verified_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -1779,6 +1781,7 @@ export type Database = {
           original_name?: string
           processing_status?: string
           sha256?: string | null
+          sha256_verified_at?: string | null
           updated_at?: string
         }
         Relationships: [
