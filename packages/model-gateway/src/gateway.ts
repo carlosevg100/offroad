@@ -27,6 +27,11 @@ export type ModelGatewayConfig = {
   redaction?: RedactionOptions | false;
   /** Per-gateway-instance ceilings (one instance per processing run). */
   budget?: {maxCostUsd?: number; maxCalls?: number};
+  /**
+   * Extra models this gateway instance may use, beyond the production allowlist.
+   * Only the evals sweep sets it (P1 plan §15.1); the denylist still applies.
+   */
+  experimentalModels?: readonly string[];
   /** Structured, content-free log of every call. */
   onCall?: (log: GatewayCallLog) => void;
   now?: () => number;
@@ -50,7 +55,11 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   };
 
   const complete = async <TSchema extends z.ZodType>(request: GatewayRequest<TSchema>): Promise<GatewayResult<z.infer<TSchema>>> => {
-    const {primary, fallback, policy} = resolveModel(request.task, policies, {override: request.model, useShadow: request.useShadow});
+    const {primary, fallback, policy} = resolveModel(request.task, policies, {
+      override: request.model,
+      useShadow: request.useShadow,
+      experimentalModels: config.experimentalModels,
+    });
     if (config.budget?.maxCalls !== undefined && spent.calls >= config.budget.maxCalls) {
       throw new ModelGatewayError(`call budget exhausted (${spent.calls}/${config.budget.maxCalls})`, "budget_exceeded", spent);
     }

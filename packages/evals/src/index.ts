@@ -11,4 +11,5 @@ export * from "./gold";
 export * from "./snapshot";
 export * from "./metrics";
 export * from "./report";
+export * from "./compare";
 export * from "./gold-rede-horizonte";
