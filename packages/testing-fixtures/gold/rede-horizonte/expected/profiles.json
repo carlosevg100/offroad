@@ -1,0 +1,10 @@
+[
+  {"document": "00_Ficha_Cadastral_Rede_Horizonte.docx", "kind": "company_registration", "informationClass": "company_document", "evidenceRank": 7, "entityName": "Rede Horizonte Alimentos S.A."},
+  {"document": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx", "kind": "capital_request_letter", "informationClass": "company_document", "evidenceRank": 7, "entityName": "Rede Horizonte Alimentos S.A."},
+  {"document": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf", "kind": "audited_financial_statements", "informationClass": "audited", "evidenceRank": 1, "entityName": "Rede Horizonte Alimentos S.A.", "periodStart": "2023-01-01", "periodEnd": "2025-12-31", "scale": 1000000},
+  {"document": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx", "kind": "erp_export", "informationClass": "accounting", "evidenceRank": 3, "entityName": "Rede Horizonte Alimentos S.A.", "periodStart": "2024-01-01", "periodEnd": "2026-07-31", "scale": 1000000},
+  {"document": "04_Mapa_Divida_Garantias_Jul2026.xlsx", "kind": "debt_schedule", "informationClass": "management", "evidenceRank": 5, "entityName": "Rede Horizonte Alimentos S.A.", "periodEnd": "2026-07-31", "scale": 1000000},
+  {"document": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx", "kind": "business_plan", "informationClass": "projection", "evidenceRank": 6, "entityName": "Rede Horizonte Alimentos S.A.", "periodStart": "2026-01-01", "periodEnd": "2030-12-31", "scale": 1000000},
+  {"document": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf", "kind": "reviewed_interim_statements", "informationClass": "reviewed", "evidenceRank": 2, "entityName": "Rede Horizonte Alimentos S.A.", "periodStart": "2026-01-01", "periodEnd": "2026-07-31", "scale": 1000000},
+  {"document": "07_Memorial_Descritivo_Expansao_3_Lojas.pdf", "kind": "project_memorandum", "informationClass": "company_document", "evidenceRank": 7, "entityName": "Rede Horizonte Alimentos S.A."}
+]

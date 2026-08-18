@@ -1,0 +1,12 @@
+[
+  {"id": "ebitda_ltm_2026_07", "definition": "ltm", "value": "33000000", "unit": "BRL", "periodEnd": "2026-07-31", "tolerance": {"kind": "relative", "value": "0.01"}, "note": "gabarito RESUMO_TESOURARIA / parecer"},
+  {"id": "net_debt_2026_07", "definition": "net_debt", "value": "58700000", "unit": "BRL", "periodEnd": "2026-07-31", "tolerance": {"kind": "relative", "value": "0.005"}, "note": "68,0 − 9,3"},
+  {"id": "leverage_pre_transaction", "definition": "leverage", "value": "1.7788", "unit": "x", "periodEnd": "2026-07-31", "tolerance": {"kind": "relative", "value": "0.01"}, "note": "58,7 / 33,0 (AC-04 ~1,78x)"},
+  {"id": "leverage_post_transaction", "definition": "leverage", "value": "2.8735", "unit": "x", "tolerance": {"kind": "relative", "value": "0.01"}, "note": "pós-fechamento (AC-04 ~2,87x)"},
+  {"id": "gross_debt_post_transaction", "definition": "gross_debt", "value": "103000000", "unit": "BRL", "tolerance": {"kind": "relative", "value": "0.005"}, "note": "68 + 54 − 19"},
+  {"id": "collateral_capacity_total", "definition": "collateral_coverage", "value": "53760000", "unit": "BRL", "periodEnd": "2026-07-31", "tolerance": {"kind": "relative", "value": "0.005"}, "note": "17,12 + 15,04 + 21,60 (borrowing base preliminar)"},
+  {"id": "sources_total", "definition": "validate_sources_and_uses", "value": "68000000", "unit": "BRL", "tolerance": {"kind": "exact"}, "note": "35 + 19 + 10 + 4"},
+  {"id": "uses_total", "definition": "validate_sources_and_uses", "value": "68000000", "unit": "BRL", "tolerance": {"kind": "exact"}, "note": "49 + 19"},
+  {"id": "addon_stabilized_revenue", "definition": "projection_run_rate", "value": "94000000", "unit": "BRL", "tolerance": {"kind": "relative", "value": "0.01"}, "note": "32 + 29 + 33 (AC-06 ~R$94m)"},
+  {"id": "addon_stabilized_ebitda", "definition": "projection_run_rate", "value": "13200000", "unit": "BRL", "tolerance": {"kind": "relative", "value": "0.02"}, "note": "32×14,2% + 29×13,8% + 33×14,5% ≈ 13,2 (AC-06)"}
+]
