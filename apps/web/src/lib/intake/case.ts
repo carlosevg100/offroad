@@ -2,19 +2,49 @@ import type {buildRedeHorizonteDocumentIntake} from "@offroad/testing-fixtures";
 
 import type {Json} from "@/types/database";
 
-import type {EvidenceFactInsert, IntakeCandidate, IntakeCandidateInsert, IntakeIssueInsert} from "./types";
+import type {IntakeCandidate} from "./types";
 
 export type IntakeCompilation = ReturnType<typeof buildRedeHorizonteDocumentIntake>;
 
-export type IntakeScope = {organizationId: string; sessionId: string; userId: string};
+/** Candidate payload for `complete_intake_processing` (tenant, session and actor are added by the function). */
+export type IntakeCandidatePayload = {
+  extractor_key: string;
+  source_document_id: string;
+  field_path: string;
+  field_group: string;
+  label: string;
+  raw_value: string | null;
+  normalized_value: Json;
+  value_type: string;
+  unit: string | null;
+  currency: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  information_class: string;
+  evidence_rank: number;
+  source_anchor: Json;
+  confidence: number;
+  extraction_method: string;
+  is_primary: boolean;
+};
 
-/** Rows for `intake_field_candidates` from an extractor compilation. Pure; no I/O. */
-export function buildCandidateRows(compilation: IntakeCompilation, scope: IntakeScope): IntakeCandidateInsert[] {
+/** Issue payload for `complete_intake_processing`; `candidate_keys` are resolved to ids inside the function. */
+export type IntakeIssuePayload = {
+  issue_type: string;
+  priority: string;
+  field_group: string | null;
+  field_path: string | null;
+  candidate_keys: string[];
+  title: string;
+  description: string;
+  resolution_hint: string | null;
+};
+
+/** Pure: extractor compilation → RPC candidate payload. */
+export function buildCandidatePayload(compilation: IntakeCompilation): IntakeCandidatePayload[] {
   return compilation.candidates.map((candidate) => ({
-    organization_id: scope.organizationId,
-    intake_session_id: scope.sessionId,
-    source_document_id: candidate.sourceDocumentId,
     extractor_key: candidate.key,
+    source_document_id: candidate.sourceDocumentId,
     field_path: candidate.fieldPath,
     field_group: candidate.fieldGroup,
     label: candidate.label,
@@ -31,20 +61,17 @@ export function buildCandidateRows(compilation: IntakeCompilation, scope: Intake
     confidence: candidate.confidence,
     extraction_method: candidate.extractionMethod,
     is_primary: candidate.isPrimary ?? false,
-    created_by: scope.userId,
   }));
 }
 
-/** Rows for `intake_issues`; `candidateIdByKey` maps extractor keys to persisted candidate ids. */
-export function buildIssueRows(compilation: IntakeCompilation, scope: IntakeScope, candidateIdByKey: ReadonlyMap<string, string>): IntakeIssueInsert[] {
+/** Pure: extractor compilation → RPC issue payload. */
+export function buildIssuePayload(compilation: IntakeCompilation): IntakeIssuePayload[] {
   return compilation.issues.map((issue) => ({
-    organization_id: scope.organizationId,
-    intake_session_id: scope.sessionId,
     issue_type: issue.type,
     priority: issue.priority,
     field_group: issue.fieldGroup ?? null,
     field_path: issue.fieldPath ?? null,
-    candidate_ids: (issue.candidateKeys ?? []).map((key) => candidateIdByKey.get(key)).filter((id): id is string => Boolean(id)),
+    candidate_keys: issue.candidateKeys ?? [],
     title: issue.title,
     description: issue.description,
     resolution_hint: issue.resolutionHint ?? null,
@@ -146,39 +173,4 @@ export function deriveCase(candidates: readonly Pick<IntakeCandidate, "field_pat
     collateralTotal: numberAt(byPath, "collateral.total_capacity"),
     title: buildOpportunityTitle(displayName, purpose),
   };
-}
-
-/** Rows for `evidence_facts` promoted from confirmed candidates. Keeps raw value, class and method inside the anchor. */
-export function buildEvidenceRows(candidates: readonly IntakeCandidate[], scope: {organizationId: string; opportunityId: string; userId: string; now: string}): EvidenceFactInsert[] {
-  return confirmedCandidates(candidates).map((candidate) => {
-    const normalized = candidate.normalized_value;
-    const numeric = typeof normalized === "number" ? normalized : null;
-    const textual = numeric === null ? (typeof normalized === "string" ? normalized : JSON.stringify(normalized)) : null;
-    const anchor = candidate.source_anchor && typeof candidate.source_anchor === "object" && !Array.isArray(candidate.source_anchor) ? candidate.source_anchor : {};
-    return {
-      organization_id: scope.organizationId,
-      opportunity_id: scope.opportunityId,
-      source_document_id: candidate.source_document_id,
-      fact_type: candidate.field_path,
-      label: candidate.label,
-      value_numeric: numeric,
-      value_text: textual,
-      unit: candidate.unit,
-      currency: candidate.currency,
-      period_start: candidate.period_start,
-      period_end: candidate.period_end,
-      confidence: candidate.confidence,
-      review_state: "approved",
-      source_anchor: {
-        ...(anchor as Record<string, Json>),
-        raw_value: candidate.raw_value,
-        normalized_value: candidate.normalized_value,
-        information_class: candidate.information_class,
-        extraction_method: candidate.extraction_method,
-      } as Json,
-      created_by: scope.userId,
-      reviewed_by: scope.userId,
-      reviewed_at: candidate.reviewed_at ?? scope.now,
-    };
-  });
 }

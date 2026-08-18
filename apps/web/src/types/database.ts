@@ -1894,6 +1894,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_intake_processing: {
+        Args: { p_organization_id: string; p_session_id: string }
+        Returns: undefined
+      }
+      complete_intake_processing: {
+        Args: {
+          p_candidates: Json
+          p_issues: Json
+          p_organization_id: string
+          p_session_id: string
+          p_summary?: Json
+        }
+        Returns: Json
+      }
       complete_onboarding: {
         Args: {
           p_country_code?: string
@@ -1903,6 +1917,14 @@ export type Database = {
           p_website?: string
         }
         Returns: string
+      }
+      confirm_document_intake: {
+        Args: {
+          p_organization_id: string
+          p_output_locale?: string
+          p_session_id: string
+        }
+        Returns: Json
       }
       create_opportunity_intake: {
         Args: {
@@ -1925,6 +1947,17 @@ export type Database = {
           p_locale?: string
         }
         Returns: string
+      }
+      review_intake_candidate: {
+        Args: {
+          p_candidate_id: string
+          p_comment?: string
+          p_decision: string
+          p_normalized_value?: Json
+          p_organization_id: string
+          p_session_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

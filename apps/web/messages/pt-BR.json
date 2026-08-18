@@ -751,6 +751,7 @@
       "session": "Não foi possível abrir a sessão documental.",
       "save": "Não foi possível salvar esta etapa. Tente novamente.",
       "step": "Esta etapa não está disponível no momento.",
+      "duplicate": "Já existe um case equivalente (mesma empresa, finalidade, valor e moeda) nesta organização. Abra o case existente ou ajuste os dados.",
       "sessionNotFound": "Esta sessão não foi encontrada ou não pertence ao seu ambiente.",
       "back": "Voltar"
     }
