@@ -1,4 +1,4 @@
-import {expect, test, type Page} from "@playwright/test";
+import {expect, test, type BrowserContext, type Page} from "@playwright/test";
 
 import {assertDataRoomPresent, dataRoomExpectations, dataRoomFiles} from "./support/data-room";
 import {waitForOneTimeCode} from "./support/mail";
@@ -26,11 +26,29 @@ async function expectNoErrorNotice(page: Page) {
 }
 
 test.describe("Document-first intake (company journey)", () => {
-  test.beforeAll(() => {
+  // One browser context for the whole journey so the authenticated session carries across steps.
+  let context: BrowserContext;
+  let page: Page;
+
+  test.beforeAll(async ({browser}) => {
     assertDataRoomPresent();
+    context = await browser.newContext();
+    await context.tracing.start({screenshots: true, snapshots: true, sources: true});
+    page = await context.newPage();
   });
 
-  test("signs up with e-mail verification and lands on onboarding", async ({page}) => {
+  test.afterEach(async ({}, testInfo) => {
+    if (testInfo.status !== testInfo.expectedStatus) {
+      await page.screenshot({path: testInfo.outputPath("failure.png"), fullPage: true}).catch(() => undefined);
+    }
+  });
+
+  test.afterAll(async ({}, testInfo) => {
+    await context?.tracing.stop({path: testInfo.outputPath("journey-trace.zip")}).catch(() => undefined);
+    await context?.close();
+  });
+
+  test("signs up with e-mail verification and lands on onboarding", async () => {
     await page.goto("/pt-BR/signup");
     // Company journey is the default selection.
     await expect(page.locator('input[name="journey"][value="company"]')).toBeChecked();
@@ -50,7 +68,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-start")).toBeVisible();
   });
 
-  test("starts with documents, uploads the data room and processes it", async ({page}) => {
+  test("starts with documents, uploads the data room and processes it", async () => {
     await page.goto("/pt-BR/onboarding");
     await page.locator(".intake-start__card.is-recommended button[type=submit]").click();
     await expect(page.locator(".intake-collect")).toBeVisible();
@@ -73,7 +91,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-issues__list")).toContainText(/49 milhões/);
   });
 
-  test("accepts high-confidence suggestions and confirms the case", async ({page}) => {
+  test("accepts high-confidence suggestions and confirms the case", async () => {
     await page.goto("/pt-BR/onboarding");
     await expect(page.locator(".intake-review")).toBeVisible();
     await page.locator(".intake-review__toolbar form").first().locator("button[type=submit]").click();
@@ -86,7 +104,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expectNoErrorNotice(page);
   });
 
-  test("submits onboarding and sees the case in the workspace with its evidence", async ({page}) => {
+  test("submits onboarding and sees the case in the workspace with its evidence", async () => {
     await page.goto("/pt-BR/onboarding");
     await expect(page.locator(".onboarding-review")).toBeVisible();
     await page.locator(".onboarding-actions button.button:not(.button--ghost)").click();
@@ -103,7 +121,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(metrics.nth(1).locator("strong")).toHaveText(String(dataRoomExpectations.acceptedAfterBulkAccept));
   });
 
-  test("an unknown document set yields the honest empty state in the workspace flow", async ({page}) => {
+  test("an unknown document set yields the honest empty state in the workspace flow", async () => {
     await page.goto("/pt-BR/app/new");
     await page.locator(".intake-start__card.is-recommended button[type=submit]").click();
     await expect(page).toHaveURL(/mode=documents&session=/);
@@ -135,7 +153,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-field")).toHaveCount(0);
   });
 
-  test("signs out and logs back in with the password", async ({page}) => {
+  test("signs out and logs back in with the password", async () => {
     await page.goto("/pt-BR/app");
     await page.locator(".app-sidebar__footer form button[type=submit]").click();
     await expect(page).toHaveURL(/\/pt-BR\/?$/);
