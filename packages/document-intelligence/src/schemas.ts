@@ -90,12 +90,16 @@ export const layerSectionSchema = z.object({
   tables: z.array(layerTableSchema).default([]),
 });
 
+export type LayerSection = z.infer<typeof layerSectionSchema>;
+
 export const layerSlideSchema = z.object({
   n: z.number().int().positive(),
   blocks: z.array(layerBlockSchema),
   tables: z.array(layerTableSchema).default([]),
   notes: z.string().optional(),
 });
+
+export type LayerSlide = z.infer<typeof layerSlideSchema>;
 
 export const documentLayerSchema = z.object({
   documentId: z.string().min(1),
