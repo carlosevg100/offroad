@@ -449,12 +449,14 @@ export type Database = {
         Row: {
           confirmed_at: string | null
           created_at: string
+          current_run_id: string | null
           extraction_version: string
           id: string
           journey: string
           locale: string
           opportunity_id: string | null
           organization_id: string
+          pipeline_version: string | null
           processing_completed_at: string | null
           processing_started_at: string | null
           result_summary: Json
@@ -465,12 +467,14 @@ export type Database = {
         Insert: {
           confirmed_at?: string | null
           created_at?: string
+          current_run_id?: string | null
           extraction_version?: string
           id?: string
           journey: string
           locale?: string
           opportunity_id?: string | null
           organization_id: string
+          pipeline_version?: string | null
           processing_completed_at?: string | null
           processing_started_at?: string | null
           result_summary?: Json
@@ -481,12 +485,14 @@ export type Database = {
         Update: {
           confirmed_at?: string | null
           created_at?: string
+          current_run_id?: string | null
           extraction_version?: string
           id?: string
           journey?: string
           locale?: string
           opportunity_id?: string | null
           organization_id?: string
+          pipeline_version?: string | null
           processing_completed_at?: string | null
           processing_started_at?: string | null
           result_summary?: Json
@@ -495,6 +501,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "document_intake_sessions_current_run_fkey"
+            columns: ["organization_id", "current_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "document_intake_sessions_organization_id_fkey"
             columns: ["organization_id"]
@@ -507,6 +520,189 @@ export type Database = {
             columns: ["organization_id", "opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      document_layers: {
+        Row: {
+          bucket_id: string
+          byte_size: number | null
+          created_at: string
+          document_version: number
+          id: string
+          layer_kind: string
+          object_path: string
+          organization_id: string
+          parser_versions: Json
+          processing_run_id: string | null
+          sha256: string | null
+          source_document_id: string
+          stats: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bucket_id?: string
+          byte_size?: number | null
+          created_at?: string
+          document_version?: number
+          id?: string
+          layer_kind: string
+          object_path: string
+          organization_id: string
+          parser_versions?: Json
+          processing_run_id?: string | null
+          sha256?: string | null
+          source_document_id: string
+          stats?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bucket_id?: string
+          byte_size?: number | null
+          created_at?: string
+          document_version?: number
+          id?: string
+          layer_kind?: string
+          object_path?: string
+          organization_id?: string
+          parser_versions?: Json
+          processing_run_id?: string | null
+          sha256?: string | null
+          source_document_id?: string
+          stats?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_layers_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "document_layers_organization_id_source_document_id_fkey"
+            columns: ["organization_id", "source_document_id"]
+            isOneToOne: false
+            referencedRelation: "source_documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      document_profiles: {
+        Row: {
+          accounting_basis: string | null
+          classifier: Json
+          confidence: number
+          created_at: string
+          currency: string | null
+          document_kind: string
+          document_version: number
+          entity_name: string | null
+          entity_role: string | null
+          entity_scope: string | null
+          evidence_rank: number
+          fiscal_year: number | null
+          id: string
+          information_class: string
+          language: string | null
+          organization_id: string
+          period_end: string | null
+          period_start: string | null
+          processing_run_id: string | null
+          quality: Json
+          review_state: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          scale: number | null
+          source_document_id: string
+          suggested_folder: string | null
+          suggested_name: string | null
+          summary: Json
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          accounting_basis?: string | null
+          classifier?: Json
+          confidence: number
+          created_at?: string
+          currency?: string | null
+          document_kind: string
+          document_version?: number
+          entity_name?: string | null
+          entity_role?: string | null
+          entity_scope?: string | null
+          evidence_rank: number
+          fiscal_year?: number | null
+          id?: string
+          information_class: string
+          language?: string | null
+          organization_id: string
+          period_end?: string | null
+          period_start?: string | null
+          processing_run_id?: string | null
+          quality?: Json
+          review_state?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scale?: number | null
+          source_document_id: string
+          suggested_folder?: string | null
+          suggested_name?: string | null
+          summary?: Json
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accounting_basis?: string | null
+          classifier?: Json
+          confidence?: number
+          created_at?: string
+          currency?: string | null
+          document_kind?: string
+          document_version?: number
+          entity_name?: string | null
+          entity_role?: string | null
+          entity_scope?: string | null
+          evidence_rank?: number
+          fiscal_year?: number | null
+          id?: string
+          information_class?: string
+          language?: string | null
+          organization_id?: string
+          period_end?: string | null
+          period_start?: string | null
+          processing_run_id?: string | null
+          quality?: Json
+          review_state?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scale?: number | null
+          source_document_id?: string
+          suggested_folder?: string | null
+          suggested_name?: string | null
+          summary?: Json
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_profiles_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "document_profiles_organization_id_source_document_id_fkey"
+            columns: ["organization_id", "source_document_id"]
+            isOneToOne: false
+            referencedRelation: "source_documents"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -752,10 +948,14 @@ export type Database = {
       }
       intake_field_candidates: {
         Row: {
+          anchor_precision: string | null
+          anchor_verified: boolean
           confidence: number
           created_at: string
           created_by: string
           currency: string | null
+          entity_name: string | null
+          entity_scope: string | null
           evidence_rank: number
           extraction_method: string
           extractor_key: string
@@ -770,6 +970,7 @@ export type Database = {
           organization_id: string
           period_end: string | null
           period_start: string | null
+          processing_run_id: string | null
           raw_value: string | null
           review_state: string
           reviewed_at: string | null
@@ -779,13 +980,19 @@ export type Database = {
           source_document_id: string | null
           unit: string | null
           updated_at: string
+          value_scale: number | null
           value_type: string
+          verifier_flags: Json
         }
         Insert: {
+          anchor_precision?: string | null
+          anchor_verified?: boolean
           confidence: number
           created_at?: string
           created_by: string
           currency?: string | null
+          entity_name?: string | null
+          entity_scope?: string | null
           evidence_rank: number
           extraction_method: string
           extractor_key: string
@@ -800,6 +1007,7 @@ export type Database = {
           organization_id: string
           period_end?: string | null
           period_start?: string | null
+          processing_run_id?: string | null
           raw_value?: string | null
           review_state?: string
           reviewed_at?: string | null
@@ -809,13 +1017,19 @@ export type Database = {
           source_document_id?: string | null
           unit?: string | null
           updated_at?: string
+          value_scale?: number | null
           value_type: string
+          verifier_flags?: Json
         }
         Update: {
+          anchor_precision?: string | null
+          anchor_verified?: boolean
           confidence?: number
           created_at?: string
           created_by?: string
           currency?: string | null
+          entity_name?: string | null
+          entity_scope?: string | null
           evidence_rank?: number
           extraction_method?: string
           extractor_key?: string
@@ -830,6 +1044,7 @@ export type Database = {
           organization_id?: string
           period_end?: string | null
           period_start?: string | null
+          processing_run_id?: string | null
           raw_value?: string | null
           review_state?: string
           reviewed_at?: string | null
@@ -839,7 +1054,9 @@ export type Database = {
           source_document_id?: string | null
           unit?: string | null
           updated_at?: string
+          value_scale?: number | null
           value_type?: string
+          verifier_flags?: Json
         }
         Relationships: [
           {
@@ -856,59 +1073,93 @@ export type Database = {
             referencedRelation: "source_documents"
             referencedColumns: ["organization_id", "id"]
           },
+          {
+            foreignKeyName: "intake_field_candidates_run_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
         ]
       }
       intake_issues: {
         Row: {
+          blocks_external_outputs: boolean
           candidate_ids: string[]
           created_at: string
           description: string
+          evidence: Json | null
+          exception_type: string | null
           field_group: string | null
           field_path: string | null
           id: string
+          impacted_outputs: Json
           intake_session_id: string
           issue_type: string
           organization_id: string
+          owner_role: string | null
           priority: string
+          processing_run_id: string | null
+          proposed_resolution: Json | null
           resolution_hint: string | null
           resolved_at: string | null
           resolved_by: string | null
+          rule_id: string | null
+          severity: string | null
           status: string
           title: string
           updated_at: string
         }
         Insert: {
+          blocks_external_outputs?: boolean
           candidate_ids?: string[]
           created_at?: string
           description: string
+          evidence?: Json | null
+          exception_type?: string | null
           field_group?: string | null
           field_path?: string | null
           id?: string
+          impacted_outputs?: Json
           intake_session_id: string
           issue_type: string
           organization_id: string
+          owner_role?: string | null
           priority: string
+          processing_run_id?: string | null
+          proposed_resolution?: Json | null
           resolution_hint?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
+          rule_id?: string | null
+          severity?: string | null
           status?: string
           title: string
           updated_at?: string
         }
         Update: {
+          blocks_external_outputs?: boolean
           candidate_ids?: string[]
           created_at?: string
           description?: string
+          evidence?: Json | null
+          exception_type?: string | null
           field_group?: string | null
           field_path?: string | null
           id?: string
+          impacted_outputs?: Json
           intake_session_id?: string
           issue_type?: string
           organization_id?: string
+          owner_role?: string | null
           priority?: string
+          processing_run_id?: string | null
+          proposed_resolution?: Json | null
           resolution_hint?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
+          rule_id?: string | null
+          severity?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -919,6 +1170,13 @@ export type Database = {
             columns: ["organization_id", "intake_session_id"]
             isOneToOne: false
             referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "intake_issues_run_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -1496,6 +1754,159 @@ export type Database = {
           },
         ]
       }
+      processing_jobs: {
+        Row: {
+          attempts: number
+          available_at: string
+          capability_sha256: string | null
+          created_at: string
+          id: string
+          intake_session_id: string
+          kind: string
+          last_error: Json | null
+          lease_expires_at: string | null
+          leased_by: string | null
+          max_attempts: number
+          organization_id: string
+          payload: Json
+          processing_run_id: string
+          result: Json | null
+          source_document_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          available_at?: string
+          capability_sha256?: string | null
+          created_at?: string
+          id?: string
+          intake_session_id: string
+          kind: string
+          last_error?: Json | null
+          lease_expires_at?: string | null
+          leased_by?: string | null
+          max_attempts?: number
+          organization_id: string
+          payload?: Json
+          processing_run_id: string
+          result?: Json | null
+          source_document_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          available_at?: string
+          capability_sha256?: string | null
+          created_at?: string
+          id?: string
+          intake_session_id?: string
+          kind?: string
+          last_error?: Json | null
+          lease_expires_at?: string | null
+          leased_by?: string | null
+          max_attempts?: number
+          organization_id?: string
+          payload?: Json
+          processing_run_id?: string
+          result?: Json | null
+          source_document_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processing_jobs_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "processing_jobs_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "processing_jobs_organization_id_source_document_id_fkey"
+            columns: ["organization_id", "source_document_id"]
+            isOneToOne: false
+            referencedRelation: "source_documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      processing_runs: {
+        Row: {
+          budget: Json
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          error: Json | null
+          id: string
+          intake_session_id: string
+          organization_id: string
+          pipeline_version: string
+          run_no: number
+          stages: Json
+          started_at: string | null
+          status: string
+          trigger: string
+          updated_at: string
+          usage: Json
+          versions: Json
+        }
+        Insert: {
+          budget?: Json
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          error?: Json | null
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          pipeline_version: string
+          run_no: number
+          stages?: Json
+          started_at?: string | null
+          status?: string
+          trigger: string
+          updated_at?: string
+          usage?: Json
+          versions?: Json
+        }
+        Update: {
+          budget?: Json
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          error?: Json | null
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          pipeline_version?: string
+          run_no?: number
+          stages?: Json
+          started_at?: string | null
+          status?: string
+          trigger?: string
+          updated_at?: string
+          usage?: Json
+          versions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processing_runs_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1731,6 +2142,7 @@ export type Database = {
           created_at: string
           created_by: string
           document_kind: string | null
+          document_version: number
           evidence_rank: number | null
           id: string
           intake_session_id: string | null
@@ -1740,6 +2152,7 @@ export type Database = {
           organization_id: string
           original_name: string
           processing_status: string
+          scan_result: Json | null
           sha256: string | null
           sha256_verified_at: string | null
           updated_at: string
@@ -1751,6 +2164,7 @@ export type Database = {
           created_at?: string
           created_by: string
           document_kind?: string | null
+          document_version?: number
           evidence_rank?: number | null
           id?: string
           intake_session_id?: string | null
@@ -1760,6 +2174,7 @@ export type Database = {
           organization_id: string
           original_name: string
           processing_status?: string
+          scan_result?: Json | null
           sha256?: string | null
           sha256_verified_at?: string | null
           updated_at?: string
@@ -1771,6 +2186,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           document_kind?: string | null
+          document_version?: number
           evidence_rank?: number | null
           id?: string
           intake_session_id?: string | null
@@ -1780,6 +2196,7 @@ export type Database = {
           organization_id?: string
           original_name?: string
           processing_status?: string
+          scan_result?: Json | null
           sha256?: string | null
           sha256_verified_at?: string | null
           updated_at?: string
@@ -1901,6 +2318,17 @@ export type Database = {
         Args: { p_organization_id: string; p_session_id: string }
         Returns: undefined
       }
+      begin_processing_run: {
+        Args: {
+          p_budget?: Json
+          p_documents: Json
+          p_organization_id: string
+          p_pipeline_version: string
+          p_session_id: string
+          p_trigger: string
+        }
+        Returns: Json
+      }
       complete_intake_processing: {
         Args: {
           p_candidates: Json
@@ -1961,6 +2389,53 @@ export type Database = {
           p_session_id: string
         }
         Returns: undefined
+      }
+      worker_claim_job: {
+        Args: { p_lease_seconds?: number; p_worker_token: string }
+        Returns: Json
+      }
+      worker_complete_job: {
+        Args: { p_capability_token: string; p_job_id: string; p_result?: Json }
+        Returns: Json
+      }
+      worker_fail_job: {
+        Args: {
+          p_capability_token: string
+          p_error: Json
+          p_job_id: string
+          p_retry_in_seconds?: number
+          p_retryable?: boolean
+        }
+        Returns: Json
+      }
+      worker_heartbeat: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_lease_seconds?: number
+        }
+        Returns: Json
+      }
+      worker_record_document_result: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_layer: Json
+          p_profile: Json
+          p_scan_result: Json
+        }
+        Returns: Json
+      }
+      worker_write_stage_result: {
+        Args: {
+          p_capability_token: string
+          p_detail?: Json
+          p_job_id: string
+          p_stage: string
+          p_status: string
+          p_usage?: Json
+        }
+        Returns: Json
       }
     }
     Enums: {

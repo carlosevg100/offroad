@@ -808,6 +808,60 @@ begin
 end;
 $$;
 
+-- Schema invariant: the anonymous role holds no privilege inside the Data API schema.
+-- This is the invariant that the project drifted away from: Supabase's bootstrap
+-- `alter default privileges in schema public grant all ... to anon, authenticated` kept
+-- granting every new table and function to both roles, while the migrations revoked them
+-- one table at a time. A fresh local stack has no such defaults, so only an explicit
+-- assertion keeps CI and the project honest (fixed in 20260818190000).
+do $$
+declare
+  offending text;
+begin
+  select string_agg(label, ', ' order by label) into offending
+  from (
+    select c.relname as label
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relkind in ('r', 'p', 'v', 'm')
+      and (
+        has_table_privilege('anon', c.oid, 'select, insert, update, delete, truncate, references, trigger')
+        or has_any_column_privilege('anon', c.oid, 'select, insert, update, references')
+      )
+    union all
+    select p.proname || '()'
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and has_function_privilege('anon', p.oid, 'execute')
+  ) leaked;
+
+  if offending is not null then
+    raise exception 'anonymous role holds privileges in schema public: %', offending;
+  end if;
+end;
+$$;
+
+-- Schema invariant: security definer functions live in `private` (AGENTS.md §6); `public`
+-- exposes only invoker wrappers, so reaching an implementation always requires two grants.
+do $$
+declare
+  offending text;
+begin
+  select string_agg(p.proname, ', ' order by p.proname) into offending
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public'
+    and p.prosecdef
+    and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e');
+
+  if offending is not null then
+    raise exception 'security definer functions must live in the private schema: %', offending;
+  end if;
+end;
+$$;
+
 rollback;
 
 select 'rls_non_interference_passed' as result;
