@@ -29,5 +29,8 @@ export default defineConfig({
     url: `${baseURL}/pt-BR`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // Surface server-side logs (structured error lines) in the CI output.
+    stdout: "pipe",
+    stderr: "pipe",
   },
 });
