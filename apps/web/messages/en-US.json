@@ -751,6 +751,7 @@
       "session": "The document session could not be opened.",
       "save": "This step could not be saved. Please try again.",
       "step": "This step is not available right now.",
+      "duplicate": "An equivalent case (same company, purpose, amount and currency) already exists in this organization. Open the existing case or adjust the data.",
       "sessionNotFound": "This session was not found or does not belong to your workspace.",
       "back": "Back"
     }

@@ -1,7 +1,7 @@
 import {buildRedeHorizonteDocumentIntake, redeHorizonteFileHashes, redeHorizonteRequiredFiles} from "@offroad/testing-fixtures";
 import {describe, expect, it} from "vitest";
 
-import {buildCandidateRows, buildEvidenceRows, buildIssueRows, buildOpportunityTitle, confirmedCandidates, deriveCase, OPPORTUNITY_TITLE_MAX, summarizeCompilation} from "./case";
+import {buildCandidatePayload, buildIssuePayload, buildOpportunityTitle, confirmedCandidates, deriveCase, OPPORTUNITY_TITLE_MAX, summarizeCompilation} from "./case";
 import type {IntakeCandidate} from "./types";
 
 const scope = {organizationId: "org-1", sessionId: "session-1", userId: "user-1"};
@@ -20,26 +20,26 @@ function candidate(overrides: Partial<IntakeCandidate>): IntakeCandidate {
   } as IntakeCandidate;
 }
 
-describe("intake rows", () => {
-  it("maps every fixture candidate and issue to tenant-scoped rows", () => {
+describe("intake payloads", () => {
+  it("maps every fixture candidate and issue to the RPC payload without tenant fields", () => {
     const compilation = buildRedeHorizonteDocumentIntake(fullDocumentSet);
-    const rows = buildCandidateRows(compilation, scope);
-    expect(rows).toHaveLength(compilation.candidates.length);
-    expect(rows.every((row) => row.organization_id === scope.organizationId && row.intake_session_id === scope.sessionId && row.created_by === scope.userId)).toBe(true);
-    expect(rows.find((row) => row.extractor_key === "requested")?.normalized_value).toBe(54_000_000);
+    const candidates = buildCandidatePayload(compilation);
+    expect(candidates).toHaveLength(compilation.candidates.length);
+    expect(candidates.find((row) => row.extractor_key === "requested")).toMatchObject({normalized_value: 54_000_000, source_document_id: "doc-1", currency: "BRL", is_primary: true});
+    expect(candidates.every((row) => !("organization_id" in row) && !("created_by" in row))).toBe(true);
 
-    const idByKey = new Map(rows.map((row, index) => [row.extractor_key, `id-${index}`]));
-    const issues = buildIssueRows(compilation, scope, idByKey);
+    const issues = buildIssuePayload(compilation);
     expect(issues).toHaveLength(compilation.issues.length);
     const conflict = issues.find((issue) => issue.issue_type === "conflict");
-    expect(conflict?.candidate_ids).toHaveLength(2);
-    expect(summarizeCompilation(compilation, {documents: 8, candidates: rows.length, issues: issues.length})).toMatchObject({fixture_matched: true, missing_files: [], documents: 8});
+    expect(conflict?.candidate_keys).toEqual(["project-letter", "project-plan"]);
+    expect(summarizeCompilation(compilation, {documents: 8, candidates: candidates.length, issues: issues.length})).toMatchObject({fixture_matched: true, missing_files: [], documents: 8});
   });
 
   it("keeps unknown document sets free of candidates", () => {
     const compilation = buildRedeHorizonteDocumentIntake([{id: "x", original_name: "balancete.xlsx", sha256: "f".repeat(64)}]);
-    expect(buildCandidateRows(compilation, scope)).toHaveLength(0);
-    expect(buildIssueRows(compilation, scope, new Map())).toHaveLength(1);
+    expect(buildCandidatePayload(compilation)).toHaveLength(0);
+    expect(buildIssuePayload(compilation)).toHaveLength(1);
+    expect(buildIssuePayload(compilation)[0]?.candidate_keys).toEqual([]);
   });
 });
 
@@ -87,21 +87,14 @@ describe("deriveCase", () => {
     expect(buildOpportunityTitle("Nome", "")).toBe("Nome");
     expect(buildOpportunityTitle("N".repeat(200), "p").length).toBeLessThanOrEqual(OPPORTUNITY_TITLE_MAX);
   });
-});
 
-describe("buildEvidenceRows", () => {
-  it("promotes only accepted/edited primary candidates and preserves provenance in the anchor", () => {
-    const rows = buildEvidenceRows([
-      candidate({id: "a", field_path: "historical_financials.2025.revenue", normalized_value: 184_700_000, value_type: "number", currency: "BRL", unit: "currency", information_class: "audited", evidence_rank: 1, review_state: "accepted"}),
-      candidate({id: "b", field_path: "project.total_cost", normalized_value: 50_000_000, value_type: "number", review_state: "proposed", is_primary: false}),
-      candidate({id: "c", field_path: "company.city", normalized_value: "Ribeirão Preto", review_state: "edited", extraction_method: "user_entry"}),
-      candidate({id: "d", field_path: "company.state", normalized_value: "SP", review_state: "rejected"}),
-    ], {organizationId: scope.organizationId, opportunityId: "opp-1", userId: scope.userId, now: "2026-08-18T00:00:00Z"});
-    expect(rows.map((row) => row.fact_type)).toEqual(["historical_financials.2025.revenue", "company.city"]);
-    expect(rows[0]).toMatchObject({value_numeric: 184_700_000, value_text: null, review_state: "approved", opportunity_id: "opp-1"});
-    expect(rows[0]?.source_anchor).toMatchObject({page: 1, information_class: "audited", extraction_method: "native_text", raw_value: "raw"});
-    expect(rows[1]).toMatchObject({value_numeric: null, value_text: "Ribeirão Preto"});
-    expect(rows[1]?.source_anchor).toMatchObject({extraction_method: "user_entry"});
-    expect(confirmedCandidates([candidate({review_state: "not_applicable"})])).toHaveLength(0);
+  it("only counts accepted/edited primary candidates as confirmed", () => {
+    expect(confirmedCandidates([
+      candidate({review_state: "accepted"}),
+      candidate({review_state: "edited"}),
+      candidate({review_state: "accepted", is_primary: false}),
+      candidate({review_state: "not_applicable"}),
+      candidate({review_state: "proposed"}),
+    ])).toHaveLength(2);
   });
 });

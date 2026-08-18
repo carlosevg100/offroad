@@ -59,7 +59,7 @@ export const metadata: Metadata = {title: "Institutional Profile", robots: {inde
 type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
-const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step"];
+const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate"];
 
 function answerObject(answers: AnswerMap, key: string): AnswerMap {
   const value = answers[key];

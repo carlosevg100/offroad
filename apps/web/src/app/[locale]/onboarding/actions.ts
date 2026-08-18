@@ -190,7 +190,7 @@ export async function confirmDocumentIntake(formData: FormData) {
   if (!outcome.ok) redirect(onboardingUrl(locale, outcome.error));
   const {derived, opportunityId, companyId, capitalRequestId, documentCount} = outcome.value;
 
-  if (context.journey === "company") {
+  if (context.journey === "company" && derived.legalName) {
     const {error} = await context.supabase.from("organizations").update({
       name: derived.displayName,
       legal_name: derived.legalName,

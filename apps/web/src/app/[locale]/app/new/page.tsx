@@ -31,7 +31,7 @@ type Props = {
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "New Opportunity", robots: {index: false, follow: false}};
 
-const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step"];
+const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate"];
 
 export default async function NewOpportunityPage({params, searchParams}: Props) {
   const {locale} = await params;

@@ -612,7 +612,12 @@ needed.
 - `initialize_professional_onboarding`: idempotent account-to-organization
   initialization after verified signup.
 - `create_opportunity_intake`: creates company, capital request, and opportunity
-  under tenant authorization.
+  under tenant authorization (manual form path).
+- `begin_intake_processing` / `complete_intake_processing`: clear and persist a
+  whole generation of intake candidates and issues in one transaction.
+- `review_intake_candidate`: accept / edit / reject / N/A with sibling demotion.
+- `confirm_document_intake`: atomic, idempotent promotion of a reviewed session
+  into company + capital request + opportunity + approved evidence facts.
 - `complete_onboarding`: finalizes onboarding state.
 - private authorization functions implement membership, organization management,
   opportunity permissions, intake access, storage path parsing, AAL, audit capture,
@@ -633,6 +638,7 @@ needed.
 | `20260817202807_document_first_intake_indexes.sql` | Intake query indexes |
 | `20260817203931_scope_document_hash_uniqueness.sql` | Hash uniqueness scoped to session/opportunity |
 | `20260817232443_hardening_force_rls_and_org_type_guard.sql` | FORCE RLS on intake tables; no self-service `offroad` organizations; intake sessions only for borrower-side tenants |
+| `20260818033220_atomic_intake_commands.sql` | Atomic intake commands: `begin_intake_processing`, `complete_intake_processing`, `review_intake_candidate`, `confirm_document_intake` (idempotent); bounded opportunity title in `create_opportunity_intake` |
 
 File names match the versions recorded in `supabase_migrations.schema_migrations`
 of the hosted project (the migrations were applied through the Supabase MCP tool,
@@ -891,11 +897,13 @@ deployment.
    arbitrary files are not yet extracted.
 2. **Parsing security.** Uploaded files are stored privately, but the full
    hostile-file pipeline is not present.
-3. **Transactionality.** Confirmation creates company/request/opportunity
-   atomically through `create_opportunity_intake`, but the follow-up writes
-   (company details, evidence facts, document links, session closure) are still
-   sequential in `confirmIntakeCase`. A single Postgres function
-   (`confirm_document_intake`, idempotent per session) replaces this next.
+3. ~~Transactionality.~~ Resolved on 18 Aug 2026: processing, review and
+   confirmation run as Postgres functions (`begin_intake_processing`,
+   `complete_intake_processing`, `review_intake_candidate`,
+   `confirm_document_intake`), all `security invoker` with an explicit
+   borrower-side tenant check and a row lock on the session. Confirmation is
+   atomic and idempotent per session; duplicates raise `duplicate_opportunity`
+   (surfaced as a clear message). Covered by `supabase/tests/rls_non_interference.sql`.
 4. ~~Reusable component placement.~~ Resolved on 18 Aug 2026: intake UI lives in
    `src/components/intake/*`, shared logic in `src/lib/intake/*`, and both entry
    points (onboarding, workspace) call the same operations. Copy moved to the
