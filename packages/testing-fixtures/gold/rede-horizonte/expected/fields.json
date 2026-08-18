@@ -1,0 +1,910 @@
+[
+  {
+    "fieldPath": "company.legal_name",
+    "value": "Rede Horizonte Alimentos S.A.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "company.display_name",
+    "value": "Rede Horizonte Supermercados",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "company.legal_identifier",
+    "value": "12345678000195",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "company.website",
+    "value": "https://www.redehorizonte.com.br",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "company.city",
+    "value": "Ribeirão Preto",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "company.state",
+    "value": "SP",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "company.sector",
+    "value": "Consumo / Varejo",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "company.subsector",
+    "value": "Varejo alimentar / supermercados",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "transaction.requested_amount",
+    "value": "54000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "transaction.purpose",
+    "value": "Expansão de três novas lojas e refinanciamento de dívida existente",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "transaction.expansion_debt",
+    "value": "35000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "transaction.refinancing",
+    "value": "19000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "project.total_cost",
+    "value": "50000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "project.total_cost",
+    "value": "49000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "project.shareholder_equity",
+    "value": "10000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "project.company_cash",
+    "value": "4000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "historical_financials.2025.revenue",
+    "value": "184700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31"
+  },
+  {
+    "fieldPath": "historical_financials.2025.ebitda",
+    "value": "30400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31"
+  },
+  {
+    "fieldPath": "historical_financials.2025.gross_debt",
+    "value": "65000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2025-12-31"
+  },
+  {
+    "fieldPath": "historical_financials.2025.cash",
+    "value": "8600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2025-12-31"
+  },
+  {
+    "fieldPath": "interim_financials.erp_reconciled",
+    "value": "true",
+    "valueType": "boolean",
+    "materiality": "supporting",
+    "sourceDocument": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.revenue_7m",
+    "value": "123000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.ebitda_7m",
+    "value": "20800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.gross_debt",
+    "value": "68000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.cash",
+    "value": "9300000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.ebitda_ltm",
+    "value": "33000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodStart": "2025-08-01",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.net_debt",
+    "value": "58700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "leverage.pre_transaction_net_debt_ebitda",
+    "value": "1.77878788",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "leverage.post_transaction_gross_debt",
+    "value": "103000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "07_Memorial_Descritivo_Expansao_3_Lojas.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "leverage.post_transaction_net_debt_ebitda",
+    "value": "2.8735",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "collateral.inventory_accounting",
+    "value": "32600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "collateral.inventory_gross_base",
+    "value": "29700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "collateral.inventory_eligible",
+    "value": "18800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "collateral.receivables_capacity",
+    "value": "17120000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "collateral.inventory_capacity",
+    "value": "15040000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "collateral.property_equipment_capacity",
+    "value": "21600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "collateral.total_capacity",
+    "value": "53760000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "fixture candidate (acceptance slice)",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "fieldPath": "projections.minimum_dscr",
+    "value": "1.452",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "fixture candidate (acceptance slice)"
+  },
+  {
+    "fieldPath": "historical_financials.2023.revenue",
+    "value": "142600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito HISTORICO_ESPERADO"
+  },
+  {
+    "fieldPath": "historical_financials.2023.ebitda",
+    "value": "20200000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito HISTORICO_ESPERADO"
+  },
+  {
+    "fieldPath": "historical_financials.2023.cash",
+    "value": "7100000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito HISTORICO_ESPERADO"
+  },
+  {
+    "fieldPath": "historical_financials.2023.gross_debt",
+    "value": "52000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito HISTORICO_ESPERADO"
+  },
+  {
+    "fieldPath": "historical_financials.2024.revenue",
+    "value": "164300000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito HISTORICO_ESPERADO"
+  },
+  {
+    "fieldPath": "historical_financials.2024.ebitda",
+    "value": "25500000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito HISTORICO_ESPERADO"
+  },
+  {
+    "fieldPath": "historical_financials.2024.cash",
+    "value": "8000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito HISTORICO_ESPERADO"
+  },
+  {
+    "fieldPath": "historical_financials.2024.gross_debt",
+    "value": "60000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito HISTORICO_ESPERADO"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.1.side",
+    "value": "sources",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.1.item",
+    "value": "Tranche expansão (nova dívida)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.1.amount",
+    "value": "35000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.2.side",
+    "value": "sources",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.2.item",
+    "value": "Tranche refinanciamento",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.2.amount",
+    "value": "19000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.3.side",
+    "value": "sources",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.3.item",
+    "value": "Aporte dos acionistas",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.3.amount",
+    "value": "10000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.4.side",
+    "value": "sources",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.4.item",
+    "value": "Caixa da companhia",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.4.amount",
+    "value": "4000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.5.side",
+    "value": "uses",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.5.item",
+    "value": "Investimento no projeto (3 lojas)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.5.amount",
+    "value": "49000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.6.side",
+    "value": "uses",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.6.item",
+    "value": "Refinanciamento de dívida existente",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "transaction.sources_and_uses.6.amount",
+    "value": "19000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO (mix de funding)"
+  },
+  {
+    "fieldPath": "project.locations",
+    "value": "[\"Franca\",\"Araraquara\",\"São Carlos\"]",
+    "valueType": "list",
+    "materiality": "supporting",
+    "sourceDocument": "07_Memorial_Descritivo_Expansao_3_Lojas.pdf",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO"
+  },
+  {
+    "fieldPath": "project.investments.1.name",
+    "value": "Franca",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.1.amount",
+    "value": "14600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.2.name",
+    "value": "Araraquara",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.2.amount",
+    "value": "15200000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.3.name",
+    "value": "São Carlos",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.3.amount",
+    "value": "15800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.4.name",
+    "value": "Compartilhado",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "investimento compartilhado (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.4.amount",
+    "value": "3400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "investimento compartilhado (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "transaction.timeline.1.milestone",
+    "value": "Abertura Franca",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO"
+  },
+  {
+    "fieldPath": "transaction.timeline.1.date",
+    "value": "2027-04-01",
+    "valueType": "date",
+    "materiality": "supporting",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO"
+  },
+  {
+    "fieldPath": "transaction.timeline.2.milestone",
+    "value": "Abertura Araraquara",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO"
+  },
+  {
+    "fieldPath": "transaction.timeline.2.date",
+    "value": "2027-07-01",
+    "valueType": "date",
+    "materiality": "supporting",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO"
+  },
+  {
+    "fieldPath": "transaction.timeline.3.milestone",
+    "value": "Abertura São Carlos",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO"
+  },
+  {
+    "fieldPath": "transaction.timeline.3.date",
+    "value": "2027-10-01",
+    "valueType": "date",
+    "materiality": "supporting",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "gabarito ADD_ON_ESPERADO"
+  }
+]
