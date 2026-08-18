@@ -1,10 +1,10 @@
 import {existsSync} from "node:fs";
-import {dirname, join} from "node:path";
-import {fileURLToPath} from "node:url";
+import {join} from "node:path";
 
 import {redeHorizonteRequiredFiles} from "@offroad/testing-fixtures";
 
-const here = dirname(fileURLToPath(import.meta.url));
+// Playwright transpiles the suite to CommonJS, so resolve relative to this file with __dirname.
+const here = __dirname;
 
 /** Absolute paths of the eight synthetic Rede Horizonte files versioned in `packages/testing-fixtures`. */
 export const dataRoomDirectory = join(here, "..", "..", "..", "..", "packages", "testing-fixtures", "assets", "rede-horizonte");
