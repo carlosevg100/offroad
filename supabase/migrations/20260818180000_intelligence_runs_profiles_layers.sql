@@ -409,11 +409,17 @@ grant select on public.document_layers to authenticated;
 -- ---------------------------------------------------------------------------------------------
 
 -- p_documents: [{"source_document_id": uuid, "download_url": text, "layer_object_path": text,
---                "layer_upload_url": text, "original_name": text, "mime_type": text,
---                "byte_size": number, "sha256": text}]
+--                "layer_upload_url": text}]
 -- Signed URLs are minted by the caller (the authenticated user's Storage client) and stay in
 -- the job payload, which tenants cannot read. They are short-lived: an expired URL makes the
 -- job fail as retryable and the app opens a new run.
+--
+-- SECURITY DEFINER on purpose (AGENTS.md §6 requires the reason to be documented): tenants
+-- have SELECT-only access to runs and jobs, so they can watch progress but can never forge a
+-- job — in particular they cannot choose the payload, which would let them point the worker
+-- at a URL of their choosing. Authorization is explicit on entry:
+-- private.intake_session_for_update checks the caller, the organization type and the session,
+-- and every statement below is filtered by (organization_id, intake_session_id).
 create or replace function public.begin_processing_run(
   p_organization_id uuid,
   p_session_id uuid,
@@ -424,7 +430,7 @@ create or replace function public.begin_processing_run(
 )
 returns jsonb
 language plpgsql
-security invoker
+security definer
 set search_path = ''
 as $$
 declare
