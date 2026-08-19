@@ -36,7 +36,17 @@ export type RenderOptions = {
   maxLineChars?: number;
 };
 
-const DEFAULT_MAX_CHARS = 60_000;
+/**
+ * Sized by what has to come *out*, not by what fits going in.
+ *
+ * A dense financial statement produces roughly one candidate per number, and each candidate
+ * costs a few hundred output tokens. At 60k characters of evidence the audited statements of
+ * this data room asked for more candidates than a single response could hold: the answer hit
+ * the output ceiling, stopped mid-JSON, and the whole chunk was lost — the most important
+ * document in the room contributed nothing, silently, while the run looked successful.
+ * Smaller chunks cost a few more calls and remove that failure mode.
+ */
+const DEFAULT_MAX_CHARS = 18_000;
 const DEFAULT_MAX_LINE_CHARS = 2_000;
 
 const isTableAggregate = (id: string) => /\.t\d+$/.test(id);

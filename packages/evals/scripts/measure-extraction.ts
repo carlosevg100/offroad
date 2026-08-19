@@ -95,6 +95,13 @@ for (const entry of gold.manifest.documents) {
     fileName: entry.name,
     gateway,
     localeHint: "pt-BR",
+    // A lost chunk is the difference between "this document has nothing" and "we failed to
+    // read it", so it says so on the spot instead of only showing up as a missing number.
+    onProgress: (progress) => {
+      if (progress.stage === "chunk_failed") {
+        console.log(`    !! trecho ${progress.chunk}/${progress.total} falhou: ${progress.message}`);
+      }
+    },
   });
 
   const unverified = result.candidates.filter((candidate) => !candidate.anchor_verified).length;
