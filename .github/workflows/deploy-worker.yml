@@ -1,0 +1,106 @@
+name: Deploy document worker
+
+# Builds the worker image and rolls it out to Fargate in sa-east-1.
+#
+# There is no Docker on the founder's machine, and there is no AWS key anywhere: the job
+# authenticates by OIDC, exchanging the workflow's identity token for a short-lived session on
+# `offroadGitHubDeployRole`. That role can push to this one ECR repository and update this one
+# service, and nothing else.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/document-worker/**"
+      - "packages/document-parsers/**"
+      - "packages/document-intelligence/**"
+      - "packages/credit-ontology/**"
+      - "packages/model-gateway/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: sa-east-1
+  ECR_REPOSITORY: offroad/document-worker
+  ECS_CLUSTER: offroad
+  ECS_SERVICE: document-worker
+  TASK_FAMILY: offroad-document-worker
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build, push and roll out
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubDeployRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push the image
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_SHA::12}"
+          URI="$REGISTRY/$ECR_REPOSITORY:$TAG"
+          # The Dockerfile builds from the repository root: it needs the workspace manifests
+          # and the packages the worker depends on, not just apps/document-worker.
+          docker build -f apps/document-worker/Dockerfile -t "$URI" -t "$REGISTRY/$ECR_REPOSITORY:latest" .
+          docker push "$URI"
+          docker push "$REGISTRY/$ECR_REPOSITORY:latest"
+          echo "uri=$URI" >> "$GITHUB_OUTPUT"
+
+      - name: Register the task definition with the new image
+        id: taskdef
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          spec = json.load(open("apps/document-worker/task-definition.json"))
+          spec["containerDefinitions"][0]["image"] = os.environ["IMAGE_URI"]
+          json.dump(spec, open("/tmp/taskdef.json", "w"))
+          PY
+          ARN=$(aws ecs register-task-definition \
+            --cli-input-json file:///tmp/taskdef.json \
+            --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "arn=$ARN" >> "$GITHUB_OUTPUT"
+          echo "Registered $ARN"
+        env:
+          IMAGE_URI: ${{ steps.image.outputs.uri }}
+
+      - name: Roll out to the service
+        run: |
+          set -euo pipefail
+          # The service is created once, out of band; this step only moves it to the new
+          # revision. If it does not exist yet the workflow says so instead of failing blind.
+          COUNT=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
+            --query 'length(services[?status==`ACTIVE`])' --output text 2>/dev/null || echo 0)
+          if [ "$COUNT" = "0" ]; then
+            echo "Service $ECS_SERVICE does not exist yet in cluster $ECS_CLUSTER."
+            echo "The image and task definition are ready; create the service once and re-run."
+            exit 0
+          fi
+          aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" \
+            --task-definition "${{ steps.taskdef.outputs.arn }}" --force-new-deployment >/dev/null
+          echo "Waiting for the deployment to stabilise..."
+          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"
+          echo "Deployment stable."

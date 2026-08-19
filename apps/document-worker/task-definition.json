@@ -1,0 +1,46 @@
+{
+  "family": "offroad-document-worker",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "2048",
+  "memory": "4096",
+  "runtimePlatform": {"cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX"},
+  "executionRoleArn": "arn:aws:iam::389642461544:role/offroadEcsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::389642461544:role/offroadDocumentWorkerTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "document-worker",
+      "image": "IMAGE_PLACEHOLDER",
+      "essential": true,
+      "stopTimeout": 120,
+      "environment": [
+        {"name": "NODE_ENV", "value": "production"},
+        {"name": "SUPABASE_URL", "value": "https://ifnogpksgdadruooqydi.supabase.co"},
+        {"name": "PIPELINE_VERSION", "value": "f1-2026.08.19"},
+        {"name": "LEASE_SECONDS", "value": "600"},
+        {"name": "HEARTBEAT_SECONDS", "value": "120"},
+        {"name": "IDLE_POLL_SECONDS", "value": "5"},
+        {"name": "MAX_CONCURRENT_JOBS", "value": "1"},
+        {"name": "REQUIRE_VIRUS_SCAN", "value": "true"},
+        {"name": "OCR_LANGUAGES", "value": "por+eng"},
+        {"name": "LOG_LEVEL", "value": "info"}
+      ],
+      "secrets": [
+        {"name": "ANTHROPIC_API_KEY", "valueFrom": "arn:aws:secretsmanager:sa-east-1:389642461544:secret:offroad/anthropic-api-key-RLpwik"},
+        {"name": "OPENAI_API_KEY", "valueFrom": "arn:aws:secretsmanager:sa-east-1:389642461544:secret:offroad/openai-api-key-F0Yxi7"},
+        {"name": "SUPABASE_PUBLISHABLE_KEY", "valueFrom": "arn:aws:secretsmanager:sa-east-1:389642461544:secret:offroad/supabase-publishable-key"},
+        {"name": "WORKER_ACCOUNT_EMAIL", "valueFrom": "arn:aws:secretsmanager:sa-east-1:389642461544:secret:offroad/worker-account-email"},
+        {"name": "WORKER_ACCOUNT_PASSWORD", "valueFrom": "arn:aws:secretsmanager:sa-east-1:389642461544:secret:offroad/worker-account-password"},
+        {"name": "OFFROAD_WORKER_TOKEN", "valueFrom": "arn:aws:secretsmanager:sa-east-1:389642461544:secret:offroad/worker-token"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/offroad-document-worker",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "worker"
+        }
+      }
+    }
+  ]
+}
