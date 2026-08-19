@@ -132,6 +132,25 @@ importers:
         specifier: workspace:*
         version: link:../testing-fixtures
 
+  packages/document-extraction:
+    dependencies:
+      '@offroad/credit-ontology':
+        specifier: workspace:*
+        version: link:../credit-ontology
+      '@offroad/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
+      '@offroad/model-gateway':
+        specifier: workspace:*
+        version: link:../model-gateway
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+
   packages/document-intelligence:
     dependencies:
       '@offroad/credit-ontology':
@@ -199,9 +218,18 @@ importers:
       '@offroad/credit-ontology':
         specifier: workspace:*
         version: link:../credit-ontology
+      '@offroad/document-extraction':
+        specifier: workspace:*
+        version: link:../document-extraction
       '@offroad/document-intelligence':
         specifier: workspace:*
         version: link:../document-intelligence
+      '@offroad/document-parsers':
+        specifier: workspace:*
+        version: link:../document-parsers
+      '@offroad/model-gateway':
+        specifier: workspace:*
+        version: link:../model-gateway
       '@offroad/testing-fixtures':
         specifier: workspace:*
         version: link:../testing-fixtures

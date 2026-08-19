@@ -27,3 +27,6 @@ test-results/
 *.log
 pnpm-debug.log*
 .env*.local
+
+# Measurement output (real model runs; never committed)
+packages/evals/out/
