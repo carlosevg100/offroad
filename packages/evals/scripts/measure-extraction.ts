@@ -106,7 +106,7 @@ for (const entry of gold.manifest.documents) {
 
   const unverified = result.candidates.filter((candidate) => !candidate.anchor_verified).length;
   console.log(
-    `    ${result.candidates.length} candidatos (${unverified} sem âncora confirmada), ${result.rejected.length} recusados, ${result.absentFields.length} ausentes, ${result.chunks.total} trecho(s)${result.chunks.failed ? `, ${result.chunks.failed} falharam` : ""}`,
+    `    ${result.candidates.length} candidatos (${unverified} sem âncora confirmada), ${result.rejected.length} recusados, ${result.malformed} malformados, ${result.absentFields.length} ausentes, ${result.chunks.total} trecho(s)${result.chunks.failed ? `, ${result.chunks.failed} falharam` : ""}`,
   );
 
   usage.costUsd += result.usage.costUsd;

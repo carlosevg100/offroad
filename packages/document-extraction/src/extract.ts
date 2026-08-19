@@ -1,7 +1,8 @@
+import {z} from "zod";
 import type {ModelGateway} from "@offroad/model-gateway";
 import {
-  extractorOutputSchema,
   indexLayer,
+  rawExtractionCandidateSchema,
   verifyCandidates,
   type DocumentLayer,
   type DocumentProfile,
@@ -27,9 +28,26 @@ import {EXTRACTOR_SYSTEM, buildExtractionPrompt, targetFields} from "./prompt";
  * 1234567.89", and it is the only place that line can be drawn honestly.
  */
 
+/**
+ * The strict contract, made survivable.
+ *
+ * Validating the whole response against `extractorOutputSchema` was all-or-nothing: sixty
+ * good candidates plus one with a malformed field meant zero candidates — which is exactly
+ * what zeroed the CFO letter and the audited statements in the first real measurement. The
+ * provider still receives the full candidate shape as guidance (the JSON schema keeps it,
+ * inside an anyOf with null), but on the way back each candidate is judged alone: a bad one
+ * becomes `null` and is counted, and the good ones live. Sub-perfect output costs precision
+ * points, never whole documents.
+ */
+const salvageExtractorOutputSchema = z.object({
+  candidates: z.array(rawExtractionCandidateSchema.nullable().catch(null)),
+  absent_fields: z.array(z.string()).default([]),
+  document_alerts: z.array(z.string()).default([]),
+});
+
 export type ExtractionProgress =
   | {stage: "chunk_started"; chunk: number; total: number}
-  | {stage: "chunk_finished"; chunk: number; total: number; candidates: number; costUsd: number}
+  | {stage: "chunk_finished"; chunk: number; total: number; candidates: number; malformed: number; costUsd: number}
   | {stage: "chunk_failed"; chunk: number; total: number; message: string};
 
 export type ExtractionResult = {
@@ -43,6 +61,8 @@ export type ExtractionResult = {
   alerts: string[];
   /** Chunks the evidence was split into, and how many of them failed. */
   chunks: {total: number; failed: number};
+  /** Candidates the model emitted that did not match the contract. Counted, never repaired. */
+  malformed: number;
   usage: {calls: number; costUsd: number; inputTokens: number; outputTokens: number};
 };
 
@@ -69,6 +89,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
   const alerts: string[] = [];
   const usage = {calls: 0, costUsd: 0, inputTokens: 0, outputTokens: 0};
   let failed = 0;
+  let malformed = 0;
 
   for (const chunk of chunks) {
     options.onProgress?.({stage: "chunk_started", chunk: chunk.index, total: chunk.total});
@@ -77,13 +98,16 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         task: "extract_fields",
         system: EXTRACTOR_SYSTEM,
         input: [{type: "text", text: buildExtractionPrompt({profile, fileName: options.fileName, fields, evidence: chunk})}],
-        schema: extractorOutputSchema,
+        schema: salvageExtractorOutputSchema,
         schemaName: "extractor_output",
         ...(options.maxOutputTokens ? {maxOutputTokens: options.maxOutputTokens} : {}),
         metadata: {document: profile.documentId, chunk: String(chunk.index)},
       });
 
-      raw.push(...result.output.candidates);
+      const kept = result.output.candidates.filter((candidate): candidate is RawExtractionCandidate => candidate !== null);
+      const dropped = result.output.candidates.length - kept.length;
+      malformed += dropped;
+      raw.push(...kept);
       for (const field of result.output.absent_fields) absentFields.add(field);
       alerts.push(...result.output.document_alerts);
 
@@ -96,7 +120,8 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         stage: "chunk_finished",
         chunk: chunk.index,
         total: chunk.total,
-        candidates: result.output.candidates.length,
+        candidates: kept.length,
+        malformed: dropped,
         costUsd: result.costUsd,
       });
     } catch (error) {
@@ -125,6 +150,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     absentFields: [...absentFields],
     alerts,
     chunks: {total: chunks.length, failed},
+    malformed,
     usage,
   };
 }
