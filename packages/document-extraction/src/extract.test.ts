@@ -60,11 +60,14 @@ const profile: DocumentProfile = {
 function gatewayReturning(outputs: unknown[]): ModelGateway {
   let call = 0;
   return {
-    async complete<TSchema extends z.ZodType>(): Promise<never | {output: z.infer<TSchema>} & Record<string, unknown>> {
+    async complete<TSchema extends z.ZodType>(request: {schema: TSchema}): Promise<never | {output: z.infer<TSchema>} & Record<string, unknown>> {
       // Past the scripted responses the stub answers "nothing here", so a test that cares
       // about one failing chunk is not measuring the stub running out of script.
-      const output = call < outputs.length ? outputs[call++] : {candidates: [], absent_fields: [], document_alerts: []};
-      if (output instanceof Error) throw output;
+      const raw = call < outputs.length ? outputs[call++] : {candidates: [], absent_fields: [], document_alerts: []};
+      if (raw instanceof Error) throw raw;
+      // The real gateway validates the provider's answer against the request schema before
+      // returning it; a stub that skips this hands the pipeline data it could never receive.
+      const output = request.schema.parse(raw);
       return {
         output,
         provider: "anthropic",
@@ -231,6 +234,33 @@ describe("extraction", () => {
     });
 
     expect(result.absentFields).toEqual(["historical_financials.2025.ebitda"]);
+  });
+
+  it("keeps the good candidates when one is malformed, and counts the loss", async () => {
+    // The regression this exists for: all-or-nothing validation turned sixty good candidates
+    // plus one malformed field into zero — which is how the audited statements, the highest-
+    // ranked document in the data room, contributed nothing to the first real measurement.
+    const result = await extractDocument({
+      layer,
+      profile,
+      fileName: "02_DF.pdf",
+      gateway: gatewayReturning([
+        {
+          candidates: [
+            candidate(),
+            {field_path: "historical_financials.2025.ebitda", value_raw: "", confidence: 2},
+          ],
+          absent_fields: [],
+          document_alerts: [],
+        },
+      ]),
+      localeHint: "pt-BR",
+    });
+
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]?.field_path).toBe("historical_financials.2025.revenue");
+    expect(result.malformed).toBe(1);
+    expect(result.chunks.failed).toBe(0);
   });
 
   it("counts a failed chunk instead of passing a partial reading off as complete", async () => {
