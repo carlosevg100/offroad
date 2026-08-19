@@ -73,10 +73,26 @@ jobs:
         id: taskdef
         run: |
           set -euo pipefail
+          # The checked-in task definition names its secrets (`offroad/worker-token`), it does
+          # not pin their ARNs. Secrets Manager appends a random six-character suffix to every
+          # ARN and mints a new one whenever a secret is deleted and recreated, so a pinned ARN
+          # is a time bomb: the task stops starting and the error surfaces only at run time.
+          # Resolving the names here keeps the file readable and the deployment self-healing —
+          # and a name that does not exist fails this step loudly, before anything rolls out.
+          : > /tmp/secret-arns.txt
+          for name in $(python3 -c 'import json; print(" ".join(s["valueFrom"] for s in json.load(open("apps/document-worker/task-definition.json"))["containerDefinitions"][0]["secrets"]))'); do
+            arn=$(aws secretsmanager describe-secret --secret-id "$name" --query ARN --output text)
+            printf '%s %s\n' "$name" "$arn" >> /tmp/secret-arns.txt
+            echo "resolved $name"
+          done
           python3 - <<'PY'
           import json, os
           spec = json.load(open("apps/document-worker/task-definition.json"))
-          spec["containerDefinitions"][0]["image"] = os.environ["IMAGE_URI"]
+          container = spec["containerDefinitions"][0]
+          container["image"] = os.environ["IMAGE_URI"]
+          arns = dict(line.split() for line in open("/tmp/secret-arns.txt") if line.strip())
+          for secret in container["secrets"]:
+              secret["valueFrom"] = arns[secret["valueFrom"]]
           json.dump(spec, open("/tmp/taskdef.json", "w"))
           PY
           ARN=$(aws ecs register-task-definition \
