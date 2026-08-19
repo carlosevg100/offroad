@@ -1,0 +1,89 @@
+name: Measure extraction
+
+# Runs the real extractor over a gold case and reports what it actually got: material recall,
+# precision, hallucination and cost per run — the numbers the F1 gate is written in.
+#
+# It exists because the model keys live in Secrets Manager and nowhere else. Rather than
+# copying them to a laptop, the measurement runs where a short-lived OIDC session can read
+# them: `offroadGitHubEvalsRole` may read those two secrets and nothing else — it cannot push
+# an image, touch ECS, or reach the database.
+#
+# Manual only. This spends real money with the providers, so it runs when someone asks.
+
+on:
+  workflow_dispatch:
+    inputs:
+      case:
+        description: "Gold case to measure"
+        required: false
+        default: "rede-horizonte"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: measure-extraction
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    name: Extract and score
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
+          aws-region: sa-east-1
+
+      - name: Run the extractor and score it
+        env:
+          CASE: ${{ inputs.case || 'rede-horizonte' }}
+        run: |
+          set -euo pipefail
+          # Masked the moment they exist, so a stray echo or a crash dump cannot print one.
+          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
+          echo "::add-mask::$ANTHROPIC_API_KEY"
+          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
+          echo "::add-mask::$OPENAI_API_KEY"
+          export ANTHROPIC_API_KEY OPENAI_API_KEY
+
+          pnpm --filter @offroad/evals measure "$CASE" | tee /tmp/measure.log
+
+          # The report is the point of the run: put it where it can be read without digging
+          # through the log.
+          {
+            echo "## Extraction measurement — $CASE"
+            echo
+            sed -n '/^# /,$p' /tmp/measure.log
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the full report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: extraction-measurement
+          path: packages/evals/out/
+          if-no-files-found: warn
+          retention-days: 30

@@ -15,11 +15,16 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --exclude 'dist/**'",
     "baseline": "tsx src/cli.ts baseline",
-    "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts"
+    "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts",
+    "measure": "tsx scripts/measure-extraction.ts",
+    "measure:local": "tsx --env-file=../../.env.local scripts/measure-extraction.ts"
   },
   "dependencies": {
     "@offroad/credit-ontology": "workspace:*",
+    "@offroad/document-extraction": "workspace:*",
     "@offroad/document-intelligence": "workspace:*",
+    "@offroad/document-parsers": "workspace:*",
+    "@offroad/model-gateway": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
     "decimal.js": "10.6.0",
     "zod": "4.4.3"
