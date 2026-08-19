@@ -1,0 +1,161 @@
+import {z} from "zod";
+import type {SupabaseClient} from "@supabase/supabase-js";
+
+/**
+ * The worker's only vocabulary against the database: the seven commands created in
+ * `20260818171246`. It never issues a plain insert or update, never holds a service-role key,
+ * and never passes an `organization_id` — scope always comes from the job it claimed
+ * (P1 plan §13.4, ADR 0008 decision 7).
+ *
+ * Two credentials, neither sufficient alone: the hashed worker token claims a job, and the
+ * capability token issued at claim time authorises everything after it. The capability dies
+ * with the lease, so a leaked one is worthless minutes later.
+ */
+export const jobPayloadSchema = z.object({
+  source_document_id: z.uuid(),
+  document_version: z.number().int().positive().default(1),
+  original_name: z.string().min(1),
+  mime_type: z.string().min(1).optional(),
+  byte_size: z.number().int().nonnegative().optional(),
+  sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  object_path: z.string().min(1),
+  download_url: z.url().optional(),
+  layer_object_path: z.string().min(1).optional(),
+  layer_upload_url: z.url().optional(),
+  locale: z.string().optional(),
+});
+export type JobPayload = z.infer<typeof jobPayloadSchema>;
+
+export const claimedJobSchema = z.object({
+  claimed: z.literal(true),
+  job_id: z.uuid(),
+  capability_token: z.string().min(32),
+  lease_expires_at: z.string(),
+  attempt: z.number().int().positive(),
+  kind: z.string(),
+  organization_id: z.uuid(),
+  intake_session_id: z.uuid(),
+  processing_run_id: z.uuid(),
+  payload: jobPayloadSchema,
+});
+export type ClaimedJob = z.infer<typeof claimedJobSchema>;
+
+const noJobSchema = z.object({
+  claimed: z.literal(false),
+  poisoned_job_id: z.uuid().optional(),
+});
+
+export type StageStatus = "started" | "succeeded" | "failed" | "skipped";
+
+export type QueueClient = {
+  claim(): Promise<ClaimedJob | null>;
+  heartbeat(job: ClaimedJob): Promise<void>;
+  writeStage(job: ClaimedJob, stage: string, status: StageStatus, detail?: unknown, usage?: Record<string, number>): Promise<void>;
+  recordDocument(job: ClaimedJob, input: {scanResult?: unknown; profile?: unknown; layer?: unknown}): Promise<void>;
+  complete(job: ClaimedJob, result: unknown): Promise<void>;
+  fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
+};
+
+export function createQueueClient(
+  supabase: SupabaseClient,
+  options: {workerToken: string; leaseSeconds: number},
+): QueueClient {
+  const call = async (name: string, args: Record<string, unknown>): Promise<unknown> => {
+    const {data, error} = await supabase.rpc(name, args);
+    if (error) throw new Error(`${name} failed: ${error.message}`);
+    return data;
+  };
+
+  return {
+    async claim() {
+      const data = await call("worker_claim_job", {
+        p_worker_token: options.workerToken,
+        p_lease_seconds: options.leaseSeconds,
+      });
+
+      const empty = noJobSchema.safeParse(data);
+      if (empty.success) {
+        if (empty.data.poisoned_job_id) {
+          throw new PoisonedJobError(empty.data.poisoned_job_id);
+        }
+        return null;
+      }
+
+      const claimed = claimedJobSchema.safeParse(data);
+      if (!claimed.success) {
+        // A payload we cannot understand is a bug in the app that queued it, not something to
+        // guess our way through.
+        throw new Error(`worker_claim_job returned an unusable job: ${claimed.error.issues.map((i) => i.path.join(".")).join(", ")}`);
+      }
+      return claimed.data;
+    },
+
+    async heartbeat(job) {
+      await call("worker_heartbeat", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_lease_seconds: options.leaseSeconds,
+      });
+    },
+
+    async writeStage(job, stage, status, detail, usage) {
+      await call("worker_write_stage_result", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_stage: stage,
+        p_status: status,
+        p_detail: detail ?? {},
+        p_usage: usage ?? {},
+      });
+    },
+
+    async recordDocument(job, input) {
+      await call("worker_record_document_result", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_scan_result: input.scanResult ?? null,
+        p_profile: input.profile ?? null,
+        p_layer: input.layer ?? null,
+      });
+    },
+
+    async complete(job, result) {
+      await call("worker_complete_job", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_result: result ?? {},
+      });
+    },
+
+    async fail(job, error, opts) {
+      await call("worker_fail_job", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_error: error ?? {},
+        p_retryable: opts?.retryable ?? true,
+        p_retry_in_seconds: opts?.retryInSeconds ?? 60,
+      });
+    },
+  };
+}
+
+export class PoisonedJobError extends Error {
+  readonly jobId: string;
+  constructor(jobId: string) {
+    super(`job ${jobId} exceeded its attempts and was marked poison`);
+    this.name = "PoisonedJobError";
+    this.jobId = jobId;
+  }
+}
+
+/**
+ * Keeps the lease alive while a long document is being read. Stops on its own when the work
+ * finishes or throws, so a crashed job's lease expires and another worker picks it up.
+ */
+export function startHeartbeat(queue: QueueClient, job: ClaimedJob, everyMs: number, onError: (error: Error) => void): () => void {
+  const timer = setInterval(() => {
+    queue.heartbeat(job).catch((error: Error) => onError(error));
+  }, everyMs);
+  timer.unref?.();
+  return () => clearInterval(timer);
+}
