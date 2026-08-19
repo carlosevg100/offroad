@@ -774,6 +774,93 @@ end;
 $$;
 
 reset role;
+
+-- ---------------------------------------------------------------------------------------------
+-- Layer storage: the app mints the worker's upload link, so the app needs insert rights on
+-- `document-layers` — scoped by the path, which is `<organization_id>/<scope_id>/…`.
+-- The worker itself never authenticates against Storage; it PUTs to the signed URL.
+-- ---------------------------------------------------------------------------------------------
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  org_b constant uuid := '20000000-0000-4000-8000-000000000002';
+  session_a constant uuid := '40000000-0000-4000-8000-000000000003';
+  document_id constant uuid := '50000000-0000-4000-8000-000000000003';
+begin
+  -- Tenant A may write a layer under its own organization and its own session.
+  insert into storage.objects (bucket_id, name, owner)
+  values (
+    'document-layers',
+    org_a || '/' || session_a || '/' || document_id || '/attempt-1.json',
+    '10000000-0000-4000-8000-000000000001'
+  );
+
+  -- ...and may not write one into another tenant's prefix, however well-formed the path is.
+  begin
+    insert into storage.objects (bucket_id, name, owner)
+    values (
+      'document-layers',
+      org_b || '/' || session_a || '/' || document_id || '/attempt-2.json',
+      '10000000-0000-4000-8000-000000000001'
+    );
+    raise exception 'a member of tenant A wrote a layer into tenant B''s prefix';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- ...nor one outside any known scope, which is what a path helper returning null looks like.
+  begin
+    insert into storage.objects (bucket_id, name, owner)
+    values ('document-layers', 'layers/loose.json', '10000000-0000-4000-8000-000000000001');
+    raise exception 'a layer was written outside the organization/scope path convention';
+  exception
+    when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+-- Tenant B sees nothing of tenant A's layer, and cannot write into A's prefix either.
+reset role;
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_a constant uuid := '40000000-0000-4000-8000-000000000003';
+  document_id constant uuid := '50000000-0000-4000-8000-000000000003';
+begin
+  if exists (select 1 from storage.objects where bucket_id = 'document-layers') then
+    raise exception 'tenant B read a document layer belonging to tenant A';
+  end if;
+
+  begin
+    insert into storage.objects (bucket_id, name, owner)
+    values (
+      'document-layers',
+      org_a || '/' || session_a || '/' || document_id || '/attempt-3.json',
+      '10000000-0000-4000-8000-000000000002'
+    );
+    raise exception 'tenant B wrote a layer into tenant A''s prefix';
+  exception
+    when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 
