@@ -73,13 +73,14 @@ describe("type detection", () => {
     expect(honest.mismatch).toBe(false);
   });
 
-  it("refuses legacy binary Office files with an actionable message", async () => {
-    // CFB (Office 97-2003) container signature
+  it("refuses a container it cannot identify instead of guessing from the name", async () => {
+    // The Office 97-2003 signature with no readable directory: the bytes claim to be a CFB
+    // container but say nothing about what is inside, and the extension is the one part an
+    // attacker controls. Real .xls/.doc/.ppt are covered in universal.test.ts.
     const cfb = new Uint8Array(1024);
     cfb.set([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1], 0);
-    await expect(parseDocument(input(files.erp, {bytes: cfb, fileName: "balancete.xls"}))).rejects.toThrow(/legacy/i);
     await expect(parseDocument(input(files.erp, {bytes: cfb, fileName: "balancete.xls"}))).rejects.toMatchObject({
-      code: "unsupported_legacy_format",
+      code: "unsupported_format",
     });
   });
 

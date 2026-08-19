@@ -54,10 +54,40 @@ because an anchor that moves between runs silently invalidates every fact that c
   (`;` and windows-1252 are both routine in Brazilian ERP exports). Values stay literal text.
 - **DOCX / PPTX** (`jszip` + `fast-xml-parser`) — sections split at headings, paragraphs and
   tables in document order; slides keep one block per shape plus speaker notes.
-- **Legacy `.xls` / `.doc` / `.ppt`** — refused with an actionable message. The only npm
-  parser for `.xls` carries unfixed advisories (patched builds are published outside npm) and
-  nothing maintained reads `.doc`/`.ppt`; pointing an unmaintained parser at a hostile file
-  inside the worker is worse than asking for a re-save.
+- **Legacy `.xls`, `.xlsb`, `.ods`, `.dbf`, SpreadsheetML** (SheetJS) — read in process, into
+  exactly the same shape as a modern workbook, so anchors and downstream behaviour do not
+  change with the age of the file. Office 97–2003 files all share the OLE2/CFB container, so
+  the subtype is decided by the **main stream inside** (`Workbook`, `WordDocument`,
+  `PowerPoint Document`), never by the extension — the part an attacker controls.
+- **`.doc`, `.ppt`, `.rtf`, `.odt`, `.odp`** — converted to the modern equivalent by the
+  worker's `DocumentConverter` and then parsed normally. The conversion is recorded on the
+  result (`conversion`) and as a warning, because a converted document puts one more program
+  between the anchor and the original file.
+- **Images, and PDFs with no text layer** — read through the worker's `OcrEngine`. The page
+  stays marked `scanned` even after a successful read, and blocks below a confidence floor are
+  not offered as quotable anchors. OCR turns a smudge into a plausible digit, so its output
+  never qualifies for automatic acceptance.
+
+### SheetJS is pinned by URL, on purpose
+
+`package.json` depends on `https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`, not on the
+npm `xlsx` package. The npm copy is stranded at 0.18.5 with unfixed prototype-pollution and
+ReDoS advisories; the fixes were only ever published on the vendor's own distribution.
+**Dependabot cannot see a URL dependency**, so the version has to be checked by hand when
+SheetJS publishes a release.
+
+## Capabilities the host lends
+
+The package stays pure — no process spawning, no network, no filesystem — so the two jobs
+that need the outside world arrive as interfaces (`./capabilities`) implemented by the worker
+inside its isolated container:
+
+```ts
+await parseDocument(input, {converter, ocr});
+```
+
+Without them, a `.doc` and an image are still handled honestly: a named error for the first,
+an empty scanned page plus a warning for the second. Nothing is ever silently empty.
 
 ## Scale declarations
 
