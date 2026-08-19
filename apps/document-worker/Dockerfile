@@ -37,8 +37,12 @@ RUN pnpm install --frozen-lockfile --filter @offroad/document-worker...
 COPY packages ./packages
 COPY apps/document-worker ./apps/document-worker
 
+# `--legacy` is what pnpm 10 calls the behaviour this image needs: copy the workspace
+# dependencies into the deployed tree. Without it pnpm refuses (ERR_PNPM_DEPLOY_NONINJECTED_
+# WORKSPACE) unless every `workspace:` dependency is declared as an injected dependency —
+# which would change how the whole monorepo installs, to fix one container.
 RUN pnpm --filter @offroad/document-worker... build \
- && pnpm deploy --filter @offroad/document-worker --prod /out
+ && pnpm deploy --legacy --filter @offroad/document-worker --prod /out
 
 # ---------------------------------------------------------------------------------------
 # Runtime: Node plus the document tooling and the virus scanner
