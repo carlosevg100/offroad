@@ -16,7 +16,8 @@
     "test": "vitest run --exclude 'dist/**'",
     "baseline": "tsx src/cli.ts baseline",
     "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts",
-    "measure": "tsx --env-file=../../.env.local scripts/measure-extraction.ts"
+    "measure": "tsx scripts/measure-extraction.ts",
+    "measure:local": "tsx --env-file=../../.env.local scripts/measure-extraction.ts"
   },
   "dependencies": {
     "@offroad/credit-ontology": "workspace:*",
