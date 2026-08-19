@@ -37,12 +37,28 @@ RUN pnpm install --frozen-lockfile --filter @offroad/document-worker...
 COPY packages ./packages
 COPY apps/document-worker ./apps/document-worker
 
-# `--legacy` is what pnpm 10 calls the behaviour this image needs: copy the workspace
-# dependencies into the deployed tree. Without it pnpm refuses (ERR_PNPM_DEPLOY_NONINJECTED_
-# WORKSPACE) unless every `workspace:` dependency is declared as an injected dependency —
-# which would change how the whole monorepo installs, to fix one container.
+# Two flags, each earning its place:
+#
+#   --legacy             pnpm 10 otherwise refuses to deploy a workspace whose dependencies
+#                        are not declared as injected (ERR_PNPM_DEPLOY_NONINJECTED_WORKSPACE);
+#                        the alternative would change how the whole monorepo installs, to fix
+#                        one container.
+#   node-linker=hoisted  the worker ships as a bundle of first-party code with third-party
+#                        packages left external, so pdfjs, SheetJS and the provider SDKs have
+#                        to resolve from the application root rather than from the isolated
+#                        store of whichever package declared them.
 RUN pnpm --filter @offroad/document-worker... build \
- && pnpm deploy --legacy --filter @offroad/document-worker --prod /out
+ && pnpm deploy --legacy --filter @offroad/document-worker --prod --config.node-linker=hoisted /out
+
+# A bundle that cannot start has to fail here, in the build, and not forty minutes later as a
+# task that boots and dies in CloudWatch. Started with an empty environment the worker must
+# reach configuration validation and complain about missing variables: that means every module
+# in the graph resolved. Anything about modules — a package Node cannot find, types it refuses
+# to strip — is a packaging error, and it stops the image right here.
+RUN out=$(cd /out && env -i PATH="$PATH" HOME=/tmp node dist/main.js 2>&1 || true); \
+    printf '%s\n' "$out" | head -3; \
+    printf '%s' "$out" | grep -q 'worker configuration is invalid or incomplete' \
+      || { echo 'the deployed bundle does not boot — see the output above'; exit 1; }
 
 # ---------------------------------------------------------------------------------------
 # Runtime: Node plus the document tooling and the virus scanner
