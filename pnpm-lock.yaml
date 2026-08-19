@@ -45,6 +45,9 @@ importers:
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
 
   apps/web:
     dependencies:
