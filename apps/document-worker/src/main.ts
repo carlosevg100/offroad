@@ -5,6 +5,7 @@ import {createQueueClient, startHeartbeat, PoisonedJobError, type ClaimedJob} fr
 import {createClamdScanner} from "./scan";
 import {createLibreOfficeConverter, createTesseractEngine, toolVersion} from "./tools";
 import {createClassifier} from "./classifier";
+import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 
 /**
@@ -103,11 +104,14 @@ async function main(): Promise<void> {
 
   let stopping = false;
   let current: Promise<unknown> | null = null;
+  const shuttingDown = new AbortController();
 
   const shutdown = (signal: string) => {
     if (stopping) return;
     stopping = true;
     // Finish the job in hand; its lease is what protects it from being claimed twice.
+    // Aborting only cuts the idle wait short, so a stop does not sit out the poll interval.
+    shuttingDown.abort();
     log("worker.stopping", {signal});
   };
   process.on("SIGTERM", () => shutdown("SIGTERM"));
@@ -123,12 +127,12 @@ async function main(): Promise<void> {
         continue;
       }
       log("queue.error", {message: (error as Error).message});
-      await sleep(config.IDLE_POLL_SECONDS * 1000);
+      await sleep(config.IDLE_POLL_SECONDS * 1000, shuttingDown.signal);
       continue;
     }
 
     if (!job) {
-      await sleep(config.IDLE_POLL_SECONDS * 1000);
+      await sleep(config.IDLE_POLL_SECONDS * 1000, shuttingDown.signal);
       continue;
     }
 
@@ -157,12 +161,6 @@ async function main(): Promise<void> {
   log("worker.stopped");
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    const timer = setTimeout(resolve, ms);
-    timer.unref?.();
-  });
-}
 
 main().catch((error: Error) => {
   process.stderr.write(`${JSON.stringify({at: new Date().toISOString(), event: "worker.fatal", message: error.message})}\n`);
