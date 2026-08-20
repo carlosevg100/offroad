@@ -1012,6 +1012,115 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------------------------
+-- The fund directory is platform data, not tenant data.
+--
+-- The whole commercial premise is that our map of the market is ours: a company receives
+-- conclusions drawn from it, never the boxes. So the first assertion is the strongest one — an
+-- ordinary tenant, authenticated and in good standing, reads exactly zero rows.
+-- ---------------------------------------------------------------------------------------------
+do $$
+declare
+  fund_id uuid;
+  visible integer;
+  code text;
+begin
+  set local role postgres;
+  insert into public.fund_directory (legal_name, kind, status)
+  values ('Fundo de Teste RLS', 'credit_fund', 'mapped')
+  returning id into fund_id;
+
+  insert into public.fund_mandate_observations (fund_id, criterion, value, provenance, observed_at, note)
+  values (fund_id, 'ticket', '{"min": "10000000", "max": "60000000"}'::jsonb, 'inferred', current_date, 'seed do teste');
+
+  -- A company tenant, fully authenticated, sees nothing at all.
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
+  select count(*) into visible from public.fund_directory;
+  if visible <> 0 then
+    raise exception 'a tenant can see % rows of the fund directory', visible;
+  end if;
+
+  select count(*) into visible from public.fund_mandate_observations;
+  if visible <> 0 then
+    raise exception 'a tenant can see % mandate observations', visible;
+  end if;
+
+  -- And cannot create a fund record: a fund claims one, it never invents one.
+  begin
+    insert into public.fund_directory (legal_name, kind) values ('Fundo Inventado', 'credit_fund');
+    raise exception 'a tenant inserted into the fund directory';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- Observations are append-only. Update and delete are withheld at the grant, so the failure is
+  -- loud (42501) rather than a silent zero-row update.
+  begin
+    update public.fund_mandate_observations set provenance = 'declared';
+    raise exception 'fund_mandate_observations allowed an update';
+  exception
+    when insufficient_privilege then null;
+  end;
+  begin
+    delete from public.fund_mandate_observations;
+    raise exception 'fund_mandate_observations allowed a delete';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- A registered fund reads and declares on its own record, and only its own.
+  set local role postgres;
+  update public.fund_directory
+  set claimed_by_organization_id = (select id from public.organizations order by created_at limit 1),
+      claimed_at = now(),
+      status = 'registered'
+  where id = fund_id;
+
+  set local role authenticated;
+  select count(*) into visible from public.fund_directory where id = fund_id;
+  if visible <> 1 then
+    raise exception 'a registered fund cannot read its own record';
+  end if;
+
+  insert into public.fund_mandate_observations (fund_id, criterion, value, provenance, observed_at, recorded_by)
+  values (fund_id, 'ticket', '{"min": "20000000", "max": "80000000"}'::jsonb, 'declared', current_date,
+          '10000000-0000-4000-8000-000000000001');
+
+  -- But it may only state its own position. Writing an "observed" row would be the subject
+  -- editing the evidence about itself.
+  begin
+    insert into public.fund_mandate_observations (fund_id, criterion, value, provenance, observed_at, recorded_by)
+    values (fund_id, 'ticket', '{"min": "1", "max": "2"}'::jsonb, 'observed', current_date,
+            '10000000-0000-4000-8000-000000000001');
+    raise exception 'a fund wrote an observation it did not declare';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- And it cannot hand its record to somebody else, or rewrite what we researched about it.
+  begin
+    update public.fund_directory set claimed_by_organization_id = null where id = fund_id;
+    raise exception 'a fund released its own claim';
+  exception
+    when insufficient_privilege then null;
+  end;
+  begin
+    update public.fund_directory set kind = 'bank' where id = fund_id;
+    raise exception 'a fund rewrote a column that belongs to our research';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  set local role postgres;
+end;
+$$;
+
 rollback;
 
 select 'rls_non_interference_passed' as result;
