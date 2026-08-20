@@ -54,12 +54,18 @@ importers:
 
   apps/web:
     dependencies:
+      '@offroad/credit-playbook':
+        specifier: workspace:*
+        version: link:../../packages/credit-playbook
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../../packages/financial-core
       '@offroad/matching-core':
         specifier: workspace:*
         version: link:../../packages/matching-core
+      '@offroad/reconciliation':
+        specifier: workspace:*
+        version: link:../../packages/reconciliation
       '@offroad/testing-fixtures':
         specifier: workspace:*
         version: link:../../packages/testing-fixtures
