@@ -6486,6 +6486,33 @@ button[disabled].workspace-search,
   font-size: 0.8rem;
 }
 
+/* What to actually send: the concrete artifact, not the category */
+.intake-checklist__accepts {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.intake-checklist__accepts em {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.intake-checklist__accepts ul {
+  border-left: 2px solid var(--soft);
+  color: var(--muted);
+  display: grid;
+  font-size: 0.86rem;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 2px 12px;
+}
+
 /* Materials are documents, so they get the affordances of documents */
 .case-materials__actions {
   display: flex;

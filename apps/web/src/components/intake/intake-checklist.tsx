@@ -131,9 +131,21 @@ export async function IntakeChecklist({locale, checklist}: ChecklistProps) {
                         <FileText aria-hidden="true" size={12} /> {item.satisfiedBy.join(" · ")}
                       </span>
                     ) : (
-                      <span className="intake-checklist__why">
-                        <em>{t("whyItMatters")}:</em> {item.rationale}
-                      </span>
+                      <>
+                        <span className="intake-checklist__why">
+                          <em>{t("whyItMatters")}:</em> {item.rationale}
+                        </span>
+                        {item.accepts.length > 0 ? (
+                          <div className="intake-checklist__accepts">
+                            <em>{t("whatToSend")}:</em>
+                            <ul>
+                              {item.accepts.map((entry) => (
+                                <li key={entry}>{entry}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </>
                     )}
                   </div>
                 </li>
