@@ -13,7 +13,12 @@ const SESSION = "40000000-0000-4000-8000-000000000003";
 const DOCUMENT = "50000000-0000-4000-8000-000000000003";
 
 /**
- * A Storage double that records what was asked of it. The real client is not exercised here —
+ * A Storage double that records what was asked of it.
+ *
+ * The URLs it returns carry the real Storage shape (`/storage/v1/object/sign/<bucket>/<path>`)
+ * rather than a convenient placeholder, because that shape is now load-bearing: the database
+ * refuses a link whose Storage path does not contain the object it claims to carry. A double
+ * that returned something tidier would let this suite pass while every real run was refused. The real client is not exercised here —
  * whether a signed URL is actually accepted is a question for the policy, and
  * `supabase/tests/rls_non_interference.sql` answers it against a real database.
  */
@@ -26,12 +31,12 @@ function storageDouble(options: {failDownload?: boolean; failUpload?: boolean} =
           async createSignedUrl(path: string, expiresIn: number) {
             calls.push({bucket, kind: "download", path, expiresIn});
             if (options.failDownload) return {data: null, error: {message: "denied"}};
-            return {data: {signedUrl: `https://storage.invalid/${bucket}/${path}?token=download`}, error: null};
+            return {data: {signedUrl: `https://storage.invalid/storage/v1/object/sign/${bucket}/${path}?token=download`}, error: null};
           },
           async createSignedUploadUrl(path: string) {
             calls.push({bucket, kind: "upload", path});
             if (options.failUpload) return {data: null, error: {message: "denied"}};
-            return {data: {signedUrl: `https://storage.invalid/${bucket}/${path}?token=upload`, token: "upload", path}, error: null};
+            return {data: {signedUrl: `https://storage.invalid/storage/v1/object/upload/sign/${bucket}/${path}?token=upload`, token: "upload", path}, error: null};
           },
         };
       },
@@ -124,5 +129,41 @@ describe("begin_processing_run result", () => {
     expect(readRunResult({job_ids: [1, "job-1", null]})).toEqual({processingRunId: "", runNo: 0, jobIds: ["job-1"]});
     expect(readRunResult(null)).toEqual({processingRunId: "", runNo: 0, jobIds: []});
     expect(readRunResult("unexpected")).toEqual({processingRunId: "", runNo: 0, jobIds: []});
+  });
+});
+
+describe("the links satisfy the rule the database enforces", () => {
+  /**
+   * `begin_processing_run` refuses a link whose Storage path does not contain the object it
+   * claims to carry, and refuses a layer path outside `<organization>/<session>/`. That check
+   * is what stops a tenant pointing the worker at the ECS credential endpoint, and it means the
+   * naming here is no longer a private convention: rename a bucket or reorder a path segment
+   * and every real run is refused, with nothing in this suite noticing. So the rule is asserted
+   * on this side too, in the same words.
+   */
+  const carriesObject = (url: string, objectPath: string) => {
+    const storageAt = url.indexOf("/storage/v1/");
+    return storageAt !== -1 && url.indexOf(objectPath) > storageAt;
+  };
+
+  it("names the document in the download link and the layer in the upload link", async () => {
+    const {supabase} = storageDouble();
+    const objectPath = `${ORG}/${SESSION}/one.pdf`;
+    const result = await signPipelineDocuments({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- narrow double of the Storage surface used here
+      supabase: supabase as any,
+      organizationId: ORG,
+      sessionId: SESSION,
+      documents: [{id: DOCUMENT, object_path: objectPath}],
+      newAttemptId: () => "70000000-0000-4000-8000-000000000001",
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const [entry] = result.value;
+    expect(entry).toBeDefined();
+    expect(carriesObject(entry!.download_url, objectPath)).toBe(true);
+    expect(carriesObject(entry!.layer_upload_url, entry!.layer_object_path)).toBe(true);
+    expect(entry!.layer_object_path.startsWith(`${ORG}/${SESSION}/`)).toBe(true);
   });
 });

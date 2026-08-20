@@ -8,6 +8,7 @@ import {createClassifier} from "./classifier";
 import {createExtractor} from "./extract";
 import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
+import {createStorageUrlGuard} from "./storage-url";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -74,6 +75,10 @@ async function main(): Promise<void> {
     onCall: (call) => log("model.call", {...call}),
   });
 
+  // The payload's URLs are input, `SUPABASE_URL` is configuration, and the two are not
+  // allowed to disagree. See `storage-url.ts` for what a worker that trusted them would be.
+  const guardStorageUrl = createStorageUrlGuard(config.SUPABASE_URL);
+
   const dependencies: PipelineDependencies = {
     queue,
     scanner,
@@ -88,12 +93,12 @@ async function main(): Promise<void> {
       version: tesseractVersion,
     }),
     download: async (url) => {
-      const response = await fetch(url);
+      const response = await fetch(guardStorageUrl("download_url", url));
       if (!response.ok) throw new Error(`the document could not be downloaded (${response.status})`);
       return new Uint8Array(await response.arrayBuffer());
     },
     uploadLayer: async (url, body) => {
-      const response = await fetch(url, {
+      const response = await fetch(guardStorageUrl("layer_upload_url", url), {
         method: "PUT",
         headers: {"content-type": "application/json"},
         // Node's fetch wants a BodyInit; a copy into a Buffer is the cheapest way there.

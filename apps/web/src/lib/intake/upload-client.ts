@@ -73,9 +73,11 @@ export async function uploadDocuments(input: {
       original_name: file.name,
       mime_type: file.type || null,
       byte_size: file.size,
+      // The hash the browser computed, which the server recomputes and overwrites once it has
+      // downloaded the object itself. Classification and processing status are the system's
+      // judgement and now carry column defaults: a browser that could set `processing_status`
+      // could declare a file clean before anything looked at it.
       sha256: fileHash,
-      classification: "restricted",
-      processing_status: "quarantined",
       created_by: userId,
     }).select("id, original_name, byte_size").single();
     if (insertError || !data) {

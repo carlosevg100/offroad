@@ -1,0 +1,14 @@
+-- `source_documents.document_kind` is removed, because a column nobody writes and everybody
+-- believes is worse than no column.
+--
+-- It dates from the fixture era, when the extractor stamped the kind onto the document row.
+-- The pipeline replaced that with `document_profiles`, which the classifier writes per run and
+-- per document version, and nothing has written the old column since. It stayed readable, so
+-- it kept being read: the review ledger recorded a null kind for every decision, and the
+-- auto-accept policy was handed a null for every candidate, which quietly retired every
+-- per-kind rule it has. Both readers were caught and moved to the profile; this makes a third
+-- one impossible rather than likely.
+--
+-- Nothing is lost. The single existing row holds null here, and the kind of any document that
+-- has been through the pipeline lives in `document_profiles.document_kind`, which is not null.
+alter table public.source_documents drop column if exists document_kind;

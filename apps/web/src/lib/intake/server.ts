@@ -341,8 +341,14 @@ export async function verifyIntakeDocuments(runtime: IntakeRuntime): Promise<Int
       return fail("processing");
     }
     const serverHash = sha256HexOf(new Uint8Array(await blob.arrayBuffer()));
-    const now = new Date().toISOString();
-    const {error: updateError} = await supabase.from("source_documents").update({sha256: serverHash, sha256_verified_at: now, processing_status: "clean"}).eq("organization_id", organizationId).eq("id", document.id);
+    // "The server downloaded this object and the digest matched" is a statement only the server
+    // can make, so it is no longer a column a browser can write.
+    const {error: updateError} = await supabase.rpc("record_document_verification", {
+      p_organization_id: organizationId,
+      p_document_id: document.id,
+      p_sha256: serverHash,
+      p_processing_status: "clean",
+    });
     if (updateError) {
       logIntakeFailure("store_verified_hash", updateError);
       return fail("processing");
@@ -451,11 +457,20 @@ export async function acceptHighConfidenceCandidates(runtime: IntakeRuntime): Pr
   if (loadError) return fail("save");
   if (!candidates?.length) return ok({accepted: 0, held: []});
 
+  // The kind comes from the profile the classifier wrote, not from `source_documents`. That
+  // table carries a `document_kind` column nothing has written since the pipeline replaced the
+  // fixture, so reading it here handed the policy a null for every candidate and every
+  // per-kind rule silently stopped applying: the auto-accept decision was being made by the
+  // fallback branch alone, for every field, in every document.
   const documentIds = [...new Set(candidates.map((candidate) => candidate.source_document_id).filter((id): id is string => Boolean(id)))];
-  const {data: documents} = documentIds.length
-    ? await supabase.from("source_documents").select("id, document_kind").eq("organization_id", organizationId).in("id", documentIds)
+  const {data: profiles} = documentIds.length
+    ? await supabase
+        .from("document_profiles")
+        .select("source_document_id, document_kind")
+        .eq("organization_id", organizationId)
+        .in("source_document_id", documentIds)
     : {data: []};
-  const kindOf = new Map((documents ?? []).map((document) => [document.id, document.document_kind]));
+  const kindOf = new Map((profiles ?? []).map((profile) => [profile.source_document_id, profile.document_kind]));
 
   const acceptable: string[] = [];
   const held: AutoAcceptOutcome["held"] = [];
@@ -471,13 +486,15 @@ export async function acceptHighConfidenceCandidates(runtime: IntakeRuntime): Pr
 
   if (acceptable.length === 0) return ok({accepted: 0, held});
 
-  const {error} = await supabase
-    .from("intake_field_candidates")
-    .update({review_state: "accepted", reviewed_by: runtime.userId, reviewed_at: new Date().toISOString()})
-    .eq("organization_id", organizationId)
-    .eq("intake_session_id", sessionId)
-    .in("id", acceptable);
-  return error ? fail("save") : ok({accepted: acceptable.length, held});
+  // Through the RPC rather than a direct update: `intake_field_candidates` is no longer writable
+  // by a tenant at all, because a table-level grant is a way around every determinism mechanism
+  // above it. The function re-checks membership and refuses to revive a decision already made.
+  const {data: accepted, error} = await supabase.rpc("accept_intake_candidates", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_candidate_ids: acceptable,
+  });
+  return error ? fail("save") : ok({accepted: typeof accepted === "number" ? accepted : acceptable.length, held});
 }
 
 export type ReviewInput = {candidateId: string; decision: string; rawValue: string; comment: string};
