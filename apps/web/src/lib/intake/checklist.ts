@@ -34,6 +34,8 @@ export type ChecklistItem = {
   satisfiedBy: string[];
   /** What this item unblocks: the case, the financials, the structure, the story. */
   purposes: RequirementPurpose[];
+  /** Document items only: what file to actually send, named the way the company calls it. */
+  accepts: string[];
   /** Information items only: the question, an example answer, and what was answered. */
   question?: string;
   example?: string;
@@ -127,6 +129,7 @@ export async function loadIntakeChecklist(input: {
       satisfied: status.satisfied,
       satisfiedBy: status.satisfiedBy.map((id) => nameById.get(id) ?? id),
       purposes: [...status.requirement.purposes],
+      accepts: (status.requirement.accepts ?? []).map((entry) => entry[locale]),
       ...(status.requirement.question ? {question: status.requirement.question[locale]} : {}),
       ...(status.requirement.example ? {example: status.requirement.example[locale]} : {}),
       ...(status.answer ? {answer: status.answer} : {}),
