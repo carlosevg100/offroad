@@ -1509,6 +1509,90 @@ begin
 end;
 $$;
 
+-- A command that takes an organization id by argument proves membership itself.
+--
+-- This is the invariant that `security definer` turns from a nicety into the only thing there
+-- is. While these ran as their caller, RLS filtered the row and an argument naming another
+-- tenant simply matched nothing. Running as the owner, RLS is not consulted at all, and a
+-- command that trusted its argument would write into any session in the database. Two of the
+-- four were in exactly that state when they were moved, and the check went in first.
+do $$
+declare
+  org_a uuid := '20000000-0000-4000-8000-000000000001';
+  session_id uuid := '40000000-0000-4000-8000-0000000000f6';
+  accepted boolean;
+begin
+  set local role postgres;
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+
+  -- Tenant B, naming tenant A's organization and session by argument.
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
+  accepted := true;
+  begin
+    perform public.claim_case_brief(org_a, session_id);
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'claim_case_brief accepted an organization the caller does not belong to'; end if;
+
+  accepted := true;
+  begin
+    perform public.record_case_model_spend(org_a, session_id, 999, 999);
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'record_case_model_spend accepted an organization the caller does not belong to'; end if;
+
+  accepted := true;
+  begin
+    perform public.begin_intake_processing(org_a, session_id);
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'begin_intake_processing accepted an organization the caller does not belong to'; end if;
+
+  accepted := true;
+  begin
+    perform public.record_intake_analysis(org_a, session_id, '{"brief": "from another tenant"}'::jsonb);
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'record_intake_analysis accepted an organization the caller does not belong to'; end if;
+
+  -- Nothing of tenant B's reached the row.
+  set local role postgres;
+  if (select result_summary from public.document_intake_sessions where id = session_id) <> '{}'::jsonb then
+    raise exception 'a refused cross-tenant command still wrote to the session';
+  end if;
+  if (select status from public.document_intake_sessions where id = session_id) <> 'collecting' then
+    raise exception 'a refused cross-tenant command still moved the session';
+  end if;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
+  -- And the owner's own calls still work, or this would be a lock rather than a boundary.
+  if public.claim_case_brief(org_a, session_id) <> true then
+    raise exception 'the session owner could not claim its own brief';
+  end if;
+  if public.claim_case_brief(org_a, session_id) <> false then
+    raise exception 'the brief lease let a second claim through';
+  end if;
+  perform public.record_case_model_spend(org_a, session_id, 1.25, 3);
+  if (select (result_summary ->> 'model_spend_usd')::numeric
+      from public.document_intake_sessions where id = session_id) <> 1.25 then
+    raise exception 'record_case_model_spend did not accumulate the owner''s spend';
+  end if;
+end;
+$$;
+
 set local role postgres;
 
 rollback;
