@@ -56,7 +56,7 @@ export async function IntakeReview({locale, session, documents, candidates, issu
         </div>
       </header>
 
-      {caseState !== undefined ? <IntakeCase caseState={caseState} locale={locale} /> : null}
+      {caseState !== undefined ? <IntakeCase caseState={caseState} locale={locale} sessionId={session.id} /> : null}
 
       <div className="intake-review__toolbar">
         <div><History size={14} /><span>{t("reviewedCounter", {reviewed, total: candidates.length})}</span></div>

@@ -25,7 +25,7 @@ import {redirect} from "next/navigation";
 
 import {BrandMark} from "@/components/brand-mark";
 import {IntakeCollect} from "@/components/intake/intake-collect";
-import {buildCaseState} from "@/lib/intake/case-pipeline";
+import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
@@ -346,7 +346,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           {currentStep === "documents" && isDocumentFirst ? (
             !intakeReview?.session ? <p className="form-notice form-notice--error">{tIntake("errors.session")}</p> : intakeReview.session.status === "review_ready" ? (
               <IntakeReview
-                caseState={await buildCaseState({
+                caseState={await resolveCaseState({
                   supabase,
                   organizationId: organization.id,
                   sessionId: intakeReview.session.id,
