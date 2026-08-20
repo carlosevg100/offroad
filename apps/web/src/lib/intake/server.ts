@@ -11,6 +11,7 @@ import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilati
 import {parseList, parseLocalizedNumber} from "./format";
 import {pipelineEnabledFor, startProcessingRun} from "./pipeline-run";
 import {reconcileIntakeSession} from "./reconcile";
+import {parseArchetype} from "./checklist";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 
 /**
@@ -123,6 +124,29 @@ async function ensureReconciled(runtime: IntakeRuntime): Promise<void> {
     .update({result_summary: {...((updated?.result_summary ?? {}) as Record<string, Json>), reconciled_run: session.current_run_id} as Json})
     .eq("organization_id", organizationId)
     .eq("id", sessionId);
+}
+
+/**
+ * Records which operation the company is asking for.
+ *
+ * Validated against the playbook's closed list rather than trusted from the form: the archetype
+ * decides which documents are required and which questions come back, so an unrecognised value
+ * would produce a checklist for an operation that does not exist.
+ */
+export async function setIntakeArchetype(runtime: IntakeRuntime, raw: string): Promise<IntakeOutcome> {
+  const archetype = parseArchetype(raw);
+  if (!archetype) return fail("validation");
+
+  const {error} = await runtime.supabase
+    .from("document_intake_sessions")
+    .update({archetype})
+    .eq("organization_id", runtime.organizationId)
+    .eq("id", runtime.sessionId);
+  if (error) {
+    logIntakeFailure("set_archetype", error);
+    return fail(intakeErrorFrom(error, "save"));
+  }
+  return ok(null);
 }
 
 /** Starts a session for the tenant. `journey` follows the organization type. */

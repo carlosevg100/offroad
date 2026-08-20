@@ -11,6 +11,7 @@ import {
   confirmIntakeCase,
   loadIntakeSession,
   processIntakeSession,
+  setIntakeArchetype as setArchetype,
   removeIntakeDocument as removeDocument,
   resolveIntakeIssue as resolveIssue,
   reviewIntakeCandidate as reviewCandidate,
@@ -150,6 +151,13 @@ export async function startDocumentIntake(formData: FormData) {
     redirect(onboardingUrl(locale, "save"));
   }
   redirect(onboardingUrl(locale));
+}
+
+export async function setIntakeOperation(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const outcome = await setArchetype(runtime, value(formData, "archetype"));
+  redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
 }
 
 export async function processDocumentIntake(formData: FormData) {

@@ -5,6 +5,7 @@ import {getTranslations} from "next-intl/server";
 import {redirect} from "next/navigation";
 
 import {IntakeCollect} from "@/components/intake/intake-collect";
+import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import type {AppLocale} from "@/i18n/routing";
@@ -18,6 +19,7 @@ import {
   confirmWorkspaceDocumentIntake,
   createOpportunity,
   processWorkspaceDocumentIntake,
+  setWorkspaceIntakeOperation,
   removeWorkspaceIntakeDocument,
   resolveWorkspaceIntakeIssue,
   reviewWorkspaceIntakeCandidate,
@@ -81,6 +83,12 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
           />
         ) : (
           <IntakeCollect
+            checklist={await loadIntakeChecklist({
+              supabase,
+              organizationId: organization.id,
+              sessionId: review.session.id,
+              locale: locale === "en-US" ? "en" : "pt",
+            })}
             documents={review.documents}
             locale={locale}
             manualHref={manualHref}
@@ -88,6 +96,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             processAction={processWorkspaceDocumentIntake}
             removeAction={removeWorkspaceIntakeDocument}
             session={review.session}
+            setOperationAction={setWorkspaceIntakeOperation}
             userId={userId}
           />
         )

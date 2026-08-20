@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@offroad/credit-ontology": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/financial-core": "workspace:*",
     "@offroad/matching-core": "workspace:*",

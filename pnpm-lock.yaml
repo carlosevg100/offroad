@@ -54,6 +54,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@offroad/credit-ontology':
+        specifier: workspace:*
+        version: link:../../packages/credit-ontology
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../../packages/credit-playbook
