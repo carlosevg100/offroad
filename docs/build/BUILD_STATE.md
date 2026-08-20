@@ -87,6 +87,15 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [ ] ligar ao worker: rodar a conciliação ao fim da run e persistir fatos, exceções e cálculos
 - [ ] aba Financeiro e aba Conciliação na UI
 
+## P1 — Fase D (entendimento do case) — 20/08/2026
+
+- [x] `packages/case-understanding`, determinístico:
+  - **score de prontidão em cinco componentes**, nunca um número só — suficiência de dados (mínimo pesa o dobro), estado da conciliação (ponderado por severidade), qualidade da evidência (rank médio + % com âncora confirmada), lacunas materiais e bloqueios. Cada componente traz a explicação em números que o leitor confere. **Bloqueio não desconta pontos: segura o caso.** Um pacote 90% completo com balanço que não fecha não está 90% pronto
+  - **auditor de evidência**: relê cada claim material, extrai os números realmente escritos na frase e recusa qualquer um que não apareça nos fatos ou cálculos citados. Ano, percentual e contagem passam sem suporte (senão a prosa fica impossível de escrever); dinheiro e múltiplo, não. Falha bloqueia, não avisa
+  - 14 testes
+- [ ] case brief gerado com claims (chamada de modelo, saída por schema, auditada antes de sair)
+- [ ] perguntas à administração e roadmap de diligência
+
 ## Estado corrente (20/08/2026)
 
 A linha do pipeline está ligada de ponta a ponta: empresa envia documentos → app assina os
