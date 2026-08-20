@@ -97,6 +97,12 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
   if (!collateral) gaps.push("capacidade de garantias após haircut");
 
   // ---- wall 3: what the market carries -----------------------------------------------------
+  //
+  // Honest naming, because this one is easy to over-read. The number is EBITDA times the
+  // playbook's leverage ceiling — the desk's own view of what this profile places, not an
+  // observation of transactions that cleared. It is a good proxy for *size*, and it says nothing
+  // at all about tenor, which is the other half of what the market decides; that half lives in
+  // `market.ts` and is labelled by provenance for the same reason.
   let market: string | null = null;
   if (input.adjustedEbitda) {
     const ebitda = new Decimal(input.adjustedEbitda);
@@ -155,14 +161,14 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
     },
     {
       id: "market",
-      labels: {pt: "Apetite de mercado", en: "Market appetite"},
+      labels: {pt: "Apetite de mercado (alavancagem)", en: "Market appetite (leverage)"},
       amount: market,
       explanation: {
         pt: market
-          ? `Espaço até ${definition.structure.leverageCeiling}x dívida líquida / EBITDA no fechamento, que é onde este tipo de papel deixa de encontrar comprador. Não é covenant nem meta.`
+          ? `Espaço até ${definition.structure.leverageCeiling}x dívida líquida / EBITDA no fechamento, que é onde este tipo de papel deixa de encontrar comprador. Este teto é a leitura do desk, não uma média de operações observadas — e ele fala de tamanho, não de prazo. Não é covenant nem meta.`
           : "Não calculada: falta EBITDA ajustado positivo.",
         en: market
-          ? `Room to ${definition.structure.leverageCeiling}x net debt / EBITDA at closing, where this paper stops finding buyers. Not a covenant and not a target.`
+          ? `Room to ${definition.structure.leverageCeiling}x net debt / EBITDA at closing, where this paper stops finding buyers. This ceiling is the desk's read rather than an average of observed transactions — and it speaks to size, not tenor. Not a covenant and not a target.`
           : "Not computed: positive adjusted EBITDA is missing.",
       },
       inputs: ["calculated.adjusted_ebitda"],

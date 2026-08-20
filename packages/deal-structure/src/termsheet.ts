@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import {archetype, type ArchetypeId} from "@offroad/credit-playbook";
 
 import type {CapacityAssessment} from "./capacity";
+import {bandProvenanceNote, playbookBand, reconcileTenor, type MarketBand} from "./market";
 
 /**
  * The indicative term sheet — the shape of the paper, with every term traceable to why.
@@ -95,6 +96,14 @@ export type TermSheetInput = {
   currency?: string;
   /** Anything that holds the case — a critical exception, a missing minimum document. */
   blockers?: readonly string[];
+  /**
+   * What the market does for this profile. Defaults to the playbook's band, labelled as ours.
+   *
+   * Passing an observed band is what turns "this operation usually carries 48–84 months" into
+   * "fourteen transactions of this profile cleared between 48 and 72 months in the last year" —
+   * the same sentence with evidence behind it.
+   */
+  market?: MarketBand;
 };
 
 const formatMoney = (value: string, currency: string, locale: "pt-BR" | "en-US") =>
@@ -162,7 +171,14 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
   });
 
   // ---- tenor and grace ---------------------------------------------------------------------
-  const tenor = withinBand(input.requestedTermMonths, definition.structure.tenorMonths.typical);
+  //
+  // Two different constraints, and conflating them is how a company is told something beautiful
+  // and then hears nothing back from the market. The cash flow decides whether the operation can
+  // be serviced; the band decides whether anyone buys that shape. This is the second one.
+  const band = input.market ?? playbookBand(input.archetypeId);
+  const bandNote = bandProvenanceNote(band);
+  const verdict = reconcileTenor(band, input.requestedTermMonths);
+  const tenor = {value: verdict.recommended, clamped: verdict.binding === "market" ? ((input.requestedTermMonths ?? 0) < band.tenorMonths.min ? "low" : "high") : null} as const;
   terms.push({
     id: "tenor",
     labels: {pt: "Prazo", en: "Tenor"},
@@ -172,12 +188,12 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     rationale:
       input.requestedTermMonths === undefined
         ? {
-            pt: `Você não indicou prazo, então propomos ${tenor.value} meses: é o que esta operação costuma carregar (${definition.structure.tenorMonths.typical.join("–")} meses). ${definition.structure.notes.pt}`,
-            en: `You did not state a tenor, so we propose ${tenor.value} months: it is what this operation usually carries (${definition.structure.tenorMonths.typical.join("–")} months). ${definition.structure.notes.en}`,
+            pt: `Você não indicou prazo, então propomos ${tenor.value} meses: é o prazo que os financiadores compram neste perfil (${band.tenorMonths.min}–${band.tenorMonths.max} meses). ${bandNote.pt} ${definition.structure.notes.pt}`,
+            en: `You did not state a tenor, so we propose ${tenor.value} months: it is the tenor lenders buy in this profile (${band.tenorMonths.min}–${band.tenorMonths.max} months). ${bandNote.en} ${definition.structure.notes.en}`,
           }
         : {
-            pt: `Dentro da banda típica desta operação (${definition.structure.tenorMonths.typical.join("–")} meses). ${definition.structure.notes.pt}`,
-            en: `Inside this operation's typical band (${definition.structure.tenorMonths.typical.join("–")} months). ${definition.structure.notes.en}`,
+            pt: `Dentro do que os financiadores compram neste perfil (${band.tenorMonths.min}–${band.tenorMonths.max} meses). ${bandNote.pt} ${definition.structure.notes.pt}`,
+            en: `Inside what lenders buy in this profile (${band.tenorMonths.min}–${band.tenorMonths.max} months). ${bandNote.en} ${definition.structure.notes.en}`,
           },
     ...(tenor.clamped
       ? {
@@ -186,12 +202,12 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
             reason:
               tenor.clamped === "low"
                 ? {
-                    pt: `Curto demais para o mercado desta operação, que trabalha entre ${definition.structure.tenorMonths.typical.join(" e ")} meses. Prazo apertado sobe a parcela e derruba a cobertura — costuma ser o que faz o fundo recusar, não o valor.`,
-                    en: `Shorter than the market for this operation, which works between ${definition.structure.tenorMonths.typical.join(" and ")} months. A tight tenor raises the instalment and cuts coverage — usually what makes a fund decline, rather than the amount.`,
+                    pt: `Os financiadores deste perfil trabalham entre ${band.tenorMonths.min} e ${band.tenorMonths.max} meses. Prazo apertado sobe a parcela e derruba a cobertura — costuma ser o que faz o fundo recusar, não o valor. ${bandNote.pt}`,
+                    en: `Lenders in this profile work between ${band.tenorMonths.min} and ${band.tenorMonths.max} months. A tight tenor raises the instalment and cuts coverage — usually what makes a fund decline, rather than the amount. ${bandNote.en}`,
                   }
                 : {
-                    pt: `Mais longo do que este tipo de operação costuma alcançar (${definition.structure.tenorMonths.typical.join("–")} meses). Prazo além da banda existe, mas custa mais caro e reduz muito o conjunto de compradores.`,
-                    en: `Longer than this kind of operation usually reaches (${definition.structure.tenorMonths.typical.join("–")} months). It exists beyond the band, but it costs more and sharply narrows the buyer set.`,
+                    pt: `O seu fluxo pode até comportar esse prazo — o problema é outro: os financiadores deste perfil compram de ${band.tenorMonths.min} a ${band.tenorMonths.max} meses. Fundo de crédito tem os próprios cotistas para remunerar num horizonte, e prazo fora disso simplesmente não encontra comprador, por mais que a conta feche. ${bandNote.pt}`,
+                    en: `Your cash flow may well carry that tenor — the problem is a different one: lenders in this profile buy ${band.tenorMonths.min} to ${band.tenorMonths.max} months. A credit fund has its own investors to repay on its own horizon, and a tenor outside that simply finds no buyer, however well the arithmetic works. ${bandNote.en}`,
                   },
           },
         }
