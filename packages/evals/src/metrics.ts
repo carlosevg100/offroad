@@ -69,7 +69,90 @@ function candidateMatchesField(candidate: SnapshotCandidate, field: GoldField): 
   return true;
 }
 
-export function evaluateSnapshot(gold: GoldCase, snapshot: ExtractionSnapshot): EvalReport {
+/** `transaction.sources_and_uses.3.amount` → group `transaction.sources_and_uses`, index `3`, key `amount`. */
+const indexedPath = /^(.*)\.(\d+)\.([a-z0-9_]+)$/;
+
+/**
+ * Re-indexes {i}-grouped candidates so tuples are matched by content, not by position.
+ *
+ * The index in `sources_and_uses.{i}` is presentation order, and presentation order is not a
+ * fact: a document that lists uses before sources states the same six facts as the answer key
+ * that lists sources first. Comparing by index scores a correct extraction as six wrong
+ * values — which is noise, and noise in the gate hides real defects. So, per group, gold
+ * tuples and extracted tuples are paired greedily by how many of their fields agree, and the
+ * candidates are rewritten to the gold tuple's index. Genuinely wrong tuples still fail:
+ * pairing maximizes agreement, it does not invent any.
+ */
+export function alignIndexedGroups(goldFields: GoldField[], candidates: SnapshotCandidate[]): SnapshotCandidate[] {
+  type Tuple = Map<string, GoldField[]>;
+  const goldGroups = new Map<string, Map<string, Tuple>>();
+  for (const field of goldFields) {
+    const match = indexedPath.exec(field.fieldPath);
+    if (!match) continue;
+    const [, group, index, key] = match as unknown as [string, string, string, string];
+    const tuples = goldGroups.get(group) ?? new Map<string, Tuple>();
+    const tuple = tuples.get(index) ?? new Map<string, GoldField[]>();
+    tuple.set(key, [...(tuple.get(key) ?? []), field]);
+    tuples.set(index, tuple);
+    goldGroups.set(group, tuples);
+  }
+  if (goldGroups.size === 0) return candidates;
+
+  const output: SnapshotCandidate[] = [];
+  const candidateGroups = new Map<string, Map<string, SnapshotCandidate[]>>();
+  for (const candidate of candidates) {
+    const match = indexedPath.exec(candidate.fieldPath);
+    const group = match ? (match[1] as string) : null;
+    if (!group || !goldGroups.has(group)) {
+      output.push(candidate);
+      continue;
+    }
+    const index = match![2] as string;
+    const tuples = candidateGroups.get(group) ?? new Map<string, SnapshotCandidate[]>();
+    tuples.set(index, [...(tuples.get(index) ?? []), candidate]);
+    candidateGroups.set(group, tuples);
+  }
+
+  for (const [group, candidateTuples] of candidateGroups) {
+    const goldTuples = [...(goldGroups.get(group) ?? new Map<string, Tuple>()).entries()];
+    const remaining = new Set(goldTuples.map(([index]) => index));
+
+    // Score every (candidate tuple, gold tuple) pair by agreeing fields, assign greedily.
+    const scored: {candidateIndex: string; goldIndex: string; score: number}[] = [];
+    for (const [candidateIndex, tupleCandidates] of candidateTuples) {
+      for (const [goldIndex, tuple] of goldTuples) {
+        let score = 0;
+        for (const candidate of tupleCandidates) {
+          const key = indexedPath.exec(candidate.fieldPath)?.[3] ?? "";
+          for (const field of tuple.get(key) ?? []) {
+            if (valuesMatch(field.value, candidate.normalizedValue, field.valueType, field.tolerance)) score += 1;
+          }
+        }
+        scored.push({candidateIndex, goldIndex, score});
+      }
+    }
+    scored.sort((a, b) => b.score - a.score);
+
+    const assignment = new Map<string, string>();
+    const taken = new Set<string>();
+    for (const {candidateIndex, goldIndex, score} of scored) {
+      if (score === 0 || assignment.has(candidateIndex) || taken.has(goldIndex) || !remaining.has(goldIndex)) continue;
+      assignment.set(candidateIndex, goldIndex);
+      taken.add(goldIndex);
+    }
+
+    for (const [candidateIndex, tupleCandidates] of candidateTuples) {
+      const target = assignment.get(candidateIndex) ?? candidateIndex;
+      for (const candidate of tupleCandidates) {
+        output.push(target === candidateIndex ? candidate : {...candidate, fieldPath: candidate.fieldPath.replace(`.${candidateIndex}.`, `.${target}.`)});
+      }
+    }
+  }
+  return output;
+}
+
+export function evaluateSnapshot(gold: GoldCase, rawSnapshot: ExtractionSnapshot): EvalReport {
+  const snapshot: ExtractionSnapshot = {...rawSnapshot, candidates: alignIndexedGroups(gold.fields, rawSnapshot.candidates)};
   const fieldOutcomes: FieldOutcome[] = gold.fields.map((field) => {
     const candidates = snapshot.candidates.filter((candidate) => candidateMatchesField(candidate, field));
     const outcome: FieldOutcome = {fieldPath: field.fieldPath, materiality: field.materiality, expected: field.value, status: "missing"};
