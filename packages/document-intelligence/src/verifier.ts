@@ -66,7 +66,16 @@ export function verifyCandidate(
     flags.add("anchor_missing");
     precision = candidate.anchor.kind === "page" ? "page" : "document";
   } else {
-    if (!containsNormalized(anchor.text, candidate.quote)) flags.add("quote_not_in_anchor");
+    if (!containsNormalized(anchor.text, candidate.quote)) {
+      // A cell is one number; the row is where its meaning lives. Citing `p3.t1.r2.c3` while
+      // quoting "Receita líquida | 142,6 | 164,3 | 184,7" is precise, honest behaviour — the
+      // anchor names the exact cell, the quote shows the reader the whole line — and it was
+      // being flagged as an invented trace. The quote may live in the enclosing row; the
+      // digits check below still holds the value against the cell itself.
+      const rowId = /\.r\d+\.c\d+$/.test(candidate.anchor.id) ? candidate.anchor.id.replace(/\.c\d+$/, "") : null;
+      const row = rowId ? lookupAnchor(context.index, rowId) : undefined;
+      if (!row || !containsNormalized(row.text, candidate.quote)) flags.add("quote_not_in_anchor");
+    }
     if (!containsNormalized(candidate.quote, candidate.value_raw)) flags.add("value_not_in_quote");
     if (candidate.value_type === "number") {
       const digits = digitSequence(candidate.value_raw);

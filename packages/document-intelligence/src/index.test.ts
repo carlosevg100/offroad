@@ -204,6 +204,21 @@ describe("verifier", () => {
     );
   });
 
+  it("accepts a cell anchor whose quote is the enclosing row — precise citation, honest context", () => {
+    const outcome = verifyCandidate({...revenue, quote: "Receita líquida | 185.400 | 172.900"}, context);
+    if (outcome.kind !== "verified") throw new Error("expected verified shape");
+    expect(outcome.value.anchor_verified).toBe(true);
+    expect(outcome.value.verifier_flags).toEqual([]);
+    expect(outcome.value.anchor_precision).toBe("cell");
+  });
+
+  it("still refuses a cell anchor whose quote is not even in its row", () => {
+    const outcome = verifyCandidate({...revenue, quote: "EBITDA | 28.900 | 25.100"}, context);
+    if (outcome.kind !== "verified") throw new Error("expected verified shape");
+    expect(outcome.value.anchor_verified).toBe(false);
+    expect(outcome.value.verifier_flags).toContain("quote_not_in_anchor");
+  });
+
   it("flags a quote that is not in the anchor (invented trace)", () => {
     const outcome = verifyCandidate({...revenue, quote: "Receita líquida 190.000"}, context);
     if (outcome.kind !== "verified") throw new Error("expected verified shape");
