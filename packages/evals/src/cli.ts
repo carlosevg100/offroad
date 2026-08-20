@@ -23,7 +23,7 @@ const option = (name: string, fallback: string): string => {
 };
 
 if (command !== "baseline") {
-  console.error(`unknown command "${command}" — available: baseline`);
+  console.error(`unknown command "${command}". Available: baseline`);
   process.exit(2);
 }
 

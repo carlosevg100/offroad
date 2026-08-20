@@ -287,7 +287,7 @@ function MatchingScene({ui}: {ui: FilmUi}) {
         <header><span>{ui.provider}</span><span>{ui.mandate}</span><span>{ui.status}</span><span>{ui.fit}</span></header>
         <article><span>01</span><div><strong>Aurora Credit</strong><small>{ui.seniorReceivables}</small></div><span><i /> {ui.qualified}</span><strong>94%</strong></article>
         <article><span>02</span><div><strong>Vale Verde</strong><small>{ui.expansion}</small></div><span><i /> {ui.qualified}</span><strong>86%</strong></article>
-        <article data-muted><span>03</span><div><strong>Canyon Opportunities</strong><small>{ui.usdOnly}</small></div><span>{ui.mismatch}</span><strong>—</strong></article>
+        <article data-muted><span>03</span><div><strong>Canyon Opportunities</strong><small>{ui.usdOnly}</small></div><span>{ui.mismatch}</span><strong>0%</strong></article>
       </div>
       <div className="film-evidence-line"><ShieldCheck size={16} /><span>{ui.constraintNote}</span><strong>{ui.qualifiedCount}</strong></div>
     </div>

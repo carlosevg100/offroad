@@ -83,10 +83,10 @@ describe("baseline — the fixture extractor that runs in production today", () 
 
   it("renders a markdown report with the headline metrics", () => {
     const markdown = renderMarkdownReport(report);
-    expect(markdown).toContain("# Eval — rede-horizonte · rede-horizonte-fixture@rede-horizonte-v1");
+    expect(markdown).toContain("# Eval: rede-horizonte · rede-horizonte-fixture@rede-horizonte-v1");
     expect(markdown).toContain("| Precision on comparable candidates | 100.0% (38/38)");
     expect(markdown).toContain("| RF-05 | medium | detected |");
-    expect(markdown).toContain("| AC-03 | 15 | yes | pass | — |");
+    expect(markdown).toContain("| AC-03 | 15 | yes | pass | n/a |");
   });
 });
 

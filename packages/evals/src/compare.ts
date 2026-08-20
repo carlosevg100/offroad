@@ -77,7 +77,7 @@ const money = (value: number | null): string => (value === null ? "n/a" : `US$ $
 
 export function renderSweepMarkdown(comparison: SweepComparison): string {
   const lines: string[] = [];
-  lines.push(`# Model sweep — ${comparison.caseId}`);
+  lines.push(`# Model sweep: ${comparison.caseId}`);
   lines.push("");
   lines.push("| Configuration | Production | Material recall | Precision | Hallucination | Exceptions | Cost | Verdict |");
   lines.push("|---|---|---|---|---|---|---|---|");
@@ -89,14 +89,14 @@ export function renderSweepMarkdown(comparison: SweepComparison): string {
   }
   lines.push("");
   if (comparison.recommended) {
-    lines.push(`**Recommended (cheapest qualifying, already allowlisted):** ${comparison.recommended.label} — ${money(comparison.recommended.costUsd)}.`);
+    lines.push(`**Recommended (cheapest qualifying, already allowlisted):** ${comparison.recommended.label}, ${money(comparison.recommended.costUsd)}.`);
   } else {
     lines.push("**No allowlisted configuration cleared every threshold.** Do not promote; investigate before changing policy.");
   }
   if (comparison.cheapestQualified) {
     lines.push("");
     lines.push(
-      `**Cheaper candidate outside the allowlist:** ${comparison.cheapestQualified.label} — ${money(comparison.cheapestQualified.costUsd)}. It clears the thresholds on this gold case; promoting it to production requires the same result on the other gold sets (including the adversarial one) and a founder decision, since the allowlist encodes a quality-bar decision, not a technical limit.`,
+      `**Cheaper candidate outside the allowlist:** ${comparison.cheapestQualified.label}, ${money(comparison.cheapestQualified.costUsd)}. It clears the thresholds on this gold case; promoting it to production requires the same result on the other gold sets (including the adversarial one) and a founder decision, since the allowlist encodes a quality-bar decision, not a technical limit.`,
     );
   }
   lines.push("");

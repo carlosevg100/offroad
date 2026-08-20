@@ -101,7 +101,7 @@ function historyTable(facts: readonly ReconciledFact[], currency: string): Mater
     const year = period.slice(0, 4);
     const cells = metrics.map((metric) => {
       const fact = facts.find((candidate) => candidate.key.periodEnd === period && candidate.key.fieldPath.endsWith(`.${metric}`));
-      return fact ? formatMoney(fact.value, currency, "pt-BR") : "—";
+      return fact ? formatMoney(fact.value, currency, "pt-BR") : "não informado";
     });
     return [year, ...cells];
   });
@@ -149,7 +149,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
 
   const audit = auditBrief({brief: input.brief, facts: input.facts, calculations: input.calculations});
   if (!audit.ok) {
-    return {ok: false, reason: "audit_failed", detail: audit.audit.findings.map((finding) => `${finding.claimId}: ${finding.reason} — ${finding.detail}`)};
+    return {ok: false, reason: "audit_failed", detail: audit.audit.findings.map((finding) => `${finding.claimId}: ${finding.reason} · ${finding.detail}`)};
   }
 
   const name = input.companyName ?? "";
@@ -164,8 +164,8 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
   const teaser: Material = {
     kind: "teaser",
     title: {
-      pt: anonymous ? "Oportunidade de crédito privado" : `${name} — oportunidade de crédito privado`,
-      en: anonymous ? "Private credit opportunity" : `${name} — private credit opportunity`,
+      pt: anonymous ? "Oportunidade de crédito privado" : `${name}: oportunidade de crédito privado`,
+      en: anonymous ? "Private credit opportunity" : `${name}: private credit opportunity`,
     },
     blocks: [
       {type: "heading", text: {pt: "A oportunidade", en: "The opportunity"}},
@@ -209,8 +209,8 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
   const creditProfile: Material = {
     kind: "credit_profile",
     title: {
-      pt: anonymous ? "Perfil de crédito" : `${name} — perfil de crédito`,
-      en: anonymous ? "Credit profile" : `${name} — credit profile`,
+      pt: anonymous ? "Perfil de crédito" : `${name}: perfil de crédito`,
+      en: anonymous ? "Credit profile" : `${name}: credit profile`,
     },
     blocks: profileBlocks,
     dependsOn: [...input.calculations.map((calculation) => calculation.id), ...input.facts.map((fact) => fact.key.fieldPath)],
@@ -241,8 +241,8 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
   const packageMaterial: Material = {
     kind: "package",
     title: {
-      pt: anonymous ? "Pacote para investidores" : `${name} — pacote para investidores`,
-      en: anonymous ? "Investor package" : `${name} — investor package`,
+      pt: anonymous ? "Pacote para investidores" : `${name}: pacote para investidores`,
+      en: anonymous ? "Investor package" : `${name}: investor package`,
     },
     blocks: packageBlocks,
     dependsOn: creditProfile.dependsOn,

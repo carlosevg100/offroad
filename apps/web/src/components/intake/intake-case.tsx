@@ -178,7 +178,7 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         </div>
       ) : null}
 
-      {/* The written case — or the reason it was refused. */}
+      {/* The written case, or the reason it was refused. */}
       <div className="case-brief">
         <h3>{t("briefTitle")}</h3>
         {brief ? (

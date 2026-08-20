@@ -220,7 +220,7 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
   const A = (rowKey: string) => reference(positions, assumptionsName, "assumptions", rowKey, 1, true);
 
   const fromDocument = L("do data room", "from the data room");
-  const fromDesk = L("premissa Offroad — editável", "Offroad assumption — editable");
+  const fromDesk = L("premissa Offroad: editável", "Offroad assumption: editable");
   const driver = (text: {pt: string; en: string}, cell: Cell, origin: {pt: string; en: string}): Cell[] => [
     label(text[lang]),
     cell,
@@ -236,7 +236,7 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
   assumptions.fill(
     "base_revenue",
     driver(
-      L(`Receita líquida — ${periods[0]}`, `Net revenue — ${periods[0]}`),
+      L(`Receita líquida: ${periods[0]}`, `Net revenue: ${periods[0]}`),
       revenue ? historical(revenue.value, "money") : input(0, "money"),
       revenue ? fromDocument : fromDesk,
     ),
@@ -244,7 +244,7 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
   assumptions.fill(
     "base_ebitda",
     driver(
-      L(`EBITDA ajustado — ${periods[0]}`, `Adjusted EBITDA — ${periods[0]}`),
+      L(`EBITDA ajustado: ${periods[0]}`, `Adjusted EBITDA: ${periods[0]}`),
       adjustedEbitda !== null ? historical(adjustedEbitda, "money") : input(0, "money"),
       adjustedEbitda !== null ? fromDocument : fromDesk,
     ),
@@ -279,7 +279,7 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
     driver(
       L("Custo da dívida para sensibilidade (% a.a.)", "Cost of debt for sensitivity (% p.a.)"),
       input(0.14, "percent"),
-      L("placeholder de sensibilidade — não é precificação", "sensitivity placeholder — not a price"),
+      L("placeholder de sensibilidade: não é precificação", "sensitivity placeholder: not a price"),
     ),
   );
   assumptions.fill("existing_debt", driver(L("Dívida bruta existente", "Existing gross debt"), grossDebt ? historical(grossDebt.value, "money") : input(0, "money"), grossDebt ? fromDocument : fromDesk));
@@ -304,8 +304,8 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
 
   if (!marginKnown) {
     desk.push(lang === "pt"
-      ? "Margem EBITDA de 10% — o data room não trouxe receita e EBITDA no mesmo período para calcular a margem realizada."
-      : "10% EBITDA margin — the data room did not provide revenue and EBITDA for the same period.");
+      ? "Margem EBITDA de 10%: o data room não trouxe receita e EBITDA no mesmo período para calcular a margem realizada."
+      : "10% EBITDA margin: the data room did not provide revenue and EBITDA for the same period.");
   }
   desk.push(lang === "pt"
     ? "Crescimento de receita de 6% a.a., D&A 3% da receita, capex de manutenção 2%, variação de capital de giro 10% da variação de receita, IR/CS a 34%."
@@ -314,8 +314,8 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
     ? "Dívida existente amortizando linearmente em 3 anos."
     : "Existing debt amortising straight-line over 3 years.");
   desk.push(lang === "pt"
-    ? "Custo da dívida de 14% a.a., usado apenas para calcular cobertura. A Offroad não precifica a operação — ajuste esta célula ao custo que o mercado indicar."
-    : "14% p.a. cost of debt, used only to compute coverage. Offroad does not price the transaction — set this cell to the market's indication.");
+    ? "Custo da dívida de 14% a.a., usado apenas para calcular cobertura. A Offroad não precifica a operação. Ajuste esta célula ao custo que o mercado indicar."
+    : "14% p.a. cost of debt, used only to compute coverage. Offroad does not price the transaction. Set this cell to the market's indication.");
 
   // ---- 2. Debt schedule ------------------------------------------------------------------------
   const debtName = lang === "pt" ? "Dívida" : "Debt";
@@ -333,26 +333,26 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
   debt.fill("title", [header(lang === "pt" ? "Serviço da dívida" : "Debt service")]);
   debt.fill("periods", [header(lang === "pt" ? "Linha" : "Line"), ...periods.map(header)]);
 
-  debt.fill("existing_open", [label(lang === "pt" ? "Dívida existente — saldo inicial" : "Existing debt — opening"), blank(),
+  debt.fill("existing_open", [label(lang === "pt" ? "Dívida existente: saldo inicial" : "Existing debt: opening"), blank(),
     ...across((column) => (column === firstProjection ? formula(A("existing_debt"), "money") : formula(D("existing_close", column - 1), "money")))]);
-  debt.fill("existing_amort", [label(lang === "pt" ? "Dívida existente — amortização" : "Existing debt — amortisation"), blank(),
+  debt.fill("existing_amort", [label(lang === "pt" ? "Dívida existente: amortização" : "Existing debt: amortisation"), blank(),
     ...across((column) => formula(`-MIN(${D("existing_open", column)},${A("existing_debt")}/MAX(1,${A("existing_amortisation_years")}))`, "money"))]);
-  debt.fill("existing_interest", [label(lang === "pt" ? "Dívida existente — juros" : "Existing debt — interest"), blank(),
+  debt.fill("existing_interest", [label(lang === "pt" ? "Dívida existente: juros" : "Existing debt: interest"), blank(),
     ...across((column) => formula(`-${D("existing_open", column)}*${A("interest_rate")}`, "money"))]);
-  debt.fill("existing_close", [label(lang === "pt" ? "Dívida existente — saldo final" : "Existing debt — closing"), blank(),
+  debt.fill("existing_close", [label(lang === "pt" ? "Dívida existente: saldo final" : "Existing debt: closing"), blank(),
     ...across((column) => formula(`${D("existing_open", column)}+${D("existing_amort", column)}`, "money"))]);
 
-  debt.fill("facility_open", [label(lang === "pt" ? "Dívida pleiteada — saldo inicial" : "Facility — opening"), blank(),
+  debt.fill("facility_open", [label(lang === "pt" ? "Dívida pleiteada: saldo inicial" : "Facility: opening"), blank(),
     ...across((column) => (column === firstProjection ? formula(A("facility"), "money") : formula(D("facility_close", column - 1), "money")))]);
-  debt.fill("facility_amort", [label(lang === "pt" ? "Dívida pleiteada — amortização" : "Facility — amortisation"), blank(),
+  debt.fill("facility_amort", [label(lang === "pt" ? "Dívida pleiteada: amortização" : "Facility: amortisation"), blank(),
     // Principal starts after grace, then straight-line (SAC) over the remaining years.
     ...across((column) => formula(
       `-IF(${column - firstProjection + 1}<=${A("grace")}/12,0,MIN(${D("facility_open", column)},${A("facility")}/MAX(1,ROUNDUP((${A("tenor")}-${A("grace")})/12,0))))`,
       "money",
     ))]);
-  debt.fill("facility_interest", [label(lang === "pt" ? "Dívida pleiteada — juros" : "Facility — interest"), blank(),
+  debt.fill("facility_interest", [label(lang === "pt" ? "Dívida pleiteada: juros" : "Facility: interest"), blank(),
     ...across((column) => formula(`-${D("facility_open", column)}*${A("interest_rate")}`, "money"))]);
-  debt.fill("facility_close", [label(lang === "pt" ? "Dívida pleiteada — saldo final" : "Facility — closing"), blank(),
+  debt.fill("facility_close", [label(lang === "pt" ? "Dívida pleiteada: saldo final" : "Facility: closing"), blank(),
     ...across((column) => formula(`${D("facility_open", column)}+${D("facility_amort", column)}`, "money"))]);
 
   debt.fill("total_interest", [label(lang === "pt" ? "Juros totais" : "Total interest"), blank(),
@@ -361,9 +361,9 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
     ...across((column) => formula(`${D("existing_amort", column)}+${D("facility_amort", column)}`, "money", "total"))]);
   debt.fill("debt_service", [label(lang === "pt" ? "Serviço da dívida (saída de caixa)" : "Debt service (cash out)"), blank(),
     ...across((column) => formula(`${D("total_interest", column)}+${D("total_amort", column)}`, "money", "total"))]);
-  debt.fill("gross_debt_close", [label(lang === "pt" ? "Dívida bruta — saldo final" : "Gross debt — closing"), blank(),
+  debt.fill("gross_debt_close", [label(lang === "pt" ? "Dívida bruta: saldo final" : "Gross debt: closing"), blank(),
     ...across((column) => formula(`${D("existing_close", column)}+${D("facility_close", column)}`, "money", "total"))]);
-  debt.fill("net_debt_close", [label(lang === "pt" ? "Dívida líquida — saldo final" : "Net debt — closing"), blank(),
+  debt.fill("net_debt_close", [label(lang === "pt" ? "Dívida líquida: saldo final" : "Net debt: closing"), blank(),
     ...across((column) => formula(`${D("gross_debt_close", column)}-${A("cash")}`, "money", "total"))]);
 
   // ---- 3. Projection ---------------------------------------------------------------------------
@@ -436,14 +436,14 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
     netDebt !== null && adjustedEbitda ? historical(Number((netDebt / adjustedEbitda).toFixed(2)), "multiple") : blank(),
     ...across((column) => formula(`IF(${P("ebitda", column)}=0,"",${D("net_debt_close", column)}/${P("ebitda", column)})`, "multiple")),
   ]);
-  covenants.fill("leverage_status", [label(lang === "pt" ? "Alavancagem — situação" : "Leverage — status"), blank(),
+  covenants.fill("leverage_status", [label(lang === "pt" ? "Alavancagem: situação" : "Leverage: status"), blank(),
     ...across((column) => formula(
       `IF(${C("leverage", column)}="","",IF(${C("leverage", column)}<=${A("leverage_ceiling")},"${within}","${lang === "pt" ? "acima do teto" : "above ceiling"}"))`,
       "text",
     ))]);
   covenants.fill("dscr", [label("DSCR"), blank(),
     ...across((column) => formula(`IF(${P("debt_service", column)}=0,"",${P("cfads", column)}/-${P("debt_service", column)})`, "multiple"))]);
-  covenants.fill("dscr_status", [label(lang === "pt" ? "DSCR — situação" : "DSCR — status"), blank(),
+  covenants.fill("dscr_status", [label(lang === "pt" ? "DSCR: situação" : "DSCR: status"), blank(),
     ...across((column) => formula(
       `IF(${C("dscr", column)}="","",IF(${C("dscr", column)}>=${A("minimum_dscr")},"${within}","${lang === "pt" ? "abaixo do mínimo" : "below minimum"}"))`,
       "text",

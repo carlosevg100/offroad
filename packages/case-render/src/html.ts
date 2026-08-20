@@ -304,13 +304,13 @@ export function renderMaterialHtml(input: {material: Material; lang: Lang; meta:
     .map(([id]) => {
       const source = known.get(id);
       const label = escapeHtml(source?.label ?? id);
-      const document = source?.document ? ` <span class="sources__doc">— ${escapeHtml(source.document)}</span>` : "";
+      const document = source?.document ? ` <span class="sources__doc">· ${escapeHtml(source.document)}</span>` : "";
       return `<li>${label}${document}</li>`;
     })
     .join("");
 
   const company = meta.companyName ? `<p class="title__company">${escapeHtml(meta.companyName)}</p>` : "";
-  const documentTitle = `${material.title[lang]}${meta.companyName ? ` — ${meta.companyName}` : ""}`;
+  const documentTitle = `${material.title[lang]}${meta.companyName ? `, ${meta.companyName}` : ""}`;
 
   return `<!doctype html>
 <html lang="${lang === "pt" ? "pt-BR" : "en-US"}">

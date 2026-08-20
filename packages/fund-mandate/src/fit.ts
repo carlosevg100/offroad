@@ -150,8 +150,8 @@ function criterion(
 const weDoNotKnow = (what: {pt: string; en: string}): Assessment => ({
   outcome: "not_assessed",
   explanation: L(
-    `Não sabemos ${what.pt} deste fundo. Isso é uma lacuna nossa — nada que você envie resolve; quem resolve somos nós, falando com eles.`,
-    `We do not know this fund's ${what.en}. That is our gap — nothing you send resolves it; we resolve it by asking them.`,
+    `Não sabemos ${what.pt} deste fundo. Isso é uma lacuna nossa: nada que você envie resolve. Quem resolve somos nós, falando com eles.`,
+    `We do not know this fund's ${what.en}. That is our gap: nothing you send resolves it. We resolve it by asking them.`,
   ),
 });
 
@@ -210,8 +210,8 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
               mandate: mandate.instruments.value.join(", "),
               request: request.instruments.join(", "),
               explanation: L(
-                "Este fundo não compra nenhum dos instrumentos possíveis para esta operação. No Brasil isso costuma ser regra do próprio veículo, não preferência — mudar o instrumento muda o conjunto de compradores.",
-                "This fund buys none of the instruments this transaction could take. In Brazil that is usually the vehicle's own rule rather than a preference — changing the instrument changes the buyer set.",
+                "Este fundo não compra nenhum dos instrumentos possíveis para esta operação. No Brasil isso costuma ser regra do próprio veículo, não preferência, e mudar o instrumento muda o conjunto de compradores.",
+                "This fund buys none of the instruments this transaction could take. In Brazil that is usually the vehicle's own rule rather than a preference, and changing the instrument changes the buyer set.",
               ),
             };
       })(),
@@ -288,8 +288,8 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
               mandate: box,
               request: `${request.termMonths} meses`,
               explanation: L(
-                "O prazo não cabe. Prazo costuma ser o parâmetro mais fácil de renegociar de todos — vale testar antes de descartar o fundo.",
-                "The tenor does not fit. Tenor is usually the easiest parameter to move — worth testing before dropping the fund.",
+                "O prazo não cabe. Prazo costuma ser o parâmetro mais fácil de renegociar de todos, então vale testar antes de descartar o fundo.",
+                "The tenor does not fit. Tenor is usually the easiest parameter to move, so it is worth testing before dropping the fund.",
               ),
             };
       })(),
@@ -318,8 +318,8 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
               mandate: box,
               request: request.sector,
               explanation: L(
-                "O setor está fora do mandato. Restrição setorial costuma vir do regulamento do fundo ou do que os cotistas aceitaram — raramente se negocia.",
-                "The sector is outside the mandate. Sector restrictions usually come from the fund's own regulation or its investors — rarely negotiable.",
+                "O setor está fora do mandato. Restrição setorial costuma vir do regulamento do fundo ou do que os cotistas aceitaram, e raramente se negocia.",
+                "The sector is outside the mandate. Sector restrictions usually come from the fund's own regulation or its investors, and are rarely negotiable.",
               ),
             };
       })(),
@@ -373,8 +373,8 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
               mandate: box,
               request: request.collateral.join(", "),
               explanation: L(
-                "A garantia oferecida não é a que este fundo costuma pedir. Não elimina o fundo — muda o preço e a estrutura, e é exatamente o tipo de coisa que se discute.",
-                "The security on offer is not what this fund usually asks for. It does not rule the fund out — it moves price and structure, and it is precisely the sort of thing that gets discussed.",
+                "A garantia oferecida não é a que este fundo costuma pedir. Não elimina o fundo: muda o preço e a estrutura, e é exatamente o tipo de coisa que se discute.",
+                "The security on offer is not what this fund usually asks for. It does not rule the fund out: it moves price and structure, and it is precisely the sort of thing that gets discussed.",
               ),
             };
       })(),
@@ -396,8 +396,8 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
             outcome: "unknown" as const,
             mandate: box,
             explanation: L(
-              "A alavancagem pós-operação só é calculável com dívida e EBITDA conciliados. É por isso que pedimos as demonstrações — este fundo tem um teto e precisamos saber de que lado dele você está.",
-              "Post-transaction leverage can only be computed from reconciled debt and EBITDA. That is why we ask for the statements — this fund has a ceiling and we need to know which side of it you are on.",
+              "A alavancagem pós-operação só é calculável com dívida e EBITDA conciliados. É por isso que pedimos as demonstrações: este fundo tem um teto e precisamos saber de que lado dele você está.",
+              "Post-transaction leverage can only be computed from reconciled debt and EBITDA. That is why we ask for the statements: this fund has a ceiling and we need to know which side of it you are on.",
             ),
           };
         }

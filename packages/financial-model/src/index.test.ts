@@ -171,7 +171,7 @@ describe("the model is honest about what it did not receive", () => {
     const facility = assumptions.rows.find((row) => row.key === "facility")!;
     expect(facility.cells[2]?.value).toBe("do data room");
     const growth = assumptions.rows.find((row) => row.key === "revenue_growth")!;
-    expect(growth.cells[2]?.value).toBe("premissa Offroad — editável");
+    expect(growth.cells[2]?.value).toBe("premissa Offroad: editável");
   });
 
   it("traces every historical number to its document and evidence rank", () => {

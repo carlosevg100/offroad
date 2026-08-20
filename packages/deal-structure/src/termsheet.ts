@@ -147,8 +147,8 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     origin: "requested",
     rationale: constrained
       ? {
-          pt: `Pedido de ${formatMoney(requested, currency, "pt-BR")}. O limite é ${bindingLabel.pt} — a conversa é sobre essa restrição, não sobre o montante.`,
-          en: `Requested ${formatMoney(requested, currency, "en-US")}. The binding limit is ${bindingLabel.en} — the conversation is about that constraint, not about the amount.`,
+          pt: `Pedido de ${formatMoney(requested, currency, "pt-BR")}. O limite é ${bindingLabel.pt}, e a conversa é sobre essa restrição, não sobre o montante.`,
+          en: `Requested ${formatMoney(requested, currency, "en-US")}. The binding limit is ${bindingLabel.en}, and the conversation is about that constraint, not about the amount.`,
         }
       : {
           pt: "O montante pedido cabe nas três restrições calculadas.",
@@ -162,8 +162,8 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
               en: formatMoney(requested, currency, "en-US"),
             },
             reason: {
-              pt: `A operação não suporta o pedido inteiro: ${bindingLabel.pt} limita em ${formatMoney(recommended!, currency, "pt-BR")}. Para chegar aos ${formatMoney(requested, currency, "pt-BR")} é preciso mexer nessa restrição — mais garantia, prazo maior, ou o caixa crescendo antes do desembolso.`,
-              en: `The operation does not carry the full request: ${bindingLabel.en} caps it at ${formatMoney(recommended!, currency, "en-US")}. Reaching ${formatMoney(requested, currency, "en-US")} means moving that constraint — more security, a longer tenor, or cash growing before disbursement.`,
+              pt: `A operação não suporta o pedido inteiro: ${bindingLabel.pt} limita em ${formatMoney(recommended!, currency, "pt-BR")}. Para chegar aos ${formatMoney(requested, currency, "pt-BR")} é preciso mexer nessa restrição: mais garantia, prazo maior, ou o caixa crescendo antes do desembolso.`,
+              en: `The operation does not carry the full request: ${bindingLabel.en} caps it at ${formatMoney(recommended!, currency, "en-US")}. Reaching ${formatMoney(requested, currency, "en-US")} means moving that constraint: more security, a longer tenor, or cash growing before disbursement.`,
             },
           },
         }
@@ -202,12 +202,12 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
             reason:
               tenor.clamped === "low"
                 ? {
-                    pt: `Os financiadores deste perfil trabalham entre ${band.tenorMonths.min} e ${band.tenorMonths.max} meses. Prazo apertado sobe a parcela e derruba a cobertura — costuma ser o que faz o fundo recusar, não o valor. ${bandNote.pt}`,
-                    en: `Lenders in this profile work between ${band.tenorMonths.min} and ${band.tenorMonths.max} months. A tight tenor raises the instalment and cuts coverage — usually what makes a fund decline, rather than the amount. ${bandNote.en}`,
+                    pt: `Os financiadores deste perfil trabalham entre ${band.tenorMonths.min} e ${band.tenorMonths.max} meses. Prazo apertado sobe a parcela e derruba a cobertura, e costuma ser isso que faz o fundo recusar, não o valor. ${bandNote.pt}`,
+                    en: `Lenders in this profile work between ${band.tenorMonths.min} and ${band.tenorMonths.max} months. A tight tenor raises the instalment and cuts coverage, and that is usually what makes a fund decline, rather than the amount. ${bandNote.en}`,
                   }
                 : {
-                    pt: `O seu fluxo pode até comportar esse prazo — o problema é outro: os financiadores deste perfil compram de ${band.tenorMonths.min} a ${band.tenorMonths.max} meses. Fundo de crédito tem os próprios cotistas para remunerar num horizonte, e prazo fora disso simplesmente não encontra comprador, por mais que a conta feche. ${bandNote.pt}`,
-                    en: `Your cash flow may well carry that tenor — the problem is a different one: lenders in this profile buy ${band.tenorMonths.min} to ${band.tenorMonths.max} months. A credit fund has its own investors to repay on its own horizon, and a tenor outside that simply finds no buyer, however well the arithmetic works. ${bandNote.en}`,
+                    pt: `O seu fluxo pode até comportar esse prazo. O problema é outro: os financiadores deste perfil compram de ${band.tenorMonths.min} a ${band.tenorMonths.max} meses. Fundo de crédito tem os próprios cotistas para remunerar num horizonte, e prazo fora disso simplesmente não encontra comprador, por mais que a conta feche. ${bandNote.pt}`,
+                    en: `Your cash flow may well carry that tenor. The problem is a different one: lenders in this profile buy ${band.tenorMonths.min} to ${band.tenorMonths.max} months. A credit fund has its own investors to repay on its own horizon, and a tenor outside that simply finds no buyer, however well the arithmetic works. ${bandNote.en}`,
                   },
           },
         }
@@ -224,8 +224,8 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     rationale:
       input.requestedGraceMonths === undefined
         ? {
-            pt: `Você não indicou carência, então propomos ${grace.value} meses — a banda usual desta operação é ${definition.structure.gracePeriodMonths.typical.join("–")} meses, e ela existe para cobrir o tempo até o investimento começar a gerar caixa.`,
-            en: `You did not state a grace period, so we propose ${grace.value} months — the usual band for this operation is ${definition.structure.gracePeriodMonths.typical.join("–")} months, and it exists to cover the time before the investment starts generating cash.`,
+            pt: `Você não indicou carência, então propomos ${grace.value} meses. A banda usual desta operação é ${definition.structure.gracePeriodMonths.typical.join("–")} meses, e ela existe para cobrir o tempo até o investimento começar a gerar caixa.`,
+            en: `You did not state a grace period, so we propose ${grace.value} months. The usual band for this operation is ${definition.structure.gracePeriodMonths.typical.join("–")} months, and it exists to cover the time before the investment starts generating cash.`,
           }
         : {
             pt: `Banda típica: ${definition.structure.gracePeriodMonths.typical.join("–")} meses.`,
@@ -238,8 +238,8 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
             reason:
               grace.clamped === "low"
                 ? {
-                    pt: `Curta para esta operação. Começar a amortizar antes de o investimento maturar é o que costuma apertar a cobertura no primeiro ano — e o primeiro ano é o que o comitê olha.`,
-                    en: `Short for this operation. Amortising before the investment matures is what usually squeezes coverage in year one — and year one is what a committee looks at.`,
+                    pt: `Curta para esta operação. Começar a amortizar antes de o investimento maturar é o que costuma apertar a cobertura no primeiro ano, e o primeiro ano é o que o comitê olha.`,
+                    en: `Short for this operation. Amortising before the investment matures is what usually squeezes coverage in year one, and year one is what a committee looks at.`,
                   }
                 : {
                     pt: `Mais longa que o usual (${definition.structure.gracePeriodMonths.typical.join("–")} meses). Carência longa não é de graça: o juro do período corre e entra no saldo, e o financiador cobra por isso.`,
@@ -285,8 +285,8 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
           divergence: {
             requested: {pt: input.expectedRate, en: input.expectedRate},
             reason: {
-              pt: "Este documento não traz taxa, e isso é deliberado — quem precifica é quem toma o risco. A leitura do que o mercado tem pago para este perfil fica no documento interno, sustentada pelas operações comparáveis, não em um número posto aqui.",
-              en: "This document carries no rate, deliberately — whoever takes the risk sets the price. Our read on what the market has been paying for this profile belongs in the internal document, supported by comparable transactions rather than by a number asserted here.",
+              pt: "Este documento não traz taxa, e isso é deliberado: quem precifica é quem toma o risco. A leitura do que o mercado tem pago para este perfil fica no documento interno, sustentada pelas operações comparáveis, não em um número posto aqui.",
+              en: "This document carries no rate, deliberately: whoever takes the risk sets the price. Our read on what the market has been paying for this profile belongs in the internal document, supported by comparable transactions rather than by a number asserted here.",
             },
           },
         }

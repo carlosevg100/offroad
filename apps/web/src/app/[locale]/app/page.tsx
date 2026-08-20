@@ -42,7 +42,7 @@ export default async function ApplicationHome({params, searchParams}: Props) {
             <div className="opportunity-table" role="list">
               {funds?.map((fund) => {
                 const mandate = mandates?.find((item) => item.fund_id === fund.id);
-                return <div className="provider-row" key={fund.id} role="listitem"><div><span>{fund.status}</span><strong>{fund.name}</strong><small>{fund.strategy}</small></div><div><span>{t("mandate")}</span><strong>{mandate ? `${t("version")} ${mandate.version_number}` : t("notRegistered")}</strong></div><div><span>{t("status")}</span><strong>{mandate?.status ?? "—"}</strong></div><CheckCircle2 aria-hidden="true" size={16} /></div>;
+                return <div className="provider-row" key={fund.id} role="listitem"><div><span>{fund.status}</span><strong>{fund.name}</strong><small>{fund.strategy}</small></div><div><span>{t("mandate")}</span><strong>{mandate ? `${t("version")} ${mandate.version_number}` : t("notRegistered")}</strong></div><div><span>{t("status")}</span><strong>{mandate?.status ?? t("notRegistered")}</strong></div><CheckCircle2 aria-hidden="true" size={16} /></div>;
               })}
             </div>
           )}

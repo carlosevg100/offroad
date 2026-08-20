@@ -90,7 +90,7 @@ function ruleDebtConsistency(context: RuleContext): ReconciliationException[] {
       "R4",
       "medium",
       {
-        pt: `O saldo de dívida aparece como ${money(accepted)} em ${fact.accepted.sourceDocument} e ${money(other)} em ${worst.candidate.sourceDocument}. Diferenças assim costumam ser datas-base distintas — o que precisa ser confirmado antes de a capacidade incremental ser calculada.`,
+        pt: `O saldo de dívida aparece como ${money(accepted)} em ${fact.accepted.sourceDocument} e ${money(other)} em ${worst.candidate.sourceDocument}. Diferenças assim costumam ser datas-base distintas, e isso precisa ser confirmado antes de a capacidade incremental ser calculada.`,
         en: `Total debt appears as ${money(accepted)} in ${fact.accepted.sourceDocument} and ${money(other)} in ${worst.candidate.sourceDocument}. Differences like this are usually different reference dates, which has to be confirmed before incremental capacity is calculated.`,
       },
       [
@@ -147,8 +147,8 @@ function ruleSourcesAndUses(context: RuleContext): ReconciliationException[] {
           "R11",
           "low",
           {
-            pt: `O custo do projeto está declarado como ${money(projectCost)}, enquanto os usos somam ${money(uses)}. A diferença é pequena e costuma ser arredondamento na apresentação — vale confirmar qual número entra no term sheet.`,
-            en: `Project cost is stated as ${money(projectCost)} while uses total ${money(uses)}. The difference is small and usually presentation rounding — worth confirming which number goes into the term sheet.`,
+            pt: `O custo do projeto está declarado como ${money(projectCost)}, enquanto os usos somam ${money(uses)}. A diferença é pequena e costuma ser arredondamento na apresentação. Vale confirmar qual número entra no term sheet.`,
+            en: `Project cost is stated as ${money(projectCost)} while uses total ${money(uses)}. The difference is small and usually presentation rounding. Worth confirming which number goes into the term sheet.`,
           },
           [
             {label: "custo do projeto", value: projectCost.toFixed(), fieldPath: "project.total_cost"},
@@ -182,8 +182,8 @@ function ruleInformationClass(context: RuleContext): ReconciliationException[] {
       "R16",
       "medium",
       {
-        pt: `Os números do período mais recente (${latest}) vêm de fonte não auditada — revisão limitada ou material gerencial. Continuam utilizáveis, e o investidor precisa saber disso ao ler a alavancagem atual.`,
-        en: `The most recent period (${latest}) is sourced from unaudited material — limited review or management reporting. Still usable, and the investor has to know it when reading current leverage.`,
+        pt: `Os números do período mais recente (${latest}) vêm de fonte não auditada: revisão limitada ou material gerencial. Continuam utilizáveis, e o investidor precisa saber disso ao ler a alavancagem atual.`,
+        en: `The most recent period (${latest}) is sourced from unaudited material: limited review or management reporting. Still usable, and the investor has to know it when reading current leverage.`,
       },
       [
         {label: "período", value: latest},
@@ -211,8 +211,8 @@ function ruleScaleSanity(context: RuleContext): ReconciliationException[] {
           "R14",
           "critical",
           {
-            pt: `A margem EBITDA calculada para ${period} é de ${margin.times(100).toDecimalPlaces(0).toFixed()}%, o que não descreve uma operação — descreve escalas diferentes entre as duas linhas (uma em milhares e a outra em unidades, tipicamente).`,
-            en: `The EBITDA margin computed for ${period} is ${margin.times(100).toDecimalPlaces(0).toFixed()}%, which does not describe a business — it describes two lines read at different scales, typically thousands against units.`,
+            pt: `A margem EBITDA calculada para ${period} é de ${margin.times(100).toDecimalPlaces(0).toFixed()}%, o que não descreve uma operação. Descreve escalas diferentes entre as duas linhas (uma em milhares e a outra em unidades, tipicamente).`,
+            en: `The EBITDA margin computed for ${period} is ${margin.times(100).toDecimalPlaces(0).toFixed()}%, which does not describe a business. It describes two lines read at different scales, typically thousands against units.`,
           },
           [
             {label: "receita", value: revenue.toFixed()},

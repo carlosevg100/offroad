@@ -65,7 +65,7 @@ function coverSheet(model: FinancialModel, lang: "pt" | "en"): XLSX.WorkSheet {
 
   const rows: string[][] = [
     ["Offroad Capital"],
-    [lang === "pt" ? "Modelo de crédito — indicativo" : "Credit model — indicative"],
+    [lang === "pt" ? "Modelo de crédito, indicativo" : "Credit model, indicative"],
     [],
     [
       lang === "pt"
@@ -74,8 +74,8 @@ function coverSheet(model: FinancialModel, lang: "pt" | "en"): XLSX.WorkSheet {
     ],
     [
       lang === "pt"
-        ? `Toda célula editável está na aba ${assumptionsName}. As demais abas são fórmulas — mude uma premissa e o modelo inteiro recalcula. Não há número digitado escondido em nenhuma projeção.`
-        : `Every editable cell is on the ${assumptionsName} sheet. Every other sheet is formulas — change an assumption and the whole model recalculates. No hardcoded number is hidden in any projection.`,
+        ? `Toda célula editável está na aba ${assumptionsName}. As demais abas são fórmulas: mude uma premissa e o modelo inteiro recalcula. Não há número digitado escondido em nenhuma projeção.`
+        : `Every editable cell is on the ${assumptionsName} sheet. Every other sheet is formulas: change an assumption and the whole model recalculates. No hardcoded number is hidden in any projection.`,
     ],
     [
       lang === "pt"
