@@ -935,6 +935,29 @@
       "purpose_structure": "The operation's structure",
       "purpose_storytelling": "The business narrative",
       "purposeEmpty": "Nothing pending here."
+    },
+    "case": {
+      "kicker": "Case analysis",
+      "readinessTitle": "Readiness",
+      "readinessBlocked": "Blocked",
+      "readinessInProgress": "In progress",
+      "readinessReady": "Ready for market",
+      "blockersTitle": "What holds the case",
+      "capacityTitle": "Capacity",
+      "capacityRequested": "Requested",
+      "capacityRecommended": "Supports",
+      "capacityBinding": "Binding constraint",
+      "capacityNotComputed": "not computed",
+      "termsTitle": "Indicative structure",
+      "termBasis": "Basis",
+      "briefTitle": "Case summary",
+      "briefBlocked": "The summary was not produced because not every sentence could be traced to a fact. That is protection, not an error: nothing leaves here carrying a number that does not hold up.",
+      "materialsTitle": "Materials",
+      "materialsBlocked": "Materials are not compiled while a critical point is open.",
+      "exceptionsTitle": "Open points",
+      "calculationsTitle": "Computed figures",
+      "tracedFrom": "computed from",
+      "empty": "No analysis yet: process the documents first."
     }
   }
 }

@@ -935,6 +935,29 @@
       "purpose_structure": "Estrutura da operação",
       "purpose_storytelling": "Narrativa do negócio",
       "purposeEmpty": "Nada pendente aqui."
+    },
+    "case": {
+      "kicker": "Análise do case",
+      "readinessTitle": "Prontidão",
+      "readinessBlocked": "Bloqueado",
+      "readinessInProgress": "Em andamento",
+      "readinessReady": "Pronto para o mercado",
+      "blockersTitle": "O que segura o caso",
+      "capacityTitle": "Capacidade",
+      "capacityRequested": "Pedido",
+      "capacityRecommended": "Comporta",
+      "capacityBinding": "Restrição",
+      "capacityNotComputed": "não calculada",
+      "termsTitle": "Estrutura indicativa",
+      "termBasis": "Base",
+      "briefTitle": "Resumo do case",
+      "briefBlocked": "O resumo não foi produzido porque nem toda frase pôde ser rastreada até um fato. Isso é proteção, não erro: nada sai daqui com número que não se sustenta.",
+      "materialsTitle": "Materiais",
+      "materialsBlocked": "Os materiais não foram compilados enquanto houver ponto crítico em aberto.",
+      "exceptionsTitle": "Pontos em aberto",
+      "calculationsTitle": "Números calculados",
+      "tracedFrom": "calculado de",
+      "empty": "Ainda não há análise: processe os documentos primeiro."
     }
   }
 }
