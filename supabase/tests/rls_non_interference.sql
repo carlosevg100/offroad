@@ -261,15 +261,15 @@ begin
     raise exception 'extraction_feedback did not record every review decision: %',
       (select count(*) from public.extraction_feedback where intake_session_id = session_id);
   end if;
-  if (select proposed_value from public.extraction_feedback
-      where candidate_id = amount_candidate and decision = 'edit') = to_jsonb(12500000) then
+  if (select f.proposed_value from public.extraction_feedback f
+      where f.candidate_id = amount_candidate and f.decision = 'edit') = to_jsonb(12500000) then
     raise exception 'extraction_feedback stored the corrected value as the proposal';
   end if;
-  if (select corrected_value from public.extraction_feedback
-      where candidate_id = amount_candidate and decision = 'edit') <> to_jsonb(12500000) then
+  if (select f.corrected_value from public.extraction_feedback f
+      where f.candidate_id = amount_candidate and f.decision = 'edit') <> to_jsonb(12500000) then
     raise exception 'extraction_feedback did not record the correction';
   end if;
-  if exists (select 1 from public.extraction_feedback where decision <> 'edit' and corrected_value is not null) then
+  if exists (select 1 from public.extraction_feedback f where f.decision <> 'edit' and f.corrected_value is not null) then
     raise exception 'extraction_feedback recorded a correction on a non-edit decision';
   end if;
 
