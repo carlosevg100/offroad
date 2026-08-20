@@ -33,7 +33,10 @@ const layer: DocumentLayer = documentLayerSchema.parse({
     },
     {
       n: 12,
-      blocks: [{id: "p12.b1", kind: "text", text: "Nota 14 — Empréstimos e financiamentos: saldo de R$ 54,2 milhões em 31/12/2025."}],
+      blocks: [
+        {id: "p12.b1", kind: "text", text: "Nota 14 — Empréstimos e financiamentos: saldo de R$ 54,2 milhões em 31/12/2025."},
+        {id: "p12.b2", kind: "text", text: "Rede Horizonte Ltda., CNPJ 12.345.678/0001-95, sede em São Paulo — SP. FONTES: Tranche expansão."},
+      ],
       tables: [
         {
           id: "p12.t1",
@@ -135,6 +138,52 @@ describe("layer index", () => {
     expect(() =>
       indexLayer(documentLayerSchema.parse({documentId: "d", documentVersion: 1, kind: "pdf", pages: [{n: 1, blocks: [{id: "p1.b1", kind: "text", text: "a"}, {id: "p1.b1", kind: "text", text: "b"}]}]})),
     ).toThrow(/duplicate layer id/);
+  });
+});
+
+describe("ontology canonicalization", () => {
+  const textCandidate = (fieldPath: string, valueRaw: string): RawExtractionCandidate => ({
+    field_path: fieldPath,
+    value_raw: valueRaw,
+    value_type: "text",
+    scale: 1,
+    information_class: "audited",
+    anchor: {kind: "block", id: "p12.b2", page: 12},
+    quote: "Rede Horizonte Ltda., CNPJ 12.345.678/0001-95, sede em São Paulo — SP. FONTES: Tranche expansão.",
+    confidence: 0.9,
+  });
+
+  it("reduces a CNPJ to its digits — punctuation is clothing, not identity", () => {
+    const outcome = verifyCandidate(textCandidate("company.legal_identifier", "12.345.678/0001-95"), context);
+    if (outcome.kind !== "verified") throw new Error("expected verified shape");
+    expect(outcome.value.normalized_value).toBe("12345678000195");
+    expect(outcome.value.anchor_verified).toBe(true);
+  });
+
+  it("reduces a state to its UF, wherever in the prose it sits", () => {
+    const outcome = verifyCandidate(textCandidate("company.state", "São Paulo — SP"), context);
+    if (outcome.kind !== "verified") throw new Error("expected verified shape");
+    expect(outcome.value.normalized_value).toBe("SP");
+  });
+
+  it("maps a sources-and-uses side to the closed vocabulary", () => {
+    const outcome = verifyCandidate(textCandidate("transaction.sources_and_uses.1.side", "FONTES"), context);
+    if (outcome.kind !== "verified") throw new Error("expected verified shape");
+    expect(outcome.value.normalized_value).toBe("sources");
+  });
+
+  it("refuses a value the closed vocabulary cannot hold", () => {
+    const outcome = verifyCandidate(textCandidate("transaction.sources_and_uses.1.side", "Tranche expansão"), context);
+    if (outcome.kind !== "verified") throw new Error("expected verified shape");
+    expect(outcome.value.verifier_flags).toContain("value_unparseable");
+    expect(outcome.value.anchor_verified).toBe(false);
+  });
+
+  it("stores money at cent precision — nothing past two decimals is information", () => {
+    const outcome = verifyCandidate({...revenue, value_raw: "185.400,004"}, context);
+    if (outcome.kind !== "verified") throw new Error("expected verified shape");
+    // 185400.004 × scale 1000, rounded to cents: no trailing artifact survives.
+    expect(outcome.value.normalized_value).toBe("185400004");
   });
 });
 

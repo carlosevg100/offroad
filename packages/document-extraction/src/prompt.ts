@@ -62,7 +62,10 @@ export function renderTargetFields(fields: FieldDefinition[]): string {
   const lines = fields.map((field) => {
     const synonyms = [...field.synonyms.pt, ...field.synonyms.en];
     const tail = synonyms.length > 0 ? ` | também chamado: ${synonyms.join("; ")}` : "";
-    return `${field.pattern} [${field.valueType}/${field.unit}/${field.materiality}] ${field.labels.pt} / ${field.labels.en}${tail}`;
+    // A closed vocabulary is stated where the field is stated, so "Fontes" never has to be
+    // guessed into "sources" downstream.
+    const allowed = field.canonical?.kind === "enum" ? ` | valores permitidos: ${field.canonical.values.join(" | ")}` : "";
+    return `${field.pattern} [${field.valueType}/${field.unit}/${field.materiality}] ${field.labels.pt} / ${field.labels.en}${tail}${allowed}`;
   });
   return lines.join("\n");
 }
@@ -99,6 +102,9 @@ export function buildExtractionPrompt(input: {
     "## Campos-alvo",
     "Use exatamente estes caminhos, substituindo {period} pelo período concreto (2025, 2026_07),",
     "{i} por um índice a partir de 1 e {ytd} por sufixo de acumulado quando fizer sentido (_7m, _ytd, _ltm).",
+    "Itens indexados por {i} seguem a ordem em que aparecem no documento — o item 1 é o primeiro",
+    "que o documento mostra, e todos os campos de um mesmo {i} descrevem a mesma linha.",
+    "Campos com valores permitidos aceitam somente um deles, exatamente como listado.",
     "",
     renderTargetFields(input.fields),
     "",

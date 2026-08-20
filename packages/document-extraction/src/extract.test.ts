@@ -93,12 +93,60 @@ describe("evidence rendering", () => {
 
     expect(ids).toContain("p1.b1");
     expect(ids).toContain("p2.t1.r1");
-    // Containers repeat their children's text; the table aggregate repeats its rows; cells are
-    // derivable from the row. Printing them would spend the budget saying the same thing again.
+    // Containers repeat their children's text; cells are derivable from the row. Printing
+    // them would spend the budget saying the same thing again.
     expect(ids).not.toContain("p1");
     expect(ids).not.toContain("document");
-    expect(ids).not.toContain("p2.t1");
     expect(ids).not.toContain("p2.t1.r1.c1");
+  });
+
+  it("gives every table its header line — a row without its columns loses period and scale", () => {
+    const lines = selectLines(indexLayer(layer));
+    const tableLine = lines.find((line) => line.anchorId === "p2.t1");
+    expect(tableLine?.text).toBe("colunas: Conta | 2025");
+    // The header precedes its rows, in document order.
+    const ids = lines.map((line) => line.anchorId);
+    expect(ids.indexOf("p2.t1")).toBeLessThan(ids.indexOf("p2.t1.r1"));
+  });
+
+  it("repeats the header lines when a container has to be split", () => {
+    const wide = documentLayerSchema.parse({
+      ...layer,
+      pages: [
+        {
+          n: 1,
+          scanned: false,
+          blocks: [],
+          tables: [
+            {
+              id: "p1.t1",
+              header: ["Conta", "2025", "2024"],
+              rows: Array.from({length: 30}, (_, rowIndex) => ({
+                id: `p1.t1.r${rowIndex + 1}`,
+                cells: [
+                  {id: `p1.t1.r${rowIndex + 1}.c1`, text: `Conta contábil de nome comprido número ${rowIndex + 1}`},
+                  {id: `p1.t1.r${rowIndex + 1}.c2`, text: `${(rowIndex + 1) * 111}`},
+                ],
+              })),
+            },
+          ],
+        },
+      ],
+    });
+    const chunks = renderEvidence(indexLayer(wide), {maxChars: 900});
+    expect(chunks.length).toBeGreaterThan(1);
+    for (const chunk of chunks.slice(1)) {
+      expect(chunk.text).toContain("(continuação)");
+      expect(chunk.text).toContain("colunas: Conta | 2025 | 2024");
+    }
+  });
+
+  it("keeps a whole container together instead of cutting it mid-sheet when it fits", () => {
+    const chunks = renderEvidence(indexLayer(layer), {maxChars: 150});
+    // Page 2 (note + header + row) stays in one chunk even though page 1 + page 2 exceed the budget.
+    const page2 = chunks.find((chunk) => chunk.text.includes("[p2.t1.r1]"));
+    expect(page2?.text).toContain("[p2.b1]");
+    expect(page2?.text).toContain("colunas: Conta | 2025");
   });
 
   it("puts the anchor id at the start of every line, because that is what gets cited", () => {
