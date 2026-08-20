@@ -31,8 +31,12 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "4.4.3",
+<<<<<<< HEAD
     "@offroad/case-render": "workspace:*",
     "@offroad/financial-model": "workspace:*"
+=======
+    "@offroad/case-render": "workspace:*"
+>>>>>>> origin/main
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

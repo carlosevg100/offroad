@@ -961,11 +961,15 @@
       "empty": "Ainda não há análise: processe os documentos primeiro.",
       "materialOpen": "Abrir",
       "materialPdf": "PDF",
+<<<<<<< HEAD
       "materialSections": "{count} blocos",
       "modelTitle": "Modelo financeiro",
       "modelWhat": "Planilha com fórmulas vivas: projeção operacional, cronograma da dívida, DSCR e alavancagem contra o teto do playbook. Toda célula editável fica na aba Premissas — mude uma e o modelo inteiro recalcula. Cada número histórico está rastreado até o documento de origem.",
       "modelDownload": "Baixar modelo (.xlsx)",
       "modelBlocked": "O modelo precisa de pelo menos um número conciliado. Envie as demonstrações financeiras e ele passa a ser emitido."
+=======
+      "materialSections": "{count} blocos"
+>>>>>>> origin/main
     }
   }
 }
