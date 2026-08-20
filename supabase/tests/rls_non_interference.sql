@@ -255,6 +255,38 @@ begin
     raise exception 'review_intake_candidate left more than one primary per field path';
   end if;
 
+  -- The learning ledger. An edit overwrites the candidate in place, so unless the prior value
+  -- was written down first, the pair the extractor learns from is gone the moment it is made.
+  if (select count(*) from public.extraction_feedback where intake_session_id = session_id) <> 4 then
+    raise exception 'extraction_feedback did not record every review decision: %',
+      (select count(*) from public.extraction_feedback where intake_session_id = session_id);
+  end if;
+  if (select f.proposed_value from public.extraction_feedback f
+      where f.candidate_id = amount_candidate and f.decision = 'edit') = to_jsonb(12500000) then
+    raise exception 'extraction_feedback stored the corrected value as the proposal';
+  end if;
+  if (select f.corrected_value from public.extraction_feedback f
+      where f.candidate_id = amount_candidate and f.decision = 'edit') <> to_jsonb(12500000) then
+    raise exception 'extraction_feedback did not record the correction';
+  end if;
+  if exists (select 1 from public.extraction_feedback f where f.decision <> 'edit' and f.corrected_value is not null) then
+    raise exception 'extraction_feedback recorded a correction on a non-edit decision';
+  end if;
+
+  -- Append-only: the tenant may write history and read it, never revise it.
+  begin
+    update public.extraction_feedback set decision = 'accept' where intake_session_id = session_id;
+    raise exception 'extraction_feedback allowed an update';
+  exception
+    when insufficient_privilege then null;
+  end;
+  begin
+    delete from public.extraction_feedback where intake_session_id = session_id;
+    raise exception 'extraction_feedback allowed a delete';
+  exception
+    when insufficient_privilege then null;
+  end;
+
   -- Atomic confirmation.
   result := public.confirm_document_intake(org, session_id, 'pt-BR');
   first_opportunity := (result ->> 'opportunity_id')::uuid;

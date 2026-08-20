@@ -1,5 +1,6 @@
 import {createHash} from "node:crypto";
 
+import {buildAutoAcceptPolicy, measureAccuracy, type FeedbackRow} from "@offroad/extraction-learning";
 import {buildRedeHorizonteDocumentIntake} from "@offroad/testing-fixtures";
 import type {PostgrestError, SupabaseClient} from "@supabase/supabase-js";
 import {getTranslations} from "next-intl/server";
@@ -363,13 +364,103 @@ export async function removeIntakeDocument(runtime: IntakeRuntime, documentId: s
   return ok(null);
 }
 
-/** Accepts every still-proposed primary candidate with confidence ≥ 0.95. */
-export async function acceptHighConfidenceCandidates(runtime: IntakeRuntime): Promise<IntakeOutcome> {
-  const {error} = await runtime.supabase.from("intake_field_candidates")
+export type AutoAcceptOutcome = {
+  accepted: number;
+  /** Held back for a human, and why. The screen shows this; a silent hold teaches nothing. */
+  held: Array<{fieldPath: string; reason: string}>;
+};
+
+/**
+ * Accepts what the desk has earned the right to accept, and holds the rest.
+ *
+ * This used to be one line: confidence ≥ 0.95, everything through. That threshold treats every
+ * field the same, so the extractor's self-reported confidence on a field it has been wrong
+ * about four times in five carried exactly the same weight as on a field it has never missed —
+ * and the product had no way to get better at telling those apart, because the evidence was
+ * being thrown away.
+ *
+ * Now the ledger decides. Fields with a scale error in their history are locked outright,
+ * unproven fields must earn their way out, and fields the desk has been wrong about need more
+ * certainty than fields it has not. The reason is returned rather than swallowed, so a company
+ * looking at four held-back numbers can see that they were held because this platform has
+ * misread that line before.
+ *
+ * The bulk accept deliberately does **not** write feedback rows. An automatic acceptance is not
+ * a human judgement, and recording it as one would inflate the measured accuracy with values
+ * nobody looked at — the ledger would then approve of exactly the fields it never checked. The
+ * consequence is a known and acceptable bias: what is measured is accuracy *among candidates a
+ * human judged*, which skews toward the harder cases, so the policy is conservative by
+ * construction rather than optimistic.
+ */
+export async function acceptHighConfidenceCandidates(runtime: IntakeRuntime): Promise<IntakeOutcome<AutoAcceptOutcome>> {
+  const {supabase, organizationId, sessionId} = runtime;
+
+  // Learning is tenant-wide: a field this company has corrected on one deal should not be
+  // auto-accepted on the next just because the session changed.
+  const {data: feedback} = await supabase
+    .from("extraction_feedback")
+    .select("field_path, field_group, value_type, document_kind, extractor_key, decision, proposed_value, corrected_value, confidence, anchor_verified")
+    .eq("organization_id", organizationId);
+
+  const policy = buildAutoAcceptPolicy(
+    measureAccuracy(
+      (feedback ?? []).map((entry) => ({
+        fieldPath: entry.field_path,
+        fieldGroup: entry.field_group,
+        valueType: entry.value_type,
+        documentKind: entry.document_kind,
+        extractorKey: entry.extractor_key,
+        decision: entry.decision as FeedbackRow["decision"],
+        proposedValue: typeof entry.proposed_value === "string" ? entry.proposed_value : JSON.stringify(entry.proposed_value),
+        correctedValue:
+          entry.corrected_value === null
+            ? null
+            : typeof entry.corrected_value === "string"
+              ? entry.corrected_value
+              : JSON.stringify(entry.corrected_value),
+        confidence: Number(entry.confidence),
+        anchorVerified: entry.anchor_verified,
+      })),
+    ),
+  );
+
+  const {data: candidates, error: loadError} = await supabase
+    .from("intake_field_candidates")
+    .select("id, field_path, confidence, source_document_id")
+    .eq("organization_id", organizationId)
+    .eq("intake_session_id", sessionId)
+    .eq("is_primary", true)
+    .eq("review_state", "proposed");
+  if (loadError) return fail("save");
+  if (!candidates?.length) return ok({accepted: 0, held: []});
+
+  const documentIds = [...new Set(candidates.map((candidate) => candidate.source_document_id).filter((id): id is string => Boolean(id)))];
+  const {data: documents} = documentIds.length
+    ? await supabase.from("source_documents").select("id, document_kind").eq("organization_id", organizationId).in("id", documentIds)
+    : {data: []};
+  const kindOf = new Map((documents ?? []).map((document) => [document.id, document.document_kind]));
+
+  const acceptable: string[] = [];
+  const held: AutoAcceptOutcome["held"] = [];
+  for (const candidate of candidates) {
+    const decision = policy.decide({
+      fieldPath: candidate.field_path,
+      documentKind: candidate.source_document_id ? (kindOf.get(candidate.source_document_id) ?? null) : null,
+      confidence: Number(candidate.confidence),
+    });
+    if (decision.autoAccept) acceptable.push(candidate.id);
+    else held.push({fieldPath: candidate.field_path, reason: decision.reason});
+  }
+
+  if (acceptable.length === 0) return ok({accepted: 0, held});
+
+  const {error} = await supabase
+    .from("intake_field_candidates")
     .update({review_state: "accepted", reviewed_by: runtime.userId, reviewed_at: new Date().toISOString()})
-    .eq("organization_id", runtime.organizationId).eq("intake_session_id", runtime.sessionId)
-    .eq("is_primary", true).eq("review_state", "proposed").gte("confidence", 0.95);
-  return error ? fail("save") : ok(null);
+    .eq("organization_id", organizationId)
+    .eq("intake_session_id", sessionId)
+    .in("id", acceptable);
+  return error ? fail("save") : ok({accepted: acceptable.length, held});
 }
 
 export type ReviewInput = {candidateId: string; decision: string; rawValue: string; comment: string};

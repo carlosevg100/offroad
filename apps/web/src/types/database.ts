@@ -794,6 +794,97 @@ export type Database = {
           },
         ]
       }
+      extraction_feedback: {
+        Row: {
+          anchor_verified: boolean
+          candidate_id: string
+          confidence: number
+          corrected_value: Json | null
+          created_at: string
+          created_by: string
+          decision: string
+          document_kind: string | null
+          evidence_rank: number
+          extraction_method: string
+          extractor_key: string
+          field_group: string
+          field_path: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          proposed_value: Json
+          reviewer_comment: string | null
+          source_document_id: string | null
+          value_type: string
+        }
+        Insert: {
+          anchor_verified: boolean
+          candidate_id: string
+          confidence: number
+          corrected_value?: Json | null
+          created_at?: string
+          created_by?: string
+          decision: string
+          document_kind?: string | null
+          evidence_rank: number
+          extraction_method: string
+          extractor_key: string
+          field_group: string
+          field_path: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          proposed_value: Json
+          reviewer_comment?: string | null
+          source_document_id?: string | null
+          value_type: string
+        }
+        Update: {
+          anchor_verified?: boolean
+          candidate_id?: string
+          confidence?: number
+          corrected_value?: Json | null
+          created_at?: string
+          created_by?: string
+          decision?: string
+          document_kind?: string | null
+          evidence_rank?: number
+          extraction_method?: string
+          extractor_key?: string
+          field_group?: string
+          field_path?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          proposed_value?: Json
+          reviewer_comment?: string | null
+          source_document_id?: string | null
+          value_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extraction_feedback_organization_id_candidate_id_fkey"
+            columns: ["organization_id", "candidate_id"]
+            isOneToOne: false
+            referencedRelation: "intake_field_candidates"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "extraction_feedback_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extraction_feedback_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       financial_line_items: {
         Row: {
           account_code: string
