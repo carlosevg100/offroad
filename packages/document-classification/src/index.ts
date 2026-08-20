@@ -1,5 +1,5 @@
 /**
- * @offroad/document-classification — layer + ontology → what this document is (P1 plan §7, stage E1).
+ * @offroad/document-classification: layer + ontology to what this document is (P1 plan §7, stage E1).
  *
  * The sibling of `@offroad/document-extraction`, and split out of the worker for the same
  * reason that one was: a stage that only exists inside the worker is a stage nothing can

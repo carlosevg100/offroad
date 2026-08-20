@@ -73,7 +73,7 @@ jobs:
           pnpm --filter @offroad/evals measure:classification "$CASE" | tee /tmp/classification.log
 
           {
-            echo "## Classification measurement — $CASE"
+            echo "## Classification measurement: $CASE"
             echo
             echo '```'
             sed -n '/^=\{10,\}/,$p' /tmp/classification.log

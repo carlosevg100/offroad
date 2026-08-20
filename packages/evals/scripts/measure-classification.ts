@@ -154,7 +154,7 @@ const summary = {
 };
 
 console.log(`\n${"=".repeat(78)}`);
-console.log(`classificacao (E1) — ${caseId} — ${documentClassificationVersion}`);
+console.log(`classificacao (E1): ${caseId}, ${documentClassificationVersion}`);
 console.log(`  tipo do documento     ${kindCorrect.length}/${rows.length}  ${pct(summary.kindAccuracy)}`);
 console.log(`  classe da informacao  ${classCorrect.length}/${rows.length}  ${pct(summary.informationClassAccuracy)}`);
 console.log(

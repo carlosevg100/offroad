@@ -6,7 +6,7 @@ import type {ParseResult} from "@offroad/document-parsers";
 /**
  * Stage E1: what *is* this document?
  *
- * The model gets a bounded, deterministic sample of the layer — never the whole file — and
+ * The model gets a bounded, deterministic sample of the layer, never the whole file, and
  * answers in a closed schema. Everything it may say is a value from the ontology, so a
  * hallucinated document type is not representable; the worst case is the wrong member of a
  * known set, flagged by a low confidence.
