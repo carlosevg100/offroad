@@ -48,6 +48,22 @@ export type Classifier = (input: {
   locale?: string;
 }) => Promise<{profile: DocumentProfile; usage?: Record<string, number>}>;
 
+/** What the extractor gives back: candidates already checked against the document they cite. */
+export type ExtractedCandidates = {
+  candidates: Array<Record<string, unknown>>;
+  absentFields: string[];
+  malformed: number;
+  chunks: {total: number; failed: number};
+  usage?: Record<string, number>;
+};
+
+export type Extractor = (input: {
+  parsed: ParseResult;
+  profile: DocumentProfile;
+  fileName: string;
+  locale?: string;
+}) => Promise<ExtractedCandidates>;
+
 export type PipelineDependencies = {
   queue: QueueClient;
   download: (url: string) => Promise<Uint8Array>;
@@ -56,6 +72,8 @@ export type PipelineDependencies = {
   converter?: DocumentConverter;
   ocr?: OcrEngine;
   classify: Classifier;
+  /** Optional: without it the worker still reads and profiles, it just proposes nothing. */
+  extract?: Extractor;
   now?: () => string;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -175,14 +193,44 @@ export async function processDocumentJob(job: ClaimedJob, deps: PipelineDependen
         : {}),
     });
 
+    // ---- E3 extraction ---------------------------------------------------------------
+    // The profile says what the document is; this says what it states. Every candidate has
+    // already been checked against the document it cites before it reaches the database —
+    // one whose anchor did not confirm still travels, carrying its flags, because a fact a
+    // human has to look at is information and a fact quietly dropped is not.
+    let extracted: ExtractedCandidates | null = null;
+    let written = 0;
+    if (deps.extract) {
+      extracted = await stage("extract", () =>
+        deps.extract!({parsed, profile: classified.profile, fileName: payload.original_name, ...(payload.locale ? {locale: payload.locale} : {})}),
+      );
+      const result = await stage("record_candidates", () => queue.recordCandidates(job, extracted!.candidates));
+      written = result.written;
+      await queue.writeStage(
+        job,
+        "extract_usage",
+        "succeeded",
+        {
+          candidates: extracted.candidates.length,
+          written,
+          unverified: extracted.candidates.filter((candidate) => candidate.anchor_verified === false).length,
+          malformed: extracted.malformed,
+          absent: extracted.absentFields.length,
+          chunks: extracted.chunks,
+        },
+        extracted.usage ?? {},
+      );
+    }
+
     await queue.complete(job, {
       document_kind: classified.profile.document_kind,
       layer_bytes: layerBody.byteLength,
       warnings: parsed.warnings,
       detected: parsed.detected,
+      ...(extracted ? {candidates: written, chunks_failed: extracted.chunks.failed} : {}),
     });
 
-    log("document.done", {job: job.job_id, kind: classified.profile.document_kind});
+    log("document.done", {job: job.job_id, kind: classified.profile.document_kind, candidates: written});
     return {status: "succeeded", stages, layerBytes: layerBody.byteLength, documentKind: classified.profile.document_kind};
   } catch (error) {
     const failure = describeFailure(error);

@@ -5,6 +5,7 @@ import {createQueueClient, startHeartbeat, PoisonedJobError, type ClaimedJob} fr
 import {createClamdScanner} from "./scan";
 import {createLibreOfficeConverter, createTesseractEngine, toolVersion} from "./tools";
 import {createClassifier} from "./classifier";
+import {createExtractor} from "./extract";
 import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 
@@ -77,6 +78,7 @@ async function main(): Promise<void> {
     queue,
     scanner,
     classify: createClassifier(gateway),
+    extract: createExtractor(gateway),
     converter: createLibreOfficeConverter({bin: config.SOFFICE_BIN, timeoutMs: config.CONVERT_TIMEOUT_MS, version: sofficeVersion}),
     ocr: createTesseractEngine({
       bin: config.TESSERACT_BIN,

@@ -773,6 +773,18 @@ begin
 end;
 $$;
 
+-- The candidate command answers to the capability token and to nothing else.
+do $$
+begin
+  begin
+    perform public.worker_record_candidates('00000000-0000-4000-8000-000000000000'::uuid, repeat('z', 40), '[]'::jsonb);
+    raise exception 'an unknown capability token wrote candidates';
+  exception
+    when sqlstate '42501' then null;
+  end;
+end;
+$$;
+
 reset role;
 
 -- ---------------------------------------------------------------------------------------------

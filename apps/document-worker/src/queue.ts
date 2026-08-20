@@ -52,6 +52,7 @@ export type QueueClient = {
   heartbeat(job: ClaimedJob): Promise<void>;
   writeStage(job: ClaimedJob, stage: string, status: StageStatus, detail?: unknown, usage?: Record<string, number>): Promise<void>;
   recordDocument(job: ClaimedJob, input: {scanResult?: unknown; profile?: unknown; layer?: unknown}): Promise<void>;
+  recordCandidates(job: ClaimedJob, candidates: unknown[]): Promise<{written: number; replaced: number}>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
   fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
 };
@@ -117,6 +118,16 @@ export function createQueueClient(
         p_profile: input.profile ?? null,
         p_layer: input.layer ?? null,
       });
+    },
+
+    async recordCandidates(job, candidates) {
+      const data = await call("worker_record_candidates", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_candidates: candidates,
+      });
+      const result = (data ?? {}) as {written?: number; replaced?: number};
+      return {written: result.written ?? 0, replaced: result.replaced ?? 0};
     },
 
     async complete(job, result) {
