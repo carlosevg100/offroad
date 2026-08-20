@@ -36,7 +36,7 @@ const documentsDir = join(goldDir, gold.manifest.documentsDir);
 const anthropicKey = process.env.ANTHROPIC_API_KEY;
 const openaiKey = process.env.OPENAI_API_KEY;
 if (!anthropicKey && !openaiKey) {
-  console.error("no model key in the environment — run with `--env-file=.env.local`");
+  console.error("no model key in the environment. Run with `--env-file=.env.local`");
   process.exit(2);
 }
 
@@ -61,7 +61,7 @@ const perDocument: Array<{document: string; candidates: number; unverified: numb
 for (const entry of gold.manifest.documents) {
   const goldProfile = gold.profiles.find((profile) => profile.document === entry.name);
   if (!goldProfile) {
-    console.log(`\n${entry.name}\n    sem perfil no gold set — pulado`);
+    console.log(`\n${entry.name}\n    sem perfil no gold set, pulado`);
     continue;
   }
 

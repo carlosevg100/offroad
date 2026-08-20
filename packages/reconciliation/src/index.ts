@@ -57,7 +57,7 @@ export function reconcileCase(input: {
       title: locale === "pt" ? `Cálculo não realizado: ${gap.labels.pt}` : `Calculation not performed: ${gap.labels.en}`,
       description:
         locale === "pt"
-          ? `Faltam insumos: ${gap.missing.join(", ")}. O número não é estimado — a lacuna é reportada.`
+          ? `Faltam insumos: ${gap.missing.join(", ")}. O número não é estimado. A lacuna é reportada.`
           : `Missing inputs: ${gap.missing.join(", ")}. The number is not estimated; the gap is reported instead.`,
       ownerRole: "company",
       reference: gap.id,

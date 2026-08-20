@@ -137,10 +137,10 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
       amount: cashFlow,
       explanation: {
         pt: cashFlow
-          ? `A geração cobre um serviço de dívida a um DSCR mínimo de ${definition.structure.minimumDscr}x — a cobertura que um financiador subscreve para este tipo de operação.`
+          ? `A geração cobre um serviço de dívida a um DSCR mínimo de ${definition.structure.minimumDscr}x, que é a cobertura que um financiador subscreve para este tipo de operação.`
           : "Não calculada: falta CFADS ou o fator de serviço da dívida do prazo em discussão.",
         en: cashFlow
-          ? `Generation covers debt service at a minimum DSCR of ${definition.structure.minimumDscr}x — the coverage a lender underwrites to for this operation.`
+          ? `Generation covers debt service at a minimum DSCR of ${definition.structure.minimumDscr}x, the coverage a lender underwrites to for this operation.`
           : "Not computed: CFADS or the debt service factor for the tenor under discussion is missing.",
       },
       inputs: ["calculated.cfads"],
@@ -165,10 +165,10 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
       amount: market,
       explanation: {
         pt: market
-          ? `Espaço até ${definition.structure.leverageCeiling}x dívida líquida / EBITDA no fechamento, que é onde este tipo de papel deixa de encontrar comprador. Este teto é a leitura do desk, não uma média de operações observadas — e ele fala de tamanho, não de prazo. Não é covenant nem meta.`
+          ? `Espaço até ${definition.structure.leverageCeiling}x dívida líquida / EBITDA no fechamento, que é onde este tipo de papel deixa de encontrar comprador. Este teto é a leitura do desk, não uma média de operações observadas, e ele fala de tamanho, não de prazo. Não é covenant nem meta.`
           : "Não calculada: falta EBITDA ajustado positivo.",
         en: market
-          ? `Room to ${definition.structure.leverageCeiling}x net debt / EBITDA at closing, where this paper stops finding buyers. This ceiling is the desk's read rather than an average of observed transactions — and it speaks to size, not tenor. Not a covenant and not a target.`
+          ? `Room to ${definition.structure.leverageCeiling}x net debt / EBITDA at closing, where this paper stops finding buyers. This ceiling is the desk's read rather than an average of observed transactions, and it speaks to size, not tenor. Not a covenant and not a target.`
           : "Not computed: positive adjusted EBITDA is missing.",
       },
       inputs: ["calculated.adjusted_ebitda"],

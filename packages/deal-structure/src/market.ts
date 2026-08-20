@@ -83,8 +83,8 @@ export function bandProvenanceNote(band: MarketBand): {pt: string; en: string} {
     };
   }
   return {
-    pt: "Faixa de prática do desk, não observação de mercado — ainda não temos operações comparáveis suficientes deste perfil.",
-    en: "The desk's practice range, not a market observation — we do not yet have enough comparable transactions of this profile.",
+    pt: "Faixa de prática do desk, não observação de mercado. Ainda não temos operações comparáveis suficientes deste perfil.",
+    en: "The desk's practice range, not a market observation. We do not yet have enough comparable transactions of this profile.",
   };
 }
 

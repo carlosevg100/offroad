@@ -91,7 +91,7 @@ const commonMinimum: readonly Requirement[] = [
     singleDocument: true,
     labels: {pt: "O pedido: montante, uso dos recursos e prazo pretendido", en: "The request: amount, use of proceeds and intended tenor"},
     rationale: {
-      pt: "Uso dos recursos é o que separa uma operação estruturável de um pedido genérico de dinheiro — e é a primeira coisa que um comitê pergunta.",
+      pt: "Uso dos recursos é o que separa uma operação estruturável de um pedido genérico de dinheiro, e é a primeira coisa que um comitê pergunta.",
       en: "Use of proceeds is what separates a structurable operation from a generic request for money, and it is the first thing a committee asks.",
     },
   },
@@ -110,8 +110,8 @@ const commonIdeal: readonly Requirement[] = [
     singleDocument: false,
     labels: {pt: "Extratos bancários dos últimos meses", en: "Recent bank statements"},
     rationale: {
-      pt: "Caixa é a única linha que não se ajusta. Extrato confirma — ou contradiz — o que a contabilidade diz sobre geração.",
-      en: "Cash is the one line that cannot be adjusted. Statements confirm — or contradict — what the accounts claim about generation.",
+      pt: "Caixa é a única linha que não se ajusta. Extrato confirma, ou contradiz, o que a contabilidade diz sobre geração.",
+      en: "Cash is the one line that cannot be adjusted. Statements confirm, or contradict, what the accounts claim about generation.",
     },
   },
   {
@@ -150,15 +150,15 @@ const commonIdeal: readonly Requirement[] = [
     purposes: ["investor_case", "storytelling"],
     satisfiedBy: ["investor_deck", "cim", "teaser", "technical_report"],
     accepts: [
-      {pt: "A apresentação institucional da companhia — a mesma que vai a cliente, banco ou feira (.pptx ou PDF)", en: "The company's institutional presentation — the same one used with clients, banks or at trade shows (.pptx or PDF)"},
+      {pt: "A apresentação institucional da companhia, a mesma que vai a cliente, banco ou feira (.pptx ou PDF)", en: "The company's institutional presentation, the same one used with clients, banks or at trade shows (.pptx or PDF)"},
       {pt: "Catálogo, memorando de informações ou material de marca, se houver (PDF)", en: "Catalogue, information memorandum or brand material, if any (PDF)"},
       {pt: "Fotos das instalações, lojas ou plantas (imagem)", en: "Photos of the facilities, stores or plants (image)"},
     ],
     singleDocument: false,
     labels: {pt: "Material institucional da companhia", en: "The company's institutional material"},
     rationale: {
-      pt: "É o que dá cara ao negócio. O investidor lê números em toda proposta que recebe; o que faz ele lembrar deste case é conseguir imaginar a operação — a loja, a planta, o produto na prateleira.",
-      en: "It is what gives the business a face. An investor reads numbers in every proposal he receives; what makes him remember this one is being able to picture the operation — the store, the plant, the product on the shelf.",
+      pt: "É o que dá cara ao negócio. O investidor lê números em toda proposta que recebe; o que faz ele lembrar deste case é conseguir imaginar a operação: a loja, a planta, o produto na prateleira.",
+      en: "It is what gives the business a face. An investor reads numbers in every proposal he receives; what makes him remember this one is being able to picture the operation: the store, the plant, the product on the shelf.",
     },
   },
 ];
@@ -194,8 +194,8 @@ const commonInformation: readonly Requirement[] = [
       en: "e.g. the three sites are already under contract and works start in March; without the financing the company loses the sites and the deposit.",
     },
     rationale: {
-      pt: "É a primeira pergunta de qualquer comitê. Uma resposta específica com data e consequência transforma um pedido genérico em uma operação com prazo — e é o que separa um case que anda de um que fica na pilha.",
-      en: "It is any committee's first question. A specific answer with a date and a consequence turns a generic request into an operation with a clock — and it is what separates a case that moves from one that sits in the pile.",
+      pt: "É a primeira pergunta de qualquer comitê. Uma resposta específica com data e consequência transforma um pedido genérico em uma operação com prazo, e é o que separa um case que anda de um que fica na pilha.",
+      en: "It is any committee's first question. A specific answer with a date and a consequence turns a generic request into an operation with a clock, and it is what separates a case that moves from one that sits in the pile.",
     },
   },
   {
@@ -296,8 +296,8 @@ const commonInformation: readonly Requirement[] = [
     purposes: ["investor_case", "financials"],
     labels: {pt: "Partes relacionadas", en: "Related parties"},
     question: {
-      pt: "Há operações com partes relacionadas — aluguel de imóvel dos sócios, mútuo, compra de coligada? Quais e de quanto?",
-      en: "Are there related-party transactions — property rented from the owners, intercompany loans, purchases from an affiliate? Which, and how much?",
+      pt: "Há operações com partes relacionadas, como aluguel de imóvel dos sócios, mútuo ou compra de coligada? Quais e de quanto?",
+      en: "Are there related-party transactions, such as property rented from the owners, intercompany loans or purchases from an affiliate? Which, and how much?",
     },
     example: {
       pt: "Ex.: aluguel de três lojas de imóveis dos sócios, R$ 180 mil/mês, contratos até 2030.",
@@ -323,7 +323,7 @@ export const archetypes: readonly Archetype[] = [
       {
         id: "project_plan",
     accepts: [
-      {pt: "Modelo financeiro do projeto em planilha, com a aba de premissas visível e as fórmulas preservadas (.xlsx — não envie só o PDF)", en: "The project's financial model as a spreadsheet, with the assumptions tab visible and formulas intact (.xlsx — do not send only the PDF)"},
+      {pt: "Modelo financeiro do projeto em planilha, com a aba de premissas visível e as fórmulas preservadas (.xlsx, não envie só o PDF)", en: "The project's financial model as a spreadsheet, with the assumptions tab visible and formulas intact (.xlsx, do not send only the PDF)"},
       {pt: "Business plan ou memorial descritivo do projeto (PDF, .docx ou .pptx)", en: "Business plan or project memorandum (PDF, .docx or .pptx)"},
       {pt: "Orçamento do projeto por rubrica, com contingência (.xlsx)", en: "Project budget by line item, with contingency (.xlsx)"},
     ],
@@ -333,7 +333,7 @@ export const archetypes: readonly Archetype[] = [
         singleDocument: true,
         labels: {pt: "Plano do projeto com premissas e orçamento", en: "Project plan with assumptions and budget"},
         rationale: {
-          pt: "O crédito é pago pelo projeto. Sem premissas explícitas não há o que testar — e premissa que não se escreve é premissa que não se defende.",
+          pt: "O crédito é pago pelo projeto. Sem premissas explícitas não há o que testar, e premissa que não se escreve é premissa que não se defende.",
           en: "The credit is repaid by the project. Without explicit assumptions there is nothing to test, and an assumption not written down is one that cannot be defended.",
         },
       },
@@ -544,8 +544,8 @@ export const archetypes: readonly Archetype[] = [
     id: "working_capital",
     labels: {pt: "Capital de giro", en: "Working capital"},
     description: {
-      pt: "Financiamento do ciclo operacional — estoque, prazo de recebimento e sazonalidade —, pago pela conversão do próprio giro.",
-      en: "Financing of the operating cycle — inventory, receivable terms and seasonality — repaid by the conversion of the cycle itself.",
+      pt: "Financiamento do ciclo operacional (estoque, prazo de recebimento e sazonalidade), pago pela conversão do próprio giro.",
+      en: "Financing of the operating cycle (inventory, receivable terms and seasonality), repaid by the conversion of the cycle itself.",
     },
     requirements: [
       ...commonMinimum,
@@ -585,7 +585,7 @@ export const archetypes: readonly Archetype[] = [
           en: "e.g. 40% of card receivables assigned to Bank X until 06/2027; trade receivables unencumbered.",
         },
         rationale: {
-          pt: "O recebível é a garantia natural desta operação. Se já está cedido, a estrutura muda inteira — e descobrir isso na diligência custa semanas.",
+          pt: "O recebível é a garantia natural desta operação. Se já está cedido, a estrutura muda inteira, e descobrir isso na diligência custa semanas.",
           en: "The receivable is this operation's natural collateral. If it is already assigned the structure changes entirely, and finding that out in diligence costs weeks.",
         },
       },
@@ -602,7 +602,7 @@ export const archetypes: readonly Archetype[] = [
           pt: "Em dias: quanto a companhia leva para receber, quanto tempo o estoque gira e em quanto paga fornecedores?",
           en: "In days: how long to collect, how long inventory turns, and how long to pay suppliers?",
         },
-        example: {pt: "Ex.: recebe em 38, estoque gira em 52, paga em 41 — ciclo de 49 dias.", en: "e.g. collects in 38, inventory turns in 52, pays in 41 — a 49-day cycle."},
+        example: {pt: "Ex.: recebe em 38, estoque gira em 52, paga em 41, ciclo de 49 dias.", en: "e.g. collects in 38, inventory turns in 52, pays in 41, a 49-day cycle."},
         rationale: {
           pt: "O ciclo define o tamanho certo da linha. Pedido acima do ciclo é dívida estrutural com nome de giro, e um financiador experiente identifica isso na primeira conversa.",
           en: "The cycle defines the right size of the facility. A request larger than the cycle is structural debt wearing a working-capital label, and an experienced lender spots it on the first call.",
@@ -619,8 +619,8 @@ export const archetypes: readonly Archetype[] = [
         singleDocument: false,
         labels: {pt: "Aging de recebíveis com concentração por cliente", en: "Receivables aging with customer concentration"},
         rationale: {
-          pt: "O recebível é a garantia natural desta operação. Vencido e concentrado valem menos — e parte dele pode já estar cedido.",
-          en: "The receivable is this operation's natural collateral. Overdue and concentrated is worth less — and part of it may already be assigned.",
+          pt: "O recebível é a garantia natural desta operação. Vencido e concentrado valem menos, e parte dele pode já estar cedido.",
+          en: "The receivable is this operation's natural collateral. Overdue and concentrated is worth less, and part of it may already be assigned.",
         },
       },
       {
@@ -649,7 +649,7 @@ export const archetypes: readonly Archetype[] = [
         singleDocument: false,
         labels: {pt: "Contratos com os principais clientes", en: "Contracts with the main customers"},
         rationale: {
-          pt: "Prazo, reajuste e cláusula de cessão definem se o recebível é cedível — e portanto se serve de garantia.",
+          pt: "Prazo, reajuste e cláusula de cessão definem se o recebível é cedível, e portanto se serve de garantia.",
           en: "Term, indexation and assignment clauses define whether the receivable can be assigned, and therefore whether it works as collateral.",
         },
       },
@@ -753,8 +753,8 @@ export const archetypes: readonly Archetype[] = [
     id: "refinance",
     labels: {pt: "Refinanciamento", en: "Refinance"},
     description: {
-      pt: "Substituição de dívida existente por prazo mais longo, custo menor ou garantia melhor — paga pela mesma geração, reorganizada.",
-      en: "Replacement of existing debt with longer tenor, lower cost or better collateral — repaid by the same generation, reorganised.",
+      pt: "Substituição de dívida existente por prazo mais longo, custo menor ou garantia melhor, paga pela mesma geração, reorganizada.",
+      en: "Replacement of existing debt with longer tenor, lower cost or better collateral, repaid by the same generation, reorganised.",
     },
     requirements: [
       ...commonMinimum,
@@ -769,7 +769,7 @@ export const archetypes: readonly Archetype[] = [
         singleDocument: false,
         labels: {pt: "Contratos das dívidas a serem liquidadas", en: "Agreements of the debt being repaid"},
         rationale: {
-          pt: "Multa de pré-pagamento, cross-default e ordem de liberação das garantias definem se a operação é possível — e a que custo.",
+          pt: "Multa de pré-pagamento, cross-default e ordem de liberação das garantias definem se a operação é possível, e a que custo.",
           en: "Prepayment penalties, cross-default and the order in which collateral is released define whether the operation is possible at all, and at what cost.",
         },
       },
@@ -903,7 +903,7 @@ export const archetypes: readonly Archetype[] = [
         "restrição a distribuição de dividendos acima de percentual do lucro",
       ],
       notes: {
-        pt: "O prazo novo tem de ser maior que o da dívida que substitui — caso contrário a operação não resolve nada e cobra por isso.",
+        pt: "O prazo novo tem de ser maior que o da dívida que substitui. Caso contrário a operação não resolve nada e cobra por isso.",
         en: "The new tenor has to exceed the debt it replaces; otherwise the operation solves nothing and charges for it.",
       },
     },
@@ -918,7 +918,7 @@ export const archetypes: readonly Archetype[] = [
     id: "acquisition",
     labels: {pt: "Aquisição", en: "Acquisition"},
     description: {
-      pt: "Financiamento da compra de uma empresa ou de ativos, pago pela geração combinada — e garantido pelo perímetro que se forma.",
+      pt: "Financiamento da compra de uma empresa ou de ativos, pago pela geração combinada e garantido pelo perímetro que se forma.",
       en: "Financing the purchase of a company or assets, repaid from combined generation and secured on the perimeter that results.",
     },
     requirements: [
@@ -971,7 +971,7 @@ export const archetypes: readonly Archetype[] = [
           pt: "Para cada sinergia projetada: qual o valor, o plano para capturá-la, o prazo e quem responde por ela?",
           en: "For each projected synergy: the amount, the plan to capture it, the deadline, and who owns it.",
         },
-        example: {pt: "Ex.: R$ 4,2 mi/ano em compras, renegociando 60% do volume em 90 dias — responsável: diretor comercial.", en: "e.g. R$ 4.2m/year in purchasing, renegotiating 60% of volume in 90 days — owner: commercial director."},
+        example: {pt: "Ex.: R$ 4,2 mi/ano em compras, renegociando 60% do volume em 90 dias, responsável: diretor comercial.", en: "e.g. R$ 4.2m/year in purchasing, renegotiating 60% of volume in 90 days, owner: commercial director."},
         rationale: {
           pt: "Sinergia sem plano não entra na base do covenant, e sinergia que entra sem plano faz o covenant nascer quebrado. A diferença entre as duas é esta resposta.",
           en: "A synergy with no plan does not enter the covenant base, and one that enters without a plan makes the covenant start already breached. This answer is the difference.",
@@ -1095,7 +1095,7 @@ export const archetypes: readonly Archetype[] = [
         "manutenção do perímetro societário",
       ],
       notes: {
-        pt: "A base de EBITDA do covenant é a decisão mais importante da estrutura. Sinergia não realizada não entra na base — entra no step-down, se entrar.",
+        pt: "A base de EBITDA do covenant é a decisão mais importante da estrutura. Sinergia não realizada não entra na base. Entra no step-down, se entrar.",
         en: "The covenant's EBITDA base is the most important decision in the structure. Unrealised synergies do not enter the base; they enter the step-down, if anywhere.",
       },
     },
@@ -1148,8 +1148,8 @@ export const archetypes: readonly Archetype[] = [
         },
         example: {pt: "Ex.: substitui terceirização de corte, economia de R$ 95 mil/mês a partir do segundo mês.", en: "e.g. replaces outsourced cutting, saving R$ 95k/month from the second month."},
         rationale: {
-          pt: "É o que responde se o ativo se paga sozinho ou se a operação depende do resto da empresa — e é a diferença entre financiar um ativo e financiar um balanço.",
-          en: "It answers whether the asset pays for itself or the operation leans on the rest of the company — the difference between financing an asset and financing a balance sheet.",
+          pt: "É o que responde se o ativo se paga sozinho ou se a operação depende do resto da empresa, e é a diferença entre financiar um ativo e financiar um balanço.",
+          en: "It answers whether the asset pays for itself or the operation leans on the rest of the company, which is the difference between financing an asset and financing a balance sheet.",
         },
       },
       {
@@ -1298,7 +1298,7 @@ export const archetypes: readonly Archetype[] = [
       collateral: ["a definir com os ativos disponíveis"],
       covenants: ["dívida líquida / EBITDA", "DSCR mínimo"],
       notes: {
-        pt: "Sem arquétipo definido, a primeira entrega do desk é enquadrar a operação — não estruturá-la.",
+        pt: "Sem arquétipo definido, a primeira entrega do desk é enquadrar a operação, não estruturá-la.",
         en: "With no archetype settled, the desk's first deliverable is to frame the operation, not to structure it.",
       },
     },

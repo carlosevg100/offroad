@@ -41,8 +41,8 @@ export const commonClosing: readonly Requirement[] = [
       en: "Signed before disbursement",
     },
     rationale: {
-      pt: "Ata ou aprovação que autoriza contrair a dívida, emitir o título e constituir as garantias. Só faz sentido depois que os termos estiverem definidos — assinar antes é aprovar uma operação que ainda vai mudar.",
-      en: "The resolution authorising the debt, the issuance, and the security. It only makes sense once terms are settled — signing earlier approves a transaction that is still going to change.",
+      pt: "Ata ou aprovação que autoriza contrair a dívida, emitir o título e constituir as garantias. Só faz sentido depois que os termos estiverem definidos. Assinar antes é aprovar uma operação que ainda vai mudar.",
+      en: "The resolution authorising the debt, the issuance, and the security. It only makes sense once terms are settled. Signing earlier approves a transaction that is still going to change.",
     },
   },
   {
@@ -104,7 +104,7 @@ export const commonClosing: readonly Requirement[] = [
       en: "At disbursement",
     },
     rationale: {
-      pt: "O financiador desembolsa contra uma lista de condições verificadas por advogados — dos dois lados. É trabalho dos escritórios, não da companhia, e entra na conta do custo da operação.",
+      pt: "O financiador desembolsa contra uma lista de condições verificadas por advogados dos dois lados. É trabalho dos escritórios, não da companhia, e entra na conta do custo da operação.",
       en: "The lender disburses against a list of conditions verified by lawyers on both sides. It is the firms' work rather than the company's, and it is part of the transaction's cost.",
     },
   },
