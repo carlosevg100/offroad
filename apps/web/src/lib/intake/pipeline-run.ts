@@ -19,9 +19,9 @@ import type {IntakeErrorCode} from "./types";
  * a worker that sits on a job past its lease has to be handed fresh links rather than reuse
  * stale ones.
  *
- * Nothing here changes what the user sees. The production extraction path is still the
- * content-hash-verified fixture and stays that way until the F2 gate; this exists so the
- * pipeline can be exercised in parallel, per organization, behind `PIPELINE_RUNS_ENABLED`.
+ * Which organizations get this is decided per organization, in the database
+ * (`organizations.pipeline_enabled`): promotion is gradual and reversible, and it is not a
+ * deployment. Everyone else stays on the content-hash-verified fixture.
  */
 
 /** Pipeline contract version recorded on the run. Must match what the worker reports. */
@@ -44,13 +44,19 @@ export type ProcessingRunStarted = {
 type Outcome<T> = {ok: true; value: T} | {ok: false; error: IntakeErrorCode};
 
 /**
- * Is the pipeline allowed to run at all? Off unless the deployment says otherwise, because a
- * run with no worker behind it parks the intake session in `processing` — a working journey
- * traded for one that hangs. This is a documented switch, not a hidden fallback: the variable
- * is listed in `.env.example` and its absence means "keep the current path".
+ * Which extractor this organization gets.
+ *
+ * Per organization, in the database, because promotion is gradual: one tenant moves to the
+ * pipeline, its runs are watched, and the switch goes back if they are not good enough — none
+ * of which should require a deployment. The column is readable by the organization's members
+ * (the review screen can honestly say which extractor produced a candidate) and writable by
+ * nobody through the Data API, so a tenant cannot promote itself.
+ *
+ * Off is the safe default and stays the default: a run with no worker behind it parks the
+ * intake session in `processing`, trading a working journey for one that hangs.
  */
-export function pipelineRunsEnabled(env: Record<string, string | undefined> = process.env): boolean {
-  return env.PIPELINE_RUNS_ENABLED === "true";
+export function pipelineEnabledFor(organization: {pipeline_enabled?: boolean | null} | null | undefined): boolean {
+  return organization?.pipeline_enabled === true;
 }
 
 /**
@@ -143,8 +149,6 @@ export async function startProcessingRun(input: {
   budget?: Record<string, number>;
   newAttemptId?: () => string;
 }): Promise<Outcome<ProcessingRunStarted>> {
-  if (!pipelineRunsEnabled()) return {ok: false, error: "processing"};
-
   const {data: documents, error: documentsError} = await input.supabase
     .from("source_documents")
     .select("id, object_path")

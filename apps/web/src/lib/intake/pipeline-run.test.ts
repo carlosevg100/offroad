@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 
 import {
   layerObjectPath,
-  pipelineRunsEnabled,
+  pipelineEnabledFor,
   readRunResult,
   signPipelineDocuments,
   PIPELINE_LINK_TTL_SECONDS,
@@ -99,12 +99,18 @@ describe("pipeline run links", () => {
 });
 
 describe("pipeline run switch", () => {
-  it("stays off unless the deployment turns it on", () => {
-    expect(pipelineRunsEnabled({})).toBe(false);
-    expect(pipelineRunsEnabled({PIPELINE_RUNS_ENABLED: ""})).toBe(false);
-    expect(pipelineRunsEnabled({PIPELINE_RUNS_ENABLED: "false"})).toBe(false);
-    expect(pipelineRunsEnabled({PIPELINE_RUNS_ENABLED: "1"})).toBe(false);
-    expect(pipelineRunsEnabled({PIPELINE_RUNS_ENABLED: "true"})).toBe(true);
+  it("is off for an organization that was not promoted, and for one that could not be read", () => {
+    expect(pipelineEnabledFor({pipeline_enabled: false})).toBe(false);
+    expect(pipelineEnabledFor({})).toBe(false);
+    expect(pipelineEnabledFor({pipeline_enabled: null})).toBe(false);
+    // A failed read must never be mistaken for permission: falling back to the fixture is the
+    // safe answer, since a run with no worker behind it parks the session in `processing`.
+    expect(pipelineEnabledFor(null)).toBe(false);
+    expect(pipelineEnabledFor(undefined)).toBe(false);
+  });
+
+  it("is on only for an organization explicitly promoted", () => {
+    expect(pipelineEnabledFor({pipeline_enabled: true})).toBe(true);
   });
 });
 

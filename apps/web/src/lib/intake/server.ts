@@ -9,7 +9,7 @@ import type {Database, Json} from "@/types/database";
 
 import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilation, type DerivedCase, type IntakeIssuePayload} from "./case";
 import {parseList, parseLocalizedNumber} from "./format";
-import {pipelineRunsEnabled, startProcessingRun} from "./pipeline-run";
+import {pipelineEnabledFor, startProcessingRun} from "./pipeline-run";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 
 /**
@@ -96,8 +96,8 @@ async function markSessionFailed(runtime: IntakeRuntime, reason: string) {
  * `begin_intake_processing` clears previous results and marks the session `processing`;
  * `complete_intake_processing` writes the new generation and marks `review_ready` in one
  * transaction — a reprocess never mixes generations and a failure never leaves partial rows.
- * Two extractors, one switch. With `PIPELINE_RUNS_ENABLED` the session is handed to the
- * document pipeline: the app signs the links, `begin_processing_run` queues one job per
+ * Two extractors, one switch, held per organization (`organizations.pipeline_enabled`).
+ * With it on, the session is handed to the document pipeline: the app signs the links, `begin_processing_run` queues one job per
  * document, and the worker reads, verifies and proposes — the session stays `processing`
  * until the worker's last job moves it to `review_ready`, which is what the screen watches.
  * Without the switch it is the content-hash-verified Rede Horizonte fixture, where an unknown
@@ -131,7 +131,13 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     return fail("processing");
   }
 
-  if (pipelineRunsEnabled()) {
+  const {data: organization} = await supabase
+    .from("organizations")
+    .select("pipeline_enabled")
+    .eq("id", organizationId)
+    .maybeSingle();
+
+  if (pipelineEnabledFor(organization)) {
     const run = await startProcessingRun({supabase, organizationId, sessionId, trigger: "upload"});
     if (!run.ok) {
       logIntakeFailure("begin_processing_run", null);

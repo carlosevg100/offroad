@@ -120,6 +120,20 @@ jobs:
       - name: Start local Supabase and apply migrations
         run: supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
 
+      # This stack has no document worker, so the journey test runs the deterministic extractor:
+      # with the pipeline on, intake correctly waits in `processing` for a worker that does not
+      # exist here and the review screen never arrives. The pipeline is measured on its own, on
+      # real documents, by the `Measure extraction` workflow.
+      - name: Run the journey against the deterministic extractor
+        run: |
+          set -euo pipefail
+          DB_URL="$(supabase status -o env | sed -n 's/^DB_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p')"
+          if [ -z "$DB_URL" ]; then
+            DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          fi
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -q \
+            -c "alter table public.organizations alter column pipeline_enabled set default false;"
+
       - name: Export local Supabase configuration for the app and the tests
         run: |
           set -euo pipefail
