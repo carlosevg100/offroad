@@ -119,6 +119,48 @@ brief que não sai deixa o case com fatos, exceções, prontidão e estrutura �
 explica a si mesma** (brief recusado diz que a auditoria recusou; parede não calculada diz qual
 insumo faltou), porque tela que omite em silêncio ensina o leitor a achar que branco é zero.
 
+## Entregáveis, aprendizado e horizonte (20/08/2026, tarde)
+
+**Os materiais saem como documento.** `@offroad/case-render` transforma um material em página A4
+no template Offroad, impressa em PDF pelo próprio Chrome — sem headless na serverless e sem
+serviço de render para manter vivo. As citações sobrevivem: cada alegação vira marcador numerado
+e resolve num apêndice de Fontes até o campo, o período e o nome do arquivo de origem. Rota
+`/[locale]/app/materials/[sessionId]/[kind]`, `?print=1` abre o diálogo de impressão.
+
+**O caso deixou de ser recomputado a cada render.** `saveCaseState` existia e nunca era chamado,
+então toda atualização da tela re-rodava a linha inteira, inclusive a chamada de modelo que
+escreve o brief — quatro refreshes custavam quatro briefs, cada um com redação levemente
+diferente. `resolveCaseState` calcula uma vez por estado do data room, com fingerprint sobre
+arquétipo, status, contagens de documento/candidato/resposta e o `updated_at` mais recente dos
+candidatos. Invalidado por mudança, nunca por idade.
+
+**Modelo financeiro exportável.** `@offroad/financial-model` emite um `.xlsx` real com 159
+fórmulas vivas: projeção operacional, cronograma de dívida com carência e SAC, CFADS, DSCR e
+alavancagem contra o teto do playbook. É modelo de crédito, não de equity — não projeta balanço,
+e a capa diz isso. Toda célula editável fica numa única aba, garantido por teste; o SheetJS
+community não escreve estilo (medido, não suposto), então a convenção de célula azul foi
+substituída por uma estrutural que sobrevive a qualquer writer. Um avaliador de planilha
+escrito só para teste executa as fórmulas como o Excel faria, o que pegou três expectativas
+minhas erradas e um bug que nada mais veria: célula de fórmula sem valor em cache sai como
+`t="e"` e a projeção inteira abre em `#N/A`.
+
+**A plataforma aprende com correção.** `review_intake_candidate` sobrescrevia
+`normalized_value` no lugar — a proposta do modelo era destruída pelo próprio ato de corrigi-la.
+`extraction_feedback` grava toda decisão humana com o estado anterior congelado ao lado, dentro
+da mesma transação e antes do update. Append-only na ACL, não só na intenção: `authenticated`
+tem SELECT e INSERT, então UPDATE e DELETE levantam 42501 (verificado contra o projeto).
+`@offroad/extraction-learning` mede acurácia por campo **e tipo de documento**, com limite
+inferior de Wilson em toda taxa e erro de escala contado à parte — e usa isso para decidir o
+auto-accept: campo com erro de escala no histórico fica travado em qualquer confiança, campo
+não provado precisa ganhar o direito, campo abaixo de cara-ou-coroa fica travado, campo abaixo
+da meta tem a barra elevada.
+
+**O pedido ganhou eixo de tempo.** Três horizontes — **Agora** (aberto, ≤ 20 itens por teste),
+**Quando um fundo se interessar** (fechado, explicitamente não pedido) e **Se a operação
+acontecer** (fechado, sem marcas, `source: "notice"`). Todo item pendente pode ser respondido
+sem arquivo: não se aplica, parcial, depois do NDA — e "não se aplica" exige razão no tipo, na
+server action e numa check constraint.
+
 ## Estado corrente (20/08/2026)
 
 A linha do pipeline está ligada de ponta a ponta: empresa envia documentos → app assina os
