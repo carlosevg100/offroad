@@ -49,21 +49,36 @@ export type Classifier = (input: {
   locale?: string;
 }) => Promise<{profile: DocumentProfile; usage?: Record<string, number>}>;
 
+/**
+ * `nullish`, not `nullable`, for everything a document may simply not state.
+ *
+ * The distinction looked pedantic and was not. `nullable()` requires the key to be present
+ * carrying `null`; a model that expresses "the document does not say" by leaving the key out
+ * fails validation, and both providers do exactly that. The gateway then falls back, the
+ * fallback omits it too, and the whole classification returns `all_attempts_failed`: not a
+ * degraded answer, no answer at all, for a document whose only sin was having no fiscal year.
+ *
+ * What the product actually requires is that the model never *invent* a period, an entity or a
+ * currency. Absent and null both say the same true thing, and the normaliser below collapses
+ * them to one so nothing downstream has to know which one arrived.
+ */
+const absent = <T extends z.ZodType>(schema: T) => schema.nullish();
+
 const profileSchema = z.object({
   documentKind: documentKindSchema,
-  title: z.string().max(200).nullable(),
-  entityName: z.string().max(200).nullable(),
-  entityScope: z.enum(["consolidated", "standalone", "segment"]).nullable(),
-  periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-  periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-  fiscalYear: z.number().int().min(1990).max(2100).nullable(),
-  currency: z.string().regex(/^[A-Z]{3}$/).nullable(),
+  title: absent(z.string().max(200)),
+  entityName: absent(z.string().max(200)),
+  entityScope: absent(z.enum(["consolidated", "standalone", "segment"])),
+  periodStart: absent(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+  periodEnd: absent(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+  fiscalYear: absent(z.number().int().min(1990).max(2100)),
+  currency: absent(z.string().regex(/^[A-Z]{3}$/)),
   informationClass: informationClassSchema,
   language: z.enum(["pt", "en", "other"]),
   /** Only what the document literally declares; the parser already found the candidates. */
-  declaredScale: z.number().positive().nullable(),
+  declaredScale: absent(z.number().positive()),
   summary: z.string().max(600),
-  /** 0–1, calibrated: below 0.8 the document goes to human confirmation. */
+  /** 0 to 1, calibrated: below 0.8 the document goes to human confirmation. */
   confidence: z.number().min(0).max(1),
   reasoning: z.string().max(400),
 });
@@ -143,13 +158,16 @@ export function createClassifier(gateway: ModelGateway): Classifier {
       },
     };
 
+    // `!= null` on purpose: absent and null both mean the document did not state it, and the
+    // strict `!== null` these two used to carry would have written an `undefined` onto the
+    // profile the moment the model omitted the key rather than nulling it.
     if (answer.title) profile.title = answer.title;
     if (answer.entityName) profile.entity_name = answer.entityName;
     if (answer.periodStart) profile.period_start = answer.periodStart;
     if (answer.periodEnd) profile.period_end = answer.periodEnd;
-    if (answer.fiscalYear !== null) profile.fiscal_year = answer.fiscalYear;
+    if (answer.fiscalYear != null) profile.fiscal_year = answer.fiscalYear;
     if (answer.currency) profile.currency = answer.currency;
-    if (answer.declaredScale !== null) profile.scale = answer.declaredScale;
+    if (answer.declaredScale != null) profile.scale = answer.declaredScale;
     if (definition?.folder) profile.suggested_folder = definition.folder;
 
     profile.suggested_name = suggestedDocumentName({
