@@ -88,6 +88,17 @@ export type StructureMenu = {
   amortization: readonly string[];
   collateral: readonly string[];
   covenants: readonly string[];
+  /**
+   * What the market will carry for this kind of operation, as a decimal string.
+   *
+   * `leverageCeiling` is net debt / adjusted EBITDA at closing — the level above which this
+   * paper stops finding buyers, not a covenant and not a target. `minimumDscr` is the coverage
+   * a lender underwrites to. Both are the conservative end of what the desk has seen clear;
+   * they size the operation, and they are the numbers a credit professional will argue with
+   * first, which is why they are data rather than a constant buried in a function.
+   */
+  leverageCeiling: string;
+  minimumDscr: string;
   notes: {pt: string; en: string};
 };
 

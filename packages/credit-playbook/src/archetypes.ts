@@ -241,6 +241,8 @@ export const archetypes: readonly Archetype[] = [
     ],
     structure: {
       tenorMonths: {typical: [48, 84], outer: [36, 120]},
+      leverageCeiling: "3.5",
+      minimumDscr: "1.30",
       gracePeriodMonths: {typical: [12, 24]},
       amortization: ["price", "sac", "bullet parcial com amortização crescente"],
       collateral: [
@@ -392,6 +394,8 @@ export const archetypes: readonly Archetype[] = [
     ],
     structure: {
       tenorMonths: {typical: [12, 36], outer: [6, 48]},
+      leverageCeiling: "2.5",
+      minimumDscr: "1.20",
       gracePeriodMonths: {typical: [0, 6]},
       amortization: ["revolving com limite decrescente", "amortização mensal", "bullet com renovação condicionada"],
       collateral: [
@@ -520,6 +524,8 @@ export const archetypes: readonly Archetype[] = [
     ],
     structure: {
       tenorMonths: {typical: [36, 84], outer: [24, 120]},
+      leverageCeiling: "3.0",
+      minimumDscr: "1.25",
       gracePeriodMonths: {typical: [6, 18]},
       amortization: ["sac", "price", "amortização crescente acompanhando a geração"],
       collateral: [
@@ -670,6 +676,8 @@ export const archetypes: readonly Archetype[] = [
     ],
     structure: {
       tenorMonths: {typical: [60, 84], outer: [36, 96]},
+      leverageCeiling: "4.0",
+      minimumDscr: "1.35",
       gracePeriodMonths: {typical: [6, 12]},
       amortization: ["sac", "amortização com cash sweep sobre excedente", "bullet parcial no final"],
       collateral: [
@@ -792,6 +800,8 @@ export const archetypes: readonly Archetype[] = [
     ],
     structure: {
       tenorMonths: {typical: [24, 60], outer: [12, 84]},
+      leverageCeiling: "3.0",
+      minimumDscr: "1.25",
       gracePeriodMonths: {typical: [3, 12]},
       amortization: ["sac", "price", "parcelas sazonais quando a produção é sazonal"],
       collateral: [
@@ -847,6 +857,8 @@ export const archetypes: readonly Archetype[] = [
     ],
     structure: {
       tenorMonths: {typical: [24, 60], outer: [12, 120]},
+      leverageCeiling: "2.5",
+      minimumDscr: "1.30",
       gracePeriodMonths: {typical: [0, 12]},
       amortization: ["a definir com o uso dos recursos"],
       collateral: ["a definir com os ativos disponíveis"],
