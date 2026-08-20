@@ -96,6 +96,17 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [x] case brief: schema versionado por seção, payload compacto (fatos conciliados, cálculos, exceções, lacunas e os focos do arquétipo — **nunca o data room cru**, para não criar a oportunidade de o modelo ler um número da página e repetir sem citar), instruções escritas como proibições, e `auditBrief` como portão único. Brief que não passa na auditoria **não sai com aviso: não sai**. Julgamento nasce não aprovado — "a alavancagem é confortável" é opinião do analista, não achado do sistema. 20 testes
 - [ ] perguntas à administração e roadmap de diligência
 
+## P1 — Fase E (estrutura da operação) — 20/08/2026
+
+- [x] `packages/deal-structure`, determinístico:
+  - **capacidade em três paredes independentes** — geração de caixa (ao DSCR mínimo do arquétipo), garantias (base elegível após haircut) e apetite de mercado (espaço até o teto de alavancagem) — e a resposta é a menor delas. **Nomear a parede restritiva é o produto**: "pediu 38, garantias sustentam 28" é conversa de estrutura; "o limite é 28" é recusa. Parede que não dá para calcular não é tratada como infinita — é reportada como lacuna
+  - **term sheet indicativo** com `basis` em cada termo (capacidade · playbook · pedido da companhia · fato conciliado) e a razão junto. Prazo pedido fora da banda é puxado para dentro e o documento diz que puxou
+  - **sem preço, deliberadamente**: a Offroad não precifica; custo sai da conversa com quem toma o risco. Inventar taxa é o jeito mais rápido de perder a confiança da companhia quando o mercado responde outra coisa
+  - tetos de alavancagem e DSCR mínimo por arquétipo entraram no playbook como **dado** (3,5x / 1,30x em expansão; 2,5x / 1,20x em giro; 4,0x / 1,35x em aquisição) — são os primeiros números que um profissional de crédito vai querer discutir
+  - 13 testes
+- [ ] materiais institucionais no template Offroad (perfil de crédito, teaser, pacote) e render em PDF
+- [ ] modelo financeiro exportável
+
 ## Estado corrente (20/08/2026)
 
 A linha do pipeline está ligada de ponta a ponta: empresa envia documentos → app assina os
