@@ -1121,6 +1121,106 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------------------------
+-- The evidence chain is not writable by the company whose evidence it is.
+--
+-- This is the invariant the whole product rests on: a number in a memo links back to the
+-- document, the page and the cell. It is worth exactly as much as the narrowest thing a tenant
+-- can write, and for weeks the grants were whole-table, so a PATCH went around all nine
+-- determinism mechanisms at once.
+--
+-- Asserted as a grant check rather than as a behavioural test on purpose. A behavioural test
+-- proves one path is closed; this proves there is no path, including one a future migration adds
+-- by writing `grant update on ... to authenticated` out of habit.
+-- ---------------------------------------------------------------------------------------------
+do $$
+declare
+  offending text;
+begin
+  select string_agg(table_name || '.' || column_name, ', ' order by table_name, column_name)
+  into offending
+  from information_schema.role_column_grants
+  where table_schema = 'public'
+    and grantee = 'authenticated'
+    and privilege_type = 'UPDATE'
+    and (
+      (table_name = 'intake_field_candidates')
+      or (table_name = 'document_profiles')
+      -- Attaching a document to the opportunity at confirmation is the one legitimate direct
+      -- write. Everything else about a document is the system's judgement.
+      or (table_name = 'source_documents' and column_name <> 'opportunity_id')
+    );
+
+  if offending is not null then
+    raise exception 'a tenant can rewrite its own evidence: %', offending;
+  end if;
+end;
+$$;
+
+-- The same tables, on insert: a browser may say where the object is and what it hashed to, and
+-- may not declare a document audited, classified or already verified.
+do $$
+declare
+  offending text;
+begin
+  select string_agg(column_name, ', ' order by column_name) into offending
+  from information_schema.role_column_grants
+  where table_schema = 'public'
+    and table_name = 'source_documents'
+    and grantee = 'authenticated'
+    and privilege_type = 'INSERT'
+    and column_name in ('sha256_verified_at', 'evidence_rank', 'document_kind', 'classification', 'processing_status');
+
+  if offending is not null then
+    raise exception 'a tenant can assert a document is trusted at insert: %', offending;
+  end if;
+end;
+$$;
+
+-- Grant parity across every public wrapper that delegates into `private`.
+--
+-- Every `public.worker_*` wrapper is `security invoker`, so calling one runs as the caller and the
+-- caller needs execute on the `private` implementation it delegates to. `worker_record_candidates`
+-- had the wrapper grant and not the implementation grant, which made the gap invisible to anything
+-- that inspected the public surface, and meant every real run died at the last write after paying
+-- for the whole pipeline. Proven by calling both as `authenticated`: one answered "permission
+-- denied for function", the other answered "worker_token_invalid", which is the body refusing a
+-- bad token.
+--
+-- So the invariant is parity, not absence: a wrapper that is executable must have an executable
+-- implementation, or it is a trap. The capability token is what protects these, and it is checked
+-- inside the implementation.
+do $$
+declare
+  offending text;
+begin
+  select string_agg(wrapper.proname, ', ' order by wrapper.proname) into offending
+  from pg_proc wrapper
+  join pg_namespace wrapper_ns on wrapper_ns.oid = wrapper.pronamespace
+  join pg_proc impl on impl.proname = wrapper.proname
+  join pg_namespace impl_ns on impl_ns.oid = impl.pronamespace
+  where wrapper_ns.nspname = 'public'
+    and impl_ns.nspname = 'private'
+    and has_function_privilege('authenticated', wrapper.oid, 'execute')
+    and not has_function_privilege('authenticated', impl.oid, 'execute');
+
+  if offending is not null then
+    raise exception 'a public wrapper is granted while its private implementation is not: %', offending;
+  end if;
+end;
+$$;
+
+-- And nothing that is not a wrapper's implementation is reachable. `worker_identity` maps a raw
+-- token to a service account and is called only from inside `worker_claim_job`; there is no caller
+-- outside that needs it.
+do $$
+begin
+  if has_function_privilege('authenticated', 'private.worker_identity(text)', 'execute') then
+    raise exception 'private.worker_identity is directly executable by authenticated';
+  end if;
+end;
+$$;
+
 rollback;
 
 select 'rls_non_interference_passed' as result;

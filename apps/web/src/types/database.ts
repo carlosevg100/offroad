@@ -2588,6 +2588,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_intake_candidates: {
+        Args: {
+          p_candidate_ids: string[]
+          p_organization_id: string
+          p_session_id: string
+        }
+        Returns: number
+      }
       begin_intake_processing: {
         Args: { p_organization_id: string; p_session_id: string }
         Returns: undefined
@@ -2667,6 +2675,15 @@ export type Database = {
           p_cost_usd: number
           p_organization_id: string
           p_session_id: string
+        }
+        Returns: undefined
+      }
+      record_document_verification: {
+        Args: {
+          p_document_id: string
+          p_organization_id: string
+          p_processing_status: string
+          p_sha256: string
         }
         Returns: undefined
       }

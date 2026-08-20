@@ -341,8 +341,14 @@ export async function verifyIntakeDocuments(runtime: IntakeRuntime): Promise<Int
       return fail("processing");
     }
     const serverHash = sha256HexOf(new Uint8Array(await blob.arrayBuffer()));
-    const now = new Date().toISOString();
-    const {error: updateError} = await supabase.from("source_documents").update({sha256: serverHash, sha256_verified_at: now, processing_status: "clean"}).eq("organization_id", organizationId).eq("id", document.id);
+    // "The server downloaded this object and the digest matched" is a statement only the server
+    // can make, so it is no longer a column a browser can write.
+    const {error: updateError} = await supabase.rpc("record_document_verification", {
+      p_organization_id: organizationId,
+      p_document_id: document.id,
+      p_sha256: serverHash,
+      p_processing_status: "clean",
+    });
     if (updateError) {
       logIntakeFailure("store_verified_hash", updateError);
       return fail("processing");
@@ -471,13 +477,15 @@ export async function acceptHighConfidenceCandidates(runtime: IntakeRuntime): Pr
 
   if (acceptable.length === 0) return ok({accepted: 0, held});
 
-  const {error} = await supabase
-    .from("intake_field_candidates")
-    .update({review_state: "accepted", reviewed_by: runtime.userId, reviewed_at: new Date().toISOString()})
-    .eq("organization_id", organizationId)
-    .eq("intake_session_id", sessionId)
-    .in("id", acceptable);
-  return error ? fail("save") : ok({accepted: acceptable.length, held});
+  // Through the RPC rather than a direct update: `intake_field_candidates` is no longer writable
+  // by a tenant at all, because a table-level grant is a way around every determinism mechanism
+  // above it. The function re-checks membership and refuses to revive a decision already made.
+  const {data: accepted, error} = await supabase.rpc("accept_intake_candidates", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_candidate_ids: acceptable,
+  });
+  return error ? fail("save") : ok({accepted: typeof accepted === "number" ? accepted : acceptable.length, held});
 }
 
 export type ReviewInput = {candidateId: string; decision: string; rawValue: string; comment: string};
