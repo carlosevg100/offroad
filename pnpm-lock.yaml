@@ -54,18 +54,30 @@ importers:
 
   apps/web:
     dependencies:
+      '@offroad/case-materials':
+        specifier: workspace:*
+        version: link:../../packages/case-materials
+      '@offroad/case-understanding':
+        specifier: workspace:*
+        version: link:../../packages/case-understanding
       '@offroad/credit-ontology':
         specifier: workspace:*
         version: link:../../packages/credit-ontology
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../../packages/credit-playbook
+      '@offroad/deal-structure':
+        specifier: workspace:*
+        version: link:../../packages/deal-structure
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../../packages/financial-core
       '@offroad/matching-core':
         specifier: workspace:*
         version: link:../../packages/matching-core
+      '@offroad/model-gateway':
+        specifier: workspace:*
+        version: link:../../packages/model-gateway
       '@offroad/reconciliation':
         specifier: workspace:*
         version: link:../../packages/reconciliation

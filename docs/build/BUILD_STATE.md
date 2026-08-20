@@ -108,6 +108,17 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [ ] render em PDF no template Offroad
 - [ ] modelo financeiro exportável
 
+## Tudo ligado (20/08/2026)
+
+`buildCaseState` é o único caminho e a ordem carrega significado: **concilia → mede prontidão →
+dimensiona capacidade → estrutura o term sheet → escreve o brief → compila os materiais**. Nada é
+dimensionado antes de os números conciliarem, nada é escrito antes de ser dimensionado, nada é
+compilado antes de o que foi escrito passar pela auditoria. Cada etapa degrada com honestidade:
+brief que não sai deixa o case com fatos, exceções, prontidão e estrutura — o que nunca acontece
+é uma etapa inventar insumo que não recebeu. Tela de revisão mostra tudo, e **cada ausência
+explica a si mesma** (brief recusado diz que a auditoria recusou; parede não calculada diz qual
+insumo faltou), porque tela que omite em silêncio ensina o leitor a achar que branco é zero.
+
 ## Estado corrente (20/08/2026)
 
 A linha do pipeline está ligada de ponta a ponta: empresa envia documentos → app assina os

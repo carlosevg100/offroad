@@ -3,7 +3,10 @@ import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
 import {anchorText, displayCandidateValue, editableCandidateValue, intakeGroups} from "@/lib/intake/format";
+import type {CaseState} from "@/lib/intake/case-pipeline";
 import type {IntakeCandidate, IntakeDocument, IntakeIssue, IntakeReviewActionSet, IntakeSession} from "@/lib/intake/types";
+
+import {IntakeCase} from "./intake-case";
 
 type Props = {
   locale: string;
@@ -13,6 +16,8 @@ type Props = {
   issues: IntakeIssue[];
   actions: IntakeReviewActionSet;
   manualHref?: string;
+  /** The desk's read of the case: readiness, capacity, structure, brief. Null before processing. */
+  caseState?: CaseState | null;
 };
 
 const HIGH_CONFIDENCE = 0.85;
@@ -21,7 +26,7 @@ const HIGH_CONFIDENCE = 0.85;
  * Assisted review of extracted candidates: accept / edit / reject / N/A per field, open issues,
  * evidence links and the final confirmation. Every string comes from the `Intake` catalog.
  */
-export async function IntakeReview({locale, session, documents, candidates, issues, actions, manualHref}: Props) {
+export async function IntakeReview({locale, session, documents, candidates, issues, actions, manualHref, caseState}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.review"});
   const documentById = new Map(documents.map((document) => [document.id, document]));
   const openIssues = issues.filter((issue) => issue.status === "open");
@@ -50,6 +55,8 @@ export async function IntakeReview({locale, session, documents, candidates, issu
           <span><strong>{openIssues.length}</strong>{t("openItems")}</span>
         </div>
       </header>
+
+      {caseState !== undefined ? <IntakeCase caseState={caseState} locale={locale} /> : null}
 
       <div className="intake-review__toolbar">
         <div><History size={14} /><span>{t("reviewedCounter", {reviewed, total: candidates.length})}</span></div>
