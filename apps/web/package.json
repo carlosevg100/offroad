@@ -11,8 +11,10 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@offroad/credit-playbook": "workspace:*",
     "@offroad/financial-core": "workspace:*",
     "@offroad/matching-core": "workspace:*",
+    "@offroad/reconciliation": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
     "@sentry/nextjs": "10.70.0",
     "@supabase/ssr": "0.12.4",

@@ -10,6 +10,7 @@ import type {Database, Json} from "@/types/database";
 import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilation, type DerivedCase, type IntakeIssuePayload} from "./case";
 import {parseList, parseLocalizedNumber} from "./format";
 import {pipelineEnabledFor, startProcessingRun} from "./pipeline-run";
+import {reconcileIntakeSession} from "./reconcile";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 
 /**
@@ -57,6 +58,11 @@ export async function loadIntakeSession(runtime: IntakeRuntime) {
 /** Session, documents (with 15-minute evidence links), candidates and issues for the review UI. */
 export async function loadIntakeReview(runtime: IntakeRuntime): Promise<{session: IntakeSession | null; documents: IntakeDocument[]; candidates: IntakeCandidate[]; issues: IntakeIssue[]}> {
   const {supabase, organizationId, sessionId} = runtime;
+
+  // The pipeline finishes by handing the session to the reviewer; reconciliation is what makes
+  // that hand-off worth reading, and it only makes sense once every document has landed. Run
+  // once per generation: the marker on the summary says whether this run was already checked.
+  await ensureReconciled(runtime);
   const [sessionResult, documentsResult, candidatesResult, issuesResult] = await Promise.all([
     supabase.from("document_intake_sessions").select("*").eq("organization_id", organizationId).eq("id", sessionId).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, object_path").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("created_at"),
@@ -75,6 +81,48 @@ export async function loadIntakeReview(runtime: IntakeRuntime): Promise<{session
     candidates: candidatesResult.data ?? [],
     issues: issuesResult.data ?? [],
   };
+}
+
+/**
+ * Reconciles a finished pipeline session, once per run.
+ *
+ * Deliberately lazy rather than triggered: the worker cannot do it (it holds one document and
+ * a token scoped to that job), and a background job would be a second thing to operate. The
+ * first reader after the run finishes pays a few milliseconds of arithmetic, and every reader
+ * after that pays nothing.
+ */
+async function ensureReconciled(runtime: IntakeRuntime): Promise<void> {
+  const {supabase, organizationId, sessionId} = runtime;
+  const {data: session} = await supabase
+    .from("document_intake_sessions")
+    .select("status, current_run_id, result_summary")
+    .eq("organization_id", organizationId)
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  if (!session || session.status !== "review_ready" || !session.current_run_id) return;
+
+  const summary = (session.result_summary ?? {}) as Record<string, unknown>;
+  if (summary.reconciled_run === session.current_run_id) return;
+
+  const outcome = await reconcileIntakeSession({supabase, organizationId, sessionId, locale: runtime.locale === "en-US" ? "en" : "pt"});
+  if (!outcome.ok) {
+    logIntakeFailure("reconcile_session", null);
+    return;
+  }
+
+  const {data: updated} = await supabase
+    .from("document_intake_sessions")
+    .select("result_summary")
+    .eq("organization_id", organizationId)
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  await supabase
+    .from("document_intake_sessions")
+    .update({result_summary: {...((updated?.result_summary ?? {}) as Record<string, Json>), reconciled_run: session.current_run_id} as Json})
+    .eq("organization_id", organizationId)
+    .eq("id", sessionId);
 }
 
 /** Starts a session for the tenant. `journey` follows the organization type. */

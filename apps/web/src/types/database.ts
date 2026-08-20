@@ -447,6 +447,7 @@ export type Database = {
       }
       document_intake_sessions: {
         Row: {
+          archetype: string | null
           confirmed_at: string | null
           created_at: string
           current_run_id: string | null
@@ -465,6 +466,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archetype?: string | null
           confirmed_at?: string | null
           created_at?: string
           current_run_id?: string | null
@@ -483,6 +485,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archetype?: string | null
           confirmed_at?: string | null
           created_at?: string
           current_run_id?: string | null
