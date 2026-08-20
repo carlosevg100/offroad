@@ -1323,6 +1323,87 @@ begin
 end;
 $$;
 
+-- The month's ceiling refuses the next run and never the one in flight.
+--
+-- The two halves are equally load-bearing. A ceiling that let spending run is pointless; a
+-- ceiling that stopped a case halfway would be worse than no ceiling at all, because the
+-- company mid-analysis is the one least able to do anything about a limit it cannot see.
+do $$
+declare
+  org uuid := '20000000-0000-4000-8000-000000000001';
+  session_id uuid := '40000000-0000-4000-8000-0000000000f3';
+  doc_id uuid := '50000000-0000-4000-8000-0000000000f3';
+  path text;
+  first_run jsonb;
+  run_id uuid;
+  accepted boolean;
+  link text;
+begin
+  path := org::text || '/' || session_id::text || '/spend.pdf';
+  link := 'https://p.supabase.co/storage/v1/object/sign/opportunity-documents/' || path;
+
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+  insert into public.source_documents (
+    id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by
+  ) values (
+    doc_id, org, session_id, 'opportunity-documents', path, 'spend.pdf', repeat('5', 64), 10,
+    '10000000-0000-4000-8000-000000000001'
+  );
+
+  first_run := public.begin_processing_run(org, session_id, 'manual',
+    jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+  run_id := (first_run->>'processing_run_id')::uuid;
+
+  -- Put the month over the ceiling by recording what that run cost.
+  set local role postgres;
+  update public.processing_runs set model_cost_usd = 10000 where id = run_id;
+  set local role authenticated;
+
+  if private.month_spend_usd(org) < 10000 then
+    raise exception 'the month total does not see the run it is made of';
+  end if;
+
+  -- The run in flight keeps its status and its jobs. Nothing reaches back into it.
+  if (select status from public.processing_runs where id = run_id) <> 'queued' then
+    raise exception 'the ceiling changed the status of a run already in flight';
+  end if;
+  if (select count(*) from public.processing_jobs where processing_run_id = run_id) <> 1 then
+    raise exception 'the ceiling removed the jobs of a run already in flight';
+  end if;
+
+  -- The next run is refused, and leaves nothing behind.
+  accepted := true;
+  begin
+    perform public.begin_processing_run(org, session_id, 'manual',
+      jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'begin_processing_run started a run past the month ceiling'; end if;
+  if (select count(*) from public.processing_runs where intake_session_id = session_id) <> 1 then
+    raise exception 'a refused run left a row behind';
+  end if;
+
+  -- Raising the ceiling releases it again, so this is a limit and not a dead end.
+  set local role postgres;
+  update public.organizations set model_monthly_ceiling_usd = 20000 where id = org;
+  set local role authenticated;
+
+  perform public.begin_processing_run(org, session_id, 'manual',
+    jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+end;
+$$;
+
+-- And a tenant cannot raise its own ceiling. The update grant on `organizations` is stated
+-- column by column, so this holds for any column added later without anyone remembering to.
+do $$
+begin
+  if has_column_privilege('authenticated', 'public.organizations', 'model_monthly_ceiling_usd', 'update') then
+    raise exception 'a tenant can raise its own model spend ceiling';
+  end if;
+end;
+$$;
+
 set local role postgres;
 
 rollback;

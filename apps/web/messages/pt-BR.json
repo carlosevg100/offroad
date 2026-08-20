@@ -888,6 +888,7 @@
     "errors": {
       "documents": "Adicione pelo menos um documento para iniciar a análise.",
       "processing": "Não foi possível concluir o processamento. Seus arquivos continuam salvos; tente novamente.",
+      "capacity": "O limite de processamento deste mês foi atingido neste ambiente. Seus documentos continuam salvos e nada foi perdido; fale com a equipe Offroad para liberar a análise.",
       "confirmation": "Confirme os campos essenciais e a declaração final antes de criar o case.",
       "validation": "Revise o valor informado e tente novamente.",
       "session": "Não foi possível abrir a sessão documental.",

@@ -1880,6 +1880,7 @@ export type Database = {
           description: string | null
           id: string
           legal_name: string | null
+          model_monthly_ceiling_usd: number
           name: string
           organization_type: string
           pipeline_enabled: boolean
@@ -1899,6 +1900,7 @@ export type Database = {
           description?: string | null
           id?: string
           legal_name?: string | null
+          model_monthly_ceiling_usd?: number
           name: string
           organization_type: string
           pipeline_enabled?: boolean
@@ -1918,6 +1920,7 @@ export type Database = {
           description?: string | null
           id?: string
           legal_name?: string | null
+          model_monthly_ceiling_usd?: number
           name?: string
           organization_type?: string
           pipeline_enabled?: boolean
@@ -2041,6 +2044,8 @@ export type Database = {
           lease_expires_at: string | null
           leased_by: string | null
           max_attempts: number
+          model_calls: number
+          model_cost_usd: number
           organization_id: string
           payload: Json
           processing_run_id: string
@@ -2061,6 +2066,8 @@ export type Database = {
           lease_expires_at?: string | null
           leased_by?: string | null
           max_attempts?: number
+          model_calls?: number
+          model_cost_usd?: number
           organization_id: string
           payload?: Json
           processing_run_id: string
@@ -2081,6 +2088,8 @@ export type Database = {
           lease_expires_at?: string | null
           leased_by?: string | null
           max_attempts?: number
+          model_calls?: number
+          model_cost_usd?: number
           organization_id?: string
           payload?: Json
           processing_run_id?: string
@@ -2122,6 +2131,8 @@ export type Database = {
           error: Json | null
           id: string
           intake_session_id: string
+          model_calls: number
+          model_cost_usd: number
           organization_id: string
           pipeline_version: string
           run_no: number
@@ -2141,6 +2152,8 @@ export type Database = {
           error?: Json | null
           id?: string
           intake_session_id: string
+          model_calls?: number
+          model_cost_usd?: number
           organization_id: string
           pipeline_version: string
           run_no: number
@@ -2160,6 +2173,8 @@ export type Database = {
           error?: Json | null
           id?: string
           intake_session_id?: string
+          model_calls?: number
+          model_cost_usd?: number
           organization_id?: string
           pipeline_version?: string
           run_no?: number
