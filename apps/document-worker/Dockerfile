@@ -19,23 +19,18 @@ RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 
 WORKDIR /repo
 
-# Manifests first, so a change to source code does not re-resolve the dependency graph.
+# The whole workspace, then install. This used to copy each package's manifest by name, for
+# layer caching, and the list went stale the first time a package was added: the worker gained
+# a dependency, its manifest was not on the list, and the image failed to build on `main` —
+# after review, after merge, in the one place the Dockerfile is exercised. A list that must be
+# edited whenever the repository changes is a list that will be wrong. The cost is re-running
+# `install` when source changes; the benefit is an image that cannot be broken by adding a
+# package.
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json turbo.json ./
-COPY apps/document-worker/package.json apps/document-worker/
-COPY packages/credit-ontology/package.json packages/credit-ontology/
-COPY packages/document-intelligence/package.json packages/document-intelligence/
-COPY packages/document-parsers/package.json packages/document-parsers/
-COPY packages/model-gateway/package.json packages/model-gateway/
-COPY packages/domain-contracts/package.json packages/domain-contracts/
-COPY packages/financial-core/package.json packages/financial-core/
-COPY packages/evidence-compiler/package.json packages/evidence-compiler/
-COPY packages/matching-core/package.json packages/matching-core/
-COPY packages/testing-fixtures/package.json packages/testing-fixtures/
-
-RUN pnpm install --frozen-lockfile --filter @offroad/document-worker...
-
 COPY packages ./packages
 COPY apps/document-worker ./apps/document-worker
+
+RUN pnpm install --frozen-lockfile --filter @offroad/document-worker...
 
 # Two flags, each earning its place:
 #
