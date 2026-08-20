@@ -19,6 +19,7 @@ import {
   confirmWorkspaceDocumentIntake,
   createOpportunity,
   processWorkspaceDocumentIntake,
+  saveWorkspaceIntakeAnswer,
   setWorkspaceIntakeOperation,
   removeWorkspaceIntakeDocument,
   resolveWorkspaceIntakeIssue,
@@ -96,6 +97,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             processAction={processWorkspaceDocumentIntake}
             removeAction={removeWorkspaceIntakeDocument}
             session={review.session}
+            answerAction={saveWorkspaceIntakeAnswer}
             setOperationAction={setWorkspaceIntakeOperation}
             userId={userId}
           />

@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {documentKindSchema, resolveFieldPath} from "@offroad/credit-ontology";
 
 import {archetype, archetypes} from "./archetypes";
-import {assessSufficiency, nextStep} from "./sufficiency";
+import {assessSufficiency, missingByPurpose, nextStep} from "./sufficiency";
 import {archetypeIdSchema} from "./types";
 
 describe("playbook integrity", () => {
@@ -11,11 +11,43 @@ describe("playbook integrity", () => {
     // asked forever for a document the system cannot recognise.
     for (const definition of archetypes) {
       for (const requirement of definition.requirements) {
+        if (requirement.source === "information") {
+          expect(requirement.satisfiedBy).toHaveLength(0);
+          continue;
+        }
         expect(requirement.satisfiedBy.length).toBeGreaterThan(0);
         for (const kind of requirement.satisfiedBy) {
           expect(documentKindSchema.safeParse(kind).success).toBe(true);
         }
       }
+    }
+  });
+
+  it("asks for information as well as files, with the question and an example", () => {
+    // Nobody uploads a document that explains why now. A request that only asks for files
+    // leaves the qualitative half of the case to be discovered on a call with an investor.
+    for (const definition of archetypes) {
+      const information = definition.requirements.filter((requirement) => requirement.source === "information");
+      expect(information.length, definition.id).toBeGreaterThanOrEqual(6);
+      for (const requirement of information) {
+        expect(requirement.question?.pt.length, requirement.id).toBeGreaterThan(20);
+        expect(requirement.question?.en.length, requirement.id).toBeGreaterThan(20);
+        expect(requirement.example?.pt, requirement.id).toBeTruthy();
+        expect(requirement.answerFormat, requirement.id).toBeTruthy();
+      }
+    }
+  });
+
+  it("says what every item unblocks", () => {
+    for (const definition of archetypes) {
+      for (const requirement of definition.requirements) {
+        expect(requirement.purposes.length, `${definition.id}/${requirement.id}`).toBeGreaterThan(0);
+      }
+      // Storytelling is the purpose people forget, and the one that changes how much gets
+      // raised. Every operation asks for at least one thing that serves it.
+      const purposes = new Set(definition.requirements.flatMap((requirement) => requirement.purposes));
+      expect(purposes.has("storytelling"), definition.id).toBe(true);
+      expect(purposes.has("financials"), definition.id).toBe(true);
     }
   });
 
@@ -82,14 +114,18 @@ describe("sufficiency", () => {
   const growth = archetype("growth_expansion");
 
   it("answers the checklist from what was read, not from what was asked", () => {
-    const report = assessSufficiency("growth_expansion", [
-      {id: "d1", kind: "audited_financial_statements"},
-      {id: "d2", kind: "trial_balance"},
-      {id: "d3", kind: "debt_schedule"},
-      {id: "d4", kind: "company_registration"},
-      {id: "d5", kind: "capital_request_letter"},
-      {id: "d6", kind: "business_plan"},
-    ]);
+    const documents = [
+      {id: "d1", kind: "audited_financial_statements" as const},
+      {id: "d2", kind: "trial_balance" as const},
+      {id: "d3", kind: "debt_schedule" as const},
+      {id: "d4", kind: "company_registration" as const},
+      {id: "d5", kind: "capital_request_letter" as const},
+      {id: "d6", kind: "business_plan" as const},
+    ];
+    const answers = Object.fromEntries(
+      growth.requirements.filter((r) => r.source === "information" && r.level === "minimum").map((r) => [r.id, "respondido"]),
+    );
+    const report = assessSufficiency("growth_expansion", documents, answers);
     expect(report.minimum.complete).toBe(true);
     expect(report.ideal.complete).toBe(false);
     expect(report.missing.every((status) => status.requirement.level === "ideal")).toBe(true);
@@ -120,6 +156,24 @@ describe("sufficiency", () => {
     expect(report.requirements.find((s) => s.requirement.id === "debt_schedule")?.satisfied).toBe(true);
   });
 
+  it("counts an information item only when the company actually answered", () => {
+    const blank = assessSufficiency("growth_expansion", [], {info_why_now: "   "});
+    expect(blank.requirements.find((s) => s.requirement.id === "info_why_now")?.satisfied).toBe(false);
+
+    const answered = assessSufficiency("growth_expansion", [], {info_why_now: "Os pontos já estão contratados."});
+    const status = answered.requirements.find((s) => s.requirement.id === "info_why_now");
+    expect(status?.satisfied).toBe(true);
+    expect(status?.answer).toContain("contratados");
+  });
+
+  it("groups what is missing by what it unblocks", () => {
+    const grouped = missingByPurpose(assessSufficiency("growth_expansion", []));
+    // People close gaps faster when they can see which part of the outcome each one buys.
+    expect(grouped.financials.length).toBeGreaterThan(0);
+    expect(grouped.storytelling.length).toBeGreaterThan(0);
+    expect(grouped.investor_case.length).toBeGreaterThan(0);
+  });
+
   it("names one next step rather than eleven, and in the user's language", () => {
     const blocked = nextStep(assessSufficiency("growth_expansion", []), "pt");
     expect(blocked.state).toBe("blocked");
@@ -131,6 +185,7 @@ describe("sufficiency", () => {
         const kind = requirement.satisfiedBy[0];
         return kind ? [{id: `d${index}`, kind}] : [];
       }),
+      Object.fromEntries(growth.requirements.filter((r) => r.source === "information").map((r) => [r.id, "respondido"])),
     );
     expect(nextStep(complete, "en").state).toBe("priceable");
     expect(nextStep(complete, "pt").message).toContain("Pacote completo");

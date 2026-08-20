@@ -11,6 +11,7 @@ import {
   confirmIntakeCase,
   loadIntakeSession,
   processIntakeSession,
+  recordInformationAnswer as recordAnswer,
   setIntakeArchetype as setArchetype,
   removeIntakeDocument as removeDocument,
   resolveIntakeIssue as resolveIssue,
@@ -157,6 +158,13 @@ export async function setIntakeOperation(formData: FormData) {
   const locale = localeFrom(formData);
   const {runtime} = await onboardingIntakeRuntime(locale, formData);
   const outcome = await setArchetype(runtime, value(formData, "archetype"));
+  redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
+}
+
+export async function saveIntakeAnswer(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const outcome = await recordAnswer(runtime, {requirementId: value(formData, "requirement_id"), answer: value(formData, "answer")});
   redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
 }
 

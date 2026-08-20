@@ -37,6 +37,36 @@ export const requirementLevelSchema = z.enum(["minimum", "ideal"]);
 export type RequirementLevel = z.infer<typeof requirementLevelSchema>;
 
 /**
+ * What an item is *for*. Four purposes, because a company deserves to know which part of the
+ * work its effort unblocks — and because the four are genuinely different jobs.
+ *
+ *   - `investor_case` — an investor will ask for it, and its absence is a question mark on the
+ *     first call.
+ *   - `financials` — the spreads and the ratios cannot be built without it.
+ *   - `structure` — it sizes the operation or defines the security package.
+ *   - `storytelling` — it is what turns a set of numbers into a business a reader understands.
+ *     Underrated and usually missing: two identical credit profiles raise different amounts
+ *     depending on whether anyone can explain what the company does and why now.
+ */
+export const requirementPurposeSchema = z.enum(["investor_case", "financials", "structure", "storytelling"]);
+export type RequirementPurpose = z.infer<typeof requirementPurposeSchema>;
+
+/**
+ * How an item gets satisfied.
+ *
+ * `document` items are discharged by a file the pipeline classifies. `information` items are
+ * discharged by the company answering — a number, a date, a paragraph. A desk asks for both,
+ * and a request that only asks for files leaves the qualitative half of the case unwritten:
+ * nobody uploads a document that explains why now, who the customers are, or what happens if
+ * the biggest one leaves.
+ */
+export const requirementSourceSchema = z.enum(["document", "information"]);
+export type RequirementSource = z.infer<typeof requirementSourceSchema>;
+
+export const answerFormatSchema = z.enum(["text", "number", "date", "list", "currency", "percentage"]);
+export type AnswerFormat = z.infer<typeof answerFormatSchema>;
+
+/**
  * One thing the desk needs to see.
  *
  * `minimum` is the refusal line: without it the case cannot be opened, because no amount of
@@ -52,11 +82,22 @@ export type RequirementLevel = z.infer<typeof requirementLevelSchema>;
 export type Requirement = {
   id: string;
   level: RequirementLevel;
+  /** Empty for information items; the document kinds that discharge a document item. */
   satisfiedBy: readonly DocumentKind[];
   labels: {pt: string; en: string};
   rationale: {pt: string; en: string};
   /** True when one document of any listed kind is enough; false when the desk expects coverage of a period. */
   singleDocument: boolean;
+  /** What this item unblocks. At least one; usually two. */
+  purposes: readonly RequirementPurpose[];
+  /** A file, or an answer from the company. Defaults to `document` when omitted. */
+  source?: RequirementSource;
+  /** For information items: the shape of the answer expected. */
+  answerFormat?: AnswerFormat;
+  /** For information items: the question, phrased the way a banker would ask it. */
+  question?: {pt: string; en: string};
+  /** For information items: what a good answer looks like, so nobody guesses the format. */
+  example?: {pt: string; en: string};
 };
 
 /** What the desk reads first, and what it is reading for. */

@@ -9,6 +9,7 @@ import type {ArchetypeId} from "@offroad/credit-playbook";
 
 import {DocumentIntakeUploader} from "./document-intake-uploader";
 import {IntakeChecklist, IntakeOperation} from "./intake-checklist";
+import {IntakeGapPurposes, IntakeInformation} from "./intake-information";
 
 type Props = {
   locale: string;
@@ -27,13 +28,15 @@ type Props = {
   setOperationAction?: (formData: FormData) => Promise<void>;
   /** What the desk still needs, answered by what was read. Null until the operation is stated. */
   checklist?: Checklist | null;
+  /** Saves one information answer (`requirement_id`, `answer`, `session_id`, `locale`). */
+  answerAction?: (formData: FormData) => Promise<void>;
 };
 
 /**
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -66,6 +69,17 @@ export async function IntakeCollect({locale, session, documents, organizationId,
       ) : null}
 
       {setOperationAction ? <IntakeChecklist locale={locale} checklist={checklist ?? null} /> : null}
+
+      {checklist && answerAction ? (
+        <IntakeInformation
+          action={answerAction}
+          items={checklist.items.filter((item) => item.source === "information")}
+          locale={locale}
+          sessionId={session.id}
+        />
+      ) : null}
+
+      {checklist ? <IntakeGapPurposes locale={locale} missingByPurpose={checklist.missingByPurpose} /> : null}
 
       <DocumentIntakeUploader
         copy={{

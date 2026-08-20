@@ -6093,3 +6093,131 @@ button[disabled].workspace-search,
     grid-template-columns: 1fr;
   }
 }
+
+/* The half of the request that is not a file */
+.intake-information {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 18px;
+  padding-top: 20px;
+}
+
+.intake-information h4 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.intake-information > ul {
+  display: grid;
+  gap: 22px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.intake-information__head {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 20px 1fr;
+}
+
+.intake-information__head strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.intake-information__example {
+  color: var(--muted);
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.intake-information__example em,
+.intake-checklist__why em {
+  color: var(--ink-soft);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.intake-information__form {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr auto;
+  margin-left: 30px;
+  margin-top: 10px;
+}
+
+.intake-information__form textarea {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.92rem;
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+}
+
+.intake-information__form textarea:focus-visible {
+  border-color: var(--accent-bright);
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.intake-information li.is-satisfied .intake-information__form textarea {
+  background: var(--soft);
+}
+
+.intake-purposes {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  padding-top: 20px;
+}
+
+.intake-purposes h4 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.intake-purposes__grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.intake-purposes__cell {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+}
+
+.intake-purposes__cell strong {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.intake-purposes__cell ul {
+  color: var(--muted);
+  display: grid;
+  font-size: 0.85rem;
+  gap: 4px;
+  margin: 0;
+  padding-left: 16px;
+}
+
+.intake-purposes__empty {
+  color: var(--success);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .intake-information__form {
+    grid-template-columns: 1fr;
+    margin-left: 0;
+  }
+}

@@ -16,6 +16,7 @@ import type {Archetype, Requirement} from "./types";
 const commonMinimum: readonly Requirement[] = [
   {
     id: "financials_historical",
+    purposes: ["investor_case", "financials", "storytelling"],
     level: "minimum",
     satisfiedBy: ["audited_financial_statements", "reviewed_interim_statements", "management_accounts"],
     singleDocument: false,
@@ -27,6 +28,7 @@ const commonMinimum: readonly Requirement[] = [
   },
   {
     id: "financials_interim",
+    purposes: ["investor_case", "financials"],
     level: "minimum",
     satisfiedBy: ["trial_balance", "erp_export", "reviewed_interim_statements", "management_accounts"],
     singleDocument: false,
@@ -38,6 +40,7 @@ const commonMinimum: readonly Requirement[] = [
   },
   {
     id: "debt_schedule",
+    purposes: ["investor_case", "financials", "structure"],
     level: "minimum",
     satisfiedBy: ["debt_schedule", "loan_agreement", "debenture_indenture"],
     singleDocument: false,
@@ -49,6 +52,7 @@ const commonMinimum: readonly Requirement[] = [
   },
   {
     id: "corporate_identity",
+    purposes: ["investor_case", "structure"],
     level: "minimum",
     satisfiedBy: ["company_registration", "corporate_docs"],
     singleDocument: true,
@@ -60,6 +64,7 @@ const commonMinimum: readonly Requirement[] = [
   },
   {
     id: "request",
+    purposes: ["investor_case", "structure", "storytelling"],
     level: "minimum",
     satisfiedBy: ["capital_request_letter", "investor_deck", "cim", "business_plan"],
     singleDocument: true,
@@ -74,6 +79,7 @@ const commonMinimum: readonly Requirement[] = [
 const commonIdeal: readonly Requirement[] = [
   {
     id: "bank_statements",
+    purposes: ["financials"],
     level: "ideal",
     satisfiedBy: ["bank_statements", "open_finance_export"],
     singleDocument: false,
@@ -85,6 +91,7 @@ const commonIdeal: readonly Requirement[] = [
   },
   {
     id: "tax_clearance",
+    purposes: ["investor_case", "structure"],
     level: "ideal",
     satisfiedBy: ["tax_clearance"],
     singleDocument: false,
@@ -96,6 +103,7 @@ const commonIdeal: readonly Requirement[] = [
   },
   {
     id: "auditor_opinion",
+    purposes: ["investor_case", "financials"],
     level: "ideal",
     satisfiedBy: ["audited_financial_statements", "auditor_report_only"],
     singleDocument: true,
@@ -103,6 +111,153 @@ const commonIdeal: readonly Requirement[] = [
     rationale: {
       pt: "A ressalva é onde o auditor escreve o que a demonstração não mostra. É leitura obrigatória e costuma valer mais que a demonstração.",
       en: "The qualification is where the auditor writes what the statements do not show. It is required reading and often worth more than the statements.",
+    },
+  },
+];
+
+/**
+ * What the desk asks the company to *tell it* — the half of a data room that never arrives as
+ * a file.
+ *
+ * Nobody uploads a document that explains why now, who the customers are, what happens if the
+ * largest one leaves, or how long the last store took to mature. Those answers decide how the
+ * case reads and, often, whether it clears — and a request that only asks for files leaves
+ * them to be discovered on a call with an investor, which is the worst place to discover them.
+ *
+ * Each carries the question phrased the way a banker asks it, an example so nobody guesses the
+ * format, and what it unblocks.
+ */
+const commonInformation: readonly Requirement[] = [
+  {
+    id: "info_why_now",
+    level: "minimum",
+    satisfiedBy: [],
+    source: "information",
+    answerFormat: "text",
+    singleDocument: true,
+    purposes: ["investor_case", "storytelling"],
+    labels: {pt: "Por que agora", en: "Why now"},
+    question: {
+      pt: "Por que esta operação agora, e o que acontece se ela não sair nos próximos seis meses?",
+      en: "Why this operation now, and what happens if it does not close in the next six months?",
+    },
+    example: {
+      pt: "Ex.: os três pontos comerciais já estão contratados e as obras começam em março; sem o financiamento, a companhia perde os pontos e o depósito.",
+      en: "e.g. the three sites are already under contract and works start in March; without the financing the company loses the sites and the deposit.",
+    },
+    rationale: {
+      pt: "É a primeira pergunta de qualquer comitê. Uma resposta específica com data e consequência transforma um pedido genérico em uma operação com prazo — e é o que separa um case que anda de um que fica na pilha.",
+      en: "It is any committee's first question. A specific answer with a date and a consequence turns a generic request into an operation with a clock — and it is what separates a case that moves from one that sits in the pile.",
+    },
+  },
+  {
+    id: "info_business_model",
+    level: "minimum",
+    satisfiedBy: [],
+    source: "information",
+    answerFormat: "text",
+    singleDocument: true,
+    purposes: ["investor_case", "storytelling"],
+    labels: {pt: "O que a companhia faz e como ganha dinheiro", en: "What the company does and how it makes money"},
+    question: {
+      pt: "Descreva o negócio: o que vende, para quem, como cobra, e de onde vem a margem.",
+      en: "Describe the business: what it sells, to whom, how it charges, and where the margin comes from.",
+    },
+    example: {
+      pt: "Ex.: 12 supermercados de vizinhança no interior de SP, ticket médio de R$ 62, margem bruta de 29% vinda de private label e negociação de compra por volume.",
+      en: "e.g. 12 neighbourhood supermarkets in inland São Paulo, average basket R$ 62, 29% gross margin from private label and volume purchasing.",
+    },
+    rationale: {
+      pt: "Dois perfis de crédito idênticos captam valores diferentes conforme alguém consiga explicar o negócio. O investidor não financia uma planilha; financia uma operação que ele entende.",
+      en: "Two identical credit profiles raise different amounts depending on whether anyone can explain the business. An investor does not fund a spreadsheet; he funds an operation he understands.",
+    },
+  },
+  {
+    id: "info_customer_concentration",
+    level: "minimum",
+    satisfiedBy: [],
+    source: "information",
+    answerFormat: "list",
+    singleDocument: true,
+    purposes: ["investor_case", "financials", "structure"],
+    labels: {pt: "Concentração de clientes", en: "Customer concentration"},
+    question: {
+      pt: "Quais os cinco maiores clientes, a participação de cada um na receita e o prazo do contrato?",
+      en: "Who are the five largest customers, each one's share of revenue, and the term of each contract?",
+    },
+    example: {
+      pt: "Ex.: Cliente A 18% (contrato até 2028), Cliente B 11% (sem contrato), …",
+      en: "e.g. Customer A 18% (contract to 2028), Customer B 11% (no contract), …",
+    },
+    rationale: {
+      pt: "Concentração é o risco que mais derruba operação de médio porte no comitê. Declarada com contrato e prazo, vira um fato administrável; descoberta na diligência, vira desconfiança sobre tudo o mais.",
+      en: "Concentration is what most often sinks a mid-market operation at committee. Declared with contract and term it becomes a manageable fact; found in diligence it becomes distrust of everything else.",
+    },
+  },
+  {
+    id: "info_management",
+    level: "ideal",
+    satisfiedBy: [],
+    source: "information",
+    answerFormat: "list",
+    singleDocument: true,
+    purposes: ["investor_case", "storytelling"],
+    labels: {pt: "Quem toca o negócio", en: "Who runs the business"},
+    question: {
+      pt: "Quem são os executivos-chave, há quanto tempo estão na companhia e o que faziam antes?",
+      en: "Who are the key executives, how long have they been with the company, and what did they do before?",
+    },
+    example: {
+      pt: "Ex.: CFO há 6 anos, antes controller de rede com 40 lojas; fundador ainda opera comercial.",
+      en: "e.g. CFO for 6 years, previously controller of a 40-store chain; founder still runs commercial.",
+    },
+    rationale: {
+      pt: "Crédito de médio porte é decisão sobre gente tanto quanto sobre número. Um time que já operou algo maior muda a leitura de um plano de expansão.",
+      en: "Mid-market credit is a decision about people as much as about numbers. A team that has run something bigger changes how an expansion plan reads.",
+    },
+  },
+  {
+    id: "info_seasonality",
+    level: "ideal",
+    satisfiedBy: [],
+    source: "information",
+    answerFormat: "text",
+    singleDocument: true,
+    purposes: ["financials", "structure"],
+    labels: {pt: "Sazonalidade", en: "Seasonality"},
+    question: {
+      pt: "Quais são os meses mais fortes e mais fracos, e quanto varia o caixa entre eles?",
+      en: "Which are the strongest and weakest months, and how much does cash swing between them?",
+    },
+    example: {
+      pt: "Ex.: dezembro é 1,6x o mês médio; fevereiro e março consomem caixa; pico de necessidade em abril.",
+      en: "e.g. December runs 1.6x the average month; February and March consume cash; peak need in April.",
+    },
+    rationale: {
+      pt: "Sem sazonalidade declarada, um trimestre fraco parece deterioração. Com ela, o cronograma de amortização pode ser desenhado para não pedir caixa no pior mês do ano.",
+      en: "Without stated seasonality a weak quarter looks like deterioration. With it, the amortisation schedule can be drawn so it does not ask for cash in the worst month of the year.",
+    },
+  },
+  {
+    id: "info_related_parties",
+    level: "ideal",
+    satisfiedBy: [],
+    source: "information",
+    answerFormat: "text",
+    singleDocument: true,
+    purposes: ["investor_case", "financials"],
+    labels: {pt: "Partes relacionadas", en: "Related parties"},
+    question: {
+      pt: "Há operações com partes relacionadas — aluguel de imóvel dos sócios, mútuo, compra de coligada? Quais e de quanto?",
+      en: "Are there related-party transactions — property rented from the owners, intercompany loans, purchases from an affiliate? Which, and how much?",
+    },
+    example: {
+      pt: "Ex.: aluguel de três lojas de imóveis dos sócios, R$ 180 mil/mês, contratos até 2030.",
+      en: "e.g. three stores rented from properties owned by the shareholders, R$ 180k/month, contracts to 2030.",
+    },
+    rationale: {
+      pt: "Parte relacionada não é problema; parte relacionada não declarada é. Ela muda EBITDA normalizado e aparece na diligência de qualquer forma.",
+      en: "A related party is not a problem; an undeclared one is. It changes normalised EBITDA and surfaces in diligence anyway.",
     },
   },
 ];
@@ -119,6 +274,7 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "project_plan",
+    purposes: ["investor_case", "financials", "structure", "storytelling"],
         level: "minimum",
         satisfiedBy: ["business_plan", "financial_model", "project_memorandum", "budget"],
         singleDocument: true,
@@ -129,8 +285,54 @@ export const archetypes: readonly Archetype[] = [
         },
       },
       ...commonIdeal,
+      ...commonInformation,
+      {
+        id: "info_ramp_history",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "text",
+        singleDocument: true,
+        purposes: ["investor_case", "financials", "structure"],
+        labels: {pt: "Curva das unidades já abertas", en: "Curve of units already opened"},
+        question: {
+          pt: "Qual foi a receita mensal das duas últimas unidades abertas, do mês 1 ao mês 24?",
+          en: "What was the monthly revenue of the last two units opened, from month 1 to month 24?",
+        },
+        example: {
+          pt: "Ex.: loja de Ribeirão abriu em 03/2024: R$ 310 mil no mês 1, R$ 780 mil no mês 12, estabilizou em R$ 1,05 mi no mês 18.",
+          en: "e.g. the Ribeirão store opened 03/2024: R$ 310k in month 1, R$ 780k in month 12, stabilised at R$ 1.05m in month 18.",
+        },
+        rationale: {
+          pt: "É a premissa mais frágil de qualquer expansão e a que o comitê testa primeiro. Com histórico comparável, o ramp-up projetado deixa de ser opinião; sem ele, a projeção inteira fica em aberto.",
+          en: "It is the most fragile assumption in any expansion and the first thing a committee tests. With comparable history the projected ramp stops being an opinion; without it the whole projection is open.",
+        },
+      },
+      {
+        id: "info_capex_actual",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "currency",
+        singleDocument: true,
+        purposes: ["financials", "structure"],
+        labels: {pt: "Custo real da última unidade", en: "Actual cost of the last unit"},
+        question: {
+          pt: "Quanto custou, de fato, abrir a última unidade, e o que ficou fora do orçamento original?",
+          en: "What did the last unit actually cost to open, and what fell outside the original budget?",
+        },
+        example: {
+          pt: "Ex.: orçado R$ 12,0 mi, realizado R$ 14,6 mi; estouro em obra civil e equipamento de frios.",
+          en: "e.g. budgeted R$ 12.0m, actual R$ 14.6m; overrun in civil works and refrigeration.",
+        },
+        rationale: {
+          pt: "Capex projetado sem confronto com o realizado é a segunda premissa que mais quebra. A diferença entre orçado e realizado na última obra é o melhor indicador de contingência para a próxima.",
+          en: "Projected capex never checked against actuals is the second assumption that most often breaks. The gap between budget and outturn on the last build is the best contingency indicator for the next.",
+        },
+      },
       {
         id: "unit_economics",
+    purposes: ["investor_case", "financials", "storytelling"],
         level: "ideal",
         satisfiedBy: ["management_accounts", "financial_model", "business_plan"],
         singleDocument: false,
@@ -142,6 +344,7 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "project_schedule",
+    purposes: ["structure", "storytelling"],
         level: "ideal",
         satisfiedBy: ["project_memorandum", "technical_report", "budget"],
         singleDocument: true,
@@ -153,6 +356,7 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "appraisal",
+    purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["appraisal_report", "collateral_inventory"],
         singleDocument: false,
@@ -281,6 +485,7 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "revenue_evidence",
+    purposes: ["financials", "storytelling"],
         level: "minimum",
         satisfiedBy: ["erp_export", "management_accounts", "trial_balance"],
         singleDocument: false,
@@ -291,8 +496,51 @@ export const archetypes: readonly Archetype[] = [
         },
       },
       ...commonIdeal,
+      ...commonInformation,
+      {
+        id: "info_assigned_receivables",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "text",
+        singleDocument: true,
+        purposes: ["structure", "financials"],
+        labels: {pt: "Recebíveis já cedidos", en: "Receivables already assigned"},
+        question: {
+          pt: "Que parcela dos recebíveis já está cedida ou vinculada, e a quais credores?",
+          en: "What share of receivables is already assigned or pledged, and to which creditors?",
+        },
+        example: {
+          pt: "Ex.: 40% do faturamento de cartão cedido ao Banco X até 06/2027; duplicatas livres.",
+          en: "e.g. 40% of card receivables assigned to Bank X until 06/2027; trade receivables unencumbered.",
+        },
+        rationale: {
+          pt: "O recebível é a garantia natural desta operação. Se já está cedido, a estrutura muda inteira — e descobrir isso na diligência custa semanas.",
+          en: "The receivable is this operation's natural collateral. If it is already assigned the structure changes entirely, and finding that out in diligence costs weeks.",
+        },
+      },
+      {
+        id: "info_cash_cycle",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "number",
+        singleDocument: true,
+        purposes: ["financials", "structure"],
+        labels: {pt: "Prazos de recebimento, estoque e pagamento", en: "Receivable, inventory and payable days"},
+        question: {
+          pt: "Em dias: quanto a companhia leva para receber, quanto tempo o estoque gira e em quanto paga fornecedores?",
+          en: "In days: how long to collect, how long inventory turns, and how long to pay suppliers?",
+        },
+        example: {pt: "Ex.: recebe em 38, estoque gira em 52, paga em 41 — ciclo de 49 dias.", en: "e.g. collects in 38, inventory turns in 52, pays in 41 — a 49-day cycle."},
+        rationale: {
+          pt: "O ciclo define o tamanho certo da linha. Pedido acima do ciclo é dívida estrutural com nome de giro, e um financiador experiente identifica isso na primeira conversa.",
+          en: "The cycle defines the right size of the facility. A request larger than the cycle is structural debt wearing a working-capital label, and an experienced lender spots it on the first call.",
+        },
+      },
       {
         id: "receivables_aging",
+    purposes: ["financials", "structure"],
         level: "ideal",
         satisfiedBy: ["receivables_aging"],
         singleDocument: false,
@@ -304,6 +552,7 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "payables_aging",
+    purposes: ["financials"],
         level: "ideal",
         satisfiedBy: ["payables_aging"],
         singleDocument: false,
@@ -315,6 +564,7 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "customer_contracts",
+    purposes: ["investor_case", "structure", "storytelling"],
         level: "ideal",
         satisfiedBy: ["customer_contract"],
         singleDocument: false,
@@ -431,6 +681,7 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "debt_contracts",
+    purposes: ["structure"],
         level: "minimum",
         satisfiedBy: ["loan_agreement", "debenture_indenture", "debt_schedule"],
         singleDocument: false,
@@ -441,8 +692,29 @@ export const archetypes: readonly Archetype[] = [
         },
       },
       ...commonIdeal,
+      ...commonInformation,
+      {
+        id: "info_prepayment",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "text",
+        singleDocument: true,
+        purposes: ["structure", "financials"],
+        labels: {pt: "Multas e condições de pré-pagamento", en: "Prepayment penalties and conditions"},
+        question: {
+          pt: "Para cada dívida a ser liquidada: qual a multa de pré-pagamento e sob que condições cada credor libera as garantias?",
+          en: "For each debt being repaid: what is the prepayment penalty, and under what conditions does each creditor release its collateral?",
+        },
+        example: {pt: "Ex.: Banco Y cobra 2% sobre o saldo e libera a alienação em 30 dias após a quitação.", en: "e.g. Bank Y charges 2% on the balance and releases the lien 30 days after repayment."},
+        rationale: {
+          pt: "É o que decide se a operação faz sentido econômico. Multa não considerada come a economia de custo que justificava o refinanciamento.",
+          en: "It decides whether the operation makes economic sense. An unaccounted penalty eats the cost saving that justified the refinancing.",
+        },
+      },
       {
         id: "collateral_release",
+    purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["collateral_inventory", "loan_agreement"],
         singleDocument: false,
@@ -454,6 +726,7 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "waivers",
+    purposes: ["investor_case", "structure"],
         level: "ideal",
         satisfiedBy: ["loan_agreement", "regulatory_filing", "corporate_docs"],
         singleDocument: false,
@@ -563,6 +836,7 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "target_financials",
+    purposes: ["investor_case", "financials"],
         level: "minimum",
         satisfiedBy: ["audited_financial_statements", "reviewed_interim_statements", "management_accounts", "trial_balance"],
         singleDocument: false,
@@ -574,6 +848,7 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "transaction_documents",
+    purposes: ["investor_case", "structure", "storytelling"],
         level: "minimum",
         satisfiedBy: ["corporate_docs", "capital_request_letter", "cim"],
         singleDocument: true,
@@ -584,8 +859,29 @@ export const archetypes: readonly Archetype[] = [
         },
       },
       ...commonIdeal,
+      ...commonInformation,
+      {
+        id: "info_synergies",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "list",
+        singleDocument: true,
+        purposes: ["investor_case", "financials", "storytelling"],
+        labels: {pt: "Sinergias com plano e responsável", en: "Synergies with a plan and an owner"},
+        question: {
+          pt: "Para cada sinergia projetada: qual o valor, o plano para capturá-la, o prazo e quem responde por ela?",
+          en: "For each projected synergy: the amount, the plan to capture it, the deadline, and who owns it.",
+        },
+        example: {pt: "Ex.: R$ 4,2 mi/ano em compras, renegociando 60% do volume em 90 dias — responsável: diretor comercial.", en: "e.g. R$ 4.2m/year in purchasing, renegotiating 60% of volume in 90 days — owner: commercial director."},
+        rationale: {
+          pt: "Sinergia sem plano não entra na base do covenant, e sinergia que entra sem plano faz o covenant nascer quebrado. A diferença entre as duas é esta resposta.",
+          en: "A synergy with no plan does not enter the covenant base, and one that enters without a plan makes the covenant start already breached. This answer is the difference.",
+        },
+      },
       {
         id: "due_diligence",
+    purposes: ["investor_case", "structure"],
         level: "ideal",
         satisfiedBy: ["technical_report", "auditor_report_only", "tax_clearance"],
         singleDocument: false,
@@ -597,6 +893,7 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "post_structure",
+    purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["corporate_docs"],
         singleDocument: true,
@@ -716,6 +1013,7 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "equipment_quote",
+    purposes: ["financials", "structure"],
         level: "minimum",
         satisfiedBy: ["budget", "supplier_contract", "project_memorandum", "technical_report"],
         singleDocument: true,
@@ -726,8 +1024,29 @@ export const archetypes: readonly Archetype[] = [
         },
       },
       ...commonIdeal,
+      ...commonInformation,
+      {
+        id: "info_asset_productivity",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "text",
+        singleDocument: true,
+        purposes: ["financials", "structure", "storytelling"],
+        labels: {pt: "O que o equipamento muda na operação", en: "What the equipment changes in the operation"},
+        question: {
+          pt: "Qual capacidade, custo ou receita muda com este equipamento, e em quanto tempo depois da instalação?",
+          en: "What capacity, cost or revenue changes with this equipment, and how long after installation?",
+        },
+        example: {pt: "Ex.: substitui terceirização de corte, economia de R$ 95 mil/mês a partir do segundo mês.", en: "e.g. replaces outsourced cutting, saving R$ 95k/month from the second month."},
+        rationale: {
+          pt: "É o que responde se o ativo se paga sozinho ou se a operação depende do resto da empresa — e é a diferença entre financiar um ativo e financiar um balanço.",
+          en: "It answers whether the asset pays for itself or the operation leans on the rest of the company — the difference between financing an asset and financing a balance sheet.",
+        },
+      },
       {
         id: "equipment_appraisal",
+    purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["appraisal_report"],
         singleDocument: false,
@@ -739,6 +1058,7 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "insurance",
+    purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["insurance_policy"],
         singleDocument: false,
@@ -832,7 +1152,7 @@ export const archetypes: readonly Archetype[] = [
       pt: "Operação que não se encaixa nos arquétipos acima. O desk pede o mínimo comum e pergunta o resto.",
       en: "An operation that does not fit the archetypes above. The desk asks for the common minimum and asks about the rest.",
     },
-    requirements: [...commonMinimum, ...commonIdeal],
+    requirements: [...commonMinimum, ...commonIdeal, ...commonInformation],
     focus: [
       {
         id: "generation_vs_service",

@@ -922,7 +922,19 @@
       "whyItMatters": "Why it matters",
       "emptyBody": "Choose the operation above so the desk can build the list of what it needs.",
       "unmatched": "{count} uploaded document(s) match no item on the list — the desk reads them anyway.",
-      "recognizedAs": "Recognised as"
+      "recognizedAs": "Recognised as",
+      "documentsTitle": "Documents",
+      "informationTitle": "Information about the company and the operation",
+      "answerPlaceholder": "Write the answer",
+      "answerSave": "Save",
+      "answered": "Answered",
+      "example": "Example",
+      "purposeTitle": "What each pending item unblocks",
+      "purpose_investor_case": "The investor case",
+      "purpose_financials": "Building the financials",
+      "purpose_structure": "The operation's structure",
+      "purpose_storytelling": "The business narrative",
+      "purposeEmpty": "Nothing pending here."
     }
   }
 }

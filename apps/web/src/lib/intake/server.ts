@@ -12,6 +12,7 @@ import {parseList, parseLocalizedNumber} from "./format";
 import {pipelineEnabledFor, startProcessingRun} from "./pipeline-run";
 import {reconcileIntakeSession} from "./reconcile";
 import {parseArchetype} from "./checklist";
+import {archetype} from "@offroad/credit-playbook";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 
 /**
@@ -144,6 +145,62 @@ export async function setIntakeArchetype(runtime: IntakeRuntime, raw: string): P
     .eq("id", runtime.sessionId);
   if (error) {
     logIntakeFailure("set_archetype", error);
+    return fail(intakeErrorFrom(error, "save"));
+  }
+  return ok(null);
+}
+
+/**
+ * Records one answer to the information request.
+ *
+ * Validated against the archetype's own list rather than trusted from the form: an answer to a
+ * requirement this operation never asked for is not an answer, it is a stray write. And an
+ * empty answer deletes rather than storing a blank, so the item goes honestly back to pending
+ * instead of looking closed with nothing in it.
+ */
+export async function recordInformationAnswer(runtime: IntakeRuntime, input: {requirementId: string; answer: string}): Promise<IntakeOutcome> {
+  const {supabase, organizationId, sessionId, userId} = runtime;
+
+  const {data: session} = await supabase
+    .from("document_intake_sessions")
+    .select("archetype")
+    .eq("organization_id", organizationId)
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  const archetypeId = parseArchetype(session?.archetype);
+  if (!archetypeId) return fail("validation");
+
+  const known = archetype(archetypeId).requirements.some(
+    (requirement) => requirement.id === input.requirementId && requirement.source === "information",
+  );
+  if (!known) return fail("validation");
+
+  const answer = input.answer.trim();
+  if (!answer) {
+    const {error} = await supabase
+      .from("intake_information_answers")
+      .delete()
+      .eq("organization_id", organizationId)
+      .eq("intake_session_id", sessionId)
+      .eq("requirement_id", input.requirementId);
+    return error ? fail(intakeErrorFrom(error, "save")) : ok(null);
+  }
+
+  const {error} = await supabase
+    .from("intake_information_answers")
+    .upsert(
+      {
+        organization_id: organizationId,
+        intake_session_id: sessionId,
+        requirement_id: input.requirementId,
+        answer,
+        answered_by: userId,
+      },
+      {onConflict: "organization_id,intake_session_id,requirement_id"},
+    );
+  if (error) {
+    logIntakeFailure("record_answer", error);
     return fail(intakeErrorFrom(error, "save"));
   }
   return ok(null);
