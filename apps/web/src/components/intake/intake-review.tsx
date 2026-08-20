@@ -26,6 +26,34 @@ const HIGH_CONFIDENCE = 0.85;
  * Assisted review of extracted candidates: accept / edit / reject / N/A per field, open issues,
  * evidence links and the final confirmation. Every string comes from the `Intake` catalog.
  */
+
+/**
+ * Reads the evidence off an issue without trusting its shape.
+ *
+ * The column is jsonb and the writer is the only thing that shapes it, so a reader that assumed
+ * the shape would break the review screen the next time the writer changed. It returns an empty
+ * list for anything it does not recognise, which renders as no evidence rather than as a crash.
+ */
+type IssueEvidence = {label: string; value?: string; sourceDocument?: string};
+
+function issueEvidence(raw: unknown): IssueEvidence[] {
+  if (!raw || typeof raw !== "object") return [];
+  const items = (raw as {items?: unknown}).items;
+  if (!Array.isArray(items)) return [];
+  return items.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const entry = item as Record<string, unknown>;
+    if (typeof entry.label !== "string") return [];
+    return [
+      {
+        label: entry.label,
+        ...(typeof entry.value === "string" ? {value: entry.value} : {}),
+        ...(typeof entry.sourceDocument === "string" ? {sourceDocument: entry.sourceDocument} : {}),
+      },
+    ];
+  });
+}
+
 export async function IntakeReview({locale, session, documents, candidates, issues, actions, manualHref, caseState}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.review"});
   const documentById = new Map(documents.map((document) => [document.id, document]));
@@ -71,7 +99,25 @@ export async function IntakeReview({locale, session, documents, candidates, issu
             {openIssues.map((issue) => (
               <article className={`priority-${issue.priority}`} key={issue.id}>
                 <span>{priorityLabel(issue.priority)}</span>
-                <div><strong>{issue.title}</strong><p>{issue.description}</p>{issue.resolution_hint ? <small>{issue.resolution_hint}</small> : null}</div>
+                <div>
+                  <strong>{issue.title}</strong>
+                  <p>{issue.description}</p>
+                  {/* An exception exists to put both sides of a disagreement in front of the
+                      reviewer. Rendering only the description leaves them to trust it, which is
+                      the opposite of the point. */}
+                  {issueEvidence(issue.evidence).length > 0 ? (
+                    <ul className="intake-issues__evidence">
+                      {issueEvidence(issue.evidence).map((entry, index) => (
+                        <li key={`${entry.label}-${index}`}>
+                          <span>{entry.label}</span>
+                          {entry.value ? <strong>{entry.value}</strong> : null}
+                          {entry.sourceDocument ? <small>{entry.sourceDocument}</small> : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {issue.resolution_hint ? <small>{issue.resolution_hint}</small> : null}
+                </div>
                 <form action={actions.resolve}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><input name="issue_id" type="hidden" value={issue.id} /><button name="issue_status" type="submit" value="resolved">{t("markReviewed")}</button></form>
               </article>
             ))}
