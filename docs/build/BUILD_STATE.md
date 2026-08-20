@@ -69,4 +69,16 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
   - [x] worker extrai de verdade: estágio E3 no pipeline, `worker_record_candidates` (migration `20260820104922`) grava candidato com âncora, quote e flags, e `worker_complete_job` move a sessão para `review_ready` quando o último job termina — sem isso a jornada acabava num spinner
   - [ ] tela de processamento por etapas (Realtime) e aba Documentos com índice organizado
 
+## Estado corrente (20/08/2026)
+
+A linha do pipeline está ligada de ponta a ponta: empresa envia documentos → app assina os
+links e abre a run → worker baixa, escaneia, parseia, classifica, **extrai com citação
+verificada** e grava os candidatos → o último job move a sessão para `review_ready` → a tela de
+revisão mostra os fatos com âncora. Nenhum passo é fixture. Qualidade medida sobre documentos
+reais: **recall material 75,4%, precisão 79,0%, ~US$ 2,50/caso** (gate: 90/98).
+
+Handoff completo, incluindo como testar o fluxo e o que falta:
+[`HANDOFF_2026-08-20.md`](HANDOFF_2026-08-20.md). Alvo do produto e plano por fases:
+[`DCM_DESK_DE_PARA.md`](DCM_DESK_DE_PARA.md).
+
 Produção canônica: `https://offroad.capital`
