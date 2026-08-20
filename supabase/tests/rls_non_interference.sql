@@ -355,8 +355,11 @@ begin
     raise exception 'tenant B can read tenant A intake sessions';
   end if;
 
+  -- Written through a column the tenant is still allowed to write. `status` would now fail on
+  -- the grant before RLS ever ran, and this block is asserting isolation between tenants, not
+  -- the column grants: it has to reach the policy to prove the policy holds.
   update public.document_intake_sessions
-  set status = 'cancelled'
+  set requested_amount = 1
   where id = '40000000-0000-4000-8000-000000000001';
   get diagnostics affected_rows = row_count;
   if affected_rows <> 0 then
@@ -1401,6 +1404,108 @@ begin
   if has_column_privilege('authenticated', 'public.organizations', 'model_monthly_ceiling_usd', 'update') then
     raise exception 'a tenant can raise its own model spend ceiling';
   end if;
+end;
+$$;
+
+-- The session's state machine is not writable by the company whose session it is.
+--
+-- `status` is the precondition every intake command reads: `begin_processing_run`,
+-- `complete_intake_processing` and `confirm_document_intake` all refuse a confirmed session. A
+-- member who could PATCH the column could skip the confirmation command entirely, or set a
+-- confirmed case back to `collecting` and reopen something already sent. The same grant covered
+-- `pipeline_version` (which extractor produced this evidence) and `result_summary` (the
+-- readiness, the capacity, the term sheet and the brief).
+do $$
+declare
+  org uuid := '20000000-0000-4000-8000-000000000001';
+  session_id uuid := '40000000-0000-4000-8000-0000000000f4';
+  accepted boolean;
+begin
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+
+  -- What the company answers about itself stays its own to change.
+  update public.document_intake_sessions
+  set requested_amount = 40000000, requested_term_months = 48, sector = 'varejo', archetype = null
+  where organization_id = org and id = session_id;
+
+  accepted := true;
+  begin
+    update public.document_intake_sessions set status = 'confirmed'
+    where organization_id = org and id = session_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'a tenant can write its own session status'; end if;
+
+  accepted := true;
+  begin
+    update public.document_intake_sessions set pipeline_version = 'not-what-ran'
+    where organization_id = org and id = session_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'a tenant can rewrite which extractor produced its evidence'; end if;
+
+  accepted := true;
+  begin
+    update public.document_intake_sessions set result_summary = '{"brief": "forged"}'::jsonb
+    where organization_id = org and id = session_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'a tenant can author its own analysis'; end if;
+
+  accepted := true;
+  begin
+    update public.document_intake_sessions set confirmed_at = now(), opportunity_id = gen_random_uuid()
+    where organization_id = org and id = session_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'a tenant can confirm its own session without the command'; end if;
+
+  -- The analysis command merges rather than replaces, so two writers cannot drop each other's
+  -- keys the way the read-modify-write in the application could.
+  perform public.record_intake_analysis(org, session_id, '{"readiness": {"score": 1}}'::jsonb);
+  perform public.record_intake_analysis(org, session_id, '{"case_run": "abc"}'::jsonb);
+  if (select count(*) from jsonb_object_keys(
+        (select result_summary from public.document_intake_sessions where id = session_id)) as k) <> 2 then
+    raise exception 'record_intake_analysis replaced the summary instead of merging into it';
+  end if;
+end;
+$$;
+
+-- And a confirmed case is closed. Once it has been sent, nobody rewrites the analysis that went
+-- with it, which is the half of a terminal state that actually matters.
+do $$
+declare
+  org uuid := '20000000-0000-4000-8000-000000000001';
+  session_id uuid := '40000000-0000-4000-8000-0000000000f5';
+  opportunity_id uuid;
+  accepted boolean;
+begin
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+
+  opportunity_id := public.create_opportunity_intake(
+    org, 'Terminal SA', 'varejo', 'capital de giro', 40000000, 'BRL', 48, 'pt-BR');
+
+  -- The manual path's confirmation: one command where the application used to do three writes.
+  perform public.attach_intake_session_to_opportunity(org, session_id, opportunity_id);
+  if (select status from public.document_intake_sessions where id = session_id) <> 'confirmed' then
+    raise exception 'attach_intake_session_to_opportunity did not confirm the session';
+  end if;
+
+  accepted := true;
+  begin
+    perform public.record_intake_analysis(org, session_id, '{"brief": "rewritten after sending"}'::jsonb);
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'the analysis of a confirmed case was rewritten'; end if;
+
+  accepted := true;
+  begin
+    perform public.fail_intake_session(org, session_id, 'retroactive failure');
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'a confirmed case was failed retroactively'; end if;
 end;
 $$;
 

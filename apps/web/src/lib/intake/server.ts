@@ -114,18 +114,14 @@ async function ensureReconciled(runtime: IntakeRuntime): Promise<void> {
     return;
   }
 
-  const {data: updated} = await supabase
-    .from("document_intake_sessions")
-    .select("result_summary")
-    .eq("organization_id", organizationId)
-    .eq("id", sessionId)
-    .maybeSingle();
-
-  await supabase
-    .from("document_intake_sessions")
-    .update({result_summary: {...((updated?.result_summary ?? {}) as Record<string, Json>), reconciled_run: session.current_run_id} as Json})
-    .eq("organization_id", organizationId)
-    .eq("id", sessionId);
+  // The merge happens in the database rather than here. Reading the summary, spreading it and
+  // writing it back is a read-modify-write, and two of these running at once dropped each
+  // other's keys; the command merges with `||` in one statement instead.
+  await supabase.rpc("record_intake_analysis", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_patch: {reconciled_run: session.current_run_id} as unknown as Json,
+  });
 }
 
 /**
@@ -235,7 +231,13 @@ export async function startIntakeSession(input: {supabase: SupabaseClient<Databa
 }
 
 async function markSessionFailed(runtime: IntakeRuntime, reason: string) {
-  await runtime.supabase.from("document_intake_sessions").update({status: "failed", processing_completed_at: new Date().toISOString(), result_summary: {error: reason}}).eq("organization_id", runtime.organizationId).eq("id", runtime.sessionId);
+  // `status` is the precondition every intake command reads, so it is not writable through the
+  // Data API. The command refuses to fail a case that was already confirmed and sent.
+  await runtime.supabase.rpc("fail_intake_session", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+    p_reason: reason,
+  });
 }
 
 /**

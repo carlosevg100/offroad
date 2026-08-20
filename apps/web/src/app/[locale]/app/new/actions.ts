@@ -157,11 +157,14 @@ export async function createOpportunity(formData: FormData) {
   const sessionId = value(formData, "session_id");
   if (sessionId) {
     // Manual completion after a document session: keep the uploaded files attached to the new case.
-    const {data: session} = await supabase.from("document_intake_sessions").select("id").eq("organization_id", organization.id).eq("id", sessionId).maybeSingle();
-    if (session) {
-      await supabase.from("source_documents").update({opportunity_id: data}).eq("organization_id", organization.id).eq("intake_session_id", sessionId);
-      await supabase.from("document_intake_sessions").update({status: "confirmed", opportunity_id: data, confirmed_at: new Date().toISOString()}).eq("organization_id", organization.id).eq("id", sessionId);
-    }
+    // One command instead of three writes. Linking the documents, confirming the session and
+    // stamping the time used to be three separate statements, and a failure between any two of
+    // them left documents belonging to an opportunity the session did not admit to.
+    await supabase.rpc("attach_intake_session_to_opportunity", {
+      p_organization_id: organization.id,
+      p_session_id: sessionId,
+      p_opportunity_id: data,
+    });
   }
   redirect(`/${locale}/app/opportunities/${data}`);
 }
