@@ -57,6 +57,9 @@ importers:
       '@offroad/case-materials':
         specifier: workspace:*
         version: link:../../packages/case-materials
+      '@offroad/case-render':
+        specifier: workspace:*
+        version: link:../../packages/case-render
       '@offroad/case-understanding':
         specifier: workspace:*
         version: link:../../packages/case-understanding
@@ -166,6 +169,16 @@ importers:
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+
+  packages/case-render:
+    dependencies:
+      '@offroad/case-materials':
+        specifier: workspace:*
+        version: link:../case-materials
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
