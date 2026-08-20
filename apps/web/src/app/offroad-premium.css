@@ -6851,3 +6851,47 @@ button[disabled].workspace-search,
   font-style: normal;
   line-height: 1.45;
 }
+
+/* A term the company asked for, against what the analysis supports */
+.case-terms__origin {
+  border-radius: 2px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.case-terms__origin--requested {
+  background: var(--signal-soft);
+  color: var(--signal);
+}
+
+.case-terms__origin--proposed {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.case-terms li.is-divergent {
+  border-left: 2px solid var(--signal);
+  padding-left: 12px;
+}
+
+.case-terms__divergence {
+  display: grid;
+  gap: 4px;
+  margin-top: 7px;
+}
+
+.case-terms__asked {
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+}
+
+.case-terms__divergence > span:last-child {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  max-width: 70ch;
+}

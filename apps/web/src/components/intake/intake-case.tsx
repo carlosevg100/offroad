@@ -125,13 +125,29 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
           <h3>{t("termsTitle")}</h3>
           <ul>
             {termSheet.terms.map((term) => (
-              <li key={term.id}>
+              <li className={term.divergence ? "is-divergent" : ""} key={term.id}>
                 <strong>{term.labels[lang]}</strong>
                 <span className="case-terms__value">{term.value[lang]}</span>
+                {/* Requested or proposed changes what the sentence beside the number has to do,
+                    so the reader is told which it is before reading the reason. */}
+                <span className={`case-terms__origin case-terms__origin--${term.origin}`}>
+                  {t(`origin_${term.origin}`)}
+                </span>
                 <span className="case-terms__basis">
                   {t("termBasis")}: {term.basis}
                 </span>
                 <span className="case-terms__why">{term.rationale[lang]}</span>
+                {/* The disagreement, with both sides. A term sheet that quietly replaces a
+                    company's number teaches it nothing and ambushes it in the first meeting
+                    where somebody asks why the figure changed. */}
+                {term.divergence ? (
+                  <div className="case-terms__divergence">
+                    <span className="case-terms__asked">
+                      {t("youAskedFor")}: <strong>{term.divergence.requested[lang]}</strong>
+                    </span>
+                    <span>{term.divergence.reason[lang]}</span>
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>

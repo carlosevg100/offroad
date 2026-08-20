@@ -85,6 +85,7 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("#brief-grace").fill("12");
     await page.locator("#brief-sector").fill("varejo alimentar");
     await page.locator("#brief-geography").fill("sp");
+    await page.locator("#brief-rate").fill("CDI + 4");
     await page.locator("#collateral-recebiveis").check();
     await page.locator("#collateral-imovel").check();
     await page.locator(".intake-brief__form button[type=submit]").click();
@@ -93,6 +94,7 @@ test.describe("Document-first intake (company journey)", () => {
     // It came back as a number the desk can compute with, and the state was normalised.
     await expect(page.locator("#brief-amount")).toHaveValue("45.000.000");
     await expect(page.locator("#brief-geography")).toHaveValue("SP");
+    await expect(page.locator("#brief-rate")).toHaveValue("CDI + 4");
     await expect(page.locator("#collateral-recebiveis")).toBeChecked();
     await expect(page.locator("#collateral-imovel")).toBeChecked();
     // Nothing was invented for the question nobody is expected to answer.

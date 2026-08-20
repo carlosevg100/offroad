@@ -6,6 +6,8 @@ import {assessCapacity, buildTermSheet, type CapacityAssessment, type Indicative
 import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@offroad/reconciliation";
 import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter} from "@offroad/model-gateway";
 
+import {dealBriefOf} from "./deal-brief";
+
 import type {Database, Json} from "@/types/database";
 
 /**
@@ -170,12 +172,17 @@ export async function buildCaseState(input: {
 
   const {data: session} = await supabase
     .from("document_intake_sessions")
-    .select("archetype")
+    .select(
+      "archetype, requested_amount, requested_term_months, requested_grace_months, sector, geography, instruments, collateral_kinds, expected_rate",
+    )
     .eq("organization_id", organizationId)
     .eq("id", sessionId)
     .maybeSingle();
 
   const archetypeId = ((session?.archetype as ArchetypeId | null) ?? "other") satisfies ArchetypeId;
+  // `dealBrief` is what the company asked for; `brief` further down is the written case. Two
+  // very different things that both wanted the same short name.
+  const dealBrief = session ? dealBriefOf(session) : ({} as ReturnType<typeof dealBriefOf>);
   const documents = await loadClassified(supabase, organizationId, sessionId);
   const candidates = await loadCandidates(supabase, organizationId, sessionId);
 
@@ -194,7 +201,7 @@ export async function buildCaseState(input: {
   const valueOf = (fieldPath: string) => reconciliation.facts.find((fact) => fact.key.fieldPath === fieldPath)?.value;
   const calculationOf = (id: string) => reconciliation.calculations.find((calculation) => calculation.id === id)?.value;
 
-  const requested = number(valueOf("transaction.requested_amount"));
+  const requested = dealBrief.requestedAmount ?? number(valueOf("transaction.requested_amount"));
   let capacity: CapacityAssessment | null = null;
   let termSheet: IndicativeTermSheet | null = null;
 
@@ -212,13 +219,18 @@ export async function buildCaseState(input: {
       annualDebtServiceFactor: (1 / (archetype(archetypeId).structure.tenorMonths.typical[1] / 12) + 0.12).toFixed(4),
     });
 
-    const term = number(valueOf("transaction.desired_term_months"));
-    const grace = number(valueOf("transaction.desired_grace_months"));
+    // The brief wins over anything extracted from a document. Both are the company speaking, but
+    // the brief is the deliberate, current statement — a tenor read off a proposal PDF is what
+    // they wanted when they wrote it, and the whole point of the brief is that they can change
+    // their mind after seeing what the numbers say.
+    const term = dealBrief.requestedTermMonths ?? number(valueOf("transaction.desired_term_months"));
+    const grace = dealBrief.requestedGraceMonths ?? number(valueOf("transaction.desired_grace_months"));
     termSheet = buildTermSheet({
       archetypeId,
       capacity,
       ...(term ? {requestedTermMonths: Number(term)} : {}),
       ...(grace ? {requestedGraceMonths: Number(grace)} : {}),
+      ...(dealBrief.expectedRate ? {expectedRate: dealBrief.expectedRate} : {}),
       blockers: readiness.blockers.map((blocker) => blocker.labels[locale]),
     });
   }

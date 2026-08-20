@@ -27,6 +27,8 @@ export type DealBrief = {
   geography?: string;
   instruments?: Instrument[];
   collateralKinds?: CollateralKind[];
+  /** The cost hoped for, in the company's own words. Answered, never countered with a guess. */
+  expectedRate?: string;
 };
 
 /**
@@ -115,6 +117,7 @@ export const dealBriefFormSchema = z.object({
     .refine((value) => value === "" || /^[A-Z]{2}$/.test(value), {message: "invalid_uf"}),
   instruments: z.array(instrumentSchema).default([]),
   collateral_kinds: z.array(collateralKindSchema).default([]),
+  expected_rate: z.string().trim().max(80).default(""),
 });
 
 export type DealBriefInput = z.infer<typeof dealBriefFormSchema>;
@@ -143,6 +146,7 @@ export function toDealBrief(input: DealBriefInput): DealBrief | null {
     ...(input.geography ? {geography: input.geography} : {}),
     ...(input.instruments.length > 0 ? {instruments: input.instruments} : {}),
     ...(input.collateral_kinds.length > 0 ? {collateralKinds: input.collateral_kinds} : {}),
+    ...(input.expected_rate ? {expectedRate: input.expected_rate} : {}),
   };
 }
 
@@ -151,7 +155,7 @@ type SessionRow = Database["public"]["Tables"]["document_intake_sessions"]["Row"
 /** Reads the brief back off a session row, in the shape the fit assessment consumes. */
 export function dealBriefOf(session: Pick<
   SessionRow,
-  "requested_amount" | "requested_term_months" | "requested_grace_months" | "sector" | "geography" | "instruments" | "collateral_kinds"
+  "requested_amount" | "requested_term_months" | "requested_grace_months" | "sector" | "geography" | "instruments" | "collateral_kinds" | "expected_rate"
 >): DealBrief {
   return {
     ...(session.requested_amount !== null ? {requestedAmount: String(session.requested_amount)} : {}),
@@ -161,6 +165,7 @@ export function dealBriefOf(session: Pick<
     ...(session.geography ? {geography: session.geography} : {}),
     ...(session.instruments?.length ? {instruments: session.instruments as Instrument[]} : {}),
     ...(session.collateral_kinds?.length ? {collateralKinds: session.collateral_kinds as CollateralKind[]} : {}),
+    ...(session.expected_rate ? {expectedRate: session.expected_rate} : {}),
   };
 }
 
@@ -195,6 +200,7 @@ export async function saveDealBrief(input: {
       geography: input.brief.geography ?? null,
       instruments: input.brief.instruments ?? null,
       collateral_kinds: input.brief.collateralKinds ?? null,
+      expected_rate: input.brief.expectedRate ?? null,
     })
     .eq("organization_id", input.organizationId)
     .eq("id", input.sessionId);

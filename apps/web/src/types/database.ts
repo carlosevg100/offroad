@@ -452,6 +452,7 @@ export type Database = {
           confirmed_at: string | null
           created_at: string
           current_run_id: string | null
+          expected_rate: string | null
           extraction_version: string
           geography: string | null
           id: string
@@ -478,6 +479,7 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           current_run_id?: string | null
+          expected_rate?: string | null
           extraction_version?: string
           geography?: string | null
           id?: string
@@ -504,6 +506,7 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           current_run_id?: string | null
+          expected_rate?: string | null
           extraction_version?: string
           geography?: string | null
           id?: string

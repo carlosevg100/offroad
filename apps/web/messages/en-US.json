@@ -982,7 +982,10 @@
       "modelTitle": "Financial model",
       "modelWhat": "A spreadsheet with live formulas: operating projection, debt schedule, DSCR and leverage against the playbook's ceiling. Every editable cell is on the Assumptions sheet — change one and the whole model recalculates. Every historical number is traced to its source document.",
       "modelDownload": "Download model (.xlsx)",
-      "modelBlocked": "The model needs at least one reconciled number. Upload the financial statements and it becomes available."
+      "modelBlocked": "The model needs at least one reconciled number. Upload the financial statements and it becomes available.",
+      "origin_requested": "You asked",
+      "origin_proposed": "Our proposal",
+      "youAskedFor": "You asked for"
     },
     "brief": {
       "kicker": "The transaction",
@@ -1039,7 +1042,10 @@
       "instrument_receivables_purchase": "Receivables discounting",
       "instrumentNote_receivables_purchase": "discounting invoices or contracts",
       "instrument_project_finance": "Project finance",
-      "instrumentNote_project_finance": "the project repays and answers for the debt"
+      "instrumentNote_project_finance": "the project repays and answers for the debt",
+      "rateLabel": "Cost you are hoping for",
+      "rateHint": "However you think about it: 13% a year, CDI + 4, 1.2% a month. If you have no idea, leave it blank — the lender sets the price, and our read on what the market has been paying for this profile comes back to you after the analysis.",
+      "ratePlaceholder": "CDI + 4"
     }
   }
 }

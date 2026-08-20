@@ -130,6 +130,14 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
           </div>
         </div>
 
+        <div className="intake-brief__row">
+          <label htmlFor="brief-rate">
+            {t("rateLabel")}
+            <span className="intake-brief__hint">{t("rateHint")}</span>
+          </label>
+          <input defaultValue={brief.expectedRate ?? ""} id="brief-rate" name="expected_rate" placeholder={t("ratePlaceholder")} type="text" />
+        </div>
+
         <div className="intake-brief__pair">
           <div className="intake-brief__row">
             <label htmlFor="brief-sector">

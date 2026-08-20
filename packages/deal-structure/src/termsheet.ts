@@ -23,14 +23,42 @@ import type {CapacityAssessment} from "./capacity";
 
 export type TermBasis = "capacity" | "playbook" | "company_request" | "reconciled_fact";
 
+/**
+ * Whether this term answers something the company asked for, or fills something it did not.
+ *
+ * A company often arrives knowing one thing — "I need R$ 40 million" — and nothing else. It does
+ * not know whether it wants 48 months or 72, six months of grace or twelve, a debênture or a
+ * CCB. That is the expertise it came here for, and a product that treats those blanks as missing
+ * input has misunderstood its own job.
+ *
+ * So every term is either **`requested`** — the company stated a preference and this is our read
+ * on it — or **`proposed`**, which we filled in from the analysis. The distinction is not
+ * cosmetic: it changes what the sentence next to the number has to do. A proposed term must
+ * justify itself from scratch; a requested one must explain why we agree, or why we do not.
+ */
+export type TermOrigin = "requested" | "proposed";
+
 export type Term = {
   id: string;
   labels: {pt: string; en: string};
   /** The value, formatted for reading. */
   value: {pt: string; en: string};
   basis: TermBasis;
+  origin: TermOrigin;
   /** Why this value and not another. */
   rationale: {pt: string; en: string};
+  /**
+   * Present only when the company asked for something the analysis does not support.
+   *
+   * This is the sentence that has to survive a hard conversation, so it carries both sides: what
+   * they asked for, and the reason ours differs. A term sheet that quietly replaces a company's
+   * number with a better one teaches it nothing and ambushes it in the first meeting where
+   * somebody asks why the figure changed.
+   */
+  divergence?: {
+    requested: {pt: string; en: string};
+    reason: {pt: string; en: string};
+  };
 };
 
 export type IndicativeTermSheet = {
@@ -55,6 +83,14 @@ export type TermSheetInput = {
   requestedTermMonths?: number;
   /** Grace the company asked for, in months. */
   requestedGraceMonths?: number;
+  /**
+   * The cost the company hoped for, as it wrote it ("13% a.a.", "CDI + 4").
+   *
+   * Recorded and answered, never argued with by an invented number. Kept as free text because a
+   * company writes a rate in whatever convention it thinks in, and normalising it here would be
+   * pretending to a precision the field does not have.
+   */
+  expectedRate?: string;
   /** Currency of the operation. */
   currency?: string;
   /** Anything that holds the case — a critical exception, a missing minimum document. */
@@ -82,6 +118,13 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
   const requested = input.capacity.requested;
   const constrained = recommended !== null && new Decimal(recommended).lt(new Decimal(requested));
 
+  const bindingLabel =
+    input.capacity.bindingConstraint === "cash_flow"
+      ? {pt: "a geração de caixa", en: "cash generation"}
+      : input.capacity.bindingConstraint === "collateral"
+        ? {pt: "a capacidade de garantias", en: "collateral capacity"}
+        : {pt: "o apetite de mercado", en: "market appetite"};
+
   terms.push({
     id: "amount",
     labels: {pt: "Montante indicativo", en: "Indicative amount"},
@@ -90,15 +133,32 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
       en: recommended ? formatMoney(recommended, currency, "en-US") : "to be determined",
     },
     basis: "capacity",
+    // The amount is always something the company asked for — it is the one thing nobody else can
+    // state on its behalf.
+    origin: "requested",
     rationale: constrained
       ? {
-          pt: `Pedido de ${formatMoney(requested, currency, "pt-BR")}. O limite é ${definition.structure.leverageCeiling ? "" : ""}${input.capacity.bindingConstraint === "cash_flow" ? "a geração de caixa" : input.capacity.bindingConstraint === "collateral" ? "a capacidade de garantias" : "o apetite de mercado"} — a conversa é sobre essa restrição, não sobre o montante.`,
-          en: `Requested ${formatMoney(requested, currency, "en-US")}. The binding limit is ${input.capacity.bindingConstraint === "cash_flow" ? "cash generation" : input.capacity.bindingConstraint === "collateral" ? "collateral capacity" : "market appetite"} — the conversation is about that constraint, not about the amount.`,
+          pt: `Pedido de ${formatMoney(requested, currency, "pt-BR")}. O limite é ${bindingLabel.pt} — a conversa é sobre essa restrição, não sobre o montante.`,
+          en: `Requested ${formatMoney(requested, currency, "en-US")}. The binding limit is ${bindingLabel.en} — the conversation is about that constraint, not about the amount.`,
         }
       : {
           pt: "O montante pedido cabe nas três restrições calculadas.",
           en: "The requested amount fits inside all three computed constraints.",
         },
+    ...(constrained
+      ? {
+          divergence: {
+            requested: {
+              pt: formatMoney(requested, currency, "pt-BR"),
+              en: formatMoney(requested, currency, "en-US"),
+            },
+            reason: {
+              pt: `A operação não suporta o pedido inteiro: ${bindingLabel.pt} limita em ${formatMoney(recommended!, currency, "pt-BR")}. Para chegar aos ${formatMoney(requested, currency, "pt-BR")} é preciso mexer nessa restrição — mais garantia, prazo maior, ou o caixa crescendo antes do desembolso.`,
+              en: `The operation does not carry the full request: ${bindingLabel.en} caps it at ${formatMoney(recommended!, currency, "en-US")}. Reaching ${formatMoney(requested, currency, "en-US")} means moving that constraint — more security, a longer tenor, or cash growing before disbursement.`,
+            },
+          },
+        }
+      : {}),
   });
 
   // ---- tenor and grace ---------------------------------------------------------------------
@@ -108,14 +168,34 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     labels: {pt: "Prazo", en: "Tenor"},
     value: {pt: `${tenor.value} meses`, en: `${tenor.value} months`},
     basis: input.requestedTermMonths === undefined ? "playbook" : "company_request",
-    rationale: {
-      pt: tenor.clamped
-        ? `Pedido de ${input.requestedTermMonths} meses ajustado para a banda típica desta operação (${definition.structure.tenorMonths.typical.join("–")} meses). ${definition.structure.notes.pt}`
-        : `Dentro da banda típica desta operação (${definition.structure.tenorMonths.typical.join("–")} meses). ${definition.structure.notes.pt}`,
-      en: tenor.clamped
-        ? `Requested ${input.requestedTermMonths} months adjusted into this operation's typical band (${definition.structure.tenorMonths.typical.join("–")} months). ${definition.structure.notes.en}`
-        : `Inside this operation's typical band (${definition.structure.tenorMonths.typical.join("–")} months). ${definition.structure.notes.en}`,
-    },
+    origin: input.requestedTermMonths === undefined ? "proposed" : "requested",
+    rationale:
+      input.requestedTermMonths === undefined
+        ? {
+            pt: `Você não indicou prazo, então propomos ${tenor.value} meses: é o que esta operação costuma carregar (${definition.structure.tenorMonths.typical.join("–")} meses). ${definition.structure.notes.pt}`,
+            en: `You did not state a tenor, so we propose ${tenor.value} months: it is what this operation usually carries (${definition.structure.tenorMonths.typical.join("–")} months). ${definition.structure.notes.en}`,
+          }
+        : {
+            pt: `Dentro da banda típica desta operação (${definition.structure.tenorMonths.typical.join("–")} meses). ${definition.structure.notes.pt}`,
+            en: `Inside this operation's typical band (${definition.structure.tenorMonths.typical.join("–")} months). ${definition.structure.notes.en}`,
+          },
+    ...(tenor.clamped
+      ? {
+          divergence: {
+            requested: {pt: `${input.requestedTermMonths} meses`, en: `${input.requestedTermMonths} months`},
+            reason:
+              tenor.clamped === "low"
+                ? {
+                    pt: `Curto demais para o mercado desta operação, que trabalha entre ${definition.structure.tenorMonths.typical.join(" e ")} meses. Prazo apertado sobe a parcela e derruba a cobertura — costuma ser o que faz o fundo recusar, não o valor.`,
+                    en: `Shorter than the market for this operation, which works between ${definition.structure.tenorMonths.typical.join(" and ")} months. A tight tenor raises the instalment and cuts coverage — usually what makes a fund decline, rather than the amount.`,
+                  }
+                : {
+                    pt: `Mais longo do que este tipo de operação costuma alcançar (${definition.structure.tenorMonths.typical.join("–")} meses). Prazo além da banda existe, mas custa mais caro e reduz muito o conjunto de compradores.`,
+                    en: `Longer than this kind of operation usually reaches (${definition.structure.tenorMonths.typical.join("–")} months). It exists beyond the band, but it costs more and sharply narrows the buyer set.`,
+                  },
+          },
+        }
+      : {}),
   });
 
   const grace = withinBand(input.requestedGraceMonths, definition.structure.gracePeriodMonths.typical);
@@ -124,10 +204,34 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     labels: {pt: "Carência", en: "Grace period"},
     value: {pt: `${grace.value} meses`, en: `${grace.value} months`},
     basis: input.requestedGraceMonths === undefined ? "playbook" : "company_request",
-    rationale: {
-      pt: `Banda típica: ${definition.structure.gracePeriodMonths.typical.join("–")} meses.`,
-      en: `Typical band: ${definition.structure.gracePeriodMonths.typical.join("–")} months.`,
-    },
+    origin: input.requestedGraceMonths === undefined ? "proposed" : "requested",
+    rationale:
+      input.requestedGraceMonths === undefined
+        ? {
+            pt: `Você não indicou carência, então propomos ${grace.value} meses — a banda usual desta operação é ${definition.structure.gracePeriodMonths.typical.join("–")} meses, e ela existe para cobrir o tempo até o investimento começar a gerar caixa.`,
+            en: `You did not state a grace period, so we propose ${grace.value} months — the usual band for this operation is ${definition.structure.gracePeriodMonths.typical.join("–")} months, and it exists to cover the time before the investment starts generating cash.`,
+          }
+        : {
+            pt: `Banda típica: ${definition.structure.gracePeriodMonths.typical.join("–")} meses.`,
+            en: `Typical band: ${definition.structure.gracePeriodMonths.typical.join("–")} months.`,
+          },
+    ...(grace.clamped
+      ? {
+          divergence: {
+            requested: {pt: `${input.requestedGraceMonths} meses`, en: `${input.requestedGraceMonths} months`},
+            reason:
+              grace.clamped === "low"
+                ? {
+                    pt: `Curta para esta operação. Começar a amortizar antes de o investimento maturar é o que costuma apertar a cobertura no primeiro ano — e o primeiro ano é o que o comitê olha.`,
+                    en: `Short for this operation. Amortising before the investment matures is what usually squeezes coverage in year one — and year one is what a committee looks at.`,
+                  }
+                : {
+                    pt: `Mais longa que o usual (${definition.structure.gracePeriodMonths.typical.join("–")} meses). Carência longa não é de graça: o juro do período corre e entra no saldo, e o financiador cobra por isso.`,
+                    en: `Longer than usual (${definition.structure.gracePeriodMonths.typical.join("–")} months). A long grace is not free: interest accrues into the balance over the period, and the lender charges for it.`,
+                  },
+          },
+        }
+      : {}),
   });
 
   terms.push({
@@ -135,23 +239,42 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     labels: {pt: "Amortização", en: "Amortisation"},
     value: {pt: definition.structure.amortization.join(" · "), en: definition.structure.amortization.join(" · ")},
     basis: "playbook",
+    origin: "proposed",
     rationale: {
       pt: "Formatos usuais para esta operação; o definitivo acompanha o perfil de geração.",
       en: "Usual formats for this operation; the final one follows the generation profile.",
     },
   });
 
-  // Pricing is deliberately absent. The desk does not know what an investor will charge, and a
-  // rate invented here is the fastest way to lose the company's trust when the market answers.
+  // No rate is stated in the document that reaches an investor. Inventing one is the fastest way
+  // to lose the company's trust when the market answers differently, and a term sheet that prices
+  // itself is presuming to speak for whoever takes the risk.
+  //
+  // What the company hoped for is answered separately, on the internal side: a banker tells their
+  // client "expect CDI + 5"; they do not put a number in the teaser. That view needs comparables
+  // to be worth anything, and the comparables are the fund directory's observed transactions —
+  // which is why `expectedRate` is recorded here as an open question rather than argued with.
   terms.push({
     id: "pricing",
     labels: {pt: "Custo", en: "Pricing"},
     value: {pt: "definido pelo investidor", en: "set by the investor"},
     basis: "playbook",
+    origin: input.expectedRate === undefined ? "proposed" : "requested",
     rationale: {
       pt: "A Offroad não precifica: o custo sai da conversa com quem toma o risco. O que este documento faz é chegar nessa conversa com os números conciliados e rastreáveis.",
       en: "Offroad does not price: cost comes from the conversation with whoever takes the risk. What this document does is arrive at that conversation with reconciled, traceable numbers.",
     },
+    ...(input.expectedRate
+      ? {
+          divergence: {
+            requested: {pt: input.expectedRate, en: input.expectedRate},
+            reason: {
+              pt: "Este documento não traz taxa, e isso é deliberado — quem precifica é quem toma o risco. A leitura do que o mercado tem pago para este perfil fica no documento interno, sustentada pelas operações comparáveis, não em um número posto aqui.",
+              en: "This document carries no rate, deliberately — whoever takes the risk sets the price. Our read on what the market has been paying for this profile belongs in the internal document, supported by comparable transactions rather than by a number asserted here.",
+            },
+          },
+        }
+      : {}),
   });
 
   return {
