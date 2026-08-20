@@ -9,6 +9,7 @@ import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter} from "@
 import {dealBriefOf} from "./deal-brief";
 
 import type {Database, Json} from "@/types/database";
+import {reportServerFailure} from "@/lib/observability/report";
 
 /**
  * The case, end to end: reconcile, size, structure, write, compile.
@@ -166,7 +167,7 @@ async function writeBrief(input: {
     }
     return {brief: audited.brief, blockedBy: []};
   } catch (error) {
-    console.error("case_brief_failed", {message: (error as Error).message});
+    reportServerFailure({step: "case.brief", error});
     return {brief: null, blockedBy: ["generation_failed"]};
   } finally {
     // `finally`, because a brief that failed the audit or threw still cost what it cost. A ledger
@@ -283,7 +284,7 @@ export async function buildCaseState(input: {
             p_calls: calls,
           })
           .then(({error}) => {
-            if (error) console.error("case_spend_not_recorded", {message: error.message});
+            if (error) reportServerFailure({step: "case.spend_not_recorded", error});
           });
       },
     });

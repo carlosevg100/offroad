@@ -4,6 +4,18 @@ const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const uuidPattern = /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi;
 const tokenPattern = /\b[A-Za-z0-9_-]{32,}\b/g;
 const numericPattern = /(^|[^A-Za-z])[-+]?\d[\d.,]*(?:\s?(?:%|x|bps))?/g;
+/**
+ * A quoted literal that is not an identifier.
+ *
+ * Postgres and Zod both quote the thing that failed, and the thing that failed is often the
+ * company's own content: `expected string, received "Rede Horizonte Alimentos S.A."`. What they
+ * also quote is the name of a constraint, a table or a column, and those are constants worth
+ * keeping, since without them a redacted message says nothing at all. The two are told apart by
+ * shape rather than by guesswork: an identifier here is lower-case, digits and underscores, and
+ * anything with a space, a capital or punctuation is content.
+ */
+const quotedLiteralPattern = /"([^"]{1,200})"/g;
+const looksLikeIdentifier = (value: string) => /^[a-z0-9_]+(?:\.[a-z0-9_]+)*$/.test(value);
 
 const allowedTags = new Set(["environment", "release", "route_class", "runtime"]);
 
@@ -13,6 +25,9 @@ export function redactTelemetryText(value: string): string {
     .replace(uuidPattern, "[id]")
     .replace(tokenPattern, "[token]")
     .replace(/([?&])[^\s#]+/g, "$1[query]")
+    .replace(quotedLiteralPattern, (match, inner: string) =>
+      looksLikeIdentifier(inner) ? match : '"[value]"',
+    )
     .replace(numericPattern, "$1[number]");
 }
 

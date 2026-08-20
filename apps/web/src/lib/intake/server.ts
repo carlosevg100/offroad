@@ -15,6 +15,7 @@ import {reconcileIntakeSession} from "./reconcile";
 import {parseArchetype} from "./checklist";
 import {archetype, requirementResponseSchema} from "@offroad/credit-playbook";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
+import {reportServerFailure} from "@/lib/observability/report";
 
 /**
  * Everything the intake operations need, resolved by the caller (onboarding or workspace).
@@ -50,7 +51,9 @@ export function intakeErrorFrom(error: PostgrestError | null | undefined, fallba
  * content while remaining actionable.
  */
 function logIntakeFailure(step: string, error: {code?: string; message?: string} | null | undefined) {
-  console.error("intake_step_failed", {step, code: error?.code ?? null, message: error?.message ?? null});
+  // Through the one reporting path: the message is redacted before it leaves the process, and
+  // the failure reaches the error view rather than only a log line.
+  reportServerFailure({step: `intake.${step}`, error});
 }
 
 export async function loadIntakeSession(runtime: IntakeRuntime) {
