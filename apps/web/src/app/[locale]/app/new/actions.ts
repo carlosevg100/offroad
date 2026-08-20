@@ -186,6 +186,7 @@ export async function saveWorkspaceDealBrief(formData: FormData) {
     geography: value(formData, "geography"),
     instruments: formData.getAll("instruments").map(String),
     collateral_kinds: formData.getAll("collateral_kinds").map(String),
+    expected_rate: value(formData, "expected_rate"),
   });
   if (!parsed.success) redirect(intakeUrl(locale, sessionId, "validation"));
 

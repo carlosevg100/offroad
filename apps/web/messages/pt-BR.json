@@ -982,7 +982,10 @@
       "modelTitle": "Modelo financeiro",
       "modelWhat": "Planilha com fórmulas vivas: projeção operacional, cronograma da dívida, DSCR e alavancagem contra o teto do playbook. Toda célula editável fica na aba Premissas — mude uma e o modelo inteiro recalcula. Cada número histórico está rastreado até o documento de origem.",
       "modelDownload": "Baixar modelo (.xlsx)",
-      "modelBlocked": "O modelo precisa de pelo menos um número conciliado. Envie as demonstrações financeiras e ele passa a ser emitido."
+      "modelBlocked": "O modelo precisa de pelo menos um número conciliado. Envie as demonstrações financeiras e ele passa a ser emitido.",
+      "origin_requested": "Você pediu",
+      "origin_proposed": "Nossa proposta",
+      "youAskedFor": "Você pediu"
     },
     "brief": {
       "kicker": "A operação",
@@ -1039,7 +1042,10 @@
       "instrument_receivables_purchase": "Antecipação de recebíveis",
       "instrumentNote_receivables_purchase": "desconto de duplicata ou de contrato",
       "instrument_project_finance": "Financiamento de projeto",
-      "instrumentNote_project_finance": "o projeto se paga e responde pela dívida"
+      "instrumentNote_project_finance": "o projeto se paga e responde pela dívida",
+      "rateLabel": "Custo que você espera",
+      "rateHint": "Do jeito que você pensa: 13% ao ano, CDI + 4, 1,2% ao mês. Se não fizer ideia, deixe em branco — quem precifica é o financiador, e a nossa leitura do que o mercado tem pago para este perfil volta para você depois da análise.",
+      "ratePlaceholder": "CDI + 4"
     }
   }
 }

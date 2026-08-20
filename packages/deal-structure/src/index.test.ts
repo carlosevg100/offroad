@@ -72,16 +72,62 @@ describe("the indicative term sheet", () => {
     expect(amount?.rationale.pt).toContain("garantias");
   });
 
-  it("pulls a requested tenor into the archetype's band and says it did", () => {
+  it("pulls a requested tenor into the band and keeps both sides of the disagreement", () => {
     const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity, requestedTermMonths: 120});
     const tenor = sheet.terms.find((t) => t.id === "tenor");
     expect(tenor?.value.pt).toBe("84 meses");
-    expect(tenor?.rationale.pt).toContain("ajustado para a banda típica");
+    expect(tenor?.origin).toBe("requested");
+    // The disagreement is structured rather than buried in prose: what they asked for survives
+    // next to why we differ, so nobody is ambushed later by a figure that quietly changed.
+    expect(tenor?.divergence?.requested.pt).toBe("120 meses");
+    expect(tenor?.divergence?.reason.pt).toContain("reduz muito o conjunto de compradores");
+    expect(tenor?.divergence?.reason.en).toContain("narrows the buyer set");
   });
 
-  it("keeps a requested tenor that already fits", () => {
+  it("keeps a requested tenor that already fits, and disagrees with nothing", () => {
     const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity, requestedTermMonths: 60});
-    expect(sheet.terms.find((t) => t.id === "tenor")?.value.pt).toBe("60 meses");
+    const tenor = sheet.terms.find((t) => t.id === "tenor");
+    expect(tenor?.value.pt).toBe("60 meses");
+    expect(tenor?.origin).toBe("requested");
+    expect(tenor?.divergence).toBeUndefined();
+  });
+
+  it("proposes what the company did not state, and says that is what it is doing", () => {
+    // A company often knows only how much it needs. Every blank is our job, not missing input.
+    const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity});
+    const tenor = sheet.terms.find((t) => t.id === "tenor")!;
+    const grace = sheet.terms.find((t) => t.id === "grace")!;
+
+    expect(tenor.origin).toBe("proposed");
+    expect(tenor.rationale.pt).toContain("Você não indicou prazo");
+    expect(tenor.divergence).toBeUndefined();
+    expect(grace.origin).toBe("proposed");
+    expect(grace.rationale.pt).toContain("Você não indicou carência");
+  });
+
+  it("marks every term as requested or proposed, with no third state", () => {
+    // The distinction decides what the sentence beside the number has to do: a proposed term
+    // justifies itself from scratch, a requested one explains agreement or disagreement.
+    const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity, requestedTermMonths: 60});
+    for (const term of sheet.terms) {
+      expect(["requested", "proposed"], term.id).toContain(term.origin);
+    }
+  });
+
+  it("answers a hoped-for rate without inventing one", () => {
+    const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity, expectedRate: "13% a.a."});
+    const pricing = sheet.terms.find((t) => t.id === "pricing")!;
+    expect(pricing.origin).toBe("requested");
+    expect(pricing.value.pt).toBe("definido pelo investidor");
+    expect(pricing.divergence?.requested.pt).toBe("13% a.a.");
+    // No counter-rate appears in the investor-facing document; the market read lives internally.
+    expect(pricing.divergence?.reason.pt).toContain("documento interno");
+    expect(JSON.stringify(pricing)).not.toMatch(/CDI \+ \d/);
+  });
+
+  it("says nothing about pricing when nobody asked", () => {
+    const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity});
+    expect(sheet.terms.find((t) => t.id === "pricing")?.divergence).toBeUndefined();
   });
 
   it("quotes no price, and says why", () => {

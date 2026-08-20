@@ -92,6 +92,7 @@ describe("dealBriefOf", () => {
         geography: "SP",
         instruments: ["debenture"],
         collateral_kinds: ["recebiveis"],
+        expected_rate: "CDI + 4",
       }),
     ).toEqual({
       requestedAmount: "45000000",
@@ -101,6 +102,7 @@ describe("dealBriefOf", () => {
       geography: "SP",
       instruments: ["debenture"],
       collateralKinds: ["recebiveis"],
+      expectedRate: "CDI + 4",
     });
   });
 
@@ -114,6 +116,7 @@ describe("dealBriefOf", () => {
         geography: null,
         instruments: null,
         collateral_kinds: [],
+        expected_rate: null,
       }),
     ).toEqual({});
   });
