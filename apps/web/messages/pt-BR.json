@@ -957,7 +957,10 @@
       "exceptionsTitle": "Pontos em aberto",
       "calculationsTitle": "Números calculados",
       "tracedFrom": "calculado de",
-      "empty": "Ainda não há análise: processe os documentos primeiro."
+      "empty": "Ainda não há análise: processe os documentos primeiro.",
+      "materialOpen": "Abrir",
+      "materialPdf": "PDF",
+      "materialSections": "{count} blocos"
     }
   }
 }

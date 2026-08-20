@@ -6485,3 +6485,19 @@ button[disabled].workspace-search,
   color: var(--muted);
   font-size: 0.8rem;
 }
+
+/* Materials are documents, so they get the affordances of documents */
+.case-materials__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.case-materials__actions .button {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.8rem;
+  gap: 5px;
+  padding: 5px 12px;
+}

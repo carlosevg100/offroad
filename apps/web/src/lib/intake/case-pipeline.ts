@@ -283,3 +283,81 @@ export async function saveCaseState(input: {
     .eq("organization_id", organizationId)
     .eq("id", sessionId);
 }
+
+/**
+ * A fingerprint of everything the case is computed from.
+ *
+ * Cheap to take — three counted queries — and it changes whenever a document lands, a
+ * candidate is reviewed, an answer is written, or the operation type is changed. Anything
+ * that would alter the case alters this string.
+ */
+async function caseFingerprint(supabase: SupabaseClient<Database>, organizationId: string, sessionId: string): Promise<string> {
+  const [{count: candidateCount}, {count: documentCount}, {data: session}, {data: latest}, {count: answerCount}] = await Promise.all([
+    supabase.from("intake_field_candidates").select("id", {count: "exact", head: true}).eq("organization_id", organizationId).eq("intake_session_id", sessionId),
+    supabase.from("source_documents").select("id", {count: "exact", head: true}).eq("organization_id", organizationId).eq("intake_session_id", sessionId),
+    supabase.from("document_intake_sessions").select("archetype, status").eq("organization_id", organizationId).eq("id", sessionId).maybeSingle(),
+    supabase
+      .from("intake_field_candidates")
+      .select("updated_at")
+      .eq("organization_id", organizationId)
+      .eq("intake_session_id", sessionId)
+      .order("updated_at", {ascending: false})
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("intake_information_answers").select("id", {count: "exact", head: true}).eq("organization_id", organizationId).eq("intake_session_id", sessionId),
+  ]);
+
+  return [
+    session?.archetype ?? "",
+    session?.status ?? "",
+    candidateCount ?? 0,
+    documentCount ?? 0,
+    answerCount ?? 0,
+    latest?.updated_at ?? "",
+  ].join("|");
+}
+
+/**
+ * The case, computed once per state of the data room.
+ *
+ * Without this, every render of the review screen re-ran the whole line — including the model
+ * call that writes the brief. A company that refreshes the page four times while reading pays
+ * four times for the same paragraphs, and the paragraphs come back subtly different each
+ * time, which is worse than the cost: a credit memo that changes wording on reload is not a
+ * document anybody can quote.
+ *
+ * The snapshot is invalidated by the fingerprint, never by age. A case whose data room has
+ * not moved has no reason to be recomputed, and one whose data room moved by a single
+ * reviewed candidate has every reason to be.
+ */
+export async function resolveCaseState(input: {
+  supabase: SupabaseClient<Database>;
+  organizationId: string;
+  sessionId: string;
+  locale: "pt" | "en";
+}): Promise<CaseState> {
+  const {supabase, organizationId, sessionId, locale} = input;
+  const fingerprint = await caseFingerprint(supabase, organizationId, sessionId);
+
+  const {data: session} = await supabase
+    .from("document_intake_sessions")
+    .select("result_summary")
+    .eq("organization_id", organizationId)
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  const summary = (session?.result_summary ?? {}) as Record<string, unknown>;
+  const snapshot = summary.case_state as (CaseState & {fingerprint?: string; locale?: string}) | undefined;
+  if (snapshot?.fingerprint === fingerprint && snapshot.locale === locale) return snapshot;
+
+  const state = await buildCaseState({supabase, organizationId, sessionId, locale});
+  await supabase
+    .from("document_intake_sessions")
+    .update({
+      result_summary: {...(summary as Record<string, Json>), case_state: {...state, fingerprint, locale} as unknown as Json} as Json,
+    })
+    .eq("organization_id", organizationId)
+    .eq("id", sessionId);
+
+  return state;
+}

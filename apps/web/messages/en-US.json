@@ -957,7 +957,10 @@
       "exceptionsTitle": "Open points",
       "calculationsTitle": "Computed figures",
       "tracedFrom": "computed from",
-      "empty": "No analysis yet: process the documents first."
+      "empty": "No analysis yet: process the documents first.",
+      "materialOpen": "Open",
+      "materialPdf": "PDF",
+      "materialSections": "{count} blocks"
     }
   }
 }

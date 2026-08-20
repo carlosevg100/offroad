@@ -1,4 +1,4 @@
-import {AlertTriangle, FileText, Info} from "lucide-react";
+import {AlertTriangle, FileText, Info, Printer} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
@@ -6,6 +6,8 @@ import type {CaseState} from "@/lib/intake/case-pipeline";
 type Props = {
   locale: string;
   caseState: CaseState | null;
+  /** Needed to address the material routes; absent on screens that only preview a case. */
+  sessionId?: string;
 };
 
 const asLocale = (locale: string) => (locale === "en-US" ? "en" : "pt") as "pt" | "en";
@@ -29,7 +31,7 @@ const money = (value: string, locale: string) => {
  * wall says which input it lacked. A screen that silently omits what it could not compute
  * teaches the reader to assume the blanks are zeroes.
  */
-export async function IntakeCase({locale, caseState: state}: Props) {
+export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.case"});
   const lang = asLocale(locale);
 
@@ -209,13 +211,28 @@ export async function IntakeCase({locale, caseState: state}: Props) {
         <h3>{t("materialsTitle")}</h3>
         {materials.length > 0 ? (
           <ul>
-            {materials.map((material) => (
-              <li key={material.kind}>
-                <FileText aria-hidden="true" size={14} />
-                <strong>{material.title[lang]}</strong>
-                <span>{material.blocks.length}</span>
-              </li>
-            ))}
+            {materials.map((material) => {
+              const href = sessionId ? `/${locale}/app/materials/${sessionId}/${material.kind}` : null;
+              return (
+                <li key={material.kind}>
+                  <FileText aria-hidden="true" size={14} />
+                  <strong>{material.title[lang]}</strong>
+                  <span>{t("materialSections", {count: material.blocks.length})}</span>
+                  {href ? (
+                    <span className="case-materials__actions">
+                      {/* New tab, not a route change: the company is mid-review and losing the
+                          screen to a document it wanted to glance at is its own small failure. */}
+                      <a className="button button--ghost" href={href} rel="noreferrer" target="_blank">
+                        {t("materialOpen")}
+                      </a>
+                      <a className="button button--ghost" href={`${href}?print=1`} rel="noreferrer" target="_blank">
+                        <Printer aria-hidden="true" size={13} /> {t("materialPdf")}
+                      </a>
+                    </span>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="form-notice">{t("materialsBlocked")}</p>
