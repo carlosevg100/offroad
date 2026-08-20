@@ -999,6 +999,112 @@ export type Database = {
           },
         ]
       }
+      fund_directory: {
+        Row: {
+          bucket: string | null
+          claimed_at: string | null
+          claimed_by_organization_id: string | null
+          cnpj: string | null
+          created_at: string
+          cvm_code: string | null
+          id: string
+          kind: string
+          legal_name: string
+          notes: string | null
+          short_name: string | null
+          status: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          bucket?: string | null
+          claimed_at?: string | null
+          claimed_by_organization_id?: string | null
+          cnpj?: string | null
+          created_at?: string
+          cvm_code?: string | null
+          id?: string
+          kind: string
+          legal_name: string
+          notes?: string | null
+          short_name?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          bucket?: string | null
+          claimed_at?: string | null
+          claimed_by_organization_id?: string | null
+          cnpj?: string | null
+          created_at?: string
+          cvm_code?: string | null
+          id?: string
+          kind?: string
+          legal_name?: string
+          notes?: string | null
+          short_name?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fund_directory_claimed_by_organization_id_fkey"
+            columns: ["claimed_by_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fund_mandate_observations: {
+        Row: {
+          criterion: string
+          fund_id: string
+          id: string
+          note: string | null
+          observed_at: string
+          provenance: string
+          recorded_at: string
+          recorded_by: string | null
+          source_url: string | null
+          value: Json
+        }
+        Insert: {
+          criterion: string
+          fund_id: string
+          id?: string
+          note?: string | null
+          observed_at: string
+          provenance: string
+          recorded_at?: string
+          recorded_by?: string | null
+          source_url?: string | null
+          value: Json
+        }
+        Update: {
+          criterion?: string
+          fund_id?: string
+          id?: string
+          note?: string | null
+          observed_at?: string
+          provenance?: string
+          recorded_at?: string
+          recorded_by?: string | null
+          source_url?: string | null
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fund_mandate_observations_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       funds: {
         Row: {
           created_at: string
