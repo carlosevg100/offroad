@@ -1,4 +1,4 @@
-import {AlertTriangle, FileText, Info, Printer} from "lucide-react";
+import {AlertTriangle, FileText, Info, Printer, Table2} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
@@ -206,6 +206,21 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
           </ul>
         </div>
       ) : null}
+
+      {/* The model stands apart from the materials on purpose: it is arithmetic over reconciled
+          facts, so it can be issued even in a case whose written brief the audit refused. A
+          company blocked from circulating a memo can still hand an investor the numbers. */}
+      <div className="case-model">
+        <h3>{t("modelTitle")}</h3>
+        <p className="case-model__what">{t("modelWhat")}</p>
+        {sessionId && state.reconciliation.facts.length > 0 ? (
+          <a className="button button--ghost" href={`/${locale}/app/model/${sessionId}`}>
+            <Table2 aria-hidden="true" size={13} /> {t("modelDownload")}
+          </a>
+        ) : (
+          <p className="form-notice">{t("modelBlocked")}</p>
+        )}
+      </div>
 
       <div className="case-materials">
         <h3>{t("materialsTitle")}</h3>
