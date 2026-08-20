@@ -169,8 +169,17 @@ export function parseBoolean(raw: string): boolean | null {
 }
 
 export function parseList(raw: string): string[] {
-  return raw
+  const parts = raw
     .split(/[;\n]|,(?=\s*[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/)
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
+  // Portuguese closes an enumeration with "e", not a comma: "Franca, Araraquara e São Carlos"
+  // is three items. Only the final part of an already-plural list is split, so a lone name
+  // that happens to contain "e" ("Compra e Venda Ltda") is never torn apart.
+  if (parts.length >= 2) {
+    const last = parts[parts.length - 1] ?? "";
+    const closing = /^(.+?)\s+e\s+(.+)$/.exec(last);
+    if (closing) parts.splice(parts.length - 1, 1, closing[1]!.trim(), closing[2]!.trim());
+  }
+  return parts;
 }

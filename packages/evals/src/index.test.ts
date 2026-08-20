@@ -5,6 +5,7 @@ import {fileURLToPath} from "node:url";
 import {describe, expect, it} from "vitest";
 import {resolveFieldPath} from "@offroad/credit-ontology";
 import {
+  alignIndexedGroups,
   buildRedeHorizonteGoldFields,
   checkThresholds,
   compareSweep,
@@ -151,6 +152,58 @@ describe("value matching", () => {
     expect(valuesMatch("Rede Horizonte Alimentos S.A.", "rede horizonte alimentos s.a.", "text", {kind: "exact"})).toBe(true);
     expect(valuesMatch(JSON.stringify(["Franca", "Araraquara"]), JSON.stringify(["araraquara", "Franca"]), "list", {kind: "exact"})).toBe(true);
     expect(valuesMatch("2027-04-01", "2027-04-01", "date", {kind: "exact"})).toBe(true);
+  });
+});
+
+describe("indexed tuple alignment", () => {
+  const goldFields = [
+    {fieldPath: "transaction.sources_and_uses.1.side", value: "sources", valueType: "text", materiality: "material", tolerance: {kind: "exact"}},
+    {fieldPath: "transaction.sources_and_uses.1.amount", value: "35000000", valueType: "number", materiality: "material", tolerance: {kind: "exact"}},
+    {fieldPath: "transaction.sources_and_uses.2.side", value: "uses", valueType: "text", materiality: "material", tolerance: {kind: "exact"}},
+    {fieldPath: "transaction.sources_and_uses.2.amount", value: "49000000", valueType: "number", materiality: "material", tolerance: {kind: "exact"}},
+  ] as never[];
+  const candidate = (fieldPath: string, normalizedValue: string, valueType: "text" | "number") => ({
+    fieldPath,
+    normalizedValue,
+    valueType,
+    informationClass: "company_document" as const,
+    evidenceRank: 7,
+    confidence: 0.9,
+    anchorVerified: true,
+    anchorPrecision: "row" as const,
+    autoAccepted: false,
+  });
+
+  it("matches tuples by content — the index is presentation order, not a fact", () => {
+    // The document lists uses first; the answer key lists sources first. Same two facts.
+    const aligned = alignIndexedGroups(goldFields, [
+      candidate("transaction.sources_and_uses.1.side", "uses", "text"),
+      candidate("transaction.sources_and_uses.1.amount", "49000000", "number"),
+      candidate("transaction.sources_and_uses.2.side", "sources", "text"),
+      candidate("transaction.sources_and_uses.2.amount", "35000000", "number"),
+    ]);
+    const byPath = new Map(aligned.map((c) => [c.fieldPath, c.normalizedValue]));
+    expect(byPath.get("transaction.sources_and_uses.1.side")).toBe("sources");
+    expect(byPath.get("transaction.sources_and_uses.1.amount")).toBe("35000000");
+    expect(byPath.get("transaction.sources_and_uses.2.side")).toBe("uses");
+    expect(byPath.get("transaction.sources_and_uses.2.amount")).toBe("49000000");
+  });
+
+  it("does not invent agreement — a tuple that matches nothing keeps failing", () => {
+    const aligned = alignIndexedGroups(goldFields, [
+      candidate("transaction.sources_and_uses.1.side", "uses", "text"),
+      candidate("transaction.sources_and_uses.1.amount", "77000000", "number"),
+    ]);
+    // Best pairing is gold tuple 2 (side matches); the wrong amount still disagrees with it.
+    const byPath = new Map(aligned.map((c) => [c.fieldPath, c.normalizedValue]));
+    expect(byPath.get("transaction.sources_and_uses.2.side")).toBe("uses");
+    expect(byPath.get("transaction.sources_and_uses.2.amount")).toBe("77000000");
+  });
+
+  it("leaves non-indexed candidates untouched", () => {
+    const plain = candidate("company.legal_name", "Rede Horizonte", "text");
+    const aligned = alignIndexedGroups(goldFields, [plain]);
+    expect(aligned).toEqual([plain]);
   });
 });
 
