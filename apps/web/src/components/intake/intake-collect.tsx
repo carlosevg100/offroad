@@ -4,7 +4,11 @@ import {getTranslations} from "next-intl/server";
 
 import type {IntakeDocumentSummary, IntakeSession} from "@/lib/intake/types";
 
+import type {IntakeChecklist as Checklist} from "@/lib/intake/checklist";
+import type {ArchetypeId} from "@offroad/credit-playbook";
+
 import {DocumentIntakeUploader} from "./document-intake-uploader";
+import {IntakeChecklist, IntakeOperation} from "./intake-checklist";
 
 type Props = {
   locale: string;
@@ -19,13 +23,17 @@ type Props = {
   manualHref?: string;
   /** Wrapper class differs between onboarding (`onboarding-stage__form`) and workspace (`intake-form`). */
   className?: string;
+  /** Sets which operation the company is asking for (`archetype`, `session_id`, `locale`). */
+  setOperationAction?: (formData: FormData) => Promise<void>;
+  /** What the desk still needs, answered by what was read. Null until the operation is stated. */
+  checklist?: Checklist | null;
 };
 
 /**
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -47,6 +55,17 @@ export async function IntakeCollect({locale, session, documents, organizationId,
           <strong><LoaderCircle aria-hidden="true" className="spin" size={14} /> {t("collect.processingTitle")}</strong> {t("collect.processingBody")}
         </div>
       ) : null}
+
+      {setOperationAction ? (
+        <IntakeOperation
+          locale={locale}
+          selected={(checklist?.archetypeId ?? null) as ArchetypeId | null}
+          action={setOperationAction}
+          sessionId={session.id}
+        />
+      ) : null}
+
+      {setOperationAction ? <IntakeChecklist locale={locale} checklist={checklist ?? null} /> : null}
 
       <DocumentIntakeUploader
         copy={{

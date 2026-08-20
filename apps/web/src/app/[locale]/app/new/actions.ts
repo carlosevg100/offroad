@@ -9,6 +9,7 @@ import {
   confirmIntakeCase,
   loadIntakeSession,
   processIntakeSession,
+  setIntakeArchetype as setArchetype,
   removeIntakeDocument,
   resolveIntakeIssue,
   reviewIntakeCandidate,
@@ -54,6 +55,14 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
   const outcome = await startIntakeSession({supabase, organizationId: organization.id, userId, locale, journey: organization.organization_type === "originator" ? "originator" : "company"});
   if (!outcome.ok) redirect(`/${locale}/app/new?error=${outcome.error}`);
   redirect(intakeUrl(locale, outcome.value));
+}
+
+export async function setWorkspaceIntakeOperation(formData: FormData) {
+  const locale = localeFrom(formData);
+  const sessionId = value(formData, "session_id");
+  const runtime = await workspaceRuntime(locale, sessionId);
+  const outcome = await setArchetype(runtime, value(formData, "archetype"));
+  redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
 }
 
 export async function processWorkspaceDocumentIntake(formData: FormData) {

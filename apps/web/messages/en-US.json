@@ -410,9 +410,26 @@
       "autoSave": "Your progress is saved after each block.",
       "comingSoon": "Coming soon",
       "nodes": {
-        "company": {"organization": "Institutional profile", "funding": "Transaction context", "documents": "Data room", "review": "Market preparation"},
-        "originator": {"organization": "Advisory profile", "company": "Advised company", "funding": "Transaction context", "documents": "Data room", "review": "Market preparation"},
-        "capital_provider": {"organization": "Institutional profile", "fund": "Fund or vehicle", "mandate": "Investment mandate", "contacts": "Contacts and routing", "review": "Activate workspace"}
+        "company": {
+          "organization": "Institutional profile",
+          "funding": "Transaction context",
+          "documents": "Data room",
+          "review": "Market preparation"
+        },
+        "originator": {
+          "organization": "Advisory profile",
+          "company": "Advised company",
+          "funding": "Transaction context",
+          "documents": "Data room",
+          "review": "Market preparation"
+        },
+        "capital_provider": {
+          "organization": "Institutional profile",
+          "fund": "Fund or vehicle",
+          "mandate": "Investment mandate",
+          "contacts": "Contacts and routing",
+          "review": "Activate workspace"
+        }
       }
     },
     "journeyCompany": "Company",
@@ -434,16 +451,40 @@
     "subsector": "Subsector",
     "providerType": "Institution type",
     "description": "Institutional description",
-    "providerTypes": {"fundManager": "Fund manager", "fidcManager": "FIDC manager", "factor": "Factor", "bank": "Bank", "familyOffice": "Family office", "alternative": "Alternative lender", "other": "Other"},
+    "providerTypes": {
+      "fundManager": "Fund manager",
+      "fidcManager": "FIDC manager",
+      "factor": "Factor",
+      "bank": "Bank",
+      "familyOffice": "Family office",
+      "alternative": "Alternative lender",
+      "other": "Other"
+    },
     "relationship": "Relationship with the company",
-    "relationships": {"engaged": "Engaged advisor", "exclusive": "Exclusive mandate", "authorized": "Authorized by company"},
+    "relationships": {
+      "engaged": "Engaged advisor",
+      "exclusive": "Exclusive mandate",
+      "authorized": "Authorized by company"
+    },
     "authorityKind": "Authority evidence",
-    "authorityKinds": {"mandate": "Advisory mandate", "power": "Power of attorney", "board": "Corporate approval", "other": "Other"},
+    "authorityKinds": {
+      "mandate": "Advisory mandate",
+      "power": "Power of attorney",
+      "board": "Corporate approval",
+      "other": "Other"
+    },
     "authorityReference": "Mandate or authorization reference",
     "companyContact": "Primary company contact",
     "companyContactEmail": "Contact email",
     "purposeCategory": "Primary purpose",
-    "purposes": {"workingCapital": "Working capital", "growth": "Growth or expansion", "acquisition": "Acquisition", "equipment": "Equipment", "refinance": "Refinance", "other": "Other"},
+    "purposes": {
+      "workingCapital": "Working capital",
+      "growth": "Growth or expansion",
+      "acquisition": "Acquisition",
+      "equipment": "Equipment",
+      "refinance": "Refinance",
+      "other": "Other"
+    },
     "purposeSummary": "What does the company intend to finance?",
     "rationale": "Why is the capital needed?",
     "strategicImportance": "Why is this important to the business?",
@@ -465,9 +506,24 @@
     "uploadGuidanceTitle": "From essential inputs to the strongest possible case",
     "uploadGuidanceBody": "You can start with a few files and add more later. This guide shows what most improves preparation quality.",
     "uploadGuidance": {
-      "essential": {"title": "Start here", "financials": "Recent financial statements", "trialBalances": "Monthly trial balances", "debtSchedule": "Debt schedule"},
-      "recommended": {"title": "Recommended", "projections": "Financial projections", "presentation": "Institutional presentation", "transaction": "Transaction and collateral details"},
-      "complementary": {"title": "For deeper analysis", "contracts": "Relevant contracts", "cim": "CIM or credit memo", "other": "Additional materials"}
+      "essential": {
+        "title": "Start here",
+        "financials": "Recent financial statements",
+        "trialBalances": "Monthly trial balances",
+        "debtSchedule": "Debt schedule"
+      },
+      "recommended": {
+        "title": "Recommended",
+        "projections": "Financial projections",
+        "presentation": "Institutional presentation",
+        "transaction": "Transaction and collateral details"
+      },
+      "complementary": {
+        "title": "For deeper analysis",
+        "contracts": "Relevant contracts",
+        "cim": "CIM or credit memo",
+        "other": "Additional materials"
+      }
     },
     "documentsRequired": "Upload at least one document before continuing to review.",
     "fundName": "Fund or vehicle name",
@@ -511,9 +567,82 @@
     "error": "We could not save this step. Review the fields and try again.",
     "validationError": "Review the required fields and save again.",
     "steps": {
-      "company": {"organization": {"title": "Company", "short": "Basic information", "body": "Identify the company and responsible contact."}, "funding": {"title": "Capital need", "short": "Purpose and amount", "body": "Explain the plan, why it matters, and how much capital is needed."}, "documents": {"title": "Documents", "short": "History and projections", "body": "Add the materials that help explain the business and capital need."}, "review": {"title": "Review", "short": "Confirm and submit", "body": "Confirm the information before submitting the opportunity for preparation."}},
-      "originator": {"organization": {"title": "Advisory firm", "short": "Institutional profile", "body": "Register the advisory firm, boutique, or organization responsible for origination."}, "company": {"title": "Advised company", "short": "Relationship and authority", "body": "Identify the company, contact, and basis of your authorization to act."}, "funding": {"title": "Capital need", "short": "Purpose and amount", "body": "Describe the transaction to be prepared on the company's behalf."}, "documents": {"title": "Documents", "short": "History and projections", "body": "Add the materials received from the company."}, "review": {"title": "Review", "short": "Confirm and submit", "body": "Review the opportunity and authority record before submission."}},
-      "capital_provider": {"organization": {"title": "Institution", "short": "Institutional profile", "body": "Register the manager, fund, FIDC, factor, or lending institution."}, "fund": {"title": "Fund or vehicle", "short": "Strategy", "body": "Start with the main fund, vehicle, or strategy that should receive opportunities."}, "mandate": {"title": "Mandate", "short": "Investment criteria", "body": "Define ticket, sectors, structures, term, pricing, collateral, and exclusions."}, "contacts": {"title": "Contacts and routing", "short": "Responsible people", "body": "Identify who should receive each type of opportunity."}, "review": {"title": "Review", "short": "Activate criteria", "body": "Confirm the mandate before activating it for qualification."}}
+      "company": {
+        "organization": {
+          "title": "Company",
+          "short": "Basic information",
+          "body": "Identify the company and responsible contact."
+        },
+        "funding": {
+          "title": "Capital need",
+          "short": "Purpose and amount",
+          "body": "Explain the plan, why it matters, and how much capital is needed."
+        },
+        "documents": {
+          "title": "Documents",
+          "short": "History and projections",
+          "body": "Add the materials that help explain the business and capital need."
+        },
+        "review": {
+          "title": "Review",
+          "short": "Confirm and submit",
+          "body": "Confirm the information before submitting the opportunity for preparation."
+        }
+      },
+      "originator": {
+        "organization": {
+          "title": "Advisory firm",
+          "short": "Institutional profile",
+          "body": "Register the advisory firm, boutique, or organization responsible for origination."
+        },
+        "company": {
+          "title": "Advised company",
+          "short": "Relationship and authority",
+          "body": "Identify the company, contact, and basis of your authorization to act."
+        },
+        "funding": {
+          "title": "Capital need",
+          "short": "Purpose and amount",
+          "body": "Describe the transaction to be prepared on the company's behalf."
+        },
+        "documents": {
+          "title": "Documents",
+          "short": "History and projections",
+          "body": "Add the materials received from the company."
+        },
+        "review": {
+          "title": "Review",
+          "short": "Confirm and submit",
+          "body": "Review the opportunity and authority record before submission."
+        }
+      },
+      "capital_provider": {
+        "organization": {
+          "title": "Institution",
+          "short": "Institutional profile",
+          "body": "Register the manager, fund, FIDC, factor, or lending institution."
+        },
+        "fund": {
+          "title": "Fund or vehicle",
+          "short": "Strategy",
+          "body": "Start with the main fund, vehicle, or strategy that should receive opportunities."
+        },
+        "mandate": {
+          "title": "Mandate",
+          "short": "Investment criteria",
+          "body": "Define ticket, sectors, structures, term, pricing, collateral, and exclusions."
+        },
+        "contacts": {
+          "title": "Contacts and routing",
+          "short": "Responsible people",
+          "body": "Identify who should receive each type of opportunity."
+        },
+        "review": {
+          "title": "Review",
+          "short": "Activate criteria",
+          "body": "Confirm the mandate before activating it for qualification."
+        }
+      }
     }
   },
   "App": {
@@ -768,6 +897,32 @@
       "remove": "The document could not be removed. It may already be linked to a case.",
       "sessionNotFound": "This session was not found or does not belong to your workspace.",
       "back": "Back"
+    },
+    "operation": {
+      "kicker": "Intended operation",
+      "title": "What are you looking for?",
+      "body": "This defines what the desk asks for, what it reads first and how it structures. You can change it later.",
+      "save": "Confirm",
+      "change": "Change",
+      "selected": "Selected operation",
+      "growth_expansion": "Growth / Expansion",
+      "working_capital": "Working capital",
+      "refinance": "Refinance",
+      "acquisition": "Acquisition",
+      "equipment_finance": "Equipment finance",
+      "other": "Other"
+    },
+    "checklist": {
+      "kicker": "What the desk needs",
+      "minimumTitle": "Minimum to open the case",
+      "idealTitle": "Ideal to structure it and take it to market",
+      "progress": "{satisfied} of {total}",
+      "satisfied": "Received",
+      "pending": "Pending",
+      "whyItMatters": "Why it matters",
+      "emptyBody": "Choose the operation above so the desk can build the list of what it needs.",
+      "unmatched": "{count} uploaded document(s) match no item on the list — the desk reads them anyway.",
+      "recognizedAs": "Recognised as"
     }
   }
 }

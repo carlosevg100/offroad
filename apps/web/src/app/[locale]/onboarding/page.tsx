@@ -25,6 +25,7 @@ import {redirect} from "next/navigation";
 
 import {BrandMark} from "@/components/brand-mark";
 import {IntakeCollect} from "@/components/intake/intake-collect";
+import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {OnboardingDocumentUploader} from "@/components/onboarding-document-uploader";
@@ -42,6 +43,7 @@ import {
   finishDocumentsStep,
   previousOnboardingStep,
   processDocumentIntake,
+  setIntakeOperation,
   removeIntakeDocument,
   resolveIntakeIssue,
   reviewIntakeCandidate,
@@ -351,6 +353,12 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               />
             ) : (
               <IntakeCollect
+                checklist={await loadIntakeChecklist({
+                  supabase,
+                  organizationId: organization.id,
+                  sessionId: intakeReview.session.id,
+                  locale: locale === "en-US" ? "en" : "pt",
+                })}
                 className="onboarding-stage__form"
                 documents={intakeReview.documents}
                 locale={locale}
@@ -358,6 +366,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 processAction={processDocumentIntake}
                 removeAction={removeIntakeDocument}
                 session={intakeReview.session}
+                setOperationAction={setIntakeOperation}
                 userId={userId}
               />
             )

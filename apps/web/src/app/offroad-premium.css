@@ -5901,3 +5901,195 @@ button[disabled].workspace-switcher,
 button[disabled].workspace-search,
 .opportunity-rail button[disabled],
 .workspace-topbar__actions button[disabled] {cursor: default; opacity: .55;}
+
+/* Guided intake: the operation, then the checklist the desk answers by reading */
+.intake-operation {
+  display: grid;
+  gap: 16px;
+}
+
+.intake-operation__intro h3 {
+  margin: 4px 0 6px;
+}
+
+.intake-operation__intro p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.intake-operation__options {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.intake-operation__option {
+  align-items: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 14px 16px;
+  text-align: left;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.intake-operation__option:hover {
+  border-color: var(--accent-bright);
+}
+
+.intake-operation__option svg {
+  color: var(--muted);
+  flex: none;
+}
+
+.intake-operation__option--selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+
+.intake-operation__option--selected svg {
+  color: var(--paper);
+}
+
+.intake-checklist {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: grid;
+  gap: 20px;
+  padding: 22px;
+}
+
+.intake-checklist--empty p {
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+
+.intake-checklist__head {
+  display: grid;
+  gap: 8px;
+}
+
+.intake-checklist__next {
+  border-left: 3px solid var(--signal);
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin: 0;
+  padding-left: 12px;
+}
+
+/* Below the minimum the message is the blocking one; above it, it is guidance. */
+.intake-checklist__next--blocked {
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.intake-checklist__next--priceable {
+  border-left-color: var(--success);
+}
+
+.intake-checklist__group header {
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 8px;
+}
+
+.intake-checklist__group h4 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.intake-checklist__progress {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.intake-checklist__group ul {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.intake-checklist__group li {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 20px 1fr;
+}
+
+.intake-checklist__mark {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  display: inline-flex;
+  height: 20px;
+  justify-content: center;
+  width: 20px;
+}
+
+.intake-checklist__group li.is-satisfied .intake-checklist__mark {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--paper);
+}
+
+.intake-checklist__item {
+  display: grid;
+  gap: 4px;
+}
+
+.intake-checklist__item strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.intake-checklist__state {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.intake-checklist__group li.is-satisfied .intake-checklist__state {
+  color: var(--success);
+}
+
+.intake-checklist__files,
+.intake-checklist__why {
+  align-items: baseline;
+  color: var(--muted);
+  display: flex;
+  font-size: 0.88rem;
+  gap: 6px;
+}
+
+.intake-checklist__why em {
+  color: var(--ink-soft);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.intake-checklist__unmatched {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+  padding-top: 14px;
+}
+
+@media (max-width: 640px) {
+  .intake-operation__options {
+    grid-template-columns: 1fr;
+  }
+}
