@@ -93,7 +93,7 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
   - **score de prontidão em cinco componentes**, nunca um número só — suficiência de dados (mínimo pesa o dobro), estado da conciliação (ponderado por severidade), qualidade da evidência (rank médio + % com âncora confirmada), lacunas materiais e bloqueios. Cada componente traz a explicação em números que o leitor confere. **Bloqueio não desconta pontos: segura o caso.** Um pacote 90% completo com balanço que não fecha não está 90% pronto
   - **auditor de evidência**: relê cada claim material, extrai os números realmente escritos na frase e recusa qualquer um que não apareça nos fatos ou cálculos citados. Ano, percentual e contagem passam sem suporte (senão a prosa fica impossível de escrever); dinheiro e múltiplo, não. Falha bloqueia, não avisa
   - 14 testes
-- [ ] case brief gerado com claims (chamada de modelo, saída por schema, auditada antes de sair)
+- [x] case brief: schema versionado por seção, payload compacto (fatos conciliados, cálculos, exceções, lacunas e os focos do arquétipo — **nunca o data room cru**, para não criar a oportunidade de o modelo ler um número da página e repetir sem citar), instruções escritas como proibições, e `auditBrief` como portão único. Brief que não passa na auditoria **não sai com aviso: não sai**. Julgamento nasce não aprovado — "a alavancagem é confortável" é opinião do analista, não achado do sistema. 20 testes
 - [ ] perguntas à administração e roadmap de diligência
 
 ## Estado corrente (20/08/2026)
