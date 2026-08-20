@@ -888,6 +888,7 @@
     "errors": {
       "documents": "Add at least one document to start the analysis.",
       "processing": "Processing could not be completed. Your files remain saved; please try again.",
+      "capacity": "This workspace has reached its processing limit for the month. Your documents are safe and nothing was lost; contact the Offroad team to release the analysis.",
       "confirmation": "Confirm the required fields and final declaration before creating the case.",
       "validation": "Review the entered value and try again.",
       "session": "The document session could not be opened.",

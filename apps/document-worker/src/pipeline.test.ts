@@ -3,6 +3,7 @@ import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClamdScanner, runGate, sha256Of, verifyIntegrity, GateError, type Scanner} from "./scan";
 import {parseTesseractTsv} from "./tools";
 import type {ClaimedJob} from "./queue";
+import {ModelGatewayError} from "@offroad/model-gateway";
 
 const bytes = new TextEncoder().encode(
   "Rede Horizonte Ltda\nDemonstracao do resultado\nValores em R$ milhoes\nReceita liquida 185,4\n",
@@ -254,5 +255,47 @@ describe("logging", () => {
     const logged = JSON.stringify(log.mock.calls);
     expect(logged).not.toContain("Receita");
     expect(logged).not.toContain("185");
+  });
+});
+
+describe("what a document cost travels with its outcome", () => {
+  it("reports the spend when the job succeeds", async () => {
+    const {deps, calls} = fakes({spend: () => ({costUsd: 1.234, calls: 7})});
+    await processDocumentJob(job(), deps);
+    expect(calls.completed[0]).toMatchObject({spend: {costUsd: 1.234, calls: 7}});
+  });
+
+  it("reports the spend when the job fails, which is the case that matters", async () => {
+    // A document that burns four dollars and then fails is exactly the one worth seeing, and a
+    // ledger that counted only successes would show the cheapest possible version of the truth.
+    const {deps, calls} = fakes({
+      spend: () => ({costUsd: 4.1, calls: 22}),
+      scanner: {name: "fake", scan: async () => ({clean: false, signature: "Eicar-Test-Signature"})},
+    });
+    await processDocumentJob(job(), deps);
+    expect(calls.failed[0]?.error).toMatchObject({spend: {costUsd: 4.1, calls: 22}});
+  });
+
+  it("stops a document that exhausts its allowance, and does not retry it", async () => {
+    // A fresh gateway per attempt means the allowance resets, so retrying a document that
+    // already spent its ceiling simply spends it again. This one needs a person.
+    const {deps, calls} = fakes({
+      spend: () => ({costUsd: 5, calls: 31}),
+      classify: async () => {
+        throw new ModelGatewayError("cost budget exhausted (5.0000/5)", "budget_exceeded", {costUsd: 5});
+      },
+    });
+
+    const outcome = await processDocumentJob(job(), deps);
+
+    expect(outcome.status).toBe("failed");
+    expect(calls.failed[0]?.error).toMatchObject({reason: "model_budget_exceeded"});
+    expect(calls.failed[0]?.options).toMatchObject({retryable: false});
+  });
+
+  it("says nothing about spend when nothing is measuring it", async () => {
+    const {deps, calls} = fakes();
+    await processDocumentJob(job(), deps);
+    expect(calls.completed[0]).not.toHaveProperty("spend");
   });
 });

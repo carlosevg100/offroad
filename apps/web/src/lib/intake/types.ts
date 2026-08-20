@@ -30,6 +30,17 @@ export type IntakeStartActionSet = {
 };
 
 /** Error codes carried in the `?error=` query parameter by intake actions. */
-export type IntakeErrorCode = "documents" | "processing" | "confirmation" | "validation" | "session" | "save" | "step" | "duplicate" | "remove";
+export type IntakeErrorCode =
+  | "documents"
+  | "processing"
+  | "confirmation"
+  | "validation"
+  | "session"
+  | "save"
+  | "step"
+  | "duplicate"
+  | "remove"
+  /** The month's model spend for this organization is at its ceiling. Retrying will not help. */
+  | "capacity";
 
 export type CandidateValue = Json;

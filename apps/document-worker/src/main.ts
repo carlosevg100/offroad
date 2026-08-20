@@ -67,19 +67,29 @@ async function main(): Promise<void> {
     : null;
   if (!scanner) log("worker.scanner_disabled", {reason: "REQUIRE_VIRUS_SCAN=false"});
 
-  const gateway = createModelGateway({
-    adapters: {
-      ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
-      ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
-    },
-    onCall: (call) => log("model.call", {...call}),
-  });
+  // One gateway per job, not one per process.
+  //
+  // The gateway keeps a running total and refuses calls past its ceiling, so a single instance
+  // shared across the loop would spend the whole allowance on the first few documents and then
+  // refuse every document after them: a spend problem turned into an outage. A fresh instance
+  // per job makes the ceiling mean "this document", which is the only unit where a number like
+  // five dollars is meaningful.
+  const adapters = {
+    ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
+    ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
+  };
+  const newGateway = () =>
+    createModelGateway({
+      adapters,
+      budget: {maxCostUsd: config.MODEL_MAX_COST_USD_PER_JOB, maxCalls: config.MODEL_MAX_CALLS_PER_JOB},
+      onCall: (call) => log("model.call", {...call}),
+    });
 
   // The payload's URLs are input, `SUPABASE_URL` is configuration, and the two are not
   // allowed to disagree. See `storage-url.ts` for what a worker that trusted them would be.
   const guardStorageUrl = createStorageUrlGuard(config.SUPABASE_URL);
 
-  const dependencies: PipelineDependencies = {
+  const dependenciesFor = (gateway: ReturnType<typeof newGateway>): PipelineDependencies => ({
     queue,
     scanner,
     classify: createClassifier(gateway),
@@ -107,7 +117,8 @@ async function main(): Promise<void> {
       if (!response.ok) throw new Error(`the layer could not be stored (${response.status})`);
     },
     log,
-  };
+    spend: () => gateway.spent(),
+  });
 
   let stopping = false;
   let current: Promise<unknown> | null = null;
@@ -150,9 +161,18 @@ async function main(): Promise<void> {
       log("job.heartbeat_failed", {job: job?.job_id, message: error.message}),
     );
 
-    current = processDocumentJob(job, dependencies)
+    const gateway = newGateway();
+    current = processDocumentJob(job, dependenciesFor(gateway))
       .then((outcome) => {
-        log("job.finished", {job: job?.job_id, status: outcome.status, ms: Date.now() - startedAt, stages: outcome.stages.length});
+        const spent = gateway.spent();
+        log("job.finished", {
+          job: job?.job_id,
+          status: outcome.status,
+          ms: Date.now() - startedAt,
+          stages: outcome.stages.length,
+          costUsd: spent.costUsd,
+          modelCalls: spent.calls,
+        });
       })
       .catch((error: Error) => {
         // processDocumentJob reports its own failures; reaching here means the reporting

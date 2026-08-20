@@ -175,6 +175,9 @@ export async function startProcessingRun(input: {
     p_pipeline_version: PIPELINE_VERSION,
     ...(input.budget ? {p_budget: input.budget as unknown as Json} : {}),
   });
+  // The ceiling is not a processing failure, and telling somebody to try again when trying
+  // again cannot work is the kind of small dishonesty that costs a user an afternoon.
+  if (error?.message.includes("model_month_ceiling_reached")) return {ok: false, error: "capacity"};
   if (error || !data) return {ok: false, error: "processing"};
 
   return {ok: true, value: readRunResult(data)};

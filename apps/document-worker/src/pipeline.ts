@@ -5,6 +5,7 @@ import {
   type DocumentConverter,
   type ParseResult,
 } from "@offroad/document-parsers";
+import {ModelGatewayError} from "@offroad/model-gateway";
 import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
 import type {ClaimedJob, QueueClient} from "./queue";
 
@@ -75,6 +76,14 @@ export type PipelineDependencies = {
   /** Optional: without it the worker still reads and profiles, it just proposes nothing. */
   extract?: Extractor;
   now?: () => string;
+  /**
+   * What this job has spent so far, read at the moment the job is reported.
+   *
+   * Reported on failure as well as on success, and that is the point: a document that burns
+   * four dollars and then fails is exactly the one worth seeing, and a ledger that only counts
+   * successes would show the cheapest possible version of the truth.
+   */
+  spend?: () => {costUsd: number; calls: number};
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
 
@@ -128,7 +137,16 @@ export async function processDocumentJob(job: ClaimedJob, deps: PipelineDependen
       // Recorded on the document (it becomes `rejected`) and reported as a permanent failure:
       // retrying an infected file would only scan it again.
       await queue.recordDocument(job, {scanResult: verdict});
-      await queue.fail(job, {reason: "infected", signature: verdict.signature, document: payload.original_name}, {retryable: false});
+      await queue.fail(
+        job,
+        {
+          reason: "infected",
+          signature: verdict.signature,
+          document: payload.original_name,
+          ...(deps.spend ? {spend: deps.spend()} : {}),
+        },
+        {retryable: false},
+      );
       log("document.infected", {job: job.job_id, signature: verdict.signature});
       return {status: "failed", stages};
     }
@@ -228,13 +246,18 @@ export async function processDocumentJob(job: ClaimedJob, deps: PipelineDependen
       warnings: parsed.warnings,
       detected: parsed.detected,
       ...(extracted ? {candidates: written, chunks_failed: extracted.chunks.failed} : {}),
+      ...(deps.spend ? {spend: deps.spend()} : {}),
     });
 
     log("document.done", {job: job.job_id, kind: classified.profile.document_kind, candidates: written});
     return {status: "succeeded", stages, layerBytes: layerBody.byteLength, documentKind: classified.profile.document_kind};
   } catch (error) {
     const failure = describeFailure(error);
-    await queue.fail(job, failure.detail, {retryable: failure.retryable, retryInSeconds: failure.retryInSeconds});
+    await queue.fail(
+      job,
+      {...failure.detail, ...(deps.spend ? {spend: deps.spend()} : {})},
+      {retryable: failure.retryable, retryInSeconds: failure.retryInSeconds},
+    );
     log("document.failed", {job: job.job_id, reason: failure.detail.reason});
     return {status: "failed", stages};
   }
@@ -255,6 +278,16 @@ function describeFailure(error: unknown): {
       retryable: error.retryable,
       retryInSeconds: 120,
       detail: {reason: error.code, message: error.message, code: error.code},
+    };
+  }
+
+  if (error instanceof ModelGatewayError && error.code === "budget_exceeded") {
+    // Not retryable: every attempt starts with a fresh allowance, so retrying a document that
+    // already spent its ceiling spends it again. This needs a person to look at the file.
+    return {
+      retryable: false,
+      retryInSeconds: 0,
+      detail: {reason: "model_budget_exceeded", message: error.message, code: error.code},
     };
   }
 
