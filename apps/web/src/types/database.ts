@@ -2603,6 +2603,14 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_case_brief: {
+        Args: {
+          p_lease_seconds?: number
+          p_organization_id: string
+          p_session_id: string
+        }
+        Returns: boolean
+      }
       complete_intake_processing: {
         Args: {
           p_candidates: Json
@@ -2652,6 +2660,15 @@ export type Database = {
           p_locale?: string
         }
         Returns: string
+      }
+      record_case_model_spend: {
+        Args: {
+          p_calls?: number
+          p_cost_usd: number
+          p_organization_id: string
+          p_session_id: string
+        }
+        Returns: undefined
       }
       review_intake_candidate: {
         Args: {

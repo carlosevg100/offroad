@@ -199,7 +199,11 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
               ))}
           </>
         ) : (
-          <p className="form-notice">{t("briefBlocked")}</p>
+          // "Being prepared" and "the audit refused it" are different situations with different
+          // next actions, and a single message for both teaches the reader to ignore it.
+          <p className="form-notice">
+            {state.briefBlockedBy.includes("brief_in_progress") ? t("briefInProgress") : t("briefBlocked")}
+          </p>
         )}
       </div>
 

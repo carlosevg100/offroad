@@ -985,7 +985,8 @@
       "modelBlocked": "O modelo precisa de pelo menos um número conciliado. Envie as demonstrações financeiras e ele passa a ser emitido.",
       "origin_requested": "Você pediu",
       "origin_proposed": "Nossa proposta",
-      "youAskedFor": "Você pediu"
+      "youAskedFor": "Você pediu",
+      "briefInProgress": "O caso escrito está sendo preparado agora. Os números, as exceções e a estrutura abaixo já estão prontos; atualize em alguns instantes para ler o texto."
     },
     "brief": {
       "kicker": "A operação",
