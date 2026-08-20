@@ -90,7 +90,10 @@ export function verifyCandidate(
     } else {
       if (parsed.detectedScale && candidate.scale !== 1 && parsed.detectedScale !== candidate.scale) flags.add("scale_conflict");
       effectiveScale = candidate.scale !== 1 ? candidate.scale : (parsed.detectedScale ?? 1);
-      normalizedValue = parsed.value.times(effectiveScale).toDecimalPlaces(8).toFixed();
+      // Money is stored at cent precision. Anything past two decimals in a currency amount is
+      // an artifact of parsing or of the model's own arithmetic, never information — and it is
+      // exactly the kind of noise that makes 53760000 fail to equal 53760000.00000001.
+      normalizedValue = parsed.value.times(effectiveScale).toDecimalPlaces(2).toFixed();
       // a scale other than 1 must be declared somewhere we can see (document/table header or profile)
       const declaredInText = parsed.detectedScale === effectiveScale;
       const declared = declaredInText || context.layer.scaleDeclarations.some((d) => d.scale === effectiveScale) || context.profile.scale === effectiveScale;
@@ -107,6 +110,14 @@ export function verifyCandidate(
     else normalizedValue = bool ? "true" : "false";
   } else if (expectedType === "list") {
     normalizedValue = JSON.stringify(parseList(candidate.value_raw));
+  } else if (field.definition.canonical) {
+    // The ontology, not the model, decides the canonical form of these values. "12.345.678/0001-95"
+    // and "12345678000195" are one CNPJ; "Fontes", "FONTES" and "origens" are one side of a
+    // sources & uses table; "São Paulo — SP" is the UF. A value that reduces to nothing is a
+    // value the field cannot hold, and it says so instead of passing as prose.
+    const canonical = canonicalizeText(candidate.value_raw, field.definition.canonical);
+    if (canonical === null) flags.add("value_unparseable");
+    else normalizedValue = canonical;
   }
 
   if (candidate.period && context.profile.periodEnd && candidate.period.end > context.profile.periodEnd && field.definition.group !== "projections") {
@@ -138,6 +149,30 @@ export function verifyCandidate(
     additional_anchors: [],
   };
   return {kind: "verified", value};
+}
+
+/** Applies an ontology-declared canonical form to a text value. Returns null when the value cannot hold it. */
+export function canonicalizeText(raw: string, canonical: NonNullable<ReturnType<typeof resolveFieldPath>>["definition"]["canonical"]): string | null {
+  if (!canonical) return raw.trim();
+  if (canonical.kind === "digits") {
+    const digits = raw.replace(/\D+/g, "");
+    return digits.length > 0 ? digits : null;
+  }
+  const normalized = normalizeText(raw);
+  for (const value of canonical.values) {
+    if (normalized === normalizeText(value)) return value;
+  }
+  // Longest synonym first, so "mato grosso do sul" wins over "mato grosso" inside prose.
+  const synonyms = Object.entries(canonical.synonyms).sort((a, b) => b[0].length - a[0].length);
+  for (const [synonym, value] of synonyms) {
+    if (normalized === synonym || normalized.includes(synonym)) return value;
+  }
+  // A bare canonical value embedded in prose ("São Paulo — SP") still resolves.
+  for (const value of canonical.values) {
+    const token = normalizeText(value);
+    if (new RegExp(`(^|[^a-z0-9])${token}([^a-z0-9]|$)`).test(normalized)) return value;
+  }
+  return null;
 }
 
 function entitiesCompatible(left: string, right: string): boolean {

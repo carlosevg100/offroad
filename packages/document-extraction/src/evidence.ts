@@ -37,16 +37,16 @@ export type RenderOptions = {
 };
 
 /**
- * Sized by what has to come *out*, not by what fits going in.
+ * Sized by what has to come *out*, not by what fits going in — but measured, not guessed.
  *
- * A dense financial statement produces roughly one candidate per number, and each candidate
- * costs a few hundred output tokens. At 60k characters of evidence the audited statements of
- * this data room asked for more candidates than a single response could hold: the answer hit
- * the output ceiling, stopped mid-JSON, and the whole chunk was lost — the most important
- * document in the room contributed nothing, silently, while the run looked successful.
- * Smaller chunks cost a few more calls and remove that failure mode.
+ * The history in three runs: at 60k a dense statement asked for more candidates than one
+ * response could hold and the whole chunk died at the output ceiling; at 18k recall got
+ * *worse* (44.6% → 40.0%), because tiny windows cut the table header away from its rows and
+ * the model lost period and scale. 40k with structural packing (whole sheets/pages together,
+ * headers repeated on a split) keeps context intact, and per-candidate salvage now means a
+ * ceiling-hit response loses its tail, not the document.
  */
-const DEFAULT_MAX_CHARS = 18_000;
+const DEFAULT_MAX_CHARS = 40_000;
 const DEFAULT_MAX_LINE_CHARS = 2_000;
 
 const isTableAggregate = (id: string) => /\.t\d+$/.test(id);
@@ -86,7 +86,23 @@ export function selectLines(index: LayerIndex, options: RenderOptions = {}): Lin
     if (isRow(anchor.id) && anchor.containerId) containersWithRows.add(anchor.containerId);
   }
 
+  // The index stores a table's rows before the table itself, but the reader needs the columns
+  // before the first row — "Receita | 185.400 | 172.900" means nothing until the years arrive.
+  // So: collect each table's header first, then emit it right before its first row.
+  const headerByTable = new Map<string, Line>();
+  for (const anchor of index.byId.values()) {
+    if (!isTableAggregate(anchor.id)) continue;
+    const header = anchor.text.split("\n", 1)[0] ?? "";
+    // A table without a detected header starts with its first data row; repeating that line
+    // as "columns" would state a falsehood, so only headerish lines qualify.
+    const isHeaderish = header.length > 0 && !/\d{3}[.,]\d{3}/.test(header);
+    if (isHeaderish) {
+      headerByTable.set(anchor.id, {anchorId: anchor.id, text: `colunas: ${clip(header, maxLineChars)}`, container: containerLabel(anchor)});
+    }
+  }
+
   const lines: Line[] = [];
+  const emittedHeaders = new Set<string>();
   for (const anchor of index.byId.values()) {
     if (isContainer(anchor)) continue;
     if (isTableAggregate(anchor.id)) continue;
@@ -96,6 +112,15 @@ export function selectLines(index: LayerIndex, options: RenderOptions = {}): Lin
     // A spreadsheet whose tables were detected is read by rows; one without them, by cells.
     if (anchor.precision === "cell" && !isRow(anchor.id) && containersWithRows.has(container)) continue;
 
+    if (isRow(anchor.id)) {
+      const tableId = anchor.id.replace(/\.r\d+$/, "");
+      const headerLine = headerByTable.get(tableId);
+      if (headerLine && !emittedHeaders.has(tableId)) {
+        emittedHeaders.add(tableId);
+        lines.push(headerLine);
+      }
+    }
+
     const text = clip(anchor.text, maxLineChars);
     if (!text) continue;
     lines.push({anchorId: anchor.id, text, container: containerLabel(anchor)});
@@ -103,37 +128,70 @@ export function selectLines(index: LayerIndex, options: RenderOptions = {}): Lin
   return lines;
 }
 
-/** Renders the layer into one or more chunks, each under the character ceiling. */
+/**
+ * Renders the layer into chunks that respect the document's own structure.
+ *
+ * Chunk boundaries fall between containers (pages, sheets, sections) whenever the budget
+ * allows: a sheet read whole is a sheet whose labels, columns and totals stay in one view.
+ * Only a container that alone exceeds the budget is split — and then every table header line
+ * seen so far in that container is repeated at the top of the continuation, so a row never
+ * arrives without its columns. That header repetition is the fix for the measured regression
+ * where "Receita | 185.400 | 172.900" reached the model with no years attached.
+ */
 export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): EvidenceChunk[] {
   const maxChars = options.maxChars ?? DEFAULT_MAX_CHARS;
   const lines = selectLines(index, options);
 
+  // Group into containers first: structure decides boundaries, size only forces them.
+  const groups: {container: string; lines: Line[]}[] = [];
+  for (const line of lines) {
+    const last = groups[groups.length - 1];
+    if (last && last.container === line.container) last.lines.push(line);
+    else groups.push({container: line.container, lines: [line]});
+  }
+
   const chunks: {parts: string[]; anchorIds: string[]; size: number}[] = [];
   let current = {parts: [] as string[], anchorIds: [] as string[], size: 0};
-  let lastContainer: string | null = null;
 
   const flush = () => {
     if (current.parts.length === 0) return;
     chunks.push(current);
     current = {parts: [], anchorIds: [], size: 0};
-    lastContainer = null;
   };
 
-  for (const line of lines) {
-    const header = line.container === lastContainer ? null : `--- ${line.container} ---`;
-    const rendered = `[${line.anchorId}] ${line.text}`;
-    const cost = rendered.length + 1 + (header ? header.length + 1 : 0);
+  const push = (part: string, anchorId?: string) => {
+    current.parts.push(part);
+    current.size += part.length + 1;
+    if (anchorId) current.anchorIds.push(anchorId);
+  };
 
-    if (current.size > 0 && current.size + cost > maxChars) flush();
+  for (const group of groups) {
+    const rendered = group.lines.map((line) => ({line, text: `[${line.anchorId}] ${line.text}`}));
+    const groupSize = group.container.length + 9 + rendered.reduce((sum, item) => sum + item.text.length + 1, 0);
 
-    if (line.container !== lastContainer) {
-      current.parts.push(`--- ${line.container} ---`);
-      current.size += line.container.length + 9;
-      lastContainer = line.container;
+    // Whole container fits: keep it together, starting a new chunk if the current one is busy.
+    if (groupSize <= maxChars) {
+      if (current.size > 0 && current.size + groupSize > maxChars) flush();
+      push(`--- ${group.container} ---`);
+      for (const item of rendered) push(item.text, item.line.anchorId);
+      continue;
     }
-    current.parts.push(rendered);
-    current.anchorIds.push(line.anchorId);
-    current.size += rendered.length + 1;
+
+    // The container alone exceeds the budget: split it, repeating its header lines so a row
+    // never loses its columns across the cut.
+    flush();
+    const headerLines: string[] = [];
+    push(`--- ${group.container} ---`);
+    for (const item of rendered) {
+      if (current.size + item.text.length + 1 > maxChars && current.anchorIds.length > 0) {
+        flush();
+        push(`--- ${group.container} (continuação) ---`);
+        for (const headerLine of headerLines) push(headerLine);
+      }
+      push(item.text, item.line.anchorId);
+      if (item.line.text.startsWith("colunas: ")) headerLines.push(item.text);
+    }
+    flush();
   }
   flush();
 

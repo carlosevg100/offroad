@@ -53,6 +53,8 @@ const gateway = createModelGateway({
 
 const candidates: SnapshotCandidate[] = [];
 const profiles: SnapshotProfile[] = [];
+/** Full per-candidate detail (flags, anchors, quotes) — this is what makes a failure diagnosable offline. */
+const detail: Record<string, unknown> = {};
 const usage = {costUsd: 0, calls: 0};
 const perDocument: Array<{document: string; candidates: number; unverified: number; absent: number; chunks: number; failed: number; costUsd: number; ms: number}> = [];
 
@@ -122,6 +124,23 @@ for (const entry of gold.manifest.documents) {
     ms: Date.now() - startedAt,
   });
 
+  detail[entry.name] = {
+    candidates: result.candidates.map((candidate) => ({
+      field_path: candidate.field_path,
+      value_raw: candidate.value_raw,
+      normalized_value: candidate.normalized_value,
+      anchor: candidate.anchor,
+      quote: candidate.quote,
+      confidence: candidate.confidence,
+      anchor_verified: candidate.anchor_verified,
+      verifier_flags: candidate.verifier_flags,
+    })),
+    rejected: result.rejected.map((rejection) => ({field_path: rejection.candidate.field_path, reason: rejection.reason})),
+    absent: result.absentFields,
+    alerts: result.alerts,
+    malformed: result.malformed,
+  };
+
   profiles.push({
     document: entry.name,
     kind,
@@ -172,5 +191,5 @@ console.log(`\nTotal: ${usage.calls} chamadas, $${usage.costUsd.toFixed(4)}`);
 const outDir = join(here, "..", "out");
 mkdirSync(outDir, {recursive: true});
 const outPath = join(outDir, `extraction-${caseId}.json`);
-writeFileSync(outPath, `${JSON.stringify({report, snapshot, perDocument}, null, 2)}\n`);
+writeFileSync(outPath, `${JSON.stringify({report, snapshot, perDocument, detail}, null, 2)}\n`);
 console.log(`\nrelatório completo: ${outPath}`);

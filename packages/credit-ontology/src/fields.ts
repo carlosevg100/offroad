@@ -41,6 +41,19 @@ export type FieldUnit = z.infer<typeof fieldUnitSchema>;
 export const materialitySchema = z.enum(["material", "supporting"]);
 export type Materiality = z.infer<typeof materialitySchema>;
 
+/**
+ * How a text value is reduced to its canonical form — playbook data, not model behaviour.
+ *
+ * `digits` keeps only digits (a CNPJ is one number wearing punctuation: `12.345.678/0001-95`
+ * and `12345678000195` are the same fact and must compare equal). `enum` maps free prose to a
+ * closed vocabulary: "Fontes", "FONTES" and "origens" all mean `sources`, and a value that
+ * maps to nothing is a value the field cannot hold. Synonym keys are matched after lowercase
+ * and diacritics stripping.
+ */
+export type FieldCanonical =
+  | {kind: "digits"}
+  | {kind: "enum"; values: readonly string[]; synonyms: Readonly<Record<string, string>>};
+
 export type FieldDefinition = {
   /** Pattern with placeholders: `{period}` (2025 | 2026_07), `{i}` (index), `{ytd}` (optional `_7m`/`_ytd`/`_ltm` suffix). */
   pattern: string;
@@ -52,6 +65,7 @@ export type FieldDefinition = {
   requiresEntity: boolean;
   labels: {pt: string; en: string};
   synonyms: {pt: string[]; en: string[]};
+  canonical?: FieldCanonical;
   description?: string;
 };
 
@@ -104,14 +118,39 @@ const historical = financialMetrics.map(([key, pt, en, spt, sen]) => f(`historic
 const interim = financialMetrics.map(([key, pt, en, spt, sen]) => f(`interim_financials.{period}.${key}{ytd}`, "interim_financials", "number", "money", "material", pt, en, spt, sen));
 const projected = financialMetrics.map(([key, pt, en, spt, sen]) => f(`projections.{period}.${key}`, "projections", "number", "money", "material", `${pt} (projetado)`, `${en} (projected)`, spt, sen));
 
+const withCanonical = (field: FieldDefinition, canonical: FieldCanonical): FieldDefinition => ({...field, canonical});
+
+/** "Fontes"/"origens" and "usos"/"aplicações" reduce to the two sides a sources & uses table has. */
+const sourcesUsesSide: FieldCanonical = {
+  kind: "enum",
+  values: ["sources", "uses"],
+  synonyms: {
+    fontes: "sources", fonte: "sources", origens: "sources", origem: "sources", entradas: "sources", source: "sources", sources: "sources",
+    usos: "uses", uso: "uses", aplicacoes: "uses", aplicacao: "uses", destinacao: "uses", saidas: "uses", use: "uses", uses: "uses",
+  },
+};
+
+/** A state is its UF: a document may write "São Paulo — SP" or "Minas Gerais", the fact is the sigla. */
+const brazilianStates: FieldCanonical = {
+  kind: "enum",
+  values: ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"],
+  synonyms: {
+    acre: "AC", alagoas: "AL", amapa: "AP", amazonas: "AM", bahia: "BA", ceara: "CE", "distrito federal": "DF",
+    "espirito santo": "ES", goias: "GO", maranhao: "MA", "mato grosso": "MT", "mato grosso do sul": "MS",
+    "minas gerais": "MG", para: "PA", paraiba: "PB", parana: "PR", pernambuco: "PE", piaui: "PI",
+    "rio de janeiro": "RJ", "rio grande do norte": "RN", "rio grande do sul": "RS", rondonia: "RO",
+    roraima: "RR", "santa catarina": "SC", "sao paulo": "SP", sergipe: "SE", tocantins: "TO",
+  },
+};
+
 export const fieldCatalog: readonly FieldDefinition[] = [
   // company
   f("company.legal_name", "company", "text", "text", "material", "Razão social", "Legal name", ["denominação social"], ["registered name"]),
   f("company.display_name", "company", "text", "text", "supporting", "Nome fantasia", "Trade name", ["nome fantasia", "marca"], ["brand"]),
-  f("company.legal_identifier", "company", "text", "text", "material", "CNPJ", "Legal identifier (CNPJ)", ["cnpj"], ["tax id"]),
+  withCanonical(f("company.legal_identifier", "company", "text", "text", "material", "CNPJ", "Legal identifier (CNPJ)", ["cnpj"], ["tax id"]), {kind: "digits"}),
   f("company.jurisdiction", "company", "text", "text", "supporting", "Jurisdição", "Jurisdiction", ["país"], ["country"]),
   f("company.city", "company", "text", "text", "supporting", "Cidade", "City", ["município"], []),
-  f("company.state", "company", "text", "text", "supporting", "Estado", "State", ["uf"], []),
+  withCanonical(f("company.state", "company", "text", "text", "supporting", "Estado", "State", ["uf"], []), brazilianStates),
   f("company.website", "company", "text", "text", "supporting", "Site", "Website", ["website"], []),
   f("company.sector", "company", "text", "text", "supporting", "Setor", "Sector", ["segmento", "atividade"], ["industry"]),
   f("company.subsector", "company", "text", "text", "supporting", "Subsetor", "Subsector", [], []),
@@ -119,7 +158,7 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("company.employees", "company", "number", "count", "supporting", "Funcionários", "Employees", ["colaboradores", "headcount"], []),
   f("company.description", "company", "text", "text", "supporting", "Descrição do negócio", "Business description", ["atividade principal"], []),
   f("company.group_structure.{i}.name", "company", "text", "text", "material", "Entidade do grupo", "Group entity", ["controlada", "coligada", "holding"], ["subsidiary"]),
-  f("company.group_structure.{i}.legal_identifier", "company", "text", "text", "material", "CNPJ da entidade", "Entity legal identifier", ["cnpj"], []),
+  withCanonical(f("company.group_structure.{i}.legal_identifier", "company", "text", "text", "material", "CNPJ da entidade", "Entity legal identifier", ["cnpj"], []), {kind: "digits"}),
   f("company.group_structure.{i}.role", "company", "text", "text", "supporting", "Papel no grupo", "Role in group", [], []),
   f("company.group_structure.{i}.ownership_pct", "company", "number", "percent", "material", "Participação", "Ownership", ["participação societária"], ["stake"]),
   f("company.controllers.{i}.name", "company", "text", "text", "material", "Controlador", "Controller", ["acionista", "sócio", "quotista"], ["shareholder"]),
@@ -138,7 +177,7 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("transaction.purpose", "transaction", "text", "text", "material", "Finalidade", "Purpose", ["destinação", "objetivo"], ["use of funds"]),
   f("transaction.use_of_proceeds.{i}.item", "transaction", "text", "text", "material", "Uso dos recursos — item", "Use of proceeds — item", ["destinação dos recursos"], []),
   f("transaction.use_of_proceeds.{i}.amount", "transaction", "number", "money", "material", "Uso dos recursos — valor", "Use of proceeds — amount", [], []),
-  f("transaction.sources_and_uses.{i}.side", "transaction", "text", "text", "material", "Fontes e usos — lado", "Sources and uses — side", ["fontes", "usos"], ["sources", "uses"]),
+  withCanonical(f("transaction.sources_and_uses.{i}.side", "transaction", "text", "text", "material", "Fontes e usos — lado", "Sources and uses — side", ["fontes", "usos"], ["sources", "uses"]), sourcesUsesSide),
   f("transaction.sources_and_uses.{i}.item", "transaction", "text", "text", "material", "Fontes e usos — item", "Sources and uses — item", [], []),
   f("transaction.sources_and_uses.{i}.amount", "transaction", "number", "money", "material", "Fontes e usos — valor", "Sources and uses — amount", [], []),
   f("transaction.desired_term_months", "transaction", "number", "months", "material", "Prazo desejado", "Desired tenor", ["prazo"], ["tenor"]),
