@@ -98,6 +98,19 @@ export type Requirement = {
   question?: {pt: string; en: string};
   /** For information items: what a good answer looks like, so nobody guesses the format. */
   example?: {pt: string; en: string};
+  /**
+   * For document items: **what file to actually send**, named the way the company calls it.
+   *
+   * A requirement labelled "Historical financial statements" is a category, and a company
+   * staring at a category sends the wrong thing or nothing at all. What unblocks people is the
+   * concrete artifact — "the audited PDF signed by the auditor, one per year", "the ERP export
+   * in .xlsx with one tab per account", "the deck you already use with investors" — because
+   * they know exactly which file on which drive that is.
+   *
+   * Each entry is one artifact, with its usual format in parentheses. Several because a company
+   * may hold the same information in different shapes, and the desk takes whichever exists.
+   */
+  accepts?: readonly {pt: string; en: string}[];
 };
 
 /** What the desk reads first, and what it is reading for. */

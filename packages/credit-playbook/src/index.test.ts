@@ -38,6 +38,37 @@ describe("playbook integrity", () => {
     }
   });
 
+  it("tells the company which file to actually send", () => {
+    // A requirement labelled "Historical financial statements" is a category, and a company
+    // staring at a category sends the wrong thing or nothing. The concrete artifact — "the
+    // audited PDF signed by the auditor" — is what people can act on.
+    for (const definition of archetypes) {
+      for (const requirement of definition.requirements) {
+        if (requirement.source === "information") continue;
+        expect(requirement.accepts?.length, `${definition.id}/${requirement.id}`).toBeGreaterThan(0);
+        for (const entry of requirement.accepts ?? []) {
+          expect(entry.pt.length).toBeGreaterThan(20);
+          expect(entry.en.length).toBeGreaterThan(20);
+          // Naming the usual format is what stops a company sending a screenshot of a
+          // spreadsheet, or a PDF of a model whose formulas are the thing we need.
+          expect(entry.pt, `${requirement.id}: ${entry.pt}`).toMatch(/\(|\.xlsx|PDF|\.pptx|\.csv|\.docx/);
+        }
+      }
+    }
+  });
+
+  it("asks for the spreadsheet, not a picture of it, where the formulas are the point", () => {
+    const plan = archetype("growth_expansion").requirements.find((requirement) => requirement.id === "project_plan");
+    expect(plan?.accepts?.[0]?.pt).toContain("premissas");
+    expect(plan?.accepts?.[0]?.pt).toContain("não envie só o PDF");
+  });
+
+  it("asks every operation for the institutional material", () => {
+    for (const definition of archetypes) {
+      expect(definition.requirements.some((r) => r.id === "institutional_materials"), definition.id).toBe(true);
+    }
+  });
+
   it("says what every item unblocks", () => {
     for (const definition of archetypes) {
       for (const requirement of definition.requirements) {

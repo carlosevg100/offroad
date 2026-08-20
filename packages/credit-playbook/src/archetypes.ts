@@ -16,6 +16,10 @@ import type {Archetype, Requirement} from "./types";
 const commonMinimum: readonly Requirement[] = [
   {
     id: "financials_historical",
+    accepts: [
+      {pt: "Demonstrações financeiras auditadas dos últimos 3 exercícios (PDF assinado pelo auditor, um por ano)", en: "Audited financial statements for the last 3 years (PDF signed by the auditor, one per year)"},
+      {pt: "Se não houver auditoria: demonstrações gerenciais ou balanços de encerramento (PDF ou planilha)", en: "If unaudited: management accounts or year-end statements (PDF or spreadsheet)"},
+    ],
     purposes: ["investor_case", "financials", "storytelling"],
     level: "minimum",
     satisfiedBy: ["audited_financial_statements", "reviewed_interim_statements", "management_accounts"],
@@ -28,6 +32,10 @@ const commonMinimum: readonly Requirement[] = [
   },
   {
     id: "financials_interim",
+    accepts: [
+      {pt: "Balancete mais recente, com no máximo 90 dias (PDF ou planilha)", en: "Most recent trial balance, no more than 90 days old (PDF or spreadsheet)"},
+      {pt: "Export do ERP com o razão ou o plano de contas do período (.xlsx, .csv ou .txt)", en: "ERP export with the ledger or chart of accounts for the period (.xlsx, .csv or .txt)"},
+    ],
     purposes: ["investor_case", "financials"],
     level: "minimum",
     satisfiedBy: ["trial_balance", "erp_export", "reviewed_interim_statements", "management_accounts"],
@@ -40,6 +48,10 @@ const commonMinimum: readonly Requirement[] = [
   },
   {
     id: "debt_schedule",
+    accepts: [
+      {pt: "Mapa de dívida em planilha: credor, saldo, taxa, vencimento, amortização, garantia e covenants por contrato (.xlsx)", en: "Debt schedule as a spreadsheet: lender, balance, rate, maturity, amortisation, collateral and covenants per facility (.xlsx)"},
+      {pt: "Contratos, CCBs ou escrituras das operações vigentes (PDF)", en: "Agreements, promissory notes or indentures of the outstanding facilities (PDF)"},
+    ],
     purposes: ["investor_case", "financials", "structure"],
     level: "minimum",
     satisfiedBy: ["debt_schedule", "loan_agreement", "debenture_indenture"],
@@ -52,6 +64,10 @@ const commonMinimum: readonly Requirement[] = [
   },
   {
     id: "corporate_identity",
+    accepts: [
+      {pt: "Contrato social ou estatuto consolidado, com as alterações (PDF)", en: "Consolidated articles of association or bylaws, with amendments (PDF)"},
+      {pt: "Organograma societário com participações, e cartão CNPJ (PDF, imagem ou apresentação)", en: "Ownership chart with stakes, and the company registration extract (PDF, image or slide)"},
+    ],
     purposes: ["investor_case", "structure"],
     level: "minimum",
     satisfiedBy: ["company_registration", "corporate_docs"],
@@ -64,6 +80,10 @@ const commonMinimum: readonly Requirement[] = [
   },
   {
     id: "request",
+    accepts: [
+      {pt: "Apresentação institucional ou deck que a companhia já usa com bancos e investidores (.pptx ou PDF)", en: "The institutional presentation or deck the company already uses with banks and investors (.pptx or PDF)"},
+      {pt: "Carta ou memorando com o pedido: montante, uso dos recursos, prazo e garantias oferecidas (PDF ou .docx)", en: "Letter or memo stating the request: amount, use of proceeds, tenor and collateral offered (PDF or .docx)"},
+    ],
     purposes: ["investor_case", "structure", "storytelling"],
     level: "minimum",
     satisfiedBy: ["capital_request_letter", "investor_deck", "cim", "business_plan"],
@@ -79,6 +99,10 @@ const commonMinimum: readonly Requirement[] = [
 const commonIdeal: readonly Requirement[] = [
   {
     id: "bank_statements",
+    accepts: [
+      {pt: "Extratos das principais contas dos últimos 6 a 12 meses (PDF ou .ofx)", en: "Statements from the main accounts for the last 6 to 12 months (PDF or .ofx)"},
+      {pt: "Ou o export de Open Finance consolidado (.csv)", en: "Or the consolidated Open Finance export (.csv)"},
+    ],
     purposes: ["financials"],
     level: "ideal",
     satisfiedBy: ["bank_statements", "open_finance_export"],
@@ -91,6 +115,9 @@ const commonIdeal: readonly Requirement[] = [
   },
   {
     id: "tax_clearance",
+    accepts: [
+      {pt: "Certidões negativas federal, estadual, municipal, FGTS e trabalhista (PDF)", en: "Federal, state, municipal, FGTS and labour clearance certificates (PDF)"},
+    ],
     purposes: ["investor_case", "structure"],
     level: "ideal",
     satisfiedBy: ["tax_clearance"],
@@ -103,6 +130,9 @@ const commonIdeal: readonly Requirement[] = [
   },
   {
     id: "auditor_opinion",
+    accepts: [
+      {pt: "Relatório do auditor independente com ênfases e ressalvas, se houver (PDF)", en: "Independent auditor's report with emphases and qualifications, if any (PDF)"},
+    ],
     purposes: ["investor_case", "financials"],
     level: "ideal",
     satisfiedBy: ["audited_financial_statements", "auditor_report_only"],
@@ -111,6 +141,23 @@ const commonIdeal: readonly Requirement[] = [
     rationale: {
       pt: "A ressalva é onde o auditor escreve o que a demonstração não mostra. É leitura obrigatória e costuma valer mais que a demonstração.",
       en: "The qualification is where the auditor writes what the statements do not show. It is required reading and often worth more than the statements.",
+    },
+  },
+  {
+    id: "institutional_materials",
+    level: "ideal",
+    purposes: ["investor_case", "storytelling"],
+    satisfiedBy: ["investor_deck", "cim", "teaser", "technical_report"],
+    accepts: [
+      {pt: "A apresentação institucional da companhia — a mesma que vai a cliente, banco ou feira (.pptx ou PDF)", en: "The company's institutional presentation — the same one used with clients, banks or at trade shows (.pptx or PDF)"},
+      {pt: "Catálogo, memorando de informações ou material de marca, se houver (PDF)", en: "Catalogue, information memorandum or brand material, if any (PDF)"},
+      {pt: "Fotos das instalações, lojas ou plantas (imagem)", en: "Photos of the facilities, stores or plants (image)"},
+    ],
+    singleDocument: false,
+    labels: {pt: "Material institucional da companhia", en: "The company's institutional material"},
+    rationale: {
+      pt: "É o que dá cara ao negócio. O investidor lê números em toda proposta que recebe; o que faz ele lembrar deste case é conseguir imaginar a operação — a loja, a planta, o produto na prateleira.",
+      en: "It is what gives the business a face. An investor reads numbers in every proposal he receives; what makes him remember this one is being able to picture the operation — the store, the plant, the product on the shelf.",
     },
   },
 ];
@@ -274,6 +321,11 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "project_plan",
+    accepts: [
+      {pt: "Modelo financeiro do projeto em planilha, com a aba de premissas visível e as fórmulas preservadas (.xlsx — não envie só o PDF)", en: "The project's financial model as a spreadsheet, with the assumptions tab visible and formulas intact (.xlsx — do not send only the PDF)"},
+      {pt: "Business plan ou memorial descritivo do projeto (PDF, .docx ou .pptx)", en: "Business plan or project memorandum (PDF, .docx or .pptx)"},
+      {pt: "Orçamento do projeto por rubrica, com contingência (.xlsx)", en: "Project budget by line item, with contingency (.xlsx)"},
+    ],
     purposes: ["investor_case", "financials", "structure", "storytelling"],
         level: "minimum",
         satisfiedBy: ["business_plan", "financial_model", "project_memorandum", "budget"],
@@ -332,6 +384,10 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "unit_economics",
+    accepts: [
+      {pt: "Planilha com a receita, a margem e o custo fixo por unidade das lojas ou plantas existentes (.xlsx)", en: "Spreadsheet with revenue, margin and fixed cost per unit for the existing stores or plants (.xlsx)"},
+      {pt: "Relatório gerencial que abra os números por unidade (PDF ou planilha)", en: "Management report breaking the numbers down per unit (PDF or spreadsheet)"},
+    ],
     purposes: ["investor_case", "financials", "storytelling"],
         level: "ideal",
         satisfiedBy: ["management_accounts", "financial_model", "business_plan"],
@@ -344,6 +400,10 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "project_schedule",
+    accepts: [
+      {pt: "Cronograma físico-financeiro do projeto (.xlsx ou PDF)", en: "Construction and disbursement schedule (.xlsx or PDF)"},
+      {pt: "Licenças, alvarás e protocolos já obtidos (PDF)", en: "Permits, licences and filings already obtained (PDF)"},
+    ],
     purposes: ["structure", "storytelling"],
         level: "ideal",
         satisfiedBy: ["project_memorandum", "technical_report", "budget"],
@@ -356,6 +416,10 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "appraisal",
+    accepts: [
+      {pt: "Laudos de avaliação dos imóveis e equipamentos oferecidos (PDF)", en: "Appraisal reports for the properties and equipment offered (PDF)"},
+      {pt: "Inventário de garantias com valor contábil, gravames e credor (.xlsx)", en: "Collateral inventory with book value, liens and creditor (.xlsx)"},
+    ],
     purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["appraisal_report", "collateral_inventory"],
@@ -485,6 +549,9 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "revenue_evidence",
+    accepts: [
+      {pt: "Faturamento mês a mês dos últimos 12 meses (.xlsx ou export do ERP)", en: "Month-by-month billings for the last 12 months (.xlsx or ERP export)"},
+    ],
     purposes: ["financials", "storytelling"],
         level: "minimum",
         satisfiedBy: ["erp_export", "management_accounts", "trial_balance"],
@@ -540,6 +607,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "receivables_aging",
+    accepts: [
+      {pt: "Aging de recebíveis por faixa de vencimento e por cliente (.xlsx)", en: "Receivables aging by ageing bucket and by customer (.xlsx)"},
+    ],
     purposes: ["financials", "structure"],
         level: "ideal",
         satisfiedBy: ["receivables_aging"],
@@ -552,6 +622,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "payables_aging",
+    accepts: [
+      {pt: "Aging de fornecedores por faixa de vencimento (.xlsx)", en: "Payables aging by ageing bucket (.xlsx)"},
+    ],
     purposes: ["financials"],
         level: "ideal",
         satisfiedBy: ["payables_aging"],
@@ -564,6 +637,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "customer_contracts",
+    accepts: [
+      {pt: "Contratos dos cinco maiores clientes, com prazo, reajuste e cláusula de cessão (PDF)", en: "Contracts with the five largest customers, showing term, indexation and assignment clauses (PDF)"},
+    ],
     purposes: ["investor_case", "structure", "storytelling"],
         level: "ideal",
         satisfiedBy: ["customer_contract"],
@@ -681,6 +757,9 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "debt_contracts",
+    accepts: [
+      {pt: "Contratos das dívidas que serão liquidadas, com as cláusulas de pré-pagamento (PDF)", en: "Agreements for the debt being repaid, including prepayment clauses (PDF)"},
+    ],
     purposes: ["structure"],
         level: "minimum",
         satisfiedBy: ["loan_agreement", "debenture_indenture", "debt_schedule"],
@@ -714,6 +793,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "collateral_release",
+    accepts: [
+      {pt: "Inventário das garantias atuais, com o credor e a condição de liberação de cada uma (.xlsx ou PDF)", en: "Inventory of current collateral, with the creditor and release condition for each (.xlsx or PDF)"},
+    ],
     purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["collateral_inventory", "loan_agreement"],
@@ -726,6 +808,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "waivers",
+    accepts: [
+      {pt: "Covenants vigentes e waivers obtidos nos últimos 36 meses (PDF)", en: "Current covenants and any waivers obtained in the last 36 months (PDF)"},
+    ],
     purposes: ["investor_case", "structure"],
         level: "ideal",
         satisfiedBy: ["loan_agreement", "regulatory_filing", "corporate_docs"],
@@ -836,6 +921,10 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "target_financials",
+    accepts: [
+      {pt: "Demonstrações da empresa-alvo dos últimos 2 a 3 exercícios (PDF ou planilha)", en: "Target company statements for the last 2 to 3 years (PDF or spreadsheet)"},
+      {pt: "Balancete recente do alvo (PDF ou planilha)", en: "Recent trial balance of the target (PDF or spreadsheet)"},
+    ],
     purposes: ["investor_case", "financials"],
         level: "minimum",
         satisfiedBy: ["audited_financial_statements", "reviewed_interim_statements", "management_accounts", "trial_balance"],
@@ -848,6 +937,10 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "transaction_documents",
+    accepts: [
+      {pt: "LOI, memorando de entendimentos ou SPA, mesmo em versão preliminar (PDF ou .docx)", en: "LOI, memorandum of understanding or SPA, even in draft (PDF or .docx)"},
+      {pt: "Modelo financeiro da transação, com as premissas de sinergia separadas (.xlsx)", en: "Transaction financial model, with synergy assumptions kept separate (.xlsx)"},
+    ],
     purposes: ["investor_case", "structure", "storytelling"],
         level: "minimum",
         satisfiedBy: ["corporate_docs", "capital_request_letter", "cim"],
@@ -881,6 +974,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "due_diligence",
+    accepts: [
+      {pt: "Relatórios de diligência contábil, fiscal e trabalhista do alvo (PDF)", en: "Accounting, tax and labour diligence reports on the target (PDF)"},
+    ],
     purposes: ["investor_case", "structure"],
         level: "ideal",
         satisfiedBy: ["technical_report", "auditor_report_only", "tax_clearance"],
@@ -893,6 +989,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "post_structure",
+    accepts: [
+      {pt: "Organograma societário depois da operação, indicando quem toma a dívida e quem gera o caixa (PDF ou apresentação)", en: "Post-transaction ownership chart, showing who borrows and who generates the cash (PDF or slide)"},
+    ],
     purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["corporate_docs"],
@@ -1013,6 +1112,9 @@ export const archetypes: readonly Archetype[] = [
       ...commonMinimum,
       {
         id: "equipment_quote",
+    accepts: [
+      {pt: "Proposta ou orçamento do fornecedor, com especificação e prazo de entrega (PDF)", en: "Supplier quote or budget, with specification and delivery lead time (PDF)"},
+    ],
     purposes: ["financials", "structure"],
         level: "minimum",
         satisfiedBy: ["budget", "supplier_contract", "project_memorandum", "technical_report"],
@@ -1046,6 +1148,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "equipment_appraisal",
+    accepts: [
+      {pt: "Laudo do equipamento ou referência de valor de revenda (PDF)", en: "Equipment appraisal or resale value reference (PDF)"},
+    ],
     purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["appraisal_report"],
@@ -1058,6 +1163,9 @@ export const archetypes: readonly Archetype[] = [
       },
       {
         id: "insurance",
+    accepts: [
+      {pt: "Apólice do equipamento ou dos ativos, com o endosso ao credor quando já houver (PDF)", en: "Policy covering the equipment or the assets, with the creditor's endorsement where it exists (PDF)"},
+    ],
     purposes: ["structure"],
         level: "ideal",
         satisfiedBy: ["insurance_policy"],
