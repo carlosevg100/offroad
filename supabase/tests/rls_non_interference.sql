@@ -510,9 +510,11 @@ begin
     'upload',
     jsonb_build_array(jsonb_build_object(
       'source_document_id', document_id,
-      'download_url', 'https://example.invalid/signed-download',
+      'download_url', 'https://p.supabase.co/storage/v1/object/sign/opportunity-documents/'
+        || org::text || '/' || session_id::text || '/df.pdf?token=one',
       'layer_object_path', org::text || '/' || session_id::text || '/df.layer.json',
-      'layer_upload_url', 'https://example.invalid/signed-upload'
+      'layer_upload_url', 'https://p.supabase.co/storage/v1/object/upload/sign/document-layers/'
+        || org::text || '/' || session_id::text || '/df.layer.json'
     )),
     'pipeline-test-v1',
     '{"max_cost_usd": 15}'::jsonb
@@ -744,9 +746,11 @@ begin
     'reprocess',
     jsonb_build_array(jsonb_build_object(
       'source_document_id', document_id,
-      'download_url', 'https://example.invalid/signed-download-2',
+      'download_url', 'https://p.supabase.co/storage/v1/object/sign/opportunity-documents/'
+        || org::text || '/' || session_id::text || '/df.pdf?token=two',
       'layer_object_path', org::text || '/' || session_id::text || '/df.layer.json',
-      'layer_upload_url', 'https://example.invalid/signed-upload-2'
+      'layer_upload_url', 'https://p.supabase.co/storage/v1/object/upload/sign/document-layers/'
+        || org::text || '/' || session_id::text || '/df.layer.json'
     )),
     'pipeline-test-v1'
   );
