@@ -72,6 +72,9 @@ importers:
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../../packages/financial-core
+      '@offroad/financial-model':
+        specifier: workspace:*
+        version: link:../../packages/financial-model
       '@offroad/matching-core':
         specifier: workspace:*
         version: link:../../packages/matching-core
@@ -358,6 +361,28 @@ importers:
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0
+
+  packages/financial-model:
+    dependencies:
+      '@offroad/credit-playbook':
+        specifier: workspace:*
+        version: link:../credit-playbook
+      '@offroad/deal-structure':
+        specifier: workspace:*
+        version: link:../deal-structure
+      '@offroad/reconciliation':
+        specifier: workspace:*
+        version: link:../reconciliation
+      decimal.js:
+        specifier: 10.6.0
+        version: 10.6.0
+      xlsx:
+        specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
+        version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
 
   packages/matching-core:
     dependencies:
