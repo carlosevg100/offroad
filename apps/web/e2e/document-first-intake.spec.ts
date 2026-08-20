@@ -72,6 +72,32 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator(".intake-start__card.is-recommended button[type=submit]").click();
     await expect(page.locator(".intake-collect")).toBeVisible();
 
+    // The operation decides the checklist; the brief decides who could buy the paper. Neither
+    // needs a document, and both come before the upload in the conversation a desk actually has.
+    await expect(page.locator(".intake-brief")).toHaveCount(0);
+    await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
+    await expect(page.locator(".intake-brief")).toBeVisible();
+    await expectNoErrorNotice(page);
+
+    // Typed the way a person types, not the way a parser prefers.
+    await page.locator("#brief-amount").fill("45 milhões");
+    await page.locator("#brief-term").fill("60");
+    await page.locator("#brief-grace").fill("12");
+    await page.locator("#brief-sector").fill("varejo alimentar");
+    await page.locator("#brief-geography").fill("sp");
+    await page.locator("#collateral-recebiveis").check();
+    await page.locator("#collateral-imovel").check();
+    await page.locator(".intake-brief__form button[type=submit]").click();
+
+    await expectNoErrorNotice(page);
+    // It came back as a number the desk can compute with, and the state was normalised.
+    await expect(page.locator("#brief-amount")).toHaveValue("45.000.000");
+    await expect(page.locator("#brief-geography")).toHaveValue("SP");
+    await expect(page.locator("#collateral-recebiveis")).toBeChecked();
+    await expect(page.locator("#collateral-imovel")).toBeChecked();
+    // Nothing was invented for the question nobody is expected to answer.
+    await expect(page.locator("#instrument-debenture")).not.toBeChecked();
+
     await page.locator(".intake-upload input[type=file]").setInputFiles(dataRoomFiles);
     await expect(page.locator(".intake-upload__files header span")).toHaveText(String(dataRoomExpectations.documents), {timeout: 120_000});
     await expectNoErrorNotice(page);

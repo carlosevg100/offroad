@@ -19,6 +19,7 @@ import {
   startIntakeSession,
   type IntakeRuntime,
 } from "@/lib/intake/server";
+import {dealBriefFormSchema, saveDealBrief, toDealBrief} from "@/lib/intake/deal-brief";
 import type {IntakeErrorCode} from "@/lib/intake/types";
 import {createClient} from "@/lib/supabase/server";
 import type {Json} from "@/types/database";
@@ -159,6 +160,40 @@ export async function setIntakeOperation(formData: FormData) {
   const {runtime} = await onboardingIntakeRuntime(locale, formData);
   const outcome = await setArchetype(runtime, value(formData, "archetype"));
   redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
+}
+
+/**
+ * Saves the deal brief during onboarding.
+ *
+ * One submit for the whole form rather than a field at a time: unlike the information answers,
+ * these six move together — changing the amount usually changes the tenor — and saving them
+ * separately would assess fit against a half-updated request.
+ */
+export async function saveDealBriefAction(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+
+  const parsed = dealBriefFormSchema.safeParse({
+    amount: value(formData, "amount"),
+    term_months: value(formData, "term_months"),
+    grace_months: value(formData, "grace_months"),
+    sector: value(formData, "sector"),
+    geography: value(formData, "geography"),
+    instruments: formData.getAll("instruments").map(String),
+    collateral_kinds: formData.getAll("collateral_kinds").map(String),
+  });
+  if (!parsed.success) redirect(onboardingUrl(locale, "validation"));
+
+  const brief = toDealBrief(parsed.data);
+  if (!brief) redirect(onboardingUrl(locale, "validation"));
+
+  const saved = await saveDealBrief({
+    supabase: runtime.supabase,
+    organizationId: runtime.organizationId,
+    sessionId: runtime.sessionId,
+    brief,
+  });
+  redirect(onboardingUrl(locale, saved.ok ? undefined : "save"));
 }
 
 export async function saveIntakeAnswer(formData: FormData) {

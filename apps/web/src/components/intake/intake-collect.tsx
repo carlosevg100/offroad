@@ -5,10 +5,12 @@ import {getTranslations} from "next-intl/server";
 import type {IntakeDocumentSummary, IntakeSession} from "@/lib/intake/types";
 
 import type {IntakeChecklist as Checklist} from "@/lib/intake/checklist";
+import type {DealBrief} from "@/lib/intake/deal-brief";
 import type {ArchetypeId} from "@offroad/credit-playbook";
 
 import {DocumentIntakeUploader} from "./document-intake-uploader";
 import {IntakeChecklist, IntakeOperation} from "./intake-checklist";
+import {IntakeDealBrief} from "./intake-deal-brief";
 import {IntakeGapPurposes, IntakeInformation} from "./intake-information";
 
 type Props = {
@@ -30,13 +32,16 @@ type Props = {
   checklist?: Checklist | null;
   /** Saves one information answer (`requirement_id`, `answer`, `session_id`, `locale`). */
   answerAction?: (formData: FormData) => Promise<void>;
+  /** The six facts that decide who could buy the paper, and the action that saves them. */
+  dealBrief?: DealBrief;
+  dealBriefAction?: (formData: FormData) => Promise<void>;
 };
 
 /**
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -66,6 +71,10 @@ export async function IntakeCollect({locale, session, documents, organizationId,
           action={setOperationAction}
           sessionId={session.id}
         />
+      ) : null}
+
+      {dealBriefAction && checklist?.archetypeId ? (
+        <IntakeDealBrief action={dealBriefAction} brief={dealBrief ?? {}} locale={locale} sessionId={session.id} />
       ) : null}
 
       {setOperationAction ? (
