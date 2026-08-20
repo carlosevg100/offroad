@@ -162,4 +162,14 @@ depois. Este documento é atualizado com a tabela de medições a cada rodada.
 | Data | Run | Recall material | Precisão | Custo | Mudança |
 |---|---|---|---|---|---|
 | 19/08 | 32306812508 | 44,6% | 52,3% | US$ 1,60 | primeira medição real |
-| 19/08 | 32308765792 | 40,0% | 50,7% | US$ 3,67 | trechos de 18k (revertendo — piorou) |
+| 19/08 | 32308765792 | 40,0% | 50,7% | US$ 3,67 | trechos de 18k — piorou, revertido |
+| 19/08 | 32315077187 | 60,0% | 55,8% | US$ 4,21 | correção 1: candidato julgado um a um; DFs auditadas 0 → 58 candidatos |
+| 19/08 | 32320129899 | 64,6% | 60,5% | US$ 2,09 | correções 2–3: canonicalização pela ontologia (CNPJ, UF, fontes/usos, centavos) + cabeçalho de tabela junto das linhas, janelas por estrutura |
+| 20/08 | 32322051560 | 66,1% | 60,3% | US$ 1,91 | correção 4: quote da célula pode morar na linha — DFs auditadas 61 → 0 âncoras não confirmadas |
+| 20/08 | 32324397398 | **75,4%** | **79,0%** | US$ 2,47 | correção 5: tuplas {i} casadas por conteúdo (índice é apresentação, não fato) + enumeração pt em listas |
+
+O que resta entre 75/79 e o gate 90/98, pelos dumps: `gross_debt` por período (o mesmo número
+existe como `debt.total_gross` — mapeamento entre caminhos, trabalho da Fase B), campos
+calculados de alavancagem (Fase B, `financial-core`), timeline do projeto (variância de
+extração), e textos com rótulo do gabarito diferente do texto do documento (revisão do gold
+set, não do extrator).
