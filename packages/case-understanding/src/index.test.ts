@@ -3,6 +3,7 @@ import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@
 
 import {assessReadiness} from "./readiness";
 import {auditClaims, financialNumbersIn, normalizeNumber} from "./audit";
+import {auditBrief, buildBriefInput, BRIEF_SYSTEM} from "./brief";
 
 const fact = (fieldPath: string, value: string, over: Partial<ReconciledFact["accepted"]> = {}): ReconciledFact => ({
   key: {fieldPath},
@@ -207,5 +208,100 @@ describe("the evidence auditor", () => {
   it("does not police a non-material claim", () => {
     const report = auditClaims({claims: [{id: "c1", material: false, kind: "judgment", text: "R$ 999 milhões.", supportIds: []}], facts, calculations});
     expect(report.status).toBe("pass");
+  });
+});
+
+describe("the case brief", () => {
+  const facts = [fact("historical_financials.2025.revenue", "184700000"), fact("debt.total_gross", "65000000")];
+  const calculations: TracedCalculation[] = [
+    {id: "leverage_pre_transaction", labels: {pt: "", en: ""}, value: "1.7788", trace: [], inputs: ["debt.total_gross"], warnings: []},
+  ];
+
+  const brief = (claims: Array<Partial<{text: string; material: boolean; kind: string; supportIds: string[]}>>) => ({
+    executiveSummary: "resumo",
+    sections: [
+      {
+        id: "history" as const,
+        heading: "Histórico",
+        claims: claims.map((claim, index) => ({
+          id: `c${index}`,
+          text: claim.text ?? "",
+          material: claim.material ?? true,
+          kind: (claim.kind ?? "fact") as "fact" | "calculation" | "judgment" | "public_source",
+          supportIds: claim.supportIds ?? [],
+        })),
+      },
+    ],
+  });
+
+  it("passes a brief whose every figure is in the facts it cites", () => {
+    const outcome = auditBrief({
+      brief: brief([{text: "Receita líquida de R$ 184,7 milhões em 2025.", supportIds: ["historical_financials.2025.revenue"]}]),
+      facts,
+      calculations,
+    });
+    expect(outcome.ok).toBe(true);
+  });
+
+  it("refuses the whole brief when one sentence carries a number nobody stated", () => {
+    // A brief that is 95% sourced is not 95% publishable: the unsourced sentence is the one a
+    // committee would act on and the one nobody could defend.
+    const outcome = auditBrief({
+      brief: brief([
+        {text: "Receita líquida de R$ 184,7 milhões em 2025.", supportIds: ["historical_financials.2025.revenue"]},
+        {text: "O EBITDA ajustado foi de R$ 41,2 milhões.", supportIds: ["historical_financials.2025.revenue"]},
+      ]),
+      facts,
+      calculations,
+    });
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.audit.findings[0]?.reason).toBe("number_not_in_support");
+  });
+
+  it("holds a judgement as a proposal until a person approves it", () => {
+    const outcome = auditBrief({
+      brief: brief([{text: "A alavancagem de 1,7788x é confortável para o setor.", kind: "judgment", supportIds: ["leverage_pre_transaction"]}]),
+      facts,
+      calculations,
+    });
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.audit.findings[0]?.reason).toBe("material_judgment_without_approval");
+  });
+
+  it("hands the model the facts and the desk's questions, never the raw data room", () => {
+    const payload = buildBriefInput({
+      archetypeId: "growth_expansion",
+      facts,
+      calculations,
+      exceptions: [exception("high", "R4")],
+      gaps: [{id: "g1", severity: "high", title: "Laudo", description: "porque importa", ownerRole: "company", reference: "appraisal"}],
+      locale: "pt",
+    });
+
+    expect(payload).toContain("historical_financials.2025.revenue");
+    expect(payload).toContain("leverage_pre_transaction");
+    expect(payload).toContain("Credibilidade do ramp-up");
+    expect(payload).toContain("[high] R4");
+    expect(payload).toContain("Laudo");
+    // The rule the whole design rests on, restated where the model reads it.
+    expect(payload).toContain("os únicos números que você pode usar");
+  });
+
+  it("marks a disputed fact as disputed, so the brief can say so", () => {
+    const disputed: ReconciledFact = {
+      ...fact("debt.total_gross", "65000000"),
+      disputed: true,
+      conflicts: [{candidate: {...fact("debt.total_gross", "68000000").accepted, sourceDocument: "mapa.xlsx"}, relativeDelta: "0.046"}],
+    };
+    const payload = buildBriefInput({archetypeId: "growth_expansion", facts: [disputed], calculations: [], exceptions: [], gaps: [], locale: "pt"});
+    expect(payload).toContain("DISPUTADO");
+    expect(payload).toContain("68000000");
+  });
+
+  it("forbids computing, in the instructions the model actually receives", () => {
+    expect(BRIEF_SYSTEM).toContain("You never produce a number");
+    expect(BRIEF_SYSTEM).toContain("qualified introduction");
   });
 });
