@@ -318,30 +318,20 @@ export async function saveCaseState(input: {
   runId: string | null;
 }): Promise<void> {
   const {supabase, organizationId, sessionId, state} = input;
-  const {data: current} = await supabase
-    .from("document_intake_sessions")
-    .select("result_summary")
-    .eq("organization_id", organizationId)
-    .eq("id", sessionId)
-    .maybeSingle();
-
-  await supabase
-    .from("document_intake_sessions")
-    .update({
-      result_summary: {
-        ...((current?.result_summary ?? {}) as Record<string, Json>),
-        readiness: state.readiness as unknown as Json,
-        capacity: (state.capacity ?? null) as unknown as Json,
-        term_sheet: (state.termSheet ?? null) as unknown as Json,
-        brief: (state.brief ?? null) as unknown as Json,
-        brief_blocked_by: state.briefBlockedBy as unknown as Json,
-        materials: state.materials as unknown as Json,
-        materials_blocked_by: state.materialsBlockedBy as unknown as Json,
-        case_run: input.runId,
-      } as Json,
-    })
-    .eq("organization_id", organizationId)
-    .eq("id", sessionId);
+  await supabase.rpc("record_intake_analysis", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_patch: {
+      readiness: state.readiness,
+      capacity: state.capacity ?? null,
+      term_sheet: state.termSheet ?? null,
+      brief: state.brief ?? null,
+      brief_blocked_by: state.briefBlockedBy,
+      materials: state.materials,
+      materials_blocked_by: state.materialsBlockedBy,
+      case_run: input.runId,
+    } as unknown as Json,
+  });
 }
 
 /**
@@ -411,13 +401,11 @@ export async function resolveCaseState(input: {
   if (snapshot?.fingerprint === fingerprint && snapshot.locale === locale) return snapshot;
 
   const state = await buildCaseState({supabase, organizationId, sessionId, locale});
-  await supabase
-    .from("document_intake_sessions")
-    .update({
-      result_summary: {...(summary as Record<string, Json>), case_state: {...state, fingerprint, locale} as unknown as Json} as Json,
-    })
-    .eq("organization_id", organizationId)
-    .eq("id", sessionId);
+  await supabase.rpc("record_intake_analysis", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_patch: {case_state: {...state, fingerprint, locale}} as unknown as Json,
+  });
 
   return state;
 }

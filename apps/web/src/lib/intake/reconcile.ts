@@ -226,26 +226,15 @@ export async function reconcileIntakeSession(input: {
   // inventing an opportunity that does not exist yet. The trace travels either way — it is the
   // product here, the thing that lets a number be walked back to a page.
   if (report.calculations.length > 0) {
-    const {data: current} = await supabase
-      .from("document_intake_sessions")
-      .select("result_summary")
-      .eq("organization_id", organizationId)
-      .eq("id", sessionId)
-      .maybeSingle();
-
-    const summary = (current?.result_summary ?? {}) as Record<string, Json>;
-    await supabase
-      .from("document_intake_sessions")
-      .update({
-        result_summary: {
-          ...summary,
-          calculations: report.calculations as unknown as Json,
-          reconciled_facts: report.facts.length,
-          disputed_facts: report.facts.filter((fact) => fact.disputed).length,
-        } as Json,
-      })
-      .eq("organization_id", organizationId)
-      .eq("id", sessionId);
+    await supabase.rpc("record_intake_analysis", {
+      p_organization_id: organizationId,
+      p_session_id: sessionId,
+      p_patch: {
+        calculations: report.calculations,
+        reconciled_facts: report.facts.length,
+        disputed_facts: report.facts.filter((fact) => fact.disputed).length,
+      } as unknown as Json,
+    });
   }
 
   return {ok: true, report, issuesWritten: issues.length};

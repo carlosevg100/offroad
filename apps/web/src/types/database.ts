@@ -2608,6 +2608,14 @@ export type Database = {
         }
         Returns: number
       }
+      attach_intake_session_to_opportunity: {
+        Args: {
+          p_opportunity_id: string
+          p_organization_id: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
       begin_intake_processing: {
         Args: { p_organization_id: string; p_session_id: string }
         Returns: undefined
@@ -2672,6 +2680,14 @@ export type Database = {
         }
         Returns: string
       }
+      fail_intake_session: {
+        Args: {
+          p_organization_id: string
+          p_reason: string
+          p_session_id: string
+        }
+        Returns: undefined
+      }
       initialize_professional_onboarding: {
         Args: {
           p_full_name: string
@@ -2697,6 +2713,10 @@ export type Database = {
           p_processing_status: string
           p_sha256: string
         }
+        Returns: undefined
+      }
+      record_intake_analysis: {
+        Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
         Returns: undefined
       }
       review_intake_candidate: {
