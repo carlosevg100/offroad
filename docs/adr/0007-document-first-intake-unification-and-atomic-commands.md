@@ -1,4 +1,4 @@
-# ADR 0007 — Intake documents-first: um módulo, comandos atômicos, hash verificado
+# ADR 0007: Intake documents-first: um módulo, comandos atômicos, hash verificado
 
 Status: accepted
 Data: 2026-08-18

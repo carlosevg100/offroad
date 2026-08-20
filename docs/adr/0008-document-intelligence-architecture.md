@@ -1,6 +1,6 @@
-# ADR 0008 — Arquitetura da inteligência documental (P1): pipeline puro, extração ancorada verificada, gateway multi-provedor, evals como gate
+# ADR 0008: Arquitetura da inteligência documental (P1): pipeline puro, extração ancorada verificada, gateway multi-provedor, evals como gate
 
-Status: accepted (fundador, 18/08/2026 — "plano ok"; restrições de modelo e residência incorporadas: sem Haiku, sem usar modelo mais poderoso do que o necessário, worker em AWS Fargate `sa-east-1`)
+Status: accepted (fundador, 18/08/2026, "plano ok"; restrições de modelo e residência incorporadas: sem Haiku, sem usar modelo mais poderoso do que o necessário, worker em AWS Fargate `sa-east-1`)
 Data: 2026-08-18
 Plano de referência: `docs/build/P1_INTELLIGENCE_PLAN.md`
 
@@ -10,7 +10,7 @@ Até o P0 a "extração" era a reprodução do fixture Rede Horizonte casado por
 zero parsers, zero chamadas a modelos, zero evals. O produto precisa entender um
 pacote desorganizado (DFs, balancetes, planilhas, planos, apresentações, cartas),
 organizá-lo, conciliar fontes, entender o case e preparar materiais de mercado com
-cada dado referenciado à origem — sem inventar números e sem que o modelo faça
+cada dado referenciado à origem, sem inventar números e sem que o modelo faça
 conta. O Blueprint v3.0 (§13–§21, §36–§43) fixa os invariantes; faltava decidir a
 arquitetura de execução.
 
@@ -40,7 +40,7 @@ arquitetura de execução.
    barato → forte (`extract_fields`: Sonnet 5 `medium` → Opus 5 `high` → GPT-5.6 Sol
    `high`). O pipeline só sobe um degrau quando o verificador aponta fraqueza no
    documento (âncoras não verificadas em campos materiais, divergência do shadow,
-   saída inválida, conflito) — nunca porque um valor "parece estranho". Modelos de
+   saída inválida, conflito), nunca porque um valor "parece estranho". Modelos de
    geração anterior (GPT-4o, GPT-4.1, Luna, Sonnet 4.6) ficam fora de produção: a
    economia é de ≈ US$ 1,5 por case, enquanto cache de prompt e a passada
    "localizar → extrair" economizam mais do que isso sem custo de qualidade; eles
@@ -64,14 +64,14 @@ arquitetura de execução.
 7. **Escopo dual sessão/oportunidade e capacidades sem service-role.** Perfis, camadas,
    spreads e brief nascem no escopo da `document_intake_session` e são promovidos à
    oportunidade na confirmação; o worker escreve por RPCs estreitas com token de
-   capacidade por job e lê/grava objetos por URLs assinadas — nenhum componente recebe
+   capacidade por job e lê/grava objetos por URLs assinadas, nenhum componente recebe
    a service-role key (detalhe em F1).
 
    *Implementado na F1-1 (18/08/2026, migrations `20260818171246` e `20260818172243`).*
    Duas credenciais independentes, nenhuma suficiente sozinha: o worker autentica como
    conta de serviço que não pertence a nenhuma organização (então a RLS por si não lhe dá
    nada), reivindica um job com a credencial de worker guardada apenas como hash
-   (`private.worker_tokens`) e, daí em diante, usa o capability token daquele job — também
+   (`private.worker_tokens`) e, daí em diante, usa o capability token daquele job, também
    guardado só como hash, com validade presa ao lease. Nenhum comando aceita
    `organization_id` do chamador: o escopo vem sempre do job reivindicado. As URLs
    assinadas são emitidas pelo app e viajam no `payload` do job, coluna que os membros da

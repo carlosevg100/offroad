@@ -1,6 +1,6 @@
 # Offroad Capital
 
-Monorepo oficial da Offroad Capital — originação de crédito privado e acesso ao mercado,
+Monorepo oficial da Offroad Capital, originação de crédito privado e acesso ao mercado,
 impulsionada por IA. Este repositório contém o site institucional bilíngue, a aplicação
 autenticada (empresas, advisors/originadores e provedores de capital) e os núcleos
 determinísticos de domínio.
@@ -8,7 +8,7 @@ determinísticos de domínio.
 ## Estado atual
 
 - Produção: <https://offroad.capital> (Vercel, deploy a partir de `main`; `www` redireciona para o apex; site permanece `noindex` até a liberação de marca).
-- Backend: projeto Supabase `offroad-development` (São Paulo, `sa-east-1`) — Auth (código de 6 dígitos por e-mail via Resend), Postgres 17 com RLS em todas as tabelas, Storage privado. É o único projeto: **não há staging separado**.
+- Backend: projeto Supabase `offroad-development` (São Paulo, `sa-east-1`), Auth (código de 6 dígitos por e-mail via Resend), Postgres 17 com RLS em todas as tabelas, Storage privado. É o único projeto: **não há staging separado**.
 - Operacional hoje: site bilíngue, cadastro/verificação/recuperação, onboarding por perfil, workspace autenticado, novo case (documentos primeiro ou manual), upload privado com SHA-256 e revisão de evidências, pacote de aceitação Rede Horizonte verificado por hash, núcleos `financial-core`/`matching-core`/`evidence-compiler`/`domain-contracts` iniciais.
 - Ainda não operacional: extração geral de documentos (OCR/parsers/LLM), sala de crédito completa, matching persistido e discovery de provedores, outputs gerados, agentes, admin interno, Sentry/PostHog externos, MFA.
 

@@ -1,4 +1,4 @@
-# ADR 0005 — Paleta institucional grafite/azul (amenda o ADR 0002)
+# ADR 0005: Paleta institucional grafite/azul (amenda o ADR 0002)
 
 Status: accepted
 Data: 2026-08-18 (registra decisão tomada em 2026-08-15)
