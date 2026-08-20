@@ -1611,6 +1611,7 @@ export type Database = {
           legal_name: string | null
           name: string
           organization_type: string
+          pipeline_enabled: boolean
           provider_type: string | null
           sector: string | null
           state_code: string | null
@@ -1629,6 +1630,7 @@ export type Database = {
           legal_name?: string | null
           name: string
           organization_type: string
+          pipeline_enabled?: boolean
           provider_type?: string | null
           sector?: string | null
           state_code?: string | null
@@ -1647,6 +1649,7 @@ export type Database = {
           legal_name?: string | null
           name?: string
           organization_type?: string
+          pipeline_enabled?: boolean
           provider_type?: string | null
           sector?: string | null
           state_code?: string | null
