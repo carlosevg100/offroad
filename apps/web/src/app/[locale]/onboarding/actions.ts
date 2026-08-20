@@ -23,6 +23,7 @@ import {dealBriefFormSchema, saveDealBrief, toDealBrief} from "@/lib/intake/deal
 import type {IntakeErrorCode} from "@/lib/intake/types";
 import {createClient} from "@/lib/supabase/server";
 import type {Json} from "@/types/database";
+import {reportServerFailure} from "@/lib/observability/report";
 
 type Journey = "company" | "originator" | "capital_provider";
 type AnswerMap = Record<string, Json | undefined>;
@@ -149,7 +150,7 @@ export async function startDocumentIntake(formData: FormData) {
     current_step: "documents",
   }).eq("organization_id", context.organizationId).eq("user_id", context.userId).eq("journey", context.journey);
   if (error) {
-    console.error("intake_step_failed", {step: "onboarding_progress_documents", code: error.code, message: error.message});
+    reportServerFailure({step: "intake.onboarding_progress_documents", error});
     redirect(onboardingUrl(locale, "save"));
   }
   redirect(onboardingUrl(locale));

@@ -9,6 +9,7 @@ import {
   registrationSchema,
 } from "@/lib/auth/registration";
 import {createClient} from "@/lib/supabase/server";
+import {reportServerFailure} from "@/lib/observability/report";
 
 const emailCookie = "offroad_signup_email";
 
@@ -79,7 +80,7 @@ export async function startRegistration(formData: FormData) {
   });
 
   if (error) {
-    console.error("signup_failed", {code: error.code, status: error.status});
+    reportServerFailure({step: "auth.signup", error, context: {status: error.status ?? null}});
     if (canContinuePendingRegistration(pendingEmail, parsed.data.email, error.code)) {
       await rememberSignupEmail(locale, parsed.data.email);
       redirect(verificationPath(locale, true));
