@@ -1,0 +1,90 @@
+name: Measure classification
+
+# Runs the real classifier over a gold case and reports what it actually got (E1).
+#
+# The sibling of `measure-extraction.yml`, and the reason it exists is the gap between them.
+# Extraction has been measured for weeks, but that measurement hands the extractor the *correct*
+# document kind on purpose, to isolate the two stages. In production nothing hands it anything:
+# the classifier decides, and a wrong kind is not a small error downstream, it is the wrong field
+# set asked of the wrong document. Until this workflow, that half had no number at all.
+#
+# Same posture as its sibling. The model keys live in Secrets Manager and nowhere else, so the
+# measurement runs where a short-lived OIDC session can read them, and they are masked the moment
+# they exist. Manual only: this spends real money with the providers.
+
+on:
+  workflow_dispatch:
+    inputs:
+      case:
+        description: "Gold case to measure"
+        required: false
+        default: "rede-horizonte"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: measure-classification
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    name: Classify and score
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
+          aws-region: sa-east-1
+
+      - name: Run the classifier and score it
+        env:
+          CASE: ${{ inputs.case || 'rede-horizonte' }}
+        run: |
+          set -euo pipefail
+          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
+          echo "::add-mask::$ANTHROPIC_API_KEY"
+          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
+          echo "::add-mask::$OPENAI_API_KEY"
+          export ANTHROPIC_API_KEY OPENAI_API_KEY
+
+          pnpm --filter @offroad/evals measure:classification "$CASE" | tee /tmp/classification.log
+
+          {
+            echo "## Classification measurement: $CASE"
+            echo
+            echo '```'
+            sed -n '/^=\{10,\}/,$p' /tmp/classification.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the full report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: classification-measurement
+          path: packages/evals/results/
+          if-no-files-found: warn
+          retention-days: 30
