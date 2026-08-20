@@ -2416,6 +2416,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_candidates: {
+        Args: {
+          p_candidates: Json
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
       worker_record_document_result: {
         Args: {
           p_capability_token: string

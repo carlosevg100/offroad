@@ -26,6 +26,9 @@ importers:
       '@offroad/credit-ontology':
         specifier: workspace:*
         version: link:../../packages/credit-ontology
+      '@offroad/document-extraction':
+        specifier: workspace:*
+        version: link:../../packages/document-extraction
       '@offroad/document-intelligence':
         specifier: workspace:*
         version: link:../../packages/document-intelligence

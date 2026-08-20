@@ -43,6 +43,7 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
     completed: [] as unknown[],
     failed: [] as {error: {reason?: string}; options?: {retryable?: boolean}}[],
     uploaded: [] as number[],
+    candidates: [] as unknown[][],
   };
 
   const deps: PipelineDependencies = {
@@ -54,6 +55,10 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
       },
       recordDocument: async (_job, input) => {
         calls.documents.push(input);
+      },
+      recordCandidates: async (_job, candidates) => {
+        calls.candidates.push(candidates);
+        return {written: candidates.length, replaced: 0};
       },
       complete: async (_job, result) => {
         calls.completed.push(result);

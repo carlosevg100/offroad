@@ -9,6 +9,7 @@ import type {Database, Json} from "@/types/database";
 
 import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilation, type DerivedCase, type IntakeIssuePayload} from "./case";
 import {parseList, parseLocalizedNumber} from "./format";
+import {pipelineRunsEnabled, startProcessingRun} from "./pipeline-run";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 
 /**
@@ -95,9 +96,18 @@ async function markSessionFailed(runtime: IntakeRuntime, reason: string) {
  * `begin_intake_processing` clears previous results and marks the session `processing`;
  * `complete_intake_processing` writes the new generation and marks `review_ready` in one
  * transaction — a reprocess never mixes generations and a failure never leaves partial rows.
- * Today the only extractor is the content-hash-verified Rede Horizonte fixture; unknown sets
- * yield zero candidates and one explicit issue. Failures mark the session `failed` so the UI
- * offers a retry instead of leaving it stuck in `processing`.
+ * Two extractors, one switch. With `PIPELINE_RUNS_ENABLED` the session is handed to the
+ * document pipeline: the app signs the links, `begin_processing_run` queues one job per
+ * document, and the worker reads, verifies and proposes — the session stays `processing`
+ * until the worker's last job moves it to `review_ready`, which is what the screen watches.
+ * Without the switch it is the content-hash-verified Rede Horizonte fixture, where an unknown
+ * set yields zero candidates and one explicit issue.
+ *
+ * The two never run together. `begin_processing_run` returns the session to `processing`, so
+ * calling it after the fixture path finished would undo the `review_ready` it had just set and
+ * leave the journey in a spinner.
+ *
+ * Failures mark the session `failed` so the UI offers a retry instead of leaving it stuck.
  */
 export async function processIntakeSession(runtime: IntakeRuntime): Promise<IntakeOutcome> {
   const {supabase, organizationId, sessionId} = runtime;
@@ -111,12 +121,26 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
   }
 
   // Content verification: recompute SHA-256 from the stored objects so the extractor and the
-  // audit trail rely on server-verified hashes, never on the browser's claim.
+  // audit trail rely on server-verified hashes, never on the browser's claim. The pipeline
+  // needs this too — the worker's gate refuses any file whose bytes do not match what the app
+  // recorded, and that comparison is only meaningful against a server-computed hash.
   const verification = await verifyIntakeDocuments(runtime);
   if (!verification.ok) {
     logIntakeFailure("verify_documents", null);
     await markSessionFailed(runtime, "verification_failed");
     return fail("processing");
+  }
+
+  if (pipelineRunsEnabled()) {
+    const run = await startProcessingRun({supabase, organizationId, sessionId, trigger: "upload"});
+    if (!run.ok) {
+      logIntakeFailure("begin_processing_run", null);
+      await markSessionFailed(runtime, "pipeline_start_failed");
+      return run;
+    }
+    // The session stays `processing`; the worker's last job is what moves it on. Returning
+    // here is the point — the fixture path must not also write a generation of candidates.
+    return ok(null);
   }
   const verifiedDocuments = documents.map((document) => ({...document, sha256: verification.value.hashes.get(document.id) ?? document.sha256}));
 

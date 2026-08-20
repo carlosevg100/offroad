@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@offroad/credit-ontology": "workspace:*",
+    "@offroad/document-extraction": "workspace:*",
     "@offroad/document-intelligence": "workspace:*",
     "@offroad/document-parsers": "workspace:*",
     "@offroad/model-gateway": "workspace:*",

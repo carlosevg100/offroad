@@ -65,6 +65,8 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [ ] F1-4 UI: aba Documentos com índice organizado e tela de processamento por etapas (Realtime), paridade PT/EN
   - [x] emissão das URLs assinadas (`src/lib/intake/pipeline-run.ts`): o app assina o download em `opportunity-documents` e o upload da camada em `document-layers`, e abre a run com `begin_processing_run` — o worker continua sem credencial de Storage; atrás de `PIPELINE_RUNS_ENABLED`, desligada por padrão
   - [x] migration `20260819115701`: política de `insert` em `document-layers`, que faltava desde `20260818171246` (sem ela `createSignedUploadUrl` é recusado e a camada não tem onde ser gravada)
-  - [ ] ponto de chamada na aba Documentos — **não** pendurar em `processIntakeSession`: `begin_processing_run` devolve a sessão para `processing`, então chamá-la depois do caminho fixture desfaz o `review_ready` e trava a jornada
+  - [x] ponto de chamada ligado (20/08): `processIntakeSession` bifurca — com `PIPELINE_RUNS_ENABLED` abre a run e **retorna**, sem tocar no caminho fixture; sem a flag, fixture como antes. Os dois nunca rodam juntos
+  - [x] worker extrai de verdade: estágio E3 no pipeline, `worker_record_candidates` (migration `20260820104922`) grava candidato com âncora, quote e flags, e `worker_complete_job` move a sessão para `review_ready` quando o último job termina — sem isso a jornada acabava num spinner
+  - [ ] tela de processamento por etapas (Realtime) e aba Documentos com índice organizado
 
 Produção canônica: `https://offroad.capital`
