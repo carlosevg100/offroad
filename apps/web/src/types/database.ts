@@ -2415,7 +2415,6 @@ export type Database = {
           classification: string
           created_at: string
           created_by: string
-          document_kind: string | null
           document_version: number
           evidence_rank: number | null
           id: string
@@ -2437,7 +2436,6 @@ export type Database = {
           classification?: string
           created_at?: string
           created_by: string
-          document_kind?: string | null
           document_version?: number
           evidence_rank?: number | null
           id?: string
@@ -2459,7 +2457,6 @@ export type Database = {
           classification?: string
           created_at?: string
           created_by?: string
-          document_kind?: string | null
           document_version?: number
           evidence_rank?: number | null
           id?: string

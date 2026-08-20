@@ -457,11 +457,20 @@ export async function acceptHighConfidenceCandidates(runtime: IntakeRuntime): Pr
   if (loadError) return fail("save");
   if (!candidates?.length) return ok({accepted: 0, held: []});
 
+  // The kind comes from the profile the classifier wrote, not from `source_documents`. That
+  // table carries a `document_kind` column nothing has written since the pipeline replaced the
+  // fixture, so reading it here handed the policy a null for every candidate and every
+  // per-kind rule silently stopped applying: the auto-accept decision was being made by the
+  // fallback branch alone, for every field, in every document.
   const documentIds = [...new Set(candidates.map((candidate) => candidate.source_document_id).filter((id): id is string => Boolean(id)))];
-  const {data: documents} = documentIds.length
-    ? await supabase.from("source_documents").select("id, document_kind").eq("organization_id", organizationId).in("id", documentIds)
+  const {data: profiles} = documentIds.length
+    ? await supabase
+        .from("document_profiles")
+        .select("source_document_id, document_kind")
+        .eq("organization_id", organizationId)
+        .in("source_document_id", documentIds)
     : {data: []};
-  const kindOf = new Map((documents ?? []).map((document) => [document.id, document.document_kind]));
+  const kindOf = new Map((profiles ?? []).map((profile) => [profile.source_document_id, profile.document_kind]));
 
   const acceptable: string[] = [];
   const held: AutoAcceptOutcome["held"] = [];
