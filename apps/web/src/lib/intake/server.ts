@@ -13,7 +13,7 @@ import {parseList, parseLocalizedNumber} from "./format";
 import {pipelineEnabledFor, startProcessingRun} from "./pipeline-run";
 import {reconcileIntakeSession} from "./reconcile";
 import {parseArchetype} from "./checklist";
-import {archetype} from "@offroad/credit-playbook";
+import {archetype, requirementResponseSchema} from "@offroad/credit-playbook";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 
 /**
@@ -159,7 +159,10 @@ export async function setIntakeArchetype(runtime: IntakeRuntime, raw: string): P
  * empty answer deletes rather than storing a blank, so the item goes honestly back to pending
  * instead of looking closed with nothing in it.
  */
-export async function recordInformationAnswer(runtime: IntakeRuntime, input: {requirementId: string; answer: string}): Promise<IntakeOutcome> {
+export async function recordInformationAnswer(
+  runtime: IntakeRuntime,
+  input: {requirementId: string; answer?: string; response?: string; note?: string},
+): Promise<IntakeOutcome> {
   const {supabase, organizationId, sessionId, userId} = runtime;
 
   const {data: session} = await supabase
@@ -172,13 +175,21 @@ export async function recordInformationAnswer(runtime: IntakeRuntime, input: {re
   const archetypeId = parseArchetype(session?.archetype);
   if (!archetypeId) return fail("validation");
 
-  const known = archetype(archetypeId).requirements.some(
-    (requirement) => requirement.id === input.requirementId && requirement.source === "information",
-  );
-  if (!known) return fail("validation");
+  const requirement = archetype(archetypeId).requirements.find((entry) => entry.id === input.requirementId);
+  // A notice is something the company is told about, never something it reports on. Accepting
+  // a response against one would let the closing tier quietly become a task list.
+  if (!requirement || requirement.source === "notice") return fail("validation");
 
-  const answer = input.answer.trim();
-  if (!answer) {
+  const parsedResponse = requirementResponseSchema.safeParse(input.response ?? "provided");
+  if (!parsedResponse.success) return fail("validation");
+  const response = parsedResponse.data;
+
+  const answer = (input.answer ?? "").trim();
+  const note = (input.note ?? "").trim();
+
+  // A document item's answer is the file, so `provided` there is expressed by uploading, not by
+  // a row here — and an empty row of any kind is the company clearing a red mark with nothing.
+  if (!answer && !note) {
     const {error} = await supabase
       .from("intake_information_answers")
       .delete()
@@ -188,6 +199,10 @@ export async function recordInformationAnswer(runtime: IntakeRuntime, input: {re
     return error ? fail(intakeErrorFrom(error, "save")) : ok(null);
   }
 
+  // "Does not apply" with no reason tells an investor only that somebody wanted the item gone.
+  // The database enforces this too; refusing here gives the company an error it can act on.
+  if (response === "not_applicable" && !note) return fail("validation");
+
   const {error} = await supabase
     .from("intake_information_answers")
     .upsert(
@@ -195,7 +210,9 @@ export async function recordInformationAnswer(runtime: IntakeRuntime, input: {re
         organization_id: organizationId,
         intake_session_id: sessionId,
         requirement_id: input.requirementId,
-        answer,
+        answer: answer || null,
+        response,
+        note: note || null,
         answered_by: userId,
       },
       {onConflict: "organization_id,intake_session_id,requirement_id"},

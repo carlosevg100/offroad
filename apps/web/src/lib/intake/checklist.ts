@@ -7,6 +7,9 @@ import {
   type ArchetypeId,
   type ClassifiedDocument,
   type RequirementPurpose,
+  type RequirementResponse,
+  type RequirementResponses,
+  type RequirementStage,
   type SufficiencyReport,
 } from "@offroad/credit-playbook";
 import {documentKindDefinition, type DocumentKind} from "@offroad/credit-ontology";
@@ -25,8 +28,16 @@ import type {Database} from "@/types/database";
 export type ChecklistItem = {
   id: string;
   level: "minimum" | "ideal";
-  /** A file to upload, or a question to answer. */
-  source: "document" | "information";
+  /** A file to upload, a question to answer, or something the company only needs to know about. */
+  source: "document" | "information" | "notice";
+  /** When it is needed: now, in diligence, or at closing. The axis the company reads first. */
+  stage: RequirementStage;
+  /** The period and granularity expected, when the item names one. */
+  period?: string;
+  /** What the company said about it, when a file was not the answer. */
+  response?: RequirementResponse;
+  /** Why it does not apply, or what part is still coming. */
+  note?: string;
   label: string;
   rationale: string;
   satisfied: boolean;
@@ -48,6 +59,8 @@ export type IntakeChecklist = {
   minimum: SufficiencyReport["minimum"];
   ideal: SufficiencyReport["ideal"];
   items: ChecklistItem[];
+  /** The same items on the axis the company reads first: what is needed now, later, at closing. */
+  byStage: Record<RequirementStage, ChecklistItem[]>;
   /** One line: what to do next, in the reader's language. */
   next: ReturnType<typeof nextStep>;
   /** What is still missing, grouped by what each gap unblocks. */
@@ -107,34 +120,52 @@ export async function loadIntakeChecklist(input: {
 
   const {data: answerRows} = await supabase
     .from("intake_information_answers")
-    .select("requirement_id, answer")
+    .select("requirement_id, answer, response, note")
     .eq("organization_id", organizationId)
     .eq("intake_session_id", sessionId);
-  const answers = Object.fromEntries((answerRows ?? []).map((row) => [row.requirement_id, row.answer]));
 
-  const report = assessSufficiency(archetypeId, classified, answers);
+  const answers = Object.fromEntries((answerRows ?? []).map((row) => [row.requirement_id, row.answer ?? ""]));
+  const responses: RequirementResponses = Object.fromEntries(
+    (answerRows ?? []).map((row) => [
+      row.requirement_id,
+      {response: row.response as RequirementResponse, ...(row.note ? {note: row.note} : {})},
+    ]),
+  );
+
+  const report = assessSufficiency(archetypeId, classified, answers, responses);
   const label = (kind: DocumentKind) => documentKindDefinition(kind).labels[locale];
   const grouped = missingByPurpose(report);
+
+  const items: ChecklistItem[] = report.requirements.map((status) => ({
+    id: status.requirement.id,
+    level: status.requirement.level,
+    source: status.requirement.source ?? ("document" as const),
+    stage: status.stage,
+    label: status.requirement.labels[locale],
+    rationale: status.requirement.rationale[locale],
+    satisfied: status.satisfied,
+    satisfiedBy: status.satisfiedBy.map((id) => nameById.get(id) ?? id),
+    purposes: [...status.requirement.purposes],
+    accepts: (status.requirement.accepts ?? []).map((entry) => entry[locale]),
+    ...(status.requirement.period ? {period: status.requirement.period[locale]} : {}),
+    ...(status.requirement.question ? {question: status.requirement.question[locale]} : {}),
+    ...(status.requirement.example ? {example: status.requirement.example[locale]} : {}),
+    ...(status.answer ? {answer: status.answer} : {}),
+    ...(status.response ? {response: status.response} : {}),
+    ...(status.note ? {note: status.note} : {}),
+    ...(status.requirement.answerFormat ? {answerFormat: status.requirement.answerFormat} : {}),
+  }));
 
   return {
     archetypeId,
     minimum: report.minimum,
     ideal: report.ideal,
-    items: report.requirements.map((status) => ({
-      id: status.requirement.id,
-      level: status.requirement.level,
-      source: status.requirement.source === "information" ? ("information" as const) : ("document" as const),
-      label: status.requirement.labels[locale],
-      rationale: status.requirement.rationale[locale],
-      satisfied: status.satisfied,
-      satisfiedBy: status.satisfiedBy.map((id) => nameById.get(id) ?? id),
-      purposes: [...status.requirement.purposes],
-      accepts: (status.requirement.accepts ?? []).map((entry) => entry[locale]),
-      ...(status.requirement.question ? {question: status.requirement.question[locale]} : {}),
-      ...(status.requirement.example ? {example: status.requirement.example[locale]} : {}),
-      ...(status.answer ? {answer: status.answer} : {}),
-      ...(status.requirement.answerFormat ? {answerFormat: status.requirement.answerFormat} : {}),
-    })),
+    items,
+    byStage: {
+      now: items.filter((item) => item.stage === "now"),
+      diligence: items.filter((item) => item.stage === "diligence"),
+      closing: items.filter((item) => item.stage === "closing"),
+    },
     next: nextStep(report, locale),
     missingByPurpose: {
       investor_case: grouped.investor_case.map((status) => status.requirement.labels[locale]),

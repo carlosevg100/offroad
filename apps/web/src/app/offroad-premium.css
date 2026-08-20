@@ -6557,3 +6557,144 @@ button[disabled].workspace-search,
   display: inline-flex;
   gap: 6px;
 }
+
+/* The request has a time axis: what is needed now, later, at closing */
+.intake-checklist__frame {
+  background: var(--accent-soft);
+  border-radius: 4px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 10px 0 14px;
+  max-width: 74ch;
+  padding: 12px 14px;
+}
+
+.intake-checklist__stageBody {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin: 0 0 12px;
+  max-width: 74ch;
+}
+
+.intake-checklist__group--diligence,
+.intake-checklist__group--closing {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin-top: 16px;
+  padding: 0;
+}
+
+.intake-checklist__group--diligence > summary,
+.intake-checklist__group--closing > summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  font-weight: 600;
+  gap: 8px;
+  padding: 13px 16px;
+}
+
+.intake-checklist__group--diligence[open] > summary,
+.intake-checklist__group--closing[open] > summary {
+  border-bottom: 1px solid var(--soft);
+}
+
+.intake-checklist__group--diligence > summary:focus-visible,
+.intake-checklist__group--closing > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.intake-checklist__count {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+  margin-left: auto;
+}
+
+.intake-checklist__group--diligence > p,
+.intake-checklist__group--diligence > ul,
+.intake-checklist__group--closing > p,
+.intake-checklist__group--closing > ul {
+  padding-inline: 16px;
+}
+
+.intake-checklist__group--closing > ul {
+  padding-bottom: 14px;
+}
+
+/* Closing items carry no marks at all: nothing here should read as a task */
+.intake-checklist__notices {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+}
+
+.intake-checklist__notices li {
+  border-left: 2px solid var(--soft);
+  display: grid;
+  gap: 3px;
+  padding-left: 12px;
+}
+
+.intake-checklist__period {
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.intake-checklist__note {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  font-style: italic;
+}
+
+/* Saying "this does not apply to me" has to be as easy as uploading */
+.intake-checklist__respond {
+  margin-top: 8px;
+}
+
+.intake-checklist__respond > summary {
+  color: var(--signal);
+  cursor: pointer;
+  font-size: 0.82rem;
+  width: fit-content;
+}
+
+.intake-checklist__respond > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.intake-checklist__respond form {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  margin-top: 8px;
+  max-width: 46ch;
+}
+
+.intake-checklist__respond label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.intake-checklist__respond select,
+.intake-checklist__respond textarea {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 7px 9px;
+  width: 100%;
+}
+
+.intake-checklist li.is-partial .intake-checklist__mark,
+.intake-checklist li.is-after_nda .intake-checklist__mark {
+  color: var(--signal);
+}

@@ -164,7 +164,12 @@ export async function setIntakeOperation(formData: FormData) {
 export async function saveIntakeAnswer(formData: FormData) {
   const locale = localeFrom(formData);
   const {runtime} = await onboardingIntakeRuntime(locale, formData);
-  const outcome = await recordAnswer(runtime, {requirementId: value(formData, "requirement_id"), answer: value(formData, "answer")});
+  const outcome = await recordAnswer(runtime, {
+    requirementId: value(formData, "requirement_id"),
+    answer: value(formData, "answer"),
+    response: value(formData, "response"),
+    note: value(formData, "note"),
+  });
   redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
 }
 

@@ -1,4 +1,5 @@
 import type {Archetype, Requirement} from "./types";
+import {commonClosing} from "./closing";
 
 /**
  * The five operations this desk originates, plus a fallback.
@@ -338,6 +339,7 @@ export const archetypes: readonly Archetype[] = [
       },
       ...commonIdeal,
       ...commonInformation,
+      ...commonClosing,
       {
         id: "info_ramp_history",
         level: "minimum",
@@ -564,6 +566,7 @@ export const archetypes: readonly Archetype[] = [
       },
       ...commonIdeal,
       ...commonInformation,
+      ...commonClosing,
       {
         id: "info_assigned_receivables",
         level: "minimum",
@@ -772,6 +775,7 @@ export const archetypes: readonly Archetype[] = [
       },
       ...commonIdeal,
       ...commonInformation,
+      ...commonClosing,
       {
         id: "info_prepayment",
         level: "minimum",
@@ -953,6 +957,7 @@ export const archetypes: readonly Archetype[] = [
       },
       ...commonIdeal,
       ...commonInformation,
+      ...commonClosing,
       {
         id: "info_synergies",
         level: "minimum",
@@ -1127,6 +1132,7 @@ export const archetypes: readonly Archetype[] = [
       },
       ...commonIdeal,
       ...commonInformation,
+      ...commonClosing,
       {
         id: "info_asset_productivity",
         level: "minimum",
@@ -1260,7 +1266,7 @@ export const archetypes: readonly Archetype[] = [
       pt: "Operação que não se encaixa nos arquétipos acima. O desk pede o mínimo comum e pergunta o resto.",
       en: "An operation that does not fit the archetypes above. The desk asks for the common minimum and asks about the rest.",
     },
-    requirements: [...commonMinimum, ...commonIdeal, ...commonInformation],
+    requirements: [...commonMinimum, ...commonIdeal, ...commonInformation, ...commonClosing],
     focus: [
       {
         id: "generation_vs_service",

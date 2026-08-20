@@ -1,4 +1,4 @@
-import {Check, CircleDashed, FileText} from "lucide-react";
+import {Check, CircleDashed, Clock, FileText, Flag, MinusCircle} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import type {ArchetypeId} from "@offroad/credit-playbook";
@@ -64,20 +64,33 @@ export async function IntakeOperation({locale, selected, action, sessionId}: Ope
 type ChecklistProps = {
   locale: string;
   checklist: Checklist | null;
+  sessionId?: string;
+  /** Records "does not apply" / "partly ready" / "after the NDA" against one item. */
+  respond?: (formData: FormData) => Promise<void>;
 };
 
 /**
- * What the desk needs, and what it already has.
+ * What the desk needs now, what a fund will ask later, and what only exists at closing.
  *
- * Two lists, never one bar. The minimum is the line below which the case cannot be opened; the
- * ideal is the line above which it can be priced and taken to market. A single percentage
- * would average the two and hide the only distinction the company actually needs to act on.
+ * The old screen showed two lists — minimum and ideal — with no time on them, and it failed in
+ * both directions at once. A company read the whole thing as the price of admission and
+ * concluded it had to assemble a data room before anyone would look at it. Then, having sent
+ * everything, it met a fund's diligence list and decided the platform had under-asked.
  *
- * Every pending item carries its reason. A checklist that says *what* without *why* is a form;
- * the reason is the desk explaining itself, and it is what makes a company send the right file
- * instead of the closest one.
+ * So the axis is time, and the horizon is stated rather than implied. **Agora** is small and
+ * open. **Na diligência** is closed by default, explicitly not requested, and there so the road
+ * is visible. **No fechamento** is closed, has no marks at all, and contains nothing anyone
+ * could mistake for a task.
+ *
+ * Collapsed sections are `<details>`, which costs no JavaScript, keeps keyboard and screen
+ * reader behaviour correct, and is honest: the later stages are one click away rather than
+ * hidden.
+ *
+ * Every pending item can be answered without a file — does not apply, partly ready, after the
+ * NDA. A list whose only states are sent and missing makes a company look delinquent for things
+ * it does not have and cannot have, and people stop reading a list that is permanently red.
  */
-export async function IntakeChecklist({locale, checklist}: ChecklistProps) {
+export async function IntakeChecklist({locale, checklist, sessionId, respond}: ChecklistProps) {
   const t = await getTranslations({locale, namespace: "Intake.checklist"});
 
   if (!checklist) {
@@ -89,70 +102,142 @@ export async function IntakeChecklist({locale, checklist}: ChecklistProps) {
     );
   }
 
-  const groups = [
-    {level: "minimum" as const, title: t("minimumTitle"), counts: checklist.minimum},
-    {level: "ideal" as const, title: t("idealTitle"), counts: checklist.ideal},
-  ];
+  const now = checklist.byStage.now.filter((item) => item.source === "document");
+  const later = checklist.byStage.diligence.filter((item) => item.source === "document");
+  const closing = checklist.byStage.closing;
+  const outstanding = now.filter((item) => !item.satisfied).length;
 
-  // Documents and questions are both part of one request, and the counts above cover both —
-  // but they are answered in completely different ways, so they are shown apart.
+  /** One item, with its reason, what to send, and a way to say it does not apply. */
+  const renderItem = (item: (typeof now)[number], interactive: boolean) => (
+    <li key={item.id} className={item.satisfied ? "is-satisfied" : `is-pending is-${item.response ?? "open"}`}>
+      <span className="intake-checklist__mark" aria-hidden="true">
+        {item.satisfied ? <Check size={14} /> : item.response === "partial" ? <Clock size={14} /> : <CircleDashed size={14} />}
+      </span>
+      <div className="intake-checklist__item">
+        <strong>{item.label}</strong>
+        {item.period ? <span className="intake-checklist__period">{item.period}</span> : null}
+        <span className="intake-checklist__state">
+          {item.satisfied
+            ? item.response === "not_applicable"
+              ? t("notApplicable")
+              : t("satisfied")
+            : item.response
+              ? t(`response_${item.response}`)
+              : t("pending")}
+        </span>
+
+        {item.satisfied && item.satisfiedBy.length > 0 ? (
+          <span className="intake-checklist__files">
+            <FileText aria-hidden="true" size={12} /> {item.satisfiedBy.join(" · ")}
+          </span>
+        ) : null}
+        {item.note ? <span className="intake-checklist__note">{item.note}</span> : null}
+
+        {!item.satisfied ? (
+          <>
+            <span className="intake-checklist__why">
+              <em>{t("whyItMatters")}:</em> {item.rationale}
+            </span>
+            {item.accepts.length > 0 ? (
+              <div className="intake-checklist__accepts">
+                <em>{t("whatToSend")}:</em>
+                <ul>
+                  {item.accepts.map((entry) => (
+                    <li key={entry}>{entry}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {interactive && respond && sessionId ? (
+              <details className="intake-checklist__respond">
+                <summary>{t("cannotSend")}</summary>
+                <form action={respond}>
+                  <input type="hidden" name="session_id" value={sessionId} />
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="requirement_id" value={item.id} />
+                  <label htmlFor={`response-${item.id}`}>{t("responseLabel")}</label>
+                  <select defaultValue={item.response ?? "not_applicable"} id={`response-${item.id}`} name="response">
+                    <option value="not_applicable">{t("response_not_applicable")}</option>
+                    <option value="partial">{t("response_partial")}</option>
+                    <option value="after_nda">{t("response_after_nda")}</option>
+                  </select>
+                  <label htmlFor={`note-${item.id}`}>{t("noteLabel")}</label>
+                  <textarea
+                    defaultValue={item.note ?? ""}
+                    id={`note-${item.id}`}
+                    name="note"
+                    placeholder={t("notePlaceholder")}
+                    required
+                    rows={2}
+                  />
+                  <button className="button button--ghost" type="submit">
+                    {t("responseSave")}
+                  </button>
+                </form>
+              </details>
+            ) : null}
+          </>
+        ) : null}
+      </div>
+    </li>
+  );
 
   return (
     <section className="intake-checklist">
       <div className="intake-checklist__head">
         <span className="section-kicker">{t("kicker")}</span>
+        {/* The frame, stated before the list. Without it the list is the message. */}
+        <p className="intake-checklist__frame">{t("frame", {count: now.length})}</p>
         <p className={`intake-checklist__next intake-checklist__next--${checklist.next.state}`} role="status">
           {checklist.next.message}
         </p>
       </div>
 
-      {groups.map((group) => (
-        <div key={group.level} className={`intake-checklist__group intake-checklist__group--${group.level}`}>
-          <header>
-            <h4>{group.title}</h4>
-            <span className="intake-checklist__progress">
-              {t("progress", {satisfied: group.counts.satisfied, total: group.counts.total})}
-            </span>
-          </header>
+      <div className="intake-checklist__group intake-checklist__group--now">
+        <header>
+          <h4>{t("stageNowTitle")}</h4>
+          <span className="intake-checklist__progress">
+            {t("progress", {satisfied: now.length - outstanding, total: now.length})}
+          </span>
+        </header>
+        <p className="intake-checklist__stageBody">{t("stageNowBody")}</p>
+        <ul>{now.map((item) => renderItem(item, true))}</ul>
+      </div>
 
-          <ul>
-            {checklist.items
-              .filter((item) => item.level === group.level && item.source === "document")
-              .map((item) => (
-                <li key={item.id} className={item.satisfied ? "is-satisfied" : "is-pending"}>
-                  <span className="intake-checklist__mark" aria-hidden="true">
-                    {item.satisfied ? <Check size={14} /> : <CircleDashed size={14} />}
-                  </span>
-                  <div className="intake-checklist__item">
-                    <strong>{item.label}</strong>
-                    <span className="intake-checklist__state">{item.satisfied ? t("satisfied") : t("pending")}</span>
-                    {item.satisfied ? (
-                      <span className="intake-checklist__files">
-                        <FileText aria-hidden="true" size={12} /> {item.satisfiedBy.join(" · ")}
-                      </span>
-                    ) : (
-                      <>
-                        <span className="intake-checklist__why">
-                          <em>{t("whyItMatters")}:</em> {item.rationale}
-                        </span>
-                        {item.accepts.length > 0 ? (
-                          <div className="intake-checklist__accepts">
-                            <em>{t("whatToSend")}:</em>
-                            <ul>
-                              {item.accepts.map((entry) => (
-                                <li key={entry}>{entry}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-                </li>
-              ))}
+      {/* Closed by default and explicitly not requested. The point is that the road is visible,
+          not that there is more work today. */}
+      {later.length > 0 ? (
+        <details className="intake-checklist__group intake-checklist__group--diligence">
+          <summary>
+            <Flag aria-hidden="true" size={14} />
+            <span>{t("stageDiligenceTitle")}</span>
+            <span className="intake-checklist__count">{t("stageCount", {count: later.length})}</span>
+          </summary>
+          <p className="intake-checklist__stageBody">{t("stageDiligenceBody")}</p>
+          <ul>{later.map((item) => renderItem(item, true))}</ul>
+        </details>
+      ) : null}
+
+      {closing.length > 0 ? (
+        <details className="intake-checklist__group intake-checklist__group--closing">
+          <summary>
+            <MinusCircle aria-hidden="true" size={14} />
+            <span>{t("stageClosingTitle")}</span>
+            <span className="intake-checklist__count">{t("stageCount", {count: closing.length})}</span>
+          </summary>
+          <p className="intake-checklist__stageBody">{t("stageClosingBody")}</p>
+          <ul className="intake-checklist__notices">
+            {closing.map((item) => (
+              <li key={item.id}>
+                <strong>{item.label}</strong>
+                {item.period ? <span className="intake-checklist__period">{item.period}</span> : null}
+                <span className="intake-checklist__why">{item.rationale}</span>
+              </li>
+            ))}
           </ul>
-        </div>
-      ))}
+        </details>
+      ) : null}
 
       {checklist.unmatched.length > 0 ? (
         <p className="intake-checklist__unmatched">
