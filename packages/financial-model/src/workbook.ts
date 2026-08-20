@@ -38,10 +38,13 @@ function toCell(cell: Cell): XLSX.CellObject | undefined {
   const format = numberFormats[cell.format ?? "text"] ?? "@";
 
   if (cell.formula) {
-    // A formula whose result is text (the covenant status) must not be typed numeric, or
-    // Excel shows 0 until the user forces a recalculation.
-    const type = cell.format === "text" ? "s" : "n";
-    return {t: type, f: cell.formula, ...(type === "n" ? {z: format} : {})} as XLSX.CellObject;
+    // The cached value is not optional. A formula cell handed to this writer without one is
+    // emitted as `t="e"` — the *error* type — and every projected cell opens as `#N/A`. The
+    // placeholder is discarded on open: the file carries no calcChain.xml, so Excel rebuilds
+    // the dependency graph and recalculates rather than trusting these zeros.
+    return cell.format === "text"
+      ? ({t: "s", v: "", f: cell.formula} as XLSX.CellObject)
+      : ({t: "n", v: 0, f: cell.formula, z: format} as XLSX.CellObject);
   }
   if (cell.value === undefined || cell.value === "") return undefined;
   if (typeof cell.value === "number") return {t: "n", v: cell.value, z: format};

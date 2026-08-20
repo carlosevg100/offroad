@@ -961,7 +961,11 @@
       "empty": "No analysis yet: process the documents first.",
       "materialOpen": "Open",
       "materialPdf": "PDF",
-      "materialSections": "{count} blocks"
+      "materialSections": "{count} blocks",
+      "modelTitle": "Financial model",
+      "modelWhat": "A spreadsheet with live formulas: operating projection, debt schedule, DSCR and leverage against the playbook's ceiling. Every editable cell is on the Assumptions sheet — change one and the whole model recalculates. Every historical number is traced to its source document.",
+      "modelDownload": "Download model (.xlsx)",
+      "modelBlocked": "The model needs at least one reconciled number. Upload the financial statements and it becomes available."
     }
   }
 }

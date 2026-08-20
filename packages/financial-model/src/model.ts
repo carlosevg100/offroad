@@ -115,12 +115,17 @@ export function columnLetter(index: number): string {
 class SheetBuilder {
   private readonly order: string[] = [];
   private readonly filled = new Map<string, Cell[]>();
+  // Plain fields rather than parameter properties: Node's type stripping cannot run the
+  // shorthand, and this package is imported by tooling that relies on it.
+  readonly sheetName: string;
+  private readonly positions: Map<string, number>;
+  private readonly sheetKey: string;
 
-  constructor(
-    readonly sheetName: string,
-    private readonly positions: Map<string, number>,
-    private readonly sheetKey: string,
-  ) {}
+  constructor(sheetName: string, positions: Map<string, number>, sheetKey: string) {
+    this.sheetName = sheetName;
+    this.positions = positions;
+    this.sheetKey = sheetKey;
+  }
 
   declare(keys: readonly string[]): void {
     for (const key of keys) {

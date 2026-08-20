@@ -201,12 +201,31 @@ describe("every editable cell is on one sheet", () => {
 });
 
 describe("the workbook", () => {
-  it("writes formulas as formulas, so the file recalculates", () => {
+  it("writes formulas as formulas, pointing at the assumptions sheet", () => {
     const book = toWorkbook(build(), "pt");
     const projection = book.Sheets["Projeção"]!;
     expect(projection.C3?.f).toBeTruthy();
-    expect(projection.C3?.v).toBeUndefined();
     expect(projection.C3?.f).toContain("Premissas!");
+  });
+
+  it("emits no error-typed cells", async () => {
+    // A formula cell written without a cached value comes out as `t="e"` — the error type —
+    // and the whole projection opens as #N/A. Nothing about the workbook object shows this;
+    // it only appears once the file is written, so the guard reads the file back.
+    const XLSX = await import("xlsx");
+    const back = XLSX.read(toXlsxBuffer(build(), "pt"), {cellFormula: true});
+    let formulas = 0;
+    for (const name of back.SheetNames) {
+      const sheet = back.Sheets[name]!;
+      for (const [address, cell] of Object.entries(sheet)) {
+        if (address.startsWith("!")) continue;
+        const typed = cell as {t?: string; f?: string};
+        expect(typed.t, `${name}!${address}`).not.toBe("e");
+        if (typed.f) formulas += 1;
+      }
+    }
+    // And they really are formulas in the file, not values baked at build time.
+    expect(formulas).toBeGreaterThan(100);
   });
 
   it("opens on a cover that says what the model is not", () => {

@@ -6528,3 +6528,32 @@ button[disabled].workspace-search,
   gap: 5px;
   padding: 5px 12px;
 }
+
+/* The model: a deliverable in its own right, not a footnote to the materials */
+.case-model {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  margin-top: 22px;
+  padding: 18px 20px;
+}
+
+.case-model h3 {
+  margin: 0;
+}
+
+.case-model__what {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 68ch;
+}
+
+.case-model .button {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
