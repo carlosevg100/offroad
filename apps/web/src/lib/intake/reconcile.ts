@@ -80,6 +80,61 @@ async function loadClassified(
 }
 
 /**
+ * The three vocabularies `intake_issues` actually accepts.
+ *
+ * Every insert this file made violated the schema in three separate places, so no exception and
+ * no gap the reconciler has ever produced reached a reviewer. The whole batch goes in one
+ * statement, so a single bad row discarded all of them, which is why the table is empty rather
+ * than partially wrong.
+ *
+ * What makes it worth reading rather than just fixing: the review screen was already written
+ * against the correct vocabulary. `priorityLabel` in intake-review.tsx tests for exactly
+ * critical, analysis, diligence and complementary, and all four translation keys exist. The
+ * reader was right and the writer was wrong, which is the failure mode a check constraint exists
+ * to catch and did.
+ */
+
+/**
+ * Coarse classification, for the reader who is triaging.
+ *
+ * `conflict` is two sources disagreeing, `missing` is an absence, and everything else is a
+ * statement that does not hold up under arithmetic, period, entity or plausibility. Collapsing
+ * seven ontology types into `validation` loses nothing, because the precise type travels
+ * alongside in `exception_type`.
+ */
+export const ISSUE_TYPE: Readonly<Record<string, "conflict" | "missing" | "validation">> = {
+  source_conflict: "conflict",
+  missing: "missing",
+  arithmetic: "validation",
+  period: "validation",
+  entity: "validation",
+  plausibility: "validation",
+  quality: "validation",
+  adjustment: "validation",
+  validation: "validation",
+};
+
+/**
+ * Severity is about how wrong; priority is about when somebody has to deal with it.
+ *
+ * Critical holds the case. High is needed to finish the analysis. Medium waits for diligence.
+ * Low is worth having and never worth blocking on.
+ */
+export const PRIORITY: Readonly<Record<string, "critical" | "analysis" | "diligence" | "complementary">> = {
+  critical: "critical",
+  high: "analysis",
+  medium: "diligence",
+  low: "complementary",
+};
+
+/**
+ * Evidence is stored as an object because the column requires one, and the shape carries the
+ * count so a reader knows how many sides a disagreement had without parsing the array.
+ */
+const evidenceOf = (items: readonly unknown[]): Json =>
+  ({items, count: items.length} as unknown as Json);
+
+/**
  * Runs the desk's checks over a finished session and records what it found.
  *
  * Exceptions and gaps both land in `intake_issues` because to the person reading them they are
@@ -116,6 +171,7 @@ export async function reconcileIntakeSession(input: {
     locale,
   });
 
+
   // Replace what the pipeline said last time; never touch a human's decision.
   await supabase
     .from("intake_issues")
@@ -130,15 +186,15 @@ export async function reconcileIntakeSession(input: {
       organization_id: organizationId,
       intake_session_id: sessionId,
       processing_run_id: session.current_run_id,
-      issue_type: exception.type,
-      priority: exception.severity === "critical" || exception.severity === "high" ? "blocking" : "diligence",
+      issue_type: ISSUE_TYPE[exception.type] ?? "validation",
+      priority: PRIORITY[exception.severity] ?? "diligence",
       rule_id: exception.ruleId,
       severity: exception.severity,
       exception_type: exception.type,
       owner_role: exception.ownerRole,
       title: exception.title,
       description: exception.description,
-      evidence: exception.evidence as unknown as Json,
+      evidence: evidenceOf(exception.evidence),
       blocks_external_outputs: exception.blocksExternalOutputs,
       candidate_ids: [],
     })),
@@ -146,15 +202,15 @@ export async function reconcileIntakeSession(input: {
       organization_id: organizationId,
       intake_session_id: sessionId,
       processing_run_id: session.current_run_id,
-      issue_type: "missing",
-      priority: gap.severity === "critical" || gap.severity === "high" ? "blocking" : "diligence",
+      issue_type: "missing" as const,
+      priority: PRIORITY[gap.severity] ?? "diligence",
       rule_id: gap.id,
       severity: gap.severity,
       exception_type: "missing",
       owner_role: gap.ownerRole,
       title: gap.title,
       description: gap.description,
-      evidence: [{label: "referência", value: gap.reference}] as unknown as Json,
+      evidence: evidenceOf([{label: "referência", value: gap.reference}]),
       blocks_external_outputs: false,
       candidate_ids: [],
     })),
