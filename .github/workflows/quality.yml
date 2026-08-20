@@ -61,8 +61,21 @@ jobs:
       # Boots a fresh local stack and applies every file in supabase/migrations from
       # scratch. This proves the migration history is replayable and that no policy,
       # grant, or function depends on state that only exists in the hosted project.
+      #
+      # The exclusion list is a correctness fix, not a speed one. This job failed on run
+      # 32383127190 with `failed to bind host port 0.0.0.0:54324 ... address already in use`
+      # for `supabase_inbucket` — after all 27 migrations had applied. A mail catcher has
+      # nothing to do with migrations, RLS, or lint, and neither does the analytics pair, so
+      # every host port they bind is a way for this job to fail for reasons unrelated to the
+      # change under test. (`mailpit` is the CLI's name for the container still called
+      # `supabase_inbucket_*`.)
+      #
+      # gotrue, postgrest, storage-api and kong deliberately stay: the RLS test writes to
+      # `auth.users` and reads `auth.uid()`, and the DB URL is resolved from `supabase status`.
+      # Dropping those is plausible but unverified, and this job is the last gate before a
+      # migration reaches the only Supabase project we have.
       - name: Start local Supabase and apply migrations
-        run: supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
+        run: supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,mailpit,logflare,vector
 
       - name: Resolve local database URL
         id: db
