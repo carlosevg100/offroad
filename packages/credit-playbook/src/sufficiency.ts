@@ -1,7 +1,28 @@
 import type {DocumentKind} from "@offroad/credit-ontology";
 
 import {archetype} from "./archetypes";
-import type {ArchetypeId, Requirement, RequirementLevel, RequirementPurpose} from "./types";
+import type {
+  ArchetypeId,
+  Requirement,
+  RequirementLevel,
+  RequirementPurpose,
+  RequirementResponse,
+  RequirementStage,
+} from "./types";
+
+/**
+ * Which declared responses close an item.
+ *
+ * A reasoned "does not apply" closes it: the desk asked for something this company does not
+ * have, and leaving that permanently red teaches people to ignore the list. Without a reason
+ * it closes nothing — an investor reading "not applicable" with no explanation learns only
+ * that somebody wanted the red mark gone.
+ *
+ * "Partial" and "after the NDA" deliberately close nothing. They are the company telling us
+ * where it stands, which is worth recording and is not the same as the item being met.
+ */
+const resolvedBy = (declared: {response: RequirementResponse; note?: string} | undefined): boolean =>
+  declared?.response === "not_applicable" && Boolean(declared.note?.trim());
 
 /**
  * What the desk still needs, computed rather than asked.
@@ -27,7 +48,20 @@ export type RequirementStatus = {
   satisfiedBy: string[];
   /** For information items: the answer the company gave, when it gave one. */
   answer?: string;
+  /** When it is needed. Derived from `level` unless the requirement says otherwise. */
+  stage: RequirementStage;
+  /** What the company said about it, when a file was not the answer. */
+  response?: RequirementResponse;
+  /** Why it does not apply, or what part is still coming. Required for `not_applicable`. */
+  note?: string;
 };
+
+/**
+ * What the company said about an item it did not simply upload.
+ *
+ * Keyed by requirement id, the same key the answers use.
+ */
+export type RequirementResponses = Readonly<Record<string, {response: RequirementResponse; note?: string} | undefined>>;
 
 /** An answer the company typed, keyed by requirement id. */
 export type InformationAnswers = Readonly<Record<string, string | undefined>>;
@@ -36,6 +70,8 @@ export type SufficiencyReport = {
   archetypeId: ArchetypeId;
   minimum: {satisfied: number; total: number; complete: boolean};
   ideal: {satisfied: number; total: number; complete: boolean};
+  /** Grouped by when they are needed — the axis the company reads first. */
+  byStage: Record<RequirementStage, RequirementStatus[]>;
   /** Everything, in playbook order — minimum first, then ideal. */
   requirements: RequirementStatus[];
   /** Not satisfied, minimum before ideal: the list to show as "what is still missing". */
@@ -53,6 +89,15 @@ export type ClassifiedDocument = {
 const levelOrder: Record<RequirementLevel, number> = {minimum: 0, ideal: 1};
 
 /**
+ * When an item is needed, defaulting from how much it matters.
+ *
+ * The two axes usually agree — what the desk cannot open a case without is what it needs now —
+ * so the default carries almost every item and only `closing` is ever set by hand.
+ */
+export const stageOf = (requirement: Requirement): RequirementStage =>
+  requirement.stage ?? (requirement.level === "minimum" ? "now" : "diligence");
+
+/**
  * Answers the checklist from what was read.
  *
  * A requirement is discharged by any document of a kind it lists — several kinds per
@@ -65,6 +110,7 @@ export function assessSufficiency(
   archetypeId: ArchetypeId,
   documents: readonly ClassifiedDocument[],
   answers: InformationAnswers = {},
+  responses: RequirementResponses = {},
 ): SufficiencyReport {
   const definition = archetype(archetypeId);
   const byKind = new Map<DocumentKind, string[]>();
@@ -76,25 +122,42 @@ export function assessSufficiency(
   const requirements: RequirementStatus[] = [...definition.requirements]
     .sort((a, b) => levelOrder[a.level] - levelOrder[b.level])
     .map((requirement) => {
+      const stage = stageOf(requirement);
+      const declared = responses[requirement.id];
+
       // An information item is discharged by the company answering, not by a file. A blank or
       // whitespace answer is not an answer: the item stays open rather than looking closed.
       if (requirement.source === "information") {
         const answer = answers[requirement.id]?.trim();
         return {
           requirement,
-          satisfied: Boolean(answer),
+          stage,
+          satisfied: Boolean(answer) || resolvedBy(declared),
           satisfiedBy: [],
           ...(answer ? {answer} : {}),
+          ...(declared ? {response: declared.response, ...(declared.note ? {note: declared.note} : {})} : {}),
         };
       }
 
       const satisfiedBy = requirement.satisfiedBy.flatMap((kind) => byKind.get(kind) ?? []);
       for (const id of satisfiedBy) matched.add(id);
-      return {requirement, satisfied: satisfiedBy.length > 0, satisfiedBy};
+      return {
+        requirement,
+        stage,
+        // A file closes it; so does a reasoned "does not apply". "Partial" and "after the NDA"
+        // do not — they are the company telling us where it stands, not the item being met.
+        satisfied: satisfiedBy.length > 0 || resolvedBy(declared),
+        satisfiedBy,
+        ...(declared ? {response: declared.response, ...(declared.note ? {note: declared.note} : {})} : {}),
+      };
     });
 
+  // Closing items are shown and never scored. The day one of them counts is the day this
+  // request becomes the data room it promised not to be.
+  const scored = requirements.filter((status) => status.stage !== "closing");
+
   const count = (level: RequirementLevel) => {
-    const scoped = requirements.filter((status) => status.requirement.level === level);
+    const scoped = scored.filter((status) => status.requirement.level === level);
     const satisfied = scoped.filter((status) => status.satisfied).length;
     return {satisfied, total: scoped.length, complete: satisfied === scoped.length};
   };
@@ -104,7 +167,12 @@ export function assessSufficiency(
     minimum: count("minimum"),
     ideal: count("ideal"),
     requirements,
-    missing: requirements.filter((status) => !status.satisfied),
+    byStage: {
+      now: requirements.filter((status) => status.stage === "now"),
+      diligence: requirements.filter((status) => status.stage === "diligence"),
+      closing: requirements.filter((status) => status.stage === "closing"),
+    },
+    missing: scored.filter((status) => !status.satisfied),
     unmatchedDocuments: documents.filter((document) => !matched.has(document.id)).map((document) => document.id),
   };
 }

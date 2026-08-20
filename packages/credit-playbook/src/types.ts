@@ -59,12 +59,53 @@ export type RequirementPurpose = z.infer<typeof requirementPurposeSchema>;
  * and a request that only asks for files leaves the qualitative half of the case unwritten:
  * nobody uploads a document that explains why now, who the customers are, or what happens if
  * the biggest one leaves.
+ *
+ * `notice` is neither. It is something the company should know is coming and must not be asked
+ * to do — the corporate approvals, the registrations, the certificates dated at signing. Making
+ * it a source rather than a test exemption means nothing can accidentally start requesting one:
+ * a notice has no file to send and no question to answer, and the type says so.
  */
-export const requirementSourceSchema = z.enum(["document", "information"]);
+export const requirementSourceSchema = z.enum(["document", "information", "notice"]);
 export type RequirementSource = z.infer<typeof requirementSourceSchema>;
 
 export const answerFormatSchema = z.enum(["text", "number", "date", "list", "currency", "percentage"]);
 export type AnswerFormat = z.infer<typeof answerFormatSchema>;
+
+/**
+ * When the desk needs it — which is a different question from how much it matters.
+ *
+ * A company opening a request sees a list and reads it as the price of admission. If that list
+ * is everything a fund will ever want, the company closes the tab; if it is only what we need
+ * today and says nothing about what comes next, the company is ambushed in diligence three
+ * weeks later and blames us for the surprise. Both failures come from the same omission: a
+ * request with no time axis.
+ *
+ * So every item carries one. `now` is what the desk needs to build the case and take it to
+ * investors — deliberately small. `diligence` is what a fund will ask once it is interested;
+ * shown, explained, and **not requested yet**. `closing` is what only exists if the operation
+ * happens — named so nobody is surprised, never a task.
+ *
+ * The stages map onto the market's own P0/P1/P2 vocabulary, but they are not labelled that way
+ * for the company. "P1" tells a banker when something is needed and tells a founder nothing.
+ */
+export const requirementStageSchema = z.enum(["now", "diligence", "closing"]);
+export type RequirementStage = z.infer<typeof requirementStageSchema>;
+
+/**
+ * How a company can close an item without a file.
+ *
+ * A checklist whose only two states are "sent" and "missing" makes a company look delinquent
+ * for things that genuinely do not apply to it — a business with no receivables facility has
+ * no receivables ageing, and marking that permanently red trains people to ignore the whole
+ * list. It also has nowhere to put "I sent last year's, this year's is with the auditor",
+ * which is the single most common real answer.
+ *
+ * `not_applicable` requires a reason. Without one it is a way to make the list go away, and
+ * an investor reading "not applicable" with no explanation learns nothing except that somebody
+ * wanted the red mark gone.
+ */
+export const requirementResponseSchema = z.enum(["provided", "partial", "not_applicable", "after_nda"]);
+export type RequirementResponse = z.infer<typeof requirementResponseSchema>;
 
 /**
  * One thing the desk needs to see.
@@ -92,6 +133,19 @@ export type Requirement = {
   purposes: readonly RequirementPurpose[];
   /** A file, or an answer from the company. Defaults to `document` when omitted. */
   source?: RequirementSource;
+  /**
+   * When it is needed. Omitted means derived from `level`: minimum is `now`, ideal is
+   * `diligence`. Set explicitly only for `closing` items, which exist to be seen and not done.
+   */
+  stage?: RequirementStage;
+  /**
+   * The period and granularity expected, in the company's words.
+   *
+   * "Demonstrações financeiras" is not a request; "demonstrações auditadas dos últimos três
+   * exercícios" is. Without the period a company sends the most recent year and both sides
+   * discover the gap a week later.
+   */
+  period?: {pt: string; en: string};
   /** For information items: the shape of the answer expected. */
   answerFormat?: AnswerFormat;
   /** For information items: the question, phrased the way a banker would ask it. */

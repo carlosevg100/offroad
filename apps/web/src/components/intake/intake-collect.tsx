@@ -68,7 +68,14 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {setOperationAction ? <IntakeChecklist locale={locale} checklist={checklist ?? null} /> : null}
+      {setOperationAction ? (
+        <IntakeChecklist
+          checklist={checklist ?? null}
+          locale={locale}
+          sessionId={session.id}
+          {...(answerAction ? {respond: answerAction} : {})}
+        />
+      ) : null}
 
       {checklist && answerAction ? (
         <IntakeInformation

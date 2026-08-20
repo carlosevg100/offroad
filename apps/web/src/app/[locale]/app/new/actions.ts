@@ -70,7 +70,12 @@ export async function saveWorkspaceIntakeAnswer(formData: FormData) {
   const locale = localeFrom(formData);
   const sessionId = value(formData, "session_id");
   const runtime = await workspaceRuntime(locale, sessionId);
-  const outcome = await recordAnswer(runtime, {requirementId: value(formData, "requirement_id"), answer: value(formData, "answer")});
+  const outcome = await recordAnswer(runtime, {
+    requirementId: value(formData, "requirement_id"),
+    answer: value(formData, "answer"),
+    response: value(formData, "response"),
+    note: value(formData, "note"),
+  });
   redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
 }
 

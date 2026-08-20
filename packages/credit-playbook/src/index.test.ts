@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {documentKindSchema, resolveFieldPath} from "@offroad/credit-ontology";
 
 import {archetype, archetypes} from "./archetypes";
-import {assessSufficiency, missingByPurpose, nextStep} from "./sufficiency";
+import {assessSufficiency, missingByPurpose, nextStep, stageOf} from "./sufficiency";
 import {archetypeIdSchema} from "./types";
 
 describe("playbook integrity", () => {
@@ -11,8 +11,11 @@ describe("playbook integrity", () => {
     // asked forever for a document the system cannot recognise.
     for (const definition of archetypes) {
       for (const requirement of definition.requirements) {
-        if (requirement.source === "information") {
-          expect(requirement.satisfiedBy).toHaveLength(0);
+        // Only document items are discharged by a file. An information item is answered and a
+        // notice is neither answered nor uploaded, so both must name no document kind at all —
+        // a kind on one of those would be a request nothing could ever close.
+        if (requirement.source !== undefined && requirement.source !== "document") {
+          expect(requirement.satisfiedBy, `${definition.id}/${requirement.id}`).toHaveLength(0);
           continue;
         }
         expect(requirement.satisfiedBy.length).toBeGreaterThan(0);
@@ -38,13 +41,77 @@ describe("playbook integrity", () => {
     }
   });
 
+  it("keeps the day-zero ask small enough that nobody reads it as a data room", () => {
+    // The market's own guidance for a first request is roughly 15–20 items. Past that a
+    // company stops reading and starts estimating how many weeks this will take. This is the
+    // guardrail on the whole product: anything genuinely needed later belongs in a later
+    // stage, not in the first screen.
+    for (const definition of archetypes) {
+      const now = definition.requirements.filter((requirement) => stageOf(requirement) === "now");
+      expect(now.length, `${definition.id} asks for ${now.length} things on day zero`).toBeLessThanOrEqual(20);
+      // And it must not be so short that the desk cannot open a case either.
+      expect(now.length, definition.id).toBeGreaterThanOrEqual(6);
+    }
+  });
+
+  it("shows every operation the road past the first request", () => {
+    // A company that finishes the first list and then meets a four-times-longer diligence list
+    // concludes the platform under-asked. Naming the road costs a paragraph.
+    for (const definition of archetypes) {
+      const later = definition.requirements.filter((requirement) => stageOf(requirement) !== "now");
+      expect(later.some((requirement) => stageOf(requirement) === "diligence"), definition.id).toBe(true);
+      expect(later.some((requirement) => stageOf(requirement) === "closing"), definition.id).toBe(true);
+    }
+  });
+
+  it("never lets a closing item count against the company", () => {
+    const report = assessSufficiency("growth_expansion", [], {});
+    const closing = report.byStage.closing;
+    expect(closing.length).toBeGreaterThan(0);
+    // Present on the screen, absent from every number and from the missing list.
+    expect(report.missing.some((status) => status.stage === "closing")).toBe(false);
+    expect(report.minimum.total + report.ideal.total).toBe(report.requirements.length - closing.length);
+  });
+
+  it("lets a company close an item that does not apply to it, with a reason", () => {
+    const withReason = assessSufficiency("working_capital", [], {}, {
+      receivables_aging: {response: "not_applicable", note: "Vendemos à vista; não há carteira a receber."},
+    });
+    const status = withReason.requirements.find((entry) => entry.requirement.id === "receivables_aging");
+    expect(status?.satisfied).toBe(true);
+    expect(status?.response).toBe("not_applicable");
+  });
+
+  it("does not let a bare 'not applicable' make the item go away", () => {
+    const bare = assessSufficiency("working_capital", [], {}, {receivables_aging: {response: "not_applicable"}});
+    expect(bare.requirements.find((entry) => entry.requirement.id === "receivables_aging")?.satisfied).toBe(false);
+    const blank = assessSufficiency("working_capital", [], {}, {receivables_aging: {response: "not_applicable", note: "   "}});
+    expect(blank.requirements.find((entry) => entry.requirement.id === "receivables_aging")?.satisfied).toBe(false);
+  });
+
+  it("treats partial and after-the-NDA as position, not as delivery", () => {
+    // Both are the company telling us where it stands, which is worth recording and is not
+    // the same as the desk having what it needs.
+    for (const response of ["partial", "after_nda"] as const) {
+      const report = assessSufficiency("working_capital", [], {}, {
+        receivables_aging: {response, note: "Fechamento do mês sai dia 10."},
+      });
+      const status = report.requirements.find((entry) => entry.requirement.id === "receivables_aging");
+      expect(status?.satisfied, response).toBe(false);
+      expect(status?.response, response).toBe(response);
+      expect(status?.note, response).toBe("Fechamento do mês sai dia 10.");
+    }
+  });
+
   it("tells the company which file to actually send", () => {
     // A requirement labelled "Historical financial statements" is a category, and a company
     // staring at a category sends the wrong thing or nothing. The concrete artifact — "the
     // audited PDF signed by the auditor" — is what people can act on.
     for (const definition of archetypes) {
       for (const requirement of definition.requirements) {
-        if (requirement.source === "information") continue;
+        // Notices are neither uploaded nor answered: there is no file to name and no
+        // question to ask, which is the whole point of them being a separate source.
+        if (requirement.source !== undefined && requirement.source !== "document") continue;
         expect(requirement.accepts?.length, `${definition.id}/${requirement.id}`).toBeGreaterThan(0);
         for (const entry of requirement.accepts ?? []) {
           expect(entry.pt.length).toBeGreaterThan(20);

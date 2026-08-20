@@ -1178,33 +1178,39 @@ export type Database = {
       }
       intake_information_answers: {
         Row: {
-          answer: string
+          answer: string | null
           answered_by: string
           created_at: string
           id: string
           intake_session_id: string
+          note: string | null
           organization_id: string
           requirement_id: string
+          response: string
           updated_at: string
         }
         Insert: {
-          answer: string
+          answer?: string | null
           answered_by: string
           created_at?: string
           id?: string
           intake_session_id: string
+          note?: string | null
           organization_id: string
           requirement_id: string
+          response?: string
           updated_at?: string
         }
         Update: {
-          answer?: string
+          answer?: string | null
           answered_by?: string
           created_at?: string
           id?: string
           intake_session_id?: string
+          note?: string | null
           organization_id?: string
           requirement_id?: string
+          response?: string
           updated_at?: string
         }
         Relationships: [
