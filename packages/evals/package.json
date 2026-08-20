@@ -10,17 +10,20 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "lint": "tsc -p tsconfig.json --noEmit",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --exclude 'dist/**'",
     "baseline": "tsx src/cli.ts baseline",
+    "build": "tsc -p tsconfig.json",
     "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts",
+    "lint": "tsc -p tsconfig.json --noEmit",
     "measure": "tsx scripts/measure-extraction.ts",
-    "measure:local": "tsx --env-file=../../.env.local scripts/measure-extraction.ts"
+    "measure:classification": "tsx scripts/measure-classification.ts",
+    "measure:classification:local": "tsx --env-file=../../.env.local scripts/measure-classification.ts",
+    "measure:local": "tsx --env-file=../../.env.local scripts/measure-extraction.ts",
+    "test": "vitest run --exclude 'dist/**'",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@offroad/credit-ontology": "workspace:*",
+    "@offroad/document-classification": "workspace:*",
     "@offroad/document-extraction": "workspace:*",
     "@offroad/document-intelligence": "workspace:*",
     "@offroad/document-parsers": "workspace:*",

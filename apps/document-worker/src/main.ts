@@ -4,10 +4,10 @@ import {loadConfig, describeConfig, type WorkerConfig} from "./config";
 import {createQueueClient, startHeartbeat, PoisonedJobError, type ClaimedJob} from "./queue";
 import {createClamdScanner} from "./scan";
 import {createLibreOfficeConverter, createTesseractEngine, toolVersion} from "./tools";
-import {createClassifier} from "./classifier";
 import {createExtractor} from "./extract";
 import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
+import {createClassifier} from "@offroad/document-classification";
 import {createStorageUrlGuard} from "./storage-url";
 
 /**

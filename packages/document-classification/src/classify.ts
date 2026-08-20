@@ -2,7 +2,6 @@ import {z} from "zod";
 import {documentKinds, documentKindSchema, evidenceRankFor, informationClassSchema, suggestedDocumentName, type DocumentKind, type InformationClass} from "@offroad/credit-ontology";
 import type {ModelGateway} from "@offroad/model-gateway";
 import type {ParseResult} from "@offroad/document-parsers";
-import type {Classifier, DocumentProfile} from "./pipeline";
 
 /**
  * Stage E1: what *is* this document?
@@ -17,6 +16,39 @@ import type {Classifier, DocumentProfile} from "./pipeline";
  * between conflicting sources, and precedence is a rule of the domain, not an opinion
  * (P1 plan §6, §7).
  */
+/**
+ * What the classifier answers: everything a downstream stage needs to know about the document.
+ *
+ * Three fields are deliberately absent from the model's schema and computed from the ontology
+ * instead (the evidence rank, the folder, the suggested name), because precedence between
+ * conflicting sources is a rule of the domain rather than an opinion.
+ */
+export type DocumentProfile = {
+  document_kind: string;
+  information_class: string;
+  evidence_rank: number;
+  confidence: number;
+  title?: string;
+  entity_name?: string;
+  period_start?: string;
+  period_end?: string;
+  fiscal_year?: number;
+  currency?: string;
+  scale?: number;
+  language?: string;
+  suggested_folder?: string;
+  suggested_name?: string;
+  quality?: Record<string, unknown>;
+  summary?: Record<string, unknown>;
+  classifier?: Record<string, unknown>;
+};
+
+export type Classifier = (input: {
+  parsed: ParseResult;
+  fileName: string;
+  locale?: string;
+}) => Promise<{profile: DocumentProfile; usage?: Record<string, number>}>;
+
 const profileSchema = z.object({
   documentKind: documentKindSchema,
   title: z.string().max(200).nullable(),

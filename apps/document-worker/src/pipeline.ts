@@ -5,6 +5,7 @@ import {
   type DocumentConverter,
   type ParseResult,
 } from "@offroad/document-parsers";
+import type {Classifier, DocumentProfile} from "@offroad/document-classification";
 import {ModelGatewayError} from "@offroad/model-gateway";
 import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
 import type {ClaimedJob, QueueClient} from "./queue";
@@ -23,31 +24,10 @@ import type {ClaimedJob, QueueClient} from "./queue";
  * swallow — it is a fact about the document that the sender has to see and act on, so it
  * ends up on the document and the run, not only in the worker's log.
  */
-export type DocumentProfile = {
-  document_kind: string;
-  information_class: string;
-  evidence_rank: number;
-  confidence: number;
-  title?: string;
-  entity_name?: string;
-  period_start?: string;
-  period_end?: string;
-  fiscal_year?: number;
-  currency?: string;
-  scale?: number;
-  language?: string;
-  suggested_folder?: string;
-  suggested_name?: string;
-  quality?: Record<string, unknown>;
-  summary?: Record<string, unknown>;
-  classifier?: Record<string, unknown>;
-};
-
-export type Classifier = (input: {
-  parsed: ParseResult;
-  fileName: string;
-  locale?: string;
-}) => Promise<{profile: DocumentProfile; usage?: Record<string, number>}>;
+// The classifier and its contract live in `@offroad/document-classification` (stage E1), beside
+// the extractor in `@offroad/document-extraction` (stage E3). Re-exported here because the
+// worker's own modules refer to them and should not have to care where a stage lives.
+export type {Classifier, DocumentProfile};
 
 /** What the extractor gives back: candidates already checked against the document they cite. */
 export type ExtractedCandidates = {
