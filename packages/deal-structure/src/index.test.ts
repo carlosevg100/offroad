@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {assessCapacity, buildTermSheet} from "./index";
+import {assessCapacity, bandProvenanceNote, buildTermSheet, playbookBand, reconcileTenor} from "./index";
 
 describe("capacity is three walls, and the lowest one is the answer", () => {
   const base = {
@@ -80,8 +80,11 @@ describe("the indicative term sheet", () => {
     // The disagreement is structured rather than buried in prose: what they asked for survives
     // next to why we differ, so nobody is ambushed later by a figure that quietly changed.
     expect(tenor?.divergence?.requested.pt).toBe("120 meses");
-    expect(tenor?.divergence?.reason.pt).toContain("reduz muito o conjunto de compradores");
-    expect(tenor?.divergence?.reason.en).toContain("narrows the buyer set");
+    // The sentence separates the two constraints, which is the whole point: the arithmetic may
+    // be fine and the market still not buy that shape.
+    expect(tenor?.divergence?.reason.pt).toContain("O seu fluxo pode até comportar esse prazo");
+    expect(tenor?.divergence?.reason.pt).toContain("não encontra comprador");
+    expect(tenor?.divergence?.reason.en).toContain("finds no buyer");
   });
 
   it("keeps a requested tenor that already fits, and disagrees with nothing", () => {
@@ -164,5 +167,97 @@ describe("the indicative term sheet", () => {
       expect(term.rationale.pt.length).toBeGreaterThan(20);
       expect(term.rationale.en.length).toBeGreaterThan(20);
     }
+  });
+});
+
+describe("what the market does, and how we know", () => {
+  const capacity = assessCapacity({
+    archetypeId: "growth_expansion",
+    requested: "45000000",
+    cfads: "30000000",
+    adjustedEbitda: "31000000",
+    collateralCapacity: "60000000",
+    annualDebtServiceFactor: "0.25",
+  });
+
+  it("labels the playbook band as ours, not as an observation", () => {
+    // Presenting the desk's opinion in the voice of market evidence is the thing that would
+    // embarrass us in a room with a fund manager.
+    const band = playbookBand("growth_expansion");
+    expect(band.provenance).toBe("playbook");
+    expect(band.sample).toBeUndefined();
+    expect(bandProvenanceNote(band).pt).toContain("não observação de mercado");
+  });
+
+  it("cites the sample once a band is observed", () => {
+    const note = bandProvenanceNote({
+      archetypeId: "growth_expansion",
+      tenorMonths: {min: 48, max: 72},
+      leverageCeiling: "3.20",
+      provenance: "observed",
+      sample: {count: 14, windowMonths: 12, asOf: "2026-08-20"},
+    });
+    expect(note.pt).toContain("14 operações");
+    expect(note.pt).toContain("últimos 12 meses");
+    expect(note.en).toContain("14 transactions");
+  });
+
+  it("says a single transaction in the singular, because a sample of one reads as a claim", () => {
+    const note = bandProvenanceNote({
+      archetypeId: "other",
+      tenorMonths: {min: 24, max: 36},
+      leverageCeiling: "2.50",
+      provenance: "observed",
+      sample: {count: 1, windowMonths: 6, asOf: "2026-08-20"},
+    });
+    expect(note.pt).toContain("1 operação");
+    expect(note.en).toContain("1 transaction");
+  });
+
+  it("honours a request the market has room for", () => {
+    const verdict = reconcileTenor(playbookBand("growth_expansion"), 60);
+    expect(verdict).toMatchObject({recommended: 60, requested: 60, binding: "request"});
+  });
+
+  it("names the market as the binding constraint when the request is outside the band", () => {
+    // Carlos's case: the cash flow carries 160 months and no fund holds paper that long.
+    const long = reconcileTenor(playbookBand("growth_expansion"), 160);
+    expect(long.binding).toBe("market");
+    expect(long.recommended).toBe(84);
+
+    const short = reconcileTenor(playbookBand("growth_expansion"), 12);
+    expect(short.binding).toBe("market");
+    expect(short.recommended).toBe(48);
+  });
+
+  it("proposes the top of the band when nothing was asked for", () => {
+    // Longer is easier on coverage, and the ceiling is where the market stops rather than where
+    // it prefers — so the proposal sits at the edge the company gains most from.
+    const verdict = reconcileTenor(playbookBand("growth_expansion"), undefined);
+    expect(verdict).toMatchObject({recommended: 84, binding: "default"});
+    expect(verdict.requested).toBeUndefined();
+  });
+
+  it("uses an observed band over the playbook when one is supplied, and cites it", () => {
+    const observed = {
+      archetypeId: "growth_expansion" as const,
+      tenorMonths: {min: 48, max: 72},
+      leverageCeiling: "3.20",
+      provenance: "observed" as const,
+      sample: {count: 14, windowMonths: 12, asOf: "2026-08-20"},
+    };
+    const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity, requestedTermMonths: 160, market: observed});
+    const tenor = sheet.terms.find((term) => term.id === "tenor")!;
+
+    // 72, not the playbook's 84 — and the reason cites transactions rather than citing us.
+    expect(tenor.value.pt).toBe("72 meses");
+    expect(tenor.divergence?.reason.pt).toContain("14 operações");
+    expect(tenor.divergence?.reason.pt).not.toContain("não observação de mercado");
+  });
+
+  it("keeps the leverage wall honest about being the desk's read", () => {
+    const wall = capacity.walls.find((entry) => entry.id === "market")!;
+    expect(wall.explanation.pt).toContain("leitura do desk");
+    expect(wall.explanation.pt).toContain("fala de tamanho, não de prazo");
   });
 });
