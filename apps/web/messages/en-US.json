@@ -985,7 +985,8 @@
       "modelBlocked": "The model needs at least one reconciled number. Upload the financial statements and it becomes available.",
       "origin_requested": "You asked",
       "origin_proposed": "Our proposal",
-      "youAskedFor": "You asked for"
+      "youAskedFor": "You asked for",
+      "briefInProgress": "The written case is being prepared right now. The numbers, exceptions and structure below are ready; refresh in a moment to read the text."
     },
     "brief": {
       "kicker": "The transaction",

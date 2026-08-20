@@ -109,10 +109,15 @@ async function writeBrief(input: {
   archetypeId: ArchetypeId;
   reconciliation: ReconciliationReport;
   locale: "pt" | "en";
+  /** Reports what the call cost, so the one spend nobody could query lands in a ledger. */
+  onSpend?: (spend: {costUsd: number; calls: number}) => void;
 }): Promise<{brief: CaseBrief | null; blockedBy: string[]}> {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
   if (!anthropicKey && !openaiKey) return {brief: null, blockedBy: ["no_model_credentials"]};
+
+  let costUsd = 0;
+  let calls = 0;
 
   const gateway = createModelGateway({
     adapters: {
@@ -121,6 +126,12 @@ async function writeBrief(input: {
     },
     // One case, one budget. A loop cannot spend the next company's money.
     budget: {maxCostUsd: 3, maxCalls: 4},
+    // The worker writes its spend to `processing_runs.usage`; the brief is written outside any
+    // run, so before this it was the only money in the system nobody could count.
+    onCall: (call) => {
+      costUsd += call.costUsd ?? 0;
+      calls += 1;
+    },
   });
 
   try {
@@ -157,6 +168,10 @@ async function writeBrief(input: {
   } catch (error) {
     console.error("case_brief_failed", {message: (error as Error).message});
     return {brief: null, blockedBy: ["generation_failed"]};
+  } finally {
+    // `finally`, because a brief that failed the audit or threw still cost what it cost. A ledger
+    // that only records successes understates spend exactly when spend is going wrong.
+    if (calls > 0) input.onSpend?.({costUsd, calls});
   }
 }
 
@@ -236,10 +251,43 @@ export async function buildCaseState(input: {
   }
 
   // ---- write and compile ---------------------------------------------------------------------
-  const {brief, blockedBy: briefBlockedBy} =
-    input.withBrief === false
-      ? {brief: null, blockedBy: ["not_requested"]}
-      : await writeBrief({archetypeId, reconciliation, locale});
+  //
+  // Everything above this line is arithmetic over facts already in the database and costs
+  // nothing to repeat. The brief is the only expensive step, so it is the only one that needs a
+  // claim: two requests arriving before the first snapshot is written would otherwise both pay,
+  // and a refresh during loading would cost a second brief.
+  //
+  // Losing the race is not an error. The case still renders with its facts, exceptions,
+  // readiness and structure, and `brief_in_progress` tells the screen to say the written part is
+  // being prepared rather than showing an empty section with no reason.
+  const {brief, blockedBy: briefBlockedBy} = await (async () => {
+    if (input.withBrief === false) return {brief: null, blockedBy: ["not_requested"]};
+
+    const {data: claimed} = await supabase.rpc("claim_case_brief", {
+      p_organization_id: organizationId,
+      p_session_id: sessionId,
+    });
+    if (claimed !== true) return {brief: null, blockedBy: ["brief_in_progress"]};
+
+    return writeBrief({
+      archetypeId,
+      reconciliation,
+      locale,
+      onSpend: ({costUsd, calls}) => {
+        // Fire and forget: the case must not fail to render because the ledger write did.
+        void supabase
+          .rpc("record_case_model_spend", {
+            p_organization_id: organizationId,
+            p_session_id: sessionId,
+            p_cost_usd: costUsd,
+            p_calls: calls,
+          })
+          .then(({error}) => {
+            if (error) console.error("case_spend_not_recorded", {message: error.message});
+          });
+      },
+    });
+  })();
 
   let materials: Material[] = [];
   let materialsBlockedBy: string[] = [];
