@@ -6698,3 +6698,156 @@ button[disabled].workspace-search,
 .intake-checklist li.is-after_nda .intake-checklist__mark {
   color: var(--signal);
 }
+
+/* The deal brief: six answers, none of them requiring a document */
+.intake-brief {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin-top: 22px;
+  padding: 22px 24px;
+}
+
+.intake-brief__head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.intake-brief__head h3 {
+  margin: 0;
+}
+
+.intake-brief__body {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 72ch;
+}
+
+.intake-brief__progress {
+  color: var(--signal);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.intake-brief__form {
+  display: grid;
+  gap: 20px;
+  justify-items: start;
+}
+
+.intake-brief__pair {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  width: 100%;
+}
+
+.intake-brief__row {
+  display: grid;
+  gap: 6px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.intake-brief__row label {
+  display: grid;
+  font-size: 0.86rem;
+  font-weight: 600;
+  gap: 3px;
+}
+
+.intake-brief__hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 70ch;
+}
+
+.intake-brief__row input {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 9px 11px;
+  width: 100%;
+}
+
+.intake-brief__row input:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 0;
+}
+
+.intake-brief__set {
+  border: 0;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.intake-brief__set legend {
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 0;
+}
+
+/* The instrument question is the one nobody is expected to answer */
+.intake-brief__set--optional legend::after {
+  color: var(--muted);
+  content: " ·";
+  font-weight: 400;
+}
+
+.intake-brief__options {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-top: 4px;
+}
+
+.intake-brief__option {
+  align-items: start;
+  border: 1px solid var(--soft);
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  gap: 9px;
+  padding: 10px 12px;
+}
+
+.intake-brief__option:hover {
+  border-color: var(--line);
+}
+
+.intake-brief__option:focus-within {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent-soft);
+}
+
+.intake-brief__option input {
+  margin-top: 3px;
+}
+
+.intake-brief__option span {
+  display: grid;
+  gap: 2px;
+}
+
+.intake-brief__option strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.intake-brief__option em {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: normal;
+  line-height: 1.45;
+}

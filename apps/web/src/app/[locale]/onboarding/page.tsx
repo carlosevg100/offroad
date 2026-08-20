@@ -27,6 +27,7 @@ import {BrandMark} from "@/components/brand-mark";
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
+import {dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {OnboardingDocumentUploader} from "@/components/onboarding-document-uploader";
@@ -45,6 +46,7 @@ import {
   previousOnboardingStep,
   processDocumentIntake,
   saveIntakeAnswer,
+  saveDealBriefAction,
   setIntakeOperation,
   removeIntakeDocument,
   resolveIntakeIssue,
@@ -375,6 +377,8 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 removeAction={removeIntakeDocument}
                 session={intakeReview.session}
                 answerAction={saveIntakeAnswer}
+                dealBrief={dealBriefOf(intakeReview.session)}
+                dealBriefAction={saveDealBriefAction}
                 setOperationAction={setIntakeOperation}
                 userId={userId}
               />

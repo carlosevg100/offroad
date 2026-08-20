@@ -448,11 +448,14 @@ export type Database = {
       document_intake_sessions: {
         Row: {
           archetype: string | null
+          collateral_kinds: string[] | null
           confirmed_at: string | null
           created_at: string
           current_run_id: string | null
           extraction_version: string
+          geography: string | null
           id: string
+          instruments: string[] | null
           journey: string
           locale: string
           opportunity_id: string | null
@@ -460,18 +463,25 @@ export type Database = {
           pipeline_version: string | null
           processing_completed_at: string | null
           processing_started_at: string | null
+          requested_amount: number | null
+          requested_grace_months: number | null
+          requested_term_months: number | null
           result_summary: Json
+          sector: string | null
           started_by: string
           status: string
           updated_at: string
         }
         Insert: {
           archetype?: string | null
+          collateral_kinds?: string[] | null
           confirmed_at?: string | null
           created_at?: string
           current_run_id?: string | null
           extraction_version?: string
+          geography?: string | null
           id?: string
+          instruments?: string[] | null
           journey: string
           locale?: string
           opportunity_id?: string | null
@@ -479,18 +489,25 @@ export type Database = {
           pipeline_version?: string | null
           processing_completed_at?: string | null
           processing_started_at?: string | null
+          requested_amount?: number | null
+          requested_grace_months?: number | null
+          requested_term_months?: number | null
           result_summary?: Json
+          sector?: string | null
           started_by: string
           status?: string
           updated_at?: string
         }
         Update: {
           archetype?: string | null
+          collateral_kinds?: string[] | null
           confirmed_at?: string | null
           created_at?: string
           current_run_id?: string | null
           extraction_version?: string
+          geography?: string | null
           id?: string
+          instruments?: string[] | null
           journey?: string
           locale?: string
           opportunity_id?: string | null
@@ -498,7 +515,11 @@ export type Database = {
           pipeline_version?: string | null
           processing_completed_at?: string | null
           processing_started_at?: string | null
+          requested_amount?: number | null
+          requested_grace_months?: number | null
+          requested_term_months?: number | null
           result_summary?: Json
+          sector?: string | null
           started_by?: string
           status?: string
           updated_at?: string

@@ -7,6 +7,7 @@ import {redirect} from "next/navigation";
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
+import {dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import type {AppLocale} from "@/i18n/routing";
@@ -21,6 +22,7 @@ import {
   createOpportunity,
   processWorkspaceDocumentIntake,
   saveWorkspaceIntakeAnswer,
+  saveWorkspaceDealBrief,
   setWorkspaceIntakeOperation,
   removeWorkspaceIntakeDocument,
   resolveWorkspaceIntakeIssue,
@@ -105,6 +107,8 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             removeAction={removeWorkspaceIntakeDocument}
             session={review.session}
             answerAction={saveWorkspaceIntakeAnswer}
+            dealBrief={dealBriefOf(review.session)}
+            dealBriefAction={saveWorkspaceDealBrief}
             setOperationAction={setWorkspaceIntakeOperation}
             userId={userId}
           />
