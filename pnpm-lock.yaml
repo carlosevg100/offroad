@@ -72,6 +72,9 @@ importers:
       '@offroad/deal-structure':
         specifier: workspace:*
         version: link:../../packages/deal-structure
+      '@offroad/extraction-learning':
+        specifier: workspace:*
+        version: link:../../packages/extraction-learning
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../../packages/financial-core
@@ -365,6 +368,16 @@ importers:
       '@offroad/domain-contracts':
         specifier: workspace:*
         version: link:../domain-contracts
+
+  packages/extraction-learning:
+    dependencies:
+      decimal.js:
+        specifier: 10.6.0
+        version: 10.6.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
 
   packages/financial-core:
     dependencies:
