@@ -104,7 +104,8 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
   - **sem preço, deliberadamente**: a Offroad não precifica; custo sai da conversa com quem toma o risco. Inventar taxa é o jeito mais rápido de perder a confiança da companhia quando o mercado responde outra coisa
   - tetos de alavancagem e DSCR mínimo por arquétipo entraram no playbook como **dado** (3,5x / 1,30x em expansão; 2,5x / 1,20x em giro; 4,0x / 1,35x em aquisição) — são os primeiros números que um profissional de crédito vai querer discutir
   - 13 testes
-- [ ] materiais institucionais no template Offroad (perfil de crédito, teaser, pacote) e render em PDF
+- [x] `packages/case-materials`: os três documentos que um processo de dívida precisa — **teaser** (diz o bastante sem dizer quem, até a companhia autorizar), **perfil de crédito** (a análise) e **pacote** (perfil + estrutura indicativa). Compilados dos fatos, não escritos à mão. **Exceção crítica bloqueia os três** — caso que não concilia não chega ao investidor com capa bonita — e brief que falha na auditoria não pode ser citado, porque as frases dele são exatamente o que seria citado. Pontos em aberto entram no documento: investidor que descobre sozinho confia menos que o que recebeu a lista. PT/EN com economia idêntica por construção; detecção de material desatualizado quando um fato se move. 11 testes
+- [ ] render em PDF no template Offroad
 - [ ] modelo financeiro exportável
 
 ## Estado corrente (20/08/2026)
