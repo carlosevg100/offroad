@@ -76,6 +76,17 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [ ] tela do intake guiado consumindo a régua (a peça que o fundador vê)
 - [ ] captura da operação pretendida no início (arquétipo, montante, uso, prazo/taxa almejados)
 
+## P1 — Fase B (conciliar e calcular) — 20/08/2026
+
+- [x] `packages/reconciliation`: **determinístico de ponta a ponta, sem nenhuma chamada de modelo**
+  - precedência entre fontes por **rank de evidência** (auditado > revisado > gerencial > apresentação), nunca por recência ou confiança; o valor perdedor **não é descartado** — fica anexado ao fato com sua fonte e âncora, porque a diferença é justamente a pergunta que o investidor faz
+  - regras R3/R4/R5/R11/R13/R14/R16 como aritmética sobre os fatos conciliados; toda exceção nasce com **os dois lados e os dois documentos**, e é uma pergunta, não um veredito
+  - cálculos com **trace**: dívida líquida, EBITDA ajustado, alavancagem pré e pós, capacidade de garantias após haircut, totais de fontes e usos — cada insumo aponta o campo e o documento de onde veio; cálculo sem insumo **não é estimado**, vira lacuna reportada
+  - lacunas de informação a partir do checklist do playbook e dos campos materiais ausentes: viram pedidos com o "por que importa" junto
+  - 14 testes; alavancagem pré confere com o gabarito (1,7788x)
+- [ ] ligar ao worker: rodar a conciliação ao fim da run e persistir fatos, exceções e cálculos
+- [ ] aba Financeiro e aba Conciliação na UI
+
 ## Estado corrente (20/08/2026)
 
 A linha do pipeline está ligada de ponta a ponta: empresa envia documentos → app assina os
