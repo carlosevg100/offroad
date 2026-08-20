@@ -1085,6 +1085,47 @@ export type Database = {
           },
         ]
       }
+      intake_information_answers: {
+        Row: {
+          answer: string
+          answered_by: string
+          created_at: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          requirement_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          answered_by: string
+          created_at?: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          requirement_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          answered_by?: string
+          created_at?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          requirement_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_information_answers_organization_id_intake_session__fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       intake_issues: {
         Row: {
           blocks_external_outputs: boolean

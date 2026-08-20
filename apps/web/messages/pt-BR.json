@@ -922,7 +922,19 @@
       "whyItMatters": "Por que importa",
       "emptyBody": "Escolha a operação acima para o desk montar a lista do que precisa.",
       "unmatched": "{count} documento(s) enviado(s) que não fecham nenhum item da lista — o desk lê mesmo assim.",
-      "recognizedAs": "Reconhecido como"
+      "recognizedAs": "Reconhecido como",
+      "documentsTitle": "Documentos",
+      "informationTitle": "Informações sobre a companhia e a operação",
+      "answerPlaceholder": "Escreva a resposta",
+      "answerSave": "Salvar",
+      "answered": "Respondido",
+      "example": "Exemplo",
+      "purposeTitle": "O que cada pendência destrava",
+      "purpose_investor_case": "Case para o investidor",
+      "purpose_financials": "Construção dos financeiros",
+      "purpose_structure": "Estrutura da operação",
+      "purpose_storytelling": "Narrativa do negócio",
+      "purposeEmpty": "Nada pendente aqui."
     }
   }
 }

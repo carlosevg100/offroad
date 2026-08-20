@@ -9,6 +9,7 @@ import {
   confirmIntakeCase,
   loadIntakeSession,
   processIntakeSession,
+  recordInformationAnswer as recordAnswer,
   setIntakeArchetype as setArchetype,
   removeIntakeDocument,
   resolveIntakeIssue,
@@ -62,6 +63,14 @@ export async function setWorkspaceIntakeOperation(formData: FormData) {
   const sessionId = value(formData, "session_id");
   const runtime = await workspaceRuntime(locale, sessionId);
   const outcome = await setArchetype(runtime, value(formData, "archetype"));
+  redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
+}
+
+export async function saveWorkspaceIntakeAnswer(formData: FormData) {
+  const locale = localeFrom(formData);
+  const sessionId = value(formData, "session_id");
+  const runtime = await workspaceRuntime(locale, sessionId);
+  const outcome = await recordAnswer(runtime, {requirementId: value(formData, "requirement_id"), answer: value(formData, "answer")});
   redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
 }
 

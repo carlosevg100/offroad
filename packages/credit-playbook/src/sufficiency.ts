@@ -1,7 +1,7 @@
 import type {DocumentKind} from "@offroad/credit-ontology";
 
 import {archetype} from "./archetypes";
-import type {ArchetypeId, Requirement, RequirementLevel} from "./types";
+import type {ArchetypeId, Requirement, RequirementLevel, RequirementPurpose} from "./types";
 
 /**
  * What the desk still needs, computed rather than asked.
@@ -25,7 +25,12 @@ export type RequirementStatus = {
   satisfied: boolean;
   /** Documents that discharge it, by id — so the UI can link the tick to the file. */
   satisfiedBy: string[];
+  /** For information items: the answer the company gave, when it gave one. */
+  answer?: string;
 };
+
+/** An answer the company typed, keyed by requirement id. */
+export type InformationAnswers = Readonly<Record<string, string | undefined>>;
 
 export type SufficiencyReport = {
   archetypeId: ArchetypeId;
@@ -56,7 +61,11 @@ const levelOrder: Record<RequirementLevel, number> = {minimum: 0, ideal: 1};
  * audited statements carry both the history and the auditor's opinion, and pretending
  * otherwise would ask the company for a file it already sent.
  */
-export function assessSufficiency(archetypeId: ArchetypeId, documents: readonly ClassifiedDocument[]): SufficiencyReport {
+export function assessSufficiency(
+  archetypeId: ArchetypeId,
+  documents: readonly ClassifiedDocument[],
+  answers: InformationAnswers = {},
+): SufficiencyReport {
   const definition = archetype(archetypeId);
   const byKind = new Map<DocumentKind, string[]>();
   for (const document of documents) {
@@ -67,6 +76,18 @@ export function assessSufficiency(archetypeId: ArchetypeId, documents: readonly 
   const requirements: RequirementStatus[] = [...definition.requirements]
     .sort((a, b) => levelOrder[a.level] - levelOrder[b.level])
     .map((requirement) => {
+      // An information item is discharged by the company answering, not by a file. A blank or
+      // whitespace answer is not an answer: the item stays open rather than looking closed.
+      if (requirement.source === "information") {
+        const answer = answers[requirement.id]?.trim();
+        return {
+          requirement,
+          satisfied: Boolean(answer),
+          satisfiedBy: [],
+          ...(answer ? {answer} : {}),
+        };
+      }
+
       const satisfiedBy = requirement.satisfiedBy.flatMap((kind) => byKind.get(kind) ?? []);
       for (const id of satisfiedBy) matched.add(id);
       return {requirement, satisfied: satisfiedBy.length > 0, satisfiedBy};
@@ -95,6 +116,27 @@ export function assessSufficiency(archetypeId: ArchetypeId, documents: readonly 
  * the desk names the single most important gap, because a list of eleven missing items reads
  * as "come back later" while one named document reads as a next step.
  */
+/**
+ * What is still missing, grouped by what it unblocks.
+ *
+ * A flat list of gaps tells a company how much work is left. This tells it what the work is
+ * *for* — the numbers cannot be built without these, the investor will ask for those, the story
+ * has no shape without the others. People close gaps far faster when they can see which part of
+ * the outcome each one buys.
+ */
+export function missingByPurpose(report: SufficiencyReport): Record<RequirementPurpose, RequirementStatus[]> {
+  const grouped: Record<RequirementPurpose, RequirementStatus[]> = {
+    investor_case: [],
+    financials: [],
+    structure: [],
+    storytelling: [],
+  };
+  for (const status of report.missing) {
+    for (const purpose of status.requirement.purposes) grouped[purpose].push(status);
+  }
+  return grouped;
+}
+
 export function nextStep(report: SufficiencyReport, locale: "pt" | "en" = "pt"): {state: "blocked" | "openable" | "priceable"; message: string} {
   const firstMissing = report.missing[0];
 

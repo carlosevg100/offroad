@@ -773,6 +773,21 @@ begin
 end;
 $$;
 
+-- Information answers belong to the session, and only to members of its organization.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_a constant uuid := '40000000-0000-4000-8000-000000000003';
+begin
+  insert into public.intake_information_answers (organization_id, intake_session_id, requirement_id, answer, answered_by)
+  values (org_a, session_a, 'info_why_now', 'Os pontos comerciais já estão contratados.', '10000000-0000-4000-8000-000000000001');
+
+  if (select count(*) from public.intake_information_answers where organization_id = org_a) <> 1 then
+    raise exception 'a member could not record an answer for their own session';
+  end if;
+end;
+$$;
+
 -- The candidate command answers to the capability token and to nothing else.
 do $$
 begin
@@ -854,6 +869,10 @@ declare
   session_a constant uuid := '40000000-0000-4000-8000-000000000003';
   document_id constant uuid := '50000000-0000-4000-8000-000000000003';
 begin
+  if exists (select 1 from public.intake_information_answers) then
+    raise exception 'tenant B read an information answer belonging to tenant A';
+  end if;
+
   if exists (select 1 from storage.objects where bucket_id = 'document-layers') then
     raise exception 'tenant B read a document layer belonging to tenant A';
   end if;

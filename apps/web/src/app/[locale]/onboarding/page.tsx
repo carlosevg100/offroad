@@ -43,6 +43,7 @@ import {
   finishDocumentsStep,
   previousOnboardingStep,
   processDocumentIntake,
+  saveIntakeAnswer,
   setIntakeOperation,
   removeIntakeDocument,
   resolveIntakeIssue,
@@ -366,6 +367,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 processAction={processDocumentIntake}
                 removeAction={removeIntakeDocument}
                 session={intakeReview.session}
+                answerAction={saveIntakeAnswer}
                 setOperationAction={setIntakeOperation}
                 userId={userId}
               />

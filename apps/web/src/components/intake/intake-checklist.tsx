@@ -94,6 +94,9 @@ export async function IntakeChecklist({locale, checklist}: ChecklistProps) {
     {level: "ideal" as const, title: t("idealTitle"), counts: checklist.ideal},
   ];
 
+  // Documents and questions are both part of one request, and the counts above cover both —
+  // but they are answered in completely different ways, so they are shown apart.
+
   return (
     <section className="intake-checklist">
       <div className="intake-checklist__head">
@@ -114,7 +117,7 @@ export async function IntakeChecklist({locale, checklist}: ChecklistProps) {
 
           <ul>
             {checklist.items
-              .filter((item) => item.level === group.level)
+              .filter((item) => item.level === group.level && item.source === "document")
               .map((item) => (
                 <li key={item.id} className={item.satisfied ? "is-satisfied" : "is-pending"}>
                   <span className="intake-checklist__mark" aria-hidden="true">
