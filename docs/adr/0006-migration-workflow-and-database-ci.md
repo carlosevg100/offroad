@@ -1,4 +1,4 @@
-# ADR 0006 — Workflow de migrations (MCP + arquivos alinhados) e CI de banco
+# ADR 0006: Workflow de migrations (MCP + arquivos alinhados) e CI de banco
 
 Status: accepted
 Data: 2026-08-18

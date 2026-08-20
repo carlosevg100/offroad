@@ -1,4 +1,4 @@
-# Offroad Capital — Product and Engineering Handoff
+# Offroad Capital: Product and Engineering Handoff
 
 > Current as of 18 August 2026, `main` after PRs #41, #44, #46, #47, #48, #49
 > and this documentation PR (previous baseline: `30b87f7`, PR #40).
@@ -152,7 +152,7 @@ framing: **“Originação de crédito privado impulsionada por IA.”**
   storage, and typed client.
 - Initial deterministic financial, matching, evidence, and domain packages.
 - Vercel preview/production deployment; GitHub quality gate with three required
-  jobs (`check`, `database`, `e2e`) — the E2E job runs the whole borrower
+  jobs (`check`, `database`, `e2e`), the E2E job runs the whole borrower
   journey on a local Supabase stack.
 - Localized 404/error pages; placeholder controls disabled honestly.
 
@@ -398,8 +398,8 @@ edit sections. Completed onboarding routes users to their organization workspace
 - `apps/web/src/app/[locale]/app/opportunities/[opportunityId]/page.tsx`:
   current credit-room overview.
 
-The opportunity rail shows intended modules — snapshot, documents, capacity,
-structure, outputs, and matching — but most are placeholders today, not complete
+The opportunity rail shows intended modules, snapshot, documents, capacity,
+structure, outputs, and matching, but most are placeholders today, not complete
 workbenches.
 
 ## 9. Document-first intake
@@ -434,17 +434,17 @@ The review model supports:
 
 Important files:
 
-- `apps/web/src/lib/intake/server.ts` — the intake operations shared by both
+- `apps/web/src/lib/intake/server.ts`, the intake operations shared by both
   entry points (start, process, accept, review, resolve, confirm, load); tenant
   scope always comes from the verified session.
-- `apps/web/src/lib/intake/case.ts` — pure builders (candidate/issue/evidence
+- `apps/web/src/lib/intake/case.ts`, pure builders (candidate/issue/evidence
   rows, `deriveCase`, bounded opportunity title) and `format.ts` (locale-aware
   number parsing and value rendering), both unit-tested.
-- `apps/web/src/components/intake/` — `IntakeStartChoice`, `IntakeCollect`,
+- `apps/web/src/components/intake/`, `IntakeStartChoice`, `IntakeCollect`,
   `IntakeReview`, `DocumentIntakeUploader` (client). Copy comes from the
   `Intake` namespace of the message catalogs; nothing is inlined.
 - `apps/web/src/app/[locale]/app/new/{page,actions}.ts(x)` and
-  `apps/web/src/app/[locale]/onboarding/{page,actions}.ts(x)` — thin wrappers
+  `apps/web/src/app/[locale]/onboarding/{page,actions}.ts(x)`, thin wrappers
   that resolve the scope, pick the session and translate outcomes into
   redirects. Onboarding adds its own bookkeeping (organization profile,
   `onboarding_progress` answers) after the shared confirmation.
@@ -675,7 +675,7 @@ needed.
 | `20260817232443_hardening_force_rls_and_org_type_guard.sql` | FORCE RLS on intake tables; no self-service `offroad` organizations; intake sessions only for borrower-side tenants |
 | `20260818033220_atomic_intake_commands.sql` | Atomic intake commands: `begin_intake_processing`, `complete_intake_processing`, `review_intake_candidate`, `confirm_document_intake` (idempotent); bounded opportunity title in `create_opportunity_intake` |
 | `20260818034457_intake_document_removal_and_verification.sql` | Delete policy for intake documents of open sessions; `source_documents.sha256_verified_at` |
-| `20260818043539_intake_session_policies_membership.sql` | Sessions SELECT/UPDATE policies use the tenant/type check only — fixes `insert … returning` failing under the STABLE self-lookup (session creation was broken) |
+| `20260818043539_intake_session_policies_membership.sql` | Sessions SELECT/UPDATE policies use the tenant/type check only, fixes `insert … returning` failing under the STABLE self-lookup (session creation was broken) |
 
 File names match the versions recorded in `supabase_migrations.schema_migrations`
 of the hosted project (the migrations were applied through the Supabase MCP tool,
@@ -695,7 +695,7 @@ RLS test on each PR. See `AGENTS.md` §6.
 - RLS and FORCE RLS on every public table (the CI database job asserts it).
 - Organization-scoped reads and writes.
 - Role and organization-type checks; self-service organizations are limited to
-  `company` / `originator` / `capital_provider` — the internal `offroad` type
+  `company` / `originator` / `capital_provider`, the internal `offroad` type
   cannot be created or promoted through the Data API.
 - Document intake sessions can only be started by borrower-side tenants
   (`company`, `originator`, `offroad`).
@@ -704,7 +704,7 @@ RLS test on each PR. See `AGENTS.md` §6.
 - Audit triggers on material tables.
 - Minimal Data API grants.
 - Server-side protected-route guards using verified claims.
-- `anon` holds no privilege at all inside `public` — no table, column, sequence or
+- `anon` holds no privilege at all inside `public`, no table, column, sequence or
   function. The Supabase bootstrap default privileges that kept granting every new
   object to `anon` and `authenticated` were revoked in `20260818172243`; before
   that, every table created after `20260815022143` was born with
@@ -880,7 +880,7 @@ still depend on RLS.
 
 ### Prerequisites
 
-- Node 24 (`.nvmrc`; `fnm use` or `nvm use` — CI and Vercel run 24, `engines` rejects 25+)
+- Node 24 (`.nvmrc`; `fnm use` or `nvm use`, CI and Vercel run 24, `engines` rejects 25+)
 - pnpm 10.32.1
 - access to the appropriate Supabase/Vercel environments when testing live flows
 - read `AGENTS.md` (repository operating rules for agents and humans) first
@@ -996,7 +996,7 @@ deployment.
 
 ## 20. Recommended next execution sequence
 
-### P0 — Stabilize the current vertical slice
+### P0: Stabilize the current vertical slice
 
 1. ~~Extract reusable document-intake UI into `src/components`.~~ Done (18 Aug 2026).
 2. ~~Make intake confirmation atomic with one RPC and idempotency key.~~ Done (18 Aug 2026).
@@ -1013,30 +1013,30 @@ Items 1, 2, 3, 4 and 5 are done (PRs #41–#49 plus this documentation PR).
 Remaining before P1 work starts: create Sentry/PostHog projects (D-005), decide
 staging (D-009) and residency (D-003).
 
-### P1 — Build the general evidence pipeline
+### P1: Build the general evidence pipeline
 
 Detailed plan (proposed 18 Aug 2026, awaiting founder decisions D-003/D-010–D-014):
-[`docs/build/P1_INTELLIGENCE_PLAN.md`](docs/build/P1_INTELLIGENCE_PLAN.md) — case
+[`docs/build/P1_INTELLIGENCE_PLAN.md`](docs/build/P1_INTELLIGENCE_PLAN.md), case
 file ("Arquivo do Case"), anchored extraction with deterministic verifier,
 spreading, reconciliation rules R1–R17, case brief with claims, financial-core
 completion, provenance-bearing outputs, evals harness, isolated worker, model
 policy and costs, phases F0–F7. Summary of the phases:
 
-1. F0 — **done 18 Aug 2026 (PRs #52–#55, ADR 0008)**: `credit-ontology`,
+1. F0, **done 18 Aug 2026 (PRs #52–#55, ADR 0008)**: `credit-ontology`,
    `document-intelligence` (anchor verifier + normalizer), `model-gateway`
    (Anthropic + OpenAI via API, no Haiku), `evals` + gold case G1 with the
    fixture baseline (precision 100%, material recall 47.7%, exceptions 7/12).
-2. F1 — isolated worker (D-003), quarantine/scan, deterministic layers for
+2. F1, isolated worker (D-003), quarantine/scan, deterministic layers for
    PDF/XLSX/XLS/CSV/DOCX/PPTX, document profiles, organized document index.
-3. F2 — anchored LLM extraction + verifier for native formats, incremental
+3. F2, anchored LLM extraction + verifier for native formats, incremental
    runs, auto-accept policy (D-014), replaces the fixture path in production.
-4. F3 — spreads, reconciliation exceptions, financial-core functions, XLSX export.
-5. F4 — case brief, management questions, red-flag candidates, readiness score.
-6. F5 — outputs with provenance (readiness report, credit profile, diligence
+4. F3, spreads, reconciliation exceptions, financial-core functions, XLSX export.
+5. F4, case brief, management questions, red-flag candidates, readiness score.
+6. F5, outputs with provenance (readiness report, credit profile, diligence
    roadmap, proposed structure/indicative term sheet, teaser, lender package).
-7. F6 — scanned PDFs/images (OCR, D-011) and the case Copilot with narrow tools.
+7. F6, scanned PDFs/images (OCR, D-011) and the case Copilot with narrow tools.
 
-### P2 — Complete the borrower/advisor credit workflow
+### P2: Complete the borrower/advisor credit workflow
 
 1. Financial statement spreading and reconciliation.
 2. Debt capacity, leverage, DSCR, collateral, and downside.
@@ -1044,7 +1044,7 @@ policy and costs, phases F0–F7. Summary of the phases:
 4. Missing-information roadmap and evidence coverage.
 5. Investor-ready outputs with immutable versions and PT/EN parity.
 
-### P3 — Complete the lender and market-access workflow
+### P3: Complete the lender and market-access workflow
 
 1. Mandate editor with versions, freshness, and routing contacts.
 2. Published opportunity projection separate from private workspace.
@@ -1052,7 +1052,7 @@ policy and costs, phases F0–F7. Summary of the phases:
 4. Watchlists, access requests, grants, approvals, and audit.
 5. Qualified introduction and handoff package.
 
-### P4 — Agent, operations, and production hardening
+### P4: Agent, operations, and production hardening
 
 1. Agent kernel with typed envelopes, evidence scopes, tool allowlists, budgets,
    checkpoints, and approvals.

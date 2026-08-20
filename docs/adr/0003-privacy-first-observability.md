@@ -1,4 +1,4 @@
-# ADR 0003 — Observabilidade privacy-first
+# ADR 0003: Observabilidade privacy-first
 
 Status: accepted
 Data: 2026-08-14

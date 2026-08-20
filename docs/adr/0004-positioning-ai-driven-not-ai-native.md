@@ -1,4 +1,4 @@
-# ADR 0004 — Posicionamento público: "impulsionada por IA", não "AI-Native"
+# ADR 0004: Posicionamento público: "impulsionada por IA", não "AI-Native"
 
 Status: accepted
 Data: 2026-08-18 (registra decisão tomada em 2026-08-15)

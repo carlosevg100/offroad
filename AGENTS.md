@@ -1,4 +1,4 @@
-# Offroad Capital — operating rules for coding agents
+# Offroad Capital: operating rules for coding agents
 
 These rules apply to every agent working in this repository (Claude Code, Codex, or a
 human). They exist so that two agents can work in parallel without duplicating flows,
@@ -17,7 +17,7 @@ origination and market-access platform. One Next.js 16 app (`apps/web`) plus sma
 deterministic domain packages (`packages/*`), backed by Supabase (Auth, Postgres 17 with
 RLS, private Storage) and deployed on Vercel from `main`. Production is
 `https://offroad.capital`; the single Supabase project (`offroad-development`,
-`sa-east-1`) **is** production — there is no staging database. Do not create throwaway
+`sa-east-1`) **is** production, there is no staging database. Do not create throwaway
 data there.
 
 ## 2. Non-negotiable invariants
@@ -66,9 +66,9 @@ Turbopack is default; `next lint` no longer exists (ESLint CLI flat config); roo
 - Never commit to `main`. Branch from an up-to-date `origin/main` with a focused name
   (`feat/…`, `fix/…`, `chore/…`, `docs/…`). One concern per PR; keep PRs small and green.
 - Fill the PR template (context, scope, evidence, security/privacy, data/migrations, risk).
-- Merge only after the three `Quality` jobs — `check` (lint/typecheck/test/build),
+- Merge only after the three `Quality` jobs, `check` (lint/typecheck/test/build),
   `database` (migrations from scratch + RLS test + lint) and `e2e` (Playwright journey on a
-  local stack) — and the Vercel check pass; use squash merge; keep linear history; never
+  local stack), and the Vercel check pass; use squash merge; keep linear history; never
   force-push shared branches.
 - After merge: wait for the Vercel production deployment, verify
   `https://offroad.capital/pt-BR` and the affected routes, then sync local `main`.
@@ -119,7 +119,7 @@ the `private` schema, `set search_path = ''`, revoked from `public`, granted nar
   `layout.tsx`, `route.ts`, `actions.ts`) export only what Next expects.
 - **Brand and metadata** come from `apps/web/src/config/brand.ts`. Public copy follows the
   wording rules in `handoff.md` §2 (no promises of approval/funding, "advisor" not
-  "originator" in public copy, avoid "plataforma de IA" — prefer "impulsionada por IA").
+  "originator" in public copy, avoid "plataforma de IA", prefer "impulsionada por IA").
 - **Documents:** uploads are private, hashed (SHA-256), scoped by organization and
   opportunity/intake session; nothing is sent to market during intake. Extraction today is
   the content-hash-verified Rede Horizonte fixture; unknown documents must produce an honest
@@ -132,7 +132,7 @@ the `private` schema, `set search_path = ''`, revoked from `public`, granted nar
 | Domain/package logic | Vitest unit tests with boundary cases and traces |
 | Server action / lib code | Vitest unit tests for pure parts; SQL or E2E for persistence |
 | Schema / policy / RPC | Extend `supabase/tests/rls_non_interference.sql`; advisors clean |
-| UI flow | Playwright E2E (`apps/web/e2e`) when the flow is user-critical; the journey runs in CI against a local Supabase stack, and its selectors are the product's own classes/roles — keep them stable |
+| UI flow | Playwright E2E (`apps/web/e2e`) when the flow is user-critical; the journey runs in CI against a local Supabase stack, and its selectors are the product's own classes/roles, keep them stable |
 | Copy | Message-catalog parity test stays green |
 
 Do not claim completion from the UI alone: verify persistence, authorization, tests, build,
@@ -144,7 +144,7 @@ The Rede Horizonte acceptance data room (8 synthetic files) is matched by exact 
 **and** SHA-256 (`packages/testing-fixtures/src/document-intake.ts`). The source files and
 their generators live outside this repo (`../outputs/rede-horizonte-realistic-test/`,
 `../.codex-build/rede-horizonte-realistic/`). Re-running a generator changes the hashes and
-silently breaks the match — if you regenerate, update the hashes and the tests together.
+silently breaks the match. If you regenerate, update the hashes and the tests together.
 `02_GABARITO_OFFROAD` is the answer key and must never be uploaded to the product.
 
 ## 10. Definition of done

@@ -19,6 +19,9 @@ import ptBR from "../../messages/pt-BR.json";
  * both the ban and the prompt that carries it.
  *
  * Code comments are out of scope: they are documentation for whoever maintains this, not copy.
+ * The markdown is not. The ledgers, the handoff and the ADRs are prose the founder reads, and
+ * they held 271 of the character until they were swept; without a check here they simply come
+ * back, one pull request at a time.
  */
 
 const EM_DASH = "—";
@@ -80,6 +83,45 @@ describe("no em dash reaches a reader", () => {
     };
 
     walk(root);
+    expect(offenders).toEqual([]);
+  });
+
+  it("the markdown a person reads", () => {
+    // The repository's own prose: ledgers, handoff, ADRs, operating rules. Not the code comments
+    // beside them, and not `node_modules` or build output.
+    const root = join(import.meta.dirname, "../../../..");
+    const offenders: string[] = [];
+
+    const walk = (directory: string) => {
+      for (const entry of readdirSync(directory, {withFileTypes: true})) {
+        if (entry.name.startsWith(".")) continue;
+        const full = join(directory, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name === "node_modules" || entry.name === "dist" || entry.name === "coverage") continue;
+          walk(full);
+          continue;
+        }
+        if (!entry.name.endsWith(".md")) continue;
+
+        readFileSync(full, "utf8")
+          .split("\n")
+          .forEach((line, index) => {
+            if (line.includes(EM_DASH)) {
+              offenders.push(`${full.slice(root.length + 1)}:${index + 1}  ${line.trim().slice(0, 120)}`);
+            }
+          });
+      }
+    };
+
+    for (const directory of ["docs"]) walk(join(root, directory));
+    for (const file of ["AGENTS.md", "README.md", "handoff.md", "CLAUDE.md"]) {
+      readFileSync(join(root, file), "utf8")
+        .split("\n")
+        .forEach((line, index) => {
+          if (line.includes(EM_DASH)) offenders.push(`${file}:${index + 1}  ${line.trim().slice(0, 120)}`);
+        });
+    }
+
     expect(offenders).toEqual([]);
   });
 });
