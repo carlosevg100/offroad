@@ -1221,6 +1221,106 @@ begin
 end;
 $$;
 
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+-- The job payload's URLs are bound to the document they claim to carry.
+--
+-- `begin_processing_run` is granted to `authenticated`, so `download_url` and
+-- `layer_upload_url` are, in the worst case, written by a tenant member calling the Data API
+-- rather than by the application that signs them. A worker that acted on them as given would
+-- be a request forwarder inside our AWS account with a task role attached, and
+-- `http://169.254.170.2/v2/credentials/...` is where that role is handed out.
+do $$
+declare
+  org uuid := '20000000-0000-4000-8000-000000000001';
+  session_id uuid := '40000000-0000-4000-8000-0000000000f1';
+  doc_id uuid := '50000000-0000-4000-8000-0000000000f1';
+  path text;
+  accepted boolean;
+begin
+  path := org::text || '/' || session_id::text || '/probe.pdf';
+
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+  insert into public.source_documents (
+    id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by
+  ) values (
+    doc_id, org, session_id, 'opportunity-documents', path, 'probe.pdf', repeat('9', 64), 10,
+    '10000000-0000-4000-8000-000000000001'
+  );
+
+  -- The ECS task credential endpoint, which is the vector this check exists for.
+  accepted := true;
+  begin
+    perform public.begin_processing_run(org, session_id, 'manual',
+      jsonb_build_array(jsonb_build_object('source_document_id', doc_id,
+        'download_url', 'http://169.254.170.2/v2/credentials/abc')), 'test');
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'begin_processing_run accepted a download_url pointing at the metadata endpoint'; end if;
+
+  -- The expected object path smuggled into a query string on somebody else's host: the check
+  -- has to read the Storage part of the URL, not merely find the text somewhere in it.
+  accepted := true;
+  begin
+    perform public.begin_processing_run(org, session_id, 'manual',
+      jsonb_build_array(jsonb_build_object('source_document_id', doc_id,
+        'download_url', 'https://evil.example/?p=' || path)), 'test');
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'begin_processing_run accepted a foreign host carrying the object path in its query string'; end if;
+
+  -- A layer written outside `<organization>/<session>/`, which is the prefix the Storage
+  -- policies parse into a tenant.
+  accepted := true;
+  begin
+    perform public.begin_processing_run(org, session_id, 'manual',
+      jsonb_build_array(jsonb_build_object('source_document_id', doc_id,
+        'layer_object_path', 'someone-else/session/x.json',
+        'layer_upload_url', 'https://p.supabase.co/storage/v1/object/upload/sign/l/someone-else/session/x.json')), 'test');
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'begin_processing_run accepted a layer path outside the session prefix'; end if;
+
+  -- And the links the application actually signs still start a run, or this check would have
+  -- closed the hole by breaking the product.
+  perform public.begin_processing_run(org, session_id, 'manual',
+    jsonb_build_array(jsonb_build_object('source_document_id', doc_id,
+      'download_url', 'https://p.supabase.co/storage/v1/object/sign/opportunity-documents/' || path || '?token=x',
+      'layer_object_path', org::text || '/' || session_id::text || '/' || doc_id::text || '/1.json',
+      'layer_upload_url', 'https://p.supabase.co/storage/v1/object/upload/sign/document-layers/'
+        || org::text || '/' || session_id::text || '/' || doc_id::text || '/1.json')), 'test');
+end;
+$$;
+
+-- `object_path` is the string the Storage policies parse, and it became tenant-insertable when
+-- the write surface narrowed to named columns. A row may not describe another tenant's object.
+do $$
+declare
+  accepted boolean := true;
+begin
+  begin
+    insert into public.source_documents (
+      id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by
+    ) values (
+      '50000000-0000-4000-8000-0000000000f2', '20000000-0000-4000-8000-000000000001',
+      '40000000-0000-4000-8000-0000000000f1', 'opportunity-documents',
+      '20000000-0000-4000-8000-000000000002/x/y.pdf', 'y.pdf', repeat('7', 64), 10,
+      '10000000-0000-4000-8000-000000000001'
+    );
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'source_documents accepted an object_path under another organization'; end if;
+end;
+$$;
+
+set local role postgres;
+
 rollback;
 
 select 'rls_non_interference_passed' as result;
