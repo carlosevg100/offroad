@@ -179,8 +179,8 @@ declare
   title_length integer;
 begin
   -- Documents: one in the session that will be confirmed (becomes evidence), one in an open session (removable).
-  insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, classification, processing_status, created_by)
-  values ('50000000-0000-4000-8000-000000000001', org, session_id, 'opportunity-documents', org::text || '/' || session_id::text || '/a.pdf', 'a.pdf', repeat('a', 64), 10, 'restricted', 'quarantined', '10000000-0000-4000-8000-000000000001');
+  insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by)
+  values ('50000000-0000-4000-8000-000000000001', org, session_id, 'opportunity-documents', org::text || '/' || session_id::text || '/a.pdf', 'a.pdf', repeat('a', 64), 10, '10000000-0000-4000-8000-000000000001');
   -- `insert … returning` must work for the tenant (the app reads the new session id this way).
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values ('40000000-0000-4000-8000-000000000002', org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR')
@@ -188,8 +188,8 @@ begin
   if returned_session is distinct from '40000000-0000-4000-8000-000000000002' then
     raise exception 'insert returning did not expose the new intake session to its tenant';
   end if;
-  insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, classification, processing_status, created_by)
-  values ('50000000-0000-4000-8000-000000000002', org, '40000000-0000-4000-8000-000000000002', 'opportunity-documents', org::text || '/40000000-0000-4000-8000-000000000002/b.pdf', 'b.pdf', repeat('b', 64), 10, 'restricted', 'quarantined', '10000000-0000-4000-8000-000000000001');
+  insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by)
+  values ('50000000-0000-4000-8000-000000000002', org, '40000000-0000-4000-8000-000000000002', 'opportunity-documents', org::text || '/40000000-0000-4000-8000-000000000002/b.pdf', 'b.pdf', repeat('b', 64), 10, '10000000-0000-4000-8000-000000000001');
 
   delete from public.source_documents where id = '50000000-0000-4000-8000-000000000002';
   get diagnostics n = row_count;
@@ -497,11 +497,11 @@ begin
 
   insert into public.source_documents (
     id, organization_id, intake_session_id, bucket_id, object_path, original_name, mime_type,
-    sha256, byte_size, classification, processing_status, created_by
+    sha256, byte_size, created_by
   ) values (
     document_id, org, session_id, 'opportunity-documents',
     org::text || '/' || session_id::text || '/df.pdf', 'df.pdf', 'application/pdf',
-    repeat('d', 64), 4096, 'restricted', 'quarantined', '10000000-0000-4000-8000-000000000001'
+    repeat('d', 64), 4096, '10000000-0000-4000-8000-000000000001'
   );
 
   result := public.begin_processing_run(
