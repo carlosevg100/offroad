@@ -1090,7 +1090,16 @@
       "missingSomeBody": "The desk ran with what there was. These fields would sharpen the reading.",
       "missingAllTitle": "The desk could not run",
       "missingAllBody": "The fields below are missing. Send the document that carries each one and the analysis is assembled automatically.",
-      "lmBodyRefinancing": "The raise repays {balance} of existing debt at disbursement (a liability swap), leaving {newMoney} of new money. Leverage after the swap: {leverage}."
+      "lmBodyRefinancing": "The raise repays {balance} of existing debt at disbursement (a liability swap), leaving {newMoney} of new money. Leverage after the swap: {leverage}.",
+      "months": "{count} months",
+      "monthlyBurn": "Monthly cash burn",
+      "runwayPre": "Runway today",
+      "runwayPost": "Runway after the deal",
+      "runwayPostHint": "with debt service at {rate}",
+      "arr": "ARR",
+      "debtToArr": "Post-deal debt over ARR",
+      "nrr": "Net revenue retention (NRR)",
+      "notMeaningful": "not meaningful with negative EBITDA"
     }
   }
 }

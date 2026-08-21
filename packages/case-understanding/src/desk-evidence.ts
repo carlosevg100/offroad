@@ -43,6 +43,13 @@ export function deskEvidence(desk: DeskAnalysis | null, trajectory: Trajectory |
   metric("desk.vencendo_24m", desk.stack.maturingWithin24Months, "Principal vencendo em 24 meses", ["debt.instruments"]);
   metric("desk.ciclo_de_caixa_dias", desk.workingCapital.cycleDays, "Ciclo de caixa em dias", ["historical_financials.receivables", "historical_financials.inventory", "historical_financials.payables"]);
   metric("desk.recebiveis_livres", desk.encumbrance.free, "Recebíveis livres de ônus", ["debt.instruments", "interim_financials.receivables"]);
+  if (desk.runway) {
+    metric("desk.runway_pre_meses", desk.runway.monthsPre, "Runway antes da operação (meses)", ["interim_financials.cash", "interim_financials.monthly_burn"]);
+    metric("desk.runway_pos_meses", desk.runway.monthsPostAfterService, "Runway após a operação, com o serviço da dívida (meses)", ["transaction.requested_amount", "interim_financials.monthly_burn"]);
+    metric("desk.queima_mensal", desk.runway.monthlyBurn, "Queima de caixa mensal", ["interim_financials.monthly_burn"]);
+    metric("desk.divida_sobre_arr", desk.runway.debtToArr, "Dívida pós-operação sobre ARR", ["interim_financials.arr", "debt.total_gross", "transaction.requested_amount"]);
+    metric("desk.arr", desk.runway.arr, "Receita recorrente anualizada (ARR)", ["interim_financials.arr"]);
+  }
   for (const scenario of desk.leverage.scenarios) {
     metric(`desk.alavancagem_pos.${scenario.source.replace(/\s+/g, "_")}`, scenario.postTurns, `Alavancagem pós (${scenario.source})`, ["transaction.requested_amount", "historical_financials.ebitda"]);
   }

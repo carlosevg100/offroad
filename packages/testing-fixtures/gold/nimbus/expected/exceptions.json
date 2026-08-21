@@ -1,0 +1,76 @@
+[
+  {
+    "id": "arr-deck-vs-export",
+    "type": "source_conflict",
+    "severity": "critical",
+    "description": "o export por cliente manda; o deck é narrativa",
+    "keywords": [
+      "arr",
+      "40",
+      "deck",
+      "export",
+      "divergencia"
+    ],
+    "evidenceDocuments": [
+      "00_Deck_Institucional_Nimbus.docx",
+      "02_Metricas_MRR_por_Cliente_2024_2026.xlsx"
+    ],
+    "expectedTreatment": "management"
+  },
+  {
+    "id": "runway-letter-vs-statement",
+    "type": "source_conflict",
+    "severity": "critical",
+    "description": "o extrato manda; runway se calcula, não se declara",
+    "keywords": [
+      "runway",
+      "16",
+      "13",
+      "queima",
+      "extrato"
+    ],
+    "evidenceDocuments": [
+      "01_Carta_Pedido_Venture_Debt.docx",
+      "05_Extrato_Bancario_Mai_Jul2026.csv"
+    ],
+    "expectedTreatment": "management"
+  },
+  {
+    "id": "missing-audited_statements",
+    "type": "missing",
+    "severity": "high",
+    "description": "a auditoria de 2025 está em andamento; só há gerencial",
+    "keywords": [
+      "audited",
+      "statements"
+    ],
+    "evidenceDocuments": [],
+    "expectedTreatment": "question"
+  },
+  {
+    "id": "missing-top_customer_contracts",
+    "type": "missing",
+    "severity": "medium",
+    "description": "contratos dos dois maiores clientes não enviados",
+    "keywords": [
+      "top",
+      "customer",
+      "contracts"
+    ],
+    "evidenceDocuments": [],
+    "expectedTreatment": "question"
+  },
+  {
+    "id": "missing-investor_follow_on",
+    "type": "missing",
+    "severity": "medium",
+    "description": "nenhuma carta dos fundos confirmando reserva para follow-on",
+    "keywords": [
+      "investor",
+      "follow",
+      "on"
+    ],
+    "evidenceDocuments": [],
+    "expectedTreatment": "question"
+  }
+]

@@ -16,7 +16,7 @@ export type Fact = {fieldPath: string; value: string};
 export type DeskInputsOptions = {
   referenceDate: string;
   /** A market assumption of the analysis, stated by the caller, never invented here. */
-  indexLevels: {cdi: string; tlp?: string; ipca?: string; selic?: string};
+  indexLevels: {cdi: string; tlp?: string; ipca?: string; selic?: string; tr?: string};
   /** What the company stated in the product itself, alongside what the documents say. */
   statedRequest?: {amount?: string; termMonths?: number; graceMonths?: number; expectedRate?: string};
 };
@@ -176,6 +176,25 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
     : companyProjections;
   const nextRevenue = latest ? value(`projections.${latest + 1}.revenue`) : undefined;
 
+  // ---- what a venture lender reads -----------------------------------------------------------
+  const latestOf = (metric: string): string | undefined =>
+    facts
+      .filter((fact) => new RegExp(`^(historical|interim)_financials\\.\\d{4}(_\\d{2})?\\.${metric}(_\\d+m|_ytd|_ltm)?$`).test(fact.fieldPath))
+      .sort((a, b) => b.fieldPath.localeCompare(a.fieldPath))[0]?.value;
+  const ventureEntries: Array<[string, string | undefined]> = [
+    ["arr", latestOf("arr")],
+    ["mrr", latestOf("mrr")],
+    ["monthlyBurn", latestOf("monthly_burn")],
+    ["runwayMonthsStated", value("company.runway_months")],
+    ["lastEquityRoundAmount", value("company.last_equity_round.amount")],
+    ["lastEquityRoundDate", value("company.last_equity_round.date")],
+    ["nrr", value("company.net_revenue_retention")],
+    ["monthlyChurn", value("company.monthly_churn_pct")],
+    ["topCustomerShare", value("customers.top_customers.1.share_pct")],
+  ];
+  const venture = Object.fromEntries(ventureEntries.filter((entry): entry is [string, string] => entry[1] !== undefined)) as NonNullable<DeskInput["venture"]>;
+  const hasVenture = Object.keys(venture).length > 0;
+
   // ---- assemble, honestly --------------------------------------------------------------------
   const canDesk = Boolean(revenue && ebitda && balanceCash && balanceGrossDebt && balanceReceivables && amounts.length > 0);
   const desk: DeskInput | null = canDesk
@@ -201,6 +220,7 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
         ...(interim ? {interim} : {}),
         debt,
         ...(companyCovenants.length > 0 ? {covenants: companyCovenants} : {}),
+        ...(hasVenture ? {venture} : {}),
         request: {
           amounts,
           ...(termMonths !== undefined ? {termMonths} : {}),
@@ -212,8 +232,10 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
       }
     : null;
 
+  // A leverage trajectory over a negative EBITDA is arithmetic without meaning; the cash-burning
+  // company is read through its runway, inside the desk analysis.
   const canTrajectory = Boolean(
-    desk && ebitda && projectedEbitda.length > 0 && amounts.length > 0 && termMonths !== undefined && graceMonths !== undefined,
+    desk && ebitda && Number(ebitda) > 0 && projectedEbitda.length > 0 && amounts.length > 0 && termMonths !== undefined && graceMonths !== undefined,
   );
   // Still asked for, even when the trajectory ran on the fallback: the company's own ramp is
   // the number the fund will underwrite, and the desk's flat line is a placeholder, not an answer.

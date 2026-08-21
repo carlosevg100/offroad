@@ -52,6 +52,24 @@ export function sourcesAndUses(desk: DeskAnalysis, trajectory: Trajectory): Mate
 }
 
 /** The stack the day before and the day after, on one axis. */
+/** What a venture lender reads instead of leverage: runway, burn, ARR and what the ticket buys. */
+export function runwayAndRecurring(desk: DeskAnalysis): MaterialBlock | null {
+  const runway = desk.runway;
+  if (!runway) return null;
+  const months = (value: string, locale: "pt-BR" | "en-US") => `${new Decimal(value).toFixed(1).replace(".", locale === "pt-BR" ? "," : ".")} ${locale === "pt-BR" ? "meses" : "months"}`;
+  const rows: Array<{label: {pt: string; en: string}; value: {pt: string; en: string}; supportIds?: string[]}> = [
+    {label: {pt: "Queima de caixa mensal", en: "Monthly cash burn"}, value: {pt: money(runway.monthlyBurn, "pt-BR"), en: money(runway.monthlyBurn, "en-US")}, supportIds: ["desk.queima_mensal"]},
+    {label: {pt: "Runway antes da operação", en: "Runway before the deal"}, value: {pt: months(runway.monthsPre, "pt-BR"), en: months(runway.monthsPre, "en-US")}, supportIds: ["desk.runway_pre_meses"]},
+    {label: {pt: "Runway após a operação, com o serviço", en: "Runway after the deal, with service"}, value: {pt: months(runway.monthsPostAfterService, "pt-BR"), en: months(runway.monthsPostAfterService, "en-US")}, supportIds: ["desk.runway_pos_meses"]},
+    {label: {pt: "Taxa assumida para o serviço", en: "Rate assumed for service"}, value: {pt: pct(runway.assumedRate, "pt-BR"), en: pct(runway.assumedRate, "en-US")}},
+  ];
+  if (runway.arr) rows.push({label: {pt: "ARR", en: "ARR"}, value: {pt: money(runway.arr, "pt-BR"), en: money(runway.arr, "en-US")}, supportIds: ["desk.arr"]});
+  if (runway.debtToArr) rows.push({label: {pt: "Dívida pós-operação sobre ARR", en: "Post-deal debt over ARR"}, value: {pt: pct(runway.debtToArr, "pt-BR"), en: pct(runway.debtToArr, "en-US")}, supportIds: ["desk.divida_sobre_arr"]});
+  if (runway.nrr) rows.push({label: {pt: "Retenção líquida de receita", en: "Net revenue retention"}, value: {pt: pct(runway.nrr, "pt-BR"), en: pct(runway.nrr, "en-US")}});
+  if (runway.topCustomerShare) rows.push({label: {pt: "Maior cliente sobre o MRR", en: "Largest customer over MRR"}, value: {pt: pct(runway.topCustomerShare, "pt-BR"), en: pct(runway.topCustomerShare, "en-US")}});
+  return {type: "kv", caption: {pt: "Runway e receita recorrente", en: "Runway and recurring revenue"}, rows};
+}
+
 export function capitalStructure(desk: DeskAnalysis, trajectory: Trajectory | null): MaterialBlock[] {
   const takenOut = new Set(trajectory?.liabilityManagement?.lendersTakenOut ?? []);
   const rows = desk.stack.lines.map((line) => [
@@ -92,7 +110,9 @@ export function capitalStructure(desk: DeskAnalysis, trajectory: Trajectory | nu
         {
           label: {pt: "Alavancagem pré-operação", en: "Pre-transaction leverage"},
           value: desk.leverage.preTurns,
-          formatted: {pt: turns(desk.leverage.preTurns, "pt-BR"), en: turns(desk.leverage.preTurns, "en-US")},
+          formatted: desk.profile === "cash_burning"
+            ? {pt: "não se aplica (EBITDA negativo)", en: "not applicable (negative EBITDA)"}
+            : {pt: turns(desk.leverage.preTurns, "pt-BR"), en: turns(desk.leverage.preTurns, "en-US")},
           supportIds: ["desk.alavancagem_pre"],
         },
         ...(trajectory?.liabilityManagement
@@ -109,7 +129,8 @@ export function capitalStructure(desk: DeskAnalysis, trajectory: Trajectory | nu
       ],
     },
   ];
-  return blocks;
+  const runway = runwayAndRecurring(desk);
+  return runway ? [...blocks, runway] : blocks;
 }
 
 /** Leverage over the life of the paper, base and haircut cases side by side. */

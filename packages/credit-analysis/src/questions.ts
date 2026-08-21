@@ -65,6 +65,55 @@ export function questionsForCompany(
     });
   }
 
+  if (has("runway-short")) {
+    const values = finding("runway-short")!.values;
+    questions.push({
+      findingId: "runway-short",
+      severity: "critical",
+      pt: `O runway atual é de ${new Decimal(values.monthsPre!).toFixed(1).replace(".", ",")} meses. Qual é o plano de caixa mês a mês até a próxima rodada, e o que é cortado se ela atrasar um trimestre? Os fundos atuais já confirmaram por escrito a reserva para acompanhar?`,
+      en: `Current runway is ${new Decimal(values.monthsPre!).toFixed(1)} months. What is the month-by-month cash plan to the next round, and what gets cut if it slips a quarter? Have the current funds confirmed follow-on reserves in writing?`,
+    });
+  }
+
+  if (has("runway-stated-vs-computed")) {
+    const values = finding("runway-stated-vs-computed")!.values;
+    questions.push({
+      findingId: "runway-stated-vs-computed",
+      severity: "high",
+      pt: `A carta fala em ${new Decimal(values.stated!).toFixed(0)} meses de runway e o extrato dá ${new Decimal(values.computed!).toFixed(1).replace(".", ",")}. Qual queima mensal a companhia usa, e o que muda nela nos próximos seis meses?`,
+      en: `The letter says ${new Decimal(values.stated!).toFixed(0)} months of runway and the statement gives ${new Decimal(values.computed!).toFixed(1)}. Which monthly burn does the company use, and what changes in it over the next six months?`,
+    });
+  }
+
+  if (has("debt-to-arr")) {
+    const values = finding("debt-to-arr")!.values;
+    questions.push({
+      findingId: "debt-to-arr",
+      severity: "high",
+      pt: `Com a captação, a dívida chega a ${new Decimal(values.debtToArr!).times(100).toFixed(0)}% do ARR. A companhia aceita um tíquete menor em tranches liberadas contra marcos de ARR, ou prefere manter o valor e oferecer warrant maior?`,
+      en: `With the raise, debt reaches ${new Decimal(values.debtToArr!).times(100).toFixed(0)}% of ARR. Would the company take a smaller ticket in tranches released against ARR milestones, or keep the amount and offer a larger warrant?`,
+    });
+  }
+
+  if (has("customer-concentration")) {
+    const values = finding("customer-concentration")!.values;
+    questions.push({
+      findingId: "customer-concentration",
+      severity: "high",
+      pt: `O maior cliente é ${new Decimal(values.topCustomerShare!).times(100).toFixed(0)}% do MRR. Qual é o prazo e a cláusula de rescisão do contrato, e quando foi a última renovação?`,
+      en: `The largest customer is ${new Decimal(values.topCustomerShare!).times(100).toFixed(0)}% of MRR. What are the contract's term and termination clause, and when was it last renewed?`,
+    });
+  }
+
+  if (has("nrr-below-par")) {
+    questions.push({
+      findingId: "nrr-below-par",
+      severity: "high",
+      pt: "A retenção líquida está abaixo de 100%. Qual é a análise de coortes dos últimos 12 meses, separando contração, churn e expansão, e o que explica cada uma?",
+      en: "Net revenue retention is below 100%. What is the cohort analysis for the last 12 months, splitting contraction, churn and expansion, and what explains each?",
+    });
+  }
+
   if (has("stack-vs-balance")) {
     const values = finding("stack-vs-balance")!.values;
     questions.push({

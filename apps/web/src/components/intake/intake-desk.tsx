@@ -57,15 +57,27 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
   if (!desk && deskMissing.length === 0 && clientQuestions.length === 0) return null;
 
   const requestedScenario = desk?.leverage.scenarios[0] ?? null;
+  const monthsLabel = (value: string) => t("months", {count: Number(value).toLocaleString(intl(locale), {minimumFractionDigits: 1, maximumFractionDigits: 1})});
+  const runwayMetrics: Array<{id: string; label: string; value: string | null; hint?: string}> = desk?.runway
+    ? [
+        {id: "burn", label: t("monthlyBurn"), value: millions(desk.runway.monthlyBurn, locale)},
+        {id: "runwayPre", label: t("runwayPre"), value: monthsLabel(desk.runway.monthsPre)},
+        {id: "runwayPost", label: t("runwayPost"), value: monthsLabel(desk.runway.monthsPostAfterService), hint: t("runwayPostHint", {rate: ratePct(desk.runway.assumedRate, locale) ?? ""})},
+        {id: "arr", label: t("arr"), value: millions(desk.runway.arr, locale)},
+        {id: "debtToArr", label: t("debtToArr"), value: desk.runway.debtToArr ? `${(Number(desk.runway.debtToArr) * 100).toFixed(0)}%` : null},
+        {id: "nrr", label: t("nrr"), value: desk.runway.nrr ? `${(Number(desk.runway.nrr) * 100).toFixed(0)}%` : null},
+      ]
+    : [];
   const metrics: Array<{id: string; label: string; value: string | null; hint?: string}> = desk
     ? [
+        ...runwayMetrics,
         {id: "netDebt", label: t("netDebt"), value: millions(desk.leverage.netDebtPre, locale)},
         {id: "ebitda", label: t("ebitda"), value: millions(desk.leverage.ebitda, locale)},
-        {id: "leveragePre", label: t("leveragePre"), value: turns(desk.leverage.preTurns, locale)},
+        {id: "leveragePre", label: t("leveragePre"), value: desk.profile === "cash_burning" ? t("notMeaningful") : turns(desk.leverage.preTurns, locale)},
         {
           id: "leveragePost",
           label: t("leveragePost"),
-          value: requestedScenario ? turns(requestedScenario.postTurns, locale) : null,
+          value: desk.profile === "cash_burning" ? t("notMeaningful") : requestedScenario ? turns(requestedScenario.postTurns, locale) : null,
           ...(requestedScenario ? {hint: t("leveragePostHint", {amount: millions(requestedScenario.amount, locale) ?? ""})} : {}),
         },
         {

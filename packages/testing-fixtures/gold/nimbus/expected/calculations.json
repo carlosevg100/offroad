@@ -1,0 +1,44 @@
+[
+  {
+    "id": "runway_months",
+    "definition": "Caixa de 31/07/2026 sobre a queima média de maio a julho",
+    "value": "13",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.05"
+    }
+  },
+  {
+    "id": "arr_2026_07",
+    "definition": "MRR de julho de 2026 vezes doze, a partir do export por cliente",
+    "value": "37326000",
+    "unit": "BRL",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "id": "capacity_arr_and_round",
+    "definition": "Menor entre 30% do ARR e 35% da última rodada",
+    "value": "11197800",
+    "unit": "BRL",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "id": "runway_after_debt",
+    "definition": "Runway com a captação, antes do serviço da dívida: (caixa + pedido) / queima",
+    "value": "21.1",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.05"
+    }
+  }
+]
