@@ -97,7 +97,7 @@ describe("compileMaterials", () => {
     const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness, desk, trajectory, termSheet});
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    expect(outcome.materials.map((material) => material.kind)).toEqual(["investment_memo", "term_sheet", "teaser", "credit_profile", "package"]);
+    expect(outcome.materials.map((material) => material.kind)).toEqual(["investment_memo", "term_sheet", "diligence_qa", "teaser", "credit_profile", "package"]);
   });
 
   it("emits neither when the desk did not run", () => {

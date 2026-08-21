@@ -3,6 +3,7 @@ import {auditBrief, type CaseBrief, type ReadinessReport} from "@offroad/case-un
 import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
 
 import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
+import {diligenceQa} from "./diligence";
 import {investmentMemo, termSheetDocument} from "./institutional";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
@@ -28,7 +29,7 @@ import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@
  * same decimal strings, never translated or re-rounded per locale.
  */
 
-export type MaterialKind = "teaser" | "credit_profile" | "package" | "investment_memo" | "term_sheet";
+export type MaterialKind = "teaser" | "credit_profile" | "package" | "investment_memo" | "term_sheet" | "diligence_qa";
 
 export type MaterialBlock =
   | {type: "heading"; text: {pt: string; en: string}}
@@ -295,6 +296,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
     institutional.push(investmentMemo(shared));
     const sheet = termSheetDocument(shared);
     if (sheet) institutional.push(sheet);
+    institutional.push(diligenceQa({facts: input.facts, calculations: input.calculations, desk: input.desk, trajectory: input.trajectory ?? null}, input.companyName));
   }
 
   return {ok: true, materials: [...institutional, teaser, creditProfile, packageMaterial]};

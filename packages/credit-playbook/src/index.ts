@@ -13,3 +13,4 @@ export const creditPlaybookVersion = "2026.08.20-v1";
 export * from "./types";
 export * from "./archetypes";
 export * from "./sufficiency";
+export * from "./instruments";

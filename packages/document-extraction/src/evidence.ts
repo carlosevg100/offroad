@@ -41,6 +41,13 @@ export type RenderOptions = {
   oneContainerPerChunk?: boolean;
   /** Longest single line kept intact; anything longer is cut with an explicit marker. */
   maxLineChars?: number;
+  /**
+   * Lines per window, whatever their size. Cogna measured why the character budget alone is
+   * not enough: a 34-page release packed into three windows of 40k characters came back with
+   * eleven fields, because a model asked to read four hundred lines in one breath reads the
+   * first hundred. Two hundred lines is the size of task it reads whole.
+   */
+  maxLines?: number;
 };
 
 /**
@@ -54,6 +61,7 @@ export type RenderOptions = {
  * ceiling-hit response loses its tail, not the document.
  */
 const DEFAULT_MAX_CHARS = 40_000;
+const DEFAULT_MAX_LINES = 200;
 const DEFAULT_MAX_LINE_CHARS = 2_000;
 
 const isTableAggregate = (id: string) => /\.t\d+$/.test(id);
@@ -147,6 +155,7 @@ export function selectLines(index: LayerIndex, options: RenderOptions = {}): Lin
  */
 export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): EvidenceChunk[] {
   const maxChars = options.maxChars ?? DEFAULT_MAX_CHARS;
+  const maxLines = options.maxLines ?? DEFAULT_MAX_LINES;
   const lines = selectLines(index, options);
 
   // Group into containers first: structure decides boundaries, size only forces them.
@@ -177,8 +186,8 @@ export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): 
     const groupSize = group.container.length + 9 + rendered.reduce((sum, item) => sum + item.text.length + 1, 0);
 
     // Whole container fits: keep it together, starting a new chunk if the current one is busy.
-    if (groupSize <= maxChars) {
-      if (current.size > 0 && (options.oneContainerPerChunk || current.size + groupSize > maxChars)) flush();
+    if (groupSize <= maxChars && rendered.length <= maxLines) {
+      if (current.size > 0 && (options.oneContainerPerChunk || current.size + groupSize > maxChars || current.anchorIds.length + rendered.length > maxLines)) flush();
       push(`--- ${group.container} ---`);
       for (const item of rendered) push(item.text, item.line.anchorId);
       continue;
@@ -190,7 +199,7 @@ export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): 
     const headerLines: string[] = [];
     push(`--- ${group.container} ---`);
     for (const item of rendered) {
-      if (current.size + item.text.length + 1 > maxChars && current.anchorIds.length > 0) {
+      if ((current.size + item.text.length + 1 > maxChars || current.anchorIds.length >= maxLines) && current.anchorIds.length > 0) {
         flush();
         push(`--- ${group.container} (continuação) ---`);
         for (const headerLine of headerLines) push(headerLine);
