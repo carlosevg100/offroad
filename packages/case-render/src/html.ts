@@ -3,7 +3,7 @@ import type {Material, MaterialBlock, MaterialKind} from "@offroad/case-material
 /**
  * The material as a document somebody prints, signs, and puts in front of a committee.
  *
- * Everything upstream produced structure — headings, metrics, tables, claims with their
+ * Everything upstream produced structure, headings, metrics, tables, claims with their
  * support ids. This turns that structure into an A4 document in the Offroad template, and it
  * is deliberately a pure string function: no DOM, no headless browser, no render service. It
  * runs in a route handler on the edge of a request and costs nothing, which matters because a
@@ -13,12 +13,12 @@ import type {Material, MaterialBlock, MaterialKind} from "@offroad/case-material
  *
  * **Every value is escaped.** Most of the text here was written by a model over a company's
  * documents. A legal name with an ampersand, a covenant clause with a `<`, a model that
- * decides to emit a tag — any of them turns an unescaped template into a broken or hostile
+ * decides to emit a tag, any of them turns an unescaped template into a broken or hostile
  * page. Nothing reaches the output without passing through `escapeHtml`.
  *
  * **The citations print.** A claim carries the ids of the facts behind it, and those markers
  * survive into the PDF along with an appendix that resolves them. A credit memo whose numbers
- * cannot be traced back to a document is exactly the artifact this product exists to replace —
+ * cannot be traced back to a document is exactly the artifact this product exists to replace,
  * dropping the markers "because they look technical" would be dropping the product.
  */
 
@@ -48,6 +48,8 @@ const copy = {
     teaser: {pt: "Resumo da operação", en: "Transaction summary"},
     credit_profile: {pt: "Perfil de crédito", en: "Credit profile"},
     package: {pt: "Material completo", en: "Full package"},
+    investment_memo: {pt: "Investment Memorandum", en: "Investment Memorandum"},
+    term_sheet: {pt: "Term Sheet indicativo", en: "Indicative Term Sheet"},
   } satisfies Record<MaterialKind, {pt: string; en: string}>,
 } as const;
 
@@ -65,7 +67,7 @@ export function escapeHtml(value: string): string {
  *
  * Numbers rather than raw ids because `historical_financials.2025.ebitda` in the middle of a
  * sentence is noise to a reader and the id is meaningless to them anyway; the appendix carries
- * the full path and the document. Unknown ids still print — an unresolved marker is a visible
+ * the full path and the document. Unknown ids still print, an unresolved marker is a visible
  * defect, and silently dropping it would hide a broken trace.
  */
 function marker(supportIds: readonly string[] | undefined, order: Map<string, number>): string {
@@ -94,15 +96,42 @@ function renderBlock(block: MaterialBlock, lang: Lang, order: Map<string, number
         )
         .join("")}</div>`;
 
-    case "table":
+    case "table": {
+      // A column whose every cell reads as a number is set right-aligned in tabular figures,
+      // which is how a desk reads a table: the eye runs down the digits, not across the text.
+      const numeric = block.head.map((_, column) =>
+        block.rows.length > 0 && block.rows.every((row) => /^([R$€US\s]*[-+]?[\d.,]+\s*(%|x|dias|meses)?|\d{4}-\d{2}-\d{2})$/.test((row[column] ?? "").trim())),
+      );
+      const cellClass = (column: number) => (numeric[column] ? ' class="num"' : "");
       return (
         `<figure class="table"><figcaption>${escapeHtml(block.caption[lang])}</figcaption><table><thead><tr>` +
-        block.head.map((cell) => `<th>${escapeHtml(cell[lang])}</th>`).join("") +
+        block.head.map((cell, column) => `<th${cellClass(column)}>${escapeHtml(cell[lang])}</th>`).join("") +
         `</tr></thead><tbody>` +
         block.rows
-          .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`)
+          .map((row) => `<tr>${row.map((cell, column) => `<td${cellClass(column)}>${escapeHtml(cell)}</td>`).join("")}</tr>`)
           .join("") +
         `</tbody></table></figure>`
+      );
+    }
+
+    case "kv":
+      return (
+        `<figure class="kv">${block.caption ? `<figcaption>${escapeHtml(block.caption[lang])}</figcaption>` : ""}<table><tbody>` +
+        block.rows
+          .map(
+            (row) =>
+              `<tr><th scope="row">${escapeHtml(row.label[lang])}</th><td>${escapeHtml(row.value[lang])}${marker(row.supportIds, order)}` +
+              `${row.note ? `<span class="kv__note">${escapeHtml(row.note[lang])}</span>` : ""}</td></tr>`,
+          )
+          .join("") +
+        `</tbody></table></figure>`
+      );
+
+    case "callout":
+      return (
+        `<aside class="callout"><h3>${escapeHtml(block.title[lang])}</h3><dl>` +
+        block.items.map((item) => `<div><dt>${escapeHtml(item.label[lang])}</dt><dd>${escapeHtml(item.value[lang])}</dd></div>`).join("") +
+        `</dl></aside>`
       );
 
     case "list":
@@ -190,6 +219,30 @@ h2 {
 }
 
 p { margin: 0 0 10px; orphans: 3; widows: 3; }
+
+/* Tables: quiet rules, tabular digits, numbers flush right. */
+.table { margin: 14px 0 18px; }
+.table figcaption, .kv figcaption { color: var(--muted); font-size: 8.5pt; letter-spacing: 0.06em; margin-bottom: 6px; text-transform: uppercase; }
+.table table, .kv table { border-collapse: collapse; font-size: 9.25pt; width: 100%; }
+.table th, .table td { border-bottom: 1px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; }
+.table thead th { border-bottom: 1.5px solid var(--accent); color: var(--ink-soft); font-size: 8.25pt; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.table th.num, .table td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.table tbody tr:last-child td { border-bottom: 1.5px solid var(--line); }
+
+/* Key-value terms: the term sheet's backbone. */
+.kv { margin: 12px 0 18px; }
+.kv th { color: var(--ink-soft); font-weight: 600; padding: 7px 12px 7px 0; text-align: left; vertical-align: top; width: 30%; border-bottom: 1px solid var(--line); }
+.kv table td, .kv table th { text-align: left; }
+.kv td { border-bottom: 1px solid var(--line); padding: 7px 0; vertical-align: top; }
+.kv__note { color: var(--muted); display: block; font-size: 8.5pt; line-height: 1.45; margin-top: 3px; }
+
+/* Callout: key terms at the top, basis of preparation at the end. */
+.callout { background: var(--accent-soft); border-left: 3px solid var(--accent); break-inside: avoid; margin: 18px 0; padding: 12px 16px 8px; }
+.callout h3 { color: var(--accent); font-size: 8.5pt; letter-spacing: 0.14em; margin: 0 0 8px; text-transform: uppercase; }
+.callout dl { display: grid; gap: 4px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+.callout div { display: grid; gap: 1px; padding: 4px 0; border-bottom: 1px solid rgb(37 55 67 / 12%); }
+.callout dt { color: var(--muted); font-size: 8pt; letter-spacing: 0.05em; text-transform: uppercase; }
+.callout dd { font-size: 10pt; font-weight: 500; margin: 0; }
 
 sup.cite {
   color: var(--accent);
