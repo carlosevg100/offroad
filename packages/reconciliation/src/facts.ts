@@ -58,8 +58,14 @@ export type ReconciledFact = {
   disputed: boolean;
 };
 
+// One to three digits: an {i} index, never a year such as historical_financials.2025.
+const indexedPath = /^(.*)\.(\d{1,3})\.([a-z0-9_]+)$/;
+
 export function factKeyOf(candidate: FactCandidate): string {
-  return [candidate.fieldPath, candidate.periodEnd ?? "", candidate.entityName ?? ""].join("|");
+  // Indexed tuples (instruments, customers, windows) are rows of one document: the same index in
+  // another document is another row, not the same fact read twice.
+  const tupleScope = indexedPath.test(candidate.fieldPath) ? candidate.sourceDocument : "";
+  return [candidate.fieldPath, candidate.periodEnd ?? "", candidate.entityName ?? "", tupleScope].join("|");
 }
 
 const isNumeric = (candidate: FactCandidate) => candidate.valueType === "number";
@@ -131,6 +137,43 @@ export function reconcileFacts(candidates: readonly FactCandidate[], options: Re
     });
   }
   return facts;
+}
+
+/**
+ * One number per row of one document, across the whole case.
+ *
+ * Every table numbers its rows from one, and so does every document: the ITR's note 15 has a
+ * `debt.instruments.1`, the letter's table has a `debt.instruments.1`, and without this step
+ * the two are one fact with a conflict, the reconciliation reports a contradiction the room
+ * never stated, and the desk reads one instrument where there were two. Tuples are grouped by
+ * document and original index, ordered by the document's evidence rank, and renumbered 1..N.
+ */
+export function renumberIndexedGroups(facts: readonly ReconciledFact[]): ReconciledFact[] {
+  type TupleKey = string;
+  const groups = new Map<string, Map<TupleKey, {rank: number; document: string; index: number}>>();
+  for (const fact of facts) {
+    const match = indexedPath.exec(fact.key.fieldPath);
+    if (!match) continue;
+    const [, group, index] = match as unknown as [string, string, string];
+    const document = fact.accepted.sourceDocument;
+    const tupleKey = `${document}#${index}`;
+    const tuples = groups.get(group) ?? new Map();
+    if (!tuples.has(tupleKey)) tuples.set(tupleKey, {rank: fact.accepted.evidenceRank, document, index: Number(index)});
+    groups.set(group, tuples);
+  }
+  const renumbered = new Map<string, Map<TupleKey, number>>();
+  for (const [group, tuples] of groups) {
+    const ordered = [...tuples.entries()].sort(([, a], [, b]) => a.rank - b.rank || a.document.localeCompare(b.document) || a.index - b.index);
+    renumbered.set(group, new Map(ordered.map(([key], position) => [key, position + 1])));
+  }
+  return facts.map((fact) => {
+    const match = indexedPath.exec(fact.key.fieldPath);
+    if (!match) return fact;
+    const [, group, index, key] = match as unknown as [string, string, string, string];
+    const next = renumbered.get(group)?.get(`${fact.accepted.sourceDocument}#${index}`);
+    if (next === undefined || String(next) === index) return fact;
+    return {...fact, key: {...fact.key, fieldPath: `${group}.${next}.${key}`}};
+  });
 }
 
 /** Index for the rules and the calculations: field path (+ period) → fact. */
