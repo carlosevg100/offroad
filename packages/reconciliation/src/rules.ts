@@ -6,7 +6,7 @@ import {factValue, indexFacts, relativeDelta, type ReconciledFact} from "./facts
 /**
  * The rules the desk runs before it believes a number.
  *
- * Each one is arithmetic or a comparison over reconciled facts — never a model call, never a
+ * Each one is arithmetic or a comparison over reconciled facts, never a model call, never a
  * judgement. That is deliberate: an exception is the moment the system tells a company that
  * something in its data room does not add up, and it has to be able to show the two sides and
  * the difference, not an opinion. R1–R17 are declared in the ontology with their tolerance,
@@ -14,7 +14,7 @@ import {factValue, indexFacts, relativeDelta, type ReconciledFact} from "./facts
  *
  * An exception is a **question**, not a verdict. Every one carries both sides with their
  * source documents, so the reviewer sees "the audited statements say 65, the debt schedule
- * says 68, as of different dates" and can resolve it — rather than a red badge saying "debt
+ * says 68, as of different dates" and can resolve it, rather than a red badge saying "debt
  * mismatch".
  */
 
@@ -75,7 +75,7 @@ function exceptionFrom(
   };
 }
 
-/** R4 — the debt balance has to be the same number wherever it is written. */
+/** R4, the debt balance has to be the same number wherever it is written. */
 function ruleDebtConsistency(context: RuleContext): ReconciliationException[] {
   const fact = context.index.get("debt.total_gross");
   if (!fact || fact.conflicts.length === 0 || !fact.disputed) return [];
@@ -102,7 +102,7 @@ function ruleDebtConsistency(context: RuleContext): ReconciliationException[] {
   ];
 }
 
-/** R11 — sources equal uses, and the request equals what it is for. */
+/** R11, sources equal uses, and the request equals what it is for. */
 function ruleSourcesAndUses(context: RuleContext): ReconciliationException[] {
   const side = (which: string) =>
     context.facts
@@ -163,7 +163,7 @@ function ruleSourcesAndUses(context: RuleContext): ReconciliationException[] {
   return exceptions;
 }
 
-/** R16 — a number the auditor did not sign is a different kind of number. */
+/** R16, a number the auditor did not sign is a different kind of number. */
 function ruleInformationClass(context: RuleContext): ReconciliationException[] {
   const latest = context.periods[0];
   if (!latest) return [];
@@ -195,7 +195,7 @@ function ruleInformationClass(context: RuleContext): ReconciliationException[] {
   ];
 }
 
-/** R14 — thousands read as units is the most expensive and most common error there is. */
+/** R14, thousands read as units is the most expensive and most common error there is. */
 function ruleScaleSanity(context: RuleContext): ReconciliationException[] {
   const exceptions: ReconciliationException[] = [];
   for (const period of context.periods) {
@@ -227,7 +227,7 @@ function ruleScaleSanity(context: RuleContext): ReconciliationException[] {
   return exceptions;
 }
 
-/** R13 — an interim figure larger than the full year is a period or a scale error. */
+/** R13, an interim figure larger than the full year is a period or a scale error. */
 function rulePeriodSanity(context: RuleContext): ReconciliationException[] {
   const exceptions: ReconciliationException[] = [];
   for (const fact of context.facts) {
@@ -270,8 +270,11 @@ function rulePeriodSanity(context: RuleContext): ReconciliationException[] {
  */
 function ruleSourceConflict(context: RuleContext): ReconciliationException[] {
   const decisive = /(\.requested_amount|\.revenue|\.ebitda|\.arr|\.gross_debt|\.net_debt|\.cash)(_\d+m|_ytd|_ltm)?$/;
+  // Below the dispute tolerance (1%) the fact is not disputed, but a letter that rounds the
+  // audited revenue is still a difference an investor will notice; it is named at low severity.
+  const rounded = (fact: ReconciledFact) => fact.conflicts.some((conflict) => conflict.relativeDelta !== undefined && new Decimal(conflict.relativeDelta).gt("0.002"));
   return context.facts
-    .filter((fact) => fact.disputed && fact.conflicts.length > 0 && isMaterialFieldPath(fact.key.fieldPath))
+    .filter((fact) => fact.conflicts.length > 0 && isMaterialFieldPath(fact.key.fieldPath) && (fact.disputed || rounded(fact)))
     .slice(0, 12)
     .map((fact) => {
       const worst = [...fact.conflicts].sort((a, b) => Number(b.relativeDelta ?? 0) - Number(a.relativeDelta ?? 0))[0]!;
@@ -279,7 +282,7 @@ function ruleSourceConflict(context: RuleContext): ReconciliationException[] {
       const wide = worst.relativeDelta ? new Decimal(worst.relativeDelta).gt("0.05") : true;
       return exceptionFrom(
         "R3",
-        decisive.test(fact.key.fieldPath) && wide ? "critical" : "high",
+        !fact.disputed ? "low" : decisive.test(fact.key.fieldPath) && wide ? "critical" : "high",
         {
           pt: `${fact.key.fieldPath}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""}: ${fact.accepted.sourceDocument} diz ${fact.value} e ${worst.candidate.sourceDocument} diz ${worst.candidate.normalizedValue} (diferença de ${pct}%). Foi adotado o de maior rank de evidência; a divergência precisa de explicação da companhia antes de qualquer material ir ao mercado.`,
           en: `${fact.key.fieldPath}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""}: ${fact.accepted.sourceDocument} says ${fact.value} and ${worst.candidate.sourceDocument} says ${worst.candidate.normalizedValue} (a ${pct}% difference). The higher evidence rank was adopted; the divergence needs the company's explanation before any material goes to market.`,
@@ -291,6 +294,44 @@ function ruleSourceConflict(context: RuleContext): ReconciliationException[] {
         context.locale,
       );
     });
+}
+
+/**
+ * R19, the debt schedule against the balance sheet, across two field paths.
+ *
+ * Aurora's room states gross debt twice: the balance sheet recognises 45,3M and the debt map
+ * sums to 38,5M, the difference being the leasing the map never lists. They are two fields
+ * (`historical_financials.{period}.gross_debt` and `debt.total_gross`), so the per-fact
+ * reconciliation never saw them as one fact in conflict. This rule reads them side by side.
+ */
+function ruleScheduleVersusBalance(context: RuleContext): ReconciliationException[] {
+  const schedule = context.index.get("debt.total_gross");
+  if (!schedule || schedule.valueType !== "number") return [];
+  const balance = context.facts
+    .filter((fact) => /^(historical|interim)_financials\.\d{4}(_\d{2})?\.gross_debt$/.test(fact.key.fieldPath) && fact.valueType === "number")
+    .sort((a, b) => (b.key.periodEnd ?? "").localeCompare(a.key.periodEnd ?? ""))[0];
+  if (!balance) return [];
+  const onBalance = new Decimal(balance.value);
+  const onSchedule = new Decimal(schedule.value);
+  if (onBalance.lte(0)) return [];
+  const delta = onBalance.minus(onSchedule).abs().div(onBalance);
+  if (delta.lte("0.02")) return [];
+  const gap = onBalance.minus(onSchedule);
+  return [
+    exceptionFrom(
+      "R19",
+      delta.gt("0.10") ? "critical" : "high",
+      {
+        pt: `O balanço reconhece ${money(onBalance)} de dívida bruta${balance.key.periodEnd ? ` (${balance.key.periodEnd})` : ""} e o mapa de dívida soma ${money(onSchedule)}: ${money(gap.abs())} ${gap.gt(0) ? "fora do mapa, tipicamente arrendamento ou fiança" : "a mais no mapa, tipicamente juros apropriados ou outra data-base"}. A mesa precisa saber o que é antes de calcular capacidade.`,
+        en: `The balance sheet recognises ${money(onBalance)} of gross debt${balance.key.periodEnd ? ` (${balance.key.periodEnd})` : ""} and the debt schedule sums to ${money(onSchedule)}: ${money(gap.abs())} ${gap.gt(0) ? "outside the schedule, typically leases or guarantees" : "only in the schedule, typically accrued interest or a different reference date"}. The desk needs to know what it is before computing capacity.`,
+      },
+      [
+        {label: "balanço", value: balance.value, sourceDocument: balance.accepted.sourceDocument, fieldPath: balance.key.fieldPath, anchor: balance.accepted.anchor},
+        {label: "mapa", value: schedule.value, sourceDocument: schedule.accepted.sourceDocument, fieldPath: "debt.total_gross", anchor: schedule.accepted.anchor},
+      ],
+      context.locale,
+    ),
+  ];
 }
 
 /** R18, the runway a founder writes against the one the bank statement and the burn give. */
@@ -329,7 +370,7 @@ function ruleStatedRunway(context: RuleContext): ReconciliationException[] {
   ];
 }
 
-/** R5 — financial expense has to look like the debt stock times a plausible rate. */
+/** R5, financial expense has to look like the debt stock times a plausible rate. */
 function ruleFinancialExpensePlausibility(context: RuleContext): ReconciliationException[] {
   const period = context.periods[0];
   if (!period) return [];
@@ -368,7 +409,8 @@ const allRules = [
   rulePeriodSanity,
   ruleSourceConflict,
   ruleFinancialExpensePlausibility,
- ruleStatedRunway,
+  ruleStatedRunway,
+  ruleScheduleVersusBalance,
 ];
 
 /** Runs every rule over the reconciled facts. Deterministic, ordered by severity. */
