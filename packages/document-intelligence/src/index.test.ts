@@ -283,7 +283,7 @@ describe("verifier", () => {
     expect(conflict.value.verifier_flags).toContain("scale_conflict");
   });
 
-  it("does not scale percentages and ratios", () => {
+  it("stores a percentage as the fraction the desk computes with, and never scales it", () => {
     const margin: RawExtractionCandidate = {
       field_path: "customers.top_customers.1.share_pct",
       value_raw: "12,5%",
@@ -296,8 +296,15 @@ describe("verifier", () => {
     };
     const outcome = verifyCandidate({...margin, quote: "saldo de R$ 54,2 milhões"}, context);
     if (outcome.kind !== "verified") throw new Error("expected verified shape");
-    expect(outcome.value.normalized_value).toBe("12.5");
+    expect(outcome.value.normalized_value).toBe("0.125");
     expect(outcome.value.scale).toBe(1);
+    // A cell that already reads as a fraction stays one; a bare 115 for retention is 115%.
+    const fraction = verifyCandidate({...margin, value_raw: "0,125", quote: "0,125"}, context);
+    if (fraction.kind !== "verified") throw new Error("expected verified shape");
+    expect(fraction.value.normalized_value).toBe("0.125");
+    const retention = verifyCandidate({...margin, field_path: "company.net_revenue_retention", value_raw: "115", quote: "115"}, context);
+    if (retention.kind !== "verified") throw new Error("expected verified shape");
+    expect(retention.value.normalized_value).toBe("1.15");
   });
 
   it("flags period and entity inconsistencies without rejecting", () => {

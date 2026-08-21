@@ -92,8 +92,16 @@ export function verifyCandidate(
     const parsed = parseNumber(candidate.value_raw, context.localeHint ?? "pt-BR");
     if (!parsed) {
       flags.add("value_unparseable");
+    } else if (field.definition.unit === "percent") {
+      // A percentage is stored as the fraction the desk computes with: "12,5%" is 0.125, and so
+      // is a cell that already reads 0.125. Nimbus measured the alternative: retention came back
+      // as 115 beside a customer share that came back as 0.0476, two conventions for one unit.
+      // The sign the document prints is the sign of the fact; only the magnitude is rescaled.
+      effectiveScale = 1;
+      const printedAsPercent = parsed.isPercent || /%/.test(candidate.value_raw) || parsed.value.abs().gt("1.5");
+      normalizedValue = (printedAsPercent ? parsed.value.div(100) : parsed.value).toDecimalPlaces(8).toFixed();
     } else if (field.definition.unit !== "money") {
-      // percentages, ratios, counts, months… are stored at displayed magnitude (12,5% → 12.5) and never scaled
+      // ratios, counts, months… are stored at displayed magnitude and never scaled
       effectiveScale = 1;
       normalizedValue = parsed.value.toDecimalPlaces(8).toFixed();
     } else {
