@@ -3,6 +3,8 @@ import {getTranslations} from "next-intl/server";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
 
+import {IntakeDesk} from "./intake-desk";
+
 type Props = {
   locale: string;
   caseState: CaseState | null;
@@ -118,6 +120,15 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
           </ul>
         </div>
       ) : null}
+
+      {/* The desk's reading: arithmetic first, prose later. */}
+      <IntakeDesk
+        clientQuestions={state.clientQuestions ?? []}
+        desk={state.desk ?? null}
+        deskMissing={state.deskMissing ?? []}
+        locale={locale}
+        trajectory={state.trajectory ?? null}
+      />
 
       {/* Structure: every term with the reason it is that term. */}
       {termSheet ? (
