@@ -133,14 +133,36 @@ export function createClassifier(gateway: ModelGateway): Classifier {
 
     const answer = result.output;
     const kind = answer.documentKind;
-
-    // Derived from the ontology, never from the model.
-    const evidenceRank = evidenceRankFor(answer.informationClass as InformationClass);
     const definition = documentKinds.find((candidate) => candidate.kind === kind);
+
+    /**
+     * The class follows the kind, and the rank follows the class. Both from the ontology.
+     *
+     * This used to be half true. The rank was derived, but from an information class the model
+     * chose freely, so a document correctly identified as a `trial_balance` could come back
+     * classed `management` and be ranked 5 instead of 3. Evidence rank is what decides which
+     * document wins when two disagree about the same number, so a wobble there quietly rewrites
+     * precedence: a hand-kept schedule outranking an accounting export, on the strength of an
+     * adjective in its title.
+     *
+     * `trial_balance` is `accounting` by definition, not by opinion. The model still names the
+     * kind, because that is a judgement about what a document is. What follows from the kind is
+     * a rule, and rules are not asked of a model.
+     */
+    const informationClass = definition?.informationClass ?? (answer.informationClass as InformationClass);
+    const evidenceRank = evidenceRankFor(informationClass);
+
+    /**
+     * The model's own reading is kept when it disagrees, because the disagreement is
+     * information: it means the document does not sit comfortably in the kind it was given. A
+     * "balancete gerencial" really does read as management, and a reviewer seeing both is
+     * better served than one seeing only the answer that won.
+     */
+    const classMismatch = definition !== undefined && answer.informationClass !== definition.informationClass;
 
     const profile: DocumentProfile = {
       document_kind: kind,
-      information_class: answer.informationClass,
+      information_class: informationClass,
       evidence_rank: evidenceRank,
       confidence: answer.confidence,
       language: answer.language,
@@ -149,6 +171,7 @@ export function createClassifier(gateway: ModelGateway): Classifier {
         typeMismatch: parsed.detected.mismatch,
         converted: Boolean(parsed.conversion),
         scanned: (parsed.layer.pages ?? []).some((page) => page.scanned),
+        ...(classMismatch ? {classSuggestedByModel: answer.informationClass} : {}),
       },
       summary: {text: answer.summary, reasoning: answer.reasoning},
       classifier: {
