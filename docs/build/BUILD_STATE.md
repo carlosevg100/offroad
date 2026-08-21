@@ -295,6 +295,8 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
 | E3 extração (camil) | recall material / precisão | em execução | |
 | E1 classificação (nimbus) | tipo / classe / período | **100%** (6/6), 100% (6/6), 67% (2/3) | US$ 0,030 / 6 docs |
 | E3 extração (nimbus) | recall material / precisão / alucinação | 73,4% (47/64) / 79,8% / **0%** | US$ 0,71 / 14 chamadas |
+| E3 extração (nimbus, após #141) | recall material / precisão / alucinação | **85,9%** (55/64) / 85,6% / **0%** | US$ 0,91 / 15 chamadas |
+| E3 extração (camil, antes de #143) | recall material / precisão / alucinação | 11,1% (15/135) / 50,0% / 0% | US$ 14,32 / 1.575 chamadas / 2h19 |
 
 ## Mapa de entrega, perfil de vencimentos e simulações, 21/08/2026 (noite)
 
@@ -320,4 +322,11 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
   (agora magnitude); "R$" e "BRL" eram duas moedas (canônico); a tabela de dívida de uma carta
   nunca era pedida (carta passa a mirar `debt`); planilha com várias abas era lida em uma janela
   e o resumo (ARR, MRR, queima) não voltava (uma aba por janela). CNPJ nos gabaritos em dígitos.
+- **O que a Camil ensinou ao extrator** (#143): os números saíram certos e os caminhos saíram no
+  dialeto do modelo (`interim_financials.2026.revenue`, `revenue_ytd`) em vez do canônico
+  (`2026_05.revenue_3m`); o verificador passa a escrever o período no caminho a partir das datas
+  citadas, e ano é o ano em que o período termina. ITR e protocolo CVM passam a mirar histórico e
+  dívida (a nota 15 rendeu zero instrumentos porque nunca foi pedida). Passadas por linha só em
+  tabelas com duas palavras do vocabulário dos campos indexados (eram 913 passadas no ITR).
+  Re-medição da Camil disparada depois do merge.
 
