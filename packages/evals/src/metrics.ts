@@ -70,7 +70,8 @@ function candidateMatchesField(candidate: SnapshotCandidate, field: GoldField): 
 }
 
 /** `transaction.sources_and_uses.3.amount` → group `transaction.sources_and_uses`, index `3`, key `amount`. */
-const indexedPath = /^(.*)\.(\d+)\.([a-z0-9_]+)$/;
+// One to three digits: an {i} index, never a year such as historical_financials.2025.
+const indexedPath = /^(.*)\.(\d{1,3})\.([a-z0-9_]+)$/;
 
 /**
  * Re-indexes {i}-grouped candidates so tuples are matched by content, not by position.
@@ -107,7 +108,10 @@ export function alignIndexedGroups(goldFields: GoldField[], candidates: Snapshot
       output.push(candidate);
       continue;
     }
-    const index = match![2] as string;
+    // One tuple is one row of one document. Camil measured the alternative: instrument 5 of the
+    // ITR's debenture table and instrument 5 of the swap table became one tuple with two
+    // lenders and two rates, and neither matched anything.
+    const index = `${candidate.sourceDocument ?? ""}#${match![2] as string}`;
     const tuples = candidateGroups.get(group) ?? new Map<string, SnapshotCandidate[]>();
     tuples.set(index, [...(tuples.get(index) ?? []), candidate]);
     candidateGroups.set(group, tuples);
@@ -142,9 +146,10 @@ export function alignIndexedGroups(goldFields: GoldField[], candidates: Snapshot
     }
 
     for (const [candidateIndex, tupleCandidates] of candidateTuples) {
-      const target = assignment.get(candidateIndex) ?? candidateIndex;
+      const original = candidateIndex.slice(candidateIndex.indexOf("#") + 1);
+      const target = assignment.get(candidateIndex) ?? original;
       for (const candidate of tupleCandidates) {
-        output.push(target === candidateIndex ? candidate : {...candidate, fieldPath: candidate.fieldPath.replace(`.${candidateIndex}.`, `.${target}.`)});
+        output.push(target === original ? candidate : {...candidate, fieldPath: candidate.fieldPath.replace(`.${original}.`, `.${target}.`)});
       }
     }
   }
