@@ -1101,7 +1101,9 @@
       "nrr": "Retenção líquida (NRR)",
       "notMeaningful": "sem sentido com EBITDA negativo",
       "maturing12": "Vence em 12 meses",
-      "coverage12Hint": "caixa cobre {coverage}"
+      "coverage12Hint": "caixa cobre {coverage}",
+      "interestCoverage": "Cobertura de juros",
+      "interestCoveragePostHint": "com a operação: {coverage}"
     },
     "deliveryMap": {
       "kicker": "Mapa de entrega",
