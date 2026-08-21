@@ -18,15 +18,16 @@ import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
 import {resolveFieldPath} from "@offroad/credit-ontology";
+import {fakeco} from "@offroad/testing-fixtures";
 
-import {
+const {
   balance2025, company, contradictions, customers, debt, fakecoVersion, historical,
   interim2026, leasingOffMap, missing, project, projections, request,
-} from "../src/fakeco/truth";
+} = fakeco;
 
 const here = dirname(fileURLToPath(import.meta.url));
-const assets = join(here, "..", "assets", "fakeco");
-const goldDir = join(here, "..", "gold", "fakeco");
+const assets = join(here, "..", "..", "testing-fixtures", "assets", "fakeco");
+const goldDir = join(here, "..", "..", "testing-fixtures", "gold", "fakeco");
 mkdirSync(join(goldDir, "expected"), {recursive: true});
 
 const write = (relative: string, value: unknown) =>

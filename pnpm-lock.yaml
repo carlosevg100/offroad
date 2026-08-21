@@ -516,9 +516,6 @@ importers:
 
   packages/testing-fixtures:
     dependencies:
-      '@offroad/credit-ontology':
-        specifier: workspace:*
-        version: link:../credit-ontology
       jszip:
         specifier: 3.10.1
         version: 3.10.1
