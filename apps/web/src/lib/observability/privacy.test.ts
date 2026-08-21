@@ -89,3 +89,34 @@ describe("a stack frame keeps a filename Sentry can fetch", () => {
     expect(scrubSentryEvent(event).message).not.toContain("48200000");
   });
 });
+
+describe("a browser frame points at a URL Sentry can fetch", () => {
+  const frameOf = (filename: string) => {
+    const event: Event = {
+      exception: {values: [{type: "Error", value: "boom", stacktrace: {frames: [{filename}]}}]},
+    };
+    return scrubSentryEvent(event).exception?.values?.[0]?.stacktrace?.frames?.[0]?.filename;
+  };
+
+  it("turns the SDK's app:/// prefix back into the origin the script came from", () => {
+    // `app:///` is what Sentry matches against uploaded artifacts. Nothing is uploaded here, so
+    // a frame in that shape is one Sentry cannot resolve, and every browser trace stays minified.
+    const previous = globalThis.location;
+    Object.defineProperty(globalThis, "location", {value: {origin: "https://offroad.capital"}, configurable: true});
+
+    expect(frameOf("app:///_next/static/immutable/chunks/08f3ut8074cvq.js")).toBe(
+      "https://offroad.capital/_next/static/immutable/chunks/08f3ut8074cvq.js",
+    );
+
+    Object.defineProperty(globalThis, "location", {value: previous, configurable: true});
+  });
+
+  it("leaves a frame alone on the server, where nothing could be scraped anyway", () => {
+    const previous = globalThis.location;
+    Object.defineProperty(globalThis, "location", {value: undefined, configurable: true});
+
+    expect(frameOf("app:///.next/server/app/page.js")).toBe("app:///.next/server/app/page.js");
+
+    Object.defineProperty(globalThis, "location", {value: previous, configurable: true});
+  });
+});

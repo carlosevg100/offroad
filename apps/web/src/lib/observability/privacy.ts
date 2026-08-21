@@ -49,7 +49,16 @@ export function redactTelemetryText(value: string): string {
 function sanitizeFrameFilename(value: string | undefined): string | undefined {
   if (!value) return value;
 
-  const withoutQuery = value.split("?")[0] ?? value;
+  // The Next.js SDK rewrites every frame to `app:///…`, which is the shape Sentry matches
+  // against *uploaded* artifacts. Nothing is uploaded here (that needs a write token), and the
+  // browser maps are served instead, which Sentry finds by fetching the script. It can only do
+  // that from a real URL, so in the browser the prefix goes back to the origin the script
+  // actually came from. On the server `location` is undefined and nothing changes, which is
+  // correct: a server bundle is never served, so no scraping could reach it anyway.
+  const origin = typeof globalThis.location?.origin === "string" ? globalThis.location.origin : null;
+  const addressed = origin && value.startsWith("app:///") ? `${origin}/${value.slice("app:///".length)}` : value;
+
+  const withoutQuery = addressed.split("?")[0] ?? addressed;
   return withoutQuery
     .replace(emailPattern, "[email]")
     .replace(uuidPattern, "[id]")
