@@ -20,3 +20,15 @@ describe("a workbook with several sheets", () => {
     expect(split[1]!.text).toContain("ARR");
   });
 });
+
+describe("a dense document", () => {
+  it("is read in windows of at most two hundred lines", () => {
+    const layer = documentLayerSchema.parse({
+      documentId: "dense", documentVersion: 1, kind: "pdf", parserVersion: "t", scaleDeclarations: [], stats: {},
+      pages: [{n: 1, scanned: false, tables: [], blocks: Array.from({length: 450}, (_, i) => ({id: `p1.b${i + 1}`, kind: "text", text: `Linha ${i + 1} de um release denso com um número ${i * 7}.`}))}],
+    });
+    const chunks = renderEvidence(indexLayer(layer), {});
+    expect(chunks.length).toBeGreaterThanOrEqual(3);
+    expect(Math.max(...chunks.map((chunk) => chunk.anchorIds.length))).toBeLessThanOrEqual(200);
+  });
+});

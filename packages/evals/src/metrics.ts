@@ -137,12 +137,16 @@ export function alignIndexedGroups(goldFields: GoldField[], candidates: Snapshot
     }
     scored.sort((a, b) => b.score - a.score);
 
+    // One gold tuple may be served by one candidate tuple from each document: Camil's gold
+    // instruments carry balances from the ITR and rates from the AGOE proposal, two documents
+    // that each numbered the same series from one.
     const assignment = new Map<string, string>();
     const taken = new Set<string>();
     for (const {candidateIndex, goldIndex, score} of scored) {
-      if (score === 0 || assignment.has(candidateIndex) || taken.has(goldIndex) || !remaining.has(goldIndex)) continue;
+      const document = candidateIndex.slice(0, candidateIndex.indexOf("#"));
+      if (score === 0 || assignment.has(candidateIndex) || taken.has(`${goldIndex}@${document}`) || !remaining.has(goldIndex)) continue;
       assignment.set(candidateIndex, goldIndex);
-      taken.add(goldIndex);
+      taken.add(`${goldIndex}@${document}`);
     }
 
     for (const [candidateIndex, tupleCandidates] of candidateTuples) {

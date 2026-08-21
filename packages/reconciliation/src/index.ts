@@ -18,7 +18,7 @@ export * from "./gaps";
 import {buildContext, runRules, type ReconciliationException} from "./rules";
 import {computeCalculations, type CalculationSet} from "./calculations";
 import {archetypeQuestions, findGaps, type InformationGap} from "./gaps";
-import {reconcileFacts, renumberIndexedGroups, type FactCandidate, type ReconciledFact} from "./facts";
+import {mergeInstrumentsByIdentity, reconcileFacts, renumberIndexedGroups, type FactCandidate, type ReconciledFact} from "./facts";
 import type {ArchetypeId, ClassifiedDocument} from "@offroad/credit-playbook";
 
 export type ReconciliationReport = {
@@ -45,7 +45,7 @@ export function reconcileCase(input: {
   locale?: "pt" | "en";
 }): ReconciliationReport {
   const locale = input.locale ?? "pt";
-  const facts = renumberIndexedGroups(reconcileFacts(input.candidates));
+  const facts = mergeInstrumentsByIdentity(renumberIndexedGroups(reconcileFacts(input.candidates)));
   const context = buildContext(facts, locale);
   const {calculations, gaps: calculationGaps} = computeCalculations(context);
 
