@@ -336,3 +336,35 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
   sobrou na Camil é numeração de instrumentos reiniciando a cada tabela (#144), as tabelas dos
   comentários dos diretores (R$ mn, colunas fev-25/fev-26) e o covenant em prosa.
 
+## Onda A em andamento e o começo da Onda B, 21/08/2026 (noite, segunda parte)
+
+Plano em `PLANO_E2E_100.md`. O que entrou ou está em PR:
+
+- **Conciliação que vê contradição** (#146, #155): o eval nunca rodava a conciliação (snapshot
+  entrava com `exceptions: []`); agora roda a mesma do produto e pontua. R3 cobre todo fato
+  material (crítico em pedido, receita, EBITDA, ARR, dívida, caixa acima de 5%; baixo quando é
+  arredondamento abaixo de 1%); R18 runway declarado × caixa/queima; R19 mapa de dívida × dívida
+  bruta do balanço (o arrendamento fora do mapa da Aurora). Modelo financeiro passa a mirar
+  `transaction` (o pedido do plano nunca era lido).
+- **Uma linha é uma linha** (#147, #153): instrumentos de documentos diferentes nunca dividem
+  número; dentro de um documento, tabelas diferentes também não (o deck da Nimbus produzia o CEO
+  contra um fundo como "contradição"). Período menor que um ano vai para `interim` mesmo quando o
+  modelo escreve `historical`.
+- **Consolidado é o número da companhia** (#148): prompt, escopo no candidato até a conciliação,
+  preferência por consolidado sobre controladora.
+- **OCR medido** (#149): motor Tesseract movido para `document-parsers`, o eval usa o mesmo motor
+  do worker, o runner instala; quinto caso `fakeco-scan` (demonstrações, mapa de dívida e contrato
+  social como imagem, 83 campos). Medição a disparar.
+- **Percentual é fração** (#150): "12,5%" → 0,125; 115 de retenção → 1,15.
+- **Cogna** (#151): sexto caso, companhia aberta de serviços lida do release do 2T26 (57 campos,
+  parede de 2028, arrendamentos fora da dívida). Simulação: R$ 1,8 bi em debêntures.
+- **Rating interno** (#152) e **tabela de stress** (#154), Onda B: dez graus a partir de sete
+  fatores com faixas escritas como dado; quatro choques padrão e a perda do maior cliente,
+  recalculados dos números da mesa. Integração na tela e nos materiais vem em seguida.
+
+| medição | métrica | valor | custo |
+|---|---|---|---|
+| E3 extração (nimbus, #146 com conciliação) | recall / precisão / exceções | 89,1% / 86,6% / 40% (2/5) | US$ 0,92 |
+| E3 extração (fakeco, #146 com conciliação) | recall / precisão / exceções | 87,8% / 88,3% / 0% (antes de #153, #155) | US$ 0,89 |
+| E3 extração (camil, #144) | recall / precisão | 54,8% / 65,0% | US$ 5,47 / 247 chamadas |
+
