@@ -6930,3 +6930,211 @@ button[disabled].workspace-search,
   color: var(--muted);
   font-size: 0.78rem;
 }
+
+/* ---- Credit desk: arithmetic first, prose later ------------------------------------------ */
+.case-desk {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: grid;
+  gap: 22px;
+  margin-top: 18px;
+  padding: 22px;
+}
+
+.case-desk__head {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  justify-content: space-between;
+}
+
+.case-desk__head h3,
+.case-desk h4 {
+  margin: 0;
+}
+
+.case-desk h4 {
+  align-items: center;
+  display: flex;
+  font-size: 0.92rem;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.case-desk__assumptions,
+.case-desk__note {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0 0 10px;
+  max-width: 70ch;
+}
+
+.case-desk__metrics {
+  display: grid;
+  gap: 14px 18px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  margin: 0;
+}
+
+.case-desk__metrics div {
+  border-left: 2px solid var(--line);
+  display: grid;
+  gap: 2px;
+  padding-left: 12px;
+}
+
+.case-desk__metrics div.is-unavailable {
+  opacity: 0.55;
+}
+
+.case-desk__metrics dt {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.case-desk__metrics dd {
+  font-size: 1.12rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  margin: 0;
+}
+
+.case-desk__metrics span {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.case-desk__findings ul,
+.case-desk__findings-list,
+.case-desk__questions ol,
+.case-desk__missing ul {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.case-desk__findings li,
+.case-desk__findings-list li,
+.case-desk__questions li {
+  border-left: 2px solid var(--line);
+  display: grid;
+  font-size: 0.9rem;
+  gap: 4px;
+  line-height: 1.5;
+  padding-left: 12px;
+}
+
+.case-desk li.is-critical { border-left-color: #a23b2e; }
+.case-desk li.is-high { border-left-color: var(--signal); }
+.case-desk li.is-medium { border-left-color: #b08a2e; }
+
+.case-desk__severity {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.case-desk li.is-critical .case-desk__severity { color: #a23b2e; }
+.case-desk li.is-high .case-desk__severity { color: var(--signal); }
+
+.case-desk__table {
+  overflow-x: auto;
+}
+
+.case-desk__table table {
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  width: 100%;
+}
+
+.case-desk__table th,
+.case-desk__table td {
+  border-bottom: 1px solid var(--line);
+  padding: 7px 10px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.case-desk__table th:first-child,
+.case-desk__table td:first-child {
+  text-align: left;
+}
+
+.case-desk__table thead th {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.case-desk__table td {
+  font-variant-numeric: tabular-nums;
+}
+
+.case-desk__table tr.is-peak td {
+  font-weight: 600;
+}
+
+.case-desk__peak {
+  color: var(--signal);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-left: 6px;
+  text-transform: uppercase;
+}
+
+.case-desk__lm {
+  background: color-mix(in srgb, var(--accent, #253743) 7%, transparent);
+  border-left: 3px solid var(--accent, #253743);
+  display: grid;
+  font-size: 0.88rem;
+  gap: 4px;
+  line-height: 1.5;
+  margin: 12px 0;
+  padding: 12px 14px;
+}
+
+.case-desk__findings-list {
+  margin-top: 12px;
+}
+
+.case-desk__questions ol {
+  counter-reset: question;
+}
+
+.case-desk__questions li {
+  counter-increment: question;
+  position: relative;
+}
+
+.case-desk__questions li::before {
+  color: var(--muted);
+  content: counter(question, decimal-leading-zero);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.case-desk__missing li {
+  display: grid;
+  gap: 2px;
+  font-size: 0.88rem;
+}
+
+.case-desk__missing code {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.74rem;
+}
