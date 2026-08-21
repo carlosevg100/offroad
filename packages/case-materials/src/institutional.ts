@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 import type {CaseBrief} from "@offroad/case-understanding";
 import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+import {covenantsFor} from "@offroad/credit-playbook";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
