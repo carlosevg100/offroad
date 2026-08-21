@@ -12,7 +12,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "fakeco": "tsx scripts/build-fakeco.ts",
-    "fakeco:gold": "tsx scripts/build-fakeco-gold.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --exclude 'dist/**' --passWithNoTests",
     "typecheck": "tsc -p tsconfig.json --noEmit"

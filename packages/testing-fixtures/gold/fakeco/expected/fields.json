@@ -7,25 +7,10 @@
     "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
   },
   {
-    "fieldPath": "company.tax_id",
+    "fieldPath": "company.legal_identifier",
     "value": "24.518.907/0001-63",
     "valueType": "text",
     "materiality": "material",
-    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
-  },
-  {
-    "fieldPath": "company.legal_form",
-    "value": "ltda",
-    "valueType": "text",
-    "materiality": "material",
-    "sourceDocument": "07_Contrato_Social_Consolidado.png",
-    "note": "Só o contrato social, que chega como foto, afirma a forma societária. Ela bloqueia metade do catálogo de instrumentos."
-  },
-  {
-    "fieldPath": "company.founded_year",
-    "value": "2004",
-    "valueType": "number",
-    "materiality": "supporting",
     "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
   },
   {
@@ -46,7 +31,14 @@
     "fieldPath": "company.sector",
     "value": "Distribuição de materiais de construção",
     "valueType": "text",
-    "materiality": "material",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
+  },
+  {
+    "fieldPath": "company.founded_year",
+    "value": "2004",
+    "valueType": "number",
+    "materiality": "supporting",
     "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
   },
   {
@@ -57,68 +49,124 @@
     "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
   },
   {
-    "fieldPath": "company.shareholder.1.name",
+    "fieldPath": "company.reporting_currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf"
+  },
+  {
+    "fieldPath": "company.auditor.firm",
+    "value": "Marcondes & Auditores Independentes S/S",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf"
+  },
+  {
+    "fieldPath": "company.auditor.opinion",
+    "value": "sem ressalvas",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf"
+  },
+  {
+    "fieldPath": "company.controllers.1.name",
+    "value": "Helena Bastos Corrêa",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
+  },
+  {
+    "fieldPath": "company.controllers.1.ownership_pct",
+    "value": "0.5200",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "company.controllers.2.name",
+    "value": "Rafael Bastos Corrêa",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
+  },
+  {
+    "fieldPath": "company.controllers.2.ownership_pct",
+    "value": "0.3300",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "company.controllers.3.name",
+    "value": "Participações Vale do Paraíba Ltda",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
+  },
+  {
+    "fieldPath": "company.controllers.3.ownership_pct",
+    "value": "0.1500",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "company.management.1.name",
     "value": "Helena Bastos Corrêa",
     "valueType": "text",
     "materiality": "supporting",
     "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
   },
   {
-    "fieldPath": "company.shareholder.1.share",
-    "value": "0.5200",
-    "valueType": "number",
+    "fieldPath": "company.management.1.title",
+    "value": "Diretora-presidente",
+    "valueType": "text",
     "materiality": "supporting",
-    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx",
-    "tolerance": {
-      "kind": "relative",
-      "value": "0.005"
-    }
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
   },
   {
-    "fieldPath": "company.shareholder.2.name",
+    "fieldPath": "company.management.2.name",
+    "value": "Marcos Tanaka",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
+  },
+  {
+    "fieldPath": "company.management.2.title",
+    "value": "Diretor financeiro",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
+  },
+  {
+    "fieldPath": "company.management.3.name",
     "value": "Rafael Bastos Corrêa",
     "valueType": "text",
     "materiality": "supporting",
     "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
   },
   {
-    "fieldPath": "company.shareholder.2.share",
-    "value": "0.3300",
-    "valueType": "number",
-    "materiality": "supporting",
-    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx",
-    "tolerance": {
-      "kind": "relative",
-      "value": "0.005"
-    }
-  },
-  {
-    "fieldPath": "company.shareholder.3.name",
-    "value": "Participações Vale do Paraíba Ltda",
+    "fieldPath": "company.management.3.title",
+    "value": "Diretor comercial",
     "valueType": "text",
     "materiality": "supporting",
     "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"
   },
   {
-    "fieldPath": "company.shareholder.3.share",
-    "value": "0.1500",
-    "valueType": "number",
-    "materiality": "supporting",
-    "sourceDocument": "00_Ficha_Cadastral_Aurora.docx",
-    "tolerance": {
-      "kind": "relative",
-      "value": "0.005"
-    }
-  },
-  {
-    "fieldPath": "company.share_capital",
-    "value": "12000000",
-    "valueType": "number",
-    "materiality": "supporting",
-    "sourceDocument": "07_Contrato_Social_Consolidado.png"
-  },
-  {
-    "fieldPath": "historical_financials.revenue.2023",
+    "fieldPath": "historical_financials.2023.revenue",
     "value": "142800000",
     "valueType": "number",
     "materiality": "material",
@@ -131,7 +179,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.ebitda.2023",
+    "fieldPath": "historical_financials.2023.ebitda",
     "value": "11281000",
     "valueType": "number",
     "materiality": "material",
@@ -144,7 +192,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.gross_profit.2023",
+    "fieldPath": "historical_financials.2023.gross_profit",
     "value": "34272000",
     "valueType": "number",
     "materiality": "material",
@@ -157,7 +205,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.net_income.2023",
+    "fieldPath": "historical_financials.2023.net_income",
     "value": "1004000",
     "valueType": "number",
     "materiality": "material",
@@ -170,7 +218,33 @@
     }
   },
   {
-    "fieldPath": "historical_financials.revenue.2024",
+    "fieldPath": "historical_financials.2023.d_and_a",
+    "value": "3140000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2023.financial_expenses",
+    "value": "6820000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.revenue",
     "value": "168400000",
     "valueType": "number",
     "materiality": "material",
@@ -183,7 +257,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.ebitda.2024",
+    "fieldPath": "historical_financials.2024.ebitda",
     "value": "14924000",
     "valueType": "number",
     "materiality": "material",
@@ -196,7 +270,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.gross_profit.2024",
+    "fieldPath": "historical_financials.2024.gross_profit",
     "value": "41184000",
     "valueType": "number",
     "materiality": "material",
@@ -209,7 +283,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.net_income.2024",
+    "fieldPath": "historical_financials.2024.net_income",
     "value": "2338000",
     "valueType": "number",
     "materiality": "material",
@@ -222,7 +296,33 @@
     }
   },
   {
-    "fieldPath": "historical_financials.revenue.2025",
+    "fieldPath": "historical_financials.2024.d_and_a",
+    "value": "3610000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.financial_expenses",
+    "value": "8190000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.revenue",
     "value": "191200000",
     "valueType": "number",
     "materiality": "material",
@@ -233,10 +333,10 @@
       "kind": "relative",
       "value": "0.005"
     },
-    "note": "O documento imprime 191.200,00 em milhares. Ler 191200 é errar por mil."
+    "note": "O documento imprime 191.200,00 em milhares. Ler 191200 e errar por mil."
   },
   {
-    "fieldPath": "historical_financials.ebitda.2025",
+    "fieldPath": "historical_financials.2025.ebitda",
     "value": "16848000",
     "valueType": "number",
     "materiality": "material",
@@ -249,7 +349,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.gross_profit.2025",
+    "fieldPath": "historical_financials.2025.gross_profit",
     "value": "47800000",
     "valueType": "number",
     "materiality": "material",
@@ -262,7 +362,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.net_income.2025",
+    "fieldPath": "historical_financials.2025.net_income",
     "value": "2611000",
     "valueType": "number",
     "materiality": "material",
@@ -275,11 +375,38 @@
     }
   },
   {
-    "fieldPath": "historical_financials.cash.2025",
+    "fieldPath": "historical_financials.2025.d_and_a",
+    "value": "4020000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.financial_expenses",
+    "value": "9460000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.cash",
     "value": "8420000",
     "valueType": "number",
     "materiality": "material",
     "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
     "periodEnd": "2025-12-31",
     "tolerance": {
       "kind": "relative",
@@ -287,11 +414,12 @@
     }
   },
   {
-    "fieldPath": "historical_financials.receivables.2025",
+    "fieldPath": "historical_financials.2025.receivables",
     "value": "47310000",
     "valueType": "number",
     "materiality": "material",
     "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
     "periodEnd": "2025-12-31",
     "tolerance": {
       "kind": "relative",
@@ -299,11 +427,12 @@
     }
   },
   {
-    "fieldPath": "historical_financials.inventory.2025",
+    "fieldPath": "historical_financials.2025.inventory",
     "value": "39880000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
     "periodEnd": "2025-12-31",
     "tolerance": {
       "kind": "relative",
@@ -311,11 +440,25 @@
     }
   },
   {
-    "fieldPath": "historical_financials.equity.2025",
+    "fieldPath": "historical_financials.2025.payables",
+    "value": "33540000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.equity",
     "value": "47120000",
     "valueType": "number",
     "materiality": "material",
     "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
     "periodEnd": "2025-12-31",
     "tolerance": {
       "kind": "relative",
@@ -323,7 +466,34 @@
     }
   },
   {
-    "fieldPath": "interim_financials.revenue.2026_07",
+    "fieldPath": "historical_financials.2025.total_assets",
+    "value": "141870000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.gross_debt",
+    "value": "45320000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Inclui o arrendamento que o mapa de divida nao lista."
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.revenue_7m",
     "value": "121640000",
     "valueType": "number",
     "materiality": "material",
@@ -336,7 +506,7 @@
     }
   },
   {
-    "fieldPath": "interim_financials.ebitda.2026_07",
+    "fieldPath": "interim_financials.2026_07.ebitda_7m",
     "value": "10970000",
     "valueType": "number",
     "materiality": "material",
@@ -349,8 +519,21 @@
     }
   },
   {
-    "fieldPath": "interim_financials.net_income.2026_07",
+    "fieldPath": "interim_financials.2026_07.net_income_7m",
     "value": "1486000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Balancete_Gerencial_Jul2026.xls",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.cash",
+    "value": "6180000",
     "valueType": "number",
     "materiality": "material",
     "sourceDocument": "03_Balancete_Gerencial_Jul2026.xls",
@@ -361,7 +544,7 @@
     }
   },
   {
-    "fieldPath": "interim_financials.receivables.2026_07",
+    "fieldPath": "interim_financials.2026_07.receivables",
     "value": "51940000",
     "valueType": "number",
     "materiality": "material",
@@ -373,14 +556,21 @@
     }
   },
   {
-    "fieldPath": "debt.line.1.lender",
+    "fieldPath": "debt.instruments.1.lender",
     "value": "Banco Itaú",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.1.outstanding",
+    "fieldPath": "debt.instruments.1.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.1.balance",
     "value": "9840000",
     "valueType": "number",
     "materiality": "material",
@@ -392,43 +582,49 @@
     }
   },
   {
-    "fieldPath": "debt.line.1.rate",
+    "fieldPath": "debt.instruments.1.rate",
     "value": "CDI + 4,10% a.a.",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.1.maturity",
+    "fieldPath": "debt.instruments.1.maturity",
     "value": "2027-11-20",
     "valueType": "date",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.1.collateral",
+    "fieldPath": "debt.instruments.1.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.1.collateral",
     "value": "Duplicatas 130%",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.1.covenant",
-    "value": "Dívida líquida/EBITDA <= 3,0x",
-    "valueType": "text",
-    "materiality": "material",
-    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx",
-    "note": "Um covenant é o que quebra uma operação antes de ela vencer."
-  },
-  {
-    "fieldPath": "debt.line.2.lender",
+    "fieldPath": "debt.instruments.2.lender",
     "value": "Banco Bradesco",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.2.outstanding",
+    "fieldPath": "debt.instruments.2.instrument_type",
+    "value": "CCB",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.2.balance",
     "value": "7500000",
     "valueType": "number",
     "materiality": "material",
@@ -440,43 +636,49 @@
     }
   },
   {
-    "fieldPath": "debt.line.2.rate",
+    "fieldPath": "debt.instruments.2.rate",
     "value": "CDI + 3,85% a.a.",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.2.maturity",
+    "fieldPath": "debt.instruments.2.maturity",
     "value": "2028-04-15",
     "valueType": "date",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.2.collateral",
+    "fieldPath": "debt.instruments.2.amortization",
+    "value": "Mensal com 6m carência",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.2.collateral",
     "value": "Aval dos sócios",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.2.covenant",
-    "value": "Dívida líquida/EBITDA <= 3,25x",
-    "valueType": "text",
-    "materiality": "material",
-    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx",
-    "note": "Um covenant é o que quebra uma operação antes de ela vencer."
-  },
-  {
-    "fieldPath": "debt.line.3.lender",
+    "fieldPath": "debt.instruments.3.lender",
     "value": "Banco Santander",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.3.outstanding",
+    "fieldPath": "debt.instruments.3.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.3.balance",
     "value": "6260000",
     "valueType": "number",
     "materiality": "material",
@@ -488,35 +690,49 @@
     }
   },
   {
-    "fieldPath": "debt.line.3.rate",
+    "fieldPath": "debt.instruments.3.rate",
     "value": "CDI + 4,45% a.a.",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.3.maturity",
+    "fieldPath": "debt.instruments.3.maturity",
     "value": "2027-03-10",
     "valueType": "date",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.3.collateral",
+    "fieldPath": "debt.instruments.3.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.3.collateral",
     "value": "Duplicatas 125%",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.4.lender",
+    "fieldPath": "debt.instruments.4.lender",
     "value": "Banco do Brasil",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.4.outstanding",
+    "fieldPath": "debt.instruments.4.instrument_type",
+    "value": "FINAME",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.4.balance",
     "value": "5180000",
     "valueType": "number",
     "materiality": "material",
@@ -528,35 +744,49 @@
     }
   },
   {
-    "fieldPath": "debt.line.4.rate",
+    "fieldPath": "debt.instruments.4.rate",
     "value": "TLP + 2,90% a.a.",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.4.maturity",
+    "fieldPath": "debt.instruments.4.maturity",
     "value": "2030-08-01",
     "valueType": "date",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.4.collateral",
+    "fieldPath": "debt.instruments.4.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.4.collateral",
     "value": "Alienação fiduciária da frota",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.5.lender",
+    "fieldPath": "debt.instruments.5.lender",
     "value": "Sicredi",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.5.outstanding",
+    "fieldPath": "debt.instruments.5.instrument_type",
+    "value": "Cédula de crédito bancário",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.5.balance",
     "value": "4120000",
     "valueType": "number",
     "materiality": "material",
@@ -568,35 +798,49 @@
     }
   },
   {
-    "fieldPath": "debt.line.5.rate",
+    "fieldPath": "debt.instruments.5.rate",
     "value": "CDI + 5,20% a.a.",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.5.maturity",
+    "fieldPath": "debt.instruments.5.maturity",
     "value": "2027-06-30",
     "valueType": "date",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.5.collateral",
+    "fieldPath": "debt.instruments.5.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.5.collateral",
     "value": "Aval dos sócios",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.6.lender",
+    "fieldPath": "debt.instruments.6.lender",
     "value": "BTG Pactual",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.6.outstanding",
+    "fieldPath": "debt.instruments.6.instrument_type",
+    "value": "Antecipação de recebíveis",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.6.balance",
     "value": "3780000",
     "valueType": "number",
     "materiality": "material",
@@ -608,35 +852,49 @@
     }
   },
   {
-    "fieldPath": "debt.line.6.rate",
+    "fieldPath": "debt.instruments.6.rate",
     "value": "1,42% a.m.",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.6.maturity",
+    "fieldPath": "debt.instruments.6.maturity",
     "value": "2026-12-20",
     "valueType": "date",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.6.collateral",
+    "fieldPath": "debt.instruments.6.amortization",
+    "value": "No vencimento",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.6.collateral",
     "value": "Recebíveis cedidos",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.7.lender",
+    "fieldPath": "debt.instruments.7.lender",
     "value": "Banco Volkswagen",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.7.outstanding",
+    "fieldPath": "debt.instruments.7.instrument_type",
+    "value": "Financiamento de frota",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.7.balance",
     "value": "1820000",
     "valueType": "number",
     "materiality": "material",
@@ -648,28 +906,73 @@
     }
   },
   {
-    "fieldPath": "debt.line.7.rate",
+    "fieldPath": "debt.instruments.7.rate",
     "value": "1,18% a.m.",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.7.maturity",
+    "fieldPath": "debt.instruments.7.maturity",
     "value": "2029-02-15",
     "valueType": "date",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.line.7.collateral",
+    "fieldPath": "debt.instruments.7.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
+  },
+  {
+    "fieldPath": "debt.instruments.7.collateral",
     "value": "Alienação fiduciária de 11 veículos",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx"
   },
   {
-    "fieldPath": "debt.schedule_total",
+    "fieldPath": "debt.covenants.1.metric",
+    "value": "Dívida líquida/EBITDA",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx",
+    "note": "Contrato Banco Itaú. Um covenant quebra uma operacao antes de ela vencer."
+  },
+  {
+    "fieldPath": "debt.covenants.1.threshold",
+    "value": "3.0",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.covenants.2.metric",
+    "value": "Dívida líquida/EBITDA",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx",
+    "note": "Contrato Banco Bradesco. Um covenant quebra uma operacao antes de ela vencer."
+  },
+  {
+    "fieldPath": "debt.covenants.2.threshold",
+    "value": "3.25",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.total_gross",
     "value": "38500000",
     "valueType": "number",
     "materiality": "material",
@@ -681,39 +984,14 @@
     }
   },
   {
-    "fieldPath": "debt.gross_on_balance",
-    "value": "45320000",
-    "valueType": "number",
-    "materiality": "material",
-    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
-    "periodEnd": "2025-12-31",
-    "tolerance": {
-      "kind": "relative",
-      "value": "0.005"
-    },
-    "note": "Inclui o arrendamento que o mapa não lista."
-  },
-  {
-    "fieldPath": "debt.leasing",
-    "value": "6820000",
-    "valueType": "number",
-    "materiality": "material",
-    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
-    "periodEnd": "2025-12-31",
-    "tolerance": {
-      "kind": "relative",
-      "value": "0.005"
-    }
-  },
-  {
-    "fieldPath": "customers.top.1.name",
+    "fieldPath": "customers.top_customers.1.name",
     "value": "Construtora Vertical Engenharia",
     "valueType": "text",
-    "materiality": "material",
+    "materiality": "supporting",
     "sourceDocument": "05_Concentracao_Clientes_2025.xlsx"
   },
   {
-    "fieldPath": "customers.top.1.share",
+    "fieldPath": "customers.top_customers.1.share_pct",
     "value": "0.1810",
     "valueType": "number",
     "materiality": "material",
@@ -724,14 +1002,14 @@
     }
   },
   {
-    "fieldPath": "customers.top.2.name",
+    "fieldPath": "customers.top_customers.2.name",
     "value": "Grupo Habita Empreendimentos",
     "valueType": "text",
-    "materiality": "material",
+    "materiality": "supporting",
     "sourceDocument": "05_Concentracao_Clientes_2025.xlsx"
   },
   {
-    "fieldPath": "customers.top.2.share",
+    "fieldPath": "customers.top_customers.2.share_pct",
     "value": "0.1120",
     "valueType": "number",
     "materiality": "material",
@@ -742,14 +1020,14 @@
     }
   },
   {
-    "fieldPath": "customers.top.3.name",
+    "fieldPath": "customers.top_customers.3.name",
     "value": "Prefeitura de São José dos Campos",
     "valueType": "text",
-    "materiality": "material",
+    "materiality": "supporting",
     "sourceDocument": "05_Concentracao_Clientes_2025.xlsx"
   },
   {
-    "fieldPath": "customers.top.3.share",
+    "fieldPath": "customers.top_customers.3.share_pct",
     "value": "0.0740",
     "valueType": "number",
     "materiality": "material",
@@ -760,14 +1038,14 @@
     }
   },
   {
-    "fieldPath": "customers.top.4.name",
+    "fieldPath": "customers.top_customers.4.name",
     "value": "Rede Construir (franquias)",
     "valueType": "text",
-    "materiality": "material",
+    "materiality": "supporting",
     "sourceDocument": "05_Concentracao_Clientes_2025.xlsx"
   },
   {
-    "fieldPath": "customers.top.4.share",
+    "fieldPath": "customers.top_customers.4.share_pct",
     "value": "0.0610",
     "valueType": "number",
     "materiality": "material",
@@ -778,26 +1056,15 @@
     }
   },
   {
-    "fieldPath": "customers.top.5.name",
+    "fieldPath": "customers.top_customers.5.name",
     "value": "Marfim Incorporações",
     "valueType": "text",
-    "materiality": "material",
+    "materiality": "supporting",
     "sourceDocument": "05_Concentracao_Clientes_2025.xlsx"
   },
   {
-    "fieldPath": "customers.top.5.share",
+    "fieldPath": "customers.top_customers.5.share_pct",
     "value": "0.0480",
-    "valueType": "number",
-    "materiality": "material",
-    "sourceDocument": "05_Concentracao_Clientes_2025.xlsx",
-    "tolerance": {
-      "kind": "relative",
-      "value": "0.005"
-    }
-  },
-  {
-    "fieldPath": "customers.top5_share",
-    "value": "0.4760",
     "valueType": "number",
     "materiality": "material",
     "sourceDocument": "05_Concentracao_Clientes_2025.xlsx",
@@ -816,7 +1083,7 @@
       "kind": "relative",
       "value": "0.005"
     },
-    "note": "A carta diz 40 milhões, o plano diz 42,3. Nenhuma fonte manda na outra: é pergunta para a empresa."
+    "note": "A carta diz 40 milhoes, o plano diz 42,3. Nenhuma fonte manda na outra: e pergunta para a empresa."
   },
   {
     "fieldPath": "transaction.currency",
@@ -826,29 +1093,29 @@
     "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
   },
   {
-    "fieldPath": "transaction.term_months",
+    "fieldPath": "transaction.purpose",
+    "value": "Capital de giro para alongamento do ciclo e implantação do quarto centro de distribuição",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
+  },
+  {
+    "fieldPath": "transaction.desired_term_months",
     "value": "48",
     "valueType": "number",
     "materiality": "material",
     "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
   },
   {
-    "fieldPath": "transaction.grace_months",
+    "fieldPath": "transaction.desired_grace_months",
     "value": "6",
     "valueType": "number",
     "materiality": "material",
     "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
   },
   {
-    "fieldPath": "transaction.expected_rate",
-    "value": "CDI + 4,00% a.a.",
-    "valueType": "text",
-    "materiality": "material",
-    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
-  },
-  {
-    "fieldPath": "transaction.purpose",
-    "value": "Capital de giro para alongamento do ciclo e implantação do quarto centro de distribuição",
+    "fieldPath": "transaction.use_of_proceeds.1.item",
+    "value": "Capital de giro (reforço do ciclo de recebíveis)",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
@@ -865,6 +1132,13 @@
     }
   },
   {
+    "fieldPath": "transaction.use_of_proceeds.2.item",
+    "value": "Obra civil do centro de distribuição de Jacareí",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
+  },
+  {
     "fieldPath": "transaction.use_of_proceeds.2.amount",
     "value": "11400000",
     "valueType": "number",
@@ -876,6 +1150,13 @@
     }
   },
   {
+    "fieldPath": "transaction.use_of_proceeds.3.item",
+    "value": "Equipamentos de movimentação e racks",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
+  },
+  {
     "fieldPath": "transaction.use_of_proceeds.3.amount",
     "value": "4100000",
     "valueType": "number",
@@ -885,6 +1166,13 @@
       "kind": "relative",
       "value": "0.005"
     }
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.4.item",
+    "value": "Sistema de gestão e integração logística",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_CFO_Pedido_e_Racional.docx"
   },
   {
     "fieldPath": "transaction.use_of_proceeds.4.amount",
@@ -901,18 +1189,11 @@
     "fieldPath": "project.name",
     "value": "Centro de Distribuição Jacareí",
     "valueType": "text",
-    "materiality": "material",
-    "sourceDocument": "06_Memorial_CD_Jacarei.pdf"
-  },
-  {
-    "fieldPath": "project.city",
-    "value": "Jacareí",
-    "valueType": "text",
     "materiality": "supporting",
     "sourceDocument": "06_Memorial_CD_Jacarei.pdf"
   },
   {
-    "fieldPath": "project.capex",
+    "fieldPath": "project.total_cost",
     "value": "17300000",
     "valueType": "number",
     "materiality": "material",
@@ -923,25 +1204,73 @@
     }
   },
   {
-    "fieldPath": "project.built_area",
-    "value": "9600",
-    "valueType": "number",
+    "fieldPath": "project.permits_status",
+    "value": "Licença prévia em análise na CETESB, protocolo 2026/114.882-7, ainda não emitida",
+    "valueType": "text",
     "materiality": "supporting",
     "sourceDocument": "06_Memorial_CD_Jacarei.pdf"
   },
   {
-    "fieldPath": "project.operation_date",
-    "value": "2027-09-01",
-    "valueType": "date",
+    "fieldPath": "project.investments.1.name",
+    "value": "Obra civil do centro de distribuição de Jacareí",
+    "valueType": "text",
     "materiality": "material",
     "sourceDocument": "06_Memorial_CD_Jacarei.pdf"
   },
   {
-    "fieldPath": "projections.revenue.2026",
+    "fieldPath": "project.investments.1.amount",
+    "value": "11400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "06_Memorial_CD_Jacarei.pdf",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "project.investments.2.name",
+    "value": "Equipamentos de movimentação e racks",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "06_Memorial_CD_Jacarei.pdf"
+  },
+  {
+    "fieldPath": "project.investments.2.amount",
+    "value": "4100000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "06_Memorial_CD_Jacarei.pdf",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "project.investments.3.name",
+    "value": "Sistema de gestão e integração logística",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "06_Memorial_CD_Jacarei.pdf"
+  },
+  {
+    "fieldPath": "project.investments.3.amount",
+    "value": "1800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "06_Memorial_CD_Jacarei.pdf",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "projections.2026.revenue",
     "value": "208500000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2026-01-01",
     "periodEnd": "2026-12-31",
     "tolerance": {
       "kind": "relative",
@@ -949,11 +1278,12 @@
     }
   },
   {
-    "fieldPath": "projections.ebitda.2026",
+    "fieldPath": "projections.2026.ebitda",
     "value": "18760000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2026-01-01",
     "periodEnd": "2026-12-31",
     "tolerance": {
       "kind": "relative",
@@ -961,11 +1291,12 @@
     }
   },
   {
-    "fieldPath": "projections.revenue.2027",
+    "fieldPath": "projections.2027.revenue",
     "value": "236900000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2027-01-01",
     "periodEnd": "2027-12-31",
     "tolerance": {
       "kind": "relative",
@@ -973,11 +1304,12 @@
     }
   },
   {
-    "fieldPath": "projections.ebitda.2027",
+    "fieldPath": "projections.2027.ebitda",
     "value": "22270000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2027-01-01",
     "periodEnd": "2027-12-31",
     "tolerance": {
       "kind": "relative",
@@ -985,11 +1317,12 @@
     }
   },
   {
-    "fieldPath": "projections.revenue.2028",
+    "fieldPath": "projections.2028.revenue",
     "value": "271400000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2028-01-01",
     "periodEnd": "2028-12-31",
     "tolerance": {
       "kind": "relative",
@@ -997,11 +1330,12 @@
     }
   },
   {
-    "fieldPath": "projections.ebitda.2028",
+    "fieldPath": "projections.2028.ebitda",
     "value": "26320000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2028-01-01",
     "periodEnd": "2028-12-31",
     "tolerance": {
       "kind": "relative",
@@ -1009,11 +1343,12 @@
     }
   },
   {
-    "fieldPath": "projections.revenue.2029",
+    "fieldPath": "projections.2029.revenue",
     "value": "298100000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2029-01-01",
     "periodEnd": "2029-12-31",
     "tolerance": {
       "kind": "relative",
@@ -1021,11 +1356,12 @@
     }
   },
   {
-    "fieldPath": "projections.ebitda.2029",
+    "fieldPath": "projections.2029.ebitda",
     "value": "29510000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2029-01-01",
     "periodEnd": "2029-12-31",
     "tolerance": {
       "kind": "relative",
@@ -1033,11 +1369,12 @@
     }
   },
   {
-    "fieldPath": "projections.revenue.2030",
+    "fieldPath": "projections.2030.revenue",
     "value": "321700000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2030-01-01",
     "periodEnd": "2030-12-31",
     "tolerance": {
       "kind": "relative",
@@ -1045,15 +1382,28 @@
     }
   },
   {
-    "fieldPath": "projections.ebitda.2030",
+    "fieldPath": "projections.2030.ebitda",
     "value": "32490000",
     "valueType": "number",
-    "materiality": "supporting",
+    "materiality": "material",
     "sourceDocument": "08_Projecoes_2026_2030.xlsx",
+    "periodStart": "2030-01-01",
     "periodEnd": "2030-12-31",
     "tolerance": {
       "kind": "relative",
       "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "leverage.pre_transaction_net_debt_ebitda",
+    "value": "2.1902",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
     }
   }
 ]

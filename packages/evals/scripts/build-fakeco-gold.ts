@@ -17,14 +17,17 @@ import {mkdirSync, readFileSync, readdirSync, writeFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {
+import {resolveFieldPath} from "@offroad/credit-ontology";
+import {fakeco} from "@offroad/testing-fixtures";
+
+const {
   balance2025, company, contradictions, customers, debt, fakecoVersion, historical,
   interim2026, leasingOffMap, missing, project, projections, request,
-} from "../src/fakeco/truth";
+} = fakeco;
 
 const here = dirname(fileURLToPath(import.meta.url));
-const assets = join(here, "..", "assets", "fakeco");
-const goldDir = join(here, "..", "gold", "fakeco");
+const assets = join(here, "..", "..", "testing-fixtures", "assets", "fakeco");
+const goldDir = join(here, "..", "..", "testing-fixtures", "gold", "fakeco");
 mkdirSync(join(goldDir, "expected"), {recursive: true});
 
 const write = (relative: string, value: unknown) =>
@@ -76,6 +79,19 @@ write("expected/profiles.json", [
  * sharper question than a four-level scale, and it is the one the accuracy gate reads, so the
  * generator answers it directly instead of inventing a middle.
  */
+/**
+ * Field paths come from the product's own catalogue, not from imagination.
+ *
+ * The first version of this file invented them: `historical_financials.revenue.2025`,
+ * `debt.line.1.lender`. The extractor produced 174 candidates against it and 158 matched nothing,
+ * which reads as 8,1% recall and is really a measurement in the wrong dialect. The catalogue
+ * says `historical_financials.{period}.revenue` and `debt.instruments.{i}.lender`, and it has
+ * said so all along.
+ *
+ * So every path below is checked against `resolveFieldPath` before it is written. A gold set
+ * that can name a field the product has never heard of is not a gold set, it is a second
+ * opinion about what the fields should have been called.
+ */
 type Field = {
   fieldPath: string; value: string; valueType: "text" | "number" | "date" | "boolean" | "list";
   materiality: "material" | "supporting"; sourceDocument?: string;
@@ -85,7 +101,11 @@ type Field = {
 
 const near = {kind: "relative" as const, value: "0.005"};
 const fields: Field[] = [];
-const add = (field: Field) => fields.push(field);
+const unknown: string[] = [];
+const add = (field: Field) => {
+  if (!resolveFieldPath(field.fieldPath)) unknown.push(field.fieldPath);
+  fields.push(field);
+};
 
 const DFS = "02_Demonstracoes_Auditadas_2023_2025.pdf";
 const BAL = "03_Balancete_Gerencial_Jul2026.xls";
@@ -97,85 +117,113 @@ const MEM = "06_Memorial_CD_Jacarei.pdf";
 const CTR = "07_Contrato_Social_Consolidado.png";
 const PRJ = "08_Projecoes_2026_2030.xlsx";
 
-// Company
+// Company.
 add({fieldPath: "company.legal_name", value: company.legalName, valueType: "text", materiality: "material", sourceDocument: FIC});
-add({fieldPath: "company.tax_id", value: company.cnpj, valueType: "text", materiality: "material", sourceDocument: FIC});
-add({fieldPath: "company.legal_form", value: "ltda", valueType: "text", materiality: "material", sourceDocument: CTR, note: "Só o contrato social, que chega como foto, afirma a forma societária. Ela bloqueia metade do catálogo de instrumentos."});
-add({fieldPath: "company.founded_year", value: String(company.foundedYear), valueType: "number", materiality: "supporting", sourceDocument: FIC});
+add({fieldPath: "company.legal_identifier", value: company.cnpj, valueType: "text", materiality: "material", sourceDocument: FIC});
 add({fieldPath: "company.city", value: company.city, valueType: "text", materiality: "supporting", sourceDocument: FIC});
 add({fieldPath: "company.state", value: company.state, valueType: "text", materiality: "supporting", sourceDocument: FIC});
-add({fieldPath: "company.sector", value: company.sector, valueType: "text", materiality: "material", sourceDocument: FIC});
+add({fieldPath: "company.sector", value: company.sector, valueType: "text", materiality: "supporting", sourceDocument: FIC});
+add({fieldPath: "company.founded_year", value: String(company.foundedYear), valueType: "number", materiality: "supporting", sourceDocument: FIC});
 add({fieldPath: "company.employees", value: String(company.employees), valueType: "number", materiality: "supporting", sourceDocument: FIC});
+add({fieldPath: "company.reporting_currency", value: "BRL", valueType: "text", materiality: "material", sourceDocument: DFS});
+add({fieldPath: "company.auditor.firm", value: "Marcondes & Auditores Independentes S/S", valueType: "text", materiality: "material", sourceDocument: DFS});
+add({fieldPath: "company.auditor.opinion", value: "sem ressalvas", valueType: "text", materiality: "material", sourceDocument: DFS});
 company.partners.forEach((partner, index) => {
-  add({fieldPath: `company.shareholder.${index + 1}.name`, value: partner.name, valueType: "text", materiality: "supporting", sourceDocument: FIC});
-  add({fieldPath: `company.shareholder.${index + 1}.share`, value: partner.share.toFixed(4), valueType: "number", materiality: "supporting", sourceDocument: FIC, tolerance: near});
+  add({fieldPath: `company.controllers.${index + 1}.name`, value: partner.name, valueType: "text", materiality: "material", sourceDocument: FIC});
+  add({fieldPath: `company.controllers.${index + 1}.ownership_pct`, value: partner.share.toFixed(4), valueType: "number", materiality: "material", sourceDocument: FIC, tolerance: near});
 });
-add({fieldPath: "company.share_capital", value: "12000000", valueType: "number", materiality: "supporting", sourceDocument: CTR});
+company.management.forEach((person, index) => {
+  add({fieldPath: `company.management.${index + 1}.name`, value: person.name, valueType: "text", materiality: "supporting", sourceDocument: FIC});
+  add({fieldPath: `company.management.${index + 1}.title`, value: person.role, valueType: "text", materiality: "supporting", sourceDocument: FIC});
+});
 
-// Historical, audited. Printed in thousands: the expected value is in reais, which is the
-// whole test.
+// Historical, audited, printed in thousands. The expected value is in reais: that is the trap.
 for (const year of historical) {
   const period = {periodStart: `${year.year}-01-01`, periodEnd: `${year.year}-12-31`};
-  add({fieldPath: `historical_financials.revenue.${year.year}`, value: String(year.revenue), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near, note: year.year === 2025 ? "O documento imprime 191.200,00 em milhares. Ler 191200 é errar por mil." : undefined});
-  add({fieldPath: `historical_financials.ebitda.${year.year}`, value: String(year.ebitda), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near});
-  add({fieldPath: `historical_financials.gross_profit.${year.year}`, value: String(year.grossProfit), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near});
-  add({fieldPath: `historical_financials.net_income.${year.year}`, value: String(year.netIncome), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near});
+  const trap = year.year === 2025 ? "O documento imprime 191.200,00 em milhares. Ler 191200 e errar por mil." : undefined;
+  add({fieldPath: `historical_financials.${year.year}.revenue`, value: String(year.revenue), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near, ...(trap ? {note: trap} : {})});
+  add({fieldPath: `historical_financials.${year.year}.ebitda`, value: String(year.ebitda), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near});
+  add({fieldPath: `historical_financials.${year.year}.gross_profit`, value: String(year.grossProfit), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near});
+  add({fieldPath: `historical_financials.${year.year}.net_income`, value: String(year.netIncome), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near});
+  add({fieldPath: `historical_financials.${year.year}.d_and_a`, value: String(year.depreciation), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near});
+  add({fieldPath: `historical_financials.${year.year}.financial_expenses`, value: String(year.financialExpenses), valueType: "number", materiality: "material", sourceDocument: DFS, ...period, tolerance: near});
 }
-add({fieldPath: "historical_financials.cash.2025", value: String(balance2025.cash), valueType: "number", materiality: "material", sourceDocument: DFS, periodEnd: "2025-12-31", tolerance: near});
-add({fieldPath: "historical_financials.receivables.2025", value: String(balance2025.receivables), valueType: "number", materiality: "material", sourceDocument: DFS, periodEnd: "2025-12-31", tolerance: near});
-add({fieldPath: "historical_financials.inventory.2025", value: String(balance2025.inventory), valueType: "number", materiality: "supporting", sourceDocument: DFS, periodEnd: "2025-12-31", tolerance: near});
-add({fieldPath: "historical_financials.equity.2025", value: String(balance2025.equity), valueType: "number", materiality: "material", sourceDocument: DFS, periodEnd: "2025-12-31", tolerance: near});
+const p2025 = {periodStart: "2025-01-01", periodEnd: "2025-12-31"};
+add({fieldPath: "historical_financials.2025.cash", value: String(balance2025.cash), valueType: "number", materiality: "material", sourceDocument: DFS, ...p2025, tolerance: near});
+add({fieldPath: "historical_financials.2025.receivables", value: String(balance2025.receivables), valueType: "number", materiality: "material", sourceDocument: DFS, ...p2025, tolerance: near});
+add({fieldPath: "historical_financials.2025.inventory", value: String(balance2025.inventory), valueType: "number", materiality: "material", sourceDocument: DFS, ...p2025, tolerance: near});
+add({fieldPath: "historical_financials.2025.payables", value: String(balance2025.suppliers), valueType: "number", materiality: "material", sourceDocument: DFS, ...p2025, tolerance: near});
+add({fieldPath: "historical_financials.2025.equity", value: String(balance2025.equity), valueType: "number", materiality: "material", sourceDocument: DFS, ...p2025, tolerance: near});
+add({fieldPath: "historical_financials.2025.total_assets", value: String(balance2025.totalAssets), valueType: "number", materiality: "material", sourceDocument: DFS, ...p2025, tolerance: near});
+add({fieldPath: "historical_financials.2025.gross_debt", value: String(balance2025.grossDebtOnBalance), valueType: "number", materiality: "material", sourceDocument: DFS, ...p2025, tolerance: near, note: "Inclui o arrendamento que o mapa de divida nao lista."});
 
-// Interim, stated in units in a legacy .xls.
-add({fieldPath: "interim_financials.revenue.2026_07", value: String(interim2026.revenue), valueType: "number", materiality: "material", sourceDocument: BAL, periodStart: "2026-01-01", periodEnd: interim2026.periodEnd, tolerance: near});
-add({fieldPath: "interim_financials.ebitda.2026_07", value: String(interim2026.ebitda), valueType: "number", materiality: "material", sourceDocument: BAL, periodStart: "2026-01-01", periodEnd: interim2026.periodEnd, tolerance: near});
-add({fieldPath: "interim_financials.net_income.2026_07", value: String(interim2026.netIncome), valueType: "number", materiality: "material", sourceDocument: BAL, periodEnd: interim2026.periodEnd, tolerance: near});
-add({fieldPath: "interim_financials.receivables.2026_07", value: String(interim2026.receivables), valueType: "number", materiality: "material", sourceDocument: BAL, periodEnd: interim2026.periodEnd, tolerance: near});
+// Interim, stated in units in a legacy .xls. Seven months, so the ytd suffix is `_7m`.
+const pInterim = {periodStart: "2026-01-01", periodEnd: interim2026.periodEnd};
+add({fieldPath: "interim_financials.2026_07.revenue_7m", value: String(interim2026.revenue), valueType: "number", materiality: "material", sourceDocument: BAL, ...pInterim, tolerance: near});
+add({fieldPath: "interim_financials.2026_07.ebitda_7m", value: String(interim2026.ebitda), valueType: "number", materiality: "material", sourceDocument: BAL, ...pInterim, tolerance: near});
+add({fieldPath: "interim_financials.2026_07.net_income_7m", value: String(interim2026.netIncome), valueType: "number", materiality: "material", sourceDocument: BAL, ...pInterim, tolerance: near});
+add({fieldPath: "interim_financials.2026_07.cash", value: String(interim2026.cash), valueType: "number", materiality: "material", sourceDocument: BAL, periodEnd: interim2026.periodEnd, tolerance: near});
+add({fieldPath: "interim_financials.2026_07.receivables", value: String(interim2026.receivables), valueType: "number", materiality: "material", sourceDocument: BAL, periodEnd: interim2026.periodEnd, tolerance: near});
 
-// Debt: the group with no coverage anywhere until now.
+// Debt: the group with no coverage anywhere until this case existed.
 debt.forEach((line, index) => {
   const n = index + 1;
-  add({fieldPath: `debt.line.${n}.lender`, value: line.lender, valueType: "text", materiality: "material", sourceDocument: DIV});
-  add({fieldPath: `debt.line.${n}.outstanding`, value: String(line.outstanding), valueType: "number", materiality: "material", sourceDocument: DIV, periodEnd: "2026-07-31", tolerance: near});
-  add({fieldPath: `debt.line.${n}.rate`, value: line.rate, valueType: "text", materiality: "material", sourceDocument: DIV});
-  add({fieldPath: `debt.line.${n}.maturity`, value: line.maturity, valueType: "date", materiality: "material", sourceDocument: DIV});
-  add({fieldPath: `debt.line.${n}.collateral`, value: line.collateral, valueType: "text", materiality: "material", sourceDocument: DIV});
-  if (line.covenant) add({fieldPath: `debt.line.${n}.covenant`, value: line.covenant, valueType: "text", materiality: "material", sourceDocument: DIV, note: "Um covenant é o que quebra uma operação antes de ela vencer."});
+  add({fieldPath: `debt.instruments.${n}.lender`, value: line.lender, valueType: "text", materiality: "material", sourceDocument: DIV});
+  add({fieldPath: `debt.instruments.${n}.instrument_type`, value: line.instrument, valueType: "text", materiality: "material", sourceDocument: DIV});
+  add({fieldPath: `debt.instruments.${n}.balance`, value: String(line.outstanding), valueType: "number", materiality: "material", sourceDocument: DIV, periodEnd: "2026-07-31", tolerance: near});
+  add({fieldPath: `debt.instruments.${n}.rate`, value: line.rate, valueType: "text", materiality: "material", sourceDocument: DIV});
+  add({fieldPath: `debt.instruments.${n}.maturity`, value: line.maturity, valueType: "date", materiality: "material", sourceDocument: DIV});
+  add({fieldPath: `debt.instruments.${n}.amortization`, value: line.amortization, valueType: "text", materiality: "material", sourceDocument: DIV});
+  add({fieldPath: `debt.instruments.${n}.collateral`, value: line.collateral, valueType: "text", materiality: "material", sourceDocument: DIV});
 });
-add({fieldPath: "debt.schedule_total", value: String(debt.reduce((sum, line) => sum + line.outstanding, 0)), valueType: "number", materiality: "material", sourceDocument: DIV, periodEnd: "2026-07-31", tolerance: near});
-add({fieldPath: "debt.gross_on_balance", value: String(balance2025.grossDebtOnBalance), valueType: "number", materiality: "material", sourceDocument: DFS, periodEnd: "2025-12-31", tolerance: near, note: "Inclui o arrendamento que o mapa não lista."});
-add({fieldPath: "debt.leasing", value: String(leasingOffMap), valueType: "number", materiality: "material", sourceDocument: DFS, periodEnd: "2025-12-31", tolerance: near});
+debt.filter((line) => line.covenant).forEach((line, index) => {
+  add({fieldPath: `debt.covenants.${index + 1}.metric`, value: "Dívida líquida/EBITDA", valueType: "text", materiality: "material", sourceDocument: DIV, note: `Contrato ${line.lender}. Um covenant quebra uma operacao antes de ela vencer.`});
+  add({fieldPath: `debt.covenants.${index + 1}.threshold`, value: line.covenant!.replace(/[^0-9,.]/g, "").replace(",", "."), valueType: "number", materiality: "material", sourceDocument: DIV, tolerance: near});
+});
+add({fieldPath: "debt.total_gross", value: String(debt.reduce((sum, line) => sum + line.outstanding, 0)), valueType: "number", materiality: "material", sourceDocument: DIV, periodEnd: "2026-07-31", tolerance: near});
 
-// Customers: the other uncovered group.
+// Customers: the other group that had no coverage.
 customers.forEach((customer, index) => {
   const n = index + 1;
-  add({fieldPath: `customers.top.${n}.name`, value: customer.name, valueType: "text", materiality: "material", sourceDocument: CLI});
-  add({fieldPath: `customers.top.${n}.share`, value: customer.share.toFixed(4), valueType: "number", materiality: "material", sourceDocument: CLI, tolerance: near});
+  add({fieldPath: `customers.top_customers.${n}.name`, value: customer.name, valueType: "text", materiality: "supporting", sourceDocument: CLI});
+  add({fieldPath: `customers.top_customers.${n}.share_pct`, value: customer.share.toFixed(4), valueType: "number", materiality: "material", sourceDocument: CLI, tolerance: near});
 });
-add({fieldPath: "customers.top5_share", value: customers.reduce((sum, c) => sum + c.share, 0).toFixed(4), valueType: "number", materiality: "material", sourceDocument: CLI, tolerance: near});
 
 // The transaction. The amount is the contradiction with no precedence to settle it.
-add({fieldPath: "transaction.requested_amount", value: String(request.amount), valueType: "number", materiality: "material", sourceDocument: MEM, tolerance: near, note: "A carta diz 40 milhões, o plano diz 42,3. Nenhuma fonte manda na outra: é pergunta para a empresa."});
+add({fieldPath: "transaction.requested_amount", value: String(request.amount), valueType: "number", materiality: "material", sourceDocument: MEM, tolerance: near, note: "A carta diz 40 milhoes, o plano diz 42,3. Nenhuma fonte manda na outra: e pergunta para a empresa."});
 add({fieldPath: "transaction.currency", value: request.currency, valueType: "text", materiality: "material", sourceDocument: CAR});
-add({fieldPath: "transaction.term_months", value: String(request.termMonths), valueType: "number", materiality: "material", sourceDocument: CAR});
-add({fieldPath: "transaction.grace_months", value: String(request.graceMonths), valueType: "number", materiality: "material", sourceDocument: CAR});
-add({fieldPath: "transaction.expected_rate", value: request.expectedRate, valueType: "text", materiality: "material", sourceDocument: CAR});
 add({fieldPath: "transaction.purpose", value: request.purpose, valueType: "text", materiality: "material", sourceDocument: CAR});
+add({fieldPath: "transaction.desired_term_months", value: String(request.termMonths), valueType: "number", materiality: "material", sourceDocument: CAR});
+add({fieldPath: "transaction.desired_grace_months", value: String(request.graceMonths), valueType: "number", materiality: "material", sourceDocument: CAR});
 request.useOfProceeds.forEach((use, index) => {
+  add({fieldPath: `transaction.use_of_proceeds.${index + 1}.item`, value: use.item, valueType: "text", materiality: "material", sourceDocument: CAR});
   add({fieldPath: `transaction.use_of_proceeds.${index + 1}.amount`, value: String(use.amount), valueType: "number", materiality: "material", sourceDocument: CAR, tolerance: near});
 });
 
 // Project.
-add({fieldPath: "project.name", value: project.name, valueType: "text", materiality: "material", sourceDocument: MEM});
-add({fieldPath: "project.city", value: project.city, valueType: "text", materiality: "supporting", sourceDocument: MEM});
-add({fieldPath: "project.capex", value: String(project.capex), valueType: "number", materiality: "material", sourceDocument: MEM, tolerance: near});
-add({fieldPath: "project.built_area", value: String(project.builtArea), valueType: "number", materiality: "supporting", sourceDocument: MEM});
-add({fieldPath: "project.operation_date", value: project.operationDate, valueType: "date", materiality: "material", sourceDocument: MEM});
+add({fieldPath: "project.name", value: project.name, valueType: "text", materiality: "supporting", sourceDocument: MEM});
+add({fieldPath: "project.total_cost", value: String(project.capex), valueType: "number", materiality: "material", sourceDocument: MEM, tolerance: near});
+add({fieldPath: "project.permits_status", value: "Licença prévia em análise na CETESB, protocolo 2026/114.882-7, ainda não emitida", valueType: "text", materiality: "supporting", sourceDocument: MEM});
+request.useOfProceeds.slice(1).forEach((use, index) => {
+  add({fieldPath: `project.investments.${index + 1}.name`, value: use.item, valueType: "text", materiality: "material", sourceDocument: MEM});
+  add({fieldPath: `project.investments.${index + 1}.amount`, value: String(use.amount), valueType: "number", materiality: "material", sourceDocument: MEM, tolerance: near});
+});
 
 // Projections.
 for (const year of projections) {
-  add({fieldPath: `projections.revenue.${year.year}`, value: String(year.revenue), valueType: "number", materiality: "supporting", sourceDocument: PRJ, periodEnd: `${year.year}-12-31`, tolerance: near});
-  add({fieldPath: `projections.ebitda.${year.year}`, value: String(year.ebitda), valueType: "number", materiality: "supporting", sourceDocument: PRJ, periodEnd: `${year.year}-12-31`, tolerance: near});
+  const period = {periodStart: `${year.year}-01-01`, periodEnd: `${year.year}-12-31`};
+  add({fieldPath: `projections.${year.year}.revenue`, value: String(year.revenue), valueType: "number", materiality: "material", sourceDocument: PRJ, ...period, tolerance: near});
+  add({fieldPath: `projections.${year.year}.ebitda`, value: String(year.ebitda), valueType: "number", materiality: "material", sourceDocument: PRJ, ...period, tolerance: near});
+}
+
+// Leverage, which is the number a covenant is written against.
+const netDebtNow = balance2025.grossDebtOnBalance - balance2025.cash;
+add({fieldPath: "leverage.pre_transaction_net_debt_ebitda", value: (netDebtNow / historical[2].ebitda).toFixed(4), valueType: "number", materiality: "material", sourceDocument: DFS, periodEnd: "2025-12-31", tolerance: {kind: "relative", value: "0.01"}});
+
+if (unknown.length > 0) {
+  console.error("Campos que a ontologia do produto nao reconhece:");
+  for (const path of [...new Set(unknown)]) console.error("  " + path);
+  process.exit(1);
 }
 
 write("expected/fields.json", fields);

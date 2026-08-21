@@ -50,7 +50,7 @@ emite debênture.
 ```
 pnpm --filter @offroad/testing-fixtures fakeco         # os seis arquivos de escritório
 ./packages/testing-fixtures/scripts/render-fakeco.sh   # os dois PDFs e a foto
-pnpm --filter @offroad/testing-fixtures fakeco:gold    # o gabarito
+pnpm --filter @offroad/evals fakeco:gold               # o gabarito
 pnpm --filter @offroad/evals fakeco:verify              # os parsers do produto leem tudo?
 ```
 
