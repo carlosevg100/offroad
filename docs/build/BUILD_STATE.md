@@ -252,3 +252,24 @@ Handoff completo, incluindo como testar o fluxo e o que falta:
 [`DCM_DESK_DE_PARA.md`](DCM_DESK_DE_PARA.md).
 
 Produção canônica: `https://offroad.capital`
+
+## Documentos institucionais, mesa na tela e a primeira companhia aberta, 21/08/2026
+
+Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
+
+- **Investment Memorandum e Term Sheet** compilados dos números da mesa (não da prosa do brief):
+  termos-chave, operação, companhia, histórico, estrutura de capital e tratamento, trajetória com
+  covenant proposto, projeções, fatores de risco com resposta estrutural, base de preparação;
+  term sheet com partes, termos econômicos com a base ao lado de cada um, destinação, garantias,
+  covenants, CPs, obrigações de informação, eventos de vencimento. Só saem quando a mesa rodou.
+- **Mesa na tela do case**: o que estava calculado e persistido e nunca aparecia.
+- **Camil Alimentos**: gold case com arquivamentos públicos reais. O que a mesa errou ao ler uma
+  companhia aberta está corrigido (data-base do estoque, covenant da companhia, refinanciamento
+  abatido, EBITDA mantido sem projeção, taxas `% do DI` e `pré`). Medições de extração e
+  classificação disparadas; números a registrar na tabela abaixo quando terminarem.
+
+| medição | métrica | valor | custo |
+|---|---|---|---|
+| E1 classificação (camil) | tipo / classe | pendente | |
+| E3 extração (camil) | recall material / precisão | pendente | |
+

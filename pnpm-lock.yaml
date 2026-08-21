@@ -393,6 +393,9 @@ importers:
 
   packages/evals:
     dependencies:
+      '@offroad/credit-analysis':
+        specifier: workspace:*
+        version: link:../credit-analysis
       '@offroad/credit-ontology':
         specifier: workspace:*
         version: link:../credit-ontology
