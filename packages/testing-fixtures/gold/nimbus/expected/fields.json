@@ -1,0 +1,768 @@
+[
+  {
+    "fieldPath": "company.legal_name",
+    "value": "Nimbus Tecnologia em Gestão de Frotas S.A.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.legal_identifier",
+    "value": "41.207.553/0001-09",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.city",
+    "value": "São Paulo",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.state",
+    "value": "SP",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.sector",
+    "value": "Software (SaaS) de gestão de frotas e telemetria",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.founded_year",
+    "value": "2019",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.employees",
+    "value": "96",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.controllers.1.name",
+    "value": "Ana Ribeiro",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.controllers.1.ownership_pct",
+    "value": "0.2800",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "company.controllers.2.name",
+    "value": "Tiago Mendes",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.controllers.2.ownership_pct",
+    "value": "0.2200",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "company.controllers.3.name",
+    "value": "Horizonte Capital Growth FIP",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.controllers.3.ownership_pct",
+    "value": "0.2500",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "company.controllers.4.name",
+    "value": "Aurora Ventures II FIP",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.controllers.4.ownership_pct",
+    "value": "0.1500",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "company.controllers.5.name",
+    "value": "Pool de opções (ESOP)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.controllers.5.ownership_pct",
+    "value": "0.1000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "company.management.1.name",
+    "value": "Ana Ribeiro",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.management.1.title",
+    "value": "Diretora-presidente",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.management.2.name",
+    "value": "Tiago Mendes",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.management.2.title",
+    "value": "Diretor de tecnologia",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.management.3.name",
+    "value": "Paula Nakamura",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.management.3.title",
+    "value": "Diretora financeira",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "00_Deck_Institucional_Nimbus.docx"
+  },
+  {
+    "fieldPath": "company.last_equity_round.amount",
+    "value": "48000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.last_equity_round.date",
+    "value": "2025-03-14",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.last_equity_round.lead_investor",
+    "value": "Horizonte Capital Growth FIP",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.last_equity_round.post_money_valuation",
+    "value": "240000000",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "03_Cap_Table_Serie_A.xlsx"
+  },
+  {
+    "fieldPath": "company.runway_months",
+    "value": "13",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Extrato_Bancario_Mai_Jul2026.csv",
+    "note": "Calculado: caixa de julho sobre a queima média de maio a julho. A carta diz 16."
+  },
+  {
+    "fieldPath": "company.net_revenue_retention",
+    "value": "1.1519",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "fieldPath": "company.monthly_churn_pct",
+    "value": "0.0048",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.02"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.revenue",
+    "value": "16100000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.cogs",
+    "value": "4830000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.gross_profit",
+    "value": "11270000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.ebitda",
+    "value": "-14800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.net_income",
+    "value": "-15900000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.cash",
+    "value": "9800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.revenue",
+    "value": "28600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.cogs",
+    "value": "7150000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.gross_profit",
+    "value": "21450000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.ebitda",
+    "value": "-19400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.net_income",
+    "value": "-21000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.cash",
+    "value": "36400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.receivables",
+    "value": "3700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.gross_debt",
+    "value": "3500000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.revenue_7m",
+    "value": "21900000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.ebitda_7m",
+    "value": "-12600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.net_income_7m",
+    "value": "-13400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.cash",
+    "value": "24100000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Extrato_Bancario_Mai_Jul2026.csv",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Extrato e gerencial concordam."
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.receivables",
+    "value": "4900000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.gross_debt",
+    "value": "3200000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.mrr",
+    "value": "3110500",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.arr",
+    "value": "37326000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "O deck diz R$ 40 milhões; o export por cliente manda."
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.monthly_burn",
+    "value": "1850000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "periodStart": "2026-05-01",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.02"
+    }
+  },
+  {
+    "fieldPath": "customers.top_customers.1.name",
+    "value": "Via Rápida Motofrete",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx"
+  },
+  {
+    "fieldPath": "customers.top_customers.1.share_pct",
+    "value": "0.0682",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "fieldPath": "customers.top_customers.2.name",
+    "value": "Cooperativa Agro Sul",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx"
+  },
+  {
+    "fieldPath": "customers.top_customers.2.share_pct",
+    "value": "0.0526",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "fieldPath": "customers.top_customers.3.name",
+    "value": "Mineração Serra Verde",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx"
+  },
+  {
+    "fieldPath": "customers.top_customers.3.share_pct",
+    "value": "0.0498",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "fieldPath": "customers.top_customers.4.name",
+    "value": "Rodonorte Transportes",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx"
+  },
+  {
+    "fieldPath": "customers.top_customers.4.share_pct",
+    "value": "0.0476",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "fieldPath": "customers.top_customers.5.name",
+    "value": "Hidro Saneamento",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx"
+  },
+  {
+    "fieldPath": "customers.top_customers.5.share_pct",
+    "value": "0.0466",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.1.lender",
+    "value": "FINEP",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "debt.instruments.1.instrument_type",
+    "value": "Financiamento à inovação",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "debt.instruments.1.balance",
+    "value": "3200000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.1.rate",
+    "value": "TR + 5,00% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "debt.instruments.1.maturity",
+    "value": "2029-06-15",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "debt.instruments.1.amortization",
+    "value": "Mensal com 24m carência",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "debt.instruments.1.collateral",
+    "value": "Fiança bancária",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "debt.total_gross",
+    "value": "3200000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "transaction.requested_amount",
+    "value": "15000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "transaction.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "transaction.desired_term_months",
+    "value": "36",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "transaction.desired_grace_months",
+    "value": "12",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "transaction.purpose",
+    "value": "Estender o runway até a Série B prevista para o segundo semestre de 2027 sem antecipar a rodada em condições piores.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "transaction.preferred_structure",
+    "value": "Venture debt com warrant",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.1.item",
+    "value": "Extensão de runway (folha e infraestrutura)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.1.amount",
+    "value": "11000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.2.item",
+    "value": "Aquisição de clientes (time comercial e marketing)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx"
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.2.amount",
+    "value": "4000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Carta_Pedido_Venture_Debt.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  }
+]

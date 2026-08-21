@@ -15,7 +15,7 @@ import Decimal from "decimal.js";
  */
 
 export type ParsedRate =
-  | {kind: "index_plus_spread"; index: "CDI" | "TLP" | "IPCA" | "SELIC"; spreadAnnual: string}
+  | {kind: "index_plus_spread"; index: "CDI" | "TLP" | "IPCA" | "SELIC" | "TR"; spreadAnnual: string}
   | {kind: "percent_of_index"; index: "CDI"; factor: string}
   | {kind: "fixed_annual"; annual: string}
   | {kind: "fixed_monthly"; monthly: string};
@@ -27,11 +27,11 @@ export function parseRate(text: string | null | undefined): ParsedRate | null {
   const value = text.trim().toLowerCase().replace(/\s+/g, " ");
 
   // "cdi + 4,10% a.a." / "tlp + 2,90% a.a." / "ipca + 7% a.a."
-  const indexPlus = value.match(/^(cdi|tlp|ipca|selic)\s*\+\s*([\d.,]+)\s*%(\s*a\.?a\.?)?$/);
+  const indexPlus = value.match(/^(cdi|tlp|ipca|selic|tr)\s*\+\s*([\d.,]+)\s*%(\s*a\.?a\.?)?$/);
   if (indexPlus) {
     return {
       kind: "index_plus_spread",
-      index: indexPlus[1]!.toUpperCase() as "CDI" | "TLP" | "IPCA" | "SELIC",
+      index: indexPlus[1]!.toUpperCase() as "CDI" | "TLP" | "IPCA" | "SELIC" | "TR",
       spreadAnnual: decimalFrom(indexPlus[2]!).div(100).toFixed(6),
     };
   }
@@ -63,7 +63,7 @@ export function parseRate(text: string | null | undefined): ParsedRate | null {
  * Monthly rates compound: 1,42% a.m. is 18,45% a.a., not 17,04%, and the difference is exactly
  * the kind of thing a schedule maintained by hand gets wrong in the company's favour.
  */
-export function effectiveAnnualCost(rate: ParsedRate, indexLevels: {cdi: string; tlp?: string; ipca?: string; selic?: string}): string | null {
+export function effectiveAnnualCost(rate: ParsedRate, indexLevels: {cdi: string; tlp?: string; ipca?: string; selic?: string; tr?: string}): string | null {
   const level = (name: string): Decimal | null => {
     const value = (indexLevels as Record<string, string | undefined>)[name.toLowerCase()];
     return value === undefined ? null : new Decimal(value);

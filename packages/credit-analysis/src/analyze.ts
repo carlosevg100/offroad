@@ -42,7 +42,7 @@ export type DebtLineInput = {
 
 export type DeskInput = {
   /** Stated out loud in every cost figure. An assumption of the analysis, not a fact of the room. */
-  indexLevels: {cdi: string; tlp?: string; ipca?: string; selic?: string};
+  indexLevels: {cdi: string; tlp?: string; ipca?: string; selic?: string; tr?: string};
   /** The date the analysis is run, for maturity and grace arithmetic. ISO. */
   referenceDate: string;
   /** Most recent full audited year. */
@@ -92,6 +92,40 @@ export type DeskInput = {
   };
   /** Next projected year, for the growth-absorption arithmetic. */
   projectedNextYear?: {year: number; revenue: string};
+  /**
+   * What a venture lender reads instead of EBITDA: recurring revenue, burn, runway, the last
+   * round, retention and concentration. Any of them may be absent; the runway arithmetic needs
+   * burn, everything else sharpens it.
+   */
+  venture?: {
+    arr?: string;
+    mrr?: string;
+    monthlyBurn?: string;
+    runwayMonthsStated?: string;
+    lastEquityRoundAmount?: string;
+    lastEquityRoundDate?: string;
+    nrr?: string;
+    monthlyChurn?: string;
+    topCustomerShare?: string;
+  };
+};
+
+export type RunwayAnalysis = {
+  monthlyBurn: string;
+  cash: string;
+  /** cash / burn, months, before the deal. */
+  monthsPre: string;
+  /** (cash + ask) / burn: what the ticket buys before its own service. */
+  monthsPost: string;
+  /** Same, with the ticket's interest paid monthly out of the same cash. */
+  monthsPostAfterService: string;
+  /** Annual rate assumed for the service, stated; the ask's own rate when parseable. */
+  assumedRate: string;
+  arr: string | null;
+  /** (existing debt + ask) / ARR. Venture practice keeps this under roughly a third. */
+  debtToArr: string | null;
+  nrr: string | null;
+  topCustomerShare: string | null;
 };
 
 export type Finding = {
@@ -149,6 +183,9 @@ export type DeskAnalysis = {
     free: string;
     askAgainstFree: string | null;
   };
+  /** Whether leverage arithmetic means anything: a company that burns cash has no turns to count. */
+  profile: "cash_generative" | "cash_burning";
+  runway: RunwayAnalysis | null;
   findings: Finding[];
 };
 
@@ -254,8 +291,12 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
     ? covenants.reduce((min, entry) => (d(entry.covenant.maximum).lt(min.covenant.maximum) ? entry : min))
     : null;
 
+  // Leverage over a negative EBITDA is a number with no meaning, and a covenant test on it is
+  // a sentence with no meaning. The cash-burning company is read through its runway instead.
+  const burning = ebitda.lte(0);
+
   let maxNewDebt: Decimal | null = null;
-  if (tightest) {
+  if (tightest && !burning) {
     maxNewDebt = d(tightest.covenant.maximum).times(ebitda).minus(netDebtPre);
     const worst = scenarios.reduce((max, s) => (d(s.postTurns).gt(max.postTurns) ? s : max), scenarios[0]!);
     if (scenarios.some((s) => d(s.postTurns).gt(tightest.covenant.maximum))) {
@@ -287,6 +328,106 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
         en: `${brlM(maturing24)} (${share.times(100).toFixed(0)}% of the schedule) matures within 24 months. The transaction competes with a refinancing wall, and the structure has to say what happens to those lines.`,
         values: {maturing24: maturing24.toFixed(2), share: share.toFixed(4)},
         inputs: ["debt.instruments"],
+      });
+    }
+  }
+
+  // ---- runway: the axis a venture lender actually reads ---------------------------------------
+  //
+  // Months of cash before the deal, months the ticket buys, and months it buys once it has to
+  // pay its own interest out of the same cash. The third number is the honest one: a loan that
+  // buys eight months and costs two of them back buys six, and the founder's letter will have
+  // quoted the first figure.
+  let runway: RunwayAnalysis | null = null;
+  const venture = input.venture;
+  if (venture?.monthlyBurn && d(venture.monthlyBurn).gt(0)) {
+    const burn = d(venture.monthlyBurn);
+    const cashNow = d(input.balance.cash);
+    const ask = scenarios.length > 0 ? scenarios.reduce((max, s) => (d(s.amount).gt(max) ? d(s.amount) : max), ZERO) : ZERO;
+    const askRate = parseRate(input.request.rateAsk);
+    const askCost = askRate ? effectiveAnnualCost(askRate, input.indexLevels) : null;
+    // Venture practice when the ask names no rate: CDI plus six, before the warrant.
+    const assumedRate = askCost ? d(askCost) : cdi.plus("0.06");
+    const monthsPre = cashNow.div(burn);
+    const monthsPost = cashNow.plus(ask).div(burn);
+    const monthlyInterest = ask.times(assumedRate).div(12);
+    const monthsPostAfterService = cashNow.plus(ask).div(burn.plus(monthlyInterest));
+    const arr = venture.arr ? d(venture.arr) : null;
+    const debtToArr = arr && arr.gt(0) ? totalOnBalance.plus(ask).div(arr) : null;
+    const nrr = venture.nrr ? d(venture.nrr) : null;
+    const topShare = venture.topCustomerShare ? d(venture.topCustomerShare) : null;
+    runway = {
+      monthlyBurn: burn.toFixed(2),
+      cash: cashNow.toFixed(2),
+      monthsPre: monthsPre.toFixed(1),
+      monthsPost: monthsPost.toFixed(1),
+      monthsPostAfterService: monthsPostAfterService.toFixed(1),
+      assumedRate: assumedRate.toFixed(6),
+      arr: arr ? arr.toFixed(2) : null,
+      debtToArr: debtToArr ? debtToArr.toFixed(4) : null,
+      nrr: nrr ? nrr.toFixed(4) : null,
+      topCustomerShare: topShare ? topShare.toFixed(4) : null,
+    };
+    const months = (value: Decimal) => value.toFixed(1).replace(".", ",");
+
+    if (monthsPre.lt(12)) {
+      findings.push({
+        id: "runway-short",
+        severity: monthsPre.lt(9) ? "critical" : "high",
+        pt: `Runway de ${months(monthsPre)} meses antes da operação (caixa de ${brlM(cashNow)} sobre queima de ${brlM(burn)} por mês). ${monthsPre.lt(9) ? "Abaixo de nove meses não é venture debt, é ponte de equity: o credor entraria para financiar a própria saída." : "Abaixo de doze meses o credor vai exigir que a rodada esteja encaminhada antes do desembolso, não depois."}`,
+        en: `Runway of ${monthsPre.toFixed(1)} months before the deal (${brlM(cashNow)} of cash over ${brlM(burn)} of monthly burn). ${monthsPre.lt(9) ? "Under nine months this is not venture debt but an equity bridge: the lender would be funding its own exit." : "Under twelve months the lender will want the round in motion before disbursement, not after."}`,
+        values: {monthsPre: monthsPre.toFixed(2), cash: cashNow.toFixed(2), burn: burn.toFixed(2)},
+        inputs: ["interim_financials.cash", "interim_financials.monthly_burn"],
+      });
+    }
+    if (venture.runwayMonthsStated && d(venture.runwayMonthsStated).minus(monthsPre).abs().gt("1.5")) {
+      findings.push({
+        id: "runway-stated-vs-computed",
+        severity: "high",
+        pt: `A companhia declara ${d(venture.runwayMonthsStated).toFixed(0)} meses de runway; o caixa sobre a queima média dá ${months(monthsPre)}. A diferença é a queima escolhida (melhor mês contra média do trimestre), e o credor usa a média.`,
+        en: `The company states ${d(venture.runwayMonthsStated).toFixed(0)} months of runway; cash over average burn gives ${monthsPre.toFixed(1)}. The difference is the burn chosen (best month versus quarterly average), and the lender uses the average.`,
+        values: {stated: d(venture.runwayMonthsStated).toFixed(2), computed: monthsPre.toFixed(2)},
+        inputs: ["company.runway_months", "interim_financials.cash", "interim_financials.monthly_burn"],
+      });
+    }
+    if (ask.gt(0)) {
+      findings.push({
+        id: "runway-bought",
+        severity: "info",
+        pt: `A captação de ${brlM(ask)} leva o runway de ${months(monthsPre)} para ${months(monthsPost)} meses antes do serviço, e para ${months(monthsPostAfterService)} com os juros pagos do mesmo caixa (${pctAA(assumedRate)} assumido${askCost ? ", a taxa pedida" : ", prática de venture debt quando o pedido não nomeia taxa"}). O que a operação compra é ${months(monthsPostAfterService.minus(monthsPre))} meses, não ${months(monthsPost.minus(monthsPre))}.`,
+        en: `The ${brlM(ask)} raise takes runway from ${monthsPre.toFixed(1)} to ${monthsPost.toFixed(1)} months before service, and to ${monthsPostAfterService.toFixed(1)} with interest paid from the same cash (${pctAA(assumedRate)} assumed${askCost ? ", the rate asked" : ", venture-debt practice when the ask names no rate"}). What the deal buys is ${monthsPostAfterService.minus(monthsPre).toFixed(1)} months, not ${monthsPost.minus(monthsPre).toFixed(1)}.`,
+        values: {monthsPre: monthsPre.toFixed(2), monthsPost: monthsPost.toFixed(2), monthsPostAfterService: monthsPostAfterService.toFixed(2), assumedRate: assumedRate.toFixed(6)},
+        inputs: ["transaction.requested_amount", "interim_financials.cash", "interim_financials.monthly_burn"],
+      });
+    }
+    if (debtToArr && debtToArr.gt("0.35")) {
+      findings.push({
+        id: "debt-to-arr",
+        severity: "high",
+        pt: `Dívida total pós-operação de ${brlM(totalOnBalance.plus(ask))} sobre ARR de ${brlM(arr!)}: ${debtToArr.times(100).toFixed(0)}% do ARR. A prática de venture debt fica entre 20% e 35%; acima disso o credor está financiando a queima, não a tração.`,
+        en: `Total post-deal debt of ${brlM(totalOnBalance.plus(ask))} over ARR of ${brlM(arr!)}: ${debtToArr.times(100).toFixed(0)}% of ARR. Venture practice sits between 20% and 35%; above that the lender is funding burn, not traction.`,
+        values: {debtToArr: debtToArr.toFixed(4), arr: arr!.toFixed(2), debtPost: totalOnBalance.plus(ask).toFixed(2)},
+        inputs: ["interim_financials.arr", "debt.total_gross", "transaction.requested_amount"],
+      });
+    }
+    if (nrr && nrr.lt(1)) {
+      findings.push({
+        id: "nrr-below-par",
+        severity: "high",
+        pt: `Retenção líquida de receita de ${nrr.times(100).toFixed(0)}%: a base encolhe sem venda nova. Em venture debt a base é a garantia; abaixo de 100% o credor precifica churn, não crescimento.`,
+        en: `Net revenue retention of ${nrr.times(100).toFixed(0)}%: the base shrinks without new sales. In venture debt the base is the collateral; under 100% the lender prices churn, not growth.`,
+        values: {nrr: nrr.toFixed(4)},
+        inputs: ["company.net_revenue_retention"],
+      });
+    }
+    if (topShare && topShare.gt("0.20")) {
+      findings.push({
+        id: "customer-concentration",
+        severity: "high",
+        pt: `O maior cliente responde por ${topShare.times(100).toFixed(0)}% do MRR. Acima de 20% a perda de um contrato move o runway em meses, e o credor vai pedir o contrato e uma cláusula de vencimento antecipado ligada a ele.`,
+        en: `The largest customer is ${topShare.times(100).toFixed(0)}% of MRR. Above 20% losing one contract moves runway by months, and the lender will ask for the contract and an acceleration clause tied to it.`,
+        values: {topCustomerShare: topShare.toFixed(4)},
+        inputs: ["customers.top_customers.1.share_pct"],
       });
     }
   }
@@ -426,6 +567,8 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
       free: free.toFixed(2),
       askAgainstFree: askAgainstFree ? askAgainstFree.toFixed(4) : null,
     },
+    profile: burning ? "cash_burning" : "cash_generative",
+    runway,
     findings,
   };
 }

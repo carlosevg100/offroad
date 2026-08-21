@@ -273,3 +273,24 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
 | E1 classificação (camil) | tipo / classe | pendente | |
 | E3 extração (camil) | recall material / precisão | pendente | |
 
+## Venture debt e a Nimbus, 21/08/2026 (fim do dia)
+
+- **Sexto arquétipo** (`venture_debt`, PR #135): exigências, focos, riscos, estrutura e perguntas
+  de um credor de venture debt; capacidade = menor entre 30% do ARR e 35% da última rodada, nunca
+  múltiplo de EBITDA. Campos novos na ontologia (ARR, MRR, queima, runway, NRR, churn, última
+  rodada) e dois tipos de documento (`cap_table`, `metrics_report`). A migração também consertou
+  o check de `document_profiles`, que não conhecia `customer_concentration`; um teste agora lê
+  todas as migrações e cobra cada tipo e cada arquétipo.
+- **Nimbus** (quarto gold case, sintético): SaaS de Série A, 40 clientes × 24 meses de MRR com
+  semente fixa, cap table, gerencial, extrato; duas contradições (ARR do deck × export; runway
+  declarado × calculado). 81 campos.
+- **Mesa para quem queima caixa**: perfil `cash_burning` (sem turns, sem teste de covenant sobre
+  EBITDA negativo, sem trajetória de alavancagem); seção de runway (antes, depois, depois com o
+  serviço da própria dívida), dívida/ARR, NRR, concentração; leituras e perguntas próprias; bloco
+  "Runway e receita recorrente" nos materiais; métricas na tela. Índice TR lido.
+
+| medição | métrica | valor | custo |
+|---|---|---|---|
+| E1 classificação (camil) | tipo / classe / período | **100%** (3/3, 3/3, 2/2) | US$ 0,036 / 3 docs |
+| E3 extração (camil) | recall material / precisão | em execução | |
+
