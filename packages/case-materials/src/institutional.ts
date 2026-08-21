@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import type {CaseBrief} from "@offroad/case-understanding";
+import {covenantsFor, type InstrumentVerdict} from "@offroad/credit-playbook";
 import type {DeskAnalysis, InternalRating, StressScenario, Trajectory} from "@offroad/credit-analysis";
-import type {InstrumentVerdict} from "@offroad/credit-playbook";
 import type {CollateralPackage} from "@offroad/deal-structure";
 import type {IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
@@ -318,6 +318,17 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
           {type: "list" as const, items: termSheet.covenants.map((item) => bi(item, item))},
         ]
       : []),
+    // The clauses as an indenture writes them: definition, test and what a breach does. A term
+    // sheet that names a ratio has named nothing a lawyer can mark up.
+    {type: "heading", text: bi("Definições contratuais dos covenants", "Contractual definitions of the covenants")},
+    {
+      type: "kv",
+      rows: covenantsFor(termSheet.archetypeId).map((covenant) => ({
+        label: covenant.labels,
+        value: covenant.definition,
+        note: bi(`Aferição: ${covenant.test.pt} Descumprimento: ${covenant.breach.pt}${covenant.carveOuts.length ? ` Exceções: ${covenant.carveOuts.map((entry) => entry.pt).join(" ")}` : ""}`, `Test: ${covenant.test.en} Breach: ${covenant.breach.en}${covenant.carveOuts.length ? ` Carve-outs: ${covenant.carveOuts.map((entry) => entry.en).join(" ")}` : ""}`),
+      })),
+    },
     {type: "heading", text: bi("Condições precedentes", "Conditions precedent")},
     {
       type: "list",

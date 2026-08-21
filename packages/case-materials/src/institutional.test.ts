@@ -109,6 +109,16 @@ describe("compileMaterials", () => {
   });
 });
 
+describe("the term sheet's covenant definitions", () => {
+  it("writes each usual covenant as an indenture does: definition, test, breach", () => {
+    const sheet = termSheetDocument(shared)!;
+    const definitions = sheet.blocks.find((block) => block.type === "kv" && block.rows.some((row) => row.label.pt === "Dívida líquida / EBITDA" && row.value.pt.includes("Dívida líquida:")));
+    expect(definitions).toBeDefined();
+    if (definitions?.type !== "kv") return;
+    expect(definitions.rows.map((row) => row.label.pt)).toEqual(expect.arrayContaining(["Dívida líquida / EBITDA", "Limitação de nova dívida", "Mudança de controle"]));
+    expect(definitions.rows[0]!.note?.pt).toContain("Aferição:");
+  });
+});
 describe("the committee section of the memorandum", () => {
   it("carries the grade, the shocks, the papers and the security, with the rating in the key terms", () => {
     const rating = rateCredit({desk, trajectory, financialExpenses: "6140000", priorEbitda: "14924000", topCustomerShare: "0.181", evidenceRank: "1.8"});
