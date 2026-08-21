@@ -1,0 +1,146 @@
+[
+  {
+    "id": "revenue-2025",
+    "type": "source_conflict",
+    "severity": "critical",
+    "description": "A demonstração auditada tem rank 1; a carta arredonda e a projeção usa uma base preliminar.",
+    "keywords": [
+      "receita",
+      "191",
+      "190",
+      "193",
+      "divergencia",
+      "conflito"
+    ],
+    "evidenceDocuments": [
+      "02_Demonstracoes_Auditadas_2023_2025.pdf",
+      "01_Carta_CFO_Pedido_e_Racional.docx",
+      "08_Projecoes_2026_2030.xlsx"
+    ],
+    "expectedTreatment": "audited"
+  },
+  {
+    "id": "gross-debt",
+    "type": "source_conflict",
+    "severity": "critical",
+    "description": "O mapa de dívida não inclui o arrendamento mercantil que o balanço reconhece.",
+    "keywords": [
+      "divida",
+      "arrendamento",
+      "leasing",
+      "45.320",
+      "38.500",
+      "divergencia"
+    ],
+    "evidenceDocuments": [
+      "02_Demonstracoes_Auditadas_2023_2025.pdf",
+      "04_Mapa_Divida_Jul2026.xlsx"
+    ],
+    "expectedTreatment": "balance_sheet"
+  },
+  {
+    "id": "requested-amount",
+    "type": "source_conflict",
+    "severity": "high",
+    "description": "Nenhuma fonte tem precedência sobre a outra: é o que a empresa quer, e ela disse duas coisas.",
+    "keywords": [
+      "valor solicitado",
+      "40",
+      "42,3",
+      "42.300",
+      "divergencia"
+    ],
+    "evidenceDocuments": [
+      "01_Carta_CFO_Pedido_e_Racional.docx",
+      "06_Memorial_CD_Jacarei.pdf"
+    ],
+    "expectedTreatment": "ask_the_company"
+  },
+  {
+    "id": "missing-1",
+    "type": "missing",
+    "severity": "high",
+    "description": "Balanço revisado por auditor independente para 2026. Só há balancete gerencial de julho.",
+    "keywords": [
+      "balanço",
+      "revisado",
+      "auditor",
+      "independente"
+    ],
+    "evidenceDocuments": [],
+    "expectedTreatment": "ask_the_company"
+  },
+  {
+    "id": "missing-2",
+    "type": "missing",
+    "severity": "high",
+    "description": "Licença ambiental prévia do CD de Jacareí. O memorial cita o protocolo, não a licença.",
+    "keywords": [
+      "licença",
+      "ambiental",
+      "prévia",
+      "jacareí"
+    ],
+    "evidenceDocuments": [],
+    "expectedTreatment": "ask_the_company"
+  },
+  {
+    "id": "missing-3",
+    "type": "missing",
+    "severity": "medium",
+    "description": "Aging da carteira de recebíveis. O saldo aparece, a composição por vencimento não.",
+    "keywords": [
+      "aging",
+      "carteira",
+      "recebíveis"
+    ],
+    "evidenceDocuments": [],
+    "expectedTreatment": "ask_the_company"
+  },
+  {
+    "id": "missing-4",
+    "type": "missing",
+    "severity": "medium",
+    "description": "Contratos dos dois maiores clientes. A concentração é declarada, o contrato não foi anexado.",
+    "keywords": [
+      "contratos",
+      "maiores",
+      "clientes"
+    ],
+    "evidenceDocuments": [],
+    "expectedTreatment": "ask_the_company"
+  },
+  {
+    "id": "scale-trap",
+    "type": "quality",
+    "severity": "critical",
+    "description": "As demonstrações auditadas estão em milhares de reais e o balancete gerencial em reais. Misturar as duas escalas erra por um fator de mil, e é o erro mais caro que este produto pode cometer.",
+    "keywords": [
+      "milhares",
+      "escala",
+      "unidade",
+      "mil"
+    ],
+    "evidenceDocuments": [
+      "02_Demonstracoes_Auditadas_2023_2025.pdf",
+      "03_Balancete_Gerencial_Jul2026.xls"
+    ],
+    "expectedTreatment": "normalize_to_units"
+  },
+  {
+    "id": "customer-concentration",
+    "type": "plausibility",
+    "severity": "high",
+    "description": "O maior cliente responde por 18.1% da receita, e os cinco maiores por 47.6%.",
+    "keywords": [
+      "concentracao",
+      "cliente",
+      "18,1",
+      "vertical"
+    ],
+    "evidenceDocuments": [
+      "05_Concentracao_Clientes_2025.xlsx"
+    ],
+    "expectedTreatment": "flag_to_reviewer"
+  }
+]
