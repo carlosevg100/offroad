@@ -1,6 +1,7 @@
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {assessReadiness, auditBrief, buildBriefInput, deskEvidence, BRIEF_SYSTEM, caseBriefSchema, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
 import {compileMaterials, type Material} from "@offroad/case-materials";
+import {dataRoomIndex, planDataRoom, type DataRoomDocument, type DataRoomPlan} from "@offroad/data-room";
 import {archetype, type ArchetypeId, type ClassifiedDocument} from "@offroad/credit-playbook";
 import {assessCapacity, buildTermSheet, type CapacityAssessment, type IndicativeTermSheet} from "@offroad/deal-structure";
 import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@offroad/reconciliation";
@@ -55,6 +56,8 @@ export type CaseState = {
   materials: Material[];
   /** Why materials are absent, when they are. */
   materialsBlockedBy: string[];
+  /** What leaves the desk, behind which gate, and what holds it. */
+  dataRoom: DataRoomPlan | null;
 };
 
 /** Facts the case is expected to carry, per operation — drives the material-gaps component. */
@@ -115,6 +118,31 @@ async function loadClassified(supabase: SupabaseClient<Database>, organizationId
   return (profiles ?? []).map((profile) => ({
     id: profile.source_document_id,
     kind: profile.document_kind as ClassifiedDocument["kind"],
+  }));
+}
+
+/** The files as the room needs them: name, kind, and whether the bytes were verified. */
+async function loadRoomDocuments(supabase: SupabaseClient<Database>, organizationId: string, sessionId: string): Promise<DataRoomDocument[]> {
+  const {data: documents} = await supabase
+    .from("source_documents")
+    .select("id, original_name, sha256, sha256_verified_at, byte_size")
+    .eq("organization_id", organizationId)
+    .eq("intake_session_id", sessionId);
+  const rows = documents ?? [];
+  if (rows.length === 0) return [];
+  const {data: profiles} = await supabase
+    .from("document_profiles")
+    .select("source_document_id, document_kind")
+    .eq("organization_id", organizationId)
+    .in("source_document_id", rows.map((document) => document.id));
+  const kindOf = new Map((profiles ?? []).map((profile) => [profile.source_document_id, profile.document_kind as DataRoomDocument["kind"]]));
+  return rows.map((document) => ({
+    id: document.id,
+    kind: kindOf.get(document.id) ?? null,
+    originalName: document.original_name,
+    sha256: document.sha256,
+    sha256VerifiedAt: document.sha256_verified_at,
+    byteSize: document.byte_size,
   }));
 }
 
@@ -445,7 +473,20 @@ export async function buildCaseState(input: {
 
   const clientQuestions = questionsForCompany(desk, trajectory, deskInputs.missing);
 
-  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, brief, briefBlockedBy, materials, materialsBlockedBy};
+  // The room is planned even when no material exists yet: the analyst then sees a room of
+  // holds and requests, which is the honest state. Disclosure of the company's name is not
+  // granted at intake today, so nothing beyond the teaser is placed before the NDA.
+  const dataRoom = planDataRoom({
+    materials,
+    materialsBlockedBy,
+    documents: await loadRoomDocuments(supabase, organizationId, sessionId),
+    exceptions: reconciliation.exceptions,
+    readiness,
+    disclosureAuthorised: false,
+  });
+  materials = [...materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
+
+  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, brief, briefBlockedBy, materials, materialsBlockedBy, dataRoom};
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */
