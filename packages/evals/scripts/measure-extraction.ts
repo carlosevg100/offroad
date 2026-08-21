@@ -198,13 +198,18 @@ const snapshot: ExtractionSnapshot = {
   documents: gold.manifest.documents.map((entry) => entry.name),
   profiles,
   candidates,
-  exceptions: reconciliation.exceptions.map((exception) => ({
-    ruleId: exception.ruleId,
-    type: exception.type,
-    severity: exception.severity,
-    title: exception.title,
-    description: exception.description,
-  })),
+  exceptions: [
+    ...reconciliation.exceptions.map((exception) => ({
+      ruleId: exception.ruleId,
+      type: exception.type,
+      severity: exception.severity,
+      title: exception.title,
+      description: exception.description,
+    })),
+    // A gap the reconciliation names (a missing document, a missing material fact) is an
+    // exception the gold may expect; scoring only the rules would hide whether it was seen.
+    ...reconciliation.gaps.map((gap) => ({type: "missing", severity: gap.severity, title: gap.title, description: gap.description})),
+  ],
   calculations: reconciliation.calculations.map((calculation) => ({id: calculation.id, value: calculation.value})),
   usage,
 };

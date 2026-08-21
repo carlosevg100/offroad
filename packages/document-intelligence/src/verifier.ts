@@ -186,6 +186,16 @@ const monthsBetween = (start: string, end: string): number => {
  */
 export function canonicalPeriodPath(fieldPath: string, period: {start: string; end: string} | undefined): string {
   if (!period) return fieldPath;
+  // Nimbus measured this: ARR at 31/07/2026 came back as `historical_financials.2026.arr`. A
+  // period that is not a full year belongs to the interim group, whatever the model wrote, and
+  // so does a balance at a month that is not a year-end.
+  const spanMonths = period.start === period.end ? null : monthsBetween(period.start, period.end);
+  const endMonth = period.end.slice(5, 7);
+  const looksInterim = spanMonths !== null ? spanMonths < 12 : endMonth !== "12";
+  const historicalMatch = fieldPath.match(/^historical_financials\.(\d{4})(?:_\d{2})?\.([a-z_]+?)(?:_\d+m|_ytd|_ltm)?$/);
+  if (historicalMatch && looksInterim) {
+    fieldPath = `interim_financials.${period.end.slice(0, 4)}.${historicalMatch[2]}`;
+  }
   const interim = fieldPath.match(/^interim_financials\.(\d{4})(?:_(\d{2}))?\.([a-z_]+?)(?:_\d+m|_ytd|_ltm)?$/);
   if (interim) {
     const metric = interim[3]!;
