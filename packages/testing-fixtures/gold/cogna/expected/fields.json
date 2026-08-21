@@ -1,0 +1,604 @@
+[
+  {
+    "fieldPath": "company.legal_name",
+    "value": "Cogna Educação S.A.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf"
+  },
+  {
+    "fieldPath": "company.reporting_currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf"
+  },
+  {
+    "fieldPath": "company.sector",
+    "value": "Educação",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf"
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.revenue_3m",
+    "value": "1960700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-04-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.revenue_6m",
+    "value": "4106900000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.adjusted_ebitda_3m",
+    "value": "589400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-04-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "EBITDA recorrente, a medida que a companhia destaca."
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.adjusted_ebitda_6m",
+    "value": "1269000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.net_income_3m",
+    "value": "148900000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-04-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.net_income_6m",
+    "value": "290300000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.d_and_a_3m",
+    "value": "234144000",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-04-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.d_and_a_6m",
+    "value": "466371000",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.capex_3m",
+    "value": "150332000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-04-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.capex_6m",
+    "value": "272383000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.free_cash_flow_3m",
+    "value": "251871000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-04-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Geração de caixa livre após capex e juros, definição da companhia."
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.free_cash_flow_6m",
+    "value": "504330000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.financial_expenses_3m",
+    "value": "143065000",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodStart": "2026-04-01",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Juros pagos no trimestre, a linha que o release traz; a despesa competência fica no ITR."
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.cash",
+    "value": "1431485000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Total de disponibilidades: caixa, equivalentes e títulos, como a companhia define."
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.receivables",
+    "value": "2763024000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Circulante; há mais R$ 143.765 mil no realizável a longo prazo."
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.inventory",
+    "value": "500460000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.payables",
+    "value": "715101000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Fornecedores; o risco sacado (R$ 678.726 mil) é linha à parte."
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.gross_debt",
+    "value": "3926827000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Empréstimos, financiamentos e debêntures; arrendamentos (R$ 2,76 bi) fora, como a companhia apura."
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.net_debt",
+    "value": "2775379000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.equity",
+    "value": "13744284000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_06.total_assets",
+    "value": "24534326000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.1.lender",
+    "value": "Debêntures (circulante)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.instruments.1.instrument_type",
+    "value": "Debênture",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.1.balance",
+    "value": "203029000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.2.lender",
+    "value": "Debêntures (não circulante)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.instruments.2.instrument_type",
+    "value": "Debênture",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.balance",
+    "value": "3022963000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.3.lender",
+    "value": "Empréstimos e financiamentos (circulante)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.instruments.3.instrument_type",
+    "value": "Empréstimo bancário",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.balance",
+    "value": "106331000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.4.lender",
+    "value": "Empréstimos e financiamentos (não circulante)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.instruments.4.instrument_type",
+    "value": "Empréstimo bancário",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.balance",
+    "value": "594504000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.total_gross",
+    "value": "3926827000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.maturity_profile.1.window",
+    "value": "2026",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.1.amount",
+    "value": "254000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Gráfico do cronograma de amortização, R$ milhões."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.2.window",
+    "value": "2027",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.2.amount",
+    "value": "413000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Gráfico do cronograma de amortização, R$ milhões."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.3.window",
+    "value": "2028",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.3.amount",
+    "value": "2140000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Gráfico do cronograma de amortização, R$ milhões."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.4.window",
+    "value": "2029",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.4.amount",
+    "value": "811000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Gráfico do cronograma de amortização, R$ milhões."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.5.window",
+    "value": "2030 em diante",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.5.amount",
+    "value": "309000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Gráfico do cronograma de amortização, R$ milhões."
+  },
+  {
+    "fieldPath": "debt.covenants.1.metric",
+    "value": "Dívida líquida / EBITDA ajustado",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "note": "Apurado conforme as escrituras: dívida líquida inclui contas a pagar de aquisições; EBITDA ajustado soma itens não recorrentes e provisões sem caixa."
+  },
+  {
+    "fieldPath": "leverage.pre_transaction_net_debt_ebitda",
+    "value": "1.10",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_Release_Resultados_2T26.pdf",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "fieldPath": "transaction.requested_amount",
+    "value": "1800000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Pedido_Simulado_Debentures_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Pedido_Simulado_Debentures_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.desired_term_months",
+    "value": "84",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Pedido_Simulado_Debentures_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.desired_grace_months",
+    "value": "36",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Pedido_Simulado_Debentures_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.preferred_structure",
+    "value": "Debêntures simples, não conversíveis",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Pedido_Simulado_Debentures_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.refinancing",
+    "value": "1800000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Pedido_Simulado_Debentures_2026.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.1.item",
+    "value": "Resgate antecipado das debêntures com vencimento em 2028",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Pedido_Simulado_Debentures_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.1.amount",
+    "value": "1800000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Pedido_Simulado_Debentures_2026.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  }
+]
