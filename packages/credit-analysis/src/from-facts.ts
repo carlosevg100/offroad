@@ -176,6 +176,18 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
     : companyProjections;
   const nextRevenue = latest ? value(`projections.${latest + 1}.revenue`) : undefined;
 
+  // ---- the amortisation profile, by window ---------------------------------------------------
+  const profileGroups = indexed(facts, "debt.maturity_profile");
+  const maturityProfile = [...profileGroups.entries()]
+    .sort(([a], [b]) => a - b)
+    .flatMap(([, group]) => {
+      const window = group.get("window");
+      const amount = group.get("amount");
+      if (!window || !amount) return [];
+      const endsOn = windowEnd(window);
+      return [{window, amount, ...(endsOn ? {endsOn} : {})}];
+    });
+
   // ---- what a venture lender reads -----------------------------------------------------------
   const latestOf = (metric: string): string | undefined =>
     facts
@@ -221,6 +233,7 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
         debt,
         ...(companyCovenants.length > 0 ? {covenants: companyCovenants} : {}),
         ...(hasVenture ? {venture} : {}),
+        ...(maturityProfile.length > 0 ? {maturityProfile} : {}),
         request: {
           amounts,
           ...(termMonths !== undefined ? {termMonths} : {}),
@@ -286,6 +299,27 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
 
   return {desk, trajectory, missing};
 }
+
+const MONTHS: Record<string, number> = {jan: 1, fev: 2, feb: 2, mar: 3, abr: 4, apr: 4, mai: 5, may: 5, jun: 6, jul: 7, ago: 8, aug: 8, set: 9, sep: 9, out: 10, oct: 10, nov: 11, dez: 12, dec: 12};
+
+/**
+ * The last month of a window as a note writes it: "Jun/26 a Mai/27" → 2027-05-31, "2028" →
+ * 2028-12-31, "Jun/28 a Mai/29" → 2029-05-31. "Após Jun/31" has no end and returns undefined,
+ * which keeps it out of every "within N months" sum, as it should be.
+ */
+export const windowEnd = (window: string): string | undefined => {
+  const text = window.trim().toLowerCase();
+  if (/^(após|apos|after|a partir)/.test(text)) return undefined;
+  const monthYear = [...text.matchAll(/([a-zç]{3})[a-zç]*\.?\/?\s*(\d{2,4})/g)];
+  const last = monthYear.at(-1);
+  if (last && MONTHS[last[1]!]) {
+    const year = last[2]!.length === 2 ? 2000 + Number(last[2]) : Number(last[2]);
+    return `${year}-${String(MONTHS[last[1]!]).padStart(2, "0")}-28`;
+  }
+  const year = text.match(/(20\d{2})(?!.*20\d{2})/);
+  if (year) return `${year[1]}-12-31`;
+  return undefined;
+};
 
 const numberOf = (raw: string | undefined): number | undefined => {
   if (raw === undefined) return undefined;

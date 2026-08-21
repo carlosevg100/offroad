@@ -71,6 +71,12 @@ export type DeskInput = {
   };
   debt: DebtLineInput[];
   /**
+   * Principal due per window, the way a note prints it ("Jun/26 a Mai/27: 1.229.828"). Listed
+   * companies disclose this and rarely disclose maturities per line; when the lines carry no
+   * dates, the wall is read from here.
+   */
+  maturityProfile?: Array<{window: string; amount: string; endsOn?: string}>;
+  /**
    * Covenants the room states for the company as a whole rather than per line, the way a
    * listed company's notes do ("os principais instrumentos estão sujeitos a Dívida líquida /
    * EBITDA ≤ 4,0x"). They bind the stack, not one lender, and are labelled by their scope.
@@ -243,9 +249,16 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
     : null;
   const weightedSpread = weightedCost ? weightedCost.minus(cdi) : null;
 
-  const maturing24 = lines
+  const maturingFromLines = lines
     .filter((line) => line.maturity !== undefined && monthsBetween(input.referenceDate, line.maturity) <= 24)
     .reduce((sum, line) => sum.plus(line.balance), ZERO);
+  // The profile wins when the lines cannot speak: a line without a maturity is not a line that
+  // never matures, and a note that says "Jun/26 a Mai/27: 1.229.828" has already done the sum.
+  const linesWithDates = lines.filter((line) => line.maturity !== undefined).length;
+  const profileWithin24 = (input.maturityProfile ?? [])
+    .filter((entry) => entry.endsOn !== undefined && monthsBetween(input.referenceDate, entry.endsOn) <= 24)
+    .reduce((sum, entry) => sum.plus(entry.amount), ZERO);
+  const maturing24 = linesWithDates < lines.length && profileWithin24.gt(maturingFromLines) ? profileWithin24 : maturingFromLines;
 
   if (scheduleGap.abs().gt(totalOnBalance.times("0.02"))) {
     findings.push({
@@ -319,7 +332,7 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
   }
 
   if (maturing24.gt(0) && totalSchedule.gt(0)) {
-    const share = maturing24.div(totalSchedule);
+    const share = Decimal.min(maturing24.div(totalSchedule), 1);
     if (share.gte("0.4")) {
       findings.push({
         id: "maturity-wall",

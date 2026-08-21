@@ -242,6 +242,8 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("debt.instruments.{i}.grace_months", "debt", "number", "months", "material", "Carência", "Grace", [], []),
   f("debt.instruments.{i}.collateral", "debt", "text", "text", "material", "Garantia", "Collateral", ["garantias"], []),
   f("debt.instruments.{i}.covenants", "debt", "list", "list", "material", "Covenants", "Covenants", [], []),
+  f("debt.maturity_profile.{i}.window", "debt", "text", "text", "material", "Cronograma de amortização: janela", "Maturity profile: window", ["cronograma de amortizações", "vencimento por ano", "ano safra", "parcelas de empréstimos"], ["maturity profile", "amortisation schedule"]),
+  f("debt.maturity_profile.{i}.amount", "debt", "number", "money", "material", "Cronograma de amortização: valor", "Maturity profile: amount", [], []),
   f("debt.total_gross", "debt", "number", "money", "material", "Dívida bruta total (mapa)", "Total gross debt (schedule)", [], []),
   f("debt.total_secured", "debt", "number", "money", "material", "Dívida garantida", "Secured debt", [], []),
   f("debt.covenants.{i}.metric", "debt", "text", "text", "material", "Covenant: métrica", "Covenant: metric", [], []),
