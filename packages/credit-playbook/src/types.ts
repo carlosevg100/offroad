@@ -29,6 +29,7 @@ export const archetypeIdSchema = z.enum([
   "acquisition",
   "refinance",
   "equipment_finance",
+  "venture_debt",
   "other",
 ]);
 export type ArchetypeId = z.infer<typeof archetypeIdSchema>;

@@ -55,6 +55,7 @@ function expectedMaterialFields(archetypeId: ArchetypeId): string[] {
     working_capital: ["collateral.receivables_capacity"],
     acquisition: ["leverage.post_transaction_net_debt_ebitda"],
     equipment_finance: ["project.total_cost"],
+    venture_debt: ["company.runway_months", "company.last_equity_round.amount"],
   };
   return [...base, ...(perArchetype[archetypeId] ?? [])];
 }
@@ -262,9 +263,16 @@ export async function buildCaseState(input: {
 
   if (requested) {
     const cfads = number(calculationOf("adjusted_ebitda"));
+    // Venture debt sizes against recurring revenue and the last round, not EBITDA.
+    const latestArr = reconciliation.facts
+      .filter((fact) => /^(historical|interim)_financials\.\d{4}(_\d{2})?\.arr(_\d+m|_ytd|_ltm)?$/.test(fact.key.fieldPath))
+      .sort((a, b) => b.key.fieldPath.localeCompare(a.key.fieldPath))[0]?.value;
+    const lastRound = valueOf("company.last_equity_round.amount");
     capacity = assessCapacity({
       archetypeId,
       requested,
+      ...(number(latestArr) ? {arr: latestArr!} : {}),
+      ...(number(lastRound) ? {lastEquityRound: lastRound!} : {}),
       ...(cfads ? {cfads} : {}),
       ...(number(calculationOf("adjusted_ebitda")) ? {adjustedEbitda: calculationOf("adjusted_ebitda")!} : {}),
       ...(number(calculationOf("net_debt")) ? {existingNetDebt: calculationOf("net_debt")!} : {}),

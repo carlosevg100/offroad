@@ -54,6 +54,7 @@ const expectedFields: Record<ArchetypeId, readonly string[]> = {
   refinance: ["transaction.requested_amount", "debt.total_gross", "debt.instruments.1.maturity", "debt.instruments.1.rate"],
   acquisition: ["transaction.requested_amount", "debt.total_gross", "leverage.post_transaction_net_debt_ebitda"],
   equipment_finance: ["transaction.requested_amount", "project.total_cost", "collateral.assets.1.appraisal_value"],
+  venture_debt: ["transaction.requested_amount", "company.runway_months", "company.net_revenue_retention", "company.last_equity_round.amount"],
   other: ["transaction.requested_amount", "debt.total_gross"],
 };
 

@@ -132,7 +132,9 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
       ? {pt: "a geração de caixa", en: "cash generation"}
       : input.capacity.bindingConstraint === "collateral"
         ? {pt: "a capacidade de garantias", en: "collateral capacity"}
-        : {pt: "o apetite de mercado", en: "market appetite"};
+        : input.capacity.bindingConstraint === "arr_and_round"
+          ? {pt: "a fração do ARR e da última rodada", en: "the fraction of ARR and of the last round"}
+          : {pt: "o apetite de mercado", en: "market appetite"};
 
   terms.push({
     id: "amount",
