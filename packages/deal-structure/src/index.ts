@@ -13,3 +13,4 @@ export const dealStructureVersion = "2026.08.20-v1";
 export * from "./capacity";
 export * from "./termsheet";
 export * from "./market";
+export * from "./collateral";
