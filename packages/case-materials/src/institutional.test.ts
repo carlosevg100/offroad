@@ -106,3 +106,14 @@ describe("compileMaterials", () => {
     expect(outcome.materials.map((material) => material.kind)).toEqual(["teaser", "credit_profile", "package"]);
   });
 });
+
+describe("the term sheet's covenant definitions", () => {
+  it("writes each usual covenant as an indenture does: definition, test, breach", () => {
+    const sheet = termSheetDocument(shared)!;
+    const definitions = sheet.blocks.find((block) => block.type === "kv" && block.rows.some((row) => row.label.pt === "Dívida líquida / EBITDA" && row.value.pt.includes("Dívida líquida:")));
+    expect(definitions).toBeDefined();
+    if (definitions?.type !== "kv") return;
+    expect(definitions.rows.map((row) => row.label.pt)).toEqual(expect.arrayContaining(["Dívida líquida / EBITDA", "Limitação de nova dívida", "Mudança de controle"]));
+    expect(definitions.rows[0]!.note?.pt).toContain("Aferição:");
+  });
+});

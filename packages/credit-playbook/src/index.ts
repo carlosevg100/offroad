@@ -14,3 +14,4 @@ export * from "./types";
 export * from "./archetypes";
 export * from "./sufficiency";
 export * from "./instruments";
+export * from "./covenants";
