@@ -124,3 +124,21 @@ describe("which tables deserve a pass per row", () => {
     expect(tableRowPasses(indexLayer(layer)).length).toBe(6);
   });
 });
+
+describe("instrument numbers across tables", () => {
+  it("keeps counting from one table into the next", async () => {
+    const {documentLayerSchema, indexLayer} = await import("@offroad/document-intelligence");
+    const table = (id: string, rows: string[][]) => ({
+      id, header: ["Credor", "Saldo", "Vencimento"], rows: rows.map((cells, r) => ({id: `${id}.r${r + 1}`, cells: cells.map((text, c) => ({id: `${id}.r${r + 1}.c${c + 1}`, text}))})),
+    });
+    const layer = documentLayerSchema.parse({
+      documentId: "d", documentVersion: 1, kind: "pdf", parserVersion: "t", scaleDeclarations: [], stats: {},
+      pages: [{n: 1, scanned: false, blocks: [], tables: [
+        table("p1.t1", [["Itaú", "1.000", "2027-01-01"], ["Bradesco", "2.000", "2028-01-01"], ["Santander", "3.000", "2029-01-01"]]),
+        table("p1.t2", [["BTG", "4.000", "2027-06-01"], ["Safra", "5.000", "2028-06-01"], ["Daycoval", "6.000", "2029-06-01"]]),
+      ]}],
+    });
+    const passes = tableRowPasses(indexLayer(layer));
+    expect(passes.map((pass) => pass.instance)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+});

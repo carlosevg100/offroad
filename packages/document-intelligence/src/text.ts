@@ -67,7 +67,8 @@ export function parseNumber(raw: string, localeHint: "pt-BR" | "en-US" = "pt-BR"
   }
 
   const parenthesized = /^\s*\(.*\)\s*$/.test(cleaned) || /\(\s*[\d.,]+\s*\)/.test(cleaned);
-  const match = /[-−–]?\s?\d[\d.,]*/.exec(cleaned.replace(/\(([^)]*)\)/g, "$1"));
+  // A multiplier suffix ("4,0x", "3.0 x") is a unit, the way "%" is; the digits are the value.
+  const match = /[-−–]?\s?\d[\d.,]*/.exec(cleaned.replace(/\(([^)]*)\)/g, "$1").replace(/(\d)\s?x\b/i, "$1"));
   if (!match) return null;
   let token = match[0].replace(/\s+/g, "").replace(/[.,]+$/, "");
   let negative = parenthesized || /^[-−–]/.test(token) || /^\s*[-−–]/.test(cleaned);
