@@ -297,6 +297,8 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
 | E3 extração (nimbus) | recall material / precisão / alucinação | 73,4% (47/64) / 79,8% / **0%** | US$ 0,71 / 14 chamadas |
 | E3 extração (nimbus, após #141) | recall material / precisão / alucinação | **85,9%** (55/64) / 85,6% / **0%** | US$ 0,91 / 15 chamadas |
 | E3 extração (camil, antes de #143) | recall material / precisão / alucinação | 11,1% (15/135) / 50,0% / 0% | US$ 14,32 / 1.575 chamadas / 2h19 |
+| E3 extração (nimbus, após #143) | recall material / precisão / alucinação | **92,2%** (59/64) / 87,4% / **0%** | US$ 0,92 / 15 chamadas |
+| E3 extração (camil, após #143) | recall material / precisão / alucinação | 39,3% (53/135) / 66,7% / 0% | US$ 5,32 / 246 chamadas / 15 min |
 
 ## Mapa de entrega, perfil de vencimentos e simulações, 21/08/2026 (noite)
 
@@ -329,4 +331,8 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
   dívida (a nota 15 rendeu zero instrumentos porque nunca foi pedida). Passadas por linha só em
   tabelas com duas palavras do vocabulário dos campos indexados (eram 913 passadas no ITR).
   Re-medição da Camil disparada depois do merge.
+- **Segunda rodada de medições** (noite): Nimbus é o primeiro caso a passar o gate de recall
+  (92,2%); Camil subiu de 11% para 39% e caiu de US$ 14 / 2h19 para US$ 5 / 15 min. O que
+  sobrou na Camil é numeração de instrumentos reiniciando a cada tabela (#144), as tabelas dos
+  comentários dos diretores (R$ mn, colunas fev-25/fev-26) e o covenant em prosa.
 
