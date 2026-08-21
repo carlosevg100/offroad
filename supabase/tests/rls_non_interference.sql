@@ -682,9 +682,26 @@ begin
     raise exception 'worker did not persist the profile and the layer';
   end if;
 
-  result := public.worker_complete_job(job_id, capability, '{"documents":1}'::jsonb);
+  result := public.worker_complete_job(job_id, capability, '{"documents":1, "spend": {"costUsd": 0.42, "calls": 3}}'::jsonb);
   if (result->>'pending_jobs')::integer <> 0 then
     raise exception 'run still had pending jobs after the only job completed';
+  end if;
+
+  -- The assertion that was missing, and the reason a regression got all the way to production
+  -- unnoticed: the run finishing is not the point, the session becoming reviewable is. Without
+  -- this, a company uploads its data room, every fact is extracted correctly, and the screen
+  -- shows a spinner forever because the session never leaves `processing`.
+  if (select status from public.document_intake_sessions
+      where organization_id = '20000000-0000-4000-8000-000000000001'
+        and id = '40000000-0000-4000-8000-000000000003') <> 'review_ready' then
+    raise exception 'the last job did not move the session to review_ready';
+  end if;
+
+  -- And what it cost is on the run, not only in a log line.
+  if (select model_cost_usd from public.processing_runs
+      where organization_id = '20000000-0000-4000-8000-000000000001'
+        and id = (select processing_run_id from public.processing_jobs where id = job_id)) <> 0.42 then
+    raise exception 'the run did not record what the job spent';
   end if;
 
   -- the capability dies with the job
