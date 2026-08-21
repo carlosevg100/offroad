@@ -169,6 +169,9 @@ importers:
       '@offroad/case-understanding':
         specifier: workspace:*
         version: link:../case-understanding
+      '@offroad/credit-analysis':
+        specifier: workspace:*
+        version: link:../credit-analysis
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../credit-playbook

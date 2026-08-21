@@ -10,3 +10,4 @@ export * from "./parse";
 export * from "./analyze";
 export * from "./trajectory";
 export * from "./from-facts";
+export * from "./questions";
