@@ -1140,7 +1140,9 @@
       "shortfall": "{amount} of eligible value short.",
       "haircut": "haircut",
       "policy": "policy",
-      "eligible": "eligible"
+      "eligible": "eligible",
+      "priceTitle": "Indicative price (internal; the term sheet carries no rate)",
+      "to": "to"
     }
   }
 }

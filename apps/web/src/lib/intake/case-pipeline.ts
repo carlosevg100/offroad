@@ -13,6 +13,7 @@ import {reportServerFailure} from "@/lib/observability/report";
 import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, questionsForCompany, rateCredit, stressTable, type ClientQuestion, type DeskAnalysis, type InternalRating, type StressScenario, type Trajectory} from "@offroad/credit-analysis";
 import {instrumentVerdicts, type InstrumentVerdict, type LegalForm} from "@offroad/credit-playbook";
 import {designCollateralPackage, type CollateralAsset, type CollateralPackage} from "@offroad/deal-structure";
+import {indicativePrice, type IndicativePrice, type PricedInstrument} from "@offroad/market-reference";
 
 /**
  * The case, end to end: reconcile, size, structure, write, compile.
@@ -46,6 +47,8 @@ export type CaseState = {
   stress: StressScenario[];
   instruments: InstrumentVerdict[];
   collateral: CollateralPackage | null;
+  /** The desk's indicative price for the internal documents; the term sheet stays silent on purpose. */
+  price: IndicativePrice | null;
   brief: CaseBrief | null;
   /** Why the brief is absent, when it is. */
   briefBlockedBy: string[];
@@ -362,6 +365,18 @@ export async function buildCaseState(input: {
   }
   const collateral = requested && collateralAssets.length > 0 ? designCollateralPackage({assets: collateralAssets, amount: requested}) : null;
 
+  const preferredInstrument = instruments.find((verdict) => verdict.eligible)?.instrument.id as PricedInstrument | undefined;
+  const price = rating && preferredInstrument && requested
+    ? indicativePrice({
+        instrument: preferredInstrument,
+        rating: rating.band,
+        cdi: "0.105",
+        amount: requested,
+        ...(dealBrief.requestedTermMonths !== undefined ? {tenorMonths: dealBrief.requestedTermMonths} : number(valueOf("transaction.desired_term_months")) ? {tenorMonths: Number(valueOf("transaction.desired_term_months"))} : {}),
+        ...(collateral ? {collateralCoverage: collateral.coverageAchieved} : {}),
+      })
+    : null;
+
   // ---- write and compile ---------------------------------------------------------------------
   //
   // Everything above this line is arithmetic over facts already in the database and costs
@@ -420,6 +435,7 @@ export async function buildCaseState(input: {
       stress,
       instruments,
       ...(collateral ? {collateral} : {}),
+      ...(price ? {price} : {}),
     });
     if (compiled.ok) materials = compiled.materials;
     else materialsBlockedBy = compiled.detail;
@@ -429,7 +445,7 @@ export async function buildCaseState(input: {
 
   const clientQuestions = questionsForCompany(desk, trajectory, deskInputs.missing);
 
-  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, brief, briefBlockedBy, materials, materialsBlockedBy};
+  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, brief, briefBlockedBy, materials, materialsBlockedBy};
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */

@@ -3,6 +3,7 @@ import {getTranslations} from "next-intl/server";
 import type {InternalRating, StressScenario} from "@offroad/credit-analysis";
 import type {InstrumentVerdict} from "@offroad/credit-playbook";
 import type {CollateralPackage} from "@offroad/deal-structure";
+import type {IndicativePrice} from "@offroad/market-reference";
 
 type Props = {
   locale: string;
@@ -10,6 +11,7 @@ type Props = {
   stress: StressScenario[];
   instruments: InstrumentVerdict[];
   collateral: CollateralPackage | null;
+  price?: IndicativePrice | null;
 };
 
 const asLocale = (locale: string) => (locale === "en-US" ? "en" : "pt") as "pt" | "en";
@@ -22,7 +24,7 @@ const turns = (value: string | null, locale: string) => (value === null ? null :
  * profile admits and the security package. All arithmetic over the battery; nothing here is
  * written by a model, and every factor shows the band it fell in so the grade can be argued.
  */
-export async function IntakeCommittee({locale, rating, stress, instruments, collateral}: Props) {
+export async function IntakeCommittee({locale, rating, stress, instruments, collateral, price = null}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.committee"});
   const lang = asLocale(locale);
   if (!rating && stress.length === 0 && instruments.length === 0 && !collateral) return null;
@@ -95,6 +97,16 @@ export async function IntakeCommittee({locale, rating, stress, instruments, coll
               </li>
             ))}
           </ul>
+        </section>
+      ) : null}
+
+      {price ? (
+        <section className="case-committee__price">
+          <h4>{t("priceTitle")}</h4>
+          <p className="case-committee__priceRange">
+            CDI + {(price.bps.min / 100).toLocaleString(intl(locale), {minimumFractionDigits: 2, maximumFractionDigits: 2})}% {t("to")} CDI + {(price.bps.max / 100).toLocaleString(intl(locale), {minimumFractionDigits: 2, maximumFractionDigits: 2})}% a.a.
+          </p>
+          <p className="case-desk__note">{price.sentence[lang]}</p>
         </section>
       ) : null}
 

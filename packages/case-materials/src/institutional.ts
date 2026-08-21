@@ -3,6 +3,7 @@ import type {CaseBrief} from "@offroad/case-understanding";
 import type {DeskAnalysis, InternalRating, StressScenario, Trajectory} from "@offroad/credit-analysis";
 import type {InstrumentVerdict} from "@offroad/credit-playbook";
 import type {CollateralPackage} from "@offroad/deal-structure";
+import type {IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
@@ -46,6 +47,7 @@ export type InstitutionalInput = {
   stress?: StressScenario[];
   instruments?: InstrumentVerdict[];
   collateral?: CollateralPackage;
+  price?: IndicativePrice;
 };
 
 const termValue = (termSheet: IndicativeTermSheet | undefined, id: string) =>
@@ -75,6 +77,15 @@ export function committeeSection(input: InstitutionalInput): MaterialBlock[] {
     blocks.push({type: "heading", text: bi("Instrumentos", "Instruments")});
     blocks.push({type: "kv", caption: bi("Papéis que o perfil admite", "Papers the profile admits"), rows: open.map((verdict) => ({label: verdict.instrument.labels, value: bi(`${verdict.instrument.tenorMonths.min} a ${verdict.instrument.tenorMonths.max} meses; ${verdict.instrument.buyers.join(", ")}`, `${verdict.instrument.tenorMonths.min} to ${verdict.instrument.tenorMonths.max} months; ${verdict.instrument.buyers.join(", ")}`), ...(verdict.reasons[0] ? {note: verdict.reasons[0]} : {})}))});
     if (closed.length > 0) blocks.push({type: "list", items: closed.map((verdict) => bi(`${verdict.instrument.labels.pt}: ${verdict.reasons[0]!.pt}`, `${verdict.instrument.labels.en}: ${verdict.reasons[0]!.en}`))});
+  }
+  if (input.price) {
+    const p = input.price;
+    blocks.push({type: "heading", text: bi("Preço indicativo (documento interno)", "Indicative price (internal document)")});
+    blocks.push({type: "kv", rows: [
+      {label: bi("Faixa", "Range"), value: bi(`CDI + ${(p.bps.min / 100).toFixed(2).replace(".", ",")}% a CDI + ${(p.bps.max / 100).toFixed(2).replace(".", ",")}% a.a.`, `CDI + ${(p.bps.min / 100).toFixed(2)}% to CDI + ${(p.bps.max / 100).toFixed(2)}% p.a.`), note: bi(`Base: banda ${p.rating} para ${p.instrument}, ${p.base.bps.min} a ${p.base.bps.max} bps.`, `Base: ${p.rating} band for ${p.instrument}, ${p.base.bps.min} to ${p.base.bps.max} bps.`)},
+      ...p.adjustments.map((adjustment) => ({label: bi(`Ajuste: ${adjustment.id}`, `Adjustment: ${adjustment.id}`), value: bi(`${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`, `${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`), note: adjustment.rationale})),
+      {label: bi("Proveniência", "Provenance"), value: bi(p.provenance.kind === "desk_practice" ? `Prática da mesa, declarada em ${p.provenance.statedOn}; não é observação de operações fechadas.` : `Observada em ${p.provenance.sample} operações nos últimos ${p.provenance.windowMonths} meses.`, p.provenance.kind === "desk_practice" ? `Desk practice, stated on ${p.provenance.statedOn}; not an observation of closed deals.` : `Observed across ${p.provenance.sample} deals in the last ${p.provenance.windowMonths} months.`)},
+    ]});
   }
   if (input.collateral) {
     const c = input.collateral;

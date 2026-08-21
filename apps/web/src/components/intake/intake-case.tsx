@@ -136,6 +136,7 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         collateral={state.collateral ?? null}
         instruments={state.instruments ?? []}
         locale={locale}
+        price={state.price ?? null}
         rating={state.rating ?? null}
         stress={state.stress ?? []}
       />

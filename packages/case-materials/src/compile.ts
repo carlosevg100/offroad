@@ -6,6 +6,7 @@ import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, traject
 import type {InternalRating, StressScenario} from "@offroad/credit-analysis";
 import type {InstrumentVerdict} from "@offroad/credit-playbook";
 import type {CollateralPackage} from "@offroad/deal-structure";
+import type {IndicativePrice} from "@offroad/market-reference";
 
 import {diligenceQa} from "./diligence";
 import {investmentMemo, termSheetDocument} from "./institutional";
@@ -73,6 +74,7 @@ export type CompileInput = {
   stress?: StressScenario[];
   instruments?: InstrumentVerdict[];
   collateral?: CollateralPackage;
+  price?: IndicativePrice;
 };
 
 export type CompileOutcome =
@@ -305,6 +307,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
       ...(input.stress ? {stress: input.stress} : {}),
       ...(input.instruments ? {instruments: input.instruments} : {}),
       ...(input.collateral ? {collateral: input.collateral} : {}),
+      ...(input.price ? {price: input.price} : {}),
     };
     institutional.push(investmentMemo(shared));
     const sheet = termSheetDocument(shared);

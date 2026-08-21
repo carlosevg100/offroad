@@ -7274,4 +7274,4 @@ button[disabled].workspace-search,
 .case-committee__collateral li.is-selected { border-left-color: var(--accent, #253743); }
 .case-committee__coverage { font-size: 0.9rem; margin: 0 0 10px; }
 .case-committee__coverage.is-short { color: #a23b2e; }
-
+.case-committee__priceRange { font-size: 1.15rem; font-variant-numeric: tabular-nums; font-weight: 600; margin: 0 0 6px; }

@@ -1140,7 +1140,9 @@
       "shortfall": "Faltam {amount} de valor elegível.",
       "haircut": "haircut",
       "policy": "política",
-      "eligible": "elegível"
+      "eligible": "elegível",
+      "priceTitle": "Preço indicativo (uso interno; o term sheet não traz taxa)",
+      "to": "a"
     }
   }
 }
