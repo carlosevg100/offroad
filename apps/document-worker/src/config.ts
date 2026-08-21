@@ -26,9 +26,9 @@ const schema = z.object({
    * Deliberately per job rather than per process. A process-wide ceiling would make the worker
    * refuse every document after some arbitrary one, turning a spend problem into an outage.
    */
-  MODEL_MAX_COST_USD_PER_JOB: z.coerce.number().positive().default(5),
+  MODEL_MAX_COST_USD_PER_JOB: z.coerce.number().positive().default(12),
   /** The same bound expressed in calls, which catches a loop before the cost does. */
-  MODEL_MAX_CALLS_PER_JOB: z.coerce.number().int().positive().default(40),
+  MODEL_MAX_CALLS_PER_JOB: z.coerce.number().int().positive().default(800),
   SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
   /** Dedicated service account that belongs to no organization. */
   WORKER_ACCOUNT_EMAIL: z.email(),

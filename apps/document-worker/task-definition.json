@@ -23,8 +23,8 @@
         {"name": "MAX_CONCURRENT_JOBS", "value": "1"},
         {"name": "REQUIRE_VIRUS_SCAN", "value": "true"},
         {"name": "OCR_LANGUAGES", "value": "por+eng"},
-        {"name": "MODEL_MAX_COST_USD_PER_JOB", "value": "5"},
-        {"name": "MODEL_MAX_CALLS_PER_JOB", "value": "40"},
+        {"name": "MODEL_MAX_COST_USD_PER_JOB", "value": "12"},
+        {"name": "MODEL_MAX_CALLS_PER_JOB", "value": "800"},
         {"name": "LOG_LEVEL", "value": "info"}
       ],
       "secrets": [
