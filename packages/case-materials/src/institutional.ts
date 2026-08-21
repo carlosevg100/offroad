@@ -1,6 +1,8 @@
 import Decimal from "decimal.js";
 import type {CaseBrief} from "@offroad/case-understanding";
-import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+import type {DeskAnalysis, InternalRating, StressScenario, Trajectory} from "@offroad/credit-analysis";
+import type {InstrumentVerdict} from "@offroad/credit-playbook";
+import type {CollateralPackage} from "@offroad/deal-structure";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
@@ -40,10 +42,54 @@ export type InstitutionalInput = {
   trajectory: Trajectory | null;
   termSheet?: IndicativeTermSheet;
   companyName?: string;
+  rating?: InternalRating;
+  stress?: StressScenario[];
+  instruments?: InstrumentVerdict[];
+  collateral?: CollateralPackage;
 };
 
 const termValue = (termSheet: IndicativeTermSheet | undefined, id: string) =>
   termSheet?.terms.find((term) => term.id === id);
+
+/** Rating factor by factor, the stress table, and the papers and security the profile admits. */
+export function committeeSection(input: InstitutionalInput): MaterialBlock[] {
+  const blocks: MaterialBlock[] = [];
+  if (input.rating) {
+    const r = input.rating;
+    blocks.push({type: "heading", text: bi("Rating interno", "Internal rating")});
+    blocks.push({type: "paragraph", text: r.summary});
+    blocks.push({type: "kv", caption: bi("Fatores", "Factors"), rows: r.factors.map((factor) => ({label: factor.labels, value: bi(factor.points === null ? "não avaliado" : `${factor.points} de 4 (peso ${factor.weight})`, factor.points === null ? "not assessed" : `${factor.points} of 4 (weight ${factor.weight})`), note: factor.rationale}))});
+  }
+  if (input.stress && input.stress.length > 0) {
+    blocks.push({type: "heading", text: bi("Sensibilidade", "Sensitivity")});
+    blocks.push({
+      type: "table",
+      caption: bi("Choques padrão sobre a posição pós-operação", "Standard shocks on the post-transaction position"),
+      head: [bi("Cenário", "Scenario"), bi("Alavancagem", "Leverage"), bi("Juros anuais", "Annual interest"), bi("Folga de covenant", "Covenant headroom"), bi("Rompe?", "Breaches?")],
+      rows: input.stress.map((row) => [row.labels.pt, row.leverage ? turns(row.leverage, "pt-BR") : "n/d", row.annualInterest ? money(row.annualInterest, "pt-BR") : "n/d", row.covenantHeadroom ? money(row.covenantHeadroom, "pt-BR") : "n/d", row.breachesCovenant === null ? "n/d" : row.breachesCovenant ? "sim" : "não"]),
+    });
+  }
+  if (input.instruments && input.instruments.length > 0) {
+    const open = input.instruments.filter((verdict) => verdict.eligible);
+    const closed = input.instruments.filter((verdict) => !verdict.eligible);
+    blocks.push({type: "heading", text: bi("Instrumentos", "Instruments")});
+    blocks.push({type: "kv", caption: bi("Papéis que o perfil admite", "Papers the profile admits"), rows: open.map((verdict) => ({label: verdict.instrument.labels, value: bi(`${verdict.instrument.tenorMonths.min} a ${verdict.instrument.tenorMonths.max} meses; ${verdict.instrument.buyers.join(", ")}`, `${verdict.instrument.tenorMonths.min} to ${verdict.instrument.tenorMonths.max} months; ${verdict.instrument.buyers.join(", ")}`), ...(verdict.reasons[0] ? {note: verdict.reasons[0]} : {})}))});
+    if (closed.length > 0) blocks.push({type: "list", items: closed.map((verdict) => bi(`${verdict.instrument.labels.pt}: ${verdict.reasons[0]!.pt}`, `${verdict.instrument.labels.en}: ${verdict.reasons[0]!.en}`))});
+  }
+  if (input.collateral) {
+    const c = input.collateral;
+    blocks.push({type: "heading", text: bi("Pacote de garantias", "Security package")});
+    blocks.push({type: "paragraph", text: bi(`Cobertura alvo de ${turns(c.target.coverage, "pt-BR")} sobre ${money(c.target.amount, "pt-BR")}; o pacote proposto cobre ${turns(c.coverageAchieved, "pt-BR")}${c.sufficient ? "." : `, faltando ${money(c.shortfall!, "pt-BR")} de valor elegível.`}`, `Target coverage of ${turns(c.target.coverage, "en-US")} over ${money(c.target.amount, "en-US")}; the proposed package covers ${turns(c.coverageAchieved, "en-US")}${c.sufficient ? "." : `, ${money(c.shortfall!, "en-US")} of eligible value short.`}`)});
+    blocks.push({
+      type: "table",
+      caption: bi("Ativos, haircut e valor elegível", "Assets, haircut and eligible value"),
+      head: [bi("Ativo", "Asset"), bi("Valor", "Value"), bi("Haircut", "Haircut"), bi("Elegível", "Eligible"), bi("No pacote", "In package")],
+      rows: c.lines.map((line) => [line.asset.description, money(line.asset.value, "pt-BR"), `${pct(line.haircut, "pt-BR")}${line.haircutSource === "policy" ? " (política)" : ""}`, money(line.eligible, "pt-BR"), line.selected ? "sim" : "não"]),
+    });
+    for (const note of c.notes) blocks.push({type: "paragraph", text: note});
+  }
+  return blocks;
+}
 
 /** The card at the top: what is being asked, on what basis, in ten seconds. */
 function keyTerms(input: InstitutionalInput): MaterialBlock {
@@ -73,6 +119,7 @@ function keyTerms(input: InstitutionalInput): MaterialBlock {
       ...(tenor ? [{label: tenor.labels, value: tenor.value}] : []),
       ...(grace ? [{label: grace.labels, value: grace.value}] : []),
       ...(pricing ? [{label: pricing.labels, value: pricing.value}] : []),
+      ...(input.rating ? [{label: bi("Rating interno", "Internal rating"), value: bi(`${input.rating.grade} de 10 (${({strong: "forte", adequate: "adequado", watch: "atenção", weak: "fraco", distressed: "crítico"})[input.rating.band]})`, `${input.rating.grade} of 10 (${input.rating.band})`)}] : []),
       {
         label: bi("Alavancagem pré / pós", "Leverage pre / post"),
         value: bi(
@@ -169,6 +216,10 @@ export function investmentMemo(input: InstitutionalInput): Material {
           {type: "heading" as const, text: bi("9. Pontos em aberto", "9. Open points")},
           {type: "list" as const, items: exceptions.map((exception) => bi(exception.description, exception.description))},
         ]
+      : []),
+
+    ...(committeeSection(input).length > 0
+      ? [{type: "heading" as const, text: bi("10. Comitê: rating, sensibilidade, instrumentos e garantias", "10. Committee: rating, sensitivity, instruments and security")}, ...committeeSection(input)]
       : []),
 
     {type: "heading", text: bi("Base de preparação", "Basis of preparation")},

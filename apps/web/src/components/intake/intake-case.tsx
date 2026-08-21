@@ -3,6 +3,7 @@ import {getTranslations} from "next-intl/server";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
 
+import {IntakeCommittee} from "./intake-committee";
 import {IntakeDesk} from "./intake-desk";
 
 type Props = {
@@ -128,6 +129,15 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         deskMissing={state.deskMissing ?? []}
         locale={locale}
         trajectory={state.trajectory ?? null}
+      />
+
+      {/* The committee pack: grade, shocks, papers, security. */}
+      <IntakeCommittee
+        collateral={state.collateral ?? null}
+        instruments={state.instruments ?? []}
+        locale={locale}
+        rating={state.rating ?? null}
+        stress={state.stress ?? []}
       />
 
       {/* Structure: every term with the reason it is that term. */}

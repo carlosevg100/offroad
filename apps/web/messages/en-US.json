@@ -1114,6 +1114,33 @@
       "fileWaiting": "waiting to be read; click Analyse documents",
       "fileUnrecognised": "read but not recognised; say what it is by answering the matching item",
       "empty": "No files yet. Drop them above and each item ticks itself when the right document arrives."
+    },
+    "committee": {
+      "title": "Committee",
+      "band_strong": "strong",
+      "band_adequate": "adequate",
+      "band_watch": "watch",
+      "band_weak": "weak",
+      "band_distressed": "distressed",
+      "notAssessed": "not assessed",
+      "points": "{points} of 4 · weight {weight}",
+      "stressTitle": "Sensitivity: standard shocks on the post-transaction position",
+      "scenario": "Scenario",
+      "leverage": "Leverage",
+      "interest": "Annual interest",
+      "headroom": "Covenant headroom",
+      "breaches": "Breaches?",
+      "na": "n/a",
+      "yes": "yes",
+      "no": "no",
+      "instrumentsTitle": "Instruments the profile admits",
+      "months": "months",
+      "collateralTitle": "Security package",
+      "coverage": "Coverage of {achieved} against {target} required.",
+      "shortfall": "{amount} of eligible value short.",
+      "haircut": "haircut",
+      "policy": "policy",
+      "eligible": "eligible"
     }
   }
 }

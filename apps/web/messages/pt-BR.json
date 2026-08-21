@@ -1114,6 +1114,33 @@
       "fileWaiting": "aguardando leitura; clique em Analisar documentos",
       "fileUnrecognised": "lido, mas não reconhecido; diga o que é respondendo ao item correspondente",
       "empty": "Nenhum arquivo ainda. Arraste acima e cada item marca sozinho quando o documento certo chegar."
+    },
+    "committee": {
+      "title": "Comitê",
+      "band_strong": "forte",
+      "band_adequate": "adequado",
+      "band_watch": "atenção",
+      "band_weak": "fraco",
+      "band_distressed": "crítico",
+      "notAssessed": "não avaliado",
+      "points": "{points} de 4 · peso {weight}",
+      "stressTitle": "Sensibilidade: choques padrão sobre a posição pós-operação",
+      "scenario": "Cenário",
+      "leverage": "Alavancagem",
+      "interest": "Juros anuais",
+      "headroom": "Folga de covenant",
+      "breaches": "Rompe?",
+      "na": "n/d",
+      "yes": "sim",
+      "no": "não",
+      "instrumentsTitle": "Instrumentos que o perfil admite",
+      "months": "meses",
+      "collateralTitle": "Pacote de garantias",
+      "coverage": "Cobertura de {achieved} contra {target} exigidos.",
+      "shortfall": "Faltam {amount} de valor elegível.",
+      "haircut": "haircut",
+      "policy": "política",
+      "eligible": "elegível"
     }
   }
 }
