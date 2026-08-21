@@ -22,9 +22,9 @@ import {tableRowPasses} from "./rows";
  * trusted on its word: every candidate goes through the anchor verifier, which re-reads the
  * layer and checks that the quote is really there, that the value is really in the quote, and
  * that the digits are really in the anchor. Whatever fails keeps its flags and travels on as a
- * candidate a human has to look at — it is never silently dropped and never silently accepted.
+ * candidate a human has to look at, it is never silently dropped and never silently accepted.
  *
- * The normalized value is computed here, in code, from the raw string — never taken from the
+ * The normalized value is computed here, in code, from the raw string, never taken from the
  * model. That is the line between "the document says 1.234.567,89" and "the system believes
  * 1234567.89", and it is the only place that line can be drawn honestly.
  */
@@ -33,7 +33,7 @@ import {tableRowPasses} from "./rows";
  * The strict contract, made survivable.
  *
  * Validating the whole response against `extractorOutputSchema` was all-or-nothing: sixty
- * good candidates plus one with a malformed field meant zero candidates — which is exactly
+ * good candidates plus one with a malformed field meant zero candidates, which is exactly
  * what zeroed the CFO letter and the audited statements in the first real measurement. The
  * provider still receives the full candidate shape as guidance (the JSON schema keeps it,
  * inside an anyOf with null), but on the way back each candidate is judged alone: a bad one
