@@ -12,6 +12,7 @@
   "scripts": {
     "baseline": "tsx src/cli.ts baseline",
     "build": "tsc -p tsconfig.json",
+    "fakeco:verify": "tsx scripts/verify-fakeco.ts",
     "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
     "measure": "tsx scripts/measure-extraction.ts",

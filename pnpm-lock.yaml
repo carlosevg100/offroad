@@ -515,6 +515,13 @@ importers:
         version: 20.19.43
 
   packages/testing-fixtures:
+    dependencies:
+      jszip:
+        specifier: 3.10.1
+        version: 3.10.1
+      xlsx:
+        specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
+        version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
     devDependencies:
       '@types/node':
         specifier: ^20.19.43

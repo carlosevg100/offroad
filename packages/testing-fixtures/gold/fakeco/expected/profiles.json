@@ -1,0 +1,75 @@
+[
+  {
+    "document": "00_Ficha_Cadastral_Aurora.docx",
+    "kind": "company_registration",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda"
+  },
+  {
+    "document": "01_Carta_CFO_Pedido_e_Racional.docx",
+    "kind": "capital_request_letter",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda"
+  },
+  {
+    "document": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+    "kind": "audited_financial_statements",
+    "informationClass": "audited",
+    "evidenceRank": 1,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2025-12-31",
+    "scale": 1000
+  },
+  {
+    "document": "03_Balancete_Gerencial_Jul2026.xls",
+    "kind": "trial_balance",
+    "informationClass": "accounting",
+    "evidenceRank": 3,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "document": "04_Mapa_Divida_Jul2026.xlsx",
+    "kind": "debt_schedule",
+    "informationClass": "management",
+    "evidenceRank": 5,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "document": "05_Concentracao_Clientes_2025.xlsx",
+    "kind": "management_accounts",
+    "informationClass": "management",
+    "evidenceRank": 5,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31"
+  },
+  {
+    "document": "06_Memorial_CD_Jacarei.pdf",
+    "kind": "project_memorandum",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda"
+  },
+  {
+    "document": "07_Contrato_Social_Consolidado.png",
+    "kind": "corporate_docs",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda"
+  },
+  {
+    "document": "08_Projecoes_2026_2030.xlsx",
+    "kind": "financial_model",
+    "informationClass": "projection",
+    "evidenceRank": 6,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",
+    "periodStart": "2026-01-01",
+    "periodEnd": "2030-12-31"
+  }
+]

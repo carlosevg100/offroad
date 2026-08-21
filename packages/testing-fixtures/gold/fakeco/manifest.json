@@ -1,0 +1,47 @@
+{
+  "caseId": "fakeco",
+  "title": "Aurora Distribuidora de Materiais de Construção Ltda: capital de giro e quarto CD (sala de dados sintética)",
+  "synthetic": true,
+  "language": "pt",
+  "documentsDir": "../../assets/fakeco",
+  "documents": [
+    {
+      "name": "00_Ficha_Cadastral_Aurora.docx",
+      "sha256": "cd858d5c653a7ffd70d80a7a7cf6e1842a8c6b78f40260a49a25b5612e16eb59"
+    },
+    {
+      "name": "01_Carta_CFO_Pedido_e_Racional.docx",
+      "sha256": "7c05fdf1e1d55cb9daae9c275a977b27416f8c0118087957a8572b4bf1d8d75c"
+    },
+    {
+      "name": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+      "sha256": "06d7fd3b92e82097c4eba1afc60f880cd9148057d9960adb3c33e7f39619d9a4"
+    },
+    {
+      "name": "03_Balancete_Gerencial_Jul2026.xls",
+      "sha256": "703ad87ddb43711c68fc46a3b18f7c8cc9bf679b60e84c85a0da29622bf1240b"
+    },
+    {
+      "name": "04_Mapa_Divida_Jul2026.xlsx",
+      "sha256": "dde0f54da560c8139362289a57f09c387039c4a3bd9f3d2900710954db785b7c"
+    },
+    {
+      "name": "05_Concentracao_Clientes_2025.xlsx",
+      "sha256": "7fd003a5e6846a44382cb896999e3126e934967a131c7757add4c6768d1afdae"
+    },
+    {
+      "name": "06_Memorial_CD_Jacarei.pdf",
+      "sha256": "9bc417077a784bee2066ed74a7b9917d3751dad5a8a3cf52203f06f595abf42e"
+    },
+    {
+      "name": "07_Contrato_Social_Consolidado.png",
+      "sha256": "ce2f506b515a018ae115af860dd2a5f7608a2e78c9171c8c5c7654e2ee297da4"
+    },
+    {
+      "name": "08_Projecoes_2026_2030.xlsx",
+      "sha256": "29a365fb32c3ff7e30c86265799b29bcd4449d8b1aa47d106d5e2863f193b4f1"
+    }
+  ],
+  "provenance": "Gerada por packages/testing-fixtures/scripts/build-fakeco.ts a partir de src/fakeco/truth.ts, e este gabarito por build-fakeco-gold.ts a partir da mesma fonte. Nenhum número descreve empresa real. O gerador vive no repositório de propósito: o do rede-horizonte não vive, e AGENTS.md §9 registra o custo disso.",
+  "version": "fakeco-2026.08.21-v1"
+}

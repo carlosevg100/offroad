@@ -1,0 +1,54 @@
+[
+  {
+    "id": "net_debt_2025",
+    "definition": "Dívida bruta do balanço menos caixa",
+    "value": "36900000",
+    "unit": "BRL",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "id": "leverage_2025",
+    "definition": "Dívida líquida / EBITDA 2025",
+    "value": "2.1902",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Contra o covenant mais apertado do mapa (3,0x), esta é a conta que decide se a operação cabe."
+  },
+  {
+    "id": "ebitda_margin_2025",
+    "definition": "EBITDA / receita líquida 2025",
+    "value": "0.0881",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "id": "revenue_cagr_2023_2025",
+    "definition": "CAGR da receita entre 2023 e 2025",
+    "value": "0.1571",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "id": "days_receivable_2025",
+    "definition": "Contas a receber / receita x 365",
+    "value": "90.3",
+    "unit": "dias",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  }
+]

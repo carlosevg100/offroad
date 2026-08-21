@@ -31,3 +31,7 @@ pnpm-debug.log*
 # Measurement output (real model runs; never committed)
 packages/evals/out/
 .gstack/
+
+# Intermediários da FakeCo: o gerador os reproduz, o renderizador os consome.
+packages/testing-fixtures/assets/fakeco/.html/
+packages/testing-fixtures/assets/fakeco/.build.json
