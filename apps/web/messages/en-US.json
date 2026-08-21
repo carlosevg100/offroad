@@ -1102,6 +1102,16 @@
       "notMeaningful": "not meaningful with negative EBITDA",
       "maturing12": "Maturing within 12 months",
       "coverage12Hint": "cash covers {coverage}"
+    },
+    "deliveryMap": {
+      "kicker": "Delivery map",
+      "progress": "{delivered} of {total} items needed now delivered",
+      "fileSatisfies": "read; covers: {items}",
+      "fileUnmatched": "read as {kind}; covers no item on the list",
+      "fileReading": "being read now",
+      "fileWaiting": "waiting to be read; click Analyse documents",
+      "fileUnrecognised": "read but not recognised; say what it is by answering the matching item",
+      "empty": "No files yet. Drop them above and each item ticks itself when the right document arrives."
     }
   }
 }

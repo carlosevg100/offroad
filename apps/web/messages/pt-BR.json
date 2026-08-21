@@ -1102,6 +1102,16 @@
       "notMeaningful": "sem sentido com EBITDA negativo",
       "maturing12": "Vence em 12 meses",
       "coverage12Hint": "caixa cobre {coverage}"
+    },
+    "deliveryMap": {
+      "kicker": "Mapa de entrega",
+      "progress": "{delivered} de {total} itens de agora entregues",
+      "fileSatisfies": "lido; atende: {items}",
+      "fileUnmatched": "lido como {kind}; não atende nenhum item da lista",
+      "fileReading": "sendo lido agora",
+      "fileWaiting": "aguardando leitura; clique em Analisar documentos",
+      "fileUnrecognised": "lido, mas não reconhecido; diga o que é respondendo ao item correspondente",
+      "empty": "Nenhum arquivo ainda. Arraste acima e cada item marca sozinho quando o documento certo chegar."
     }
   }
 }
