@@ -36,5 +36,12 @@ describe("a note's amortisation windows", () => {
     // Jun/26 to May/27 ends within 24 months of August 2026; Jun/27 to May/28 ends in month 21 too.
     expect(desk.stack.maturingWithin24Months).toBe("2006696000.00");
     expect(desk.findings.some((finding) => finding.id === "maturity-wall")).toBe(false);
+    // Jun/26 to May/27 is the year ahead: 1,23bn against 1,43bn of cash is 1,16x, and that is
+    // the sentence, not the 35% share of the schedule that the 24-month test waves through.
+    expect(desk.stack.maturingWithin12Months).toBe("1229828000.00");
+    expect(desk.stack.liquidityCoverage12).toBe("1.1633");
+    const wall = desk.findings.find((finding) => finding.id === "short-term-principal-vs-cash")!;
+    expect(wall.severity).toBe("high");
+    expect(wall.pt).toContain("1,16x");
   });
 });

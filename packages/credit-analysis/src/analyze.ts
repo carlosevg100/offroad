@@ -166,6 +166,10 @@ export type DeskAnalysis = {
     weightedSpreadOverCdi: string | null;
     unpriceableLines: number;
     maturingWithin24Months: string;
+    /** Principal due within 12 months, from the profile when the lines cannot say. */
+    maturingWithin12Months: string;
+    /** Cash over the principal due within 12 months; null when nothing is due. */
+    liquidityCoverage12: string | null;
   };
   leverage: {
     netDebtPre: string;
@@ -259,6 +263,29 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
     .filter((entry) => entry.endsOn !== undefined && monthsBetween(input.referenceDate, entry.endsOn) <= 24)
     .reduce((sum, entry) => sum.plus(entry.amount), ZERO);
   const maturing24 = linesWithDates < lines.length && profileWithin24.gt(maturingFromLines) ? profileWithin24 : maturingFromLines;
+  const within12FromLines = lines
+    .filter((line) => line.maturity !== undefined && monthsBetween(input.referenceDate, line.maturity) <= 12)
+    .reduce((sum, line) => sum.plus(line.balance), ZERO);
+  const profileWithin12 = (input.maturityProfile ?? [])
+    .filter((entry) => entry.endsOn !== undefined && monthsBetween(input.referenceDate, entry.endsOn) <= 12)
+    .reduce((sum, entry) => sum.plus(entry.amount), ZERO);
+  const maturing12 = linesWithDates < lines.length && profileWithin12.gt(within12FromLines) ? profileWithin12 : within12FromLines;
+  const liquidityCoverage12 = maturing12.gt(0) ? d(input.balance.cash).div(maturing12) : null;
+
+  // The wall a desk actually worries about is the next twelve months against the cash on hand.
+  // A company can carry a heavy schedule if it sits on the cash to meet it; a light one is a
+  // wall if the cash is not there. The ratio says which, before any refinancing assumption.
+  if (liquidityCoverage12 && liquidityCoverage12.lt("1.5")) {
+    const tight = liquidityCoverage12.lt(1);
+    findings.push({
+      id: "short-term-principal-vs-cash",
+      severity: tight ? "critical" : "high",
+      pt: `${brlM(maturing12)} de principal vencem nos próximos 12 meses contra ${brlM(input.balance.cash)} de caixa: cobertura de ${liquidityCoverage12.toFixed(2).replace(".", ",")}x. ${tight ? "O caixa não cobre o principal do ano: sem refinanciamento ou geração acima do histórico, a companhia não chega ao fim do período pelos próprios meios, e a captação tem que ser dimensionada para isso." : "Cobre, mas sem folga para a sazonalidade do capital de giro: parte do caixa que paga a dívida é o caixa que compra estoque, e a mesa precisa ver o fluxo mensal antes de tratar o refinanciamento como opcional."}`,
+      en: `${brlM(maturing12)} of principal falls due in the next 12 months against ${brlM(input.balance.cash)} of cash: ${liquidityCoverage12.toFixed(2)}x coverage. ${tight ? "Cash does not cover the year's principal: without refinancing or generation above history, the company does not reach the end of the period on its own means, and the raise has to be sized for that." : "It covers, but without room for working-capital seasonality: part of the cash that pays the debt is the cash that buys inventory, and the desk needs the monthly flow before treating refinancing as optional."}`,
+      values: {maturing12: maturing12.toFixed(2), cash: d(input.balance.cash).toFixed(2), coverage: liquidityCoverage12.toFixed(4)},
+      inputs: ["debt.maturity_profile", "debt.instruments", "interim_financials.cash"],
+    });
+  }
 
   if (scheduleGap.abs().gt(totalOnBalance.times("0.02"))) {
     findings.push({
@@ -558,6 +585,8 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
       weightedSpreadOverCdi: weightedSpread ? weightedSpread.toFixed(6) : null,
       unpriceableLines: unpriceable.length,
       maturingWithin24Months: maturing24.toFixed(2),
+      maturingWithin12Months: maturing12.toFixed(2),
+      liquidityCoverage12: liquidityCoverage12 ? liquidityCoverage12.toFixed(4) : null,
     },
     leverage: {
       netDebtPre: netDebtPre.toFixed(2),

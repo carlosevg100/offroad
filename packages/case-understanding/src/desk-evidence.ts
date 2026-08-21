@@ -41,6 +41,8 @@ export function deskEvidence(desk: DeskAnalysis | null, trajectory: Trajectory |
   metric("desk.custo_medio_do_stack", desk.stack.weightedCost, "Custo médio do estoque de dívida (efetivo anual)", ["debt.instruments"]);
   metric("desk.divida_fora_do_mapa", desk.stack.scheduleGap, "Dívida no balanço ausente do mapa", ["debt.total_gross", "historical_financials.gross_debt"]);
   metric("desk.vencendo_24m", desk.stack.maturingWithin24Months, "Principal vencendo em 24 meses", ["debt.instruments"]);
+  metric("desk.vencendo_12m", desk.stack.maturingWithin12Months, "Principal vencendo em 12 meses", ["debt.maturity_profile", "debt.instruments"]);
+  metric("desk.cobertura_12m", desk.stack.liquidityCoverage12, "Caixa sobre o principal de 12 meses", ["interim_financials.cash", "debt.maturity_profile"]);
   metric("desk.ciclo_de_caixa_dias", desk.workingCapital.cycleDays, "Ciclo de caixa em dias", ["historical_financials.receivables", "historical_financials.inventory", "historical_financials.payables"]);
   metric("desk.recebiveis_livres", desk.encumbrance.free, "Recebíveis livres de ônus", ["debt.instruments", "interim_financials.receivables"]);
   if (desk.runway) {
