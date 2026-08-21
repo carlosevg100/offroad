@@ -1,3 +1,4 @@
+import type {FieldDefinition} from "@offroad/credit-ontology";
 import type {LayerIndex} from "@offroad/document-intelligence";
 
 /**
@@ -30,9 +31,31 @@ const headerish = (text: string): boolean => /[a-zA-Zà-úÀ-Ú]/.test(text) && 
 /** Total and subtotal rows summarise other rows; an instrument named "Total" is a defect. */
 const aggregateRow = (text: string): boolean => /^(total|subtotal|soma)\b/i.test(text.trim());
 
-export function tableRowPasses(index: LayerIndex, options: {minRows?: number; maxRows?: number} = {}): TableRowPass[] {
+const fold = (text: string): string => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+/**
+ * The words a table must carry to deserve a pass per row, taken from the indexed fields' own
+ * labels and synonyms. Camil measured the alternative: 913 passes over a 62-page ITR, one per
+ * row of every table including the tax reconciliation and the share count, US$ 7,80 and an
+ * hour and twenty minutes, for zero debt instruments. A table that names no lender, balance,
+ * rate, maturity, customer or share is not a table the indexed fields live in.
+ */
+const GENERIC_WORDS = new Set(["valor", "value", "total", "data", "date", "nome", "name", "base", "tipo", "type", "item", "descricao", "description", "numero", "number", "periodo", "period", "conta", "amount", "anual", "annual", "mensal", "monthly", "percent", "share", "other", "outro", "outros", "detail", "entity", "entidade", "papel", "role"]);
+
+export function tableCues(fields: readonly FieldDefinition[]): string[] {
+  const cues = new Set<string>();
+  for (const field of fields) {
+    for (const text of [field.labels.pt, field.labels.en, ...field.synonyms.pt, ...field.synonyms.en]) {
+      for (const word of fold(text).split(/[^a-z0-9]+/)) if (word.length >= 4 && !GENERIC_WORDS.has(word)) cues.add(word);
+    }
+  }
+  return [...cues];
+}
+
+export function tableRowPasses(index: LayerIndex, options: {minRows?: number; maxRows?: number; fields?: readonly FieldDefinition[]} = {}): TableRowPass[] {
   const minRows = options.minRows ?? 3;
   const maxRows = options.maxRows ?? 60;
+  const cues = options.fields ? tableCues(options.fields) : null;
 
   const rowsByTable = new Map<string, Array<{id: string; text: string}>>();
   for (const anchor of index.byId.values()) {
@@ -61,6 +84,11 @@ export function tableRowPasses(index: LayerIndex, options: {minRows?: number; ma
 
     const cleaned = dataRows.filter((row) => row.text.trim() !== "" && !aggregateRow(row.text));
     if (cleaned.length < minRows || cleaned.length > maxRows) continue;
+    if (cues) {
+      const sample = fold([header ?? "", ...cleaned.slice(0, 3).map((row) => row.text)].join(" "));
+      // Two distinct cues, because one word ("saldo", "participacao") turns up in half the notes.
+      if (cues.filter((cue) => sample.includes(cue)).length < 2) continue;
+    }
 
     cleaned.forEach((row, position) => {
       passes.push({

@@ -137,11 +137,13 @@ export function verifyCandidate(
   }
 
   const anchorVerified = ![...flags].some((flag) => fatalVerifierFlags.has(flag));
+  const fieldPath = canonicalPeriodPath(candidate.field_path, candidate.period);
   const value: VerifiedCandidate = {
     ...candidate,
+    field_path: fieldPath,
     scale: effectiveScale,
     extractor_key: computeExtractorKey({
-      fieldPath: candidate.field_path,
+      fieldPath,
       sourceDocumentId: context.profile.documentId,
       documentVersion: context.documentVersion,
       anchorId: candidate.anchor.id,
@@ -161,6 +163,44 @@ export function verifyCandidate(
 }
 
 /** Applies an ontology-declared canonical form to a text value. Returns null when the value cannot hold it. */
+/** Balance-sheet metrics: a point in time, never a window. */
+const STOCK_METRICS = new Set(["cash", "receivables", "inventory", "payables", "gross_debt", "net_debt", "equity", "total_assets", "working_capital", "arr", "mrr"]);
+
+const monthsBetween = (start: string, end: string): number => {
+  const [sy, sm] = start.split("-").map(Number);
+  const [ey, em] = end.split("-").map(Number);
+  return (ey! - sy!) * 12 + (em! - sm!) + 1;
+};
+
+/**
+ * The period belongs in the path, the way the ontology spells it, and the model's guess at
+ * the spelling is replaced by the dates it cited.
+ *
+ * Camil measured this: the ITR's quarter came back as `interim_financials.2026.revenue`,
+ * `interim_financials.2026_05.revenue` and `interim_financials.2026.revenue_ytd`, all with the
+ * right number and the right dates (2026-03-01 to 2026-05-31), none spelled
+ * `interim_financials.2026_05.revenue_3m`. A fiscal year ending in February came back under
+ * the calendar year the model preferred. The dates are the fact; the spelling follows them:
+ * interim periods are `YYYY_MM` of the end month with a `_Nm` window on flows, and a year is
+ * the year its period ends.
+ */
+export function canonicalPeriodPath(fieldPath: string, period: {start: string; end: string} | undefined): string {
+  if (!period) return fieldPath;
+  const interim = fieldPath.match(/^interim_financials\.(\d{4})(?:_(\d{2}))?\.([a-z_]+?)(?:_\d+m|_ytd|_ltm)?$/);
+  if (interim) {
+    const metric = interim[3]!;
+    const [endYear, endMonth] = period.end.split("-");
+    const window = STOCK_METRICS.has(metric) ? "" : `_${monthsBetween(period.start, period.end)}m`;
+    return `interim_financials.${endYear}_${endMonth}.${metric}${window}`;
+  }
+  const annual = fieldPath.match(/^(historical_financials|projections)\.(\d{4})\.(.+)$/);
+  if (annual) {
+    const endYear = period.end.slice(0, 4);
+    return `${annual[1]}.${endYear}.${annual[3]}`;
+  }
+  return fieldPath;
+}
+
 /**
  * Costs, capex, taxes, depreciation and burn are magnitudes in the ontology. Statements print
  * them with a minus sign because the column is a subtraction; a model that copies the sign has

@@ -49,7 +49,7 @@
     "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
   },
   {
-    "fieldPath": "historical_financials.2025.revenue",
+    "fieldPath": "historical_financials.2026.revenue",
     "value": "11115000000",
     "valueType": "number",
     "materiality": "material",
@@ -62,7 +62,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.cogs",
+    "fieldPath": "historical_financials.2026.cogs",
     "value": "8622700000",
     "valueType": "number",
     "materiality": "material",
@@ -75,7 +75,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.gross_profit",
+    "fieldPath": "historical_financials.2026.gross_profit",
     "value": "2492300000",
     "valueType": "number",
     "materiality": "material",
@@ -88,7 +88,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.ebitda",
+    "fieldPath": "historical_financials.2026.ebitda",
     "value": "915300000",
     "valueType": "number",
     "materiality": "material",
@@ -101,7 +101,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.net_income",
+    "fieldPath": "historical_financials.2026.net_income",
     "value": "148500000",
     "valueType": "number",
     "materiality": "material",
@@ -114,7 +114,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.d_and_a",
+    "fieldPath": "historical_financials.2026.d_and_a",
     "value": "285900000",
     "valueType": "number",
     "materiality": "supporting",
@@ -127,7 +127,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.financial_result",
+    "fieldPath": "historical_financials.2026.financial_result",
     "value": "-591700000",
     "valueType": "number",
     "materiality": "material",
@@ -140,7 +140,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.taxes",
+    "fieldPath": "historical_financials.2026.taxes",
     "value": "110800000",
     "valueType": "number",
     "materiality": "supporting",
@@ -153,7 +153,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.net_debt",
+    "fieldPath": "historical_financials.2026.net_debt",
     "value": "2965700000",
     "valueType": "number",
     "materiality": "material",
@@ -167,7 +167,7 @@
     "note": "Dívida bruta menos caixa e aplicações financeiras, definição da companhia."
   },
   {
-    "fieldPath": "historical_financials.2025.gross_debt",
+    "fieldPath": "historical_financials.2026.gross_debt",
     "value": "4988383000",
     "valueType": "number",
     "materiality": "material",
@@ -180,7 +180,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.cash",
+    "fieldPath": "historical_financials.2026.cash",
     "value": "1997608000",
     "valueType": "number",
     "materiality": "material",
@@ -194,7 +194,7 @@
     "note": "Caixa e equivalentes; as aplicações financeiras (R$ 25.095 mil) ficam fora."
   },
   {
-    "fieldPath": "historical_financials.2025.receivables",
+    "fieldPath": "historical_financials.2026.receivables",
     "value": "1019433000",
     "valueType": "number",
     "materiality": "material",
@@ -207,7 +207,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.inventory",
+    "fieldPath": "historical_financials.2026.inventory",
     "value": "2096538000",
     "valueType": "number",
     "materiality": "material",
@@ -221,7 +221,7 @@
     "note": "Circulante; há mais R$ 87.120 mil no não circulante."
   },
   {
-    "fieldPath": "historical_financials.2025.payables",
+    "fieldPath": "historical_financials.2026.payables",
     "value": "1229105000",
     "valueType": "number",
     "materiality": "material",
@@ -234,7 +234,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.equity",
+    "fieldPath": "historical_financials.2026.equity",
     "value": "3015690000",
     "valueType": "number",
     "materiality": "material",
@@ -247,7 +247,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2025.total_assets",
+    "fieldPath": "historical_financials.2026.total_assets",
     "value": "10774545000",
     "valueType": "number",
     "materiality": "material",
@@ -260,7 +260,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2024.revenue",
+    "fieldPath": "historical_financials.2025.revenue",
     "value": "12262900000",
     "valueType": "number",
     "materiality": "material",
@@ -273,7 +273,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2024.cogs",
+    "fieldPath": "historical_financials.2025.cogs",
     "value": "9873000000",
     "valueType": "number",
     "materiality": "material",
@@ -286,7 +286,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2024.ebitda",
+    "fieldPath": "historical_financials.2025.ebitda",
     "value": "907300000",
     "valueType": "number",
     "materiality": "material",
@@ -299,7 +299,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2024.net_income",
+    "fieldPath": "historical_financials.2025.net_income",
     "value": "217000000",
     "valueType": "number",
     "materiality": "material",
@@ -312,7 +312,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2024.net_debt",
+    "fieldPath": "historical_financials.2025.net_debt",
     "value": "2690700000",
     "valueType": "number",
     "materiality": "material",
@@ -325,7 +325,7 @@
     }
   },
   {
-    "fieldPath": "historical_financials.2024.gross_debt",
+    "fieldPath": "historical_financials.2025.gross_debt",
     "value": "5237700000",
     "valueType": "number",
     "materiality": "material",

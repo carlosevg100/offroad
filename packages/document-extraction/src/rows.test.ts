@@ -103,3 +103,24 @@ describe("the extractor runs one pass per data row, with the index pre-bound", (
     expect(rowPrompts[0]).not.toContain("Bradesco");
   });
 });
+
+describe("which tables deserve a pass per row", () => {
+  it("skips a table that names none of the indexed fields' words", async () => {
+    const {targetFields} = await import("./prompt");
+    const {documentLayerSchema, indexLayer} = await import("@offroad/document-intelligence");
+    const table = (id: string, header: string[], rows: string[][]) => ({
+      id, header, rows: rows.map((cells, r) => ({id: `${id}.r${r + 1}`, cells: cells.map((text, c) => ({id: `${id}.r${r + 1}.c${c + 1}`, text}))})),
+    });
+    const layer = documentLayerSchema.parse({
+      documentId: "d", documentVersion: 1, kind: "pdf", parserVersion: "t", scaleDeclarations: [], stats: {},
+      pages: [{n: 1, scanned: false, blocks: [], tables: [
+        table("p1.t1", ["Credor", "Saldo", "Vencimento"], [["Itaú", "1.000", "2027-01-01"], ["Bradesco", "2.000", "2028-01-01"], ["Santander", "3.000", "2029-01-01"]]),
+        table("p1.t2", ["Alíquota", "Base", "Imposto"], [["34%", "100", "34"], ["34%", "200", "68"], ["34%", "300", "102"]]),
+      ]}],
+    });
+    const indexed = targetFields("audited_financial_statements").filter((field) => field.pattern.includes("{i}"));
+    const passes = tableRowPasses(indexLayer(layer), {fields: indexed});
+    expect(new Set(passes.map((pass) => pass.tableId))).toEqual(new Set(["p1.t1"]));
+    expect(tableRowPasses(indexLayer(layer)).length).toBe(6);
+  });
+});

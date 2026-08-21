@@ -179,7 +179,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
   // indexed patterns bound to that row's number, and a row-pass candidate outranks a whole-doc
   // candidate for the same field, because it carries the sharper anchor.
   const indexedFields = fields.filter((field) => field.pattern.includes("{i}"));
-  const rowPasses = indexedFields.length > 0 ? tableRowPasses(index) : [];
+  const rowPasses = indexedFields.length > 0 ? tableRowPasses(index, {fields: indexedFields}) : [];
   const rowFieldPaths = new Set<string>();
 
   const rowOutcomes = await mapWithConcurrency(rowPasses, concurrency, async (pass, position): Promise<PassOutcome> => {

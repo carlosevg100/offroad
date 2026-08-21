@@ -78,7 +78,7 @@ const def = (
 export const documentKinds: readonly DocumentKindDefinition[] = [
   def("audited_financial_statements", "Demonstrações financeiras auditadas", "Audited financial statements", "audited", "financial", ["company", "historical_financials", "debt", "collateral"], ["demonstracoes financeiras", "relatorio do auditor", "relatorio dos auditores independentes", "financial statements", "independent auditor"]),
   def("auditor_report_only", "Relatório do auditor (isolado)", "Auditor's report (standalone)", "audited", "financial", ["company"], ["relatorio do auditor independente", "opiniao", "auditor's report"]),
-  def("reviewed_interim_statements", "Informações intermediárias revisadas", "Reviewed interim statements", "reviewed", "financial", ["company", "interim_financials"], ["revisao limitada", "informacoes intermediarias", "itr", "review report", "interim"]),
+  def("reviewed_interim_statements", "Informações intermediárias revisadas", "Reviewed interim statements", "reviewed", "financial", ["company", "interim_financials", "historical_financials", "debt"], ["revisao limitada", "informacoes intermediarias", "itr", "review report", "interim"]),
   def("trial_balance", "Balancete", "Trial balance", "accounting", "financial", ["historical_financials", "interim_financials"], ["balancete", "trial balance", "razao"]),
   def("erp_export", "Export contábil (ERP)", "ERP / accounting export", "accounting", "financial", ["historical_financials", "interim_financials"], ["erp", "export", "plano de contas", "contabilidade", "chart of accounts"]),
   def("management_accounts", "Relatório gerencial", "Management accounts", "management", "financial", ["historical_financials", "interim_financials", "customers"], ["gerencial", "kpi", "management report", "dashboard"]),
@@ -105,7 +105,7 @@ export const documentKinds: readonly DocumentKindDefinition[] = [
   def("metrics_report", "Relatório de métricas (ARR, MRR, coortes)", "Metrics report (ARR, MRR, cohorts)", "management", "financial", ["historical_financials", "interim_financials", "customers"], ["arr", "mrr", "churn", "cohort", "coorte", "burn", "runway", "nrr", "retention", "retenção", "métricas", "metrics"]),
   def("corporate_docs", "Documentos societários", "Corporate documents", "company_document", "institutional_and_corporate", ["company"], ["contrato social", "estatuto", "ata", "organograma", "quadro societario", "bylaws"]),
   def("tax_clearance", "Certidões", "Tax clearance certificates", "company_document", "institutional_and_corporate", ["company"], ["certidao", "negativa", "clearance"]),
-  def("regulatory_filing", "Protocolo regulatório", "Regulatory filing", "company_document", "institutional_and_corporate", ["company"], ["protocolo", "cvm", "bacen", "filing"]),
+  def("regulatory_filing", "Protocolo regulatório", "Regulatory filing", "company_document", "institutional_and_corporate", ["company", "historical_financials", "debt", "transaction"], ["protocolo", "cvm", "bacen", "filing"]),
   /**
    * A company's own account of who it sells to: the concentration table, the client list, the
    * commercial report. There was no kind for it, which had a consequence nobody would guess from
