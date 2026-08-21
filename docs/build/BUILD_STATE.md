@@ -368,3 +368,20 @@ Plano em `PLANO_E2E_100.md`. O que entrou ou está em PR:
 | E3 extração (fakeco, #146 com conciliação) | recall / precisão / exceções | 87,8% / 88,3% / 0% (antes de #153, #155) | US$ 0,89 |
 | E3 extração (camil, #144) | recall / precisão | 54,8% / 65,0% | US$ 5,47 / 247 chamadas |
 
+## Terceira leva da noite, 21/08/2026
+
+- **OCR em produção estava quebrado** (#160): pdf.js destaca o buffer e o OCR recebia zero
+  bytes; todo PDF escaneado lia vazio, no worker e no eval. Corrigido com teste na sala escaneada.
+- **Catálogo de instrumentos** (#158), **pacote de garantias** (#159), **Q&A de diligência**
+  (#162), **preview da Nimbus** (#161), **cobertura de juros** (#157, merged).
+- **Conciliação**: contradição só entre documentos, não entre duas leituras da mesma página
+  (#164); instrumentos de dois documentos com o mesmo nome são um só (#165); release de
+  resultados é gerencial e janela de leitura limitada a 200 linhas (#165).
+
+| medição | métrica | valor | custo |
+|---|---|---|---|
+| E1 classificação (cogna) | tipo / classe | 50% (release lido como relatório de métricas, corrigido em #165) / 100% | US$ 0,013 |
+| E3 extração (cogna, antes de #165) | recall / precisão / exceções | 22,9% / 92,3% / 100% (FP 19) | US$ 0,35 / 3 chamadas |
+| E3 extração (camil, #155) | recall / precisão / exceções | 41,5% / 56,9% / 100% (FP 16, corrigido em #164) | US$ 5,42 / 243 chamadas |
+| E3 extração (fakeco-scan, OCR, antes de #160) | recall | 0% (buffer destacado) | |
+
