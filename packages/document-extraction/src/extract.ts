@@ -22,9 +22,9 @@ import {tableRowPasses} from "./rows";
  * trusted on its word: every candidate goes through the anchor verifier, which re-reads the
  * layer and checks that the quote is really there, that the value is really in the quote, and
  * that the digits are really in the anchor. Whatever fails keeps its flags and travels on as a
- * candidate a human has to look at — it is never silently dropped and never silently accepted.
+ * candidate a human has to look at, it is never silently dropped and never silently accepted.
  *
- * The normalized value is computed here, in code, from the raw string — never taken from the
+ * The normalized value is computed here, in code, from the raw string, never taken from the
  * model. That is the line between "the document says 1.234.567,89" and "the system believes
  * 1234567.89", and it is the only place that line can be drawn honestly.
  */
@@ -33,7 +33,7 @@ import {tableRowPasses} from "./rows";
  * The strict contract, made survivable.
  *
  * Validating the whole response against `extractorOutputSchema` was all-or-nothing: sixty
- * good candidates plus one with a malformed field meant zero candidates — which is exactly
+ * good candidates plus one with a malformed field meant zero candidates, which is exactly
  * what zeroed the CFO letter and the audited statements in the first real measurement. The
  * provider still receives the full candidate shape as guidance (the JSON schema keeps it,
  * inside an anyOf with null), but on the way back each candidate is judged alone: a bad one
@@ -75,8 +75,30 @@ export type ExtractionOptions = {
   localeHint?: "pt-BR" | "en-US";
   render?: RenderOptions;
   maxOutputTokens?: number;
+  /**
+   * Model calls in flight at once. The passes are independent reads of one document; running
+   * them four abreast cuts a 200-page filing from forty-five minutes to about twelve without
+   * changing what any pass sees. Bounded, because the gateway's budget accounting and the
+   * provider's rate limits are both per job.
+   */
+  concurrency?: number;
   onProgress?: (progress: ExtractionProgress) => void;
 };
+
+/** Runs `work` over `items` with at most `limit` in flight, results in input order. */
+async function mapWithConcurrency<T, R>(items: readonly T[], limit: number, work: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array<R>(items.length);
+  let next = 0;
+  const lanes = Array.from({length: Math.max(1, Math.min(limit, items.length))}, async () => {
+    while (next < items.length) {
+      const current = next;
+      next += 1;
+      results[current] = await work(items[current]!, current);
+    }
+  });
+  await Promise.all(lanes);
+  return results;
+}
 
 export async function extractDocument(options: ExtractionOptions): Promise<ExtractionResult> {
   const {layer, profile, gateway} = options;
@@ -92,7 +114,13 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
   let failed = 0;
   let malformed = 0;
 
-  for (const chunk of chunks) {
+  const concurrency = options.concurrency ?? 4;
+
+  type PassOutcome =
+    | {ok: true; kept: RawExtractionCandidate[]; dropped: number; absent: string[]; alerts: string[]; costUsd: number; inputTokens: number; outputTokens: number}
+    | {ok: false; message: string};
+
+  const chunkOutcomes = await mapWithConcurrency(chunks, concurrency, async (chunk): Promise<PassOutcome> => {
     options.onProgress?.({stage: "chunk_started", chunk: chunk.index, total: chunk.total});
     try {
       const result = await gateway.complete({
@@ -107,16 +135,6 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
 
       const kept = result.output.candidates.filter((candidate): candidate is RawExtractionCandidate => candidate !== null);
       const dropped = result.output.candidates.length - kept.length;
-      malformed += dropped;
-      raw.push(...kept);
-      for (const field of result.output.absent_fields) absentFields.add(field);
-      alerts.push(...result.output.document_alerts);
-
-      usage.calls += 1;
-      usage.costUsd += result.costUsd;
-      usage.inputTokens += result.usage.inputTokens;
-      usage.outputTokens += result.usage.outputTokens;
-
       options.onProgress?.({
         stage: "chunk_finished",
         chunk: chunk.index,
@@ -125,13 +143,30 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         malformed: dropped,
         costUsd: result.costUsd,
       });
+      return {ok: true, kept, dropped, absent: result.output.absent_fields, alerts: result.output.document_alerts, costUsd: result.costUsd, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens};
     } catch (error) {
       // A chunk that fails is a hole in the reading, and it is reported as one. Carrying on
-      // matters — one unreadable page should not discard the other forty — but the count has
+      // matters, one unreadable page should not discard the other forty, but the count has
       // to reach the caller, or a partial extraction looks like a complete one.
-      failed += 1;
       options.onProgress?.({stage: "chunk_failed", chunk: chunk.index, total: chunk.total, message: (error as Error).message});
+      return {ok: false, message: (error as Error).message};
     }
+  });
+
+  // Merged in chunk order, so the candidate list is the same whatever the lanes did.
+  for (const outcome of chunkOutcomes) {
+    if (!outcome.ok) {
+      failed += 1;
+      continue;
+    }
+    malformed += outcome.dropped;
+    raw.push(...outcome.kept);
+    for (const field of outcome.absent) absentFields.add(field);
+    alerts.push(...outcome.alerts);
+    usage.calls += 1;
+    usage.costUsd += outcome.costUsd;
+    usage.inputTokens += outcome.inputTokens;
+    usage.outputTokens += outcome.outputTokens;
   }
 
   // ---- row passes: the orchestration enumerates, the model reads --------------------------
@@ -144,9 +179,9 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
   const rowPasses = indexedFields.length > 0 ? tableRowPasses(index) : [];
   const rowFieldPaths = new Set<string>();
 
-  for (const pass of rowPasses) {
+  const rowOutcomes = await mapWithConcurrency(rowPasses, concurrency, async (pass, position): Promise<PassOutcome> => {
     const bound = indexedFields.map((field) => ({...field, pattern: field.pattern.replace("{i}", String(pass.instance))}));
-    const passNumber = chunks.length + rowPasses.indexOf(pass) + 1;
+    const passNumber = chunks.length + position + 1;
     options.onProgress?.({stage: "chunk_started", chunk: passNumber, total: chunks.length + rowPasses.length});
     try {
       const result = await gateway.complete({
@@ -166,17 +201,6 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
       });
 
       const kept = result.output.candidates.filter((candidate): candidate is RawExtractionCandidate => candidate !== null);
-      malformed += result.output.candidates.length - kept.length;
-      for (const candidate of kept) rowFieldPaths.add(candidate.field_path);
-      raw.push(...kept);
-      // A row not carrying a grace period says nothing about the document lacking one, so
-      // absences from row passes are ignored on purpose.
-
-      usage.calls += 1;
-      usage.costUsd += result.costUsd;
-      usage.inputTokens += result.usage.inputTokens;
-      usage.outputTokens += result.usage.outputTokens;
-
       options.onProgress?.({
         stage: "chunk_finished",
         chunk: passNumber,
@@ -185,10 +209,27 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         malformed: 0,
         costUsd: result.costUsd,
       });
+      // A row not carrying a grace period says nothing about the document lacking one, so
+      // absences from row passes are ignored on purpose.
+      return {ok: true, kept, dropped: result.output.candidates.length - kept.length, absent: [], alerts: [], costUsd: result.costUsd, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens};
     } catch (error) {
-      failed += 1;
       options.onProgress?.({stage: "chunk_failed", chunk: passNumber, total: chunks.length + rowPasses.length, message: (error as Error).message});
+      return {ok: false, message: (error as Error).message};
     }
+  });
+
+  for (const outcome of rowOutcomes) {
+    if (!outcome.ok) {
+      failed += 1;
+      continue;
+    }
+    malformed += outcome.dropped;
+    for (const candidate of outcome.kept) rowFieldPaths.add(candidate.field_path);
+    raw.push(...outcome.kept);
+    usage.calls += 1;
+    usage.costUsd += outcome.costUsd;
+    usage.inputTokens += outcome.inputTokens;
+    usage.outputTokens += outcome.outputTokens;
   }
 
   // The dedup: for a field a row pass produced, the whole-document candidate is the blurrier of

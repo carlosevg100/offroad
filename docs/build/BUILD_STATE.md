@@ -311,4 +311,9 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
   sem tocar no gabarito.
 - **Produção**: os 500 de `/.env`, `/wp-login.php` e `/foo.bar` vistos na Vercel até 20/08
   21:17 pararam com o #104; sondado em 21/08: os três respondem 404 e `/pt-BR` 200.
+- **Extração em quatro faixas** (#140): a Camil fez 431 chamadas sequenciais em 45 min (US$ 4,68)
+  e foi cortada; as passadas agora correm até quatro em paralelo, mescladas na ordem do documento.
+  Tetos por job do worker: 40 chamadas / US$ 5 viraram 800 / US$ 12, porque o teto de chamadas
+  recusaria um arquivamento de companhia aberta de cara; o de custo continua sendo a guarda.
+  Os workflows de medição ganharam 180 min (#139).
 
