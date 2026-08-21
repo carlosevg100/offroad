@@ -240,6 +240,11 @@ async function convertThenParse(
  * is what blocks automatic acceptance downstream.
  */
 async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | undefined): Promise<ParseResult> {
+  // pdf.js transfers the buffer it is given to its worker and leaves the caller's view detached,
+  // so the bytes the OCR step renders must be its own copy, taken before the text parse. The
+  // scanned room measured the alternative: every image-only PDF failed with "Cannot perform
+  // Construct on a detached ArrayBuffer" and read as empty, in the worker as in the evals.
+  const bytesForOcr = new Uint8Array(input.bytes);
   const result = await parsePdf(input);
   const pages = result.layer.pages ?? [];
   const scanned = pages.filter((page) => page.scanned);
@@ -258,7 +263,7 @@ async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | un
   const byNumber = new Map<number, LayerPage>();
   for (const page of readable) {
     try {
-      const recognized = await engine.recognizePdfPage({bytes: input.bytes, pageNumber: page.n});
+      const recognized = await engine.recognizePdfPage({bytes: bytesForOcr, pageNumber: page.n});
       const built = pagesFromOcr([{pageNumber: page.n, result: recognized}]);
       const [ocrPage] = built.pages;
       if (ocrPage) byNumber.set(page.n, ocrPage);
