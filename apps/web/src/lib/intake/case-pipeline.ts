@@ -10,7 +10,10 @@ import {dealBriefOf} from "./deal-brief";
 
 import type {Database, Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
-import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, questionsForCompany, type ClientQuestion, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
+import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, questionsForCompany, rateCredit, stressTable, type ClientQuestion, type DeskAnalysis, type InternalRating, type StressScenario, type Trajectory} from "@offroad/credit-analysis";
+import {instrumentVerdicts, type InstrumentVerdict, type LegalForm} from "@offroad/credit-playbook";
+import {designCollateralPackage, type CollateralAsset, type CollateralPackage} from "@offroad/deal-structure";
+import {indicativePrice, type IndicativePrice, type PricedInstrument} from "@offroad/market-reference";
 
 /**
  * The case, end to end: reconcile, size, structure, write, compile.
@@ -39,6 +42,13 @@ export type CaseState = {
   /** The desk's questions to the company, generated from the findings, meeting order. */
   clientQuestions: ClientQuestion[];
   termSheet: IndicativeTermSheet | null;
+  /** What a committee reads after the battery: the grade, the shocks, the papers, the security. */
+  rating: InternalRating | null;
+  stress: StressScenario[];
+  instruments: InstrumentVerdict[];
+  collateral: CollateralPackage | null;
+  /** The desk's indicative price for the internal documents; the term sheet stays silent on purpose. */
+  price: IndicativePrice | null;
   brief: CaseBrief | null;
   /** Why the brief is absent, when it is. */
   briefBlockedBy: string[];
@@ -299,6 +309,74 @@ export async function buildCaseState(input: {
     });
   }
 
+  // ---- the committee pack ---------------------------------------------------------------------
+  //
+  // Rating, stress, instruments and security are arithmetic over what the battery already
+  // established. They are computed here, once, so the screen, the memorandum and the term sheet
+  // read the same grade and the same shocks.
+  const legalName = valueOf("company.legal_name") ?? "";
+  const legalForm: LegalForm = /\bS\.?A\.?\b|sociedade an[oô]nima/i.test(legalName) ? "sa" : /ltda|limitada/i.test(legalName) ? "ltda" : "other";
+  const latestYear = reconciliation.facts.map((fact) => fact.key.fieldPath.match(/^historical_financials\.(\d{4})\./)?.[1]).filter((year): year is string => Boolean(year)).sort().at(-1);
+  const priorYear = latestYear ? String(Number(latestYear) - 1) : undefined;
+  const materialFacts = reconciliation.facts.filter((fact) => fact.accepted.evidenceRank <= 7);
+  const evidenceRank = materialFacts.length ? (materialFacts.reduce((sum, fact) => sum + fact.accepted.evidenceRank, 0) / materialFacts.length).toFixed(2) : undefined;
+  const topShare = valueOf("customers.top_customers.1.share_pct");
+  const rating = desk
+    ? rateCredit({
+        desk,
+        trajectory,
+        ...(latestYear && valueOf(`historical_financials.${latestYear}.financial_expenses`) ? {financialExpenses: valueOf(`historical_financials.${latestYear}.financial_expenses`)!} : {}),
+        ...(priorYear && valueOf(`historical_financials.${priorYear}.ebitda`) ? {priorEbitda: valueOf(`historical_financials.${priorYear}.ebitda`)!} : {}),
+        ...(topShare ? {topCustomerShare: topShare} : {}),
+        ...(evidenceRank ? {evidenceRank} : {}),
+      })
+    : null;
+  const stress = desk && desk.profile === "cash_generative"
+    ? stressTable({desk, ...(latestYear && valueOf(`historical_financials.${latestYear}.revenue`) ? {revenue: valueOf(`historical_financials.${latestYear}.revenue`)!} : {}), ...(topShare ? {topCustomerShare: topShare} : {})})
+    : [];
+  const instruments = requested
+    ? instrumentVerdicts({
+        legalForm,
+        archetypeId,
+        amount: requested,
+        ...(desk?.profile === "cash_burning" || valueOf("company.last_equity_round.amount") ? {ventureBacked: true} : {}),
+        ...(archetypeId === "equipment_finance" ? {equipment: true} : {}),
+        ...(desk && desk.encumbrance.free && requested ? {receivablesCoverage: (Number(desk.encumbrance.free) / Number(requested)).toFixed(2)} : {}),
+      })
+    : [];
+  const collateralAssets: CollateralAsset[] = reconciliation.facts
+    .filter((fact) => /^collateral\.assets\.\d+\.type$/.test(fact.key.fieldPath))
+    .map((fact) => {
+      const base = fact.key.fieldPath.replace(/\.type$/, "");
+      const classOf = (text: string): CollateralAsset["type"] => /receb|duplicat/i.test(text) ? "receivables" : /estoque|invent/i.test(text) ? "inventory" : /im[oó]vel|galp|terreno|property/i.test(text) ? "property" : /ve[ií]culo|frota|caminh/i.test(text) ? "vehicles" : /m[aá]quina|equip/i.test(text) ? "equipment" : /quota|a[çc][õo]es|shares/i.test(text) ? "shares" : /aval|fian/i.test(text) ? "guarantee" : /aplica|financ/i.test(text) ? "financial" : "other";
+      const appraisal = valueOf(`${base}.appraisal_value`);
+      const book = valueOf(`${base}.book_value`);
+      return {
+        description: valueOf(`${base}.description`) ?? fact.value,
+        type: classOf(fact.value),
+        value: appraisal ?? book ?? "0",
+        ...(appraisal ? {appraised: true} : {}),
+        ...(valueOf(`${base}.encumbrances`) && number(valueOf(`${base}.encumbrances`)) ? {encumbered: valueOf(`${base}.encumbrances`)!} : {}),
+        ...(valueOf(`${base}.policy_haircut`) ? {haircut: valueOf(`${base}.policy_haircut`)!} : {}),
+      };
+    });
+  if (desk && collateralAssets.every((asset) => asset.type !== "receivables") && Number(desk.encumbrance.receivablesBase) > 0) {
+    collateralAssets.push({description: "Recebíveis de clientes", type: "receivables", value: desk.encumbrance.receivablesBase, encumbered: desk.encumbrance.encumbered});
+  }
+  const collateral = requested && collateralAssets.length > 0 ? designCollateralPackage({assets: collateralAssets, amount: requested}) : null;
+
+  const preferredInstrument = instruments.find((verdict) => verdict.eligible)?.instrument.id as PricedInstrument | undefined;
+  const price = rating && preferredInstrument && requested
+    ? indicativePrice({
+        instrument: preferredInstrument,
+        rating: rating.band,
+        cdi: "0.105",
+        amount: requested,
+        ...(dealBrief.requestedTermMonths !== undefined ? {tenorMonths: dealBrief.requestedTermMonths} : number(valueOf("transaction.desired_term_months")) ? {tenorMonths: Number(valueOf("transaction.desired_term_months"))} : {}),
+        ...(collateral ? {collateralCoverage: collateral.coverageAchieved} : {}),
+      })
+    : null;
+
   // ---- write and compile ---------------------------------------------------------------------
   //
   // Everything above this line is arithmetic over facts already in the database and costs
@@ -353,6 +431,11 @@ export async function buildCaseState(input: {
       desk,
       trajectory,
       ...(termSheet ? {termSheet} : {}),
+      ...(rating ? {rating} : {}),
+      stress,
+      instruments,
+      ...(collateral ? {collateral} : {}),
+      ...(price ? {price} : {}),
     });
     if (compiled.ok) materials = compiled.materials;
     else materialsBlockedBy = compiled.detail;
@@ -362,7 +445,7 @@ export async function buildCaseState(input: {
 
   const clientQuestions = questionsForCompany(desk, trajectory, deskInputs.missing);
 
-  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, brief, briefBlockedBy, materials, materialsBlockedBy};
+  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, brief, briefBlockedBy, materials, materialsBlockedBy};
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */

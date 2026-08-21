@@ -1,7 +1,11 @@
 import {notFound} from "next/navigation";
 
 import {IntakeDeliveryMap, type DeliveryMapChecklist} from "@/components/intake/intake-delivery-map";
+import {IntakeCommittee} from "@/components/intake/intake-committee";
 import {IntakeDesk} from "@/components/intake/intake-desk";
+import {rateCredit, stressTable} from "@offroad/credit-analysis";
+import {instrumentVerdicts} from "@offroad/credit-playbook";
+import {designCollateralPackage} from "@offroad/deal-structure";
 import {auroraDeskState} from "@/lib/intake/dev/aurora-desk";
 import {nimbusDeskState} from "@/lib/intake/dev/nimbus-desk";
 
@@ -48,6 +52,13 @@ export default async function CasePreviewPage({params, searchParams}: {params: P
     <main className="app-main" style={{margin: "0 auto", maxWidth: 980, padding: "32px 20px"}}>
       <IntakeDeliveryMap checklist={checklist} documents={documents} locale={locale} sessionStatus="open" />
       <IntakeDesk clientQuestions={state.clientQuestions} desk={state.desk} deskMissing={state.deskMissing} locale={locale} trajectory={state.trajectory} />
+      <IntakeCommittee
+        collateral={state.desk ? designCollateralPackage({assets: [{description: "Recebíveis de clientes", type: "receivables", value: state.desk.encumbrance.receivablesBase, encumbered: state.desk.encumbrance.encumbered}, {description: "CD de São José dos Campos", type: "property", value: "28000000", appraised: true}, {description: "Estoques", type: "inventory", value: "42180000"}], amount: "42300000"}) : null}
+        instruments={instrumentVerdicts({legalForm: which === "nimbus" ? "sa" : "ltda", archetypeId: which === "nimbus" ? "venture_debt" : "growth_expansion", amount: which === "nimbus" ? "15000000" : "42300000", ...(which === "nimbus" ? {ventureBacked: true} : {})})}
+        locale={locale}
+        rating={state.desk ? rateCredit({desk: state.desk, trajectory: state.trajectory, financialExpenses: "6140000", priorEbitda: "14924000", topCustomerShare: "0.181", evidenceRank: "1.8"}) : null}
+        stress={state.desk && state.desk.profile === "cash_generative" ? stressTable({desk: state.desk, revenue: "191200000", topCustomerShare: "0.181"}) : []}
+      />
     </main>
   );
 }

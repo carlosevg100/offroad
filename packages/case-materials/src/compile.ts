@@ -3,6 +3,11 @@ import {auditBrief, type CaseBrief, type ReadinessReport} from "@offroad/case-un
 import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
 
 import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
+import type {InternalRating, StressScenario} from "@offroad/credit-analysis";
+import type {InstrumentVerdict} from "@offroad/credit-playbook";
+import type {CollateralPackage} from "@offroad/deal-structure";
+import type {IndicativePrice} from "@offroad/market-reference";
+
 import {diligenceQa} from "./diligence";
 import {investmentMemo, termSheetDocument} from "./institutional";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
@@ -64,6 +69,12 @@ export type CompileInput = {
   /** The desk battery and the structure. Without them the package is a brochure. */
   desk?: DeskAnalysis | null;
   trajectory?: Trajectory | null;
+  /** The committee pack: grade, shocks, papers, security. */
+  rating?: InternalRating;
+  stress?: StressScenario[];
+  instruments?: InstrumentVerdict[];
+  collateral?: CollateralPackage;
+  price?: IndicativePrice;
 };
 
 export type CompileOutcome =
@@ -292,6 +303,11 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
       trajectory: input.trajectory ?? null,
       ...(input.termSheet ? {termSheet: input.termSheet} : {}),
       ...(input.companyName ? {companyName: input.companyName} : {}),
+      ...(input.rating ? {rating: input.rating} : {}),
+      ...(input.stress ? {stress: input.stress} : {}),
+      ...(input.instruments ? {instruments: input.instruments} : {}),
+      ...(input.collateral ? {collateral: input.collateral} : {}),
+      ...(input.price ? {price: input.price} : {}),
     };
     institutional.push(investmentMemo(shared));
     const sheet = termSheetDocument(shared);
