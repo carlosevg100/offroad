@@ -25,9 +25,9 @@
   },
   {
     "document": "03_Balancete_Gerencial_Jul2026.xls",
-    "kind": "trial_balance",
-    "informationClass": "accounting",
-    "evidenceRank": 3,
+    "kind": "management_accounts",
+    "informationClass": "management",
+    "evidenceRank": 5,
     "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",
     "periodStart": "2026-01-01",
     "periodEnd": "2026-07-31"
@@ -42,7 +42,7 @@
   },
   {
     "document": "05_Concentracao_Clientes_2025.xlsx",
-    "kind": "management_accounts",
+    "kind": "customer_concentration",
     "informationClass": "management",
     "evidenceRank": 5,
     "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",

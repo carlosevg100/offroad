@@ -41,6 +41,7 @@ export const documentKindSchema = z.enum([
   "corporate_docs",
   "tax_clearance",
   "regulatory_filing",
+  "customer_concentration",
   "customer_contract",
   "supplier_contract",
   "insurance_policy",
@@ -101,6 +102,22 @@ export const documentKinds: readonly DocumentKindDefinition[] = [
   def("corporate_docs", "Documentos societários", "Corporate documents", "company_document", "institutional_and_corporate", ["company"], ["contrato social", "estatuto", "ata", "organograma", "quadro societario", "bylaws"]),
   def("tax_clearance", "Certidões", "Tax clearance certificates", "company_document", "institutional_and_corporate", ["company"], ["certidao", "negativa", "clearance"]),
   def("regulatory_filing", "Protocolo regulatório", "Regulatory filing", "company_document", "institutional_and_corporate", ["company"], ["protocolo", "cvm", "bacen", "filing"]),
+  /**
+   * A company's own account of who it sells to: the concentration table, the client list, the
+   * commercial report. There was no kind for it, which had a consequence nobody would guess from
+   * reading the vocabulary. The nearest neighbour a model reaches for is `management_accounts`,
+   * and a table of customers is plainly not a set of management accounts, so it lands on
+   * `other`. `other` maps to **no field groups at all**, so the document is never asked for
+   * anything, and `customers` becomes a field group the extractor cannot reach in practice
+   * however well it classifies.
+   *
+   * Found by the Aurora gold case, whose customer file came back `other`. Concentration is a
+   * rating driver: one client at eighteen per cent of revenue is a different credit from forty
+   * clients at half a per cent each, and a desk reads it before it reads the projections.
+   *
+   * `management`, because the company prepares it and nobody checks it.
+   */
+  def("customer_concentration", "Concentração de clientes", "Customer concentration", "management", "financial", ["customers", "transaction"], ["concentracao de clientes", "maiores clientes", "carteira de clientes", "principais clientes", "top clientes", "customer concentration", "client concentration"]),
   def("customer_contract", "Contrato com cliente", "Customer contract", "company_document", "contracts", ["customers"], ["contrato", "cliente", "fornecimento", "customer agreement"]),
   def("supplier_contract", "Contrato com fornecedor", "Supplier contract", "company_document", "contracts", ["customers"], ["contrato", "fornecedor", "supplier agreement"]),
   def("insurance_policy", "Apólice de seguro", "Insurance policy", "company_document", "contracts", ["collateral"], ["apolice", "seguro", "insurance"]),
