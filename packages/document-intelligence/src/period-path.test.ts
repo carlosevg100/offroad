@@ -38,3 +38,13 @@ describe("a covenant threshold written as a multiple", () => {
     expect(parseNumber("12,5%")?.value.toFixed()).toBe("12.5");
   });
 });
+
+describe("a period that is not a year", () => {
+  it("moves a historical path to the interim group", async () => {
+    const {canonicalPeriodPath: canonical} = await import("./verifier");
+    expect(canonical("historical_financials.2026.arr", {start: "2026-07-31", end: "2026-07-31"})).toBe("interim_financials.2026_07.arr");
+    expect(canonical("historical_financials.2026.revenue", {start: "2026-01-01", end: "2026-07-31"})).toBe("interim_financials.2026_07.revenue_7m");
+    expect(canonical("historical_financials.2026.cash", {start: "2026-12-31", end: "2026-12-31"})).toBe("historical_financials.2026.cash");
+    expect(canonical("historical_financials.2025.ebitda", {start: "2025-03-01", end: "2026-02-28"})).toBe("historical_financials.2026.ebitda");
+  });
+});
