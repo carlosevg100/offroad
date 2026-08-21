@@ -92,7 +92,7 @@ export const documentKinds: readonly DocumentKindDefinition[] = [
   def("receivables_aging", "Aging de recebíveis", "Receivables aging", "accounting", "financial", ["collateral", "customers"], ["aging", "recebiveis", "contas a receber", "receivables"]),
   def("payables_aging", "Aging de fornecedores", "Payables aging", "accounting", "financial", ["historical_financials"], ["aging", "fornecedores", "contas a pagar", "payables"]),
   def("business_plan", "Business plan", "Business plan", "projection", "project_and_plan", ["projections", "project", "transaction"], ["business plan", "plano de negocios", "projecoes", "premissas"]),
-  def("financial_model", "Modelo financeiro", "Financial model", "projection", "project_and_plan", ["projections", "project"], ["modelo", "model", "dcf", "cenario"]),
+  def("financial_model", "Modelo financeiro", "Financial model", "projection", "project_and_plan", ["projections", "project", "transaction"], ["modelo", "model", "dcf", "cenario"]),
   def("budget", "Orçamento", "Budget", "projection", "project_and_plan", ["projections"], ["orcamento", "budget"]),
   def("investor_deck", "Apresentação institucional", "Investor deck", "management", "institutional_and_corporate", ["company", "transaction", "customers", "project"], ["apresentacao", "deck", "investidores", "investor presentation"]),
   def("cim", "Memorando de informações", "Confidential information memorandum", "management", "institutional_and_corporate", ["company", "transaction", "historical_financials", "projections"], ["memorando", "information memorandum", "cim"]),
