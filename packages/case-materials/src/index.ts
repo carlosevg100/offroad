@@ -1,5 +1,5 @@
 /**
- * @offroad/case-materials — the documents a company takes to market, compiled from what was
+ * @offroad/case-materials, the documents a company takes to market, compiled from what was
  * verified rather than written free-hand.
  *
  * Three documents for the three moments of a debt process: a teaser that says enough without
@@ -12,3 +12,4 @@ export const caseMaterialsVersion = "2026.08.20-v1";
 
 export * from "./compile";
 export * from "./desk-sections";
+export * from "./institutional";

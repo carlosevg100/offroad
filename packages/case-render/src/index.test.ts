@@ -117,3 +117,26 @@ describe("escapeHtml", () => {
     expect(escapeHtml("EBITDA ajustado de R$ 12,4 milhões")).toBe("EBITDA ajustado de R$ 12,4 milhões");
   });
 });
+
+describe("key-value and callout blocks", () => {
+  it("render terms as a row table and key terms as a definition list", () => {
+    const html = renderMaterialHtml({
+      material: {
+        kind: "term_sheet",
+        title: {pt: "Term Sheet indicativo", en: "Indicative Term Sheet"},
+        dependsOn: [],
+        blocks: [
+          {type: "callout", title: {pt: "Termos-chave", en: "Key terms"}, items: [{label: {pt: "Prazo", en: "Tenor"}, value: {pt: "48 meses", en: "48 months"}}]},
+          {type: "kv", rows: [{label: {pt: "Montante", en: "Amount"}, value: {pt: "R$ 22.068.000", en: "R$ 22,068,000"}, note: {pt: "Limite da capacidade.", en: "Capacity limit."}}]},
+          {type: "table", caption: {pt: "Datas", en: "Dates"}, head: [{pt: "Credor", en: "Lender"}, {pt: "Vencimento", en: "Maturity"}], rows: [["Itaú", "2027-11-20"]]},
+        ],
+      },
+      lang: "pt",
+      meta: {issuedOn: "2026-08-21", companyName: "Aurora", sources: []},
+    });
+    expect(html).toContain('<aside class="callout"><h3>Termos-chave</h3><dl><div><dt>Prazo</dt><dd>48 meses</dd></div></dl></aside>');
+    expect(html).toContain('<th scope="row">Montante</th><td>R$ 22.068.000<span class="kv__note">Limite da capacidade.</span></td>');
+    expect(html).toContain('<td class="num">2027-11-20</td>');
+    expect(html).toContain("Term Sheet indicativo");
+  });
+});

@@ -3,6 +3,7 @@ import {auditBrief, type CaseBrief, type ReadinessReport} from "@offroad/case-un
 import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
 
 import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
+import {investmentMemo, termSheetDocument} from "./institutional";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
@@ -11,23 +12,23 @@ import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@
  *
  * Three of them, because a debt process has three moments and they need different documents:
  *
- *   - **Teaser** — one page, no company name until the company says so, enough for an investor
+ *   - **Teaser**, one page, no company name until the company says so, enough for an investor
  *     to decide whether to sign an NDA.
- *   - **Credit profile** — the analysis: history, current position, the operation, the numbers
+ *   - **Credit profile**, the analysis: history, current position, the operation, the numbers
  *     with their sources, the open questions.
- *   - **Package** — the profile plus the indicative structure and the diligence roadmap.
+ *   - **Package**, the profile plus the indicative structure and the diligence roadmap.
  *
  * Every one is compiled, never written free-hand: sections are assembled from facts,
  * calculations, the brief's claims and the term sheet, and the same evidence auditor that gates
  * the brief gates the material. A document that would carry a number nobody can source does not
- * get produced — and a critical open exception blocks all three, because circulating a case
+ * get produced, and a critical open exception blocks all three, because circulating a case
  * whose balance sheet does not balance is worse than circulating nothing.
  *
  * The two languages carry identical economics by construction: numbers are formatted from the
  * same decimal strings, never translated or re-rounded per locale.
  */
 
-export type MaterialKind = "teaser" | "credit_profile" | "package";
+export type MaterialKind = "teaser" | "credit_profile" | "package" | "investment_memo" | "term_sheet";
 
 export type MaterialBlock =
   | {type: "heading"; text: {pt: string; en: string}}
@@ -35,7 +36,11 @@ export type MaterialBlock =
   | {type: "metrics"; items: Array<{label: {pt: string; en: string}; value: string; formatted: {pt: string; en: string}; supportIds: string[]}>}
   | {type: "table"; caption: {pt: string; en: string}; head: Array<{pt: string; en: string}>; rows: string[][]}
   | {type: "list"; items: Array<{pt: string; en: string}>}
-  | {type: "disclaimer"; text: {pt: string; en: string}};
+  | {type: "disclaimer"; text: {pt: string; en: string}}
+  /** Two-column terms a lawyer can mark up: label, value, and the basis beside it. */
+  | {type: "kv"; caption?: {pt: string; en: string}; rows: Array<{label: {pt: string; en: string}; value: {pt: string; en: string}; note?: {pt: string; en: string}; supportIds?: string[]}>}
+  /** A boxed card of labelled values: key terms at the top, basis of preparation at the end. */
+  | {type: "callout"; title: {pt: string; en: string}; items: Array<{label: {pt: string; en: string}; value: {pt: string; en: string}}>};
 
 export type Material = {
   kind: MaterialKind;
@@ -136,8 +141,8 @@ const DISCLAIMER: MaterialBlock = {
 /**
  * Assembles the three documents, or explains why it will not.
  *
- * Refusal comes first and is deliberate. A critical open exception blocks everything — a case
- * whose numbers do not reconcile should not reach an investor with a nice cover — and a brief
+ * Refusal comes first and is deliberate. A critical open exception blocks everything, a case
+ * whose numbers do not reconcile should not reach an investor with a nice cover, and a brief
  * that fails the evidence audit cannot be quoted from, because its sentences are exactly what
  * would be quoted.
  */
@@ -273,14 +278,33 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
     dependsOn: creditProfile.dependsOn,
   };
 
-  return {ok: true, materials: [teaser, creditProfile, packageMaterial]};
+  // The two documents a DCM house circulates. Only when the desk ran: a memorandum without
+  // the capital structure and the trajectory is the brochure this replaces.
+  const institutional: Material[] = [];
+  if (input.desk) {
+    const shared = {
+      brief: input.brief,
+      facts: input.facts,
+      calculations: input.calculations,
+      exceptions: input.exceptions,
+      desk: input.desk,
+      trajectory: input.trajectory ?? null,
+      ...(input.termSheet ? {termSheet: input.termSheet} : {}),
+      ...(input.companyName ? {companyName: input.companyName} : {}),
+    };
+    institutional.push(investmentMemo(shared));
+    const sheet = termSheetDocument(shared);
+    if (sheet) institutional.push(sheet);
+  }
+
+  return {ok: true, materials: [...institutional, teaser, creditProfile, packageMaterial]};
 }
 
 /**
  * Whether a produced document still reflects the case.
  *
- * A material is a photograph of a fact set. When a fact it depends on changes — a reprocess, a
- * reviewer's correction, a new document — the photograph is stale, and saying so is better than
+ * A material is a photograph of a fact set. When a fact it depends on changes, a reprocess, a
+ * reviewer's correction, a new document, the photograph is stale, and saying so is better than
  * silently regenerating: someone may already have sent it.
  */
 export function isStale(material: Material, currentValues: Map<string, string>, snapshotValues: Map<string, string>): boolean {

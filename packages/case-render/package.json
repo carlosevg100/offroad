@@ -12,13 +12,18 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --exclude 'dist/**'"
+    "render:aurora": "tsx scripts/render-aurora.ts",
+    "test": "vitest run --exclude 'dist/**'",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@offroad/case-materials": "workspace:*"
   },
   "devDependencies": {
+    "@offroad/case-understanding": "workspace:*",
+    "@offroad/credit-analysis": "workspace:*",
+    "@offroad/deal-structure": "workspace:*",
+    "@offroad/reconciliation": "workspace:*",
     "@types/node": "^20.19.43"
   }
 }
