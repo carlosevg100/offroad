@@ -1,0 +1,24 @@
+{
+  "caseId": "fakeco-scan",
+  "title": "Aurora Distribuidora, a sala digitalizada: demonstrações, mapa de dívida e contrato social como imagens (sintética)",
+  "synthetic": true,
+  "archetypeId": "growth_expansion",
+  "language": "pt",
+  "documentsDir": "../../assets/fakeco-scan",
+  "documents": [
+    {
+      "name": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+      "sha256": "6e9ee92a4bc31b7c1336d118bfb5b404dcda01426af24e14f64f7ee2d719e8ff"
+    },
+    {
+      "name": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+      "sha256": "4e3d0a55dde5fb3b2e5a07b168f700c322394b1af0622122eb77e670ee4d1e70"
+    },
+    {
+      "name": "07_Contrato_Social_Consolidado.png",
+      "sha256": "ce2f506b515a018ae115af860dd2a5f7608a2e78c9171c8c5c7654e2ee297da4"
+    }
+  ],
+  "provenance": "Derivada do gabarito fakeco: os mesmos números, lidos dos mesmos documentos renderizados como imagem por packages/testing-fixtures/scripts/render-fakeco-scan.sh. Mede o caminho de OCR.",
+  "version": "fakeco-2026.08.21-v1-scan"
+}
