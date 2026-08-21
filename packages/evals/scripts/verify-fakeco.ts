@@ -4,6 +4,9 @@
  * The point of a fixture is that the system can actually read it. A data room that only looks
  * realistic teaches nothing, and a generator is perfectly capable of writing a spreadsheet no
  * parser here accepts. This is the check that the room is a room.
+ *
+ *   pnpm --filter @offroad/evals fakeco:verify            # Aurora
+ *   pnpm --filter @offroad/evals verify:case camil        # any case under assets/
  */
 import {readFileSync, readdirSync} from "node:fs";
 import {dirname, join} from "node:path";
@@ -11,7 +14,8 @@ import {fileURLToPath} from "node:url";
 
 import {parseDocument} from "@offroad/document-parsers";
 
-const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "testing-fixtures", "assets", "fakeco");
+const caseId = process.argv[2] ?? "fakeco";
+const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "testing-fixtures", "assets", caseId);
 const files = readdirSync(dir).filter((f) => !f.startsWith("."));
 
 for (const name of files.sort()) {

@@ -1,0 +1,23 @@
+{
+  "caseId": "camil",
+  "title": "Camil Alimentos S.A.: alongamento de R$ 1,5 bilhão via CRA sobre demonstrações públicas (1T26)",
+  "synthetic": false,
+  "language": "pt",
+  "documentsDir": "../../assets/camil",
+  "documents": [
+    {
+      "name": "01_ITR_1T26_31mai2026.pdf",
+      "sha256": "75d759c687ad2b32c51db2433b8d98eb11ece8f7dbf1801f71857e34f5042f49"
+    },
+    {
+      "name": "02_Proposta_Administracao_AGOE_2026.pdf",
+      "sha256": "dfb079f948194dcfab34b87806251ae2db81dfb1fc5255a3ae11553f2969ec95"
+    },
+    {
+      "name": "03_Pedido_Simulado_CRA_2026.docx",
+      "sha256": "8d5f20a613f510775ed33d8e9df0fc608a3434a1e6b64303e1f1d7178812d5b6"
+    }
+  ],
+  "provenance": "Os dois PDFs são arquivamentos públicos da companhia (ITR de 31/05/2026 com revisão da BDO RCS e Proposta da Administração para a AGOE de 30/06/2026), obtidos dos sites de RI/CVM em 21/08/2026. O pedido é simulado e diz isso na primeira linha; foi gerado por packages/testing-fixtures/scripts/build-camil.ts. Este gabarito foi lido à mão dos arquivamentos por packages/evals/scripts/build-camil-gold.ts, com cada valor citado ao documento de origem.",
+  "version": "camil-2026.08.21-v1"
+}

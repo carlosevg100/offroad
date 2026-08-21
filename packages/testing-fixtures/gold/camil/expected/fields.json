@@ -1,0 +1,1395 @@
+[
+  {
+    "fieldPath": "company.legal_name",
+    "value": "Camil Alimentos S.A.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "company.legal_identifier",
+    "value": "64.904.295/0001-03",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "company.reporting_currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "company.fiscal_year_end",
+    "value": "28 de fevereiro",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "company.accounting_framework",
+    "value": "IFRS / CPC",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "company.auditor.firm",
+    "value": "BDO RCS Auditores Independentes SS Ltda.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "company.sector",
+    "value": "Alimentos",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "historical_financials.2025.revenue",
+    "value": "11115000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.ebitda",
+    "value": "915300000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.net_income",
+    "value": "148500000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.d_and_a",
+    "value": "285900000",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.financial_result",
+    "value": "-591700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.taxes",
+    "value": "110800000",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.net_debt",
+    "value": "2965700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Dívida bruta menos caixa e aplicações financeiras, definição da companhia."
+  },
+  {
+    "fieldPath": "historical_financials.2025.gross_debt",
+    "value": "4988383000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.cash",
+    "value": "1997608000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Caixa e equivalentes; as aplicações financeiras (R$ 25.095 mil) ficam fora."
+  },
+  {
+    "fieldPath": "historical_financials.2025.receivables",
+    "value": "1019433000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.inventory",
+    "value": "2096538000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Circulante; há mais R$ 87.120 mil no não circulante."
+  },
+  {
+    "fieldPath": "historical_financials.2025.payables",
+    "value": "1229105000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.equity",
+    "value": "3015690000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.total_assets",
+    "value": "10774545000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.revenue",
+    "value": "12262900000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2024-03-01",
+    "periodEnd": "2025-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.ebitda",
+    "value": "907300000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2024-03-01",
+    "periodEnd": "2025-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.net_income",
+    "value": "217000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2024-03-01",
+    "periodEnd": "2025-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.net_debt",
+    "value": "2690700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2024-03-01",
+    "periodEnd": "2025-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.gross_debt",
+    "value": "5237700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2024-03-01",
+    "periodEnd": "2025-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.revenue_3m",
+    "value": "2667975000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.gross_profit_3m",
+    "value": "651796000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.ebit_3m",
+    "value": "139521000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.ebitda_3m",
+    "value": "210000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Relatório da administração dentro do ITR: R$ 210,0 milhões, margem 7,9%."
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.financial_expenses_3m",
+    "value": "188430000",
+    "valueType": "number",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.financial_result_3m",
+    "value": "-141971000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.net_income_3m",
+    "value": "27971000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.cash",
+    "value": "1430714000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.receivables",
+    "value": "1881602000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.inventory",
+    "value": "3013060000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.payables",
+    "value": "1870146000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.gross_debt",
+    "value": "5670186000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.equity",
+    "value": "2989107000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.total_assets",
+    "value": "12021830000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.1.lender",
+    "value": "Bancos (capital de giro, moeda nacional)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.1.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.1.balance",
+    "value": "1314412000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.1.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.lender",
+    "value": "Bancos (capital de giro, USD)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.2.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.balance",
+    "value": "867244000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.2.currency",
+    "value": "USD",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.lender",
+    "value": "Bancos (capital de giro, CLP)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.3.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.balance",
+    "value": "54180000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.3.currency",
+    "value": "CLP",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.lender",
+    "value": "Bancos (capital de giro, PEN)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.4.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.balance",
+    "value": "181158000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.4.currency",
+    "value": "PEN",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.lender",
+    "value": "11ª emissão, 1ª série",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.5.instrument_type",
+    "value": "Debênture",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.balance",
+    "value": "151795000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.5.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.rate",
+    "value": "CDI + 1,55% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.maturity",
+    "value": "2028-10-30",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.amortization",
+    "value": "2 parcelas",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.lender",
+    "value": "11ª emissão, 2ª série",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.6.instrument_type",
+    "value": "Debênture",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.balance",
+    "value": "505984000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.6.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.rate",
+    "value": "CDI + 1,55% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.maturity",
+    "value": "2028-10-30",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.amortization",
+    "value": "2 parcelas",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.lender",
+    "value": "13ª emissão, 1ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.7.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.balance",
+    "value": "306038000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.7.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.rate",
+    "value": "CDI + 0,65% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.maturity",
+    "value": "2028-11-14",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.amortization",
+    "value": "Parcela única",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.8.lender",
+    "value": "13ª emissão, 2ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.8.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.8.balance",
+    "value": "282357000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.8.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.8.rate",
+    "value": "IPCA + 6,3416% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.8.maturity",
+    "value": "2030-11-14",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.8.amortization",
+    "value": "2 parcelas anuais",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.9.lender",
+    "value": "13ª emissão, 3ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.9.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.9.balance",
+    "value": "110321000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.9.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.9.rate",
+    "value": "IPCA + 6,5264% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.9.maturity",
+    "value": "2033-11-14",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.9.amortization",
+    "value": "3 parcelas anuais",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.10.lender",
+    "value": "14ª emissão, 1ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.10.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.10.balance",
+    "value": "438918000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.10.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.10.rate",
+    "value": "104% do DI",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.10.maturity",
+    "value": "2029-06-15",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.10.amortization",
+    "value": "Parcela única",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.11.lender",
+    "value": "14ª emissão, 2ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.11.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.11.balance",
+    "value": "204059000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.11.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.11.rate",
+    "value": "IPCA + 6,8286% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.11.maturity",
+    "value": "2031-06-16",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.11.amortization",
+    "value": "2 parcelas anuais",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.12.lender",
+    "value": "14ª emissão, 3ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.12.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.12.balance",
+    "value": "66024000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.12.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.12.rate",
+    "value": "IPCA + 6,9982% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.12.maturity",
+    "value": "2034-06-15",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.12.amortization",
+    "value": "3 parcelas anuais",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.13.lender",
+    "value": "15ª emissão, 1ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.13.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.13.balance",
+    "value": "770123000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.13.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.13.rate",
+    "value": "105% do DI",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.13.maturity",
+    "value": "2030-11-14",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.13.amortization",
+    "value": "Parcela única",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.14.lender",
+    "value": "15ª emissão, 2ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.14.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.14.balance",
+    "value": "408703000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.14.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.14.rate",
+    "value": "14,15% a.a. pré",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.14.maturity",
+    "value": "2032-11-12",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.14.amortization",
+    "value": "2 parcelas anuais",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.15.lender",
+    "value": "15ª emissão, 3ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.15.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.15.balance",
+    "value": "50401000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.15.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.15.rate",
+    "value": "IPCA + 8,2% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.15.maturity",
+    "value": "2032-11-12",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.15.amortization",
+    "value": "2 parcelas anuais",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.16.lender",
+    "value": "15ª emissão, 4ª série (CRA)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.instruments.16.instrument_type",
+    "value": "Debênture / CRA",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.16.balance",
+    "value": "30793000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.16.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.16.rate",
+    "value": "IPCA + 8,7% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.16.maturity",
+    "value": "2035-11-14",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.16.amortization",
+    "value": "3 parcelas anuais",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
+  },
+  {
+    "fieldPath": "debt.total_gross",
+    "value": "5670186000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.covenants.1.metric",
+    "value": "Dívida líquida / EBITDA",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf"
+  },
+  {
+    "fieldPath": "debt.covenants.1.threshold",
+    "value": "4.0",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "note": "Medido nas demonstrações anuais; próxima medição em 28/02/2027."
+  },
+  {
+    "fieldPath": "leverage.pre_transaction_net_debt_ebitda",
+    "value": "4.72",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "Pro forma informado pela companhia na nota 15."
+  },
+  {
+    "fieldPath": "transaction.requested_amount",
+    "value": "1500000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.desired_term_months",
+    "value": "84",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.desired_grace_months",
+    "value": "24",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.preferred_structure",
+    "value": "CRA lastreado em debêntures",
+    "valueType": "text",
+    "materiality": "supporting",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.refinancing",
+    "value": "1229828000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.1.item",
+    "value": "Resgate antecipado das parcelas Jun/26 a Mai/27 (empréstimos bilaterais e CCBs)",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.1.amount",
+    "value": "1229828000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.2.item",
+    "value": "Reforço de caixa para a safra 2026/27",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx"
+  },
+  {
+    "fieldPath": "transaction.use_of_proceeds.2.amount",
+    "value": "270172000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Pedido_Simulado_CRA_2026.docx",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  }
+]
