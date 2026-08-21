@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import {reconciliationRule, type ExceptionSeverity} from "@offroad/credit-ontology";
+import {isMaterialFieldPath, reconciliationRule, type ExceptionSeverity} from "@offroad/credit-ontology";
 
 import {factValue, indexFacts, relativeDelta, type ReconciledFact} from "./facts";
 
@@ -259,21 +259,30 @@ function rulePeriodSanity(context: RuleContext): ReconciliationException[] {
   return exceptions;
 }
 
-/** R3 — the same metric from different sources has to agree, or the difference is the story. */
+/**
+ * R3, the same fact from different sources has to agree, or the difference is the story.
+ *
+ * Every material fact, not a handful of metrics: Nimbus measured why. The deck said ARR of
+ * R$ 40 million and the per-customer export said 37,3; the letter asked for one amount and the
+ * plan for another; none of them was revenue or EBITDA, so none was flagged, and the
+ * contradiction went to the memo as if the room agreed with itself. The fact with the higher
+ * evidence rank is adopted; the other one is shown beside it, so the reviewer judges.
+ */
 function ruleSourceConflict(context: RuleContext): ReconciliationException[] {
-  const watched = /(\.revenue|\.ebitda|\.net_income|\.equity|\.total_assets)$/;
+  const decisive = /(\.requested_amount|\.revenue|\.ebitda|\.arr|\.gross_debt|\.net_debt|\.cash)(_\d+m|_ytd|_ltm)?$/;
   return context.facts
-    .filter((fact) => fact.disputed && watched.test(fact.key.fieldPath) && fact.conflicts.length > 0)
-    .slice(0, 8)
+    .filter((fact) => fact.disputed && fact.conflicts.length > 0 && isMaterialFieldPath(fact.key.fieldPath))
+    .slice(0, 12)
     .map((fact) => {
       const worst = [...fact.conflicts].sort((a, b) => Number(b.relativeDelta ?? 0) - Number(a.relativeDelta ?? 0))[0]!;
       const pct = worst.relativeDelta ? new Decimal(worst.relativeDelta).times(100).toDecimalPlaces(1).toFixed() : "?";
+      const wide = worst.relativeDelta ? new Decimal(worst.relativeDelta).gt("0.05") : true;
       return exceptionFrom(
         "R3",
-        "high",
+        decisive.test(fact.key.fieldPath) && wide ? "critical" : "high",
         {
-          pt: `${fact.key.fieldPath}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""} difere em ${pct}% entre ${fact.accepted.sourceDocument} e ${worst.candidate.sourceDocument}. Foi adotado o de maior rank de evidência; a diferença precisa de explicação antes de ir ao mercado.`,
-          en: `${fact.key.fieldPath}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""} differs by ${pct}% between ${fact.accepted.sourceDocument} and ${worst.candidate.sourceDocument}. The higher evidence rank was adopted; the difference needs explaining before this goes to market.`,
+          pt: `${fact.key.fieldPath}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""}: ${fact.accepted.sourceDocument} diz ${fact.value} e ${worst.candidate.sourceDocument} diz ${worst.candidate.normalizedValue} (diferença de ${pct}%). Foi adotado o de maior rank de evidência; a divergência precisa de explicação da companhia antes de qualquer material ir ao mercado.`,
+          en: `${fact.key.fieldPath}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""}: ${fact.accepted.sourceDocument} says ${fact.value} and ${worst.candidate.sourceDocument} says ${worst.candidate.normalizedValue} (a ${pct}% difference). The higher evidence rank was adopted; the divergence needs the company's explanation before any material goes to market.`,
         },
         [
           {label: "adotado", value: fact.value, sourceDocument: fact.accepted.sourceDocument, fieldPath: fact.key.fieldPath, anchor: fact.accepted.anchor},
@@ -282,6 +291,42 @@ function ruleSourceConflict(context: RuleContext): ReconciliationException[] {
         context.locale,
       );
     });
+}
+
+/** R18, the runway a founder writes against the one the bank statement and the burn give. */
+function ruleStatedRunway(context: RuleContext): ReconciliationException[] {
+  const stated = context.index.get("company.runway_months");
+  if (!stated || stated.valueType !== "number") return [];
+  const latest = (metric: string): ReconciledFact | undefined =>
+    context.facts
+      .filter((fact) => new RegExp(`^interim_financials\\.\\d{4}_\\d{2}\\.${metric}(_\\d+m)?$`).test(fact.key.fieldPath))
+      .sort((a, b) => (b.key.periodEnd ?? "").localeCompare(a.key.periodEnd ?? ""))[0];
+  const cash = latest("cash");
+  const burn = latest("monthly_burn");
+  if (!cash || !burn) return [];
+  const burnValue = new Decimal(burn.value).abs();
+  if (burnValue.lte(0)) return [];
+  const computed = new Decimal(cash.value).div(burnValue);
+  const declared = new Decimal(stated.value);
+  if (declared.minus(computed).abs().lte("1.5")) return [];
+  const months = (value: Decimal) => value.toDecimalPlaces(1).toFixed();
+  return [
+    exceptionFrom(
+      "R18",
+      declared.gt(computed) ? "high" : "medium",
+      {
+        pt: `O runway declarado é de ${months(declared)} meses (${stated.accepted.sourceDocument}); o caixa de ${money(new Decimal(cash.value))} sobre a queima média de ${money(burnValue)} por mês dá ${months(computed)}. A diferença é a queima escolhida, e o credor usa a média do extrato.`,
+        en: `Stated runway is ${months(declared)} months (${stated.accepted.sourceDocument}); cash of ${money(new Decimal(cash.value))} over average burn of ${money(burnValue)} a month gives ${months(computed)}. The difference is the burn chosen, and the lender uses the statement's average.`,
+      },
+      [
+        {label: "declarado", value: stated.value, sourceDocument: stated.accepted.sourceDocument, fieldPath: "company.runway_months", anchor: stated.accepted.anchor},
+        {label: "caixa", value: cash.value, sourceDocument: cash.accepted.sourceDocument, fieldPath: cash.key.fieldPath, anchor: cash.accepted.anchor},
+        {label: "queima mensal", value: burn.value, sourceDocument: burn.accepted.sourceDocument, fieldPath: burn.key.fieldPath, anchor: burn.accepted.anchor},
+        {label: "calculado", value: months(computed)},
+      ],
+      context.locale,
+    ),
+  ];
 }
 
 /** R5 — financial expense has to look like the debt stock times a plausible rate. */
@@ -323,6 +368,7 @@ const allRules = [
   rulePeriodSanity,
   ruleSourceConflict,
   ruleFinancialExpensePlausibility,
+ ruleStatedRunway,
 ];
 
 /** Runs every rule over the reconciled facts. Deterministic, ordered by severity. */
