@@ -1,5 +1,8 @@
 import Decimal from "decimal.js";
 import {auditBrief, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
+import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+
+import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
@@ -52,6 +55,9 @@ export type CompileInput = {
   /** Redacted until the company authorises disclosure (AGENTS.md §2.6). */
   companyName?: string;
   currency?: string;
+  /** The desk battery and the structure. Without them the package is a brochure. */
+  desk?: DeskAnalysis | null;
+  trajectory?: Trajectory | null;
 };
 
 export type CompileOutcome =
@@ -195,6 +201,15 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
     if (section.id === "current_position" && metrics) profileBlocks.push(metrics);
   }
 
+  // The desk sections: the capital structure the day before and after, and the risks with
+  // their structural answers. This is the difference between a brochure and a document an
+  // investor prices from.
+  if (input.desk) {
+    profileBlocks.push({type: "heading", text: {pt: "Estrutura de capital e tratamento", en: "Capital structure and treatment"}});
+    profileBlocks.push(...capitalStructure(input.desk, input.trajectory ?? null));
+    profileBlocks.push(...riskFactors(input.desk, input.trajectory ?? null));
+  }
+
   // Open questions belong in the document. An investor who finds them himself trusts the
   // package less than one who was handed them.
   if (input.exceptions.length > 0) {
@@ -217,6 +232,16 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
   };
 
   const packageBlocks = [...profileBlocks];
+  if (input.desk && input.trajectory) {
+    const su = sourcesAndUses(input.desk, input.trajectory);
+    const insert: MaterialBlock[] = [
+      {type: "heading", text: {pt: "A operação proposta", en: "The proposed transaction"}},
+      ...(su ? [su] : []),
+      trajectoryTable(input.trajectory),
+      covenantSchedule(input.trajectory),
+    ];
+    packageBlocks.splice(packageBlocks.length - 1, 0, ...insert);
+  }
   if (input.termSheet) {
     packageBlocks.splice(packageBlocks.length - 1, 0, {type: "heading", text: {pt: "Estrutura indicativa", en: "Indicative structure"}});
     packageBlocks.splice(packageBlocks.length - 1, 0, {

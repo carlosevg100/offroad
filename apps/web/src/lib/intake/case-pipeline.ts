@@ -10,7 +10,7 @@ import {dealBriefOf} from "./deal-brief";
 
 import type {Database, Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
-import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
+import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, questionsForCompany, type ClientQuestion, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
 
 /**
  * The case, end to end: reconcile, size, structure, write, compile.
@@ -36,6 +36,8 @@ export type CaseState = {
   trajectory: Trajectory | null;
   /** Field paths that kept the battery from running, surfaced as questions to the company. */
   deskMissing: string[];
+  /** The desk's questions to the company, generated from the findings, meeting order. */
+  clientQuestions: ClientQuestion[];
   termSheet: IndicativeTermSheet | null;
   brief: CaseBrief | null;
   /** Why the brief is absent, when it is. */
@@ -332,12 +334,15 @@ export async function buildCaseState(input: {
   let materials: Material[] = [];
   let materialsBlockedBy: string[] = [];
   if (brief) {
+    const materialEvidence = deskEvidence(desk, trajectory);
     const compiled = compileMaterials({
       brief,
       facts: reconciliation.facts,
-      calculations: reconciliation.calculations,
+      calculations: [...reconciliation.calculations, ...materialEvidence.calculations],
       exceptions: reconciliation.exceptions,
       readiness,
+      desk,
+      trajectory,
       ...(termSheet ? {termSheet} : {}),
     });
     if (compiled.ok) materials = compiled.materials;
@@ -346,7 +351,9 @@ export async function buildCaseState(input: {
     materialsBlockedBy = ["brief_unavailable"];
   }
 
-  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, termSheet, brief, briefBlockedBy, materials, materialsBlockedBy};
+  const clientQuestions = questionsForCompany(desk, trajectory, deskInputs.missing);
+
+  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, brief, briefBlockedBy, materials, materialsBlockedBy};
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */
@@ -366,6 +373,7 @@ export async function saveCaseState(input: {
       capacity: state.capacity ?? null,
       desk: (state.desk ?? null) as unknown as Json,
       trajectory: (state.trajectory ?? null) as unknown as Json,
+      client_questions: state.clientQuestions as unknown as Json,
       term_sheet: state.termSheet ?? null,
       brief: state.brief ?? null,
       brief_blocked_by: state.briefBlockedBy,

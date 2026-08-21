@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@offroad/case-understanding": "workspace:*",
+    "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/deal-structure": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
