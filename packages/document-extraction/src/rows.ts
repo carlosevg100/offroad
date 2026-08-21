@@ -66,6 +66,11 @@ export function tableRowPasses(index: LayerIndex, options: {minRows?: number; ma
   }
 
   const passes: TableRowPass[] = [];
+  // The instance runs across tables, not within each one. Camil measured the alternative: the
+  // debenture table, the swap table and the sensitivity table each started at 1, so
+  // `debt.instruments.1.balance` was three different numbers from one document and the
+  // reconciliation saw a contradiction where the filing had three tables.
+  let instance = 0;
   for (const [tableId, rows] of rowsByTable) {
     const aggregate = index.byId.get(tableId);
     const firstLine = aggregate?.text.split("\n", 1)[0] ?? "";
@@ -90,10 +95,11 @@ export function tableRowPasses(index: LayerIndex, options: {minRows?: number; ma
       if (cues.filter((cue) => sample.includes(cue)).length < 2) continue;
     }
 
-    cleaned.forEach((row, position) => {
+    cleaned.forEach((row) => {
+      instance += 1;
       passes.push({
         tableId,
-        instance: position + 1,
+        instance,
         rowAnchorId: row.id,
         evidenceText: [
           ...(header ? [`colunas: ${header}`] : []),

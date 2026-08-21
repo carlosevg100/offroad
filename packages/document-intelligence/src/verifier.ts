@@ -193,7 +193,7 @@ export function canonicalPeriodPath(fieldPath: string, period: {start: string; e
     const window = STOCK_METRICS.has(metric) ? "" : `_${monthsBetween(period.start, period.end)}m`;
     return `interim_financials.${endYear}_${endMonth}.${metric}${window}`;
   }
-  const annual = fieldPath.match(/^(historical_financials|projections)\.(\d{4})\.(.+)$/);
+  const annual = fieldPath.match(/^(historical_financials|projections)\.(\d{4})(?:_\d{2})?\.(.+)$/);
   if (annual) {
     const endYear = period.end.slice(0, 4);
     return `${annual[1]}.${endYear}.${annual[3]}`;

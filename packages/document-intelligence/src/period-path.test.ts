@@ -22,3 +22,19 @@ describe("the period spelled the way the ontology spells it", () => {
     expect(canonicalPeriodPath("debt.instruments.1.balance", quarter)).toBe("debt.instruments.1.balance");
   });
 });
+
+describe("a year the model spelled with a month", () => {
+  it("is keyed by the year alone", async () => {
+    const {canonicalPeriodPath: canonical} = await import("./verifier");
+    expect(canonical("historical_financials.2026_02.total_assets", {start: "2025-03-01", end: "2026-02-28"})).toBe("historical_financials.2026.total_assets");
+  });
+});
+
+describe("a covenant threshold written as a multiple", () => {
+  it("parses '4,0x' as four", async () => {
+    const {parseNumber} = await import("./text");
+    expect(parseNumber("4,0x")?.value.toFixed()).toBe("4");
+    expect(parseNumber("3.25 x", "en-US")?.value.toFixed()).toBe("3.25");
+    expect(parseNumber("12,5%")?.value.toFixed()).toBe("12.5");
+  });
+});
