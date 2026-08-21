@@ -1,0 +1,105 @@
+import {describe, expect, it} from "vitest";
+import {documentLayerSchema, indexLayer, type DocumentLayer} from "@offroad/document-intelligence";
+import type {ModelGateway} from "@offroad/model-gateway";
+import type {z} from "zod";
+
+import {extractDocument} from "./extract";
+import type {DocumentProfile} from "@offroad/document-intelligence";
+import {tableRowPasses} from "./rows";
+
+/** A debt schedule the shape Aurora's arrives in: header row, seven contracts, a total. */
+const debtLayer: DocumentLayer = documentLayerSchema.parse({
+  documentId: "mapa-divida",
+  documentVersion: 1,
+  kind: "spreadsheet",
+  parserVersion: "test",
+  scaleDeclarations: [],
+  stats: {},
+  sheets: [{
+    name: "Dívida",
+    cells: [],
+    tables: [{
+      id: "sDívida.t1",
+      rows: [
+        {id: "sDívida.t1.r1", cells: [
+          {id: "sDívida.t1.r1.c1", text: "Credor"}, {id: "sDívida.t1.r1.c2", text: "Saldo devedor (R$)"}, {id: "sDívida.t1.r1.c3", text: "Custo"}]},
+        {id: "sDívida.t1.r2", cells: [
+          {id: "sDívida.t1.r2.c1", text: "Banco Itaú"}, {id: "sDívida.t1.r2.c2", text: "9.840.000"}, {id: "sDívida.t1.r2.c3", text: "CDI + 4,10% a.a."}]},
+        {id: "sDívida.t1.r3", cells: [
+          {id: "sDívida.t1.r3.c1", text: "Banco Bradesco"}, {id: "sDívida.t1.r3.c2", text: "7.500.000"}, {id: "sDívida.t1.r3.c3", text: "CDI + 3,85% a.a."}]},
+        {id: "sDívida.t1.r4", cells: [
+          {id: "sDívida.t1.r4.c1", text: "Sicredi"}, {id: "sDívida.t1.r4.c2", text: "4.120.000"}, {id: "sDívida.t1.r4.c3", text: "CDI + 5,20% a.a."}]},
+        {id: "sDívida.t1.r5", cells: [
+          {id: "sDívida.t1.r5.c1", text: "Total"}, {id: "sDívida.t1.r5.c2", text: "21.460.000"}, {id: "sDívida.t1.r5.c3", text: ""}]},
+      ],
+    }],
+  }],
+});
+
+describe("row passes: the orchestration enumerates, the model reads", () => {
+  it("takes the headerish first row as the header and the rest as data", () => {
+    const passes = tableRowPasses(indexLayer(debtLayer));
+    expect(passes).toHaveLength(3);
+    expect(passes.map((pass) => pass.instance)).toEqual([1, 2, 3]);
+    expect(passes[0]!.evidenceText).toContain("colunas: Credor | Saldo devedor");
+    expect(passes[0]!.evidenceText).toContain("[sDívida.t1.r2] Banco Itaú");
+  });
+
+  it("filters the total row: an instrument named Total is a defect, not a candidate", () => {
+    const passes = tableRowPasses(indexLayer(debtLayer));
+    expect(passes.some((pass) => pass.evidenceText.includes("Total"))).toBe(false);
+  });
+
+  it("leaves small tables to the whole-document pass", () => {
+    const passes = tableRowPasses(indexLayer(debtLayer), {minRows: 4});
+    expect(passes).toHaveLength(0);
+  });
+});
+
+const profile: DocumentProfile = {
+  documentId: "mapa-divida",
+  kind: "debt_schedule",
+  informationClass: "management",
+  evidenceRank: 5,
+  language: "pt",
+  quality: {alerts: []},
+  confidence: 1,
+};
+
+const gatewayRecording = (record: string[]) => {
+  return {
+    async complete<TSchema extends z.ZodType>(request: {schema: TSchema; input: Array<{text: string}>}) {
+      record.push(request.input[0]!.text);
+      const output = request.schema.parse({candidates: [], absent_fields: [], document_alerts: []});
+      return {
+        output, provider: "anthropic", model: "claude-sonnet-5", effort: "medium",
+        usage: {inputTokens: 10, outputTokens: 5}, costUsd: 0.001, latencyMs: 1,
+        stopReason: "stop", usedFallback: false, fromCassette: false, attempts: [],
+      } as never;
+    },
+    spent: () => ({costUsd: 0, calls: 0}),
+  } as unknown as ModelGateway;
+};
+
+describe("the extractor runs one pass per data row, with the index pre-bound", () => {
+  it("binds {i} to the row's own number in each pass", async () => {
+    const prompts: string[] = [];
+    const result = await extractDocument({
+      layer: debtLayer,
+      profile,
+      fileName: "04_Mapa_Divida.xlsx",
+      gateway: gatewayRecording(prompts),
+    });
+
+    // One whole-document chunk plus three row passes.
+    expect(result.chunks.total).toBe(4);
+    const rowPrompts = prompts.filter((prompt) => prompt.includes("Esta é a linha"));
+    expect(rowPrompts).toHaveLength(3);
+    expect(rowPrompts[0]).toContain("debt.instruments.1.lender");
+    expect(rowPrompts[0]).not.toContain("{i}");
+    expect(rowPrompts[2]).toContain("debt.instruments.3.lender");
+    // And each pass shows only its own row beside the header.
+    expect(rowPrompts[0]).toContain("Banco Itaú");
+    expect(rowPrompts[0]).not.toContain("Bradesco");
+  });
+});
