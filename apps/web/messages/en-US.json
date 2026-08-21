@@ -500,7 +500,7 @@
     "uploadChoose": "Or select documents",
     "uploadDrop": "Drop files into the data room",
     "uploading": "Uploading securely",
-    "uploadCategories": "PDF, CSV, XLSX, or DOCX. Up to 50 MB per file.",
+    "uploadCategories": "Send what you already have: PDF, Excel (including .xls and .xlsb), LibreOffice spreadsheets, Word, PowerPoint, CSV, text, or a photo of a document. Up to 50 MB per file.",
     "uploadReceived": "Received",
     "uploadError": "One or more files could not be uploaded. Check the format, size, and connection.",
     "uploadGuidanceTitle": "From essential inputs to the strongest possible case",
