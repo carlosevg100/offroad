@@ -36,6 +36,8 @@ export type FactCandidate = {
   periodStart?: string;
   periodEnd?: string;
   entityName?: string;
+  /** Consolidated, standalone (parent-only) or segment; the consolidated number is the company's. */
+  entityScope?: string;
   /** Where in the document it was found; carried through so a fact never loses its citation. */
   anchor?: unknown;
 };
@@ -79,9 +81,13 @@ const isNumeric = (candidate: FactCandidate) => candidate.valueType === "number"
  * deterministic — two runs over the same data room must reconcile identically, or nothing
  * downstream can be trusted.
  */
+const scopeOrder = (scope: string | undefined): number => (scope === "consolidated" ? 0 : scope === undefined ? 1 : 2);
+
 export function compareCandidates(a: FactCandidate, b: FactCandidate): number {
   if (a.evidenceRank !== b.evidenceRank) return a.evidenceRank - b.evidenceRank;
   if (a.anchorVerified !== b.anchorVerified) return a.anchorVerified ? -1 : 1;
+  // Consolidated before parent-only: a filing prints both columns and the company is the group.
+  if (scopeOrder(a.entityScope) !== scopeOrder(b.entityScope)) return scopeOrder(a.entityScope) - scopeOrder(b.entityScope);
   if (a.confidence !== b.confidence) return b.confidence - a.confidence;
   return a.normalizedValue.localeCompare(b.normalizedValue);
 }

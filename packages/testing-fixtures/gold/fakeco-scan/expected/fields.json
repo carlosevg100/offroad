@@ -1,0 +1,790 @@
+[
+  {
+    "fieldPath": "company.reporting_currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "company.auditor.firm",
+    "value": "Marcondes & Auditores Independentes S/S",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "company.auditor.opinion",
+    "value": "sem ressalvas",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "historical_financials.2023.revenue",
+    "value": "142800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2023.ebitda",
+    "value": "11281000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2023.gross_profit",
+    "value": "34272000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2023.net_income",
+    "value": "1004000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2023.d_and_a",
+    "value": "3140000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2023.financial_expenses",
+    "value": "6820000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2023-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.revenue",
+    "value": "168400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.ebitda",
+    "value": "14924000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.gross_profit",
+    "value": "41184000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.net_income",
+    "value": "2338000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.d_and_a",
+    "value": "3610000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2024.financial_expenses",
+    "value": "8190000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.revenue",
+    "value": "191200000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "O documento imprime 191.200,00 em milhares. Ler 191200 e errar por mil."
+  },
+  {
+    "fieldPath": "historical_financials.2025.ebitda",
+    "value": "16848000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.gross_profit",
+    "value": "47800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.net_income",
+    "value": "2611000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.d_and_a",
+    "value": "4020000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.financial_expenses",
+    "value": "9460000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.cash",
+    "value": "8420000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.receivables",
+    "value": "47310000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.inventory",
+    "value": "39880000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.payables",
+    "value": "33540000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.equity",
+    "value": "47120000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.total_assets",
+    "value": "141870000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.gross_debt",
+    "value": "45320000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Inclui o arrendamento que o mapa de divida nao lista."
+  },
+  {
+    "fieldPath": "debt.instruments.1.lender",
+    "value": "Banco Itaú",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.1.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.1.balance",
+    "value": "9840000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.1.rate",
+    "value": "CDI + 4,10% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.1.maturity",
+    "value": "2027-11-20",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.1.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.1.collateral",
+    "value": "Duplicatas 130%",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.lender",
+    "value": "Banco Bradesco",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.instrument_type",
+    "value": "CCB",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.balance",
+    "value": "7500000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.2.rate",
+    "value": "CDI + 3,85% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.maturity",
+    "value": "2028-04-15",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.amortization",
+    "value": "Mensal com 6m carência",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.2.collateral",
+    "value": "Aval dos sócios",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.lender",
+    "value": "Banco Santander",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.balance",
+    "value": "6260000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.3.rate",
+    "value": "CDI + 4,45% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.maturity",
+    "value": "2027-03-10",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.3.collateral",
+    "value": "Duplicatas 125%",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.lender",
+    "value": "Banco do Brasil",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.instrument_type",
+    "value": "FINAME",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.balance",
+    "value": "5180000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.4.rate",
+    "value": "TLP + 2,90% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.maturity",
+    "value": "2030-08-01",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.4.collateral",
+    "value": "Alienação fiduciária da frota",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.lender",
+    "value": "Sicredi",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.instrument_type",
+    "value": "Cédula de crédito bancário",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.balance",
+    "value": "4120000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.5.rate",
+    "value": "CDI + 5,20% a.a.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.maturity",
+    "value": "2027-06-30",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.5.collateral",
+    "value": "Aval dos sócios",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.lender",
+    "value": "BTG Pactual",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.instrument_type",
+    "value": "Antecipação de recebíveis",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.balance",
+    "value": "3780000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.6.rate",
+    "value": "1,42% a.m.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.maturity",
+    "value": "2026-12-20",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.amortization",
+    "value": "No vencimento",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.6.collateral",
+    "value": "Recebíveis cedidos",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.lender",
+    "value": "Banco Volkswagen",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.instrument_type",
+    "value": "Financiamento de frota",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.balance",
+    "value": "1820000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.instruments.7.rate",
+    "value": "1,18% a.m.",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.maturity",
+    "value": "2029-02-15",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.instruments.7.collateral",
+    "value": "Alienação fiduciária de 11 veículos",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf"
+  },
+  {
+    "fieldPath": "debt.covenants.1.metric",
+    "value": "Dívida líquida/EBITDA",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "note": "Contrato Banco Itaú. Um covenant quebra uma operacao antes de ela vencer."
+  },
+  {
+    "fieldPath": "debt.covenants.1.threshold",
+    "value": "3.0",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.covenants.2.metric",
+    "value": "Dívida líquida/EBITDA",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "note": "Contrato Banco Bradesco. Um covenant quebra uma operacao antes de ela vencer."
+  },
+  {
+    "fieldPath": "debt.covenants.2.threshold",
+    "value": "3.25",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "debt.total_gross",
+    "value": "38500000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "leverage.pre_transaction_net_debt_ebitda",
+    "value": "2.1902",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  }
+]

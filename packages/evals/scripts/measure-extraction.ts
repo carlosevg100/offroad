@@ -15,7 +15,7 @@ import {readFileSync, writeFileSync, mkdirSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {parseDocument} from "@offroad/document-parsers";
+import {createTesseractEngine, parseDocument, toolVersion, type OcrEngine} from "@offroad/document-parsers";
 import {extractDocument, documentExtractionVersion} from "@offroad/document-extraction";
 import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter} from "@offroad/model-gateway";
 import type {DocumentProfile} from "@offroad/document-intelligence";
@@ -34,6 +34,15 @@ const goldDir = join(here, "..", "..", "testing-fixtures", "gold", caseId);
 
 const gold = loadGoldCase(goldDir);
 const documentsDir = join(goldDir, gold.manifest.documentsDir);
+
+// The same Tesseract the worker runs, when the machine has it. Without it, a scanned page is
+// parsed as empty and the report says so instead of pretending the OCR path was measured.
+const tesseractBin = process.env.TESSERACT_BIN ?? "tesseract";
+const tesseractVersion = await toolVersion(tesseractBin);
+const ocr: OcrEngine | null = tesseractVersion === "unavailable"
+  ? null
+  : createTesseractEngine({bin: tesseractBin, pdftoppmBin: process.env.PDFTOPPM_BIN ?? "pdftoppm", languages: process.env.OCR_LANGUAGES ?? "por+eng", timeoutMs: 120_000, version: tesseractVersion});
+console.log(ocr ? `OCR: ${tesseractVersion}` : "OCR: indisponível nesta máquina (páginas escaneadas serão lidas como vazias)");
 
 const anthropicKey = process.env.ANTHROPIC_API_KEY;
 const openaiKey = process.env.OPENAI_API_KEY;
@@ -73,13 +82,10 @@ for (const entry of gold.manifest.documents) {
 
   const startedAt = Date.now();
   const bytes = new Uint8Array(readFileSync(join(documentsDir, entry.name)));
-  const parsed = await parseDocument({
-    bytes,
-    documentId: entry.name,
-    documentVersion: 1,
-    fileName: entry.name,
-    localeHint: "pt-BR",
-  });
+  const parsed = await parseDocument(
+    {bytes, documentId: entry.name, documentVersion: 1, fileName: entry.name, localeHint: "pt-BR"},
+    ocr ? {ocr} : {},
+  );
 
   const profile: DocumentProfile = {
     documentId: entry.name,
@@ -159,6 +165,7 @@ for (const entry of gold.manifest.documents) {
       sourceDocument: entry.name,
       ...(candidate.period?.start ? {periodStart: candidate.period.start} : {}),
       ...(candidate.period?.end ? {periodEnd: candidate.period.end} : {}),
+      ...(candidate.entity?.scope ? {entityScope: candidate.entity.scope} : {}),
       informationClass: candidate.information_class,
       evidenceRank: definition.evidenceRank,
       confidence: candidate.confidence,
@@ -197,13 +204,18 @@ const snapshot: ExtractionSnapshot = {
   documents: gold.manifest.documents.map((entry) => entry.name),
   profiles,
   candidates,
-  exceptions: reconciliation.exceptions.map((exception) => ({
-    ruleId: exception.ruleId,
-    type: exception.type,
-    severity: exception.severity,
-    title: exception.title,
-    description: exception.description,
-  })),
+  exceptions: [
+    ...reconciliation.exceptions.map((exception) => ({
+      ruleId: exception.ruleId,
+      type: exception.type,
+      severity: exception.severity,
+      title: exception.title,
+      description: exception.description,
+    })),
+    // A gap the reconciliation names (a missing document, a missing material fact) is an
+    // exception the gold may expect; scoring only the rules would hide whether it was seen.
+    ...reconciliation.gaps.map((gap) => ({type: "missing", severity: gap.severity, title: gap.title, description: gap.description})),
+  ],
   calculations: reconciliation.calculations.map((calculation) => ({id: calculation.id, value: calculation.value})),
   usage,
 };

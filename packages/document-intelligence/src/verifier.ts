@@ -92,8 +92,16 @@ export function verifyCandidate(
     const parsed = parseNumber(candidate.value_raw, context.localeHint ?? "pt-BR");
     if (!parsed) {
       flags.add("value_unparseable");
+    } else if (field.definition.unit === "percent") {
+      // A percentage is stored as the fraction the desk computes with: "12,5%" is 0.125, and so
+      // is a cell that already reads 0.125. Nimbus measured the alternative: retention came back
+      // as 115 beside a customer share that came back as 0.0476, two conventions for one unit.
+      // The sign the document prints is the sign of the fact; only the magnitude is rescaled.
+      effectiveScale = 1;
+      const printedAsPercent = parsed.isPercent || /%/.test(candidate.value_raw) || parsed.value.abs().gt("1.5");
+      normalizedValue = (printedAsPercent ? parsed.value.div(100) : parsed.value).toDecimalPlaces(8).toFixed();
     } else if (field.definition.unit !== "money") {
-      // percentages, ratios, counts, months… are stored at displayed magnitude (12,5% → 12.5) and never scaled
+      // ratios, counts, months… are stored at displayed magnitude and never scaled
       effectiveScale = 1;
       normalizedValue = parsed.value.toDecimalPlaces(8).toFixed();
     } else {
@@ -186,6 +194,16 @@ const monthsBetween = (start: string, end: string): number => {
  */
 export function canonicalPeriodPath(fieldPath: string, period: {start: string; end: string} | undefined): string {
   if (!period) return fieldPath;
+  // Nimbus measured this: ARR at 31/07/2026 came back as `historical_financials.2026.arr`. A
+  // period that is not a full year belongs to the interim group, whatever the model wrote, and
+  // so does a balance at a month that is not a year-end.
+  const spanMonths = period.start === period.end ? null : monthsBetween(period.start, period.end);
+  const endMonth = period.end.slice(5, 7);
+  const looksInterim = spanMonths !== null ? spanMonths < 12 : endMonth !== "12";
+  const historicalMatch = fieldPath.match(/^historical_financials\.(\d{4})(?:_\d{2})?\.([a-z_]+?)(?:_\d+m|_ytd|_ltm)?$/);
+  if (historicalMatch && looksInterim) {
+    fieldPath = `interim_financials.${period.end.slice(0, 4)}.${historicalMatch[2]}`;
+  }
   const interim = fieldPath.match(/^interim_financials\.(\d{4})(?:_(\d{2}))?\.([a-z_]+?)(?:_\d+m|_ytd|_ltm)?$/);
   if (interim) {
     const metric = interim[3]!;
