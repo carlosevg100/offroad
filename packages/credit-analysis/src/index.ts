@@ -11,4 +11,5 @@ export * from "./analyze";
 export * from "./trajectory";
 export * from "./from-facts";
 export * from "./questions";
+export * from "./rating";
 export * from "./stress";
