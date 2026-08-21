@@ -104,3 +104,21 @@ describe("the desk on a listed company", () => {
     expect(covenant.pt).not.toContain("R$ -");
   });
 });
+
+describe("interest coverage", () => {
+  it("reads the year's interest against EBITDA, before and after the ask", () => {
+    const facts: Fact[] = [
+      ...camil.filter((fact) => fact.fieldPath !== "transaction.refinancing"),
+      {fieldPath: "historical_financials.2025.financial_expenses", value: "591700000"},
+      {fieldPath: "transaction.expected_rate", value: "CDI + 1,25% a.a."},
+    ];
+    const inputs = buildDeskInputs(facts, options);
+    const desk = analyzeCreditPosition(inputs.desk!);
+    expect(Number(desk.leverage.interestCoverage)).toBeCloseTo(915.3 / 591.7, 2);
+    // 1,5bn at CDI + 1,25% adds 176M of interest: coverage falls under 1,5x and the desk says so.
+    expect(Number(desk.leverage.interestCoveragePost)).toBeLessThan(1.5);
+    const finding = desk.findings.find((entry) => entry.id === "thin-interest-coverage")!;
+    expect(finding.severity).toBe("critical");
+    expect(finding.pt).toContain("a taxa pedida");
+  });
+});
