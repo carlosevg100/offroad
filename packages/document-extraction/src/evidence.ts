@@ -4,11 +4,11 @@ import type {IndexedAnchor, LayerIndex} from "@offroad/document-intelligence";
  * Turns an indexed layer into the evidence the extractor reads.
  *
  * Every line carries the anchor id the model must cite, because a number without the exact
- * place it came from is not a fact here — it is a guess that survived. The renderer therefore
+ * place it came from is not a fact here, it is a guess that survived. The renderer therefore
  * never invents, merges or reflows content: it selects a granularity and prints ids.
  *
- * Granularity is chosen per container. A table row is the useful unit — it carries the label
- * and the values together, which is what makes "Receita líquida" mean the number beside it —
+ * Granularity is chosen per container. A table row is the useful unit, it carries the label
+ * and the values together, which is what makes "Receita líquida" mean the number beside it,
  * and cell ids are derivable from it (`<row>.c1`, `<row>.c2`, …), so the model can cite a
  * single cell without the renderer spending characters on every one. Containers with no rows
  * fall back to their cells, which is what a spreadsheet export without detected tables looks
@@ -32,12 +32,19 @@ export type RenderOptions = {
    * looks complete and is not.
    */
   maxChars?: number;
+  /**
+   * Never pack two containers into one window. Nimbus measured why: a workbook whose first
+   * sheet is 40 customers by 24 months and whose second is a ten-line summary was read in one
+   * call, and the summary's ARR, MRR and burn never came back. A sheet read alone is a sheet
+   * the model actually reads.
+   */
+  oneContainerPerChunk?: boolean;
   /** Longest single line kept intact; anything longer is cut with an explicit marker. */
   maxLineChars?: number;
 };
 
 /**
- * Sized by what has to come *out*, not by what fits going in — but measured, not guessed.
+ * Sized by what has to come *out*, not by what fits going in, but measured, not guessed.
  *
  * The history in three runs: at 60k a dense statement asked for more candidates than one
  * response could hold and the whole chunk died at the output ceiling; at 18k recall got
@@ -87,7 +94,7 @@ export function selectLines(index: LayerIndex, options: RenderOptions = {}): Lin
   }
 
   // The index stores a table's rows before the table itself, but the reader needs the columns
-  // before the first row — "Receita | 185.400 | 172.900" means nothing until the years arrive.
+  // before the first row, "Receita | 185.400 | 172.900" means nothing until the years arrive.
   // So: collect each table's header first, then emit it right before its first row.
   const headerByTable = new Map<string, Line>();
   for (const anchor of index.byId.values()) {
@@ -133,7 +140,7 @@ export function selectLines(index: LayerIndex, options: RenderOptions = {}): Lin
  *
  * Chunk boundaries fall between containers (pages, sheets, sections) whenever the budget
  * allows: a sheet read whole is a sheet whose labels, columns and totals stay in one view.
- * Only a container that alone exceeds the budget is split — and then every table header line
+ * Only a container that alone exceeds the budget is split, and then every table header line
  * seen so far in that container is repeated at the top of the continuation, so a row never
  * arrives without its columns. That header repetition is the fix for the measured regression
  * where "Receita | 185.400 | 172.900" reached the model with no years attached.
@@ -171,7 +178,7 @@ export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): 
 
     // Whole container fits: keep it together, starting a new chunk if the current one is busy.
     if (groupSize <= maxChars) {
-      if (current.size > 0 && current.size + groupSize > maxChars) flush();
+      if (current.size > 0 && (options.oneContainerPerChunk || current.size + groupSize > maxChars)) flush();
       push(`--- ${group.container} ---`);
       for (const item of rendered) push(item.text, item.line.anchorId);
       continue;

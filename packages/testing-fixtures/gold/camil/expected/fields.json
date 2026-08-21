@@ -8,7 +8,7 @@
   },
   {
     "fieldPath": "company.legal_identifier",
-    "value": "64.904.295/0001-03",
+    "value": "64904295000103",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"

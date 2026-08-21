@@ -135,6 +135,20 @@ const sourcesUsesSide: FieldCanonical = {
 };
 
 /** A state is its UF: a document may write "São Paulo: SP" or "Minas Gerais", the fact is the sigla. */
+const currencies: FieldCanonical = {
+  kind: "enum",
+  values: ["BRL", "USD", "EUR", "CLP", "PEN", "ARS", "GBP"],
+  synonyms: {
+    "r$": "BRL", rs: "BRL", brl: "BRL", real: "BRL", reais: "BRL",
+    "us$": "USD", usd: "USD", "u$s": "USD", dolar: "USD", dolares: "USD", dollar: "USD", dollars: "USD",
+    "€": "EUR", eur: "EUR", euro: "EUR", euros: "EUR",
+    clp: "CLP", "peso chileno": "CLP", "pesos chilenos": "CLP",
+    pen: "PEN", sol: "PEN", soles: "PEN", "novo sol": "PEN",
+    ars: "ARS", "peso argentino": "ARS", "pesos argentinos": "ARS",
+    gbp: "GBP", libra: "GBP", "libra esterlina": "GBP", pound: "GBP",
+  },
+};
+
 const brazilianStates: FieldCanonical = {
   kind: "enum",
   values: ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"],
@@ -173,7 +187,7 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("company.auditor.opinion", "company", "text", "text", "material", "Opinião do auditor", "Audit opinion", ["sem ressalvas", "com ressalva", "abstenção", "adversa"], ["unqualified", "qualified", "disclaimer", "adverse"]),
   f("company.auditor.emphasis", "company", "list", "list", "material", "Ênfases", "Emphasis of matter", ["parágrafo de ênfase"], []),
   f("company.fiscal_year_end", "company", "text", "text", "supporting", "Encerramento do exercício", "Fiscal year end", [], []),
-  f("company.reporting_currency", "company", "text", "text", "material", "Moeda de reporte", "Reporting currency", [], []),
+  withCanonical(f("company.reporting_currency", "company", "text", "text", "material", "Moeda de reporte", "Reporting currency", ["moeda"], ["currency"]), currencies),
   f("company.runway_months", "company", "number", "months", "material", "Runway (meses de caixa)", "Runway (months of cash)", ["runway", "meses de caixa"], ["cash runway"]),
   f("company.net_revenue_retention", "company", "number", "percent", "material", "Retenção líquida de receita (NRR)", "Net revenue retention (NRR)", ["nrr", "retenção líquida", "net retention"], ["ndr"]),
   f("company.monthly_churn_pct", "company", "number", "percent", "material", "Churn mensal", "Monthly churn", ["churn", "cancelamento"], ["logo churn"]),
@@ -184,7 +198,7 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("company.accounting_framework", "company", "text", "text", "supporting", "Prática contábil", "Accounting framework", ["br gaap", "cpc", "ifrs"], []),
   // transaction
   f("transaction.requested_amount", "transaction", "number", "money", "material", "Montante solicitado", "Requested amount", ["valor solicitado", "captação", "pedido"], ["amount requested", "ticket"]),
-  f("transaction.currency", "transaction", "text", "text", "material", "Moeda", "Currency", [], []),
+  withCanonical(f("transaction.currency", "transaction", "text", "text", "material", "Moeda", "Currency", ["moeda da operação"], ["deal currency"]), currencies),
   f("transaction.purpose", "transaction", "text", "text", "material", "Finalidade", "Purpose", ["destinação", "objetivo"], ["use of funds"]),
   f("transaction.use_of_proceeds.{i}.item", "transaction", "text", "text", "material", "Uso dos recursos: item", "Use of proceeds: item", ["destinação dos recursos"], []),
   f("transaction.use_of_proceeds.{i}.amount", "transaction", "number", "money", "material", "Uso dos recursos: valor", "Use of proceeds: amount", [], []),
