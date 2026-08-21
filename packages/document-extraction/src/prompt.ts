@@ -88,10 +88,18 @@ export function buildExtractionPrompt(input: {
   fileName: string;
   fields: FieldDefinition[];
   evidence: {text: string; index: number; total: number};
+  /**
+   * A row pass: the evidence is one data row of a table and the indexed fields arrive with
+   * {i} already bound. The model reads cells; the orchestration did the enumeration, because
+   * asking a model to expand rows-times-fields in one breath is how a seven-line debt map
+   * came back as one candidate.
+   */
+  row?: {instance: number; tableId: string};
 }): string {
   const {evidence} = input;
-  const placement =
-    evidence.total > 1
+  const placement = input.row
+    ? `Esta é a linha ${input.row.instance} da tabela ${input.row.tableId}, mostrada com o cabeçalho de colunas. Extraia apenas desta linha; os campos-alvo já vêm com o índice desta linha aplicado. Se a linha for um total, um subtotal ou um cabeçalho repetido, não produza candidato nenhum.`
+    : evidence.total > 1
       ? `Este é o trecho ${evidence.index} de ${evidence.total} deste documento. Extraia apenas o que estiver neste trecho; o que faltar aqui pode estar em outro e não deve ser inventado nem marcado como ausente por falta de contexto.`
       : "Este é o documento inteiro.";
 
@@ -100,11 +108,19 @@ export function buildExtractionPrompt(input: {
     renderDocumentContext(input.profile, input.fileName),
     "",
     "## Campos-alvo",
-    "Use exatamente estes caminhos, substituindo {period} pelo período concreto (2025, 2026_07),",
-    "{i} por um índice a partir de 1 e {ytd} por sufixo de acumulado quando fizer sentido (_7m, _ytd, _ltm).",
-    "Itens indexados por {i} seguem a ordem em que aparecem no documento, sendo o item 1 o primeiro",
-    "que o documento mostra, e todos os campos de um mesmo {i} descrevem a mesma linha.",
-    "Campos com valores permitidos aceitam somente um deles, exatamente como listado.",
+    ...(input.row
+      ? [
+          "Use exatamente estes caminhos, já com o índice desta linha aplicado. Substitua {period}",
+          "pelo período concreto (2025, 2026_07) quando o campo pedir.",
+          "Campos com valores permitidos aceitam somente um deles, exatamente como listado.",
+        ]
+      : [
+          "Use exatamente estes caminhos, substituindo {period} pelo período concreto (2025, 2026_07),",
+          "{i} por um índice a partir de 1 e {ytd} por sufixo de acumulado quando fizer sentido (_7m, _ytd, _ltm).",
+          "Itens indexados por {i} seguem a ordem em que aparecem no documento, sendo o item 1 o primeiro",
+          "que o documento mostra, e todos os campos de um mesmo {i} descrevem a mesma linha.",
+          "Campos com valores permitidos aceitam somente um deles, exatamente como listado.",
+        ]),
     "",
     renderTargetFields(input.fields),
     "",

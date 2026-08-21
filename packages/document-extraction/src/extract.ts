@@ -13,6 +13,7 @@ import {
 
 import {renderEvidence, type RenderOptions} from "./evidence";
 import {EXTRACTOR_SYSTEM, buildExtractionPrompt, targetFields} from "./prompt";
+import {tableRowPasses} from "./rows";
 
 /**
  * One document in, verified candidates out (P1 plan §7, stage E3).
@@ -133,7 +134,76 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     }
   }
 
-  const report = verifyCandidates(raw, {
+  // ---- row passes: the orchestration enumerates, the model reads --------------------------
+  //
+  // Wide tables measured this in: a seven-line debt schedule asked for as one task returned one
+  // candidate and zero absences. Each detected data row now runs as its own pass, with the
+  // indexed patterns bound to that row's number, and a row-pass candidate outranks a whole-doc
+  // candidate for the same field, because it carries the sharper anchor.
+  const indexedFields = fields.filter((field) => field.pattern.includes("{i}"));
+  const rowPasses = indexedFields.length > 0 ? tableRowPasses(index) : [];
+  const rowFieldPaths = new Set<string>();
+
+  for (const pass of rowPasses) {
+    const bound = indexedFields.map((field) => ({...field, pattern: field.pattern.replace("{i}", String(pass.instance))}));
+    const passNumber = chunks.length + rowPasses.indexOf(pass) + 1;
+    options.onProgress?.({stage: "chunk_started", chunk: passNumber, total: chunks.length + rowPasses.length});
+    try {
+      const result = await gateway.complete({
+        task: "extract_fields",
+        system: EXTRACTOR_SYSTEM,
+        input: [{type: "text", text: buildExtractionPrompt({
+          profile,
+          fileName: options.fileName,
+          fields: bound,
+          evidence: {text: pass.evidenceText, index: pass.instance, total: rowPasses.length},
+          row: {instance: pass.instance, tableId: pass.tableId},
+        })}],
+        schema: salvageExtractorOutputSchema,
+        schemaName: "extractor_output",
+        maxOutputTokens: options.maxOutputTokens ?? 2_000,
+        metadata: {document: profile.documentId, chunk: `row:${pass.rowAnchorId}`},
+      });
+
+      const kept = result.output.candidates.filter((candidate): candidate is RawExtractionCandidate => candidate !== null);
+      malformed += result.output.candidates.length - kept.length;
+      for (const candidate of kept) rowFieldPaths.add(candidate.field_path);
+      raw.push(...kept);
+      // A row not carrying a grace period says nothing about the document lacking one, so
+      // absences from row passes are ignored on purpose.
+
+      usage.calls += 1;
+      usage.costUsd += result.costUsd;
+      usage.inputTokens += result.usage.inputTokens;
+      usage.outputTokens += result.usage.outputTokens;
+
+      options.onProgress?.({
+        stage: "chunk_finished",
+        chunk: passNumber,
+        total: chunks.length + rowPasses.length,
+        candidates: kept.length,
+        malformed: 0,
+        costUsd: result.costUsd,
+      });
+    } catch (error) {
+      failed += 1;
+      options.onProgress?.({stage: "chunk_failed", chunk: passNumber, total: chunks.length + rowPasses.length, message: (error as Error).message});
+    }
+  }
+
+  // The dedup: for a field a row pass produced, the whole-document candidate is the blurrier of
+  // the two readings of the same cell, and two candidates for one field would each dilute the
+  // other's confidence downstream.
+  const deduped = rowFieldPaths.size > 0
+    ? raw.filter((candidate, position) => {
+        const fromRowPass = rowPasses.some((pass) => candidate.anchor.id === pass.rowAnchorId || candidate.anchor.id.startsWith(`${pass.rowAnchorId}.`));
+        if (fromRowPass) return true;
+        void position;
+        return !rowFieldPaths.has(candidate.field_path);
+      })
+    : raw;
+
+  const report = verifyCandidates(deduped, {
     index,
     layer,
     profile,
@@ -149,7 +219,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     rejected: report.rejected,
     absentFields: [...absentFields],
     alerts,
-    chunks: {total: chunks.length, failed},
+    chunks: {total: chunks.length + rowPasses.length, failed},
     malformed,
     usage,
   };
