@@ -14,6 +14,8 @@ on:
       - "apps/document-worker/**"
       - "packages/document-parsers/**"
       - "packages/document-intelligence/**"
+      - "packages/document-extraction/**"
+      - "packages/document-classification/**"
       - "packages/credit-ontology/**"
       - "packages/model-gateway/**"
       - "pnpm-lock.yaml"
