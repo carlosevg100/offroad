@@ -1323,6 +1323,132 @@
     "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf"
   },
   {
+    "fieldPath": "debt.maturity_profile.1.window",
+    "value": "Jun/26 a Mai/27",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.1.amount",
+    "value": "1229828000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Cronograma consolidado por ano-safra, nota 15."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.2.window",
+    "value": "Jun/27 a Mai/28",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.2.amount",
+    "value": "776868000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Cronograma consolidado por ano-safra, nota 15."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.3.window",
+    "value": "Jun/28 a Mai/29",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.3.amount",
+    "value": "1228475000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Cronograma consolidado por ano-safra, nota 15."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.4.window",
+    "value": "Jun/29 a Mai/30",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.4.amount",
+    "value": "694497000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Cronograma consolidado por ano-safra, nota 15."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.5.window",
+    "value": "Jun/30 a Mai/31",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.5.amount",
+    "value": "994544000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Cronograma consolidado por ano-safra, nota 15."
+  },
+  {
+    "fieldPath": "debt.maturity_profile.6.window",
+    "value": "Após Jun/31",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31"
+  },
+  {
+    "fieldPath": "debt.maturity_profile.6.amount",
+    "value": "809198000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Cronograma consolidado por ano-safra, nota 15."
+  },
+  {
     "fieldPath": "debt.total_gross",
     "value": "5670186000",
     "valueType": "number",

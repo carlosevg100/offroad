@@ -90,6 +90,12 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
         },
         {id: "weightedCost", label: t("weightedCost"), value: ratePct(desk.stack.weightedCost, locale)},
         {id: "spread", label: t("spreadOverCdi"), value: desk.stack.weightedSpreadOverCdi ? `CDI + ${ratePct(desk.stack.weightedSpreadOverCdi, locale)}` : null},
+        {
+          id: "maturing12",
+          label: t("maturing12"),
+          value: millions(desk.stack.maturingWithin12Months, locale),
+          ...(desk.stack.liquidityCoverage12 ? {hint: t("coverage12Hint", {coverage: turns(desk.stack.liquidityCoverage12, locale) ?? ""})} : {}),
+        },
         {id: "maturing", label: t("maturing24"), value: millions(desk.stack.maturingWithin24Months, locale)},
         {id: "cycle", label: t("cashCycle"), value: desk.workingCapital.cycleDays ? t("days", {count: days(desk.workingCapital.cycleDays) ?? ""}) : null},
         {id: "freeReceivables", label: t("freeReceivables"), value: millions(desk.encumbrance.free, locale)},

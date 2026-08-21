@@ -65,6 +65,16 @@ export function questionsForCompany(
     });
   }
 
+  if (has("short-term-principal-vs-cash")) {
+    const values = finding("short-term-principal-vs-cash")!.values;
+    questions.push({
+      findingId: "short-term-principal-vs-cash",
+      severity: new Decimal(values.coverage!).lt(1) ? "critical" : "high",
+      pt: `${brlM(values.maturing12!)} de principal vencem em 12 meses contra ${brlM(values.cash!)} de caixa. Qual é o fluxo de caixa mensal projetado para esse período, com a sazonalidade de compras, e quais dessas parcelas já têm renovação acertada com o credor?`,
+      en: `${brlM(values.maturing12!)} of principal falls due within 12 months against ${brlM(values.cash!)} of cash. What is the projected monthly cash flow for that period, with purchasing seasonality, and which of those instalments already have a renewal agreed with the lender?`,
+    });
+  }
+
   if (has("runway-short")) {
     const values = finding("runway-short")!.values;
     questions.push({

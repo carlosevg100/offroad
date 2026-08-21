@@ -7,6 +7,10 @@
  * about the desk, not about the extractor.
  *
  *   pnpm --filter @offroad/evals desk:gold camil
+ *   pnpm --filter @offroad/evals desk:gold camil -- --amount 800000000 --term 84 --grace 24 --refinancing 600000000
+ *
+ * The flags simulate a different ask on the same company: the desk's answer to "and if we
+ * asked for less, longer, with more of it as a swap?" without touching the gold.
  */
 import {readFileSync} from "node:fs";
 import {dirname, join} from "node:path";
@@ -14,14 +18,34 @@ import {fileURLToPath} from "node:url";
 
 import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, questionsForCompany, type Fact} from "@offroad/credit-analysis";
 
-const caseId = process.argv[2] ?? "fakeco";
-const referenceDate = process.argv[3] ?? "2026-08-21";
+const args = process.argv.slice(2);
+// A flag consumes the argument after it; everything else is positional (case id, reference date).
+const positional = args.filter((arg, index) => !arg.startsWith("--") && !(index > 0 && args[index - 1]!.startsWith("--")));
+const flag = (name: string): string | undefined => {
+  const index = args.indexOf(`--${name}`);
+  return index >= 0 ? args[index + 1] : undefined;
+};
+const caseId = positional[0] ?? "fakeco";
+const referenceDate = positional[1] ?? "2026-08-21";
+const overrides: Record<string, string | undefined> = {
+  "transaction.requested_amount": flag("amount"),
+  "transaction.desired_term_months": flag("term"),
+  "transaction.desired_grace_months": flag("grace"),
+  "transaction.refinancing": flag("refinancing"),
+  "transaction.expected_rate": flag("rate"),
+};
 const goldDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "testing-fixtures", "gold", caseId);
 const fields = JSON.parse(readFileSync(join(goldDir, "expected", "fields.json"), "utf8")) as Array<{fieldPath: string; value: string}>;
-const facts: Fact[] = fields.map((field) => ({fieldPath: field.fieldPath, value: field.value}));
+const overridden = new Set(Object.entries(overrides).filter(([, value]) => value !== undefined).map(([path]) => path));
+const facts: Fact[] = [
+  ...fields.filter((field) => !overridden.has(field.fieldPath)).map((field) => ({fieldPath: field.fieldPath, value: field.value})),
+  ...[...overridden].map((path) => ({fieldPath: path, value: overrides[path]!})),
+];
+if (overridden.size > 0) console.log(`simulação: ${[...overridden].map((path) => `${path}=${overrides[path]}`).join(", ")}`);
 
 const inputs = buildDeskInputs(facts, {referenceDate, indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045", tr: "0.002"}});
 console.log(`${caseId}: ${facts.length} fatos; faltam para a mesa: ${inputs.missing.length ? inputs.missing.join(", ") : "nada"}`);
+if (flag("debug") !== undefined) console.log(`debug: pedido ${JSON.stringify(inputs.desk?.request)}; nova dívida ${JSON.stringify(inputs.trajectory?.newDebt)}`);
 
 const desk = inputs.desk ? analyzeCreditPosition(inputs.desk) : null;
 const trajectory = inputs.trajectory ? projectLeverageTrajectory(inputs.trajectory) : null;

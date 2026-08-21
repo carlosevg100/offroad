@@ -1099,7 +1099,9 @@
       "arr": "ARR",
       "debtToArr": "Dívida pós sobre ARR",
       "nrr": "Retenção líquida (NRR)",
-      "notMeaningful": "sem sentido com EBITDA negativo"
+      "notMeaningful": "sem sentido com EBITDA negativo",
+      "maturing12": "Vence em 12 meses",
+      "coverage12Hint": "caixa cobre {coverage}"
     },
     "deliveryMap": {
       "kicker": "Mapa de entrega",

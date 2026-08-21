@@ -164,6 +164,13 @@ lines.forEach((line, index) => {
   if (line.maturity) add({fieldPath: `debt.instruments.${n}.maturity`, value: line.maturity, valueType: "date", materiality: "material", sourceDocument: AGO});
   if (line.amortization) add({fieldPath: `debt.instruments.${n}.amortization`, value: line.amortization, valueType: "text", materiality: "supporting", sourceDocument: AGO});
 });
+[
+  ["Jun/26 a Mai/27", 1_229_828], ["Jun/27 a Mai/28", 776_868], ["Jun/28 a Mai/29", 1_228_475],
+  ["Jun/29 a Mai/30", 694_497], ["Jun/30 a Mai/31", 994_544], ["Após Jun/31", 809_198],
+].forEach(([window, amountK], index) => {
+  add({fieldPath: `debt.maturity_profile.${index + 1}.window`, value: String(window), valueType: "text", materiality: "material", sourceDocument: ITR, periodEnd: "2026-05-31"});
+  add({fieldPath: `debt.maturity_profile.${index + 1}.amount`, value: k(Number(amountK)), valueType: "number", materiality: "material", sourceDocument: ITR, periodEnd: "2026-05-31", tolerance: near, note: "Cronograma consolidado por ano-safra, nota 15."});
+});
 add({fieldPath: "debt.total_gross", value: k(5_670_186), valueType: "number", materiality: "material", sourceDocument: ITR, periodEnd: "2026-05-31", tolerance: near});
 add({fieldPath: "debt.covenants.1.metric", value: "Dívida líquida / EBITDA", valueType: "text", materiality: "material", sourceDocument: ITR});
 add({fieldPath: "debt.covenants.1.threshold", value: "4.0", valueType: "number", materiality: "material", sourceDocument: ITR, note: "Medido nas demonstrações anuais; próxima medição em 28/02/2027."});
