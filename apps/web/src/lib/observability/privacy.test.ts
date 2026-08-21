@@ -47,3 +47,45 @@ describe("privacy-safe observability", () => {
     expect(redactTelemetryText("DSCR 1.74x and amount 54.0")).toBe("DSCR [number] and amount [number]");
   });
 });
+
+describe("a stack frame keeps a filename Sentry can fetch", () => {
+  const frameOf = (filename: string) => {
+    const event: Event = {
+      exception: {
+        values: [
+          {type: "Error", value: "boom", stacktrace: {frames: [{filename, function: "x", lineno: 1, colno: 2, in_app: true}]}},
+        ],
+      },
+    };
+    return scrubSentryEvent(event).exception?.values?.[0]?.stacktrace?.frames?.[0]?.filename;
+  };
+
+  it("leaves a hashed chunk name intact", () => {
+    // The blanket digit rule turned this into a file that does not exist, so Sentry could never
+    // fetch the script or its source map and every browser trace stayed minified.
+    const chunk = "https://offroad.capital/_next/static/immutable/chunks/08f3ut8074cvq.js";
+    expect(frameOf(chunk)).toBe(chunk);
+  });
+
+  it("leaves a server route path intact, brackets and all", () => {
+    const route = "/var/task/.next/server/app/[locale]/app/opportunities/[id]/page.js";
+    expect(frameOf(route)).toBe(route);
+  });
+
+  it("still removes an id, an email and a token from a path", () => {
+    // Dropping the digit rule is not dropping the rule that matters: anything identifying on
+    // its own still goes.
+    expect(frameOf("/app/3f1b0c1e-2b7a-4d4e-9a1e-2c9f0a1b2c3d/page.js")).toBe("/app/[id]/page.js");
+    expect(frameOf("/u/carlos@example.com/page.js")).toBe("/u/[email]/page.js");
+    expect(frameOf("/x/" + "A".repeat(40) + "/page.js")).toBe("/x/[token]/page.js");
+  });
+
+  it("drops the query string, where a signed link would be", () => {
+    expect(frameOf("https://offroad.capital/chunk.js?token=abc")).toBe("https://offroad.capital/chunk.js");
+  });
+
+  it("keeps redacting numbers everywhere else, because there a number is money", () => {
+    const event: Event = {message: "valor 48200000.55 recusado"};
+    expect(scrubSentryEvent(event).message).not.toContain("48200000");
+  });
+});
