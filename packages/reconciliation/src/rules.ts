@@ -273,11 +273,15 @@ function ruleSourceConflict(context: RuleContext): ReconciliationException[] {
   // Below the dispute tolerance (1%) the fact is not disputed, but a letter that rounds the
   // audited revenue is still a difference an investor will notice; it is named at low severity.
   const rounded = (fact: ReconciledFact) => fact.conflicts.some((conflict) => conflict.relativeDelta !== undefined && new Decimal(conflict.relativeDelta).gt("0.002"));
+  // A conflict is between sources. Two readings of one cell in one document (the model citing a
+  // subtotal beside a total, a parent-only column beside the consolidated one) are an
+  // extraction matter, not a contradiction the room stated; Camil measured nineteen of them.
+  const acrossDocuments = (fact: ReconciledFact) => fact.conflicts.filter((conflict) => conflict.candidate.sourceDocument !== fact.accepted.sourceDocument);
   return context.facts
-    .filter((fact) => fact.conflicts.length > 0 && isMaterialFieldPath(fact.key.fieldPath) && (fact.disputed || rounded(fact)))
+    .filter((fact) => acrossDocuments(fact).length > 0 && isMaterialFieldPath(fact.key.fieldPath) && (fact.disputed || rounded(fact)))
     .slice(0, 12)
     .map((fact) => {
-      const worst = [...fact.conflicts].sort((a, b) => Number(b.relativeDelta ?? 0) - Number(a.relativeDelta ?? 0))[0]!;
+      const worst = [...acrossDocuments(fact)].sort((a, b) => Number(b.relativeDelta ?? 0) - Number(a.relativeDelta ?? 0))[0]!;
       const pct = worst.relativeDelta ? new Decimal(worst.relativeDelta).times(100).toDecimalPlaces(1).toFixed() : "?";
       const wide = worst.relativeDelta ? new Decimal(worst.relativeDelta).gt("0.05") : true;
       return exceptionFrom(

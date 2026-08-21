@@ -91,3 +91,19 @@ describe("Aurora's three contradictions", () => {
     expect(map!.severity).toBe("critical");
   });
 });
+
+describe("two readings of one document", () => {
+  it("are not a contradiction between sources", () => {
+    const report = reconcileCase({
+      archetypeId: "refinance",
+      candidates: [
+        candidate("interim_financials.2026_05.inventory", "3013060000", "01_ITR.pdf", 2, {periodEnd: "2026-05-31", confidence: 0.99}),
+        candidate("interim_financials.2026_05.inventory", "3088478000", "01_ITR.pdf", 2, {periodEnd: "2026-05-31", confidence: 0.8}),
+      ],
+      documents: [],
+      locale: "pt",
+    });
+    expect(report.exceptions.filter((exception) => exception.ruleId === "R3")).toHaveLength(0);
+    expect(report.facts[0]?.conflicts).toHaveLength(1);
+  });
+});
