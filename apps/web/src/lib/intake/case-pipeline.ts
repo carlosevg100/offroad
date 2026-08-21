@@ -64,7 +64,7 @@ async function loadCandidates(supabase: SupabaseClient<Database>, organizationId
   const {data} = await supabase
     .from("intake_field_candidates")
     .select(
-      "field_path, normalized_value, value_type, source_document_id, evidence_rank, information_class, confidence, anchor_verified, period_start, period_end, entity_name, source_anchor",
+      "field_path, normalized_value, value_type, source_document_id, evidence_rank, information_class, confidence, anchor_verified, period_start, period_end, entity_name, entity_scope, source_anchor",
     )
     .eq("organization_id", organizationId)
     .eq("intake_session_id", sessionId);
@@ -81,6 +81,7 @@ async function loadCandidates(supabase: SupabaseClient<Database>, organizationId
     ...(row.period_start ? {periodStart: row.period_start} : {}),
     ...(row.period_end ? {periodEnd: row.period_end} : {}),
     ...(row.entity_name ? {entityName: row.entity_name} : {}),
+    ...(row.entity_scope ? {entityScope: row.entity_scope} : {}),
     ...(row.source_anchor ? {anchor: row.source_anchor} : {}),
   }));
 }

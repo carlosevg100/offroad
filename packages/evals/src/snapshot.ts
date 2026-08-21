@@ -15,6 +15,7 @@ export type SnapshotCandidate = {
   sourceDocument?: string;
   periodStart?: string;
   periodEnd?: string;
+  entityScope?: string;
   informationClass: InformationClass;
   evidenceRank: number;
   confidence: number;
