@@ -4,7 +4,7 @@ import {calculateCapacityEnvelope, solveMaximumDebtByDscr} from "@offroad/financ
 import type {TracedCalculation} from "@offroad/reconciliation";
 
 /**
- * How much this company can actually carry — and which of the three walls it hits first.
+ * How much this company can actually carry, and which of the three walls it hits first.
  *
  * A desk does not size an operation against what was asked for. It sizes against three
  * independent limits and takes the lowest, because a deal only clears if all three clear:
@@ -14,7 +14,7 @@ import type {TracedCalculation} from "@offroad/reconciliation";
  *   - **Collateral.** What the assets support after haircuts, and after what is already
  *     pledged elsewhere.
  *   - **Market.** What this kind of paper carries at closing leverage before it stops finding
- *     buyers. Not a covenant, not a target — an observation about who buys.
+ *     buyers. Not a covenant, not a target, an observation about who buys.
  *
  * Naming the **binding constraint** is the useful part. "You asked for 38 and the answer is
  * 31" is a rejection; "you asked for 38, cash flow supports 46 and collateral supports 31, so
@@ -30,7 +30,7 @@ export type CapacityInput = {
   archetypeId: ArchetypeId;
   /** Amount asked for, decimal string. */
   requested: string;
-  /** Cash available for debt service in a year — CFADS. */
+  /** Cash available for debt service in a year, CFADS. */
   cfads?: string;
   /** Adjusted EBITDA, for the leverage ceiling. */
   adjustedEbitda?: string;
@@ -43,10 +43,14 @@ export type CapacityInput = {
    * amortisation with interest is roughly 0.28; the caller passes what the structure implies.
    */
   annualDebtServiceFactor?: string;
+  /** Annual recurring revenue, for venture debt, where EBITDA is negative by design. */
+  arr?: string;
+  /** Size of the last equity round, the other reference a venture lender sizes against. */
+  lastEquityRound?: string;
 };
 
 export type CapacityWall = {
-  id: "cash_flow" | "collateral" | "market";
+  id: "cash_flow" | "collateral" | "market" | "arr_and_round";
   labels: {pt: string; en: string};
   /** Decimal string, or null when the inputs to compute it are missing. */
   amount: string | null;
@@ -58,13 +62,13 @@ export type CapacityWall = {
 
 export type CapacityAssessment = {
   requested: string;
-  /** The lowest wall — what the desk would take to market. Null when nothing could be computed. */
+  /** The lowest wall, what the desk would take to market. Null when nothing could be computed. */
   recommended: string | null;
   bindingConstraint: CapacityWall["id"] | null;
   walls: CapacityWall[];
   /** Traced calculations, for the audit trail. */
   calculations: TracedCalculation[];
-  /** What could not be computed and why — never silently omitted. */
+  /** What could not be computed and why, never silently omitted. */
   gaps: string[];
 };
 
@@ -75,9 +79,42 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
   const calculations: TracedCalculation[] = [];
   const gaps: string[] = [];
 
+  // Venture debt is sized against a company that burns cash on purpose: the cash-flow wall and
+  // the EBITDA-multiple wall do not exist for it. What exists is a fraction of the recurring
+  // revenue and a fraction of the last round, whichever is lower, and the collateral wall.
+  const ventureDebt = definition.id === "venture_debt";
+  let arrAndRound: string | null = null;
+  if (ventureDebt) {
+    const candidates: Array<{label: string; value: Decimal}> = [];
+    if (input.arr && new Decimal(input.arr).gt(0)) candidates.push({label: "arr", value: new Decimal(input.arr).times("0.30")});
+    if (input.lastEquityRound && new Decimal(input.lastEquityRound).gt(0)) candidates.push({label: "last_equity_round", value: new Decimal(input.lastEquityRound).times("0.35")});
+    if (candidates.length > 0) {
+      const lowest = candidates.reduce((min, entry) => (entry.value.lt(min.value) ? entry : min));
+      arrAndRound = money(lowest.value);
+      calculations.push({
+        id: "capacity_arr_and_round",
+        labels: {pt: "Capacidade por ARR e última rodada", en: "Capacity from ARR and last round"},
+        value: arrAndRound,
+        trace: [
+          {label: "arr", value: input.arr ?? "n/d"},
+          {label: "arr_fraction", value: "0.30"},
+          {label: "last_equity_round", value: input.lastEquityRound ?? "n/d"},
+          {label: "round_fraction", value: "0.35"},
+          {label: "binding", value: lowest.label},
+        ],
+        inputs: ["historical_financials.arr", "company.last_equity_round.amount", "playbook.venture_debt"],
+        warnings: [],
+      });
+    } else {
+      gaps.push("ARR ou valor da última rodada");
+    }
+  }
+
   // ---- wall 1: what the cash flow services -------------------------------------------------
   let cashFlow: string | null = null;
-  if (input.cfads && input.annualDebtServiceFactor) {
+  if (ventureDebt) {
+    // Not a gap: a venture lender does not ask a pre-profit company for DSCR.
+  } else if (input.cfads && input.annualDebtServiceFactor) {
     const result = solveMaximumDebtByDscr(input.cfads, definition.structure.minimumDscr, input.annualDebtServiceFactor);
     cashFlow = result.value;
     calculations.push({
@@ -99,12 +136,14 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
   // ---- wall 3: what the market carries -----------------------------------------------------
   //
   // Honest naming, because this one is easy to over-read. The number is EBITDA times the
-  // playbook's leverage ceiling — the desk's own view of what this profile places, not an
+  // playbook's leverage ceiling, the desk's own view of what this profile places, not an
   // observation of transactions that cleared. It is a good proxy for *size*, and it says nothing
   // at all about tenor, which is the other half of what the market decides; that half lives in
   // `market.ts` and is labelled by provenance for the same reason.
   let market: string | null = null;
-  if (input.adjustedEbitda) {
+  if (ventureDebt) {
+    // No EBITDA ceiling by construction; the ARR wall above plays this role.
+  } else if (input.adjustedEbitda) {
     const ebitda = new Decimal(input.adjustedEbitda);
     if (ebitda.gt(0)) {
       const ceiling = ebitda.times(definition.structure.leverageCeiling);
@@ -130,9 +169,24 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
     gaps.push("EBITDA ajustado");
   }
 
+  const ventureWall: CapacityWall = {
+    id: "arr_and_round",
+    labels: {pt: "Fração do ARR e da última rodada", en: "Fraction of ARR and last round"},
+    amount: arrAndRound,
+    explanation: {
+      pt: arrAndRound
+        ? "O menor entre 30% do ARR e 35% da última rodada de equity: a prática de venture debt, onde o EBITDA é negativo por desenho e o que sustenta a dívida é a receita recorrente e o apoio dos investidores."
+        : "Não calculada: falta o ARR ou o valor da última rodada.",
+      en: arrAndRound
+        ? "The lower of 30% of ARR and 35% of the last equity round: venture-debt practice, where EBITDA is negative by design and what carries the debt is recurring revenue and sponsor support."
+        : "Not computed: ARR or the last round size is missing.",
+    },
+    inputs: ["historical_financials.arr", "company.last_equity_round.amount"],
+  };
   const walls: CapacityWall[] = [
-    {
-      id: "cash_flow",
+    ...(ventureDebt ? [ventureWall] : []),
+    ...(ventureDebt ? [] : [{
+      id: "cash_flow" as const,
       labels: {pt: "Geração de caixa", en: "Cash generation"},
       amount: cashFlow,
       explanation: {
@@ -144,7 +198,7 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
           : "Not computed: CFADS or the debt service factor for the tenor under discussion is missing.",
       },
       inputs: ["calculated.cfads"],
-    },
+    }]),
     {
       id: "collateral",
       labels: {pt: "Garantias", en: "Collateral"},
@@ -159,8 +213,8 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
       },
       inputs: ["calculated.collateral_capacity_total"],
     },
-    {
-      id: "market",
+    ...(ventureDebt ? [] : [{
+      id: "market" as const,
       labels: {pt: "Apetite de mercado (alavancagem)", en: "Market appetite (leverage)"},
       amount: market,
       explanation: {
@@ -172,7 +226,7 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
           : "Not computed: positive adjusted EBITDA is missing.",
       },
       inputs: ["calculated.adjusted_ebitda"],
-    },
+    }]),
   ];
 
   const computed = walls.filter((wall): wall is CapacityWall & {amount: string} => wall.amount !== null);
@@ -181,13 +235,13 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
   }
 
   // The envelope takes the lowest of the three. A wall that could not be computed is not
-  // treated as infinite — it is simply absent, and the gaps say so, because a recommendation
+  // treated as infinite, it is simply absent, and the gaps say so, because a recommendation
   // that ignores a missing constraint is a recommendation that will move later.
   const envelope = calculateCapacityEnvelope({
     requested: input.requested,
-    cashFlowCapacity: cashFlow ?? computed[0]!.amount,
+    cashFlowCapacity: cashFlow ?? arrAndRound ?? computed[0]!.amount,
     collateralCapacity: collateral ?? computed[0]!.amount,
-    marketCapacity: market ?? computed[0]!.amount,
+    marketCapacity: market ?? arrAndRound ?? computed[0]!.amount,
   });
 
   const binding = computed.reduce((lowest, wall) =>

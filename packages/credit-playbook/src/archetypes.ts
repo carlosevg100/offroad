@@ -164,12 +164,12 @@ const commonIdeal: readonly Requirement[] = [
 ];
 
 /**
- * What the desk asks the company to *tell it* — the half of a data room that never arrives as
+ * What the desk asks the company to *tell it*, the half of a data room that never arrives as
  * a file.
  *
  * Nobody uploads a document that explains why now, who the customers are, what happens if the
  * largest one leaves, or how long the last store took to mature. Those answers decide how the
- * case reads and, often, whether it clears — and a request that only asks for files leaves
+ * case reads and, often, whether it clears, and a request that only asks for files leaves
  * them to be discovered on a call with an investor, which is the worst place to discover them.
  *
  * Each carries the question phrased the way a banker asks it, an example so nobody guesses the
@@ -1259,6 +1259,165 @@ export const archetypes: readonly Archetype[] = [
     ],
   },
 
+  {
+    id: "venture_debt",
+    labels: {pt: "Venture debt (startups)", en: "Venture debt (startups)"},
+    description: {
+      pt: "Dívida para empresa em crescimento financiada por equity, que ainda não gera caixa: estende o runway entre rodadas e é paga pela próxima rodada ou pela receita recorrente que já existe.",
+      en: "Debt for an equity-funded growth company that does not yet generate cash: it extends runway between rounds and is repaid by the next round or by the recurring revenue already in place.",
+    },
+    requirements: [
+      ...commonMinimum,
+      {
+        id: "metrics_export",
+        accepts: [
+          {pt: "Export mensal de ARR/MRR por cliente ou coorte, dos últimos 24 meses (.xlsx ou .csv)", en: "Monthly ARR/MRR export by customer or cohort for the last 24 months (.xlsx or .csv)"},
+          {pt: "Painel de métricas com churn, NRR, CAC e payback (PDF ou planilha)", en: "Metrics dashboard with churn, NRR, CAC and payback (PDF or spreadsheet)"},
+        ],
+        purposes: ["investor_case", "financials", "structure"],
+        level: "minimum",
+        satisfiedBy: ["metrics_report", "management_accounts", "erp_export"],
+        singleDocument: false,
+        labels: {pt: "Métricas de receita recorrente (ARR, MRR, churn, NRR)", en: "Recurring revenue metrics (ARR, MRR, churn, NRR)"},
+        rationale: {
+          pt: "Aqui o EBITDA é negativo por desenho; o que sustenta a dívida é a receita recorrente e a sua retenção. Sem a série por cliente, ARR é um número de slide.",
+          en: "EBITDA is negative by design here; what carries the debt is recurring revenue and its retention. Without the per-customer series, ARR is a slide number.",
+        },
+      },
+      {
+        id: "cap_table_and_round",
+        accepts: [
+          {pt: "Cap table atualizado, com a última rodada e a liquidação preferencial (.xlsx ou PDF)", en: "Current cap table, with the last round and the liquidation preference (.xlsx or PDF)"},
+          {pt: "Acordo de investimento ou termos da última rodada (PDF)", en: "Investment agreement or terms of the last round (PDF)"},
+        ],
+        purposes: ["investor_case", "structure"],
+        level: "minimum",
+        satisfiedBy: ["cap_table", "corporate_docs"],
+        singleDocument: false,
+        labels: {pt: "Cap table e termos da última rodada", en: "Cap table and last-round terms"},
+        rationale: {
+          pt: "Venture debt é subscrito junto com os investidores de equity: quem são, quanto puseram, quando, e se vão acompanhar. O cap table diz isso e diz quanto vale o warrant.",
+          en: "Venture debt is underwritten alongside the equity investors: who they are, how much they put in, when, and whether they will follow on. The cap table says that and prices the warrant.",
+        },
+      },
+      ...commonIdeal,
+      ...commonInformation,
+      ...commonClosing,
+      {
+        id: "info_runway",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "number",
+        singleDocument: true,
+        purposes: ["financials", "structure"],
+        labels: {pt: "Runway atual em meses", en: "Current runway in months"},
+        question: {pt: "Com o caixa de hoje e a queima dos últimos três meses, quantos meses a empresa opera sem captar?", en: "With today's cash and the last three months' burn, how many months can the company operate without raising?"},
+        example: {pt: "14", en: "14"},
+        rationale: {
+          pt: "O credor de venture debt empresta para quem ainda tem runway, não para quem já acabou. Abaixo de 9 meses a conversa muda de dívida para ponte de equity.",
+          en: "A venture lender lends to a company that still has runway, not to one that has run out. Under 9 months the conversation moves from debt to an equity bridge.",
+        },
+      },
+      {
+        id: "info_next_round",
+        level: "minimum",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "text",
+        singleDocument: true,
+        purposes: ["investor_case", "structure"],
+        labels: {pt: "Plano da próxima rodada", en: "Next round plan"},
+        question: {pt: "Quando é a próxima rodada, de quanto, e os investidores atuais já sinalizaram participação?", en: "When is the next round, how large, and have current investors signalled participation?"},
+        example: {pt: "Series B de R$ 120M no 2º semestre de 2027; os dois líderes atuais já indicaram pro rata.", en: "R$ 120M Series B in H2 2027; both current leads have indicated pro rata."},
+        rationale: {
+          pt: "A fonte de pagamento mais provável é a rodada seguinte. O credor quer saber se ela é um plano ou uma esperança.",
+          en: "The most likely repayment source is the next round. The lender wants to know whether it is a plan or a hope.",
+        },
+      },
+    ],
+    focus: [
+      {
+        id: "runway_extension",
+        labels: {pt: "Extensão do runway", en: "Runway extension"},
+        question: {pt: "Quantos meses a dívida compra, e o serviço dela consome quanto desse ganho?", en: "How many months does the debt buy, and how much of that gain does its service consume?"},
+        evidence: ["company.runway_months", "historical_financials.{period}.monthly_burn", "historical_financials.{period}.cash", "transaction.requested_amount"],
+      },
+      {
+        id: "arr_quality",
+        labels: {pt: "Qualidade do ARR", en: "ARR quality"},
+        question: {pt: "O ARR cresce por clientes novos ou por expansão? A retenção líquida segura a base quando a venda desacelera?", en: "Does ARR grow from new logos or expansion? Does net retention hold the base when sales slow?"},
+        evidence: ["historical_financials.{period}.arr", "company.net_revenue_retention", "company.monthly_churn_pct", "customers.top_customers.{i}.share_pct"],
+      },
+      {
+        id: "sponsor_support",
+        labels: {pt: "Apoio dos investidores de equity", en: "Equity sponsor support"},
+        question: {pt: "Os fundos da última rodada têm reserva e histórico de follow-on? A dívida vence antes ou depois da próxima rodada provável?", en: "Do the last round's funds have reserves and a follow-on track record? Does the debt mature before or after the likely next round?"},
+        evidence: ["company.last_equity_round.amount", "company.last_equity_round.date", "company.last_equity_round.lead_investor", "transaction.desired_term_months"],
+      },
+      {
+        id: "downside_recovery",
+        labels: {pt: "Recuperação no cenário ruim", en: "Downside recovery"},
+        question: {pt: "Se a rodada não vier, o que paga: a base de receita em modo de sobrevivência, a venda da empresa, ou a garantia?", en: "If the round does not come, what repays: the revenue base in survival mode, a sale of the company, or the collateral?"},
+        evidence: ["historical_financials.{period}.arr", "historical_financials.{period}.cash", "collateral.assets.{i}.description"],
+      },
+    ],
+    risks: [
+      {
+        id: "short_runway",
+        severity: "critical",
+        labels: {pt: "Runway curto demais", en: "Runway too short"},
+        test: {pt: "Caixa atual dividido pela queima média dos últimos 3 meses, com e sem a dívida; abaixo de 9 meses pós-operação não é venture debt.", en: "Current cash over the last 3 months' average burn, with and without the debt; under 9 months post-deal it is not venture debt."},
+      },
+      {
+        id: "arr_not_recurring",
+        severity: "critical",
+        labels: {pt: "ARR que não recorre", en: "ARR that does not recur"},
+        test: {pt: "Reconstruir o ARR a partir do export por cliente; separar serviços, setup e contratos anuais não renovados.", en: "Rebuild ARR from the per-customer export; strip services, setup fees and unrenewed annual contracts."},
+      },
+      {
+        id: "round_dependence",
+        severity: "high",
+        labels: {pt: "Pagamento dependente da rodada", en: "Repayment dependent on the round"},
+        test: {pt: "Vencimento e início da amortização contra a data provável da próxima rodada e o histórico de follow-on dos fundos atuais.", en: "Maturity and amortisation start against the likely next-round date and the current funds' follow-on record."},
+      },
+      {
+        id: "concentration_and_churn",
+        severity: "high",
+        labels: {pt: "Concentração e churn", en: "Concentration and churn"},
+        test: {pt: "Top 5 clientes sobre o ARR e churn dos últimos 12 meses; um cliente acima de 20% vira cláusula.", en: "Top 5 customers over ARR and trailing 12-month churn; one customer above 20% becomes a clause."},
+      },
+    ],
+    structure: {
+      tenorMonths: {typical: [24, 42], outer: [18, 48]},
+      leverageCeiling: "0",
+      minimumDscr: "1.00",
+      gracePeriodMonths: {typical: [6, 12]},
+      amortization: ["carência de juros-só seguida de amortização mensal linear", "bullet parcial no vencimento"],
+      collateral: [
+        "alienação fiduciária de quotas ou ações da operadora",
+        "cessão fiduciária de recebíveis dos contratos recorrentes",
+        "alienação fiduciária de propriedade intelectual e marcas",
+        "warrants ou opção de subscrição (tipicamente 5% a 15% do principal em equity)",
+      ],
+      covenants: [
+        "caixa mínimo equivalente a 6 meses de queima",
+        "ARR mínimo trimestral (piso sobre o plano com folga de 20%)",
+        "sem nova dívida sênior sem anuência",
+        "vencimento antecipado por troca de controle ou saída dos fundadores",
+      ],
+      notes: {
+        pt: "Aqui não existe teto de alavancagem sobre EBITDA: o tamanho é uma fração do ARR (20% a 35%) ou da última rodada (25% a 40%), o que for menor. O preço vem com warrant, e o covenant que importa é caixa mínimo, não DSCR.",
+        en: "There is no EBITDA leverage ceiling here: size is a fraction of ARR (20% to 35%) or of the last round (25% to 40%), whichever is lower. Pricing comes with a warrant, and the covenant that matters is minimum cash, not DSCR.",
+      },
+    },
+    questions: [
+      {id: "burn_trend", focusId: "runway_extension", materiality: "material", labels: {pt: "Qual foi a queima líquida mês a mês nos últimos 6 meses e o que a reduz no plano?", en: "What was net burn month by month over the last 6 months and what reduces it in the plan?"}},
+      {id: "arr_bridge", focusId: "arr_quality", materiality: "material", labels: {pt: "Ponte do ARR dos últimos 12 meses: novo, expansão, contração e churn, em valor.", en: "ARR bridge for the last 12 months: new, expansion, contraction and churn, in value."}},
+      {id: "investor_reserves", focusId: "sponsor_support", materiality: "material", labels: {pt: "Quais fundos da última rodada têm reserva para follow-on e já o confirmaram por escrito?", en: "Which last-round funds have follow-on reserves and have confirmed them in writing?"}},
+      {id: "warrant_appetite", focusId: "downside_recovery", materiality: "supporting", labels: {pt: "Que diluição via warrant a companhia aceita em troca de preço menor?", en: "What warrant dilution does the company accept in exchange for a lower price?"}},
+    ],
+  },
   {
     id: "other",
     labels: {pt: "Outra operação", en: "Other operation"},

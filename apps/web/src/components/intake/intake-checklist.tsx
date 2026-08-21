@@ -18,6 +18,7 @@ const OPERATIONS: readonly ArchetypeId[] = [
   "refinance",
   "acquisition",
   "equipment_finance",
+  "venture_debt",
   "other",
 ];
 

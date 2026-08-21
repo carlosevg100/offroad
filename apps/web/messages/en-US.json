@@ -911,6 +911,7 @@
       "refinance": "Refinance",
       "acquisition": "Acquisition",
       "equipment_finance": "Equipment finance",
+      "venture_debt": "Venture debt (startups)",
       "other": "Other"
     },
     "checklist": {
