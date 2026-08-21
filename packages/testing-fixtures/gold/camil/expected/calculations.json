@@ -1,0 +1,57 @@
+[
+  {
+    "id": "net_debt_2026_05",
+    "definition": "Dívida bruta menos caixa e aplicações financeiras em 31/05/2026 (definição da companhia)",
+    "value": "4214377000",
+    "unit": "BRL",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "id": "net_debt_fy2025",
+    "definition": "Dívida bruta menos caixa e aplicações em 28/02/2026",
+    "value": "2965680000",
+    "unit": "BRL",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "Bate com os R$ 2.965,7 milhões dos comentários dos diretores."
+  },
+  {
+    "id": "leverage_fy2025",
+    "definition": "Dívida líquida / EBITDA do exercício findo em 28/02/2026",
+    "value": "3.2402",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "id": "maturity_wall_12m",
+    "definition": "Principal com vencimento de Jun/26 a Mai/27 sobre caixa e aplicações de 31/05/2026",
+    "value": "0.8447",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    },
+    "note": "1.229.828 / 1.455.809."
+  },
+  {
+    "id": "cdi_share_of_stack",
+    "definition": "Parcela do estoque em CDI ou % do DI (capital de giro nacional e séries em DI) sobre a dívida bruta consolidada",
+    "value": "0.6149",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.02"
+    },
+    "note": "(1.314.412 + 151.795 + 505.984 + 306.038 + 438.918 + 770.123) / 5.670.186."
+  }
+]

@@ -1,0 +1,28 @@
+[
+  {
+    "document": "01_ITR_1T26_31mai2026.pdf",
+    "kind": "reviewed_interim_statements",
+    "informationClass": "reviewed",
+    "evidenceRank": 2,
+    "entityName": "Camil Alimentos S.A.",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "scale": 1000
+  },
+  {
+    "document": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "kind": "regulatory_filing",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Camil Alimentos S.A.",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28"
+  },
+  {
+    "document": "03_Pedido_Simulado_CRA_2026.docx",
+    "kind": "capital_request_letter",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Camil Alimentos S.A."
+  }
+]

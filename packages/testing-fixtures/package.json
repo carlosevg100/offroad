@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "camil": "tsx scripts/build-camil.ts",
     "fakeco": "tsx scripts/build-fakeco.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --exclude 'dist/**' --passWithNoTests",

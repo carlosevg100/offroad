@@ -56,7 +56,7 @@ export const auroraFacts: Fact[] = [
 export function auroraDeskState() {
   const inputs = buildDeskInputs(auroraFacts, {
     referenceDate: "2026-08-21",
-    indexLevels: {cdi: "0.105", tlp: "0.079"},
+    indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045"},
     statedRequest: {amount: "40000000"},
   });
   const desk = inputs.desk ? analyzeCreditPosition(inputs.desk) : null;

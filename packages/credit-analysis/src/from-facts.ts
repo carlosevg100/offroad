@@ -95,14 +95,16 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
     });
   if (debt.length === 0) missing.push("debt.instruments");
 
-  // Covenants stated as a separate table attach to the lender named in the note when they can;
-  // the battery only needs one line to carry each ceiling, and the tightest governs anyway.
-  covenantTexts.forEach((text, index) => {
-    const line = debt[index];
-    if (line && !line.covenant) line.covenant = text.replace("Dívida líquida/EBITDA", "Dívida líquida/EBITDA");
-  });
+  // Covenants stated as a table rather than per line bind the company, not one lender. A
+  // listed company's note says "os principais instrumentos" and names nobody; pinning that
+  // ceiling on whichever line happens to be first would invent a contract. They go in as
+  // company-level covenants, labelled by their scope.
+  const companyCovenants = covenantTexts.map((text) => ({scope: "escrituras e contratos da companhia", text}));
 
   // ---- interim -------------------------------------------------------------------------------
+  // The most recent balance sheet wins as the anchor for stock figures. A schedule dated May
+  // against a balance dated February reads as R$ 750M of phantom debt; the stack, the cash and
+  // the receivables must be read on the same date, and that date is the latest one the room has.
   const interimPeriods = [...new Set(
     facts
       .map((fact) => fact.fieldPath.match(/^interim_financials\.(\d{4}_\d{2})\./)?.[1])
@@ -127,6 +129,19 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
     }
   }
 
+  const interimCash = period ? facts.find((fact) => fact.fieldPath === `interim_financials.${period}.cash`)?.value : undefined;
+  const interimGrossDebt = period ? facts.find((fact) => fact.fieldPath === `interim_financials.${period}.gross_debt`)?.value : undefined;
+  const interimReceivables = period ? facts.find((fact) => fact.fieldPath === `interim_financials.${period}.receivables`)?.value : undefined;
+  const interimInventory = period ? facts.find((fact) => fact.fieldPath === `interim_financials.${period}.inventory`)?.value : undefined;
+  const interimPayables = period ? facts.find((fact) => fact.fieldPath === `interim_financials.${period}.payables`)?.value : undefined;
+  const anchorOnInterim = Boolean(period && interimCash && interimGrossDebt && interimReceivables);
+  const balanceCash = anchorOnInterim ? interimCash : cash;
+  const balanceGrossDebt = anchorOnInterim ? interimGrossDebt : grossDebt;
+  const balanceReceivables = anchorOnInterim ? interimReceivables : receivables;
+  const balanceInventory = anchorOnInterim ? interimInventory : latest ? value(`historical_financials.${latest}.inventory`) : undefined;
+  const balancePayables = anchorOnInterim ? interimPayables : latest ? value(`historical_financials.${latest}.payables`) : undefined;
+  const balancePeriodEnd = anchorOnInterim ? interim?.periodEnd ?? `${period!.replace("_", "-")}-28` : `${latest}-12-31`;
+
   // ---- the request: documents and the product's own form, side by side -----------------------
   const amounts: Array<{value: string; source: string}> = [];
   const fromDocuments = value("transaction.requested_amount");
@@ -143,6 +158,7 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
   const termMonths = options.statedRequest?.termMonths ?? numberOf(value("transaction.desired_term_months"));
   const graceMonths = options.statedRequest?.graceMonths ?? numberOf(value("transaction.desired_grace_months"));
   const rateAsk = options.statedRequest?.expectedRate ?? value("transaction.expected_rate");
+  const refinancing = value("transaction.refinancing");
 
   // ---- projections ---------------------------------------------------------------------------
   const projectionYears = [...new Set(
@@ -150,11 +166,18 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
       .map((fact) => fact.fieldPath.match(/^projections\.(\d{4})\.ebitda$/)?.[1])
       .filter((year): year is string => Boolean(year)),
   )].map(Number).sort((a, b) => a - b);
-  const projectedEbitda = projectionYears.map((year) => ({year, ebitda: value(`projections.${year}.ebitda`)!}));
+  const companyProjections = projectionYears.map((year) => ({year, ebitda: value(`projections.${year}.ebitda`)!}));
+  // No projection from the company is a question for the company, not a reason to have no
+  // trajectory: the desk runs it on EBITDA held flat and says so. A listed company rarely
+  // sends a model; a desk never waits for one to know whether the schedule is serviceable.
+  const ebitdaHeldFlat = companyProjections.length === 0 && latest !== undefined && ebitda !== undefined;
+  const projectedEbitda = ebitdaHeldFlat
+    ? Array.from({length: 5}, (_, offset) => ({year: latest! + 1 + offset, ebitda: ebitda!}))
+    : companyProjections;
   const nextRevenue = latest ? value(`projections.${latest + 1}.revenue`) : undefined;
 
   // ---- assemble, honestly --------------------------------------------------------------------
-  const canDesk = Boolean(revenue && ebitda && cash && grossDebt && receivables && amounts.length > 0);
+  const canDesk = Boolean(revenue && ebitda && balanceCash && balanceGrossDebt && balanceReceivables && amounts.length > 0);
   const desk: DeskInput | null = canDesk
     ? {
         indexLevels: options.indexLevels,
@@ -168,19 +191,16 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
             : {}),
         },
         balance: {
-          periodEnd: `${latest}-12-31`,
-          cash: cash!,
-          receivables: receivables!,
-          grossDebt: grossDebt!,
-          ...(value(`historical_financials.${latest}.inventory`) !== undefined
-            ? {inventory: value(`historical_financials.${latest}.inventory`)!}
-            : {}),
-          ...(value(`historical_financials.${latest}.payables`) !== undefined
-            ? {suppliers: value(`historical_financials.${latest}.payables`)!}
-            : {}),
+          periodEnd: balancePeriodEnd,
+          cash: balanceCash!,
+          receivables: balanceReceivables!,
+          grossDebt: balanceGrossDebt!,
+          ...(balanceInventory !== undefined ? {inventory: balanceInventory} : {}),
+          ...(balancePayables !== undefined ? {suppliers: balancePayables} : {}),
         },
         ...(interim ? {interim} : {}),
         debt,
+        ...(companyCovenants.length > 0 ? {covenants: companyCovenants} : {}),
         request: {
           amounts,
           ...(termMonths !== undefined ? {termMonths} : {}),
@@ -195,15 +215,17 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
   const canTrajectory = Boolean(
     desk && ebitda && projectedEbitda.length > 0 && amounts.length > 0 && termMonths !== undefined && graceMonths !== undefined,
   );
+  // Still asked for, even when the trajectory ran on the fallback: the company's own ramp is
+  // the number the fund will underwrite, and the desk's flat line is a placeholder, not an answer.
+  if (desk && companyProjections.length === 0) missing.push("projections.{ano}.ebitda");
   if (desk && !canTrajectory) {
-    if (projectedEbitda.length === 0) missing.push("projections.{ano}.ebitda");
     if (termMonths === undefined) missing.push("transaction.desired_term_months");
     if (graceMonths === undefined) missing.push("transaction.desired_grace_months");
   }
   const trajectory: TrajectoryInput | null = canTrajectory
     ? {
         referenceDate: options.referenceDate,
-        cash: cash!,
+        cash: balanceCash!,
         existing: debt.map((line) => ({
           lender: line.lender,
           balance: line.balance,
@@ -217,16 +239,26 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
           amount: amounts.map((entry) => entry.value).sort((a, b) => Number(b) - Number(a))[0]!,
           termMonths: termMonths!,
           graceMonths: graceMonths!,
+          ...(refinancing !== undefined ? {refinancing} : {}),
         },
         auditedEbitda: ebitda!,
         projectedEbitda,
-        existingCovenants: debt
-          .filter((line) => line.covenant !== undefined)
-          .map((line) => {
-            const match = line.covenant!.match(/([\d.,]+)\s*x/);
-            return match ? {lender: line.lender, maximum: match[1]!.replace(",", ".")} : null;
-          })
-          .filter((entry): entry is {lender: string; maximum: string} => entry !== null),
+        ...(ebitdaHeldFlat ? {ebitdaHeldFlat: true} : {}),
+        existingCovenants: [
+          ...debt
+            .filter((line) => line.covenant !== undefined)
+            .map((line) => {
+              const match = line.covenant!.match(/([\d.,]+)\s*x/);
+              return match ? {lender: line.lender, maximum: match[1]!.replace(",", ".")} : null;
+            })
+            .filter((entry): entry is {lender: string; maximum: string} => entry !== null),
+          ...companyCovenants
+            .map((entry) => {
+              const match = entry.text.match(/([\d.,]+)\s*x/);
+              return match ? {lender: entry.scope, maximum: match[1]!.replace(",", ".")} : null;
+            })
+            .filter((entry): entry is {lender: string; maximum: string} => entry !== null),
+        ],
       }
     : null;
 

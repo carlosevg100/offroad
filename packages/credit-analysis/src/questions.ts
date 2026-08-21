@@ -56,8 +56,12 @@ export function questionsForCompany(
     questions.push({
       findingId: "covenant-breach-day-one",
       severity: "critical",
-      pt: `Do jeito pedido, a operação rompe covenant existente no primeiro dia (${brlM(values.maxNewDebt!)} caberiam; o pedido é maior). O desenho natural é quitar as linhas com covenant dentro da captação. A companhia está aberta a incluir essa quitação na operação, ou prefere renegociar os covenants com os bancos atuais?`,
-      en: `As asked, the transaction breaches an existing covenant on day one (${brlM(values.maxNewDebt!)} would fit; the ask is larger). The natural structure takes out the covenanted lines inside the raise. Is the company open to including that takeout, or would it rather renegotiate the covenants with the incumbent banks?`,
+      pt: new Decimal(values.maxNewDebt!).lt(0)
+        ? `A alavancagem já está acima do covenant (${values.pre ? `${new Decimal(values.pre).toFixed(2).replace(".", ",")}x` : ""} contra ${new Decimal(values.ceiling!).toFixed(2).replace(".", ",")}x). Qual é o plano até a próxima medição: geração de caixa sazonal, venda de ativos, resgate de linhas com a captação, ou waiver já negociado com os credores? A resposta define se a operação é troca de passivo ou dinheiro novo.`
+        : `Do jeito pedido, a operação rompe covenant existente no primeiro dia (${brlM(values.maxNewDebt!)} caberiam; o pedido é maior). O desenho natural é quitar as linhas com covenant dentro da captação. A companhia está aberta a incluir essa quitação na operação, ou prefere renegociar os covenants com os bancos atuais?`,
+      en: new Decimal(values.maxNewDebt!).lt(0)
+        ? `Leverage is already above the covenant (${values.pre ? `${new Decimal(values.pre).toFixed(2)}x` : ""} against ${new Decimal(values.ceiling!).toFixed(2)}x). What is the plan to the next test: seasonal cash generation, asset sales, lines repaid with the raise, or a waiver already agreed with creditors? The answer decides whether this deal is a liability swap or new money.`
+        : `As asked, the transaction breaches an existing covenant on day one (${brlM(values.maxNewDebt!)} would fit; the ask is larger). The natural structure takes out the covenanted lines inside the raise. Is the company open to including that takeout, or would it rather renegotiate the covenants with the incumbent banks?`,
     });
   }
 
@@ -66,8 +70,12 @@ export function questionsForCompany(
     questions.push({
       findingId: "stack-vs-balance",
       severity: "critical",
-      pt: `O balanço reconhece ${brlM(values.gap!)} de dívida que o mapa não lista. O que compõe essa diferença? Se for arrendamento mercantil, precisamos dos contratos ou da nota explicativa detalhada.`,
-      en: `The balance sheet recognises ${brlM(values.gap!)} of debt the schedule does not list. What makes up the difference? If it is leasing, we need the contracts or the detailed note.`,
+      pt: new Decimal(values.gap!).gte(0)
+        ? `O balanço reconhece ${brlM(values.gap!)} de dívida que o mapa não lista. O que compõe essa diferença? Se for arrendamento mercantil, precisamos dos contratos ou da nota explicativa detalhada.`
+        : `O mapa de dívida soma ${brlM(new Decimal(values.gap!).abs())} a mais do que o balanço reconhece na data-base. O mapa inclui juros apropriados, custo de transação ou linhas de controladas que o balanço apresenta em outra rubrica? Precisamos da conciliação mapa × balanço na mesma data.`,
+      en: new Decimal(values.gap!).gte(0)
+        ? `The balance sheet recognises ${brlM(values.gap!)} of debt the schedule does not list. What makes up the difference? If it is leasing, we need the contracts or the detailed note.`
+        : `The debt schedule sums to ${brlM(new Decimal(values.gap!).abs())} more than the balance sheet recognises at the reference date. Does the schedule include accrued interest, transaction costs or subsidiary lines the balance sheet presents elsewhere? We need the schedule-to-balance reconciliation on the same date.`,
     });
   }
 

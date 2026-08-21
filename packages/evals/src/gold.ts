@@ -11,7 +11,8 @@ import {documentKindSchema, informationClassSchema, materialitySchema} from "@of
  *   expected/exceptions.json     — expected reconciliation exceptions / red flags
  *   expected/calculations.json   — expected deterministic outputs (financial-core, F3+)
  *   expected/acceptance.json     — acceptance criteria and how they are evaluated
- * Everything is synthetic; real client data never enters a gold set without documented permission.
+ * Synthetic by default. Real documents enter only when they are public filings (CVM, RI) with their
+ * provenance recorded in the manifest; client data never does without documented permission.
  */
 
 export const toleranceSchema = z.union([z.object({kind: z.literal("absolute"), value: z.string()}), z.object({kind: z.literal("relative"), value: z.string()}), z.object({kind: z.literal("exact")})]);
@@ -20,7 +21,7 @@ export type Tolerance = z.infer<typeof toleranceSchema>;
 export const goldManifestSchema = z.object({
   caseId: z.string().min(1),
   title: z.string(),
-  synthetic: z.literal(true),
+  synthetic: z.boolean(),
   language: z.enum(["pt", "en", "mixed"]),
   documentsDir: z.string(),
   documents: z.array(z.object({name: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/).optional()})),

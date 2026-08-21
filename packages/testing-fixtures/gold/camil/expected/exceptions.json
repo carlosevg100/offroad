@@ -1,0 +1,72 @@
+[
+  {
+    "id": "covenant-proforma",
+    "type": "plausibility",
+    "severity": "critical",
+    "description": "A companhia informa alavancagem pro forma de 4,72x em 31/05/2026 contra covenant de 4,0x medido anualmente; o pedido como desenhado precisa mostrar como chega a fevereiro de 2027 abaixo do limite.",
+    "keywords": [
+      "covenant",
+      "4,72",
+      "4,0",
+      "alavancagem",
+      "pro forma"
+    ],
+    "evidenceDocuments": [
+      "01_ITR_1T26_31mai2026.pdf",
+      "03_Pedido_Simulado_CRA_2026.docx"
+    ],
+    "expectedTreatment": "question"
+  },
+  {
+    "id": "maturity-wall",
+    "type": "plausibility",
+    "severity": "high",
+    "description": "R$ 1.229.828 mil vencem entre Jun/26 e Mai/27 contra caixa de R$ 1.430.714 mil, com a compra da safra concentrada no mesmo semestre.",
+    "keywords": [
+      "vencimento",
+      "1.229",
+      "parede",
+      "refinanciamento",
+      "safra"
+    ],
+    "evidenceDocuments": [
+      "01_ITR_1T26_31mai2026.pdf"
+    ],
+    "expectedTreatment": "question"
+  },
+  {
+    "id": "fx-lines",
+    "type": "quality",
+    "severity": "medium",
+    "description": "R$ 1.102.582 mil do estoque está em USD, CLP e PEN, sem indexador nem vencimento por linha na nota; o mapa por instrumento fica incompleto sem o detalhe das controladas.",
+    "keywords": [
+      "moeda estrangeira",
+      "USD",
+      "CLP",
+      "PEN",
+      "controladas"
+    ],
+    "evidenceDocuments": [
+      "01_ITR_1T26_31mai2026.pdf",
+      "02_Proposta_Administracao_AGOE_2026.pdf"
+    ],
+    "expectedTreatment": "question"
+  },
+  {
+    "id": "cash-definition",
+    "type": "source_conflict",
+    "severity": "medium",
+    "description": "A dívida líquida da companhia desconta caixa e aplicações financeiras; o balanço separa as duas rubricas. Qualquer cálculo deve dizer qual definição usa.",
+    "keywords": [
+      "caixa",
+      "aplicações financeiras",
+      "dívida líquida",
+      "definição"
+    ],
+    "evidenceDocuments": [
+      "01_ITR_1T26_31mai2026.pdf",
+      "02_Proposta_Administracao_AGOE_2026.pdf"
+    ],
+    "expectedTreatment": "audited"
+  }
+]

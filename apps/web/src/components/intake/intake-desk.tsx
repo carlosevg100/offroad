@@ -167,7 +167,7 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
             <div className="case-desk__lm">
               <strong>{t("lmTitle")}</strong>
               <span>
-                {t("lmBody", {
+                {t(trajectory.liabilityManagement.lendersTakenOut.length > 0 ? "lmBody" : "lmBodyRefinancing", {
                   lenders: trajectory.liabilityManagement.lendersTakenOut.join(", "),
                   balance: millions(trajectory.liabilityManagement.covenantedBalance, locale) ?? "",
                   newMoney: millions(trajectory.liabilityManagement.netNewMoney, locale) ?? "",
