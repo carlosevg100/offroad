@@ -1091,6 +1091,16 @@
       "missingAllTitle": "A mesa não pôde rodar",
       "missingAllBody": "Faltam os campos abaixo. Envie o documento que traz cada um e a análise é montada automaticamente.",
       "lmBodyRefinancing": "A captação resgata {balance} de dívida existente no desembolso (troca de passivo) e deixa {newMoney} de dinheiro novo. Alavancagem após a troca: {leverage}."
+    },
+    "deliveryMap": {
+      "kicker": "Mapa de entrega",
+      "progress": "{delivered} de {total} itens de agora entregues",
+      "fileSatisfies": "lido; atende: {items}",
+      "fileUnmatched": "lido como {kind}; não atende nenhum item da lista",
+      "fileReading": "sendo lido agora",
+      "fileWaiting": "aguardando leitura; clique em Analisar documentos",
+      "fileUnrecognised": "lido, mas não reconhecido; diga o que é respondendo ao item correspondente",
+      "empty": "Nenhum arquivo ainda. Arraste acima e cada item marca sozinho quando o documento certo chegar."
     }
   }
 }

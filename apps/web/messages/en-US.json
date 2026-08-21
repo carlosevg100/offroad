@@ -1091,6 +1091,16 @@
       "missingAllTitle": "The desk could not run",
       "missingAllBody": "The fields below are missing. Send the document that carries each one and the analysis is assembled automatically.",
       "lmBodyRefinancing": "The raise repays {balance} of existing debt at disbursement (a liability swap), leaving {newMoney} of new money. Leverage after the swap: {leverage}."
+    },
+    "deliveryMap": {
+      "kicker": "Delivery map",
+      "progress": "{delivered} of {total} items needed now delivered",
+      "fileSatisfies": "read; covers: {items}",
+      "fileUnmatched": "read as {kind}; covers no item on the list",
+      "fileReading": "being read now",
+      "fileWaiting": "waiting to be read; click Analyse documents",
+      "fileUnrecognised": "read but not recognised; say what it is by answering the matching item",
+      "empty": "No files yet. Drop them above and each item ticks itself when the right document arrives."
     }
   }
 }
