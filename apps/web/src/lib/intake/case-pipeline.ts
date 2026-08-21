@@ -474,15 +474,13 @@ export async function buildCaseState(input: {
   const clientQuestions = questionsForCompany(desk, trajectory, deskInputs.missing);
 
   // The room is planned even when no material exists yet: the analyst then sees a room of
-  // holds and requests, which is the honest state. Disclosure of the company's name is not
-  // granted at intake today, so nothing beyond the teaser is placed before the NDA.
+  // holds and requests, which is the honest state.
   const dataRoom = planDataRoom({
     materials,
     materialsBlockedBy,
     documents: await loadRoomDocuments(supabase, organizationId, sessionId),
     exceptions: reconciliation.exceptions,
     readiness,
-    disclosureAuthorised: false,
   });
   materials = [...materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
 

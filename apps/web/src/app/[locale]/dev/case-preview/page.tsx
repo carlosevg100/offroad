@@ -76,7 +76,6 @@ export default async function CasePreviewPage({params, searchParams}: {params: P
           })),
           exceptions: [],
           readiness: {state: "in_progress", score: 0.7, components: [], blockers: [{id: "receivables_aging", labels: {pt: "Aging de recebíveis", en: "Receivables aging"}}]},
-          disclosureAuthorised: false,
         })}
       />
     </main>
