@@ -1,0 +1,34 @@
+[
+  {
+    "id": "net_debt_2026_06",
+    "definition": "Dívida bruta (empréstimos, financiamentos e debêntures) menos disponibilidades, definição da companhia",
+    "value": "2495342000",
+    "unit": "BRL",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    },
+    "note": "3.926.827 menos 1.431.485; a companhia chega a 2.775.379 somando derivativos e contas a pagar de aquisições à dívida."
+  },
+  {
+    "id": "maturity_wall_2028_vs_cash",
+    "definition": "Principal de 2028 sobre disponibilidades de 30/06/2026",
+    "value": "1.4950",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.01"
+    }
+  },
+  {
+    "id": "ltm_leverage_company",
+    "definition": "Alavancagem apurada pela companhia conforme as escrituras",
+    "value": "1.10",
+    "periodEnd": "2026-06-30",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.02"
+    }
+  }
+]
