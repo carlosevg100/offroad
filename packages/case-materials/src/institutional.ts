@@ -1,9 +1,7 @@
 import Decimal from "decimal.js";
 import type {CaseBrief} from "@offroad/case-understanding";
-import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
-import {covenantsFor} from "@offroad/credit-playbook";
+import {covenantsFor, type InstrumentVerdict} from "@offroad/credit-playbook";
 import type {DeskAnalysis, InternalRating, StressScenario, Trajectory} from "@offroad/credit-analysis";
-import type {InstrumentVerdict} from "@offroad/credit-playbook";
 import type {CollateralPackage} from "@offroad/deal-structure";
 import type {IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
