@@ -1,0 +1,20 @@
+{
+  "caseId": "cogna",
+  "title": "Cogna Educação S.A.: alongamento de R$ 1,8 bilhão em debêntures sobre o release público do 2T26",
+  "synthetic": false,
+  "archetypeId": "refinance",
+  "language": "pt",
+  "documentsDir": "../../assets/cogna",
+  "documents": [
+    {
+      "name": "01_Release_Resultados_2T26.pdf",
+      "sha256": "d36c8a7c33f8844a3d63fc8e0ff66e5a7f0e8f1ec71bfbfc58c9b4ca62c64c23"
+    },
+    {
+      "name": "02_Pedido_Simulado_Debentures_2026.docx",
+      "sha256": "e77e56e02a4b235ff1951ebcb1263ffa5b433d5494860d36c5af133ad76296cd"
+    }
+  ],
+  "provenance": "O release de resultados do 2T26 é público (RI da companhia, agosto de 2026), obtido em 21/08/2026. O pedido é simulado e diz isso na primeira linha; gerado por packages/testing-fixtures/scripts/build-cogna.ts. Gabarito lido à mão do release por packages/evals/scripts/build-cogna-gold.ts.",
+  "version": "cogna-2026.08.21-v1"
+}
