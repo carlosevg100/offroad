@@ -23,7 +23,9 @@ permissions:
   id-token: write
 
 concurrency:
-  group: measure-extraction
+  # One group per case: dispatching five cases queued four and cancelled three, because a
+  # workflow-level group keeps one pending run. Cases are independent; they run side by side.
+  group: measure-extraction-${{ inputs.case || 'rede-horizonte' }}
   cancel-in-progress: false
 
 jobs:
