@@ -13,3 +13,4 @@ export const caseMaterialsVersion = "2026.08.20-v1";
 export * from "./compile";
 export * from "./desk-sections";
 export * from "./institutional";
+export * from "./diligence";

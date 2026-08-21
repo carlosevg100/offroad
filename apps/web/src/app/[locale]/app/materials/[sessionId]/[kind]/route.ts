@@ -18,7 +18,7 @@ import {resolveCaseState} from "@/lib/intake/case-pipeline";
  * case, not somebody else's memo.
  */
 
-const kinds: readonly MaterialKind[] = ["investment_memo", "term_sheet", "teaser", "credit_profile", "package"];
+const kinds: readonly MaterialKind[] = ["investment_memo", "term_sheet", "diligence_qa", "teaser", "credit_profile", "package"];
 
 type Params = {params: Promise<{locale: string; sessionId: string; kind: string}>};
 
