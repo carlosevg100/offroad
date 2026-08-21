@@ -26,6 +26,7 @@ write("manifest.json", {
   caseId: "nimbus",
   title: "Nimbus Tecnologia em Gestão de Frotas S.A.: venture debt de R$ 15 milhões para chegar à Série B (sala de dados sintética)",
   synthetic: true,
+  archetypeId: "venture_debt",
   language: "pt",
   documentsDir: "../../assets/nimbus",
   documents,

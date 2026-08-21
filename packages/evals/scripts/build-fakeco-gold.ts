@@ -45,6 +45,7 @@ write("manifest.json", {
   caseId: "fakeco",
   title: "Aurora Distribuidora de Materiais de Construção Ltda: capital de giro e quarto CD (sala de dados sintética)",
   synthetic: true,
+  archetypeId: "growth_expansion",
   language: "pt",
   documentsDir: "../../assets/fakeco",
   documents,
