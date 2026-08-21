@@ -14,6 +14,7 @@
     "camil": "tsx scripts/build-camil.ts",
     "cogna": "tsx scripts/build-cogna.ts",
     "fakeco": "tsx scripts/build-fakeco.ts",
+    "fakeco:scan": "./scripts/render-fakeco-scan.sh",
     "lint": "tsc -p tsconfig.json --noEmit",
     "nimbus": "tsx scripts/build-nimbus.ts",
     "test": "vitest run --exclude 'dist/**' --passWithNoTests",

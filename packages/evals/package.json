@@ -15,6 +15,7 @@
     "camil:gold": "tsx scripts/build-camil-gold.ts",
     "cogna:gold": "tsx scripts/build-cogna-gold.ts",
     "desk:gold": "tsx scripts/desk-from-gold.ts",
+    "fakeco-scan:gold": "tsx scripts/build-fakeco-scan-gold.ts",
     "fakeco:gold": "tsx scripts/build-fakeco-gold.ts",
     "fakeco:verify": "tsx scripts/verify-fakeco.ts",
     "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts",

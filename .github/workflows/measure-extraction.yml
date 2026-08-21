@@ -51,6 +51,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install OCR (the worker's own engine, so scanned pages are measured too)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-por tesseract-ocr-eng poppler-utils >/dev/null
+
       - name: Configure AWS credentials (OIDC, no stored key)
         uses: aws-actions/configure-aws-credentials@v5
         with:

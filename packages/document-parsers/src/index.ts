@@ -311,3 +311,4 @@ function looksTextual(bytes: Uint8Array): boolean {
   }
   return control / Math.max(1, sample.length) < 0.05;
 }
+export {createTesseractEngine, parseTesseractTsv, runTool, toolVersion, withTempDirectory} from "./tesseract";
