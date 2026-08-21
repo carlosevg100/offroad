@@ -1088,7 +1088,8 @@
       "missingSomeTitle": "What is still missing to close the analysis",
       "missingSomeBody": "The desk ran with what there was. These fields would sharpen the reading.",
       "missingAllTitle": "The desk could not run",
-      "missingAllBody": "The fields below are missing. Send the document that carries each one and the analysis is assembled automatically."
+      "missingAllBody": "The fields below are missing. Send the document that carries each one and the analysis is assembled automatically.",
+      "lmBodyRefinancing": "The raise repays {balance} of existing debt at disbursement (a liability swap), leaving {newMoney} of new money. Leverage after the swap: {leverage}."
     }
   }
 }

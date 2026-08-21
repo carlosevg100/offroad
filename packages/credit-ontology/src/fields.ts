@@ -90,6 +90,7 @@ const f = (...s: Shorthand): FieldDefinition => ({
 const financialMetrics: Array<[key: string, pt: string, en: string, synonymsPt: string[], synonymsEn: string[]]> = [
   ["revenue", "Receita líquida", "Net revenue", ["receita operacional líquida", "receita líquida de vendas", "ROL"], ["net sales", "net operating revenue"]],
   ["gross_profit", "Lucro bruto", "Gross profit", ["resultado bruto"], []],
+  ["cogs", "Custo dos produtos vendidos", "Cost of goods sold", ["cpv", "custo das vendas", "custo das mercadorias vendidas", "custos dos serviços"], ["cogs", "cost of sales"]],
   ["ebitda", "EBITDA", "EBITDA", ["lajida", "ebitda reportado"], ["reported ebitda"]],
   ["adjusted_ebitda", "EBITDA ajustado", "Adjusted EBITDA", ["ebitda normalizado"], ["normalized ebitda"]],
   ["ebit", "EBIT", "EBIT", ["lajir", "resultado operacional"], ["operating income"]],

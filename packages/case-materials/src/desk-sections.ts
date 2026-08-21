@@ -45,7 +45,7 @@ export function sourcesAndUses(desk: DeskAnalysis, trajectory: Trajectory): Mate
     ],
     rows: [
       ["Fonte: novo instrumento", money(amount, "pt-BR")],
-      [`Uso: quitação das linhas com covenant (${lm.lendersTakenOut.join(", ")})`, money(lm.covenantedBalance, "pt-BR")],
+      [lm.lendersTakenOut.length > 0 ? `Uso: quitação das linhas com covenant (${lm.lendersTakenOut.join(", ")})` : "Uso: resgate de dívida existente (troca de passivo)", money(lm.covenantedBalance, "pt-BR")],
       ["Uso: recursos novos para o plano da companhia", money(lm.netNewMoney, "pt-BR")],
     ],
   };
@@ -164,10 +164,15 @@ export function covenantSchedule(trajectory: Trajectory): MaterialBlock {
 export function riskFactors(desk: DeskAnalysis, trajectory: Trajectory | null): MaterialBlock[] {
   const mitigants: Record<string, {pt: string; en: string} | undefined> = {
     "covenant-breach-day-one": trajectory?.liabilityManagement
-      ? {
-          pt: `Endereçado na estrutura: as linhas com covenant são quitadas na operação (${trajectory.liabilityManagement.lendersTakenOut.join(", ")}), e o novo instrumento carrega covenant próprio, escalonado conforme a trajetória.`,
-          en: `Addressed in the structure: the covenanted lines are taken out in the transaction (${trajectory.liabilityManagement.lendersTakenOut.join(", ")}), and the new instrument carries its own covenant, stepped to the trajectory.`,
-        }
+      ? trajectory.liabilityManagement.lendersTakenOut.length > 0
+        ? {
+            pt: `Endereçado na estrutura: as linhas com covenant são quitadas na operação (${trajectory.liabilityManagement.lendersTakenOut.join(", ")}), e o novo instrumento carrega covenant próprio, escalonado conforme a trajetória.`,
+            en: `Addressed in the structure: the covenanted lines are taken out in the transaction (${trajectory.liabilityManagement.lendersTakenOut.join(", ")}), and the new instrument carries its own covenant, stepped to the trajectory.`,
+          }
+        : {
+            pt: "Parcialmente endereçado: a captação é majoritariamente troca de passivo, e a trajetória até a próxima medição do covenant deve ser demonstrada com a sazonalidade de caixa e o resgate das parcelas de curto prazo.",
+            en: "Partially addressed: the raise is mostly a liability swap, and the trajectory to the next covenant test must be shown with cash seasonality and the repayment of the short-dated instalments.",
+          }
       : undefined,
     "maturity-wall": trajectory?.liabilityManagement
       ? {

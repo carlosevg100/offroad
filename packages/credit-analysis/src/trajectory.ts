@@ -45,7 +45,23 @@ export type TrajectoryInput = {
   /** Held flat across the horizon; stated as an assumption in the output. */
   cash: string;
   existing: TrajectoryDebtLine[];
-  newDebt: {amount: string; termMonths: number; graceMonths: number};
+  newDebt: {
+    amount: string;
+    termMonths: number;
+    graceMonths: number;
+    /**
+     * Existing debt the proceeds repay at disbursement, when the room says so
+     * (`transaction.refinancing`). Netted off the existing stack pro rata: the desk knows how
+     * much is being taken out before it knows which contracts, and the leverage arithmetic
+     * needs only the amount.
+     */
+    refinancing?: string;
+  };
+  /**
+   * True when the projection is not the company's but the desk's fallback (EBITDA held at the
+   * audited level), so the narrative says so instead of describing a ramp nobody promised.
+   */
+  ebitdaHeldFlat?: boolean;
   /** Most recent audited EBITDA, the base the haircut anchors on. */
   auditedEbitda: string;
   /** Projected EBITDA per calendar year, the company's own ramp. */
@@ -94,7 +110,7 @@ export type LiabilityManagement = {
 export type CovenantStep = {year: number; maximum: string};
 
 export type Trajectory = {
-  assumptions: {cashHeldFlat: string; growthHaircut: string; covenantCushion: string; disbursement: string};
+  assumptions: {cashHeldFlat: string; growthHaircut: string; covenantCushion: string; disbursement: string; ebitdaHeldFlat: boolean; refinancing: string};
   years: TrajectoryYear[];
   peak: {year: number; leverageBase: string; leverageStressed: string};
   crossings: Array<{maximum: string; yearBase: number | null; yearStressed: number | null}>;
@@ -143,12 +159,19 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
   const floor = d(input.covenantFloor ?? "2.5");
   const audited = d(input.auditedEbitda);
 
+  // Proceeds that repay existing debt leave the stack on day one. Pro rata across lines, so
+  // every schedule shrinks by the same factor and no contract is invented as the one repaid.
+  const existingTotalAtStart = input.existing.reduce((sum, line) => sum.plus(line.balance), new Decimal(0));
+  const refinancing = Decimal.min(d(input.newDebt.refinancing ?? "0"), existingTotalAtStart);
+  const keepFactor = existingTotalAtStart.gt(0) ? existingTotalAtStart.minus(refinancing).div(existingTotalAtStart) : new Decimal(1);
+  const existing: TrajectoryDebtLine[] = input.existing.map((line) => ({...line, balance: d(line.balance).times(keepFactor).toFixed(2)}));
+
   const years: TrajectoryYear[] = input.projectedEbitda.map(({year, ebitda}) => {
     const atYm = year * 12 + 11; // December of the year.
     const prevYm = (year - 1) * 12 + 11;
 
-    const existingNow = input.existing.reduce((sum, line) => sum.plus(existingAt(line, referenceYm, atYm)), new Decimal(0));
-    const existingPrev = input.existing.reduce((sum, line) => sum.plus(existingAt(line, referenceYm, Math.max(prevYm, referenceYm))), new Decimal(0));
+    const existingNow = existing.reduce((sum, line) => sum.plus(existingAt(line, referenceYm, atYm)), new Decimal(0));
+    const existingPrev = existing.reduce((sum, line) => sum.plus(existingAt(line, referenceYm, Math.max(prevYm, referenceYm))), new Decimal(0));
     const newNow = newDebtAt(amount, referenceYm, input.newDebt.graceMonths, input.newDebt.termMonths, atYm);
     const newPrev = newDebtAt(amount, referenceYm, input.newDebt.graceMonths, input.newDebt.termMonths, Math.max(prevYm, referenceYm));
 
@@ -183,6 +206,27 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
   // ---- liability management: take out the covenanted lines inside the ticket ------------------
   const covenanted = input.existing.filter((line) => line.hasCovenant);
   let liabilityManagement: LiabilityManagement | null = null;
+  if (covenanted.length === 0 && refinancing.gt(0)) {
+    // No single contract to take out: the covenant binds the whole stack and the room states how
+    // much of it the proceeds repay. The arithmetic is the same, the lenders are "the schedule".
+    const netNewMoney = amount.minus(refinancing);
+    const postDebt = existingTotalAtStart.minus(refinancing).plus(amount);
+    const postLeverage = postDebt.minus(cash).div(audited);
+    liabilityManagement = {
+      covenantedBalance: refinancing.toFixed(2),
+      netNewMoney: netNewMoney.toFixed(2),
+      postLeverageAfterRefi: postLeverage.toFixed(4),
+      lendersTakenOut: [],
+    };
+    findings.push({
+      id: "refinancing-inside-ticket",
+      severity: "high",
+      pt: `A captação é, em ${brlM(refinancing)}, troca de passivo: esse valor resgata dívida existente no desembolso e sobra ${brlM(netNewMoney)} de dinheiro efetivamente novo. A alavancagem pós-operação é ${turns(postLeverage)} sobre o EBITDA reportado, não a soma ingênua do tíquete ao estoque. O que a operação compra é prazo e carência, e é contra isso que o fundo precifica.`,
+      en: `${brlM(refinancing)} of the raise is a liability swap: it repays existing debt at disbursement, leaving ${brlM(netNewMoney)} of genuinely new money. Post-transaction leverage is ${turns(postLeverage)} on reported EBITDA, not the naive sum of ticket and stock. What the deal buys is tenor and grace, and that is what the fund prices.`,
+      values: {refinancing: refinancing.toFixed(2), netNewMoney: netNewMoney.toFixed(2), postLeverage: postLeverage.toFixed(4)},
+      inputs: ["transaction.refinancing", "transaction.requested_amount", "debt.instruments"],
+    });
+  }
   if (covenanted.length > 0) {
     const covenantedBalance = covenanted.reduce((sum, line) => sum.plus(line.balance), new Decimal(0));
     const netNewMoney = amount.minus(covenantedBalance);
@@ -231,8 +275,8 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
   findings.push({
     id: "leverage-trajectory",
     severity: "info",
-    pt: `Trajetória: pico de ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} no cenário com corte de ${haircut.times(100).toFixed(0)}% do crescimento) em ${peakYear.year}, desalavancando pela amortização SAC e pela rampa do projeto${back && back.yearStressed ? `, e voltando abaixo de ${turns(back.maximum)} em ${back.yearStressed} mesmo no cenário cortado` : ""}. Covenant proposto para o novo instrumento, com folga de ${cushion.toFixed(2).replace(".", ",")}x sobre o cenário cortado e teste anual: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum.replace(".", ",")}x`).join("; ")}. Primeira aferição no primeiro exercício completo após o desembolso.`,
-    en: `Trajectory: peak of ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} with ${haircut.times(100).toFixed(0)}% of the growth cut) in ${peakYear.year}, deleveraging through SAC amortisation and the project ramp${back && back.yearStressed ? `, and back under ${turns(back.maximum)} by ${back.yearStressed} even in the cut scenario` : ""}. Proposed covenant for the new instrument, ${cushion.toFixed(2)}x of cushion over the cut scenario, tested annually: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum}x`).join("; ")}. First test at the first full year after disbursement.`,
+    pt: `Trajetória${input.ebitdaHeldFlat ? " (sem projeção da companhia: EBITDA mantido no nível do último exercício, premissa da mesa)" : ""}: pico de ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} no cenário com corte de ${haircut.times(100).toFixed(0)}% do crescimento) em ${peakYear.year}, desalavancando pela amortização SAC${input.ebitdaHeldFlat ? "" : " e pela rampa do projeto"}${back && back.yearStressed ? `, e voltando abaixo de ${turns(back.maximum)} em ${back.yearStressed} mesmo no cenário cortado` : ""}. Covenant proposto para o novo instrumento, com folga de ${cushion.toFixed(2).replace(".", ",")}x sobre o cenário cortado e teste anual: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum.replace(".", ",")}x`).join("; ")}. Primeira aferição no primeiro exercício completo após o desembolso.`,
+    en: `Trajectory${input.ebitdaHeldFlat ? " (no company projection: EBITDA held at the latest audited level, a desk assumption)" : ""}: peak of ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} with ${haircut.times(100).toFixed(0)}% of the growth cut) in ${peakYear.year}, deleveraging through SAC amortisation${input.ebitdaHeldFlat ? "" : " and the project ramp"}${back && back.yearStressed ? `, and back under ${turns(back.maximum)} by ${back.yearStressed} even in the cut scenario` : ""}. Proposed covenant for the new instrument, ${cushion.toFixed(2)}x of cushion over the cut scenario, tested annually: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum}x`).join("; ")}. First test at the first full year after disbursement.`,
     values: {peakBase: peakYear.leverageBase, peakStressed: peakYear.leverageStressed, peakYear: String(peakYear.year)},
     inputs: ["projections.ebitda", "debt.instruments", "transaction.requested_amount"],
   });
@@ -246,6 +290,8 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
       growthHaircut: haircut.toFixed(4),
       covenantCushion: cushion.toFixed(4),
       disbursement: input.referenceDate,
+      ebitdaHeldFlat: input.ebitdaHeldFlat ?? false,
+      refinancing: refinancing.toFixed(2),
     },
     years,
     peak: {year: peakYear.year, leverageBase: peakYear.leverageBase, leverageStressed: peakYear.leverageStressed},

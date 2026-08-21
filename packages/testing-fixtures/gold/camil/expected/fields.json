@@ -62,6 +62,32 @@
     }
   },
   {
+    "fieldPath": "historical_financials.2025.cogs",
+    "value": "8622700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "historical_financials.2025.gross_profit",
+    "value": "2492300000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2025-03-01",
+    "periodEnd": "2026-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
     "fieldPath": "historical_financials.2025.ebitda",
     "value": "915300000",
     "valueType": "number",
@@ -247,6 +273,19 @@
     }
   },
   {
+    "fieldPath": "historical_financials.2024.cogs",
+    "value": "9873000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Proposta_Administracao_AGOE_2026.pdf",
+    "periodStart": "2024-03-01",
+    "periodEnd": "2025-02-28",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
     "fieldPath": "historical_financials.2024.ebitda",
     "value": "907300000",
     "valueType": "number",
@@ -301,6 +340,19 @@
   {
     "fieldPath": "interim_financials.2026_05.revenue_3m",
     "value": "2667975000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
+    "periodStart": "2026-03-01",
+    "periodEnd": "2026-05-31",
+    "tolerance": {
+      "kind": "relative",
+      "value": "0.005"
+    }
+  },
+  {
+    "fieldPath": "interim_financials.2026_05.cogs_3m",
+    "value": "2016179000",
     "valueType": "number",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",

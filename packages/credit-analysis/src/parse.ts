@@ -36,8 +36,8 @@ export function parseRate(text: string | null | undefined): ParsedRate | null {
     };
   }
 
-  // "112% do cdi" / "112% cdi"
-  const percentOf = value.match(/^([\d.,]+)\s*%\s*(?:do\s+)?cdi$/);
+  // "112% do cdi" / "112% cdi" / "104% do di" / "105% da taxa di" (DI and CDI are the same axis)
+  const percentOf = value.match(/^([\d.,]+)\s*%\s*(?:d[oa]\s+)?(?:taxa\s+)?(?:cdi|di)$/);
   if (percentOf) {
     return {kind: "percent_of_index", index: "CDI", factor: decimalFrom(percentOf[1]!).div(100).toFixed(6)};
   }
@@ -48,8 +48,8 @@ export function parseRate(text: string | null | undefined): ParsedRate | null {
     return {kind: "fixed_monthly", monthly: decimalFrom(monthly[1]!).div(100).toFixed(6)};
   }
 
-  // "16,5% a.a." / "pré 16,5% a.a."
-  const annual = value.match(/^(?:pr[eé]\s+)?([\d.,]+)\s*%\s*a\.?a\.?$/);
+  // "16,5% a.a." / "pré 16,5% a.a." / "14,15% a.a. pré" / "14,15% a.a. pré-fixada"
+  const annual = value.match(/^(?:pr[eé](?:-?fixad[oa])?\s+)?([\d.,]+)\s*%\s*a\.?a\.?(?:\s+pr[eé](?:-?fixad[oa])?)?$/);
   if (annual) {
     return {kind: "fixed_annual", annual: decimalFrom(annual[1]!).div(100).toFixed(6)};
   }

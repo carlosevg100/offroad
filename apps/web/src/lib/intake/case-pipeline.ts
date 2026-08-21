@@ -240,7 +240,7 @@ export async function buildCaseState(input: {
     reconciliation.facts.map((fact) => ({fieldPath: fact.key.fieldPath, value: fact.value})),
     {
       referenceDate: new Date().toISOString().slice(0, 10),
-      indexLevels: {cdi: "0.105", tlp: "0.079"},
+      indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045"},
       statedRequest: {
         ...(dealBrief.requestedAmount !== undefined ? {amount: dealBrief.requestedAmount} : {}),
         ...(dealBrief.requestedTermMonths !== undefined ? {termMonths: dealBrief.requestedTermMonths} : {}),

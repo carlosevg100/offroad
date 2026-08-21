@@ -13,6 +13,7 @@
     "baseline": "tsx src/cli.ts baseline",
     "build": "tsc -p tsconfig.json",
     "camil:gold": "tsx scripts/build-camil-gold.ts",
+    "desk:gold": "tsx scripts/desk-from-gold.ts",
     "fakeco:gold": "tsx scripts/build-fakeco-gold.ts",
     "fakeco:verify": "tsx scripts/verify-fakeco.ts",
     "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts",
@@ -26,6 +27,7 @@
     "verify:case": "tsx scripts/verify-fakeco.ts"
   },
   "dependencies": {
+    "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/document-classification": "workspace:*",
     "@offroad/document-extraction": "workspace:*",

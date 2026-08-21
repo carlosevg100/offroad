@@ -93,6 +93,8 @@ add({fieldPath: "company.sector", value: "Alimentos", valueType: "text", materia
 const fy = {periodStart: "2025-03-01", periodEnd: "2026-02-28"};
 const fyPrev = {periodStart: "2024-03-01", periodEnd: "2025-02-28"};
 add({fieldPath: "historical_financials.2025.revenue", value: m(11115.0), valueType: "number", materiality: "material", sourceDocument: AGO, ...fy, tolerance: near});
+add({fieldPath: "historical_financials.2025.cogs", value: m(8622.7), valueType: "number", materiality: "material", sourceDocument: AGO, ...fy, tolerance: near});
+add({fieldPath: "historical_financials.2025.gross_profit", value: m(2492.3), valueType: "number", materiality: "material", sourceDocument: AGO, ...fy, tolerance: near});
 add({fieldPath: "historical_financials.2025.ebitda", value: m(915.3), valueType: "number", materiality: "material", sourceDocument: AGO, ...fy, tolerance: near});
 add({fieldPath: "historical_financials.2025.net_income", value: m(148.5), valueType: "number", materiality: "material", sourceDocument: AGO, ...fy, tolerance: near});
 add({fieldPath: "historical_financials.2025.d_and_a", value: m(285.9), valueType: "number", materiality: "supporting", sourceDocument: AGO, ...fy, tolerance: near});
@@ -107,6 +109,7 @@ add({fieldPath: "historical_financials.2025.payables", value: k(1_229_105), valu
 add({fieldPath: "historical_financials.2025.equity", value: k(3_015_690), valueType: "number", materiality: "material", sourceDocument: ITR, ...fy, tolerance: near});
 add({fieldPath: "historical_financials.2025.total_assets", value: k(10_774_545), valueType: "number", materiality: "material", sourceDocument: ITR, ...fy, tolerance: near});
 add({fieldPath: "historical_financials.2024.revenue", value: m(12262.9), valueType: "number", materiality: "material", sourceDocument: AGO, ...fyPrev, tolerance: near});
+add({fieldPath: "historical_financials.2024.cogs", value: m(9873.0), valueType: "number", materiality: "material", sourceDocument: AGO, ...fyPrev, tolerance: near});
 add({fieldPath: "historical_financials.2024.ebitda", value: m(907.3), valueType: "number", materiality: "material", sourceDocument: AGO, ...fyPrev, tolerance: near});
 add({fieldPath: "historical_financials.2024.net_income", value: m(217.0), valueType: "number", materiality: "material", sourceDocument: AGO, ...fyPrev, tolerance: near});
 add({fieldPath: "historical_financials.2024.net_debt", value: m(2690.7), valueType: "number", materiality: "material", sourceDocument: AGO, ...fyPrev, tolerance: near});
@@ -115,6 +118,7 @@ add({fieldPath: "historical_financials.2024.gross_debt", value: m(5237.7), value
 // Quarter ended 31/05/2026, consolidated, in thousands on the page.
 const q = {periodStart: "2026-03-01", periodEnd: "2026-05-31"};
 add({fieldPath: "interim_financials.2026_05.revenue_3m", value: k(2_667_975), valueType: "number", materiality: "material", sourceDocument: ITR, ...q, tolerance: near});
+add({fieldPath: "interim_financials.2026_05.cogs_3m", value: k(2_016_179), valueType: "number", materiality: "material", sourceDocument: ITR, ...q, tolerance: near});
 add({fieldPath: "interim_financials.2026_05.gross_profit_3m", value: k(651_796), valueType: "number", materiality: "material", sourceDocument: ITR, ...q, tolerance: near});
 add({fieldPath: "interim_financials.2026_05.ebit_3m", value: k(139_521), valueType: "number", materiality: "material", sourceDocument: ITR, ...q, tolerance: near});
 add({fieldPath: "interim_financials.2026_05.ebitda_3m", value: m(210.0), valueType: "number", materiality: "material", sourceDocument: ITR, ...q, tolerance: loose, note: "Relatório da administração dentro do ITR: R$ 210,0 milhões, margem 7,9%."});

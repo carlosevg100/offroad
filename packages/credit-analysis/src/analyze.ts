@@ -70,6 +70,12 @@ export type DeskInput = {
     cash?: string;
   };
   debt: DebtLineInput[];
+  /**
+   * Covenants the room states for the company as a whole rather than per line, the way a
+   * listed company's notes do ("os principais instrumentos estão sujeitos a Dívida líquida /
+   * EBITDA ≤ 4,0x"). They bind the stack, not one lender, and are labelled by their scope.
+   */
+  covenants?: Array<{scope: string; text: string}>;
   request: {
     /** Every amount the room states, with where it said so. More than one is itself a finding. */
     amounts: Array<{value: string; source: string}>;
@@ -238,9 +244,12 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
     postTurns: netDebtPre.plus(amount.value).div(ebitda).toFixed(4),
   }));
 
-  const covenants = lines
-    .filter((line) => line.covenant !== null)
-    .map((line) => ({lender: line.lender, covenant: line.covenant!}));
+  const covenants = [
+    ...lines.filter((line) => line.covenant !== null).map((line) => ({lender: line.lender, covenant: line.covenant!})),
+    ...(input.covenants ?? [])
+      .map((entry) => ({lender: entry.scope, covenant: parseCovenant(entry.text)}))
+      .filter((entry): entry is {lender: string; covenant: ParsedCovenant} => entry.covenant !== null),
+  ];
   const tightest = covenants.length > 0
     ? covenants.reduce((min, entry) => (d(entry.covenant.maximum).lt(min.covenant.maximum) ? entry : min))
     : null;
@@ -250,11 +259,18 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
     maxNewDebt = d(tightest.covenant.maximum).times(ebitda).minus(netDebtPre);
     const worst = scenarios.reduce((max, s) => (d(s.postTurns).gt(max.postTurns) ? s : max), scenarios[0]!);
     if (scenarios.some((s) => d(s.postTurns).gt(tightest.covenant.maximum))) {
+      // Already above the ceiling before the deal is a different sentence from "the deal breaks
+      // it": the first is a fact about the company today, and new money can only enter as a swap.
+      const alreadyAbove = preTurns.gt(tightest.covenant.maximum);
       findings.push({
         id: "covenant-breach-day-one",
         severity: "critical",
-        pt: `A operação como solicitada rompe covenant existente no dia um: a alavancagem sai de ${turns(preTurns)} para ${turns(worst.postTurns)} contra o teto de ${turns(tightest.covenant.maximum)} do contrato ${tightest.lender}. Nos números atuais cabem ${brlM(Decimal.max(maxNewDebt, 0))} de dívida nova antes do covenant, não ${brlM(worst.amount)}. Isso muda a natureza da operação: ou o pedido inclui quitação/renegociação das linhas com covenant, ou o tíquete cai, ou não há operação.`,
-        en: `The transaction as asked breaches an existing covenant on day one: leverage moves from ${turns(preTurns)} to ${turns(worst.postTurns)} against the ${turns(tightest.covenant.maximum)} ceiling in the ${tightest.lender} contract. The current numbers admit ${brlM(Decimal.max(maxNewDebt, 0))} of new debt before the covenant, not ${brlM(worst.amount)}. That changes the nature of the deal: either the ask includes repaying or renegotiating the covenanted lines, or the ticket comes down, or there is no deal.`,
+        pt: alreadyAbove
+          ? `A companhia já está acima do covenant antes da operação: ${turns(preTurns)} contra o teto de ${turns(tightest.covenant.maximum)} (${tightest.lender}), excesso de ${brlM(maxNewDebt.abs())} de dívida líquida. Não cabe dívida nova por cima do estoque; a operação só existe como troca de passivo (resgate de linhas dentro do tíquete) ou com renegociação do covenant, e a trajetória até a próxima medição é o que a mesa precisa mostrar.`
+          : `A operação como solicitada rompe covenant existente no dia um: a alavancagem sai de ${turns(preTurns)} para ${turns(worst.postTurns)} contra o teto de ${turns(tightest.covenant.maximum)} (${tightest.lender}). Nos números atuais cabem ${brlM(Decimal.max(maxNewDebt, 0))} de dívida nova antes do covenant, não ${brlM(worst.amount)}. Isso muda a natureza da operação: ou o pedido inclui quitação/renegociação das linhas com covenant, ou o tíquete cai, ou não há operação.`,
+        en: alreadyAbove
+          ? `The company is already above the covenant before the deal: ${turns(preTurns)} against the ${turns(tightest.covenant.maximum)} ceiling (${tightest.lender}), ${brlM(maxNewDebt.abs())} of net debt in excess. No new debt fits on top of the stock; the deal exists only as a liability swap (lines repaid inside the ticket) or with a renegotiated covenant, and the trajectory to the next test is what the desk has to show.`
+          : `The transaction as asked breaches an existing covenant on day one: leverage moves from ${turns(preTurns)} to ${turns(worst.postTurns)} against the ${turns(tightest.covenant.maximum)} ceiling (${tightest.lender}). The current numbers admit ${brlM(Decimal.max(maxNewDebt, 0))} of new debt before the covenant, not ${brlM(worst.amount)}. That changes the nature of the deal: either the ask includes repaying or renegotiating the covenanted lines, or the ticket comes down, or there is no deal.`,
         values: {pre: preTurns.toFixed(4), post: worst.postTurns, ceiling: tightest.covenant.maximum, maxNewDebt: maxNewDebt.toFixed(2)},
         inputs: ["debt.covenants", "historical_financials.gross_debt", "historical_financials.cash", "historical_financials.ebitda", "transaction.requested_amount"],
       });

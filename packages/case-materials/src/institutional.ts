@@ -232,7 +232,9 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
           type: "kv" as const,
           caption: bi("Destinação dos recursos", "Use of proceeds"),
           rows: [
-            {label: bi("Quitação de linhas com covenant", "Covenanted-line takeout"), value: bi(`${money(lm.covenantedBalance, "pt-BR")} (${lm.lendersTakenOut.join(", ")})`, `${money(lm.covenantedBalance, "en-US")} (${lm.lendersTakenOut.join(", ")})`), supportIds: ["trajetoria.linhas_com_covenant"]},
+            lm.lendersTakenOut.length > 0
+              ? {label: bi("Quitação de linhas com covenant", "Covenanted-line takeout"), value: bi(`${money(lm.covenantedBalance, "pt-BR")} (${lm.lendersTakenOut.join(", ")})`, `${money(lm.covenantedBalance, "en-US")} (${lm.lendersTakenOut.join(", ")})`), supportIds: ["trajetoria.linhas_com_covenant"]}
+              : {label: bi("Resgate de dívida existente", "Repayment of existing debt"), value: bi(money(lm.covenantedBalance, "pt-BR"), money(lm.covenantedBalance, "en-US")), supportIds: ["trajetoria.linhas_com_covenant"]},
             {label: bi("Recursos novos para o plano", "New money for the plan"), value: bi(money(lm.netNewMoney, "pt-BR"), money(lm.netNewMoney, "en-US")), supportIds: ["trajetoria.dinheiro_novo_liquido"]},
           ],
         }]
