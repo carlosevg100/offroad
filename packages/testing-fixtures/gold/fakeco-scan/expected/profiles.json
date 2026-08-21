@@ -1,0 +1,27 @@
+[
+  {
+    "document": "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf",
+    "kind": "audited_financial_statements",
+    "informationClass": "audited",
+    "evidenceRank": 1,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",
+    "periodStart": "2023-01-01",
+    "periodEnd": "2025-12-31",
+    "scale": 1000
+  },
+  {
+    "document": "04_Mapa_Divida_Jul2026_digitalizado.pdf",
+    "kind": "debt_schedule",
+    "informationClass": "management",
+    "evidenceRank": 5,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "document": "07_Contrato_Social_Consolidado.png",
+    "kind": "corporate_docs",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Aurora Distribuidora de Materiais de Construção Ltda"
+  }
+]
