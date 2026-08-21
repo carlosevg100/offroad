@@ -180,8 +180,14 @@ Qualidade medida sobre documentos reais, agora nos dois estágios:
 | E1 classificação | classe da informação | 6/8, 75,0% | |
 | E1 classificação | período | 5/5, 100% | |
 | E1 classificação | errado com confiança >= 0,80 | **0** | |
-| E3 extração | recall material | 75,4% | ~US$ 2,50 / caso |
-| E3 extração | precisão | 79,0% | |
+| E3 extração (rede-horizonte) | recall material | 75,4% | ~US$ 2,50 / caso |
+| E3 extração (rede-horizonte) | precisão | 79,0% | |
+| E1 classificação (fakeco) | tipo do documento | **100%** (9/9) | US$ 0,041 / 9 docs |
+| E1 classificação (fakeco) | classe da informação | **100%** (9/9) | |
+| E1 classificação (fakeco) | errado com confiança | **0** | |
+| E3 extração (fakeco) | recall material | **42,0%** (55/131) | US$ 0,55 / caso |
+| E3 extração (fakeco) | precisão | 79,0% (75/95) | |
+| E3 extração (fakeco) | alucinação | 0% | |
 
 E1 não tinha número nenhum até 20/08/2026, e a ausência não era neutra: a medição de E3
 entrega ao extrator o tipo **correto** de propósito, para isolar os estágios, então "quão bom é
@@ -199,6 +205,36 @@ gabarito pretendia. Defensável dos dois lados e é decisão de mesa, não de c�
 CFO é informação da administração ou documento societário? Pendente com o fundador.
 
 Reproduzir: workflow `Measure classification` (manual, chaves via OIDC no Secrets Manager).
+
+## O que a Aurora encontrou, 21/08/2026
+
+O segundo gold case (`packages/testing-fixtures/gold/fakeco`) existe para medir o que o
+primeiro não alcança. Em algumas horas ele achou cinco coisas, e três eram defeito nosso.
+
+**Corrigido.** A classe da informação era escolhida pelo modelo e o rank de evidência derivava
+dela, então um `trial_balance` corretamente identificado podia ser ranqueado 5 em vez de 3 e
+inverter a precedência entre dois documentos que discordam (PR #123). A ontologia não tinha tipo
+para relação de clientes, e como `other` não mapeia para grupo de campo nenhum, o grupo
+`customers` era inalcançável na prática (PR #124). E o próprio gabarito falava um dialeto
+inventado, o que fez a primeira medição reportar 8,1% quando o real era 42% (PR #125).
+
+**Aberto, e é o maior buraco do produto: extração de dívida está em 1,9% (1 de 54 campos).**
+Tudo o mais está entre 50% e 100%. Só a dívida colapsa, e ela é a primeira coisa que uma mesa de
+crédito lê. A instalação está correta ponta a ponta e foi verificada: o `debt_schedule` pede 34
+alvos incluindo todos os moldes `debt.instruments.{i}.*`, o prompt explica como preencher o
+índice e diz que os itens seguem a ordem do documento, e a planilha é lida com 68 células. O
+modelo recebe a pergunta certa sobre um documento legível e devolve **1 candidato com zero
+ausentes**, ou seja, nem sequer declara o que não achou. É comportamento de modelo em tabela
+larga, não encanamento quebrado, e o caminho provável é fatiar tabelas por linha em vez de
+mandar a tabela inteira num trecho só.
+
+Isso era invisível antes porque o gabarito do rede-horizonte tem **zero** campos de dívida.
+
+**Aberto, e é limitação do instrumento, não do produto.** O contrato social chega como foto e
+produziu zero candidatos: o harness de medição roda fora do worker e não tem OCR, que é
+capacidade que o worker empresta. O caminho de OCR continua sem número, e medi-lo exige rodar a
+medição dentro do worker.
+
 
 Handoff completo, incluindo como testar o fluxo e o que falta:
 [`HANDOFF_2026-08-20.md`](HANDOFF_2026-08-20.md). Alvo do produto e plano por fases:
