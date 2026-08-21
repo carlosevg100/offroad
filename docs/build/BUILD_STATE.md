@@ -385,3 +385,19 @@ Plano em `PLANO_E2E_100.md`. O que entrou ou está em PR:
 | E3 extração (camil, #155) | recall / precisão / exceções | 41,5% / 56,9% / 100% (FP 16, corrigido em #164) | US$ 5,42 / 243 chamadas |
 | E3 extração (fakeco-scan, OCR, antes de #160) | recall | 0% (buffer destacado) | |
 
+## Quarta leva da noite, 21/08/2026: o comitê na tela e no memo
+
+- **Comitê na tela e no memorando** (#170): rating com fator a fator, tabela de stress, papéis
+  que o perfil admite, pacote de garantias e preço indicativo (documento interno; o term sheet
+  segue sem taxa por decisão de desenho), computados uma vez no pipeline e lidos pela tela e pelo
+  memo (seção 10). Referência de preço em `packages/market-reference` (#167), com proveniência
+  "prática da mesa" em todo número. Base de investidores e shortlist em `packages/investor-base`
+  (#169, sintético). Covenants como a escritura escreve (#172).
+- **Medições**: workflows passam a rodar um caso ao lado do outro (#171). `fakeco-scan` com OCR
+  funcionando: 22,9% de recall com 3 chamadas; o próximo passo do OCR é reconstruir tabelas a
+  partir das linhas reconhecidas (hoje cada documento vira uma janela de prosa, sem passadas por
+  linha). Nimbus, FakeCo, Cogna e Camil a re-medir depois do #171.
+- **Processo**: auto-merge ligado e `strict` desligado na proteção de `main` para drenar a fila;
+  religar `strict` quando esvaziar. Lição da noite: só fazer push depois de `pnpm check` verde
+  lido de arquivo, não de `grep | head` (dois PRs subiram vermelhos por isso e foram corrigidos).
+
