@@ -3,6 +3,7 @@ import {notFound} from "next/navigation";
 import {IntakeDeliveryMap, type DeliveryMapChecklist} from "@/components/intake/intake-delivery-map";
 import {IntakeDesk} from "@/components/intake/intake-desk";
 import {auroraDeskState} from "@/lib/intake/dev/aurora-desk";
+import {nimbusDeskState} from "@/lib/intake/dev/nimbus-desk";
 
 /**
  * Development-only preview of the desk panel, fed with Aurora's state.
@@ -11,10 +12,12 @@ import {auroraDeskState} from "@/lib/intake/dev/aurora-desk";
  * 404 outside development; there is no data here that matters, but a preview route that ships
  * is a route nobody remembers to remove.
  */
-export default async function CasePreviewPage({params}: {params: Promise<{locale: string}>}) {
+export default async function CasePreviewPage({params, searchParams}: {params: Promise<{locale: string}>; searchParams: Promise<{case?: string}>}) {
   if (process.env.NODE_ENV === "production") notFound();
   const {locale} = await params;
-  const state = auroraDeskState();
+  const {case: which} = await searchParams;
+  // `?case=nimbus` shows the cash-burning profile; anything else, Aurora.
+  const state = which === "nimbus" ? nimbusDeskState() : auroraDeskState();
   const item = (id: string, label: string, satisfied: boolean, satisfiedBy: string[] = [], response?: "partial" | "not_applicable") => ({
     id, label, satisfied, satisfiedBy, level: "minimum" as const, source: "document" as const, stage: "now" as const,
     rationale: "", purposes: [], accepts: [], ...(response ? {response} : {}),
