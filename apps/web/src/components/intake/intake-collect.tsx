@@ -10,6 +10,7 @@ import type {ArchetypeId} from "@offroad/credit-playbook";
 
 import {DocumentIntakeUploader} from "./document-intake-uploader";
 import {IntakeChecklist, IntakeOperation} from "./intake-checklist";
+import {IntakeDeliveryMap} from "./intake-delivery-map";
 import {IntakeDealBrief} from "./intake-deal-brief";
 import {IntakeGapPurposes, IntakeInformation} from "./intake-information";
 
@@ -73,6 +74,35 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
+      {/* The drop zone comes right after the question it depends on, and the map sits beside
+          it: a company drags files and watches items tick, instead of scrolling past the whole
+          list to find where to drop. */}
+      <DocumentIntakeUploader
+        copy={{
+          startError: t("uploader.startError"),
+          invalidFile: t("uploader.invalidFile"),
+          uploadError: t("uploader.uploadError"),
+          registerError: t("uploader.registerError"),
+          uploading: t("uploader.uploading"),
+          dropTitle: t("uploader.dropTitle"),
+          dropBody: t("uploader.dropBody"),
+          select: t("uploader.select"),
+          formats: t("uploader.formats"),
+          received: t("uploader.received"),
+          remove: t("uploader.remove"),
+        }}
+        initialDocuments={documents}
+        locale={locale}
+        organizationId={organizationId}
+        removeAction={session.status === "confirmed" ? undefined : removeAction}
+        sessionId={session.id}
+        userId={userId}
+      />
+
+      {setOperationAction ? (
+        <IntakeDeliveryMap checklist={checklist ?? null} documents={documents} locale={locale} sessionStatus={session.status} />
+      ) : null}
+
       {dealBriefAction && checklist?.archetypeId ? (
         <IntakeDealBrief action={dealBriefAction} brief={dealBrief ?? {}} locale={locale} sessionId={session.id} />
       ) : null}
@@ -96,28 +126,6 @@ export async function IntakeCollect({locale, session, documents, organizationId,
       ) : null}
 
       {checklist ? <IntakeGapPurposes locale={locale} missingByPurpose={checklist.missingByPurpose} /> : null}
-
-      <DocumentIntakeUploader
-        copy={{
-          startError: t("uploader.startError"),
-          invalidFile: t("uploader.invalidFile"),
-          uploadError: t("uploader.uploadError"),
-          registerError: t("uploader.registerError"),
-          uploading: t("uploader.uploading"),
-          dropTitle: t("uploader.dropTitle"),
-          dropBody: t("uploader.dropBody"),
-          select: t("uploader.select"),
-          formats: t("uploader.formats"),
-          received: t("uploader.received"),
-          remove: t("uploader.remove"),
-        }}
-        initialDocuments={documents}
-        locale={locale}
-        organizationId={organizationId}
-        removeAction={session.status === "confirmed" ? undefined : removeAction}
-        sessionId={session.id}
-        userId={userId}
-      />
 
       <div className="intake-collect__process">
         <div><ShieldCheck size={15} /><span>{t("collect.notice")}</span></div>
