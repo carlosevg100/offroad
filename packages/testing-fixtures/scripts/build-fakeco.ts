@@ -275,6 +275,8 @@ const main = async () => {
 
   writeFileSync(join(htmlDir, "02_Demonstracoes_Auditadas_2023_2025.html"), dfsHtml, "utf8");
   writeFileSync(join(htmlDir, "06_Memorial_CD_Jacarei.html"), memorialHtml, "utf8");
+  // The debt map as a printed page: the scanned room photographs this instead of reading the sheet.
+  writeFileSync(join(htmlDir, "04_Mapa_Divida_Jul2026.html"), page("Mapa de dívida bancária", `<h1>${company.legalName}</h1><h2>Mapa de dívida bancária</h2><p>Posição em 31/07/2026, valores em reais</p><table><thead><tr>${dividaRows[3]!.map((cell) => `<th>${cell}</th>`).join("")}</tr></thead><tbody>${dividaRows.slice(4, 4 + debt.length).map((row) => `<tr>${row.map((cell, index) => `<td>${typeof cell === "number" ? (index === 2 ? brl(cell) : String(cell)) : cell}</td>`).join("")}</tr>`).join("")}<tr><td><strong>Total</strong></td><td></td><td><strong>${brl(debt.reduce((sum, d) => sum + d.outstanding, 0))}</strong></td><td colspan="5"></td></tr></tbody></table>`), "utf8");
   writeFileSync(join(htmlDir, "07_Contrato_Social_Consolidado.html"), contratoHtml, "utf8");
 
   const summary = {
