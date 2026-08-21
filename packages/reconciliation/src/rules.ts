@@ -6,7 +6,7 @@ import {factValue, indexFacts, relativeDelta, type ReconciledFact} from "./facts
 /**
  * The rules the desk runs before it believes a number.
  *
- * Each one is arithmetic or a comparison over reconciled facts — never a model call, never a
+ * Each one is arithmetic or a comparison over reconciled facts, never a model call, never a
  * judgement. That is deliberate: an exception is the moment the system tells a company that
  * something in its data room does not add up, and it has to be able to show the two sides and
  * the difference, not an opinion. R1–R17 are declared in the ontology with their tolerance,
@@ -14,7 +14,7 @@ import {factValue, indexFacts, relativeDelta, type ReconciledFact} from "./facts
  *
  * An exception is a **question**, not a verdict. Every one carries both sides with their
  * source documents, so the reviewer sees "the audited statements say 65, the debt schedule
- * says 68, as of different dates" and can resolve it — rather than a red badge saying "debt
+ * says 68, as of different dates" and can resolve it, rather than a red badge saying "debt
  * mismatch".
  */
 
@@ -75,7 +75,7 @@ function exceptionFrom(
   };
 }
 
-/** R4 — the debt balance has to be the same number wherever it is written. */
+/** R4, the debt balance has to be the same number wherever it is written. */
 function ruleDebtConsistency(context: RuleContext): ReconciliationException[] {
   const fact = context.index.get("debt.total_gross");
   if (!fact || fact.conflicts.length === 0 || !fact.disputed) return [];
@@ -102,7 +102,7 @@ function ruleDebtConsistency(context: RuleContext): ReconciliationException[] {
   ];
 }
 
-/** R11 — sources equal uses, and the request equals what it is for. */
+/** R11, sources equal uses, and the request equals what it is for. */
 function ruleSourcesAndUses(context: RuleContext): ReconciliationException[] {
   const side = (which: string) =>
     context.facts
@@ -163,7 +163,7 @@ function ruleSourcesAndUses(context: RuleContext): ReconciliationException[] {
   return exceptions;
 }
 
-/** R16 — a number the auditor did not sign is a different kind of number. */
+/** R16, a number the auditor did not sign is a different kind of number. */
 function ruleInformationClass(context: RuleContext): ReconciliationException[] {
   const latest = context.periods[0];
   if (!latest) return [];
@@ -195,7 +195,7 @@ function ruleInformationClass(context: RuleContext): ReconciliationException[] {
   ];
 }
 
-/** R14 — thousands read as units is the most expensive and most common error there is. */
+/** R14, thousands read as units is the most expensive and most common error there is. */
 function ruleScaleSanity(context: RuleContext): ReconciliationException[] {
   const exceptions: ReconciliationException[] = [];
   for (const period of context.periods) {
@@ -227,7 +227,7 @@ function ruleScaleSanity(context: RuleContext): ReconciliationException[] {
   return exceptions;
 }
 
-/** R13 — an interim figure larger than the full year is a period or a scale error. */
+/** R13, an interim figure larger than the full year is a period or a scale error. */
 function rulePeriodSanity(context: RuleContext): ReconciliationException[] {
   const exceptions: ReconciliationException[] = [];
   for (const fact of context.facts) {
@@ -370,7 +370,7 @@ function ruleStatedRunway(context: RuleContext): ReconciliationException[] {
   ];
 }
 
-/** R5 — financial expense has to look like the debt stock times a plausible rate. */
+/** R5, financial expense has to look like the debt stock times a plausible rate. */
 function ruleFinancialExpensePlausibility(context: RuleContext): ReconciliationException[] {
   const period = context.periods[0];
   if (!period) return [];
