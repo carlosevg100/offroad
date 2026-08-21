@@ -38,6 +38,8 @@ export function deskEvidence(desk: DeskAnalysis | null, trajectory: Trajectory |
 
   metric("desk.alavancagem_pre", desk.leverage.preTurns, "Alavancagem pré-operação (dívida líquida/EBITDA)", ["historical_financials.gross_debt", "historical_financials.cash", "historical_financials.ebitda"]);
   metric("desk.divida_nova_que_cabe", desk.leverage.maxNewDebtUnderCovenants, "Dívida nova que cabe sob o covenant mais apertado", ["debt.covenants", "historical_financials.ebitda"]);
+  metric("desk.cobertura_de_juros", desk.leverage.interestCoverage, "Cobertura de juros (EBITDA / despesa financeira)", ["historical_financials.ebitda", "historical_financials.financial_expenses"]);
+  metric("desk.cobertura_de_juros_pos", desk.leverage.interestCoveragePost, "Cobertura de juros com a operação", ["transaction.requested_amount", "historical_financials.financial_expenses"]);
   metric("desk.custo_medio_do_stack", desk.stack.weightedCost, "Custo médio do estoque de dívida (efetivo anual)", ["debt.instruments"]);
   metric("desk.divida_fora_do_mapa", desk.stack.scheduleGap, "Dívida no balanço ausente do mapa", ["debt.total_gross", "historical_financials.gross_debt"]);
   metric("desk.vencendo_24m", desk.stack.maturingWithin24Months, "Principal vencendo em 24 meses", ["debt.instruments"]);

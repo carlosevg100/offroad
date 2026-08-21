@@ -51,6 +51,8 @@ export type DeskInput = {
     revenue: string;
     ebitda: string;
     cogs?: string;
+    /** Interest expense of the year, as a magnitude. */
+    financialExpenses?: string;
   };
   balance: {
     periodEnd: string;
@@ -179,6 +181,10 @@ export type DeskAnalysis = {
     tightestCovenant: {lender: string; maximum: string} | null;
     /** The number that changes the meeting: new money the tightest covenant admits. */
     maxNewDebtUnderCovenants: string | null;
+    /** EBITDA over the year's interest expense; null when the room does not state the expense. */
+    interestCoverage: string | null;
+    /** The same coverage with the ask's interest added at the stack's cost, or the ask's own rate. */
+    interestCoveragePost: string | null;
   };
   workingCapital: {
     dso: string | null;
@@ -330,6 +336,25 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
   const tightest = covenants.length > 0
     ? covenants.reduce((min, entry) => (d(entry.covenant.maximum).lt(min.covenant.maximum) ? entry : min))
     : null;
+
+  // ---- interest coverage: what the operation earns against what the debt costs ---------------
+  const expenses = input.audited.financialExpenses ? d(input.audited.financialExpenses).abs() : null;
+  const interestCoverage = expenses && expenses.gt(0) && ebitda.gt(0) ? ebitda.div(expenses) : null;
+  const askAmount = scenarios.length > 0 ? scenarios.reduce((max, s) => (d(s.amount).gt(max) ? d(s.amount) : max), ZERO) : ZERO;
+  const askRateParsed = parseRate(input.request.rateAsk);
+  const askCostRaw = askRateParsed ? effectiveAnnualCost(askRateParsed, input.indexLevels) : null;
+  const askCost = askCostRaw ? d(askCostRaw) : weightedCost;
+  const interestCoveragePost = interestCoverage && expenses && askCost ? ebitda.div(expenses.plus(askAmount.times(askCost))) : null;
+  if (interestCoveragePost && interestCoveragePost.lt("2")) {
+    findings.push({
+      id: "thin-interest-coverage",
+      severity: interestCoveragePost.lt("1.5") ? "critical" : "high",
+      pt: `Cobertura de juros de ${interestCoverage!.toFixed(1).replace(".", ",")}x hoje e ${interestCoveragePost.toFixed(1).replace(".", ",")}x com a operação (juros do pedido a ${pctAA(askCost!)}${askCostRaw ? ", a taxa pedida" : ", o custo médio do estoque"}). Abaixo de 2x a operação consome a maior parte do que a companhia gera antes de amortizar um real; abaixo de 1,5x o serviço depende de refinanciamento contínuo.`,
+      en: `Interest coverage of ${interestCoverage!.toFixed(1)}x today and ${interestCoveragePost.toFixed(1)}x with the deal (the ask's interest at ${pctAA(askCost!)}${askCostRaw ? ", the rate asked" : ", the stack's weighted cost"}). Under 2x the operation consumes most of what the company generates before amortising a real; under 1.5x service depends on continuous refinancing.`,
+      values: {coverage: interestCoverage!.toFixed(4), coveragePost: interestCoveragePost.toFixed(4), askCost: askCost!.toFixed(6)},
+      inputs: ["historical_financials.ebitda", "historical_financials.financial_expenses", "transaction.requested_amount", "debt.instruments"],
+    });
+  }
 
   // Leverage over a negative EBITDA is a number with no meaning, and a covenant test on it is
   // a sentence with no meaning. The cash-burning company is read through its runway instead.
@@ -595,6 +620,8 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
       scenarios,
       tightestCovenant: tightest ? {lender: tightest.lender, maximum: tightest.covenant.maximum} : null,
       maxNewDebtUnderCovenants: maxNewDebt ? maxNewDebt.toFixed(2) : null,
+      interestCoverage: interestCoverage ? interestCoverage.toFixed(4) : null,
+      interestCoveragePost: interestCoveragePost ? interestCoveragePost.toFixed(4) : null,
     },
     workingCapital: {
       dso: dso ? dso.toFixed(1) : null,
