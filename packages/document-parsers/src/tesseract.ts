@@ -92,7 +92,7 @@ export async function withTempDirectory<T>(run: (directory: string) => Promise<T
 /**
  * Tesseract in TSV mode, which is the only output that carries a per-word confidence. Words
  * are grouped back into their block by the ids tesseract already assigns, and the block
- * confidence is the mean of its words — that number decides whether the text is allowed to
+ * confidence is the mean of its words, that number decides whether the text is allowed to
  * become a quotable anchor at all.
  */
 export function createTesseractEngine(options: {
