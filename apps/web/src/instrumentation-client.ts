@@ -3,11 +3,14 @@ import posthog from "posthog-js";
 
 import {isAllowedProductEvent} from "@/lib/observability/events";
 import {scrubSentryEvent} from "@/lib/observability/privacy";
+import {deploymentEnvironment, deploymentRelease} from "@/lib/observability/deployment";
 
 const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 if (sentryDsn) {
   Sentry.init({
     dsn: sentryDsn,
+    environment: deploymentEnvironment(),
+    ...(deploymentRelease() ? {release: deploymentRelease()} : {}),
     sendDefaultPii: false,
     tracesSampleRate: 0.05,
     enableLogs: false,
