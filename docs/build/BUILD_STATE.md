@@ -36,7 +36,8 @@ Objetivo: estabilizar a fatia vertical antes do extrator geral (P0 do
 - [x] E2E em CI (stack local + Playwright), encontrou e corrigiu a criação de sessão sob RLS
 - [x] páginas de erro/404 localizadas; placeholders desabilitados com "Em breve"; código morto removido
 - [x] ADRs 0004–0007, ledgers e `handoff.md` atualizados
-- [ ] criar projetos Sentry/PostHog e configurar secrets por ambiente
+- [x] Sentry e PostHog ligados em produção (20/08/2026). Projeto `offroad` na org `olpi-technologies` do Sentry; no PostHog o plano free permite um projeto só, então o Offroad divide o `Default project` (341812) com o resto. `NEXT_PUBLIC_SENTRY_DSN` e `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` configurados em production, preview e development. Verificado ponta a ponta: evento de teste aparece como issue no Sentry (`firstEvent` gravado) e dois eventos `offroad_wiring_check` ingeridos no PostHog.
+- [ ] `SENTRY_AUTH_TOKEN` para upload de source map. Sem ele, `next.config.ts` desliga o upload (`sourcemaps: {disable: !process.env.SENTRY_AUTH_TOKEN}`) e todo stack trace de produção chega minificado. É um token de escrita, decisão do fundador criar e colar.
 - [ ] extrator geral de documentos (P1), plano detalhado em [`P1_INTELLIGENCE_PLAN.md`](P1_INTELLIGENCE_PLAN.md); ADR 0008
 
 ## P1: Fase F0 (fundações da inteligência), 18/08/2026
