@@ -30,7 +30,7 @@ jobs:
   measure:
     name: Extract and score
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 180
 
     steps:
       - name: Checkout
