@@ -165,6 +165,7 @@ for (const entry of gold.manifest.documents) {
       sourceDocument: entry.name,
       ...(candidate.period?.start ? {periodStart: candidate.period.start} : {}),
       ...(candidate.period?.end ? {periodEnd: candidate.period.end} : {}),
+      ...(candidate.entity?.scope ? {entityScope: candidate.entity.scope} : {}),
       informationClass: candidate.information_class,
       evidenceRank: definition.evidenceRank,
       confidence: candidate.confidence,
