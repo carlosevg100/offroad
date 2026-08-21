@@ -182,6 +182,74 @@ export function renumberIndexedGroups(facts: readonly ReconciledFact[]): Reconci
   });
 }
 
+const fold = (text: string): string => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+
+/**
+ * Rows from different documents that name the same contract are one instrument.
+ *
+ * Camil's ITR lists twelve debenture series with balances and the AGOE proposal describes the
+ * same series with their rates and maturities. After renumbering they are twenty-four rows;
+ * a desk reads twelve. Rows whose lender text folds to the same string are merged: the fields
+ * of the higher-ranked document win on conflict, the others fill in what it lacks, and the
+ * conflicts stay on the fact. Only the debt group is merged, because it is the one where a
+ * name identifies a contract.
+ */
+export function mergeInstrumentsByIdentity(facts: readonly ReconciledFact[]): ReconciledFact[] {
+  const group = "debt.instruments";
+  const byTuple = new Map<number, ReconciledFact[]>();
+  for (const fact of facts) {
+    const match = indexedPath.exec(fact.key.fieldPath);
+    if (!match || match[1] !== group) continue;
+    const index = Number(match[2]);
+    byTuple.set(index, [...(byTuple.get(index) ?? []), fact]);
+  }
+  if (byTuple.size < 2) return [...facts];
+  const identity = (tuple: ReconciledFact[]): string | null => {
+    const lender = tuple.find((fact) => fact.key.fieldPath.endsWith(".lender"));
+    return lender ? fold(lender.value) : null;
+  };
+  const canonical = new Map<string, number>();
+  const remap = new Map<number, number>();
+  for (const [index, tuple] of [...byTuple.entries()].sort(([a], [b]) => a - b)) {
+    const id = identity(tuple);
+    if (!id) continue;
+    const existing = canonical.get(id);
+    if (existing === undefined) canonical.set(id, index);
+    else remap.set(index, existing);
+  }
+  if (remap.size === 0) return [...facts];
+  const merged: ReconciledFact[] = [];
+  const seen = new Map<string, ReconciledFact>();
+  for (const fact of facts) {
+    const match = indexedPath.exec(fact.key.fieldPath);
+    if (!match || match[1] !== group) { merged.push(fact); continue; }
+    const index = Number(match[2]);
+    const target = remap.get(index) ?? index;
+    const path = `${group}.${target}.${match[3]}`;
+    const candidate = target === index ? fact : {...fact, key: {...fact.key, fieldPath: path}};
+    const key = [path, fact.key.periodEnd ?? "", fact.key.entityName ?? ""].join("|");
+    const prior = seen.get(key);
+    if (!prior) { seen.set(key, candidate); merged.push(candidate); continue; }
+    // Same field from two documents: the better-ranked reading stands, the other is a conflict.
+    const [winner, loser] = compareCandidates(prior.accepted, candidate.accepted) <= 0 ? [prior, candidate] : [candidate, prior];
+    const conflict = loser.value === winner.value ? [] : [{candidate: loser.accepted, ...(isNumeric(loser.accepted) && isNumeric(winner.accepted) ? {relativeDelta: relativeDelta(winner.value, loser.value) ?? undefined} : {})}];
+    const combined: ReconciledFact = {...winner, conflicts: [...winner.conflicts, ...loser.conflicts, ...conflict].filter((entry): entry is FactConflict => Boolean(entry)), disputed: winner.disputed || loser.disputed};
+    seen.set(key, combined);
+    merged[merged.indexOf(prior)] = combined;
+  }
+  // Compress the surviving indices to 1..N without splitting by document again: a merged
+  // instrument now carries facts from two documents on purpose.
+  const survivors = [...new Set(merged.map((fact) => indexedPath.exec(fact.key.fieldPath)).filter((match): match is RegExpExecArray => Boolean(match) && match![1] === group).map((match) => Number(match[2])))].sort((a, b) => a - b);
+  const compress = new Map(survivors.map((index, position) => [index, position + 1]));
+  return merged.map((fact) => {
+    const match = indexedPath.exec(fact.key.fieldPath);
+    if (!match || match[1] !== group) return fact;
+    const next = compress.get(Number(match[2]));
+    if (next === undefined || String(next) === match[2]) return fact;
+    return {...fact, key: {...fact.key, fieldPath: `${group}.${next}.${match[3]}`}};
+  });
+}
+
 /** Index for the rules and the calculations: field path (+ period) → fact. */
 export function indexFacts(facts: readonly ReconciledFact[]): Map<string, ReconciledFact> {
   const index = new Map<string, ReconciledFact>();
