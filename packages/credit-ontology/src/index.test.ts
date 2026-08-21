@@ -176,3 +176,25 @@ describe("reconciliation rules and definitions", () => {
     }
   });
 });
+
+describe("commercial data has a document kind, so the customers group is reachable", () => {
+  it("gives customer concentration its own kind rather than leaving it as other", () => {
+    // Without it, the nearest neighbour a model reaches for is `management_accounts`, a table of
+    // customers is plainly not that, and the document lands on `other`.
+    const definition = documentKindDefinition("customer_concentration");
+    expect(definition.informationClass).toBe("management");
+    expect(definition.typicalFieldGroups).toContain("customers");
+  });
+
+  it("keeps other empty, which is why other is not an answer", () => {
+    // `other` maps to no field groups at all: a document classified there is never asked for
+    // anything, so a missing kind is not a cosmetic gap, it silently removes a field group.
+    expect(documentKindDefinition("other").typicalFieldGroups).toHaveLength(0);
+  });
+
+  it("ranks it below anything an accountant or an auditor touched", () => {
+    const concentration = evidenceRankFor(documentKindDefinition("customer_concentration").informationClass);
+    expect(concentration).toBeGreaterThan(evidenceRankFor("audited"));
+    expect(concentration).toBeGreaterThan(evidenceRankFor("accounting"));
+  });
+});
