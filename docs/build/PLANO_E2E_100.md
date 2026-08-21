@@ -177,3 +177,28 @@ Onda A começa agora, pela conciliação: é o que hoje deixa passar contradiç�
 2. Revisão às cegas: o Carlos lê como head de mesa e marca cada linha que um comitê rejeitaria.
    Cada marca vira teste antes da correção.
 3. O gate de cada onda só fecha com a revisão dele.
+
+## 6. Andamento (atualizado 21/08/2026, noite)
+
+| Onda | Item | Estado |
+|---|---|---|
+| A | Conciliação que aponta contradição (R3 ampliado, R18 runway, R19 mapa × balanço), eval rodando a conciliação | entregue (#146, #155) |
+| A | Instrumentos por documento e por tabela; período < 1 ano é interino; consolidado sobre controladora | entregue (#147, #148, #153) |
+| A | OCR medido (motor no eval, runner, caso `fakeco-scan`); bug do buffer destacado que zerava todo PDF escaneado | entregue (#149), correção em PR (#160) |
+| A | Percentual como fração; canônico de moeda; custo como magnitude; uma aba por janela | entregue (#141, #150) |
+| A | Companhias abertas: Camil (#134, #143, #144) e Cogna (#151) | entregue; Camil em 55% de recall, meta 85% |
+| B | Rating interno (7 fatores, 10 graus) | em PR (#152) |
+| B | Stress padronizado (4 choques + perda do maior cliente) | entregue (#154) |
+| B | Cobertura de juros antes e depois do pedido | em PR (#157) |
+| B | Comparáveis de mercado versionados | não começado |
+| C | Catálogo de instrumentos brasileiro com elegibilidade | em PR (#158) |
+| C | Pacote de garantias desenhado do inventário, haircuts de política | em PR (#159) |
+| C | Preço indicativo a partir de rating, comparáveis e garantia | não começado (depende de B) |
+| C | Covenants completos com definição contábil e cura | não começado |
+| D | Q&A de diligência (40 perguntas respondidas da sala) | em PR (#162) |
+| D | Memo com rating, stress, comparáveis e preço; data room de saída; PDF/DOCX | não começado |
+| E, F | Mercado, execução, pós-closing | não começado |
+
+Integração pendente para fechar a Onda B: rating, stress e cobertura na tela do case, no
+memorando e no term sheet (depende dos merges de #152 e #157).
+
