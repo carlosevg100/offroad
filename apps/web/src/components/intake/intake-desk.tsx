@@ -89,7 +89,13 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
             : {}),
         },
         {id: "weightedCost", label: t("weightedCost"), value: ratePct(desk.stack.weightedCost, locale)},
-        {id: "spread", label: t("spreadOverCdi"), value: desk.stack.weightedSpreadOverCdi ? `CDI + ${ratePct(desk.stack.weightedSpreadOverCdi, locale)}` : null},
+        {
+          id: "spread",
+          label: t("spreadOverCdi"),
+          value: desk.stack.weightedSpreadOverCdi
+            ? `CDI ${Number(desk.stack.weightedSpreadOverCdi) < 0 ? "-" : "+"} ${ratePct(String(Math.abs(Number(desk.stack.weightedSpreadOverCdi))), locale)}`
+            : null,
+        },
         {
           id: "maturing12",
           label: t("maturing12"),
