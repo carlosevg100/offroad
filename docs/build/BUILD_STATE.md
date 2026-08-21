@@ -185,8 +185,9 @@ Qualidade medida sobre documentos reais, agora nos dois estágios:
 | E1 classificação (fakeco) | tipo do documento | **100%** (9/9) | US$ 0,041 / 9 docs |
 | E1 classificação (fakeco) | classe da informação | **100%** (9/9) | |
 | E1 classificação (fakeco) | errado com confiança | **0** | |
-| E3 extração (fakeco) | recall material | **42,0%** (55/131) | US$ 0,55 / caso |
-| E3 extração (fakeco) | precisão | 79,0% (75/95) | |
+| E3 extração (fakeco) | recall material | **80,2%** (105/131) | US$ 1,09 / caso |
+| E3 extração (fakeco) | recall de dívida | **92,6%** (50/54), era 1,9% | |
+| E3 extração (fakeco) | precisão | 83,9% (125/149) | |
 | E3 extração (fakeco) | alucinação | 0% | |
 
 E1 não tinha número nenhum até 20/08/2026, e a ausência não era neutra: a medição de E3
@@ -229,6 +230,16 @@ larga, não encanamento quebrado, e o caminho provável é fatiar tabelas por li
 mandar a tabela inteira num trecho só.
 
 Isso era invisível antes porque o gabarito do rede-horizonte tem **zero** campos de dívida.
+
+**Resolvido em 21/08 (PR #130): passadas por linha.** O modelo, pedido para expandir 7 linhas
+por 7 campos de uma vez, devolvia 1 candidato; nenhuma redação de prompt conserta uma tarefa
+que nunca deveria ter sido uma tarefa só. A orquestração agora enumera e o modelo lê: cada
+linha de dados de tabela detectada vira uma passada própria, com cabeçalho, âncora da linha e
+os padrões indexados já com o índice aplicado. Linhas de total são filtradas antes do modelo,
+ausências de passada por linha são ignoradas, e o candidato da linha ganha o dedup contra o do
+documento inteiro. Dívida foi de 1,9% para **92,6%**; o recall material do caso, de 42% para
+**80,2%**. Restam: customers a 50% (provável normalização de percentual), leverage 0/1 (campo
+calculado que o gabarito não deveria esperar de extração) e o OCR ainda sem número.
 
 **Aberto, e é limitação do instrumento, não do produto.** O contrato social chega como foto e
 produziu zero candidatos: o harness de medição roda fora do worker e não tem OCR, que é
