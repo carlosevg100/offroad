@@ -68,14 +68,20 @@ function gatewayDouble(answer: Record<string, unknown>, capture?: {prompt?: stri
 }
 
 describe("the evidence rank comes from the ontology, never from the model", () => {
-  it("ignores a rank the model was never asked for and derives it from the class", async () => {
+  it("derives the rank from the kind, so a projection cannot outrank an audited statement", async () => {
     // Precedence between conflicting sources is a rule of the domain. A model that could set it
     // could make a projection outrank an audited statement, which is the whole ordering gone.
-    const classify = createClassifier(gatewayDouble({informationClass: "projection"}));
-    const {profile} = await classify({parsed: layerWith(), fileName: "plan.xlsx"});
+    // The chain runs kind -> class -> rank, and the model only supplies the first link.
+    const plan = createClassifier(gatewayDouble({documentKind: "financial_model", informationClass: "audited"}));
+    const audited = createClassifier(gatewayDouble({documentKind: "audited_financial_statements", informationClass: "projection"}));
 
-    expect(profile.evidence_rank).toBe(evidenceRankFor("projection"));
-    expect(profile.evidence_rank).toBeGreaterThan(evidenceRankFor("audited"));
+    const planProfile = (await plan({parsed: layerWith(), fileName: "plan.xlsx"})).profile;
+    const auditedProfile = (await audited({parsed: layerWith(), fileName: "dfs.pdf"})).profile;
+
+    // Both models were told the opposite of the truth, and neither was believed.
+    expect(planProfile.evidence_rank).toBe(evidenceRankFor("projection"));
+    expect(auditedProfile.evidence_rank).toBe(evidenceRankFor("audited"));
+    expect(planProfile.evidence_rank).toBeGreaterThan(auditedProfile.evidence_rank);
   });
 
   it("keeps the audited class at the top of the ordering", async () => {
@@ -241,5 +247,48 @@ describe("a field the model leaves out is a document that did not say, not a fai
 
     expect(Object.keys(profile)).not.toContain("fiscal_year");
     expect(Object.keys(profile)).not.toContain("scale");
+  });
+});
+
+describe("the class follows the kind, and the rank follows the class", () => {
+  it("classes a trial balance as accounting even when the model says management", async () => {
+    // The exact failure Aurora exposed. A "balancete gerencial" reads as management to a model,
+    // and `trial_balance` is `accounting` by definition. Rank 3 against rank 5 is which document
+    // wins when two disagree about the same number, so this cannot be an opinion.
+    const classify = createClassifier(
+      gatewayDouble({documentKind: "trial_balance", informationClass: "management"}),
+    );
+    const {profile} = await classify({parsed: layerWith(), fileName: "balancete.xls"});
+
+    expect(profile.information_class).toBe("accounting");
+    expect(profile.evidence_rank).toBe(evidenceRankFor("accounting"));
+    expect(profile.evidence_rank).toBeLessThan(evidenceRankFor("management"));
+  });
+
+  it("keeps the model's reading when it disagrees, because the disagreement is information", async () => {
+    const classify = createClassifier(
+      gatewayDouble({documentKind: "trial_balance", informationClass: "management"}),
+    );
+    const {profile} = await classify({parsed: layerWith(), fileName: "balancete.xls"});
+
+    expect(profile.quality).toMatchObject({classSuggestedByModel: "management"});
+  });
+
+  it("says nothing when the model and the ontology agree", async () => {
+    const classify = createClassifier(
+      gatewayDouble({documentKind: "audited_financial_statements", informationClass: "audited"}),
+    );
+    const {profile} = await classify({parsed: layerWith(), fileName: "dfs.pdf"});
+
+    expect(profile.information_class).toBe("audited");
+    expect(profile.quality).not.toHaveProperty("classSuggestedByModel");
+  });
+
+  it("keeps a capital request letter a company document, whatever it sounds like", async () => {
+    const classify = createClassifier(
+      gatewayDouble({documentKind: "capital_request_letter", informationClass: "management"}),
+    );
+    const {profile} = await classify({parsed: layerWith(), fileName: "carta.docx"});
+    expect(profile.information_class).toBe("company_document");
   });
 });
