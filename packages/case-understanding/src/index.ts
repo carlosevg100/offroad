@@ -13,3 +13,4 @@ export const caseUnderstandingVersion = "2026.08.20-v1";
 export * from "./readiness";
 export * from "./audit";
 export * from "./brief";
+export * from "./desk-evidence";

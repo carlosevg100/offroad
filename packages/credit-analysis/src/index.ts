@@ -9,3 +9,4 @@ export const creditAnalysisVersion = "2026.08.21-desk-v1";
 export * from "./parse";
 export * from "./analyze";
 export * from "./trajectory";
+export * from "./from-facts";

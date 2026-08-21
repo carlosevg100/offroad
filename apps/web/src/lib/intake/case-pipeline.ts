@@ -1,5 +1,5 @@
 import type {SupabaseClient} from "@supabase/supabase-js";
-import {assessReadiness, auditBrief, buildBriefInput, BRIEF_SYSTEM, caseBriefSchema, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
+import {assessReadiness, auditBrief, buildBriefInput, deskEvidence, BRIEF_SYSTEM, caseBriefSchema, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
 import {compileMaterials, type Material} from "@offroad/case-materials";
 import {archetype, type ArchetypeId, type ClassifiedDocument} from "@offroad/credit-playbook";
 import {assessCapacity, buildTermSheet, type CapacityAssessment, type IndicativeTermSheet} from "@offroad/deal-structure";
@@ -10,6 +10,7 @@ import {dealBriefOf} from "./deal-brief";
 
 import type {Database, Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
+import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
 
 /**
  * The case, end to end: reconcile, size, structure, write, compile.
@@ -29,6 +30,12 @@ export type CaseState = {
   reconciliation: ReconciliationReport;
   readiness: ReadinessReport;
   capacity: CapacityAssessment | null;
+  /** The desk battery: deterministic findings the narrative narrates and may not renumber. */
+  desk: DeskAnalysis | null;
+  /** The leverage trajectory and the structure that makes the deal doable. */
+  trajectory: Trajectory | null;
+  /** Field paths that kept the battery from running, surfaced as questions to the company. */
+  deskMissing: string[];
   termSheet: IndicativeTermSheet | null;
   brief: CaseBrief | null;
   /** Why the brief is absent, when it is. */
@@ -109,6 +116,8 @@ const number = (value: string | undefined) => (value && Number.isFinite(Number(v
 async function writeBrief(input: {
   archetypeId: ArchetypeId;
   reconciliation: ReconciliationReport;
+  desk?: DeskAnalysis | null;
+  trajectory?: Trajectory | null;
   locale: "pt" | "en";
   /** Reports what the call cost, so the one spend nobody could query lands in a ledger. */
   onSpend?: (spend: {costUsd: number; calls: number}) => void;
@@ -135,6 +144,12 @@ async function writeBrief(input: {
     },
   });
 
+  // The battery's findings enter the prompt as computed sentences with citable ids, and enter
+  // the auditor as calculations. One gate: a brief that misquotes the desk is rejected exactly
+  // like a brief that misquotes a document.
+  const evidence = deskEvidence(input.desk ?? null, input.trajectory ?? null);
+  const auditableCalculations = [...input.reconciliation.calculations, ...evidence.calculations];
+
   try {
     const result = await gateway.complete({
       task: "case_brief",
@@ -145,10 +160,11 @@ async function writeBrief(input: {
           text: buildBriefInput({
             archetypeId: input.archetypeId,
             facts: input.reconciliation.facts,
-            calculations: input.reconciliation.calculations,
+            calculations: auditableCalculations,
             exceptions: input.reconciliation.exceptions,
             gaps: input.reconciliation.gaps,
             locale: input.locale,
+            deskLines: evidence.promptLines,
           }),
         },
       ],
@@ -159,7 +175,7 @@ async function writeBrief(input: {
     const audited = auditBrief({
       brief: result.output,
       facts: input.reconciliation.facts,
-      calculations: input.reconciliation.calculations,
+      calculations: auditableCalculations,
     });
     if (!audited.ok) {
       // Not shown with a caveat: the unsourced sentence is the one a committee would act on.
@@ -212,6 +228,27 @@ export async function buildCaseState(input: {
     gaps: reconciliation.gaps,
     expectedMaterialFields: expectedMaterialFields(archetypeId),
   });
+
+  // ---- the desk battery ---------------------------------------------------------------------
+  //
+  // The CDI level is a market assumption of the analysis, stated here and echoed in every cost
+  // figure the battery produces. Indicative until a rates source feeds it; changing it changes
+  // every comparison, which is exactly why it lives in one visible place.
+  const deskInputs = buildDeskInputs(
+    reconciliation.facts.map((fact) => ({fieldPath: fact.key.fieldPath, value: fact.value})),
+    {
+      referenceDate: new Date().toISOString().slice(0, 10),
+      indexLevels: {cdi: "0.105", tlp: "0.079"},
+      statedRequest: {
+        ...(dealBrief.requestedAmount !== undefined ? {amount: dealBrief.requestedAmount} : {}),
+        ...(dealBrief.requestedTermMonths !== undefined ? {termMonths: dealBrief.requestedTermMonths} : {}),
+        ...(dealBrief.requestedGraceMonths !== undefined ? {graceMonths: dealBrief.requestedGraceMonths} : {}),
+        ...(dealBrief.expectedRate !== undefined ? {expectedRate: dealBrief.expectedRate} : {}),
+      },
+    },
+  );
+  const desk = deskInputs.desk ? analyzeCreditPosition(deskInputs.desk) : null;
+  const trajectory = deskInputs.trajectory ? projectLeverageTrajectory(deskInputs.trajectory) : null;
 
   // ---- size the operation -------------------------------------------------------------------
   const valueOf = (fieldPath: string) => reconciliation.facts.find((fact) => fact.key.fieldPath === fieldPath)?.value;
@@ -273,6 +310,8 @@ export async function buildCaseState(input: {
     return writeBrief({
       archetypeId,
       reconciliation,
+      desk,
+      trajectory,
       locale,
       onSpend: ({costUsd, calls}) => {
         // Fire and forget: the case must not fail to render because the ledger write did.
@@ -307,7 +346,7 @@ export async function buildCaseState(input: {
     materialsBlockedBy = ["brief_unavailable"];
   }
 
-  return {reconciliation, readiness, capacity, termSheet, brief, briefBlockedBy, materials, materialsBlockedBy};
+  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, termSheet, brief, briefBlockedBy, materials, materialsBlockedBy};
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */
@@ -325,6 +364,8 @@ export async function saveCaseState(input: {
     p_patch: {
       readiness: state.readiness,
       capacity: state.capacity ?? null,
+      desk: (state.desk ?? null) as unknown as Json,
+      trajectory: (state.trajectory ?? null) as unknown as Json,
       term_sheet: state.termSheet ?? null,
       brief: state.brief ?? null,
       brief_blocked_by: state.briefBlockedBy,

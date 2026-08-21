@@ -115,6 +115,8 @@ export function buildBriefInput(input: {
   exceptions: readonly ReconciliationException[];
   gaps: readonly InformationGap[];
   locale: "pt" | "en";
+  /** Pre-rendered lines from the desk battery (see `deskEvidence`); appended verbatim. */
+  deskLines?: readonly string[];
 }): string {
   const definition = archetype(input.archetypeId);
 
@@ -153,6 +155,7 @@ export function buildBriefInput(input: {
     "",
     "## Lacunas de informação",
     ...(gapLines.length ? gapLines : ["nenhuma"]),
+    ...(input.deskLines ?? []),
   ].join("\n");
 }
 

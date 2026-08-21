@@ -16,6 +16,7 @@
     "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {
+    "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/reconciliation": "workspace:*",

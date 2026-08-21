@@ -12,11 +12,16 @@
   },
   "dependencies": {
     "@offroad/case-materials": "workspace:*",
+    "@offroad/case-render": "workspace:*",
     "@offroad/case-understanding": "workspace:*",
+    "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/deal-structure": "workspace:*",
+    "@offroad/extraction-learning": "workspace:*",
     "@offroad/financial-core": "workspace:*",
+    "@offroad/financial-model": "workspace:*",
+    "@offroad/fund-mandate": "workspace:*",
     "@offroad/matching-core": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
@@ -30,11 +35,7 @@
     "posthog-js": "1.416.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "zod": "4.4.3",
-    "@offroad/case-render": "workspace:*",
-    "@offroad/extraction-learning": "workspace:*",
-    "@offroad/financial-model": "workspace:*",
-    "@offroad/fund-mandate": "workspace:*"
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
