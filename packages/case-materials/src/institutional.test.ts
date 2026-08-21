@@ -1,7 +1,9 @@
 import {describe, expect, it} from "vitest";
 import type {CaseBrief, ReadinessReport} from "@offroad/case-understanding";
 import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, type Fact} from "@offroad/credit-analysis";
-import {assessCapacity, buildTermSheet} from "@offroad/deal-structure";
+import {rateCredit, stressTable} from "@offroad/credit-analysis";
+import {instrumentVerdicts} from "@offroad/credit-playbook";
+import {assessCapacity, buildTermSheet, designCollateralPackage} from "@offroad/deal-structure";
 
 import {compileMaterials} from "./compile";
 import {investmentMemo, termSheetDocument} from "./institutional";
@@ -106,3 +108,20 @@ describe("compileMaterials", () => {
     expect(outcome.materials.map((material) => material.kind)).toEqual(["teaser", "credit_profile", "package"]);
   });
 });
+
+describe("the committee section of the memorandum", () => {
+  it("carries the grade, the shocks, the papers and the security, with the rating in the key terms", () => {
+    const rating = rateCredit({desk, trajectory, financialExpenses: "6140000", priorEbitda: "14924000", topCustomerShare: "0.181", evidenceRank: "1.8"});
+    const stress = stressTable({desk, revenue: "191200000", topCustomerShare: "0.181"});
+    const instruments = instrumentVerdicts({legalForm: "ltda", archetypeId: "growth_expansion", amount: "42300000"});
+    const collateral = designCollateralPackage({assets: [{description: "Recebíveis", type: "receivables", value: "51940000", encumbered: "24400000"}], amount: "42300000"});
+    const memo = investmentMemo({...shared, rating, stress, instruments, collateral});
+    const headings = memo.blocks.filter((block) => block.type === "heading").map((block) => (block.type === "heading" ? block.text.pt : ""));
+    expect(headings).toContain("10. Comitê: rating, sensibilidade, instrumentos e garantias");
+    expect(headings).toEqual(expect.arrayContaining(["Rating interno", "Sensibilidade", "Instrumentos", "Pacote de garantias"]));
+    const keyTerms = memo.blocks[0];
+    expect(keyTerms?.type === "callout" && keyTerms.items.some((item) => item.label.pt === "Rating interno")).toBe(true);
+    expect(JSON.stringify(memo.blocks)).toContain("EBITDA -30%");
+  });
+});
+

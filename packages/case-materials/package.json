@@ -20,6 +20,7 @@
     "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/deal-structure": "workspace:*",
+    "@offroad/market-reference": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "decimal.js": "10.6.0"
   },
