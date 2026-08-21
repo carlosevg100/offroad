@@ -20,6 +20,8 @@ import {extractDocument, documentExtractionVersion} from "@offroad/document-extr
 import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter} from "@offroad/model-gateway";
 import type {DocumentProfile} from "@offroad/document-intelligence";
 import {documentKindDefinition, type DocumentKind} from "@offroad/credit-ontology";
+import {archetypeIdSchema} from "@offroad/credit-playbook";
+import {reconcileCase} from "@offroad/reconciliation";
 
 import {evaluateSnapshot} from "../src/metrics";
 import {loadGoldCase} from "../src/gold";
@@ -169,15 +171,44 @@ for (const entry of gold.manifest.documents) {
   }
 }
 
+// The same reconciliation the product runs, over the same candidates: the exceptions it raises
+// (and fails to raise) are part of what this measurement is for.
+const archetypeId = archetypeIdSchema.parse(gold.manifest.archetypeId ?? "other");
+const reconciliation = reconcileCase({
+  archetypeId,
+  candidates: candidates.map((candidate) => ({
+    fieldPath: candidate.fieldPath,
+    normalizedValue: candidate.normalizedValue,
+    valueType: candidate.valueType,
+    sourceDocument: candidate.sourceDocument ?? "",
+    evidenceRank: candidate.evidenceRank,
+    informationClass: candidate.informationClass,
+    confidence: candidate.confidence,
+    anchorVerified: candidate.anchorVerified,
+    ...(candidate.periodStart ? {periodStart: candidate.periodStart} : {}),
+    ...(candidate.periodEnd ? {periodEnd: candidate.periodEnd} : {}),
+  })),
+  documents: profiles.map((profile) => ({id: profile.document, kind: profile.kind as DocumentKind})),
+  locale: "pt",
+});
+
 const snapshot: ExtractionSnapshot = {
   extractor: {name: "document-extraction", version: documentExtractionVersion},
   documents: gold.manifest.documents.map((entry) => entry.name),
   profiles,
   candidates,
-  exceptions: [],
-  calculations: [],
+  exceptions: reconciliation.exceptions.map((exception) => ({
+    ruleId: exception.ruleId,
+    type: exception.type,
+    severity: exception.severity,
+    title: exception.title,
+    description: exception.description,
+  })),
+  calculations: reconciliation.calculations.map((calculation) => ({id: calculation.id, value: calculation.value})),
   usage,
 };
+console.log(`\nConciliação: ${reconciliation.exceptions.length} exceção(ões), ${reconciliation.calculations.length} cálculo(s)`);
+for (const exception of reconciliation.exceptions) console.log(`  [${exception.severity}] ${exception.ruleId} ${exception.title}: ${exception.description.slice(0, 160)}`);
 
 const report = evaluateSnapshot(gold, snapshot);
 console.log(`\n${renderMarkdownReport(report)}`);

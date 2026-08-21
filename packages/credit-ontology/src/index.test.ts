@@ -159,8 +159,8 @@ describe("auto-accept policy v1", () => {
 });
 
 describe("reconciliation rules and definitions", () => {
-  it("has R1–R17 with unique ids and bilingual titles", () => {
-    expect(reconciliationRules.map((r) => r.id)).toEqual(Array.from({length: 17}, (_, i) => `R${i + 1}`));
+  it("has R1–R18 with unique ids and bilingual titles", () => {
+    expect(reconciliationRules.map((r) => r.id)).toEqual(Array.from({length: 18}, (_, i) => `R${i + 1}`));
     for (const rule of reconciliationRules) {
       expect(rule.titles.pt.length).toBeGreaterThan(0);
       expect(rule.titles.en.length).toBeGreaterThan(0);
