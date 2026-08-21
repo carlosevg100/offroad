@@ -22,6 +22,8 @@ export const goldManifestSchema = z.object({
   caseId: z.string().min(1),
   title: z.string(),
   synthetic: z.boolean(),
+  /** The operation the room is for; drives the reconciliation's gaps and the archetype questions. */
+  archetypeId: z.string().optional(),
   language: z.enum(["pt", "en", "mixed"]),
   documentsDir: z.string(),
   documents: z.array(z.object({name: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/).optional()})),
