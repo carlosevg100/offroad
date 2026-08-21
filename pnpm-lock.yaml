@@ -275,6 +275,25 @@ importers:
         specifier: ^20.19.43
         version: 20.19.43
 
+  packages/data-room:
+    dependencies:
+      '@offroad/case-materials':
+        specifier: workspace:*
+        version: link:../case-materials
+      '@offroad/case-understanding':
+        specifier: workspace:*
+        version: link:../case-understanding
+      '@offroad/credit-ontology':
+        specifier: workspace:*
+        version: link:../credit-ontology
+      '@offroad/reconciliation':
+        specifier: workspace:*
+        version: link:../reconciliation
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+
   packages/deal-structure:
     dependencies:
       '@offroad/credit-playbook':
