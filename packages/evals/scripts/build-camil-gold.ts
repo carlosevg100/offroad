@@ -82,7 +82,7 @@ const m = (millions: number) => String(Math.round(millions * 1_000_000));
 
 // Company.
 add({fieldPath: "company.legal_name", value: COMPANY, valueType: "text", materiality: "material", sourceDocument: ITR});
-add({fieldPath: "company.legal_identifier", value: "64.904.295/0001-03", valueType: "text", materiality: "material", sourceDocument: AGO});
+add({fieldPath: "company.legal_identifier", value: "64904295000103", valueType: "text", materiality: "material", sourceDocument: AGO});
 add({fieldPath: "company.reporting_currency", value: "BRL", valueType: "text", materiality: "material", sourceDocument: ITR});
 add({fieldPath: "company.fiscal_year_end", value: "28 de fevereiro", valueType: "text", materiality: "supporting", sourceDocument: ITR});
 add({fieldPath: "company.accounting_framework", value: "IFRS / CPC", valueType: "text", materiality: "supporting", sourceDocument: ITR});

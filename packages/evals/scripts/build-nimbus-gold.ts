@@ -60,7 +60,7 @@ const unknown: string[] = [];
 const add = (field: Field) => { if (!resolveFieldPath(field.fieldPath)) unknown.push(field.fieldPath); fields.push(field); };
 
 add({fieldPath: "company.legal_name", value: company.legalName, valueType: "text", materiality: "material", sourceDocument: DECK});
-add({fieldPath: "company.legal_identifier", value: company.cnpj, valueType: "text", materiality: "material", sourceDocument: DECK});
+add({fieldPath: "company.legal_identifier", value: company.cnpj.replace(/\D/g, ""), valueType: "text", materiality: "material", sourceDocument: DECK});
 add({fieldPath: "company.city", value: company.city, valueType: "text", materiality: "supporting", sourceDocument: DECK});
 add({fieldPath: "company.state", value: company.state, valueType: "text", materiality: "supporting", sourceDocument: DECK});
 add({fieldPath: "company.sector", value: company.sector, valueType: "text", materiality: "supporting", sourceDocument: DECK});

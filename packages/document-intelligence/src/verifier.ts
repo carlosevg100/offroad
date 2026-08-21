@@ -68,8 +68,8 @@ export function verifyCandidate(
   } else {
     if (!containsNormalized(anchor.text, candidate.quote)) {
       // A cell is one number; the row is where its meaning lives. Citing `p3.t1.r2.c3` while
-      // quoting "Receita líquida | 142,6 | 164,3 | 184,7" is precise, honest behaviour — the
-      // anchor names the exact cell, the quote shows the reader the whole line — and it was
+      // quoting "Receita líquida | 142,6 | 164,3 | 184,7" is precise, honest behaviour, the
+      // anchor names the exact cell, the quote shows the reader the whole line, and it was
       // being flagged as an invented trace. The quote may live in the enclosing row; the
       // digits check below still holds the value against the cell itself.
       const rowId = /\.r\d+\.c\d+$/.test(candidate.anchor.id) ? candidate.anchor.id.replace(/\.c\d+$/, "") : null;
@@ -100,9 +100,9 @@ export function verifyCandidate(
       if (parsed.detectedScale && candidate.scale !== 1 && parsed.detectedScale !== candidate.scale) flags.add("scale_conflict");
       effectiveScale = candidate.scale !== 1 ? candidate.scale : (parsed.detectedScale ?? 1);
       // Money is stored at cent precision. Anything past two decimals in a currency amount is
-      // an artifact of parsing or of the model's own arithmetic, never information — and it is
+      // an artifact of parsing or of the model's own arithmetic, never information, and it is
       // exactly the kind of noise that makes 53760000 fail to equal 53760000.00000001.
-      normalizedValue = parsed.value.times(effectiveScale).toDecimalPlaces(2).toFixed();
+      normalizedValue = outflowMagnitude(field.definition.pattern, parsed.value.times(effectiveScale)).toDecimalPlaces(2).toFixed();
       // a scale other than 1 must be declared somewhere we can see (document/table header or profile)
       const declaredInText = parsed.detectedScale === effectiveScale;
       const declared = declaredInText || context.layer.scaleDeclarations.some((d) => d.scale === effectiveScale) || context.profile.scale === effectiveScale;
@@ -122,7 +122,7 @@ export function verifyCandidate(
   } else if (field.definition.canonical) {
     // The ontology, not the model, decides the canonical form of these values. "12.345.678/0001-95"
     // and "12345678000195" are one CNPJ; "Fontes", "FONTES" and "origens" are one side of a
-    // sources & uses table; "São Paulo — SP" is the UF. A value that reduces to nothing is a
+    // sources & uses table; "São Paulo, SP" is the UF. A value that reduces to nothing is a
     // value the field cannot hold, and it says so instead of passing as prose.
     const canonical = canonicalizeText(candidate.value_raw, field.definition.canonical);
     if (canonical === null) flags.add("value_unparseable");
@@ -161,6 +161,17 @@ export function verifyCandidate(
 }
 
 /** Applies an ontology-declared canonical form to a text value. Returns null when the value cannot hold it. */
+/**
+ * Costs, capex, taxes, depreciation and burn are magnitudes in the ontology. Statements print
+ * them with a minus sign because the column is a subtraction; a model that copies the sign has
+ * read the page faithfully and produced a number the desk cannot use. The sign is the table's,
+ * the magnitude is the fact's.
+ */
+const OUTFLOW_METRICS = /\.(cogs|financial_expenses|capex|taxes|d_and_a|monthly_burn)(\{ytd\})?$/;
+export function outflowMagnitude(fieldPattern: string, value: Decimal): Decimal {
+  return OUTFLOW_METRICS.test(fieldPattern) ? value.abs() : value;
+}
+
 export function canonicalizeText(raw: string, canonical: NonNullable<ReturnType<typeof resolveFieldPath>>["definition"]["canonical"]): string | null {
   if (!canonical) return raw.trim();
   if (canonical.kind === "digits") {
@@ -176,7 +187,7 @@ export function canonicalizeText(raw: string, canonical: NonNullable<ReturnType<
   for (const [synonym, value] of synonyms) {
     if (normalized === synonym || normalized.includes(synonym)) return value;
   }
-  // A bare canonical value embedded in prose ("São Paulo — SP") still resolves.
+  // A bare canonical value embedded in prose ("São Paulo, SP") still resolves.
   for (const value of canonical.values) {
     const token = normalizeText(value);
     if (new RegExp(`(^|[^a-z0-9])${token}([^a-z0-9]|$)`).test(normalized)) return value;

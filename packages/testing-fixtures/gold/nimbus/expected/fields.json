@@ -8,7 +8,7 @@
   },
   {
     "fieldPath": "company.legal_identifier",
-    "value": "41.207.553/0001-09",
+    "value": "41207553000109",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "00_Deck_Institucional_Nimbus.docx"

@@ -119,7 +119,7 @@ const PRJ = "08_Projecoes_2026_2030.xlsx";
 
 // Company.
 add({fieldPath: "company.legal_name", value: company.legalName, valueType: "text", materiality: "material", sourceDocument: FIC});
-add({fieldPath: "company.legal_identifier", value: company.cnpj, valueType: "text", materiality: "material", sourceDocument: FIC});
+add({fieldPath: "company.legal_identifier", value: company.cnpj.replace(/\D/g, ""), valueType: "text", materiality: "material", sourceDocument: FIC});
 add({fieldPath: "company.city", value: company.city, valueType: "text", materiality: "supporting", sourceDocument: FIC});
 add({fieldPath: "company.state", value: company.state, valueType: "text", materiality: "supporting", sourceDocument: FIC});
 add({fieldPath: "company.sector", value: company.sector, valueType: "text", materiality: "supporting", sourceDocument: FIC});

@@ -8,7 +8,7 @@
   },
   {
     "fieldPath": "company.legal_identifier",
-    "value": "24.518.907/0001-63",
+    "value": "24518907000163",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "00_Ficha_Cadastral_Aurora.docx"

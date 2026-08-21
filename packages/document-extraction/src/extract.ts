@@ -82,7 +82,10 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
   const {layer, profile, gateway} = options;
 
   const index = indexLayer(layer);
-  const chunks = renderEvidence(index, options.render ?? {});
+  // A workbook with several sheets is read one sheet per window; a PDF or a single sheet keeps
+  // the packing that lets a statement's pages share one view.
+  const multiSheet = (layer.sheets?.length ?? 0) > 1;
+  const chunks = renderEvidence(index, {...(multiSheet ? {oneContainerPerChunk: true} : {}), ...(options.render ?? {})});
   const fields = targetFields(profile.kind);
 
   const raw: RawExtractionCandidate[] = [];
