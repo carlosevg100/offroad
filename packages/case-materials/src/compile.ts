@@ -34,7 +34,7 @@ import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@
  * same decimal strings, never translated or re-rounded per locale.
  */
 
-export type MaterialKind = "teaser" | "credit_profile" | "package" | "investment_memo" | "term_sheet" | "diligence_qa";
+export type MaterialKind = "teaser" | "credit_profile" | "package" | "investment_memo" | "term_sheet" | "diligence_qa" | "data_room_index";
 
 export type MaterialBlock =
   | {type: "heading"; text: {pt: string; en: string}}

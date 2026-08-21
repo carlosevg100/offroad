@@ -51,6 +51,7 @@ const copy = {
     investment_memo: {pt: "Investment Memorandum", en: "Investment Memorandum"},
     term_sheet: {pt: "Term Sheet indicativo", en: "Indicative Term Sheet"},
     diligence_qa: {pt: "Q&A de diligência", en: "Diligence Q&A"},
+    data_room_index: {pt: "Sala de dados de saída", en: "Outbound data room"},
   } satisfies Record<MaterialKind, {pt: string; en: string}>,
 } as const;
 
