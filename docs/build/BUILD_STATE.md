@@ -293,4 +293,22 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
 |---|---|---|---|
 | E1 classificação (camil) | tipo / classe / período | **100%** (3/3, 3/3, 2/2) | US$ 0,036 / 3 docs |
 | E3 extração (camil) | recall material / precisão | em execução | |
+| E1 classificação (nimbus) | tipo / classe / período | **100%** (6/6), 100% (6/6), 67% (2/3) | US$ 0,030 / 6 docs |
+| E3 extração (nimbus) | recall material / precisão | na fila | |
+
+## Mapa de entrega, perfil de vencimentos e simulações, 21/08/2026 (noite)
+
+- **Mapa de entrega ao lado da zona de arrastar** (#137): a zona sobe para logo depois da
+  escolha da operação; abaixo dela, quantos itens de agora já chegaram, cada item como chip que
+  marca sozinho, e uma frase por arquivo (o que atendeu, como foi lido quando não atendeu nada,
+  ou que ainda espera leitura). Preview em `/pt-BR/dev/case-preview`.
+- **Cronograma por janela** (#138): `debt.maturity_profile.{i}.window/amount` na ontologia; a
+  mesa lê "Jun/26 a Mai/27" e usa o perfil quando as linhas não têm vencimento. Leitura nova:
+  principal de 12 meses contra o caixa (Camil: R$ 1,23 bi contra R$ 1,43 bi, 1,16x), com
+  pergunta e métrica na tela.
+- **Simulações**: `pnpm --filter @offroad/evals desk:gold camil -- --amount 800000000 --term 84
+  --grace 24 --refinancing 600000000` responde "e se pedíssemos menos, mais longo, mais troca?"
+  sem tocar no gabarito.
+- **Produção**: os 500 de `/.env`, `/wp-login.php` e `/foo.bar` vistos na Vercel até 20/08
+  21:17 pararam com o #104; sondado em 21/08: os três respondem 404 e `/pt-BR` 200.
 
