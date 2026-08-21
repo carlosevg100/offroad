@@ -294,7 +294,7 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
 | E1 classificação (camil) | tipo / classe / período | **100%** (3/3, 3/3, 2/2) | US$ 0,036 / 3 docs |
 | E3 extração (camil) | recall material / precisão | em execução | |
 | E1 classificação (nimbus) | tipo / classe / período | **100%** (6/6), 100% (6/6), 67% (2/3) | US$ 0,030 / 6 docs |
-| E3 extração (nimbus) | recall material / precisão | na fila | |
+| E3 extração (nimbus) | recall material / precisão / alucinação | 73,4% (47/64) / 79,8% / **0%** | US$ 0,71 / 14 chamadas |
 
 ## Mapa de entrega, perfil de vencimentos e simulações, 21/08/2026 (noite)
 
@@ -311,4 +311,8 @@ Três PRs (#132, #133, #134); detalhe em `HANDOFF_2026-08-21.md`.
   sem tocar no gabarito.
 - **Produção**: os 500 de `/.env`, `/wp-login.php` e `/foo.bar` vistos na Vercel até 20/08
   21:17 pararam com o #104; sondado em 21/08: os três respondem 404 e `/pt-BR` 200.
+- **O que a Nimbus ensinou ao extrator** (#141): custos com sinal negativo viravam fato negativo
+  (agora magnitude); "R$" e "BRL" eram duas moedas (canônico); a tabela de dívida de uma carta
+  nunca era pedida (carta passa a mirar `debt`); planilha com várias abas era lida em uma janela
+  e o resumo (ARR, MRR, queima) não voltava (uma aba por janela). CNPJ nos gabaritos em dígitos.
 
