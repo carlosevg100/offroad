@@ -88,6 +88,12 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
             ? {hint: t("covenantRoomHint", {lender: desk.leverage.tightestCovenant.lender, maximum: turns(desk.leverage.tightestCovenant.maximum, locale) ?? ""})}
             : {}),
         },
+        {
+          id: "coverage",
+          label: t("interestCoverage"),
+          value: desk.profile === "cash_burning" ? t("notMeaningful") : turns(desk.leverage.interestCoverage, locale),
+          ...(desk.leverage.interestCoveragePost ? {hint: t("interestCoveragePostHint", {coverage: turns(desk.leverage.interestCoveragePost, locale) ?? ""})} : {}),
+        },
         {id: "weightedCost", label: t("weightedCost"), value: ratePct(desk.stack.weightedCost, locale)},
         {
           id: "spread",

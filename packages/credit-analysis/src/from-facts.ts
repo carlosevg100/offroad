@@ -220,6 +220,9 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
           ...(latest && value(`historical_financials.${latest}.cogs`) !== undefined
             ? {cogs: value(`historical_financials.${latest}.cogs`)!}
             : {}),
+          ...(latest && value(`historical_financials.${latest}.financial_expenses`) !== undefined
+            ? {financialExpenses: value(`historical_financials.${latest}.financial_expenses`)!}
+            : {}),
         },
         balance: {
           periodEnd: balancePeriodEnd,
