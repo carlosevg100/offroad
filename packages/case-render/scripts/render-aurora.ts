@@ -67,7 +67,7 @@ const facts: Fact[] = [
 
 const inputs = buildDeskInputs(facts, {
   referenceDate: "2026-08-21",
-  indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045"},
+  indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045", tr: "0.002"},
   statedRequest: {amount: "40000000"},
 });
 const desk = analyzeCreditPosition(inputs.desk!);

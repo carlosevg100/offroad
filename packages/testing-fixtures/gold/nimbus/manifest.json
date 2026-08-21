@@ -1,0 +1,35 @@
+{
+  "caseId": "nimbus",
+  "title": "Nimbus Tecnologia em Gestão de Frotas S.A.: venture debt de R$ 15 milhões para chegar à Série B (sala de dados sintética)",
+  "synthetic": true,
+  "language": "pt",
+  "documentsDir": "../../assets/nimbus",
+  "documents": [
+    {
+      "name": "00_Deck_Institucional_Nimbus.docx",
+      "sha256": "56d090991252319d5c425380250e4d9ec6c4d409a073e25c30eaf3333ac940f0"
+    },
+    {
+      "name": "01_Carta_Pedido_Venture_Debt.docx",
+      "sha256": "7e2059778c4c7aa41a60d2d7978d449aa9c47806f760b8efa0dd19a5f768122b"
+    },
+    {
+      "name": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+      "sha256": "038bc0afc8e839fa1d10bf05d59244c41c76d9e0d52bc923b389b9a31971c725"
+    },
+    {
+      "name": "03_Cap_Table_Serie_A.xlsx",
+      "sha256": "4c4698b9c0a28e87addabe4229ee478344b6d6982aa2634acbd41c05f81edce1"
+    },
+    {
+      "name": "04_Gerencial_2024_2025_Jul2026.xlsx",
+      "sha256": "1625823ed4397abf4a21cf20cb0ebe5cb689ebb7bbdda719a9be13c9643754f2"
+    },
+    {
+      "name": "05_Extrato_Bancario_Mai_Jul2026.csv",
+      "sha256": "c63868e65dcd074cbd1a32eb3dcb492a0cb69a2ab1d0e259d85f25d60d0343ec"
+    }
+  ],
+  "provenance": "Gerada por packages/testing-fixtures/scripts/build-nimbus.ts a partir de src/nimbus/truth.ts, e este gabarito por build-nimbus-gold.ts a partir da mesma fonte. Nenhum número descreve empresa real.",
+  "version": "nimbus-2026.08.21-v1"
+}

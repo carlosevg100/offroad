@@ -1090,7 +1090,16 @@
       "missingSomeBody": "A mesa rodou com o que havia. Estes campos refinariam a leitura.",
       "missingAllTitle": "A mesa não pôde rodar",
       "missingAllBody": "Faltam os campos abaixo. Envie o documento que traz cada um e a análise é montada automaticamente.",
-      "lmBodyRefinancing": "A captação resgata {balance} de dívida existente no desembolso (troca de passivo) e deixa {newMoney} de dinheiro novo. Alavancagem após a troca: {leverage}."
+      "lmBodyRefinancing": "A captação resgata {balance} de dívida existente no desembolso (troca de passivo) e deixa {newMoney} de dinheiro novo. Alavancagem após a troca: {leverage}.",
+      "months": "{count} meses",
+      "monthlyBurn": "Queima de caixa mensal",
+      "runwayPre": "Runway hoje",
+      "runwayPost": "Runway após a operação",
+      "runwayPostHint": "com o serviço da dívida a {rate}",
+      "arr": "ARR",
+      "debtToArr": "Dívida pós sobre ARR",
+      "nrr": "Retenção líquida (NRR)",
+      "notMeaningful": "sem sentido com EBITDA negativo"
     },
     "deliveryMap": {
       "kicker": "Mapa de entrega",

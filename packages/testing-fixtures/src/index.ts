@@ -35,3 +35,4 @@ export * from "./document-intake";
 // generated. Exported so the evals package can build the key without testing-fixtures needing
 // to depend on the ontology, which would close a cycle with credit-ontology.
 export * as fakeco from "./fakeco/truth";
+export * as nimbus from "./nimbus/truth";

@@ -1,0 +1,50 @@
+[
+  {
+    "document": "00_Deck_Institucional_Nimbus.docx",
+    "kind": "investor_deck",
+    "informationClass": "management",
+    "evidenceRank": 5,
+    "entityName": "Nimbus Tecnologia em Gestão de Frotas S.A."
+  },
+  {
+    "document": "01_Carta_Pedido_Venture_Debt.docx",
+    "kind": "capital_request_letter",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Nimbus Tecnologia em Gestão de Frotas S.A."
+  },
+  {
+    "document": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+    "kind": "metrics_report",
+    "informationClass": "management",
+    "evidenceRank": 5,
+    "entityName": "Nimbus Tecnologia em Gestão de Frotas S.A.",
+    "periodStart": "2024-08-01",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "document": "03_Cap_Table_Serie_A.xlsx",
+    "kind": "cap_table",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Nimbus Tecnologia em Gestão de Frotas S.A."
+  },
+  {
+    "document": "04_Gerencial_2024_2025_Jul2026.xlsx",
+    "kind": "management_accounts",
+    "informationClass": "management",
+    "evidenceRank": 5,
+    "entityName": "Nimbus Tecnologia em Gestão de Frotas S.A.",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2026-07-31"
+  },
+  {
+    "document": "05_Extrato_Bancario_Mai_Jul2026.csv",
+    "kind": "bank_statements",
+    "informationClass": "bank_statement",
+    "evidenceRank": 4,
+    "entityName": "Nimbus Tecnologia em Gestão de Frotas S.A.",
+    "periodStart": "2026-05-01",
+    "periodEnd": "2026-07-31"
+  }
+]

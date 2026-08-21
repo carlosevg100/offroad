@@ -20,7 +20,7 @@ const goldDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "testi
 const fields = JSON.parse(readFileSync(join(goldDir, "expected", "fields.json"), "utf8")) as Array<{fieldPath: string; value: string}>;
 const facts: Fact[] = fields.map((field) => ({fieldPath: field.fieldPath, value: field.value}));
 
-const inputs = buildDeskInputs(facts, {referenceDate, indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045"}});
+const inputs = buildDeskInputs(facts, {referenceDate, indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045", tr: "0.002"}});
 console.log(`${caseId}: ${facts.length} fatos; faltam para a mesa: ${inputs.missing.length ? inputs.missing.join(", ") : "nada"}`);
 
 const desk = inputs.desk ? analyzeCreditPosition(inputs.desk) : null;
@@ -31,6 +31,7 @@ if (desk) {
   console.log(`custo médio ${desk.stack.weightedCost ?? "n/d"}, spread/CDI ${desk.stack.weightedSpreadOverCdi ?? "n/d"}, sem preço: ${desk.stack.unpriceableLines}, vence 24m ${desk.stack.maturingWithin24Months}`);
   console.log(`alavancagem pré ${desk.leverage.preTurns}; cenários: ${desk.leverage.scenarios.map((s) => `${s.source}=${s.postTurns}`).join(", ")}; covenant mais apertado ${desk.leverage.tightestCovenant ? `${desk.leverage.tightestCovenant.lender} ${desk.leverage.tightestCovenant.maximum}` : "nenhum"}; dívida nova admitida ${desk.leverage.maxNewDebtUnderCovenants ?? "n/d"}`);
   console.log(`ciclo: DSO ${desk.workingCapital.dso ?? "n/d"} DIO ${desk.workingCapital.dio ?? "n/d"} DPO ${desk.workingCapital.dpo ?? "n/d"} = ${desk.workingCapital.cycleDays ?? "n/d"} dias`);
+  if (desk.runway) console.log(`perfil: ${desk.profile}; runway ${desk.runway.monthsPre} -> ${desk.runway.monthsPost} (${desk.runway.monthsPostAfterService} com serviço a ${desk.runway.assumedRate}); ARR ${desk.runway.arr ?? "n/d"}; dívida/ARR ${desk.runway.debtToArr ?? "n/d"}`);
   console.log(`\nleituras (${desk.findings.length}):`);
   for (const finding of desk.findings) console.log(`  [${finding.severity}] ${finding.id}: ${finding.pt}`);
 }
