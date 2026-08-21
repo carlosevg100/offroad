@@ -1,9 +1,74 @@
-import type {LayerBlock, LayerPage} from "@offroad/document-intelligence";
+import type {LayerBlock, LayerPage, LayerTable} from "@offroad/document-intelligence";
 import {parserLimits, type ParseResult, type ParserWarning} from "./types";
-import {minimumOcrConfidence, type OcrEngine, type OcrResult} from "./capabilities";
+import {minimumOcrConfidence, type OcrEngine, type OcrLine, type OcrResult} from "./capabilities";
 import {collectScaleDeclarations} from "./scale";
 
-export const ocrLayerVersion = "ocr-1.0.0";
+export const ocrLayerVersion = "ocr-1.1.0";
+
+/**
+ * A line becomes cells where the ink leaves a gap wider than the text is tall. A word space is
+ * about a third of the type height; a column gap is several times it. Measuring against the
+ * line's own height keeps the rule the same for a 300 dpi scan and a 72 dpi phone photo, and
+ * does not depend on how many of the gaps in the line happen to be column gaps.
+ */
+function cellsOf(line: OcrLine): string[] {
+  const words = [...line.words].sort((a, b) => a.bbox[0] - b.bbox[0]);
+  if (words.length < 2) return [line.text];
+  const gaps = words.slice(1).map((word, index) => word.bbox[0] - words[index]!.bbox[2]);
+  const heights = words.map((w) => w.bbox[3] - w.bbox[1]);
+  const height = heights.reduce((sum, h) => sum + h, 0) / heights.length;
+  const threshold = height * 1.5;
+  const cells: string[][] = [[words[0]!.text]];
+  gaps.forEach((gap, index) => {
+    if (gap > threshold) cells.push([words[index + 1]!.text]);
+    else cells[cells.length - 1]!.push(words[index + 1]!.text);
+  });
+  return cells.map((cell) => cell.join(" "));
+}
+
+/**
+ * Consecutive lines with three or more cells are a table. Aurora's scanned debt map measured
+ * why this matters: without it the eight columns of a row were one sentence, no row pass ran,
+ * and the numbers came back as prose with no cell to cite.
+ */
+export function tablesFromLines(lines: readonly OcrLine[], pageId: string): {tables: LayerTable[]; consumed: Set<OcrLine>} {
+  const tables: LayerTable[] = [];
+  const consumed = new Set<OcrLine>();
+  const ordered = [...lines].sort((a, b) => a.bbox[1] - b.bbox[1]);
+  let run: {line: OcrLine; cells: string[]}[] = [];
+  const flush = () => {
+    if (run.length >= 3) {
+      const id = `${pageId}.t${tables.length + 1}`;
+      const [first, ...rest] = run;
+      const headerish = first !== undefined && first.cells.every((cell) => !/\d{2,}[.,]\d{3}/.test(cell));
+      const body = headerish ? rest : run;
+      const rows = body.map((entry, index) => ({
+        id: `${id}.r${index + 1}`,
+        cells: entry.cells.map((text, column) => ({id: `${id}.r${index + 1}.c${column + 1}`, text})),
+      }));
+      tables.push({
+        id,
+        ...(headerish && first ? {header: first.cells} : {}),
+        rows,
+        bbox: [
+          Math.min(...run.map((e) => e.line.bbox[0])),
+          Math.min(...run.map((e) => e.line.bbox[1])),
+          Math.max(...run.map((e) => e.line.bbox[2])),
+          Math.max(...run.map((e) => e.line.bbox[3])),
+        ],
+      });
+      for (const entry of run) consumed.add(entry.line);
+    }
+    run = [];
+  };
+  for (const line of ordered) {
+    const cells = cellsOf(line);
+    if (cells.length >= 3) run.push({line, cells});
+    else flush();
+  }
+  flush();
+  return {tables, consumed};
+}
 
 /**
  * Turns OCR output into layer pages.
@@ -24,12 +89,19 @@ export function pagesFromOcr(results: readonly {pageNumber: number; result: OcrR
   for (const {pageNumber, result} of results) {
     const pageId = `p${pageNumber}`;
     const blocks: LayerBlock[] = [];
+    // Tables first, from the lines that carry positions; the lines they consume do not also
+    // become prose, and what is left is emitted block by block as before.
+    const readableLines = result.blocks
+      .filter((block) => block.confidence >= minimumOcrConfidence && block.lines)
+      .flatMap((block) => block.lines!.filter((line) => line.confidence >= minimumOcrConfidence));
+    const {tables, consumed} = tablesFromLines(readableLines, pageId);
 
     for (const block of result.blocks) {
-      const text = block.text.replace(/\s+/g, " ").trim();
-      if (!text) continue;
       if (block.confidence < minimumOcrConfidence) continue;
       if (blocks.length >= parserLimits.maxBlocksPerPage) break;
+      const remaining = block.lines ? block.lines.filter((line) => !consumed.has(line)) : null;
+      const text = (remaining ? remaining.map((line) => line.text).join(" ") : block.text).replace(/\s+/g, " ").trim();
+      if (!text) continue;
 
       const layerBlock: LayerBlock = {
         id: `${pageId}.b${blocks.length + 1}`,
@@ -53,7 +125,7 @@ export function pagesFromOcr(results: readonly {pageNumber: number; result: OcrR
     }
 
     // `scanned` stays true: the text came from pixels, and every consumer must know it.
-    pages.push({n: pageNumber, blocks, tables: [], scanned: true});
+    pages.push({n: pageNumber, blocks, tables, scanned: true});
   }
 
   return {pages, warnings};

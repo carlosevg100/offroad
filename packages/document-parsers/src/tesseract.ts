@@ -155,7 +155,8 @@ export function parseTesseractTsv(tsv: string): OcrResult {
     return index === -1 ? "" : row[index] ?? "";
   };
 
-  type Accumulator = {words: string[]; confidences: number[]; left: number; top: number; right: number; bottom: number};
+  type Word = {text: string; confidence: number; bbox: [number, number, number, number]};
+  type Accumulator = {words: string[]; confidences: number[]; left: number; top: number; right: number; bottom: number; lines: Map<string, Word[]>};
   const blocks = new Map<string, Accumulator>();
 
   for (const line of lines) {
@@ -172,6 +173,8 @@ export function parseTesseractTsv(tsv: string): OcrResult {
     const width = Number(at(row, "width")) || 0;
     const height = Number(at(row, "height")) || 0;
 
+    const lineKey = at(row, "line_num");
+    const word: Word = {text, confidence: confidence / 100, bbox: [left, top, left + width, top + height]};
     const current = blocks.get(key);
     if (current) {
       current.words.push(text);
@@ -180,6 +183,7 @@ export function parseTesseractTsv(tsv: string): OcrResult {
       current.top = Math.min(current.top, top);
       current.right = Math.max(current.right, left + width);
       current.bottom = Math.max(current.bottom, top + height);
+      current.lines.set(lineKey, [...(current.lines.get(lineKey) ?? []), word]);
     } else {
       blocks.set(key, {
         words: [text],
@@ -188,6 +192,7 @@ export function parseTesseractTsv(tsv: string): OcrResult {
         top,
         right: left + width,
         bottom: top + height,
+        lines: new Map([[lineKey, [word]]]),
       });
     }
   }
@@ -196,6 +201,12 @@ export function parseTesseractTsv(tsv: string): OcrResult {
     text: block.words.join(" "),
     confidence: block.confidences.reduce((sum, value) => sum + value, 0) / block.confidences.length,
     bbox: [block.left, block.top, block.right, block.bottom] as [number, number, number, number],
+    lines: [...block.lines.values()].map((words) => ({
+      text: words.map((w) => w.text).join(" "),
+      confidence: words.reduce((sum, w) => sum + w.confidence, 0) / words.length,
+      bbox: [Math.min(...words.map((w) => w.bbox[0])), Math.min(...words.map((w) => w.bbox[1])), Math.max(...words.map((w) => w.bbox[2])), Math.max(...words.map((w) => w.bbox[3]))] as [number, number, number, number],
+      words,
+    })),
   }));
 
   const overall = built.length === 0 ? 0 : built.reduce((sum, block) => sum + block.confidence, 0) / built.length;

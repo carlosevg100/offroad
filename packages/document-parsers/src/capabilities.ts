@@ -41,11 +41,16 @@ export type DocumentConverter = {
   convert(input: ConvertibleInput): Promise<ConvertedDocument>;
 };
 
+export type OcrWord = {text: string; confidence: number; bbox: [number, number, number, number]};
+export type OcrLine = {text: string; confidence: number; bbox: [number, number, number, number]; words: OcrWord[]};
+
 export type OcrBlock = {
   text: string;
   /** Mean confidence 0–1 for the block, as reported by the engine. */
   confidence: number;
   bbox?: [number, number, number, number];
+  /** The block's lines with their words, when the engine reports positions; tables are rebuilt from these. */
+  lines?: OcrLine[];
 };
 
 export type OcrResult = {
