@@ -399,9 +399,6 @@ importers:
       '@offroad/credit-ontology':
         specifier: workspace:*
         version: link:../credit-ontology
-      '@offroad/credit-playbook':
-        specifier: workspace:*
-        version: link:../credit-playbook
       '@offroad/document-classification':
         specifier: workspace:*
         version: link:../document-classification
@@ -417,9 +414,6 @@ importers:
       '@offroad/model-gateway':
         specifier: workspace:*
         version: link:../model-gateway
-      '@offroad/reconciliation':
-        specifier: workspace:*
-        version: link:../reconciliation
       '@offroad/testing-fixtures':
         specifier: workspace:*
         version: link:../testing-fixtures
