@@ -1101,7 +1101,9 @@
       "nrr": "Net revenue retention (NRR)",
       "notMeaningful": "not meaningful with negative EBITDA",
       "maturing12": "Maturing within 12 months",
-      "coverage12Hint": "cash covers {coverage}"
+      "coverage12Hint": "cash covers {coverage}",
+      "interestCoverage": "Interest coverage",
+      "interestCoveragePostHint": "with the deal: {coverage}"
     },
     "deliveryMap": {
       "kicker": "Delivery map",
