@@ -1,0 +1,36 @@
+[
+  {
+    "id": "maturity-wall-2028",
+    "type": "plausibility",
+    "severity": "high",
+    "description": "R$ 2,14 bilhões vencem em 2028 contra R$ 1,43 bilhão de disponibilidades; a parede é a razão da operação e precisa aparecer na leitura.",
+    "keywords": [
+      "2028",
+      "2.140",
+      "vencimento",
+      "parede",
+      "refinanciamento"
+    ],
+    "evidenceDocuments": [
+      "01_Release_Resultados_2T26.pdf",
+      "02_Pedido_Simulado_Debentures_2026.docx"
+    ],
+    "expectedTreatment": "question"
+  },
+  {
+    "id": "leases-outside-debt",
+    "type": "quality",
+    "severity": "medium",
+    "description": "Arrendamentos de R$ 2,76 bilhões ficam fora da dívida bruta que a companhia apura; a mesa deve dizer qual definição usa.",
+    "keywords": [
+      "arrendamento",
+      "IFRS 16",
+      "definição",
+      "dívida bruta"
+    ],
+    "evidenceDocuments": [
+      "01_Release_Resultados_2T26.pdf"
+    ],
+    "expectedTreatment": "audited"
+  }
+]

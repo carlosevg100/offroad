@@ -1,0 +1,19 @@
+[
+  {
+    "document": "01_Release_Resultados_2T26.pdf",
+    "kind": "management_accounts",
+    "informationClass": "management",
+    "evidenceRank": 5,
+    "entityName": "Cogna Educação S.A.",
+    "periodStart": "2026-04-01",
+    "periodEnd": "2026-06-30",
+    "scale": 1000
+  },
+  {
+    "document": "02_Pedido_Simulado_Debentures_2026.docx",
+    "kind": "capital_request_letter",
+    "informationClass": "company_document",
+    "evidenceRank": 7,
+    "entityName": "Cogna Educação S.A."
+  }
+]
