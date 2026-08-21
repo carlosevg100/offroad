@@ -31,6 +31,31 @@ export function redactTelemetryText(value: string): string {
     .replace(numericPattern, "$1[number]");
 }
 
+/**
+ * A stack frame's filename, kept fetchable.
+ *
+ * The blanket redactor replaces every run of digits with `[number]`, which is right for a
+ * message (a number in a message is usually money) and wrong for a path (a number in a path is
+ * a build hash). Run over a frame it turned
+ * `/_next/static/immutable/chunks/08f3ut8074cvq.js` into
+ * `/_next/static/immutable/chunks/[number]f[number]ut[number]cvq.js`, a file that does not
+ * exist, so Sentry could never fetch the script or its source map and every browser trace
+ * stayed minified no matter what the build emitted.
+ *
+ * What still goes: the query string, and anything that is identifying on its own. An email, a
+ * uuid or a long token in a path is redacted exactly as before. Only the digit rule is dropped,
+ * and only here.
+ */
+function sanitizeFrameFilename(value: string | undefined): string | undefined {
+  if (!value) return value;
+
+  const withoutQuery = value.split("?")[0] ?? value;
+  return withoutQuery
+    .replace(emailPattern, "[email]")
+    .replace(uuidPattern, "[id]")
+    .replace(tokenPattern, "[token]");
+}
+
 function sanitizeUrl(value: string | undefined): string | undefined {
   if (!value) return value;
 
@@ -73,7 +98,7 @@ export function scrubSentryEvent<T extends Event>(event: T): T {
               ? {
                   frames: exception.stacktrace.frames?.map((frame) => ({
                     colno: frame.colno,
-                    filename: sanitizeUrl(frame.filename),
+                    filename: sanitizeFrameFilename(frame.filename),
                     function: frame.function,
                     in_app: frame.in_app,
                     lineno: frame.lineno,
