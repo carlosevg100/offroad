@@ -68,3 +68,26 @@ describe("contradictions between documents", () => {
     expect(quiet.exceptions.filter((exception) => ["R3", "R18"].includes(exception.ruleId))).toHaveLength(0);
   });
 });
+
+describe("Aurora's three contradictions", () => {
+  const room: FactCandidate[] = [
+    candidate("historical_financials.2025.revenue", "191200000", "02_DFs.pdf", 1, {periodEnd: "2025-12-31", informationClass: "audited"}),
+    candidate("historical_financials.2025.revenue", "190000000", "01_Carta.docx", 7, {periodEnd: "2025-12-31"}),
+    candidate("historical_financials.2025.gross_debt", "45320000", "02_DFs.pdf", 1, {periodEnd: "2025-12-31", informationClass: "audited"}),
+    candidate("debt.total_gross", "38500000", "04_Mapa.xlsx", 5, {periodEnd: "2026-07-31"}),
+    candidate("transaction.requested_amount", "40000000", "01_Carta.docx", 7),
+    candidate("transaction.requested_amount", "42300000", "08_Projecoes.xlsx", 6),
+  ];
+  const report = reconcileCase({archetypeId: "growth_expansion", candidates: room, documents: [], locale: "pt"});
+
+  it("names the rounded revenue at low severity, the two asks as critical, and the debt outside the map", () => {
+    const revenue = report.exceptions.find((exception) => exception.ruleId === "R3" && exception.description.includes("revenue"));
+    expect(revenue?.severity).toBe("low");
+    const ask = report.exceptions.find((exception) => exception.ruleId === "R3" && exception.description.includes("requested_amount"));
+    expect(ask?.severity).toBe("critical");
+    const map = report.exceptions.find((exception) => exception.ruleId === "R19");
+    expect(map).toBeDefined();
+    expect(map!.description).toContain("fora do mapa");
+    expect(map!.severity).toBe("critical");
+  });
+});
