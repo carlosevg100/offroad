@@ -39,9 +39,11 @@ coisas, nesta ordem:
 | Pós-closing (covenants, reporting) | **não existe** | zero |
 | Observabilidade, segurança, multi-tenant, RLS | existe, provado | RLS suite, definer privado, worker sem service key, Sentry/PostHog |
 
-Conclusão honesta: o produto hoje vai do upload ao term sheet indicativo com qualidade de mesa
-em empresa média com sala organizada, e ainda tropeça em companhia aberta (filing de 200
-páginas) e não vê contradição entre documentos. Do term sheet até o desembolso não existe.
+Conclusão honesta: o produto hoje vai do upload ao term sheet indicativo com leitura e análise
+de mesa quando a sala é organizada e pequena; ainda falha em filing grande (companhia aberta,
+200 páginas) e não vê contradição entre documentos. A barra é uma só para qualquer emissor,
+da startup à multinacional: número certo, citado, na régua do comitê. Do term sheet até o
+desembolso não existe.
 
 ## 2. As oito etapas de um processo de dívida, e o que falta em cada uma
 
