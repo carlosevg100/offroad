@@ -100,6 +100,36 @@ async function mapWithConcurrency<T, R>(items: readonly T[], limit: number, work
   return results;
 }
 
+const indexedCandidatePath = /^(.*)\.(\d{1,3})\.([a-z0-9_]+)$/;
+
+/**
+ * One number per row of one document, whichever table the row sits in.
+ *
+ * The row passes already count across tables; the whole-document pass does not, because the
+ * model numbers each table from one. Nimbus measured the result: the deck's management table
+ * and its cap table both produced `company.controllers.4`, and the reconciliation reported the
+ * CEO against a venture fund as a contradiction. Tuples are grouped by the table their anchor
+ * cites and renumbered in document order, so the same index means the same row.
+ */
+export function renumberByTable(candidates: RawExtractionCandidate[]): RawExtractionCandidate[] {
+  const tableOf = (anchorId: string) => anchorId.replace(/\.r\d+(\..*)?$/, "");
+  const next = new Map<string, number>();
+  const assigned = new Map<string, number>();
+  return candidates.map((candidate) => {
+    const match = indexedCandidatePath.exec(candidate.field_path);
+    if (!match) return candidate;
+    const [, group, index, key] = match as unknown as [string, string, string, string];
+    const tupleKey = `${group}|${tableOf(candidate.anchor.id)}|${index}`;
+    let number = assigned.get(tupleKey);
+    if (number === undefined) {
+      number = (next.get(group) ?? 0) + 1;
+      next.set(group, number);
+      assigned.set(tupleKey, number);
+    }
+    return number === Number(index) ? candidate : {...candidate, field_path: `${group}.${number}.${key}`};
+  });
+}
+
 export async function extractDocument(options: ExtractionOptions): Promise<ExtractionResult> {
   const {layer, profile, gateway} = options;
 
@@ -247,7 +277,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
       })
     : raw;
 
-  const report = verifyCandidates(deduped, {
+  const report = verifyCandidates(renumberByTable(deduped), {
     index,
     layer,
     profile,
