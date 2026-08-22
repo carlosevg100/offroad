@@ -48,7 +48,7 @@ export const spreadBands: readonly SpreadBand[] = [
   band("leasing", "strong", 180, 280), band("leasing", "adequate", 280, 400), band("leasing", "watch", 400, 550), band("leasing", "weak", 550, 750),
 ];
 
-export type PriceAdjustment = {id: "tenor" | "security" | "coverage" | "size"; bps: number; rationale: {pt: string; en: string}};
+export type PriceAdjustment = {id: "tenor" | "security" | "coverage" | "size" | "leverage"; bps: number; rationale: {pt: string; en: string}};
 
 export type IndicativePrice = {
   instrument: PricedInstrument;
@@ -73,6 +73,15 @@ export type PriceInput = {
   collateralCoverage?: string;
   /** Ticket in reais; very small tickets price wider. */
   amount?: string;
+  /**
+   * Net debt over EBITDA after the operation, as a decimal string.
+   *
+   * The band is a rating band, and the rating is of the company as it stands. Two structures on
+   * the same company differ in what they leave behind, and leverage is the driver a desk prices
+   * that difference with: a bigger ticket that clears a later maturity is not the same paper as
+   * a smaller one, and quoting both at the same spread makes the comparison useless.
+   */
+  leveragePost?: string;
 };
 
 export function indicativePrice(input: PriceInput): IndicativePrice | null {
@@ -90,6 +99,12 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
     else if (coverage.lt("1")) adjustments.push({id: "security", bps: 50, rationale: {pt: "Garantias abaixo do tíquete: parte do papel é quirografária.", en: "Collateral below the ticket: part of the paper is unsecured."}});
   } else if (input.instrument === "ccb" || input.instrument === "debenture_476") {
     adjustments.push({id: "security", bps: 40, rationale: {pt: "Sem garantia real declarada: quirografário.", en: "No security stated: unsecured."}});
+  }
+  if (input.leveragePost !== undefined) {
+    const leverage = new Decimal(input.leveragePost);
+    if (leverage.gte("4.5")) adjustments.push({id: "leverage", bps: 75, rationale: {pt: "Alavancagem pós-operação em 4,5x ou mais: o papel entra na faixa onde o comprador exige prêmio.", en: "Post-transaction leverage at 4.5x or above: the paper enters the band where buyers demand a premium."}});
+    else if (leverage.gte("3.5")) adjustments.push({id: "leverage", bps: 35, rationale: {pt: "Alavancagem pós-operação entre 3,5x e 4,5x.", en: "Post-transaction leverage between 3.5x and 4.5x."}});
+    else if (leverage.lt("2.5")) adjustments.push({id: "leverage", bps: -25, rationale: {pt: "Alavancagem pós-operação abaixo de 2,5x: o papel compete com emissor melhor classificado.", en: "Post-transaction leverage below 2.5x: the paper competes with better-rated issuers."}});
   }
   if (input.amount !== undefined && new Decimal(input.amount).lt("10000000")) {
     adjustments.push({id: "size", bps: 50, rationale: {pt: "Tíquete abaixo de R$ 10 milhões: custo fixo de estruturação pesa no spread.", en: "Ticket under R$ 10 million: fixed set-up cost weighs on the spread."}});

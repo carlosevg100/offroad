@@ -16,7 +16,8 @@ import {readFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {analyzeCreditPosition, buildDeskInputs, judgeOperation, projectLeverageTrajectory, questionsForCompany, type Fact} from "@offroad/credit-analysis";
+import {analyzeCreditPosition, buildDeskInputs, judgeOperation, projectLeverageTrajectory, questionsForCompany, rateCredit, type Fact} from "@offroad/credit-analysis";
+import {indicativePrice} from "@offroad/market-reference";
 
 const args = process.argv.slice(2);
 // A flag consumes the argument after it; everything else is positional (case id, reference date).
@@ -72,9 +73,20 @@ for (const question of questions) console.log(`  [${question.severity}] ${questi
 
 // ---- the sentence the product exists to produce -----------------------------------------------
 if (desk) {
+  // The rating is what the price band is read against; without it the desk would be quoting a
+  // spread for a company it has not graded.
+  const rating = rateCredit({desk, trajectory, evidenceRank: "2.0"});
   const verdict = judgeOperation({
     desk,
     trajectory,
+    simulate: ({amount, termMonths, graceMonths, refinancing}) =>
+      inputs.trajectory
+        ? projectLeverageTrajectory({...inputs.trajectory, newDebt: {amount, termMonths, graceMonths, refinancing}})
+        : null,
+    priceFor: ({amount, termMonths, leveragePost}) => {
+      const priced = indicativePrice({instrument: "cra", rating: rating.band, cdi: "0.105", tenorMonths: termMonths, amount, leveragePost});
+      return priced ? {bps: priced.bps, allIn: {min: priced.allIn.min, max: priced.allIn.max}} : null;
+    },
     operation: {
       amount: overrides["transaction.requested_amount"] ?? facts.find((fact) => fact.fieldPath === "transaction.requested_amount")?.value ?? "0",
       termMonths: Number(overrides["transaction.desired_term_months"] ?? facts.find((fact) => fact.fieldPath === "transaction.desired_term_months")?.value ?? 60),
