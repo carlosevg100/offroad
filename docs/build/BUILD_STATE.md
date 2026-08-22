@@ -442,3 +442,25 @@ Armadilha recorrente: depois de trocar de branch, `apps/web/.next/types` fica ob
 
 O que falta para fechar as Ondas E e F na tela: termos finais estruturados depois da alocação (valor, prazo, carência, amortização, taxa por linha), persistência das CPs e dos períodos de monitoramento, e a ingestão do balancete novo pela mesma entrada de documentos. Os pacotes já fazem a aritmética; falta a porta.
 
+## Sétima leva, madrugada de 22/08/2026: os restos medidos, um a um
+
+| PR | O quê |
+|---|---|
+| #192 | `@offroad/closing`: termos finais a partir do book (cada investidor com sua taxa, prazo e carência) e cronograma consolidado com o mês de pico |
+| #193 | Pessoas e clientes nomeados duas vezes são uma linha (a merge por identidade cobre controladores, gestão e maiores clientes) |
+| #194 | Verificador: id entre colchetes não é parte da citação; estoque não carrega janela; "resultado financeiro líquido" é a despesa financeira |
+| #195 | Trimestre e semestre como o release escreve (2q, q2, 1s, h1, ytd) viram mês e janela |
+| #196 | Eval: contradição nomeada por regra não é valor errado (conta na precisão, não no recall) |
+| #197 (fila) | Período implausível é descartado (3110-05-31 virou caminho); emissão e série viram um nome só; gold da Camil nomeia as linhas como o ITR imprime |
+
+Medido nesta leva (recall material / precisão / recall de exceções):
+
+| Caso | Resultado | Onde |
+|---|---|---|
+| FakeCo (Aurora) | **95,4% / 97,5% / 100%** | #194 |
+| Nimbus | **93,8% / 94,0% / 100%** | #193 |
+| Camil | 45,9% / 51,5% / 100% com #185 (piorou: período alucinado e nomes de série); re-medição com #197 em curso | #185, #197 |
+| Cogna | 31,3% com #195 (o modelo passou a escrever `2026_q2`; aceito em #197); re-medição em curso | #195, #197 |
+
+Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do artefato (uma célula na chave da tupla, um zero à esquerda, um colchete na citação, um trimestre escrito ao contrário). O caminho para a companhia aberta é o mesmo, só que em um filing de 140 páginas; o que falta na Camil é uma coisa só, a tabela de séries, e ela já tem nome canônico.
+

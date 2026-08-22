@@ -185,8 +185,8 @@ Onda A começa agora, pela conciliação: é o que hoje deixa passar contradiç�
 | A | Conciliação que aponta contradição (R3 ampliado, R18, R19); narrativos miram os números que reescrevem | entregue (#146, #155, #182) |
 | A | Instrumentos por documento e por tabela; uma tupla por linha de planilha; identidade por emissão e série | entregue (#147, #148, #153, #177), #185 na fila |
 | A | OCR: tabelas e linhas reconstruídas das palavras do Tesseract | entregue (#174, #181); fakeco-scan 59% |
-| A | Casos sintéticos no gate: Nimbus 92,2% / exceções 80%; FakeCo 93,9% / exceções 100% | **gate de recall atingido**; precisão 87 a 94% (meta 98%) |
-| A | Companhias abertas: Camil 53% (só instrumentos faltam), Cogna 31% | em medição (#185) |
+| A | Casos sintéticos no gate: Nimbus 93,8% / 94,0% / exceções 100%; FakeCo 95,4% / 97,5% / exceções 100% | **gate de recall atingido nos dois**; precisão a 0,5 ponto da meta na FakeCo |
+| A | Companhias abertas: Camil (séries como identidade, período implausível descartado), Cogna (trimestre como o release escreve) | re-medição em curso (#197) |
 | B | Rating interno, stress, cobertura de juros, comitê na tela e no memo | entregue (#152, #154, #157, #170) |
 | B | Comparáveis de mercado versionados (`@offroad/market-reference`) | entregue (#167) |
 | C | Catálogo de instrumentos, pacote de garantias, preço indicativo, covenants com definição | entregue (#158, #159, #167, #172) |
