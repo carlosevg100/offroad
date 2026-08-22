@@ -8,7 +8,12 @@ export type FieldOutcome = {
   materiality: "material" | "supporting";
   expected: string;
   found?: string;
-  status: "matched" | "wrong_value" | "missing";
+  /**
+   * `flagged`: the desk adopted a value the gold calls wrong, but a rule named the contradiction
+   * with the other value beside it. The room stated both; the desk read both and said so. It
+   * counts for precision (nothing was invented) and not for recall (the truth was not landed on).
+   */
+  status: "matched" | "wrong_value" | "flagged" | "missing";
   periodEnd?: string;
 };
 
@@ -24,7 +29,7 @@ export type EvalReport = {
     material: {expected: number; matched: number; recall: number};
     all: {expected: number; matched: number; recall: number};
     /** Among produced candidates whose field is in the gold set: correct / comparable. */
-    precision: {comparable: number; correct: number; value: number};
+    precision: {comparable: number; correct: number; /** Among `correct`: contradictions the desk named instead of resolving. */ flagged: number; value: number};
     unscoredCandidates: number;
   };
   hallucination: {autoAcceptedMaterial: number; withoutVerifiedAnchor: number; rate: number};
@@ -162,6 +167,7 @@ export function alignIndexedGroups(goldFields: GoldField[], candidates: Snapshot
 
 export function evaluateSnapshot(gold: GoldCase, rawSnapshot: ExtractionSnapshot): EvalReport {
   const snapshot: ExtractionSnapshot = {...rawSnapshot, candidates: alignIndexedGroups(gold.fields, rawSnapshot.candidates)};
+  const flaggedPaths = new Set(snapshot.exceptions.filter((exception) => exception.ruleId).flatMap((exception) => exception.fieldPaths ?? []));
   const fieldOutcomes: FieldOutcome[] = gold.fields.map((field) => {
     const candidates = snapshot.candidates.filter((candidate) => candidateMatchesField(candidate, field));
     const outcome: FieldOutcome = {fieldPath: field.fieldPath, materiality: field.materiality, expected: field.value, status: "missing"};
@@ -172,12 +178,13 @@ export function evaluateSnapshot(gold: GoldCase, rawSnapshot: ExtractionSnapshot
       outcome.status = "matched";
       outcome.found = matched.normalizedValue;
     } else {
-      outcome.status = "wrong_value";
+      outcome.status = flaggedPaths.has(field.fieldPath) ? "flagged" : "wrong_value";
       const first = candidates[0];
       if (first) outcome.found = first.normalizedValue;
     }
     return outcome;
   });
+  const flaggedFields = new Set(fieldOutcomes.filter((o) => o.status === "flagged").map((o) => o.fieldPath));
 
   const material = fieldOutcomes.filter((o) => o.materiality === "material");
   const matchedMaterial = material.filter((o) => o.status === "matched").length;
@@ -187,6 +194,7 @@ export function evaluateSnapshot(gold: GoldCase, rawSnapshot: ExtractionSnapshot
   for (const field of gold.fields) goldByPath.set(field.fieldPath, [...(goldByPath.get(field.fieldPath) ?? []), field]);
   let comparable = 0;
   let correct = 0;
+  let flagged = 0;
   let unscored = 0;
   for (const candidate of snapshot.candidates) {
     const fields = (goldByPath.get(candidate.fieldPath) ?? []).filter((field) => candidateMatchesField(candidate, field));
@@ -196,6 +204,10 @@ export function evaluateSnapshot(gold: GoldCase, rawSnapshot: ExtractionSnapshot
     }
     comparable += 1;
     if (fields.some((field) => valuesMatch(field.value, candidate.normalizedValue, field.valueType, field.tolerance))) correct += 1;
+    else if (flaggedFields.has(candidate.fieldPath)) {
+      correct += 1;
+      flagged += 1;
+    }
   }
 
   const autoAcceptedMaterial = snapshot.candidates.filter((c) => c.autoAccepted && (goldByPath.get(c.fieldPath)?.[0]?.materiality ?? "material") === "material");
@@ -251,7 +263,7 @@ export function evaluateSnapshot(gold: GoldCase, rawSnapshot: ExtractionSnapshot
       outcomes: fieldOutcomes,
       material: {expected: material.length, matched: matchedMaterial, recall: ratio(matchedMaterial, material.length)},
       all: {expected: fieldOutcomes.length, matched: matchedAll, recall: ratio(matchedAll, fieldOutcomes.length)},
-      precision: {comparable, correct, value: ratio(correct, comparable)},
+      precision: {comparable, correct, flagged, value: ratio(correct, comparable)},
       unscoredCandidates: unscored,
     },
     hallucination: {autoAcceptedMaterial: autoAcceptedMaterial.length, withoutVerifiedAnchor, rate: autoAcceptedMaterial.length === 0 ? 0 : ratio(withoutVerifiedAnchor, autoAcceptedMaterial.length)},

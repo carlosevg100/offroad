@@ -40,6 +40,8 @@ export type SnapshotException = {
   severity?: string;
   title: string;
   description: string;
+  /** Field paths the exception's evidence names, so a flagged contradiction can be told from a wrong value. */
+  fieldPaths?: string[];
 };
 
 export type SnapshotCalculation = {
