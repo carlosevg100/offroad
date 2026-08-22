@@ -84,6 +84,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         timeoutMs: request.timeoutMs ?? policy.timeoutMs,
       };
       if (request.cacheKey) adapterRequest.cacheKey = request.cacheKey;
+      if (request.thinking) adapterRequest.thinking = request.thinking;
       if (request.metadata) adapterRequest.metadata = request.metadata;
 
       const startedAt = now();

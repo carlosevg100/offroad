@@ -46,6 +46,11 @@ export type GatewayRequest<TSchema extends z.ZodType> = {
   metadata?: Record<string, string>;
   /** Cache key hint forwarded to providers that support prompt caching by key. */
   cacheKey?: string;
+  /**
+   * `off` for mechanical passes: "read this row and return these fields" has nothing to reason
+   * about, and reasoning tokens bill at the output rate. Omitted means the provider default.
+   */
+  thinking?: "off";
 };
 
 export type Usage = {
@@ -67,6 +72,7 @@ export type AdapterRequest = {
   maxOutputTokens: number;
   timeoutMs: number;
   cacheKey?: string;
+  thinking?: "off";
   metadata?: Record<string, string>;
 };
 
