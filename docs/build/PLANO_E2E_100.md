@@ -178,27 +178,20 @@ Onda A começa agora, pela conciliação: é o que hoje deixa passar contradiç�
    Cada marca vira teste antes da correção.
 3. O gate de cada onda só fecha com a revisão dele.
 
-## 6. Andamento (atualizado 21/08/2026, noite)
+## 6. Andamento (atualizado 22/08/2026, madrugada)
 
 | Onda | Item | Estado |
 |---|---|---|
-| A | Conciliação que aponta contradição (R3 ampliado, R18 runway, R19 mapa × balanço), eval rodando a conciliação | entregue (#146, #155) |
-| A | Instrumentos por documento e por tabela; período < 1 ano é interino; consolidado sobre controladora | entregue (#147, #148, #153) |
-| A | OCR medido (motor no eval, runner, caso `fakeco-scan`); bug do buffer destacado que zerava todo PDF escaneado | entregue (#149), correção em PR (#160) |
-| A | Percentual como fração; canônico de moeda; custo como magnitude; uma aba por janela | entregue (#141, #150) |
-| A | Companhias abertas: Camil (#134, #143, #144) e Cogna (#151) | entregue; Camil em 55% de recall, meta 85% |
-| B | Rating interno (7 fatores, 10 graus) | em PR (#152) |
-| B | Stress padronizado (4 choques + perda do maior cliente) | entregue (#154) |
-| B | Cobertura de juros antes e depois do pedido | em PR (#157) |
-| B | Comparáveis de mercado versionados | não começado |
-| C | Catálogo de instrumentos brasileiro com elegibilidade | em PR (#158) |
-| C | Pacote de garantias desenhado do inventário, haircuts de política | em PR (#159) |
-| C | Preço indicativo a partir de rating, comparáveis e garantia | não começado (depende de B) |
-| C | Covenants completos com definição contábil e cura | não começado |
-| D | Q&A de diligência (40 perguntas respondidas da sala) | em PR (#162) |
-| D | Memo com rating, stress, comparáveis e preço; data room de saída; PDF/DOCX | não começado |
-| E, F | Mercado, execução, pós-closing | não começado |
+| A | Conciliação que aponta contradição (R3 ampliado, R18, R19); narrativos miram os números que reescrevem | entregue (#146, #155, #182) |
+| A | Instrumentos por documento e por tabela; uma tupla por linha de planilha; identidade por emissão e série | entregue (#147, #148, #153, #177), #185 na fila |
+| A | OCR: tabelas e linhas reconstruídas das palavras do Tesseract | entregue (#174, #181); fakeco-scan 59% |
+| A | Casos sintéticos no gate: Nimbus 92,2% / exceções 80%; FakeCo 93,9% / exceções 100% | **gate de recall atingido**; precisão 87 a 94% (meta 98%) |
+| A | Companhias abertas: Camil 53% (só instrumentos faltam), Cogna 31% | em medição (#185) |
+| B | Rating interno, stress, cobertura de juros, comitê na tela e no memo | entregue (#152, #154, #157, #170) |
+| B | Comparáveis de mercado versionados (`@offroad/market-reference`) | entregue (#167) |
+| C | Catálogo de instrumentos, pacote de garantias, preço indicativo, covenants com definição | entregue (#158, #159, #167, #172) |
+| D | Q&A de diligência (40 perguntas), memo com comitê, sala de dados de saída, Word e PDF | entregue (#162, #170, #175, #176, #179) |
+| E | Base de investidores (sintética), sondagem, book, alocação, trilha; tabelas e tela | entregue (#169, #180, #183), #184 na fila |
+| F | CPs, minutas, desembolso e cronograma; pós-closing | não começado |
 
-Integração pendente para fechar a Onda B: rating, stress e cobertura na tela do case, no
-memorando e no term sheet (depende dos merges de #152 e #157).
-
+Gate da Onda E (5 investidores fictícios pelo fluxo inteiro) roda como teste em `@offroad/sounding`; falta o Carlos percorrer na tela.

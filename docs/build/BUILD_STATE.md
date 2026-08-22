@@ -401,3 +401,33 @@ Plano em `PLANO_E2E_100.md`. O que entrou ou está em PR:
   religar `strict` quando esvaziar. Lição da noite: só fazer push depois de `pnpm check` verde
   lido de arquivo, não de `grep | head` (dois PRs subiram vermelhos por isso e foram corrigidos).
 
+## Quinta leva da noite, 21/08 para 22/08/2026: regressões medidas, sala de saída, Word, sondagem
+
+O que entrou em `main` (todos por auto-merge após CI verde):
+
+| PR | O quê |
+|---|---|
+| #172, #173 | Catálogo de covenants no term sheet; docs |
+| #174, #181 | OCR: tabelas reconstruídas das linhas do Tesseract; depois linhas reconstruídas por posição vertical, porque o Tesseract lê tabela coluna a coluna |
+| #175, #176 | `@offroad/data-room`: sala de saída com portões (antes do NDA, após NDA, interno), retenções (exceção bloqueante, hash não verificado, sem classificação), pendências como pedidos; painel no case e índice interno imprimível |
+| #177 | Duas regressões de extração: uma tupla por linha de planilha (a célula ficava na chave) e zero à esquerda nunca é milhar (`0.181` lia 181) |
+| #178 | Falsos positivos de exceção contados só sobre regras; lacunas são pedidos. Copy do playbook sem "médio porte" |
+| #179 | `@offroad/case-export`: materiais em Word (zip próprio, determinístico) e rota `/docx` |
+| #180, #183, #184 (fila) | `@offroad/sounding` (estágios, indicações numa régua, book, alocação, trilha), tabelas `soundings`, `sounding_investors`, `sounding_events` (append-only) e a tela `/app/sounding/<sessão>` |
+| #182 | Carta, deck e memorial passam a mirar os grupos financeiros que reescrevem (a contradição precisa dos dois valores); aging, licenças e intermediário revisado no playbook |
+| #185 (fila) | Identidade de emissão e série como credor; moeda da tabela; remuneração e vencimento por série em prosa |
+
+Medido (recall de campos materiais / precisão / recall de exceções, FP só sobre regras):
+
+| Caso | Antes da leva | Depois |
+|---|---|---|
+| Nimbus | 82,8% (regressão de #165) | **92,2% / 87,0% / 80%** (#182) |
+| FakeCo (Aurora) | 58,0% (regressão de #165) | **93,9% / 94,0% / 100%** (#182) |
+| fakeco-scan (OCR) | 15,7% | **59,0% / 96,1%** (#181) |
+| Cogna | 22,9% | 31,3% |
+| Camil | 53,3% (tudo a 100% exceto `debt.instruments`: 57 de 63 faltas) | em medição com #185 |
+
+O que a medição ensinou: (1) a chave da tupla guardava a célula da planilha, e sete instrumentos viraram 51 tuplas de um campo; (2) `0.181` era lido como milhar em pt-BR; (3) as "falsas" exceções eram os requisitos do playbook; (4) a contradição só aparece se o segundo documento também for alvo do campo; (5) Tesseract devolve tabela coluna a coluna, então linha se reconstrói por posição vertical; (6) na companhia aberta, a série da emissão é a identidade do instrumento e a taxa está em prosa na proposta da administração.
+
+Armadilha recorrente: depois de trocar de branch, `apps/web/.next/types` fica obsoleto e o `pnpm check` falha com rota inexistente; apagar a pasta antes do gate.
+
