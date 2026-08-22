@@ -50,7 +50,8 @@ test.describe("Document-first intake (company journey)", () => {
   test("signs up with e-mail verification and lands on onboarding", async () => {
     await page.goto("/pt-BR/signup");
     // Company journey is the default selection.
-    await expect(page.locator('input[name="journey"][value="company"]')).toBeChecked();
+    await expect(page.locator('input[name="entry_path"][value="origination"]')).toBeChecked();
+    await expect(page.locator('input[name="originating_role"][value="company"]')).toBeChecked();
     await page.locator('input[name="full_name"]').fill(account.fullName);
     await page.locator('input[name="job_title"]').fill(account.jobTitle);
     await page.locator('input[name="email"]').fill(account.email);

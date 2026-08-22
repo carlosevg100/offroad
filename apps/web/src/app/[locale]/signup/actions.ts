@@ -6,6 +6,7 @@ import {redirect} from "next/navigation";
 import {
   canContinuePendingRegistration,
   initializeRegistrationWorkspace,
+  registrationJourneyForEntryPath,
   registrationSchema,
 } from "@/lib/auth/registration";
 import {createClient} from "@/lib/supabase/server";
@@ -45,9 +46,13 @@ async function rememberSignupEmail(locale: string, email: string) {
 }
 
 export async function startRegistration(formData: FormData) {
+  const journey = registrationJourneyForEntryPath(
+    field(formData, "entry_path"),
+    field(formData, "originating_role"),
+  );
   const parsed = registrationSchema.safeParse({
     locale: field(formData, "locale"),
-    journey: field(formData, "journey"),
+    journey: journey ?? "",
     fullName: field(formData, "full_name"),
     jobTitle: field(formData, "job_title"),
     email: field(formData, "email"),

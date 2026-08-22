@@ -1,4 +1,4 @@
-import {ArrowLeft, Building2, Landmark, Network} from "lucide-react";
+import {ArrowLeft} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
@@ -8,6 +8,7 @@ import type {AppLocale} from "@/i18n/routing";
 
 import {startRegistration} from "./actions";
 import {PasswordFields} from "./password-fields";
+import {SignupRoleSelector} from "./role-selector";
 import {SignupSubmitButton} from "./submit-button";
 
 export const metadata: Metadata = {title: "Create Account", robots: {index: false, follow: false}};
@@ -54,24 +55,18 @@ export default async function SignupPage({params, searchParams}: Props) {
         </div>
         {state.error ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
-        <fieldset className="registration-roles">
-          <legend>{t("roleLegend")}</legend>
-          <label>
-            <input defaultChecked name="journey" type="radio" value="company" />
-            <Building2 aria-hidden="true" size={20} />
-            <span><strong>{t("company")}</strong><small>{t("companyBody")}</small></span>
-          </label>
-          <label>
-            <input name="journey" type="radio" value="originator" />
-            <Network aria-hidden="true" size={20} />
-            <span><strong>{t("originator")}</strong><small>{t("originatorBody")}</small></span>
-          </label>
-          <label>
-            <input name="journey" type="radio" value="capital_provider" />
-            <Landmark aria-hidden="true" size={20} />
-            <span><strong>{t("provider")}</strong><small>{t("providerBody")}</small></span>
-          </label>
-        </fieldset>
+        <SignupRoleSelector labels={{
+          pathLegend: t("pathLegend"),
+          origination: t("origination"),
+          originationBody: t("originationBody"),
+          provider: t("provider"),
+          providerBody: t("providerBody"),
+          roleLegend: t("roleLegend"),
+          company: t("company"),
+          companyBody: t("companyBody"),
+          originator: t("originator"),
+          originatorBody: t("originatorBody"),
+        }} />
 
         <div className="registration-fields">
           <label className="field"><span>{t("fullName")}</span><input autoComplete="name" maxLength={160} minLength={2} name="full_name" required /></label>

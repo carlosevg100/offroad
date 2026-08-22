@@ -3686,6 +3686,11 @@ summary:focus-visible {
   width: min(100%, 680px);
 }
 
+.registration-paths {
+  display: grid;
+  gap: 12px;
+}
+
 .registration-roles {
   display: grid;
   padding: 0;
@@ -3693,7 +3698,12 @@ summary:focus-visible {
   gap: 8px;
 }
 
+.registration-roles--primary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .registration-roles legend {
+  width: 100%;
   margin-bottom: 10px;
   color: #5f646c;
   font-size: 10px;
@@ -3713,6 +3723,31 @@ summary:focus-visible {
   grid-template-columns: 28px 1fr;
   gap: 12px;
   transition: border-color 150ms ease, background 150ms ease;
+}
+
+.registration-roles--primary label {
+  min-height: 132px;
+  padding: 20px 42px 20px 18px;
+  align-content: start;
+  align-items: start;
+  background: #f7f8f9;
+  grid-template-columns: 26px 1fr;
+}
+
+.registration-roles--primary label > svg {
+  margin-top: 1px;
+  color: #66717d;
+}
+
+.registration-roles--primary strong {
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.registration-roles--primary small {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.55;
 }
 
 .registration-roles label:has(input:checked) {
@@ -3744,6 +3779,70 @@ summary:focus-visible {
   color: #858b94;
   font-size: 10px;
   line-height: 1.5;
+}
+
+.registration-role-refinement {
+  display: grid;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #e0e2e5;
+  background: #f4f5f5;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.registration-role-refinement legend {
+  width: auto;
+  margin-left: -4px;
+  padding: 0 4px;
+  color: #696f77;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.registration-role-refinement label {
+  position: relative;
+  display: grid;
+  min-height: 78px;
+  padding: 13px 34px 13px 13px;
+  border: 1px solid #d8dbe0;
+  align-items: start;
+  background: #fafbfb;
+  cursor: pointer;
+  grid-template-columns: 22px 1fr;
+  gap: 9px;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.registration-role-refinement label:has(input:checked) {
+  border-color: #657647;
+  background: #fff;
+  box-shadow: inset 2px 0 0 var(--accent-bright);
+}
+
+.registration-role-refinement input {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  accent-color: var(--ink);
+}
+
+.registration-role-refinement label > span {
+  display: grid;
+  gap: 3px;
+}
+
+.registration-role-refinement strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.registration-role-refinement small {
+  color: #858b94;
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .registration-fields {
@@ -4323,6 +4422,15 @@ summary:focus-visible {
   .registration-fields,
   .form-grid--onboarding {
     grid-template-columns: 1fr;
+  }
+
+  .registration-roles--primary,
+  .registration-role-refinement {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-roles--primary label {
+    min-height: 108px;
   }
 
   .professional-onboarding {

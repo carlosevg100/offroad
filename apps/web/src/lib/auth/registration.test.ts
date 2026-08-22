@@ -1,6 +1,10 @@
 import {describe, expect, it} from "vitest";
 
-import {canContinuePendingRegistration, registrationSchema} from "./registration";
+import {
+  canContinuePendingRegistration,
+  registrationJourneyForEntryPath,
+  registrationSchema,
+} from "./registration";
 
 const validRegistration = {
   locale: "pt-BR" as const,
@@ -23,6 +27,18 @@ describe("registrationSchema", () => {
     expect(registrationSchema.safeParse({...validRegistration, password: "Capitalá", confirmPassword: "Capitalá"}).success).toBe(false);
     expect(registrationSchema.safeParse({...validRegistration, password: "Cap@26", confirmPassword: "Cap@26"}).success).toBe(false);
     expect(registrationSchema.safeParse({...validRegistration, confirmPassword: "Different@26"}).success).toBe(false);
+  });
+});
+
+describe("registrationJourneyForEntryPath", () => {
+  it("keeps company and advisor as refinements of the origination path", () => {
+    expect(registrationJourneyForEntryPath("origination", "company")).toBe("company");
+    expect(registrationJourneyForEntryPath("origination", "originator")).toBe("originator");
+  });
+
+  it("maps the capital path directly and rejects unknown paths", () => {
+    expect(registrationJourneyForEntryPath("capital_provider", "")).toBe("capital_provider");
+    expect(registrationJourneyForEntryPath("unknown", "company")).toBeNull();
   });
 });
 
