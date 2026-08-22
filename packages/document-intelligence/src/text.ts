@@ -92,7 +92,11 @@ export function parseNumber(raw: string, localeHint: "pt-BR" | "en-US" = "pt-BR"
     const separator = dots > 0 ? "." : ",";
     const count = dots > 0 ? dots : commas;
     const [i, f = ""] = splitLast(token, separator);
-    const looksLikeThousands = count > 1 || (f.length === 3 && (separator === "." ? localeHint === "pt-BR" : localeHint === "en-US"));
+    // "0.181" is never zero thousand one hundred and eighty-one: a leading lone zero makes the
+    // separator decimal in any locale. Aurora's customer sheet measured the alternative: every
+    // share came back a hundred times too large.
+    const leadingZero = /^0$/.test(i);
+    const looksLikeThousands = !leadingZero && (count > 1 || (f.length === 3 && (separator === "." ? localeHint === "pt-BR" : localeHint === "en-US")));
     if (looksLikeThousands) {
       integerPart = token.replace(/[.,]/g, "");
       fractionPart = "";

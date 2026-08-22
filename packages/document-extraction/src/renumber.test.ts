@@ -18,4 +18,14 @@ describe("tuples from two tables of one document", () => {
       "company.controllers.1.name", "company.controllers.2.name", "company.controllers.3.name", "company.controllers.3.ownership_pct", "transaction.requested_amount",
     ]);
   });
+
+  it("treats every cell of one spreadsheet row as the same tuple", () => {
+    const out = renumberByTable([
+      candidate("debt.instruments.1.lender", "sDívida!A5"), candidate("debt.instruments.1.balance", "sDívida!C5"),
+      candidate("debt.instruments.2.lender", "sDívida!A6"), candidate("debt.instruments.2.balance", "sDívida!C6"),
+    ] as never);
+    expect(out.map((c) => c.field_path)).toEqual([
+      "debt.instruments.1.lender", "debt.instruments.1.balance", "debt.instruments.2.lender", "debt.instruments.2.balance",
+    ]);
+  });
 });
