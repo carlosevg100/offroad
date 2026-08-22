@@ -56,7 +56,8 @@ export function verifyCandidate(
   candidate: RawExtractionCandidate,
   context: VerificationContext,
 ): {kind: "verified"; value: VerifiedCandidate} | {kind: "rejected"; reason: "field_unknown"} {
-  const field = resolveFieldPath(candidate.field_path);
+  const normalizedPath = normalizePeriodTokens(candidate.field_path);
+  const field = resolveFieldPath(normalizedPath);
   if (!field) return {kind: "rejected", reason: "field_unknown"};
 
   const flags = new Set<VerifierFlag>();
@@ -145,7 +146,7 @@ export function verifyCandidate(
   }
 
   const anchorVerified = ![...flags].some((flag) => fatalVerifierFlags.has(flag));
-  const fieldPath = canonicalPeriodPath(candidate.field_path, candidate.period);
+  const fieldPath = canonicalPeriodPath(normalizedPath, candidate.period);
   const value: VerifiedCandidate = {
     ...candidate,
     field_path: fieldPath,
@@ -192,6 +193,37 @@ const monthsBetween = (start: string, end: string): number => {
  * interim periods are `YYYY_MM` of the end month with a `_Nm` window on flows, and a year is
  * the year its period ends.
  */
+/**
+ * Quarters and semesters as a release writes them, turned into the ontology's month and window.
+ *
+ * Cogna's release measured it: seventy candidates rejected as unknown fields because the model
+ * wrote `interim_financials.2026_2q.revenue` and `2026_1s.revenue_ytd`, which is exactly how
+ * the document labels its columns (2T26, 1S26). A quarter ends in 03/06/09/12 and spans three
+ * months; a semester ends in 06/12 and spans six; `_ytd` at a month is that many months. A
+ * stock keeps no window either way.
+ */
+export function normalizePeriodTokens(fieldPath: string): string {
+  const quarterMonths = ["03", "06", "09", "12"] as const;
+  const quarter = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_([1-4])[qt]\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
+  if (quarter) {
+    const [, , year, q, metric, window] = quarter as unknown as [string, string, string, string, string, string | undefined];
+    const suffix = STOCK_METRICS.has(metric) ? "" : window && window !== "_ytd" ? window : "_3m";
+    return `interim_financials.${year}_${quarterMonths[Number(q) - 1]}.${metric}${suffix}`;
+  }
+  const semester = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_([12])s\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
+  if (semester) {
+    const [, , year, half, metric, window] = semester as unknown as [string, string, string, string, string, string | undefined];
+    const suffix = STOCK_METRICS.has(metric) ? "" : window && window !== "_ytd" ? window : "_6m";
+    return `interim_financials.${year}_${half === "1" ? "06" : "12"}.${metric}${suffix}`;
+  }
+  const ytd = fieldPath.match(/^interim_financials\.(\d{4})_(\d{2})\.([a-z_]+?)_ytd$/);
+  if (ytd) {
+    const [, year, month, metric] = ytd as unknown as [string, string, string, string];
+    return STOCK_METRICS.has(metric) ? `interim_financials.${year}_${month}.${metric}` : `interim_financials.${year}_${month}.${metric}_${Number(month)}m`;
+  }
+  return fieldPath;
+}
+
 export function canonicalPeriodPath(fieldPath: string, period: {start: string; end: string} | undefined): string {
   if (!period) return fieldPath;
   // Nimbus measured this: ARR at 31/07/2026 came back as `historical_financials.2026.arr`. A
