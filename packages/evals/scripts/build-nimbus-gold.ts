@@ -152,7 +152,9 @@ write("expected/exceptions.json", [
     type: "missing",
     severity: entry.id === "audited_statements" ? "high" : "medium",
     description: entry.why,
-    keywords: entry.id.split("_"),
+    // The gaps the desk produces are titled in Portuguese; the ids are English. Both languages,
+    // so the match is on the document asked for, not on which language the title came out in.
+    keywords: entry.id === "audited_statements" ? ["auditad", "audited", "demonstrações financeiras"] : entry.id === "top_customer_contracts" ? ["contratos dos", "contrato", "customer contract"] : ["rodada", "follow-on", "investidor"],
     evidenceDocuments: [],
     expectedTreatment: "question",
   })),

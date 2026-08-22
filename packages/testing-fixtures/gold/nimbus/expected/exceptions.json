@@ -41,8 +41,9 @@
     "severity": "high",
     "description": "a auditoria de 2025 está em andamento; só há gerencial",
     "keywords": [
+      "auditad",
       "audited",
-      "statements"
+      "demonstrações financeiras"
     ],
     "evidenceDocuments": [],
     "expectedTreatment": "question"
@@ -53,9 +54,9 @@
     "severity": "medium",
     "description": "contratos dos dois maiores clientes não enviados",
     "keywords": [
-      "top",
-      "customer",
-      "contracts"
+      "contratos dos",
+      "contrato",
+      "customer contract"
     ],
     "evidenceDocuments": [],
     "expectedTreatment": "question"
@@ -66,9 +67,9 @@
     "severity": "medium",
     "description": "nenhuma carta dos fundos confirmando reserva para follow-on",
     "keywords": [
-      "investor",
-      "follow",
-      "on"
+      "rodada",
+      "follow-on",
+      "investidor"
     ],
     "evidenceDocuments": [],
     "expectedTreatment": "question"

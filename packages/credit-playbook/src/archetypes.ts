@@ -99,6 +99,19 @@ const commonMinimum: readonly Requirement[] = [
 
 const commonIdeal: readonly Requirement[] = [
   {
+    id: "reviewed_interim",
+    accepts: [{pt: "Informações intermediárias com revisão limitada do auditor (PDF)", en: "Interim statements with the auditor's limited review (PDF)"}],
+    purposes: ["financials", "investor_case"],
+    level: "ideal",
+    satisfiedBy: ["reviewed_interim_statements"],
+    singleDocument: true,
+    labels: {pt: "Balanço intermediário revisado pelo auditor", en: "Interim balance sheet reviewed by the auditor"},
+    rationale: {
+      pt: "O balancete gerencial mostra a posição; a revisão limitada diz se ela fecha. Um investidor precifica a diferença como risco.",
+      en: "The management trial balance shows the position; the limited review says whether it closes. An investor prices the difference as risk.",
+    },
+  },
+  {
     id: "bank_statements",
     accepts: [
       {pt: "Extratos das principais contas dos últimos 6 a 12 meses (PDF ou .ofx)", en: "Statements from the main accounts for the last 6 to 12 months (PDF or .ofx)"},
@@ -430,6 +443,38 @@ export const archetypes: readonly Archetype[] = [
         rationale: {
           pt: "Garantia sem laudo entra na conversa com haircut de desconhecido. Com laudo, entra pelo valor.",
           en: "Collateral without an appraisal enters the conversation at an unknown haircut. With one, it enters at value.",
+        },
+      },
+      {
+        id: "receivables_aging_for_collateral",
+        accepts: [{pt: "Aging da carteira de recebíveis por faixa de vencimento (.xlsx)", en: "Receivables aging by maturity bucket (.xlsx)"}],
+        purposes: ["structure"],
+        level: "ideal",
+        satisfiedBy: ["receivables_aging"],
+        singleDocument: true,
+        labels: {pt: "Aging da carteira de recebíveis", en: "Receivables aging"},
+        rationale: {
+          pt: "O saldo de recebíveis aparece no balanço; a composição por vencimento não. Sem o aging, a garantia sobre duplicatas entra pelo pior caso.",
+          en: "The receivables balance is on the balance sheet; its composition by maturity is not. Without the aging, security over receivables enters at the worst case.",
+        },
+      },
+      {
+        id: "info_permits",
+        level: "ideal",
+        satisfiedBy: [],
+        source: "information",
+        answerFormat: "text",
+        singleDocument: true,
+        purposes: ["structure"],
+        labels: {pt: "Licenças do projeto emitidas", en: "Project permits issued"},
+        question: {
+          pt: "As licenças do projeto (ambiental, obra, operação) já foram emitidas, ou só protocoladas? Quais, com número e data?",
+          en: "Have the project permits (environmental, construction, operating) been issued, or only filed? Which, with number and date?",
+        },
+        example: {pt: "Ex.: licença prévia CETESB emitida em 12/05/2026, protocolo 2026/114.882-7; licença de instalação em análise.", en: "E.g. preliminary licence issued 12 May 2026, filing 2026/114.882-7; installation licence under review."},
+        rationale: {
+          pt: "O memorial cita o protocolo; o desembolso depende da licença. Protocolo não é licença, e a diferença é uma condição precedente.",
+          en: "The memorandum cites the filing; disbursement depends on the licence. A filing is not a licence, and the difference is a condition precedent.",
         },
       },
     ],
