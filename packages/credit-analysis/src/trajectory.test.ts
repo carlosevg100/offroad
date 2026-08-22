@@ -121,3 +121,47 @@ describe("honest degradation", () => {
     expect(trajectory.years[0]!.ebitdaStressed).toBe("16848000.00");
   });
 });
+
+describe("what the money actually buys", () => {
+  /** Two lines: one falling due next year, one in five. A refinancing takes out the near one. */
+  const stack = [
+    {lender: "Bilaterais 12m", balance: "1000", maturity: "2027-06-30", amortization: "mensal"},
+    {lender: "Debênture 2031", balance: "1000", maturity: "2031-06-30", amortization: "bullet"},
+  ];
+
+  it("redeems the nearest maturity, not a slice of every line", () => {
+    const withOperation = projectLeverageTrajectory({
+      referenceDate: "2026-06-30",
+      cash: "0",
+      auditedEbitda: "500",
+      projectedEbitda: [{year: 2027, ebitda: "500"}, {year: 2031, ebitda: "500"}],
+      existing: stack,
+      existingCovenants: [],
+      newDebt: {amount: "1000", termMonths: 60, graceMonths: 12, refinancing: "1000"},
+    });
+    const in2027 = withOperation.years.find((year) => year.year === 2027)!;
+    // The 2031 bullet is untouched: the operation bought time on the near parcels and nothing else.
+    expect(Number(in2027.existingDebt)).toBe(1000);
+    const in2031 = withOperation.years.find((year) => year.year === 2031)!;
+    expect(Number(in2031.existingDebt)).toBe(0);
+  });
+});
+
+describe("a pure liability swap adds no leverage", () => {
+  it("states the post on the same base as the pre, even when the map and the balance disagree", () => {
+    const result = projectLeverageTrajectory({
+      referenceDate: "2026-06-30",
+      cash: "1000",
+      balanceGrossDebt: "5000",
+      auditedEbitda: "1000",
+      projectedEbitda: [{year: 2027, ebitda: "1000"}],
+      // The schedule sums to 5.100: the map lists 100 the balance sheet does not.
+      existing: [{lender: "A", balance: "2600", maturity: "2027-06-30"}, {lender: "B", balance: "2500", maturity: "2031-06-30"}],
+      existingCovenants: [],
+      newDebt: {amount: "700", termMonths: 60, graceMonths: 12, refinancing: "700"},
+    });
+    // (5000 - 1000) / 1000 = 4.00x before, and a swap of 700 for 700 leaves it there.
+    expect(result.liabilityManagement?.postLeverageAfterRefi).toBe("4.0000");
+    expect(result.liabilityManagement?.netNewMoney).toBe("0.00");
+  });
+});

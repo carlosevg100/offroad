@@ -264,6 +264,7 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
     ? {
         referenceDate: options.referenceDate,
         cash: balanceCash!,
+        ...(balanceGrossDebt !== undefined ? {balanceGrossDebt} : {}),
         existing: debt.map((line) => ({
           lender: line.lender,
           balance: line.balance,
