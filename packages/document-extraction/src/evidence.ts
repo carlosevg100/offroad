@@ -42,6 +42,17 @@ export type RenderOptions = {
   /** Longest single line kept intact; anything longer is cut with an explicit marker. */
   maxLineChars?: number;
   /**
+   * Lines of the previous window repeated at the top of the next one, as context.
+   *
+   * Camil measured why prose needs it. The management proposal names an issuance once, in a
+   * heading, and then describes each of its series for two pages: "as debêntures de segunda
+   * série fazem jus a IPCA+6,3416% ao ano ... vencimento em 14 de novembro de 2030". A window
+   * that starts after the heading shows a rate belonging to a series nobody in that window can
+   * name, and a rate with no instrument to attach to is a rate that is thrown away. The repeat
+   * is marked as context and its lines keep their own anchors, so citing one is still honest.
+   */
+  overlapLines?: number;
+  /**
    * Lines per window, whatever their size. Cogna measured why the character budget alone is
    * not enough: a 34-page release packed into three windows of 40k characters came back with
    * eleven fields, because a model asked to read four hundred lines in one breath reads the
@@ -61,6 +72,9 @@ export type RenderOptions = {
  * ceiling-hit response loses its tail, not the document.
  */
 const DEFAULT_MAX_CHARS = 40_000;
+/** Three lines is a sentence and its subject; more would pay for context nobody reads. */
+const DEFAULT_OVERLAP_LINES = 3;
+
 const DEFAULT_MAX_LINES = 200;
 const DEFAULT_MAX_LINE_CHARS = 2_000;
 
@@ -156,6 +170,9 @@ export function selectLines(index: LayerIndex, options: RenderOptions = {}): Lin
 export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): EvidenceChunk[] {
   const maxChars = options.maxChars ?? DEFAULT_MAX_CHARS;
   const maxLines = options.maxLines ?? DEFAULT_MAX_LINES;
+  // A workbook read one sheet per window has no anaphora to carry: repeating three rows of the
+  // customer sheet into the summary sheet would be noise with an anchor on it.
+  const overlapLines = options.overlapLines ?? (options.oneContainerPerChunk ? 0 : DEFAULT_OVERLAP_LINES);
   const lines = selectLines(index, options);
 
   // Group into containers first: structure decides boundaries, size only forces them.
@@ -170,9 +187,20 @@ export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): 
   let current = {parts: [] as string[], anchorIds: [] as string[], size: 0};
 
   const flush = () => {
-    if (current.parts.length === 0) return;
+    // Context alone is not a window: at the end of a document the seeded tail is dropped.
+    if (current.anchorIds.length === 0) {
+      current = {parts: [], anchorIds: [], size: 0};
+      return;
+    }
     chunks.push(current);
+    // The tail of the window just closed opens the next one, so a sentence that depends on the
+    // one before it still has it. Context lines are not counted as this window's own content.
+    const tail = overlapLines > 0 ? current.parts.filter((part) => part.startsWith("[")).slice(-overlapLines) : [];
     current = {parts: [], anchorIds: [], size: 0};
+    if (tail.length > 0) {
+      current.parts.push("--- contexto do trecho anterior ---", ...tail);
+      current.size += tail.reduce((sum, part) => sum + part.length + 1, 0) + 36;
+    }
   };
 
   const push = (part: string, anchorId?: string) => {
