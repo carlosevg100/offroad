@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {canonicalPeriodPath, normalizePeriodTokens} from "./verifier";
+import {canonicalIssuanceName, canonicalPeriodPath, normalizePeriodTokens, plausiblePeriod} from "./verifier";
 
 describe("the period spelled the way the ontology spells it", () => {
   const quarter = {start: "2026-03-01", end: "2026-05-31"};
@@ -54,9 +54,25 @@ describe("quarters and semesters as a release writes them", () => {
     expect(normalizePeriodTokens("interim_financials.2026_2q.revenue")).toBe("interim_financials.2026_06.revenue_3m");
     expect(normalizePeriodTokens("interim_financials.2026_1s.revenue_ytd")).toBe("interim_financials.2026_06.revenue_6m");
     expect(normalizePeriodTokens("interim_financials.2026_2t.adjusted_ebitda")).toBe("interim_financials.2026_06.adjusted_ebitda_3m");
+    expect(normalizePeriodTokens("interim_financials.2026_q2.revenue_ytd")).toBe("interim_financials.2026_06.revenue_6m");
+    expect(normalizePeriodTokens("interim_financials.2026_h1.net_income")).toBe("interim_financials.2026_06.net_income_6m");
     expect(normalizePeriodTokens("interim_financials.2026_2q.gross_debt")).toBe("interim_financials.2026_06.gross_debt");
     expect(normalizePeriodTokens("interim_financials.2026_07.revenue_ytd")).toBe("interim_financials.2026_07.revenue_7m");
     expect(normalizePeriodTokens("historical_financials.2025.revenue")).toBe("historical_financials.2025.revenue");
+  });
+});
+
+describe("what the calendar admits and how a desk names an issuance", () => {
+  it("drops an impossible period instead of writing it into the path", () => {
+    expect(plausiblePeriod({start: "3110-03-01", end: "3110-05-31"})).toBeUndefined();
+    expect(plausiblePeriod({start: "2026-03-01", end: "2026-05-31"})).toEqual({start: "2026-03-01", end: "2026-05-31"});
+    expect(plausiblePeriod({start: "2026-05-31", end: "2026-03-01"})).toBeUndefined();
+  });
+  it("folds the three ways a filing writes a series to one name", () => {
+    expect(canonicalIssuanceName("Emitida em 17/11/2021 – 11ª emissão - 1ª série")).toBe("11ª emissão, 1ª série");
+    expect(canonicalIssuanceName("14ª emisssão - 3ª série")).toBe("14ª emissão, 3ª série");
+    expect(canonicalIssuanceName("9ª emissão - Série única")).toBe("9ª emissão, série única");
+    expect(canonicalIssuanceName("Banco Itaú")).toBe("Banco Itaú");
   });
 });
 

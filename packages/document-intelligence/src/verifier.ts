@@ -92,6 +92,7 @@ export function verifyCandidate(
   if (expectedType !== candidate.value_type) flags.add("value_type_mismatch");
 
   let normalizedValue = candidate.value_raw.trim();
+  if (expectedType === "text" && /\.lender$/.test(normalizedPath)) normalizedValue = canonicalIssuanceName(normalizedValue);
   let effectiveScale = candidate.scale;
   if (expectedType === "number") {
     const parsed = parseNumber(candidate.value_raw, context.localeHint ?? "pt-BR");
@@ -150,7 +151,7 @@ export function verifyCandidate(
   }
 
   const anchorVerified = ![...flags].some((flag) => fatalVerifierFlags.has(flag));
-  const fieldPath = canonicalPeriodPath(normalizedPath, candidate.period);
+  const fieldPath = canonicalPeriodPath(normalizedPath, plausiblePeriod(candidate.period));
   const value: VerifiedCandidate = {
     ...candidate,
     field_path: fieldPath,
@@ -208,15 +209,19 @@ const monthsBetween = (start: string, end: string): number => {
  */
 export function normalizePeriodTokens(fieldPath: string): string {
   const quarterMonths = ["03", "06", "09", "12"] as const;
-  const quarter = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_([1-4])[qt]\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
+  // 2q, q2, 2t, t2: the release's own label, written either way round.
+  const quarter = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_(?:([1-4])[qt]|[qt]([1-4]))\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
   if (quarter) {
-    const [, , year, q, metric, window] = quarter as unknown as [string, string, string, string, string, string | undefined];
-    const suffix = STOCK_METRICS.has(metric) ? "" : window && window !== "_ytd" ? window : "_3m";
+    const [, , year, qa, qb, metric, window] = quarter as unknown as [string, string, string, string | undefined, string | undefined, string, string | undefined];
+    const q = qa ?? qb!;
+    // Year to date at the second quarter is six months, not three.
+    const suffix = STOCK_METRICS.has(metric) ? "" : window === "_ytd" ? `_${3 * Number(q)}m` : window ?? "_3m";
     return `interim_financials.${year}_${quarterMonths[Number(q) - 1]}.${metric}${suffix}`;
   }
-  const semester = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_([12])s\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
+  const semester = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_(?:([12])[sh]|[sh]([12]))\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
   if (semester) {
-    const [, , year, half, metric, window] = semester as unknown as [string, string, string, string, string, string | undefined];
+    const [, , year, ha, hb, metric, window] = semester as unknown as [string, string, string, string | undefined, string | undefined, string, string | undefined];
+    const half = ha ?? hb!;
     const suffix = STOCK_METRICS.has(metric) ? "" : window && window !== "_ytd" ? window : "_6m";
     return `interim_financials.${year}_${half === "1" ? "06" : "12"}.${metric}${suffix}`;
   }
@@ -226,6 +231,38 @@ export function normalizePeriodTokens(fieldPath: string): string {
     return STOCK_METRICS.has(metric) ? `interim_financials.${year}_${month}.${metric}` : `interim_financials.${year}_${month}.${metric}_${Number(month)}m`;
   }
   return fieldPath;
+}
+
+/**
+ * A period the calendar admits. Camil measured the alternative: one candidate arrived with
+ * 3110-05-31 and became `interim_financials.3110_05.revenue_36003m`, a path no gold and no
+ * desk will ever read. Outside 1990 to 2100, or longer than ten years, the period is not
+ * information; the path keeps what the model wrote in it.
+ */
+export function plausiblePeriod(period: {start: string; end: string} | undefined): {start: string; end: string} | undefined {
+  if (!period) return undefined;
+  const year = (iso: string) => Number(iso.slice(0, 4));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(period.start) || !/^\d{4}-\d{2}-\d{2}$/.test(period.end)) return undefined;
+  if (year(period.start) < 1990 || year(period.end) > 2100 || period.end < period.start) return undefined;
+  if (monthsBetween(period.start, period.end) > 120) return undefined;
+  return period;
+}
+
+/**
+ * How a desk names an issuance: "11ª emissão, 1ª série", whatever the filing prints around it.
+ * The ITR writes "Emitida em 17/11/2021 – 11ª emissão - 1ª série", the proposal "11ª emissão -
+ * 1ª série", the request letter "11ª emissão"; the same paper has to fold to one name or the
+ * rows from three documents never merge and the gold never matches.
+ */
+export function canonicalIssuanceName(text: string): string {
+  const issuance = text.match(/(\d{1,3})\s*[ªaº°]?\s*emiss+[ãa]o/i);
+  if (!issuance) return text;
+  const series = text.match(/(\d{1,3})\s*[ªaº°]?\s*s[ée]rie/i);
+  const single = /s[ée]rie\s+[úu]nica/i.test(text);
+  const base = `${issuance[1]}ª emissão`;
+  if (series) return `${base}, ${series[1]}ª série`;
+  if (single) return `${base}, série única`;
+  return base;
 }
 
 export function canonicalPeriodPath(fieldPath: string, period: {start: string; end: string} | undefined): string {

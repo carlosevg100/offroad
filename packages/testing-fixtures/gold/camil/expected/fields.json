@@ -528,7 +528,7 @@
   },
   {
     "fieldPath": "debt.instruments.1.lender",
-    "value": "Bancos (capital de giro, moeda nacional)",
+    "value": "Capital de Giro",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -562,7 +562,7 @@
   },
   {
     "fieldPath": "debt.instruments.2.lender",
-    "value": "Bancos (capital de giro, USD)",
+    "value": "Dívida denominada em USD",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -596,7 +596,7 @@
   },
   {
     "fieldPath": "debt.instruments.3.lender",
-    "value": "Bancos (capital de giro, CLP)",
+    "value": "Dívida denominada em CLP",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -630,7 +630,7 @@
   },
   {
     "fieldPath": "debt.instruments.4.lender",
-    "value": "Bancos (capital de giro, PEN)",
+    "value": "Dívida denominada em PEN",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -774,7 +774,7 @@
   },
   {
     "fieldPath": "debt.instruments.7.lender",
-    "value": "13ª emissão, 1ª série (CRA)",
+    "value": "13ª emissão, 1ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -829,7 +829,7 @@
   },
   {
     "fieldPath": "debt.instruments.8.lender",
-    "value": "13ª emissão, 2ª série (CRA)",
+    "value": "13ª emissão, 2ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -884,7 +884,7 @@
   },
   {
     "fieldPath": "debt.instruments.9.lender",
-    "value": "13ª emissão, 3ª série (CRA)",
+    "value": "13ª emissão, 3ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -939,7 +939,7 @@
   },
   {
     "fieldPath": "debt.instruments.10.lender",
-    "value": "14ª emissão, 1ª série (CRA)",
+    "value": "14ª emissão, 1ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -994,7 +994,7 @@
   },
   {
     "fieldPath": "debt.instruments.11.lender",
-    "value": "14ª emissão, 2ª série (CRA)",
+    "value": "14ª emissão, 2ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -1049,7 +1049,7 @@
   },
   {
     "fieldPath": "debt.instruments.12.lender",
-    "value": "14ª emissão, 3ª série (CRA)",
+    "value": "14ª emissão, 3ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -1104,7 +1104,7 @@
   },
   {
     "fieldPath": "debt.instruments.13.lender",
-    "value": "15ª emissão, 1ª série (CRA)",
+    "value": "15ª emissão, 1ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -1159,7 +1159,7 @@
   },
   {
     "fieldPath": "debt.instruments.14.lender",
-    "value": "15ª emissão, 2ª série (CRA)",
+    "value": "15ª emissão, 2ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -1214,7 +1214,7 @@
   },
   {
     "fieldPath": "debt.instruments.15.lender",
-    "value": "15ª emissão, 3ª série (CRA)",
+    "value": "15ª emissão, 3ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
@@ -1269,7 +1269,7 @@
   },
   {
     "fieldPath": "debt.instruments.16.lender",
-    "value": "15ª emissão, 4ª série (CRA)",
+    "value": "15ª emissão, 4ª série",
     "valueType": "text",
     "materiality": "material",
     "sourceDocument": "01_ITR_1T26_31mai2026.pdf",
