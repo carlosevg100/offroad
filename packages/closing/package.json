@@ -21,7 +21,7 @@
     "@offroad/sounding": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43",
+    "@types/node": "^26.2.0",
     "@offroad/investor-base": "workspace:*"
   }
 }
