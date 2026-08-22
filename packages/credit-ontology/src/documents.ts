@@ -75,6 +75,13 @@ const def = (
   evidenceRank: number = evidenceRankByClass[informationClass],
 ): DocumentKindDefinition => ({kind, labels: {pt, en}, informationClass, evidenceRank, folder, typicalFieldGroups, cues});
 
+/**
+ * Narrative documents restate the numbers the statements carry, and the restatement is where
+ * the contradictions live: Aurora's covering letter rounds the audited revenue and asks for
+ * R$ 40 million where the memorandum says 42,3; Nimbus's deck says ARR of R$ 40 million where
+ * the export gives 37,3. A letter, a deck and a memorandum therefore target the financial
+ * groups too, so the reconciliation sees both values instead of one.
+ */
 export const documentKinds: readonly DocumentKindDefinition[] = [
   def("audited_financial_statements", "Demonstrações financeiras auditadas", "Audited financial statements", "audited", "financial", ["company", "historical_financials", "debt", "collateral"], ["demonstracoes financeiras", "relatorio do auditor", "relatorio dos auditores independentes", "financial statements", "independent auditor"]),
   def("auditor_report_only", "Relatório do auditor (isolado)", "Auditor's report (standalone)", "audited", "financial", ["company"], ["relatorio do auditor independente", "opiniao", "auditor's report"]),
@@ -94,12 +101,12 @@ export const documentKinds: readonly DocumentKindDefinition[] = [
   def("business_plan", "Business plan", "Business plan", "projection", "project_and_plan", ["projections", "project", "transaction"], ["business plan", "plano de negocios", "projecoes", "premissas"]),
   def("financial_model", "Modelo financeiro", "Financial model", "projection", "project_and_plan", ["projections", "project", "transaction"], ["modelo", "model", "dcf", "cenario"]),
   def("budget", "Orçamento", "Budget", "projection", "project_and_plan", ["projections"], ["orcamento", "budget"]),
-  def("investor_deck", "Apresentação institucional", "Investor deck", "management", "institutional_and_corporate", ["company", "transaction", "customers", "project"], ["apresentacao", "deck", "investidores", "investor presentation"]),
+  def("investor_deck", "Apresentação institucional", "Investor deck", "management", "institutional_and_corporate", ["company", "transaction", "customers", "project", "historical_financials", "interim_financials"], ["apresentacao", "deck", "investidores", "investor presentation"]),
   def("cim", "Memorando de informações", "Confidential information memorandum", "management", "institutional_and_corporate", ["company", "transaction", "historical_financials", "projections"], ["memorando", "information memorandum", "cim"]),
   def("teaser", "Teaser", "Teaser", "management", "institutional_and_corporate", ["company", "transaction"], ["teaser"]),
-  def("project_memorandum", "Memorial descritivo do projeto", "Project memorandum", "company_document", "project_and_plan", ["project"], ["memorial descritivo", "projeto", "expansao", "obras"]),
+  def("project_memorandum", "Memorial descritivo do projeto", "Project memorandum", "company_document", "project_and_plan", ["project", "transaction"], ["memorial descritivo", "projeto", "expansao", "obras"]),
   def("technical_report", "Relatório técnico", "Technical report", "company_document", "project_and_plan", ["project"], ["relatorio tecnico", "estudo", "technical report"]),
-  def("capital_request_letter", "Carta de pedido de capital", "Capital request letter", "company_document", "institutional_and_corporate", ["transaction", "project", "company", "debt"], ["carta", "pedido", "racional", "cfo", "capital request"]),
+  def("capital_request_letter", "Carta de pedido de capital", "Capital request letter", "company_document", "institutional_and_corporate", ["transaction", "project", "company", "debt", "historical_financials", "interim_financials"], ["carta", "pedido", "racional", "cfo", "capital request"]),
   def("company_registration", "Ficha cadastral", "Company registration form", "company_document", "institutional_and_corporate", ["company"], ["ficha cadastral", "cadastro", "cnpj", "registration"]),
   def("cap_table", "Cap table", "Cap table", "company_document", "institutional_and_corporate", ["company"], ["cap table", "captable", "quadro de acionistas", "rodada", "series a", "seed", "valuation", "diluição"]),
   def("metrics_report", "Relatório de métricas (ARR, MRR, coortes)", "Metrics report (ARR, MRR, cohorts)", "management", "financial", ["historical_financials", "interim_financials", "customers"], ["arr", "mrr", "churn", "cohort", "coorte", "burn", "runway", "nrr", "retention", "retenção", "métricas", "metrics"]),
