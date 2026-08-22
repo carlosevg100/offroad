@@ -73,6 +73,9 @@ describe("what the calendar admits and how a desk names an issuance", () => {
     expect(canonicalIssuanceName("14ª emisssão - 3ª série")).toBe("14ª emissão, 3ª série");
     expect(canonicalIssuanceName("9ª emissão - Série única")).toBe("9ª emissão, série única");
     expect(canonicalIssuanceName("Banco Itaú")).toBe("Banco Itaú");
+    // The proposal writes the same paper in words.
+    expect(canonicalIssuanceName("debêntures da décima terceira emissão, segunda série")).toBe("13ª emissão, 2ª série");
+    expect(canonicalIssuanceName("as debêntures de segunda série da 15ª emissão")).toBe("15ª emissão, 2ª série");
   });
 });
 

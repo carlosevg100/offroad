@@ -98,6 +98,10 @@ export function renderDocumentContext(profile: DocumentProfile, fileName: string
  * balance alone: no lender, no currency, and the prose never became instruments.
  */
 const instrumentIdentityGuidance = [
+  "Um dado de uma série (taxa, vencimento, amortização, moeda) só serve se vier junto do campo",
+  "lender daquela série no mesmo índice. Quando o texto diz \"as debêntures de segunda série\" sem",
+  "repetir a emissão, complete com a emissão que o trecho descreve (\"13ª emissão, 2ª série\") e",
+  "emita lender junto: sem a identificação, o dado não se liga a instrumento nenhum e se perde.",
   "Para debt.instruments: o credor (lender) é quem empresta OU a identificação da emissão e série",
   "quando o instrumento é uma emissão (ex.: \"13ª emissão, 2ª série\"); a primeira célula de uma",
   "linha de tabela de emissões é essa identificação. A moeda (currency) é a da tabela ou da",

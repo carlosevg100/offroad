@@ -254,13 +254,35 @@ export function plausiblePeriod(period: {start: string; end: string} | undefined
  * 1ª série", the request letter "11ª emissão"; the same paper has to fold to one name or the
  * rows from three documents never merge and the gold never matches.
  */
+const WRITTEN_ORDINALS: Record<string, number> = {
+  primeira: 1, segunda: 2, terceira: 3, quarta: 4, quinta: 5, sexta: 6, setima: 7, oitava: 8, nona: 9,
+  "decima primeira": 11, "decima segunda": 12, "decima terceira": 13, "decima quarta": 14, "decima quinta": 15,
+  "decima sexta": 16, "decima setima": 17, "decima oitava": 18, "decima nona": 19, decima: 10, vigesima: 20,
+};
+
+const foldText = (text: string) => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+/** "décima terceira emissão" and "13ª emissão" are the same paper; so are "segunda série" and "2ª série". */
+function ordinalOf(text: string, noun: "emissao" | "serie"): number | null {
+  const word = noun === "emissao" ? "emiss+ao" : "serie";
+  const folded = foldText(text);
+  // NFD does not decompose the ordinal indicators, so "11\u00aa" folds to "11\u00aa", not "11a".
+  const digits = new RegExp(`(\\d{1,3})\\s*[a-z\u00aa\u00ba\u00b0]?\\s*${word}`).exec(folded);
+  if (digits) return Number(digits[1]);
+  // Longest first, or "décima terceira" matches "terceira" and the paper becomes the third issuance.
+  for (const [name, value] of Object.entries(WRITTEN_ORDINALS).sort(([a], [b]) => b.length - a.length)) {
+    if (new RegExp(`\\b${name}\\s+${word}`).test(folded)) return value;
+  }
+  return null;
+}
+
 export function canonicalIssuanceName(text: string): string {
-  const issuance = text.match(/(\d{1,3})\s*[ªaº°]?\s*emiss+[ãa]o/i);
-  if (!issuance) return text;
-  const series = text.match(/(\d{1,3})\s*[ªaº°]?\s*s[ée]rie/i);
+  const issuance = ordinalOf(text, "emissao");
+  if (issuance === null) return text;
+  const series = ordinalOf(text, "serie");
   const single = /s[ée]rie\s+[úu]nica/i.test(text);
-  const base = `${issuance[1]}ª emissão`;
-  if (series) return `${base}, ${series[1]}ª série`;
+  const base = `${issuance}ª emissão`;
+  if (series !== null) return `${base}, ${series}ª série`;
   if (single) return `${base}, série única`;
   return base;
 }
