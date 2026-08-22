@@ -5,80 +5,99 @@ import {collectScaleDeclarations} from "./scale";
 
 export const ocrLayerVersion = "ocr-1.1.0";
 
+type Cell = {text: string; bbox: [number, number, number, number]; line: OcrLine};
+
 /**
  * A line becomes cells where the ink leaves a gap wider than the text is tall. A word space is
  * about a third of the type height; a column gap is several times it. Measuring against the
- * line's own height keeps the rule the same for a 300 dpi scan and a 72 dpi phone photo, and
- * does not depend on how many of the gaps in the line happen to be column gaps.
+ * line's own height keeps the rule the same for a 300 dpi scan and a 72 dpi phone photo.
  */
-function cellsOf(line: OcrLine): string[] {
+function cellsOf(line: OcrLine): Cell[] {
   const words = [...line.words].sort((a, b) => a.bbox[0] - b.bbox[0]);
-  if (words.length < 2) return [line.text];
-  const gaps = words.slice(1).map((word, index) => word.bbox[0] - words[index]!.bbox[2]);
+  if (words.length === 0) return [{text: line.text, bbox: line.bbox, line}];
   const heights = words.map((w) => w.bbox[3] - w.bbox[1]);
   const height = heights.reduce((sum, h) => sum + h, 0) / heights.length;
   const threshold = height * 1.5;
-  const cells: string[][] = [[words[0]!.text]];
-  gaps.forEach((gap, index) => {
-    if (gap > threshold) cells.push([words[index + 1]!.text]);
-    else cells[cells.length - 1]!.push(words[index + 1]!.text);
-  });
-  return cells.map((cell) => cell.join(" "));
+  const groups: OcrLine["words"][] = [[words[0]!]];
+  for (let index = 1; index < words.length; index += 1) {
+    const gap = words[index]!.bbox[0] - words[index - 1]!.bbox[2];
+    if (gap > threshold) groups.push([words[index]!]);
+    else groups[groups.length - 1]!.push(words[index]!);
+  }
+  return groups.map((group) => ({
+    text: group.map((w) => w.text).join(" "),
+    bbox: [Math.min(...group.map((w) => w.bbox[0])), Math.min(...group.map((w) => w.bbox[1])), Math.max(...group.map((w) => w.bbox[2])), Math.max(...group.map((w) => w.bbox[3]))],
+    line,
+  }));
+}
+
+/** Two cells sit on one row when their vertical extents overlap by most of the smaller one. */
+function sameRow(a: [number, number, number, number], b: [number, number, number, number]): boolean {
+  const overlap = Math.min(a[3], b[3]) - Math.max(a[1], b[1]);
+  const smaller = Math.min(a[3] - a[1], b[3] - b[1]);
+  return smaller > 0 && overlap / smaller >= 0.5;
 }
 
 /**
- * Consecutive lines with three or more cells are a table. Aurora's scanned debt map measured
- * why this matters: without it the eight columns of a row were one sentence, no row pass ran,
- * and the numbers came back as prose with no cell to cite.
+ * Tables rebuilt from where the ink sits.
+ *
+ * Tesseract reads a printed table column by column: each column is a block and each cell a
+ * line, so "Banco Itaú", "Capital de giro" and "9.840.000,00" arrive as three lines in three
+ * blocks with nothing but their vertical position in common. Rows are therefore rebuilt by
+ * that position: cells whose vertical extents overlap are one row, ordered left to right. A
+ * line that spans several columns is first cut into cells at the gaps. Three or more
+ * consecutive rows with two or more cells, at least one of them with three, are a table; the
+ * first row is the header when it holds no amounts. Aurora's scanned debt map measured why:
+ * without this the seven instruments were fifty-six prose blocks and no row pass ran.
  */
 export function tablesFromLines(lines: readonly OcrLine[], pageId: string): {tables: LayerTable[]; consumed: Set<OcrLine>} {
   const tables: LayerTable[] = [];
   const consumed = new Set<OcrLine>();
-  const ordered = [...lines].sort((a, b) => a.bbox[1] - b.bbox[1]);
-  let run: {line: OcrLine; cells: string[]}[] = [];
+  const cells = lines.flatMap(cellsOf).sort((a, b) => (a.bbox[1] + a.bbox[3]) / 2 - (b.bbox[1] + b.bbox[3]) / 2);
+
+  // Rows by vertical overlap, in reading order.
+  const rows: {cells: Cell[]; bbox: [number, number, number, number]}[] = [];
+  for (const cell of cells) {
+    const current = rows[rows.length - 1];
+    if (current && sameRow(current.bbox, cell.bbox)) {
+      current.cells.push(cell);
+      current.bbox = [Math.min(current.bbox[0], cell.bbox[0]), Math.min(current.bbox[1], cell.bbox[1]), Math.max(current.bbox[2], cell.bbox[2]), Math.max(current.bbox[3], cell.bbox[3])];
+    } else {
+      rows.push({cells: [cell], bbox: [...cell.bbox] as [number, number, number, number]});
+    }
+  }
+  for (const row of rows) row.cells.sort((a, b) => a.bbox[0] - b.bbox[0]);
+
+  let run: typeof rows = [];
   const flush = () => {
-    if (run.length >= 3) {
+    // A two-column statement (account, amount) is a table too when the amounts say so.
+    const amountRows = run.filter((row) => row.cells.some((cell) => /\d{1,3}([.,]\d{3})+/.test(cell.text))).length;
+    if (run.length >= 3 && (run.some((row) => row.cells.length >= 3) || amountRows >= 3)) {
       const id = `${pageId}.t${tables.length + 1}`;
       const [first, ...rest] = run;
-      const headerish = first !== undefined && first.cells.every((cell) => !/\d{2,}[.,]\d{3}/.test(cell));
+      const headerish = first !== undefined && first.cells.every((cell) => !/\d{1,3}([.,]\d{3})+/.test(cell.text));
       const body = headerish ? rest : run;
-      const rows = body.map((entry, index) => ({
-        id: `${id}.r${index + 1}`,
-        cells: entry.cells.map((text, column) => ({id: `${id}.r${index + 1}.c${column + 1}`, text})),
-      }));
       tables.push({
         id,
-        ...(headerish && first ? {header: first.cells} : {}),
-        rows,
-        bbox: [
-          Math.min(...run.map((e) => e.line.bbox[0])),
-          Math.min(...run.map((e) => e.line.bbox[1])),
-          Math.max(...run.map((e) => e.line.bbox[2])),
-          Math.max(...run.map((e) => e.line.bbox[3])),
-        ],
+        ...(headerish && first ? {header: first.cells.map((cell) => cell.text)} : {}),
+        rows: body.map((row, index) => ({
+          id: `${id}.r${index + 1}`,
+          cells: row.cells.map((cell, column) => ({id: `${id}.r${index + 1}.c${column + 1}`, text: cell.text})),
+        })),
+        bbox: [Math.min(...run.map((r) => r.bbox[0])), Math.min(...run.map((r) => r.bbox[1])), Math.max(...run.map((r) => r.bbox[2])), Math.max(...run.map((r) => r.bbox[3]))],
       });
-      for (const entry of run) consumed.add(entry.line);
+      for (const row of run) for (const cell of row.cells) consumed.add(cell.line);
     }
     run = [];
   };
-  for (const line of ordered) {
-    const cells = cellsOf(line);
-    if (cells.length >= 3) run.push({line, cells});
+  for (const row of rows) {
+    if (row.cells.length >= 2) run.push(row);
     else flush();
   }
   flush();
   return {tables, consumed};
 }
 
-/**
- * Turns OCR output into layer pages.
- *
- * The pages stay marked `scanned` even after a successful read. That is deliberate and it is
- * the whole safety property of this path: OCR turns a smudge into a plausible digit, so a
- * value read this way must never be auto-accepted (the policy requires a verified anchor from
- * a native text layer — P1 plan §7, D-014). Downstream sees `scanned: true` plus the recorded
- * engine and confidence, and routes the document to human review.
- */
 export function pagesFromOcr(results: readonly {pageNumber: number; result: OcrResult}[]): {
   pages: LayerPage[];
   warnings: ParserWarning[];
