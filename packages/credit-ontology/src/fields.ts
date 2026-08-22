@@ -245,11 +245,11 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("leverage.post_transaction_gross_debt", "leverage", "number", "money", "material", "Dívida bruta pós-transação", "Post-transaction gross debt", [], []),
   f("leverage.post_transaction_net_debt_ebitda", "leverage", "number", "ratio", "material", "Dívida líquida / EBITDA (pós-transação)", "Net debt / EBITDA (post-transaction)", ["alavancagem pro forma"], ["pro forma leverage"]),
   // debt instruments
-  f("debt.instruments.{i}.lender", "debt", "text", "text", "material", "Credor", "Lender", ["banco", "credor"], []),
+  f("debt.instruments.{i}.lender", "debt", "text", "text", "material", "Credor ou emissão/série", "Lender or issuance/series", ["banco", "credor", "emissão", "série"], ["issuance", "series"]),
   f("debt.instruments.{i}.instrument_type", "debt", "text", "text", "material", "Instrumento", "Instrument", ["ccb", "debênture", "finame", "capital de giro"], []),
   f("debt.instruments.{i}.original_amount", "debt", "number", "money", "material", "Valor original", "Original amount", [], []),
   f("debt.instruments.{i}.balance", "debt", "number", "money", "material", "Saldo devedor", "Outstanding balance", ["saldo"], ["balance outstanding"]),
-  f("debt.instruments.{i}.currency", "debt", "text", "text", "material", "Moeda", "Currency", [], []),
+  f("debt.instruments.{i}.currency", "debt", "text", "text", "material", "Moeda", "Currency", ["moeda", "r$", "us$"], ["currency"]),
   f("debt.instruments.{i}.rate", "debt", "text", "text", "material", "Taxa", "Rate", ["cdi", "pré", "spread"], ["pricing"]),
   f("debt.instruments.{i}.maturity", "debt", "date", "date", "material", "Vencimento", "Maturity", [], []),
   f("debt.instruments.{i}.amortization", "debt", "text", "text", "material", "Amortização", "Amortization", ["price", "sac", "bullet"], []),

@@ -327,3 +327,15 @@ describe("extraction", () => {
     expect(progress).toHaveBeenCalledWith(expect.objectContaining({stage: "chunk_failed"}));
   });
 });
+
+describe("the prompt names issuances and series as instruments", () => {
+  it("tells the model the first cell of an issuance row is the lender and the table's currency applies", () => {
+    const fields = targetFields("reviewed_interim_statements");
+    const prompt = buildExtractionPrompt({profile: {kind: "reviewed_interim_statements", scale: 1000, informationClass: "reviewed"} as never, fileName: "itr.pdf", fields, evidence: {text: "[p39.t4.r3] Emitida em 01/12/2023 – 13ª emissão - 2ª série | 282.357", index: 1, total: 1}, row: {instance: 8, tableId: "p39.t4"}});
+    expect(prompt).toContain("identificação da emissão e série");
+    expect(prompt).toContain("R$ → BRL");
+    const whole = buildExtractionPrompt({profile: {kind: "reviewed_interim_statements", scale: 1000, informationClass: "reviewed"} as never, fileName: "itr.pdf", fields, evidence: {text: "x", index: 1, total: 1}});
+    expect(whole).toContain("descritos em texto corrido são candidatos daquela série");
+  });
+});
+
