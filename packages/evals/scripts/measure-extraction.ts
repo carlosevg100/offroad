@@ -16,7 +16,7 @@ import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
 import {createTesseractEngine, parseDocument, toolVersion, type OcrEngine} from "@offroad/document-parsers";
-import {extractDocument, documentExtractionVersion} from "@offroad/document-extraction";
+import {extractDocument, documentExtractionVersion, extractionPromptVersion} from "@offroad/document-extraction";
 import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter} from "@offroad/model-gateway";
 import type {DocumentProfile} from "@offroad/document-intelligence";
 import {documentKindDefinition, type DocumentKind} from "@offroad/credit-ontology";
@@ -84,6 +84,7 @@ const candidates: SnapshotCandidate[] = [];
 const profiles: SnapshotProfile[] = [];
 /** Full per-candidate detail (flags, anchors, quotes) — this is what makes a failure diagnosable offline. */
 const detail: Record<string, unknown> = {};
+const rawByDocument: Record<string, unknown[]> = {};
 const usage = {costUsd: 0, calls: 0};
 const perDocument: Array<{document: string; candidates: number; unverified: number; absent: number; chunks: number; failed: number; costUsd: number; ms: number}> = [];
 
@@ -150,6 +151,11 @@ for (const entry of gold.manifest.documents) {
     costUsd: result.usage.costUsd,
     ms: Date.now() - startedAt,
   });
+
+  // The provider's own answer, kept verbatim. `pnpm --filter @offroad/evals rescore` replays
+  // this through the current verifier, reconciliation and scoring without spending a cent, so
+  // a change to any of them is measured in seconds instead of two hours.
+  rawByDocument[entry.name] = result.raw;
 
   detail[entry.name] = {
     candidates: result.candidates.map((candidate) => ({
@@ -255,5 +261,5 @@ console.log(`\nTotal: ${usage.calls} chamadas, $${usage.costUsd.toFixed(4)}`);
 const outDir = join(here, "..", "out");
 mkdirSync(outDir, {recursive: true});
 const outPath = join(outDir, `extraction-${caseId}.json`);
-writeFileSync(outPath, `${JSON.stringify({report, snapshot, perDocument, detail, sweep: modelArg ? {model: modelArg} : null}, null, 2)}\n`);
+writeFileSync(outPath, `${JSON.stringify({report, snapshot, perDocument, detail, sweep: modelArg ? {model: modelArg} : null, raw: rawByDocument, promptVersion: extractionPromptVersion()}, null, 2)}\n`);
 console.log(`\nrelatório completo: ${outPath}`);
