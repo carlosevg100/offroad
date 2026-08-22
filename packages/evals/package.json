@@ -42,7 +42,8 @@
     "@offroad/reconciliation": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
     "decimal.js": "10.6.0",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@offroad/market-reference": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

@@ -480,6 +480,9 @@ importers:
       '@offroad/document-parsers':
         specifier: workspace:*
         version: link:../document-parsers
+      '@offroad/market-reference':
+        specifier: workspace:*
+        version: link:../market-reference
       '@offroad/model-gateway':
         specifier: workspace:*
         version: link:../model-gateway
