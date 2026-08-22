@@ -17,9 +17,11 @@
   },
   "dependencies": {
     "@offroad/credit-playbook": "workspace:*",
-    "decimal.js": "10.6.0"
+    "decimal.js": "10.6.0",
+    "@offroad/sounding": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43"
+    "@types/node": "^20.19.43",
+    "@offroad/investor-base": "workspace:*"
   }
 }
