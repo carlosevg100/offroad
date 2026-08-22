@@ -13,7 +13,7 @@ export function renderMarkdownReport(report: EvalReport, options: {thresholds?: 
   lines.push("|---|---|---|---|");
   lines.push(`| Material fields recall | ${pct(report.fields.material.recall)} (${report.fields.material.matched}/${report.fields.material.expected}) | ≥ ${pct(thresholds.materialRecall)} | ${flag(verdicts.materialRecall)} |`);
   lines.push(`| All fields recall | ${pct(report.fields.all.recall)} (${report.fields.all.matched}/${report.fields.all.expected}) | n/a | n/a |`);
-  lines.push(`| Precision on comparable candidates | ${pct(report.fields.precision.value)} (${report.fields.precision.correct}/${report.fields.precision.comparable}) | ≥ ${pct(thresholds.precision)} | ${flag(verdicts.precision)} |`);
+  lines.push(`| Precision on comparable candidates | ${pct(report.fields.precision.value)} (${report.fields.precision.correct}/${report.fields.precision.comparable}${report.fields.precision.flagged ? `, ${report.fields.precision.flagged} flagged as contradictions` : ""}) | ≥ ${pct(thresholds.precision)} | ${flag(verdicts.precision)} |`);
   lines.push(`| Unscored candidates (fields not in gold) | ${report.fields.unscoredCandidates} | n/a | n/a |`);
   lines.push(`| Hallucination rate (auto-accepted material without verified anchor) | ${pct(report.hallucination.rate)} (${report.hallucination.withoutVerifiedAnchor}/${report.hallucination.autoAcceptedMaterial}) | = 0 | ${flag(verdicts.hallucination)} |`);
   lines.push(`| Classification accuracy | ${pct(report.classification.accuracy)} (${report.classification.correct}/${report.classification.expected}) | ≥ ${pct(thresholds.classification)} | ${report.classification.accuracy === null ? "n/a" : flag(verdicts.classification)} |`);

@@ -211,7 +211,7 @@ describe("model sweep comparison", () => {
   const base = evaluateSnapshot(gold, snapshotFromFixture(fixtureDocuments));
   const perfect = (costUsd: number): typeof base => ({
     ...base,
-    fields: {...base.fields, material: {expected: 65, matched: 65, recall: 1}, precision: {comparable: 65, correct: 65, value: 1}},
+    fields: {...base.fields, material: {expected: 65, matched: 65, recall: 1}, precision: {comparable: 65, correct: 65, flagged: 0, value: 1}},
     classification: {expected: 8, correct: 8, accuracy: 1},
     exceptions: {...base.exceptions, recall: 1, falsePositives: 0},
     usage: {costUsd, calls: 10},
@@ -248,3 +248,24 @@ describe("model sweep comparison", () => {
   });
 });
 
+
+describe("a contradiction the desk named is not a wrong value", () => {
+  it("marks the field flagged and keeps precision when a rule cites the field path", () => {
+    const snapshot = snapshotFromFixture(fixtureDocuments);
+    const target = gold.fields.find((field) => field.fieldPath === "transaction.requested_amount")!;
+    const tampered: ExtractionSnapshot = {
+      ...snapshot,
+      candidates: snapshot.candidates.map((candidate) => (candidate.fieldPath === target.fieldPath ? {...candidate, normalizedValue: "40000000"} : candidate)),
+      exceptions: [...snapshot.exceptions, {ruleId: "R3", type: "source_conflict", severity: "high", title: "Valor solicitado diverge", description: "carta 40.000.000 × memorial 42.300.000", fieldPaths: [target.fieldPath]}],
+    };
+    const report = evaluateSnapshot(gold, tampered);
+    const outcome = report.fields.outcomes.find((entry) => entry.fieldPath === target.fieldPath)!;
+    expect(outcome.status).toBe("flagged");
+    expect(report.fields.precision.flagged).toBe(1);
+    expect(report.fields.precision.value).toBe(1);
+    // Without the rule the same candidate is simply wrong.
+    const silent = evaluateSnapshot(gold, {...tampered, exceptions: snapshot.exceptions});
+    expect(silent.fields.outcomes.find((entry) => entry.fieldPath === target.fieldPath)!.status).toBe("wrong_value");
+    expect(silent.fields.precision.value).toBeLessThan(1);
+  });
+});
