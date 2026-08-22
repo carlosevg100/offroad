@@ -90,6 +90,22 @@ export function renderDocumentContext(profile: DocumentProfile, fileName: string
   return parts.join("\n");
 }
 
+/**
+ * How a listed company names its debt. Camil measured the gap: the ITR lists twelve debenture
+ * and CRA series as "Emitida em 01/12/2023 – 13ª emissão - 2ª série" with a balance each, the
+ * management proposal gives each series its rate and maturity in prose, and the loans table is
+ * "Bancos (capital de giro)" by currency. Without this guidance the row passes returned the
+ * balance alone: no lender, no currency, and the prose never became instruments.
+ */
+const instrumentIdentityGuidance = [
+  "Para debt.instruments: o credor (lender) é quem empresta OU a identificação da emissão e série",
+  "quando o instrumento é uma emissão (ex.: \"13ª emissão, 2ª série\"); a primeira célula de uma",
+  "linha de tabela de emissões é essa identificação. A moeda (currency) é a da tabela ou da",
+  "nota (R$ → BRL; US$ → USD) quando a linha não a declara; empréstimos listados por moeda",
+  "são um instrumento por moeda. Remuneração (rate) e vencimento (maturity) de cada série",
+  "descritos em texto corrido são candidatos daquela série, citando o parágrafo.",
+];
+
 export function buildExtractionPrompt(input: {
   profile: DocumentProfile;
   fileName: string;
@@ -120,6 +136,7 @@ export function buildExtractionPrompt(input: {
           "Use exatamente estes caminhos, já com o índice desta linha aplicado. Substitua {period}",
           "pelo período concreto (2025, 2026_07) quando o campo pedir.",
           "Campos com valores permitidos aceitam somente um deles, exatamente como listado.",
+          ...instrumentIdentityGuidance,
         ]
       : [
           "Use exatamente estes caminhos, substituindo {period} pelo período concreto (2025, 2026_07),",
@@ -127,6 +144,7 @@ export function buildExtractionPrompt(input: {
           "Itens indexados por {i} seguem a ordem em que aparecem no documento, sendo o item 1 o primeiro",
           "que o documento mostra, e todos os campos de um mesmo {i} descrevem a mesma linha.",
           "Campos com valores permitidos aceitam somente um deles, exatamente como listado.",
+          ...instrumentIdentityGuidance,
         ]),
     "",
     renderTargetFields(input.fields),
