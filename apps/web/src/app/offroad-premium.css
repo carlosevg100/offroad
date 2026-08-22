@@ -542,63 +542,21 @@ summary:focus-visible {
   position: relative;
   display: flex;
   align-items: center;
-  width: 170px;
-  height: 55px;
+  width: 216px;
+  height: 52px;
   overflow: visible;
 }
 
 .brand-mark__asset {
   position: static;
-  width: 170px;
+  width: 216px;
   max-width: none;
   height: auto;
 }
 
 .brand-mark[data-size="hero"] .brand-mark__asset-frame {
-  width: 176px;
-  height: 57px;
-}
-
-.brand-mark__inverted {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brand-mark__symbol-frame {
-  position: relative;
-  display: block;
-  width: 52px;
-  height: 50px;
-  overflow: hidden;
-  border: 1px solid #282c32;
-  border-radius: 9px;
-}
-
-.brand-mark__symbol-asset {
-  position: static;
-  width: 52px;
-  max-width: none;
-  height: 52px;
-}
-
-.brand-mark__inverted-copy {
-  display: grid;
-  color: #fff;
-  line-height: 0.86;
-}
-
-.brand-mark__inverted-copy strong {
-  font-size: 24px;
-  font-weight: 640;
-  letter-spacing: -0.045em;
-}
-
-.brand-mark__inverted-copy span {
-  color: #a9aeb6;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  width: 224px;
+  height: 54px;
 }
 
 .desktop-nav {
@@ -3400,12 +3358,12 @@ summary:focus-visible {
   }
 
   .brand-mark__asset-frame {
-    width: 148px;
-    height: 48px;
+    width: 176px;
+    height: 43px;
   }
 
   .brand-mark__asset {
-    width: 148px;
+    width: 176px;
   }
 
   .premium-hero__inner {
@@ -4458,13 +4416,13 @@ summary:focus-visible {
 
 .workspace-sidebar__brand {
   display: flex;
-  height: 42px;
+  height: 48px;
   padding-inline: 8px;
   align-items: center;
 }
 
 .workspace-sidebar__brand .brand-mark {
-  max-width: 146px;
+  max-width: 226px;
 }
 
 .workspace-switcher,
@@ -5620,13 +5578,13 @@ summary:focus-visible {
 
 .app-sidebar__brand {
   display: flex;
-  height: 42px;
+  height: 48px;
   padding-inline: 8px;
   align-items: center;
 }
 
 .app-sidebar__brand .brand-mark {
-  max-width: 146px;
+  max-width: 226px;
 }
 
 button.app-workspace-id {
