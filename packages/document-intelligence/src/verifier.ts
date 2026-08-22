@@ -225,6 +225,17 @@ export function normalizePeriodTokens(fieldPath: string): string {
     const suffix = STOCK_METRICS.has(metric) ? "" : window && window !== "_ytd" ? window : "_6m";
     return `interim_financials.${year}_${half === "1" ? "06" : "12"}.${metric}${suffix}`;
   }
+  // `2026_7m.revenue_7m`: the model wrote the window where the month goes. A year-to-date
+  // window of N months starts in January, so it ends in month N and the path is recoverable.
+  const windowAsMonth = fieldPath.match(/^interim_financials\.(\d{4})_(\d{1,2})m\.([a-z_]+?)(?:_(\d{1,2})m|_ytd)?$/);
+  if (windowAsMonth) {
+    const [, year, months, metric, sameWindow] = windowAsMonth as unknown as [string, string, string, string, string | undefined];
+    const n = Number(months);
+    if (n >= 1 && n <= 12 && (sameWindow === undefined || Number(sameWindow) === n)) {
+      const month = String(n).padStart(2, "0");
+      return STOCK_METRICS.has(metric) ? `interim_financials.${year}_${month}.${metric}` : `interim_financials.${year}_${month}.${metric}_${n}m`;
+    }
+  }
   const ytd = fieldPath.match(/^interim_financials\.(\d{4})_(\d{2})\.([a-z_]+?)_ytd$/);
   if (ytd) {
     const [, year, month, metric] = ytd as unknown as [string, string, string, string];

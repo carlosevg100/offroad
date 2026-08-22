@@ -167,6 +167,19 @@ export function buildExtractionPrompt(input: {
     "## Documento",
     renderDocumentContext(input.profile, input.fileName),
     "",
+    // Measured on Aurora's trial balance: with the format rule only in the cached half, the
+    // model wrote `interim_financials.2026_7m.revenue_7m` and all nine candidates were refused
+    // as unknown fields. An instruction two thousand tokens from the evidence is an instruction
+    // half followed, so the shape of a path is restated here, beside what it applies to.
+    "## Forma dos caminhos",
+    ...(input.row
+      ? ["Mantenha o literal `i` onde o caminho tem o índice da linha.", "{period} vira o período concreto: 2025 para exercício, 2026_07 para ano_mês com dois dígitos."]
+      : [
+          "{period} vira o período concreto: 2025 para exercício, 2026_07 para ano_mês com dois dígitos (nunca 2026_7 nem 2026_7m).",
+          "{ytd} vira o sufixo de acumulado (_7m, _ytd, _ltm) e só ele carrega a janela.",
+          "{i} vira um índice a partir de 1, na ordem em que o documento mostra as linhas.",
+        ]),
+    "",
     "## Evidência",
     placement,
     "Cada linha começa com o id da âncora entre colchetes. Cite sempre um id que apareça abaixo.",
