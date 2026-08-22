@@ -11,5 +11,5 @@
     "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {"decimal.js": "10.6.0", "zod": "4.4.3"},
-  "devDependencies": {"@types/node": "^20.19.43"}
+  "devDependencies": {"@types/node": "^26.2.0"}
 }
