@@ -15,3 +15,4 @@ export * from "./archetypes";
 export * from "./sufficiency";
 export * from "./instruments";
 export * from "./covenants";
+export {commonClosing} from "./closing";
