@@ -56,7 +56,9 @@ export type RenderOptions = {
    * Lines per window, whatever their size. Cogna measured why the character budget alone is
    * not enough: a 34-page release packed into three windows of 40k characters came back with
    * eleven fields, because a model asked to read four hundred lines in one breath reads the
-   * first hundred. Two hundred lines is the size of task it reads whole.
+   * first hundred. Ninety lines is the size of task it reads whole: Cogna's release put its debt note inside a
+   * 185-line window, the model answered with the financial tables it opened with, and the note
+   * came back with one field out of fifteen.
    */
   maxLines?: number;
 };
@@ -75,7 +77,7 @@ const DEFAULT_MAX_CHARS = 40_000;
 /** Three lines is a sentence and its subject; more would pay for context nobody reads. */
 const DEFAULT_OVERLAP_LINES = 3;
 
-const DEFAULT_MAX_LINES = 200;
+const DEFAULT_MAX_LINES = 90;
 const DEFAULT_MAX_LINE_CHARS = 2_000;
 
 const isTableAggregate = (id: string) => /\.t\d+$/.test(id);
