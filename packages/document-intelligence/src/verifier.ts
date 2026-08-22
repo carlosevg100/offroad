@@ -67,7 +67,11 @@ export function verifyCandidate(
     flags.add("anchor_missing");
     precision = candidate.anchor.kind === "page" ? "page" : "document";
   } else {
-    if (!containsNormalized(anchor.text, candidate.quote)) {
+    // The evidence prints every line as "[id] text"; a model that copies the line verbatim has
+    // quoted faithfully, and the id is not part of what the cell says. Nimbus's management
+    // sheet measured it: six balance-sheet cells rejected for a bracketed prefix.
+    const quote = candidate.quote.replace(/^\s*\[[^\]]+\]\s*/, "");
+    if (!containsNormalized(anchor.text, quote)) {
       // A cell is one number; the row is where its meaning lives. Citing `p3.t1.r2.c3` while
       // quoting "Receita líquida | 142,6 | 164,3 | 184,7" is precise, honest behaviour, the
       // anchor names the exact cell, the quote shows the reader the whole line, and it was
@@ -75,7 +79,7 @@ export function verifyCandidate(
       // digits check below still holds the value against the cell itself.
       const rowId = /\.r\d+\.c\d+$/.test(candidate.anchor.id) ? candidate.anchor.id.replace(/\.c\d+$/, "") : null;
       const row = rowId ? lookupAnchor(context.index, rowId) : undefined;
-      if (!row || !containsNormalized(row.text, candidate.quote)) flags.add("quote_not_in_anchor");
+      if (!row || !containsNormalized(row.text, quote)) flags.add("quote_not_in_anchor");
     }
     if (!containsNormalized(candidate.quote, candidate.value_raw)) flags.add("value_not_in_quote");
     if (candidate.value_type === "number") {
@@ -205,15 +209,19 @@ const monthsBetween = (start: string, end: string): number => {
  */
 export function normalizePeriodTokens(fieldPath: string): string {
   const quarterMonths = ["03", "06", "09", "12"] as const;
-  const quarter = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_([1-4])[qt]\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
+  // 2q, q2, 2t, t2: the release's own label, written either way round.
+  const quarter = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_(?:([1-4])[qt]|[qt]([1-4]))\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
   if (quarter) {
-    const [, , year, q, metric, window] = quarter as unknown as [string, string, string, string, string, string | undefined];
-    const suffix = STOCK_METRICS.has(metric) ? "" : window && window !== "_ytd" ? window : "_3m";
+    const [, , year, qa, qb, metric, window] = quarter as unknown as [string, string, string, string | undefined, string | undefined, string, string | undefined];
+    const q = qa ?? qb!;
+    // Year to date at the second quarter is six months, not three.
+    const suffix = STOCK_METRICS.has(metric) ? "" : window === "_ytd" ? `_${3 * Number(q)}m` : window ?? "_3m";
     return `interim_financials.${year}_${quarterMonths[Number(q) - 1]}.${metric}${suffix}`;
   }
-  const semester = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_([12])s\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
+  const semester = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_(?:([12])[sh]|[sh]([12]))\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
   if (semester) {
-    const [, , year, half, metric, window] = semester as unknown as [string, string, string, string, string, string | undefined];
+    const [, , year, ha, hb, metric, window] = semester as unknown as [string, string, string, string | undefined, string | undefined, string, string | undefined];
+    const half = ha ?? hb!;
     const suffix = STOCK_METRICS.has(metric) ? "" : window && window !== "_ytd" ? window : "_6m";
     return `interim_financials.${year}_${half === "1" ? "06" : "12"}.${metric}${suffix}`;
   }
@@ -258,6 +266,10 @@ export function canonicalIssuanceName(text: string): string {
 }
 
 export function canonicalPeriodPath(fieldPath: string, period: {start: string; end: string} | undefined): string {
+  // A stock has no window: receivables at 31/07 are receivables, not "receivables over seven
+  // months", whether or not the model said which period it read.
+  const stock = fieldPath.match(/^(interim_financials\.\d{4}_\d{2})\.([a-z_]+?)(?:_\d+m|_ytd|_ltm)$/);
+  if (stock && STOCK_METRICS.has(stock[2]!)) fieldPath = `${stock[1]}.${stock[2]}`;
   if (!period) return fieldPath;
   // Nimbus measured this: ARR at 31/07/2026 came back as `historical_financials.2026.arr`. A
   // period that is not a full year belongs to the interim group, whatever the model wrote, and

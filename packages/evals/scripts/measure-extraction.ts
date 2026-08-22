@@ -211,6 +211,7 @@ const snapshot: ExtractionSnapshot = {
       severity: exception.severity,
       title: exception.title,
       description: exception.description,
+      fieldPaths: [...new Set(exception.evidence.map((entry) => entry.fieldPath).filter((path): path is string => Boolean(path)))],
     })),
     // A gap the reconciliation names (a missing document, a missing material fact) is an
     // exception the gold may expect; scoring only the rules would hide whether it was seen.
