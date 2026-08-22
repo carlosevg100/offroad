@@ -49,7 +49,6 @@ export default async function SignupPage({params, searchParams}: Props) {
       <form action={startRegistration} className="auth-form auth-form--registration">
         <input name="locale" type="hidden" value={locale} />
         <div className="auth-form__heading">
-          <p className="section-kicker">{t("eyebrow")}</p>
           <h2>{t("title")}</h2>
           <p>{t("body")}</p>
         </div>
