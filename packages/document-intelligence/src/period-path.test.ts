@@ -59,6 +59,10 @@ describe("quarters and semesters as a release writes them", () => {
     expect(normalizePeriodTokens("interim_financials.2026_2q.gross_debt")).toBe("interim_financials.2026_06.gross_debt");
     expect(normalizePeriodTokens("interim_financials.2026_07.revenue_ytd")).toBe("interim_financials.2026_07.revenue_7m");
     expect(normalizePeriodTokens("historical_financials.2025.revenue")).toBe("historical_financials.2025.revenue");
+    // The window written where the month goes: seven months from January end in July.
+    expect(normalizePeriodTokens("interim_financials.2026_7m.revenue_7m")).toBe("interim_financials.2026_07.revenue_7m");
+    expect(normalizePeriodTokens("interim_financials.2026_7m.cash_7m")).toBe("interim_financials.2026_07.cash");
+    expect(normalizePeriodTokens("interim_financials.2026_7m.revenue_3m")).toBe("interim_financials.2026_7m.revenue_3m");
   });
 });
 
