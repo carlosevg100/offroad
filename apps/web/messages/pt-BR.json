@@ -1115,6 +1115,19 @@
       "fileUnrecognised": "lido, mas não reconhecido; diga o que é respondendo ao item correspondente",
       "empty": "Nenhum arquivo ainda. Arraste acima e cada item marca sozinho quando o documento certo chegar."
     },
+    "dataRoom": {
+      "title": "Sala de dados de saída",
+      "releasable": "liberável",
+      "notReleasable": "retida",
+      "counts": "{ready} prontos · {held} retidos · {requested} solicitados à empresa",
+      "tier_pre_nda": "antes do NDA",
+      "tier_nda": "após NDA",
+      "tier_internal": "interno",
+      "status_ready": "pronto",
+      "status_held": "retido",
+      "status_requested": "solicitado",
+      "openIndex": "Abrir índice da sala (interno, imprimível)"
+    },
     "committee": {
       "title": "Comitê",
       "band_strong": "forte",

@@ -8,6 +8,10 @@
  * module plans that room deterministically from the case state. It never invents an entry:
  * a document the case still needs appears as "requested", not as a file.
  *
+ * The company's name is not a gate here: the teaser is redacted by construction until the
+ * company authorises disclosure (case-materials does that), and everything behind the NDA
+ * names the company by definition, because that is what the NDA is for.
+ *
  * One open exception that blocks external outputs holds the whole room. The analyst sees
  * every entry and why it is held; nothing outside the desk sees anything until it is cleared.
  */
@@ -70,8 +74,6 @@ export type DataRoomInput = {
   documents: readonly DataRoomDocument[];
   exceptions: readonly ReconciliationException[];
   readiness: ReadinessReport;
-  /** Until the company authorises disclosure, nothing beyond the teaser is placed pre-NDA. */
-  disclosureAuthorised: boolean;
 };
 
 const materialTier: Record<MaterialKind, DataRoomTier> = {
@@ -118,9 +120,6 @@ export function planDataRoom(input: DataRoomInput): DataRoomPlan {
   const holds = input.exceptions
     .filter((exception) => exception.blocksExternalOutputs)
     .map((exception) => ({pt: `Exceção aberta bloqueia saída: ${exception.title}`, en: `Open exception blocks release: ${exception.title}`}));
-  const disclosureHold = input.disclosureAuthorised
-    ? null
-    : {pt: "A empresa ainda não autorizou a divulgação do nome", en: "The company has not yet authorised disclosure of its name"};
 
   const folders: DataRoomFolder[] = [
     {id: FOLDER_INTERNAL, order: 0, name: {pt: "Mesa (não circula)", en: "Desk (does not circulate)"}, tier: "internal"},
@@ -144,7 +143,6 @@ export function planDataRoom(input: DataRoomInput): DataRoomPlan {
       );
     }
     if (tier !== "internal") heldBy.push(...holds);
-    if (tier !== "internal" && disclosureHold && kind !== "teaser") heldBy.push(disclosureHold);
     entries.push({
       id: `material:${kind}`,
       folderId: tier === "internal" ? FOLDER_INTERNAL : FOLDER_MATERIALS,
@@ -163,7 +161,6 @@ export function planDataRoom(input: DataRoomInput): DataRoomPlan {
   for (const document of documents) {
     const definition = document.kind ? documentKindMap.get(document.kind) : undefined;
     const heldBy: Array<{pt: string; en: string}> = [...holds];
-    if (disclosureHold) heldBy.push(disclosureHold);
     if (!definition) heldBy.push({pt: "Documento sem classificação confirmada", en: "Document without a confirmed classification"});
     if (!document.sha256 || !document.sha256VerifiedAt) heldBy.push({pt: "Hash SHA-256 não verificado", en: "SHA-256 hash not verified"});
     if (!definition) otherFolderNeeded = true;

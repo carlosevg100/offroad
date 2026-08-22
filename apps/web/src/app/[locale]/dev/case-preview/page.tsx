@@ -2,10 +2,12 @@ import {notFound} from "next/navigation";
 
 import {IntakeDeliveryMap, type DeliveryMapChecklist} from "@/components/intake/intake-delivery-map";
 import {IntakeCommittee} from "@/components/intake/intake-committee";
+import {IntakeDataRoom} from "@/components/intake/intake-data-room";
 import {IntakeDesk} from "@/components/intake/intake-desk";
 import {rateCredit, stressTable} from "@offroad/credit-analysis";
 import {instrumentVerdicts} from "@offroad/credit-playbook";
 import {designCollateralPackage} from "@offroad/deal-structure";
+import {planDataRoom} from "@offroad/data-room";
 import {auroraDeskState} from "@/lib/intake/dev/aurora-desk";
 import {nimbusDeskState} from "@/lib/intake/dev/nimbus-desk";
 
@@ -58,6 +60,23 @@ export default async function CasePreviewPage({params, searchParams}: {params: P
         locale={locale}
         rating={state.desk ? rateCredit({desk: state.desk, trajectory: state.trajectory, financialExpenses: "6140000", priorEbitda: "14924000", topCustomerShare: "0.181", evidenceRank: "1.8"}) : null}
         stress={state.desk && state.desk.profile === "cash_generative" ? stressTable({desk: state.desk, revenue: "191200000", topCustomerShare: "0.181"}) : []}
+      />
+      <IntakeDataRoom
+        locale={locale}
+        plan={planDataRoom({
+          materials: [],
+          materialsBlockedBy: ["brief_unavailable"],
+          documents: documents.map((document, index) => ({
+            id: document.id,
+            kind: (["audited_financial_statements", "trial_balance", "debt_schedule", null, "corporate_docs"] as const)[index] ?? null,
+            originalName: document.original_name,
+            sha256: index === 3 ? null : `${index}f3a9c1e7b2d4a6c8e0f1a2b3c4d5e6f7`,
+            sha256VerifiedAt: index === 3 ? null : "2026-08-21T00:00:00Z",
+            byteSize: document.byte_size,
+          })),
+          exceptions: [],
+          readiness: {state: "in_progress", score: 0.7, components: [], blockers: [{id: "receivables_aging", labels: {pt: "Aging de recebíveis", en: "Receivables aging"}}]},
+        })}
       />
     </main>
   );

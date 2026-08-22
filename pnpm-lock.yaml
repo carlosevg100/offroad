@@ -75,6 +75,9 @@ importers:
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../../packages/credit-playbook
+      '@offroad/data-room':
+        specifier: workspace:*
+        version: link:../../packages/data-room
       '@offroad/deal-structure':
         specifier: workspace:*
         version: link:../../packages/deal-structure

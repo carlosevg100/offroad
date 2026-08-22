@@ -1115,6 +1115,19 @@
       "fileUnrecognised": "read but not recognised; say what it is by answering the matching item",
       "empty": "No files yet. Drop them above and each item ticks itself when the right document arrives."
     },
+    "dataRoom": {
+      "title": "Outbound data room",
+      "releasable": "releasable",
+      "notReleasable": "held",
+      "counts": "{ready} ready · {held} held · {requested} requested from the company",
+      "tier_pre_nda": "before NDA",
+      "tier_nda": "after NDA",
+      "tier_internal": "internal",
+      "status_ready": "ready",
+      "status_held": "held",
+      "status_requested": "requested",
+      "openIndex": "Open the room index (internal, printable)"
+    },
     "committee": {
       "title": "Committee",
       "band_strong": "strong",

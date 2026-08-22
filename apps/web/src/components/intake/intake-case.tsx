@@ -4,6 +4,7 @@ import {getTranslations} from "next-intl/server";
 import type {CaseState} from "@/lib/intake/case-pipeline";
 
 import {IntakeCommittee} from "./intake-committee";
+import {IntakeDataRoom} from "./intake-data-room";
 import {IntakeDesk} from "./intake-desk";
 
 type Props = {
@@ -140,6 +141,9 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         rating={state.rating ?? null}
         stress={state.stress ?? []}
       />
+
+      {/* What leaves the desk, behind which gate, and what still holds it. */}
+      <IntakeDataRoom locale={locale} plan={state.dataRoom ?? null} {...(sessionId ? {sessionId} : {})} />
 
       {/* Structure: every term with the reason it is that term. */}
       {termSheet ? (

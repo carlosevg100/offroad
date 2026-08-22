@@ -17,6 +17,7 @@
     "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
+    "@offroad/data-room": "workspace:*",
     "@offroad/deal-structure": "workspace:*",
     "@offroad/extraction-learning": "workspace:*",
     "@offroad/financial-core": "workspace:*",
