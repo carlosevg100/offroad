@@ -4,6 +4,9 @@ import {IntakeDeliveryMap, type DeliveryMapChecklist} from "@/components/intake/
 import {IntakeCommittee} from "@/components/intake/intake-committee";
 import {IntakeDataRoom} from "@/components/intake/intake-data-room";
 import {IntakeDesk} from "@/components/intake/intake-desk";
+import {SoundingBoard} from "@/components/sounding/sounding-board";
+import {syntheticInvestors, shortlist} from "@offroad/investor-base";
+import {auditTrail, buildBook, trackSounding, type SoundingEvent} from "@offroad/sounding";
 import {rateCredit, stressTable} from "@offroad/credit-analysis";
 import {instrumentVerdicts} from "@offroad/credit-playbook";
 import {designCollateralPackage} from "@offroad/deal-structure";
@@ -18,12 +21,48 @@ import {nimbusDeskState} from "@/lib/intake/dev/nimbus-desk";
  * 404 outside development; there is no data here that matters, but a preview route that ships
  * is a route nobody remembers to remove.
  */
+/** A sounding as it looks mid-process: five investors, four NDAs, three indications. */
+function soundingPreview(deal: {archetypeId: string; amount: string; tenorMonths: number; rating: "strong" | "adequate" | "watch" | "weak" | "distressed"; sector: string; secured: boolean}) {
+  const investors = syntheticInvestors.slice(0, 5);
+  const ids = investors.map((investor) => investor.id);
+  const at = (minute: number) => `2026-09-01T10:${String(minute).padStart(2, "0")}:00Z`;
+  const desk = "analista@offroad.capital";
+  const events: SoundingEvent[] = [
+    ...ids.map((id, i) => ({investorId: id, type: "listed" as const, at: at(i), actor: desk})),
+    ...ids.map((id, i) => ({investorId: id, type: "teaser_sent" as const, at: at(10 + i), actor: desk})),
+    ...ids.slice(0, 4).map((id, i) => ({investorId: id, type: "nda_signed" as const, at: at(20 + i), actor: `${investors[i]!.name.toLowerCase().replace(/\W+/g, ".")}@fundo`})),
+    {investorId: ids[4]!, type: "declined", at: at(24), actor: "gestao@fundo", note: "fora de tese"},
+    ...ids.slice(0, 4).map((id, i) => ({investorId: id, type: "room_opened" as const, at: at(30 + i), actor: desk})),
+    {investorId: ids[0]!, type: "indication_received", at: at(40), actor: "credito@fundo", indication: {investorId: ids[0]!, amount: "20000000", tenorMonths: 48, graceMonths: 12, pricing: {type: "cdi_plus", spreadPct: "3.90"}, firm: true}},
+    {investorId: ids[1]!, type: "indication_received", at: at(41), actor: "mesa@banco", indication: {investorId: ids[1]!, amount: "15000000", tenorMonths: 48, graceMonths: 12, pricing: {type: "cdi_plus", spreadPct: "4.40"}, firm: true}},
+    {investorId: ids[2]!, type: "indication_received", at: at(42), actor: "comite@fo", indication: {investorId: ids[2]!, amount: "25000000", tenorMonths: 48, graceMonths: 12, pricing: {type: "cdi_plus", spreadPct: "4.10"}, firm: false}},
+  ];
+  const tracks = trackSounding(ids, events);
+  const indications = tracks.flatMap((track) => (track.latestIndication ? [track.latestIndication] : []));
+  const basis = {cdiPct: "10.50", ipcaPct: "4.00"};
+  const book = buildBook({target: deal.amount, indications, investors, basis});
+  const listed = new Set(investors.map((investor) => investor.name));
+  return {
+    sounding: {id: "preview", organization_id: "org", intake_session_id: "preview", target_amount: Number(deal.amount), currency: "BRL", cdi_pct: 10.5, ipca_pct: 4, method: "price_priority", status: "open", created_by: "u", created_at: at(0), updated_at: at(0)},
+    investors,
+    tracks,
+    book,
+    trail: auditTrail(tracks, investors),
+    candidates: shortlist(syntheticInvestors.filter((investor) => !listed.has(investor.name)), {instrument: "debenture", ...deal}),
+  };
+}
+
+async function noop() {
+  "use server";
+}
+
 export default async function CasePreviewPage({params, searchParams}: {params: Promise<{locale: string}>; searchParams: Promise<{case?: string}>}) {
   if (process.env.NODE_ENV === "production") notFound();
   const {locale} = await params;
   const {case: which} = await searchParams;
   // `?case=nimbus` shows the cash-burning profile; anything else, Aurora.
   const state = which === "nimbus" ? nimbusDeskState() : auroraDeskState();
+  const deal = {archetypeId: which === "nimbus" ? "venture_debt" : "growth_expansion", amount: which === "nimbus" ? "15000000" : "42300000", tenorMonths: which === "nimbus" ? 36 : 48, rating: "adequate" as const, sector: which === "nimbus" ? "software" : "materiais de construção", secured: which !== "nimbus", ...(which === "nimbus" ? {ventureBacked: true} : {})};
   const item = (id: string, label: string, satisfied: boolean, satisfiedBy: string[] = [], response?: "partial" | "not_applicable") => ({
     id, label, satisfied, satisfiedBy, level: "minimum" as const, source: "document" as const, stage: "now" as const,
     rationale: "", purposes: [], accepts: [], ...(response ? {response} : {}),
@@ -61,6 +100,7 @@ export default async function CasePreviewPage({params, searchParams}: {params: P
         rating={state.desk ? rateCredit({desk: state.desk, trajectory: state.trajectory, financialExpenses: "6140000", priorEbitda: "14924000", topCustomerShare: "0.181", evidenceRank: "1.8"}) : null}
         stress={state.desk && state.desk.profile === "cash_generative" ? stressTable({desk: state.desk, revenue: "191200000", topCustomerShare: "0.181"}) : []}
       />
+      <SoundingBoard actions={{open: noop, addInvestor: noop, recordEvent: noop}} deal={deal} locale={locale} sessionId="preview" view={soundingPreview(deal)} />
       <IntakeDataRoom
         locale={locale}
         plan={planDataRoom({
