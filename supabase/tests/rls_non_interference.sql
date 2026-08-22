@@ -1635,6 +1635,157 @@ begin
 end;
 $$;
 
+-- =============================================================================================
+-- The pipeline contract: the app queues, the worker claims, writes, and the session lands on
+-- the review screen.
+--
+-- Every stage of the worker has unit tests with fakes and the extractor is measured against
+-- gold cases by a harness that calls it directly. What nobody exercised is the seam between
+-- them: the functions below are the ones the deployed worker actually calls, and they are the
+-- boundary where a wrong grant or a missed state transition ends a real company's journey in a
+-- spinner. Production had zero runs when this was written, so this test is the first time the
+-- path is walked at all.
+-- =============================================================================================
+set local role postgres;
+
+insert into auth.users (
+  id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, is_sso_user, is_anonymous
+) values (
+  '10000000-0000-4000-8000-000000000009', 'authenticated', 'authenticated', 'rls-worker@example.invalid',
+  '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now(), false, false
+);
+
+insert into private.worker_tokens (label, token_sha256)
+values ('rls test worker', extensions.digest('rls-test-worker-token-0123456789', 'sha256'));
+
+insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+values ('40000000-0000-4000-8000-000000000009', '20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+
+insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by)
+values (
+  '50000000-0000-4000-8000-000000000009', '20000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000009',
+  'opportunity-documents',
+  '20000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000009/mapa.pdf',
+  'mapa.pdf', repeat('c', 64), 4096, '10000000-0000-4000-8000-000000000001'
+);
+
+-- The tenant queues the run, exactly as the app does after verifying the hashes.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","email":"rls-a@example.invalid"}',
+  true
+);
+
+do $$
+declare
+  org constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '40000000-0000-4000-8000-000000000009';
+  document_id constant uuid := '50000000-0000-4000-8000-000000000009';
+  prefix constant text := org::text || '/' || session_id::text || '/';
+  run jsonb;
+begin
+  run := public.begin_processing_run(
+    org, session_id, 'upload',
+    jsonb_build_array(jsonb_build_object(
+      'source_document_id', document_id,
+      'download_url', 'https://local.test/storage/v1/object/sign/opportunity-documents/' || prefix || 'mapa.pdf?token=x',
+      'layer_object_path', prefix || 'mapa.layer.json',
+      'layer_upload_url', 'https://local.test/storage/v1/object/upload/sign/document-layers/' || prefix || 'mapa.layer.json?token=y'
+    )),
+    'rls-test'
+  );
+  if run is null then raise exception 'begin_processing_run returned nothing'; end if;
+  if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
+    raise exception 'queueing a run did not park the session in processing';
+  end if;
+  if (select count(*) from public.processing_jobs where intake_session_id = session_id) <> 1 then
+    raise exception 'the run did not queue one job per document';
+  end if;
+end;
+$$;
+
+-- The worker: its own account, member of no organization, holding only a token.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000009","role":"authenticated","email":"rls-worker@example.invalid"}',
+  true
+);
+
+do $$
+declare
+  session_id constant uuid := '40000000-0000-4000-8000-000000000009';
+  claimed jsonb;
+  job_id uuid;
+  capability text;
+  candidates integer;
+begin
+  claimed := public.worker_claim_job('rls-test-worker-token-0123456789', 600);
+  if claimed is null or claimed->>'job_id' is null then
+    raise exception 'the worker could not claim the queued job: %', coalesce(claimed::text, 'null');
+  end if;
+  job_id := (claimed->>'job_id')::uuid;
+  capability := claimed->>'capability_token';
+  if capability is null then raise exception 'a claim without a capability token cannot write anything'; end if;
+
+  -- A worker holding no capability for this job writes nothing, whatever else it holds.
+  begin
+    perform public.worker_complete_job(job_id, 'not-the-capability-token', '{}'::jsonb);
+    raise exception 'a wrong capability token completed a job';
+  exception
+    when others then
+      if sqlerrm = 'a wrong capability token completed a job' then raise; end if;
+  end;
+
+  perform public.worker_record_document_result(
+    job_id, capability,
+    jsonb_build_object('status', 'clean', 'engine', 'none'),
+    jsonb_build_object('document_kind', 'debt_schedule', 'information_class', 'management', 'evidence_rank', 5, 'language', 'pt', 'confidence', 0.9),
+    jsonb_build_object('layer_kind', 'pdf', 'object_path', '20000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000009/mapa.layer.json', 'sha256', repeat('d', 64), 'byte_size', 128)
+  );
+
+  perform public.worker_record_candidates(
+    job_id, capability,
+    jsonb_build_array(jsonb_build_object(
+      'extractor_key', 'lender-1', 'field_path', 'debt.instruments.1.lender', 'field_group', 'debt', 'label', 'Credor',
+      'raw_value', 'Banco Itaú', 'normalized_value', to_jsonb('Banco Itaú'::text), 'value_type', 'text',
+      'information_class', 'management', 'evidence_rank', 5, 'source_anchor', '{"kind":"table_row","id":"s1.t1.r2"}'::jsonb,
+      'confidence', 0.92, 'extraction_method', 'model', 'is_primary', true
+    ))
+  );
+
+  perform public.worker_complete_job(job_id, capability, jsonb_build_object('candidates', 1));
+
+  if (select status from public.document_intake_sessions where id = session_id) <> 'review_ready' then
+    raise exception 'the last job finished and the session never reached the review screen (status %)',
+      (select status from public.document_intake_sessions where id = session_id);
+  end if;
+
+  select count(*) into candidates from public.intake_field_candidates where intake_session_id = session_id;
+  if candidates <> 1 then raise exception 'the worker wrote % candidates instead of one', candidates; end if;
+end;
+$$;
+
+-- What the worker wrote belongs to the tenant, and to nobody else.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","email":"rls-b@example.invalid"}',
+  true
+);
+
+do $$
+begin
+  if (select count(*) from public.intake_field_candidates where intake_session_id = '40000000-0000-4000-8000-000000000009') <> 0 then
+    raise exception 'tenant B can read what the worker wrote for tenant A';
+  end if;
+  if (select count(*) from public.processing_jobs where intake_session_id = '40000000-0000-4000-8000-000000000009') <> 0 then
+    raise exception 'tenant B can read tenant A processing jobs';
+  end if;
+end;
+$$;
+
 set local role postgres;
 
 rollback;
