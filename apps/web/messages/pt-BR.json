@@ -980,6 +980,7 @@
       "empty": "Ainda não há análise: processe os documentos primeiro.",
       "materialOpen": "Abrir",
       "materialPdf": "PDF",
+      "materialDocx": "Word",
       "materialSections": "{count} blocos",
       "modelTitle": "Modelo financeiro",
       "modelWhat": "Planilha com fórmulas vivas: projeção operacional, cronograma da dívida, DSCR e alavancagem contra o teto do playbook. Toda célula editável fica na aba Premissas, então mude uma e o modelo inteiro recalcula. Cada número histórico está rastreado até o documento de origem.",

@@ -57,6 +57,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@offroad/case-export':
+        specifier: workspace:*
+        version: link:../../packages/case-export
       '@offroad/case-materials':
         specifier: workspace:*
         version: link:../../packages/case-materials
@@ -169,6 +172,16 @@ importers:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.19.43)(jsdom@27.4.0)(vite@8.2.1(@types/node@20.19.43)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12))
+
+  packages/case-export:
+    dependencies:
+      '@offroad/case-materials':
+        specifier: workspace:*
+        version: link:../case-materials
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
 
   packages/case-materials:
     dependencies:

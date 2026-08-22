@@ -1,4 +1,4 @@
-import {AlertTriangle, FileText, Info, Printer, Table2} from "lucide-react";
+import {AlertTriangle, FileDown, FileText, Info, Printer, Table2} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
@@ -288,6 +288,9 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
                       </a>
                       <a className="button button--ghost" href={`${href}?print=1`} rel="noreferrer" target="_blank">
                         <Printer aria-hidden="true" size={13} /> {t("materialPdf")}
+                      </a>
+                      <a className="button button--ghost" href={`${href}/docx`}>
+                        <FileDown aria-hidden="true" size={13} /> {t("materialDocx")}
                       </a>
                     </span>
                   ) : null}
