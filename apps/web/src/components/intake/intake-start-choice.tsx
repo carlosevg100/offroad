@@ -1,4 +1,4 @@
-import {ArrowRight, Check, PencilLine, ShieldCheck, Sparkles, UploadCloud} from "lucide-react";
+import {ArrowRight, FileSearch, ListChecks, ShieldCheck, Waypoints} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import type {IntakeContext, IntakeStartActionSet} from "@/lib/intake/types";
@@ -9,7 +9,13 @@ type Props = {
   actions: IntakeStartActionSet;
 };
 
-/** "Start with documents" vs "fill in manually" choice, shared by onboarding and the workspace new-case flow. */
+/**
+ * One guided entry point, shared by onboarding and the workspace new-case flow.
+ *
+ * Uploading versus typing is an implementation detail, not a decision the company should have
+ * to make before it has even described the transaction. The guided journey asks the purpose
+ * first, builds the request list from it, and lets files and direct answers coexist later.
+ */
 export async function IntakeStartChoice({locale, context, actions}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.start"});
   const isCase = context === "workspace";
@@ -20,28 +26,20 @@ export async function IntakeStartChoice({locale, context, actions}: Props) {
         <h2>{isCase ? t("titleCase") : t("titleOnboarding")}</h2>
         <p>{t("body")}</p>
       </header>
-      <div className="intake-start__options">
-        <form action={actions.start} className="intake-start__card is-recommended">
-          <input name="locale" type="hidden" value={locale} />
-          <span className="intake-start__badge"><Sparkles aria-hidden="true" size={12} />{t("recommended")}</span>
-          <div className="intake-start__icon"><UploadCloud aria-hidden="true" size={25} /></div>
-          <h3>{t("documentsTitle")}</h3>
-          <p>{t("documentsBody")}</p>
-          <ul>
-            <li><Check size={12} />{t("benefitTyping")}</li>
-            <li><Check size={12} />{t("benefitConflicts")}</li>
-            <li><Check size={12} />{t("benefitSources")}</li>
-          </ul>
-          <button className="button" type="submit">{t("documentsCta")}<ArrowRight size={15} /></button>
-        </form>
-        <form action={actions.manual} className="intake-start__card">
-          <input name="locale" type="hidden" value={locale} />
-          <div className="intake-start__icon"><PencilLine aria-hidden="true" size={24} /></div>
-          <h3>{t("manualTitle")}</h3>
-          <p>{t("manualBody")}</p>
-          <button className="button button--ghost" type="submit">{t("manualCta")}<ArrowRight size={15} /></button>
-        </form>
-      </div>
+      <form action={actions.start} className="intake-start__journey is-recommended">
+        <input name="locale" type="hidden" value={locale} />
+        <div className="intake-start__journey-copy">
+          <span className="section-kicker">{t("guidedKicker")}</span>
+          <h3>{t("guidedTitle")}</h3>
+          <p>{t("guidedBody")}</p>
+          <button className="button" type="submit">{t("guidedCta")}<ArrowRight size={15} /></button>
+        </div>
+        <ol className="intake-start__steps">
+          <li><span>01</span><Waypoints aria-hidden="true" size={18} /><div><strong>{t("stepOperationTitle")}</strong><p>{t("stepOperationBody")}</p></div></li>
+          <li><span>02</span><ListChecks aria-hidden="true" size={18} /><div><strong>{t("stepRequestTitle")}</strong><p>{t("stepRequestBody")}</p></div></li>
+          <li><span>03</span><FileSearch aria-hidden="true" size={18} /><div><strong>{t("stepDocumentsTitle")}</strong><p>{t("stepDocumentsBody")}</p></div></li>
+        </ol>
+      </form>
       <div className="intake-start__security"><ShieldCheck size={15} /><span>{t("security")}</span></div>
     </section>
   );

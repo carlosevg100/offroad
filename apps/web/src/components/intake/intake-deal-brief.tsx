@@ -130,14 +130,6 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
           </div>
         </div>
 
-        <div className="intake-brief__row">
-          <label htmlFor="brief-rate">
-            {t("rateLabel")}
-            <span className="intake-brief__hint">{t("rateHint")}</span>
-          </label>
-          <input defaultValue={brief.expectedRate ?? ""} id="brief-rate" name="expected_rate" placeholder={t("ratePlaceholder")} type="text" />
-        </div>
-
         <div className="intake-brief__pair">
           <div className="intake-brief__row">
             <label htmlFor="brief-sector">
@@ -164,53 +156,66 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
           </div>
         </div>
 
-        {/* What the company owns, in the company's words. It knows the thing; it does not
-            necessarily know the market's name for pledging it. */}
-        <fieldset className="intake-brief__set">
-          <legend>{t("collateralLabel")}</legend>
-          <p className="intake-brief__hint">{t("collateralHint")}</p>
-          <div className="intake-brief__options">
-            {COLLATERAL.map((kind) => (
-              <label className="intake-brief__option" key={kind} htmlFor={`collateral-${kind}`}>
-                <input
-                  defaultChecked={brief.collateralKinds?.includes(kind)}
-                  id={`collateral-${kind}`}
-                  name="collateral_kinds"
-                  type="checkbox"
-                  value={kind}
-                />
-                <span>
-                  <strong>{t(`collateral_${kind}`)}</strong>
-                  <em>{t(`collateralNote_${kind}`)}</em>
-                </span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <details className="intake-brief__advanced">
+          <summary>{t("advancedTitle")}</summary>
+          <p>{t("advancedBody")}</p>
 
-        {/* The one question a company genuinely cannot answer. Blank is the better early answer
-            and the copy has to say so, or an empty field reads as a failure. */}
-        <fieldset className="intake-brief__set intake-brief__set--optional">
-          <legend>{t("instrumentLabel")}</legend>
-          <p className="intake-brief__hint">{t("instrumentHint")}</p>
-          <div className="intake-brief__options">
-            {INSTRUMENTS.map((instrument) => (
-              <label className="intake-brief__option" key={instrument} htmlFor={`instrument-${instrument}`}>
-                <input
-                  defaultChecked={brief.instruments?.includes(instrument)}
-                  id={`instrument-${instrument}`}
-                  name="instruments"
-                  type="checkbox"
-                  value={instrument}
-                />
-                <span>
-                  <strong>{t(`instrument_${instrument}`)}</strong>
-                  <em>{t(`instrumentNote_${instrument}`)}</em>
-                </span>
-              </label>
-            ))}
+          <div className="intake-brief__row">
+            <label htmlFor="brief-rate">
+              {t("rateLabel")}
+              <span className="intake-brief__hint">{t("rateHint")}</span>
+            </label>
+            <input defaultValue={brief.expectedRate ?? ""} id="brief-rate" name="expected_rate" placeholder={t("ratePlaceholder")} type="text" />
           </div>
-        </fieldset>
+
+          {/* What the company owns, in the company's words. It knows the thing; it does not
+              necessarily know the market's name for pledging it. */}
+          <fieldset className="intake-brief__set">
+            <legend>{t("collateralLabel")}</legend>
+            <p className="intake-brief__hint">{t("collateralHint")}</p>
+            <div className="intake-brief__options">
+              {COLLATERAL.map((kind) => (
+                <label className="intake-brief__option" key={kind} htmlFor={`collateral-${kind}`}>
+                  <input
+                    defaultChecked={brief.collateralKinds?.includes(kind)}
+                    id={`collateral-${kind}`}
+                    name="collateral_kinds"
+                    type="checkbox"
+                    value={kind}
+                  />
+                  <span>
+                    <strong>{t(`collateral_${kind}`)}</strong>
+                    <em>{t(`collateralNote_${kind}`)}</em>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {/* The one question a company genuinely cannot answer. Blank is the better early answer
+              and the copy has to say so, or an empty field reads as a failure. */}
+          <fieldset className="intake-brief__set intake-brief__set--optional">
+            <legend>{t("instrumentLabel")}</legend>
+            <p className="intake-brief__hint">{t("instrumentHint")}</p>
+            <div className="intake-brief__options">
+              {INSTRUMENTS.map((instrument) => (
+                <label className="intake-brief__option" key={instrument} htmlFor={`instrument-${instrument}`}>
+                  <input
+                    defaultChecked={brief.instruments?.includes(instrument)}
+                    id={`instrument-${instrument}`}
+                    name="instruments"
+                    type="checkbox"
+                    value={instrument}
+                  />
+                  <span>
+                    <strong>{t(`instrument_${instrument}`)}</strong>
+                    <em>{t(`instrumentNote_${instrument}`)}</em>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </details>
 
         <button className="button" type="submit">
           {t("save")}

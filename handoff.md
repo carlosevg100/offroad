@@ -8,6 +8,27 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Update de produto: intake guiado, 22 August 2026
+
+The borrower and advisor intake now has one guided entry instead of an up-front
+choice between documents and manual typing. The implemented sequence is:
+
+```text
+Funding objective
+  → essential transaction outline
+  → operation-specific information request list
+  → private upload and automatic classification
+  → evidence-linked review
+```
+
+The request list is built from the existing `@offroad/credit-playbook` archetype
+and presented in three levels: minimum, recommended, and ideal. Missing material
+does not block the user from starting. Collateral, target cost, and instrument
+preferences are optional because recommending structure is part of Offroad's
+work, not a prerequisite the company must guess. Manual entry remains a recovery
+path when document processing cannot propose fields, not a competing first
+journey.
+
 ## 1. Executive summary
 
 Offroad Capital is a private-credit origination and market-access platform,

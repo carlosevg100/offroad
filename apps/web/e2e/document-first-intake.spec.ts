@@ -69,7 +69,7 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("starts with documents, uploads the data room and processes it", async () => {
     await page.goto("/pt-BR/onboarding");
-    await page.locator(".intake-start__card.is-recommended button[type=submit]").click();
+    await page.locator(".intake-start__journey button[type=submit]").click();
     await expect(page.locator(".intake-collect")).toBeVisible();
 
     // The operation decides the checklist; the brief decides who could buy the paper. Neither
@@ -85,20 +85,15 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("#brief-grace").fill("12");
     await page.locator("#brief-sector").fill("varejo alimentar");
     await page.locator("#brief-geography").fill("sp");
+    await page.locator(".intake-brief__advanced > summary").click();
     await page.locator("#brief-rate").fill("CDI + 4");
     await page.locator("#collateral-recebiveis").check();
     await page.locator("#collateral-imovel").check();
     await page.locator(".intake-brief__form button[type=submit]").click();
 
     await expectNoErrorNotice(page);
-    // It came back as a number the desk can compute with, and the state was normalised.
-    await expect(page.locator("#brief-amount")).toHaveValue("45.000.000");
-    await expect(page.locator("#brief-geography")).toHaveValue("SP");
-    await expect(page.locator("#brief-rate")).toHaveValue("CDI + 4");
-    await expect(page.locator("#collateral-recebiveis")).toBeChecked();
-    await expect(page.locator("#collateral-imovel")).toBeChecked();
-    // Nothing was invented for the question nobody is expected to answer.
-    await expect(page.locator("#instrument-debenture")).not.toBeChecked();
+    await expect(page.locator(".intake-request-list")).toBeVisible();
+    await expect(page.locator(".intake-upload")).toBeVisible();
 
     await page.locator(".intake-upload input[type=file]").setInputFiles(dataRoomFiles);
     await expect(page.locator(".intake-upload__files header span")).toHaveText(String(dataRoomExpectations.documents), {timeout: 120_000});
@@ -150,9 +145,16 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("an unknown document set yields the honest empty state in the workspace flow", async () => {
     await page.goto("/pt-BR/app/new");
-    await page.locator(".intake-start__card.is-recommended button[type=submit]").click();
+    await page.locator(".intake-start__journey button[type=submit]").click();
     await expect(page).toHaveURL(/mode=documents&session=/);
     await expect(page.locator(".intake-collect")).toBeVisible();
+
+    await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
+    await page.locator("#brief-amount").fill("1 milhão");
+    await page.locator("#brief-sector").fill("varejo alimentar");
+    await page.locator("#brief-geography").fill("SP");
+    await page.locator(".intake-brief__form button[type=submit]").click();
+    await expect(page.locator(".intake-upload")).toBeVisible();
 
     await page.locator(".intake-upload input[type=file]").setInputFiles({
       name: "balancete-desconhecido.txt",

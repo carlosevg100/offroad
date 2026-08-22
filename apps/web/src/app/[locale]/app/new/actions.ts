@@ -29,8 +29,10 @@ function localeFrom(formData: FormData): AppLocale {
   return routing.locales.includes(raw as AppLocale) ? raw as AppLocale : routing.defaultLocale;
 }
 
-function intakeUrl(locale: string, sessionId: string, error?: IntakeErrorCode) {
-  return `/${locale}/app/new?mode=documents&session=${sessionId}${error ? `&error=${error}` : ""}`;
+type GuidedStep = "operation" | "request" | "documents";
+
+function intakeUrl(locale: string, sessionId: string, error?: IntakeErrorCode, step: GuidedStep = "documents") {
+  return `/${locale}/app/new?mode=documents&session=${sessionId}&step=${step}${error ? `&error=${error}` : ""}`;
 }
 
 /** Resolves the tenant scope from the verified session and checks the intake session belongs to it. */
@@ -56,7 +58,7 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
   if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
   const outcome = await startIntakeSession({supabase, organizationId: organization.id, userId, locale, journey: organization.organization_type === "originator" ? "originator" : "company"});
   if (!outcome.ok) redirect(`/${locale}/app/new?error=${outcome.error}`);
-  redirect(intakeUrl(locale, outcome.value));
+  redirect(intakeUrl(locale, outcome.value, undefined, "operation"));
 }
 
 export async function setWorkspaceIntakeOperation(formData: FormData) {
@@ -64,7 +66,7 @@ export async function setWorkspaceIntakeOperation(formData: FormData) {
   const sessionId = value(formData, "session_id");
   const runtime = await workspaceRuntime(locale, sessionId);
   const outcome = await setArchetype(runtime, value(formData, "archetype"));
-  redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
+  redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error, outcome.ok ? "request" : "operation"));
 }
 
 export async function saveWorkspaceIntakeAnswer(formData: FormData) {
@@ -202,5 +204,5 @@ export async function saveWorkspaceDealBrief(formData: FormData) {
     sessionId,
     brief,
   });
-  redirect(intakeUrl(locale, sessionId, saved.ok ? undefined : "save"));
+  redirect(intakeUrl(locale, sessionId, saved.ok ? undefined : "save", saved.ok ? "documents" : "request"));
 }
