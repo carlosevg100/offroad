@@ -42,6 +42,16 @@ export type TrajectoryDebtLine = {
 
 export type TrajectoryInput = {
   referenceDate: string;
+  /**
+   * Gross debt as the balance sheet states it, when it differs from the schedule's total.
+   *
+   * Camil measured why this matters: the debt map sums to R$ 5.742,5M and the balance sheet
+   * recognises R$ 5.670,2M, a gap of R$ 72,3M in leases the map never lists. Sizing the
+   * operation off the map and publishing leverage off the balance made a pure liability swap
+   * read as 4,71x against a pre of 4,63x: the operation appeared to add leverage while adding
+   * no debt at all. Post-transaction leverage is stated on the same base as the pre.
+   */
+  balanceGrossDebt?: string;
   /** Held flat across the horizon; stated as an assumption in the output. */
   cash: string;
   existing: TrajectoryDebtLine[];
@@ -226,7 +236,8 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
     // No single contract to take out: the covenant binds the whole stack and the room states how
     // much of it the proceeds repay. The arithmetic is the same, the lenders are "the schedule".
     const netNewMoney = amount.minus(refinancing);
-    const postDebt = existingTotalAtStart.minus(refinancing).plus(amount);
+    const grossPre = input.balanceGrossDebt ? d(input.balanceGrossDebt) : existingTotalAtStart;
+    const postDebt = grossPre.plus(netNewMoney);
     const postLeverage = postDebt.minus(cash).div(audited);
     liabilityManagement = {
       covenantedBalance: refinancing.toFixed(2),
