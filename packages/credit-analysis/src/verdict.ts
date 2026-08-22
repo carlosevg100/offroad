@@ -36,6 +36,9 @@ export type VerdictStanding = "stands" | "stands_with_conditions" | "does_not_st
 
 export type VerdictNote = {id: string; pt: string; en: string};
 
+/** What a structure costs in the market, as the caller's price reference computes it. */
+export type StructurePrice = {bps: {min: number; max: number}; allIn: {min: string; max: string}};
+
 export type AlternativeStructure = {
   id: string;
   amount: string;
@@ -43,6 +46,7 @@ export type AlternativeStructure = {
   graceMonths: number;
   why: {pt: string; en: string};
   tradeoff: {pt: string; en: string};
+  price: StructurePrice | null;
 };
 
 export type OperationVerdict = {
@@ -55,6 +59,8 @@ export type OperationVerdict = {
   /** What it deliberately does not touch, so nobody discovers it later. */
   leaves: VerdictNote[];
   alternatives: AlternativeStructure[];
+  /** What the proposed structure costs, when a price reference was supplied. */
+  price: StructurePrice | null;
 };
 
 const d = (value: string | number): Decimal => new Decimal(value);
@@ -62,8 +68,43 @@ const brlM = (value: Decimal.Value): string => `R$ ${new Decimal(value).div(1_00
 const turns = (value: Decimal.Value): string => `${new Decimal(value).toFixed(2).replace(".", ",")}x`;
 const months = (count: number) => `${count} meses`;
 
-export function judgeOperation(input: {desk: DeskAnalysis; trajectory: Trajectory | null; operation: Operation}): OperationVerdict {
+export function judgeOperation(input: {
+  desk: DeskAnalysis;
+  trajectory: Trajectory | null;
+  operation: Operation;
+  /**
+   * The market's price for a structure, injected by the caller.
+   *
+   * It is a function rather than a number because the second road has to be priced too: an
+   * alternative whose advantage is described as "better price" and never says how much better
+   * is an opinion, and a committee cannot choose between two opinions.
+   */
+  priceFor?: (structure: {amount: string; termMonths: number; leveragePost: string}) => StructurePrice | null;
+  /**
+   * Re-runs the trajectory for a structure the company did not ask for.
+   *
+   * Without it an alternative is priced on the same numbers as the proposal and comes out at
+   * the same spread, which is worse than saying nothing: it presents a real choice as a
+   * non-choice. A bigger ticket that also clears a later maturity is still a liability swap on
+   * day one, so what actually differs is the peak of the trajectory, and only re-running it
+   * shows that.
+   */
+  simulate?: (structure: {amount: string; termMonths: number; graceMonths: number; refinancing: string}) => Trajectory | null;
+}): OperationVerdict {
   const {desk, trajectory, operation} = input;
+  const priceFor = input.priceFor ?? (() => null);
+  // Leverage after this structure lands: the stack plus what the ticket does not repay.
+  const leverageAfter = (ticket: Decimal, redeemed: Decimal) =>
+    d(desk.leverage.netDebtPre).plus(ticket.minus(redeemed)).div(desk.leverage.ebitda).toFixed(4);
+  const simulate = input.simulate ?? (() => null);
+  const peakOf = (result: Trajectory | null) => (result ? d(result.peak.leverageStressed) : null);
+  const price = priceFor({
+    amount: operation.amount,
+    termMonths: operation.termMonths,
+    leveragePost: (peakOf(trajectory) ?? d(leverageAfter(d(operation.amount), d(operation.refinancing ?? "0")))).toFixed(4),
+  });
+  const spread = (value: StructurePrice | null) =>
+    value ? `CDI + ${(value.bps.min / 100).toFixed(2).replace(".", ",")}% a ${(value.bps.max / 100).toFixed(2).replace(".", ",")}%` : null;
   const conditions: VerdictNote[] = [];
   const solves: VerdictNote[] = [];
   const leaves: VerdictNote[] = [];
@@ -124,6 +165,19 @@ export function judgeOperation(input: {desk: DeskAnalysis; trajectory: Trajector
       pt: `${worst.year} continua exigindo ${brlM(worst.principalDue)} de amortização, ${d(worst.scheduleStrain).times(100).toFixed(0)}% do EBITDA daquele ano. Esta operação não passa por lá, e esse ano será rolado de novo.`,
       en: `${worst.year} still demands ${brlM(worst.principalDue)} of amortisation, ${d(worst.scheduleStrain).times(100).toFixed(0)}% of that year's EBITDA. This operation does not reach it, and that year will be rolled again.`,
     });
+    const biggerTicket = amount.plus(worst.principalDue);
+    const biggerRun = simulate({amount: biggerTicket.toFixed(2), termMonths: operation.termMonths, graceMonths: operation.graceMonths, refinancing: refinancing.plus(worst.principalDue).toFixed(2)});
+    const biggerPeak = peakOf(biggerRun);
+    const biggerPrice = priceFor({
+      amount: biggerTicket.toFixed(2),
+      termMonths: operation.termMonths,
+      leveragePost: (biggerPeak ?? d(leverageAfter(biggerTicket, refinancing.plus(worst.principalDue)))).toFixed(4),
+    });
+    const ownPeak = peakOf(trajectory);
+    const biggerTradeoff = {
+      pt: `${biggerPeak && ownPeak ? `O pico de alavancagem vai de ${turns(ownPeak)} para ${turns(biggerPeak)}` : "Custa alavancagem de pico mais alta"} e o livro fica maior.${biggerPrice && price ? ` No preço: ${spread(biggerPrice)} contra ${spread(price)} da estrutura pedida${biggerPrice.bps.min === price.bps.min ? ", o mesmo spread, porque em ambas o dinheiro novo é zero e o que muda é o prazo do passivo" : `, ${((biggerPrice.bps.min - price.bps.min) / 100).toFixed(2).replace(".", ",")} ponto percentual na ponta baixa`}.` : ""}`,
+      en: `${biggerPeak && ownPeak ? `Peak leverage moves from ${turns(ownPeak)} to ${turns(biggerPeak)}` : "It costs a higher peak leverage"} and the book grows.${biggerPrice && price ? ` On price: ${spread(biggerPrice)} against ${spread(price)} for the requested structure${biggerPrice.bps.min === price.bps.min ? ", the same spread, because in both the new money is zero and what changes is the maturity of the liability" : ""}.` : ""}`,
+    };
     alternatives.push({
       id: "size-to-cover-the-later-wall",
       amount: amount.plus(worst.principalDue).toFixed(2),
@@ -133,10 +187,8 @@ export function judgeOperation(input: {desk: DeskAnalysis; trajectory: Trajector
         pt: `Um tíquete de ${brlM(amount.plus(worst.principalDue))} resolve ${worst.year} junto com a janela curta, e a companhia deixa de voltar ao mercado no pior ano do cronograma.`,
         en: `A ${brlM(amount.plus(worst.principalDue))} ticket clears ${worst.year} together with the near window, and the company stops returning to market in the worst year of its schedule.`,
       },
-      tradeoff: {
-        pt: `Custa alavancagem de pico mais alta e um livro maior de investidores; a favor está o preço, porque um papel que remove a única parede relevante é mais fácil de vender do que um que a adia.`,
-        en: `It costs a higher peak leverage and a wider book; in its favour is price, because paper that removes the only wall that matters sells better than paper that postpones it.`,
-      },
+      tradeoff: biggerTradeoff,
+      price: biggerPrice,
     });
   }
 
@@ -152,9 +204,18 @@ export function judgeOperation(input: {desk: DeskAnalysis; trajectory: Trajector
         en: `Sixty months with up to twelve of grace is where Brazilian private credit has a real book; ${operation.termMonths} months narrows the investor list and is charged a premium for it.`,
       },
       tradeoff: {
-        pt: `Amortiza mais cedo, então exige geração de caixa antes; em troca sai mais barato e com menos condições.`,
-        en: `It amortises earlier, so it demands cash generation sooner; in exchange it prices tighter and carries fewer conditions.`,
+        pt: `Amortiza mais cedo, então exige geração de caixa antes.${(() => {
+          const shorter = priceFor({amount: operation.amount, termMonths: 60, leveragePost: leverageAfter(d(operation.amount), d(operation.refinancing ?? "0"))});
+          return shorter && price
+            ? ` No preço: ${spread(shorter)} contra ${spread(price)}, ${((price.bps.min - shorter.bps.min) / 100).toFixed(2).replace(".", ",")} ponto percentual economizado ao encurtar.`
+            : " Em troca sai mais barato e com menos condições.";
+        })()}`,
+        en: `It amortises earlier, so it demands cash generation sooner.${(() => {
+          const shorter = priceFor({amount: operation.amount, termMonths: 60, leveragePost: leverageAfter(d(operation.amount), d(operation.refinancing ?? "0"))});
+          return shorter && price ? ` On price: ${spread(shorter)} against ${spread(price)}.` : " In exchange it prices tighter and carries fewer conditions.";
+        })()}`,
       },
+      price: priceFor({amount: operation.amount, termMonths: 60, leveragePost: leverageAfter(d(operation.amount), d(operation.refinancing ?? "0"))}),
     });
   }
 
@@ -179,5 +240,13 @@ export function judgeOperation(input: {desk: DeskAnalysis; trajectory: Trajector
         : `As proposed, the operation does not solve the problem behind the request.`,
   };
 
-  return {standing, headline, conditions, solves, leaves, alternatives};
+  if (price) {
+    solves.push({
+      id: "price",
+      pt: `No mercado de hoje esta estrutura sai a ${spread(price)} ao ano, e é contra essa faixa que o investidor compara o risco descrito acima.`,
+      en: `In today's market this structure prices at ${spread(price)} per year, and that is the band against which an investor weighs the risk described above.`,
+    });
+  }
+
+  return {standing, headline, conditions, solves, leaves, alternatives, price};
 }
