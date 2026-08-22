@@ -17,6 +17,7 @@ type Props = {
 const asLocale = (locale: string) => (locale === "en-US" ? "en" : "pt") as "pt" | "en";
 const intl = (locale: string) => (locale === "en-US" ? "en-US" : "pt-BR");
 const money = (value: string, locale: string) => `R$ ${(Number(value) / 1_000_000).toLocaleString(intl(locale), {minimumFractionDigits: 1, maximumFractionDigits: 1})}M`;
+const pct = (value: string | null, locale: string) => (value === null ? null : `${Number(value).toLocaleString(intl(locale), {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`);
 const when = (iso: string, locale: string) => new Date(iso).toLocaleString(intl(locale), {dateStyle: "short", timeStyle: "short"});
 
 const kinds = ["credit_fund", "bank_treasury", "family_office", "fidc_manager", "venture_debt_fund", "insurer", "development_bank"] as const;
@@ -63,8 +64,8 @@ export async function SoundingBoard({locale, sessionId, view, deal, actions}: Pr
         <div><span>{t("target")}</span><strong>{money(String(sounding.target_amount), locale)}</strong></div>
         <div><span>{t("coverage")}</span><strong>{(Number(book.coverage) * 100).toLocaleString(intl(locale), {maximumFractionDigits: 0})}%</strong></div>
         <div><span>{t("allocated")}</span><strong>{money(book.allocatedTotal, locale)}</strong></div>
-        <div><span>{t("weightedCost")}</span><strong>{book.weightedAllInPct ? `${book.weightedAllInPct}% a.a.` : t("none")}</strong></div>
-        <div><span>{t("basis")}</span><strong>CDI {String(sounding.cdi_pct)}%</strong></div>
+        <div><span>{t("weightedCost")}</span><strong>{book.weightedAllInPct ? `${pct(book.weightedAllInPct, locale)} a.a.` : t("none")}</strong></div>
+        <div><span>{t("basis")}</span><strong>CDI {pct(String(sounding.cdi_pct), locale)}</strong></div>
       </section>
 
       <section className="sounding__list">
@@ -154,10 +155,10 @@ export async function SoundingBoard({locale, sessionId, view, deal, actions}: Pr
                     <td>{line.investor.name}{line.indication.firm ? "" : ` (${t("subject")})`}</td>
                     <td>{money(line.indication.amount, locale)}</td>
                     <td>{line.indication.tenorMonths}m</td>
-                    <td>{line.allInPct}%</td>
-                    <td>{line.spreadOverCdiPct}%</td>
+                    <td>{pct(line.allInPct, locale)}</td>
+                    <td>{pct(line.spreadOverCdiPct, locale)}</td>
                     <td>{money(line.allocated, locale)}</td>
-                    <td>{line.share}%</td>
+                    <td>{pct(line.share, locale)}</td>
                   </tr>
                 ))}
               </tbody>
