@@ -1,5 +1,5 @@
 import {createClient} from "@supabase/supabase-js";
-import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter} from "@offroad/model-gateway";
+import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, FileCassetteStore} from "@offroad/model-gateway";
 import {loadConfig, describeConfig, type WorkerConfig} from "./config";
 import {createQueueClient, startHeartbeat, PoisonedJobError, type ClaimedJob} from "./queue";
 import {createClamdScanner} from "./scan";
@@ -78,10 +78,13 @@ async function main(): Promise<void> {
     ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
     ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
   };
+  // One store for the process: a cassette is keyed by the request, so every job shares it.
+  const cassetteStore = config.CASSETTE_MODE === "off" ? null : new FileCassetteStore(config.CASSETTE_DIR ?? "cassettes");
   const newGateway = () =>
     createModelGateway({
       adapters,
       budget: {maxCostUsd: config.MODEL_MAX_COST_USD_PER_JOB, maxCalls: config.MODEL_MAX_CALLS_PER_JOB},
+      ...(cassetteStore ? {cassette: {mode: config.CASSETTE_MODE, store: cassetteStore}} : {}),
       onCall: (call) => log("model.call", {...call}),
     });
 

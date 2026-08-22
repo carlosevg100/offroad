@@ -54,6 +54,18 @@ const schema = z.object({
     .default("true")
     .transform((value) => value !== "false"),
 
+  /**
+   * Runs the pipeline against recorded model answers instead of a provider.
+   *
+   * It exists so the seam between the app, the queue, this worker and the review screen can be
+   * exercised on every pull request. That seam is the one thing no test covers today: each
+   * stage here has unit tests with fakes, the extractor is measured against gold cases by a
+   * harness that calls it directly, and in between sits the part a real company actually walks
+   * through. `replay` never reaches a provider and fails loudly on a missing recording, so a
+   * green run means the plumbing carried a real document, not that a stub agreed with itself.
+   */
+  CASSETTE_MODE: z.enum(["off", "record", "replay"]).default("off"),
+  CASSETTE_DIR: z.string().optional(),
   SOFFICE_BIN: z.string().default("soffice"),
   TESSERACT_BIN: z.string().default("tesseract"),
   PDFTOPPM_BIN: z.string().default("pdftoppm"),
@@ -91,5 +103,6 @@ export function describeConfig(config: WorkerConfig): Record<string, string | nu
     ocrLanguages: config.OCR_LANGUAGES,
     maxCostUsdPerJob: config.MODEL_MAX_COST_USD_PER_JOB,
     maxCallsPerJob: config.MODEL_MAX_CALLS_PER_JOB,
+    cassette: config.CASSETTE_MODE,
   };
 }
