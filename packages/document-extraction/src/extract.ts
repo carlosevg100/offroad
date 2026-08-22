@@ -82,6 +82,12 @@ export type ExtractionOptions = {
    * provider's rate limits are both per job.
    */
   concurrency?: number;
+  /**
+   * Overrides the task policy's model. Only the evals sweep sets it: production picks the model
+   * from the policy, so a cheaper tier reaches production by changing the policy after a
+   * measurement, never by a caller deciding on its own.
+   */
+  model?: {provider?: "anthropic" | "openai"; model?: string; effort?: "low" | "medium" | "high" | "xhigh" | "max"};
   onProgress?: (progress: ExtractionProgress) => void;
 };
 
@@ -171,6 +177,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         schemaName: "extractor_output",
         ...(options.maxOutputTokens ? {maxOutputTokens: options.maxOutputTokens} : {}),
         cacheKey: `extract:${profile.kind}`,
+        ...(options.model ? {model: options.model} : {}),
         metadata: {document: profile.documentId, chunk: String(chunk.index)},
       });
 
@@ -241,6 +248,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         schemaName: "extractor_output",
         maxOutputTokens: options.maxOutputTokens ?? 2_000,
         cacheKey: `extract-row:${profile.kind}`,
+        ...(options.model ? {model: options.model} : {}),
         // A row pass reads cells; there is nothing to reason about, and reasoning bills as output.
         thinking: "off",
         metadata: {document: profile.documentId, chunk: `row:${pass.rowAnchorId}`},
