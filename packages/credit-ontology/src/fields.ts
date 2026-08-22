@@ -261,7 +261,7 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("debt.total_gross", "debt", "number", "money", "material", "Dívida bruta total (mapa)", "Total gross debt (schedule)", [], []),
   f("debt.total_secured", "debt", "number", "money", "material", "Dívida garantida", "Secured debt", [], []),
   f("debt.covenants.{i}.metric", "debt", "text", "text", "material", "Covenant: métrica", "Covenant: metric", [], []),
-  f("debt.covenants.{i}.threshold", "debt", "text", "text", "material", "Covenant: limite", "Covenant: threshold", [], []),
+  f("debt.covenants.{i}.threshold", "debt", "number", "ratio", "material", "Covenant: limite", "Covenant: threshold", ["limite", "máximo", "mínimo"], ["threshold", "maximum", "minimum"]),
   f("debt.covenants.{i}.reported_headroom", "debt", "text", "text", "supporting", "Covenant: headroom informado", "Covenant: reported headroom", [], []),
   // collateral
   f("collateral.assets.{i}.type", "collateral", "text", "text", "material", "Ativo: tipo", "Asset: type", ["recebíveis", "estoque", "imóvel", "equipamento"], []),
