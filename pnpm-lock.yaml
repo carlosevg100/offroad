@@ -269,10 +269,16 @@ importers:
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../credit-playbook
+      '@offroad/sounding':
+        specifier: workspace:*
+        version: link:../sounding
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0
     devDependencies:
+      '@offroad/investor-base':
+        specifier: workspace:*
+        version: link:../investor-base
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43
