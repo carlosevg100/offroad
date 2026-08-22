@@ -1,4 +1,4 @@
-import {AlertTriangle, FileDown, FileText, Info, Printer, Table2} from "lucide-react";
+import {AlertTriangle, FileDown, FileText, Info, Landmark, Printer, Table2} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
@@ -262,6 +262,11 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         {sessionId && state.reconciliation.facts.length > 0 ? (
           <a className="button button--ghost" href={`/${locale}/app/model/${sessionId}`}>
             <Table2 aria-hidden="true" size={13} /> {t("modelDownload")}
+          </a>
+        ) : null}
+        {sessionId && state.rating ? (
+          <a className="button button--ghost" href={`/${locale}/app/sounding/${sessionId}`}>
+            <Landmark aria-hidden="true" size={13} /> {t("soundingOpen")}
           </a>
         ) : (
           <p className="form-notice">{t("modelBlocked")}</p>
