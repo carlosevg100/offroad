@@ -11,7 +11,7 @@ import {dealBriefOf} from "./deal-brief";
 
 import type {Database, Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
-import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, questionsForCompany, rateCredit, stressTable, type ClientQuestion, type DeskAnalysis, type InternalRating, type StressScenario, type Trajectory} from "@offroad/credit-analysis";
+import {analyzeCreditPosition, buildDeskInputs, judgeOperation, projectLeverageTrajectory, questionsForCompany, rateCredit, stressTable, type ClientQuestion, type DeskAnalysis, type InternalRating, type OperationVerdict, type StressScenario, type Trajectory} from "@offroad/credit-analysis";
 import {instrumentVerdicts, type InstrumentVerdict, type LegalForm} from "@offroad/credit-playbook";
 import {designCollateralPackage, type CollateralAsset, type CollateralPackage} from "@offroad/deal-structure";
 import {indicativePrice, type IndicativePrice, type PricedInstrument} from "@offroad/market-reference";
@@ -50,6 +50,8 @@ export type CaseState = {
   collateral: CollateralPackage | null;
   /** The desk's indicative price for the internal documents; the term sheet stays silent on purpose. */
   price: IndicativePrice | null;
+  /** Does the operation the company asked for stand up, and on what conditions. */
+  verdict: OperationVerdict | null;
   brief: CaseBrief | null;
   /** Why the brief is absent, when it is. */
   briefBlockedBy: string[];
@@ -405,6 +407,47 @@ export async function buildCaseState(input: {
       })
     : null;
 
+  /**
+   * The verdict on the operation the company asked for. Everything above describes the company;
+   * this judges the deal, and it is what the memorandum opens with.
+   */
+  const verdict = desk && requested
+    ? judgeOperation({
+        desk,
+        trajectory,
+        operation: {
+          amount: requested,
+          termMonths: dealBrief.requestedTermMonths ?? Number(valueOf("transaction.desired_term_months") ?? 60),
+          graceMonths: dealBrief.requestedGraceMonths ?? Number(valueOf("transaction.desired_grace_months") ?? 12),
+          instrument: valueOf("transaction.preferred_structure") ?? "dívida privada",
+          ...(valueOf("transaction.refinancing") ? {refinancing: valueOf("transaction.refinancing")!} : {}),
+          ...(valueOf("transaction.purpose") ? {purpose: valueOf("transaction.purpose")!} : {}),
+        },
+        ...(deskInputs.trajectory
+          ? {
+              simulate: ({amount, termMonths, graceMonths, refinancing}: {amount: string; termMonths: number; graceMonths: number; refinancing: string}) =>
+                projectLeverageTrajectory({...deskInputs.trajectory!, newDebt: {amount, termMonths, graceMonths, refinancing}}),
+            }
+          : {}),
+        ...(rating && preferredInstrument
+          ? {
+              priceFor: ({amount, termMonths, leveragePost}: {amount: string; termMonths: number; leveragePost: string}) => {
+                const priced = indicativePrice({
+                  instrument: preferredInstrument,
+                  rating: rating.band,
+                  cdi: "0.105",
+                  amount,
+                  tenorMonths: termMonths,
+                  leveragePost,
+                  ...(collateral ? {collateralCoverage: collateral.coverageAchieved} : {}),
+                });
+                return priced ? {bps: priced.bps, allIn: {min: priced.allIn.min, max: priced.allIn.max}} : null;
+              },
+            }
+          : {}),
+      })
+    : null;
+
   // ---- write and compile ---------------------------------------------------------------------
   //
   // Everything above this line is arithmetic over facts already in the database and costs
@@ -464,6 +507,7 @@ export async function buildCaseState(input: {
       instruments,
       ...(collateral ? {collateral} : {}),
       ...(price ? {price} : {}),
+      ...(verdict ? {verdict} : {}),
     });
     if (compiled.ok) materials = compiled.materials;
     else materialsBlockedBy = compiled.detail;
@@ -484,7 +528,7 @@ export async function buildCaseState(input: {
   });
   materials = [...materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
 
-  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, brief, briefBlockedBy, materials, materialsBlockedBy, dataRoom};
+  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, verdict, brief, briefBlockedBy, materials, materialsBlockedBy, dataRoom};
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */
