@@ -100,7 +100,7 @@ const financialMetrics: Array<[key: string, pt: string, en: string, synonymsPt: 
   ["net_income", "Lucro líquido", "Net income", ["resultado líquido do exercício", "lucro (prejuízo) líquido"], ["net profit"]],
   ["d_and_a", "Depreciação e amortização", "Depreciation and amortization", ["depreciação", "amortização"], ["d&a"]],
   ["financial_result", "Resultado financeiro", "Financial result", ["resultado financeiro líquido"], ["net financial result"]],
-  ["financial_expenses", "Despesas financeiras", "Financial expenses", ["juros passivos", "despesas com juros"], ["interest expense"]],
+  ["financial_expenses", "Despesas financeiras", "Financial expenses", ["juros passivos", "despesas com juros", "resultado financeiro", "resultado financeiro líquido", "despesas financeiras líquidas"], ["interest expense", "net financial result", "net finance cost"]],
   ["taxes", "IR e CSLL", "Income taxes", ["imposto de renda e contribuição social", "irpj/csll"], ["income tax"]],
   ["capex", "Capex", "Capex", ["investimentos", "aquisição de imobilizado"], ["capital expenditures"]],
   ["cash", "Caixa e equivalentes", "Cash and equivalents", ["disponibilidades", "caixa e aplicações"], ["cash"]],

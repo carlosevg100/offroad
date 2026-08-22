@@ -67,7 +67,11 @@ export function verifyCandidate(
     flags.add("anchor_missing");
     precision = candidate.anchor.kind === "page" ? "page" : "document";
   } else {
-    if (!containsNormalized(anchor.text, candidate.quote)) {
+    // The evidence prints every line as "[id] text"; a model that copies the line verbatim has
+    // quoted faithfully, and the id is not part of what the cell says. Nimbus's management
+    // sheet measured it: six balance-sheet cells rejected for a bracketed prefix.
+    const quote = candidate.quote.replace(/^\s*\[[^\]]+\]\s*/, "");
+    if (!containsNormalized(anchor.text, quote)) {
       // A cell is one number; the row is where its meaning lives. Citing `p3.t1.r2.c3` while
       // quoting "Receita líquida | 142,6 | 164,3 | 184,7" is precise, honest behaviour, the
       // anchor names the exact cell, the quote shows the reader the whole line, and it was
@@ -75,7 +79,7 @@ export function verifyCandidate(
       // digits check below still holds the value against the cell itself.
       const rowId = /\.r\d+\.c\d+$/.test(candidate.anchor.id) ? candidate.anchor.id.replace(/\.c\d+$/, "") : null;
       const row = rowId ? lookupAnchor(context.index, rowId) : undefined;
-      if (!row || !containsNormalized(row.text, candidate.quote)) flags.add("quote_not_in_anchor");
+      if (!row || !containsNormalized(row.text, quote)) flags.add("quote_not_in_anchor");
     }
     if (!containsNormalized(candidate.quote, candidate.value_raw)) flags.add("value_not_in_quote");
     if (candidate.value_type === "number") {
@@ -225,6 +229,10 @@ export function normalizePeriodTokens(fieldPath: string): string {
 }
 
 export function canonicalPeriodPath(fieldPath: string, period: {start: string; end: string} | undefined): string {
+  // A stock has no window: receivables at 31/07 are receivables, not "receivables over seven
+  // months", whether or not the model said which period it read.
+  const stock = fieldPath.match(/^(interim_financials\.\d{4}_\d{2})\.([a-z_]+?)(?:_\d+m|_ytd|_ltm)$/);
+  if (stock && STOCK_METRICS.has(stock[2]!)) fieldPath = `${stock[1]}.${stock[2]}`;
   if (!period) return fieldPath;
   // Nimbus measured this: ARR at 31/07/2026 came back as `historical_financials.2026.arr`. A
   // period that is not a full year belongs to the interim group, whatever the model wrote, and

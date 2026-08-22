@@ -57,6 +57,11 @@ describe("quarters and semesters as a release writes them", () => {
     expect(normalizePeriodTokens("interim_financials.2026_2q.gross_debt")).toBe("interim_financials.2026_06.gross_debt");
     expect(normalizePeriodTokens("interim_financials.2026_07.revenue_ytd")).toBe("interim_financials.2026_07.revenue_7m");
     expect(normalizePeriodTokens("historical_financials.2025.revenue")).toBe("historical_financials.2025.revenue");
+
+describe("a stock never carries a window", () => {
+  it("strips the window from a balance item even when no period was read", () => {
+    expect(canonicalPeriodPath("interim_financials.2026_07.receivables_7m", undefined)).toBe("interim_financials.2026_07.receivables");
+    expect(canonicalPeriodPath("interim_financials.2026_07.revenue_7m", undefined)).toBe("interim_financials.2026_07.revenue_7m");
   });
 });
 
