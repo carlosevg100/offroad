@@ -194,8 +194,21 @@ const fold = (text: string): string => text.toLowerCase().normalize("NFD").repla
  * conflicts stay on the fact. Only the debt group is merged, because it is the one where a
  * name identifies a contract.
  */
+/** Groups where a name identifies the row, and the field that carries the name. */
+const identityGroups: ReadonlyArray<{group: string; key: string}> = [
+  {group: "debt.instruments", key: "lender"},
+  // Nimbus measured the people case: the deck's management table and its cap table both list
+  // the founders, and two tables gave the CEO twice with the same 28%.
+  {group: "company.controllers", key: "name"},
+  {group: "company.management", key: "name"},
+  {group: "customers.top_customers", key: "name"},
+];
+
 export function mergeInstrumentsByIdentity(facts: readonly ReconciledFact[]): ReconciledFact[] {
-  const group = "debt.instruments";
+  return identityGroups.reduce<ReconciledFact[]>((current, entry) => mergeByIdentity(current, entry.group, entry.key), [...facts]);
+}
+
+function mergeByIdentity(facts: readonly ReconciledFact[], group: string, identityKey: string): ReconciledFact[] {
   const byTuple = new Map<number, ReconciledFact[]>();
   for (const fact of facts) {
     const match = indexedPath.exec(fact.key.fieldPath);
@@ -205,8 +218,8 @@ export function mergeInstrumentsByIdentity(facts: readonly ReconciledFact[]): Re
   }
   if (byTuple.size < 2) return [...facts];
   const identity = (tuple: ReconciledFact[]): string | null => {
-    const lender = tuple.find((fact) => fact.key.fieldPath.endsWith(".lender"));
-    return lender ? fold(lender.value) : null;
+    const named = tuple.find((fact) => fact.key.fieldPath.endsWith(`.${identityKey}`));
+    return named ? fold(named.value) : null;
   };
   const canonical = new Map<string, number>();
   const remap = new Map<number, number>();
