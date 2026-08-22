@@ -112,7 +112,11 @@ const indexedCandidatePath = /^(.*)\.(\d{1,3})\.([a-z0-9_]+)$/;
  * cites and renumbered in document order, so the same index means the same row.
  */
 export function renumberByTable(candidates: RawExtractionCandidate[]): RawExtractionCandidate[] {
-  const tableOf = (anchorId: string) => anchorId.replace(/\.r\d+(\..*)?$/, "");
+  // A table row cites `<table>.r<n>` and a spreadsheet cell cites `s<sheet>!<col><row>`; both
+  // reduce to the container the row sits in. Aurora's debt map measured the cell case: with
+  // the cell left in the key, every cell was its own table and the seven instruments came out
+  // as fifty-one one-field tuples.
+  const tableOf = (anchorId: string) => anchorId.replace(/\.r\d+(\..*)?$/, "").replace(/![A-Z]{1,3}\d+$/, "");
   const next = new Map<string, number>();
   const assigned = new Map<string, number>();
   return candidates.map((candidate) => {
