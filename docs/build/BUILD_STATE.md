@@ -464,3 +464,18 @@ Medido nesta leva (recall material / precisão / recall de exceções):
 
 Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do artefato (uma célula na chave da tupla, um zero à esquerda, um colchete na citação, um trimestre escrito ao contrário). O caminho para a companhia aberta é o mesmo, só que em um filing de 140 páginas; o que falta na Camil é uma coisa só, a tabela de séries, e ela já tem nome canônico.
 
+## Jornada guiada de originação, 22/08/2026
+
+- A entrada de empresa e assessor deixa de pedir uma escolha entre "documentos" e
+  "preenchimento manual". Existe um único início guiado: objetivo da captação, contorno
+  essencial do pedido e informações.
+- O objetivo selecionado continua sendo o arquétipo real do `credit-playbook`; nenhum fluxo
+  paralelo ou checklist de apresentação foi criado.
+- A lista de informações é adaptativa e separa três horizontes acionáveis: mínimo para abrir a
+  análise, recomendado para estruturar com consistência e ideal para preparar a diligência.
+  Cada item mantém exemplos aceitos, racional, estado e documentos que o satisfizeram.
+- Garantias, custo e instrumento continuam disponíveis, mas ficam numa área opcional. A empresa
+  não precisa adivinhar a estrutura de mercado para avançar.
+- O upload permanece único, privado e multiformato. Depois do processamento, a classificação
+  continua preenchendo a lista automaticamente e preservando a evidência de origem.
+- Cobertura: E2E atualizado para a nova sequência; `pnpm check` verde em 32 pacotes.

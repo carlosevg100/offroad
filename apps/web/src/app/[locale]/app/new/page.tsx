@@ -32,7 +32,7 @@ import {
 
 type Props = {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{error?: string; mode?: string; session?: string}>;
+  searchParams: Promise<{error?: string; mode?: string; session?: string; step?: string}>;
 };
 
 export const dynamic = "force-dynamic";
@@ -55,6 +55,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
   const notice = state.error ? tIntake(`errors.${intakeErrorCodes.includes(state.error) ? state.error as IntakeErrorCode : "save"}`) : null;
   const mode = state.mode === "manual" || state.mode === "documents" ? state.mode : "choice";
   const sessionId = typeof state.session === "string" ? state.session : "";
+  const guidedStep = state.step === "operation" || state.step === "request" || state.step === "documents" ? state.step : undefined;
   const review = mode === "documents" && sessionId
     ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId})
     : null;
@@ -93,6 +94,8 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
           />
         ) : (
           <IntakeCollect
+            {...(guidedStep ? {stage: guidedStep} : {})}
+            {...(guidedStep && guidedStep !== "operation" ? {backHref: `/${locale}/app/new?mode=documents&session=${review.session.id}&step=${guidedStep === "documents" ? "request" : "operation"}`} : {})}
             checklist={await loadIntakeChecklist({
               supabase,
               organizationId: organization.id,
