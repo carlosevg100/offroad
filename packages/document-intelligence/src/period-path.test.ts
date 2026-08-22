@@ -48,3 +48,11 @@ describe("a period that is not a year", () => {
     expect(canonical("historical_financials.2025.ebitda", {start: "2025-03-01", end: "2026-02-28"})).toBe("historical_financials.2026.ebitda");
   });
 });
+
+describe("a stock never carries a window", () => {
+  it("strips the window from a balance item even when no period was read", () => {
+    expect(canonicalPeriodPath("interim_financials.2026_07.receivables_7m", undefined)).toBe("interim_financials.2026_07.receivables");
+    expect(canonicalPeriodPath("interim_financials.2026_07.revenue_7m", undefined)).toBe("interim_financials.2026_07.revenue_7m");
+  });
+});
+
