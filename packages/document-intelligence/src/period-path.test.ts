@@ -59,6 +59,11 @@ describe("quarters and semesters as a release writes them", () => {
     expect(normalizePeriodTokens("interim_financials.2026_2q.gross_debt")).toBe("interim_financials.2026_06.gross_debt");
     expect(normalizePeriodTokens("interim_financials.2026_07.revenue_ytd")).toBe("interim_financials.2026_07.revenue_7m");
     expect(normalizePeriodTokens("historical_financials.2025.revenue")).toBe("historical_financials.2025.revenue");
+    // The spelling a Brazilian release actually prints in its column headers.
+    expect(normalizePeriodTokens("interim_financials.2t26.receivables")).toBe("interim_financials.2026_06.receivables");
+    expect(normalizePeriodTokens("interim_financials.2t26.revenue")).toBe("interim_financials.2026_06.revenue_3m");
+    expect(normalizePeriodTokens("interim_financials.1s26.revenue")).toBe("interim_financials.2026_06.revenue_6m");
+    expect(normalizePeriodTokens("interim_financials.4t25.equity")).toBe("interim_financials.2025_12.equity");
     // The window written where the month goes: seven months from January end in July.
     expect(normalizePeriodTokens("interim_financials.2026_7m.revenue_7m")).toBe("interim_financials.2026_07.revenue_7m");
     expect(normalizePeriodTokens("interim_financials.2026_7m.cash_7m")).toBe("interim_financials.2026_07.cash");
