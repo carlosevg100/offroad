@@ -5,6 +5,12 @@ import type {Database} from "@/types/database";
 export const registrationJourneys = ["company", "originator", "capital_provider"] as const;
 export type RegistrationJourney = (typeof registrationJourneys)[number];
 
+export function registrationJourneyForEntryPath(entryPath: string, originatingRole: string): RegistrationJourney | null {
+  if (entryPath === "capital_provider") return "capital_provider";
+  if (entryPath !== "origination") return null;
+  return originatingRole === "originator" ? "originator" : "company";
+}
+
 export const passwordSchema = z.string().min(8).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[\p{P}\p{S}]/u);
 
 const confirmationAlreadyRequestedErrors = new Set([
