@@ -431,3 +431,14 @@ O que a medição ensinou: (1) a chave da tupla guardava a célula da planilha, 
 
 Armadilha recorrente: depois de trocar de branch, `apps/web/.next/types` fica obsoleto e o `pnpm check` falha com rota inexistente; apagar a pasta antes do gate.
 
+## Sexta leva, madrugada de 22/08/2026: execução e pós-closing como domínio
+
+| PR | O quê |
+|---|---|
+| #187 | `@offroad/closing`: cronograma de pagamentos (SAC, Price, bullet; mensal a anual; carência paga ou capitalizada; CDI+, % CDI, pré, IPCA+ sobre base declarada) e condições precedentes (tier de closing do playbook + pacote de garantias + condições do investidor; satisfação exige evidência, dispensa exige motivo; prontidão para desembolso) |
+| #188 | `@offroad/monitoring`: covenants testados a cada período nas definições da escritura, folga como fração do limite, atenção abaixo de 10%, violação com data de cura, "não testável" quando falta insumo ou o denominador não é positivo; relatório ao investidor |
+| #189 | Sondagem no preview de desenvolvimento (`/pt-BR/dev/case-preview?case=fakeco`); percentuais por locale |
+| #190 | Limite de covenant é número (razão); a Aurora devolvia "<= 3,0x" como texto |
+
+O que falta para fechar as Ondas E e F na tela: termos finais estruturados depois da alocação (valor, prazo, carência, amortização, taxa por linha), persistência das CPs e dos períodos de monitoramento, e a ingestão do balancete novo pela mesma entrada de documentos. Os pacotes já fazem a aritmética; falta a porta.
+
