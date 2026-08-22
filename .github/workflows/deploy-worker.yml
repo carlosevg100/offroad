@@ -44,7 +44,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Configure AWS credentials (OIDC, no stored key)
         uses: aws-actions/configure-aws-credentials@v5
