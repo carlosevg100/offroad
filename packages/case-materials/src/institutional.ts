@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import type {CaseBrief} from "@offroad/case-understanding";
 import {covenantsFor, type InstrumentVerdict} from "@offroad/credit-playbook";
-import type {DeskAnalysis, InternalRating, StressScenario, Trajectory} from "@offroad/credit-analysis";
+import type {DeskAnalysis, InternalRating, OperationVerdict, StressScenario, Trajectory} from "@offroad/credit-analysis";
 import type {CollateralPackage} from "@offroad/deal-structure";
 import type {IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
@@ -48,7 +48,53 @@ export type InstitutionalInput = {
   instruments?: InstrumentVerdict[];
   collateral?: CollateralPackage;
   price?: IndicativePrice;
+  /** The judgement on the operation the company asked for. */
+  verdict?: OperationVerdict;
 };
+
+/**
+ * The verdict, first, in the words a committee reads before anything else.
+ *
+ * A memorandum that opens with the company and reaches the judgement on page nine is a
+ * document written for its author. The reader wants to know whether the deal stands, what has
+ * to be true for it to stand, what the money buys and what it leaves; the analysis behind each
+ * of those is the rest of the document, and it is read only by whoever disagrees.
+ */
+export function verdictSection(verdict: OperationVerdict): MaterialBlock[] {
+  const blocks: MaterialBlock[] = [{type: "paragraph", text: verdict.headline}];
+  if (verdict.conditions.length > 0) {
+    blocks.push({
+      type: "kv",
+      caption: bi("Condições precedentes", "Conditions precedent"),
+      rows: verdict.conditions.map((condition, index) => ({
+        label: bi(`Condição ${index + 1}`, `Condition ${index + 1}`),
+        value: {pt: condition.pt, en: condition.en},
+      })),
+    });
+  }
+  if (verdict.solves.length > 0) {
+    blocks.push({type: "heading", text: bi("O que a operação resolve", "What the operation solves")});
+    blocks.push({type: "list", items: verdict.solves.map((note) => ({pt: note.pt, en: note.en}))});
+  }
+  if (verdict.leaves.length > 0) {
+    blocks.push({type: "heading", text: bi("O que ela não resolve", "What it does not solve")});
+    blocks.push({type: "list", items: verdict.leaves.map((note) => ({pt: note.pt, en: note.en}))});
+  }
+  for (const alternative of verdict.alternatives) {
+    blocks.push({
+      type: "callout",
+      title: bi(
+        `Alternativa: R$ ${(Number(alternative.amount) / 1_000_000).toFixed(0)}M em ${alternative.termMonths} meses`,
+        `Alternative: R$ ${(Number(alternative.amount) / 1_000_000).toFixed(0)}M over ${alternative.termMonths} months`,
+      ),
+      items: [
+        {label: bi("Por quê", "Why"), value: {pt: alternative.why.pt, en: alternative.why.en}},
+        {label: bi("O que muda", "What changes"), value: {pt: alternative.tradeoff.pt, en: alternative.tradeoff.en}},
+      ],
+    });
+  }
+  return blocks;
+}
 
 const termValue = (termSheet: IndicativeTermSheet | undefined, id: string) =>
   termSheet?.terms.find((term) => term.id === id);
@@ -186,51 +232,61 @@ export function investmentMemo(input: InstitutionalInput): Material {
   const {brief, desk, trajectory, exceptions, companyName} = input;
   const su = trajectory ? sourcesAndUses(desk, trajectory) : null;
 
+  // The verdict, when there is one, is section 1 and everything shifts by it. A counter rather
+  // than literals, because a memorandum whose sections jump from 3 to 5 was written carelessly
+  // and the reader is entitled to read that as a warning about the numbers too.
+  let section = 0;
+  const n = (pt: string, en: string) => {
+    section += 1;
+    return bi(`${section}. ${pt}`, `${section}. ${en}`);
+  };
+
   const blocks: MaterialBlock[] = [
     keyTerms(input),
-    {type: "heading", text: bi("1. Sumário executivo", "1. Executive summary")},
+    ...(input.verdict ? [{type: "heading" as const, text: n("Parecer sobre a operação", "Verdict on the operation")}, ...verdictSection(input.verdict)] : []),
+    {type: "heading", text: n("Sumário executivo", "Executive summary")},
     {type: "paragraph", text: bi(brief.executiveSummary, brief.executiveSummary)},
 
-    {type: "heading", text: bi("2. A operação", "2. The transaction")},
+    {type: "heading", text: n("A operação", "The transaction")},
     ...briefSection(brief, "request"),
     ...(su ? [su] : []),
 
-    {type: "heading", text: bi("3. A companhia", "3. The company")},
+    {type: "heading", text: n("A companhia", "The company")},
     ...briefSection(brief, "identity"),
     ...briefSection(brief, "business"),
 
-    {type: "heading", text: bi("4. Desempenho histórico e posição atual", "4. Historical performance and current position")},
+    {type: "heading", text: n("Desempenho histórico e posição atual", "Historical performance and current position")},
     ...briefSection(brief, "history"),
     ...briefSection(brief, "current_position"),
 
-    {type: "heading", text: bi("5. Estrutura de capital e tratamento", "5. Capital structure and treatment")},
+    {type: "heading", text: n("Estrutura de capital e tratamento", "Capital structure and treatment")},
     ...capitalStructure(desk, trajectory),
 
     ...(trajectory
       ? [
-          {type: "heading" as const, text: bi("6. Trajetória de alavancagem e covenant proposto", "6. Leverage trajectory and proposed covenant")},
+          {type: "heading" as const, text: n("Trajetória de alavancagem e covenant proposto", "Leverage trajectory and proposed covenant")},
           trajectoryTable(trajectory),
           covenantSchedule(trajectory),
         ]
       : []),
 
-    {type: "heading", text: bi("7. Projeções e projeto", "7. Projections and project")},
+    {type: "heading", text: n("Projeções e projeto", "Projections and project")},
     ...briefSection(brief, "project"),
     ...briefSection(brief, "projections"),
 
     ...riskFactors(desk, trajectory).map((block, index) =>
-      index === 0 && block.type === "heading" ? {...block, text: bi("8. Fatores de risco e tratamento", "8. Risk factors and treatment")} : block,
+      index === 0 && block.type === "heading" ? {...block, text: n("Fatores de risco e tratamento", "Risk factors and treatment")} : block,
     ),
 
     ...(exceptions.length > 0
       ? [
-          {type: "heading" as const, text: bi("9. Pontos em aberto", "9. Open points")},
+          {type: "heading" as const, text: n("Pontos em aberto", "Open points")},
           {type: "list" as const, items: exceptions.map((exception) => bi(exception.description, exception.description))},
         ]
       : []),
 
     ...(committeeSection(input).length > 0
-      ? [{type: "heading" as const, text: bi("10. Comitê: rating, sensibilidade, instrumentos e garantias", "10. Committee: rating, sensitivity, instruments and security")}, ...committeeSection(input)]
+      ? [{type: "heading" as const, text: n("Comitê: rating, sensibilidade, instrumentos e garantias", "Committee: rating, sensitivity, instruments and security")}, ...committeeSection(input)]
       : []),
 
     {type: "heading", text: bi("Base de preparação", "Basis of preparation")},
@@ -333,6 +389,9 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
     {
       type: "list",
       items: [
+        // What the verdict found binding comes first: a condition the desk discovered and the
+        // term sheet omits is a condition the borrower meets on the day of disbursement.
+        ...(input.verdict?.conditions ?? []).map((condition) => ({pt: condition.pt, en: condition.en})),
         ...(lm ? [bi("Quitação das linhas indicadas e liberação formal das garantias a elas vinculadas, simultânea ao desembolso.", "Repayment of the indicated lines and formal release of their security, simultaneous with disbursement.")] : []),
         bi("Conclusão satisfatória de diligência contábil, jurídica e de garantias.", "Satisfactory completion of accounting, legal and security due diligence."),
         bi("Ausência de alteração adversa relevante entre a data de referência e o desembolso.", "No material adverse change between the reference date and disbursement."),

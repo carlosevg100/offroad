@@ -127,7 +127,7 @@ describe("the committee section of the memorandum", () => {
     const collateral = designCollateralPackage({assets: [{description: "Recebíveis", type: "receivables", value: "51940000", encumbered: "24400000"}], amount: "42300000"});
     const memo = investmentMemo({...shared, rating, stress, instruments, collateral});
     const headings = memo.blocks.filter((block) => block.type === "heading").map((block) => (block.type === "heading" ? block.text.pt : ""));
-    expect(headings).toContain("10. Comitê: rating, sensibilidade, instrumentos e garantias");
+    expect(headings).toContain("9. Comitê: rating, sensibilidade, instrumentos e garantias");
     expect(headings).toEqual(expect.arrayContaining(["Rating interno", "Sensibilidade", "Instrumentos", "Pacote de garantias"]));
     const keyTerms = memo.blocks[0];
     expect(keyTerms?.type === "callout" && keyTerms.items.some((item) => item.label.pt === "Rating interno")).toBe(true);

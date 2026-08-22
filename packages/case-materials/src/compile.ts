@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import {auditBrief, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
-import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+import type {DeskAnalysis, OperationVerdict, Trajectory} from "@offroad/credit-analysis";
 
 import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
 import type {InternalRating, StressScenario} from "@offroad/credit-analysis";
@@ -75,6 +75,8 @@ export type CompileInput = {
   instruments?: InstrumentVerdict[];
   collateral?: CollateralPackage;
   price?: IndicativePrice;
+  /** The judgement on the operation; leads the memorandum when present. */
+  verdict?: OperationVerdict;
 };
 
 export type CompileOutcome =
@@ -308,6 +310,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
       ...(input.instruments ? {instruments: input.instruments} : {}),
       ...(input.collateral ? {collateral: input.collateral} : {}),
       ...(input.price ? {price: input.price} : {}),
+      ...(input.verdict ? {verdict: input.verdict} : {}),
     };
     institutional.push(investmentMemo(shared));
     const sheet = termSheetDocument(shared);
