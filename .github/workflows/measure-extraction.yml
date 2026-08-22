@@ -17,6 +17,10 @@ on:
         description: "Gold case to measure"
         required: false
         default: "rede-horizonte"
+      model:
+        description: "Model sweep: provider/model@effort (empty = the task policy, which is what production uses)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -25,7 +29,7 @@ permissions:
 concurrency:
   # One group per case: dispatching five cases queued four and cancelled three, because a
   # workflow-level group keeps one pending run. Cases are independent; they run side by side.
-  group: measure-extraction-${{ inputs.case || 'rede-horizonte' }}
+  group: measure-extraction-${{ inputs.case || 'rede-horizonte' }}-${{ inputs.model || 'policy' }}
   cancel-in-progress: false
 
 jobs:
@@ -65,6 +69,7 @@ jobs:
       - name: Run the extractor and score it
         env:
           CASE: ${{ inputs.case || 'rede-horizonte' }}
+          MODEL: ${{ inputs.model || '' }}
         run: |
           set -euo pipefail
           # Masked the moment they exist, so a stray echo or a crash dump cannot print one.
@@ -88,7 +93,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: extraction-measurement
+          name: extraction-measurement${{ inputs.model && '-sweep' || '' }}
           path: packages/evals/out/
           if-no-files-found: warn
           retention-days: 30

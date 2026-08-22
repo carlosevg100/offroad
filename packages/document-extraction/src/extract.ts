@@ -12,7 +12,7 @@ import {
 } from "@offroad/document-intelligence";
 
 import {renderEvidence, type RenderOptions} from "./evidence";
-import {EXTRACTOR_SYSTEM, buildExtractionPrompt, targetFields} from "./prompt";
+import {buildExtractionPrompt, extractionSystem, targetFields} from "./prompt";
 import {tableRowPasses} from "./rows";
 
 /**
@@ -82,6 +82,12 @@ export type ExtractionOptions = {
    * provider's rate limits are both per job.
    */
   concurrency?: number;
+  /**
+   * Overrides the task policy's model. Only the evals sweep sets it: production picks the model
+   * from the policy, so a cheaper tier reaches production by changing the policy after a
+   * measurement, never by a caller deciding on its own.
+   */
+  model?: {provider?: "anthropic" | "openai"; model?: string; effort?: "low" | "medium" | "high" | "xhigh" | "max"};
   onProgress?: (progress: ExtractionProgress) => void;
 };
 
@@ -157,16 +163,21 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     | {ok: true; kept: RawExtractionCandidate[]; dropped: number; absent: string[]; alerts: string[]; costUsd: number; inputTokens: number; outputTokens: number}
     | {ok: false; message: string};
 
+  // Byte-identical across every call of this document kind, so the provider caches it.
+  const wholeSystem = extractionSystem({fields});
+
   const chunkOutcomes = await mapWithConcurrency(chunks, concurrency, async (chunk): Promise<PassOutcome> => {
     options.onProgress?.({stage: "chunk_started", chunk: chunk.index, total: chunk.total});
     try {
       const result = await gateway.complete({
         task: "extract_fields",
-        system: EXTRACTOR_SYSTEM,
-        input: [{type: "text", text: buildExtractionPrompt({profile, fileName: options.fileName, fields, evidence: chunk})}],
+        system: wholeSystem,
+        input: [{type: "text", text: buildExtractionPrompt({profile, fileName: options.fileName, evidence: chunk})}],
         schema: salvageExtractorOutputSchema,
         schemaName: "extractor_output",
         ...(options.maxOutputTokens ? {maxOutputTokens: options.maxOutputTokens} : {}),
+        cacheKey: `extract:${profile.kind}`,
+        ...(options.model ? {model: options.model} : {}),
         metadata: {document: profile.documentId, chunk: String(chunk.index)},
       });
 
@@ -215,29 +226,37 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
   const indexedFields = fields.filter((field) => field.pattern.includes("{i}"));
   const rowPasses = indexedFields.length > 0 ? tableRowPasses(index, {fields: indexedFields}) : [];
   const rowFieldPaths = new Set<string>();
+  // One prefix for every row of the document: `{i}` stays unbound here and the index is written
+  // onto the candidates below, which also stops a model from numbering two rows the same.
+  const rowSystem = extractionSystem({fields: indexedFields, row: true});
+  const bindIndex = (path: string, instance: number) => path.replace(/\.(?:i|\d{1,3})\./, `.${instance}.`);
 
   const rowOutcomes = await mapWithConcurrency(rowPasses, concurrency, async (pass, position): Promise<PassOutcome> => {
-    const bound = indexedFields.map((field) => ({...field, pattern: field.pattern.replace("{i}", String(pass.instance))}));
     const passNumber = chunks.length + position + 1;
     options.onProgress?.({stage: "chunk_started", chunk: passNumber, total: chunks.length + rowPasses.length});
     try {
       const result = await gateway.complete({
         task: "extract_fields",
-        system: EXTRACTOR_SYSTEM,
+        system: rowSystem,
         input: [{type: "text", text: buildExtractionPrompt({
           profile,
           fileName: options.fileName,
-          fields: bound,
           evidence: {text: pass.evidenceText, index: pass.instance, total: rowPasses.length},
           row: {instance: pass.instance, tableId: pass.tableId},
         })}],
         schema: salvageExtractorOutputSchema,
         schemaName: "extractor_output",
         maxOutputTokens: options.maxOutputTokens ?? 2_000,
+        cacheKey: `extract-row:${profile.kind}`,
+        ...(options.model ? {model: options.model} : {}),
+        // A row pass reads cells; there is nothing to reason about, and reasoning bills as output.
+        thinking: "off",
         metadata: {document: profile.documentId, chunk: `row:${pass.rowAnchorId}`},
       });
 
-      const kept = result.output.candidates.filter((candidate): candidate is RawExtractionCandidate => candidate !== null);
+      const kept = result.output.candidates
+        .filter((candidate): candidate is RawExtractionCandidate => candidate !== null)
+        .map((candidate) => ({...candidate, field_path: bindIndex(candidate.field_path, pass.instance)}));
       options.onProgress?.({
         stage: "chunk_finished",
         chunk: passNumber,

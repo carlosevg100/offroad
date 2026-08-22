@@ -5,7 +5,7 @@ import {documentLayerSchema, indexLayer, type DocumentLayer, type DocumentProfil
 import type {ModelGateway} from "@offroad/model-gateway";
 
 import {renderEvidence, selectLines} from "./evidence";
-import {buildExtractionPrompt, targetFields} from "./prompt";
+import {buildExtractionPrompt, extractionSystem, targetFields} from "./prompt";
 import {extractDocument} from "./extract";
 
 /** A two-page statement: prose on one page, a table on the other. */
@@ -193,15 +193,13 @@ describe("target fields", () => {
 describe("prompt", () => {
   it("carries the evidence, the field patterns and where the chunk sits", () => {
     const chunks = renderEvidence(indexLayer(layer));
-    const prompt = buildExtractionPrompt({
-      profile,
-      fileName: "02_DF.pdf",
-      fields: targetFields(profile.kind),
-      evidence: chunks[0]!,
-    });
+    const prompt = buildExtractionPrompt({profile, fileName: "02_DF.pdf", evidence: chunks[0]!});
+    const system = extractionSystem({fields: targetFields(profile.kind)});
     expect(prompt).toContain("02_DF.pdf");
     expect(prompt).toContain("audited_financial_statements");
-    expect(prompt).toContain("historical_financials.{period}.revenue");
+    // The catalogue lives in the cached half, and the evidence in the half that changes.
+    expect(system).toContain("historical_financials.{period}.revenue");
+    expect(prompt).not.toContain("historical_financials.{period}.revenue");
     expect(prompt).toContain("[p2.t1.r1]");
     expect(prompt).toContain("Este é o documento inteiro");
   });
@@ -329,13 +327,24 @@ describe("extraction", () => {
 });
 
 describe("the prompt names issuances and series as instruments", () => {
+  const fields = targetFields("reviewed_interim_statements");
+
   it("tells the model the first cell of an issuance row is the lender and the table's currency applies", () => {
-    const fields = targetFields("reviewed_interim_statements");
-    const prompt = buildExtractionPrompt({profile: {kind: "reviewed_interim_statements", scale: 1000, informationClass: "reviewed"} as never, fileName: "itr.pdf", fields, evidence: {text: "[p39.t4.r3] Emitida em 01/12/2023 – 13ª emissão - 2ª série | 282.357", index: 1, total: 1}, row: {instance: 8, tableId: "p39.t4"}});
-    expect(prompt).toContain("identificação da emissão e série");
-    expect(prompt).toContain("R$ → BRL");
-    const whole = buildExtractionPrompt({profile: {kind: "reviewed_interim_statements", scale: 1000, informationClass: "reviewed"} as never, fileName: "itr.pdf", fields, evidence: {text: "x", index: 1, total: 1}});
-    expect(whole).toContain("descritos em texto corrido são candidatos daquela série");
+    const system = extractionSystem({fields: fields.filter((field) => field.pattern.includes("{i}")), row: true});
+    expect(system).toContain("identificação da emissão e série");
+    expect(system).toContain("R$ → BRL");
+    expect(extractionSystem({fields})).toContain("descritos em texto corrido são candidatos daquela série");
+  });
+
+  it("keeps one cacheable prefix for every row: {i} is not bound in it", () => {
+    const system = extractionSystem({fields: fields.filter((field) => field.pattern.includes("{i}")), row: true});
+    expect(system).toContain("debt.instruments.i.lender");
+    expect(system).not.toMatch(/debt\.instruments\.\d+\.lender/);
+    // Only the variable half knows which row this is.
+    const first = buildExtractionPrompt({profile: {kind: "reviewed_interim_statements", scale: 1000, informationClass: "reviewed"} as never, fileName: "itr.pdf", evidence: {text: "[p39.t4.r3] x", index: 3, total: 12}, row: {instance: 3, tableId: "p39.t4"}});
+    const second = buildExtractionPrompt({profile: {kind: "reviewed_interim_statements", scale: 1000, informationClass: "reviewed"} as never, fileName: "itr.pdf", evidence: {text: "[p39.t4.r4] y", index: 4, total: 12}, row: {instance: 4, tableId: "p39.t4"}});
+    expect(first).toContain("Esta é a linha 3");
+    expect(second).toContain("Esta é a linha 4");
   });
 });
 

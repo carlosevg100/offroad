@@ -31,7 +31,7 @@ export function buildAnthropicParams(request: AdapterRequest): Anthropic.Message
     messages: [{role: "user", content}],
     output_config: {effort: request.effort, format: zodOutputFormat(request.schema)},
   };
-  if (!request.model.startsWith("claude-fable") && !request.model.startsWith("claude-mythos")) {
+  if (request.thinking !== "off" && !request.model.startsWith("claude-fable") && !request.model.startsWith("claude-mythos")) {
     params.thinking = {type: "adaptive"};
   }
   if (request.metadata?.userId) params.metadata = {user_id: request.metadata.userId};

@@ -66,11 +66,19 @@ const profile: DocumentProfile = {
   confidence: 1,
 };
 
-const gatewayRecording = (record: string[]) => {
+const gatewayRecording = (record: string[], systems: string[] = []) => {
   return {
-    async complete<TSchema extends z.ZodType>(request: {schema: TSchema; input: Array<{text: string}>}) {
+    async complete<TSchema extends z.ZodType>(request: {schema: TSchema; system: string; input: Array<{text: string}>}) {
       record.push(request.input[0]!.text);
-      const output = request.schema.parse({candidates: [], absent_fields: [], document_alerts: []});
+      systems.push(request.system);
+      // Every row pass answers with index 1, the way a model that was never told the number
+      // would: the orchestration is what makes the index right.
+      const row = /\[(sDívida\.t1\.r\d+)\]/.exec(request.input[0]!.text);
+      const lender = /\[sDívida\.t1\.r\d+\]\s*([^|\n]+)/.exec(request.input[0]!.text);
+      const candidates = request.input[0]!.text.includes("Esta é a linha") && row && lender
+        ? [{field_path: "debt.instruments.i.lender", value_raw: lender[1]!.trim(), value_type: "text", scale: 1, information_class: "management", anchor: {kind: "table_row", id: row[1]!}, quote: lender[1]!.trim(), confidence: 0.9}]
+        : [];
+      const output = request.schema.parse({candidates, absent_fields: [], document_alerts: []});
       return {
         output, provider: "anthropic", model: "claude-sonnet-5", effort: "medium",
         usage: {inputTokens: 10, outputTokens: 5}, costUsd: 0.001, latencyMs: 1,
@@ -82,25 +90,33 @@ const gatewayRecording = (record: string[]) => {
 };
 
 describe("the extractor runs one pass per data row, with the index pre-bound", () => {
-  it("binds {i} to the row's own number in each pass", async () => {
+  it("gives every row the same cacheable prefix and writes the index itself", async () => {
     const prompts: string[] = [];
+    const systems: string[] = [];
     const result = await extractDocument({
       layer: debtLayer,
       profile,
       fileName: "04_Mapa_Divida.xlsx",
-      gateway: gatewayRecording(prompts),
+      gateway: gatewayRecording(prompts, systems),
     });
 
     // One whole-document chunk plus three row passes.
     expect(result.chunks.total).toBe(4);
     const rowPrompts = prompts.filter((prompt) => prompt.includes("Esta é a linha"));
     expect(rowPrompts).toHaveLength(3);
-    expect(rowPrompts[0]).toContain("debt.instruments.1.lender");
-    expect(rowPrompts[0]).not.toContain("{i}");
-    expect(rowPrompts[2]).toContain("debt.instruments.3.lender");
-    // And each pass shows only its own row beside the header.
+    // The prefix the provider caches is one string for all three rows.
+    const rowSystems = systems.filter((system) => system.includes("numeração das linhas"));
+    expect(new Set(rowSystems).size).toBe(1);
+    expect(rowSystems[0]).toContain("debt.instruments.i.lender");
+    // Only the variable half names the row, and each pass shows its own row beside the header.
+    expect(rowPrompts[0]).toContain("Esta é a linha 1");
+    expect(rowPrompts[2]).toContain("Esta é a linha 3");
     expect(rowPrompts[0]).toContain("Banco Itaú");
     expect(rowPrompts[0]).not.toContain("Bradesco");
+    // The model answered the literal `i` on every row; the numbers on the candidates are the desk's.
+    expect(result.candidates.map((candidate) => candidate.field_path).filter((path) => path.endsWith(".lender")).sort()).toEqual([
+      "debt.instruments.1.lender", "debt.instruments.2.lender", "debt.instruments.3.lender",
+    ]);
   });
 });
 
