@@ -106,37 +106,29 @@ const instrumentIdentityGuidance = [
   "descritos em texto corrido são candidatos daquela série, citando o parágrafo.",
 ];
 
-export function buildExtractionPrompt(input: {
-  profile: DocumentProfile;
-  fileName: string;
-  fields: FieldDefinition[];
-  evidence: {text: string; index: number; total: number};
-  /**
-   * A row pass: the evidence is one data row of a table and the indexed fields arrive with
-   * {i} already bound. The model reads cells; the orchestration did the enumeration, because
-   * asking a model to expand rows-times-fields in one breath is how a seven-line debt map
-   * came back as one candidate.
-   */
-  row?: {instance: number; tableId: string};
-}): string {
-  const {evidence} = input;
-  const placement = input.row
-    ? `Esta é a linha ${input.row.instance} da tabela ${input.row.tableId}, mostrada com o cabeçalho de colunas. Extraia apenas desta linha; os campos-alvo já vêm com o índice desta linha aplicado. Se a linha for um total, um subtotal ou um cabeçalho repetido, não produza candidato nenhum.`
-    : evidence.total > 1
-      ? `Este é o trecho ${evidence.index} de ${evidence.total} deste documento. Extraia apenas o que estiver neste trecho; o que faltar aqui pode estar em outro e não deve ser inventado nem marcado como ausente por falta de contexto.`
-      : "Este é o documento inteiro.";
-
+/**
+ * The stable half of an extraction call: the rules, the target-field catalogue and how to read
+ * an issuance. It holds no document data, so it is byte-identical across every call of one
+ * document kind and the provider serves it from cache.
+ *
+ * Camil measured why this matters: the ITR takes 489 calls, each one carrying a 5.620-token
+ * catalogue, so 98% of the input tokens were the same text re-sent at full price. The index of
+ * a row pass is deliberately *not* bound here, because binding it would make every row a
+ * different prefix and there would be nothing to cache; the orchestration writes the index onto
+ * the candidates when they come back, which is more reliable than asking the model to count.
+ */
+export function extractionSystem(input: {fields: FieldDefinition[]; row?: boolean}): string {
   return [
-    "## Documento",
-    renderDocumentContext(input.profile, input.fileName),
+    EXTRACTOR_SYSTEM,
     "",
     "## Campos-alvo",
     ...(input.row
       ? [
-          "Use exatamente estes caminhos, já com o índice desta linha aplicado. Substitua {period}",
-          "pelo período concreto (2025, 2026_07) quando o campo pedir.",
+          "Estes são os campos de uma linha de tabela e o índice da linha já está escrito como o",
+          "literal `i`. Devolva o caminho exatamente como está, com `i`: a numeração das linhas é",
+          "feita depois, deterministicamente, e um número inventado aqui viraria duas linhas iguais.",
+          "Substitua {period} pelo período concreto (2025, 2026_07) quando o campo pedir.",
           "Campos com valores permitidos aceitam somente um deles, exatamente como listado.",
-          ...instrumentIdentityGuidance,
         ]
       : [
           "Use exatamente estes caminhos, substituindo {period} pelo período concreto (2025, 2026_07),",
@@ -144,10 +136,36 @@ export function buildExtractionPrompt(input: {
           "Itens indexados por {i} seguem a ordem em que aparecem no documento, sendo o item 1 o primeiro",
           "que o documento mostra, e todos os campos de um mesmo {i} descrevem a mesma linha.",
           "Campos com valores permitidos aceitam somente um deles, exatamente como listado.",
-          ...instrumentIdentityGuidance,
         ]),
+    ...instrumentIdentityGuidance,
     "",
-    renderTargetFields(input.fields),
+    // `{i}` is not a legal character in a field path, so a row pass renders it as the literal
+    // `i`; the orchestration replaces it with the row's number when the candidate comes back.
+    renderTargetFields(input.row ? input.fields.map((field) => ({...field, pattern: field.pattern.replace("{i}", "i")})) : input.fields),
+  ].join("\n");
+}
+
+/**
+ * The variable half: which document, which piece of it, and the evidence itself. Everything
+ * here changes call to call, so nothing here is cacheable and nothing stable belongs in it.
+ */
+export function buildExtractionPrompt(input: {
+  profile: DocumentProfile;
+  fileName: string;
+  evidence: {text: string; index: number; total: number};
+  /** A row pass: the evidence is one data row, and the index every {i} takes is `instance`. */
+  row?: {instance: number; tableId: string};
+}): string {
+  const {evidence} = input;
+  const placement = input.row
+    ? `Esta é a linha ${input.row.instance} da tabela ${input.row.tableId}, mostrada com o cabeçalho de colunas. Extraia apenas desta linha e mantenha o literal \`i\` nos caminhos. Se a linha for um total, um subtotal ou um cabeçalho repetido, não produza candidato nenhum.`
+    : evidence.total > 1
+      ? `Este é o trecho ${evidence.index} de ${evidence.total} deste documento. Extraia apenas o que estiver neste trecho; o que faltar aqui pode estar em outro e não deve ser inventado nem marcado como ausente por falta de contexto.`
+      : "Este é o documento inteiro.";
+
+  return [
+    "## Documento",
+    renderDocumentContext(input.profile, input.fileName),
     "",
     "## Evidência",
     placement,
