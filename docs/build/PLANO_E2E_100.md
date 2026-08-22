@@ -192,6 +192,6 @@ Onda A começa agora, pela conciliação: é o que hoje deixa passar contradiç�
 | C | Catálogo de instrumentos, pacote de garantias, preço indicativo, covenants com definição | entregue (#158, #159, #167, #172) |
 | D | Q&A de diligência (40 perguntas), memo com comitê, sala de dados de saída, Word e PDF | entregue (#162, #170, #175, #176, #179) |
 | E | Base de investidores (sintética), sondagem, book, alocação, trilha; tabelas e tela | entregue (#169, #180, #183), #184 na fila |
-| F | CPs, minutas, desembolso e cronograma; pós-closing | não começado |
+| F | Cronograma de pagamentos e CPs com evidência (`@offroad/closing`); covenants por período e relatório (`@offroad/monitoring`) | domínio entregue (#187, #188); persistência, ingestão do balancete e telas não começadas; minutas não começadas |
 
 Gate da Onda E (5 investidores fictícios pelo fluxo inteiro) roda como teste em `@offroad/sounding`; falta o Carlos percorrer na tela.
