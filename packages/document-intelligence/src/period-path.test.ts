@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {canonicalPeriodPath} from "./verifier";
+import {canonicalPeriodPath, normalizePeriodTokens} from "./verifier";
 
 describe("the period spelled the way the ontology spells it", () => {
   const quarter = {start: "2026-03-01", end: "2026-05-31"};
@@ -46,6 +46,17 @@ describe("a period that is not a year", () => {
     expect(canonical("historical_financials.2026.revenue", {start: "2026-01-01", end: "2026-07-31"})).toBe("interim_financials.2026_07.revenue_7m");
     expect(canonical("historical_financials.2026.cash", {start: "2026-12-31", end: "2026-12-31"})).toBe("historical_financials.2026.cash");
     expect(canonical("historical_financials.2025.ebitda", {start: "2025-03-01", end: "2026-02-28"})).toBe("historical_financials.2026.ebitda");
+  });
+});
+
+describe("quarters and semesters as a release writes them", () => {
+  it("turns 2q, 1s and ytd into the month and the window", () => {
+    expect(normalizePeriodTokens("interim_financials.2026_2q.revenue")).toBe("interim_financials.2026_06.revenue_3m");
+    expect(normalizePeriodTokens("interim_financials.2026_1s.revenue_ytd")).toBe("interim_financials.2026_06.revenue_6m");
+    expect(normalizePeriodTokens("interim_financials.2026_2t.adjusted_ebitda")).toBe("interim_financials.2026_06.adjusted_ebitda_3m");
+    expect(normalizePeriodTokens("interim_financials.2026_2q.gross_debt")).toBe("interim_financials.2026_06.gross_debt");
+    expect(normalizePeriodTokens("interim_financials.2026_07.revenue_ytd")).toBe("interim_financials.2026_07.revenue_7m");
+    expect(normalizePeriodTokens("historical_financials.2025.revenue")).toBe("historical_financials.2025.revenue");
   });
 });
 
