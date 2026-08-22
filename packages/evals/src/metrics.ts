@@ -29,7 +29,7 @@ export type EvalReport = {
   };
   hallucination: {autoAcceptedMaterial: number; withoutVerifiedAnchor: number; rate: number};
   classification: {expected: number; correct: number; accuracy: number | null};
-  exceptions: {outcomes: ExceptionOutcome[]; recall: number | null; falsePositives: number; produced: number};
+  exceptions: {outcomes: ExceptionOutcome[]; recall: number | null; /** Among rule-based exceptions. */ falsePositives: number; produced: number; /** Gaps and calculations not performed, which are requests, not contradictions. */ gaps: number};
   calculations: {expected: number; matched: number; recall: number | null};
   acceptance: {outcomes: AcceptanceOutcome[]; passedWeight: number; totalWeight: number; criticalFailures: string[]};
   usage?: ExtractionSnapshot["usage"];
@@ -215,7 +215,12 @@ export function evaluateSnapshot(gold: GoldCase, rawSnapshot: ExtractionSnapshot
     return outcome;
   });
   const producedMatched = new Set(exceptionOutcomes.filter((o) => o.matchedBy).map((o) => o.matchedBy));
-  const falsePositives = snapshot.exceptions.filter((produced) => !producedMatched.has(produced.title)).length;
+  // A false positive is a contradiction the room did not state. Only rule-based exceptions can
+  // be that; a gap ("extratos bancários dos últimos meses") or a calculation not performed is
+  // a request to the company, and whether it is warranted is what the gold's missing-* entries
+  // test. Counting gaps as false positives measured 16/19 on Aurora with no wrong contradiction.
+  const ruleBased = snapshot.exceptions.filter((produced) => Boolean(produced.ruleId));
+  const falsePositives = ruleBased.filter((produced) => !producedMatched.has(produced.title)).length;
 
   const calculationsMatched = gold.calculations.filter((expected) => {
     const produced = snapshot.calculations.find((c) => c.id === expected.id);
@@ -251,7 +256,7 @@ export function evaluateSnapshot(gold: GoldCase, rawSnapshot: ExtractionSnapshot
     },
     hallucination: {autoAcceptedMaterial: autoAcceptedMaterial.length, withoutVerifiedAnchor, rate: autoAcceptedMaterial.length === 0 ? 0 : ratio(withoutVerifiedAnchor, autoAcceptedMaterial.length)},
     classification: {expected: gold.profiles.length, correct: classificationCorrect, accuracy: snapshot.profiles.length === 0 ? null : ratio(classificationCorrect, gold.profiles.length)},
-    exceptions: {outcomes: exceptionOutcomes, recall: gold.exceptions.length === 0 ? null : ratio(exceptionOutcomes.filter((o) => o.status === "detected").length, gold.exceptions.length), falsePositives, produced: snapshot.exceptions.length},
+    exceptions: {outcomes: exceptionOutcomes, recall: gold.exceptions.length === 0 ? null : ratio(exceptionOutcomes.filter((o) => o.status === "detected").length, gold.exceptions.length), falsePositives, produced: ruleBased.length, gaps: snapshot.exceptions.length - ruleBased.length},
     calculations: {expected: gold.calculations.length, matched: calculationsMatched, recall: gold.calculations.length === 0 ? null : ratio(calculationsMatched, gold.calculations.length)},
     acceptance: {
       outcomes: acceptanceOutcomes,

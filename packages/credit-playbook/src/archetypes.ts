@@ -238,7 +238,7 @@ const commonInformation: readonly Requirement[] = [
       en: "e.g. Customer A 18% (contract to 2028), Customer B 11% (no contract), …",
     },
     rationale: {
-      pt: "Concentração é o risco que mais derruba operação de médio porte no comitê. Declarada com contrato e prazo, vira um fato administrável; descoberta na diligência, vira desconfiança sobre tudo o mais.",
+      pt: "Concentração é o risco que mais derruba operação no comitê. Declarada com contrato e prazo, vira um fato administrável; descoberta na diligência, vira desconfiança sobre tudo o mais.",
       en: "Concentration is what most often sinks a mid-market operation at committee. Declared with contract and term it becomes a manageable fact; found in diligence it becomes distrust of everything else.",
     },
   },
@@ -260,7 +260,7 @@ const commonInformation: readonly Requirement[] = [
       en: "e.g. CFO for 6 years, previously controller of a 40-store chain; founder still runs commercial.",
     },
     rationale: {
-      pt: "Crédito de médio porte é decisão sobre gente tanto quanto sobre número. Um time que já operou algo maior muda a leitura de um plano de expansão.",
+      pt: "Crédito é decisão sobre gente tanto quanto sobre número. Um time que já operou algo maior muda a leitura de um plano de expansão.",
       en: "Mid-market credit is a decision about people as much as about numbers. A team that has run something bigger changes how an expansion plan reads.",
     },
   },
