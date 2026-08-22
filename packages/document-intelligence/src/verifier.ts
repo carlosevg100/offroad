@@ -209,6 +209,22 @@ const monthsBetween = (start: string, end: string): number => {
  */
 export function normalizePeriodTokens(fieldPath: string): string {
   const quarterMonths = ["03", "06", "09", "12"] as const;
+  // How a Brazilian release writes a period: 2T26, 1S26, 4T25. The year comes last and with two
+  // digits, and it is the spelling the document itself uses in its column headers. Cogna
+  // measured the cost of not reading it: thirty candidates, every balance-sheet line of the
+  // release, refused as unknown fields.
+  const shortForm = fieldPath.match(/^((?:interim|historical)_financials)\.([1-4])([qts])(\d{2})\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/i);
+  if (shortForm) {
+    const [, , number, letter, year, metric, window] = shortForm as unknown as [string, string, string, string, string, string, string | undefined];
+    const n = Number(number);
+    const isSemester = letter.toLowerCase() === "s";
+    if (!isSemester || n <= 2) {
+      const month = isSemester ? (n === 1 ? "06" : "12") : quarterMonths[n - 1]!;
+      const span = isSemester ? 6 * n : 3;
+      const suffix = STOCK_METRICS.has(metric) ? "" : window && window !== "_ytd" ? window : `_${span}m`;
+      return `interim_financials.20${year}_${month}.${metric}${suffix}`;
+    }
+  }
   // 2q, q2, 2t, t2: the release's own label, written either way round.
   const quarter = fieldPath.match(/^((?:interim|historical)_financials)\.(\d{4})_(?:([1-4])[qt]|[qt]([1-4]))\.([a-z_]+?)(_\d+m|_ytd|_ltm)?$/);
   if (quarter) {
