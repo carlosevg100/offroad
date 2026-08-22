@@ -54,6 +54,14 @@ export type ExtractionProgress =
 export type ExtractionResult = {
   /** Verified candidates, deduplicated; flags say what could not be confirmed. */
   candidates: VerifiedCandidate[];
+  /**
+   * What the model returned, before renumbering, verification or normalisation.
+   *
+   * This is the expensive part of a run and the only part that needs a provider. Keeping it
+   * turns every later change to the verifier, the reconciliation or the scoring into something
+   * that can be re-measured offline in seconds instead of two hours and seven dollars.
+   */
+  raw: RawExtractionCandidate[];
   /** Candidates whose field path is not in the catalogue. Kept, so the gap is visible. */
   rejected: RejectedCandidate[];
   /** Target fields the model reported as absent from this document. */
@@ -314,6 +322,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
 
   return {
     candidates: report.verified,
+    raw: deduped,
     rejected: report.rejected,
     absentFields: [...absentFields],
     alerts,

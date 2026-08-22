@@ -1,3 +1,5 @@
+import {createHash} from "node:crypto";
+
 import {documentKindMap, fieldCatalog, type DocumentKind, type FieldDefinition} from "@offroad/credit-ontology";
 import type {DocumentProfile} from "@offroad/document-intelligence";
 
@@ -52,6 +54,29 @@ Rules, in order of importance:
    period that column header gives, never only the first column. "R$ mil" is scale 1000 and
    "R$ mn" or "R$ milhões" is scale 1000000.`;
 
+const instrumentIdentityGuidance = [
+  "Um dado de uma série (taxa, vencimento, amortização, moeda) só serve se vier junto do campo",
+  "lender daquela série no mesmo índice. Quando o texto diz \"as debêntures de segunda série\" sem",
+  "repetir a emissão, complete com a emissão que o trecho descreve (\"13ª emissão, 2ª série\") e",
+  "emita lender junto: sem a identificação, o dado não se liga a instrumento nenhum e se perde.",
+  "Para debt.instruments: o credor (lender) é quem empresta OU a identificação da emissão e série",
+  "quando o instrumento é uma emissão (ex.: \"13ª emissão, 2ª série\"); a primeira célula de uma",
+  "linha de tabela de emissões é essa identificação. A moeda (currency) é a da tabela ou da",
+  "nota (R$ → BRL; US$ → USD) quando a linha não a declara; empréstimos listados por moeda",
+  "são um instrumento por moeda. Remuneração (rate) e vencimento (maturity) de cada série",
+  "descritos em texto corrido são candidatos daquela série, citando o parágrafo.",
+];
+
+/**
+ * A fingerprint of everything that decides what the model is asked. It changes when the rules,
+ * the guidance or the ontology's catalogue change, and it is stored with a recorded run so a
+ * replay can say honestly whether the capture still matches the question being asked.
+ */
+export function extractionPromptVersion(): string {
+  const sample = fieldCatalog.map((field) => `${field.pattern}|${field.unit}|${field.labels.pt}`).join("\n");
+  return createHash("sha256").update([EXTRACTOR_SYSTEM, instrumentIdentityGuidance.join("\n"), sample].join("\n")).digest("hex").slice(0, 12);
+}
+
 /** Target fields for a document kind, from the ontology's `typicalFieldGroups`. */
 export function targetFields(kind: DocumentKind): FieldDefinition[] {
   const definition = documentKindMap.get(kind);
@@ -97,18 +122,6 @@ export function renderDocumentContext(profile: DocumentProfile, fileName: string
  * "Bancos (capital de giro)" by currency. Without this guidance the row passes returned the
  * balance alone: no lender, no currency, and the prose never became instruments.
  */
-const instrumentIdentityGuidance = [
-  "Um dado de uma série (taxa, vencimento, amortização, moeda) só serve se vier junto do campo",
-  "lender daquela série no mesmo índice. Quando o texto diz \"as debêntures de segunda série\" sem",
-  "repetir a emissão, complete com a emissão que o trecho descreve (\"13ª emissão, 2ª série\") e",
-  "emita lender junto: sem a identificação, o dado não se liga a instrumento nenhum e se perde.",
-  "Para debt.instruments: o credor (lender) é quem empresta OU a identificação da emissão e série",
-  "quando o instrumento é uma emissão (ex.: \"13ª emissão, 2ª série\"); a primeira célula de uma",
-  "linha de tabela de emissões é essa identificação. A moeda (currency) é a da tabela ou da",
-  "nota (R$ → BRL; US$ → USD) quando a linha não a declara; empréstimos listados por moeda",
-  "são um instrumento por moeda. Remuneração (rate) e vencimento (maturity) de cada série",
-  "descritos em texto corrido são candidatos daquela série, citando o parágrafo.",
-];
 
 /**
  * The stable half of an extraction call: the rules, and nothing else.
