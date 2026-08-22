@@ -13,3 +13,4 @@ export * from "./from-facts";
 export * from "./questions";
 export * from "./rating";
 export * from "./stress";
+export * from "./verdict";

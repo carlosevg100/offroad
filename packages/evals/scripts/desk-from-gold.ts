@@ -16,7 +16,7 @@ import {readFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, questionsForCompany, type Fact} from "@offroad/credit-analysis";
+import {analyzeCreditPosition, buildDeskInputs, judgeOperation, projectLeverageTrajectory, questionsForCompany, type Fact} from "@offroad/credit-analysis";
 
 const args = process.argv.slice(2);
 // A flag consumes the argument after it; everything else is positional (case id, reference date).
@@ -69,3 +69,30 @@ if (trajectory) {
 const questions = questionsForCompany(desk, trajectory, inputs.missing);
 console.log(`\nperguntas (${questions.length}):`);
 for (const question of questions) console.log(`  [${question.severity}] ${question.pt}`);
+
+// ---- the sentence the product exists to produce -----------------------------------------------
+if (desk) {
+  const verdict = judgeOperation({
+    desk,
+    trajectory,
+    operation: {
+      amount: overrides["transaction.requested_amount"] ?? facts.find((fact) => fact.fieldPath === "transaction.requested_amount")?.value ?? "0",
+      termMonths: Number(overrides["transaction.desired_term_months"] ?? facts.find((fact) => fact.fieldPath === "transaction.desired_term_months")?.value ?? 60),
+      graceMonths: Number(overrides["transaction.desired_grace_months"] ?? facts.find((fact) => fact.fieldPath === "transaction.desired_grace_months")?.value ?? 12),
+      instrument: facts.find((fact) => fact.fieldPath === "transaction.preferred_structure")?.value ?? "dívida privada",
+      ...(overrides["transaction.refinancing"] ?? facts.find((fact) => fact.fieldPath === "transaction.refinancing")?.value
+        ? {refinancing: overrides["transaction.refinancing"] ?? facts.find((fact) => fact.fieldPath === "transaction.refinancing")!.value}
+        : {}),
+      ...(facts.find((fact) => fact.fieldPath === "transaction.purpose")?.value ? {purpose: facts.find((fact) => fact.fieldPath === "transaction.purpose")!.value} : {}),
+    },
+  });
+  console.log(`\n=== PARECER SOBRE A OPERAÇÃO ===\n${verdict.headline.pt}`);
+  if (verdict.conditions.length) console.log(`\ncondições (${verdict.conditions.length}):`);
+  for (const condition of verdict.conditions) console.log(`  [${condition.id}] ${condition.pt}`);
+  if (verdict.solves.length) console.log(`\no que a operação resolve:`);
+  for (const note of verdict.solves) console.log(`  - ${note.pt}`);
+  if (verdict.leaves.length) console.log(`\no que ela não toca:`);
+  for (const note of verdict.leaves) console.log(`  - ${note.pt}`);
+  for (const alternative of verdict.alternatives) console.log(`\nalternativa [${alternative.id}] ${(Number(alternative.amount) / 1e6).toFixed(0)}M em ${alternative.termMonths}m/${alternative.graceMonths}m\n  ${alternative.why.pt}\n  ${alternative.tradeoff.pt}`);
+}
+
