@@ -172,7 +172,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
       const result = await gateway.complete({
         task: "extract_fields",
         system: wholeSystem,
-        input: [{type: "text", text: buildExtractionPrompt({profile, fileName: options.fileName, evidence: chunk})}],
+        input: [{type: "text", text: buildExtractionPrompt({profile, fileName: options.fileName, fields, evidence: chunk})}],
         schema: salvageExtractorOutputSchema,
         schemaName: "extractor_output",
         ...(options.maxOutputTokens ? {maxOutputTokens: options.maxOutputTokens} : {}),
@@ -241,6 +241,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         input: [{type: "text", text: buildExtractionPrompt({
           profile,
           fileName: options.fileName,
+          fields: indexedFields,
           evidence: {text: pass.evidenceText, index: pass.instance, total: rowPasses.length},
           row: {instance: pass.instance, tableId: pass.tableId},
         })}],

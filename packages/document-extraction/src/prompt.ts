@@ -111,20 +111,23 @@ const instrumentIdentityGuidance = [
 ];
 
 /**
- * The stable half of an extraction call: the rules, the target-field catalogue and how to read
- * an issuance. It holds no document data, so it is byte-identical across every call of one
- * document kind and the provider serves it from cache.
+ * The stable half of an extraction call: the rules, and nothing else.
  *
- * Camil measured why this matters: the ITR takes 489 calls, each one carrying a 5.620-token
- * catalogue, so 98% of the input tokens were the same text re-sent at full price. The index of
- * a row pass is deliberately *not* bound here, because binding it would make every row a
- * different prefix and there would be nothing to cache; the orchestration writes the index onto
- * the candidates when they come back, which is more reliable than asking the model to count.
+ * It once carried the target-field catalogue too, on the theory that a 5.620-token block
+ * re-sent on 489 calls should be served from cache. Measured, that trade was a loss twice
+ * over: the cost did not move (Camil US$ 7,31 before, US$ 7,02 after; Aurora US$ 0,99 before,
+ * US$ 1,03 after) and the recall fell (Aurora 95,4% to 91,6%, Camil 63,0% to 54,8%), because
+ * a catalogue two thousand tokens from the evidence is a catalogue half read. The catalogue
+ * went back beside the evidence. Caching is still worth having; it has to be proven with the
+ * provider's own cache-hit counters before it costs a point of recall again.
  */
-export function extractionSystem(input: {fields: FieldDefinition[]; row?: boolean}): string {
+export function extractionSystem(_input: {fields: FieldDefinition[]; row?: boolean}): string {
+  return EXTRACTOR_SYSTEM;
+}
+
+/** The catalogue and how to read it: beside the evidence, where it is followed. */
+function targetFieldsBlock(input: {fields: FieldDefinition[]; row?: boolean}): string[] {
   return [
-    EXTRACTOR_SYSTEM,
-    "",
     "## Campos-alvo",
     ...(input.row
       ? [
@@ -146,16 +149,14 @@ export function extractionSystem(input: {fields: FieldDefinition[]; row?: boolea
     // `{i}` is not a legal character in a field path, so a row pass renders it as the literal
     // `i`; the orchestration replaces it with the row's number when the candidate comes back.
     renderTargetFields(input.row ? input.fields.map((field) => ({...field, pattern: field.pattern.replace("{i}", "i")})) : input.fields),
-  ].join("\n");
+  ];
 }
 
-/**
- * The variable half: which document, which piece of it, and the evidence itself. Everything
- * here changes call to call, so nothing here is cacheable and nothing stable belongs in it.
- */
+/** Which document, which piece of it, what to look for, and the evidence. */
 export function buildExtractionPrompt(input: {
   profile: DocumentProfile;
   fileName: string;
+  fields: FieldDefinition[];
   evidence: {text: string; index: number; total: number};
   /** A row pass: the evidence is one data row, and the index every {i} takes is `instance`. */
   row?: {instance: number; tableId: string};
@@ -171,10 +172,11 @@ export function buildExtractionPrompt(input: {
     "## Documento",
     renderDocumentContext(input.profile, input.fileName),
     "",
-    // Measured on Aurora's trial balance: with the format rule only in the cached half, the
-    // model wrote `interim_financials.2026_7m.revenue_7m` and all nine candidates were refused
-    // as unknown fields. An instruction two thousand tokens from the evidence is an instruction
-    // half followed, so the shape of a path is restated here, beside what it applies to.
+    ...targetFieldsBlock({fields: input.fields, ...(input.row ? {row: true} : {})}),
+    "",
+    // Aurora's trial balance measured what happens when this rule sits far from the evidence:
+    // the model wrote `interim_financials.2026_7m.revenue_7m` and all nine candidates were
+    // refused as unknown fields. It is cheap and it stays here.
     "## Forma dos caminhos",
     ...(input.row
       ? ["Mantenha o literal `i` onde o caminho tem o índice da linha.", "{period} vira o período concreto: 2025 para exercício, 2026_07 para ano_mês com dois dígitos."]

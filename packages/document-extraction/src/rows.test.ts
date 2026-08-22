@@ -104,11 +104,9 @@ describe("the extractor runs one pass per data row, with the index pre-bound", (
     expect(result.chunks.total).toBe(4);
     const rowPrompts = prompts.filter((prompt) => prompt.includes("Esta é a linha"));
     expect(rowPrompts).toHaveLength(3);
-    // The prefix the provider caches is one string for all three rows.
-    const rowSystems = systems.filter((system) => system.includes("numeração das linhas"));
-    expect(new Set(rowSystems).size).toBe(1);
-    expect(rowSystems[0]).toContain("debt.instruments.i.lender");
-    // Only the variable half names the row, and each pass shows its own row beside the header.
+    // Every row pass asks for the literal index; only the placement names the row.
+    expect(rowPrompts[0]).toContain("debt.instruments.i.lender");
+    expect(systems.every((system) => !system.includes("debt.instruments"))).toBe(true);
     expect(rowPrompts[0]).toContain("Esta é a linha 1");
     expect(rowPrompts[2]).toContain("Esta é a linha 3");
     expect(rowPrompts[0]).toContain("Banco Itaú");
