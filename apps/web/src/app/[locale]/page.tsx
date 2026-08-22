@@ -102,6 +102,32 @@ export default async function HomePage({params}: Props) {
                 </div>
               </div>
             </div>
+            <div className="premium-hero__participant-value" aria-label={t("heroParticipantValueLabel")}>
+              <article>
+                <header>
+                  <Building2 aria-hidden="true" size={15} />
+                  <span>{t("heroCompanyValueLabel")}</span>
+                  <small>01</small>
+                </header>
+                <p>{t("heroCompanyValueBody")}</p>
+              </article>
+              <article>
+                <header>
+                  <UserRoundCheck aria-hidden="true" size={15} />
+                  <span>{t("heroAdvisorValueLabel")}</span>
+                  <small>02</small>
+                </header>
+                <p>{t("heroAdvisorValueBody")}</p>
+              </article>
+              <article>
+                <header>
+                  <Landmark aria-hidden="true" size={15} />
+                  <span>{t("heroCapitalProviderValueLabel")}</span>
+                  <small>03</small>
+                </header>
+                <p>{t("heroCapitalProviderValueBody")}</p>
+              </article>
+            </div>
           </div>
         </section>
 
