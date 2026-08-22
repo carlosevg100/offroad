@@ -707,6 +707,25 @@ begin
     raise exception 'worker did not persist the profile and the layer';
   end if;
 
+  -- The candidates themselves: the only step of the worker's contract that had no happy path
+  -- here, and the one that decides whether the review screen has anything on it.
+  perform public.worker_record_candidates(
+    job_id,
+    capability,
+    jsonb_build_array(jsonb_build_object(
+      'extractor_key', 'lender-1', 'field_path', 'debt.instruments.1.lender', 'field_group', 'debt',
+      'label', 'Credor', 'raw_value', 'Banco Itaú', 'normalized_value', to_jsonb('Banco Itaú'::text),
+      'value_type', 'text', 'information_class', 'management', 'evidence_rank', 5,
+      'source_anchor', '{"kind":"table_row","id":"s1.t1.r2"}'::jsonb, 'confidence', 0.92,
+      'extraction_method', 'model', 'is_primary', true
+    ))
+  );
+  if (select count(*) from public.intake_field_candidates
+      where intake_session_id = '40000000-0000-4000-8000-000000000003'
+        and field_path = 'debt.instruments.1.lender') <> 1 then
+    raise exception 'the worker completed a job without leaving a candidate on the session';
+  end if;
+
   result := public.worker_complete_job(job_id, capability, '{"documents":1, "spend": {"costUsd": 0.42, "calls": 3}}'::jsonb);
   if (result->>'pending_jobs')::integer <> 0 then
     raise exception 'run still had pending jobs after the only job completed';

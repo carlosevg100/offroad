@@ -294,6 +294,13 @@ describe("gateway", () => {
     expect(second.costUsd).toBe(0);
     expect(replayer.spent().calls).toBe(0);
     await expect(replayer.complete({...baseRequest, system: "different"})).rejects.toMatchObject({code: "cassette_missing"});
+
+    // No provider, no keys: this is how the worker runs in CI, where the point is to prove the
+    // pipeline carried a document and not to buy an answer.
+    const keyless = createModelGateway({adapters: {}, cassette: {mode: "replay", store}});
+    const replayed = await keyless.complete(baseRequest);
+    expect(replayed.fromCassette).toBe(true);
+    expect(replayed.costUsd).toBe(0);
   });
 });
 
