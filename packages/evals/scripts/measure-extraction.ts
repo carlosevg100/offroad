@@ -30,6 +30,23 @@ import {renderMarkdownReport} from "../src/report";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const caseId = process.argv[2] ?? "rede-horizonte";
+/**
+ * `provider/model@effort`, e.g. `openai/gpt-5.6-terra@medium`. Absent means the task policy
+ * decides, which is what production does. A sweep candidate that is not production-allowlisted
+ * is reachable here and only here (`experimentalModels`), because the point of the sweep is to
+ * produce the evidence for changing the policy.
+ */
+const modelArg = process.argv[3] ?? process.env.MODEL ?? "";
+const modelOverride = modelArg
+  ? (() => {
+      const [reference, effort] = modelArg.split("@");
+      const [provider, ...rest] = reference!.split("/");
+      if (provider !== "anthropic" && provider !== "openai") throw new Error(`unknown provider in --model: ${modelArg}`);
+      const ref: {provider: "anthropic" | "openai"; model: string; effort?: "low" | "medium" | "high" | "xhigh" | "max"} = {provider, model: rest.join("/")};
+      if (effort) ref.effort = effort as "low" | "medium" | "high" | "xhigh" | "max";
+      return ref;
+    })()
+  : undefined;
 const goldDir = join(here, "..", "..", "testing-fixtures", "gold", caseId);
 
 const gold = loadGoldCase(goldDir);
@@ -52,6 +69,7 @@ if (!anthropicKey && !openaiKey) {
 }
 
 const gateway = createModelGateway({
+  ...(modelOverride ? {experimentalModels: [modelOverride.model]} : {}),
   adapters: {
     ...(anthropicKey ? {anthropic: createAnthropicAdapter({apiKey: anthropicKey})} : {}),
     ...(openaiKey ? {openai: createOpenAIAdapter({apiKey: openaiKey})} : {}),
@@ -105,6 +123,7 @@ for (const entry of gold.manifest.documents) {
     fileName: entry.name,
     gateway,
     localeHint: "pt-BR",
+    ...(modelOverride ? {model: modelOverride} : {}),
     // A lost chunk is the difference between "this document has nothing" and "we failed to
     // read it", so it says so on the spot instead of only showing up as a missing number.
     onProgress: (progress) => {
@@ -224,6 +243,7 @@ console.log(`\nConciliação: ${reconciliation.exceptions.length} exceção(ões
 for (const exception of reconciliation.exceptions) console.log(`  [${exception.severity}] ${exception.ruleId} ${exception.title}: ${exception.description.slice(0, 160)}`);
 
 const report = evaluateSnapshot(gold, snapshot);
+console.log(`\n### Modelo\n\n${modelArg ? `sweep: ${modelArg} (não é o modelo de produção; a política decide em produção)` : "política da tarefa (o que produção usa)"}`);
 console.log(`\n${renderMarkdownReport(report)}`);
 
 console.log("\nPor documento:");
@@ -235,5 +255,5 @@ console.log(`\nTotal: ${usage.calls} chamadas, $${usage.costUsd.toFixed(4)}`);
 const outDir = join(here, "..", "out");
 mkdirSync(outDir, {recursive: true});
 const outPath = join(outDir, `extraction-${caseId}.json`);
-writeFileSync(outPath, `${JSON.stringify({report, snapshot, perDocument, detail}, null, 2)}\n`);
+writeFileSync(outPath, `${JSON.stringify({report, snapshot, perDocument, detail, sweep: modelArg ? {model: modelArg} : null}, null, 2)}\n`);
 console.log(`\nrelatório completo: ${outPath}`);
