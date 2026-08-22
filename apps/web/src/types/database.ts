@@ -2423,6 +2423,190 @@ export type Database = {
           },
         ]
       }
+      sounding_events: {
+        Row: {
+          actor: string
+          created_at: string
+          created_by: string
+          event_type: string
+          id: string
+          indication: Json | null
+          intake_session_id: string
+          investor_id: string
+          note: string | null
+          occurred_at: string
+          organization_id: string
+          question_id: string | null
+          sounding_id: string
+        }
+        Insert: {
+          actor: string
+          created_at?: string
+          created_by: string
+          event_type: string
+          id?: string
+          indication?: Json | null
+          intake_session_id: string
+          investor_id: string
+          note?: string | null
+          occurred_at?: string
+          organization_id: string
+          question_id?: string | null
+          sounding_id: string
+        }
+        Update: {
+          actor?: string
+          created_at?: string
+          created_by?: string
+          event_type?: string
+          id?: string
+          indication?: Json | null
+          intake_session_id?: string
+          investor_id?: string
+          note?: string | null
+          occurred_at?: string
+          organization_id?: string
+          question_id?: string | null
+          sounding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sounding_events_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "sounding_events_organization_id_investor_id_fkey"
+            columns: ["organization_id", "investor_id"]
+            isOneToOne: false
+            referencedRelation: "sounding_investors"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "sounding_events_organization_id_sounding_id_fkey"
+            columns: ["organization_id", "sounding_id"]
+            isOneToOne: false
+            referencedRelation: "soundings"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      sounding_investors: {
+        Row: {
+          created_at: string
+          fund_directory_id: string | null
+          id: string
+          intake_session_id: string
+          investor_kind: string
+          investor_name: string
+          organization_id: string
+          sounding_id: string
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fund_directory_id?: string | null
+          id?: string
+          intake_session_id: string
+          investor_kind: string
+          investor_name: string
+          organization_id: string
+          sounding_id: string
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fund_directory_id?: string | null
+          id?: string
+          intake_session_id?: string
+          investor_kind?: string
+          investor_name?: string
+          organization_id?: string
+          sounding_id?: string
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sounding_investors_fund_directory_id_fkey"
+            columns: ["fund_directory_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sounding_investors_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "sounding_investors_organization_id_sounding_id_fkey"
+            columns: ["organization_id", "sounding_id"]
+            isOneToOne: false
+            referencedRelation: "soundings"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      soundings: {
+        Row: {
+          cdi_pct: number
+          created_at: string
+          created_by: string
+          currency: string
+          id: string
+          intake_session_id: string
+          ipca_pct: number | null
+          method: string
+          organization_id: string
+          status: string
+          target_amount: number
+          updated_at: string
+        }
+        Insert: {
+          cdi_pct: number
+          created_at?: string
+          created_by: string
+          currency?: string
+          id?: string
+          intake_session_id: string
+          ipca_pct?: number | null
+          method?: string
+          organization_id: string
+          status?: string
+          target_amount: number
+          updated_at?: string
+        }
+        Update: {
+          cdi_pct?: number
+          created_at?: string
+          created_by?: string
+          currency?: string
+          id?: string
+          intake_session_id?: string
+          ipca_pct?: number | null
+          method?: string
+          organization_id?: string
+          status?: string
+          target_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "soundings_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: true
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       source_documents: {
         Row: {
           bucket_id: string

@@ -333,6 +333,31 @@ begin
 end;
 $$;
 
+-- Sounding tables: tenant A cannot write a sounding into tenant B, and the event log is
+-- append-only even for its own tenant.
+do $$
+declare
+  affected_rows integer;
+begin
+  begin
+    insert into public.soundings (organization_id, intake_session_id, target_amount, cdi_pct, created_by)
+    values ('20000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000000', 1000000, 10.5, '10000000-0000-4000-8000-000000000001');
+    raise exception 'tenant A inserted a sounding into tenant B';
+  exception
+    when insufficient_privilege then null;
+    when foreign_key_violation then raise exception 'RLS let the sounding insert reach the foreign key';
+  end;
+  if (select count(*) from public.soundings) <> 0 then
+    raise exception 'tenant A sees soundings it did not create';
+  end if;
+  begin
+    delete from public.sounding_events where true;
+    raise exception 'sounding_events accepted a delete';
+  exception
+    when insufficient_privilege then null;
+  end;
+end $$;
+
 reset role;
 set local role authenticated;
 select set_config(
