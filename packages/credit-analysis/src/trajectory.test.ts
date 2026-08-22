@@ -121,3 +121,28 @@ describe("honest degradation", () => {
     expect(trajectory.years[0]!.ebitdaStressed).toBe("16848000.00");
   });
 });
+
+describe("what the money actually buys", () => {
+  /** Two lines: one falling due next year, one in five. A refinancing takes out the near one. */
+  const stack = [
+    {lender: "Bilaterais 12m", balance: "1000", maturity: "2027-06-30", amortization: "mensal"},
+    {lender: "Debênture 2031", balance: "1000", maturity: "2031-06-30", amortization: "bullet"},
+  ];
+
+  it("redeems the nearest maturity, not a slice of every line", () => {
+    const withOperation = projectLeverageTrajectory({
+      referenceDate: "2026-06-30",
+      cash: "0",
+      auditedEbitda: "500",
+      projectedEbitda: [{year: 2027, ebitda: "500"}, {year: 2031, ebitda: "500"}],
+      existing: stack,
+      existingCovenants: [],
+      newDebt: {amount: "1000", termMonths: 60, graceMonths: 12, refinancing: "1000"},
+    });
+    const in2027 = withOperation.years.find((year) => year.year === 2027)!;
+    // The 2031 bullet is untouched: the operation bought time on the near parcels and nothing else.
+    expect(Number(in2027.existingDebt)).toBe(1000);
+    const in2031 = withOperation.years.find((year) => year.year === 2031)!;
+    expect(Number(in2031.existingDebt)).toBe(0);
+  });
+});

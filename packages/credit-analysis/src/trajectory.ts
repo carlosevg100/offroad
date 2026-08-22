@@ -159,12 +159,28 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
   const floor = d(input.covenantFloor ?? "2.5");
   const audited = d(input.auditedEbitda);
 
-  // Proceeds that repay existing debt leave the stack on day one. Pro rata across lines, so
-  // every schedule shrinks by the same factor and no contract is invented as the one repaid.
+  // Proceeds that repay existing debt leave the stack on day one, nearest maturity first.
+  //
+  // Pro rata was the wrong model and it made every operation untestable: a refinancing that
+  // takes out the parcels due in the next twelve months would also shrink the line maturing in
+  // 2030 by the same factor, so the schedule after the operation looked better everywhere and
+  // the desk could not say what the money actually bought. Nobody redeems pro rata. A company
+  // pays down what is about to fall due, which is why it is raising in the first place.
   const existingTotalAtStart = input.existing.reduce((sum, line) => sum.plus(line.balance), new Decimal(0));
   const refinancing = Decimal.min(d(input.newDebt.refinancing ?? "0"), existingTotalAtStart);
-  const keepFactor = existingTotalAtStart.gt(0) ? existingTotalAtStart.minus(refinancing).div(existingTotalAtStart) : new Decimal(1);
-  const existing: TrajectoryDebtLine[] = input.existing.map((line) => ({...line, balance: d(line.balance).times(keepFactor).toFixed(2)}));
+  const byMaturity = [...input.existing].sort((a, b) => (a.maturity ?? "9999-12-31").localeCompare(b.maturity ?? "9999-12-31"));
+  let toRedeem = refinancing;
+  const redeemed = new Map<TrajectoryDebtLine, Decimal>();
+  for (const line of byMaturity) {
+    if (toRedeem.lte(0)) break;
+    const take = Decimal.min(toRedeem, d(line.balance));
+    redeemed.set(line, take);
+    toRedeem = toRedeem.minus(take);
+  }
+  const existing: TrajectoryDebtLine[] = input.existing.map((line) => ({
+    ...line,
+    balance: d(line.balance).minus(redeemed.get(line) ?? 0).toFixed(2),
+  }));
 
   const years: TrajectoryYear[] = input.projectedEbitda.map(({year, ebitda}) => {
     const atYm = year * 12 + 11; // December of the year.
@@ -257,8 +273,8 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
     findings.push({
       id: "amortization-outruns-cash",
       severity: "critical",
-      pt: `O cronograma contratado exige ${brlM(worst.principalDue)} de amortização em ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% do EBITDA projetado do ano, antes de juros e de qualquer investimento. O estoque atual não é servível pelo caixa da operação: o refinanciamento não é uma opção da mesa, é um fato que o passivo já contém, e a captação deve ser dimensionada para resolvê-lo de uma vez em vez de empurrá-lo.`,
-      en: `The contracted schedule demands ${brlM(worst.principalDue)} of amortisation in ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% of that year's projected EBITDA, before interest and any investment. The current stack cannot be served from operating cash: refinancing is not a desk option, it is a fact the liabilities already contain, and the raise should be sized to resolve it once rather than roll it forward.`,
+      pt: `O cronograma contratado exige ${brlM(worst.principalDue)} de amortização em ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% do EBITDA projetado do ano, antes de juros e de qualquer investimento. Esse ano não se paga com o caixa da operação, então ele será rolado: a pergunta não é se rola, é a que preço e com que prazo. Alongar resolve e custa spread e garantia; dimensionar a captação para cobrir ${worst.year} agora custa tíquete maior e alavancagem de pico mais alta. As duas saídas são defensáveis, e a escolha entre elas é o que o material precisa mostrar ao investidor.`,
+      en: `The contracted schedule demands ${brlM(worst.principalDue)} of amortisation in ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% of that year's projected EBITDA, before interest and any investment. That year will not be paid out of operating cash, so it will be rolled: the question is not whether, but at what price and tenor. Terming it out works and costs spread and security; sizing the raise to cover ${worst.year} now costs a larger ticket and a higher peak leverage. Both are defensible, and choosing between them is what the material has to show the investor.`,
       values: {year: String(worst.year), principalDue: worst.principalDue, strain: worst.scheduleStrain},
       inputs: ["debt.instruments", "projections.ebitda"],
     });

@@ -25,6 +25,7 @@ import {extractionPromptVersion, renumberByTable} from "@offroad/document-extrac
 import {indexLayer, rawExtractionCandidateSchema, verifyCandidates, type DocumentProfile} from "@offroad/document-intelligence";
 import {createTesseractEngine, parseDocument, toolVersion, type OcrEngine} from "@offroad/document-parsers";
 import {reconcileCase} from "@offroad/reconciliation";
+import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, type Fact} from "@offroad/credit-analysis";
 
 import {loadGoldCase} from "../src/gold";
 import {evaluateSnapshot} from "../src/metrics";
@@ -169,11 +170,52 @@ for (const file of files) {
   };
 
   const evaluated = evaluateSnapshot(gold, snapshot);
+
+  /**
+   * The question the field count does not answer: with what was actually read, does the desk
+   * produce a credit reading, and is it the reading the answer key produces?
+   *
+   * A case can miss forty fields of a 140-page filing and still be analysable, because a desk
+   * runs on about twenty numbers; and a case can read almost everything and be unanalysable,
+   * because the twenty it needs are not among them. Cogna measured the second: its room is a
+   * quarterly release, so no amount of extraction gives the desk the annual statements it asks
+   * for. Recall is an input. This is the output.
+   */
+  const deskFrom = (facts: Fact[]) => {
+    const inputs = buildDeskInputs(facts, {
+      referenceDate: "2026-08-21",
+      indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045", tr: "0.002"},
+      statedRequest: {},
+    });
+    const desk = inputs.desk ? analyzeCreditPosition(inputs.desk) : null;
+    const trajectory = inputs.trajectory ? projectLeverageTrajectory(inputs.trajectory) : null;
+    return {desk, trajectory, missing: inputs.missing};
+  };
+
+  const fromExtraction = deskFrom(reconciliation.facts.map((fact) => ({fieldPath: fact.key.fieldPath, value: fact.value})));
+  const fromGold = deskFrom(gold.fields.map((field) => ({fieldPath: field.fieldPath, value: field.value})));
+
+  const findings = (result: ReturnType<typeof deskFrom>) => [...(result.desk?.findings ?? []).map((finding) => finding.id), ...(result.trajectory?.findings ?? []).map((finding) => finding.id)].sort();
+  const extracted = findings(fromExtraction);
+  const expected = findings(fromGold);
   console.log(`\n## ${caseId} (replay${recorded.sweep ? `, ${recorded.sweep.model}` : ""}) em ${((Date.now() - startedAt) / 1000).toFixed(1)}s, US$ 0,00`);
   if (stale) {
     console.log(`\n> A captura é da versão de prompt \`${recorded.promptVersion ?? "desconhecida"}\` e o código está em \`${current}\`.`);
     console.log("> O modelo responderia outra coisa hoje. Estes números valem para a canalização (verificador, conciliação, pontuação), não para a extração.");
   }
   console.log(`\n${renderMarkdownReport(evaluated)}`);
+
+  console.log("\n## A mesa");
+  const line = (label: string, result: ReturnType<typeof deskFrom>) =>
+    result.desk
+      ? `${label}: alavancagem pré ${result.desk.leverage.preTurns}x, ${result.desk.findings.length} leitura(s)${result.missing.length ? `, faltando ${result.missing.length} campo(s)` : ""}`
+      : `${label}: **não analisável**, faltam ${result.missing.join(", ") || "insumos"}`;
+  console.log(`- ${line("com o que foi extraído", fromExtraction)}`);
+  console.log(`- ${line("com o gabarito", fromGold)}`);
+  const lost = expected.filter((id) => !extracted.includes(id));
+  const gained = extracted.filter((id) => !expected.includes(id));
+  console.log(lost.length === 0 && gained.length === 0
+    ? "- **as leituras batem**: a extração entrega a mesma análise que o gabarito."
+    : `- leituras perdidas: ${lost.join(", ") || "nenhuma"}; leituras a mais: ${gained.join(", ") || "nenhuma"}`);
   console.log(`\nA medição original custou US$ ${(recorded.snapshot.usage?.costUsd ?? 0).toFixed(2)} em ${recorded.snapshot.usage?.calls ?? 0} chamadas.`);
 }
