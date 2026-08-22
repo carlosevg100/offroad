@@ -980,6 +980,7 @@
       "empty": "No analysis yet: process the documents first.",
       "materialOpen": "Open",
       "materialPdf": "PDF",
+      "materialDocx": "Word",
       "materialSections": "{count} blocks",
       "modelTitle": "Financial model",
       "modelWhat": "A spreadsheet with live formulas: operating projection, debt schedule, DSCR and leverage against the playbook's ceiling. Every editable cell is on the Assumptions sheet, so change one and the whole model recalculates. Every historical number is traced to its source document.",
