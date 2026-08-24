@@ -53,6 +53,12 @@ export const caseBriefSchema = z.object({
   sections: z.array(briefSectionSchema),
   /** 8–12 lines, the part a busy reader actually reads. */
   executiveSummary: z.string().min(1).max(4000),
+}).superRefine((brief, context) => {
+  const seen = new Set<string>();
+  for (const claim of brief.sections.flatMap((section) => section.claims)) {
+    if (seen.has(claim.id)) context.addIssue({code: "custom", path: ["sections"], message: `claim id must be unique: ${claim.id}`});
+    seen.add(claim.id);
+  }
 });
 
 export type CaseBrief = z.infer<typeof caseBriefSchema>;
@@ -174,20 +180,26 @@ export function auditBrief(input: {
   brief: CaseBrief;
   facts: readonly ReconciledFact[];
   calculations: readonly TracedCalculation[];
+  approvedJudgmentIds?: readonly string[];
+  requireJudgmentApproval?: boolean;
 }): BriefOutcome {
+  const approved = new Set(input.approvedJudgmentIds ?? []);
   const claims: AuditableClaim[] = input.brief.sections.flatMap((section) =>
     section.claims.map((claim) => ({
-      id: `${section.id}:${claim.id}`,
+      id: claim.id,
       text: claim.text,
       material: claim.material,
       supportIds: claim.supportIds,
       kind: claim.kind,
-      // Nothing arrives approved. A judgement is the analyst's to make, and the brief carries
-      // it as a proposal until they do.
-      approved: false,
+      approved: approved.has(claim.id),
     })),
   );
 
-  const audit = auditClaims({claims, facts: input.facts, calculations: input.calculations});
+  const audit = auditClaims({
+    claims,
+    facts: input.facts,
+    calculations: input.calculations,
+    ...(input.requireJudgmentApproval === false ? {requireJudgmentApproval: false} : {}),
+  });
   return audit.status === "pass" ? {ok: true, brief: input.brief, audit} : {ok: false, reason: "audit_failed", audit, brief: input.brief};
 }

@@ -1,7 +1,7 @@
 import {dirname, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 import {statSync} from "node:fs";
-import type {CaseBrief} from "@offroad/case-understanding";
+import {supportedSemanticAudit, type CaseBrief} from "@offroad/case-understanding";
 import type {CaseEngineInput} from "@offroad/case-engine";
 import type {DataRoomDocument} from "@offroad/data-room";
 import type {Resolved, ResolvedMandate, Sourced} from "@offroad/fund-mandate";
@@ -287,6 +287,11 @@ export function redeHorizonteCaseInput(gold = loadRedeHorizonteGold()): CaseEngi
       blockedBy: [],
       usage: {costUsd: 0, modelCalls: 0},
       modelInvocations: [{provider: "deterministic_anchor_writer", model: "rede-horizonte-v1"}],
+    }),
+    verifyBrief: async ({brief}) => ({
+      audit: supportedSemanticAudit(brief),
+      usage: {costUsd: 0, modelCalls: 0},
+      modelInvocations: [{provider: "deterministic_anchor_verifier", model: "rede-horizonte-v1"}],
     }),
   };
 }

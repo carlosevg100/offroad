@@ -3,14 +3,22 @@ import {runCase, type CaseRunPolicy, type CaseRunReport, type StageContext} from
 import {
   assessReadiness,
   auditBrief,
+  buildClaimRegistry,
   caseBriefSchema,
   caseOutcomeSchema,
+  claimFingerprint,
   deriveCaseOutcome,
   deskEvidence,
   fingerprintJson,
+  normalizeSemanticAudit,
+  type AuditReport,
   type CaseBrief,
+  type ClaimDecision,
+  type ClaimRegistry,
   type CaseOutcome,
+  type NormalizedSemanticAudit,
   type ReadinessReport,
+  type SemanticAudit,
 } from "@offroad/case-understanding";
 import {
   analyzeCreditPosition,
@@ -63,7 +71,7 @@ import {indicativePrice, type IndicativePrice, type PricedInstrument} from "@off
 import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@offroad/reconciliation";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.24-v1";
+export const caseEngineVersion = "2026.08.24-v2";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -83,6 +91,12 @@ export type BriefWriterResult = {
   modelInvocations?: unknown[];
 };
 
+export type BriefVerifierResult = {
+  audit: SemanticAudit;
+  usage?: {costUsd: number; modelCalls: number};
+  modelInvocations?: unknown[];
+};
+
 export type CaseEngineInput = {
   runId: string;
   caseId: string;
@@ -95,6 +109,7 @@ export type CaseEngineInput = {
   dealBrief: CaseDealBrief;
   resolvedMandates: ResolvedMandate[];
   externalReleaseApproved: boolean;
+  claimDecisions?: ClaimDecision[];
   informationAnswers?: InformationAnswers;
   requirementResponses?: RequirementResponses;
   indexLevels?: {cdi: string; tlp: string; ipca: string; tr: string};
@@ -105,6 +120,11 @@ export type CaseEngineInput = {
     desk: DeskAnalysis | null;
     trajectory: Trajectory | null;
   }) => Promise<BriefWriterResult>;
+  verifyBrief?: (input: {
+    brief: CaseBrief;
+    facts: ReconciliationReport["facts"];
+    calculations: ReconciliationReport["calculations"];
+  }) => Promise<BriefVerifierResult>;
 };
 
 export type CaseEngineState = {
@@ -124,6 +144,7 @@ export type CaseEngineState = {
   verdict: OperationVerdict | null;
   brief: CaseBrief | null;
   briefBlockedBy: string[];
+  claimRegistry: ClaimRegistry | null;
   materials: Material[];
   materialsBlockedBy: string[];
   dataRoom: DataRoomPlan;
@@ -225,7 +246,10 @@ const structureOutputSchema = z.object({
 });
 const claimsOutputSchema = z.object({
   brief: caseBriefSchema.nullable(),
+  proposedBrief: caseBriefSchema.nullable(),
   briefBlockedBy: z.array(z.string()),
+  numericAudit: z.unknown().nullable(),
+  semanticAudit: z.unknown().nullable(),
   modelInvocations: z.array(z.unknown()),
   usage: z.object({costUsd: z.number().nonnegative(), modelCalls: z.number().int().nonnegative()}),
 });
@@ -241,6 +265,7 @@ const materialsOutputSchema = z.object({
     holds: z.array(z.unknown()),
   }),
   audit: z.enum(["not_run", "pass", "blocked"]),
+  claimRegistry: z.unknown().nullable(),
 });
 const matchingOutputSchema = z.object({
   screened: z.boolean(),
@@ -264,9 +289,12 @@ type StructureOutput = Pick<
   "capacity" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
 >;
 type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInvocations"> & {
+  proposedBrief: CaseBrief | null;
+  numericAudit: AuditReport | null;
+  semanticAudit: NormalizedSemanticAudit | null;
   usage: {costUsd: number; modelCalls: number};
 };
-type MaterialsOutput = Pick<CaseEngineState, "materials" | "materialsBlockedBy" | "dataRoom"> & {
+type MaterialsOutput = Pick<CaseEngineState, "materials" | "materialsBlockedBy" | "dataRoom" | "claimRegistry"> & {
   audit: "not_run" | "pass" | "blocked";
 };
 type MatchingOutput = CaseEngineState["matching"];
@@ -289,6 +317,16 @@ const intakeAvailableFieldPaths = (dealBrief: CaseDealBrief): string[] => [
   ...(dealBrief.requestedTermMonths !== undefined ? ["transaction.desired_term_months"] : []),
   ...(dealBrief.sector ? ["company.sector"] : []),
 ];
+
+function currentApprovedJudgments(brief: CaseBrief, decisions: readonly ClaimDecision[]): string[] {
+  return brief.sections.flatMap((section) => section.claims)
+    .filter((claim) => {
+      if (claim.kind !== "judgment" || !claim.material) return false;
+      const decision = [...decisions].reverse().find((candidate) => candidate.claimId === claim.id);
+      return Boolean(decision && decision.decision === "approved" && decision.claimFingerprint === claimFingerprint(claim));
+    })
+    .map((claim) => claim.id);
+}
 
 export async function executeCaseEngine(
   input: CaseEngineInput,
@@ -399,7 +437,10 @@ export async function executeCaseEngine(
           if (!input.writeBrief) {
             const output: ClaimsOutput = {
               brief: null,
+              proposedBrief: null,
               briefBlockedBy: ["brief_writer_unavailable"],
+              numericAudit: null,
+              semanticAudit: null,
               modelInvocations: [],
               usage: {costUsd: 0, modelCalls: 0},
             };
@@ -412,25 +453,56 @@ export async function executeCaseEngine(
             desk: metrics.desk,
             trajectory: metrics.trajectory,
           });
-          let brief = written.brief;
+          const proposedBrief = written.brief;
+          let brief = proposedBrief;
           const blockedBy = [...written.blockedBy];
+          let numericAudit: AuditReport | null = null;
+          let semanticAudit: NormalizedSemanticAudit | null = null;
+          let verifierUsage = {costUsd: 0, modelCalls: 0};
+          let verifierInvocations: unknown[] = [];
           if (brief) {
             const evidence = deskEvidence(metrics.desk, metrics.trajectory);
+            const approvedJudgmentIds = currentApprovedJudgments(brief, input.claimDecisions ?? []);
             const audited = auditBrief({
               brief,
               facts: reconciliation.facts,
               calculations: [...reconciliation.calculations, ...evidence.calculations],
+              approvedJudgmentIds,
+              requireJudgmentApproval: false,
             });
+            numericAudit = audited.audit;
             if (!audited.ok) {
               brief = null;
               blockedBy.push(...audited.audit.findings.map((finding) => `${finding.claimId}: ${finding.reason}`));
+            } else if (!input.verifyBrief) {
+              semanticAudit = normalizeSemanticAudit(audited.brief, {reviews: []});
+              brief = null;
+              blockedBy.push("semantic_verifier_unavailable");
+            } else {
+              const verified = await input.verifyBrief({
+                brief: audited.brief,
+                facts: reconciliation.facts,
+                calculations: [...reconciliation.calculations, ...evidence.calculations],
+              });
+              semanticAudit = normalizeSemanticAudit(audited.brief, verified.audit);
+              verifierUsage = verified.usage ?? verifierUsage;
+              verifierInvocations = verified.modelInvocations ?? [];
+              if (semanticAudit.status === "blocked") {
+                brief = null;
+                blockedBy.push(...semanticAudit.findings.map((finding) => `${finding.claimId}: semantic:${finding.reason}`));
+              }
             }
           }
-          const usage = written.usage ?? {costUsd: 0, modelCalls: 0};
+          if (proposedBrief && numericAudit && !semanticAudit) semanticAudit = normalizeSemanticAudit(proposedBrief, {reviews: []});
+          const writerUsage = written.usage ?? {costUsd: 0, modelCalls: 0};
+          const usage = {costUsd: writerUsage.costUsd + verifierUsage.costUsd, modelCalls: writerUsage.modelCalls + verifierUsage.modelCalls};
           const output: ClaimsOutput = {
             brief,
+            proposedBrief,
             briefBlockedBy: [...new Set(blockedBy)],
-            modelInvocations: written.modelInvocations ?? [],
+            numericAudit,
+            semanticAudit,
+            modelInvocations: [...(written.modelInvocations ?? []), ...verifierInvocations],
             usage,
           };
           return {output, usage};
@@ -447,6 +519,10 @@ export async function executeCaseEngine(
           let materials: Material[] = [];
           let materialsBlockedBy: string[] = [];
           let audit: MaterialsOutput["audit"] = "not_run";
+          let claimRegistry: ClaimRegistry | null = null;
+          const approvedJudgmentIds = claims.proposedBrief
+            ? currentApprovedJudgments(claims.proposedBrief, input.claimDecisions ?? [])
+            : [];
           if (claims.brief) {
             const evidence = deskEvidence(metrics.desk, metrics.trajectory);
             const compiled = compileMaterials({
@@ -464,6 +540,7 @@ export async function executeCaseEngine(
               ...(structure.collateral ? {collateral: structure.collateral} : {}),
               ...(structure.price ? {price: structure.price} : {}),
               ...(structure.verdict ? {verdict: structure.verdict} : {}),
+              approvedJudgmentIds,
             });
             if (compiled.ok) {
               materials = compiled.materials;
@@ -475,7 +552,7 @@ export async function executeCaseEngine(
           } else {
             materialsBlockedBy = ["brief_unavailable", ...claims.briefBlockedBy];
           }
-          const dataRoom = planDataRoom({
+          let dataRoom = planDataRoom({
             materials,
             materialsBlockedBy,
             documents: extracted.roomDocuments,
@@ -483,7 +560,32 @@ export async function executeCaseEngine(
             readiness: metrics.readiness,
           });
           materials = [...materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
-          return {output: {materials, materialsBlockedBy, dataRoom, audit} satisfies MaterialsOutput};
+          if (claims.proposedBrief && claims.numericAudit && claims.semanticAudit) {
+            claimRegistry = buildClaimRegistry({
+              brief: claims.proposedBrief,
+              numericAudit: claims.numericAudit,
+              semanticAudit: claims.semanticAudit,
+              decisions: input.claimDecisions ?? [],
+              artifacts: materials.map((material) => ({
+                artifactId: material.kind,
+                claimIds: material.blocks.flatMap((block) => block.type === "paragraph" && block.claimId ? [block.claimId] : []),
+                supportIds: material.dependsOn,
+              })),
+            });
+            if (!claimRegistry.publication.allowed) {
+              materials = [];
+              materialsBlockedBy = [...new Set([...materialsBlockedBy, ...claimRegistry.publication.blockers])];
+              audit = "blocked";
+              dataRoom = planDataRoom({
+                materials: [],
+                materialsBlockedBy,
+                documents: extracted.roomDocuments,
+                exceptions: reconciliation.exceptions,
+                readiness: metrics.readiness,
+              });
+            }
+          }
+          return {output: {materials, materialsBlockedBy, dataRoom, audit, claimRegistry} satisfies MaterialsOutput};
         },
       },
       matching: {
@@ -554,6 +656,7 @@ export async function executeCaseEngine(
       brief: claims.brief,
       briefBlockedBy: claims.briefBlockedBy,
       modelInvocations: claims.modelInvocations,
+      claimRegistry: materials.claimRegistry,
       materials: materials.materials,
       materialsBlockedBy: materials.materialsBlockedBy,
       dataRoom: materials.dataRoom,

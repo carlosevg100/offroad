@@ -26,11 +26,11 @@ incremento fecha os contratos que todas as etapas posteriores devem respeitar:
   fluxo atual enquanto a migração é feita de forma controlada;
 - [x] ADR 0009 registra as invariantes e o que ainda não foi implementado.
 
-Ainda não está concluído neste incremento: runner único partindo de documentos
-brutos, atestação do manifesto por identidade de workload, primeiro case âncora
-completo, fábrica paramétrica, trilha específica de recebíveis/FIDC e gate de
-promoção em staging. Esses itens permanecem como gates verificáveis no plano de
-execução.
+Os Gates 2, 3 e 4 já avançaram além desta fundação: o runner único e a atestação pela identidade
+do worker estão ligados, o primeiro case corporativo âncora atravessa as oito camadas e o registro
+de claims governa publicação. Permanecem pendentes a revisão econômica independente final do
+case âncora, a fábrica paramétrica, a trilha específica de recebíveis/FIDC e o gate de promoção em
+staging. Esses itens continuam explícitos no plano de execução.
 
 O Gate 2 começou com `@offroad/case-runner`: um trilho sem dependência de UI ou banco que executa
 extração, conciliação, métricas, lacunas, estrutura, claims, materiais, matching e desfecho em ordem
@@ -44,6 +44,23 @@ O navegador perdeu a permissão de atestar snapshots. Identidades e critérios c
 ficam no resultado privado do job; o workspace da empresa recebe somente um resumo sanitizado do
 matching. A indisponibilidade do redator ou de materiais continua sendo estado explícito do domínio,
 sem transformar ausência de prosa em matemática inventada.
+
+O Gate 4 separa três decisões que antes estavam misturadas. O auditor numérico determinístico
+confere quantias e múltiplos contra fatos e cálculos citados. Um segundo modelo, de provedor
+diferente do redator, recebe apenas o claim e o suporte reconciliado e audita significado,
+qualificadores e extrapolações. Julgamentos materiais exigem uma decisão humana exata, append-only,
+vinculada ao fingerprint do claim, ao manifesto imutável e ao snapshot da registry. Qualquer falha
+numérica, semântica, ausência de revisão ou aprovação desatualizada mantém o brief internamente
+visível, mas bloqueia teaser, perfil de crédito, pacote e data room de saída. Se um fato muda, a
+registry identifica os claims e artefatos dependentes; a aprovação anterior não migra para a nova
+redação.
+
+No banco, `claim_decisions` tem RLS forçado e nenhum grant de escrita direta. O comando público é
+`security invoker`; a implementação privilegiada vive em `private`, valida a versão mais recente do
+snapshot e aceita somente o fingerprint exato de um julgamento material corrente. Apenas papéis de
+revisão autorizados podem registrar a decisão. O worker lê decisões com a capability do job. As
+migrations `20260824180255`, `20260824180448` e `20260824180822` estão aplicadas no projeto e o
+Security Advisor permanece com zero alertas.
 
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|

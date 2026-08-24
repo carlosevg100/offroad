@@ -142,10 +142,16 @@ export function createQueueClient(
     },
 
     async loadCaseInput(job) {
-      return call("worker_load_case_input", {
+      const args = {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
-      });
+      };
+      const [input, decisions] = await Promise.all([
+        call("worker_load_case_input", args),
+        call("worker_load_claim_decisions", args),
+      ]);
+      if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+      return {...input, claim_decisions: decisions};
     },
 
     async recordCaseSnapshot(job, manifest, state) {

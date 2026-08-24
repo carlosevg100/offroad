@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## Registro de claims e portão de publicação, 24/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Registry individual | `@offroad/case-understanding` | cada claim tem fingerprint, suporte, decisões numérica, semântica e humana e dependências de artefato; alteração de fato retorna o conjunto afetado |
+| Auditor numérico | testes de `auditBrief` | dinheiro e múltiplos sem suporte citado bloqueiam o claim; a verificação é determinística e independente da aprovação humana |
+| Auditor semântico independente | teste integrado de `@offroad/case-engine` e worker | o redator e o verificador usam provedores diferentes; o verificador recebe somente claims e suporte reconciliado, falha fechado e bloqueia extrapolação |
+| Aprovação humana exata | migrations `20260824180255`, `20260824180448`, `20260824180822` | decisão append-only vinculada ao fingerprint do claim, manifesto e registry; decisão antiga não aprova texto ou suporte alterado |
+| Publicação fail-closed | teste integrado de `@offroad/case-engine` | claim material pendente ou reprovado mantém o brief para revisão, mas produz zero materiais publicáveis, data room não liberável e blockers explícitos |
+| Isolamento e privilégios | teste RLS + catálogo remoto | escrita direta recusada; tenant B não vê nem aprova; wrapper público é `security invoker`; implementação privilegiada está em `private`; worker lê apenas com capability ativa |
+| Advisors após DDL | Supabase Security/Performance Advisor | zero security lints; nenhum FK novo de `claim_decisions` sem índice; apenas infos preexistentes e índices ainda não exercitados em banco novo |
+| Quality gate completo | `pnpm check` com Node 24.19 | 34 pacotes: lint, tipagem, testes e builds verdes; web com 117 testes, registry com 37 e worker com 40 |
+
+O registro persistente já é consumido pelo worker. A experiência visual de revisão e promoção do
+snapshot exato será construída como uma superfície separada, sem regenerar prosa e sem enfraquecer
+o fingerprint que torna a aprovação válida.
+
 ## Worker do case e fronteira de mandatos, 24/08/2026
 
 | Evidência | Verificação | Resultado |

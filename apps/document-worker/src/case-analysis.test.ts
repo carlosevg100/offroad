@@ -41,6 +41,7 @@ describe("worker case analysis", () => {
     let recordedState: Record<string, unknown> | null = null;
     let completed: Record<string, unknown> | null = null;
     const stages: Array<{stage: string; status: string}> = [];
+    const modelCalls: Array<{task: string; provider?: string}> = [];
     const raw = {
       session: {
         id: job.intake_session_id,
@@ -103,7 +104,24 @@ describe("worker case analysis", () => {
     };
     let spent = {costUsd: 0, calls: 0};
     const gateway = {
-      complete: async () => {
+      complete: async (request: {task: string; model?: {provider?: string}}) => {
+        modelCalls.push({task: request.task, ...(request.model?.provider ? {provider: request.model.provider} : {})});
+        if (request.task === "audit_evidence") {
+          spent = {costUsd: 0.15, calls: 2};
+          return {
+            output: {reviews: []},
+            provider: "openai",
+            model: "gpt-5.6-sol",
+            effort: "high",
+            usage: invocation.usage,
+            costUsd: 0.05,
+            latencyMs: 10,
+            stopReason: "end",
+            usedFallback: false,
+            fromCassette: false,
+            attempts: [],
+          };
+        }
         spent = {costUsd: 0.1, calls: 1};
         return {
           output: {sections: [], executiveSummary: "Resumo institucional sem afirmações materiais."},
@@ -141,6 +159,7 @@ describe("worker case analysis", () => {
     expect(JSON.stringify(persisted)).not.toContain("Fundo Confidencial");
     expect(JSON.stringify(privateResult)).toContain("Fundo Confidencial");
     expect(persisted.caseRunReport).toBeTruthy();
+    expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
   });
 });
 

@@ -11,11 +11,15 @@ import {
 import type {Material} from "@offroad/case-materials";
 import {
   BRIEF_SYSTEM,
+  SEMANTIC_AUDIT_SYSTEM,
   buildBriefInput,
   buildCaseArtifactManifest,
+  buildSemanticAuditInput,
   caseBriefSchema,
   deskEvidence,
   fingerprintJson,
+  semanticAuditSchema,
+  type ClaimDecision,
 } from "@offroad/case-understanding";
 import {archetypeIdSchema} from "@offroad/credit-playbook";
 import {documentKindSchema} from "@offroad/credit-ontology";
@@ -36,6 +40,14 @@ import {z} from "zod";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
 
 const recordSchema = z.record(z.string(), z.unknown());
+const claimDecisionSchema = z.object({
+  claimId: z.string().min(1),
+  decision: z.enum(["approved", "rejected"]),
+  claimFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+  decidedBy: z.string().uuid(),
+  decidedAt: z.string().datetime({offset: true}),
+  reason: z.string().min(3).max(1000).optional(),
+});
 const rawCaseInputSchema = z.object({
   session: recordSchema,
   run: recordSchema,
@@ -65,6 +77,7 @@ const rawCaseInputSchema = z.object({
   })),
   model_lineage: z.array(z.unknown()),
   expected_model_calls: z.coerce.number().int().nonnegative(),
+  claim_decisions: z.array(claimDecisionSchema).default([]),
 });
 
 export type CaseAnalysisDependencies = {
@@ -112,6 +125,7 @@ export async function processCaseAnalysisJob(
     ].map((mandate) => resolveMandate(mandate, {asOf: referenceDate(dependencies.now)}));
 
     const spentBefore = dependencies.gateway.spent();
+    let writerProvider: "anthropic" | "openai" | null = null;
     const result = await executeCaseEngine({
       runId: job.processing_run_id,
       caseId: job.intake_session_id,
@@ -123,6 +137,7 @@ export async function processCaseAnalysisJob(
       roomDocuments,
       dealBrief: dealBrief(raw.session),
       resolvedMandates,
+      claimDecisions: raw.claim_decisions as ClaimDecision[],
       externalReleaseApproved: false,
       writeBrief: async ({reconciliation, desk, trajectory}) => {
         const evidence = deskEvidence(desk, trajectory);
@@ -146,10 +161,32 @@ export async function processCaseAnalysisJob(
           schema: caseBriefSchema,
           schemaName: "case_brief",
         });
+        writerProvider = generated.provider;
         const after = dependencies.gateway.spent();
         return {
           brief: generated.output,
           blockedBy: [],
+          usage: {costUsd: after.costUsd - before.costUsd, modelCalls: after.calls - before.calls},
+          modelInvocations: dependencies.lineage().slice(callStart),
+        };
+      },
+      verifyBrief: async ({brief, facts, calculations}) => {
+        const callStart = dependencies.lineage().length;
+        const before = dependencies.gateway.spent();
+        const generated = await dependencies.gateway.complete({
+          task: "audit_evidence",
+          system: SEMANTIC_AUDIT_SYSTEM,
+          input: [{type: "text", text: buildSemanticAuditInput({brief, facts, calculations})}],
+          schema: semanticAuditSchema,
+          schemaName: "semantic_claim_audit",
+          // The evidence review must not be performed by the provider that wrote the case.
+          model: writerProvider === "openai"
+            ? {provider: "anthropic", model: "claude-opus-5", effort: "high"}
+            : {provider: "openai", model: "gpt-5.6-sol", effort: "high"},
+        });
+        const after = dependencies.gateway.spent();
+        return {
+          audit: generated.output,
           usage: {costUsd: after.costUsd - before.costUsd, modelCalls: after.calls - before.calls},
           modelInvocations: dependencies.lineage().slice(callStart),
         };
