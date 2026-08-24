@@ -43,6 +43,7 @@ describe("worker case analysis", () => {
     let completed: Record<string, unknown> | null = null;
     const stages: Array<{stage: string; status: string}> = [];
     const modelCalls: Array<{task: string; provider?: string}> = [];
+    const retrievalRequests: Array<{query: string; allowedFundIds?: string[]}> = [];
     const raw = {
       session: {
         id: job.intake_session_id,
@@ -65,6 +66,8 @@ describe("worker case analysis", () => {
         fact("debt.total_gross", 60_000_000),
         fact("historical_financials.2025.cash", 10_000_000),
         fact("historical_financials.2025.ebitda", 25_000_000),
+        fact("leverage.post_transaction_net_debt_ebitda", 2.8),
+        fact("projections.minimum_dscr", 1.45),
       ],
       sources: [{id: "source-1", document_version: 1, sha256: "d".repeat(64)}],
       documents: [
@@ -73,7 +76,7 @@ describe("worker case analysis", () => {
       layers: [{source_document_id: "source-1", document_version: 1, sha256: "d".repeat(64), parser_versions: {}, processing_run_id: job.processing_run_id, status: "ready"}],
       answers: [],
       directory_mandates: [{
-        fund_id: "fund-1",
+        fund_id: "f1111111-1111-4111-8111-111111111111",
         fund_name: "Fundo Confidencial",
         observations: [
           observation("ticket", {min: "10000000", max: "100000000"}),
@@ -82,6 +85,8 @@ describe("worker case analysis", () => {
           observation("instruments", ["ccb"]),
           observation("collateral", ["recebiveis"]),
           observation("geographies", ["SP"]),
+          observation("leverage_ceiling", "3.5"),
+          observation("minimum_dscr", "1.2"),
           observation("active", true),
         ],
       }],
@@ -96,13 +101,28 @@ describe("worker case analysis", () => {
       writeStage: async (_job, stage, status) => { stages.push({stage, status}); },
       recordDocument: async () => {},
       recordCandidates: async () => ({written: 0, replaced: 0}),
+      recordRetrievalChunks: async () => ({written: 0, sourceDocumentId: "source-1"}),
       loadCaseInput: async () => raw,
+      loadRetrievalContext: async (_job, input) => {
+        retrievalRequests.push(input);
+        return {
+          playbook_version: "2026.08.24-v2",
+          results: [{
+            source: "house_playbook",
+            id: "71100000-0000-4000-8000-000000000003",
+            content: "Expansão exige orçamento, cronograma, capacidade de pagamento e cenário de atraso.",
+            citation: {key: "growth-expansion", label: "credit-playbook:growth-expansion"},
+            score: 0.8,
+          }],
+          abstained: false,
+        };
+      },
       recordCaseSnapshot: async (_job, _manifest, state) => {
         recordedState = state as Record<string, unknown>;
         return "manifest-1";
       },
       complete: async (_job, result) => { completed = result as Record<string, unknown>; },
-      fail: async () => { throw new Error("the case should not fail"); },
+      fail: async (_job, error) => { throw new Error(`the case should not fail: ${JSON.stringify(error)}`); },
     };
     let spent = {costUsd: 0, calls: 0};
     const gateway = {
@@ -152,14 +172,30 @@ describe("worker case analysis", () => {
     expect(outcome).toEqual({status: "succeeded", manifestId: "manifest-1"});
     expect(stages).toEqual([
       {stage: "case_analysis", status: "started"},
+      {stage: "retrieval", status: "started"},
+      {stage: "retrieval", status: "succeeded"},
+      {stage: "mandate_retrieval", status: "started"},
+      {stage: "mandate_retrieval", status: "succeeded"},
       {stage: "case_analysis", status: "succeeded"},
     ]);
     const persisted = recordedState as unknown as Record<string, unknown>;
     const privateResult = completed as unknown as Record<string, unknown>;
     const publicMatching = persisted.matching as Record<string, unknown>;
-    expect(publicMatching).toMatchObject({screened: true, counts: {fits: 0, possible: 1, excluded: 0}});
+    expect(publicMatching).toMatchObject({screened: true, counts: {fits: 1, possible: 0, excluded: 0}});
     expect(JSON.stringify(persisted)).not.toContain("Fundo Confidencial");
+    expect(JSON.stringify(persisted)).not.toContain("Expansão exige orçamento");
     expect(JSON.stringify(privateResult)).toContain("Fundo Confidencial");
+    expect(JSON.stringify(privateResult)).not.toContain("Expansão exige orçamento");
+    expect(retrievalRequests).toHaveLength(2);
+    expect(retrievalRequests[0]?.allowedFundIds).toEqual([]);
+    expect(retrievalRequests[1]?.allowedFundIds).toEqual(["f1111111-1111-4111-8111-111111111111"]);
+    expect(persisted.retrieval).toMatchObject({
+      primary: {playbookVersion: "2026.08.24-v2", sourceCounts: {house_playbook: 1}},
+      mandates: {allowedFundCount: 1},
+    });
+    expect(privateResult.retrieval_lineage).toMatchObject({
+      primary: {resultIds: ["71100000-0000-4000-8000-000000000003"]},
+    });
     expect(persisted.caseRunReport).toBeTruthy();
     expect(persisted.receivables).toMatchObject({
       caseId: "worker-receivables-case",

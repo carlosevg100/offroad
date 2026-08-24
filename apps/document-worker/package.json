@@ -21,6 +21,7 @@
     "@offroad/document-intelligence": "workspace:*",
     "@offroad/document-parsers": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
+    "@offroad/governed-retrieval": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "@offroad/receivables-analysis": "workspace:*",
     "@offroad/model-gateway": "workspace:*",

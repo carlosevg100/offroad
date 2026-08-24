@@ -45,6 +45,7 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
     failed: [] as {error: {reason?: string}; options?: {retryable?: boolean}}[],
     uploaded: [] as number[],
     candidates: [] as unknown[][],
+    retrievalChunks: [] as unknown[][],
   };
 
   const deps: PipelineDependencies = {
@@ -61,7 +62,12 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
         calls.candidates.push(candidates);
         return {written: candidates.length, replaced: 0};
       },
+      recordRetrievalChunks: async (_job, chunks) => {
+        calls.retrievalChunks.push(chunks);
+        return {written: chunks.length, sourceDocumentId: job().payload.source_document_id};
+      },
       loadCaseInput: async () => ({}),
+      loadRetrievalContext: async () => ({playbook_version: null, results: [], abstained: true}),
       recordCaseSnapshot: async () => "manifest-id",
       complete: async (_job, result) => {
         calls.completed.push(result);
@@ -150,6 +156,7 @@ describe("a healthy document goes through every stage", () => {
       "store_layer",
       "profile",
       "usage",
+      "index_retrieval",
     ]);
 
     // the layer really was uploaded, and its size is what got recorded
@@ -159,6 +166,12 @@ describe("a healthy document goes through every stage", () => {
     const recorded = calls.documents.at(-1) as {layer?: {object_path: string; parser_versions: Record<string, string>}};
     expect(recorded.layer?.object_path).toBe("org/session/dre.layer.json");
     expect(Object.keys(recorded.layer?.parser_versions ?? {}).length).toBeGreaterThan(0);
+    expect(calls.retrievalChunks).toHaveLength(1);
+    expect(calls.retrievalChunks[0]?.[0]).toMatchObject({
+      chunk_key: expect.stringContaining("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee:v1"),
+      locale: "pt-BR",
+      source_anchor: {kind: "sheet"},
+    });
   });
 
   it("reports the run timeline stage by stage, so the screen can show progress", async () => {

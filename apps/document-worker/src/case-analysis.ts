@@ -33,6 +33,7 @@ import {
   type Mandate,
   type Sourced,
 } from "@offroad/fund-mandate";
+import {sha256} from "@offroad/governed-retrieval";
 import {gatewayCallLogSchema, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import type {FactCandidate} from "@offroad/reconciliation";
 import {receivablesCaseSchema} from "@offroad/receivables-analysis";
@@ -41,6 +42,21 @@ import {z} from "zod";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
 
 const recordSchema = z.record(z.string(), z.unknown());
+const retrievalContextSchema = z.object({
+  playbook_version: z.string().nullable(),
+  results: z.array(z.object({
+    source: z.enum(["case", "house_playbook", "mandate_note", "precedent"]),
+    id: z.string().min(1),
+    content: z.string().min(1).max(12_000),
+    citation: z.object({
+      key: z.string().min(1),
+      label: z.string().min(1),
+    }).passthrough(),
+    score: z.coerce.number(),
+  })),
+  abstained: z.boolean(),
+});
+type RetrievalContext = z.infer<typeof retrievalContextSchema>;
 const claimDecisionSchema = z.object({
   claimId: z.string().min(1),
   decision: z.enum(["approved", "rejected"]),
@@ -126,6 +142,27 @@ export async function processCaseAnalysisJob(
       ...raw.registered_mandates.map(registeredMandate),
     ].map((mandate) => resolveMandate(mandate, {asOf: referenceDate(dependencies.now)}));
 
+    // The house playbook is retrieved by an approved version before a model writes anything.
+    // It may guide the analysis, but it is never evidence about this company. Case passages stay
+    // out of the writer input because the brief is allowed to use only reconciled facts.
+    const primaryQuery = retrievalQuery(archetypeId);
+    const primaryRetrieval = await loadRetrieval(
+      dependencies.queue,
+      job,
+      primaryQuery,
+      [],
+      log,
+      "retrieval",
+    );
+    const playbookLines = primaryRetrieval.results
+      .filter((entry) => entry.source === "house_playbook")
+      .map((entry) => `- [${entry.citation.label}] ${entry.content}`);
+    if (!primaryRetrieval.playbook_version || playbookLines.length === 0) {
+      throw Object.assign(new Error("approved house playbook context was not retrieved"), {
+        code: "playbook_context_unavailable",
+      });
+    }
+
     const spentBefore = dependencies.gateway.spent();
     let writerProvider: "anthropic" | "openai" | null = null;
     const result = await executeCaseEngine({
@@ -159,6 +196,7 @@ export async function processCaseAnalysisJob(
               gaps: reconciliation.gaps,
               locale,
               deskLines: evidence.promptLines,
+              playbookLines,
             }),
           }],
           schema: caseBriefSchema,
@@ -196,12 +234,44 @@ export async function processCaseAnalysisJob(
       },
     });
 
+    // Only mandates that already passed every structured criterion may unlock their open notes.
+    // Semantic retrieval can add context after that decision; it cannot rescue an excluded or
+    // incomplete mandate. UUID validation also prevents fixture labels or malformed ids from
+    // crossing the database boundary.
+    const allowedFundIds = result.state.matching.fits
+      .filter((fit) => fit.verdict === "fits")
+      .map((fit) => fit.fundId)
+      .filter((fundId) => z.uuid().safeParse(fundId).success)
+      .sort();
+    const mandateQuery = "mandato OR ticket OR prazo OR setor OR instrumento OR garantia OR retorno";
+    const mandateRetrieval = await loadRetrieval(
+      dependencies.queue,
+      job,
+      mandateQuery,
+      allowedFundIds,
+      log,
+      "mandate_retrieval",
+    );
+
     const publicState = publicCaseState(result.state);
     const publicReport = publicCaseRunReport(result.report);
     const economic = economicInput(raw);
     const extractionVersion = stringOr(raw.session.extraction_version, "unknown");
     const versions = pipelineVersions({snapshot: economic, extractionVersion});
-    const inputFingerprint = fingerprintJson({economics: economic, versions, caseEngine: caseEngineVersion});
+    const privateRetrievalLineage = {
+      primary: retrievalLineage(primaryQuery, primaryRetrieval, 0, true),
+      mandates: retrievalLineage(mandateQuery, mandateRetrieval, allowedFundIds.length, true),
+    };
+    const publicRetrievalLineage = {
+      primary: retrievalLineage(primaryQuery, primaryRetrieval, 0, false),
+      mandates: retrievalLineage(mandateQuery, mandateRetrieval, allowedFundIds.length, false),
+    };
+    const inputFingerprint = fingerprintJson({
+      economics: economic,
+      versions,
+      caseEngine: caseEngineVersion,
+      retrieval: privateRetrievalLineage,
+    });
     const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
     const currentLineage = dependencies.lineage();
     const allLineage = [...(priorLineage.success ? priorLineage.data : []), ...currentLineage];
@@ -217,6 +287,7 @@ export async function processCaseAnalysisJob(
       caseRunReport: publicReport,
       fingerprint: inputFingerprint,
       locale,
+      retrieval: publicRetrievalLineage,
     };
     const manifest = buildCaseArtifactManifest({
       caseId: job.intake_session_id,
@@ -256,6 +327,7 @@ export async function processCaseAnalysisJob(
       match_details: result.state.matching,
       spend: dependencies.gateway.spent(),
       model_lineage: currentLineage,
+      retrieval_lineage: privateRetrievalLineage,
     });
     log("case.done", {job: job.job_id, manifest: manifestId, mandates: resolvedMandates.length});
     return {status: "succeeded", manifestId};
@@ -270,6 +342,73 @@ export async function processCaseAnalysisJob(
     log("case.failed", {job: job.job_id, code: errorCode(error)});
     return {status: "failed"};
   }
+}
+
+async function loadRetrieval(
+  queue: QueueClient,
+  job: CaseAnalysisJob,
+  query: string,
+  allowedFundIds: string[],
+  log: (event: string, detail?: Record<string, unknown>) => void,
+  stage: "retrieval" | "mandate_retrieval",
+): Promise<RetrievalContext> {
+  await queue.writeStage(job, stage, "started");
+  try {
+    const context = retrievalContextSchema.parse(await queue.loadRetrievalContext(job, {
+      query,
+      allowedFundIds,
+      limit: 24,
+    }));
+    const counts = sourceCounts(context);
+    await queue.writeStage(job, stage, "succeeded", {
+      playbookVersion: context.playbook_version,
+      resultCount: context.results.length,
+      sourceCounts: counts,
+      allowedFundCount: allowedFundIds.length,
+      abstained: context.abstained,
+    });
+    log(`case.${stage}`, {job: job.job_id, results: context.results.length, allowedFunds: allowedFundIds.length});
+    return context;
+  } catch (error) {
+    await queue.writeStage(job, stage, "failed", {code: errorCode(error)});
+    throw error;
+  }
+}
+
+function retrievalLineage(
+  query: string,
+  context: RetrievalContext,
+  allowedFundCount: number,
+  includeResultIds: boolean,
+) {
+  return {
+    queryHash: sha256(query),
+    playbookVersion: context.playbook_version,
+    sourceCounts: sourceCounts(context),
+    allowedFundCount,
+    abstained: context.abstained,
+    ...(includeResultIds ? {resultIds: context.results.map((entry) => entry.id)} : {}),
+  };
+}
+
+function sourceCounts(context: RetrievalContext): Record<string, number> {
+  return context.results.reduce<Record<string, number>>((counts, entry) => {
+    counts[entry.source] = (counts[entry.source] ?? 0) + 1;
+    return counts;
+  }, {});
+}
+
+function retrievalQuery(archetypeId: z.infer<typeof archetypeIdSchema>): string {
+  const archetypeTerms: Record<z.infer<typeof archetypeIdSchema>, string> = {
+    working_capital: "capital de giro OR recebíveis OR liquidez",
+    growth_expansion: "expansão OR crescimento OR capex OR ramp-up",
+    acquisition: "aquisição OR M&A OR pró-forma OR integração",
+    refinance: "refinanciamento OR vencimentos OR alongamento",
+    equipment_finance: "equipamento OR capex OR garantia",
+    venture_debt: "venture debt OR runway OR sponsor",
+    other: "capacidade OR estrutura OR evidência",
+  };
+  return `${archetypeTerms[archetypeId]} OR capacidade OR estrutura OR evidência OR mandato`;
 }
 
 function toCandidate(candidate: Record<string, unknown>): FactCandidate {

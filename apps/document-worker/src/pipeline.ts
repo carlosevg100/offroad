@@ -6,6 +6,7 @@ import {
   type ParseResult,
 } from "@offroad/document-parsers";
 import type {Classifier, DocumentProfile} from "@offroad/document-classification";
+import {buildCaseChunks} from "@offroad/governed-retrieval";
 import {ModelGatewayError, type GatewayCallLog} from "@offroad/model-gateway";
 import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
 import type {DocumentJob, QueueClient} from "./queue";
@@ -194,6 +195,31 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
         : {}),
     });
 
+    // ---- Governed case retrieval ------------------------------------------------------
+    // Searchable context is derived only from the deterministic document layer. Each chunk
+    // keeps the page, sheet, section or slide anchor that produced it, and the database
+    // re-checks its SHA-256 before accepting it. No model-generated summary enters this index.
+    const retrievalChunks = buildCaseChunks({
+      organizationId: job.organization_id,
+      intakeSessionId: job.intake_session_id,
+      sourceDocumentId: payload.source_document_id,
+      documentVersion: payload.document_version,
+      sourceLabel: payload.original_name,
+      layer: parsed.layer,
+      ...(payload.locale === "pt-BR" || payload.locale === "en-US" ? {locale: payload.locale} : {}),
+    });
+    const indexed = await stage("index_retrieval", () => queue.recordRetrievalChunks(
+      job,
+      retrievalChunks.map((chunk) => ({
+        chunk_key: chunk.citation.key,
+        content: chunk.content,
+        content_hash: chunk.contentHash,
+        locale: chunk.locale,
+        source_anchor: chunk.citation.anchor,
+        tags: chunk.tags,
+      })),
+    ));
+
     // ---- E3 extraction ---------------------------------------------------------------
     // The profile says what the document is; this says what it states. Every candidate has
     // already been checked against the document it cites before it reaches the database —
@@ -229,6 +255,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       warnings: parsed.warnings,
       detected: parsed.detected,
       ...(extracted ? {candidates: written, chunks_failed: extracted.chunks.failed} : {}),
+      retrieval_chunks: indexed.written,
       ...(deps.spend ? {spend: deps.spend()} : {}),
       ...(deps.lineage ? {model_lineage: deps.lineage()} : {}),
     });

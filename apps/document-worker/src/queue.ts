@@ -62,7 +62,14 @@ export type QueueClient = {
   writeStage(job: ClaimedJob, stage: string, status: StageStatus, detail?: unknown, usage?: Record<string, number>): Promise<void>;
   recordDocument(job: ClaimedJob, input: {scanResult?: unknown; profile?: unknown; layer?: unknown}): Promise<void>;
   recordCandidates(job: ClaimedJob, candidates: unknown[]): Promise<{written: number; replaced: number}>;
+  recordRetrievalChunks(job: DocumentJob, chunks: unknown[]): Promise<{written: number; sourceDocumentId: string}>;
   loadCaseInput(job: CaseAnalysisJob): Promise<unknown>;
+  loadRetrievalContext(job: CaseAnalysisJob, input: {
+    query: string;
+    allowedFundIds?: string[];
+    precedentPurpose?: string;
+    limit?: number;
+  }): Promise<unknown>;
   recordCaseSnapshot(job: CaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
   fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
@@ -141,6 +148,19 @@ export function createQueueClient(
       return {written: result.written ?? 0, replaced: result.replaced ?? 0};
     },
 
+    async recordRetrievalChunks(job, chunks) {
+      const data = await call("worker_record_retrieval_chunks", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_chunks: chunks,
+      });
+      const result = (data ?? {}) as {written?: number; source_document_id?: string};
+      return {
+        written: result.written ?? 0,
+        sourceDocumentId: result.source_document_id ?? job.payload.source_document_id,
+      };
+    },
+
     async loadCaseInput(job) {
       const args = {
         p_job_id: job.job_id,
@@ -152,6 +172,17 @@ export function createQueueClient(
       ]);
       if (!input || typeof input !== "object" || Array.isArray(input)) return input;
       return {...input, claim_decisions: decisions};
+    },
+
+    async loadRetrievalContext(job, input) {
+      return call("worker_load_retrieval_context", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_query: input.query,
+        p_allowed_fund_ids: input.allowedFundIds ?? [],
+        p_precedent_purpose: input.precedentPurpose ?? null,
+        p_limit: input.limit ?? 20,
+      });
     },
 
     async recordCaseSnapshot(job, manifest, state) {

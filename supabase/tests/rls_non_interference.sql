@@ -505,6 +505,34 @@ insert into auth.users (
 insert into private.worker_tokens (label, token_sha256)
 values ('rls-test-worker', extensions.digest(repeat('w', 64), 'sha256'));
 
+-- A platform mandate note is indexed from its append-only observation. It remains invisible to
+-- borrower-side tenants and can be retrieved by a case worker only after that fund id has passed
+-- the structured screen.
+insert into public.fund_directory (id, legal_name, kind, status)
+values ('70000000-0000-4000-8000-000000000701', 'RLS Governed Retrieval Fund', 'credit_fund', 'mapped');
+
+insert into public.fund_mandate_observations (
+  id, fund_id, criterion, value, provenance, observed_at, note, source_url
+) values (
+  '70000000-0000-4000-8000-000000000702',
+  '70000000-0000-4000-8000-000000000701',
+  'ticket',
+  '{"min":"10000000","max":"80000000"}'::jsonb,
+  'conversation',
+  current_date,
+  'Mandato atualizado: busca expansão com estrutura amortizante e garantia de recebíveis.',
+  'https://example.invalid/mandate-note'
+);
+
+do $$
+begin
+  if (select count(*) from public.mandate_note_embeddings
+      where observation_id = '70000000-0000-4000-8000-000000000702') <> 1 then
+    raise exception 'append-only mandate observation did not enter the governed note index';
+  end if;
+end;
+$$;
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -640,6 +668,7 @@ declare
   case_input jsonb;
   manifest jsonb;
   manifest_id uuid;
+  retrieval jsonb;
 begin
   -- RLS gives the worker account nothing on its own
   if (select count(*) from public.processing_runs) <> 0 then
@@ -721,6 +750,36 @@ begin
     raise exception 'worker did not persist the profile and the layer';
   end if;
 
+  begin
+    perform public.worker_record_retrieval_chunks(
+      job_id,
+      repeat('y', 64),
+      '[]'::jsonb
+    );
+    raise exception 'retrieval indexing accepted a wrong capability';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  result := public.worker_record_retrieval_chunks(
+    job_id,
+    capability,
+    jsonb_build_array(jsonb_build_object(
+      'chunk_key', '50000000-0000-4000-8000-000000000003:v1:p1:1',
+      'content', 'Receita, dívida e capacidade de pagamento da expansão aparecem na página um.',
+      'content_hash', encode(extensions.digest(
+        'Receita, dívida e capacidade de pagamento da expansão aparecem na página um.',
+        'sha256'
+      ), 'hex'),
+      'locale', 'pt-BR',
+      'source_anchor', jsonb_build_object('kind', 'page', 'id', 'p1', 'page', 1),
+      'tags', jsonb_build_array('page', 'native')
+    ))
+  );
+  if (result->>'written')::integer <> 1 then
+    raise exception 'worker did not persist its parser-anchored retrieval chunk: %', result;
+  end if;
+
   result := public.worker_complete_job(job_id, capability, '{"documents":1, "spend": {"costUsd": 0.42, "calls": 3}}'::jsonb);
   if (result->>'pending_jobs')::integer <> 1 then
     raise exception 'the final document did not enqueue case analysis';
@@ -764,6 +823,54 @@ begin
   begin
     perform public.worker_load_case_input(case_job_id, repeat('z', 64));
     raise exception 'case input accepted a wrong capability';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  retrieval := public.worker_load_retrieval_context(
+    case_job_id,
+    case_capability,
+    'expansão OR receita OR mandato OR estrutura',
+    array['70000000-0000-4000-8000-000000000701'::uuid],
+    null,
+    20
+  );
+  if retrieval->>'playbook_version' <> '2026.08.24-v2'
+    or not exists (
+      select 1 from jsonb_array_elements(retrieval->'results') entry
+      where entry->>'source' = 'case'
+    )
+    or not exists (
+      select 1 from jsonb_array_elements(retrieval->'results') entry
+      where entry->>'source' = 'house_playbook'
+    )
+    or not exists (
+      select 1 from jsonb_array_elements(retrieval->'results') entry
+      where entry->>'source' = 'mandate_note'
+    ) then
+    raise exception 'governed retrieval did not return the scoped case, approved playbook and allowed note: %', retrieval;
+  end if;
+
+  retrieval := public.worker_load_retrieval_context(
+    case_job_id,
+    case_capability,
+    'mandato OR estrutura',
+    '{}'::uuid[],
+    null,
+    20
+  );
+  if exists (
+    select 1 from jsonb_array_elements(retrieval->'results') entry
+    where entry->>'source' = 'mandate_note'
+  ) then
+    raise exception 'mandate note retrieval bypassed the structured allowed-fund list';
+  end if;
+
+  begin
+    perform public.worker_load_retrieval_context(
+      case_job_id, repeat('z', 64), 'receita', '{}'::uuid[], null, 20
+    );
+    raise exception 'governed retrieval accepted a forged capability';
   exception
     when insufficient_privilege then null;
   end;
@@ -836,6 +943,82 @@ begin
 
   -- a human decision must survive a reprocessing run
   update public.document_profiles set review_state = 'accepted' where source_document_id = document_id;
+end;
+$$;
+
+-- The derived case index is readable only by its tenant and immutable from the browser. Platform
+-- playbooks, mandate notes and precedents are not borrower discovery surfaces.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  accepted boolean;
+begin
+  if (select count(*) from public.case_retrieval_chunks
+      where source_document_id = '50000000-0000-4000-8000-000000000003') <> 1 then
+    raise exception 'tenant A could not read its own governed case chunk';
+  end if;
+  if (select count(*) from public.house_playbook_versions) <> 0
+    or (select count(*) from public.house_playbook_chunks) <> 0
+    or (select count(*) from public.mandate_note_embeddings) <> 0
+    or (select count(*) from public.governed_precedents) <> 0 then
+    raise exception 'borrower tenant read an internal retrieval corpus';
+  end if;
+
+  accepted := true;
+  begin
+    insert into public.case_retrieval_chunks (
+      organization_id, intake_session_id, source_document_id, document_version,
+      processing_run_id, chunk_key, content, content_hash, source_anchor
+    ) values (
+      '20000000-0000-4000-8000-000000000001',
+      '40000000-0000-4000-8000-000000000003',
+      '50000000-0000-4000-8000-000000000003',
+      1,
+      (select id from public.processing_runs where intake_session_id = '40000000-0000-4000-8000-000000000003' order by run_no limit 1),
+      'forged',
+      'Conteúdo forjado pelo navegador não pode entrar no índice do próprio caso.',
+      repeat('a', 64),
+      '{"kind":"page","id":"forged"}'::jsonb
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant inserted its own retrieval evidence'; end if;
+
+  accepted := true;
+  begin
+    update public.case_retrieval_chunks set content = 'Conteúdo reescrito pelo tenant.'
+    where source_document_id = '50000000-0000-4000-8000-000000000003';
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant rewrote a retrieval chunk'; end if;
+
+  accepted := true;
+  begin
+    delete from public.case_retrieval_chunks
+    where source_document_id = '50000000-0000-4000-8000-000000000003';
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant deleted a retrieval chunk'; end if;
+end;
+$$;
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+begin
+  if (select count(*) from public.case_retrieval_chunks) <> 0 then
+    raise exception 'tenant B read tenant A retrieval chunks';
+  end if;
 end;
 $$;
 
