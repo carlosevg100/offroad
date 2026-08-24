@@ -3014,6 +3014,19 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_load_case_input: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_record_case_snapshot: {
+        Args: {
+          p_capability_token: string
+          p_case_state: Json
+          p_job_id: string
+          p_manifest: Json
+        }
+        Returns: string
+      }
       worker_heartbeat: {
         Args: {
           p_capability_token: string

@@ -34,6 +34,22 @@ receivables/FIDC track, and staging promotion gates are the next measured
 increments. Do not report these items as live until their acceptance evidence is
 recorded.
 
+### Engineering update: governed case worker, 24 August 2026
+
+The economic pipeline no longer depends on a browser render. When the final
+document job reaches a terminal state, Postgres enqueues one `case_analysis`
+job for the run. The ECS worker receives borrower evidence and private mandate
+data through a short-lived job capability, executes `@offroad/case-engine`,
+and atomically records the immutable manifest and latest case snapshot.
+
+The confidentiality boundary is deliberate. Full provider identities,
+constraints, and fit explanations remain in the private processing-job result.
+The borrower workspace receives only fit counts, structural exclusions,
+information that could unlock a fit, and Offroad data gaps. Browser identities
+can read their own finished snapshot but can no longer attest or replace it.
+The web path can still build a deterministic preview while processing is in
+flight, without a model call or access to the private mandate directory.
+
 ### Update de produto: intake guiado, 22 August 2026
 
 The borrower and advisor intake now has one guided entry instead of an up-front

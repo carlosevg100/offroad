@@ -2,14 +2,14 @@ import {describe, expect, it, vi} from "vitest";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClamdScanner, runGate, sha256Of, verifyIntegrity, GateError, type Scanner} from "./scan";
 import {parseTesseractTsv} from "./tools";
-import type {ClaimedJob} from "./queue";
+import type {DocumentJob} from "./queue";
 import {ModelGatewayError} from "@offroad/model-gateway";
 
 const bytes = new TextEncoder().encode(
   "Rede Horizonte Ltda\nDemonstracao do resultado\nValores em R$ milhoes\nReceita liquida 185,4\n",
 );
 
-function job(overrides: Partial<ClaimedJob["payload"]> = {}): ClaimedJob {
+function job(overrides: Partial<DocumentJob["payload"]> = {}): DocumentJob {
   return {
     claimed: true,
     job_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -61,6 +61,8 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
         calls.candidates.push(candidates);
         return {written: candidates.length, replaced: 0};
       },
+      loadCaseInput: async () => ({}),
+      recordCaseSnapshot: async () => "manifest-id",
       complete: async (_job, result) => {
         calls.completed.push(result);
       },

@@ -11,11 +11,17 @@
     "start": "node dist/main.js"
   },
   "dependencies": {
+    "@offroad/case-engine": "workspace:*",
+    "@offroad/case-materials": "workspace:*",
+    "@offroad/case-understanding": "workspace:*",
+    "@offroad/credit-playbook": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/document-classification": "workspace:*",
     "@offroad/document-extraction": "workspace:*",
     "@offroad/document-intelligence": "workspace:*",
     "@offroad/document-parsers": "workspace:*",
+    "@offroad/fund-mandate": "workspace:*",
+    "@offroad/reconciliation": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
     "@supabase/supabase-js": "2.112.3",
     "zod": "4.4.3"

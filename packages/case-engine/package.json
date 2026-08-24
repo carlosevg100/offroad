@@ -16,15 +16,20 @@
     "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {
+    "@offroad/case-export": "workspace:*",
     "@offroad/case-materials": "workspace:*",
     "@offroad/case-runner": "workspace:*",
     "@offroad/case-understanding": "workspace:*",
     "@offroad/credit-analysis": "workspace:*",
+    "@offroad/credit-ontology": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/data-room": "workspace:*",
     "@offroad/deal-structure": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
+    "@offroad/financial-core": "workspace:*",
     "@offroad/market-reference": "workspace:*",
+    "@offroad/matching-core": "workspace:*",
+    "@offroad/model-gateway": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "zod": "4.4.3"
   },

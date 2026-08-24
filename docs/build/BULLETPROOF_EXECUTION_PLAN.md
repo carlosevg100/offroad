@@ -40,12 +40,18 @@ recebíveis.
   classifica falhas e interrompe todo o downstream após bloqueio ou erro.
 - [x] Budget por etapa e por case é um hard gate com custo e chamadas contabilizados.
 - [x] O motor único executa candidatos e documentos classificados, conciliação, cálculos,
-  estrutura, materiais, matching e resultado. A ligação da leitura de bytes brutos continua no worker.
+  estrutura, materiais, matching e resultado.
+- [x] O worker encadeia automaticamente a análise econômica depois do último documento, recebe
+  evidências e mandatos por capability temporária e grava o snapshot atestado. O navegador não
+  pode mais atestar nem substituir esse resultado.
+- [x] Identidades e critérios completos dos provedores permanecem no job privado. O workspace da
+  empresa recebe somente contagens, exclusões estruturais e lacunas necessárias ao direcionamento.
 - [x] Cada camada produz saída validada, fingerprint, duração e uso próprios.
 - [x] O relatório separa erro de leitura, erro de conciliação, erro de cálculo, erro de política,
   erro de material e erro de matching.
 - [x] Custo por case e número de chamadas são gates, não apenas métricas.
-- [ ] O CI recusa regressões críticas.
+- [x] O CI recusa regressões críticas no trilho implementado, incluindo contratos, budgets,
+  isolamento, append-only, build e jornadas E2E.
 - [x] O relatório identifica a versão do motor; o manifesto já inclui playbook, mercado, modelo e templates.
 
 ## Gate 3: caso corporativo âncora
