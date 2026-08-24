@@ -69,9 +69,10 @@ import {
 } from "@offroad/fund-mandate";
 import {indicativePrice, type IndicativePrice, type PricedInstrument} from "@offroad/market-reference";
 import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@offroad/reconciliation";
+import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.24-v2";
+export const caseEngineVersion = "2026.08.24-v3";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -112,6 +113,7 @@ export type CaseEngineInput = {
   claimDecisions?: ClaimDecision[];
   informationAnswers?: InformationAnswers;
   requirementResponses?: RequirementResponses;
+  receivablesCase?: ReceivablesCase;
   indexLevels?: {cdi: string; tlp: string; ipca: string; tr: string};
   writeBrief?: (input: {
     archetypeId: ArchetypeId;
@@ -119,6 +121,7 @@ export type CaseEngineInput = {
     reconciliation: ReconciliationReport;
     desk: DeskAnalysis | null;
     trajectory: Trajectory | null;
+    receivables: ReceivablesAnalysis | null;
   }) => Promise<BriefWriterResult>;
   verifyBrief?: (input: {
     brief: CaseBrief;
@@ -133,6 +136,7 @@ export type CaseEngineState = {
   capacity: CapacityAssessment | null;
   desk: DeskAnalysis | null;
   trajectory: Trajectory | null;
+  receivables: ReceivablesAnalysis | null;
   deskMissing: string[];
   clientQuestions: ClientQuestion[];
   termSheet: IndicativeTermSheet | null;
@@ -232,6 +236,7 @@ const metricsOutputSchema = z.object({
   trajectory: z.unknown().nullable(),
   deskMissing: z.array(z.string()),
   clientQuestions: z.array(z.unknown()),
+  receivables: z.unknown().nullable(),
 });
 const gapsOutputSchema = z.object({materialGapCount: z.number().int().nonnegative(), blockers: z.array(z.string())});
 const structureOutputSchema = z.object({
@@ -280,6 +285,7 @@ type MetricsOutput = {
   readiness: ReadinessReport;
   desk: DeskAnalysis | null;
   trajectory: Trajectory | null;
+  receivables: ReceivablesAnalysis | null;
   deskMissing: string[];
   clientQuestions: ClientQuestion[];
 };
@@ -399,11 +405,13 @@ export async function executeCaseEngine(
           );
           const desk = deskInputs.desk ? analyzeCreditPosition(deskInputs.desk) : null;
           const trajectory = deskInputs.trajectory ? projectLeverageTrajectory(deskInputs.trajectory) : null;
+          const receivables = input.receivablesCase ? analyzeReceivables(input.receivablesCase) : null;
           return {
             output: {
               readiness,
               desk,
               trajectory,
+              receivables,
               deskMissing: deskInputs.missing,
               clientQuestions: questionsForCompany(desk, trajectory, deskInputs.missing),
             } satisfies MetricsOutput,
@@ -414,11 +422,16 @@ export async function executeCaseEngine(
         outputSchema: gapsOutputSchema,
         execute: (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
-          const {readiness} = outputOf<MetricsOutput>(context, "metrics");
+          const metrics = outputOf<MetricsOutput>(context, "metrics");
+          const {readiness} = metrics;
           return {
             output: {
-              materialGapCount: reconciliation.gaps.filter((gap) => gap.severity === "critical" || gap.severity === "high").length,
-              blockers: readiness.blockers.map((blocker) => blocker.id),
+              materialGapCount: reconciliation.gaps.filter((gap) => gap.severity === "critical" || gap.severity === "high").length
+                + (metrics.receivables?.gaps.filter((gap) => gap.severity === "blocking" || gap.severity === "material").length ?? 0),
+              blockers: [
+                ...readiness.blockers.map((blocker) => blocker.id),
+                ...(metrics.receivables?.decision.blockingCodes ?? []),
+              ],
             } satisfies GapsOutput,
           };
         },
@@ -452,6 +465,7 @@ export async function executeCaseEngine(
             reconciliation,
             desk: metrics.desk,
             trajectory: metrics.trajectory,
+            receivables: metrics.receivables,
           });
           const proposedBrief = written.brief;
           let brief = proposedBrief;
@@ -618,7 +632,9 @@ export async function executeCaseEngine(
               outcome: deriveCaseOutcome({
                 informationSufficient: !metrics.readiness.blockers.some((blocker) => blocker.id === "minimum_documents"),
                 materialGapCount: gaps.materialGapCount,
-                analysisComplete: Boolean(metrics.desk && structure.capacity && structure.verdict),
+                analysisComplete: metrics.receivables
+                  ? true
+                  : Boolean(metrics.desk && structure.capacity && structure.verdict),
                 ...(structure.verdict ? {verdictStanding: structure.verdict.standing} : {}),
                 materialsAudit: materials.audit,
                 mandateScreeningComplete: matching.screened,
@@ -687,7 +703,8 @@ function structureCase(
       ...(number(valueOf("company.last_equity_round.amount")) ? {lastEquityRound: valueOf("company.last_equity_round.amount")!} : {}),
       ...(number(calculationOf("adjusted_ebitda")) ? {cfads: calculationOf("adjusted_ebitda")!, adjustedEbitda: calculationOf("adjusted_ebitda")!} : {}),
       ...(number(calculationOf("net_debt")) ? {existingNetDebt: calculationOf("net_debt")!} : {}),
-      ...(number(calculationOf("collateral_capacity_total")) ? {collateralCapacity: calculationOf("collateral_capacity_total")!} : {}),
+      ...(metrics.receivables ? {collateralCapacity: metrics.receivables.structure.supportedFacility}
+        : number(calculationOf("collateral_capacity_total")) ? {collateralCapacity: calculationOf("collateral_capacity_total")!} : {}),
       annualDebtServiceFactor: (1 / (archetype(input.archetypeId).structure.tenorMonths.typical[1] / 12) + 0.12).toFixed(4),
     });
     termSheet = buildTermSheet({

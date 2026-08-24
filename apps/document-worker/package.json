@@ -22,6 +22,7 @@
     "@offroad/document-parsers": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
+    "@offroad/receivables-analysis": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
     "@supabase/supabase-js": "2.112.3",
     "zod": "4.4.3"

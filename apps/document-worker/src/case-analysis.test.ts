@@ -1,4 +1,5 @@
 import type {ModelGateway, GatewayCallLog} from "@offroad/model-gateway";
+import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
 import {processCaseAnalysisJob} from "./case-analysis";
@@ -87,6 +88,7 @@ describe("worker case analysis", () => {
       registered_mandates: [],
       model_lineage: [],
       expected_model_calls: 0,
+      receivables_case: diversifiedReceivablesCase("worker-receivables-case"),
     };
     const queue: QueueClient = {
       claim: async () => null,
@@ -159,6 +161,10 @@ describe("worker case analysis", () => {
     expect(JSON.stringify(persisted)).not.toContain("Fundo Confidencial");
     expect(JSON.stringify(privateResult)).toContain("Fundo Confidencial");
     expect(persisted.caseRunReport).toBeTruthy();
+    expect(persisted.receivables).toMatchObject({
+      caseId: "worker-receivables-case",
+      decision: {status: "ready_for_structuring", externalDirectionAllowed: false},
+    });
     expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
   });
 });

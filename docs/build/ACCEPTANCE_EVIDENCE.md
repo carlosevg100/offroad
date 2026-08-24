@@ -113,6 +113,12 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Casos gerados no trilho governado | `evals/src/parametric-factory.test.ts` | expansão limpa, sala suja e recebíveis atravessam as 9 etapas; cálculos e matching batem com o gold; PT e EN mantêm identidade econômica | 2026-08-24 |
 | Evidência sem âncora falha fechada | `case-understanding/src/index.test.ts` + eval de sala suja | candidato permanece para revisão, mas claim material e cálculo dependente são bloqueados com `support_anchor_unverified` | 2026-08-24 |
 | Quality gate do Gate 5 | `pnpm check` | lint, typecheck, todos os testes e build verdes nos 35 pacotes | 2026-08-24 |
+| Vertical econômica de recebíveis | `@offroad/receivables-analysis` | 35 testes; elegibilidade, concentração, aging, performance, evidência, reconciliação, reforços, gatilhos e waterfall determinísticos | 2026-08-24 |
+| Biblioteca paramétrica de recebíveis | `receivables-fidc.test.ts` | 28 cenários independentes cobrem pronto, remediação e recusa; recusa sem base elegível identifica o motivo correto | 2026-08-24 |
+| Recebíveis no motor governado | `@offroad/case-engine` e `parametric-factory.test.ts` | a análise viaja pelas nove etapas, afeta blockers e capacidade suportada e preserva `externalDirectionAllowed: false` | 2026-08-24 |
+| Recebíveis no worker | `case-analysis.test.ts` | snapshot estruturado validado chega ao motor, é persistido no estado sanitizado e não autoriza direcionamento externo | 2026-08-24 |
+| Anchors artesanais de recebíveis | `receivables-analysis/src/anchors.ts` | dois candidatos preparados e explicitamente marcados `pending`; revisão independente ainda não contabilizada | 2026-08-24 |
+| Quality gate do Gate 6 | `pnpm check` | lint, typecheck, testes e build verdes nos 36 pacotes; 35 testes da vertical, 26 evals, 40 testes do worker e 117 testes web aprovados | 2026-08-24 |
 
 ## Regras
 

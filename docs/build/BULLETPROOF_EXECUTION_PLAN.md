@@ -95,12 +95,34 @@ os testes dos parsers sobre arquivos binários reais e não conclui a vertical d
 
 ## Gate 6: vertical de recebíveis e FIDC
 
-- [ ] Playbook específico de carteira, cedente, sacados, servicing e estrutura.
+- [x] Playbook específico de carteira, cedente, sacados, servicing e estrutura.
 - [ ] Casos âncora revisados por especialista.
-- [ ] Métricas de concentração, aging, inadimplência, perda, recuperação, diluição e recompra.
-- [ ] Reconciliação do loan tape com contabilidade e caixa.
-- [ ] Elegibilidade, reforços, gatilhos, waterfall e gaps operacionais.
-- [ ] Pelo menos vinte cenários paramétricos, incluindo recusa correta.
+- [x] Métricas de concentração, aging, inadimplência, perda, recuperação, diluição e recompra.
+- [x] Reconciliação do loan tape com contabilidade e caixa.
+- [x] Elegibilidade, reforços, gatilhos, waterfall e gaps operacionais.
+- [x] Pelo menos vinte cenários paramétricos, incluindo recusa correta.
+
+### Evidência de aceite funcional do Gate 6
+
+O pacote `@offroad/receivables-analysis` modela o objeto econômico correto: o FIDC é o veículo de
+capital, a cessão é o instrumento e a cobrança dos recebíveis é a fonte primária de pagamento. O
+motor avalia título a título, calcula concentração por sacado e grupo, aging, inadimplência,
+perdas, recuperação, diluição, recompra, substituição e prazo médio. Também reconcilia carteira,
+contabilidade, cobrança declarada e caixa efetivamente recebido, aplica elegibilidade, limites de
+concentração, advance rate, sobrecolateralização, subordinação, reserva e waterfall.
+
+Vinte e oito cenários independentes cobrem o caminho limpo, remediação e recusa, sem confundir
+informação incompleta com inviabilidade econômica. A cobertura inclui carteira
+sem base elegível, divergência contábil, caixa não conciliado, registro conflitante, recebível
+onerado, concentração, inadimplência, diluição, recompra, recuperação insuficiente, mapeamento de
+caixa e insuficiência de reforço. A vertical executa dentro de `@offroad/case-engine`, chega ao
+worker por um contrato estruturado validado e nunca libera direcionamento externo por conta
+própria.
+
+Dois casos âncora artesanais foram preparados, mas continuam marcados como `pending` até revisão
+econômica independente. O sistema não declara uma revisão que ainda não ocorreu. A compilação
+automática de loan tapes livres para o contrato estruturado também permanece fail-closed: um LLM
+genérico não pode inventar linhas, lastro ou conciliação para ativar esta análise.
 
 ## Gate 7: retrieval governado
 

@@ -35,6 +35,7 @@ import {
 } from "@offroad/fund-mandate";
 import {gatewayCallLogSchema, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import type {FactCandidate} from "@offroad/reconciliation";
+import {receivablesCaseSchema} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
 import type {CaseAnalysisJob, QueueClient} from "./queue";
@@ -78,6 +79,7 @@ const rawCaseInputSchema = z.object({
   model_lineage: z.array(z.unknown()),
   expected_model_calls: z.coerce.number().int().nonnegative(),
   claim_decisions: z.array(claimDecisionSchema).default([]),
+  receivables_case: receivablesCaseSchema.optional(),
 });
 
 export type CaseAnalysisDependencies = {
@@ -138,6 +140,7 @@ export async function processCaseAnalysisJob(
       dealBrief: dealBrief(raw.session),
       resolvedMandates,
       claimDecisions: raw.claim_decisions as ClaimDecision[],
+      ...(raw.receivables_case ? {receivablesCase: raw.receivables_case} : {}),
       externalReleaseApproved: false,
       writeBrief: async ({reconciliation, desk, trajectory}) => {
         const evidence = deskEvidence(desk, trajectory);

@@ -45,6 +45,7 @@
     "@offroad/document-parsers": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
+    "@offroad/receivables-analysis": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
     "decimal.js": "10.6.0",
     "zod": "4.4.3",
