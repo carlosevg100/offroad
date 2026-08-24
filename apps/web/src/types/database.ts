@@ -509,6 +509,70 @@ export type Database = {
           },
         ]
       }
+      claim_decisions: {
+        Row: {
+          claim_fingerprint: string
+          claim_id: string
+          decided_at: string
+          decided_by: string
+          decision: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          reason: string
+          source_manifest_id: string
+          source_registry_fingerprint: string
+        }
+        Insert: {
+          claim_fingerprint: string
+          claim_id: string
+          decided_at?: string
+          decided_by: string
+          decision: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          reason: string
+          source_manifest_id: string
+          source_registry_fingerprint: string
+        }
+        Update: {
+          claim_fingerprint?: string
+          claim_id?: string
+          decided_at?: string
+          decided_by?: string
+          decision?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          reason?: string
+          source_manifest_id?: string
+          source_registry_fingerprint?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_decisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_decisions_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "claim_decisions_organization_id_source_manifest_id_fkey"
+            columns: ["organization_id", "source_manifest_id"]
+            isOneToOne: false
+            referencedRelation: "case_artifact_manifests"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       document_intake_sessions: {
         Row: {
           archetype: string | null
@@ -2972,6 +3036,17 @@ export type Database = {
         }
         Returns: string
       }
+      record_claim_decision: {
+        Args: {
+          p_claim_fingerprint: string
+          p_claim_id: string
+          p_decision: string
+          p_organization_id: string
+          p_reason: string
+          p_session_id: string
+        }
+        Returns: string
+      }
       record_document_verification: {
         Args: {
           p_document_id: string
@@ -3015,6 +3090,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_case_input: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_claim_decisions: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }

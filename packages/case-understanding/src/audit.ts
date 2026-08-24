@@ -148,6 +148,8 @@ export function auditClaims(input: {
   claims: readonly AuditableClaim[];
   facts: readonly ReconciledFact[];
   calculations: readonly TracedCalculation[];
+  /** Claim registries enforce this separately so the numerical pass can remain independent. */
+  requireJudgmentApproval?: boolean;
 }): AuditReport {
   const factById = new Map<string, string>();
   for (const fact of input.facts) {
@@ -177,7 +179,7 @@ export function auditClaims(input: {
       continue;
     }
 
-    if (claim.kind === "judgment" && !claim.approved) {
+    if (claim.kind === "judgment" && input.requireJudgmentApproval !== false && !claim.approved) {
       findings.push({claimId: claim.id, reason: "material_judgment_without_approval", detail: "julgamento material sem aprovação"});
       continue;
     }

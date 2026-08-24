@@ -66,12 +66,12 @@ recebíveis.
 
 ## Gate 4: claims e publicação
 
-- [ ] Registro individual de claims e dependências.
-- [ ] Auditor numérico determinístico.
-- [ ] Verificador semântico independente.
-- [ ] Alteração de um fato identifica todos os artefatos afetados.
-- [ ] Claim material reprovado bloqueia publicação.
-- [ ] Aprovação humana e trilha de decisão persistidas.
+- [x] Registro individual de claims e dependências.
+- [x] Auditor numérico determinístico.
+- [x] Verificador semântico independente.
+- [x] Alteração de um fato identifica todos os artefatos afetados.
+- [x] Claim material reprovado bloqueia publicação.
+- [x] Aprovação humana e trilha de decisão persistidas.
 
 ## Gate 5: fábrica paramétrica
 

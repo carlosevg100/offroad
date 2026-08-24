@@ -77,6 +77,8 @@ export type CompileInput = {
   price?: IndicativePrice;
   /** The judgement on the operation; leads the memorandum when present. */
   verdict?: OperationVerdict;
+  /** Current human approvals, matched to the exact claim fingerprint upstream. */
+  approvedJudgmentIds?: readonly string[];
 };
 
 export type CompileOutcome =
@@ -172,7 +174,12 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
     };
   }
 
-  const audit = auditBrief({brief: input.brief, facts: input.facts, calculations: input.calculations});
+  const audit = auditBrief({
+    brief: input.brief,
+    facts: input.facts,
+    calculations: input.calculations,
+    ...(input.approvedJudgmentIds ? {approvedJudgmentIds: input.approvedJudgmentIds} : {}),
+  });
   if (!audit.ok) {
     return {ok: false, reason: "audit_failed", detail: audit.audit.findings.map((finding) => `${finding.claimId}: ${finding.reason} · ${finding.detail}`)};
   }

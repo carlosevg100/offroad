@@ -1716,9 +1716,12 @@ declare
   capability text;
   first_id uuid;
   second_id uuid;
+  decision_id uuid;
   manifest jsonb;
   collision_manifest jsonb;
   lineage jsonb;
+  decisions jsonb;
+  case_state jsonb;
   accepted boolean;
 begin
   set local role postgres;
@@ -1758,6 +1761,19 @@ begin
     'versions', '{}'::jsonb, 'models', '[]'::jsonb, 'sources', '[]'::jsonb,
     'outputs', '[]'::jsonb
   );
+  case_state := jsonb_build_object(
+    'fingerprint', repeat('d', 64),
+    'locale', 'pt',
+    'claimRegistry', jsonb_build_object(
+      'fingerprint', repeat('f', 64),
+      'claims', jsonb_build_array(jsonb_build_object(
+        'id', 'assessment',
+        'fingerprint', repeat('c', 64),
+        'kind', 'judgment',
+        'material', true
+      ))
+    )
+  );
 
   -- A fingerprint can be retried for the exact same immutable artifact, but it can never be
   -- rebound to another case. The earlier worker test already owns fingerprint b in this tenant.
@@ -1766,22 +1782,84 @@ begin
   begin
     perform public.worker_record_case_snapshot(
       job_id, capability, collision_manifest,
-      jsonb_build_object('fingerprint', repeat('d', 64), 'locale', 'pt')
+      case_state
     );
   exception when unique_violation then accepted := false;
   end;
   if accepted then raise exception 'a manifest fingerprint was rebound to a different case'; end if;
 
   first_id := public.worker_record_case_snapshot(
-    job_id, capability, manifest,
-    jsonb_build_object('fingerprint', repeat('d', 64), 'locale', 'pt')
+    job_id, capability, manifest, case_state
   );
   second_id := public.worker_record_case_snapshot(
-    job_id, capability, manifest,
-    jsonb_build_object('fingerprint', repeat('d', 64), 'locale', 'pt')
+    job_id, capability, manifest, case_state
   );
   if first_id is distinct from second_id then
     raise exception 'record_case_snapshot was not idempotent';
+  end if;
+
+  -- Only a current material judgment can be decided. The command derives the actor and binds
+  -- the decision to the immutable manifest already recorded by the worker.
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  decision_id := public.record_claim_decision(
+    org_a, session_id, 'assessment', repeat('c', 64), 'approved', 'A conclusão foi revisada contra as evidências citadas.'
+  );
+  if decision_id is null or (select count(*) from public.claim_decisions where id = decision_id) <> 1 then
+    raise exception 'the current material judgment decision was not persisted';
+  end if;
+
+  accepted := true;
+  begin
+    perform public.record_claim_decision(
+      org_a, session_id, 'assessment', repeat('9', 64), 'approved', 'Tentativa com versão antiga.'
+    );
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'a stale claim fingerprint was approved'; end if;
+
+  -- The browser can append through the command, never forge, rewrite or delete the ledger.
+  accepted := true;
+  begin
+    insert into public.claim_decisions (
+      organization_id, intake_session_id, source_manifest_id, source_registry_fingerprint,
+      claim_id, claim_fingerprint, decision, reason, decided_by
+    ) values (
+      org_a, session_id, first_id, repeat('f', 64), 'forged', repeat('1', 64),
+      'approved', 'forged', '10000000-0000-4000-8000-000000000001'
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant directly inserted a claim decision'; end if;
+
+  accepted := true;
+  begin
+    update public.claim_decisions set reason = 'rewritten' where id = decision_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant rewrote an append-only claim decision'; end if;
+
+  accepted := true;
+  begin
+    delete from public.claim_decisions where id = decision_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant deleted an append-only claim decision'; end if;
+
+  -- The active worker capability sees only this case's decision trail.
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  decisions := public.worker_load_claim_decisions(job_id, capability);
+  if jsonb_array_length(decisions) <> 1
+    or decisions -> 0 ->> 'claimId' <> 'assessment'
+    or decisions -> 0 ->> 'decision' <> 'approved' then
+    raise exception 'worker did not load the scoped claim decision trail: %', decisions;
   end if;
 
   perform public.worker_complete_job(job_id, capability, jsonb_build_object(
@@ -1864,6 +1942,17 @@ begin
   if (select count(*) from public.case_artifact_manifests where id = first_id) <> 0 then
     raise exception 'tenant B read tenant A manifest';
   end if;
+  if (select count(*) from public.claim_decisions where id = decision_id) <> 0 then
+    raise exception 'tenant B read tenant A claim decision';
+  end if;
+  accepted := true;
+  begin
+    perform public.record_claim_decision(
+      org_a, session_id, 'assessment', repeat('c', 64), 'approved', 'Tentativa de outro tenant.'
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant B approved tenant A claim'; end if;
   accepted := true;
   begin
     perform public.worker_load_case_input(job_id, repeat('z', 64));

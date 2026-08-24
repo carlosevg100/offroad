@@ -27,12 +27,12 @@ the pipeline:
 - the production-used legacy catalogue has an explicit compatibility adapter to
   the new taxonomy.
 
-This does not yet mean the raw-document pipeline is complete. Manifest
-persistence in real case snapshots, a one-command raw-document runner, the first
-full corporate anchor, semantic audit, parametric case generation, the dedicated
-receivables/FIDC track, and staging promotion gates are the next measured
-increments. Do not report these items as live until their acceptance evidence is
-recorded.
+The raw-document runner, workload-attested manifest, first full corporate anchor
+and claim-level publication controls now exist. The remaining measured increments
+are the founder and independent economic review of the anchor, parametric case
+generation, the dedicated receivables/FIDC track, governed retrieval and staging
+promotion gates. Do not report those remaining items as live until their
+acceptance evidence is recorded.
 
 ### Engineering update: governed case worker, 24 August 2026
 
@@ -49,6 +49,28 @@ information that could unlock a fit, and Offroad data gaps. Browser identities
 can read their own finished snapshot but can no longer attest or replace it.
 The web path can still build a deterministic preview while processing is in
 flight, without a model call or access to the private mandate directory.
+
+### Engineering update: claim registry and publication gate, 24 August 2026
+
+Claims are no longer accepted as one opaque brief. `@offroad/case-understanding`
+builds an individual registry with exact fingerprints, cited support and artifact
+dependencies. Numeric audit is deterministic. Semantic audit is performed by a
+second model on a different provider from the writer and receives only the claim
+and its reconciled support. A semantic review that is absent, malformed or
+uncertain fails closed.
+
+Material judgments require an explicit human decision. That decision is
+append-only and tied to the exact claim fingerprint, immutable source manifest
+and registry fingerprint. A changed claim or source makes the prior approval
+stale. Any failed or pending material claim blocks the teaser, credit profile,
+investor package and outbound data room, while preserving the internal brief for
+review. Changing one fact identifies every dependent claim and artifact.
+
+Persistence lives in `claim_decisions`. Direct writes are not granted. The public
+command is a security-invoker wrapper over a private implementation that validates
+the current snapshot, tenant, role and exact claim. Worker reads use the active
+job capability. Relevant migrations are `20260824180255`, `20260824180448` and
+`20260824180822`; generated application types include both registry commands.
 
 ### Update de produto: intake guiado, 22 August 2026
 

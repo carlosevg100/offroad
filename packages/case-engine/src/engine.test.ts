@@ -1,6 +1,7 @@
 import {resolveMandate, type Mandate, type Sourced} from "@offroad/fund-mandate";
 import type {FactCandidate} from "@offroad/reconciliation";
 import {describe, expect, it} from "vitest";
+import {claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
 
 import {executeCaseEngine} from "./engine";
 
@@ -119,11 +120,64 @@ describe("the governed case engine", () => {
         usage: {costUsd: 0.21, modelCalls: 1},
         modelInvocations: [{provider: "test", model: "fixture"}],
       }),
+      verifyBrief: async ({brief}) => ({
+        audit: supportedSemanticAudit(brief),
+        usage: {costUsd: 0.05, modelCalls: 1},
+        modelInvocations: [{provider: "independent-test", model: "verifier"}],
+      }),
     });
 
-    expect(result.report.stages.find((stage) => stage.stage === "claims")?.usage).toEqual({costUsd: 0.21, modelCalls: 1});
-    expect(result.report.usage).toEqual({costUsd: 0.21, modelCalls: 1});
+    expect(result.report.stages.find((stage) => stage.stage === "claims")?.usage).toEqual({costUsd: 0.26, modelCalls: 2});
+    expect(result.report.usage).toEqual({costUsd: 0.26, modelCalls: 2});
     expect(result.state.brief?.executiveSummary).toContain("Resumo institucional");
-    expect(result.state.modelInvocations).toHaveLength(1);
+    expect(result.state.modelInvocations).toHaveLength(2);
+    expect(result.state.claimRegistry?.publication.allowed).toBe(true);
+  });
+
+  it("keeps a reviewed judgment visible internally but blocks every publishable artifact until approval", async () => {
+    const judgment = {
+      id: "assessment",
+      text: "A companhia apresenta uma estrutura de capital compatível com a análise proposta.",
+      material: true,
+      kind: "judgment" as const,
+      supportIds: ["company.legal_name"],
+    };
+    const caseBrief = {
+      sections: [{id: "strengths" as const, heading: "Pontos fortes", claims: [judgment]}],
+      executiveSummary: "Resumo para revisão interna.",
+    };
+    const run = (claimDecisions?: ClaimDecision[]) => executeCaseEngine({
+      runId: "run-approval",
+      caseId: "case-approval",
+      archetypeId: "other",
+      locale: "pt",
+      referenceDate: "2026-08-24",
+      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text")],
+      documents,
+      roomDocuments: [],
+      dealBrief: {},
+      resolvedMandates: [],
+      externalReleaseApproved: false,
+      ...(claimDecisions ? {claimDecisions} : {}),
+      writeBrief: async () => ({brief: caseBrief, blockedBy: []}),
+      verifyBrief: async ({brief}) => ({audit: supportedSemanticAudit(brief)}),
+    });
+
+    const pending = await run();
+    expect(pending.state.brief).toEqual(caseBrief);
+    expect(pending.state.claimRegistry?.claims[0]?.status).toBe("pending_approval");
+    expect(pending.state.materials).toEqual([]);
+    expect(pending.state.dataRoom.releasable).toBe(false);
+
+    const approved = await run([{
+      claimId: judgment.id,
+      claimFingerprint: claimFingerprint(judgment),
+      decision: "approved",
+      decidedBy: "reviewer-1",
+      decidedAt: "2026-08-24T15:00:00.000Z",
+      reason: "Conclusão revisada contra as evidências citadas.",
+    }]);
+    expect(approved.state.claimRegistry?.publication.allowed).toBe(true);
+    expect(approved.state.materials.length).toBeGreaterThan(0);
   });
 });
