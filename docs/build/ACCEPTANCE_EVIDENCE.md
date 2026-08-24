@@ -1,5 +1,15 @@
 # Acceptance Evidence
 
+## Worker do case e fronteira de mandatos, 24/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Trilho econômico fora do navegador | `@offroad/document-worker` + `@offroad/case-engine` | o último job documental enfileira `case_analysis`; o worker executa as nove etapas e grava snapshot e manifesto com capability temporária |
+| Mandatos confidenciais | teste do worker e teste RLS | detalhes e identidade dos fundos permanecem no job privado; o estado do tomador contém somente resumo sanitizado |
+| Snapshot atestado | migration `20260824170000_worker_case_analysis.sql` | `authenticated` perde o antigo comando de escrita; somente o job de case leased e dentro do escopo grava o snapshot |
+| Regressão de aplicação | `pnpm check` | 34 pacotes: lint, tipagem, testes e build de produção verdes |
+| Banco e isolamento | job obrigatório `database` | migrations do zero, não interferência RLS e lint do schema devem passar antes do merge |
+
 ## Fundações bulletproof, 24/08/2026
 
 | Evidência | Comando/artefato | Resultado | Data |

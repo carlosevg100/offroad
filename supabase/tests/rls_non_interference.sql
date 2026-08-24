@@ -631,9 +631,15 @@ select set_config(
 do $$
 declare
   claim jsonb;
+  case_claim jsonb;
   job_id uuid;
+  case_job_id uuid;
   capability text;
+  case_capability text;
   result jsonb;
+  case_input jsonb;
+  manifest jsonb;
+  manifest_id uuid;
 begin
   -- RLS gives the worker account nothing on its own
   if (select count(*) from public.processing_runs) <> 0 then
@@ -660,6 +666,14 @@ begin
   if claim->'payload'->>'download_url' is null then
     raise exception 'job payload did not reach the worker';
   end if;
+
+  -- A valid document capability still cannot open the cross-tenant mandate directory.
+  begin
+    perform public.worker_load_case_input(job_id, capability);
+    raise exception 'a document capability opened case-analysis input';
+  exception
+    when insufficient_privilege then null;
+  end;
 
   -- a wrong capability cannot write anything
   begin
@@ -708,18 +722,16 @@ begin
   end if;
 
   result := public.worker_complete_job(job_id, capability, '{"documents":1, "spend": {"costUsd": 0.42, "calls": 3}}'::jsonb);
-  if (result->>'pending_jobs')::integer <> 0 then
-    raise exception 'run still had pending jobs after the only job completed';
+  if (result->>'pending_jobs')::integer <> 1 then
+    raise exception 'the final document did not enqueue case analysis';
   end if;
 
-  -- The assertion that was missing, and the reason a regression got all the way to production
-  -- unnoticed: the run finishing is not the point, the session becoming reviewable is. Without
-  -- this, a company uploads its data room, every fact is extracted correctly, and the screen
-  -- shows a spinner forever because the session never leaves `processing`.
+  -- A document is not a case. The session stays processing until the governed economic rail
+  -- finishes and attests its snapshot.
   if (select status from public.document_intake_sessions
       where organization_id = '20000000-0000-4000-8000-000000000001'
-        and id = '40000000-0000-4000-8000-000000000003') <> 'review_ready' then
-    raise exception 'the last job did not move the session to review_ready';
+        and id = '40000000-0000-4000-8000-000000000003') <> 'processing' then
+    raise exception 'the session became reviewable before case analysis';
   end if;
 
   -- And what it cost is on the run, not only in a log line.
@@ -736,6 +748,63 @@ begin
   exception
     when insufficient_privilege then null;
   end;
+
+  case_claim := public.worker_claim_job(repeat('w', 64), 600);
+  if case_claim->>'kind' <> 'case_analysis' then
+    raise exception 'the worker did not claim the governed case-analysis job';
+  end if;
+  case_job_id := (case_claim->>'job_id')::uuid;
+  case_capability := case_claim->>'capability_token';
+
+  case_input := public.worker_load_case_input(case_job_id, case_capability);
+  if case_input->'session'->>'id' <> '40000000-0000-4000-8000-000000000003'
+    or jsonb_array_length(case_input->'documents') <> 1 then
+    raise exception 'case capability did not load its scoped evidence';
+  end if;
+  begin
+    perform public.worker_load_case_input(case_job_id, repeat('z', 64));
+    raise exception 'case input accepted a wrong capability';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  manifest := jsonb_build_object(
+    'schemaVersion', '2026.08.24-v2',
+    'caseId', '40000000-0000-4000-8000-000000000003',
+    'runId', case_claim->>'processing_run_id',
+    'createdAt', '2026-08-24T12:00:00.000Z',
+    'locale', 'pt-BR',
+    'inputFingerprint', repeat('a', 64),
+    'manifestFingerprint', repeat('b', 64),
+    'capture', jsonb_build_object('sources', 'complete', 'models', 'complete'),
+    'versions', '{}'::jsonb,
+    'models', '[]'::jsonb,
+    'sources', '[]'::jsonb,
+    'outputs', '[]'::jsonb
+  );
+  manifest_id := public.worker_record_case_snapshot(
+    case_job_id,
+    case_capability,
+    manifest,
+    jsonb_build_object('fingerprint', repeat('a', 64), 'locale', 'pt')
+  );
+  if manifest_id is null then
+    raise exception 'case workload did not persist the immutable snapshot';
+  end if;
+  perform public.worker_write_stage_result(
+    case_job_id, case_capability, 'case_analysis', 'succeeded', '{}'::jsonb, '{}'::jsonb
+  );
+  result := public.worker_complete_job(
+    case_job_id, case_capability, '{"spend":{"costUsd":0,"calls":0},"model_lineage":[]}'::jsonb
+  );
+  if (result->>'pending_jobs')::integer <> 0 then
+    raise exception 'case analysis did not finish the run';
+  end if;
+  if (select status from public.document_intake_sessions
+      where organization_id = '20000000-0000-4000-8000-000000000001'
+        and id = '40000000-0000-4000-8000-000000000003') <> 'review_ready' then
+    raise exception 'case analysis did not move the session to review_ready';
+  end if;
 end;
 $$;
 
@@ -749,7 +818,7 @@ begin
   if (select status from public.processing_runs where intake_session_id = session_id) <> 'succeeded' then
     raise exception 'the run did not reach succeeded after its jobs finished';
   end if;
-  if (select jsonb_array_length(stages) from public.processing_runs where intake_session_id = session_id) <> 1 then
+  if (select jsonb_array_length(stages) from public.processing_runs where intake_session_id = session_id) <> 2 then
     raise exception 'the stage timeline was not recorded on the run';
   end if;
   if (select usage->>'input_tokens' from public.processing_runs where intake_session_id = session_id) <> '120' then
@@ -1642,6 +1711,9 @@ declare
   org_a constant uuid := '20000000-0000-4000-8000-000000000001';
   session_id constant uuid := '40000000-0000-4000-8000-0000000000f7';
   run_id constant uuid := '60000000-0000-4000-8000-0000000000f7';
+  claim jsonb;
+  job_id uuid;
+  capability text;
   first_id uuid;
   second_id uuid;
   manifest jsonb;
@@ -1654,30 +1726,28 @@ begin
   insert into public.processing_runs (
     id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
   ) values (
-    run_id, org_a, session_id, 1, 'manual', 'succeeded', 'test-pipeline',
+    run_id, org_a, session_id, 1, 'manual', 'running', 'test-pipeline',
     '10000000-0000-4000-8000-000000000001'
   );
   insert into public.processing_jobs (
-    organization_id, processing_run_id, intake_session_id, kind, status, model_calls, result
+    organization_id, processing_run_id, intake_session_id, kind, status
   ) values (
-    org_a, run_id, session_id, 'case_analysis', 'succeeded', 1,
-    jsonb_build_object('model_lineage', jsonb_build_array(jsonb_build_object(
-      'invocationId', '11111111-1111-4111-8111-111111111111',
-      'task', 'case_brief', 'provider', 'openai', 'model', 'gpt-test', 'effort', 'medium',
-      'outcome', 'ok', 'promptFingerprint', repeat('1', 64),
-      'inputFingerprint', repeat('2', 64), 'outputFingerprint', repeat('3', 64),
-      'usage', jsonb_build_object('inputTokens', 10, 'outputTokens', 2, 'cachedInputTokens', 0),
-      'costUsd', 0.01, 'latencyMs', 12, 'stopReason', 'end',
-      'usedFallback', false, 'fromCassette', false, 'schemaName', 'case_brief'
-    )))
+    org_a, run_id, session_id, 'case_analysis', 'queued'
   );
 
   set local role authenticated;
   perform set_config(
     'request.jwt.claims',
-    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
     true
   );
+
+  claim := public.worker_claim_job(repeat('w', 64), 600);
+  if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
+    raise exception 'worker did not claim the isolated case snapshot job';
+  end if;
+  job_id := (claim->>'job_id')::uuid;
+  capability := claim->>'capability_token';
 
   manifest := jsonb_build_object(
     'schemaVersion', '2026.08.24-v2', 'caseId', session_id::text, 'runId', run_id::text,
@@ -1688,17 +1758,38 @@ begin
     'outputs', '[]'::jsonb
   );
 
-  first_id := public.record_case_snapshot(
-    org_a, session_id, run_id, manifest,
+  first_id := public.worker_record_case_snapshot(
+    job_id, capability, manifest,
     jsonb_build_object('fingerprint', repeat('a', 64), 'locale', 'pt')
   );
-  second_id := public.record_case_snapshot(
-    org_a, session_id, run_id, manifest,
+  second_id := public.worker_record_case_snapshot(
+    job_id, capability, manifest,
     jsonb_build_object('fingerprint', repeat('a', 64), 'locale', 'pt')
   );
   if first_id is distinct from second_id then
     raise exception 'record_case_snapshot was not idempotent';
   end if;
+
+  perform public.worker_complete_job(job_id, capability, jsonb_build_object(
+    'spend', jsonb_build_object('costUsd', 0.01, 'calls', 1),
+    'model_lineage', jsonb_build_array(jsonb_build_object(
+      'invocationId', '11111111-1111-4111-8111-111111111111',
+      'task', 'case_brief', 'provider', 'openai', 'model', 'gpt-test', 'effort', 'medium',
+      'outcome', 'ok', 'promptFingerprint', repeat('1', 64),
+      'inputFingerprint', repeat('2', 64), 'outputFingerprint', repeat('3', 64),
+      'usage', jsonb_build_object('inputTokens', 10, 'outputTokens', 2, 'cachedInputTokens', 0),
+      'costUsd', 0.01, 'latencyMs', 12, 'stopReason', 'end',
+      'usedFallback', false, 'fromCassette', false, 'schemaName', 'case_brief'
+    ))
+  ));
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
   if (select count(*) from public.case_artifact_manifests where intake_session_id = session_id) <> 1 then
     raise exception 'duplicate immutable manifests were inserted';
   end if;
@@ -1740,6 +1831,13 @@ begin
   end;
   if accepted then raise exception 'tenant deleted an immutable artifact manifest'; end if;
 
+  accepted := true;
+  begin
+    perform public.record_case_snapshot(org_a, session_id, run_id, manifest, '{}'::jsonb);
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant browser retained the retired case snapshot write path'; end if;
+
   perform set_config(
     'request.jwt.claims',
     '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
@@ -1750,10 +1848,10 @@ begin
   end if;
   accepted := true;
   begin
-    perform public.record_case_snapshot(org_a, session_id, run_id, manifest, '{}'::jsonb);
-  exception when others then accepted := false;
+    perform public.worker_load_case_input(job_id, repeat('z', 64));
+  exception when insufficient_privilege then accepted := false;
   end;
-  if accepted then raise exception 'tenant B wrote tenant A case snapshot'; end if;
+  if accepted then raise exception 'tenant B loaded a case through a forged capability'; end if;
 
   set local role anon;
   accepted := true;

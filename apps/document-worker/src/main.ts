@@ -9,6 +9,7 @@ import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClassifier} from "@offroad/document-classification";
 import {createStorageUrlGuard} from "./storage-url";
+import {processCaseAnalysisJob} from "./case-analysis";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -169,14 +170,21 @@ async function main(): Promise<void> {
     );
 
     const gatewayRun = newGateway();
-    current = processDocumentJob(job, dependenciesFor(gatewayRun))
+    current = (job.kind === "case_analysis"
+      ? processCaseAnalysisJob(job, {
+          queue,
+          gateway: gatewayRun.gateway,
+          lineage: () => gatewayRun.calls.map((call) => ({...call})),
+          log,
+        })
+      : processDocumentJob(job, dependenciesFor(gatewayRun)))
       .then((outcome) => {
         const spent = gatewayRun.gateway.spent();
         log("job.finished", {
           job: job?.job_id,
           status: outcome.status,
           ms: Date.now() - startedAt,
-          stages: outcome.stages.length,
+          stages: "stages" in outcome ? outcome.stages.length : 9,
           costUsd: spent.costUsd,
           modelCalls: spent.calls,
         });

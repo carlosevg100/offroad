@@ -37,10 +37,13 @@ extração, conciliação, métricas, lacunas, estrutura, claims, materiais, mat
 fixa. Cada etapa valida seu contrato, registra fingerprint, duração, custo e chamadas. Falha,
 bloqueio, contrato inválido ou budget excedido interrompem todas as etapas posteriores. O pacote
 `@offroad/case-engine` agora conecta esse trilho aos motores reais e é a única implementação
-econômica usada pela aplicação web. A indisponibilidade do redator ou de materiais é registrada
-como estado do domínio, sem interromper conciliação, estrutura, matching ou desfecho. Ainda falta
-mover a execução e a gravação para a identidade do worker e fornecer os mandatos privados por esse
-adaptador.
+econômica usada pela aplicação web e pelo worker. Depois do último documento, o banco enfileira um
+job de análise do case. Uma capability temporária entrega ao worker apenas o case, suas evidências e
+os mandatos necessários; o worker executa o trilho, grava o manifesto append-only e encerra a run.
+O navegador perdeu a permissão de atestar snapshots. Identidades e critérios completos de fundos
+ficam no resultado privado do job; o workspace da empresa recebe somente um resumo sanitizado do
+matching. A indisponibilidade do redator ou de materiais continua sendo estado explícito do domínio,
+sem transformar ausência de prosa em matemática inventada.
 
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|

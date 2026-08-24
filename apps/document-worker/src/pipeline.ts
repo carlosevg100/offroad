@@ -8,7 +8,7 @@ import {
 import type {Classifier, DocumentProfile} from "@offroad/document-classification";
 import {ModelGatewayError, type GatewayCallLog} from "@offroad/model-gateway";
 import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
-import type {ClaimedJob, QueueClient} from "./queue";
+import type {DocumentJob, QueueClient} from "./queue";
 
 /**
  * What happens to one document, start to finish (P1 plan §5, stages E0–E1).
@@ -76,7 +76,7 @@ export type PipelineOutcome = {
   documentKind?: string;
 };
 
-export async function processDocumentJob(job: ClaimedJob, deps: PipelineDependencies): Promise<PipelineOutcome> {
+export async function processDocumentJob(job: DocumentJob, deps: PipelineDependencies): Promise<PipelineOutcome> {
   const {queue} = deps;
   const payload = job.payload;
   const stages: string[] = [];

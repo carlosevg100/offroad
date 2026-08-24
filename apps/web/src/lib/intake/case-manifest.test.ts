@@ -37,6 +37,16 @@ describe("case economic fingerprint", () => {
     expect(economicInputFingerprint(first)).not.toBe(economicInputFingerprint(changedFact));
   });
 
+  it("does not change when the processing run moves from running to succeeded", () => {
+    const before = snapshot();
+    before.session.status = "processing";
+    before.run = {...before.run, status: "running", model_calls: 4};
+    const after = snapshot();
+    after.session.status = "review_ready";
+    after.run = {...after.run, status: "succeeded", model_calls: 5};
+    expect(economicInputFingerprint(before)).toBe(economicInputFingerprint(after));
+  });
+
   it("changes the parser fingerprint when a parser version changes", () => {
     const first = snapshot().layers;
     const second = snapshot().layers;

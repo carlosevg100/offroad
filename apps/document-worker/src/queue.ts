@@ -26,19 +26,28 @@ export const jobPayloadSchema = z.object({
 });
 export type JobPayload = z.infer<typeof jobPayloadSchema>;
 
-export const claimedJobSchema = z.object({
+const claimedJobBase = z.object({
   claimed: z.literal(true),
   job_id: z.uuid(),
   capability_token: z.string().min(32),
   lease_expires_at: z.string(),
   attempt: z.number().int().positive(),
-  kind: z.string(),
   organization_id: z.uuid(),
   intake_session_id: z.uuid(),
   processing_run_id: z.uuid(),
+});
+export const documentJobSchema = claimedJobBase.extend({
+  kind: z.literal("document_pipeline"),
   payload: jobPayloadSchema,
 });
+export const caseAnalysisJobSchema = claimedJobBase.extend({
+  kind: z.literal("case_analysis"),
+  payload: z.object({locale: z.enum(["pt-BR", "en-US"]).optional()}),
+});
+export const claimedJobSchema = z.discriminatedUnion("kind", [documentJobSchema, caseAnalysisJobSchema]);
 export type ClaimedJob = z.infer<typeof claimedJobSchema>;
+export type DocumentJob = z.infer<typeof documentJobSchema>;
+export type CaseAnalysisJob = z.infer<typeof caseAnalysisJobSchema>;
 
 const noJobSchema = z.object({
   claimed: z.literal(false),
@@ -53,6 +62,8 @@ export type QueueClient = {
   writeStage(job: ClaimedJob, stage: string, status: StageStatus, detail?: unknown, usage?: Record<string, number>): Promise<void>;
   recordDocument(job: ClaimedJob, input: {scanResult?: unknown; profile?: unknown; layer?: unknown}): Promise<void>;
   recordCandidates(job: ClaimedJob, candidates: unknown[]): Promise<{written: number; replaced: number}>;
+  loadCaseInput(job: CaseAnalysisJob): Promise<unknown>;
+  recordCaseSnapshot(job: CaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
   fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
 };
@@ -128,6 +139,23 @@ export function createQueueClient(
       });
       const result = (data ?? {}) as {written?: number; replaced?: number};
       return {written: result.written ?? 0, replaced: result.replaced ?? 0};
+    },
+
+    async loadCaseInput(job) {
+      return call("worker_load_case_input", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+      });
+    },
+
+    async recordCaseSnapshot(job, manifest, state) {
+      const data = await call("worker_record_case_snapshot", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_manifest: manifest,
+        p_case_state: state,
+      });
+      return String(data);
     },
 
     async complete(job, result) {

@@ -7,6 +7,7 @@ import {
   caseOutcomeSchema,
   deriveCaseOutcome,
   deskEvidence,
+  fingerprintJson,
   type CaseBrief,
   type CaseOutcome,
   type ReadinessReport,
@@ -130,6 +131,54 @@ export type CaseEngineState = {
 };
 
 export type CaseEngineResult = {state: CaseEngineState; report: CaseRunReport};
+
+/** Matching information safe to return to a borrower-side workspace before an introduction. */
+export type PublicMatchingSummary = {
+  screened: boolean;
+  counts: {fits: number; possible: number; excluded: number};
+  structuralExclusions: string[];
+  unlockedBy: string[];
+  ourGaps: string[];
+};
+
+export type PublicCaseEngineState = Omit<CaseEngineState, "matching"> & {
+  matching: PublicMatchingSummary;
+};
+
+export function summarizeMatching(matching: CaseEngineState["matching"]): PublicMatchingSummary {
+  return {
+    screened: matching.screened,
+    counts: {
+      fits: matching.fits.filter((fit) => fit.verdict === "fits").length,
+      possible: matching.fits.filter((fit) => fit.verdict === "possible").length,
+      excluded: matching.fits.filter((fit) => fit.verdict === "excluded").length,
+    },
+    structuralExclusions: [...matching.structuralExclusions],
+    unlockedBy: [...new Set(matching.fits.flatMap((fit) => fit.unlockedBy))].sort(),
+    ourGaps: [...new Set(matching.fits.flatMap((fit) => fit.ourGaps))].sort(),
+  };
+}
+
+export function publicCaseState(state: CaseEngineState): PublicCaseEngineState {
+  return {...state, matching: summarizeMatching(state.matching)};
+}
+
+/** Runner evidence is retained, but fund identities and mandate detail stay in the worker job. */
+export function publicCaseRunReport(report: CaseRunReport): CaseRunReport {
+  const matching = report.stages.find((stage) => stage.stage === "matching");
+  if (!matching || matching.status !== "succeeded" || !matching.output) return report;
+  const output = matching.output as CaseEngineState["matching"];
+  const summary = summarizeMatching(output);
+  const stages = report.stages.map((stage) => stage.stage === "matching"
+    ? {...stage, output: summary, outputFingerprint: fingerprintJson(summary)}
+    : stage);
+  const payload = {
+    ...report,
+    stages,
+  };
+  const {reportFingerprint: _priorFingerprint, ...withoutFingerprint} = payload;
+  return {...withoutFingerprint, reportFingerprint: fingerprintJson(withoutFingerprint)};
+}
 
 const inputSchema = z.custom<CaseEngineInput>((value) => Boolean(value && typeof value === "object"));
 const reconciliationReportSchema = z.object({

@@ -5,3 +5,4 @@
  * sequence and calls the same deterministic domain engines for the web app, worker and fixtures.
  */
 export * from "./engine";
+export * from "./manifest";
