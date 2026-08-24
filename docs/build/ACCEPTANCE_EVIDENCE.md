@@ -6,7 +6,7 @@
 |---|---|---|
 | Trilho econômico fora do navegador | `@offroad/document-worker` + `@offroad/case-engine` | o último job documental enfileira `case_analysis`; o worker executa as nove etapas e grava snapshot e manifesto com capability temporária |
 | Mandatos confidenciais | teste do worker e teste RLS | detalhes e identidade dos fundos permanecem no job privado; o estado do tomador contém somente resumo sanitizado |
-| Snapshot atestado | migration `20260824170000_worker_case_analysis.sql` | `authenticated` perde o antigo comando de escrita; somente o job de case leased e dentro do escopo grava o snapshot |
+| Snapshot atestado | migration `20260824170329_worker_case_analysis.sql` | `authenticated` perde o antigo comando de escrita; somente o job de case leased e dentro do escopo grava o snapshot |
 | Regressão de aplicação | `pnpm check` | 34 pacotes: lint, tipagem, testes e build de produção verdes |
 | Banco e isolamento | job obrigatório `database` | migrations do zero, não interferência RLS e lint do schema devem passar antes do merge |
 
@@ -87,7 +87,7 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Quality gate da jornada guiada | `pnpm check` com Node 24 | lint, typecheck, testes e build verdes nos 32 pacotes; 111 testes do app web aprovados | 2026-08-22 |
 | Fingerprint econômico completo | `case-manifest.test.ts` | ordem de linhas não altera o hash; mudança de resposta, fato ou parser altera o hash | 2026-08-24 |
 | Linhagem de modelos sem conteúdo | testes de `model-gateway` e `document-worker` | tentativas bem-sucedidas, fallback e erro carregam hashes, custo e usage; mensagem privada do erro não entra no log; linhagem viaja no sucesso e na falha | 2026-08-24 |
-| Manifesto atômico e append-only | migration `20260824153337` + bloco de `rls_non_interference.sql` | gravação idempotente do manifesto e snapshot em uma transação; escrita direta recusada; tenant B e anon isolados; validação final no job `database` do PR | 2026-08-24 |
+| Manifesto atômico e append-only | migration `20260824170318` + bloco de `rls_non_interference.sql` | gravação idempotente do manifesto e snapshot em uma transação; escrita direta recusada; tenant B e anon isolados; validação final no job `database` do PR | 2026-08-24 |
 | Runner governado | `@offroad/case-runner` | nove etapas ordenadas, schema por saída, fingerprints, falhas tipadas, bloqueio downstream e hard gates de custo/chamadas; 5 testes unitários | 2026-08-24 |
 | Motores reais no runner | `@offroad/case-engine` + `case-pipeline.ts` | nove etapas executam os pacotes reais; schemas por camada, fingerprints e orçamento; 2 testes integrados; a aplicação web deixou de manter uma segunda cópia da lógica econômica | 2026-08-24 |
 | Gate local do incremento | testes e typecheck dos pacotes alterados + web lint | model gateway 17, case understanding 31, worker 39 e web 116 testes aprovados; tipagem e lint verdes | 2026-08-24 |

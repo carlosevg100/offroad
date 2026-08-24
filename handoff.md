@@ -1252,7 +1252,7 @@ The first two foundation increments are now represented in code:
 - `packages/case-understanding/src/manifest.ts` owns the manifest contract and deterministic hash;
 - `packages/model-gateway` emits content-free fingerprints for every attempt, including failures;
 - the worker stores model lineage inside its private job result;
-- migration `20260824153337_case_artifact_manifests.sql` exposes only a sanitized lineage RPC and
+- migration `20260824170318_case_artifact_manifests.sql` exposes only a sanitized lineage RPC and
   atomically records the manifest with the latest case snapshot.
 - Important boundary: append-only does not yet mean workload-attested. Until the integrated runner
   owns compilation and persistence, an authorized borrower-side tenant can invoke the same snapshot
