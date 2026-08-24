@@ -239,6 +239,19 @@ importers:
         specifier: ^20.19.43
         version: 20.19.43
 
+  packages/case-runner:
+    dependencies:
+      '@offroad/case-understanding':
+        specifier: workspace:*
+        version: link:../case-understanding
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+
   packages/case-understanding:
     dependencies:
       '@offroad/credit-analysis':

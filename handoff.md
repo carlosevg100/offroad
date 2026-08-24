@@ -1243,6 +1243,16 @@ The first two foundation increments are now represented in code:
   command used by the server. Gate 2 must move the command behind the worker capability identity and
   revoke authenticated execution before external release (R-022).
 
+### Gate 2 runner contract, 24/08/2026
+
+- `packages/case-runner` owns the governed order of the nine actual layers: extraction,
+  reconciliation, metrics, gaps, structure, claims, materials, matching and outcome.
+- Every stage has an explicit output schema, output fingerprint, duration and usage record.
+- Technical failures, deliberate evidence holds, output-contract violations and budget violations
+  are different persisted states; every later stage is skipped after the first stop.
+- This package is the rail, not a claim that the train is connected. The next increment must adapt
+  the real engines, execute through the worker capability and persist its report and manifest.
+
 Do not reintroduce the former count-and-timestamp cache key. Do not expose `processing_jobs.result`
 or `last_error` to tenants. A partial `capture` value is a real limitation and must become a release
 blocker when the integrated runner and external-direction gate are implemented next.
