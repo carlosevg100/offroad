@@ -19,7 +19,12 @@ import {buildContext, runRules, type ReconciliationException} from "./rules";
 import {computeCalculations, type CalculationSet} from "./calculations";
 import {archetypeQuestions, findGaps, type InformationGap} from "./gaps";
 import {mergeInstrumentsByIdentity, reconcileFacts, renumberIndexedGroups, type FactCandidate, type ReconciledFact} from "./facts";
-import type {ArchetypeId, ClassifiedDocument} from "@offroad/credit-playbook";
+import type {
+  ArchetypeId,
+  ClassifiedDocument,
+  InformationAnswers,
+  RequirementResponses,
+} from "@offroad/credit-playbook";
 
 export type ReconciliationReport = {
   facts: ReconciledFact[];
@@ -43,13 +48,24 @@ export function reconcileCase(input: {
   candidates: readonly FactCandidate[];
   documents: readonly ClassifiedDocument[];
   locale?: "pt" | "en";
+  informationAnswers?: InformationAnswers;
+  requirementResponses?: RequirementResponses;
+  additionalAvailableFieldPaths?: readonly string[];
 }): ReconciliationReport {
   const locale = input.locale ?? "pt";
   const facts = mergeInstrumentsByIdentity(renumberIndexedGroups(reconcileFacts(input.candidates)));
   const context = buildContext(facts, locale);
   const {calculations, gaps: calculationGaps} = computeCalculations(context);
 
-  const gaps = findGaps({archetypeId: input.archetypeId, documents: input.documents, facts, locale});
+  const gaps = findGaps({
+    archetypeId: input.archetypeId,
+    documents: input.documents,
+    facts,
+    locale,
+    ...(input.informationAnswers ? {informationAnswers: input.informationAnswers} : {}),
+    ...(input.requirementResponses ? {requirementResponses: input.requirementResponses} : {}),
+    ...(input.additionalAvailableFieldPaths ? {additionalAvailableFieldPaths: input.additionalAvailableFieldPaths} : {}),
+  });
   for (const gap of calculationGaps) {
     gaps.push({
       id: `missing_calculation:${gap.id}`,

@@ -56,12 +56,12 @@ recebíveis.
 
 ## Gate 3: caso corporativo âncora
 
-- [ ] Data room artesanal de expansão corporativa.
-- [ ] Gabarito completo das oito camadas.
-- [ ] Estruturas viáveis e inelegíveis explicitadas.
-- [ ] Teaser, credit memo, term sheet indicativo e Q&A auditados.
-- [ ] Matching com inclusões e exclusões explicáveis.
-- [ ] Estado terminal correto.
+- [x] Data room artesanal de expansão corporativa.
+- [x] Gabarito completo das oito camadas.
+- [x] Estruturas viáveis e inelegíveis explicitadas.
+- [x] Teaser, credit memo, term sheet indicativo e Q&A auditados.
+- [x] Matching com inclusões e exclusões explicáveis.
+- [x] Estado terminal correto.
 - [ ] Revisão econômica do fundador e revisão independente dos temas materiais.
 
 ## Gate 4: claims e publicação

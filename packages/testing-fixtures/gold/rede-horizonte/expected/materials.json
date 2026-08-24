@@ -1,0 +1,40 @@
+[
+  {
+    "kind": "teaser",
+    "locale": "pt-BR",
+    "requiredSectionIds": ["a-oportunidade"]
+  },
+  {
+    "kind": "credit_profile",
+    "locale": "pt-BR",
+    "requiredSectionIds": ["resumo-executivo", "companhia", "historico-financeiro", "posicao-atual", "riscos-e-pontos-de-atencao", "pontos-em-aberto"],
+    "requiredClaimIds": ["legal-name", "sector", "amount-purpose", "project-cost", "history-2025", "current-debt-cash", "coverage-leverage", "collateral-shortfall"]
+  },
+  {
+    "kind": "package",
+    "locale": "pt-BR",
+    "requiredSectionIds": ["resumo-executivo", "estrutura-de-capital-e-tratamento", "a-operacao-proposta", "estrutura-indicativa"],
+    "requiredClaimIds": ["amount-purpose", "coverage-leverage", "collateral-shortfall"]
+  },
+  {
+    "kind": "investment_memo",
+    "locale": "pt-BR",
+    "requiredSectionIds": ["parecer-sobre-a-operacao", "sumario-executivo", "estrutura-de-capital-e-tratamento", "fatores-de-risco-e-tratamento", "comite-rating-sensibilidade-instrumentos-e-garantias"],
+    "requiredClaimIds": ["amount-purpose", "history-2025", "current-debt-cash", "coverage-leverage"]
+  },
+  {
+    "kind": "term_sheet",
+    "locale": "pt-BR",
+    "requiredSectionIds": ["partes-e-instrumento", "termos-economicos", "garantias", "covenants-financeiros", "condicoes-precedentes"]
+  },
+  {
+    "kind": "diligence_qa",
+    "locale": "pt-BR",
+    "requiredSectionIds": ["negocio", "financeiro", "divida", "operacao", "projecoes", "governanca-e-juridico"]
+  },
+  {
+    "kind": "data_room_index",
+    "locale": "pt-BR",
+    "requiredSectionIds": ["mesa-nao-circula", "materiais-da-operacao", "demonstracoes-e-contabil", "divida-e-garantias", "projeto-e-plano", "societario-e-institucional"]
+  }
+]

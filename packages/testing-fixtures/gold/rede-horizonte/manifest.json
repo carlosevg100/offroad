@@ -2,6 +2,8 @@
   "caseId": "rede-horizonte",
   "title": "Rede Horizonte Alimentos S.A. — expansão de 3 lojas + refinanciamento (data room sintético)",
   "synthetic": true,
+  "contractLevel": "full_case",
+  "archetypeId": "growth_expansion",
   "language": "pt",
   "documentsDir": "../../assets/rede-horizonte",
   "documents": [

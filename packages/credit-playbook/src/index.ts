@@ -13,6 +13,7 @@ export const creditPlaybookVersion = "2026.08.24-v2";
 export * from "./types";
 export * from "./archetypes";
 export * from "./sufficiency";
+export * from "./material-fields";
 export * from "./instruments";
 export * from "./taxonomy";
 export * from "./covenants";

@@ -258,6 +258,9 @@ describe("reading numbers out of prose", () => {
     expect(normalizeNumber("1.234.567,89")).toBe("1234567.89");
     expect(normalizeNumber("1,234,567.89")).toBe("1234567.89");
     expect(normalizeNumber("33,4", "milhões")).toBe("33400000");
+    expect(normalizeNumber("1,452", "x")).toBe("1.452");
+    expect(normalizeNumber("2.8735", "x")).toBe("2.8735");
+    expect(financialNumbersIn("DSCR mínimo de 1,452x e alavancagem de 2.8735x")).toEqual(["1.452", "2.8735"]);
   });
 });
 
@@ -315,6 +318,22 @@ describe("the evidence auditor", () => {
       claims: [{id: "c1", material: true, kind: "fact", text: "A companhia opera três lojas em São Paulo.", supportIds: ["debt.total_gross"]}],
       facts,
       calculations,
+    });
+    expect(report.status).toBe("pass");
+  });
+
+  it("does not parse punctuation in a text fact as a malformed financial number", () => {
+    const identity = {...fact("company.legal_name", "Rede Horizonte Alimentos S.A."), valueType: "text" as const};
+    const report = auditClaims({
+      claims: [{
+        id: "identity",
+        material: true,
+        kind: "fact",
+        text: "A tomadora é Rede Horizonte Alimentos S.A.",
+        supportIds: ["company.legal_name"],
+      }],
+      facts: [identity],
+      calculations: [],
     });
     expect(report.status).toBe("pass");
   });

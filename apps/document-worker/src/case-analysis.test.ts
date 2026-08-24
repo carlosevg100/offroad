@@ -137,7 +137,7 @@ describe("worker case analysis", () => {
     const persisted = recordedState as unknown as Record<string, unknown>;
     const privateResult = completed as unknown as Record<string, unknown>;
     const publicMatching = persisted.matching as Record<string, unknown>;
-    expect(publicMatching).toMatchObject({screened: true, counts: {fits: 1, possible: 0, excluded: 0}});
+    expect(publicMatching).toMatchObject({screened: true, counts: {fits: 0, possible: 1, excluded: 0}});
     expect(JSON.stringify(persisted)).not.toContain("Fundo Confidencial");
     expect(JSON.stringify(privateResult)).toContain("Fundo Confidencial");
     expect(persisted.caseRunReport).toBeTruthy();

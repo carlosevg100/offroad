@@ -545,6 +545,792 @@
     "note": "gabarito HISTORICO_ESPERADO"
   },
   {
+    "fieldPath": "historical_financials.2025.receivables",
+    "value": "18000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "demonstrações auditadas, balanço patrimonial"
+  },
+  {
+    "fieldPath": "historical_financials.2025.inventory",
+    "value": "29700000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "demonstrações auditadas, balanço patrimonial"
+  },
+  {
+    "fieldPath": "historical_financials.2025.payables",
+    "value": "22500000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+    "periodEnd": "2025-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "demonstrações auditadas, balanço patrimonial"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.receivables",
+    "value": "19400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "ERP, balancete de julho de 2026"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.inventory",
+    "value": "32600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "ERP, balancete de julho de 2026"
+  },
+  {
+    "fieldPath": "interim_financials.2026_07.payables",
+    "value": "24800000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx",
+    "periodEnd": "2026-07-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "ERP, balancete de julho de 2026"
+  },
+  {
+    "fieldPath": "projections.2026.revenue",
+    "value": "203000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2026-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2026.ebitda",
+    "value": "34000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2026-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2027.revenue",
+    "value": "242600000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2027-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2027.ebitda",
+    "value": "38400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2027-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2028.revenue",
+    "value": "318900000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2028-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2028.ebitda",
+    "value": "51400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2028-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2029.revenue",
+    "value": "343500000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2029-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2029.ebitda",
+    "value": "56300000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2029-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2030.revenue",
+    "value": "364400000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2030-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "projections.2030.ebitda",
+    "value": "60200000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "periodEnd": "2030-12-31",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "business plan, resumo anual consolidado"
+  },
+  {
+    "fieldPath": "debt.instruments.1.lender",
+    "value": "Banco Horizonte",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.1.instrument_type",
+    "value": "Capital de giro",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.1.original_amount",
+    "value": "20000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.1.balance",
+    "value": "15000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.1.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.1.rate",
+    "value": "CDI + 3,20%",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.1.maturity",
+    "value": "2027-03-15",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.1.amortization",
+    "value": "Bullet",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.1.collateral",
+    "value": "Recebíveis",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.lender",
+    "value": "Banco Sul",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.instrument_type",
+    "value": "Finame equipamentos",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.original_amount",
+    "value": "18000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.balance",
+    "value": "12000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.rate",
+    "value": "CDI + 2,60%",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.maturity",
+    "value": "2029-06-30",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.2.collateral",
+    "value": "Equipamentos",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.lender",
+    "value": "FIDC Alfa",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.instrument_type",
+    "value": "Antecipação de cartões",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.original_amount",
+    "value": "16000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.balance",
+    "value": "14000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.rate",
+    "value": "CDI + 4,10%",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.maturity",
+    "value": "2027-09-30",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.amortization",
+    "value": "Rotativo",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.3.collateral",
+    "value": "Recebíveis",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.lender",
+    "value": "Banco Interior",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.instrument_type",
+    "value": "Financiamento imobiliário",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.original_amount",
+    "value": "24000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.balance",
+    "value": "18000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.rate",
+    "value": "IPCA + 7,50%",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.maturity",
+    "value": "2030-09-01",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.4.collateral",
+    "value": "Hipoteca do CD",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.lender",
+    "value": "Fornecedor FrioMax",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.instrument_type",
+    "value": "Equipamentos",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.original_amount",
+    "value": "7000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.balance",
+    "value": "5000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.rate",
+    "value": "15,0% a.a. prefixado",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.maturity",
+    "value": "2027-12-01",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.amortization",
+    "value": "Mensal",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.5.collateral",
+    "value": "Equipamentos",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.lender",
+    "value": "Banco Horizonte",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.instrument_type",
+    "value": "Conta garantida",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.original_amount",
+    "value": "4000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.balance",
+    "value": "4000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.currency",
+    "value": "BRL",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.rate",
+    "value": "CDI + 5,00%",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.maturity",
+    "value": "2026-12-20",
+    "valueType": "date",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.amortization",
+    "value": "Bullet",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
+    "fieldPath": "debt.instruments.6.collateral",
+    "value": "Sem garantia real",
+    "valueType": "text",
+    "materiality": "material",
+    "sourceDocument": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "mapa de dívida, posição em 31/07/2026"
+  },
+  {
     "fieldPath": "transaction.sources_and_uses.1.side",
     "value": "sources",
     "valueType": "text",
@@ -776,6 +1562,28 @@
     "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
   },
   {
+    "fieldPath": "project.investments.1.stabilized_revenue",
+    "value": "32000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "receita estabilizada por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.1.stabilized_ebitda_margin",
+    "value": "0.142",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "margem estabilizada por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
     "fieldPath": "project.investments.2.name",
     "value": "Araraquara",
     "valueType": "text",
@@ -798,6 +1606,28 @@
     "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
   },
   {
+    "fieldPath": "project.investments.2.stabilized_revenue",
+    "value": "29000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "receita estabilizada por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.2.stabilized_ebitda_margin",
+    "value": "0.138",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "margem estabilizada por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
     "fieldPath": "project.investments.3.name",
     "value": "São Carlos",
     "valueType": "text",
@@ -818,6 +1648,28 @@
       "kind": "exact"
     },
     "note": "investimento por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.3.stabilized_revenue",
+    "value": "33000000",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "receita estabilizada por loja (gabarito ADD_ON_ESPERADO)"
+  },
+  {
+    "fieldPath": "project.investments.3.stabilized_ebitda_margin",
+    "value": "0.145",
+    "valueType": "number",
+    "materiality": "material",
+    "sourceDocument": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+    "tolerance": {
+      "kind": "exact"
+    },
+    "note": "margem estabilizada por loja (gabarito ADD_ON_ESPERADO)"
   },
   {
     "fieldPath": "project.investments.4.name",

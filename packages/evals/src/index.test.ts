@@ -104,8 +104,8 @@ describe("baseline — the fixture extractor that runs in production today", () 
   it("is precise on what it produces but incomplete, unclassified and unverified — the honest baseline", () => {
     expect(report.fields.precision.value).toBe(1);
     expect(report.fields.unscoredCandidates).toBe(0);
-    expect(report.fields.material.recall).toBeGreaterThan(0.4);
-    expect(report.fields.material.recall).toBeLessThan(0.9);
+    expect(report.fields.material.recall).toBeGreaterThan(0.2);
+    expect(report.fields.material.recall).toBeLessThan(0.3);
     expect(report.hallucination).toEqual({autoAcceptedMaterial: 0, withoutVerifiedAnchor: 0, rate: 0});
     expect(report.classification.accuracy).toBeNull();
     expect(report.calculations.matched).toBe(0);

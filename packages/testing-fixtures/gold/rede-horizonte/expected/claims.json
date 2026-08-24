@@ -1,0 +1,62 @@
+[
+  {
+    "id": "legal-name",
+    "material": true,
+    "kind": "fact",
+    "requiredSupportIds": ["company.legal_name"],
+    "expectedMeaning": "Identifica a tomadora como Rede Horizonte Alimentos S.A.",
+    "forbiddenMeanings": ["aprovação de crédito", "garantia de captação"]
+  },
+  {
+    "id": "sector",
+    "material": true,
+    "kind": "fact",
+    "requiredSupportIds": ["company.sector", "company.subsector"],
+    "expectedMeaning": "Descreve a atuação em varejo alimentar e supermercados."
+  },
+  {
+    "id": "amount-purpose",
+    "material": true,
+    "kind": "fact",
+    "requiredSupportIds": ["transaction.requested_amount", "transaction.purpose"],
+    "expectedMeaning": "Explica o pedido de R$ 54 milhões, incluindo expansão e refinanciamento.",
+    "forbiddenMeanings": ["financiamento garantido", "recursos já aprovados"]
+  },
+  {
+    "id": "project-cost",
+    "material": true,
+    "kind": "fact",
+    "requiredSupportIds": ["project.total_cost"],
+    "expectedMeaning": "Registra R$ 49 milhões de investimento detalhado no projeto."
+  },
+  {
+    "id": "history-2025",
+    "material": true,
+    "kind": "fact",
+    "requiredSupportIds": ["historical_financials.2025.revenue", "historical_financials.2025.ebitda"],
+    "expectedMeaning": "Apresenta receita e EBITDA auditados de 2025 sem misturá-los com projeções."
+  },
+  {
+    "id": "current-debt-cash",
+    "material": true,
+    "kind": "fact",
+    "requiredSupportIds": ["interim_financials.2026_07.gross_debt", "interim_financials.2026_07.cash"],
+    "expectedMeaning": "Apresenta dívida bruta e caixa de julho de 2026 como posição intermediária."
+  },
+  {
+    "id": "coverage-leverage",
+    "material": true,
+    "kind": "fact",
+    "requiredSupportIds": ["projections.minimum_dscr", "leverage.post_transaction_net_debt_ebitda"],
+    "expectedMeaning": "Apresenta DSCR mínimo e alavancagem pós-transação como métricas projetadas.",
+    "forbiddenMeanings": ["covenant aprovado", "retorno garantido"]
+  },
+  {
+    "id": "collateral-shortfall",
+    "material": true,
+    "kind": "fact",
+    "requiredSupportIds": ["collateral.total_capacity", "transaction.requested_amount"],
+    "expectedMeaning": "Explicita que a capacidade de garantias fica R$ 0,24 milhão abaixo do pedido e depende de validação.",
+    "forbiddenMeanings": ["garantia suficiente", "garantia validada"]
+  }
+]

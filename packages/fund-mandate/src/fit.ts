@@ -455,8 +455,9 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
 
   const exclusions = criteria.filter((entry) => entry.hard && entry.outcome === "excluded");
   const unknowns = criteria.filter((entry) => entry.outcome === "unknown");
+  const mandateGaps = criteria.filter((entry) => entry.outcome === "not_assessed");
   const verdict: MandateFitVerdict =
-    exclusions.length > 0 ? "excluded" : unknowns.length > 0 ? "possible" : "fits";
+    exclusions.length > 0 ? "excluded" : unknowns.length > 0 || mandateGaps.length > 0 ? "possible" : "fits";
 
   return {
     fundId: mandate.fundId,
@@ -465,7 +466,7 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
     criteria,
     exclusions,
     unlockedBy: [...new Set(unknowns.map((entry) => entry.resolvedBy).filter((id): id is string => Boolean(id)))],
-    ourGaps: criteria.filter((entry) => entry.outcome === "not_assessed").map((entry) => entry.id),
+    ourGaps: mandateGaps.map((entry) => entry.id),
     staleMonths: mandate.freshestMonths,
     divergences: mandate.divergences,
   };

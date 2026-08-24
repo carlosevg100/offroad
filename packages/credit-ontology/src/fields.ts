@@ -233,6 +233,8 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("project.third_party_debt", "project", "number", "money", "material", "Dívida de terceiros no projeto", "Third-party debt", [], []),
   f("project.investments.{i}.name", "project", "text", "text", "material", "Investimento: item/localidade", "Investment: item/location", ["loja", "unidade", "planta"], ["store", "site"]),
   f("project.investments.{i}.amount", "project", "number", "money", "material", "Investimento: valor", "Investment: amount", ["capex", "investimento"], []),
+  f("project.investments.{i}.stabilized_revenue", "project", "number", "money", "material", "Receita estabilizada da unidade", "Stabilized unit revenue", ["receita estabilizada"], ["stabilized revenue"]),
+  f("project.investments.{i}.stabilized_ebitda_margin", "project", "number", "ratio", "material", "Margem EBITDA estabilizada da unidade", "Stabilized unit EBITDA margin", ["margem EBITDA estabilizada"], ["stabilized EBITDA margin"]),
   f("project.capex_schedule.{i}.period", "project", "text", "text", "material", "Cronograma de capex: período", "Capex schedule: period", [], []),
   f("project.capex_schedule.{i}.amount", "project", "number", "money", "material", "Cronograma de capex: valor", "Capex schedule: amount", [], []),
   f("project.locations", "project", "list", "list", "supporting", "Localizações", "Locations", ["endereços", "unidades"], ["sites"]),

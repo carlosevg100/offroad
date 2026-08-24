@@ -38,7 +38,7 @@ export type MaterialKind = "teaser" | "credit_profile" | "package" | "investment
 
 export type MaterialBlock =
   | {type: "heading"; text: {pt: string; en: string}}
-  | {type: "paragraph"; text: {pt: string; en: string}; supportIds?: string[]}
+  | {type: "paragraph"; text: {pt: string; en: string}; claimId?: string; supportIds?: string[]}
   | {type: "metrics"; items: Array<{label: {pt: string; en: string}; value: string; formatted: {pt: string; en: string}; supportIds: string[]}>}
   | {type: "table"; caption: {pt: string; en: string}; head: Array<{pt: string; en: string}>; rows: string[][]}
   | {type: "list"; items: Array<{pt: string; en: string}>}
@@ -213,6 +213,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
       profileBlocks.push({
         type: "paragraph",
         text: {pt: claim.text, en: claim.text},
+        claimId: claim.id,
         ...(claim.supportIds.length > 0 ? {supportIds: claim.supportIds} : {}),
       });
     }

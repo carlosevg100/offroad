@@ -86,7 +86,14 @@ function traced(
 export function computeCalculations(context: RuleContext): CalculationSet {
   const calculations: TracedCalculation[] = [];
   const gaps: CalculationGap[] = [];
-  const period = context.periods[0];
+  // Projection dates can be years ahead of the balance sheet. They must never move the
+  // calculation anchor forward and make today's cash, debt and LTM EBITDA disappear.
+  const period = [...new Set(
+    context.facts
+      .filter((fact) => /^(historical|interim)_financials\./.test(fact.key.fieldPath))
+      .map((fact) => fact.key.periodEnd)
+      .filter((value): value is string => Boolean(value)),
+  )].sort().reverse()[0] ?? context.periods[0];
   const year = period?.slice(0, 4) ?? "";
 
   const pick = (paths: string[]): Sourced | null => {
@@ -147,7 +154,12 @@ export function computeCalculations(context: RuleContext): CalculationSet {
 
     const requested = pick(["transaction.requested_amount"]);
     if (requested) {
-      const postGross = (grossDebt?.value ?? new Decimal(0)).plus(requested.value);
+      const refinancing = pick(["transaction.refinancing"]);
+      const companyCash = pick(["project.company_cash"]);
+      const projectedEbitda = pick([`projections.${year}.ebitda`]);
+      const postGross = (grossDebt?.value ?? new Decimal(0))
+        .plus(requested.value)
+        .minus(refinancing?.value ?? new Decimal(0));
       calculations.push({
         id: "gross_debt_post_transaction",
         labels: {pt: "Dívida bruta pós-operação", en: "Gross debt after the transaction"},
@@ -155,20 +167,32 @@ export function computeCalculations(context: RuleContext): CalculationSet {
         trace: [
           {label: "gross_debt", value: (grossDebt?.value ?? new Decimal(0)).toFixed(), ...(grossDebt?.fieldPath ? {fieldPath: grossDebt.fieldPath} : {})},
           {label: "requested_amount", value: requested.value.toFixed(), fieldPath: requested.fieldPath},
+          ...(refinancing ? [{label: "refinancing_repaid", value: refinancing.value.negated().toFixed(), fieldPath: refinancing.fieldPath}] : []),
         ],
-        inputs: [grossDebt?.fieldPath ?? "", requested.fieldPath].filter(Boolean),
+        inputs: [grossDebt?.fieldPath ?? "", requested.fieldPath, refinancing?.fieldPath ?? ""].filter(Boolean),
         warnings: [],
       });
 
-      const postNet = postGross.minus(cash?.value ?? new Decimal(0));
-      const postResult = calculateLeverage(postNet, adjustedEbitda.value);
+      const postCash = (cash?.value ?? new Decimal(0)).minus(companyCash?.value ?? new Decimal(0));
+      const leverageEbitda = projectedEbitda ?? adjustedEbitda;
+      const postNet = postGross.minus(postCash);
+      const postResult = calculateLeverage(postNet, leverageEbitda.value);
       calculations.push({
-        ...traced("leverage_post_transaction", {pt: "Alavancagem pós-operação", en: "Leverage after the transaction"}, postResult, [netDebt, adjustedEbitda]),
-        // Post-transaction leverage assumes the full amount drawn and no EBITDA from it yet —
-        // the conservative reading, and the one a lender underwrites to.
+        id: "leverage_post_transaction",
+        labels: {pt: "Alavancagem pós-operação", en: "Leverage after the transaction"},
+        value: postResult.value,
+        trace: [
+          {label: "gross_debt_post_transaction", value: postGross.toFixed(), fieldPath: "calculated.gross_debt_post_transaction"},
+          {label: "cash_before_transaction", value: (cash?.value ?? new Decimal(0)).toFixed(), ...(cash?.fieldPath ? {fieldPath: cash.fieldPath} : {})},
+          ...(companyCash ? [{label: "company_cash_used", value: companyCash.value.toFixed(), fieldPath: companyCash.fieldPath}] : []),
+          {label: projectedEbitda ? "projected_ebitda_at_closing" : "current_adjusted_ebitda", value: leverageEbitda.value.toFixed(), fieldPath: leverageEbitda.fieldPath},
+        ],
+        inputs: [grossDebt?.fieldPath ?? "", requested.fieldPath, refinancing?.fieldPath ?? "", cash?.fieldPath ?? "", companyCash?.fieldPath ?? "", leverageEbitda.fieldPath].filter(Boolean),
         warnings: [
           ...postResult.warnings,
-          "assume desembolso integral e nenhum EBITDA incremental do uso dos recursos",
+          ...(projectedEbitda
+            ? ["usa o EBITDA projetado para o ano do fechamento, identificado como premissa da administração"]
+            : ["na ausência de EBITDA para o fechamento, mantém o EBITDA ajustado atual"]),
         ],
       });
     }
@@ -192,6 +216,14 @@ export function computeCalculations(context: RuleContext): CalculationSet {
       };
     });
 
+  const collateralCapacityComponents = [
+    "collateral.receivables_capacity",
+    "collateral.inventory_capacity",
+    "collateral.property_equipment_capacity",
+  ]
+    .map((fieldPath) => sourced(context, fieldPath, period) ?? sourced(context, fieldPath))
+    .filter((item): item is Sourced => item !== null);
+
   if (collateralItems.length > 0) {
     const result = applyCollateralHaircuts(collateralItems);
     calculations.push({
@@ -207,12 +239,74 @@ export function computeCalculations(context: RuleContext): CalculationSet {
       inputs: collateralItems.map((item) => item.fieldPath),
       warnings: result.warnings,
     });
+  } else if (collateralCapacityComponents.length > 0) {
+    const total = collateralCapacityComponents.reduce((sum, item) => sum.plus(item.value), new Decimal(0));
+    calculations.push({
+      id: "collateral_capacity_total",
+      labels: {pt: "Capacidade de garantias após haircut", en: "Collateral capacity after haircuts"},
+      value: total.toDecimalPlaces(2).toFixed(),
+      trace: collateralCapacityComponents.map((item) => ({
+        label: item.fieldPath,
+        value: item.value.toFixed(),
+        fieldPath: item.fieldPath,
+        ...(item.sourceDocument ? {sourceDocument: item.sourceDocument} : {}),
+      })),
+      inputs: collateralCapacityComponents.map((item) => item.fieldPath),
+      warnings: [],
+    });
   } else {
     gaps.push({
       id: "collateral_capacity_total",
       labels: {pt: "Capacidade de garantias", en: "Collateral capacity"},
       missing: ["base elegível e haircut por ativo"],
     });
+  }
+
+  // ---- stabilized project add-on --------------------------------------------------------
+  const investmentIndexes = [...new Set(
+    context.facts
+      .map((fact) => fact.key.fieldPath.match(/^project\.investments\.(\d+)\.stabilized_revenue$/)?.[1])
+      .filter((index): index is string => Boolean(index)),
+  )].sort((a, b) => Number(a) - Number(b));
+  if (investmentIndexes.length > 0) {
+    const revenues = investmentIndexes
+      .map((index) => sourced(context, `project.investments.${index}.stabilized_revenue`))
+      .filter((item): item is Sourced => item !== null);
+    const margins = investmentIndexes
+      .map((index) => sourced(context, `project.investments.${index}.stabilized_ebitda_margin`))
+      .filter((item): item is Sourced => item !== null);
+    if (revenues.length === investmentIndexes.length) {
+      const totalRevenue = revenues.reduce((sum, item) => sum.plus(item.value), new Decimal(0));
+      calculations.push({
+        id: "addon_stabilized_revenue",
+        labels: {pt: "Receita estabilizada incremental", en: "Stabilized incremental revenue"},
+        value: totalRevenue.toDecimalPlaces(2).toFixed(),
+        trace: revenues.map((item) => ({label: item.fieldPath, value: item.value.toFixed(), fieldPath: item.fieldPath, ...(item.sourceDocument ? {sourceDocument: item.sourceDocument} : {})})),
+        inputs: revenues.map((item) => item.fieldPath),
+        warnings: ["run-rate estabilizado do projeto, não receita do primeiro ano"],
+      });
+    }
+    if (revenues.length === investmentIndexes.length && margins.length === investmentIndexes.length) {
+      const totalEbitda = investmentIndexes.reduce((sum, _index, position) =>
+        sum.plus(revenues[position]!.value.times(margins[position]!.value)), new Decimal(0));
+      calculations.push({
+        id: "addon_stabilized_ebitda",
+        labels: {pt: "EBITDA estabilizado incremental", en: "Stabilized incremental EBITDA"},
+        value: totalEbitda.toDecimalPlaces(2).toFixed(),
+        trace: investmentIndexes.flatMap((_index, position) => [
+          {label: revenues[position]!.fieldPath, value: revenues[position]!.value.toFixed(), fieldPath: revenues[position]!.fieldPath, ...(revenues[position]!.sourceDocument ? {sourceDocument: revenues[position]!.sourceDocument} : {})},
+          {label: margins[position]!.fieldPath, value: margins[position]!.value.toFixed(), fieldPath: margins[position]!.fieldPath, ...(margins[position]!.sourceDocument ? {sourceDocument: margins[position]!.sourceDocument} : {})},
+        ]),
+        inputs: investmentIndexes.flatMap((_index, position) => [revenues[position]!.fieldPath, margins[position]!.fieldPath]),
+        warnings: ["receita estabilizada multiplicada pela margem EBITDA estabilizada de cada unidade"],
+      });
+    } else if (revenues.length > 0) {
+      gaps.push({
+        id: "addon_stabilized_ebitda",
+        labels: {pt: "EBITDA estabilizado incremental", en: "Stabilized incremental EBITDA"},
+        missing: ["margem EBITDA estabilizada de cada unidade"],
+      });
+    }
   }
 
   // ---- sources and uses -----------------------------------------------------------------
