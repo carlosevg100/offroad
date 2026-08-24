@@ -1,92 +1,52 @@
+import {caseEngineVersion, executeCaseEngine, type CaseEngineState} from "@offroad/case-engine";
+import type {Material} from "@offroad/case-materials";
+import {
+  buildBriefInput,
+  buildCaseArtifactManifest,
+  deskEvidence,
+  fingerprintJson,
+  BRIEF_SYSTEM,
+  caseBriefSchema,
+  type CaseBrief,
+} from "@offroad/case-understanding";
+import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+import type {ArchetypeId, ClassifiedDocument} from "@offroad/credit-playbook";
+import type {DataRoomDocument} from "@offroad/data-room";
+import {
+  createAnthropicAdapter,
+  createModelGateway,
+  createOpenAIAdapter,
+  gatewayCallLogSchema,
+  type GatewayCallLog,
+} from "@offroad/model-gateway";
+import type {FactCandidate, ReconciliationReport} from "@offroad/reconciliation";
 import type {SupabaseClient} from "@supabase/supabase-js";
-import {assessReadiness, auditBrief, buildBriefInput, buildCaseArtifactManifest, deskEvidence, fingerprintJson, BRIEF_SYSTEM, caseBriefSchema, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
-import {compileMaterials, type Material} from "@offroad/case-materials";
-import {dataRoomIndex, planDataRoom, type DataRoomDocument, type DataRoomPlan} from "@offroad/data-room";
-import {archetype, type ArchetypeId, type ClassifiedDocument} from "@offroad/credit-playbook";
-import {assessCapacity, buildTermSheet, type CapacityAssessment, type IndicativeTermSheet} from "@offroad/deal-structure";
-import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@offroad/reconciliation";
-import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, gatewayCallLogSchema, type GatewayCallLog} from "@offroad/model-gateway";
 
+import {invocationManifest, normalizeEconomicInput, pipelineVersions, type EconomicInputSnapshot} from "./case-manifest";
 import {dealBriefOf} from "./deal-brief";
 
-import type {Database, Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
-import {analyzeCreditPosition, buildDeskInputs, judgeOperation, projectLeverageTrajectory, questionsForCompany, rateCredit, stressTable, type ClientQuestion, type DeskAnalysis, type InternalRating, type OperationVerdict, type StressScenario, type Trajectory} from "@offroad/credit-analysis";
-import {instrumentVerdicts, type InstrumentVerdict, type LegalForm} from "@offroad/credit-playbook";
-import {designCollateralPackage, type CollateralAsset, type CollateralPackage} from "@offroad/deal-structure";
-import {indicativePrice, type IndicativePrice, type PricedInstrument} from "@offroad/market-reference";
-import {invocationManifest, normalizeEconomicInput, pipelineVersions, type EconomicInputSnapshot} from "./case-manifest";
+import type {Database, Json} from "@/types/database";
 
-/**
- * The case, end to end: reconcile, size, structure, write, compile.
- *
- * Everything before this point produced parts — verified facts, a playbook, an engine, an
- * auditor — and this is where they become one thing a company can use. Deliberately one
- * function and one order, because the order carries meaning: nothing is sized before the
- * numbers are reconciled, nothing is written before it is sized, and nothing is compiled
- * before what was written has been audited.
- *
- * Each stage degrades honestly. If the brief cannot be written the case still has its facts,
- * exceptions, readiness and structure; if the structure cannot be sized the case still reads.
- * What never happens is a stage inventing an input it did not get.
- */
-
-export type CaseState = {
-  reconciliation: ReconciliationReport;
-  readiness: ReadinessReport;
-  capacity: CapacityAssessment | null;
-  /** The desk battery: deterministic findings the narrative narrates and may not renumber. */
-  desk: DeskAnalysis | null;
-  /** The leverage trajectory and the structure that makes the deal doable. */
-  trajectory: Trajectory | null;
-  /** Field paths that kept the battery from running, surfaced as questions to the company. */
-  deskMissing: string[];
-  /** The desk's questions to the company, generated from the findings, meeting order. */
-  clientQuestions: ClientQuestion[];
-  termSheet: IndicativeTermSheet | null;
-  /** What a committee reads after the battery: the grade, the shocks, the papers, the security. */
-  rating: InternalRating | null;
-  stress: StressScenario[];
-  instruments: InstrumentVerdict[];
-  collateral: CollateralPackage | null;
-  /** The desk's indicative price for the internal documents; the term sheet stays silent on purpose. */
-  price: IndicativePrice | null;
-  /** Does the operation the company asked for stand up, and on what conditions. */
-  verdict: OperationVerdict | null;
-  brief: CaseBrief | null;
-  /** Why the brief is absent, when it is. */
-  briefBlockedBy: string[];
-  materials: Material[];
-  /** Why materials are absent, when they are. */
-  materialsBlockedBy: string[];
-  /** What leaves the desk, behind which gate, and what holds it. */
-  dataRoom: DataRoomPlan | null;
-  /** Content-free lineage of the model calls made while compiling this case state. */
+/** The web representation adds governed execution evidence to the domain state. */
+export type CaseState = Omit<CaseEngineState, "modelInvocations"> & {
   modelInvocations: GatewayCallLog[];
+  caseRunReport: Awaited<ReturnType<typeof executeCaseEngine>>["report"];
 };
 
-/** Facts the case is expected to carry, per operation — drives the material-gaps component. */
-function expectedMaterialFields(archetypeId: ArchetypeId): string[] {
-  const base = ["transaction.requested_amount", "debt.total_gross", "company.legal_name"];
-  const perArchetype: Partial<Record<ArchetypeId, string[]>> = {
-    growth_expansion: ["project.total_cost", "collateral.total_capacity"],
-    working_capital: ["collateral.receivables_capacity"],
-    acquisition: ["leverage.post_transaction_net_debt_ebitda"],
-    equipment_finance: ["project.total_cost"],
-    venture_debt: ["company.runway_months", "company.last_equity_round.amount"],
-  };
-  return [...base, ...(perArchetype[archetypeId] ?? [])];
-}
-
-async function loadCandidates(supabase: SupabaseClient<Database>, organizationId: string, sessionId: string): Promise<FactCandidate[]> {
-  const {data} = await supabase
+async function loadCandidates(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+  sessionId: string,
+): Promise<FactCandidate[]> {
+  const {data, error} = await supabase
     .from("intake_field_candidates")
     .select(
       "field_path, normalized_value, value_type, source_document_id, evidence_rank, information_class, confidence, anchor_verified, period_start, period_end, entity_name, entity_scope, source_anchor",
     )
     .eq("organization_id", organizationId)
     .eq("intake_session_id", sessionId);
-
+  if (error) throw error;
   return (data ?? []).map((row) => ({
     fieldPath: row.field_path,
     normalizedValue: typeof row.normalized_value === "string" ? row.normalized_value : JSON.stringify(row.normalized_value),
@@ -104,43 +64,53 @@ async function loadCandidates(supabase: SupabaseClient<Database>, organizationId
   }));
 }
 
-async function loadClassified(supabase: SupabaseClient<Database>, organizationId: string, sessionId: string): Promise<ClassifiedDocument[]> {
-  const {data: documents} = await supabase
+async function loadClassified(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+  sessionId: string,
+): Promise<ClassifiedDocument[]> {
+  const {data: documents, error: documentsError} = await supabase
     .from("source_documents")
     .select("id")
     .eq("organization_id", organizationId)
     .eq("intake_session_id", sessionId);
-
+  if (documentsError) throw documentsError;
   const ids = (documents ?? []).map((document) => document.id);
   if (ids.length === 0) return [];
-
-  const {data: profiles} = await supabase
+  const {data: profiles, error} = await supabase
     .from("document_profiles")
     .select("source_document_id, document_kind")
     .eq("organization_id", organizationId)
     .in("source_document_id", ids);
-
+  if (error) throw error;
   return (profiles ?? []).map((profile) => ({
     id: profile.source_document_id,
     kind: profile.document_kind as ClassifiedDocument["kind"],
   }));
 }
 
-/** The files as the room needs them: name, kind, and whether the bytes were verified. */
-async function loadRoomDocuments(supabase: SupabaseClient<Database>, organizationId: string, sessionId: string): Promise<DataRoomDocument[]> {
-  const {data: documents} = await supabase
+async function loadRoomDocuments(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+  sessionId: string,
+): Promise<DataRoomDocument[]> {
+  const {data: documents, error: documentsError} = await supabase
     .from("source_documents")
     .select("id, original_name, sha256, sha256_verified_at, byte_size")
     .eq("organization_id", organizationId)
     .eq("intake_session_id", sessionId);
+  if (documentsError) throw documentsError;
   const rows = documents ?? [];
   if (rows.length === 0) return [];
-  const {data: profiles} = await supabase
+  const {data: profiles, error} = await supabase
     .from("document_profiles")
     .select("source_document_id, document_kind")
     .eq("organization_id", organizationId)
     .in("source_document_id", rows.map((document) => document.id));
-  const kindOf = new Map((profiles ?? []).map((profile) => [profile.source_document_id, profile.document_kind as DataRoomDocument["kind"]]));
+  if (error) throw error;
+  const kindOf = new Map(
+    (profiles ?? []).map((profile) => [profile.source_document_id, profile.document_kind as DataRoomDocument["kind"]]),
+  );
   return rows.map((document) => ({
     id: document.id,
     kind: kindOf.get(document.id) ?? null,
@@ -151,92 +121,62 @@ async function loadRoomDocuments(supabase: SupabaseClient<Database>, organizatio
   }));
 }
 
-const number = (value: string | undefined) => (value && Number.isFinite(Number(value)) ? value : undefined);
-
-/**
- * Writes the brief, or says why it could not.
- *
- * The gateway is created per call with a budget: one case is one budget, and a runaway loop
- * cannot spend another case's money. A brief that fails the evidence audit is discarded rather
- * than shown with a warning — its sentences are exactly what would be quoted.
- */
+/** The model only writes prose. The engine independently audits every material claim. */
 async function writeBrief(input: {
   archetypeId: ArchetypeId;
   reconciliation: ReconciliationReport;
-  desk?: DeskAnalysis | null;
-  trajectory?: Trajectory | null;
+  desk: DeskAnalysis | null;
+  trajectory: Trajectory | null;
   locale: "pt" | "en";
-  /** Reports what the call cost, so the one spend nobody could query lands in a ledger. */
   onSpend?: (spend: {costUsd: number; calls: number}) => void;
 }): Promise<{brief: CaseBrief | null; blockedBy: string[]; modelInvocations: GatewayCallLog[]}> {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
-  if (!anthropicKey && !openaiKey) return {brief: null, blockedBy: ["no_model_credentials"], modelInvocations: []};
+  if (!anthropicKey && !openaiKey) {
+    return {brief: null, blockedBy: ["no_model_credentials"], modelInvocations: []};
+  }
 
   let costUsd = 0;
   let calls = 0;
   const modelInvocations: GatewayCallLog[] = [];
-
   const gateway = createModelGateway({
     adapters: {
       ...(anthropicKey ? {anthropic: createAnthropicAdapter({apiKey: anthropicKey})} : {}),
       ...(openaiKey ? {openai: createOpenAIAdapter({apiKey: openaiKey})} : {}),
     },
-    // One case, one budget. A loop cannot spend the next company's money.
     budget: {maxCostUsd: 3, maxCalls: 4},
-    // The worker writes its spend to `processing_runs.usage`; the brief is written outside any
-    // run, so before this it was the only money in the system nobody could count.
     onCall: (call) => {
       costUsd += call.costUsd ?? 0;
       calls += 1;
       modelInvocations.push(call);
     },
   });
-
-  // The battery's findings enter the prompt as computed sentences with citable ids, and enter
-  // the auditor as calculations. One gate: a brief that misquotes the desk is rejected exactly
-  // like a brief that misquotes a document.
-  const evidence = deskEvidence(input.desk ?? null, input.trajectory ?? null);
-  const auditableCalculations = [...input.reconciliation.calculations, ...evidence.calculations];
+  const evidence = deskEvidence(input.desk, input.trajectory);
 
   try {
     const result = await gateway.complete({
       task: "case_brief",
       system: BRIEF_SYSTEM,
-      input: [
-        {
-          type: "text",
-          text: buildBriefInput({
-            archetypeId: input.archetypeId,
-            facts: input.reconciliation.facts,
-            calculations: auditableCalculations,
-            exceptions: input.reconciliation.exceptions,
-            gaps: input.reconciliation.gaps,
-            locale: input.locale,
-            deskLines: evidence.promptLines,
-          }),
-        },
-      ],
+      input: [{
+        type: "text",
+        text: buildBriefInput({
+          archetypeId: input.archetypeId,
+          facts: input.reconciliation.facts,
+          calculations: [...input.reconciliation.calculations, ...evidence.calculations],
+          exceptions: input.reconciliation.exceptions,
+          gaps: input.reconciliation.gaps,
+          locale: input.locale,
+          deskLines: evidence.promptLines,
+        }),
+      }],
       schema: caseBriefSchema,
       schemaName: "case_brief",
     });
-
-    const audited = auditBrief({
-      brief: result.output,
-      facts: input.reconciliation.facts,
-      calculations: auditableCalculations,
-    });
-    if (!audited.ok) {
-      // Not shown with a caveat: the unsourced sentence is the one a committee would act on.
-      return {brief: null, blockedBy: audited.audit.findings.map((finding) => `${finding.claimId}: ${finding.reason}`), modelInvocations};
-    }
-    return {brief: audited.brief, blockedBy: [], modelInvocations};
+    return {brief: result.output, blockedBy: [], modelInvocations};
   } catch (error) {
     reportServerFailure({step: "case.brief", error});
     return {brief: null, blockedBy: ["generation_failed"], modelInvocations};
   } finally {
-    // `finally`, because a brief that failed the audit or threw still cost what it cost. A ledger
-    // that only records successes understates spend exactly when spend is going wrong.
     if (calls > 0) input.onSpend?.({costUsd, calls});
   }
 }
@@ -246,294 +186,80 @@ export async function buildCaseState(input: {
   organizationId: string;
   sessionId: string;
   locale: "pt" | "en";
-  /** Skips the model call. The screen uses this on first paint, then fills the brief in. */
   withBrief?: boolean;
 }): Promise<CaseState> {
   const {supabase, organizationId, sessionId, locale} = input;
-
-  const {data: session} = await supabase
+  const {data: session, error} = await supabase
     .from("document_intake_sessions")
     .select(
-      "archetype, requested_amount, requested_term_months, requested_grace_months, sector, geography, instruments, collateral_kinds, expected_rate",
+      "archetype, current_run_id, requested_amount, requested_term_months, requested_grace_months, sector, geography, instruments, collateral_kinds, expected_rate",
     )
     .eq("organization_id", organizationId)
     .eq("id", sessionId)
     .maybeSingle();
+  if (error) throw error;
 
   const archetypeId = ((session?.archetype as ArchetypeId | null) ?? "other") satisfies ArchetypeId;
-  // `dealBrief` is what the company asked for; `brief` further down is the written case. Two
-  // very different things that both wanted the same short name.
-  const dealBrief = session ? dealBriefOf(session) : ({} as ReturnType<typeof dealBriefOf>);
-  const documents = await loadClassified(supabase, organizationId, sessionId);
-  const candidates = await loadCandidates(supabase, organizationId, sessionId);
+  const dealBrief = session ? dealBriefOf(session) : {};
+  const [documents, candidates, roomDocuments] = await Promise.all([
+    loadClassified(supabase, organizationId, sessionId),
+    loadCandidates(supabase, organizationId, sessionId),
+    loadRoomDocuments(supabase, organizationId, sessionId),
+  ]);
+  const runId = session?.current_run_id ?? `case-state:${crypto.randomUUID()}`;
 
-  const reconciliation = reconcileCase({archetypeId, candidates, documents, locale});
-
-  const readiness = assessReadiness({
+  const result = await executeCaseEngine({
+    runId,
+    caseId: sessionId,
     archetypeId,
+    locale,
+    referenceDate: new Date().toISOString().slice(0, 10),
+    candidates,
     documents,
-    facts: reconciliation.facts,
-    exceptions: reconciliation.exceptions,
-    gaps: reconciliation.gaps,
-    expectedMaterialFields: expectedMaterialFields(archetypeId),
-  });
-
-  // ---- the desk battery ---------------------------------------------------------------------
-  //
-  // The CDI level is a market assumption of the analysis, stated here and echoed in every cost
-  // figure the battery produces. Indicative until a rates source feeds it; changing it changes
-  // every comparison, which is exactly why it lives in one visible place.
-  const deskInputs = buildDeskInputs(
-    reconciliation.facts.map((fact) => ({fieldPath: fact.key.fieldPath, value: fact.value})),
-    {
-      referenceDate: new Date().toISOString().slice(0, 10),
-      indexLevels: {cdi: "0.105", tlp: "0.079", ipca: "0.045", tr: "0.002"},
-      statedRequest: {
-        ...(dealBrief.requestedAmount !== undefined ? {amount: dealBrief.requestedAmount} : {}),
-        ...(dealBrief.requestedTermMonths !== undefined ? {termMonths: dealBrief.requestedTermMonths} : {}),
-        ...(dealBrief.requestedGraceMonths !== undefined ? {graceMonths: dealBrief.requestedGraceMonths} : {}),
-        ...(dealBrief.expectedRate !== undefined ? {expectedRate: dealBrief.expectedRate} : {}),
-      },
-    },
-  );
-  const desk = deskInputs.desk ? analyzeCreditPosition(deskInputs.desk) : null;
-  const trajectory = deskInputs.trajectory ? projectLeverageTrajectory(deskInputs.trajectory) : null;
-
-  // ---- size the operation -------------------------------------------------------------------
-  const valueOf = (fieldPath: string) => reconciliation.facts.find((fact) => fact.key.fieldPath === fieldPath)?.value;
-  const calculationOf = (id: string) => reconciliation.calculations.find((calculation) => calculation.id === id)?.value;
-
-  const requested = dealBrief.requestedAmount ?? number(valueOf("transaction.requested_amount"));
-  let capacity: CapacityAssessment | null = null;
-  let termSheet: IndicativeTermSheet | null = null;
-
-  if (requested) {
-    const cfads = number(calculationOf("adjusted_ebitda"));
-    // Venture debt sizes against recurring revenue and the last round, not EBITDA.
-    const latestArr = reconciliation.facts
-      .filter((fact) => /^(historical|interim)_financials\.\d{4}(_\d{2})?\.arr(_\d+m|_ytd|_ltm)?$/.test(fact.key.fieldPath))
-      .sort((a, b) => b.key.fieldPath.localeCompare(a.key.fieldPath))[0]?.value;
-    const lastRound = valueOf("company.last_equity_round.amount");
-    capacity = assessCapacity({
-      archetypeId,
-      requested,
-      ...(number(latestArr) ? {arr: latestArr!} : {}),
-      ...(number(lastRound) ? {lastEquityRound: lastRound!} : {}),
-      ...(cfads ? {cfads} : {}),
-      ...(number(calculationOf("adjusted_ebitda")) ? {adjustedEbitda: calculationOf("adjusted_ebitda")!} : {}),
-      ...(number(calculationOf("net_debt")) ? {existingNetDebt: calculationOf("net_debt")!} : {}),
-      ...(number(calculationOf("collateral_capacity_total")) ? {collateralCapacity: calculationOf("collateral_capacity_total")!} : {}),
-      // A SAC amortisation over the archetype's typical tenor, with interest — the shape the
-      // structure menu proposes, so capacity is sized against the paper actually on offer.
-      annualDebtServiceFactor: (1 / (archetype(archetypeId).structure.tenorMonths.typical[1] / 12) + 0.12).toFixed(4),
-    });
-
-    // The brief wins over anything extracted from a document. Both are the company speaking, but
-    // the brief is the deliberate, current statement — a tenor read off a proposal PDF is what
-    // they wanted when they wrote it, and the whole point of the brief is that they can change
-    // their mind after seeing what the numbers say.
-    const term = dealBrief.requestedTermMonths ?? number(valueOf("transaction.desired_term_months"));
-    const grace = dealBrief.requestedGraceMonths ?? number(valueOf("transaction.desired_grace_months"));
-    termSheet = buildTermSheet({
-      archetypeId,
-      capacity,
-      ...(term ? {requestedTermMonths: Number(term)} : {}),
-      ...(grace ? {requestedGraceMonths: Number(grace)} : {}),
-      ...(dealBrief.expectedRate ? {expectedRate: dealBrief.expectedRate} : {}),
-      blockers: readiness.blockers.map((blocker) => blocker.labels[locale]),
-    });
-  }
-
-  // ---- the committee pack ---------------------------------------------------------------------
-  //
-  // Rating, stress, instruments and security are arithmetic over what the battery already
-  // established. They are computed here, once, so the screen, the memorandum and the term sheet
-  // read the same grade and the same shocks.
-  const legalName = valueOf("company.legal_name") ?? "";
-  const legalForm: LegalForm = /\bS\.?A\.?\b|sociedade an[oô]nima/i.test(legalName) ? "sa" : /ltda|limitada/i.test(legalName) ? "ltda" : "other";
-  const latestYear = reconciliation.facts.map((fact) => fact.key.fieldPath.match(/^historical_financials\.(\d{4})\./)?.[1]).filter((year): year is string => Boolean(year)).sort().at(-1);
-  const priorYear = latestYear ? String(Number(latestYear) - 1) : undefined;
-  const materialFacts = reconciliation.facts.filter((fact) => fact.accepted.evidenceRank <= 7);
-  const evidenceRank = materialFacts.length ? (materialFacts.reduce((sum, fact) => sum + fact.accepted.evidenceRank, 0) / materialFacts.length).toFixed(2) : undefined;
-  const topShare = valueOf("customers.top_customers.1.share_pct");
-  const rating = desk
-    ? rateCredit({
-        desk,
-        trajectory,
-        ...(latestYear && valueOf(`historical_financials.${latestYear}.financial_expenses`) ? {financialExpenses: valueOf(`historical_financials.${latestYear}.financial_expenses`)!} : {}),
-        ...(priorYear && valueOf(`historical_financials.${priorYear}.ebitda`) ? {priorEbitda: valueOf(`historical_financials.${priorYear}.ebitda`)!} : {}),
-        ...(topShare ? {topCustomerShare: topShare} : {}),
-        ...(evidenceRank ? {evidenceRank} : {}),
-      })
-    : null;
-  const stress = desk && desk.profile === "cash_generative"
-    ? stressTable({desk, ...(latestYear && valueOf(`historical_financials.${latestYear}.revenue`) ? {revenue: valueOf(`historical_financials.${latestYear}.revenue`)!} : {}), ...(topShare ? {topCustomerShare: topShare} : {})})
-    : [];
-  const instruments = requested
-    ? instrumentVerdicts({
-        legalForm,
-        archetypeId,
-        amount: requested,
-        ...(desk?.profile === "cash_burning" || valueOf("company.last_equity_round.amount") ? {ventureBacked: true} : {}),
-        ...(archetypeId === "equipment_finance" ? {equipment: true} : {}),
-        ...(desk && desk.encumbrance.free && requested ? {receivablesCoverage: (Number(desk.encumbrance.free) / Number(requested)).toFixed(2)} : {}),
-      })
-    : [];
-  const collateralAssets: CollateralAsset[] = reconciliation.facts
-    .filter((fact) => /^collateral\.assets\.\d+\.type$/.test(fact.key.fieldPath))
-    .map((fact) => {
-      const base = fact.key.fieldPath.replace(/\.type$/, "");
-      const classOf = (text: string): CollateralAsset["type"] => /receb|duplicat/i.test(text) ? "receivables" : /estoque|invent/i.test(text) ? "inventory" : /im[oó]vel|galp|terreno|property/i.test(text) ? "property" : /ve[ií]culo|frota|caminh/i.test(text) ? "vehicles" : /m[aá]quina|equip/i.test(text) ? "equipment" : /quota|a[çc][õo]es|shares/i.test(text) ? "shares" : /aval|fian/i.test(text) ? "guarantee" : /aplica|financ/i.test(text) ? "financial" : "other";
-      const appraisal = valueOf(`${base}.appraisal_value`);
-      const book = valueOf(`${base}.book_value`);
-      return {
-        description: valueOf(`${base}.description`) ?? fact.value,
-        type: classOf(fact.value),
-        value: appraisal ?? book ?? "0",
-        ...(appraisal ? {appraised: true} : {}),
-        ...(valueOf(`${base}.encumbrances`) && number(valueOf(`${base}.encumbrances`)) ? {encumbered: valueOf(`${base}.encumbrances`)!} : {}),
-        ...(valueOf(`${base}.policy_haircut`) ? {haircut: valueOf(`${base}.policy_haircut`)!} : {}),
-      };
-    });
-  if (desk && collateralAssets.every((asset) => asset.type !== "receivables") && Number(desk.encumbrance.receivablesBase) > 0) {
-    collateralAssets.push({description: "Recebíveis de clientes", type: "receivables", value: desk.encumbrance.receivablesBase, encumbered: desk.encumbrance.encumbered});
-  }
-  const collateral = requested && collateralAssets.length > 0 ? designCollateralPackage({assets: collateralAssets, amount: requested}) : null;
-
-  const preferredInstrument = instruments.find((verdict) => verdict.eligible)?.instrument.id as PricedInstrument | undefined;
-  const price = rating && preferredInstrument && requested
-    ? indicativePrice({
-        instrument: preferredInstrument,
-        rating: rating.band,
-        cdi: "0.105",
-        amount: requested,
-        ...(dealBrief.requestedTermMonths !== undefined ? {tenorMonths: dealBrief.requestedTermMonths} : number(valueOf("transaction.desired_term_months")) ? {tenorMonths: Number(valueOf("transaction.desired_term_months"))} : {}),
-        ...(collateral ? {collateralCoverage: collateral.coverageAchieved} : {}),
-      })
-    : null;
-
-  /**
-   * The verdict on the operation the company asked for. Everything above describes the company;
-   * this judges the deal, and it is what the memorandum opens with.
-   */
-  const verdict = desk && requested
-    ? judgeOperation({
-        desk,
-        trajectory,
-        operation: {
-          amount: requested,
-          termMonths: dealBrief.requestedTermMonths ?? Number(valueOf("transaction.desired_term_months") ?? 60),
-          graceMonths: dealBrief.requestedGraceMonths ?? Number(valueOf("transaction.desired_grace_months") ?? 12),
-          instrument: valueOf("transaction.preferred_structure") ?? "dívida privada",
-          ...(valueOf("transaction.refinancing") ? {refinancing: valueOf("transaction.refinancing")!} : {}),
-          ...(valueOf("transaction.purpose") ? {purpose: valueOf("transaction.purpose")!} : {}),
+    roomDocuments,
+    dealBrief,
+    // Web sessions cannot inspect every provider mandate. The workload adapter supplies these.
+    resolvedMandates: [],
+    externalReleaseApproved: false,
+    writeBrief: async (writerInput) => {
+      if (input.withBrief === false) {
+        return {brief: null, blockedBy: ["not_requested"], usage: {costUsd: 0, modelCalls: 0}, modelInvocations: []};
+      }
+      const {data: claimed, error: claimError} = await supabase.rpc("claim_case_brief", {
+        p_organization_id: organizationId,
+        p_session_id: sessionId,
+      });
+      if (claimError) throw claimError;
+      if (claimed !== true) {
+        return {brief: null, blockedBy: ["brief_in_progress"], usage: {costUsd: 0, modelCalls: 0}, modelInvocations: []};
+      }
+      const written = await writeBrief({
+        ...writerInput,
+        onSpend: ({costUsd, calls}) => {
+          void supabase
+            .rpc("record_case_model_spend", {
+              p_organization_id: organizationId,
+              p_session_id: sessionId,
+              p_cost_usd: costUsd,
+              p_calls: calls,
+            })
+            .then(({error: spendError}) => {
+              if (spendError) reportServerFailure({step: "case.spend_not_recorded", error: spendError});
+            });
         },
-        ...(deskInputs.trajectory
-          ? {
-              simulate: ({amount, termMonths, graceMonths, refinancing}: {amount: string; termMonths: number; graceMonths: number; refinancing: string}) =>
-                projectLeverageTrajectory({...deskInputs.trajectory!, newDebt: {amount, termMonths, graceMonths, refinancing}}),
-            }
-          : {}),
-        ...(rating && preferredInstrument
-          ? {
-              priceFor: ({amount, termMonths, leveragePost}: {amount: string; termMonths: number; leveragePost: string}) => {
-                const priced = indicativePrice({
-                  instrument: preferredInstrument,
-                  rating: rating.band,
-                  cdi: "0.105",
-                  amount,
-                  tenorMonths: termMonths,
-                  leveragePost,
-                  ...(collateral ? {collateralCoverage: collateral.coverageAchieved} : {}),
-                });
-                return priced ? {bps: priced.bps, allIn: {min: priced.allIn.min, max: priced.allIn.max}} : null;
-              },
-            }
-          : {}),
-      })
-    : null;
-
-  // ---- write and compile ---------------------------------------------------------------------
-  //
-  // Everything above this line is arithmetic over facts already in the database and costs
-  // nothing to repeat. The brief is the only expensive step, so it is the only one that needs a
-  // claim: two requests arriving before the first snapshot is written would otherwise both pay,
-  // and a refresh during loading would cost a second brief.
-  //
-  // Losing the race is not an error. The case still renders with its facts, exceptions,
-  // readiness and structure, and `brief_in_progress` tells the screen to say the written part is
-  // being prepared rather than showing an empty section with no reason.
-  const {brief, blockedBy: briefBlockedBy, modelInvocations} = await (async () => {
-    if (input.withBrief === false) return {brief: null, blockedBy: ["not_requested"], modelInvocations: [] as GatewayCallLog[]};
-
-    const {data: claimed} = await supabase.rpc("claim_case_brief", {
-      p_organization_id: organizationId,
-      p_session_id: sessionId,
-    });
-    if (claimed !== true) return {brief: null, blockedBy: ["brief_in_progress"], modelInvocations: [] as GatewayCallLog[]};
-
-    return writeBrief({
-      archetypeId,
-      reconciliation,
-      desk,
-      trajectory,
-      locale,
-      onSpend: ({costUsd, calls}) => {
-        // Fire and forget: the case must not fail to render because the ledger write did.
-        void supabase
-          .rpc("record_case_model_spend", {
-            p_organization_id: organizationId,
-            p_session_id: sessionId,
-            p_cost_usd: costUsd,
-            p_calls: calls,
-          })
-          .then(({error}) => {
-            if (error) reportServerFailure({step: "case.spend_not_recorded", error});
-          });
-      },
-    });
-  })();
-
-  let materials: Material[] = [];
-  let materialsBlockedBy: string[] = [];
-  if (brief) {
-    const materialEvidence = deskEvidence(desk, trajectory);
-    const compiled = compileMaterials({
-      brief,
-      facts: reconciliation.facts,
-      calculations: [...reconciliation.calculations, ...materialEvidence.calculations],
-      exceptions: reconciliation.exceptions,
-      readiness,
-      desk,
-      trajectory,
-      ...(termSheet ? {termSheet} : {}),
-      ...(rating ? {rating} : {}),
-      stress,
-      instruments,
-      ...(collateral ? {collateral} : {}),
-      ...(price ? {price} : {}),
-      ...(verdict ? {verdict} : {}),
-    });
-    if (compiled.ok) materials = compiled.materials;
-    else materialsBlockedBy = compiled.detail;
-  } else {
-    materialsBlockedBy = ["brief_unavailable"];
-  }
-
-  const clientQuestions = questionsForCompany(desk, trajectory, deskInputs.missing);
-
-  // The room is planned even when no material exists yet: the analyst then sees a room of
-  // holds and requests, which is the honest state.
-  const dataRoom = planDataRoom({
-    materials,
-    materialsBlockedBy,
-    documents: await loadRoomDocuments(supabase, organizationId, sessionId),
-    exceptions: reconciliation.exceptions,
-    readiness,
+      });
+      return {
+        ...written,
+        usage: {
+          costUsd: written.modelInvocations.reduce((sum, call) => sum + call.costUsd, 0),
+          modelCalls: written.modelInvocations.length,
+        },
+      };
+    },
   });
-  materials = [...materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
-
-  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, verdict, brief, briefBlockedBy, materials, materialsBlockedBy, dataRoom, modelInvocations};
+  const parsedInvocations = gatewayCallLogSchema.array().safeParse(result.state.modelInvocations);
+  if (!parsedInvocations.success) throw new Error("invalid case model lineage");
+  return {...result.state, modelInvocations: parsedInvocations.data, caseRunReport: result.report};
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */
@@ -545,7 +271,7 @@ export async function saveCaseState(input: {
   runId: string | null;
 }): Promise<void> {
   const {supabase, organizationId, sessionId, state} = input;
-  await supabase.rpc("record_intake_analysis", {
+  const {error} = await supabase.rpc("record_intake_analysis", {
     p_organization_id: organizationId,
     p_session_id: sessionId,
     p_patch: {
@@ -559,9 +285,13 @@ export async function saveCaseState(input: {
       brief_blocked_by: state.briefBlockedBy,
       materials: state.materials,
       materials_blocked_by: state.materialsBlockedBy,
+      matching: state.matching,
+      outcome: state.outcome,
+      case_runner_report: state.caseRunReport,
       case_run: input.runId,
     } as unknown as Json,
   });
+  if (error) throw error;
 }
 
 async function loadEconomicInputSnapshot(
@@ -595,20 +325,20 @@ async function loadEconomicInputSnapshot(
       .eq("organization_id", organizationId)
       .eq("intake_session_id", sessionId),
   ]);
-
   for (const result of [sourcesResult, candidatesResult, answersResult]) {
     if (result.error) throw result.error;
   }
 
   const sourceIds = (sourcesResult.data ?? []).map((source) => source.id);
-  const realLayers = sourceIds.length === 0
+  const layersResult = sourceIds.length === 0
     ? {data: [], error: null}
     : await supabase
       .from("document_layers")
       .select("source_document_id, document_version, sha256, parser_versions, processing_run_id, status")
       .eq("organization_id", organizationId)
       .in("source_document_id", sourceIds);
-  if (realLayers.error) throw realLayers.error;
+  if (layersResult.error) throw layersResult.error;
+
   let run: Record<string, Json | undefined> | null = null;
   if (sessionResult.data.current_run_id) {
     const runResult = await supabase
@@ -620,13 +350,12 @@ async function loadEconomicInputSnapshot(
     if (runResult.error) throw runResult.error;
     run = asJsonRecord(runResult.data);
   }
-
   return normalizeEconomicInput({
     session: asJsonRecord(sessionResult.data),
     sources: (sourcesResult.data ?? []).map(asJsonRecord),
     candidates: (candidatesResult.data ?? []).map(asJsonRecord),
     answers: (answersResult.data ?? []).map(asJsonRecord),
-    layers: (realLayers.data ?? []).map(asJsonRecord),
+    layers: (layersResult.data ?? []).map(asJsonRecord),
     run,
   });
 }
@@ -653,11 +382,7 @@ async function loadWorkerLineage(input: {
   const record = asJsonRecord(data);
   const parsed = gatewayCallLogSchema.array().safeParse(record.calls ?? []);
   const expected = typeof record.expected_calls === "number" ? record.expected_calls : Number(record.expected_calls ?? 0);
-  return {
-    calls: parsed.success ? parsed.data : [],
-    expected,
-    complete: parsed.success && parsed.data.length === expected,
-  };
+  return {calls: parsed.success ? parsed.data : [], expected, complete: parsed.success && parsed.data.length === expected};
 }
 
 function artifactKind(kind: Material["kind"]): "teaser" | "credit_memo" | "term_sheet" | "diligence_qa" | "data_room_index" | "other" {
@@ -669,19 +394,7 @@ function artifactKind(kind: Material["kind"]): "teaser" | "credit_memo" | "term_
   return "other";
 }
 
-/**
- * The case, computed once per state of the data room.
- *
- * Without this, every render of the review screen re-ran the whole line — including the model
- * call that writes the brief. A company that refreshes the page four times while reading pays
- * four times for the same paragraphs, and the paragraphs come back subtly different each
- * time, which is worse than the cost: a credit memo that changes wording on reload is not a
- * document anybody can quote.
- *
- * The snapshot is invalidated by the fingerprint, never by age. A case whose data room has
- * not moved has no reason to be recomputed, and one whose data room moved by a single
- * reviewed candidate has every reason to be.
- */
+/** Computes once per economic fingerprint and persists an immutable artifact manifest. */
 export async function resolveCaseState(input: {
   supabase: SupabaseClient<Database>;
   organizationId: string;
@@ -694,15 +407,14 @@ export async function resolveCaseState(input: {
     ? economicSnapshot.session.extraction_version
     : "unknown";
   const versions = pipelineVersions({snapshot: economicSnapshot, extractionVersion});
-  const fingerprint = fingerprintJson({economics: economicSnapshot, versions});
-
-  const {data: session} = await supabase
+  const fingerprint = fingerprintJson({economics: economicSnapshot, versions, caseEngine: caseEngineVersion});
+  const {data: session, error: sessionError} = await supabase
     .from("document_intake_sessions")
     .select("result_summary")
     .eq("organization_id", organizationId)
     .eq("id", sessionId)
     .maybeSingle();
-
+  if (sessionError) throw sessionError;
   const summary = (session?.result_summary ?? {}) as Record<string, unknown>;
   const snapshot = summary.case_state as (CaseState & {fingerprint?: string; locale?: string}) | undefined;
   if (snapshot?.fingerprint === fingerprint && snapshot.locale === locale) return snapshot;
@@ -718,15 +430,13 @@ export async function resolveCaseState(input: {
     versionId: String(source.document_version ?? "1"),
     sha256: typeof source.sha256 === "string" ? source.sha256 : null,
   }));
-  const sourceCapture = sources.length > 0 && sources.every((source) => source.sha256 !== null)
-    ? "complete" as const
-    : "partial" as const;
+  const sourceCapture = sources.length > 0 && sources.every((source) => source.sha256 !== null) ? "complete" as const : "partial" as const;
   const modelCapture = workerLineage.complete
     ? modelCalls.length > 0 ? "complete" as const : "not_applicable" as const
     : "partial" as const;
   const manifest = buildCaseArtifactManifest({
     caseId: sessionId,
-    runId: currentRunId ?? `case-state:${crypto.randomUUID()}`,
+    runId: currentRunId ?? state.caseRunReport.runId,
     createdAt: new Date().toISOString(),
     locale: locale === "pt" ? "pt-BR" : "en-US",
     inputFingerprint: fingerprint,
@@ -752,6 +462,5 @@ export async function resolveCaseState(input: {
     p_case_state: snapshotToPersist as unknown as Json,
   });
   if (error) throw error;
-
   return state;
 }

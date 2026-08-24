@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@offroad/case-engine": "workspace:*",
     "@offroad/case-export": "workspace:*",
     "@offroad/case-materials": "workspace:*",
     "@offroad/case-render": "workspace:*",

@@ -1250,8 +1250,15 @@ The first two foundation increments are now represented in code:
 - Every stage has an explicit output schema, output fingerprint, duration and usage record.
 - Technical failures, deliberate evidence holds, output-contract violations and budget violations
   are different persisted states; every later stage is skipped after the first stop.
-- This package is the rail, not a claim that the train is connected. The next increment must adapt
-  the real engines, execute through the worker capability and persist its report and manifest.
+- `packages/case-engine` connects the rail to the production domain engines. It reconciles facts,
+  runs the deterministic desk battery, sizes and judges the proposed structure, audits model-written
+  claims, compiles materials and the outbound room, screens resolved mandates without a fake score,
+  and derives the operational outcome. The web case path now uses this package instead of carrying a
+  second copy of the financial logic.
+- The report is persisted with the private case state and the model spend is enforced at the claims
+  stage and at the total-case level.
+- Remaining Gate 2 boundary: execution and persistence still need to move behind the worker
+  capability. Only that workload may load every provider mandate and attest the final manifest.
 
 Do not reintroduce the former count-and-timestamp cache key. Do not expose `processing_jobs.result`
 or `last_error` to tenants. A partial `capture` value is a real limitation and must become a release
