@@ -617,11 +617,12 @@ begin
       ts_rank_cd(chunk.search_vector, query_value)::real
     from public.governed_precedent_chunks chunk
     join public.governed_precedents precedent on precedent.id = chunk.precedent_id
-    join public.precedent_authorizations authorization on authorization.id = precedent.authorization_id
+    join public.precedent_authorizations precedent_authorization
+      on precedent_authorization.id = precedent.authorization_id
     where p_precedent_purpose is not null
-      and authorization.status = 'active'
-      and (authorization.expires_at is null or authorization.expires_at > now())
-      and p_precedent_purpose = any(authorization.authorized_purposes)
+      and precedent_authorization.status = 'active'
+      and (precedent_authorization.expires_at is null or precedent_authorization.expires_at > now())
+      and p_precedent_purpose = any(precedent_authorization.authorized_purposes)
       and precedent.anonymization_status = 'approved'
       and precedent.governance_status = 'approved'
       and chunk.search_vector @@ query_value
