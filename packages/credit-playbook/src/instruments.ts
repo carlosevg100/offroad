@@ -1,3 +1,6 @@
+import type {TransactionRoute} from "@offroad/credit-ontology";
+
+import {routeForLegacyInstrument} from "./taxonomy";
 import type {ArchetypeId} from "./types";
 
 /**
@@ -217,6 +220,8 @@ export const instruments: readonly Instrument[] = [
 
 export type InstrumentVerdict = {
   instrument: Instrument;
+  /** Orthogonal economic interpretation of the legacy commercial route. */
+  route: TransactionRoute;
   eligible: boolean;
   /** Why it is open or closed for this issuer, in one sentence each. */
   reasons: {pt: string; en: string}[];
@@ -271,6 +276,6 @@ export function instrumentVerdicts(profile: IssuerProfile): InstrumentVerdict[] 
       reasons.push(bi("Papel pouco usual para esta operação; possível, mas fora da prática.", "Unusual paper for this operation; possible, but outside practice."));
     }
     if (eligible && reasons.length === 0) reasons.push(bi("Elegível pela forma societária, pelo tíquete e pela destinação.", "Eligible by legal form, ticket and use."));
-    return {instrument, eligible, reasons};
+    return {instrument, route: routeForLegacyInstrument(instrument.id, profile), eligible, reasons};
   });
 }

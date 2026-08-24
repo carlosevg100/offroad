@@ -8,6 +8,32 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: bulletproof foundations, 24 August 2026
+
+The founder approved the end-to-end hardening plan in
+[`docs/build/BULLETPROOF_EXECUTION_PLAN.md`](docs/build/BULLETPROOF_EXECUTION_PLAN.md).
+The first focused increment establishes the contracts required before expanding
+the pipeline:
+
+- origination taxonomy v2 separates capital need, repayment source, backing,
+  company obligation, distributed security, structure mechanism, capital
+  vehicle, provider type, distribution route, and credit enhancement;
+- FIDC is a capital vehicle, never the company's obligation or a synonym for a
+  receivables transaction;
+- six operational case outcomes are independent from the credit verdict;
+- a unified manifest can fingerprint source versions, model and prompt policy,
+  deterministic engines, market date, templates, matching, and outputs;
+- the gold-case contract now covers the complete eight-layer evaluation surface;
+- the production-used legacy catalogue has an explicit compatibility adapter to
+  the new taxonomy.
+
+This does not yet mean the raw-document pipeline is complete. Manifest
+persistence in real case snapshots, a one-command raw-document runner, the first
+full corporate anchor, semantic audit, parametric case generation, the dedicated
+receivables/FIDC track, and staging promotion gates are the next measured
+increments. Do not report these items as live until their acceptance evidence is
+recorded.
+
 ### Update de produto: intake guiado, 22 August 2026
 
 The borrower and advisor intake now has one guided entry instead of an up-front

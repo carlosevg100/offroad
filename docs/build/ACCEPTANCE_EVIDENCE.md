@@ -1,5 +1,17 @@
 # Acceptance Evidence
 
+## Fundações bulletproof, 24/08/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+|---|---|---|---|
+| Taxonomia de originação v2 | `pnpm --filter @offroad/credit-ontology test` | 22 testes; dimensões ortogonais validadas e FIDC presente apenas como veículo de capital | 2026-08-24 |
+| Estados operacionais e manifesto | `pnpm --filter @offroad/case-understanding test` | 31 testes; seis estados, portão de direcionamento externo, manifesto estável, ids de linhagem únicos e invalidação por versão | 2026-08-24 |
+| Gold case de oito camadas | `pnpm --filter @offroad/evals test` | 16 testes; estruturas, claims, materiais, matching e desfecho integram o contrato sem quebrar casos legados | 2026-08-24 |
+| Compatibilidade do playbook | `pnpm --filter @offroad/credit-playbook test` | 75 testes; dez rotas legadas convertidas para a taxonomia v2, incluindo a separação correta de FIDC | 2026-08-24 |
+| Contratos e decisão arquitetural | ADR 0009 e `BULLETPROOF_EXECUTION_PLAN.md` | limites, invariantes, gates e itens explicitamente pendentes versionados no repositório | 2026-08-24 |
+
+| Quality gate completo | `pnpm check` com Node 24.19 | lint, typecheck, testes e build verdes nos 32 pacotes; 113 testes do app web aprovados | 2026-08-24 |
+
 Evidências são adicionadas somente depois de execução real. Nenhum item pendente implica funcionamento.
 
 ## Slice vertical inicial

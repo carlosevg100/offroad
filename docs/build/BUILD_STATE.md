@@ -1,8 +1,35 @@
 # Build State
 
-Atualizado em: 2026-08-18
+Atualizado em: 2026-08-24
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Fundações bulletproof, 24/08/2026
+
+O plano aprovado pelo fundador está versionado em
+[`BULLETPROOF_EXECUTION_PLAN.md`](BULLETPROOF_EXECUTION_PLAN.md). Este primeiro
+incremento fecha os contratos que todas as etapas posteriores devem respeitar:
+
+- [x] taxonomia ortogonal v2: necessidade, fonte de pagamento, lastro,
+  obrigação, valor mobiliário, mecanismo, veículo, provedor e rota de
+  distribuição são dimensões distintas;
+- [x] FIDC modelado exclusivamente como veículo de capital, sem ser confundido
+  com obrigação da empresa ou instrumento distribuído;
+- [x] seis estados operacionais do case separados do parecer de crédito, com
+  direcionamento externo permitido somente no estado
+  `ready_for_qualified_direction`;
+- [x] manifesto unificado de linhagem com hashes das fontes, versões de
+  pipeline, políticas de modelo, prompts, playbook, mercado e artefatos;
+- [x] contrato de gold case ampliado para oito camadas: extração, conciliação,
+  métricas, lacunas, estrutura, claims, materiais, matching e desfecho;
+- [x] adaptador explícito do catálogo legado para a taxonomia v2, preservando o
+  fluxo atual enquanto a migração é feita de forma controlada;
+- [x] ADR 0009 registra as invariantes e o que ainda não foi implementado.
+
+Ainda não está concluído neste incremento: persistência do manifesto no snapshot
+real, runner único partindo de documentos brutos, primeiro case âncora completo,
+fábrica paramétrica, trilha específica de recebíveis/FIDC e gate de promoção em
+staging. Esses itens permanecem como gates verificáveis no plano de execução.
 
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|

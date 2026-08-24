@@ -34,6 +34,7 @@
     "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
+    "@offroad/case-understanding": "workspace:*",
     "@offroad/document-classification": "workspace:*",
     "@offroad/document-extraction": "workspace:*",
     "@offroad/document-intelligence": "workspace:*",

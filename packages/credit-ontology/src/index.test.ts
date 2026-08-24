@@ -16,9 +16,40 @@ import {
   proposePrecedence,
   reconciliationRules,
   resolveFieldPath,
+  transactionRouteSchema,
   suggestedDocumentName,
   validateChartOfAccounts,
 } from "./index";
+
+describe("origination taxonomy v2", () => {
+  it("keeps the need, obligation, structure, vehicle and provider independent", () => {
+    const route = transactionRouteSchema.parse({
+      capitalNeed: "working_capital",
+      repaymentSources: ["receivables_collection"],
+      assetBackings: ["receivables"],
+      obligationInstruments: ["receivables_assignment"],
+      distributedSecurities: ["fidc_senior_quota", "fidc_subordinated_quota"],
+      structureMechanisms: ["receivables_purchase"],
+      capitalVehicles: ["fidc"],
+      capitalProviderTypes: ["fidc_manager"],
+      distributionRoutes: ["bilateral_private"],
+      securityEnhancements: ["overcollateralization", "subordination"],
+    });
+
+    expect(route.capitalNeed).toBe("working_capital");
+    expect(route.obligationInstruments).toEqual(["receivables_assignment"]);
+    expect(route.capitalVehicles).toEqual(["fidc"]);
+    expect(route.capitalProviderTypes).toEqual(["fidc_manager"]);
+  });
+
+  it("does not allow a funding vehicle to masquerade as the company's obligation", () => {
+    expect(() => transactionRouteSchema.parse({
+      capitalNeed: "working_capital",
+      repaymentSources: ["receivables_collection"],
+      obligationInstruments: ["fidc"],
+    })).toThrow();
+  });
+});
 
 describe("evidence ranks", () => {
   it("orders classes from audited (1) to company documents (7)", () => {
