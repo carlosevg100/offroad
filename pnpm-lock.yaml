@@ -53,6 +53,9 @@ importers:
       '@offroad/fund-mandate':
         specifier: workspace:*
         version: link:../../packages/fund-mandate
+      '@offroad/governed-retrieval':
+        specifier: workspace:*
+        version: link:../../packages/governed-retrieval
       '@offroad/model-gateway':
         specifier: workspace:*
         version: link:../../packages/model-gateway
@@ -699,6 +702,22 @@ importers:
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+
+  packages/governed-retrieval:
+    dependencies:
+      '@offroad/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
+      '@offroad/fund-mandate':
+        specifier: workspace:*
+        version: link:../fund-mandate
       zod:
         specifier: 4.4.3
         version: 4.4.3

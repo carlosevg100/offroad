@@ -126,11 +126,30 @@ genérico não pode inventar linhas, lastro ou conciliação para ativar esta an
 
 ## Gate 7: retrieval governado
 
-- [ ] Case RAG isolado por organização e oportunidade.
-- [ ] House Playbook RAG versionado.
-- [ ] Mandatos estruturados como filtro duro; embeddings somente para notas abertas.
-- [ ] Citação, abstention e zero recuperação entre organizações.
-- [ ] Precedentes somente após autorização, anonimização e governança.
+- [x] Case RAG isolado por organização e oportunidade.
+- [x] House Playbook RAG versionado.
+- [x] Mandatos estruturados como filtro duro; embeddings somente para notas abertas.
+- [x] Citação, abstention e zero recuperação entre organizações.
+- [x] Precedentes somente após autorização, anonimização e governança.
+
+### Evidência de aceite funcional do Gate 7
+
+O pacote `@offroad/governed-retrieval` separa evidência do case, House Playbook, notas abertas de
+mandatos e precedentes em contratos independentes. Evidência do case só nasce de chunks ancorados
+da camada determinística do parser e não aceita vetores. O playbook exige a versão aprovada exata e
+orienta a análise sem se tornar prova de um fato da empresa.
+
+O worker grava os chunks usando a capability do job documental. Antes de redigir, carrega apenas o
+playbook aprovado. Depois do matching estruturado, somente ids de fundos com veredito `fits`
+liberam busca em notas abertas. O estado público registra apenas versão, contagens, hash da consulta
+e abstention; passagens e identidades continuam privadas.
+
+No banco, RLS forçado, FKs compostas e comandos com capability preservam organização, sessão,
+oportunidade, documento e run. Precedentes são recuperáveis somente quando autorização, propósito,
+prazo, anonimização e governança permanecem válidos no momento da leitura. O teste de não
+interferência cobre leitura própria, tenant cruzado, tentativa de escrita, capability forjada e
+notas fora da lista permitida. A reconstrução completa da migração permanece obrigatória no CI
+antes de produção.
 
 ## Gate 8: produção controlada
 

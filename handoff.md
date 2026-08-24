@@ -28,11 +28,34 @@ the pipeline:
   the new taxonomy.
 
 The raw-document runner, workload-attested manifest, first full corporate anchor,
-claim-level publication controls, parametric case factory and the functional
-receivables/FIDC analysis track now exist. The remaining measured increments are
-founder and independent economic review of the handcrafted anchors, governed
-retrieval and staging promotion gates. Do not report those remaining items as live until their
-acceptance evidence is recorded.
+claim-level publication controls, parametric case factory, the functional
+receivables/FIDC analysis track and governed retrieval now exist. The remaining
+measured increments are founder and independent economic review of the handcrafted
+anchors and staging promotion gates. Governed retrieval is implemented locally but
+must not be reported as live until its database CI, production migration and worker
+deployment evidence are recorded.
+
+### Engineering update: governed retrieval, 24 August 2026
+
+`@offroad/governed-retrieval` treats retrieval as controlled context selection, not
+as evidence creation. Case evidence, the House Playbook, open mandate notes and
+precedents have separate schemas and authorization gates. Case chunks come only from
+deterministic parser layers, retain stable anchors and hashes, and have no embeddings.
+The approved playbook version guides the writer but cannot prove a borrower fact.
+
+Structured mandate screening always runs before semantic notes. Only funds with a
+`fits` verdict can contribute open notes to the analysis. Precedents are rechecked at
+read time for active authorization, exact purpose, expiry, approved anonymization and
+approved governance. Every result carries a citation and the system abstains when no
+authorized context is relevant.
+
+The document worker writes anchored chunks through its temporary job capability. The
+case worker loads the approved playbook before drafting, then loads notes only for the
+post-screening fund allowlist. Full passages and fund identities stay in the private
+job result. Public case state receives only content-free lineage. The database design
+uses forced RLS and exact organization, session, opportunity, document and run scope.
+See ADR 0010. At this point the full code quality gate is green; database CI and
+production promotion remain outstanding.
 
 ### Engineering update: governed case worker, 24 August 2026
 

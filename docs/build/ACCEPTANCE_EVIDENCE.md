@@ -1,5 +1,21 @@
 # Acceptance Evidence
 
+## Retrieval governado, 24/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Contratos por fonte | `@offroad/governed-retrieval` | case, playbook, nota de mandato e precedente têm schemas separados; payload extra e vetor em evidência do case são recusados |
+| Escopo e abstention | 21 testes do pacote | organização, sessão, oportunidade, versão aprovada, fundos permitidos, hash do conteúdo e propósito do precedente são gates exatos; ausência de suporte resulta em abstention |
+| Chunks ancorados | teste integrado do document worker | camada determinística produz chunks com documento, página ou seção, hash e versão; o worker persiste antes da extração econômica |
+| Playbook antes da redação | teste integrado do case worker | a run falha fechada sem playbook aprovado; linhas governantes entram como orientação e não como evidência do case |
+| Mandatos depois do filtro duro | teste integrado do case worker | somente fundos com veredito estruturado `fits` liberam notas; identidades e passagens não entram no estado público |
+| Banco e isolamento | migration `20260824230000` + `rls_non_interference.sql` | RLS forçado, capabilities, tenant próprio, tenant cruzado, escrita direta, capability forjada e allowlist de fundos cobertos; validação final depende do job `database` do PR |
+| Quality gate local | `pnpm check` com Node 24.19 | 37 pacotes: lint, tipagem, testes e builds verdes; retrieval com 21 testes, worker com 40, evals com 26 e web com 117 |
+
+A evidência funcional e de aplicação está verde. Banco, RLS e lint do schema só serão contabilizados
+como aprovados quando o CI reconstruir toda a stack. A migration não foi aplicada ao projeto de
+produção antes dessa prova.
+
 ## Registro de claims e portão de publicação, 24/08/2026
 
 | Evidência | Verificação | Resultado |

@@ -100,7 +100,10 @@ Rules:
 7. **Never write an em dash.** Not "—", not " - " standing in for one. Use a comma for an aside,
    a colon before an explanation, a semicolon between linked clauses, or a full stop and a new
    sentence. This is house style and it is not negotiable, including when a document you are
-   reading uses them.`;
+   reading uses them.
+8. **Playbook guidance is not case evidence.** Approved playbook passages may determine which
+   questions to ask and how to organize the analysis. They cannot prove a fact about this company,
+   support a figure, resolve a conflict, fill a gap, or appear as a support id.`;
 
 const money = (value: string) => {
   const parsed = Number(value);
@@ -123,6 +126,8 @@ export function buildBriefInput(input: {
   locale: "pt" | "en";
   /** Pre-rendered lines from the desk battery (see `deskEvidence`); appended verbatim. */
   deskLines?: readonly string[];
+  /** Approved, cited house guidance. It shapes analysis but is never economic evidence. */
+  playbookLines?: readonly string[];
 }): string {
   const definition = archetype(input.archetypeId);
 
@@ -149,6 +154,13 @@ export function buildBriefInput(input: {
     "",
     "## O que o desk lê primeiro nesta operação",
     ...definition.focus.map((focus) => `- ${focus.labels[input.locale]}: ${focus.question[input.locale]}`),
+    ...(input.playbookLines?.length
+      ? [
+          "",
+          "## House playbook aprovado (orientação analítica, não evidência do caso)",
+          ...input.playbookLines,
+        ]
+      : []),
     "",
     "## Fatos conciliados (os únicos números que você pode usar; cite o caminho como id)",
     ...factLines,
