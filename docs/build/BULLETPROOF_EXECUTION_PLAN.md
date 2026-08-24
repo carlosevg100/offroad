@@ -36,6 +36,9 @@ recebíveis.
 
 ## Gate 2: harness integrado
 
+- [x] Contrato do runner governa nove camadas em ordem fixa, valida a saída de cada etapa,
+  classifica falhas e interrompe todo o downstream após bloqueio ou erro.
+- [x] Budget por etapa e por case é um hard gate com custo e chamadas contabilizados.
 - [ ] Um comando executa documentos, extração, conciliação, cálculos, estrutura, materiais,
   matching e resultado.
 - [ ] Cada camada produz resultado e comparação próprios.

@@ -32,6 +32,12 @@ completo, fábrica paramétrica, trilha específica de recebíveis/FIDC e gate d
 promoção em staging. Esses itens permanecem como gates verificáveis no plano de
 execução.
 
+O Gate 2 começou com `@offroad/case-runner`: um trilho sem dependência de UI ou banco que executa
+extração, conciliação, métricas, lacunas, estrutura, claims, materiais, matching e desfecho em ordem
+fixa. Cada etapa valida seu contrato, registra fingerprint, duração, custo e chamadas. Falha,
+bloqueio, contrato inválido ou budget excedido interrompem todas as etapas posteriores. O pacote
+ainda precisa receber os adaptadores reais dos motores e ser movido para a identidade do worker.
+
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|
 | B0 Fundação | accepted | monorepo, docs, CI (`check` + `database` + `e2e` obrigatórios), templates, `AGENTS.md`/`CLAUDE.md` raiz, Blueprint versionado, histórico de migrations alinhado ao projeto | manutenção contínua |
