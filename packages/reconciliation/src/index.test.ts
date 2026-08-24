@@ -134,7 +134,21 @@ describe("calculations show their work", () => {
     const {calculations} = computeCalculations(buildContext(reconcileFacts(baseFacts), "pt"));
     const post = calculations.find((c) => c.id === "leverage_post_transaction");
     expect(Number(post?.value)).toBeCloseTo(2.9303, 3);
-    expect(post?.warnings.join(" ")).toContain("desembolso integral");
+    expect(post?.warnings.join(" ")).toContain("mantém o EBITDA ajustado atual");
+  });
+
+  it("treats refinanced debt as replacement and traces cash used by the company", () => {
+    const facts = reconcileFacts([
+      ...baseFacts,
+      candidate({fieldPath: "transaction.refinancing", normalizedValue: "19000000", sourceDocument: "fontes_usos.xlsx"}),
+      candidate({fieldPath: "project.company_cash", normalizedValue: "4000000", sourceDocument: "fontes_usos.xlsx"}),
+      candidate({fieldPath: "projections.2026.ebitda", normalizedValue: "34000000", sourceDocument: "business_plan.xlsx"}),
+    ]);
+    const {calculations} = computeCalculations(buildContext(facts, "pt"));
+    expect(calculations.find((c) => c.id === "gross_debt_post_transaction")?.value).toBe("84000000");
+    expect(Number(calculations.find((c) => c.id === "leverage_post_transaction")?.value)).toBeCloseTo(2.4029, 3);
+    expect(calculations.find((c) => c.id === "leverage_post_transaction")?.inputs).toContain("project.company_cash");
+    expect(calculations.find((c) => c.id === "leverage_post_transaction")?.inputs).toContain("projections.2026.ebitda");
   });
 
   it("reports a gap instead of estimating a number it cannot compute", () => {

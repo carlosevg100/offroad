@@ -1,0 +1,5 @@
+{
+  "state": "conditionally_viable",
+  "externalDirectionAllowed": false,
+  "reasonsInclude": ["conditions_must_be_resolved"]
+}

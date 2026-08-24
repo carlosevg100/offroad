@@ -1,5 +1,14 @@
 import Decimal from "decimal.js";
-import {assessSufficiency, type ArchetypeId, type ClassifiedDocument} from "@offroad/credit-playbook";
+import {
+  assessSufficiency,
+  fieldsForRequirement,
+  requirementIsSatisfied,
+  type ArchetypeId,
+  type ClassifiedDocument,
+  type InformationAnswers,
+  type MaterialFieldRequirement,
+  type RequirementResponses,
+} from "@offroad/credit-playbook";
 import type {InformationGap, ReconciledFact, ReconciliationException} from "@offroad/reconciliation";
 
 /**
@@ -53,8 +62,12 @@ export type ReadinessInput = {
   facts: readonly ReconciledFact[];
   exceptions: readonly ReconciliationException[];
   gaps: readonly InformationGap[];
-  /** Field paths the ontology marks material that the case is expected to carry. */
-  expectedMaterialFields: readonly string[];
+  /** Economic requirements and the alternative canonical paths that can discharge each one. */
+  expectedMaterialFields: readonly (string | MaterialFieldRequirement)[];
+  informationAnswers?: InformationAnswers;
+  requirementResponses?: RequirementResponses;
+  /** Values declared in the guided intake may satisfy a requirement before a document states it. */
+  additionalAvailableFieldPaths?: readonly string[];
 };
 
 const WEIGHTS: Record<ReadinessComponentId, number> = {
@@ -69,7 +82,15 @@ const ratio = (numerator: number, denominator: number) =>
   denominator === 0 ? 1 : Number(new Decimal(numerator).div(denominator).toDecimalPlaces(4).toFixed());
 
 export function assessReadiness(input: ReadinessInput): ReadinessReport {
-  const sufficiency = assessSufficiency(input.archetypeId, input.documents);
+  const sufficiency = assessSufficiency(
+    input.archetypeId,
+    input.documents,
+    input.informationAnswers,
+    input.requirementResponses,
+  );
+  const requirements = input.expectedMaterialFields.map((entry) =>
+    typeof entry === "string" ? {id: entry, anyOf: [entry]} : entry,
+  );
 
   // 1 — do we have the documents? The minimum weighs double: it is the refusal line.
   const minimumScore = ratio(sufficiency.minimum.satisfied, sufficiency.minimum.total);
@@ -83,7 +104,7 @@ export function assessReadiness(input: ReadinessInput): ReadinessReport {
 
   // 3 — how good is the evidence? Rank 1 is audited, 7 is the company saying so; a verified
   // anchor is what separates a fact from a plausible sentence.
-  const materialFacts = input.facts.filter((fact) => input.expectedMaterialFields.includes(fact.key.fieldPath));
+  const materialFacts = requirements.flatMap((requirement) => fieldsForRequirement(requirement, input.facts));
   const scored = materialFacts.length > 0 ? materialFacts : input.facts;
   const averageRank = scored.length === 0 ? 7 : scored.reduce((sum, fact) => sum + fact.accepted.evidenceRank, 0) / scored.length;
   const verifiedShare = scored.length === 0 ? 0 : scored.filter((fact) => fact.accepted.anchorVerified).length / scored.length;
@@ -91,9 +112,12 @@ export function assessReadiness(input: ReadinessInput): ReadinessReport {
   const evidenceQuality = Number(new Decimal(rankScore).times(0.5).plus(new Decimal(verifiedShare).times(0.5)).toDecimalPlaces(4).toFixed());
 
   // 4 — is anything material still unknown?
-  const presentMaterial = new Set(input.facts.map((fact) => fact.key.fieldPath));
-  const missingMaterial = input.expectedMaterialFields.filter((path) => !presentMaterial.has(path));
-  const materialGaps = ratio(input.expectedMaterialFields.length - missingMaterial.length, input.expectedMaterialFields.length);
+  const presentMaterial = new Set([
+    ...input.facts.map((fact) => fact.key.fieldPath),
+    ...(input.additionalAvailableFieldPaths ?? []),
+  ]);
+  const missingMaterial = requirements.filter((requirement) => !requirementIsSatisfied(requirement, presentMaterial));
+  const materialGaps = ratio(requirements.length - missingMaterial.length, requirements.length);
 
   // 5 — is there something that stops this outright?
   const criticalExceptions = input.exceptions.filter((exception) => exception.severity === "critical");
@@ -153,8 +177,8 @@ export function assessReadiness(input: ReadinessInput): ReadinessReport {
       weight: WEIGHTS.material_gaps,
       labels: {pt: "Lacunas materiais", en: "Material gaps"},
       explanation: {
-        pt: `${missingMaterial.length} de ${input.expectedMaterialFields.length} campos materiais sem nenhum documento que os declare.`,
-        en: `${missingMaterial.length} of ${input.expectedMaterialFields.length} material fields stated by no document.`,
+        pt: `${missingMaterial.length} de ${requirements.length} requisitos materiais ainda sem evidência ou resposta de intake.`,
+        en: `${missingMaterial.length} of ${requirements.length} material requirements still lack evidence or an intake answer.`,
       },
     },
     {

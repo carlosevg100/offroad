@@ -31,6 +31,9 @@
     "rescore": "tsx scripts/rescore.ts"
   },
   "dependencies": {
+    "@offroad/case-engine": "workspace:*",
+    "@offroad/data-room": "workspace:*",
+    "@offroad/fund-mandate": "workspace:*",
     "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",

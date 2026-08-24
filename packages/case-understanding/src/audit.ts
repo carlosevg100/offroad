@@ -57,8 +57,10 @@ export function financialNumbersIn(text: string): string[] {
   const found: string[] = [];
   // Magnitude words are ordered longest-first: `mil` matches inside `milhões`, and an
   // alternation that tries it first turns "33,4 milhões" into thirty-three thousand.
+  // Multiples come first because four decimal places in `2.8735x` are decimals, not a
+  // thousands group followed by an unrelated digit.
   const pattern =
-    /(?<![\w,.])(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\d+[.,]\d+|\d+)\s*(bilh(?:ão|ões)|milh(?:ão|ões)|billion|million|thousand|mil|x)?/gi;
+    /(?<![\w,.])((?:\d+[.,]\d+)(?=\s*x)|\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\d+[.,]\d+|\d+)\s*(bilh(?:ão|ões)|milh(?:ão|ões)|billion|million|thousand|mil|x)?/gi;
 
   for (const match of text.matchAll(pattern)) {
     const [whole, raw, magnitude] = match as unknown as [string, string, string | undefined];
@@ -90,10 +92,17 @@ export function normalizeNumber(raw: string, magnitude?: string): string {
     normalized = raw.split(decimalSeparator === "." ? "," : ".").join("");
     if (decimalSeparator === ",") normalized = normalized.replace(",", ".");
   } else if (commas > 0) {
+    // A trailing `x` denotes a multiple, so `1,452x` is one point four five two rather than
+    // one thousand four hundred and fifty-two. The regex passes the `x` as the magnitude.
+    if (magnitude?.toLowerCase() === "x") normalized = raw.replace(",", ".");
     // A single comma before exactly three digits is a thousands separator in en-US prose.
-    normalized = /,\d{3}$/.test(raw) ? raw.replace(/,/g, "") : raw.replace(",", ".");
+    else normalized = /,\d{3}$/.test(raw) ? raw.replace(/,/g, "") : raw.replace(",", ".");
   } else if (dots > 0) {
-    normalized = /\.\d{3}$/.test(raw) && dots >= 1 && !/\.\d{1,2}$/.test(raw) ? raw.replace(/\./g, "") : raw;
+    normalized = magnitude?.toLowerCase() === "x"
+      ? raw
+      : /\.\d{3}$/.test(raw) && dots >= 1 && !/\.\d{1,2}$/.test(raw)
+        ? raw.replace(/\./g, "")
+        : raw;
   }
 
   const value = new Decimal(normalized || "0");
@@ -109,7 +118,9 @@ export function normalizeNumber(raw: string, magnitude?: string): string {
   };
   const key = magnitude?.toLowerCase();
   const multiplier = key ? multipliers[key] : undefined;
-  return (multiplier ? value.times(multiplier) : value).toDecimalPlaces(2).toFixed();
+  // Keep the precision written in multiples such as 1.452x. Currency claims still normalise
+  // cleanly because Decimal removes insignificant trailing zeroes.
+  return (multiplier ? value.times(multiplier) : value).toDecimalPlaces(8).toFixed();
 }
 
 /** Two figures agree if they round to the same number at the precision the prose used. */
@@ -120,6 +131,17 @@ function agrees(claimed: string, supported: string): boolean {
   if (a.isZero() || b.isZero()) return false;
   // Prose rounds; 33.4 million against 33,412,880 is the same fact stated readably.
   return b.minus(a).abs().dividedBy(b.abs()).lte("0.02");
+}
+
+/** A text fact may contain punctuation that resembles a malformed decimal, such as `S.A.`. */
+function numericSupport(value: string): string | null {
+  const candidate = value.replace(/[^\d.-]/g, "");
+  if (!candidate) return null;
+  try {
+    return new Decimal(candidate).isFinite() ? value : null;
+  } catch {
+    return null;
+  }
 }
 
 export function auditClaims(input: {
@@ -160,7 +182,9 @@ export function auditClaims(input: {
       continue;
     }
 
-    const supported = claim.supportIds.map((id) => factById.get(id)!).filter((value) => new Decimal(value.replace(/[^\d.-]/g, "") || "NaN").isFinite());
+    const supported = claim.supportIds
+      .map((id) => numericSupport(factById.get(id)!))
+      .filter((value): value is string => value !== null);
     const written = financialNumbersIn(claim.text);
     const unsupported = written.filter((number) => !supported.some((value) => agrees(number, value)));
 

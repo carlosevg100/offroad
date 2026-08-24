@@ -1,0 +1,26 @@
+[
+  {
+    "capitalProviderId": "atlas-corporate-credit",
+    "expected": "eligible",
+    "reasons": ["ticket", "prazo", "setor", "instrumento", "garantia", "alavancagem", "DSCR"],
+    "hardConstraints": []
+  },
+  {
+    "capitalProviderId": "minerva-large-cap",
+    "expected": "ineligible",
+    "reasons": ["ticket abaixo do mínimo"],
+    "hardConstraints": ["ticket"]
+  },
+  {
+    "capitalProviderId": "safra-agro-receivables",
+    "expected": "ineligible",
+    "reasons": ["instrumento e setor fora do mandato"],
+    "hardConstraints": ["instrument", "sector"]
+  },
+  {
+    "capitalProviderId": "unknown-opportunistic",
+    "expected": "unknown",
+    "reasons": ["mandato incompleto não pode ser classificado como aderente"],
+    "hardConstraints": []
+  }
+]

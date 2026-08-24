@@ -1,0 +1,118 @@
+[
+  {
+    "id": "debenture_476",
+    "classification": "viable",
+    "route": {
+      "capitalNeed": "growth_expansion",
+      "repaymentSources": ["operating_cash_flow"],
+      "assetBackings": [],
+      "obligationInstruments": ["debenture"],
+      "distributedSecurities": ["debenture"],
+      "structureMechanisms": ["private_placement"],
+      "capitalVehicles": ["credit_fund", "family_office", "insurance_balance_sheet"],
+      "capitalProviderTypes": ["asset_manager", "institutional_investor", "family_office", "insurer"],
+      "distributionRoutes": ["private_distribution"],
+      "securityEnhancements": []
+    },
+    "amount": "53760000",
+    "termMonths": 60,
+    "graceMonths": 12,
+    "amortization": "price, SAC ou amortização crescente",
+    "pricing": "definido pelo investidor",
+    "rationale": ["sociedade anônima", "tíquete institucional", "uso para expansão e refinanciamento"],
+    "hardExclusions": []
+  },
+  {
+    "id": "ccb",
+    "classification": "viable",
+    "route": {
+      "capitalNeed": "growth_expansion",
+      "repaymentSources": ["operating_cash_flow"],
+      "assetBackings": [],
+      "obligationInstruments": ["ccb"],
+      "distributedSecurities": [],
+      "structureMechanisms": ["bilateral_loan"],
+      "capitalVehicles": ["bank_balance_sheet", "credit_fund"],
+      "capitalProviderTypes": ["bank", "credit_fund_manager"],
+      "distributionRoutes": ["bilateral_private"],
+      "securityEnhancements": []
+    },
+    "amount": "53760000",
+    "termMonths": 60,
+    "graceMonths": 12,
+    "rationale": ["forma societária elegível", "execução bilateral"],
+    "hardExclusions": []
+  },
+  {
+    "id": "nce",
+    "classification": "ineligible",
+    "route": {
+      "capitalNeed": "growth_expansion",
+      "repaymentSources": ["operating_cash_flow"],
+      "assetBackings": [],
+      "obligationInstruments": ["nce"],
+      "distributedSecurities": [],
+      "structureMechanisms": ["bilateral_loan"],
+      "capitalVehicles": ["bank_balance_sheet"],
+      "capitalProviderTypes": ["bank"],
+      "distributionRoutes": ["bilateral_private"],
+      "securityEnhancements": []
+    },
+    "rationale": ["não há vínculo comprovado com exportação"],
+    "hardExclusions": ["export_link"]
+  },
+  {
+    "id": "debenture_160",
+    "classification": "ineligible",
+    "route": {
+      "capitalNeed": "growth_expansion",
+      "repaymentSources": ["operating_cash_flow"],
+      "assetBackings": [],
+      "obligationInstruments": ["debenture"],
+      "distributedSecurities": ["debenture"],
+      "structureMechanisms": ["public_offering"],
+      "capitalVehicles": ["credit_fund", "family_office", "insurance_balance_sheet"],
+      "capitalProviderTypes": ["asset_manager", "institutional_investor", "family_office", "insurer"],
+      "distributionRoutes": ["public_distribution"],
+      "securityEnhancements": []
+    },
+    "rationale": ["o custo de uma oferta ampla não se justifica para R$ 54 milhões"],
+    "hardExclusions": ["minimum_ticket"]
+  },
+  {
+    "id": "cra",
+    "classification": "ineligible",
+    "route": {
+      "capitalNeed": "growth_expansion",
+      "repaymentSources": ["receivables_collection", "operating_cash_flow"],
+      "assetBackings": ["receivables"],
+      "obligationInstruments": ["other"],
+      "distributedSecurities": ["cra"],
+      "structureMechanisms": ["securitization"],
+      "capitalVehicles": ["securitization_company", "credit_fund"],
+      "capitalProviderTypes": ["securitization_company", "asset_manager", "institutional_investor"],
+      "distributionRoutes": ["institutional_sounding"],
+      "securityEnhancements": []
+    },
+    "rationale": ["a receita da companhia não decorre da cadeia do agronegócio"],
+    "hardExclusions": ["agribusiness_backing"]
+  },
+  {
+    "id": "fidc",
+    "classification": "ineligible",
+    "route": {
+      "capitalNeed": "growth_expansion",
+      "repaymentSources": ["receivables_collection"],
+      "assetBackings": ["receivables"],
+      "obligationInstruments": ["receivables_assignment"],
+      "distributedSecurities": ["fidc_senior_quota", "fidc_subordinated_quota"],
+      "structureMechanisms": ["receivables_purchase"],
+      "capitalVehicles": ["fidc"],
+      "capitalProviderTypes": ["fidc_manager"],
+      "distributionRoutes": ["bilateral_private"],
+      "securityEnhancements": ["overcollateralization", "subordination"]
+    },
+    "rationale": ["FIDC é o veículo do financiador e exige cessão de uma carteira compatível", "a base disponível não suporta o pedido integral"],
+    "hardExclusions": ["receivables_coverage_for_full_request"]
+  }
+]

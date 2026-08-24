@@ -1,5 +1,13 @@
-import {archetype, assessSufficiency, type ArchetypeId, type ClassifiedDocument} from "@offroad/credit-playbook";
-import {isMaterialFieldPath} from "@offroad/credit-ontology";
+import {
+  archetype,
+  assessSufficiency,
+  materialFieldRequirements,
+  requirementIsSatisfied,
+  type ArchetypeId,
+  type ClassifiedDocument,
+  type InformationAnswers,
+  type RequirementResponses,
+} from "@offroad/credit-playbook";
 
 import type {ReconciledFact} from "./facts";
 import type {ExceptionSeverity} from "@offroad/credit-ontology";
@@ -34,41 +42,25 @@ export type InformationGap = {
   reference: string;
 };
 
-/** Material field paths the desk expects for an operation, beyond the document checklist. */
-const expectedFields: Record<ArchetypeId, readonly string[]> = {
-  growth_expansion: [
-    "project.total_cost",
-    "project.investments.1.amount",
-    "transaction.requested_amount",
-    "transaction.desired_term_months",
-    "debt.total_gross",
-    "collateral.total_capacity",
-    "projections.minimum_dscr",
-  ],
-  working_capital: [
-    "transaction.requested_amount",
-    "debt.total_gross",
-    "collateral.receivables_capacity",
-    "customers.top_customers.1.share_pct",
-  ],
-  refinance: ["transaction.requested_amount", "debt.total_gross", "debt.instruments.1.maturity", "debt.instruments.1.rate"],
-  acquisition: ["transaction.requested_amount", "debt.total_gross", "leverage.post_transaction_net_debt_ebitda"],
-  equipment_finance: ["transaction.requested_amount", "project.total_cost", "collateral.assets.1.appraisal_value"],
-  venture_debt: ["transaction.requested_amount", "company.runway_months", "company.net_revenue_retention", "company.last_equity_round.amount"],
-  other: ["transaction.requested_amount", "debt.total_gross"],
-};
-
 export function findGaps(input: {
   archetypeId: ArchetypeId;
   documents: readonly ClassifiedDocument[];
   facts: readonly ReconciledFact[];
   locale?: "pt" | "en";
+  informationAnswers?: InformationAnswers;
+  requirementResponses?: RequirementResponses;
+  additionalAvailableFieldPaths?: readonly string[];
 }): InformationGap[] {
   const locale = input.locale ?? "pt";
   const gaps: InformationGap[] = [];
 
   // 1 — documents the operation requires that nobody sent.
-  const sufficiency = assessSufficiency(input.archetypeId, input.documents);
+  const sufficiency = assessSufficiency(
+    input.archetypeId,
+    input.documents,
+    input.informationAnswers,
+    input.requirementResponses,
+  );
   for (const status of sufficiency.missing) {
     const {requirement} = status;
     gaps.push({
@@ -82,16 +74,18 @@ export function findGaps(input: {
   }
 
   // 2 — material facts the analysis needs that no document stated.
-  const present = new Set(input.facts.map((fact) => fact.key.fieldPath));
+  const present = new Set([
+    ...input.facts.map((fact) => fact.key.fieldPath),
+    ...(input.additionalAvailableFieldPaths ?? []),
+  ]);
   const definition = archetype(input.archetypeId);
-  for (const path of expectedFields[input.archetypeId]) {
-    if (present.has(path)) continue;
-    // A field the ontology does not consider material is not worth a request.
-    if (!isMaterialFieldPath(path)) continue;
+  for (const requirement of materialFieldRequirements(input.archetypeId)) {
+    if (requirementIsSatisfied(requirement, present)) continue;
+    const path = requirement.anyOf[0] ?? requirement.id;
 
     const focus = definition.focus.find((entry) => entry.evidence.some((evidence) => evidence.replace(/\{[a-z]+\}/g, "") === path.replace(/\.\d+\./g, ".")));
     gaps.push({
-      id: `missing_field:${path}`,
+      id: `missing_field:${requirement.id}`,
       severity: "medium",
       title:
         locale === "pt"
@@ -105,7 +99,7 @@ export function findGaps(input: {
           ? "Nenhum documento enviado declara este dado, e ele é material para a análise."
           : "No document states this, and it is material to the analysis.",
       ownerRole: "company",
-      reference: path,
+      reference: requirement.id,
     });
   }
 

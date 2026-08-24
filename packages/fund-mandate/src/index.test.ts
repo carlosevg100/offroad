@@ -215,6 +215,7 @@ describe("assessMandateFit", () => {
     // We never asked this fund its minimum coverage. No document the company sends fixes that.
     expect(dscr.outcome).toBe("not_assessed");
     expect(dscr.resolvedBy).toBeUndefined();
+    expect(fit.verdict).toBe("possible");
     expect(fit.ourGaps).toContain("dscr");
     expect(fit.unlockedBy).not.toContain("debt_schedule");
   });

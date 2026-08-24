@@ -30,10 +30,14 @@ import {
 import {
   archetype,
   instrumentVerdicts,
+  materialFieldRequirements,
   type ArchetypeId,
   type ClassifiedDocument,
+  type InformationAnswers,
   type InstrumentVerdict,
   type LegalForm,
+  type MaterialFieldRequirement,
+  type RequirementResponses,
 } from "@offroad/credit-playbook";
 import {dataRoomIndex, planDataRoom, type DataRoomDocument, type DataRoomPlan} from "@offroad/data-room";
 import {
@@ -91,6 +95,8 @@ export type CaseEngineInput = {
   dealBrief: CaseDealBrief;
   resolvedMandates: ResolvedMandate[];
   externalReleaseApproved: boolean;
+  informationAnswers?: InformationAnswers;
+  requirementResponses?: RequirementResponses;
   indexLevels?: {cdi: string; tlp: string; ipca: string; tr: string};
   writeBrief?: (input: {
     archetypeId: ArchetypeId;
@@ -274,17 +280,15 @@ const outputOf = <T>(context: StageContext, stage: keyof StageContext["outputs"]
 
 const number = (value: string | undefined) => (value && Number.isFinite(Number(value)) ? value : undefined);
 
-export function expectedMaterialFields(archetypeId: ArchetypeId): string[] {
-  const base = ["transaction.requested_amount", "debt.total_gross", "company.legal_name"];
-  const perArchetype: Partial<Record<ArchetypeId, string[]>> = {
-    growth_expansion: ["project.total_cost", "collateral.total_capacity"],
-    working_capital: ["collateral.receivables_capacity"],
-    acquisition: ["leverage.post_transaction_net_debt_ebitda"],
-    equipment_finance: ["project.total_cost"],
-    venture_debt: ["company.runway_months", "company.last_equity_round.amount"],
-  };
-  return [...base, ...(perArchetype[archetypeId] ?? [])];
+export function expectedMaterialFields(archetypeId: ArchetypeId): MaterialFieldRequirement[] {
+  return materialFieldRequirements(archetypeId);
 }
+
+const intakeAvailableFieldPaths = (dealBrief: CaseDealBrief): string[] => [
+  ...(dealBrief.requestedAmount ? ["transaction.requested_amount"] : []),
+  ...(dealBrief.requestedTermMonths !== undefined ? ["transaction.desired_term_months"] : []),
+  ...(dealBrief.sector ? ["company.sector"] : []),
+];
 
 export async function executeCaseEngine(
   input: CaseEngineInput,
@@ -319,6 +323,9 @@ export async function executeCaseEngine(
                 candidates: extracted.candidates,
                 documents: extracted.documents,
                 locale: input.locale,
+                ...(input.informationAnswers ? {informationAnswers: input.informationAnswers} : {}),
+                ...(input.requirementResponses ? {requirementResponses: input.requirementResponses} : {}),
+                additionalAvailableFieldPaths: intakeAvailableFieldPaths(input.dealBrief),
               }),
             } satisfies ReconciliationOutput,
           };
@@ -335,6 +342,9 @@ export async function executeCaseEngine(
             exceptions: reconciliation.exceptions,
             gaps: reconciliation.gaps,
             expectedMaterialFields: expectedMaterialFields(input.archetypeId),
+            ...(input.informationAnswers ? {informationAnswers: input.informationAnswers} : {}),
+            ...(input.requirementResponses ? {requirementResponses: input.requirementResponses} : {}),
+            additionalAvailableFieldPaths: intakeAvailableFieldPaths(input.dealBrief),
           });
           const deskInputs = buildDeskInputs(
             reconciliation.facts.map((fact) => ({fieldPath: fact.key.fieldPath, value: fact.value})),
@@ -481,7 +491,8 @@ export async function executeCaseEngine(
         execute: (context) => {
           const structure = outputOf<StructureOutput>(context, "structure");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
-          const request = requestForMatching(input, structure, metrics);
+          const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
+          const request = requestForMatching(input, structure, metrics, reconciliation);
           const fits = rankFits(input.resolvedMandates.map((mandate) => assessMandateFit(mandate, request)));
           return {
             output: {
@@ -643,7 +654,7 @@ function structureCase(
         ...(collateral ? {collateralCoverage: collateral.coverageAchieved} : {}),
       })
     : null;
-  const verdict = metrics.desk && requested
+  const deskVerdict = metrics.desk && requested
     ? judgeOperation({
         desk: metrics.desk,
         trajectory: metrics.trajectory,
@@ -657,7 +668,42 @@ function structureCase(
         },
       })
     : null;
+  const verdict = deskVerdict && requested
+    ? applyCapacityCondition(deskVerdict, requested, capacity)
+    : deskVerdict;
   return {capacity, termSheet, rating, stress, instruments, collateral, price, verdict};
+}
+
+function applyCapacityCondition(
+  verdict: OperationVerdict,
+  requested: string,
+  capacity: CapacityAssessment | null,
+): OperationVerdict {
+  if (!capacity || capacity.bindingConstraint !== "collateral") return verdict;
+  const requestedAmount = Number(requested);
+  const supportedAmount = Number(capacity.recommended);
+  if (!Number.isFinite(requestedAmount) || !Number.isFinite(supportedAmount) || supportedAmount >= requestedAmount) return verdict;
+
+  const money = (value: number, locale: "pt-BR" | "en-US") =>
+    `R$ ${value.toLocaleString(locale, {maximumFractionDigits: 0})}`;
+  const condition = {
+    id: "collateral-capacity-shortfall",
+    pt: `A capacidade indicativa de garantias sustenta ${money(supportedAmount, "pt-BR")}, abaixo do pedido de ${money(requestedAmount, "pt-BR")}. Antes do desembolso, a companhia precisa reduzir o montante ou comprovar garantia elegível adicional e a liberação dos gravames existentes.`,
+    en: `Indicative collateral capacity supports ${money(supportedAmount, "en-US")}, below the ${money(requestedAmount, "en-US")} request. Before disbursement, the company must reduce the amount or evidence additional eligible collateral and release existing liens.`,
+  };
+  return {
+    ...verdict,
+    standing: verdict.standing === "does_not_stand" ? "does_not_stand" : "stands_with_conditions",
+    headline: verdict.standing === "does_not_stand"
+      ? verdict.headline
+      : {
+          pt: "A operação é economicamente viável, condicionada ao fechamento da diferença entre o pedido e a capacidade de garantias.",
+          en: "The operation is economically viable, subject to closing the gap between the request and collateral capacity.",
+        },
+    conditions: verdict.conditions.some((existing) => existing.id === condition.id)
+      ? verdict.conditions
+      : [...verdict.conditions, condition],
+  };
 }
 
 function collateralAssetsOf(reconciliation: ReconciliationReport, desk: DeskAnalysis | null): CollateralAsset[] {
@@ -711,14 +757,23 @@ const legacyInstrumentMap: Partial<Record<string, Instrument>> = {
   leasing: "direct_loan",
 };
 
-function requestForMatching(input: CaseEngineInput, structure: StructureOutput, metrics: MetricsOutput): DealRequest {
+function requestForMatching(
+  input: CaseEngineInput,
+  structure: StructureOutput,
+  metrics: MetricsOutput,
+  reconciliation: ReconciliationReport,
+): DealRequest {
   const eligible = structure.instruments
     .filter((entry) => entry.eligible)
     .map((entry) => legacyInstrumentMap[entry.instrument.id])
     .filter((entry): entry is Instrument => Boolean(entry));
-  const leverage = input.dealBrief.requestedAmount
+  const deskLeverage = input.dealBrief.requestedAmount
     ? metrics.desk?.leverage.scenarios.find((scenario) => scenario.amount === input.dealBrief.requestedAmount)?.postTurns
     : metrics.desk?.leverage.scenarios[0]?.postTurns;
+  const leverage = deskLeverage
+    ?? reconciliation.calculations.find((calculation) => calculation.id === "leverage_post_transaction")?.value
+    ?? reconciliation.facts.find((fact) => fact.key.fieldPath === "leverage.post_transaction_net_debt_ebitda")?.value;
+  const dscr = reconciliation.facts.find((fact) => fact.key.fieldPath === "projections.minimum_dscr")?.value;
   return {
     ...(input.dealBrief.requestedAmount ? {amount: input.dealBrief.requestedAmount} : {}),
     ...(input.dealBrief.requestedTermMonths !== undefined ? {termMonths: input.dealBrief.requestedTermMonths} : {}),
@@ -727,5 +782,6 @@ function requestForMatching(input: CaseEngineInput, structure: StructureOutput, 
     ...((input.dealBrief.instruments?.length ?? 0) > 0 ? {instruments: input.dealBrief.instruments} : eligible.length > 0 ? {instruments: [...new Set(eligible)]} : {}),
     ...(input.dealBrief.collateralKinds?.length ? {collateral: input.dealBrief.collateralKinds} : {}),
     ...(leverage ? {leverage} : {}),
+    ...(dscr ? {dscr} : {}),
   };
 }

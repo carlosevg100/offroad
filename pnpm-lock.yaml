@@ -548,6 +548,9 @@ importers:
 
   packages/evals:
     dependencies:
+      '@offroad/case-engine':
+        specifier: workspace:*
+        version: link:../case-engine
       '@offroad/case-understanding':
         specifier: workspace:*
         version: link:../case-understanding
@@ -560,6 +563,9 @@ importers:
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../credit-playbook
+      '@offroad/data-room':
+        specifier: workspace:*
+        version: link:../data-room
       '@offroad/document-classification':
         specifier: workspace:*
         version: link:../document-classification
@@ -572,6 +578,9 @@ importers:
       '@offroad/document-parsers':
         specifier: workspace:*
         version: link:../document-parsers
+      '@offroad/fund-mandate':
+        specifier: workspace:*
+        version: link:../fund-mandate
       '@offroad/market-reference':
         specifier: workspace:*
         version: link:../market-reference

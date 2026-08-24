@@ -23,6 +23,7 @@ export const goldManifestSchema = z.object({
   caseId: z.string().min(1),
   title: z.string(),
   synthetic: z.boolean(),
+  contractLevel: z.enum(["extraction", "full_case"]).default("extraction"),
   /** The operation the room is for; drives the reconciliation's gaps and the archetype questions. */
   archetypeId: z.string().optional(),
   language: z.enum(["pt", "en", "mixed"]),
@@ -126,7 +127,15 @@ export const goldClaimSchema = z.object({
 export type GoldClaim = z.infer<typeof goldClaimSchema>;
 
 export const goldMaterialSchema = z.object({
-  kind: z.enum(["teaser", "credit_memo", "term_sheet", "diligence_qa", "data_room_index"]),
+  kind: z.enum([
+    "teaser",
+    "credit_profile",
+    "package",
+    "investment_memo",
+    "term_sheet",
+    "diligence_qa",
+    "data_room_index",
+  ]),
   locale: z.enum(["pt-BR", "en-US"]),
   requiredSectionIds: z.array(z.string()).default([]),
   requiredClaimIds: z.array(z.string()).default([]),
@@ -183,6 +192,7 @@ function readJson<T>(path: string, schema: z.ZodType<T>, fallback?: T): T {
 export function loadGoldCase(directory: string): GoldCase {
   const dir = resolve(directory);
   const manifest = readJson(join(dir, "manifest.json"), goldManifestSchema);
+  const fullCase = manifest.contractLevel === "full_case";
   return {
     directory: dir,
     manifest,
@@ -190,11 +200,11 @@ export function loadGoldCase(directory: string): GoldCase {
     fields: readJson(join(dir, "expected", "fields.json"), z.array(goldFieldSchema)),
     exceptions: readJson(join(dir, "expected", "exceptions.json"), z.array(goldExceptionSchema), []),
     calculations: readJson(join(dir, "expected", "calculations.json"), z.array(goldCalculationSchema), []),
-    structures: readJson(join(dir, "expected", "structures.json"), z.array(goldStructureSchema), []),
-    claims: readJson(join(dir, "expected", "claims.json"), z.array(goldClaimSchema), []),
-    materials: readJson(join(dir, "expected", "materials.json"), z.array(goldMaterialSchema), []),
-    matches: readJson(join(dir, "expected", "matches.json"), z.array(goldMatchSchema), []),
-    outcome: readJson(join(dir, "expected", "outcome.json"), goldOutcomeSchema.nullable(), null),
+    structures: readJson(join(dir, "expected", "structures.json"), z.array(goldStructureSchema), fullCase ? undefined : []),
+    claims: readJson(join(dir, "expected", "claims.json"), z.array(goldClaimSchema), fullCase ? undefined : []),
+    materials: readJson(join(dir, "expected", "materials.json"), z.array(goldMaterialSchema), fullCase ? undefined : []),
+    matches: readJson(join(dir, "expected", "matches.json"), z.array(goldMatchSchema), fullCase ? undefined : []),
+    outcome: readJson(join(dir, "expected", "outcome.json"), goldOutcomeSchema.nullable(), fullCase ? undefined : null),
     acceptance: readJson(join(dir, "expected", "acceptance.json"), z.array(goldAcceptanceSchema), []),
   };
 }

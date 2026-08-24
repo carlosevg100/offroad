@@ -221,6 +221,7 @@ const briefSection = (brief: CaseBrief, id: string): MaterialBlock[] => {
   return section.claims.map((claim) => ({
     type: "paragraph" as const,
     text: bi(claim.text, claim.text),
+    claimId: claim.id,
     ...(claim.supportIds.length > 0 ? {supportIds: claim.supportIds} : {}),
   }));
 };
