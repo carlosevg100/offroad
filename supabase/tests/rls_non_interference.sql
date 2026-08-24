@@ -1783,18 +1783,22 @@ begin
     ))
   ));
 
+  set local role postgres;
+  if (select count(*) from public.case_artifact_manifests where intake_session_id = session_id) <> 1 then
+    raise exception 'duplicate immutable manifests were inserted';
+  end if;
+  if (select result_summary -> 'case_manifest' ->> 'id' from public.document_intake_sessions where id = session_id) <> first_id::text then
+    raise exception 'case snapshot and manifest were not persisted atomically';
+  end if;
+
   set local role authenticated;
   perform set_config(
     'request.jwt.claims',
     '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
     true
   );
-
-  if (select count(*) from public.case_artifact_manifests where intake_session_id = session_id) <> 1 then
-    raise exception 'duplicate immutable manifests were inserted';
-  end if;
-  if (select result_summary -> 'case_manifest' ->> 'id' from public.document_intake_sessions where id = session_id) <> first_id::text then
-    raise exception 'case snapshot and manifest were not persisted atomically';
+  if (select count(*) from public.case_artifact_manifests where id = first_id) <> 1 then
+    raise exception 'the case owner could not read the worker manifest';
   end if;
 
   lineage := public.read_processing_model_lineage(org_a, session_id, run_id);
