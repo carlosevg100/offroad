@@ -298,6 +298,227 @@ export type Database = {
           },
         ]
       }
+      case_artifact_manifests: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          input_fingerprint: string
+          intake_session_id: string
+          locale: string
+          manifest: Json
+          manifest_fingerprint: string
+          organization_id: string
+          processing_run_id: string | null
+          schema_version: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          input_fingerprint: string
+          intake_session_id: string
+          locale: string
+          manifest: Json
+          manifest_fingerprint: string
+          organization_id: string
+          processing_run_id?: string | null
+          schema_version: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          input_fingerprint?: string
+          intake_session_id?: string
+          locale?: string
+          manifest?: Json
+          manifest_fingerprint?: string
+          organization_id?: string
+          processing_run_id?: string | null
+          schema_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_artifact_manifests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_artifact_manifests_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "case_artifact_manifests_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      case_retrieval_chunks: {
+        Row: {
+          chunk_key: string
+          content: string
+          content_hash: string
+          created_at: string
+          document_version: number
+          id: string
+          intake_session_id: string
+          locale: string
+          opportunity_id: string | null
+          organization_id: string
+          processing_run_id: string
+          search_vector: unknown
+          source_anchor: Json
+          source_document_id: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          chunk_key: string
+          content: string
+          content_hash: string
+          created_at?: string
+          document_version: number
+          id?: string
+          intake_session_id: string
+          locale?: string
+          opportunity_id?: string | null
+          organization_id: string
+          processing_run_id: string
+          search_vector?: unknown
+          source_anchor: Json
+          source_document_id: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          chunk_key?: string
+          content?: string
+          content_hash?: string
+          created_at?: string
+          document_version?: number
+          id?: string
+          intake_session_id?: string
+          locale?: string
+          opportunity_id?: string | null
+          organization_id?: string
+          processing_run_id?: string
+          search_vector?: unknown
+          source_anchor?: Json
+          source_document_id?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_retrieval_chunks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_retrieval_chunks_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "case_retrieval_chunks_organization_id_opportunity_id_fkey"
+            columns: ["organization_id", "opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "case_retrieval_chunks_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "case_retrieval_chunks_organization_id_source_document_id_fkey"
+            columns: ["organization_id", "source_document_id"]
+            isOneToOne: false
+            referencedRelation: "source_documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      claim_decisions: {
+        Row: {
+          claim_fingerprint: string
+          claim_id: string
+          decided_at: string
+          decided_by: string
+          decision: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          reason: string
+          source_manifest_id: string
+          source_registry_fingerprint: string
+        }
+        Insert: {
+          claim_fingerprint: string
+          claim_id: string
+          decided_at?: string
+          decided_by: string
+          decision: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          reason: string
+          source_manifest_id: string
+          source_registry_fingerprint: string
+        }
+        Update: {
+          claim_fingerprint?: string
+          claim_id?: string
+          decided_at?: string
+          decided_by?: string
+          decision?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          reason?: string
+          source_manifest_id?: string
+          source_registry_fingerprint?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_decisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_decisions_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "claim_decisions_organization_id_source_manifest_id_fkey"
+            columns: ["organization_id", "source_manifest_id"]
+            isOneToOne: false
+            referencedRelation: "case_artifact_manifests"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           created_at: string
@@ -442,134 +663,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
-          },
-        ]
-      }
-      case_artifact_manifests: {
-        Row: {
-          created_at: string
-          created_by: string
-          id: string
-          input_fingerprint: string
-          intake_session_id: string
-          locale: string
-          manifest: Json
-          manifest_fingerprint: string
-          organization_id: string
-          processing_run_id: string | null
-          schema_version: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          id?: string
-          input_fingerprint: string
-          intake_session_id: string
-          locale: string
-          manifest: Json
-          manifest_fingerprint: string
-          organization_id: string
-          processing_run_id?: string | null
-          schema_version: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          id?: string
-          input_fingerprint?: string
-          intake_session_id?: string
-          locale?: string
-          manifest?: Json
-          manifest_fingerprint?: string
-          organization_id?: string
-          processing_run_id?: string | null
-          schema_version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "case_artifact_manifests_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "case_artifact_manifests_organization_id_intake_session_id_fkey"
-            columns: ["organization_id", "intake_session_id"]
-            isOneToOne: false
-            referencedRelation: "document_intake_sessions"
-            referencedColumns: ["organization_id", "id"]
-          },
-          {
-            foreignKeyName: "case_artifact_manifests_organization_id_processing_run_id_fkey"
-            columns: ["organization_id", "processing_run_id"]
-            isOneToOne: false
-            referencedRelation: "processing_runs"
-            referencedColumns: ["organization_id", "id"]
-          },
-        ]
-      }
-      claim_decisions: {
-        Row: {
-          claim_fingerprint: string
-          claim_id: string
-          decided_at: string
-          decided_by: string
-          decision: string
-          id: string
-          intake_session_id: string
-          organization_id: string
-          reason: string
-          source_manifest_id: string
-          source_registry_fingerprint: string
-        }
-        Insert: {
-          claim_fingerprint: string
-          claim_id: string
-          decided_at?: string
-          decided_by: string
-          decision: string
-          id?: string
-          intake_session_id: string
-          organization_id: string
-          reason: string
-          source_manifest_id: string
-          source_registry_fingerprint: string
-        }
-        Update: {
-          claim_fingerprint?: string
-          claim_id?: string
-          decided_at?: string
-          decided_by?: string
-          decision?: string
-          id?: string
-          intake_session_id?: string
-          organization_id?: string
-          reason?: string
-          source_manifest_id?: string
-          source_registry_fingerprint?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "claim_decisions_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "claim_decisions_organization_id_intake_session_id_fkey"
-            columns: ["organization_id", "intake_session_id"]
-            isOneToOne: false
-            referencedRelation: "document_intake_sessions"
-            referencedColumns: ["organization_id", "id"]
-          },
-          {
-            foreignKeyName: "claim_decisions_organization_id_source_manifest_id_fkey"
-            columns: ["organization_id", "source_manifest_id"]
-            isOneToOne: false
-            referencedRelation: "case_artifact_manifests"
-            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -1298,6 +1391,180 @@ export type Database = {
           },
         ]
       }
+      governed_precedent_chunks: {
+        Row: {
+          citation_key: string
+          content: string
+          content_hash: string
+          created_at: string
+          id: string
+          precedent_id: string
+          search_vector: unknown
+          tags: string[]
+        }
+        Insert: {
+          citation_key: string
+          content: string
+          content_hash: string
+          created_at?: string
+          id?: string
+          precedent_id: string
+          search_vector?: unknown
+          tags?: string[]
+        }
+        Update: {
+          citation_key?: string
+          content?: string
+          content_hash?: string
+          created_at?: string
+          id?: string
+          precedent_id?: string
+          search_vector?: unknown
+          tags?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governed_precedent_chunks_precedent_id_fkey"
+            columns: ["precedent_id"]
+            isOneToOne: false
+            referencedRelation: "governed_precedents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governed_precedents: {
+        Row: {
+          anonymization_report: Json
+          anonymization_status: string
+          anonymized_payload_hash: string
+          approved_at: string | null
+          approved_by: string | null
+          authorization_id: string
+          created_at: string
+          governance_status: string
+          id: string
+          precedent_kind: string
+        }
+        Insert: {
+          anonymization_report: Json
+          anonymization_status: string
+          anonymized_payload_hash: string
+          approved_at?: string | null
+          approved_by?: string | null
+          authorization_id: string
+          created_at?: string
+          governance_status: string
+          id?: string
+          precedent_kind: string
+        }
+        Update: {
+          anonymization_report?: Json
+          anonymization_status?: string
+          anonymized_payload_hash?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          authorization_id?: string
+          created_at?: string
+          governance_status?: string
+          id?: string
+          precedent_kind?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governed_precedents_authorization_id_fkey"
+            columns: ["authorization_id"]
+            isOneToOne: false
+            referencedRelation: "precedent_authorizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      house_playbook_chunks: {
+        Row: {
+          archetype: string | null
+          chunk_key: string
+          content: string
+          content_hash: string
+          created_at: string
+          domain: string
+          id: string
+          locale: string
+          playbook_version_id: string
+          search_vector: unknown
+          source_ref: string
+          tags: string[]
+        }
+        Insert: {
+          archetype?: string | null
+          chunk_key: string
+          content: string
+          content_hash: string
+          created_at?: string
+          domain: string
+          id?: string
+          locale: string
+          playbook_version_id: string
+          search_vector?: unknown
+          source_ref: string
+          tags?: string[]
+        }
+        Update: {
+          archetype?: string | null
+          chunk_key?: string
+          content?: string
+          content_hash?: string
+          created_at?: string
+          domain?: string
+          id?: string
+          locale?: string
+          playbook_version_id?: string
+          search_vector?: unknown
+          source_ref?: string
+          tags?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "house_playbook_chunks_playbook_version_id_fkey"
+            columns: ["playbook_version_id"]
+            isOneToOne: false
+            referencedRelation: "house_playbook_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      house_playbook_versions: {
+        Row: {
+          approval_basis: string
+          approved_at: string | null
+          approved_by: string | null
+          content_hash: string
+          created_at: string
+          id: string
+          semantic_version: string
+          status: string
+        }
+        Insert: {
+          approval_basis: string
+          approved_at?: string | null
+          approved_by?: string | null
+          content_hash: string
+          created_at?: string
+          id?: string
+          semantic_version: string
+          status: string
+        }
+        Update: {
+          approval_basis?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          content_hash?: string
+          created_at?: string
+          id?: string
+          semantic_version?: string
+          status?: string
+        }
+        Relationships: []
+      }
       intake_field_candidates: {
         Row: {
           anchor_precision: string | null
@@ -1577,6 +1844,63 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "processing_runs"
             referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      mandate_note_embeddings: {
+        Row: {
+          citation: Json
+          content: string
+          content_hash: string
+          created_at: string
+          embedding: string | null
+          embedding_model: string | null
+          fund_id: string
+          id: string
+          note_kind: string
+          observation_id: string | null
+          observed_at: string
+        }
+        Insert: {
+          citation: Json
+          content: string
+          content_hash: string
+          created_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
+          fund_id: string
+          id?: string
+          note_kind: string
+          observation_id?: string | null
+          observed_at: string
+        }
+        Update: {
+          citation?: Json
+          content?: string
+          content_hash?: string
+          created_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
+          fund_id?: string
+          id?: string
+          note_kind?: string
+          observation_id?: string | null
+          observed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mandate_note_embeddings_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandate_note_embeddings_observation_id_fkey"
+            columns: ["observation_id"]
+            isOneToOne: true
+            referencedRelation: "fund_mandate_observations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2155,6 +2479,56 @@ export type Database = {
             columns: ["organization_id", "output_artifact_id"]
             isOneToOne: false
             referencedRelation: "output_artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      precedent_authorizations: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          authorized_purposes: string[]
+          created_at: string
+          expires_at: string | null
+          id: string
+          revoked_at: string | null
+          scope: Json
+          source_opportunity_id: string
+          source_organization_id: string
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          authorized_purposes: string[]
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          revoked_at?: string | null
+          scope: Json
+          source_opportunity_id: string
+          source_organization_id: string
+          status: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          authorized_purposes?: string[]
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          revoked_at?: string | null
+          scope?: Json
+          source_opportunity_id?: string
+          source_organization_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "precedent_authorizations_source_organization_id_source_opp_fkey"
+            columns: ["source_organization_id", "source_opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -3009,6 +3383,14 @@ export type Database = {
         }
         Returns: string
       }
+      read_processing_model_lineage: {
+        Args: {
+          p_organization_id: string
+          p_processing_run_id?: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
       record_case_model_spend: {
         Args: {
           p_calls?: number
@@ -3018,20 +3400,12 @@ export type Database = {
         }
         Returns: undefined
       }
-      read_processing_model_lineage: {
-        Args: {
-          p_organization_id: string
-          p_processing_run_id?: string | null
-          p_session_id: string
-        }
-        Returns: Json
-      }
       record_case_snapshot: {
         Args: {
           p_case_state: Json
           p_manifest: Json
           p_organization_id: string
-          p_processing_run_id: string | null
+          p_processing_run_id: string
           p_session_id: string
         }
         Returns: string
@@ -3071,6 +3445,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_case_retrieval: {
+        Args: {
+          p_limit?: number
+          p_opportunity_id: string
+          p_organization_id: string
+          p_query: string
+        }
+        Returns: {
+          chunk_id: string
+          citation_key: string
+          content: string
+          score: number
+          source_anchor: Json
+          source_document_id: string
+        }[]
+      }
       worker_claim_job: {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
@@ -3089,6 +3479,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_heartbeat: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_lease_seconds?: number
+        }
+        Returns: Json
+      }
       worker_load_case_input: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -3097,20 +3495,14 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
-      worker_record_case_snapshot: {
+      worker_load_retrieval_context: {
         Args: {
-          p_capability_token: string
-          p_case_state: Json
-          p_job_id: string
-          p_manifest: Json
-        }
-        Returns: string
-      }
-      worker_heartbeat: {
-        Args: {
+          p_allowed_fund_ids?: string[]
           p_capability_token: string
           p_job_id: string
-          p_lease_seconds?: number
+          p_limit?: number
+          p_precedent_purpose?: string
+          p_query: string
         }
         Returns: Json
       }
@@ -3122,6 +3514,15 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_case_snapshot: {
+        Args: {
+          p_capability_token: string
+          p_case_state: Json
+          p_job_id: string
+          p_manifest: Json
+        }
+        Returns: string
+      }
       worker_record_document_result: {
         Args: {
           p_capability_token: string
@@ -3130,6 +3531,10 @@ export type Database = {
           p_profile: Json
           p_scan_result: Json
         }
+        Returns: Json
+      }
+      worker_record_retrieval_chunks: {
+        Args: { p_capability_token: string; p_chunks: Json; p_job_id: string }
         Returns: Json
       }
       worker_write_stage_result: {

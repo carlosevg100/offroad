@@ -33,12 +33,13 @@ mandatos e gabaritos de uma única verdade econômica e executa os cenários no 
 de recebíveis avalia carteira, cedente, sacados, servicing e estrutura em 28 cenários e atravessa o
 mesmo motor governado usado pelo worker.
 Permanecem pendentes a revisão econômica independente final dos cases âncora e o gate de promoção
-em staging. O retrieval governado foi implementado e aguarda a prova da migração no CI e a
-promoção controlada ao banco. Esses itens continuam explícitos no plano de
-execução.
+em staging. O retrieval governado passou pelo CI obrigatório, foi promovido ao banco de produção e
+permanece condicionado ao rollout do worker a partir de `main`. Esses itens continuam explícitos
+no plano de execução.
 
-O Gate 7 adiciona `@offroad/governed-retrieval` e a migration
-`20260824230000_governed_retrieval.sql`. Evidência do case, House Playbook, notas abertas de
+O Gate 7 adiciona `@offroad/governed-retrieval` e as migrations
+`20260824232722_governed_retrieval.sql` e
+`20260824232920_retrieval_foreign_key_indexes.sql`. Evidência do case, House Playbook, notas abertas de
 mandatos e precedentes usam fontes e gates diferentes. Chunks do case mantêm âncora, hash, versão
 do documento, organização, sessão, oportunidade e run, sem embedding. O playbook é imutável e
 versionado. Notas abertas somente entram depois do filtro estruturado de mandato. Precedentes são
@@ -48,8 +49,9 @@ O worker indexa a camada determinística do parser e recupera o playbook antes d
 matching, somente fundos classificados como `fits` liberam suas notas. Conteúdo e identidades ficam
 no job privado; o snapshot público recebe apenas lineage sem conteúdo. RLS forçado, capabilities e
 teste de não interferência cobrem escrita, leitura e isolamento. O quality gate local passou nos 37
-pacotes; banco e RLS ainda precisam passar no job obrigatório do PR antes de a migration ser
-aplicada em produção.
+pacotes. O PR #240 reconstruiu as migrations do zero e aprovou banco, RLS, lint, código e E2E antes
+da promoção. O projeto de produção recebeu as duas migrations; o Security Advisor permaneceu com
+zero alertas e o Performance Advisor com zero chaves estrangeiras sem índice.
 
 O Gate 6 adiciona `@offroad/receivables-analysis`. Ele separa FIDC, cessão de recebíveis e fonte de
 pagamento; calcula elegibilidade título a título, concentração, aging, inadimplência, perda,

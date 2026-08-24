@@ -1,6 +1,6 @@
 # ADR 0010: Fronteiras do retrieval governado
 
-Status: accepted, implementação local aguardando validação do banco em CI
+Status: accepted
 
 Data: 2026-08-24
 
@@ -53,5 +53,6 @@ gates já existentes.
 - Um modelo nunca recebe notas de fundos excluídos pelo screening estruturado.
 - O custo operacional cresce de forma controlada porque chunks são derivados uma vez por versão de
   documento e o retrieval é limitado por fonte e escopo.
-- A migração e os testes de não interferência precisam ser reconstruídos do zero no CI antes de
-  qualquer aplicação no banco de produção.
+- As migrations e os testes de não interferência são reconstruídos do zero no CI antes de qualquer
+  aplicação no banco de produção. O primeiro rollout passou nesse gate e foi promovido em
+  24/08/2026.

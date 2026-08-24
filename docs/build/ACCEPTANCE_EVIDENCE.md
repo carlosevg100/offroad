@@ -9,12 +9,14 @@
 | Chunks ancorados | teste integrado do document worker | camada determinística produz chunks com documento, página ou seção, hash e versão; o worker persiste antes da extração econômica |
 | Playbook antes da redação | teste integrado do case worker | a run falha fechada sem playbook aprovado; linhas governantes entram como orientação e não como evidência do case |
 | Mandatos depois do filtro duro | teste integrado do case worker | somente fundos com veredito estruturado `fits` liberam notas; identidades e passagens não entram no estado público |
-| Banco e isolamento | migration `20260824230000` + `rls_non_interference.sql` | RLS forçado, capabilities, tenant próprio, tenant cruzado, escrita direta, capability forjada e allowlist de fundos cobertos; validação final depende do job `database` do PR |
+| Banco e isolamento | migrations `20260824232722` e `20260824232920` + `rls_non_interference.sql` | job `database` do PR #240 verde: RLS forçado, capabilities, tenant próprio, tenant cruzado, escrita direta, capability forjada e allowlist de fundos cobertos |
 | Quality gate local | `pnpm check` com Node 24.19 | 37 pacotes: lint, tipagem, testes e builds verdes; retrieval com 21 testes, worker com 40, evals com 26 e web com 117 |
+| Promoção controlada | Supabase `ifnogpksgdadruooqydi` | migrations aplicadas somente após o CI verde; tipos gerados novamente do schema remoto; Security Advisor sem alertas e Performance Advisor sem FKs sem índice |
+| Regressão ponta a ponta | jobs `database`, `code` e `e2e` do PR #240 | migrations reconstruídas do zero, suíte de não interferência, lint do schema, aplicação e navegação aprovados |
 
-A evidência funcional e de aplicação está verde. Banco, RLS e lint do schema só serão contabilizados
-como aprovados quando o CI reconstruir toda a stack. A migration não foi aplicada ao projeto de
-produção antes dessa prova.
+A evidência funcional, de aplicação e de banco está verde. O banco foi promovido somente depois de
+o CI reconstruir toda a stack e aprovar RLS, não interferência e lint. A ativação do comportamento
+no worker depende do deploy de `main` e não é inferida apenas pela presença do schema.
 
 ## Registro de claims e portão de publicação, 24/08/2026
 
