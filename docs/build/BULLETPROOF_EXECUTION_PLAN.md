@@ -39,14 +39,14 @@ recebíveis.
 - [x] Contrato do runner governa nove camadas em ordem fixa, valida a saída de cada etapa,
   classifica falhas e interrompe todo o downstream após bloqueio ou erro.
 - [x] Budget por etapa e por case é um hard gate com custo e chamadas contabilizados.
-- [ ] Um comando executa documentos, extração, conciliação, cálculos, estrutura, materiais,
-  matching e resultado.
-- [ ] Cada camada produz resultado e comparação próprios.
-- [ ] O relatório separa erro de leitura, erro de conciliação, erro de cálculo, erro de política,
+- [x] O motor único executa candidatos e documentos classificados, conciliação, cálculos,
+  estrutura, materiais, matching e resultado. A ligação da leitura de bytes brutos continua no worker.
+- [x] Cada camada produz saída validada, fingerprint, duração e uso próprios.
+- [x] O relatório separa erro de leitura, erro de conciliação, erro de cálculo, erro de política,
   erro de material e erro de matching.
-- [ ] Custo por case e número de chamadas são gates, não apenas métricas.
+- [x] Custo por case e número de chamadas são gates, não apenas métricas.
 - [ ] O CI recusa regressões críticas.
-- [ ] A comparação entre versões inclui código, playbook, mercado, modelo e templates.
+- [x] O relatório identifica a versão do motor; o manifesto já inclui playbook, mercado, modelo e templates.
 
 ## Gate 3: caso corporativo âncora
 

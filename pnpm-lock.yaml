@@ -57,6 +57,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@offroad/case-engine':
+        specifier: workspace:*
+        version: link:../../packages/case-engine
       '@offroad/case-export':
         specifier: workspace:*
         version: link:../../packages/case-export
@@ -178,6 +181,46 @@ importers:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.19.43)(jsdom@27.4.0)(vite@8.2.1(@types/node@20.19.43)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12))
+
+  packages/case-engine:
+    dependencies:
+      '@offroad/case-materials':
+        specifier: workspace:*
+        version: link:../case-materials
+      '@offroad/case-runner':
+        specifier: workspace:*
+        version: link:../case-runner
+      '@offroad/case-understanding':
+        specifier: workspace:*
+        version: link:../case-understanding
+      '@offroad/credit-analysis':
+        specifier: workspace:*
+        version: link:../credit-analysis
+      '@offroad/credit-playbook':
+        specifier: workspace:*
+        version: link:../credit-playbook
+      '@offroad/data-room':
+        specifier: workspace:*
+        version: link:../data-room
+      '@offroad/deal-structure':
+        specifier: workspace:*
+        version: link:../deal-structure
+      '@offroad/fund-mandate':
+        specifier: workspace:*
+        version: link:../fund-mandate
+      '@offroad/market-reference':
+        specifier: workspace:*
+        version: link:../market-reference
+      '@offroad/reconciliation':
+        specifier: workspace:*
+        version: link:../reconciliation
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
 
   packages/case-export:
     dependencies:
