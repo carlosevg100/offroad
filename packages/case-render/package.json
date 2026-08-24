@@ -24,6 +24,6 @@
     "@offroad/credit-analysis": "workspace:*",
     "@offroad/deal-structure": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
-    "@types/node": "^20.19.43"
+    "@types/node": "^26.2.0"
   }
 }
