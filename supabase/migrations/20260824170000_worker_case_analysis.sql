@@ -397,7 +397,14 @@ begin
     select stored.id into manifest_id
     from public.case_artifact_manifests stored
     where stored.organization_id = job_row.organization_id
-      and stored.manifest_fingerprint = v_manifest_fingerprint;
+      and stored.manifest_fingerprint = v_manifest_fingerprint
+      and stored.intake_session_id = job_row.intake_session_id
+      and stored.processing_run_id is not distinct from job_row.processing_run_id
+      and stored.manifest = p_manifest;
+
+    if manifest_id is null then
+      raise exception 'case_manifest_fingerprint_collision' using errcode = '23505';
+    end if;
   end if;
 
   update public.document_intake_sessions

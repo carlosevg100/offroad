@@ -1717,6 +1717,7 @@ declare
   first_id uuid;
   second_id uuid;
   manifest jsonb;
+  collision_manifest jsonb;
   lineage jsonb;
   accepted boolean;
 begin
@@ -1752,19 +1753,32 @@ begin
   manifest := jsonb_build_object(
     'schemaVersion', '2026.08.24-v2', 'caseId', session_id::text, 'runId', run_id::text,
     'createdAt', '2026-08-24T12:00:00.000Z', 'locale', 'pt-BR',
-    'inputFingerprint', repeat('a', 64), 'manifestFingerprint', repeat('b', 64),
+    'inputFingerprint', repeat('d', 64), 'manifestFingerprint', repeat('e', 64),
     'capture', jsonb_build_object('sources', 'complete', 'models', 'complete'),
     'versions', '{}'::jsonb, 'models', '[]'::jsonb, 'sources', '[]'::jsonb,
     'outputs', '[]'::jsonb
   );
 
+  -- A fingerprint can be retried for the exact same immutable artifact, but it can never be
+  -- rebound to another case. The earlier worker test already owns fingerprint b in this tenant.
+  collision_manifest := manifest || jsonb_build_object('manifestFingerprint', repeat('b', 64));
+  accepted := true;
+  begin
+    perform public.worker_record_case_snapshot(
+      job_id, capability, collision_manifest,
+      jsonb_build_object('fingerprint', repeat('d', 64), 'locale', 'pt')
+    );
+  exception when unique_violation then accepted := false;
+  end;
+  if accepted then raise exception 'a manifest fingerprint was rebound to a different case'; end if;
+
   first_id := public.worker_record_case_snapshot(
     job_id, capability, manifest,
-    jsonb_build_object('fingerprint', repeat('a', 64), 'locale', 'pt')
+    jsonb_build_object('fingerprint', repeat('d', 64), 'locale', 'pt')
   );
   second_id := public.worker_record_case_snapshot(
     job_id, capability, manifest,
-    jsonb_build_object('fingerprint', repeat('a', 64), 'locale', 'pt')
+    jsonb_build_object('fingerprint', repeat('d', 64), 'locale', 'pt')
   );
   if first_id is distinct from second_id then
     raise exception 'record_case_snapshot was not idempotent';
