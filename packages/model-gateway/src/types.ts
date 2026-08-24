@@ -109,10 +109,15 @@ export type GatewayResult<T> = {
 };
 
 export type GatewayCallLog = {
+  invocationId: string;
   task: TaskKind;
   provider: Provider;
   model: string;
   effort: Effort;
+  outcome: "ok" | "refusal" | "error" | "invalid_output";
+  promptFingerprint: string;
+  inputFingerprint: string;
+  outputFingerprint: string;
   usage: Usage;
   costUsd: number;
   latencyMs: number;

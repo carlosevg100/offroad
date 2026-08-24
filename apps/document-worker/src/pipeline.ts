@@ -6,7 +6,7 @@ import {
   type ParseResult,
 } from "@offroad/document-parsers";
 import type {Classifier, DocumentProfile} from "@offroad/document-classification";
-import {ModelGatewayError} from "@offroad/model-gateway";
+import {ModelGatewayError, type GatewayCallLog} from "@offroad/model-gateway";
 import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
 import type {ClaimedJob, QueueClient} from "./queue";
 
@@ -64,6 +64,8 @@ export type PipelineDependencies = {
    * successes would show the cheapest possible version of the truth.
    */
   spend?: () => {costUsd: number; calls: number};
+  /** Content-free fingerprints for every model attempt made by this job. */
+  lineage?: () => GatewayCallLog[];
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
 
@@ -124,6 +126,7 @@ export async function processDocumentJob(job: ClaimedJob, deps: PipelineDependen
           signature: verdict.signature,
           document: payload.original_name,
           ...(deps.spend ? {spend: deps.spend()} : {}),
+          ...(deps.lineage ? {model_lineage: deps.lineage()} : {}),
         },
         {retryable: false},
       );
@@ -227,6 +230,7 @@ export async function processDocumentJob(job: ClaimedJob, deps: PipelineDependen
       detected: parsed.detected,
       ...(extracted ? {candidates: written, chunks_failed: extracted.chunks.failed} : {}),
       ...(deps.spend ? {spend: deps.spend()} : {}),
+      ...(deps.lineage ? {model_lineage: deps.lineage()} : {}),
     });
 
     log("document.done", {job: job.job_id, kind: classified.profile.document_kind, candidates: written});
@@ -235,7 +239,7 @@ export async function processDocumentJob(job: ClaimedJob, deps: PipelineDependen
     const failure = describeFailure(error);
     await queue.fail(
       job,
-      {...failure.detail, ...(deps.spend ? {spend: deps.spend()} : {})},
+      {...failure.detail, ...(deps.spend ? {spend: deps.spend()} : {}), ...(deps.lineage ? {model_lineage: deps.lineage()} : {})},
       {retryable: failure.retryable, retryInSeconds: failure.retryInSeconds},
     );
     log("document.failed", {job: job.job_id, reason: failure.detail.reason});

@@ -445,6 +445,70 @@ export type Database = {
           },
         ]
       }
+      case_artifact_manifests: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          input_fingerprint: string
+          intake_session_id: string
+          locale: string
+          manifest: Json
+          manifest_fingerprint: string
+          organization_id: string
+          processing_run_id: string | null
+          schema_version: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          input_fingerprint: string
+          intake_session_id: string
+          locale: string
+          manifest: Json
+          manifest_fingerprint: string
+          organization_id: string
+          processing_run_id?: string | null
+          schema_version: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          input_fingerprint?: string
+          intake_session_id?: string
+          locale?: string
+          manifest?: Json
+          manifest_fingerprint?: string
+          organization_id?: string
+          processing_run_id?: string | null
+          schema_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_artifact_manifests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_artifact_manifests_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "case_artifact_manifests_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       document_intake_sessions: {
         Row: {
           archetype: string | null
@@ -2889,6 +2953,24 @@ export type Database = {
           p_session_id: string
         }
         Returns: undefined
+      }
+      read_processing_model_lineage: {
+        Args: {
+          p_organization_id: string
+          p_processing_run_id?: string | null
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      record_case_snapshot: {
+        Args: {
+          p_case_state: Json
+          p_manifest: Json
+          p_organization_id: string
+          p_processing_run_id: string | null
+          p_session_id: string
+        }
+        Returns: string
       }
       record_document_verification: {
         Args: {

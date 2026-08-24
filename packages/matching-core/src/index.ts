@@ -1,6 +1,8 @@
 import type {OpportunityProjection} from "@offroad/domain-contracts";
 import Decimal from "decimal.js";
 
+export const matchingCoreVersion = "2026.08.24-v1";
+
 export type Mandate = {
   id: string;
   fundName: string;

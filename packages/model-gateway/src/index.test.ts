@@ -228,6 +228,11 @@ describe("gateway", () => {
     expect(JSON.stringify(logs[0])).not.toContain("Demonstrações");
     expect(logs[0]?.schemaName).toBe("document_profile");
     expect(logs[0]?.model).toBe("claude-sonnet-5");
+    expect(logs[0]).toMatchObject({outcome: "ok"});
+    expect(logs[0]?.invocationId).toMatch(/^[a-f0-9-]{36}$/);
+    expect(logs[0]?.promptFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[0]?.inputFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[0]?.outputFingerprint).toMatch(/^[a-f0-9]{64}$/);
   });
 
   it("falls back to the next provider on refusal, error or invalid output", async () => {
@@ -250,6 +255,22 @@ describe("gateway", () => {
     const third = await createModelGateway({adapters: {anthropic: invalid, openai: openai3}}).complete(baseRequest);
     expect(third.attempts[0]?.outcome).toBe("invalid_output");
     expect(third.usedFallback).toBe(true);
+  });
+
+  it("records failed provider attempts without logging their content", async () => {
+    const logs: GatewayCallLog[] = [];
+    const gateway = createModelGateway({
+      adapters: {
+        anthropic: fakeAdapter("anthropic", [new Error("provider response contained private content")]),
+        openai: fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]),
+      },
+      onCall: (log) => logs.push(log),
+    });
+
+    await gateway.complete(baseRequest);
+    expect(logs.map((log) => log.outcome)).toEqual(["error", "ok"]);
+    expect(gateway.spent().calls).toBe(2);
+    expect(JSON.stringify(logs)).not.toContain("private content");
   });
 
   it("throws when every attempt fails and reports each attempt", async () => {

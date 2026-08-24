@@ -1635,6 +1635,136 @@ begin
 end;
 $$;
 
+-- Case snapshots are atomic, append-only and tenant isolated. Model lineage is exposed only as
+-- the content-free fingerprints written by the worker, never through the internal job payload.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '40000000-0000-4000-8000-0000000000f7';
+  run_id constant uuid := '60000000-0000-4000-8000-0000000000f7';
+  first_id uuid;
+  second_id uuid;
+  manifest jsonb;
+  lineage jsonb;
+  accepted boolean;
+begin
+  set local role postgres;
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+  insert into public.processing_runs (
+    id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
+  ) values (
+    run_id, org_a, session_id, 1, 'manual', 'succeeded', 'test-pipeline',
+    '10000000-0000-4000-8000-000000000001'
+  );
+  insert into public.processing_jobs (
+    organization_id, processing_run_id, intake_session_id, kind, status, model_calls, result
+  ) values (
+    org_a, run_id, session_id, 'case_analysis', 'succeeded', 1,
+    jsonb_build_object('model_lineage', jsonb_build_array(jsonb_build_object(
+      'invocationId', '11111111-1111-4111-8111-111111111111',
+      'task', 'case_brief', 'provider', 'openai', 'model', 'gpt-test', 'effort', 'medium',
+      'outcome', 'ok', 'promptFingerprint', repeat('1', 64),
+      'inputFingerprint', repeat('2', 64), 'outputFingerprint', repeat('3', 64),
+      'usage', jsonb_build_object('inputTokens', 10, 'outputTokens', 2, 'cachedInputTokens', 0),
+      'costUsd', 0.01, 'latencyMs', 12, 'stopReason', 'end',
+      'usedFallback', false, 'fromCassette', false, 'schemaName', 'case_brief'
+    )))
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
+  manifest := jsonb_build_object(
+    'schemaVersion', '2026.08.24-v2', 'caseId', session_id::text, 'runId', run_id::text,
+    'createdAt', '2026-08-24T12:00:00.000Z', 'locale', 'pt-BR',
+    'inputFingerprint', repeat('a', 64), 'manifestFingerprint', repeat('b', 64),
+    'capture', jsonb_build_object('sources', 'complete', 'models', 'complete'),
+    'versions', '{}'::jsonb, 'models', '[]'::jsonb, 'sources', '[]'::jsonb,
+    'outputs', '[]'::jsonb
+  );
+
+  first_id := public.record_case_snapshot(
+    org_a, session_id, run_id, manifest,
+    jsonb_build_object('fingerprint', repeat('a', 64), 'locale', 'pt')
+  );
+  second_id := public.record_case_snapshot(
+    org_a, session_id, run_id, manifest,
+    jsonb_build_object('fingerprint', repeat('a', 64), 'locale', 'pt')
+  );
+  if first_id is distinct from second_id then
+    raise exception 'record_case_snapshot was not idempotent';
+  end if;
+  if (select count(*) from public.case_artifact_manifests where intake_session_id = session_id) <> 1 then
+    raise exception 'duplicate immutable manifests were inserted';
+  end if;
+  if (select result_summary -> 'case_manifest' ->> 'id' from public.document_intake_sessions where id = session_id) <> first_id::text then
+    raise exception 'case snapshot and manifest were not persisted atomically';
+  end if;
+
+  lineage := public.read_processing_model_lineage(org_a, session_id, run_id);
+  if (lineage ->> 'expected_calls')::integer <> 1
+    or (lineage ->> 'captured_calls')::integer <> 1
+    or jsonb_array_length(lineage -> 'calls') <> 1 then
+    raise exception 'content-free model lineage did not round-trip';
+  end if;
+
+  accepted := true;
+  begin
+    insert into public.case_artifact_manifests (
+      organization_id, intake_session_id, schema_version, locale, input_fingerprint,
+      manifest_fingerprint, manifest, created_by
+    ) values (
+      org_a, session_id, 'forged', 'pt-BR', repeat('c', 64), repeat('d', 64), '{}'::jsonb,
+      '10000000-0000-4000-8000-000000000001'
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant directly inserted an artifact manifest'; end if;
+
+  accepted := true;
+  begin
+    update public.case_artifact_manifests set schema_version = 'rewritten' where id = first_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant rewrote an immutable artifact manifest'; end if;
+
+  accepted := true;
+  begin
+    delete from public.case_artifact_manifests where id = first_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant deleted an immutable artifact manifest'; end if;
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  if (select count(*) from public.case_artifact_manifests where id = first_id) <> 0 then
+    raise exception 'tenant B read tenant A manifest';
+  end if;
+  accepted := true;
+  begin
+    perform public.record_case_snapshot(org_a, session_id, run_id, manifest, '{}'::jsonb);
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'tenant B wrote tenant A case snapshot'; end if;
+
+  set local role anon;
+  accepted := true;
+  begin
+    perform public.read_processing_model_lineage(org_a, session_id, run_id);
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'anonymous caller read processing model lineage'; end if;
+end;
+$$;
+
 set local role postgres;
 
 rollback;

@@ -1,11 +1,11 @@
 import type {SupabaseClient} from "@supabase/supabase-js";
-import {assessReadiness, auditBrief, buildBriefInput, deskEvidence, BRIEF_SYSTEM, caseBriefSchema, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
+import {assessReadiness, auditBrief, buildBriefInput, buildCaseArtifactManifest, deskEvidence, fingerprintJson, BRIEF_SYSTEM, caseBriefSchema, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
 import {compileMaterials, type Material} from "@offroad/case-materials";
 import {dataRoomIndex, planDataRoom, type DataRoomDocument, type DataRoomPlan} from "@offroad/data-room";
 import {archetype, type ArchetypeId, type ClassifiedDocument} from "@offroad/credit-playbook";
 import {assessCapacity, buildTermSheet, type CapacityAssessment, type IndicativeTermSheet} from "@offroad/deal-structure";
 import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@offroad/reconciliation";
-import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter} from "@offroad/model-gateway";
+import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, gatewayCallLogSchema, type GatewayCallLog} from "@offroad/model-gateway";
 
 import {dealBriefOf} from "./deal-brief";
 
@@ -15,6 +15,7 @@ import {analyzeCreditPosition, buildDeskInputs, judgeOperation, projectLeverageT
 import {instrumentVerdicts, type InstrumentVerdict, type LegalForm} from "@offroad/credit-playbook";
 import {designCollateralPackage, type CollateralAsset, type CollateralPackage} from "@offroad/deal-structure";
 import {indicativePrice, type IndicativePrice, type PricedInstrument} from "@offroad/market-reference";
+import {invocationManifest, normalizeEconomicInput, pipelineVersions, type EconomicInputSnapshot} from "./case-manifest";
 
 /**
  * The case, end to end: reconcile, size, structure, write, compile.
@@ -60,6 +61,8 @@ export type CaseState = {
   materialsBlockedBy: string[];
   /** What leaves the desk, behind which gate, and what holds it. */
   dataRoom: DataRoomPlan | null;
+  /** Content-free lineage of the model calls made while compiling this case state. */
+  modelInvocations: GatewayCallLog[];
 };
 
 /** Facts the case is expected to carry, per operation — drives the material-gaps component. */
@@ -165,13 +168,14 @@ async function writeBrief(input: {
   locale: "pt" | "en";
   /** Reports what the call cost, so the one spend nobody could query lands in a ledger. */
   onSpend?: (spend: {costUsd: number; calls: number}) => void;
-}): Promise<{brief: CaseBrief | null; blockedBy: string[]}> {
+}): Promise<{brief: CaseBrief | null; blockedBy: string[]; modelInvocations: GatewayCallLog[]}> {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
-  if (!anthropicKey && !openaiKey) return {brief: null, blockedBy: ["no_model_credentials"]};
+  if (!anthropicKey && !openaiKey) return {brief: null, blockedBy: ["no_model_credentials"], modelInvocations: []};
 
   let costUsd = 0;
   let calls = 0;
+  const modelInvocations: GatewayCallLog[] = [];
 
   const gateway = createModelGateway({
     adapters: {
@@ -185,6 +189,7 @@ async function writeBrief(input: {
     onCall: (call) => {
       costUsd += call.costUsd ?? 0;
       calls += 1;
+      modelInvocations.push(call);
     },
   });
 
@@ -223,12 +228,12 @@ async function writeBrief(input: {
     });
     if (!audited.ok) {
       // Not shown with a caveat: the unsourced sentence is the one a committee would act on.
-      return {brief: null, blockedBy: audited.audit.findings.map((finding) => `${finding.claimId}: ${finding.reason}`)};
+      return {brief: null, blockedBy: audited.audit.findings.map((finding) => `${finding.claimId}: ${finding.reason}`), modelInvocations};
     }
-    return {brief: audited.brief, blockedBy: []};
+    return {brief: audited.brief, blockedBy: [], modelInvocations};
   } catch (error) {
     reportServerFailure({step: "case.brief", error});
-    return {brief: null, blockedBy: ["generation_failed"]};
+    return {brief: null, blockedBy: ["generation_failed"], modelInvocations};
   } finally {
     // `finally`, because a brief that failed the audit or threw still cost what it cost. A ledger
     // that only records successes understates spend exactly when spend is going wrong.
@@ -458,14 +463,14 @@ export async function buildCaseState(input: {
   // Losing the race is not an error. The case still renders with its facts, exceptions,
   // readiness and structure, and `brief_in_progress` tells the screen to say the written part is
   // being prepared rather than showing an empty section with no reason.
-  const {brief, blockedBy: briefBlockedBy} = await (async () => {
-    if (input.withBrief === false) return {brief: null, blockedBy: ["not_requested"]};
+  const {brief, blockedBy: briefBlockedBy, modelInvocations} = await (async () => {
+    if (input.withBrief === false) return {brief: null, blockedBy: ["not_requested"], modelInvocations: [] as GatewayCallLog[]};
 
     const {data: claimed} = await supabase.rpc("claim_case_brief", {
       p_organization_id: organizationId,
       p_session_id: sessionId,
     });
-    if (claimed !== true) return {brief: null, blockedBy: ["brief_in_progress"]};
+    if (claimed !== true) return {brief: null, blockedBy: ["brief_in_progress"], modelInvocations: [] as GatewayCallLog[]};
 
     return writeBrief({
       archetypeId,
@@ -528,7 +533,7 @@ export async function buildCaseState(input: {
   });
   materials = [...materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
 
-  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, verdict, brief, briefBlockedBy, materials, materialsBlockedBy, dataRoom};
+  return {reconciliation, readiness, capacity, desk, trajectory, deskMissing: deskInputs.missing, clientQuestions, termSheet, rating, stress, instruments, collateral, price, verdict, brief, briefBlockedBy, materials, materialsBlockedBy, dataRoom, modelInvocations};
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */
@@ -559,37 +564,109 @@ export async function saveCaseState(input: {
   });
 }
 
-/**
- * A fingerprint of everything the case is computed from.
- *
- * Cheap to take — three counted queries — and it changes whenever a document lands, a
- * candidate is reviewed, an answer is written, or the operation type is changed. Anything
- * that would alter the case alters this string.
- */
-async function caseFingerprint(supabase: SupabaseClient<Database>, organizationId: string, sessionId: string): Promise<string> {
-  const [{count: candidateCount}, {count: documentCount}, {data: session}, {data: latest}, {count: answerCount}] = await Promise.all([
-    supabase.from("intake_field_candidates").select("id", {count: "exact", head: true}).eq("organization_id", organizationId).eq("intake_session_id", sessionId),
-    supabase.from("source_documents").select("id", {count: "exact", head: true}).eq("organization_id", organizationId).eq("intake_session_id", sessionId),
-    supabase.from("document_intake_sessions").select("archetype, status").eq("organization_id", organizationId).eq("id", sessionId).maybeSingle(),
+async function loadEconomicInputSnapshot(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+  sessionId: string,
+): Promise<EconomicInputSnapshot> {
+  const sessionResult = await supabase
+    .from("document_intake_sessions")
+    .select("id, archetype, collateral_kinds, current_run_id, expected_rate, extraction_version, geography, instruments, journey, locale, opportunity_id, pipeline_version, requested_amount, requested_grace_months, requested_term_months, sector, status")
+    .eq("organization_id", organizationId)
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (sessionResult.error) throw sessionResult.error;
+  if (!sessionResult.data) throw new Error("case session not found");
+
+  const [sourcesResult, candidatesResult, answersResult] = await Promise.all([
+    supabase
+      .from("source_documents")
+      .select("id, document_version, sha256, sha256_verified_at, byte_size, mime_type, processing_status, classification, evidence_rank")
+      .eq("organization_id", organizationId)
+      .eq("intake_session_id", sessionId),
     supabase
       .from("intake_field_candidates")
-      .select("updated_at")
+      .select("id, anchor_precision, anchor_verified, confidence, currency, entity_name, entity_scope, evidence_rank, extraction_method, extractor_key, field_group, field_path, information_class, is_primary, normalized_value, period_end, period_start, processing_run_id, review_state, reviewer_comment, source_anchor, source_document_id, unit, value_scale, value_type, verifier_flags")
       .eq("organization_id", organizationId)
-      .eq("intake_session_id", sessionId)
-      .order("updated_at", {ascending: false})
-      .limit(1)
-      .maybeSingle(),
-    supabase.from("intake_information_answers").select("id", {count: "exact", head: true}).eq("organization_id", organizationId).eq("intake_session_id", sessionId),
+      .eq("intake_session_id", sessionId),
+    supabase
+      .from("intake_information_answers")
+      .select("id, requirement_id, response, answer, note")
+      .eq("organization_id", organizationId)
+      .eq("intake_session_id", sessionId),
   ]);
 
-  return [
-    session?.archetype ?? "",
-    session?.status ?? "",
-    candidateCount ?? 0,
-    documentCount ?? 0,
-    answerCount ?? 0,
-    latest?.updated_at ?? "",
-  ].join("|");
+  for (const result of [sourcesResult, candidatesResult, answersResult]) {
+    if (result.error) throw result.error;
+  }
+
+  const sourceIds = (sourcesResult.data ?? []).map((source) => source.id);
+  const realLayers = sourceIds.length === 0
+    ? {data: [], error: null}
+    : await supabase
+      .from("document_layers")
+      .select("source_document_id, document_version, sha256, parser_versions, processing_run_id, status")
+      .eq("organization_id", organizationId)
+      .in("source_document_id", sourceIds);
+  if (realLayers.error) throw realLayers.error;
+  let run: Record<string, Json | undefined> | null = null;
+  if (sessionResult.data.current_run_id) {
+    const runResult = await supabase
+      .from("processing_runs")
+      .select("id, pipeline_version, status, versions, model_calls")
+      .eq("organization_id", organizationId)
+      .eq("id", sessionResult.data.current_run_id)
+      .maybeSingle();
+    if (runResult.error) throw runResult.error;
+    run = asJsonRecord(runResult.data);
+  }
+
+  return normalizeEconomicInput({
+    session: asJsonRecord(sessionResult.data),
+    sources: (sourcesResult.data ?? []).map(asJsonRecord),
+    candidates: (candidatesResult.data ?? []).map(asJsonRecord),
+    answers: (answersResult.data ?? []).map(asJsonRecord),
+    layers: (realLayers.data ?? []).map(asJsonRecord),
+    run,
+  });
+}
+
+function asJsonRecord(value: unknown): Record<string, Json | undefined> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, Json | undefined>
+    : {};
+}
+
+async function loadWorkerLineage(input: {
+  supabase: SupabaseClient<Database>;
+  organizationId: string;
+  sessionId: string;
+  runId: string | null;
+}): Promise<{calls: GatewayCallLog[]; expected: number; complete: boolean}> {
+  if (!input.runId) return {calls: [], expected: 0, complete: true};
+  const {data, error} = await input.supabase.rpc("read_processing_model_lineage", {
+    p_organization_id: input.organizationId,
+    p_session_id: input.sessionId,
+    p_processing_run_id: input.runId,
+  });
+  if (error) throw error;
+  const record = asJsonRecord(data);
+  const parsed = gatewayCallLogSchema.array().safeParse(record.calls ?? []);
+  const expected = typeof record.expected_calls === "number" ? record.expected_calls : Number(record.expected_calls ?? 0);
+  return {
+    calls: parsed.success ? parsed.data : [],
+    expected,
+    complete: parsed.success && parsed.data.length === expected,
+  };
+}
+
+function artifactKind(kind: Material["kind"]): "teaser" | "credit_memo" | "term_sheet" | "diligence_qa" | "data_room_index" | "other" {
+  if (kind === "teaser") return "teaser";
+  if (kind === "term_sheet") return "term_sheet";
+  if (kind === "diligence_qa") return "diligence_qa";
+  if (kind === "data_room_index") return "data_room_index";
+  if (kind === "credit_profile" || kind === "package" || kind === "investment_memo") return "credit_memo";
+  return "other";
 }
 
 /**
@@ -612,7 +689,12 @@ export async function resolveCaseState(input: {
   locale: "pt" | "en";
 }): Promise<CaseState> {
   const {supabase, organizationId, sessionId, locale} = input;
-  const fingerprint = await caseFingerprint(supabase, organizationId, sessionId);
+  const economicSnapshot = await loadEconomicInputSnapshot(supabase, organizationId, sessionId);
+  const extractionVersion = typeof economicSnapshot.session.extraction_version === "string"
+    ? economicSnapshot.session.extraction_version
+    : "unknown";
+  const versions = pipelineVersions({snapshot: economicSnapshot, extractionVersion});
+  const fingerprint = fingerprintJson({economics: economicSnapshot, versions});
 
   const {data: session} = await supabase
     .from("document_intake_sessions")
@@ -626,11 +708,50 @@ export async function resolveCaseState(input: {
   if (snapshot?.fingerprint === fingerprint && snapshot.locale === locale) return snapshot;
 
   const state = await buildCaseState({supabase, organizationId, sessionId, locale});
-  await supabase.rpc("record_intake_analysis", {
+  const currentRunId = typeof economicSnapshot.session.current_run_id === "string"
+    ? economicSnapshot.session.current_run_id
+    : null;
+  const workerLineage = await loadWorkerLineage({supabase, organizationId, sessionId, runId: currentRunId});
+  const modelCalls = [...workerLineage.calls, ...state.modelInvocations];
+  const sources = economicSnapshot.sources.map((source) => ({
+    documentId: String(source.id ?? ""),
+    versionId: String(source.document_version ?? "1"),
+    sha256: typeof source.sha256 === "string" ? source.sha256 : null,
+  }));
+  const sourceCapture = sources.length > 0 && sources.every((source) => source.sha256 !== null)
+    ? "complete" as const
+    : "partial" as const;
+  const modelCapture = workerLineage.complete
+    ? modelCalls.length > 0 ? "complete" as const : "not_applicable" as const
+    : "partial" as const;
+  const manifest = buildCaseArtifactManifest({
+    caseId: sessionId,
+    runId: currentRunId ?? `case-state:${crypto.randomUUID()}`,
+    createdAt: new Date().toISOString(),
+    locale: locale === "pt" ? "pt-BR" : "en-US",
+    inputFingerprint: fingerprint,
+    capture: {sources: sourceCapture, models: modelCapture},
+    versions,
+    models: modelCalls.map(invocationManifest),
+    sources,
+    outputs: [
+      {artifactId: `${sessionId}:case_state`, kind: "case_state", sha256: fingerprintJson(state)},
+      ...state.materials.map((material, index) => ({
+        artifactId: `${sessionId}:${material.kind}:${index + 1}`,
+        kind: artifactKind(material.kind),
+        sha256: fingerprintJson(material),
+      })),
+    ],
+  });
+  const snapshotToPersist = {...state, fingerprint, locale, manifestFingerprint: manifest.manifestFingerprint};
+  const {error} = await supabase.rpc("record_case_snapshot", {
     p_organization_id: organizationId,
     p_session_id: sessionId,
-    p_patch: {case_state: {...state, fingerprint, locale}} as unknown as Json,
+    p_processing_run_id: currentRunId,
+    p_manifest: manifest as unknown as Json,
+    p_case_state: snapshotToPersist as unknown as Json,
   });
+  if (error) throw error;
 
   return state;
 }

@@ -39,7 +39,7 @@ const schema = z.object({
   ANTHROPIC_API_KEY: z.string().min(20).optional(),
   OPENAI_API_KEY: z.string().min(20).optional(),
 
-  PIPELINE_VERSION: z.string().min(1).default("f1-2026.08.18"),
+  PIPELINE_VERSION: z.string().min(1).default("f2-2026.08.24"),
   LEASE_SECONDS: z.coerce.number().int().min(60).max(3600).default(600),
   HEARTBEAT_SECONDS: z.coerce.number().int().min(15).max(600).default(120),
   IDLE_POLL_SECONDS: z.coerce.number().int().min(1).max(60).default(5),

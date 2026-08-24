@@ -1,5 +1,7 @@
 import Decimal from "decimal.js";
 
+export const financialCoreVersion = "2026.08.24-v1";
+
 Decimal.set({precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -30, toExpPos: 30});
 
 export type DecimalInput = Decimal.Value;

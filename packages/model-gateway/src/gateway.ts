@@ -1,3 +1,4 @@
+import {createHash, randomUUID} from "node:crypto";
 import {z} from "zod";
 import {cassetteKey, type CassetteMode, type CassetteStore} from "./cassette";
 import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
@@ -69,6 +70,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
 
     const input = config.redaction === false ? request.input : redactParts(request.input, config.redaction ?? {});
     const schemaJson = z.toJSONSchema(request.schema);
+    const promptFingerprint = fingerprint({system: request.system, schemaName: request.schemaName, schema: schemaJson});
+    const inputFingerprint = fingerprint(input);
     const attempts: GatewayResult<unknown>["attempts"] = [];
     const candidates: ModelRef[] = fallback ? [primary, fallback] : [primary];
 
@@ -110,6 +113,19 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       } catch (error) {
         if (error instanceof ModelGatewayError && error.code === "cassette_missing") throw error;
         attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error)});
+        spent.calls += 1;
+        emit(config, {
+          request,
+          ref,
+          costUsd: 0,
+          latencyMs: now() - startedAt,
+          usedFallback: index > 0,
+          fromCassette: false,
+          outcome: "error",
+          promptFingerprint,
+          inputFingerprint,
+          outputFingerprint: fingerprint({outcome: "error", kind: error instanceof Error ? error.name : "unknown"}),
+        });
         continue;
       }
 
@@ -120,19 +136,19 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
 
       if (response.stopReason === "refusal") {
         attempts.push({provider: ref.provider, model: ref.model, outcome: "refusal"});
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette});
+        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output)});
         continue;
       }
 
       const parsed = request.schema.safeParse(stripNulls(response.output));
       if (!parsed.success) {
         attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message: parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ")});
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette});
+        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output)});
         continue;
       }
 
       attempts.push({provider: ref.provider, model: ref.model, outcome: "ok"});
-      emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette});
+      emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data)});
       const result: GatewayResult<z.infer<TSchema>> = {
         output: parsed.data as z.infer<TSchema>,
         provider: ref.provider,
@@ -162,24 +178,58 @@ function redactParts(parts: ContentPart[], options: RedactionOptions): ContentPa
 
 function emit(
   config: ModelGatewayConfig,
-  entry: {request: GatewayRequest<z.ZodType>; ref: ModelRef; response: AdapterResponse; costUsd: number; latencyMs: number; usedFallback: boolean; fromCassette: boolean},
+  entry: {
+    request: GatewayRequest<z.ZodType>;
+    ref: ModelRef;
+    response?: AdapterResponse;
+    costUsd: number;
+    latencyMs: number;
+    usedFallback: boolean;
+    fromCassette: boolean;
+    outcome: GatewayCallLog["outcome"];
+    promptFingerprint: string;
+    inputFingerprint: string;
+    outputFingerprint: string;
+  },
 ): void {
   if (!config.onCall) return;
+  const usage = entry.response?.usage ?? {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0};
   const log: GatewayCallLog = {
+    invocationId: randomUUID(),
     task: entry.request.task,
     provider: entry.ref.provider,
-    model: entry.response.model || entry.ref.model,
+    model: entry.response?.model || entry.ref.model,
     effort: entry.ref.effort,
-    usage: entry.response.usage,
+    outcome: entry.outcome,
+    promptFingerprint: entry.promptFingerprint,
+    inputFingerprint: entry.inputFingerprint,
+    outputFingerprint: entry.outputFingerprint,
+    usage,
     costUsd: entry.costUsd,
     latencyMs: entry.latencyMs,
-    stopReason: entry.response.stopReason,
+    stopReason: entry.response?.stopReason ?? "other",
     usedFallback: entry.usedFallback,
     fromCassette: entry.fromCassette,
     schemaName: entry.request.schemaName,
   };
   if (entry.request.metadata) log.metadata = entry.request.metadata;
   config.onCall(log);
+}
+
+function fingerprint(value: unknown): string {
+  return createHash("sha256").update(stableJson(value)).digest("hex");
+}
+
+function stableJson(value: unknown): string {
+  if (value === undefined) return "undefined";
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, child]) => `${JSON.stringify(key)}:${stableJson(child)}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "undefined";
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {

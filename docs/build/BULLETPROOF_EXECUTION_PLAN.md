@@ -30,7 +30,9 @@ recebíveis.
 - [x] Schema do manifesto unificado.
 - [x] Contrato de gold case com oito camadas.
 - [x] Adaptador do catálogo legado de instrumentos para a taxonomia v2.
-- [ ] Persistência do manifesto em snapshots e artefatos reais.
+- [x] Persistência atômica e append-only do manifesto em snapshots e artefatos reais.
+- [x] Fingerprint econômico cobre sessão, fontes, candidatos, respostas, layers, run e versões.
+- [x] Linhagem content-free registra tentativa, modelo, custo e hashes de prompt, input e output.
 
 ## Gate 2: harness integrado
 

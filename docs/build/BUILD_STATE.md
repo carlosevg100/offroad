@@ -26,10 +26,11 @@ incremento fecha os contratos que todas as etapas posteriores devem respeitar:
   fluxo atual enquanto a migração é feita de forma controlada;
 - [x] ADR 0009 registra as invariantes e o que ainda não foi implementado.
 
-Ainda não está concluído neste incremento: persistência do manifesto no snapshot
-real, runner único partindo de documentos brutos, primeiro case âncora completo,
-fábrica paramétrica, trilha específica de recebíveis/FIDC e gate de promoção em
-staging. Esses itens permanecem como gates verificáveis no plano de execução.
+Ainda não está concluído neste incremento: runner único partindo de documentos
+brutos, atestação do manifesto por identidade de workload, primeiro case âncora
+completo, fábrica paramétrica, trilha específica de recebíveis/FIDC e gate de
+promoção em staging. Esses itens permanecem como gates verificáveis no plano de
+execução.
 
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|
@@ -506,3 +507,22 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - O upload permanece único, privado e multiformato. Depois do processamento, a classificação
   continua preenchendo a lista automaticamente e preservando a evidência de origem.
 - Cobertura: E2E atualizado para a nova sequência; `pnpm check` verde em 32 pacotes.
+
+## Manifesto reproduzível do case, 24/08/2026
+
+- O cache do case deixou de usar contagens e o último `updated_at`. O fingerprint agora cobre o
+  conteúdo econômico normalizado da sessão, documentos e hashes, candidatos completos, respostas,
+  layers, run e todas as versões governantes. Alterar uma resposta ou um valor muda o snapshot.
+- Cada tentativa de modelo registra apenas metadados e hashes: id, tarefa, provider, modelo,
+  outcome, custo, tokens e fingerprints de prompt, input e output. Nenhum texto ou valor financeiro
+  entra na trilha.
+- O worker persiste essa linhagem no resultado interno do job. A aplicação lê somente a projeção
+  sanitizada por RPC, sem receber payload, erro bruto ou conteúdo do documento.
+- `case_artifact_manifests` é append-only, tem RLS forçado, SELECT por tenant e nenhum grant de
+  INSERT, UPDATE ou DELETE. `record_case_snapshot` grava manifesto e snapshot na mesma transação.
+- Este manifesto é imutável e reproduzível, mas ainda não é uma atestação confiável: enquanto a
+  compilação ocorrer no request autenticado da aplicação, um tenant tecnicamente sofisticado pode
+  chamar o mesmo comando autorizado. O Gate 2 move produção e gravação para a identidade do runner
+  e remove esse EXECUTE de `authenticated` antes de qualquer liberação externa (R-022).
+- Manifests antigos ou incompletos permanecem honestos por `capture.sources` e `capture.models`;
+  captura parcial nunca deve liberar direcionamento externo nos gates seguintes.
