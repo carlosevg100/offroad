@@ -108,6 +108,11 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Runner governado | `@offroad/case-runner` | nove etapas ordenadas, schema por saída, fingerprints, falhas tipadas, bloqueio downstream e hard gates de custo/chamadas; 5 testes unitários | 2026-08-24 |
 | Motores reais no runner | `@offroad/case-engine` + `case-pipeline.ts` | nove etapas executam os pacotes reais; schemas por camada, fingerprints e orçamento; 2 testes integrados; a aplicação web deixou de manter uma segunda cópia da lógica econômica | 2026-08-24 |
 | Gate local do incremento | testes e typecheck dos pacotes alterados + web lint | model gateway 17, case understanding 31, worker 39 e web 116 testes aprovados; tipagem e lint verdes | 2026-08-24 |
+| Fábrica paramétrica determinística | `@offroad/case-factory` | schema único gera documentos, candidatos, loan tape, mandatos e gold; reexecução byte-idêntica; gold permanece completo diante de omissão e conflito | 2026-08-24 |
+| Loan tape fecha economicamente | `case-factory/src/index.test.ts` | 250 títulos fecham exatamente em R$ 48.000.000, 7% de saldo vencido e 12% no maior sacado | 2026-08-24 |
+| Casos gerados no trilho governado | `evals/src/parametric-factory.test.ts` | expansão limpa, sala suja e recebíveis atravessam as 9 etapas; cálculos e matching batem com o gold; PT e EN mantêm identidade econômica | 2026-08-24 |
+| Evidência sem âncora falha fechada | `case-understanding/src/index.test.ts` + eval de sala suja | candidato permanece para revisão, mas claim material e cálculo dependente são bloqueados com `support_anchor_unverified` | 2026-08-24 |
+| Quality gate do Gate 5 | `pnpm check` | lint, typecheck, todos os testes e build verdes nos 35 pacotes | 2026-08-24 |
 
 ## Regras
 

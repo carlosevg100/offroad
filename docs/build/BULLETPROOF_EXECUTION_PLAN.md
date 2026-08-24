@@ -75,11 +75,23 @@ recebíveis.
 
 ## Gate 5: fábrica paramétrica
 
-- [ ] Schema declarativo de cenário.
-- [ ] Geradores de empresa, demonstrações, dívida, documentos e loan tape.
-- [ ] Gabaritos derivados dos parâmetros.
-- [ ] Perturbações de formato, evidência, conflito e segurança.
-- [ ] Casos âncora artesanais permanecem separados dos casos gerados.
+- [x] Schema declarativo de cenário.
+- [x] Geradores de empresa, demonstrações, dívida, documentos e loan tape.
+- [x] Gabaritos derivados dos parâmetros.
+- [x] Perturbações de formato, evidência, conflito e segurança.
+- [x] Casos âncora artesanais permanecem separados dos casos gerados.
+
+### Evidência de aceite do Gate 5
+
+O pacote `@offroad/case-factory` mantém uma única verdade econômica declarativa e deriva dela os
+documentos, candidatos, carteira, mandatos e gabaritos. Os casos gerados atravessam as nove etapas
+de `@offroad/case-engine` em PT e EN. O caso de sala suja prova que conflito permanece visível,
+texto hostil não vira fato e suporte sem âncora confirmada bloqueia publicação, inclusive quando
+chega a um claim por meio de um cálculo. A carteira gerada fecha exatamente em saldo, atraso e
+concentração. Os anchors artesanais continuam fora da fábrica e preservam seus gabaritos próprios.
+
+Este gate valida geração e o trilho econômico a partir de candidatos ancorados. Ele não substitui
+os testes dos parsers sobre arquivos binários reais e não conclui a vertical de recebíveis/FIDC.
 
 ## Gate 6: vertical de recebíveis e FIDC
 
