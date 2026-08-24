@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@offroad/case-engine": "workspace:*",
+    "@offroad/case-factory": "workspace:*",
     "@offroad/data-room": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
     "@offroad/credit-analysis": "workspace:*",

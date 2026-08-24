@@ -299,6 +299,28 @@ describe("the evidence auditor", () => {
     expect(report.findings[0]?.reason).toBe("support_not_found");
   });
 
+  it("keeps an unverified candidate in the case but refuses it as publication support", () => {
+    const unverified = fact("collateral.total_capacity", "57000000", {anchorVerified: false});
+    const report = auditClaims({
+      claims: [{id: "c1", material: true, kind: "fact", text: "A garantia declarada soma R$ 57 milhões.", supportIds: ["collateral.total_capacity"]}],
+      facts: [unverified],
+      calculations: [],
+    });
+    expect(report.status).toBe("blocked");
+    expect(report.findings[0]?.reason).toBe("support_anchor_unverified");
+  });
+
+  it("refuses a calculation whose lineage reaches an unverified fact", () => {
+    const unverified = fact("debt.total_gross", "65000000", {anchorVerified: false});
+    const derived: TracedCalculation = {id: "derived_debt", labels: {pt: "", en: ""}, value: "65000000", trace: [], inputs: ["debt.total_gross"], warnings: []};
+    const report = auditClaims({
+      claims: [{id: "c1", material: true, kind: "calculation", text: "A dívida derivada é R$ 65 milhões.", supportIds: ["derived_debt"]}],
+      facts: [unverified],
+      calculations: [derived],
+    });
+    expect(report.findings[0]?.reason).toBe("support_anchor_unverified");
+  });
+
   it("refuses a material claim with no support at all", () => {
     const report = auditClaims({claims: [{id: "c1", material: true, kind: "fact", text: "R$ 65 milhões.", supportIds: []}], facts, calculations});
     expect(report.findings[0]?.reason).toBe("material_claim_without_support");

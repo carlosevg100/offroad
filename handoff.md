@@ -27,11 +27,11 @@ the pipeline:
 - the production-used legacy catalogue has an explicit compatibility adapter to
   the new taxonomy.
 
-The raw-document runner, workload-attested manifest, first full corporate anchor
-and claim-level publication controls now exist. The remaining measured increments
-are the founder and independent economic review of the anchor, parametric case
-generation, the dedicated receivables/FIDC track, governed retrieval and staging
-promotion gates. Do not report those remaining items as live until their
+The raw-document runner, workload-attested manifest, first full corporate anchor,
+claim-level publication controls and parametric case factory now exist. The remaining
+measured increments are the founder and independent economic review of the anchor,
+the dedicated receivables/FIDC track, governed retrieval and staging promotion
+gates. Do not report those remaining items as live until their
 acceptance evidence is recorded.
 
 ### Engineering update: governed case worker, 24 August 2026
@@ -71,6 +71,27 @@ command is a security-invoker wrapper over a private implementation that validat
 the current snapshot, tenant, role and exact claim. Worker reads use the active
 job capability. Relevant migrations are `20260824180255`, `20260824180448` and
 `20260824180822`; generated application types include both registry commands.
+
+### Engineering update: parametric case factory, 24 August 2026
+
+`@offroad/case-factory` creates governed synthetic cases from one declarative economic
+scenario. Company identity, financial history, debt, capital request, collateral,
+optional loan tape and capital-provider mandates drive every generated document,
+candidate and expected answer. Gold is captured before omissions, weak anchors,
+conflicts or hostile text are injected, so the test never erases its own answer.
+
+The initial library contains a clean growth case, a dirty working-capital room and a
+250-line receivables case. They run through all nine stages of `@offroad/case-engine`.
+The suite proves exact debt calculations, full-criteria mandate screening, bilingual
+economic identity, conflict retention and isolation of hostile document text. Loan
+tapes tie exactly to total balance, overdue balance and top-obligor concentration.
+
+An unverified anchor remains available to a reviewer, but cannot support publication.
+The deterministic claim auditor blocks a material claim when its direct fact or any
+calculation in its lineage reaches an unverified anchor. Handcrafted anchors remain a
+separate class and are not replaced by generated cases. The next vertical is the
+dedicated receivables and FIDC playbook with specialist-reviewed anchors and at least
+twenty scenarios.
 
 ### Update de produto: intake guiado, 22 August 2026
 

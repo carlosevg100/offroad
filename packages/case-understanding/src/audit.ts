@@ -34,6 +34,7 @@ export type AuditFinding = {
   reason:
     | "material_claim_without_support"
     | "support_not_found"
+    | "support_anchor_unverified"
     | "number_not_in_support"
     | "material_judgment_without_approval";
   detail: string;
@@ -152,12 +153,25 @@ export function auditClaims(input: {
   requireJudgmentApproval?: boolean;
 }): AuditReport {
   const factById = new Map<string, string>();
+  const unverifiedSupportIds = new Set<string>();
   for (const fact of input.facts) {
     const key = [fact.key.fieldPath, fact.key.periodEnd ?? ""].join("|");
     factById.set(key, fact.value);
     factById.set(fact.key.fieldPath, fact.value);
+    if (!fact.accepted.anchorVerified) {
+      unverifiedSupportIds.add(key);
+      unverifiedSupportIds.add(fact.key.fieldPath);
+    }
   }
   for (const calculation of input.calculations) factById.set(calculation.id, calculation.value);
+  const calculationById = new Map(input.calculations.map((calculation) => [calculation.id, calculation]));
+  const supportVerified = (id: string, visiting = new Set<string>()): boolean => {
+    if (unverifiedSupportIds.has(id)) return false;
+    const calculation = calculationById.get(id);
+    if (!calculation || visiting.has(id)) return true;
+    const next = new Set(visiting).add(id);
+    return calculation.inputs.every((inputId) => supportVerified(inputId, next));
+  };
 
   const findings: AuditFinding[] = [];
   const accepted: string[] = [];
@@ -176,6 +190,12 @@ export function auditClaims(input: {
     const unknown = claim.supportIds.filter((id) => !factById.has(id));
     if (unknown.length > 0) {
       findings.push({claimId: claim.id, reason: "support_not_found", detail: unknown.join(", ")});
+      continue;
+    }
+
+    const unverified = claim.supportIds.filter((id) => !supportVerified(id));
+    if (unverified.length > 0) {
+      findings.push({claimId: claim.id, reason: "support_anchor_unverified", detail: unverified.join(", ")});
       continue;
     }
 

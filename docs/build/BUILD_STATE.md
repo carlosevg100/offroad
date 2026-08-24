@@ -26,11 +26,13 @@ incremento fecha os contratos que todas as etapas posteriores devem respeitar:
   fluxo atual enquanto a migração é feita de forma controlada;
 - [x] ADR 0009 registra as invariantes e o que ainda não foi implementado.
 
-Os Gates 2, 3 e 4 já avançaram além desta fundação: o runner único e a atestação pela identidade
+Os Gates 2, 3, 4 e 5 já avançaram além desta fundação: o runner único e a atestação pela identidade
 do worker estão ligados, o primeiro case corporativo âncora atravessa as oito camadas e o registro
-de claims governa publicação. Permanecem pendentes a revisão econômica independente final do
-case âncora, a fábrica paramétrica, a trilha específica de recebíveis/FIDC e o gate de promoção em
-staging. Esses itens continuam explícitos no plano de execução.
+de claims governa publicação. A fábrica paramétrica agora deriva documentos, evidências, carteira,
+mandatos e gabaritos de uma única verdade econômica e executa os cenários no trilho real.
+Permanecem pendentes a revisão econômica independente final do case âncora, a trilha específica de
+recebíveis/FIDC e o gate de promoção em staging. Esses itens continuam explícitos no plano de
+execução.
 
 O Gate 2 começou com `@offroad/case-runner`: um trilho sem dependência de UI ou banco que executa
 extração, conciliação, métricas, lacunas, estrutura, claims, materiais, matching e desfecho em ordem
@@ -61,6 +63,19 @@ snapshot e aceita somente o fingerprint exato de um julgamento material corrente
 revisão autorizados podem registrar a decisão. O worker lê decisões com a capability do job. As
 migrations `20260824180255`, `20260824180448` e `20260824180822` estão aplicadas no projeto e o
 Security Advisor permanece com zero alertas.
+
+O Gate 5 introduz `@offroad/case-factory`. O schema declarativo descreve companhia, três ou mais
+exercícios, dívida, pedido, garantias, carteira opcional, mandatos e perturbações. O gerador produz
+documentos determinísticos, candidatos, loan tape, brief e gold derivados dos mesmos parâmetros.
+O gold é capturado antes das perturbações, por isso uma omissão simulada mede recall em vez de apagar
+a resposta certa. O matching esperado usa o mesmo contrato completo de critérios duros do motor.
+Carteiras fecham exatamente em saldo total, saldo vencido e concentração do maior sacado.
+
+Três cenários iniciais atravessam as nove etapas reais: expansão corporativa limpa, capital de giro
+com sala suja e inputs hostis, e recebíveis com 250 títulos. A identidade econômica entre PT e EN é
+testada. Um suporte sem âncora confirmada continua visível no case para revisão, mas o auditor agora
+recusa qualquer claim material que dependa dele direta ou indiretamente. Anchors artesanais como
+Rede Horizonte permanecem separados e continuam sendo a referência econômica revisada por pessoas.
 
 | Gate | Estado | Evidência atual | Próxima condição |
 |---|---|---|---|
