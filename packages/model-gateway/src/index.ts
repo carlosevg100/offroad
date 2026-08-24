@@ -7,7 +7,9 @@
  * refusal handling, minimization of personal identifiers, cassettes for
  * deterministic tests, and content-free call logs.
  */
-export const modelGatewayVersion = "2026.08.18-v1";
+export const modelGatewayVersion = "2026.08.24-lineage-v2";
+
+export * from "./lineage";
 
 export * from "./types";
 export * from "./policy";

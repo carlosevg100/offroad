@@ -2,15 +2,24 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 
 /** A reproducible record of every version and input that produced a case artifact. */
-export const artifactManifestSchemaVersion = "2026.08.24-v1";
+export const artifactManifestSchemaVersion = "2026.08.24-v2";
 
 export const modelInvocationManifestSchema = z.object({
   invocationId: z.string().min(1),
   task: z.string().min(1),
   provider: z.string().min(1),
   model: z.string().min(1),
+  effort: z.string().min(1).optional(),
+  outcome: z.enum(["ok", "refusal", "error", "invalid_output"]),
+  costUsd: z.number().nonnegative(),
+  usage: z.object({
+    inputTokens: z.number().int().nonnegative(),
+    outputTokens: z.number().int().nonnegative(),
+    cachedInputTokens: z.number().int().nonnegative(),
+    reasoningTokens: z.number().int().nonnegative().optional(),
+  }),
   reasoning: z.string().min(1).optional(),
-  promptFingerprint: z.string().min(1),
+  promptFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   outputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
 });
@@ -18,7 +27,7 @@ export const modelInvocationManifestSchema = z.object({
 export const sourceDocumentManifestSchema = z.object({
   documentId: z.string().min(1),
   versionId: z.string().min(1),
-  sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  sha256: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
 });
 
 export const outputArtifactManifestSchema = z.object({
@@ -59,9 +68,13 @@ export const caseArtifactManifestSchema = z.object({
   createdAt: z.iso.datetime(),
   locale: z.enum(["pt-BR", "en-US"]),
   inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  capture: z.object({
+    sources: z.enum(["complete", "partial"]),
+    models: z.enum(["complete", "partial", "not_applicable"]),
+  }),
   versions: pipelineVersionManifestSchema,
   models: z.array(modelInvocationManifestSchema),
-  sources: z.array(sourceDocumentManifestSchema).min(1),
+  sources: z.array(sourceDocumentManifestSchema),
   outputs: z.array(outputArtifactManifestSchema),
   manifestFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
 }).superRefine((manifest, context) => {
@@ -80,9 +93,13 @@ export function buildCaseArtifactManifest(raw: ManifestInput): CaseArtifactManif
     createdAt: z.iso.datetime(),
     locale: z.enum(["pt-BR", "en-US"]),
     inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    capture: z.object({
+      sources: z.enum(["complete", "partial"]),
+      models: z.enum(["complete", "partial", "not_applicable"]),
+    }),
     versions: pipelineVersionManifestSchema,
     models: z.array(modelInvocationManifestSchema),
-    sources: z.array(sourceDocumentManifestSchema).min(1),
+    sources: z.array(sourceDocumentManifestSchema),
     outputs: z.array(outputArtifactManifestSchema),
   }).parse(raw);
 
@@ -101,7 +118,12 @@ export function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function stableJson(value: unknown): string {
+export function fingerprintJson(value: unknown): string {
+  return sha256(stableJson(value));
+}
+
+export function stableJson(value: unknown): string {
+  if (value === undefined) return "undefined";
   if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
   if (value && typeof value === "object") {
     return `{${Object.entries(value as Record<string, unknown>)
@@ -109,7 +131,7 @@ function stableJson(value: unknown): string {
       .map(([key, child]) => `${JSON.stringify(key)}:${stableJson(child)}`)
       .join(",")}}`;
   }
-  return JSON.stringify(value);
+  return JSON.stringify(value) ?? "undefined";
 }
 
 function compareStable(left: unknown, right: unknown): number {

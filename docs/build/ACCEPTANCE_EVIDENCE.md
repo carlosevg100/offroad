@@ -75,6 +75,10 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Quality gate final | `pnpm check` (Node 24.19 via fnm) | lint, tipagem, 45 testes, build; jobs `check`, `database`, `e2e` obrigatórios em `main` | 2026-08-18 |
 | Jornada guiada de originação | componentes `IntakeStartChoice`, `IntakeCollect`, `IntakeChecklist` e E2E do intake | entrada única; objetivo antes do pedido; lista contextual em mínimo, recomendado e ideal; upload e evidência existentes preservados; fallback manual somente após falha | 2026-08-22 |
 | Quality gate da jornada guiada | `pnpm check` com Node 24 | lint, typecheck, testes e build verdes nos 32 pacotes; 111 testes do app web aprovados | 2026-08-22 |
+| Fingerprint econômico completo | `case-manifest.test.ts` | ordem de linhas não altera o hash; mudança de resposta, fato ou parser altera o hash | 2026-08-24 |
+| Linhagem de modelos sem conteúdo | testes de `model-gateway` e `document-worker` | tentativas bem-sucedidas, fallback e erro carregam hashes, custo e usage; mensagem privada do erro não entra no log; linhagem viaja no sucesso e na falha | 2026-08-24 |
+| Manifesto atômico e append-only | migration `20260824153337` + bloco de `rls_non_interference.sql` | gravação idempotente do manifesto e snapshot em uma transação; escrita direta recusada; tenant B e anon isolados; validação final no job `database` do PR | 2026-08-24 |
+| Gate local do incremento | testes e typecheck dos pacotes alterados + web lint | model gateway 17, case understanding 31, worker 39 e web 116 testes aprovados; tipagem e lint verdes | 2026-08-24 |
 
 ## Regras
 

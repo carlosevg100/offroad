@@ -298,4 +298,28 @@ describe("what a document cost travels with its outcome", () => {
     await processDocumentJob(job(), deps);
     expect(calls.completed[0]).not.toHaveProperty("spend");
   });
+
+  it("persists content-free model lineage with the job result", async () => {
+    const call = {
+      invocationId: "11111111-1111-4111-8111-111111111111",
+      task: "extract_fields" as const,
+      provider: "openai" as const,
+      model: "gpt-5.6-terra",
+      effort: "medium" as const,
+      outcome: "ok" as const,
+      promptFingerprint: "1".repeat(64),
+      inputFingerprint: "2".repeat(64),
+      outputFingerprint: "3".repeat(64),
+      usage: {inputTokens: 10, outputTokens: 2, cachedInputTokens: 0},
+      costUsd: 0.01,
+      latencyMs: 12,
+      stopReason: "end" as const,
+      usedFallback: false,
+      fromCassette: false,
+      schemaName: "facts",
+    };
+    const {deps, calls} = fakes({lineage: () => [call]});
+    await processDocumentJob(job(), deps);
+    expect(calls.completed[0]).toMatchObject({model_lineage: [call]});
+  });
 });

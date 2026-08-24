@@ -25,7 +25,7 @@ import type {IntakeErrorCode} from "./types";
  */
 
 /** Pipeline contract version recorded on the run. Must match what the worker reports. */
-export const PIPELINE_VERSION = "f1-2026.08.19";
+export const PIPELINE_VERSION = "f2-2026.08.24";
 
 /**
  * How long the job's links live. One hour covers a cold worker (ClamAV loading signatures,

@@ -1,5 +1,5 @@
 import {createClient} from "@supabase/supabase-js";
-import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter} from "@offroad/model-gateway";
+import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, type GatewayCallLog} from "@offroad/model-gateway";
 import {loadConfig, describeConfig, type WorkerConfig} from "./config";
 import {createQueueClient, startHeartbeat, PoisonedJobError, type ClaimedJob} from "./queue";
 import {createClamdScanner} from "./scan";
@@ -78,18 +78,24 @@ async function main(): Promise<void> {
     ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
     ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
   };
-  const newGateway = () =>
-    createModelGateway({
+  const newGateway = () => {
+    const calls: GatewayCallLog[] = [];
+    const gateway = createModelGateway({
       adapters,
       budget: {maxCostUsd: config.MODEL_MAX_COST_USD_PER_JOB, maxCalls: config.MODEL_MAX_CALLS_PER_JOB},
-      onCall: (call) => log("model.call", {...call}),
+      onCall: (call) => {
+        calls.push(call);
+        log("model.call", {...call});
+      },
     });
+    return {gateway, calls};
+  };
 
   // The payload's URLs are input, `SUPABASE_URL` is configuration, and the two are not
   // allowed to disagree. See `storage-url.ts` for what a worker that trusted them would be.
   const guardStorageUrl = createStorageUrlGuard(config.SUPABASE_URL);
 
-  const dependenciesFor = (gateway: ReturnType<typeof newGateway>): PipelineDependencies => ({
+  const dependenciesFor = ({gateway, calls}: ReturnType<typeof newGateway>): PipelineDependencies => ({
     queue,
     scanner,
     classify: createClassifier(gateway),
@@ -118,6 +124,7 @@ async function main(): Promise<void> {
     },
     log,
     spend: () => gateway.spent(),
+    lineage: () => calls.map((call) => ({...call})),
   });
 
   let stopping = false;
@@ -161,10 +168,10 @@ async function main(): Promise<void> {
       log("job.heartbeat_failed", {job: job?.job_id, message: error.message}),
     );
 
-    const gateway = newGateway();
-    current = processDocumentJob(job, dependenciesFor(gateway))
+    const gatewayRun = newGateway();
+    current = processDocumentJob(job, dependenciesFor(gatewayRun))
       .then((outcome) => {
-        const spent = gateway.spent();
+        const spent = gatewayRun.gateway.spent();
         log("job.finished", {
           job: job?.job_id,
           status: outcome.status,

@@ -1,5 +1,7 @@
 import Decimal from "decimal.js";
 
+export const marketReferenceVersion = "2026.08.24-v1";
+
 /**
  * What this kind of paper costs for this kind of credit, as the desk's reference and nothing
  * more.

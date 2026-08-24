@@ -1224,3 +1224,25 @@ be, what the architecture already models, and what the production application
 actually does. Build the next vertical slice end to end without weakening
 evidence, tenant isolation, deterministic finance, or qualified-introduction
 boundaries.
+
+## 26. Bulletproof execution, current increment (24/08/2026)
+
+The first two foundation increments are now represented in code:
+
+- taxonomy v2 and the six operational terminal states are on `main` from PR #228;
+- the current branch adds a complete economic fingerprint, model-call lineage and an immutable
+  case artifact manifest;
+- `apps/web/src/lib/intake/case-manifest.ts` owns normalization and the governing version matrix;
+- `packages/case-understanding/src/manifest.ts` owns the manifest contract and deterministic hash;
+- `packages/model-gateway` emits content-free fingerprints for every attempt, including failures;
+- the worker stores model lineage inside its private job result;
+- migration `20260824153337_case_artifact_manifests.sql` exposes only a sanitized lineage RPC and
+  atomically records the manifest with the latest case snapshot.
+- Important boundary: append-only does not yet mean workload-attested. Until the integrated runner
+  owns compilation and persistence, an authorized borrower-side tenant can invoke the same snapshot
+  command used by the server. Gate 2 must move the command behind the worker capability identity and
+  revoke authenticated execution before external release (R-022).
+
+Do not reintroduce the former count-and-timestamp cache key. Do not expose `processing_jobs.result`
+or `last_error` to tenants. A partial `capture` value is a real limitation and must become a release
+blocker when the integrated runner and external-direction gate are implemented next.
