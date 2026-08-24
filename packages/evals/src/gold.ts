@@ -1,7 +1,8 @@
 import {existsSync, readFileSync} from "node:fs";
 import {join, resolve} from "node:path";
 import {z} from "zod";
-import {documentKindSchema, informationClassSchema, materialitySchema} from "@offroad/credit-ontology";
+import {caseOutcomeStateSchema} from "@offroad/case-understanding";
+import {documentKindSchema, informationClassSchema, materialitySchema, transactionRouteSchema} from "@offroad/credit-ontology";
 
 /**
  * Gold set format (P1 plan §14.1). A gold case is a directory:
@@ -100,6 +101,62 @@ export const goldAcceptanceSchema = z.object({
 });
 export type GoldAcceptance = z.infer<typeof goldAcceptanceSchema>;
 
+export const goldStructureSchema = z.object({
+  id: z.string().min(1),
+  classification: z.enum(["preferred", "viable", "ineligible"]),
+  route: transactionRouteSchema,
+  amount: z.string().optional(),
+  termMonths: z.number().int().positive().optional(),
+  graceMonths: z.number().int().min(0).optional(),
+  amortization: z.string().optional(),
+  pricing: z.string().optional(),
+  rationale: z.array(z.string()).default([]),
+  hardExclusions: z.array(z.string()).default([]),
+});
+export type GoldStructure = z.infer<typeof goldStructureSchema>;
+
+export const goldClaimSchema = z.object({
+  id: z.string().min(1),
+  material: z.boolean(),
+  kind: z.enum(["fact", "calculation", "judgment", "public_source"]),
+  requiredSupportIds: z.array(z.string()),
+  expectedMeaning: z.string().min(1),
+  forbiddenMeanings: z.array(z.string()).default([]),
+});
+export type GoldClaim = z.infer<typeof goldClaimSchema>;
+
+export const goldMaterialSchema = z.object({
+  kind: z.enum(["teaser", "credit_memo", "term_sheet", "diligence_qa", "data_room_index"]),
+  locale: z.enum(["pt-BR", "en-US"]),
+  requiredSectionIds: z.array(z.string()).default([]),
+  requiredClaimIds: z.array(z.string()).default([]),
+  forbiddenClaimIds: z.array(z.string()).default([]),
+});
+export type GoldMaterial = z.infer<typeof goldMaterialSchema>;
+
+export const goldMatchSchema = z.object({
+  capitalProviderId: z.string().min(1),
+  expected: z.enum(["eligible", "ineligible", "unknown"]),
+  reasons: z.array(z.string()).default([]),
+  hardConstraints: z.array(z.string()).default([]),
+});
+export type GoldMatch = z.infer<typeof goldMatchSchema>;
+
+export const goldOutcomeSchema = z.object({
+  state: caseOutcomeStateSchema,
+  externalDirectionAllowed: z.boolean(),
+  reasonsInclude: z.array(z.string()).default([]),
+}).superRefine((outcome, context) => {
+  const shouldAllow = outcome.state === "ready_for_qualified_direction";
+  if (outcome.externalDirectionAllowed === shouldAllow) return;
+  context.addIssue({
+    code: "custom",
+    path: ["externalDirectionAllowed"],
+    message: "external direction must be allowed only for ready_for_qualified_direction",
+  });
+});
+export type GoldOutcome = z.infer<typeof goldOutcomeSchema>;
+
 export type GoldCase = {
   directory: string;
   manifest: GoldManifest;
@@ -107,6 +164,11 @@ export type GoldCase = {
   fields: GoldField[];
   exceptions: GoldException[];
   calculations: GoldCalculation[];
+  structures: GoldStructure[];
+  claims: GoldClaim[];
+  materials: GoldMaterial[];
+  matches: GoldMatch[];
+  outcome: GoldOutcome | null;
   acceptance: GoldAcceptance[];
 };
 
@@ -128,6 +190,11 @@ export function loadGoldCase(directory: string): GoldCase {
     fields: readJson(join(dir, "expected", "fields.json"), z.array(goldFieldSchema)),
     exceptions: readJson(join(dir, "expected", "exceptions.json"), z.array(goldExceptionSchema), []),
     calculations: readJson(join(dir, "expected", "calculations.json"), z.array(goldCalculationSchema), []),
+    structures: readJson(join(dir, "expected", "structures.json"), z.array(goldStructureSchema), []),
+    claims: readJson(join(dir, "expected", "claims.json"), z.array(goldClaimSchema), []),
+    materials: readJson(join(dir, "expected", "materials.json"), z.array(goldMaterialSchema), []),
+    matches: readJson(join(dir, "expected", "matches.json"), z.array(goldMatchSchema), []),
+    outcome: readJson(join(dir, "expected", "outcome.json"), goldOutcomeSchema.nullable(), null),
     acceptance: readJson(join(dir, "expected", "acceptance.json"), z.array(goldAcceptanceSchema), []),
   };
 }

@@ -3,6 +3,14 @@ import {describe, expect, it} from "vitest";
 import {instrumentVerdicts, instruments} from "./instruments";
 
 describe("the instrument catalogue", () => {
+  it("maps the FIDC route without calling the vehicle the company's instrument", () => {
+    const verdict = instrumentVerdicts({legalForm: "ltda", archetypeId: "working_capital", amount: "50000000", receivablesCoverage: "2"})
+      .find((entry) => entry.instrument.id === "fidc")!;
+    expect(verdict.route.capitalVehicles).toEqual(["fidc"]);
+    expect(verdict.route.obligationInstruments).toEqual(["receivables_assignment"]);
+    expect(verdict.route.distributedSecurities).toContain("fidc_senior_quota");
+  });
+
   it("knows ten papers, each with a buyer, a tax line and at least one requirement", () => {
     expect(instruments).toHaveLength(10);
     for (const instrument of instruments) {

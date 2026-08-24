@@ -18,6 +18,43 @@ import {
   valuesMatch,
   type ExtractionSnapshot,
 } from "./index";
+import {goldOutcomeSchema, goldStructureSchema} from "./gold";
+
+describe("gold case contract v2", () => {
+  it("separates the route dimensions in an expected structure", () => {
+    const structure = goldStructureSchema.parse({
+      id: "receivables-fidc",
+      classification: "preferred",
+      route: {
+        capitalNeed: "working_capital",
+        repaymentSources: ["receivables_collection"],
+        assetBackings: ["receivables"],
+        obligationInstruments: ["receivables_assignment"],
+        distributedSecurities: ["fidc_senior_quota"],
+        structureMechanisms: ["receivables_purchase"],
+        capitalVehicles: ["fidc"],
+        capitalProviderTypes: ["fidc_manager"],
+        distributionRoutes: ["bilateral_private"],
+        securityEnhancements: ["overcollateralization"],
+      },
+    });
+    expect(structure.route.capitalVehicles).toEqual(["fidc"]);
+    expect(structure.route.obligationInstruments).toEqual(["receivables_assignment"]);
+  });
+
+  it("makes the terminal outcome part of the answer key", () => {
+    expect(goldOutcomeSchema.parse({
+      state: "ready_for_qualified_direction",
+      externalDirectionAllowed: true,
+      reasonsInclude: [],
+    }).state).toBe("ready_for_qualified_direction");
+    expect(() => goldOutcomeSchema.parse({
+      state: "material_gaps",
+      externalDirectionAllowed: true,
+      reasonsInclude: [],
+    })).toThrow(/only for ready_for_qualified_direction/);
+  });
+});
 
 const here = dirname(fileURLToPath(import.meta.url));
 const goldDir = resolve(here, "..", "..", "testing-fixtures", "gold", "rede-horizonte");

@@ -7,7 +7,7 @@
  * Changes are made by PR with evals (P1 plan, part 6); nothing here is read
  * from prompts at runtime — prompts are rendered *from* this package.
  */
-export const ontologyVersion = "2026.08.18-v1";
+export const ontologyVersion = "2026.08.24-v2";
 
 export * from "./evidence";
 export * from "./documents";
@@ -17,3 +17,4 @@ export * from "./chart-of-accounts";
 export * from "./materiality";
 export * from "./reconciliation-rules";
 export * from "./definitions";
+export * from "./origination-taxonomy";

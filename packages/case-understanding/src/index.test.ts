@@ -4,6 +4,117 @@ import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@
 import {assessReadiness} from "./readiness";
 import {auditClaims, financialNumbersIn, normalizeNumber} from "./audit";
 import {auditBrief, buildBriefInput, BRIEF_SYSTEM} from "./brief";
+import {deriveCaseOutcome} from "./outcome";
+import {buildCaseArtifactManifest, sha256} from "./manifest";
+
+describe("the case artifact manifest", () => {
+  const versions = {
+    parser: "parser-v1",
+    ontology: "ontology-v2",
+    extractionPrompt: "prompt-ab12",
+    modelPolicy: "policy-v1",
+    reconciliation: "reconciliation-v1",
+    financialCore: "financial-core-v1",
+    playbook: "playbook-v2",
+    marketData: {version: "market-v1", asOf: "2026-08-24T00:00:00.000Z"},
+    caseUnderstanding: "case-v2",
+    materialCompiler: "materials-v1",
+    template: "institutional-v1",
+    matching: "mandate-v1",
+  };
+
+  const source = {documentId: "doc-1", versionId: "v1", sha256: sha256("document")};
+
+  it("fingerprints the complete lineage independently of input ordering", () => {
+    const common = {
+      caseId: "case-1",
+      runId: "run-1",
+      createdAt: "2026-08-24T12:00:00.000Z",
+      locale: "pt-BR" as const,
+      inputFingerprint: sha256("inputs"),
+      versions,
+      sources: [source],
+      models: [
+        {invocationId: "call-2", task: "write", provider: "anthropic", model: "strong", promptFingerprint: "p2", inputFingerprint: sha256("write-input"), outputFingerprint: sha256("write-output")},
+        {invocationId: "call-1", task: "extract", provider: "openai", model: "reader", promptFingerprint: "p1", inputFingerprint: sha256("extract-input"), outputFingerprint: sha256("extract-output")},
+      ],
+      outputs: [
+        {artifactId: "memo", kind: "credit_memo" as const, sha256: sha256("memo")},
+        {artifactId: "state", kind: "case_state" as const, sha256: sha256("state")},
+      ],
+    };
+    const first = buildCaseArtifactManifest(common);
+    const second = buildCaseArtifactManifest({...common, models: [...common.models].reverse(), outputs: [...common.outputs].reverse()});
+    expect(first.manifestFingerprint).toBe(second.manifestFingerprint);
+  });
+
+  it("changes the fingerprint when a governing version changes", () => {
+    const base = {
+      caseId: "case-1",
+      runId: "run-1",
+      createdAt: "2026-08-24T12:00:00.000Z",
+      locale: "pt-BR" as const,
+      inputFingerprint: sha256("inputs"),
+      versions,
+      sources: [source],
+      models: [],
+      outputs: [],
+    };
+    expect(buildCaseArtifactManifest(base).manifestFingerprint).not.toBe(
+      buildCaseArtifactManifest({...base, versions: {...versions, playbook: "playbook-v3"}}).manifestFingerprint,
+    );
+  });
+
+  it("rejects ambiguous duplicate lineage identifiers", () => {
+    const base = {
+      caseId: "case-1",
+      runId: "run-1",
+      createdAt: "2026-08-24T12:00:00.000Z",
+      locale: "pt-BR" as const,
+      inputFingerprint: sha256("inputs"),
+      versions,
+      sources: [source, source],
+      models: [],
+      outputs: [],
+    };
+    expect(() => buildCaseArtifactManifest(base)).toThrow(/duplicate identifiers/);
+  });
+});
+
+describe("the operational outcome is not the credit opinion", () => {
+  const base = {
+    informationSufficient: true,
+    materialGapCount: 0,
+    analysisComplete: true,
+    verdictStanding: "stands" as const,
+    materialsAudit: "pass" as const,
+    mandateScreeningComplete: true,
+    externalReleaseApproved: true,
+    blockers: [],
+  };
+
+  it("allows qualified direction only after every independent gate passes", () => {
+    expect(deriveCaseOutcome(base)).toMatchObject({
+      state: "ready_for_qualified_direction",
+      externalDirectionAllowed: true,
+    });
+
+    const approvalPending = deriveCaseOutcome({...base, externalReleaseApproved: false});
+    expect(approvalPending.state).toBe("structure_under_assessment");
+    expect(approvalPending.externalDirectionAllowed).toBe(false);
+    expect(approvalPending.reasons).toContain("external_release_approval_pending");
+  });
+
+  it("does not turn an incomplete room into a negative credit opinion", () => {
+    expect(deriveCaseOutcome({...base, informationSufficient: false, verdictStanding: "does_not_stand"}).state).toBe("insufficient_information");
+  });
+
+  it("keeps gaps, conditional viability and a negative recommendation distinct", () => {
+    expect(deriveCaseOutcome({...base, materialGapCount: 2}).state).toBe("material_gaps");
+    expect(deriveCaseOutcome({...base, verdictStanding: "stands_with_conditions"}).state).toBe("conditionally_viable");
+    expect(deriveCaseOutcome({...base, verdictStanding: "does_not_stand"}).state).toBe("not_recommended");
+  });
+});
 
 const fact = (fieldPath: string, value: string, over: Partial<ReconciledFact["accepted"]> = {}): ReconciledFact => ({
   key: {fieldPath},
