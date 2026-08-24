@@ -26,13 +26,24 @@ incremento fecha os contratos que todas as etapas posteriores devem respeitar:
   fluxo atual enquanto a migração é feita de forma controlada;
 - [x] ADR 0009 registra as invariantes e o que ainda não foi implementado.
 
-Os Gates 2, 3, 4 e 5 já avançaram além desta fundação: o runner único e a atestação pela identidade
+Os Gates 2, 3, 4, 5 e a capacidade funcional do Gate 6 já avançaram além desta fundação: o runner único e a atestação pela identidade
 do worker estão ligados, o primeiro case corporativo âncora atravessa as oito camadas e o registro
 de claims governa publicação. A fábrica paramétrica agora deriva documentos, evidências, carteira,
-mandatos e gabaritos de uma única verdade econômica e executa os cenários no trilho real.
-Permanecem pendentes a revisão econômica independente final do case âncora, a trilha específica de
-recebíveis/FIDC e o gate de promoção em staging. Esses itens continuam explícitos no plano de
+mandatos e gabaritos de uma única verdade econômica e executa os cenários no trilho real. A vertical
+de recebíveis avalia carteira, cedente, sacados, servicing e estrutura em 28 cenários e atravessa o
+mesmo motor governado usado pelo worker.
+Permanecem pendentes a revisão econômica independente final dos cases âncora, o retrieval governado
+e o gate de promoção em staging. Esses itens continuam explícitos no plano de
 execução.
+
+O Gate 6 adiciona `@offroad/receivables-analysis`. Ele separa FIDC, cessão de recebíveis e fonte de
+pagamento; calcula elegibilidade título a título, concentração, aging, inadimplência, perda,
+recuperação, diluição, recompra, substituição e prazo médio; concilia loan tape com contabilidade,
+cobrança e caixa; e testa advance rate, sobrecolateralização, subordinação, reserva, gatilhos e
+waterfall. A decisão tem três estados, mas sempre mantém `externalDirectionAllowed: false`. O
+contrato estruturado entra em `@offroad/case-engine` e no worker com validação Zod. Dados livres ou
+não verificados não são promovidos automaticamente para uma carteira válida. Os dois anchors
+artesanais permanecem `pending` até revisão independente.
 
 O Gate 2 começou com `@offroad/case-runner`: um trilho sem dependência de UI ou banco que executa
 extração, conciliação, métricas, lacunas, estrutura, claims, materiais, matching e desfecho em ordem

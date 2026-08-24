@@ -2,6 +2,7 @@ import {resolveMandate, type Mandate, type Sourced} from "@offroad/fund-mandate"
 import type {FactCandidate} from "@offroad/reconciliation";
 import {describe, expect, it} from "vitest";
 import {claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
+import {diversifiedReceivablesCase, receivablesParametricScenarios} from "@offroad/receivables-analysis";
 
 import {executeCaseEngine} from "./engine";
 
@@ -132,6 +133,48 @@ describe("the governed case engine", () => {
     expect(result.state.brief?.executiveSummary).toContain("Resumo institucional");
     expect(result.state.modelInvocations).toHaveLength(2);
     expect(result.state.claimRegistry?.publication.allowed).toBe(true);
+  });
+
+  it("executes the receivables vertical inside metrics and carries a refusal into the case blockers", async () => {
+    const noEligible = receivablesParametricScenarios.find((scenario) => scenario.id === "r19-no-eligible-base")!;
+    const result = await executeCaseEngine({
+      runId: "run-receivables",
+      caseId: "case-receivables",
+      archetypeId: "working_capital",
+      locale: "pt",
+      referenceDate: "2026-08-24",
+      candidates: [
+        candidate("company.legal_name", "Cedente Teste Ltda", "text"),
+        candidate("transaction.requested_amount", "3000000"),
+      ],
+      documents,
+      roomDocuments: [],
+      dealBrief: {requestedAmount: "3000000", instruments: ["fidc"], collateralKinds: ["recebiveis"]},
+      resolvedMandates: [],
+      externalReleaseApproved: false,
+      receivablesCase: noEligible.input,
+    });
+    expect(result.state.receivables?.decision.status).toBe("not_viable");
+    expect(result.state.receivables?.metrics.portfolio.concentrationAdjustedEligibleBalance).toBe("0.00");
+    expect(result.state.outcome.reasons).toContain("trigger_eligible_share");
+    expect(result.state.outcome.externalDirectionAllowed).toBe(false);
+
+    const clean = await executeCaseEngine({
+      runId: "run-receivables-clean",
+      caseId: "case-receivables-clean",
+      archetypeId: "working_capital",
+      locale: "pt",
+      referenceDate: "2026-08-24",
+      candidates: [candidate("company.legal_name", "Cedente Teste Ltda", "text"), candidate("transaction.requested_amount", "3000000")],
+      documents,
+      roomDocuments: [],
+      dealBrief: {requestedAmount: "3000000", instruments: ["fidc"], collateralKinds: ["recebiveis"]},
+      resolvedMandates: [],
+      externalReleaseApproved: false,
+      receivablesCase: diversifiedReceivablesCase(),
+    });
+    expect(clean.state.receivables?.decision.status).toBe("ready_for_structuring");
+    expect(clean.state.capacity?.walls.find((wall) => wall.id === "collateral")?.amount).toBe("4800000.00");
   });
 
   it("keeps a reviewed judgment visible internally but blocks every publishable artifact until approval", async () => {

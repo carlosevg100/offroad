@@ -8,6 +8,7 @@ import {
   type FactoryScenario,
 } from "@offroad/case-factory";
 import {supportedSemanticAudit} from "@offroad/case-understanding";
+import {toReceivablesCaseFromSimpleTape} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
 const stages = ["extraction", "reconciliation", "metrics", "gaps", "structure", "claims", "materials", "matching", "outcome"];
@@ -25,6 +26,14 @@ async function runScenario(scenario: FactoryScenario) {
     roomDocuments: generated.roomDocuments,
     dealBrief: generated.dealBrief,
     resolvedMandates: generated.mandates,
+    ...(generated.loanTape.length > 0 ? {
+      receivablesCase: toReceivablesCaseFromSimpleTape({
+        id: `${scenario.id}-receivables`,
+        referenceDate: scenario.referenceDate,
+        cedentName: scenario.company.legalName,
+        tape: generated.loanTape,
+      }),
+    } : {}),
     externalReleaseApproved: false,
     writeBrief: async () => ({brief: generated.brief, blockedBy: []}),
     verifyBrief: async ({brief}) => ({audit: supportedSemanticAudit(brief)}),
@@ -71,6 +80,14 @@ describe("parametric cases on the governed rail", () => {
     expect(english.gold.calculations).toEqual(portuguese.gold.calculations);
     expect(english.gold.expectedMatches).toEqual(portuguese.gold.expectedMatches);
     expect(english.gold.expectedStructures).toEqual(portuguese.gold.expectedStructures);
+  });
+
+  it("runs the receivables vertical inside the governed nine-stage engine", async () => {
+    const {result} = await runScenario(receivablesScenario);
+    expect(result.state.receivables?.metrics.portfolio.totalOutstanding).toBe("48000000.00");
+    expect(result.state.receivables?.metrics.portfolio.topDebtorShare).toBe("0.12000000");
+    expect(result.state.receivables?.reconciliation.tapeToAccounting.status).toBe("tied");
+    expect(result.state.receivables?.decision.externalDirectionAllowed).toBe(false);
   });
 
   it("keeps handcrafted anchors separate from parametric cases", () => {

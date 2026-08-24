@@ -28,10 +28,10 @@ the pipeline:
   the new taxonomy.
 
 The raw-document runner, workload-attested manifest, first full corporate anchor,
-claim-level publication controls and parametric case factory now exist. The remaining
-measured increments are the founder and independent economic review of the anchor,
-the dedicated receivables/FIDC track, governed retrieval and staging promotion
-gates. Do not report those remaining items as live until their
+claim-level publication controls, parametric case factory and the functional
+receivables/FIDC analysis track now exist. The remaining measured increments are
+founder and independent economic review of the handcrafted anchors, governed
+retrieval and staging promotion gates. Do not report those remaining items as live until their
 acceptance evidence is recorded.
 
 ### Engineering update: governed case worker, 24 August 2026
@@ -89,9 +89,32 @@ tapes tie exactly to total balance, overdue balance and top-obligor concentratio
 An unverified anchor remains available to a reviewer, but cannot support publication.
 The deterministic claim auditor blocks a material claim when its direct fact or any
 calculation in its lineage reaches an unverified anchor. Handcrafted anchors remain a
-separate class and are not replaced by generated cases. The next vertical is the
-dedicated receivables and FIDC playbook with specialist-reviewed anchors and at least
-twenty scenarios.
+separate class and are not replaced by generated cases.
+
+### Engineering update: receivables and FIDC vertical, 24 August 2026
+
+`@offroad/receivables-analysis` evaluates the correct economic object. FIDC is the
+capital vehicle, receivables assignment is the instrument and collection is the
+repayment source. It evaluates individual receivables, obligors, obligor groups,
+the assignor, servicing controls and the proposed capital structure.
+
+The deterministic output includes eligibility, debtor and group concentration,
+aging, delinquency, default, net loss, recovery, dilution, repurchase, substitution,
+weighted remaining term, evidence and registration coverage. It reconciles the loan
+tape to accounting, reported collections and linked cash, then tests advance rate,
+overcollateralization, subordination, reserve, triggers and waterfall priority.
+
+Twenty-eight parametric scenarios independently declare the expected decision and
+cover clean, remediation and refusal outcomes without treating missing information as
+economic failure. A portfolio with no economically eligible base is refused with
+explicit reasons. The analysis runs inside `@offroad/case-engine` and a
+validated structured snapshot can enter through the production worker contract. It
+never authorizes external direction on its own.
+
+Two handcrafted anchors exist, but their specialist-review status is deliberately
+`pending`. Free-form documents are not automatically promoted into a valid loan tape:
+the future compiler must preserve row-level anchors and reconcile totals before this
+vertical is activated. This fail-closed boundary is intentional.
 
 ### Update de produto: intake guiado, 22 August 2026
 
