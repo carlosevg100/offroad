@@ -1730,9 +1730,9 @@ begin
     '10000000-0000-4000-8000-000000000001'
   );
   insert into public.processing_jobs (
-    organization_id, processing_run_id, intake_session_id, kind, status
+    organization_id, processing_run_id, intake_session_id, kind, status, available_at
   ) values (
-    org_a, run_id, session_id, 'case_analysis', 'queued'
+    org_a, run_id, session_id, 'case_analysis', 'queued', '2000-01-01T00:00:00Z'
   );
 
   set local role authenticated;
