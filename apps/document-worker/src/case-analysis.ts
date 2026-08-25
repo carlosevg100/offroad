@@ -602,7 +602,7 @@ function artifactKind(kind: Material["kind"]): "teaser" | "credit_memo" | "term_
   if (kind === "term_sheet") return "term_sheet";
   if (kind === "diligence_qa") return "diligence_qa";
   if (kind === "data_room_index") return "data_room_index";
-  if (kind === "credit_profile" || kind === "package" || kind === "investment_memo") return "credit_memo";
+  if (kind === "credit_profile" || kind === "package" || kind === "credit_memo") return "credit_memo";
   return "other";
 }
 

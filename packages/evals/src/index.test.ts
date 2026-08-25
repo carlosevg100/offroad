@@ -44,15 +44,15 @@ describe("gold case contract v2", () => {
 
   it("makes the terminal outcome part of the answer key", () => {
     expect(goldOutcomeSchema.parse({
-      state: "ready_for_qualified_direction",
-      externalDirectionAllowed: true,
+      state: "ready_for_client_authorized_introduction",
+      qualifiedIntroductionAllowed: true,
       reasonsInclude: [],
-    }).state).toBe("ready_for_qualified_direction");
+    }).state).toBe("ready_for_client_authorized_introduction");
     expect(() => goldOutcomeSchema.parse({
-      state: "material_gaps",
-      externalDirectionAllowed: true,
+      state: "material_information_gaps",
+      qualifiedIntroductionAllowed: true,
       reasonsInclude: [],
-    })).toThrow(/only for ready_for_qualified_direction/);
+    })).toThrow(/only after client authorization/);
   });
 });
 

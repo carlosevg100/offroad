@@ -2,9 +2,9 @@
  * The outbound data room: what leaves the desk, in which order, behind which gate.
  *
  * A desk does not hand an investor a folder of whatever the company uploaded. It hands a room
- * with a door: the teaser first, the credit profile and the term sheet after the NDA, the
+ * with a door: the teaser first, the credit memorandum and the term sheet after the NDA, the
  * source documents behind the same NDA and only after their hashes were verified, and the
- * memorandum never, because it carries the desk's price and the committee's reasoning. This
+ * source documents behind the same NDA and an evidence-led package. This
  * module plans that room deterministically from the case state. It never invents an entry:
  * a document the case still needs appears as "requested", not as a file.
  *
@@ -82,8 +82,7 @@ const materialTier: Record<MaterialKind, DataRoomTier> = {
   package: "nda",
   term_sheet: "nda",
   diligence_qa: "nda",
-  // The memorandum carries the indicative price and the committee section. It is the desk's.
-  investment_memo: "internal",
+  credit_memo: "nda",
   data_room_index: "internal",
 };
 
@@ -91,14 +90,14 @@ const materialName: Record<MaterialKind, {pt: string; en: string}> = {
   teaser: {pt: "Resumo da operação", en: "Transaction summary"},
   credit_profile: {pt: "Perfil de crédito", en: "Credit profile"},
   package: {pt: "Material completo", en: "Full package"},
-  investment_memo: {pt: "Investment Memorandum", en: "Investment Memorandum"},
+  credit_memo: {pt: "Memorando de Crédito", en: "Credit Memorandum"},
   term_sheet: {pt: "Term Sheet indicativo", en: "Indicative Term Sheet"},
   diligence_qa: {pt: "Q&A de diligência", en: "Diligence Q&A"},
   data_room_index: {pt: "Índice da sala", en: "Room index"},
 };
 
 /** The materials an investor room is expected to carry, in reading order. */
-const expectedMaterials: readonly MaterialKind[] = ["teaser", "credit_profile", "term_sheet", "diligence_qa", "package"];
+const expectedMaterials: readonly MaterialKind[] = ["teaser", "credit_memo", "term_sheet", "diligence_qa", "package"];
 
 const folderNames: Record<DocumentFolder, {pt: string; en: string}> = {
   financial: {pt: "Demonstrações e contábil", en: "Financial statements and accounting"},
@@ -132,7 +131,7 @@ export function planDataRoom(input: DataRoomInput): DataRoomPlan {
   const present = new Map(input.materials.map((material) => [material.kind, material]));
 
   // Materials: the ones that exist, then the ones that should and do not.
-  for (const kind of [...expectedMaterials, "investment_memo" as const]) {
+  for (const kind of expectedMaterials) {
     const tier = materialTier[kind];
     const heldBy: Array<{pt: string; en: string}> = [];
     if (!present.has(kind)) {

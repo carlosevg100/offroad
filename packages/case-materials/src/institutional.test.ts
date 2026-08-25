@@ -6,7 +6,7 @@ import {instrumentVerdicts} from "@offroad/credit-playbook";
 import {assessCapacity, buildTermSheet, designCollateralPackage} from "@offroad/deal-structure";
 
 import {compileMaterials} from "./compile";
-import {investmentMemo, termSheetDocument} from "./institutional";
+import {creditMemo, termSheetDocument} from "./institutional";
 
 const facts: Fact[] = [
   {fieldPath: "historical_financials.2025.revenue", value: "191200000"},
@@ -47,8 +47,8 @@ const brief: CaseBrief = {
 const readiness: ReadinessReport = {state: "in_progress", score: 0.8, components: [], blockers: []};
 const shared = {brief, facts: [], calculations: [], exceptions: [], desk, trajectory, termSheet, companyName: "Aurora"};
 
-describe("the investment memorandum", () => {
-  const memo = investmentMemo(shared);
+describe("the credit memorandum", () => {
+  const memo = creditMemo(shared);
   const text = JSON.stringify(memo.blocks);
 
   it("opens with the key terms a committee reads first", () => {
@@ -60,7 +60,7 @@ describe("the investment memorandum", () => {
   });
 
   it("keeps the company out of the title, which the page already prints as the subtitle", () => {
-    expect(memo.title.pt).toBe("Investment Memorandum");
+    expect(memo.title.pt).toBe("Memorando de Crédito");
   });
 
   it("numbers its sections in the order a credit committee expects", () => {
@@ -99,13 +99,25 @@ describe("compileMaterials", () => {
     const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness, desk, trajectory, termSheet});
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    expect(outcome.materials.map((material) => material.kind)).toEqual(["investment_memo", "term_sheet", "diligence_qa", "teaser", "credit_profile", "package"]);
+    expect(outcome.materials.map((material) => material.kind)).toEqual(["credit_memo", "term_sheet", "diligence_qa", "teaser", "credit_profile", "package"]);
   });
 
   it("emits neither when the desk did not run", () => {
     const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness});
     if (!outcome.ok) throw new Error("expected materials");
     expect(outcome.materials.map((material) => material.kind)).toEqual(["teaser", "credit_profile", "package"]);
+  });
+
+  it("keeps every institutional material inside the DCM advisory boundary", () => {
+    const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness, desk, trajectory, termSheet});
+    if (!outcome.ok) throw new Error("expected materials");
+    for (const material of outcome.materials) {
+      const serialized = JSON.stringify(material.blocks).toLowerCase();
+      expect(serialized).not.toMatch(/offroad (aprova|aprovou|approved|recommends the investment)/);
+      expect(serialized).not.toMatch(/(funding|captação) (garantido|garantida|confirmed|guaranteed)/);
+      const disclaimer = material.blocks.find((block) => block.type === "disclaimer" && block.text.en.includes("acting as DCM adviser"));
+      expect(disclaimer, `${material.kind} must state the advisory boundary`).toBeDefined();
+    }
   });
 });
 
@@ -119,19 +131,18 @@ describe("the term sheet's covenant definitions", () => {
     expect(definitions.rows[0]!.note?.pt).toContain("Aferição:");
   });
 });
-describe("the committee section of the memorandum", () => {
+describe("the credit considerations section of the memorandum", () => {
   it("carries the grade, the shocks, the papers and the security, with the rating in the key terms", () => {
     const rating = rateCredit({desk, trajectory, financialExpenses: "6140000", priorEbitda: "14924000", topCustomerShare: "0.181", evidenceRank: "1.8"});
     const stress = stressTable({desk, revenue: "191200000", topCustomerShare: "0.181"});
     const instruments = instrumentVerdicts({legalForm: "ltda", archetypeId: "growth_expansion", amount: "42300000"});
     const collateral = designCollateralPackage({assets: [{description: "Recebíveis", type: "receivables", value: "51940000", encumbered: "24400000"}], amount: "42300000"});
-    const memo = investmentMemo({...shared, rating, stress, instruments, collateral});
+    const memo = creditMemo({...shared, rating, stress, instruments, collateral});
     const headings = memo.blocks.filter((block) => block.type === "heading").map((block) => (block.type === "heading" ? block.text.pt : ""));
-    expect(headings).toContain("9. Comitê: rating, sensibilidade, instrumentos e garantias");
-    expect(headings).toEqual(expect.arrayContaining(["Rating interno", "Sensibilidade", "Instrumentos", "Pacote de garantias"]));
+    expect(headings).toContain("9. Principais considerações de crédito");
+    expect(headings).toEqual(expect.arrayContaining(["Perfil analítico indicativo", "Sensibilidade", "Instrumentos", "Pacote de garantias"]));
     const keyTerms = memo.blocks[0];
-    expect(keyTerms?.type === "callout" && keyTerms.items.some((item) => item.label.pt === "Rating interno")).toBe(true);
+    expect(keyTerms?.type === "callout" && keyTerms.items.some((item) => item.label.pt === "Perfil analítico indicativo")).toBe(true);
     expect(JSON.stringify(memo.blocks)).toContain("EBITDA -30%");
   });
 });
-

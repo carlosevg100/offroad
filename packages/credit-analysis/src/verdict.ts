@@ -1,16 +1,17 @@
 /**
- * Does the operation the company asked for stand up?
+ * What structure is supportable by the available evidence and market constraints?
  *
  * This is the sentence the product exists to produce. Everything before it describes the
- * company; this judges the deal. It is deliberately not a score and not a recommendation to
- * lend: it says whether the structure on the table survives the company's own constraints,
+ * company; this tests the requested structure. It is deliberately not a score, credit opinion
+ * or recommendation to lend: it says whether the structure on the table is supportable under
+ * the company's own constraints,
  * what it has to carry to survive them, what it fixes, what it leaves untouched, and what the
  * second road would look like.
  *
  * Two rules of tone, both learned by getting them wrong. A finding never says an operation
  * "does not solve" something when the company has no cash to solve it otherwise: terming a
  * maturity out is a solution, it costs spread and security, and the desk's job is to price
- * both roads rather than to prefer one. And a verdict never hides behind a caveat: if the
+ * both roads rather than to prefer one. The analysis never hides behind a caveat: if the
  * covenant is already breached, the operation does not exist without a waiver, and that
  * belongs in the first line and not in a footnote.
  */
@@ -121,7 +122,7 @@ export function judgeOperation(input: {
     const excess = pre.minus(covenant.maximum);
     conditions.push({
       id: "waiver-before-anything",
-      pt: `A companhia está em ${turns(pre)} contra o teto de ${turns(covenant.maximum)} (${covenant.lender}). Nenhuma dívida nova é contratável antes de um waiver ou da renegociação desse covenant, e isso não é ressalva do parecer: é a primeira condição precedente da operação. ${netNewMoney.gt(0) ? `Os ${brlM(netNewMoney)} de dinheiro novo dependem dela; a parte de troca de passivo, ${brlM(refinancing)}, é discutível com os credores atuais como alongamento.` : `Por ser troca pura de passivo, a conversa com os credores atuais é de alongamento e não de dívida nova, o que é o argumento mais forte para o waiver.`}`,
+      pt: `A companhia está em ${turns(pre)} contra o teto de ${turns(covenant.maximum)} (${covenant.lender}). Nenhuma dívida nova é contratável antes de um waiver ou da renegociação desse covenant. Esta é a primeira condição precedente da estrutura indicativa. ${netNewMoney.gt(0) ? `Os ${brlM(netNewMoney)} de dinheiro novo dependem dela; a parte de troca de passivo, ${brlM(refinancing)}, é discutível com os credores atuais como alongamento.` : `Por ser troca pura de passivo, a conversa com os credores atuais é de alongamento e não de dívida nova, o que é o argumento mais forte para o waiver.`}`,
       en: `The company sits at ${turns(pre)} against a ${turns(covenant.maximum)} ceiling (${covenant.lender}). No new debt is contractable before a waiver or a renegotiation of that covenant, and this is not a caveat: it is the operation's first condition precedent. ${netNewMoney.gt(0) ? `The ${brlM(netNewMoney)} of new money depends on it; the ${brlM(refinancing)} liability swap is arguable with the existing lenders as a maturity extension.` : `Being a pure liability swap, the conversation with existing lenders is about extension rather than new debt, which is the strongest argument for the waiver.`}`,
     });
     void excess;
@@ -229,15 +230,15 @@ export function judgeOperation(input: {
 
   const headline = {
     pt: standing === "stands"
-      ? `A operação para de pé como está: ${brlM(amount)} em ${months(operation.termMonths)} com ${months(operation.graceMonths)} de carência, ${operation.instrument}.`
+      ? `As evidências e premissas analisadas suportam, de forma indicativa, a estrutura de ${brlM(amount)} em ${months(operation.termMonths)} com ${months(operation.graceMonths)} de carência, ${operation.instrument}.`
       : standing === "stands_with_conditions"
-        ? `A operação para de pé com condições: ${brlM(amount)} em ${months(operation.termMonths)} com ${months(operation.graceMonths)} de carência, ${operation.instrument}, desde que ${conditions.length === 1 ? "a condição abaixo seja resolvida antes do desembolso" : `as ${conditions.length} condições abaixo sejam resolvidas antes do desembolso`}.`
-        : `A operação, como está, não resolve o problema que motivou o pedido.`,
+        ? `As evidências e premissas analisadas suportam a estrutura de ${brlM(amount)} em ${months(operation.termMonths)} com ${months(operation.graceMonths)} de carência, ${operation.instrument}, com os ajustes e condições indicativas descritos abaixo.`
+        : `As evidências disponíveis não suportam a configuração solicitada. As alternativas abaixo preservam o objetivo econômico sempre que possível.`,
     en: standing === "stands"
-      ? `The operation stands as proposed: ${brlM(amount)} over ${operation.termMonths} months with ${operation.graceMonths} of grace, ${operation.instrument}.`
+      ? `The evidence and assumptions analyzed indicatively support a ${brlM(amount)} structure over ${operation.termMonths} months with ${operation.graceMonths} of grace, ${operation.instrument}.`
       : standing === "stands_with_conditions"
-        ? `The operation stands subject to conditions: ${brlM(amount)} over ${operation.termMonths} months with ${operation.graceMonths} of grace, ${operation.instrument}, provided ${conditions.length === 1 ? "the condition below is resolved before disbursement" : `the ${conditions.length} conditions below are resolved before disbursement`}.`
-        : `As proposed, the operation does not solve the problem behind the request.`,
+        ? `The evidence and assumptions analyzed support a ${brlM(amount)} structure over ${operation.termMonths} months with ${operation.graceMonths} of grace, ${operation.instrument}, with the indicative adjustments and conditions described below.`
+        : `The available evidence does not support the requested configuration. The alternatives below preserve the economic objective wherever possible.`,
   };
 
   if (price) {

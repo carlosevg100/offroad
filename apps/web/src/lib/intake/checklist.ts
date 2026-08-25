@@ -2,6 +2,7 @@ import type {SupabaseClient} from "@supabase/supabase-js";
 import {
   archetypeIdSchema,
   assessSufficiency,
+  planClientRequests,
   missingByPurpose,
   nextStep,
   type ArchetypeId,
@@ -59,6 +60,14 @@ export type IntakeChecklist = {
   minimum: SufficiencyReport["minimum"];
   ideal: SufficiencyReport["ideal"];
   items: ChecklistItem[];
+  /** The only open items the client should act on now, after everything received was read. */
+  activeBatch: ChecklistItem[];
+  /** Items the system already found or the client validly resolved. */
+  resolved: ChecklistItem[];
+  /** A count-only view of later stages. They are context, never current upload tasks. */
+  roadmap: Record<"diligence" | "closing", {open: number; total: number}>;
+  /** Open-now items held back until the current batch has been read. */
+  hiddenOpenCount: number;
   /** The same items on the axis the company reads first: what is needed now, later, at closing. */
   byStage: Record<RequirementStage, ChecklistItem[]>;
   /** One line: what to do next, in the reader's language. */
@@ -133,6 +142,7 @@ export async function loadIntakeChecklist(input: {
   );
 
   const report = assessSufficiency(archetypeId, classified, answers, responses);
+  const clientPlan = planClientRequests(report);
   const label = (kind: DocumentKind) => documentKindDefinition(kind).labels[locale];
   const grouped = missingByPurpose(report);
 
@@ -155,14 +165,26 @@ export async function loadIntakeChecklist(input: {
     ...(status.note ? {note: status.note} : {}),
     ...(status.requirement.answerFormat ? {answerFormat: status.requirement.answerFormat} : {}),
   }));
+  const itemById = new Map(items.map((item) => [item.id, item]));
 
   return {
     archetypeId,
     minimum: report.minimum,
     ideal: report.ideal,
     items,
+    activeBatch: clientPlan.current.flatMap(({status}) => {
+      const item = itemById.get(status.requirement.id);
+      return item ? [item] : [];
+    }),
+    resolved: clientPlan.resolved.flatMap((status) => {
+      const item = itemById.get(status.requirement.id);
+      return item ? [item] : [];
+    }),
+    roadmap: clientPlan.roadmap,
+    hiddenOpenCount: clientPlan.hiddenOpenCount,
     byStage: {
       now: items.filter((item) => item.stage === "now"),
+      structuring: items.filter((item) => item.stage === "structuring"),
       diligence: items.filter((item) => item.stage === "diligence"),
       closing: items.filter((item) => item.stage === "closing"),
     },

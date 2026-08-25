@@ -2,6 +2,9 @@
 
 Status: accepted, fundador em 24/08/2026
 
+Nota de 25/08/2026: os itens 3 e 4 e toda linguagem de parecer foram substituídos pelo ADR 0012.
+Taxonomia, lineage, gold cases e governança deste ADR permanecem válidos.
+
 Data: 2026-08-24
 
 Plano de referência: `docs/build/BULLETPROOF_EXECUTION_PLAN.md`
@@ -14,9 +17,9 @@ necessidade de capital, um instrumento, uma estrutura, um veículo e um provedor
 aparecer como se fossem a mesma dimensão. O harness mede extração sobre documentos e executa a
 mesa sobre fatos do gabarito, mas ainda não prova uma travessia única das oito camadas.
 
-O parecer de crédito também não é suficiente para representar o estado operacional do case. Uma
-operação pode ser economicamente viável e ainda não estar pronta para materiais, matching ou
-direcionamento externo.
+A análise de suportabilidade também não é suficiente para representar o estado operacional do
+case. Uma estrutura pode ser tecnicamente suportável e ainda não estar pronta para materiais,
+matching ou introdução autorizada.
 
 ## Decisão
 
@@ -27,12 +30,10 @@ direcionamento externo.
 2. FIDC é modelado internamente como veículo de capital. Uma operação de recebíveis pode ter
    cessão como obrigação ou transferência, cotas como valor distribuído e uma gestora de FIDC como
    participante. Interfaces antigas continuam válidas durante uma migração explícita.
-3. `packages/case-understanding` passa a publicar seis estados operacionais: informação
-   insuficiente, pendências materiais, estrutura em análise, viável com condições, pronta para
-   direcionamento qualificado e não recomendada.
-4. Somente o estado `ready_for_qualified_direction`, com auditoria de materiais, screening de
-   mandato e aprovação externa concluídos, permite direcionamento. O parecer econômico nunca
-   concede essa permissão sozinho.
+3. Os seis estados e a fronteira de assessoria DCM são governados pelo ADR 0012.
+4. Somente o estado `ready_for_client_authorized_introduction`, com auditoria de materiais,
+   screening de mandato, gate de plataforma e autorização explícita do cliente, permite
+   introdução. A análise técnica nunca concede essa permissão sozinha.
 5. Todo artefato material passa a poder carregar um manifesto unificado com hashes das fontes,
    versões de todos os motores, política e prompts dos modelos, data da referência de mercado e
    hashes das saídas.
@@ -49,9 +50,8 @@ direcionamento externo.
   compatibilidade testada.
 - Uma alteração de playbook, mercado, modelo ou template muda o manifesto, mesmo quando os
   documentos não mudam.
-- Um caso pode ter parecer positivo e continuar bloqueado operacionalmente.
+- Uma estrutura pode ser suportável e continuar bloqueada operacionalmente.
 - A fábrica paramétrica poderá derivar gabaritos sobre contratos estáveis, sem inventar uma nova
   taxonomia por vertical.
 - Publicação externa continuará exigindo aprovação humana até que a política de autoaceite e o
   verificador semântico estejam medidos em cases reais.
-

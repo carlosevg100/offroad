@@ -14,24 +14,24 @@ const unverified: DataRoomDocument = {id: "d2", kind: "debt_schedule", originalN
 const unclassified: DataRoomDocument = {id: "d3", kind: null, originalName: "foto.jpg", sha256: "ffff", sha256VerifiedAt: "2026-08-21T00:00:00Z", byteSize: 10};
 
 describe("planDataRoom", () => {
-  it("places the teaser before the NDA, the term sheet after it, and the memo with the desk", () => {
-    const plan = planDataRoom({materials: ["teaser", "credit_profile", "term_sheet", "diligence_qa", "package", "investment_memo"].map((k) => material(k as Material["kind"])), materialsBlockedBy: [], documents: [verified], exceptions: [], readiness: readiness()});
+  it("places the teaser before the NDA and the credit memorandum and term sheet after it", () => {
+    const plan = planDataRoom({materials: ["teaser", "credit_profile", "term_sheet", "diligence_qa", "package", "credit_memo"].map((k) => material(k as Material["kind"])), materialsBlockedBy: [], documents: [verified], exceptions: [], readiness: readiness()});
     const byId = new Map(plan.entries.map((entry) => [entry.id, entry]));
     expect(byId.get("material:teaser")?.tier).toBe("pre_nda");
     expect(byId.get("material:term_sheet")?.tier).toBe("nda");
-    expect(byId.get("material:investment_memo")?.tier).toBe("internal");
-    expect(byId.get("material:investment_memo")?.folderId).toBe("00_mesa");
+    expect(byId.get("material:credit_memo")?.tier).toBe("nda");
+    expect(byId.get("material:credit_memo")?.folderId).toBe("01_materiais");
     expect(byId.get("document:d1")?.status).toBe("ready");
     expect(byId.get("document:d1")?.folderId).toBe("02_financial");
     expect(plan.releasable).toBe(true);
-    expect(plan.counts).toEqual({ready: 7, held: 0, requested: 0});
+    expect(plan.counts).toEqual({ready: 6, held: 0, requested: 0});
   });
 
-  it("holds every external entry behind a blocking exception, and never the internal memo", () => {
-    const plan = planDataRoom({materials: [material("teaser"), material("investment_memo")], materialsBlockedBy: [], documents: [verified], exceptions: [exception(true)], readiness: readiness()});
+  it("holds every external entry behind a blocking exception, including the credit memorandum", () => {
+    const plan = planDataRoom({materials: [material("teaser"), material("credit_memo")], materialsBlockedBy: [], documents: [verified], exceptions: [exception(true)], readiness: readiness()});
     expect(plan.releasable).toBe(false);
     expect(plan.entries.find((e) => e.id === "material:teaser")?.heldBy[0]?.pt).toContain("Balanço não fecha");
-    expect(plan.entries.find((e) => e.id === "material:investment_memo")?.status).toBe("ready");
+    expect(plan.entries.find((e) => e.id === "material:credit_memo")?.status).toBe("held");
     expect(plan.entries.find((e) => e.id === "document:d1")?.status).toBe("held");
   });
 
@@ -52,9 +52,9 @@ describe("planDataRoom", () => {
     const index = dataRoomIndex(plan);
     expect(index.kind).toBe("data_room_index");
     const tables = index.blocks.filter((block) => block.type === "table");
-    // The desk folder (memo, held), the materials folder, and the financial folder.
-    expect(tables).toHaveLength(3);
-    const financial = tables[2]!;
+    // The materials folder and the financial folder. The credit memorandum is lender-facing.
+    expect(tables).toHaveLength(2);
+    const financial = tables[1]!;
     expect(financial.type === "table" && financial.rows[0]).toEqual(["Demonstrações financeiras auditadas: DF 2025.pdf", "Após NDA", "Pronto", "abcdef012345", ""]);
   });
 });

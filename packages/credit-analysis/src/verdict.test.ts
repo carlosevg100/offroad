@@ -28,12 +28,12 @@ const trajectory = (years: Array<{year: number; principalDue: string; scheduleSt
 
 const operation: Operation = {amount: "700000000", termMonths: 60, graceMonths: 12, instrument: "CRA lastreado em recebíveis do agro", refinancing: "700000000"};
 
-describe("the verdict on the operation", () => {
+describe("the supportability analysis of the requested structure", () => {
   it("puts the breached covenant in the first line, not in a caveat", () => {
     const verdict = judgeOperation({desk: desk(), trajectory: trajectory([{year: 2027, principalDue: "58333333", scheduleStrain: "0.06"}]), operation});
     expect(verdict.standing).toBe("stands_with_conditions");
     expect(verdict.conditions[0]!.id).toBe("waiver-before-anything");
-    expect(verdict.headline.pt).toContain("para de pé com condições");
+    expect(verdict.headline.pt).toContain("suportam a estrutura");
     // A pure swap is the argument for the waiver, and the verdict says so.
     expect(verdict.conditions[0]!.pt).toContain("troca pura de passivo");
   });
@@ -67,6 +67,6 @@ describe("the verdict on the operation", () => {
     const clean = desk({tightestCovenant: {lender: "escrituras", maximum: "5.0000"}}, {liquidityCoverage12: "3.0"});
     const verdict = judgeOperation({desk: clean, trajectory: trajectory([{year: 2027, principalDue: "10000000", scheduleStrain: "0.01"}]), operation});
     expect(verdict.standing).toBe("stands");
-    expect(verdict.headline.pt).toContain("para de pé como está");
+    expect(verdict.headline.pt).toContain("suportam, de forma indicativa");
   });
 });

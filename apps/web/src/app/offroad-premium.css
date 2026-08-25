@@ -7630,6 +7630,22 @@ button[disabled].workspace-search,
 .intake-request-tier > ul > li:last-child {border-bottom: 0;}
 .intake-request-tier__empty {margin: 0; padding: 14px 18px; color: #858d91; font-size: 11px;}
 
+.intake-request-resolved {border: 1px solid #dfe3e2; background: #f8faf8;}
+.intake-request-resolved > summary {display: flex; align-items: center; gap: 9px; padding: 14px 18px; color: #53675a; cursor: pointer; font-size: 11px; font-weight: 650;}
+.intake-request-resolved > ul {display: grid; margin: 0; padding: 0; border-top: 1px solid #e2e6e4; list-style: none;}
+.intake-request-resolved > ul > li {display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; padding: 12px 18px; border-bottom: 1px solid #e8eaea;}
+.intake-request-resolved > ul > li:last-child {border-bottom: 0;}
+
+.intake-request-roadmap {border: 1px solid #d9ddde; background: #f5f6f5;}
+.intake-request-roadmap > header {display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 11px; padding: 16px 18px; border-bottom: 1px solid #dfe2e2;}
+.intake-request-roadmap h4 {margin: 0 0 4px; font-size: 13px;}
+.intake-request-roadmap header p {margin: 0; color: #747c81; font-size: 10px; line-height: 1.5;}
+.intake-request-roadmap > div {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));}
+.intake-request-roadmap article {display: grid; gap: 5px; padding: 14px 18px; border-right: 1px solid #dfe2e2;}
+.intake-request-roadmap article:last-child {border-right: 0;}
+.intake-request-roadmap article span {color: #7a8286; font-size: 9px; letter-spacing: .02em;}
+.intake-request-roadmap article strong {color: #394349; font-size: 10px; font-weight: 620;}
+
 .intake-checklist__guidance {margin-top: 7px;}
 .intake-checklist__guidance > summary {color: #53676f; cursor: pointer; font-size: 10px; font-weight: 650;}
 .intake-checklist__guidance[open] > summary {margin-bottom: 9px;}
@@ -7676,4 +7692,7 @@ button[disabled].workspace-search,
   .intake-operation__options {grid-template-columns: 1fr;}
   .intake-request-tier > header {grid-template-columns: 24px minmax(0, 1fr);}
   .intake-request-tier > header .intake-checklist__progress {grid-column: 2;}
+  .intake-request-roadmap > div {grid-template-columns: 1fr;}
+  .intake-request-roadmap article {border-right: 0; border-bottom: 1px solid #dfe2e2;}
+  .intake-request-roadmap article:last-child {border-bottom: 0;}
 }

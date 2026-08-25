@@ -635,10 +635,20 @@ export async function executeCaseEngine(
                 analysisComplete: metrics.receivables
                   ? true
                   : Boolean(metrics.desk && structure.capacity && structure.verdict),
-                ...(structure.verdict ? {verdictStanding: structure.verdict.standing} : {}),
+                ...(structure.verdict
+                  ? {
+                      structureSupportability:
+                        structure.verdict.standing === "stands"
+                          ? ("supportable_as_proposed" as const)
+                          : structure.verdict.standing === "stands_with_conditions"
+                            ? ("supportable_with_adjustments" as const)
+                            : ("not_supported_as_proposed" as const),
+                    }
+                  : {}),
                 materialsAudit: materials.audit,
                 mandateScreeningComplete: matching.screened,
-                externalReleaseApproved: input.externalReleaseApproved,
+                platformExternalReleaseEnabled: input.externalReleaseApproved,
+                clientIntroductionAuthorized: false,
                 blockers: gaps.blockers,
               }),
             } satisfies OutcomeOutput,

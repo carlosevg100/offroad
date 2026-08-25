@@ -1,4 +1,4 @@
-import {Check, CircleDashed, Clock, FileText} from "lucide-react";
+import {Check, CircleDashed, Clock, FileText, Layers3} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import type {ArchetypeId} from "@offroad/credit-playbook";
@@ -21,15 +21,6 @@ const OPERATIONS: readonly ArchetypeId[] = [
   "venture_debt",
   "other",
 ];
-
-/** Common supporting material that improves almost every case before operation-specific depth. */
-const RECOMMENDED_REQUIREMENTS = new Set([
-  "reviewed_interim",
-  "bank_statements",
-  "tax_clearance",
-  "auditor_opinion",
-  "institutional_materials",
-]);
 
 /**
  * The first question a desk asks, asked first.
@@ -82,14 +73,10 @@ type ChecklistProps = {
 /**
  * The operation-specific information request list.
  *
- * Minimum holds the material needed to open the analysis. Recommended holds the common
- * supporting material that improves almost every case. Ideal holds the operation-specific
- * depth that prepares a later diligence process. Closing requirements are intentionally absent:
- * they are a roadmap for execution, not an upload task during origination.
- *
- * Every pending item explains what can be sent, why it matters and how to record that it is
- * partial, unavailable until an NDA, or not applicable. The list is answered by classified
- * documents rather than by asking the company to tick boxes itself.
+ * The client sees one short batch after the system has read what is already available. The
+ * complete desk playbook remains behind the screen; diligence and closing appear only as a
+ * count-only roadmap. This keeps the experience guided without asking the client to assemble a
+ * lender's entire data room before Offroad has understood the case.
  */
 export async function IntakeChecklist({locale, checklist, sessionId, respond}: ChecklistProps) {
   const t = await getTranslations({locale, namespace: "Intake.checklist"});
@@ -103,14 +90,11 @@ export async function IntakeChecklist({locale, checklist, sessionId, respond}: C
     );
   }
 
-  const minimum = checklist.byStage.now.filter((item) => item.source === "document" && item.level === "minimum");
-  const later = checklist.byStage.diligence.filter((item) => item.source === "document");
-  const recommended = later.filter((item) => RECOMMENDED_REQUIREMENTS.has(item.id));
-  const ideal = later.filter((item) => !RECOMMENDED_REQUIREMENTS.has(item.id));
-  const allRequested = [...minimum, ...recommended, ...ideal];
+  const current = checklist.activeBatch.filter((item) => item.source === "document");
+  const resolved = checklist.resolved.filter((item) => item.source === "document");
 
   /** One item, with its reason, what to send, and a way to say it does not apply. */
-  const renderItem = (item: (typeof minimum)[number], interactive: boolean) => (
+  const renderItem = (item: (typeof current)[number], interactive: boolean) => (
     <li key={item.id} className={item.satisfied ? "is-satisfied" : `is-pending is-${item.response ?? "open"}`}>
       <span className="intake-checklist__mark" aria-hidden="true">
         {item.satisfied ? <Check size={14} /> : item.response === "partial" ? <Clock size={14} /> : <CircleDashed size={14} />}
@@ -164,6 +148,7 @@ export async function IntakeChecklist({locale, checklist, sessionId, respond}: C
                     <option value="not_applicable">{t("response_not_applicable")}</option>
                     <option value="partial">{t("response_partial")}</option>
                     <option value="after_nda">{t("response_after_nda")}</option>
+                    <option value="unavailable">{t("response_unavailable")}</option>
                   </select>
                   <label htmlFor={`note-${item.id}`}>{t("noteLabel")}</label>
                   <textarea
@@ -186,33 +171,40 @@ export async function IntakeChecklist({locale, checklist, sessionId, respond}: C
     </li>
   );
 
-  const renderTier = (id: "minimum" | "recommended" | "ideal", items: typeof minimum, index: number) => {
-    const satisfied = items.filter((item) => item.satisfied).length;
-    return (
-      <section className={`intake-request-tier intake-request-tier--${id}`} key={id}>
-        <header>
-          <span className="intake-request-tier__number">0{index}</span>
-          <div><h4>{t(`${id}Title`)}</h4><p>{t(`${id}Body`)}</p></div>
-          <span className="intake-checklist__progress">{t("progress", {satisfied, total: items.length})}</span>
-        </header>
-        {items.length ? <ul>{items.map((item) => renderItem(item, id !== "ideal"))}</ul> : <p className="intake-request-tier__empty">{t("tierEmpty")}</p>}
-      </section>
-    );
-  };
-
   return (
     <section className="intake-checklist intake-request-list">
       <div className="intake-checklist__head">
         <span className="section-kicker">{t("requestKicker")}</span>
         <h3>{t("requestTitle")}</h3>
-        <p className="intake-checklist__frame">{t("requestBody")}</p>
+        <p className="intake-checklist__frame">{t("requestBody", {count: current.length})}</p>
         <p className={`intake-checklist__next intake-checklist__next--${checklist.next.state}`} role="status">{checklist.next.message}</p>
       </div>
 
       <div className="intake-request-list__tiers">
-        {renderTier("minimum", minimum, 1)}
-        {renderTier("recommended", recommended, 2)}
-        {renderTier("ideal", ideal, 3)}
+        <section className="intake-request-tier intake-request-tier--minimum">
+          <header>
+            <span className="intake-request-tier__number">01</span>
+            <div><h4>{t("currentBatchTitle")}</h4><p>{t("currentBatchBody")}</p></div>
+            <span className="intake-checklist__progress">{t("currentBatchCount", {count: current.length})}</span>
+          </header>
+          {current.length ? <ul>{current.map((item) => renderItem(item, true))}</ul> : <p className="intake-request-tier__empty">{t("currentBatchEmpty")}</p>}
+        </section>
+
+        {resolved.length > 0 ? (
+          <details className="intake-request-resolved">
+            <summary><Check aria-hidden="true" size={14} /><span>{t("resolvedTitle", {count: resolved.length})}</span></summary>
+            <ul>{resolved.map((item) => renderItem(item, false))}</ul>
+          </details>
+        ) : null}
+
+        <section className="intake-request-roadmap">
+          <header><Layers3 aria-hidden="true" size={15} /><div><h4>{t("roadmapTitle")}</h4><p>{t("roadmapBody")}</p></div></header>
+          <div>
+            <article><span>{t("roadmapNext")}</span><strong>{t("roadmapNextCount", {count: checklist.hiddenOpenCount})}</strong></article>
+            <article><span>{t("stageDiligenceTitle")}</span><strong>{t("roadmapLaterCount", {count: checklist.roadmap.diligence.open})}</strong></article>
+            <article><span>{t("stageClosingTitle")}</span><strong>{t("roadmapClosing")}</strong></article>
+          </div>
+        </section>
       </div>
 
       {checklist.unmatched.length > 0 ? (
@@ -224,7 +216,7 @@ export async function IntakeChecklist({locale, checklist, sessionId, respond}: C
             .join(" · ")}
         </p>
       ) : null}
-      <span className="sr-only">{t("totalItems", {count: allRequested.length})}</span>
+      <span className="sr-only">{t("totalItems", {count: checklist.items.length})}</span>
     </section>
   );
 }

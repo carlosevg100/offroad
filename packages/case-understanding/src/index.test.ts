@@ -84,38 +84,43 @@ describe("the case artifact manifest", () => {
   });
 });
 
-describe("the operational outcome is not the credit opinion", () => {
+describe("the operational outcome is not a capital provider credit decision", () => {
   const base = {
     informationSufficient: true,
     materialGapCount: 0,
     analysisComplete: true,
-    verdictStanding: "stands" as const,
+    structureSupportability: "supportable_as_proposed" as const,
     materialsAudit: "pass" as const,
     mandateScreeningComplete: true,
-    externalReleaseApproved: true,
+    platformExternalReleaseEnabled: true,
+    clientIntroductionAuthorized: true,
     blockers: [],
   };
 
   it("allows qualified direction only after every independent gate passes", () => {
     expect(deriveCaseOutcome(base)).toMatchObject({
-      state: "ready_for_qualified_direction",
-      externalDirectionAllowed: true,
+      state: "ready_for_client_authorized_introduction",
+      qualifiedIntroductionAllowed: true,
     });
 
-    const approvalPending = deriveCaseOutcome({...base, externalReleaseApproved: false});
-    expect(approvalPending.state).toBe("structure_under_assessment");
-    expect(approvalPending.externalDirectionAllowed).toBe(false);
-    expect(approvalPending.reasons).toContain("external_release_approval_pending");
+    const releaseDisabled = deriveCaseOutcome({...base, platformExternalReleaseEnabled: false});
+    expect(releaseDisabled.state).toBe("alternatives_under_development");
+    expect(releaseDisabled.qualifiedIntroductionAllowed).toBe(false);
+    expect(releaseDisabled.reasons).toContain("platform_external_release_disabled");
+
+    const clientAuthorizationPending = deriveCaseOutcome({...base, clientIntroductionAuthorized: false});
+    expect(clientAuthorizationPending.qualifiedIntroductionAllowed).toBe(false);
+    expect(clientAuthorizationPending.reasons).toContain("client_introduction_authorization_pending");
   });
 
   it("does not turn an incomplete room into a negative credit opinion", () => {
-    expect(deriveCaseOutcome({...base, informationSufficient: false, verdictStanding: "does_not_stand"}).state).toBe("insufficient_information");
+    expect(deriveCaseOutcome({...base, informationSufficient: false, structureSupportability: "not_supported_as_proposed"}).state).toBe("insufficient_information");
   });
 
-  it("keeps gaps, conditional viability and a negative recommendation distinct", () => {
-    expect(deriveCaseOutcome({...base, materialGapCount: 2}).state).toBe("material_gaps");
-    expect(deriveCaseOutcome({...base, verdictStanding: "stands_with_conditions"}).state).toBe("conditionally_viable");
-    expect(deriveCaseOutcome({...base, verdictStanding: "does_not_stand"}).state).toBe("not_recommended");
+  it("keeps gaps, adjusted structures and an unsupported requested configuration distinct", () => {
+    expect(deriveCaseOutcome({...base, materialGapCount: 2}).state).toBe("material_information_gaps");
+    expect(deriveCaseOutcome({...base, structureSupportability: "supportable_with_adjustments"}).state).toBe("supportable_with_adjustments");
+    expect(deriveCaseOutcome({...base, structureSupportability: "not_supported_as_proposed"}).state).toBe("requested_configuration_not_supported");
   });
 });
 

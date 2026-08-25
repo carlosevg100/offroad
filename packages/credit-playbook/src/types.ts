@@ -81,15 +81,17 @@ export type AnswerFormat = z.infer<typeof answerFormatSchema>;
  * weeks later and blames us for the surprise. Both failures come from the same omission: a
  * request with no time axis.
  *
- * So every item carries one. `now` is what the desk needs to build the case and take it to
- * investors — deliberately small. `diligence` is what a fund will ask once it is interested;
- * shown, explained, and **not requested yet**. `closing` is what only exists if the operation
- * happens — named so nobody is surprised, never a task.
+ * So every item carries one. `now` is the deliberately small set needed to understand the
+ * company and open the case. `structuring` is requested progressively, only after the initial
+ * base has been read, and supports the proposed alternatives and institutional materials.
+ * `diligence` is what a fund may ask once it is interested; shown, explained, and **not
+ * requested yet**. `closing` is what only exists if the operation happens — named so nobody
+ * is surprised, never a task.
  *
  * The stages map onto the market's own P0/P1/P2 vocabulary, but they are not labelled that way
  * for the company. "P1" tells a banker when something is needed and tells a founder nothing.
  */
-export const requirementStageSchema = z.enum(["now", "diligence", "closing"]);
+export const requirementStageSchema = z.enum(["now", "structuring", "diligence", "closing"]);
 export type RequirementStage = z.infer<typeof requirementStageSchema>;
 
 /**
@@ -105,7 +107,7 @@ export type RequirementStage = z.infer<typeof requirementStageSchema>;
  * an investor reading "not applicable" with no explanation learns nothing except that somebody
  * wanted the red mark gone.
  */
-export const requirementResponseSchema = z.enum(["provided", "partial", "not_applicable", "after_nda"]);
+export const requirementResponseSchema = z.enum(["provided", "partial", "not_applicable", "after_nda", "unavailable"]);
 export type RequirementResponse = z.infer<typeof requirementResponseSchema>;
 
 /**
@@ -136,7 +138,8 @@ export type Requirement = {
   source?: RequirementSource;
   /**
    * When it is needed. Omitted means derived from `level`: minimum is `now`, ideal is
-   * `diligence`. Set explicitly only for `closing` items, which exist to be seen and not done.
+   * `structuring`. Set explicitly for true diligence or closing items, which are shown as a
+   * roadmap and not turned into a current task.
    */
   stage?: RequirementStage;
   /**

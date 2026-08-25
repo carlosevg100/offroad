@@ -17,9 +17,9 @@
     "requiredClaimIds": ["amount-purpose", "coverage-leverage", "collateral-shortfall"]
   },
   {
-    "kind": "investment_memo",
+    "kind": "credit_memo",
     "locale": "pt-BR",
-    "requiredSectionIds": ["parecer-sobre-a-operacao", "sumario-executivo", "estrutura-de-capital-e-tratamento", "fatores-de-risco-e-tratamento", "comite-rating-sensibilidade-instrumentos-e-garantias"],
+    "requiredSectionIds": ["suportabilidade-e-alternativas", "sumario-executivo", "estrutura-de-capital-e-tratamento", "fatores-de-risco-e-tratamento", "principais-consideracoes-de-credito"],
     "requiredClaimIds": ["amount-purpose", "history-2025", "current-debt-cash", "coverage-leverage"]
   },
   {
@@ -35,6 +35,6 @@
   {
     "kind": "data_room_index",
     "locale": "pt-BR",
-    "requiredSectionIds": ["mesa-nao-circula", "materiais-da-operacao", "demonstracoes-e-contabil", "divida-e-garantias", "projeto-e-plano", "societario-e-institucional"]
+    "requiredSectionIds": ["materiais-da-operacao", "demonstracoes-e-contabil", "divida-e-garantias", "projeto-e-plano", "societario-e-institucional"]
   }
 ]

@@ -200,7 +200,7 @@ export async function recordInformationAnswer(
 
   // "Does not apply" with no reason tells an investor only that somebody wanted the item gone.
   // The database enforces this too; refusing here gives the company an error it can act on.
-  if (response === "not_applicable" && !note) return fail("validation");
+  if ((response === "not_applicable" || response === "unavailable") && !note) return fail("validation");
 
   const {error} = await supabase
     .from("intake_information_answers")

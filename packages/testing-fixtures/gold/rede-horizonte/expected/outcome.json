@@ -1,5 +1,5 @@
 {
-  "state": "conditionally_viable",
-  "externalDirectionAllowed": false,
-  "reasonsInclude": ["conditions_must_be_resolved"]
+  "state": "supportable_with_adjustments",
+  "qualifiedIntroductionAllowed": false,
+  "reasonsInclude": ["adjustments_must_be_resolved"]
 }

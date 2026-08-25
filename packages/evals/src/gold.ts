@@ -131,7 +131,7 @@ export const goldMaterialSchema = z.object({
     "teaser",
     "credit_profile",
     "package",
-    "investment_memo",
+    "credit_memo",
     "term_sheet",
     "diligence_qa",
     "data_room_index",
@@ -153,15 +153,15 @@ export type GoldMatch = z.infer<typeof goldMatchSchema>;
 
 export const goldOutcomeSchema = z.object({
   state: caseOutcomeStateSchema,
-  externalDirectionAllowed: z.boolean(),
+  qualifiedIntroductionAllowed: z.boolean(),
   reasonsInclude: z.array(z.string()).default([]),
 }).superRefine((outcome, context) => {
-  const shouldAllow = outcome.state === "ready_for_qualified_direction";
-  if (outcome.externalDirectionAllowed === shouldAllow) return;
+  const shouldAllow = outcome.state === "ready_for_client_authorized_introduction";
+  if (outcome.qualifiedIntroductionAllowed === shouldAllow) return;
   context.addIssue({
     code: "custom",
-    path: ["externalDirectionAllowed"],
-    message: "external direction must be allowed only for ready_for_qualified_direction",
+    path: ["qualifiedIntroductionAllowed"],
+    message: "qualified introduction must be allowed only after client authorization",
   });
 });
 export type GoldOutcome = z.infer<typeof goldOutcomeSchema>;

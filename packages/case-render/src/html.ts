@@ -48,7 +48,7 @@ const copy = {
     teaser: {pt: "Resumo da operação", en: "Transaction summary"},
     credit_profile: {pt: "Perfil de crédito", en: "Credit profile"},
     package: {pt: "Material completo", en: "Full package"},
-    investment_memo: {pt: "Investment Memorandum", en: "Investment Memorandum"},
+    credit_memo: {pt: "Memorando de Crédito", en: "Credit Memorandum"},
     term_sheet: {pt: "Term Sheet indicativo", en: "Indicative Term Sheet"},
     diligence_qa: {pt: "Q&A de diligência", en: "Diligence Q&A"},
     data_room_index: {pt: "Sala de dados de saída", en: "Outbound data room"},
