@@ -153,12 +153,19 @@ antes de produção.
 
 ## Gate 8: produção controlada
 
-- [ ] Staging separado.
-- [ ] Replay imutável e shadow run.
-- [ ] Canary por organização.
+- [x] Staging Supabase separado, isolado e sem dados de produção; credenciais da aplicação e do
+  worker permanecem próprias do ambiente antes do primeiro case acompanhado.
+- [x] Replay imutável e shadow run: input congelado, execução candidata em run separada,
+  comparação tipada e nenhum overwrite do snapshot público.
+- [x] Canary por organização, com estados `off`, `shadow`, `canary`, `active` e `paused`, sem
+  permissão de promoção pelo tenant.
 - [ ] Dez cases reais acompanhados, corrigidos e reexecutados.
 - [ ] Segundo lote de dez cases sem regressão crítica.
 - [ ] Liberação externa gradual com aprovação.
+
+ADR 0011 governa este Gate. Fixtures e gold cases não contam como case real. O primeiro lote libera
+canary; o segundo lote deve ser distinto e, junto com aprovação explícita, libera `active`. Toda
+organização permanece com saída externa desabilitada até a decisão final.
 
 ## Corte de lançamento
 

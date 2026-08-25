@@ -2153,6 +2153,158 @@ begin
 end;
 $$;
 
+-- Controlled production is a separate ledger: the worker freezes the input once, browser
+-- sessions can read only their own content-free status, and no tenant can promote itself or
+-- manufacture a shadow comparison.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '72000000-0000-4000-8000-000000000001';
+  run_id constant uuid := '72000000-0000-4000-8000-000000000002';
+  execution_id constant uuid := '72000000-0000-4000-8000-000000000003';
+  job_id uuid;
+  capability text;
+  claim jsonb;
+  frozen jsonb;
+  accepted boolean;
+begin
+  set local role postgres;
+  insert into public.document_intake_sessions (
+    id, organization_id, started_by, journey, locale, status, current_run_id, pipeline_version
+  ) values (
+    session_id, org_a, '10000000-0000-4000-8000-000000000001',
+    'company', 'pt-BR', 'processing', null, 'test-controlled'
+  );
+  insert into public.processing_runs (
+    id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
+  ) values (
+    run_id, org_a, session_id, 1, 'manual', 'running', 'test-controlled',
+    '10000000-0000-4000-8000-000000000001'
+  );
+  update public.document_intake_sessions set current_run_id = run_id where id = session_id;
+  insert into public.controlled_case_executions (
+    id, organization_id, intake_session_id, processing_run_id, mode, status,
+    pipeline_version, model_policy_version, created_by
+  ) values (
+    execution_id, org_a, session_id, run_id, 'primary', 'queued',
+    'test-controlled', 'test-model-policy', '10000000-0000-4000-8000-000000000001'
+  );
+  insert into public.processing_jobs (
+    organization_id, processing_run_id, intake_session_id, kind, status, available_at,
+    controlled_execution_id, payload
+  ) values (
+    org_a, run_id, session_id, 'case_analysis', 'queued', '2000-01-01T00:00:00Z',
+    execution_id, jsonb_build_object(
+      'locale', 'pt-BR', 'execution_id', execution_id, 'execution_mode', 'primary'
+    )
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  claim := public.worker_claim_job(repeat('w', 64), 600);
+  if claim ->> 'kind' <> 'case_analysis' then raise exception 'controlled case job was not claimed'; end if;
+  job_id := (claim ->> 'job_id')::uuid;
+  capability := claim ->> 'capability_token';
+
+  frozen := public.worker_freeze_case_input(
+    job_id, capability,
+    jsonb_build_object(
+      'session', jsonb_build_object('id', session_id, 'locale', 'pt-BR'),
+      'facts', jsonb_build_array(jsonb_build_object('field', 'company.name', 'value', 'RLS Tenant A'))
+    )
+  );
+  if frozen -> '_execution' ->> 'id' <> execution_id::text
+    or frozen -> '_execution' ->> 'mode' <> 'primary'
+    or (frozen -> '_execution' ->> 'input_fingerprint') !~ '^[0-9a-f]{64}$' then
+    raise exception 'worker did not receive the frozen controlled input';
+  end if;
+
+  perform public.worker_record_controlled_execution(
+    job_id, capability,
+    jsonb_build_object('status', 'succeeded', 'reportFingerprint', repeat('7', 64)),
+    jsonb_build_object('manifestFingerprint', repeat('8', 64)),
+    null
+  );
+  -- At-least-once delivery may repeat the same write, but it may never replace the first result.
+  perform public.worker_record_controlled_execution(
+    job_id, capability,
+    jsonb_build_object('status', 'succeeded', 'reportFingerprint', repeat('7', 64)),
+    jsonb_build_object('manifestFingerprint', repeat('8', 64)),
+    null
+  );
+  accepted := true;
+  begin
+    perform public.worker_record_controlled_execution(
+      job_id, capability,
+      jsonb_build_object('status', 'succeeded', 'reportFingerprint', repeat('6', 64)),
+      jsonb_build_object('manifestFingerprint', repeat('8', 64)),
+      null
+    );
+  exception when unique_violation then accepted := false;
+  end;
+  if accepted then raise exception 'worker replaced an immutable controlled result'; end if;
+  perform public.worker_complete_job(job_id, capability, jsonb_build_object(
+    'spend', jsonb_build_object('costUsd', 0, 'calls', 0)
+  ));
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  if (select count(*) from public.controlled_case_executions where id = execution_id and status = 'succeeded') <> 1 then
+    raise exception 'case owner could not read its controlled execution';
+  end if;
+  if (select state from public.organization_rollout_policies where organization_id = org_a) is null then
+    raise exception 'case owner could not read its rollout status';
+  end if;
+
+  accepted := true;
+  begin
+    update public.organization_rollout_policies
+    set state = 'active', external_release_enabled = true
+    where organization_id = org_a;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant promoted its own rollout'; end if;
+
+  accepted := true;
+  begin
+    insert into public.case_execution_comparisons (
+      organization_id, baseline_execution_id, candidate_execution_id, mode,
+      comparable, passed, critical_count, warning_count, differences, comparison_fingerprint
+    ) values (
+      org_a, execution_id, execution_id, 'shadow', true, true, 0, 0, '[]'::jsonb, repeat('9', 64)
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant forged a controlled comparison'; end if;
+
+  accepted := true;
+  begin
+    perform public.worker_freeze_case_input(job_id, repeat('z', 64), '{}'::jsonb);
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'forged capability loaded a frozen input'; end if;
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  if (select count(*) from public.controlled_case_executions where id = execution_id) <> 0 then
+    raise exception 'tenant B read tenant A controlled execution';
+  end if;
+  if (select count(*) from public.organization_rollout_policies where organization_id = org_a) <> 0 then
+    raise exception 'tenant B read tenant A rollout policy';
+  end if;
+end;
+$$;
+
 set local role postgres;
 
 rollback;

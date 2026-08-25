@@ -248,7 +248,9 @@ async function markSessionFailed(runtime: IntakeRuntime, reason: string) {
  * `begin_intake_processing` clears previous results and marks the session `processing`;
  * `complete_intake_processing` writes the new generation and marks `review_ready` in one
  * transaction — a reprocess never mixes generations and a failure never leaves partial rows.
- * Two extractors, one switch, held per organization (`organizations.pipeline_enabled`).
+ * Two extractors, one controlled rollout held per organization. The legacy boolean remains the
+ * emergency feature switch; `organization_rollout_policies.state` controls off, shadow, canary,
+ * active and paused without a deployment.
  * With it on, the session is handed to the document pipeline: the app signs the links, `begin_processing_run` queues one job per
  * document, and the worker reads, verifies and proposes — the session stays `processing`
  * until the worker's last job moves it to `review_ready`, which is what the screen watches.
@@ -283,13 +285,12 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     return fail("processing");
   }
 
-  const {data: organization} = await supabase
-    .from("organizations")
-    .select("pipeline_enabled")
-    .eq("id", organizationId)
-    .maybeSingle();
+  const [{data: organization}, {data: rollout}] = await Promise.all([
+    supabase.from("organizations").select("pipeline_enabled").eq("id", organizationId).maybeSingle(),
+    supabase.from("organization_rollout_policies").select("state").eq("organization_id", organizationId).maybeSingle(),
+  ]);
 
-  if (pipelineEnabledFor(organization)) {
+  if (pipelineEnabledFor({...organization, rollout_state: rollout?.state})) {
     const run = await startProcessingRun({supabase, organizationId, sessionId, trigger: "upload"});
     if (!run.ok) {
       logIntakeFailure("begin_processing_run", null);

@@ -57,8 +57,34 @@ uses forced RLS and exact organization, session, opportunity, document and run s
 See ADR 0010. The full code quality gate, database reconstruction, RLS
 non-interference suite and E2E job are green. The production project contains the
 governed retrieval schema and its supporting foreign-key indexes; Security Advisor
-has zero findings and Performance Advisor has zero unindexed foreign keys. Worker
-activation remains conditional on the deployment from `main`.
+has zero findings and Performance Advisor has zero unindexed foreign keys. Main deployed
+the worker task definition `offroad-document-worker:82` from commit `f7e3205`; ECS reported the
+service stable, so governed retrieval is active in the production worker.
+
+### Engineering update: controlled production, 25 August 2026
+
+Gate 8 is implemented behind ADR 0011. Its five migrations were proven first in the isolated,
+data-less Supabase staging branch and then promoted to the production database.
+`@offroad/release-governance` compares primary, shadow and replay reports
+without reading customer content. Input changes, status regressions and contract failures are
+critical; shadow wording drift remains visible; rollout transitions fail closed.
+
+The worker freezes the full private case input on first read. Retry returns that snapshot, and a
+shadow or replay copies the baseline snapshot instead of querying mutable intake tables. Candidate
+runs have their own `processing_run`, never replace the public case state, and record full reports
+only in the private schema. The browser can read its own content-free execution status but cannot
+change rollout state or write evidence.
+
+Rollout is organization-scoped: `off`, `shadow`, `canary`, `active`, `paused`. Ten distinct real
+cases are required for canary, another disjoint ten for active, and active additionally requires
+explicit external-release approval. Synthetic fixtures never count. The database and domain
+contracts are present in staging and production across all five Gate 8 migrations. The full RLS
+non-interference suite passes in staging, and the production Security Advisor has zero findings and
+the Performance Advisor has zero unindexed foreign keys. Immediately after database promotion,
+production contained zero rollout policies, controlled executions, comparisons, frozen inputs,
+frozen results, cohorts, cohort cases and release decisions. Lint, typecheck, all tests and the
+production build pass across 38 packages. Application and worker deployment plus both real-case
+cohorts remain outstanding and must not be reported as complete.
 
 ### Engineering update: governed case worker, 24 August 2026
 

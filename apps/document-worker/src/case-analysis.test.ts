@@ -15,7 +15,7 @@ const job: CaseAnalysisJob = {
   organization_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
   intake_session_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
   processing_run_id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-  payload: {locale: "pt-BR"},
+  payload: {locale: "pt-BR", execution_mode: "primary"},
 };
 
 const invocation: GatewayCallLog = {
@@ -94,6 +94,13 @@ describe("worker case analysis", () => {
       model_lineage: [],
       expected_model_calls: 0,
       receivables_case: diversifiedReceivablesCase("worker-receivables-case"),
+      _execution: {
+        id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+        mode: "primary",
+        input_fingerprint: "e".repeat(64),
+        pipeline_version: "fixture",
+        model_policy_version: "2026.08.24-v1",
+      },
     };
     const queue: QueueClient = {
       claim: async () => null,
@@ -121,6 +128,7 @@ describe("worker case analysis", () => {
         recordedState = state as Record<string, unknown>;
         return "manifest-1";
       },
+      recordControlledExecution: async () => "execution-1",
       complete: async (_job, result) => { completed = result as Record<string, unknown>; },
       fail: async (_job, error) => { throw new Error(`the case should not fail: ${JSON.stringify(error)}`); },
     };

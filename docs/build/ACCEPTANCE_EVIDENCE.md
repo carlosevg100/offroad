@@ -137,6 +137,14 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Recebíveis no worker | `case-analysis.test.ts` | snapshot estruturado validado chega ao motor, é persistido no estado sanitizado e não autoriza direcionamento externo | 2026-08-24 |
 | Anchors artesanais de recebíveis | `receivables-analysis/src/anchors.ts` | dois candidatos preparados e explicitamente marcados `pending`; revisão independente ainda não contabilizada | 2026-08-24 |
 | Quality gate do Gate 6 | `pnpm check` | lint, typecheck, testes e build verdes nos 36 pacotes; 35 testes da vertical, 26 evals, 40 testes do worker e 117 testes web aprovados | 2026-08-24 |
+| Contrato de produção controlada | `@offroad/release-governance` | 6 testes: replay estável, drift estrito, shadow warning, input divergente, dois cohorts distintos e aprovação antes de `active` | 2026-08-24 |
+| Staging isolado | Supabase branch `staging` | branch saudável; 56 migrations após o Gate 8; zero organizações, sessões ou documentos copiados da produção | 2026-08-24 |
+| Schema do Gate 8 em staging | migrations `20260824235937`, `20260825000110`, `20260825000811`, `20260825001020` e `20260825001758` | 3 tabelas públicas com RLS forçado, 5 tabelas privadas sem grants, tenant sem escrita nos ledgers, comandos de release privados e inputs e resultados imutáveis presentes | 2026-08-24 |
+| Advisors do Gate 8 em staging | Supabase Security + Performance Advisors | segurança: 0 lints; performance: 0 foreign keys sem índice | 2026-08-24 |
+| Não interferência do Gate 8 em staging | `supabase/tests/rls_non_interference.sql` | suíte integral aprovada: leitura própria, isolamento entre tenants, rollout sem escrita pelo tenant, capability forjada recusada, retry idempotente e resultado divergente rejeitado | 2026-08-24 |
+| Quality gate local do Gate 8 | lint, typecheck, testes e build | 38 pacotes aprovados; 6 testes do release governance, 40 do worker e 117 da web; build de produção verde | 2026-08-24 |
+| Promoção do schema do Gate 8 | Supabase production `ifnogpksgdadruooqydi` | cinco migrations aplicadas em ordem; Security Advisor com 0 lints; Performance Advisor com 0 foreign keys sem índice; zero políticas, execuções, comparações, inputs, resultados, cohorts ou decisões após a promoção | 2026-08-25 |
+| Cases reais do Gate 8 | cohorts `wave_1` e `wave_2` | **pendente**; nenhum fixture foi contabilizado como case real | 2026-08-24 |
 
 ## Regras
 
