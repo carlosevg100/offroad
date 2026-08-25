@@ -22,6 +22,7 @@ export * from "./client-requests";
 export * from "./procedure-contract";
 export * from "./reference-data";
 export * from "./material-templates";
+export * from "./conduct-policy";
 export * from "./procedures";
 export * from "./house-playbook";
 export {commonClosing} from "./closing";

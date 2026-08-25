@@ -1,8 +1,23 @@
 # Build State
 
-Atualizado em: 2026-08-24
+Atualizado em: 2026-08-25
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## House Playbook M10 em shadow, 25/08/2026
+
+As treze regras de linguagem e conduta, `LC-01` a `LC-13`, possuem agora procedimentos candidate
+individuais, compilados pelo mesmo contrato governado da vertical growth-capex. Todos usam execução
+determinística, zero chamadas de modelo e o controle `conduct_policy`. O motor verifica suporte de
+claim, julgamento aprovado pelo fingerprint exato, qualificadores materiais, ordem dos riscos,
+vocabulário, promessas de resultado, disclaimer, identidade econômica PT e EN, confidencialidade,
+conflito, registro escrito, desconhecidos com data, surpresa de diligência e forma da casa.
+
+`@offroad/case-materials` executa o controle sobre cada material compilado e anexa versão,
+fingerprint e findings. A execução está deliberadamente em shadow: o audit revelou dívida real de
+suporte campo a campo no term sheet e no Q&A e divergências bilíngues que precisam ser corrigidas no
+M7. Nenhuma regra LC será promovida para bloqueio de release antes de gold, adversarial, revisão
+independente e, quando aplicável, revisão jurídica da versão exata.
 
 ## Fundações bulletproof, 24/08/2026
 

@@ -559,7 +559,12 @@ vazamento entre cases, conflito, destinatário não autorizado e divergência bi
 ### Estado medido
 
 `case-understanding` possui claim registry, semantic audit e manifestos. Os validadores ainda não
-cobrem toda a linguagem proibida, todas as divulgações nem as comunicações de mercado.
+cobriam toda a linguagem proibida, todas as divulgações nem as comunicações de mercado. Em
+25/08/2026, `LC-01` a `LC-13` foram compilados como candidates individuais e o motor
+`conduct_policy` passou a produzir findings determinísticos. `case-materials` anexa o audit em
+shadow a cada artefato. O resultado mediu lacunas reais de suporte em campos do term sheet e Q&A e
+drift econômico PT/EN. O módulo continua candidate até esses débitos do M7 serem corrigidos e cada
+regra receber gold, adversarial e revisão independente da versão exata.
 
 ## 15. Ondas de execução
 

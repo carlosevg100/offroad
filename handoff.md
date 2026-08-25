@@ -8,6 +8,20 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: language and conduct shadow gate, 25 August 2026
+
+House Playbook procedures `LC-01` through `LC-13` now compile as thirteen individually promotable
+candidate controls. `@offroad/credit-playbook` implements the deterministic `conduct_policy` for
+claim support, exact judgment approval, material qualifiers, risk ordering, vocabulary, outcome
+promises, advisory disclaimer, bilingual economic identity, cross-case confidentiality, conflicts,
+written records, qualified unknowns, diligence surprises and house form.
+
+`@offroad/case-materials` runs the policy on every compiled artifact and carries its version,
+fingerprint and findings. Enforcement is intentionally shadow. The first measurement exposed
+unsupported term-sheet and Q&A fields and bilingual economic drift. Those are M7 remediation work,
+not reasons to waive LC. No LC control is production until its exact fingerprint passes gold,
+adversarial, independent review and any required legal review.
+
 ### Engineering update: bulletproof foundations, 24 August 2026
 
 The founder approved the end-to-end hardening plan in

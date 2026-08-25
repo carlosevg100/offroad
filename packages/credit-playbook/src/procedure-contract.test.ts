@@ -6,6 +6,8 @@ import {
   compileProcedureRegistry,
   growthCapexProcedureRegistry,
   growthCapexProcedures,
+  languageConductProcedureRegistry,
+  languageConductProcedures,
   materialTemplateRegistryHash,
   materialTemplates,
   referenceDataKeys,
@@ -129,5 +131,24 @@ describe("growth capex vertical", () => {
   it("produces a stable registry fingerprint for artifact manifests", () => {
     expect(growthCapexProcedureRegistry.registryHash).toMatch(/^[a-f0-9]{64}$/);
     expect(new Set(growthCapexProcedureRegistry.skills.map((skill) => skill.sourceHash)).size).toBe(growthCapexProcedures.length);
+  });
+});
+
+describe("language and conduct procedures", () => {
+  it("compiles LC-01 to LC-13 as individually promotable deterministic candidates", () => {
+    expect(languageConductProcedures).toHaveLength(13);
+    expect(languageConductProcedures.map((procedure) => procedure.knowledge.houseProcedureIds[0])).toEqual(
+      Array.from({length: 13}, (_, index) => `LC-${String(index + 1).padStart(2, "0")}`),
+    );
+    for (const procedure of languageConductProcedures) {
+      expect(procedure.maturity).toBe("candidate");
+      expect(procedure.runtime).toMatchObject({
+        orchestration: "deterministic_pipeline",
+        peerHandoffs: false,
+        maxModelCalls: 0,
+      });
+      expect(procedure.runtime.allowedTools).toEqual(["conduct_policy"]);
+    }
+    expect(languageConductProcedureRegistry.registryHash).toMatch(/^[a-f0-9]{64}$/u);
   });
 });
