@@ -2522,8 +2522,8 @@ begin
     where intake_session_id = session_id and requirement_id = 'expansion_rationale'
   ) or (select array_agg(event_type order by sequence) from public.intake_domain_events where intake_session_id = session_id)
       <> array[
-        'capital_need_declared', 'archetype_routed', 'scope_declared',
-        'route_checked', 'route_checked', 'capital_need_declared',
+        'capital_need_declared', 'archetype_routed', 'analysis_scope_recorded',
+        'route_check_recorded', 'route_check_recorded', 'capital_need_declared',
         'document_received', 'document_removed', 'information_answered', 'information_cleared'
       ] then
     raise exception 'the replay history does not match the accepted command sequence';
