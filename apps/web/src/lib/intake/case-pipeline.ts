@@ -120,7 +120,7 @@ export async function buildCaseState(input: {
   const {data: session, error} = await supabase
     .from("document_intake_sessions")
     .select(
-      "archetype, current_run_id, requested_amount, requested_term_months, requested_grace_months, sector, geography, instruments, collateral_kinds, expected_rate",
+      "archetype, capital_consequence, capital_currency, capital_objective, capital_urgency, current_run_id, requested_amount, requested_term_months, requested_grace_months, sector, geography, instruments, collateral_kinds, expected_rate",
     )
     .eq("organization_id", organizationId)
     .eq("id", sessionId)
@@ -198,7 +198,7 @@ async function loadEconomicInputSnapshot(
 ): Promise<EconomicInputSnapshot> {
   const sessionResult = await supabase
     .from("document_intake_sessions")
-    .select("id, archetype, collateral_kinds, current_run_id, expected_rate, extraction_version, geography, instruments, journey, locale, opportunity_id, pipeline_version, requested_amount, requested_grace_months, requested_term_months, sector, status")
+    .select("id, archetype, capital_consequence, capital_currency, capital_objective, capital_urgency, collateral_kinds, current_run_id, expected_rate, extraction_version, geography, instruments, journey, locale, opportunity_id, pipeline_version, requested_amount, requested_grace_months, requested_term_months, sector, status")
     .eq("organization_id", organizationId)
     .eq("id", sessionId)
     .maybeSingle();

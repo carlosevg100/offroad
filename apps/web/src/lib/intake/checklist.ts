@@ -17,6 +17,8 @@ import {documentKindDefinition, type DocumentKind} from "@offroad/credit-ontolog
 
 import type {Database} from "@/types/database";
 
+import {loadIntakeReplay} from "./replay";
+
 /**
  * The checklist, answered by what the pipeline read.
  *
@@ -97,14 +99,28 @@ export async function loadIntakeChecklist(input: {
 }): Promise<IntakeChecklist | null> {
   const {supabase, organizationId, sessionId, locale} = input;
 
-  const {data: session} = await supabase
-    .from("document_intake_sessions")
-    .select("archetype")
-    .eq("organization_id", organizationId)
-    .eq("id", sessionId)
-    .maybeSingle();
+  const [sessionResult, replay] = await Promise.all([
+    supabase
+      .from("document_intake_sessions")
+      .select("archetype")
+      .eq("organization_id", organizationId)
+      .eq("id", sessionId)
+      .maybeSingle(),
+    loadIntakeReplay({supabase, organizationId, sessionId}),
+  ]);
+  if (sessionResult.error) throw sessionResult.error;
 
-  const archetypeId = parseArchetype(session?.archetype);
+  // A capital-need event identifies a session written through the new atomic boundary. From that
+  // point onward the stream is authoritative; legacy sessions without it keep their projections
+  // readable while they are migrated naturally by the next guided interaction.
+  const replayIsAuthoritative = replay.kind === "ready" && replay.coverage.capitalNeed;
+  const replayArchetype = replayIsAuthoritative ? replay.state.archetypeRoute?.archetypeId ?? null : null;
+  const projectedArchetype = parseArchetype(sessionResult.data?.archetype);
+  if (replayIsAuthoritative && projectedArchetype && replayArchetype !== projectedArchetype) {
+    throw new Error("intake replay projection mismatch");
+  }
+
+  const archetypeId = replayIsAuthoritative ? replayArchetype : projectedArchetype;
   if (!archetypeId) return null;
 
   const {data: documents} = await supabase
@@ -123,9 +139,11 @@ export async function loadIntakeChecklist(input: {
   const nameById = new Map((documents ?? []).map((document) => [document.id, document.original_name]));
 
   // Only classified documents can discharge a requirement — an unread file proves nothing.
-  const classified: ClassifiedDocument[] = ids
-    .filter((id) => kindById.has(id))
-    .map((id) => ({id, kind: kindById.get(id)!}));
+  const classified: ClassifiedDocument[] = replayIsAuthoritative
+    ? replay.state.documents.map((document) => ({id: document.id, kind: document.kind}))
+    : ids
+      .filter((id) => kindById.has(id))
+      .map((id) => ({id, kind: kindById.get(id)!}));
 
   const {data: answerRows} = await supabase
     .from("intake_information_answers")
@@ -141,7 +159,23 @@ export async function loadIntakeChecklist(input: {
     ]),
   );
 
-  const report = assessSufficiency(archetypeId, classified, answers, responses);
+  const replayCoverage = replayIsAuthoritative ? replay.state.informationCoverage : null;
+  const report: SufficiencyReport = replayCoverage
+    ? {
+        archetypeId: replayCoverage.archetypeId,
+        minimum: replayCoverage.minimum,
+        ideal: replayCoverage.ideal,
+        requirements: [...replayCoverage.requirements],
+        missing: [...replayCoverage.missing],
+        unmatchedDocuments: [...replayCoverage.unmatchedDocuments],
+        byStage: {
+          now: replayCoverage.requirements.filter((status) => status.stage === "now"),
+          structuring: replayCoverage.requirements.filter((status) => status.stage === "structuring"),
+          diligence: replayCoverage.requirements.filter((status) => status.stage === "diligence"),
+          closing: replayCoverage.requirements.filter((status) => status.stage === "closing"),
+        },
+      }
+    : assessSufficiency(archetypeId, classified, answers, responses);
   const clientPlan = planClientRequests(report);
   const label = (kind: DocumentKind) => documentKindDefinition(kind).labels[locale];
   const grouped = missingByPurpose(report);

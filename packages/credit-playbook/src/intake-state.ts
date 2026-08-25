@@ -35,16 +35,37 @@ export const intakeActorRoleSchema = z.enum(["company", "advisor"]);
 export type IntakeActorRole = z.infer<typeof intakeActorRoleSchema>;
 
 export type CapitalNeedFrame = {
-  cnpj: string;
-  amountBand: string;
+  /** The operation selected in the guided intake. This is the only day-zero fact required. */
   useOfProceeds: string;
-  urgency: UrgencyBand;
-  desiredTenorBand: string;
-  availableCollateral: readonly string[];
+  objective?: string;
+  requestedAmount?: string;
+  currency?: "BRL" | "USD" | "EUR";
+  urgency?: UrgencyBand;
+  requestedTermMonths?: number;
+  requestedGraceMonths?: number;
+  consequenceIfNotExecuted?: string;
+  sector?: string;
+  geography?: string;
+  instrumentPreferences?: readonly string[];
+  availableCollateral?: readonly string[];
+  expectedRate?: string;
+  /** Legacy declarations remain replayable while new sessions use the precise fields above. */
+  cnpj?: string;
+  amountBand?: string;
+  desiredTenorBand?: string;
   currentLenders?: string;
   declaredBy: {actorId: string; role: IntakeActorRole};
   declaredAt: string;
   version: number;
+};
+
+export type ReceivedDocument = {
+  id: string;
+  originalName?: string;
+  objectPath?: string;
+  sha256?: string;
+  byteSize?: number;
+  mimeType?: string;
 };
 
 export type ArchetypeRoute = {
@@ -107,6 +128,7 @@ type EventBase = {eventId: string; caseId: string; sequence: number; occurredAt:
 export type IntakeEvent =
   | (EventBase & {type: "capital_need_declared"; frame: Omit<CapitalNeedFrame, "declaredAt">})
   | (EventBase & {type: "archetype_routed"; route: Omit<ArchetypeRoute, "routedAt">})
+  | (EventBase & {type: "document_received"; document: ReceivedDocument; actorId: string})
   | (EventBase & {type: "document_classified"; document: ClassifiedDocument; classificationVersion: number})
   | (EventBase & {type: "document_removed"; documentId: string; actorId: string})
   | (EventBase & {
@@ -138,16 +160,34 @@ const eventBaseShape = {
 };
 
 const capitalNeedFrameSchema = z.object({
-  cnpj: z.string().refine((value) => value.replace(/\D/g, "").length === 14, "CNPJ must have 14 digits"),
-  amountBand: z.string().trim().min(1),
   useOfProceeds: z.string().trim().min(1),
-  urgency: urgencyBandSchema,
-  desiredTenorBand: z.string().trim().min(1),
-  availableCollateral: z.array(z.string().trim().min(1)).min(1),
+  objective: z.string().trim().min(1).max(4000).optional(),
+  requestedAmount: z.string().regex(/^\d+(?:\.\d{1,2})?$/).optional(),
+  currency: z.enum(["BRL", "USD", "EUR"]).optional(),
+  urgency: urgencyBandSchema.optional(),
+  requestedTermMonths: z.number().int().min(1).max(360).optional(),
+  requestedGraceMonths: z.number().int().min(0).max(120).optional(),
+  consequenceIfNotExecuted: z.string().trim().min(1).max(4000).optional(),
+  sector: z.string().trim().min(1).max(120).optional(),
+  geography: z.string().regex(/^[A-Z]{2}$/).optional(),
+  instrumentPreferences: z.array(z.string().trim().min(1)).optional(),
+  availableCollateral: z.array(z.string().trim().min(1)).optional(),
+  expectedRate: z.string().trim().min(1).max(80).optional(),
+  cnpj: z.string().refine((value) => value.replace(/\D/g, "").length === 14, "CNPJ must have 14 digits").optional(),
+  amountBand: z.string().trim().min(1).optional(),
+  desiredTenorBand: z.string().trim().min(1).optional(),
   currentLenders: z.string().trim().min(1).optional(),
   declaredBy: z.object({actorId: z.string().trim().min(1), role: intakeActorRoleSchema}).strict(),
   version: z.number().int().positive(),
-}).strict();
+}).strict().superRefine((frame, context) => {
+  if (
+    frame.requestedGraceMonths !== undefined &&
+    frame.requestedTermMonths !== undefined &&
+    frame.requestedGraceMonths >= frame.requestedTermMonths
+  ) {
+    context.addIssue({code: "custom", path: ["requestedGraceMonths"], message: "grace period must be shorter than term"});
+  }
+});
 
 const ladderAttemptSchema = z.object({
   source: z.enum(ladderOrder),
@@ -169,6 +209,19 @@ export const intakeEventSchema = z.discriminatedUnion("type", [
       retestTriggers: z.array(z.string().trim().min(1)),
       version: z.number().int().positive(),
     }).strict(),
+  }).strict(),
+  z.object({
+    ...eventBaseShape,
+    type: z.literal("document_received"),
+    document: z.object({
+      id: z.string().trim().min(1),
+      originalName: z.string().trim().min(1).max(500).optional(),
+      objectPath: z.string().trim().min(1).max(1024).optional(),
+      sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+      byteSize: z.number().int().min(0).max(52_428_800).optional(),
+      mimeType: z.string().trim().min(1).max(255).optional(),
+    }).strict(),
+    actorId: z.string().trim().min(1),
   }).strict(),
   z.object({
     ...eventBaseShape,
@@ -297,6 +350,7 @@ export type IntakeDecisionLogEntry = {
   type:
     | "capital_need_recorded"
     | "archetype_selected"
+    | "document_received"
     | "document_classification_changed"
     | "document_removed"
     | "requirement_answered"
@@ -321,6 +375,7 @@ export type IntakeState = {
   analysisScope: AnalysisScope | null;
   advisorAuthorization: AdvisorAuthorization | null;
   routeChecks: readonly IntakeRouteCheck[];
+  receivedDocuments: readonly ReceivedDocument[];
   documents: readonly (ClassifiedDocument & {classificationVersion: number})[];
   ladderTraces: readonly RequestLadderTrace[];
   informationCoverage: InformationCoverage | null;
@@ -335,6 +390,7 @@ type MutableReplay = {
   scope: AnalysisScope | null;
   authorization: AdvisorAuthorization | null;
   routeChecks: IntakeRouteCheck[];
+  receivedDocuments: Map<string, ReceivedDocument>;
   documents: Map<string, ClassifiedDocument & {classificationVersion: number}>;
   answers: Record<string, string | undefined>;
   responses: Record<string, {response: RequirementResponse; note?: string} | undefined>;
@@ -360,6 +416,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     scope: null,
     authorization: null,
     routeChecks: [],
+    receivedDocuments: new Map(),
     documents: new Map(),
     answers: {},
     responses: {},
@@ -370,6 +427,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
   for (const event of parsedEvents) applyEvent(replay, event);
 
   const generatedAt = parsedEvents.at(-1)?.occurredAt ?? `${policy.asOf}T00:00:00.000Z`;
+  const receivedDocuments = [...replay.receivedDocuments.values()].sort((left, right) => left.id.localeCompare(right.id));
   const documents = [...replay.documents.values()].sort((left, right) => left.id.localeCompare(right.id));
   const ladderTraces = [...replay.ladders.values()].sort((left, right) => left.requirementId.localeCompare(right.requirementId));
   const fingerprint = hash({caseId, policy, events: parsedEvents});
@@ -385,6 +443,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
       analysisScope: replay.scope,
       advisorAuthorization: replay.authorization,
       routeChecks: replay.routeChecks,
+      receivedDocuments,
       documents,
       ladderTraces,
       informationCoverage: null,
@@ -466,6 +525,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     analysisScope: replay.scope,
     advisorAuthorization: replay.authorization,
     routeChecks: replay.routeChecks,
+    receivedDocuments,
     documents,
     ladderTraces,
     informationCoverage,
@@ -491,15 +551,25 @@ function applyEvent(state: MutableReplay, event: IntakeEvent): void {
       pushLog(state, event, "archetype_selected", `Archetype ${event.route.archetypeId} selected at ${event.route.confidence} confidence.`);
       break;
     }
+    case "document_received": {
+      if (state.receivedDocuments.has(event.document.id)) throw new Error("document receipt must be unique");
+      state.receivedDocuments.set(event.document.id, event.document);
+      pushLog(state, event, "document_received", `Document ${event.document.id} received from ${event.actorId}.`, [event.document.id]);
+      break;
+    }
     case "document_classified": {
       const prior = state.documents.get(event.document.id);
       if (event.classificationVersion !== (prior?.classificationVersion ?? 0) + 1) throw new Error("document classification versions must be sequential");
+      // Streams created before receipt events remain replayable without manufacturing metadata.
+      if (!state.receivedDocuments.has(event.document.id)) state.receivedDocuments.set(event.document.id, {id: event.document.id});
       state.documents.set(event.document.id, {...event.document, classificationVersion: event.classificationVersion});
       pushLog(state, event, "document_classification_changed", `Document ${event.document.id} classified as ${event.document.kind}.`, [event.document.id]);
       break;
     }
     case "document_removed": {
-      if (!state.documents.delete(event.documentId)) throw new Error("removed document must exist in the event stream");
+      const received = state.receivedDocuments.delete(event.documentId);
+      const classified = state.documents.delete(event.documentId);
+      if (!received && !classified) throw new Error("removed document must exist in the event stream");
       pushLog(state, event, "document_removed", `Document ${event.documentId} removed by ${event.actorId}.`, [event.documentId]);
       break;
     }

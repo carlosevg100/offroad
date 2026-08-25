@@ -179,8 +179,12 @@ declare
   title_length integer;
 begin
   -- Documents: one in the session that will be confirmed (becomes evidence), one in an open session (removable).
-  insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by)
-  values ('50000000-0000-4000-8000-000000000001', org, session_id, 'opportunity-documents', org::text || '/' || session_id::text || '/a.pdf', 'a.pdf', repeat('a', 64), 10, '10000000-0000-4000-8000-000000000001');
+  perform public.register_intake_document_command(
+    org, session_id, '51000000-0000-4000-8000-000000000001',
+    '50000000-0000-4000-8000-000000000001', 'opportunity-documents',
+    org::text || '/' || session_id::text || '/a.pdf', 'a.pdf', 'application/pdf',
+    10, repeat('a', 64)
+  );
   -- `insert … returning` must work for the tenant (the app reads the new session id this way).
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values ('40000000-0000-4000-8000-000000000002', org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR')
@@ -188,12 +192,21 @@ begin
   if returned_session is distinct from '40000000-0000-4000-8000-000000000002' then
     raise exception 'insert returning did not expose the new intake session to its tenant';
   end if;
-  insert into public.source_documents (id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by)
-  values ('50000000-0000-4000-8000-000000000002', org, '40000000-0000-4000-8000-000000000002', 'opportunity-documents', org::text || '/40000000-0000-4000-8000-000000000002/b.pdf', 'b.pdf', repeat('b', 64), 10, '10000000-0000-4000-8000-000000000001');
-
-  delete from public.source_documents where id = '50000000-0000-4000-8000-000000000002';
-  get diagnostics n = row_count;
-  if n <> 1 then raise exception 'owner could not remove a document from an open intake session'; end if;
+  perform public.register_intake_document_command(
+    org, '40000000-0000-4000-8000-000000000002',
+    '51000000-0000-4000-8000-000000000002',
+    '50000000-0000-4000-8000-000000000002', 'opportunity-documents',
+    org::text || '/40000000-0000-4000-8000-000000000002/b.pdf',
+    'b.pdf', 'application/pdf', 10, repeat('b', 64)
+  );
+  perform public.remove_intake_document_command(
+    org, '40000000-0000-4000-8000-000000000002',
+    '51000000-0000-4000-8000-000000000003',
+    '50000000-0000-4000-8000-000000000002'
+  );
+  if exists (select 1 from public.source_documents where id = '50000000-0000-4000-8000-000000000002') then
+    raise exception 'owner command did not remove a document from an open intake session';
+  end if;
 
   perform public.begin_intake_processing(org, session_id);
   if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
@@ -327,9 +340,11 @@ begin
   if (select opportunity_id from public.source_documents where id = '50000000-0000-4000-8000-000000000001') is distinct from first_opportunity then
     raise exception 'confirmation did not link the session document to the opportunity';
   end if;
-  delete from public.source_documents where id = '50000000-0000-4000-8000-000000000001';
-  get diagnostics n = row_count;
-  if n <> 0 then raise exception 'evidence document was deleted after confirmation'; end if;
+  begin
+    delete from public.source_documents where id = '50000000-0000-4000-8000-000000000001';
+    raise exception 'evidence document accepted a direct delete after confirmation';
+  exception when insufficient_privilege then null;
+  end;
 end;
 $$;
 
@@ -380,17 +395,6 @@ begin
     raise exception 'tenant B can read tenant A intake sessions';
   end if;
 
-  -- Written through a column the tenant is still allowed to write. `status` would now fail on
-  -- the grant before RLS ever ran, and this block is asserting isolation between tenants, not
-  -- the column grants: it has to reach the policy to prove the policy holds.
-  update public.document_intake_sessions
-  set requested_amount = 1
-  where id = '40000000-0000-4000-8000-000000000001';
-  get diagnostics affected_rows = row_count;
-  if affected_rows <> 0 then
-    raise exception 'tenant B updated tenant A intake session';
-  end if;
-
   begin
     insert into public.intake_field_candidates (
       organization_id, intake_session_id, extractor_key, field_path, field_group, label,
@@ -408,11 +412,11 @@ begin
     when insufficient_privilege then null;
   end;
 
-  delete from public.source_documents where id = '50000000-0000-4000-8000-000000000001';
-  get diagnostics affected_rows = row_count;
-  if affected_rows <> 0 then
+  begin
+    delete from public.source_documents where id = '50000000-0000-4000-8000-000000000001';
     raise exception 'tenant B deleted tenant A document';
-  end if;
+  exception when insufficient_privilege then null;
+  end;
 
   -- ...nor drive tenant A's session through the intake commands.
   begin
@@ -551,13 +555,10 @@ begin
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
 
-  insert into public.source_documents (
-    id, organization_id, intake_session_id, bucket_id, object_path, original_name, mime_type,
-    sha256, byte_size, created_by
-  ) values (
-    document_id, org, session_id, 'opportunity-documents',
-    org::text || '/' || session_id::text || '/df.pdf', 'df.pdf', 'application/pdf',
-    repeat('d', 64), 4096, '10000000-0000-4000-8000-000000000001'
+  perform public.register_intake_document_command(
+    org, session_id, '51000000-0000-4000-8000-000000000004', document_id,
+    'opportunity-documents', org::text || '/' || session_id::text || '/df.pdf',
+    'df.pdf', 'application/pdf', 4096, repeat('d', 64)
   );
 
   result := public.begin_processing_run(
@@ -1548,11 +1549,9 @@ begin
 
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
-  insert into public.source_documents (
-    id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by
-  ) values (
-    doc_id, org, session_id, 'opportunity-documents', path, 'probe.pdf', repeat('9', 64), 10,
-    '10000000-0000-4000-8000-000000000001'
+  perform public.register_intake_document_command(
+    org, session_id, '51000000-0000-4000-8000-000000000005', doc_id,
+    'opportunity-documents', path, 'probe.pdf', 'application/pdf', 10, repeat('9', 64)
   );
 
   -- The ECS task credential endpoint, which is the vector this check exists for.
@@ -1599,24 +1598,22 @@ begin
 end;
 $$;
 
--- `object_path` is the string the Storage policies parse, and it became tenant-insertable when
--- the write surface narrowed to named columns. A row may not describe another tenant's object.
+-- `object_path` is the string the Storage policies parse. The atomic registration command may
+-- never register another tenant's object under the authenticated tenant's session.
 do $$
 declare
   accepted boolean := true;
 begin
   begin
-    insert into public.source_documents (
-      id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by
-    ) values (
-      '50000000-0000-4000-8000-0000000000f2', '20000000-0000-4000-8000-000000000001',
-      '40000000-0000-4000-8000-0000000000f1', 'opportunity-documents',
-      '20000000-0000-4000-8000-000000000002/x/y.pdf', 'y.pdf', repeat('7', 64), 10,
-      '10000000-0000-4000-8000-000000000001'
+    perform public.register_intake_document_command(
+      '20000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-0000000000f1',
+      '51000000-0000-4000-8000-0000000000f2', '50000000-0000-4000-8000-0000000000f2',
+      'opportunity-documents', '20000000-0000-4000-8000-000000000002/x/y.pdf',
+      'y.pdf', 'application/pdf', 10, repeat('7', 64)
     );
   exception when others then accepted := false;
   end;
-  if accepted then raise exception 'source_documents accepted an object_path under another organization'; end if;
+  if accepted then raise exception 'document command accepted an object_path under another organization'; end if;
 end;
 $$;
 
@@ -1641,11 +1638,9 @@ begin
 
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
-  insert into public.source_documents (
-    id, organization_id, intake_session_id, bucket_id, object_path, original_name, sha256, byte_size, created_by
-  ) values (
-    doc_id, org, session_id, 'opportunity-documents', path, 'spend.pdf', repeat('5', 64), 10,
-    '10000000-0000-4000-8000-000000000001'
+  perform public.register_intake_document_command(
+    org, session_id, '51000000-0000-4000-8000-000000000006', doc_id,
+    'opportunity-documents', path, 'spend.pdf', 'application/pdf', 10, repeat('5', 64)
   );
 
   first_run := public.begin_processing_run(org, session_id, 'manual',
@@ -1718,10 +1713,13 @@ begin
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
 
-  -- What the company answers about itself stays its own to change.
-  update public.document_intake_sessions
-  set requested_amount = 40000000, requested_term_months = 48, sector = 'varejo'
-  where organization_id = org and id = session_id;
+  -- What the company answers about itself stays its own to change, through the atomic command
+  -- that writes the projection and immutable history together.
+  perform public.record_intake_capital_need_command(
+    org, session_id, '51000000-0000-4000-8000-000000000007', 'working_capital',
+    null, 40000000, 'BRL', null, 48, null, null, 'varejo', 'BR',
+    '{}'::text[], '{}'::text[], null
+  );
 
   accepted := true;
   begin
@@ -2305,19 +2303,25 @@ begin
 end;
 $$;
 
--- Adaptive-intake events are append-only, tenant-isolated and synchronized atomically with the
--- mutable projections the UI reads. Idempotency retries return the first event; reusing the key
--- for different content fails closed.
+-- Adaptive-intake commands make the immutable stream and the mutable projections one atomic
+-- boundary. Retries replay the first result; a reused key with different content fails closed.
 do $$
 declare
   org_a constant uuid := '20000000-0000-4000-8000-000000000001';
   session_id constant uuid := '73000000-0000-4000-8000-000000000001';
-  route_event constant uuid := '73000000-0000-4000-8000-000000000002';
-  answer_event constant uuid := '73000000-0000-4000-8000-000000000003';
-  clear_event constant uuid := '73000000-0000-4000-8000-000000000004';
-  terminal_answer_event constant uuid := '73000000-0000-4000-8000-000000000005';
-  blocked_route_event constant uuid := '73000000-0000-4000-8000-000000000006';
-  blocked_answer_event constant uuid := '73000000-0000-4000-8000-000000000007';
+  frame_event constant uuid := '73000000-0000-4000-8000-000000000002';
+  route_event constant uuid := '73000000-0000-4000-8000-000000000003';
+  capital_event constant uuid := '73000000-0000-4000-8000-000000000004';
+  document_id constant uuid := '73000000-0000-4000-8000-000000000005';
+  receipt_event constant uuid := '73000000-0000-4000-8000-000000000006';
+  removal_event constant uuid := '73000000-0000-4000-8000-000000000007';
+  answer_event constant uuid := '73000000-0000-4000-8000-000000000008';
+  clear_event constant uuid := '73000000-0000-4000-8000-000000000009';
+  terminal_answer_event constant uuid := '73000000-0000-4000-8000-000000000010';
+  blocked_capital_event constant uuid := '73000000-0000-4000-8000-000000000011';
+  blocked_answer_event constant uuid := '73000000-0000-4000-8000-000000000012';
+  opportunity_document constant uuid := '73000000-0000-4000-8000-000000000013';
+  accessible_opportunity uuid;
   outcome jsonb;
   accepted boolean;
 begin
@@ -2335,36 +2339,147 @@ begin
     true
   );
 
-  outcome := public.set_intake_archetype_command(
-    org_a, session_id, route_event, 'growth_expansion', 'medium',
-    'Declarado pelo membro autorizado durante o intake guiado.',
-    array['documentos classificados', 'detalhes da necessidade de capital']
+  select opportunity.id into accessible_opportunity
+  from public.opportunities opportunity
+  where opportunity.organization_id = org_a
+  order by opportunity.created_at
+  limit 1;
+  if accessible_opportunity is null then
+    raise exception 'adaptive intake test needs one accessible opportunity fixture';
+  end if;
+  insert into public.source_documents (
+    id, organization_id, opportunity_id, intake_session_id, bucket_id, object_path,
+    original_name, mime_type, sha256, byte_size, created_by
+  ) values (
+    opportunity_document, org_a, accessible_opportunity, null, 'opportunity-documents',
+    org_a::text || '/' || accessible_opportunity::text || '/direct-opportunity.pdf',
+    'direct-opportunity.pdf', 'application/pdf', repeat('e', 64), 1024,
+    '10000000-0000-4000-8000-000000000001'
   );
-  if outcome ->> 'replayed' <> 'false'
-    or (select archetype from public.document_intake_sessions where id = session_id) <> 'growth_expansion'
-    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 1 then
-    raise exception 'archetype command did not update its projection and append one event';
+  if not exists (select 1 from public.source_documents where id = opportunity_document) then
+    raise exception 'opportunity-scoped direct document insert regressed';
   end if;
 
-  outcome := public.set_intake_archetype_command(
-    org_a, session_id, route_event, 'growth_expansion', 'medium',
-    'Declarado pelo membro autorizado durante o intake guiado.',
+  outcome := public.set_intake_operation_command(
+    org_a, session_id, frame_event, route_event, 'growth_expansion', 'medium',
+    'Finalidade declarada pelo membro autorizado no intake guiado.',
     array['documentos classificados', 'detalhes da necessidade de capital']
   );
-  if outcome ->> 'replayed' <> 'true'
-    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 1 then
-    raise exception 'archetype command is not idempotent';
+  if outcome #>> '{frame,replayed}' <> 'false'
+    or outcome #>> '{route,replayed}' <> 'false'
+    or (select archetype from public.document_intake_sessions where id = session_id) <> 'growth_expansion'
+    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 2 then
+    raise exception 'operation command did not atomically record the frame and route';
+  end if;
+
+  outcome := public.set_intake_operation_command(
+    org_a, session_id, frame_event, route_event, 'growth_expansion', 'medium',
+    'Finalidade declarada pelo membro autorizado no intake guiado.',
+    array['documentos classificados', 'detalhes da necessidade de capital']
+  );
+  if outcome #>> '{frame,replayed}' <> 'true'
+    or outcome #>> '{route,replayed}' <> 'true'
+    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 2 then
+    raise exception 'operation command is not idempotent';
   end if;
 
   accepted := true;
   begin
-    perform public.set_intake_archetype_command(
-      org_a, session_id, route_event, 'refinance', 'medium',
-      'Tentativa de reutilizar a mesma chave para outro conteúdo.', '{}'::text[]
+    perform public.set_intake_operation_command(
+      org_a, session_id, frame_event, route_event, 'refinance', 'medium',
+      'Tentativa de reutilizar as mesmas chaves para outro conteúdo.', '{}'::text[]
     );
   exception when unique_violation then accepted := false;
   end;
-  if accepted then raise exception 'idempotency key accepted different content'; end if;
+  if accepted then raise exception 'operation idempotency keys accepted different content'; end if;
+
+  accepted := true;
+  begin
+    perform public.set_intake_archetype_command(
+      org_a, session_id, gen_random_uuid(), 'refinance', 'medium',
+      'A rota antiga não pode criar um stream sem a necessidade de capital.', '{}'::text[]
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'legacy archetype-only command remained callable'; end if;
+
+  outcome := public.record_intake_capital_need_command(
+    org_a, session_id, capital_event, 'growth_expansion',
+    'Abrir três unidades com maturação comprovada.', 48000000, 'BRL', '3_to_6_months',
+    60, 12, 'O atraso compromete o calendário de implantação.', 'retail', 'BR',
+    array['debenture', 'ccb'], array['recebiveis', 'imovel'], 'CDI mais spread indicativo'
+  );
+  if outcome ->> 'replayed' <> 'false'
+    or not exists (
+      select 1 from public.document_intake_sessions session
+      where session.id = session_id
+        and session.capital_objective = 'Abrir três unidades com maturação comprovada.'
+        and session.requested_amount = 48000000
+        and session.capital_currency = 'BRL'
+        and session.capital_urgency = '3_to_6_months'
+        and session.requested_term_months = 60
+        and session.requested_grace_months = 12
+        and session.geography = 'BR'
+    ) then
+    raise exception 'capital-need command did not synchronize its projection';
+  end if;
+
+  accepted := true;
+  begin
+    update public.document_intake_sessions set requested_amount = 1 where id = session_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant directly rewrote a capital-need projection'; end if;
+
+  accepted := true;
+  begin
+    insert into public.source_documents (
+      id, organization_id, intake_session_id, bucket_id, object_path,
+      original_name, mime_type, sha256, byte_size, created_by
+    ) values (
+      document_id, org_a, session_id, 'opportunity-documents',
+      org_a::text || '/' || session_id::text || '/direct.pdf', 'direct.pdf',
+      'application/pdf', repeat('d', 64), 1024,
+      '10000000-0000-4000-8000-000000000001'
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant directly inserted a session document'; end if;
+
+  outcome := public.register_intake_document_command(
+    org_a, session_id, receipt_event, document_id, 'opportunity-documents',
+    org_a::text || '/' || session_id::text || '/financials.pdf',
+    'financials.pdf', 'application/pdf', 2048, repeat('f', 64)
+  );
+  if outcome ->> 'replayed' <> 'false'
+    or not exists (select 1 from public.source_documents where id = document_id)
+    or not exists (
+      select 1 from public.intake_domain_events event
+      where event.event_id = receipt_event
+        and event.event_type = 'document_received'
+        and event.payload #>> '{document,originalName}' = 'financials.pdf'
+    ) then
+    raise exception 'document registration did not atomically persist receipt and row';
+  end if;
+
+  accepted := true;
+  begin
+    delete from public.source_documents where id = document_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant directly deleted a session document'; end if;
+
+  outcome := public.remove_intake_document_command(
+    org_a, session_id, removal_event, document_id
+  );
+  if outcome ->> 'replayed' <> 'false'
+    or exists (select 1 from public.source_documents where id = document_id)
+    or not exists (
+      select 1 from public.intake_domain_events event
+      where event.event_id = removal_event and event.event_type = 'document_removed'
+    ) then
+    raise exception 'document removal did not atomically preserve history and remove the row';
+  end if;
 
   perform public.record_intake_information_command(
     org_a, session_id, answer_event, 'expansion_rationale',
@@ -2383,8 +2498,11 @@ begin
     select 1 from public.intake_information_answers
     where intake_session_id = session_id and requirement_id = 'expansion_rationale'
   ) or (select array_agg(event_type order by sequence) from public.intake_domain_events where intake_session_id = session_id)
-      <> array['archetype_routed', 'information_answered', 'information_cleared'] then
-    raise exception 'clearing did not preserve the event history';
+      <> array[
+        'capital_need_declared', 'archetype_routed', 'capital_need_declared',
+        'document_received', 'document_removed', 'information_answered', 'information_cleared'
+      ] then
+    raise exception 'the replay history does not match the accepted command sequence';
   end if;
 
   perform public.record_intake_information_command(
@@ -2398,13 +2516,13 @@ begin
 
   accepted := true;
   begin
-    perform public.set_intake_archetype_command(
-      org_a, session_id, blocked_route_event, 'refinance', 'medium',
-      'Tentativa de alterar uma sessão já confirmada.', '{}'::text[]
+    perform public.record_intake_capital_need_command(
+      org_a, session_id, blocked_capital_event, 'refinance', null, null, null, null,
+      null, null, null, null, null, '{}'::text[], '{}'::text[], null
     );
   exception when object_not_in_prerequisite_state then accepted := false;
   end;
-  if accepted then raise exception 'terminal session accepted an archetype change'; end if;
+  if accepted then raise exception 'terminal session accepted a capital-need change'; end if;
 
   accepted := true;
   begin
@@ -2415,7 +2533,7 @@ begin
   exception when object_not_in_prerequisite_state then accepted := false;
   end;
   if accepted then raise exception 'terminal session accepted an information change'; end if;
-  if (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 4 then
+  if (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 8 then
     raise exception 'rejected terminal commands appended events';
   end if;
 
@@ -2425,7 +2543,7 @@ begin
       event_id, organization_id, intake_session_id, sequence, event_type, payload,
       event_hash, occurred_at, created_by
     ) values (
-      gen_random_uuid(), org_a, session_id, 4, 'information_cleared', '{}'::jsonb,
+      gen_random_uuid(), org_a, session_id, 9, 'information_cleared', '{}'::jsonb,
       repeat('a', 64), now(), '10000000-0000-4000-8000-000000000001'
     );
   exception when insufficient_privilege then accepted := false;

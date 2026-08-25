@@ -1,3 +1,5 @@
+import {randomUUID} from "node:crypto";
+
 import {collateralKindSchema, instrumentSchema, type CollateralKind, type Instrument} from "@offroad/fund-mandate";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
@@ -5,7 +7,7 @@ import {z} from "zod";
 import type {Database} from "@/types/database";
 
 /**
- * The six facts that decide who could buy the paper.
+ * The capital-need facts that shape preparation and market fit.
  *
  * The archetype already says what the money is for, which drives the checklist. It says nothing
  * about who would fund it. Amount, tenor, sector, geography, the instruments the operation could
@@ -20,9 +22,13 @@ import type {Database} from "@/types/database";
  */
 
 export type DealBrief = {
+  objective?: string;
   requestedAmount?: string;
+  currency?: "BRL" | "USD" | "EUR";
+  urgency?: "up_to_3_months" | "3_to_6_months" | "6_to_12_months" | "no_rush";
   requestedTermMonths?: number;
   requestedGraceMonths?: number;
+  consequenceIfNotExecuted?: string;
   sector?: string;
   geography?: string;
   instruments?: Instrument[];
@@ -105,9 +111,13 @@ const optionalInt = (min: number, max: number) =>
  * things they were never asked to know.
  */
 export const dealBriefFormSchema = z.object({
+  objective: z.string().trim().max(4000).default(""),
   amount: z.string().default(""),
+  currency: z.enum(["BRL", "USD", "EUR"]).optional(),
+  urgency: z.enum(["up_to_3_months", "3_to_6_months", "6_to_12_months", "no_rush"]).optional(),
   term_months: optionalInt(1, 360),
   grace_months: optionalInt(0, 120),
+  consequence: z.string().trim().max(4000).default(""),
   sector: z.string().trim().max(120).default(""),
   geography: z
     .string()
@@ -139,9 +149,13 @@ export function toDealBrief(input: DealBriefInput): DealBrief | null {
   }
 
   return {
+    ...(input.objective ? {objective: input.objective} : {}),
     ...(amount ? {requestedAmount: amount} : {}),
+    ...(amount && input.currency ? {currency: input.currency} : {}),
+    ...(input.urgency ? {urgency: input.urgency} : {}),
     ...(input.term_months !== undefined ? {requestedTermMonths: input.term_months} : {}),
     ...(input.grace_months !== undefined ? {requestedGraceMonths: input.grace_months} : {}),
+    ...(input.consequence ? {consequenceIfNotExecuted: input.consequence} : {}),
     ...(input.sector ? {sector: input.sector} : {}),
     ...(input.geography ? {geography: input.geography} : {}),
     ...(input.instruments.length > 0 ? {instruments: input.instruments} : {}),
@@ -155,12 +169,18 @@ type SessionRow = Database["public"]["Tables"]["document_intake_sessions"]["Row"
 /** Reads the brief back off a session row, in the shape the fit assessment consumes. */
 export function dealBriefOf(session: Pick<
   SessionRow,
-  "requested_amount" | "requested_term_months" | "requested_grace_months" | "sector" | "geography" | "instruments" | "collateral_kinds" | "expected_rate"
+  "capital_objective" | "capital_currency" | "capital_urgency" | "capital_consequence" |
+  "requested_amount" | "requested_term_months" | "requested_grace_months" | "sector" |
+  "geography" | "instruments" | "collateral_kinds" | "expected_rate"
 >): DealBrief {
   return {
+    ...(session.capital_objective ? {objective: session.capital_objective} : {}),
     ...(session.requested_amount !== null ? {requestedAmount: String(session.requested_amount)} : {}),
+    ...(session.capital_currency ? {currency: session.capital_currency as DealBrief["currency"]} : {}),
+    ...(session.capital_urgency ? {urgency: session.capital_urgency as DealBrief["urgency"]} : {}),
     ...(session.requested_term_months !== null ? {requestedTermMonths: session.requested_term_months} : {}),
     ...(session.requested_grace_months !== null ? {requestedGraceMonths: session.requested_grace_months} : {}),
+    ...(session.capital_consequence ? {consequenceIfNotExecuted: session.capital_consequence} : {}),
     ...(session.sector ? {sector: session.sector} : {}),
     ...(session.geography ? {geography: session.geography} : {}),
     ...(session.instruments?.length ? {instruments: session.instruments as Instrument[]} : {}),
@@ -170,11 +190,14 @@ export function dealBriefOf(session: Pick<
 }
 
 /**
- * How much of the brief is answered, and which of the six still decide the buyer set.
+ * How much of the brief is answered, including the declared purpose and the fit dimensions.
  *
  * Grace is excluded from the count: it shapes the structure, never who is eligible to hold it.
  */
-export const BRIEF_FIELDS = ["requestedAmount", "requestedTermMonths", "sector", "geography", "instruments", "collateralKinds"] as const;
+export const BRIEF_FIELDS = [
+  "objective", "requestedAmount", "urgency", "requestedTermMonths", "consequenceIfNotExecuted",
+  "sector", "geography", "instruments", "collateralKinds",
+] as const;
 
 export function briefCompleteness(brief: DealBrief): {answered: number; total: number; missing: string[]} {
   const missing = BRIEF_FIELDS.filter((field) => {
@@ -190,20 +213,32 @@ export async function saveDealBrief(input: {
   sessionId: string;
   brief: DealBrief;
 }): Promise<{ok: true} | {ok: false}> {
-  const {error} = await input.supabase
+  const {data: session, error: sessionError} = await input.supabase
     .from("document_intake_sessions")
-    .update({
-      requested_amount: input.brief.requestedAmount ? Number(input.brief.requestedAmount) : null,
-      requested_term_months: input.brief.requestedTermMonths ?? null,
-      requested_grace_months: input.brief.requestedGraceMonths ?? null,
-      sector: input.brief.sector ?? null,
-      geography: input.brief.geography ?? null,
-      instruments: input.brief.instruments ?? null,
-      collateral_kinds: input.brief.collateralKinds ?? null,
-      expected_rate: input.brief.expectedRate ?? null,
-    })
+    .select("archetype")
     .eq("organization_id", input.organizationId)
-    .eq("id", input.sessionId);
+    .eq("id", input.sessionId)
+    .maybeSingle();
+  if (sessionError || !session?.archetype) return {ok: false};
+
+  const {error} = await input.supabase.rpc("record_intake_capital_need_command", {
+    p_organization_id: input.organizationId,
+    p_session_id: input.sessionId,
+    p_event_id: randomUUID(),
+    p_use_of_proceeds: session.archetype,
+    p_objective: input.brief.objective,
+    p_requested_amount: input.brief.requestedAmount ? Number(input.brief.requestedAmount) : undefined,
+    p_currency: input.brief.currency,
+    p_urgency: input.brief.urgency,
+    p_requested_term_months: input.brief.requestedTermMonths,
+    p_requested_grace_months: input.brief.requestedGraceMonths,
+    p_consequence: input.brief.consequenceIfNotExecuted,
+    p_sector: input.brief.sector,
+    p_geography: input.brief.geography,
+    p_instruments: input.brief.instruments ?? [],
+    p_collateral_kinds: input.brief.collateralKinds ?? [],
+    p_expected_rate: input.brief.expectedRate,
+  });
 
   return error ? {ok: false} : {ok: true};
 }

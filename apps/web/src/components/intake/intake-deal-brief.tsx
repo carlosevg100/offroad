@@ -15,7 +15,7 @@ type Props = {
 /**
  * The one page that decides who could buy the paper.
  *
- * Six questions, all answerable from a conversation and none requiring a document. The archetype
+ * A short set of questions, all answerable from a conversation and none requiring a document. The archetype
  * already said what the money is for; this says enough about the shape of it that a desk can
  * name the funds that write this kind of cheque — and, more usefully, tell a company on day one
  * when *nobody* does.
@@ -80,18 +80,61 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
         <input type="hidden" name="locale" value={locale} />
 
         <div className="intake-brief__row">
-          <label htmlFor="brief-amount">
-            {t("amountLabel")}
-            <span className="intake-brief__hint">{t("amountHint")}</span>
+          <label htmlFor="brief-objective">
+            {t("objectiveLabel")}
+            <span className="intake-brief__hint">{t("objectiveHint")}</span>
           </label>
-          <input
-            defaultValue={brief.requestedAmount ? Number(brief.requestedAmount).toLocaleString("pt-BR", {maximumFractionDigits: 0}) : ""}
-            id="brief-amount"
-            inputMode="text"
-            name="amount"
-            placeholder={t("amountPlaceholder")}
-            type="text"
+          <textarea
+            defaultValue={brief.objective ?? ""}
+            id="brief-objective"
+            maxLength={4000}
+            name="objective"
+            placeholder={t("objectivePlaceholder")}
+            rows={4}
           />
+        </div>
+
+        <div className="intake-brief__pair">
+          <div className="intake-brief__row">
+            <label htmlFor="brief-amount">
+              {t("amountLabel")}
+              <span className="intake-brief__hint">{t("amountHint")}</span>
+            </label>
+            <input
+              defaultValue={brief.requestedAmount ? Number(brief.requestedAmount).toLocaleString(locale, {maximumFractionDigits: 0}) : ""}
+              id="brief-amount"
+              inputMode="text"
+              name="amount"
+              placeholder={t("amountPlaceholder")}
+              type="text"
+            />
+          </div>
+
+          <div className="intake-brief__row">
+            <label htmlFor="brief-currency">
+              {t("currencyLabel")}
+              <span className="intake-brief__hint">{t("currencyHint")}</span>
+            </label>
+            <select defaultValue={brief.currency ?? "BRL"} id="brief-currency" name="currency">
+              <option value="BRL">BRL</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="intake-brief__row">
+          <label htmlFor="brief-urgency">
+            {t("urgencyLabel")}
+            <span className="intake-brief__hint">{t("urgencyHint")}</span>
+          </label>
+          <select defaultValue={brief.urgency ?? ""} id="brief-urgency" name="urgency">
+            <option value="">{t("urgencyUnknown")}</option>
+            <option value="up_to_3_months">{t("urgencyUpTo3")}</option>
+            <option value="3_to_6_months">{t("urgency3To6")}</option>
+            <option value="6_to_12_months">{t("urgency6To12")}</option>
+            <option value="no_rush">{t("urgencyNoRush")}</option>
+          </select>
         </div>
 
         <div className="intake-brief__pair">
@@ -128,6 +171,21 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
               type="number"
             />
           </div>
+        </div>
+
+        <div className="intake-brief__row">
+          <label htmlFor="brief-consequence">
+            {t("consequenceLabel")}
+            <span className="intake-brief__hint">{t("consequenceHint")}</span>
+          </label>
+          <textarea
+            defaultValue={brief.consequenceIfNotExecuted ?? ""}
+            id="brief-consequence"
+            maxLength={4000}
+            name="consequence"
+            placeholder={t("consequencePlaceholder")}
+            rows={3}
+          />
         </div>
 
         <div className="intake-brief__pair">
