@@ -846,6 +846,41 @@
       "documentsBody": "Start with the minimum. If you already have additional materials, upload everything together. Offroad reads, classifies and shows what each file covers.",
       "back": "Back to the previous step"
     },
+    "governance": {
+      "kicker": "SCOPE AND AUTHORIZATION",
+      "title": "Confirm the case boundaries",
+      "body": "Documents may reveal other group companies. Offroad surfaces the names it finds, but only you decide which entities belong in the analysis and in what role.",
+      "scopeTitle": "Entities found in the documents",
+      "scopeBody": "Confirm only entities economically connected to the transaction. A document mention never expands the perimeter automatically.",
+      "evidenceCount": "{count, plural, one {1 source document} other {# source documents}}",
+      "roleLabel": "Role in the transaction",
+      "reasonLabel": "Basis for the decision",
+      "reasonPlaceholder": "Example: operating company that generates repayment cash flow",
+      "confirm": "Include in scope",
+      "dismiss": "Not part of this case",
+      "roles": {
+        "operatingCompany": "Operating company",
+        "guarantor": "Guarantor",
+        "holding": "Holding company",
+        "target": "Target company",
+        "other": "Other related entity"
+      },
+      "authorizationTitle": "Advisor authorization",
+      "authorizationStatus": {
+        "declared": "Declared",
+        "documented": "Documented",
+        "verified": "Verified",
+        "revoked": "Revoked"
+      },
+      "authorizationBody": {
+        "declared": "Preparation is supported by the recorded declaration. No market sounding or introduction authority has been granted.",
+        "documented": "The system found documentary evidence of authority. Operational verification remains a separate control.",
+        "verified": "The evidence was checked by Offroad operations. Scope remains limited to case preparation.",
+        "revoked": "Preparation by this advisor has stopped. No new requests will be issued."
+      },
+      "revokeReason": "Reason for revocation",
+      "revoke": "Revoke authorization"
+    },
     "uploader": {
       "startError": "The upload could not be started.",
       "invalidFile": "One or more files use an unsupported format or exceed 50 MB.",

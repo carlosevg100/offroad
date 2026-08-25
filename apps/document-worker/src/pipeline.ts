@@ -11,6 +11,7 @@ import {ModelGatewayError, type GatewayCallLog} from "@offroad/model-gateway";
 import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
 import type {DocumentJob, QueueClient} from "./queue";
 import {prepareWorkerIntakeRequests} from "./intake-requests";
+import {buildScopeSuggestionInputs, deterministicJobEventId} from "./intake-governance";
 
 /**
  * What happens to one document, start to finish (P1 plan §5, stages E0–E1).
@@ -196,11 +197,6 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
         : {}),
     });
 
-    // A new classification changes the evidence revision and invalidates any earlier client
-    // request batch. Rebuild it before this job can complete, using only the immutable stream
-    // loaded through this job's short-lived capability.
-    const preparedRequests = await stage("prepare_requests", () => prepareWorkerIntakeRequests(job, queue));
-
     // ---- Governed case retrieval ------------------------------------------------------
     // Searchable context is derived only from the deterministic document layer. Each chunk
     // keeps the page, sheet, section or slide anchor that produced it, and the database
@@ -253,7 +249,28 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
         },
         extracted.usage ?? {},
       );
+
+      const suggestions = buildScopeSuggestionInputs(extracted.candidates);
+      if (suggestions.length > 0) {
+        await stage("suggest_scope", () => queue.recordAnalysisScopeSuggestions(
+          job,
+          deterministicJobEventId(job.job_id, "scope-suggestions"),
+          suggestions,
+        ));
+      }
     }
+
+    if (classified.profile.document_kind === "advisor_authority_evidence") {
+      await stage("document_advisor_authority", () => queue.documentAdvisorAuthorization(
+        job,
+        deterministicJobEventId(job.job_id, "advisor-authorization"),
+      ));
+    }
+
+    // Classification, extracted facts and governance events all change the evidence basis. The
+    // client batch is rebuilt only after those writes, so it never ships a ladder that was stale
+    // before the job itself completed.
+    const preparedRequests = await stage("prepare_requests", () => prepareWorkerIntakeRequests(job, queue));
 
     await queue.complete(job, {
       document_kind: classified.profile.document_kind,

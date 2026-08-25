@@ -835,6 +835,7 @@ export type Database = {
         Row: {
           advisor_authorization: Json | null
           analysis_scope: Json | null
+          analysis_scope_suggestions: Json | null
           archetype: string | null
           capital_consequence: string | null
           capital_currency: string | null
@@ -869,6 +870,7 @@ export type Database = {
         Insert: {
           advisor_authorization?: Json | null
           analysis_scope?: Json | null
+          analysis_scope_suggestions?: Json | null
           archetype?: string | null
           capital_consequence?: string | null
           capital_currency?: string | null
@@ -903,6 +905,7 @@ export type Database = {
         Update: {
           advisor_authorization?: Json | null
           analysis_scope?: Json | null
+          analysis_scope_suggestions?: Json | null
           archetype?: string | null
           capital_consequence?: string | null
           capital_currency?: string | null
@@ -3867,6 +3870,37 @@ export type Database = {
         }
         Returns: Json
       }
+      resolve_analysis_scope_suggestion_command: {
+        Args: {
+          p_decision: string
+          p_organization_id: string
+          p_reason: string
+          p_role: string | null
+          p_scope_event_id: string | null
+          p_session_id: string
+          p_suggestion_event_id: string
+          p_suggestion_id: string
+        }
+        Returns: Json
+      }
+      revoke_advisor_authorization_command: {
+        Args: {
+          p_event_id: string
+          p_organization_id: string
+          p_reason: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      verify_advisor_authorization_command: {
+        Args: {
+          p_event_id: string
+          p_organization_id: string
+          p_reason: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
       worker_claim_job: {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
@@ -3963,6 +3997,23 @@ export type Database = {
       }
       worker_record_intake_request_ladders: {
         Args: { p_capability_token: string; p_events: Json; p_job_id: string }
+        Returns: Json
+      }
+      worker_record_analysis_scope_suggestions: {
+        Args: {
+          p_capability_token: string
+          p_event_id: string
+          p_job_id: string
+          p_suggestions: Json
+        }
+        Returns: Json
+      }
+      worker_document_advisor_authorization: {
+        Args: {
+          p_capability_token: string
+          p_event_id: string
+          p_job_id: string
+        }
         Returns: Json
       }
       worker_record_retrieval_chunks: {

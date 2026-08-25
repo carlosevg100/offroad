@@ -67,6 +67,7 @@ function eventRows() {
             role: "borrower",
             source: "member_organization",
             status: "declared",
+            evidenceReferences: [],
           }],
           reason: "The member organization is the primary borrower initially declared for this case.",
           version: 1,

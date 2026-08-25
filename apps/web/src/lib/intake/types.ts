@@ -22,6 +22,8 @@ export type IntakeReviewActionSet = {
   process: (formData: FormData) => Promise<void>;
   resolve: (formData: FormData) => Promise<void>;
   review: (formData: FormData) => Promise<void>;
+  resolveScopeSuggestion?: (formData: FormData) => Promise<void>;
+  revokeAuthorization?: (formData: FormData) => Promise<void>;
 };
 
 export type IntakeStartActionSet = {

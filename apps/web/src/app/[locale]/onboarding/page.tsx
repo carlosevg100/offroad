@@ -50,6 +50,8 @@ import {
   setIntakeOperation,
   removeIntakeDocument,
   resolveIntakeIssue,
+  resolveOnboardingScopeSuggestion,
+  revokeOnboardingAdvisorAuthorization,
   reviewIntakeCandidate,
   saveAdvisedCompanyStep,
   saveContactStep,
@@ -354,7 +356,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                   sessionId: intakeReview.session.id,
                   locale: locale === "en-US" ? "en" : "pt",
                 })}
-                actions={{accept: acceptHighConfidenceCandidates, confirm: confirmDocumentIntake, process: processDocumentIntake, resolve: resolveIntakeIssue, review: reviewIntakeCandidate}}
+                actions={{accept: acceptHighConfidenceCandidates, confirm: confirmDocumentIntake, process: processDocumentIntake, resolve: resolveIntakeIssue, review: reviewIntakeCandidate, resolveScopeSuggestion: resolveOnboardingScopeSuggestion, revokeAuthorization: revokeOnboardingAdvisorAuthorization}}
                 candidates={intakeReview.candidates}
                 documents={intakeReview.documents}
                 issues={intakeReview.issues}
@@ -380,6 +382,8 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 dealBrief={dealBriefOf(intakeReview.session)}
                 dealBriefAction={saveDealBriefAction}
                 setOperationAction={setIntakeOperation}
+                resolveScopeSuggestionAction={resolveOnboardingScopeSuggestion}
+                revokeAuthorizationAction={revokeOnboardingAdvisorAuthorization}
                 userId={userId}
               />
             )

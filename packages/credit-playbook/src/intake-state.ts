@@ -95,11 +95,29 @@ export type AnalysisEntity = {
   role: "borrower" | "operating_company" | "guarantor" | "holding" | "target" | "other";
   source: "member_organization" | "company_declaration" | "advisor_declaration" | "document";
   status: "declared" | "document_supported" | "confirmed";
+  /** Required whenever the entity came from, or was confirmed against, documentary evidence. */
+  evidenceReferences: readonly string[];
 };
 
 export type AnalysisScope = {
   entities: readonly AnalysisEntity[];
   reason: string;
+  version: number;
+  recordedAt: string;
+};
+
+export type AnalysisScopeSuggestion = {
+  suggestionId: string;
+  entityId: string;
+  legalName: string;
+  suggestedRole: Exclude<AnalysisEntity["role"], "borrower">;
+  status: "pending" | "confirmed" | "dismissed";
+  evidenceReferences: readonly string[];
+  decisionReason?: string;
+};
+
+export type AnalysisScopeSuggestions = {
+  items: readonly AnalysisScopeSuggestion[];
   version: number;
   recordedAt: string;
 };
@@ -112,6 +130,7 @@ export type AdvisorAuthorization = {
   scopes: readonly ("prepare_case" | "market_sounding" | "qualified_introduction")[];
   declarationReference?: string;
   evidenceReferences: readonly string[];
+  statusReason?: string;
   version: number;
   recordedAt: string;
 };
@@ -179,6 +198,7 @@ export type IntakeEvent =
     })
   | (EventBase & {type: "request_ladder_recorded"; trace: Omit<RequestLadderTrace, "recordedAt">})
   | (EventBase & {type: "analysis_scope_recorded"; scope: Omit<AnalysisScope, "recordedAt">})
+  | (EventBase & {type: "analysis_scope_suggestions_recorded"; suggestions: Omit<AnalysisScopeSuggestions, "recordedAt">})
   | (EventBase & {type: "advisor_authorization_recorded"; authorization: Omit<AdvisorAuthorization, "recordedAt">})
   | (EventBase & {type: "route_check_recorded"; routeCheck: Omit<IntakeRouteCheck, "recordedAt">});
 
@@ -308,8 +328,36 @@ export const intakeEventSchema = z.discriminatedUnion("type", [
         role: z.enum(["borrower", "operating_company", "guarantor", "holding", "target", "other"]),
         source: z.enum(["member_organization", "company_declaration", "advisor_declaration", "document"]),
         status: z.enum(["declared", "document_supported", "confirmed"]),
-      }).strict()).min(1),
+        evidenceReferences: z.array(z.string().trim().min(1)).default([]),
+      }).strict().superRefine((entity, context) => {
+        if (
+          (entity.source === "document" || entity.status === "document_supported" || entity.status === "confirmed") &&
+          entity.evidenceReferences.length === 0
+        ) {
+          context.addIssue({code: "custom", message: "document-supported scope entity requires evidence"});
+        }
+      })).min(1),
       reason: z.string().trim().min(1),
+      version: z.number().int().positive(),
+    }).strict(),
+  }).strict(),
+  z.object({
+    ...eventBaseShape,
+    type: z.literal("analysis_scope_suggestions_recorded"),
+    suggestions: z.object({
+      items: z.array(z.object({
+        suggestionId: z.string().trim().min(1),
+        entityId: z.string().trim().min(1),
+        legalName: z.string().trim().min(2),
+        suggestedRole: z.enum(["operating_company", "guarantor", "holding", "target", "other"]),
+        status: z.enum(["pending", "confirmed", "dismissed"]),
+        evidenceReferences: z.array(z.string().trim().min(1)).min(1),
+        decisionReason: z.string().trim().min(1).max(1000).optional(),
+      }).strict().superRefine((suggestion, context) => {
+        if (suggestion.status !== "pending" && !suggestion.decisionReason) {
+          context.addIssue({code: "custom", message: "decided scope suggestion requires a reason"});
+        }
+      })).max(50),
       version: z.number().int().positive(),
     }).strict(),
   }).strict(),
@@ -321,13 +369,20 @@ export const intakeEventSchema = z.discriminatedUnion("type", [
       clientEntityId: z.string().trim().min(1),
       authorityKind: z.enum(["engagement_letter", "mandate", "power_of_attorney", "board_resolution", "company_confirmation", "other"]),
       status: z.enum(["declared", "documented", "verified", "revoked"]),
-      scopes: z.array(z.enum(["prepare_case", "market_sounding", "qualified_introduction"])).min(1),
+      scopes: z.array(z.enum(["prepare_case", "market_sounding", "qualified_introduction"])).max(3),
       declarationReference: z.string().trim().min(1).optional(),
       evidenceReferences: z.array(z.string().trim().min(1)),
+      statusReason: z.string().trim().min(1).max(1000).optional(),
       version: z.number().int().positive(),
     }).strict().superRefine((authorization, context) => {
       if (["documented", "verified"].includes(authorization.status) && authorization.evidenceReferences.length === 0) {
         context.addIssue({code: "custom", message: "documented authorization requires evidence"});
+      }
+      if (authorization.status !== "revoked" && authorization.scopes.length === 0) {
+        context.addIssue({code: "custom", message: "active authorization requires at least one scope"});
+      }
+      if (authorization.status === "revoked" && (authorization.scopes.length > 0 || !authorization.statusReason)) {
+        context.addIssue({code: "custom", message: "revoked authorization requires empty scopes and a reason"});
       }
     }),
   }).strict(),
@@ -400,6 +455,7 @@ export type IntakeDecisionLogEntry = {
     | "absence_acknowledged"
     | "request_ladder_completed"
     | "analysis_scope_changed"
+    | "analysis_scope_suggestions_changed"
     | "advisor_authorized"
     | "route_check_completed"
     | "request_suppressed";
@@ -417,6 +473,7 @@ export type IntakeState = {
   capitalNeedFrame: CapitalNeedFrame | null;
   archetypeRoute: ArchetypeRoute | null;
   analysisScope: AnalysisScope | null;
+  analysisScopeSuggestions: AnalysisScopeSuggestions | null;
   advisorAuthorization: AdvisorAuthorization | null;
   routeChecks: readonly IntakeRouteCheck[];
   preparationBlocks: readonly IntakePreparationBlock[];
@@ -434,6 +491,7 @@ type MutableReplay = {
   frame: CapitalNeedFrame | null;
   route: ArchetypeRoute | null;
   scope: AnalysisScope | null;
+  scopeSuggestions: AnalysisScopeSuggestions | null;
   authorization: AdvisorAuthorization | null;
   routeChecks: IntakeRouteCheck[];
   receivedDocuments: Map<string, ReceivedDocument>;
@@ -461,6 +519,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     frame: null,
     route: null,
     scope: null,
+    scopeSuggestions: null,
     authorization: null,
     routeChecks: [],
     receivedDocuments: new Map(),
@@ -490,6 +549,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
       capitalNeedFrame: replay.frame,
       archetypeRoute: null,
       analysisScope: replay.scope,
+      analysisScopeSuggestions: replay.scopeSuggestions,
       advisorAuthorization: replay.authorization,
       routeChecks: replay.routeChecks,
       preparationBlocks,
@@ -580,6 +640,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     capitalNeedFrame: replay.frame,
     archetypeRoute: replay.route,
     analysisScope: replay.scope,
+    analysisScopeSuggestions: replay.scopeSuggestions,
     advisorAuthorization: replay.authorization,
     routeChecks: replay.routeChecks,
     preparationBlocks,
@@ -677,12 +738,31 @@ function applyEvent(state: MutableReplay, event: IntakeEvent): void {
       pushLog(state, event, "analysis_scope_changed", `Analysis scope version ${event.scope.version} recorded with ${event.scope.entities.length} entities.`);
       break;
     }
+    case "analysis_scope_suggestions_recorded": {
+      if (event.suggestions.version !== (state.scopeSuggestions?.version ?? 0) + 1) {
+        throw new Error("analysis scope suggestion versions must be sequential");
+      }
+      if (new Set(event.suggestions.items.map((item) => item.suggestionId)).size !== event.suggestions.items.length) {
+        throw new Error("analysis scope suggestions contain duplicate ids");
+      }
+      assertScopeSuggestionTransition(state, event.suggestions.items);
+      state.scopeSuggestions = {...event.suggestions, recordedAt: event.occurredAt};
+      pushLog(
+        state,
+        event,
+        "analysis_scope_suggestions_changed",
+        `Analysis scope suggestion version ${event.suggestions.version} recorded with ${event.suggestions.items.length} items.`,
+        event.suggestions.items.flatMap((item) => item.evidenceReferences),
+      );
+      break;
+    }
     case "advisor_authorization_recorded": {
       if (event.authorization.version !== (state.authorization?.version ?? 0) + 1) {
         throw new Error("advisor authorization versions must be sequential");
       }
       const scope = state.scope?.entities.find((entity) => entity.entityId === event.authorization.clientEntityId);
       if (!scope) throw new Error("advisor authorization client must belong to the analysis scope");
+      assertAuthorizationTransition(state.authorization, event.authorization);
       state.authorization = {...event.authorization, recordedAt: event.occurredAt};
       pushLog(
         state,
@@ -702,6 +782,66 @@ function applyEvent(state: MutableReplay, event: IntakeEvent): void {
       pushLog(state, event, "route_check_completed", `${event.routeCheck.check} completed with ${event.routeCheck.outcome}.`, event.routeCheck.evidenceIds);
       break;
     }
+  }
+}
+
+function assertScopeSuggestionTransition(state: MutableReplay, nextItems: readonly AnalysisScopeSuggestion[]): void {
+  const priorItems = new Map((state.scopeSuggestions?.items ?? []).map((item) => [item.suggestionId, item]));
+  const nextById = new Map(nextItems.map((item) => [item.suggestionId, item]));
+
+  for (const [suggestionId, prior] of priorItems) {
+    const next = nextById.get(suggestionId);
+    if (!next) throw new Error("analysis scope suggestions cannot disappear from history");
+    if (
+      next.entityId !== prior.entityId || next.legalName !== prior.legalName ||
+      next.suggestedRole !== prior.suggestedRole
+    ) {
+      throw new Error("analysis scope suggestion identity is immutable");
+    }
+    if (prior.status !== "pending" && next.status !== prior.status) {
+      throw new Error("decided analysis scope suggestion is terminal");
+    }
+    if (!prior.evidenceReferences.every((reference) => next.evidenceReferences.includes(reference))) {
+      throw new Error("analysis scope suggestion evidence cannot be removed");
+    }
+  }
+
+  for (const item of nextItems) {
+    if (item.status === "confirmed") {
+      const entity = state.scope?.entities.find((entry) => entry.entityId === item.entityId);
+      if (!entity || entity.status !== "confirmed" || entity.source !== "document") {
+        throw new Error("confirmed scope suggestion requires a confirmed documentary scope entity");
+      }
+    }
+  }
+}
+
+function assertAuthorizationTransition(
+  prior: AdvisorAuthorization | null,
+  next: Omit<AdvisorAuthorization, "recordedAt">,
+): void {
+  if (!prior) return;
+  if (
+    next.advisorOrganizationId !== prior.advisorOrganizationId ||
+    next.clientEntityId !== prior.clientEntityId ||
+    next.authorityKind !== prior.authorityKind
+  ) {
+    throw new Error("advisor authorization identity is immutable");
+  }
+  const allowed: Record<AdvisorAuthorization["status"], readonly AdvisorAuthorization["status"][]> = {
+    declared: ["documented", "revoked"],
+    documented: ["documented", "verified", "revoked"],
+    verified: ["verified", "revoked"],
+    revoked: [],
+  };
+  if (!allowed[prior.status].includes(next.status)) {
+    throw new Error(`invalid advisor authorization transition from ${prior.status} to ${next.status}`);
+  }
+  if (!next.scopes.every((scope) => prior.scopes.includes(scope))) {
+    throw new Error("advisor authorization lifecycle cannot broaden scope");
+  }
+  if (!prior.evidenceReferences.every((reference) => next.evidenceReferences.includes(reference))) {
+    throw new Error("advisor authorization evidence cannot be removed");
   }
 }
 
