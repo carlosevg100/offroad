@@ -6410,6 +6410,69 @@ button[disabled].workspace-search,
   padding: 20px 22px;
 }
 
+.case-truth-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.18fr) minmax(320px, .82fr);
+}
+
+.case-financial-truth,
+.case-debt-truth {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+  padding: 20px 22px;
+}
+
+.case-truth__head {
+  align-items: flex-start;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.case-truth__head h3 { margin-top: 5px; }
+.case-financial-truth > p,
+.case-debt-truth > p { color: var(--muted); font-size: .86rem; line-height: 1.55; }
+
+.case-truth__status {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  padding: 5px 9px;
+  text-transform: uppercase;
+}
+.case-truth__status.is-complete { border-color: var(--accent); color: var(--success); }
+.case-truth__status.is-blocked { background: #f9efec; color: #a23b2e; }
+
+.case-truth__table { overflow-x: auto; }
+.case-truth__table table { border-collapse: collapse; font-size: .8rem; width: 100%; }
+.case-truth__table th,
+.case-truth__table td { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: right; white-space: nowrap; }
+.case-truth__table th:first-child { text-align: left; }
+.case-truth__table thead th { color: var(--muted); font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; }
+
+.case-truth__metrics { display: grid; grid-template-columns: 1fr 1fr; margin: 18px 0; }
+.case-truth__metrics div { border-bottom: 1px solid var(--line); display: grid; gap: 3px; padding: 10px 0; }
+.case-truth__metrics div:nth-child(odd) { border-right: 1px solid var(--line); padding-right: 12px; }
+.case-truth__metrics div:nth-child(even) { padding-left: 12px; }
+.case-truth__metrics dt { color: var(--muted); font-size: .68rem; text-transform: uppercase; }
+.case-truth__metrics dd { font-size: .95rem; font-variant-numeric: tabular-nums; font-weight: 600; margin: 0; }
+
+.case-truth__instruments { display: grid; gap: 0; list-style: none; margin: 0; padding: 0; }
+.case-truth__instruments li { align-items: center; border-bottom: 1px solid var(--line); display: grid; font-size: .8rem; grid-template-columns: 1fr auto auto; gap: 12px; padding: 10px 0; }
+.case-truth__instruments div { display: grid; }
+.case-truth__instruments div span,
+.case-truth__instruments small { color: var(--muted); }
+
+.case-truth__summary { color: var(--muted); display: flex; flex-wrap: wrap; font-size: .76rem; gap: 18px; margin-top: 16px; }
+.case-truth__summary strong { color: var(--ink); }
+
+@media (max-width: 980px) {
+  .case-truth-grid { grid-template-columns: 1fr; }
+}
+
 .case-readiness header {
   align-items: baseline;
   display: flex;

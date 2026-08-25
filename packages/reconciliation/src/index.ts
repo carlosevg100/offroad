@@ -8,17 +8,21 @@
  * with both sides attached, never a verdict; a calculation is a value with a trace, never a
  * claim.
  */
-export const reconciliationVersion = "2026.08.20-v1";
+export const reconciliationVersion = "2026.08.25-v3";
 
 export * from "./facts";
 export * from "./rules";
 export * from "./calculations";
 export * from "./gaps";
+export * from "./financial-truth";
+export * from "./debt-truth";
 
 import {buildContext, runRules, type ReconciliationException} from "./rules";
 import {computeCalculations, type CalculationSet} from "./calculations";
 import {archetypeQuestions, findGaps, type InformationGap} from "./gaps";
 import {mergeInstrumentsByIdentity, reconcileFacts, renumberIndexedGroups, type FactCandidate, type ReconciledFact} from "./facts";
+import {buildFinancialTruthSet, type FinancialTruthSet} from "./financial-truth";
+import {buildDebtTruthSet, type DebtTruthSet} from "./debt-truth";
 import type {
   ArchetypeId,
   ClassifiedDocument,
@@ -34,6 +38,8 @@ export type ReconciliationReport = {
   gaps: InformationGap[];
   /** What this kind of operation is always asked, from the playbook's risks. */
   questions: InformationGap[];
+  financialTruth: FinancialTruthSet;
+  debtTruth: DebtTruthSet;
 };
 
 /**
@@ -51,11 +57,14 @@ export function reconcileCase(input: {
   informationAnswers?: InformationAnswers;
   requirementResponses?: RequirementResponses;
   additionalAvailableFieldPaths?: readonly string[];
+  referenceDate?: string;
 }): ReconciliationReport {
   const locale = input.locale ?? "pt";
   const facts = mergeInstrumentsByIdentity(renumberIndexedGroups(reconcileFacts(input.candidates)));
   const context = buildContext(facts, locale);
   const {calculations, gaps: calculationGaps} = computeCalculations(context);
+  const financialTruth = buildFinancialTruthSet(facts);
+  const debtTruth = buildDebtTruthSet(facts, input.referenceDate ?? new Date().toISOString().slice(0, 10));
 
   const gaps = findGaps({
     archetypeId: input.archetypeId,
@@ -80,11 +89,34 @@ export function reconcileCase(input: {
     });
   }
 
+  const truthExceptions: ReconciliationException[] = [
+    ...financialTruth.exceptions.map((exception) => ({
+      ruleId: `M2:${exception.id}`, type: "financial_truth", severity: exception.severity,
+      title: locale === "pt" ? "Exceção da verdade financeira" : "Financial truth exception",
+      description: exception.message[locale], evidence: exception.evidence.map((entry) => ({...entry, label: entry.fieldPath})),
+      ownerRole: "analyst", blocksExternalOutputs: exception.blocksExternalOutputs,
+    })),
+    ...debtTruth.exceptions.map((exception) => ({
+      ruleId: `M3:${exception.id}`, type: "debt_truth", severity: exception.severity,
+      title: locale === "pt" ? "Exceção do ledger de dívida" : "Debt ledger exception",
+      description: exception.message[locale], evidence: exception.evidence.map((entry) => ({...entry, label: entry.fieldPath})),
+      ownerRole: "analyst", blocksExternalOutputs: exception.blocksExternalOutputs,
+    })),
+  ];
+  for (const exception of truthExceptions) {
+    gaps.push({
+      id: `truth:${exception.ruleId}`, severity: exception.severity === "critical" ? "critical" : exception.severity === "high" ? "high" : "medium",
+      title: exception.title, description: exception.description, ownerRole: "internal_analyst", reference: exception.ruleId,
+    });
+  }
+
   return {
     facts,
-    exceptions: runRules(context),
+    exceptions: [...runRules(context), ...truthExceptions],
     calculations,
     gaps,
     questions: archetypeQuestions(input.archetypeId, locale),
+    financialTruth,
+    debtTruth,
   };
 }

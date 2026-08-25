@@ -4,10 +4,13 @@ import {
   canonicalProcedureSchema,
   compileProcedure,
   compileProcedureRegistry,
+  financialDebtTruthProcedureRegistry,
+  financialDebtTruthProcedures,
   growthCapexProcedureRegistry,
   growthCapexProcedures,
   languageConductProcedureRegistry,
   languageConductProcedures,
+  institutionalProcedureRegistryHash,
   materialTemplateRegistryHash,
   materialTemplates,
   referenceDataKeys,
@@ -150,5 +153,22 @@ describe("language and conduct procedures", () => {
       expect(procedure.runtime.allowedTools).toEqual(["conduct_policy"]);
     }
     expect(languageConductProcedureRegistry.registryHash).toMatch(/^[a-f0-9]{64}$/u);
+  });
+});
+
+describe("M2 and M3 procedure compilation", () => {
+  it("compiles Q-01 to Q-18 and D-01 to D-31 as individually governed candidate skills", () => {
+    expect(financialDebtTruthProcedures).toHaveLength(49);
+    expect(financialDebtTruthProcedures.map((procedure) => procedure.knowledge.houseProcedureIds[0])).toEqual([
+      ...Array.from({length: 18}, (_, index) => `Q-${String(index + 1).padStart(2, "0")}`),
+      ...Array.from({length: 31}, (_, index) => `D-${String(index + 1).padStart(2, "0")}`),
+    ]);
+    for (const procedure of financialDebtTruthProcedures) {
+      expect(procedure.maturity).toBe("candidate");
+      expect(procedure.runtime).toMatchObject({orchestration: "deterministic_pipeline", peerHandoffs: false, maxModelCalls: 0});
+      expect(procedure.procedure).toHaveLength(3);
+    }
+    expect(financialDebtTruthProcedureRegistry.registryHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(institutionalProcedureRegistryHash).toMatch(/^[a-f0-9]{64}$/);
   });
 });

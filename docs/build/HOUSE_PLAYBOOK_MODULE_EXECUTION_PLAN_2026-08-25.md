@@ -345,10 +345,16 @@ agressivo, capex de manutenção subestimado e projeção que não fecha com cai
 
 ### Estado medido
 
-`reconciliation` preserva facts, conflitos, gaps e alguns cálculos. `financial-core` possui apenas
-funções básicas de EBITDA, leverage, DSCR, haircut, capacidade e all-in simplificado. Faltam as
-pontes e identidades acima. O módulo está parcialmente implementado e não atende ainda ao padrão
-institucional completo.
+O trilho executável está implementado. `financial-core` contém aritmética decimal pura para pontes,
+identidades, capital de giro, CFADS, conversão, concentração, sazonalidade e moeda.
+`reconciliation.financialTruth` produz demonstrativos, ajustes, pontes, checks, analytics,
+exceções e cobertura explícita de Q-01 a Q-18 em cada run. O case-engine, o worker, o manifesto e a
+interface consomem o mesmo objeto, sem recompor números em prompt ou na tela.
+
+Q-01 a Q-18 estão compilados individualmente como `candidate`. O módulo está pronto para o teste
+E2E do produto, mas ainda não para promoção institucional em lote. Os gold obrigatórios que não
+possuem revisão econômica independente permanecem como gate por procedimento, e qualquer análise
+sem input suficiente retorna `not_computable`, `partial` ou `blocked` em vez de estimativa.
 
 ## 7. M3, Foto real da dívida
 
@@ -397,8 +403,16 @@ cross-default, holding e opco, dívida em moeda estrangeira e mapa incompleto.
 
 ### Estado medido
 
-Há fatos reconciliados e cálculos parciais. Ainda não existe o debt ledger completo nem as múltiplas
-visões governadas. Este módulo não pode ser considerado fechado.
+O debt ledger e as múltiplas visões governadas estão implementados em
+`reconciliation.debtTruth`. O objeto cobre contrato, obrigação, cronograma, serviço de 12 meses,
+vida média, entidade, credor, moeda, indexador, garantia, covenant, ponte de saldo, ponte da despesa
+financeira, liquidez, stress e grafo de cross-default, sempre ligado às evidências reconciliadas.
+Ele atravessa o case-engine e é persistido pelo worker no snapshot atestado exibido pela aplicação.
+
+D-01 a D-31 estão compilados individualmente como `candidate`. O trilho técnico está pronto para
+teste E2E, mas promoção institucional continua individual. Cenário de mercado só roda com política
+versionada; interpretação jurídica material continua exigindo revisão jurídica; ausência ou conflito
+contratual permanece ponto aberto e nunca é convertido em conforto automático.
 
 ## 8. M4, Operação e sources and uses
 

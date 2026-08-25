@@ -4,6 +4,34 @@ Atualizado em: 2026-08-25
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## M2 e M3 no trilho governado, 25/08/2026
+
+M2 e M3 agora fazem parte do `@offroad/case-engine` e do worker de produção como objetos
+determinísticos do estado do case. `financialTruth` reconstrói demonstrações por período,
+preserva reportado e ajustado, calcula capital de giro, CFADS, conversão de caixa, pontes,
+identidades e análises de concentração, sazonalidade, moeda e aging. `debtTruth` mantém um ledger
+contrato a contrato, múltiplas visões de obrigação, cronograma, serviço em 12 meses, vida média,
+custo, garantias, covenants, ponte de saldo, ponte da despesa financeira, cobertura de liquidez,
+cenários de taxa e propagação contratual de cross-default.
+
+Os 18 procedimentos Q e os 31 procedimentos D existem como candidates individuais derivados do
+House Playbook, com lineage, hash, schema, referências, owner, testes e runtime determinístico sem
+handoff entre agentes nem chamada de modelo. Cada execução registra `completed`, `partial`,
+`blocked`, `not_computable` ou `not_applicable`, além de outputs, evidências, inputs ausentes e
+exceções. O registry combinado passou a compor o manifesto econômico, portanto uma alteração nesses
+procedimentos invalida a linhagem downstream.
+
+O worker persiste os dois objetos no snapshot atestado que a aplicação consome. A superfície do
+case exibe o demonstrativo financeiro reconciliado, EBITDA ajustado, margem, CFADS, identidades,
+visões de dívida, serviço de 12 meses, exposições fora de balanço, instrumentos, covenants e pontos
+abertos. Desktop e mobile foram verificados no preview governado.
+
+Este fechamento significa que o trilho técnico está pronto para o primeiro teste E2E do fundador.
+Não significa promoção institucional em lote. Procedimentos permanecem `candidate`; referência de
+mercado ausente ou expirada, documento material ausente, conflito e identidade quebrada continuam
+falhando de forma localizada. Gold cases obrigatórios adicionais e revisão econômica independente
+da versão exata continuam sendo o gate de promoção individual.
+
 ## M0 adaptativo, 25/08/2026
 
 O contrato `@offroad/credit-playbook/intake-state` reconstrói o intake a partir de eventos e produz

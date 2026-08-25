@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## House Playbook M2 e M3, 25/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Matemática financeira determinística | `@offroad/financial-core` | 8 testes cobrindo CFADS, conversão, capital de giro, identidades, dívida, vida média, ponte de saldo, ponte de juros, liquidez, choque de taxa, cross-default, concentração, sazonalidade e moeda |
+| Verdade financeira M2 | `@offroad/reconciliation` | 18 procedimentos Q emitidos em toda run, demonstrativos e pontes rastreáveis, conflito auditado versus ERP preservado, manutenção não inferida de depreciação e identidade quebrada bloqueando apenas o output afetado |
+| Verdade da dívida M3 | `@offroad/reconciliation` | 31 procedimentos D emitidos em toda run, instrumentos separados por contrato, múltiplas visões, obrigações fora de balanço, vencimentos, vida média, bridges, covenants, stress e cross-default cobertos em 34 testes do pacote |
+| Skills compiladas da fonte canônica | `@offroad/credit-playbook` | 49 candidates individuais, Q-01 a Q-18 e D-01 a D-31, com lineage exato, runtime determinístico, zero peer handoff e zero chamadas de modelo; suíte do pacote com 141 testes |
+| Trânsito pelo Case Engine | `@offroad/evals` | 32 testes; casos clean, sala suja e recebíveis atravessam as nove etapas e preservam as listas completas de 18 e 31 procedimentos no estado final |
+| Persistência pelo worker | `@offroad/document-worker` | 46 testes; snapshot sanitizado persiste M2 e M3 completos, manifesto e relatório, sem expor identidade ou conteúdo privado de mandatos |
+| Superfície web e responsividade | preview `?case=truth` + build web | cards M2 e M3 renderizados em PT-BR, desktop e 390 px, sem overflow; status, métricas, instrumentos e lacunas legíveis |
+| Quality gate completo | `pnpm check` com Node 24.19 | 38 pacotes: lint, tipagem, testes e builds verdes antes da promoção pelo CI |
+
+O motor está pronto para teste funcional E2E com um novo case. As skills permanecem candidates e
+só recebem promoção institucional individual depois de gold, adversarial, referência vigente e
+revisão independente do fingerprint exato.
+
 ## House Playbook M10, 25/08/2026
 
 | Evidência | Verificação | Resultado |

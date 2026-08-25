@@ -52,6 +52,21 @@ describe("parametric cases on the governed rail", () => {
       expect(result.report.stages.map((stage) => stage.stage)).toEqual(stages);
       expect(result.report.stages.every((stage) => stage.status === "succeeded")).toBe(true);
 
+      expect(result.state.reconciliation.financialTruth.procedureCoverage).toHaveLength(18);
+      expect(result.state.reconciliation.financialTruth.procedureCoverage.map((entry) => entry.procedureId)).toEqual(
+        Array.from({length: 18}, (_, index) => `Q-${String(index + 1).padStart(2, "0")}`),
+      );
+      expect(result.state.reconciliation.debtTruth.procedureCoverage).toHaveLength(31);
+      expect(result.state.reconciliation.debtTruth.procedureCoverage.map((entry) => entry.procedureId)).toEqual(
+        Array.from({length: 31}, (_, index) => `D-${String(index + 1).padStart(2, "0")}`),
+      );
+      expect(result.state.reconciliation.financialTruth.procedureCoverage.every((entry) =>
+        ["completed", "partial", "blocked", "not_computable"].includes(entry.status),
+      )).toBe(true);
+      expect(result.state.reconciliation.debtTruth.procedureCoverage.every((entry) =>
+        ["completed", "partial", "blocked", "not_computable", "not_applicable"].includes(entry.status),
+      )).toBe(true);
+
       for (const expected of generated.gold.calculations) {
         const actual = result.state.reconciliation.calculations.find((calculation) => calculation.id === expected.id)?.value;
         expect(actual, `missing calculation ${expected.id}`).toBeDefined();

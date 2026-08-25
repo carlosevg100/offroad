@@ -22,6 +22,12 @@ const money = (value: string, locale: string) => {
   return Number.isFinite(parsed) ? `R$ ${parsed.toLocaleString(intl(locale), {maximumFractionDigits: 0})}` : value;
 };
 
+const ratio = (value: string | null, locale: string) => {
+  if (value === null) return "N/D";
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? `${(parsed * 100).toLocaleString(intl(locale), {maximumFractionDigits: 1})}%` : value;
+};
+
 /**
  * The case as the desk sees it, on one screen.
  *
@@ -131,6 +137,84 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         locale={locale}
         trajectory={state.trajectory ?? null}
       />
+
+      <div className="case-truth-grid">
+        <section className="case-financial-truth">
+          <header className="case-truth__head">
+            <div>
+              <span className="section-kicker">M2</span>
+              <h3>{t("financialTruthTitle")}</h3>
+            </div>
+            <span className={`case-truth__status is-${state.reconciliation.financialTruth.status}`}>
+              {t(`truthStatus_${state.reconciliation.financialTruth.status}`)}
+            </span>
+          </header>
+          <p>{t("financialTruthBody")}</p>
+          {state.reconciliation.financialTruth.statements.length > 0 ? (
+            <div className="case-truth__table">
+              <table>
+                <thead><tr><th>{t("truthPeriod")}</th><th>{t("truthRevenue")}</th><th>{t("truthAdjustedEbitda")}</th><th>{t("truthMargin")}</th><th>{t("truthCfads")}</th></tr></thead>
+                <tbody>
+                  {state.reconciliation.financialTruth.statements.map((statement) => {
+                    const revenue = statement.lines.find((line) => line.metric === "revenue")?.value ?? null;
+                    return (
+                      <tr key={statement.id}>
+                        <th scope="row">{statement.period}</th>
+                        <td>{revenue ? money(revenue, locale) : t("notInformed")}</td>
+                        <td>{statement.adjustedEbitda ? money(statement.adjustedEbitda, locale) : t("notInformed")}</td>
+                        <td>{ratio(statement.ebitdaMargin, locale)}</td>
+                        <td>{statement.cfads ? money(statement.cfads, locale) : t("notInformed")}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : <p className="form-notice">{t("financialTruthEmpty")}</p>}
+          <div className="case-truth__summary">
+            <span>{t("truthProcedures")}: <strong>{state.reconciliation.financialTruth.procedureCoverage.filter((item) => item.status === "completed").length}/18</strong></span>
+            <span>{t("truthIdentities")}: <strong>{state.reconciliation.financialTruth.identityChecks.filter((check) => check.status === "pass").length}/{state.reconciliation.financialTruth.identityChecks.length}</strong></span>
+            <span>{t("truthOpenItems")}: <strong>{state.reconciliation.financialTruth.exceptions.length + new Set(state.reconciliation.financialTruth.procedureCoverage.flatMap((item) => item.missingInputs)).size}</strong></span>
+          </div>
+        </section>
+
+        <section className="case-debt-truth">
+          <header className="case-truth__head">
+            <div>
+              <span className="section-kicker">M3</span>
+              <h3>{t("debtTruthTitle")}</h3>
+            </div>
+            <span className={`case-truth__status is-${state.reconciliation.debtTruth.status}`}>
+              {t(`truthStatus_${state.reconciliation.debtTruth.status}`)}
+            </span>
+          </header>
+          <p>{t("debtTruthBody")}</p>
+          <dl className="case-truth__metrics">
+            <div><dt>{t("grossFinancialDebt")}</dt><dd>{money(state.reconciliation.debtTruth.views.grossFinancialDebt, locale)}</dd></div>
+            <div><dt>{t("netFinancialDebt")}</dt><dd>{money(state.reconciliation.debtTruth.views.netFinancialDebt, locale)}</dd></div>
+            <div><dt>{t("covenantDebt")}</dt><dd>{money(state.reconciliation.debtTruth.views.covenantDebt, locale)}</dd></div>
+            <div><dt>{t("capacityObligations")}</dt><dd>{money(state.reconciliation.debtTruth.views.adjustedCapacityObligations, locale)}</dd></div>
+            <div><dt>{t("truthService12Months")}</dt><dd>{money(state.reconciliation.debtTruth.serviceNext12Months, locale)}</dd></div>
+            <div><dt>{t("truthOffBalance")}</dt><dd>{money(state.reconciliation.debtTruth.views.offBalanceSheetExposures, locale)}</dd></div>
+          </dl>
+          {state.reconciliation.debtTruth.instruments.length > 0 ? (
+            <ul className="case-truth__instruments">
+              {state.reconciliation.debtTruth.instruments.map((instrument) => (
+                <li key={instrument.id}>
+                  <div><strong>{instrument.lender ?? t("notInformed")}</strong><span>{instrument.instrument ?? t("notInformed")}</span></div>
+                  <span>{money(instrument.balance, locale)}</span>
+                  <small>{instrument.maturity ?? t("notInformed")}</small>
+                </li>
+              ))}
+            </ul>
+          ) : <p className="form-notice">{t("debtTruthEmpty")}</p>}
+          <div className="case-truth__summary">
+            <span>{t("truthProcedures")}: <strong>{state.reconciliation.debtTruth.procedureCoverage.filter((item) => item.status === "completed").length}/31</strong></span>
+            <span>{t("truthCovenants")}: <strong>{state.reconciliation.debtTruth.covenants.length}</strong></span>
+            <span>{t("truthOpenItems")}: <strong>{state.reconciliation.debtTruth.exceptions.length + new Set(state.reconciliation.debtTruth.procedureCoverage.flatMap((item) => item.missingInputs)).size}</strong></span>
+          </div>
+        </section>
+      </div>
 
       {/* The committee pack: grade, shocks, papers, security. */}
       <IntakeCommittee

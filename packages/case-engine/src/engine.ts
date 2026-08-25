@@ -72,7 +72,7 @@ import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@off
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.24-v3";
+export const caseEngineVersion = "2026.08.25-v5";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -218,6 +218,8 @@ const reconciliationReportSchema = z.object({
   calculations: z.array(z.unknown()),
   gaps: z.array(z.unknown()),
   questions: z.array(z.unknown()),
+  financialTruth: z.unknown(),
+  debtTruth: z.unknown(),
 });
 const extractionOutputSchema = z.object({
   candidates: z.array(z.unknown()),
@@ -370,6 +372,7 @@ export async function executeCaseEngine(
                 ...(input.informationAnswers ? {informationAnswers: input.informationAnswers} : {}),
                 ...(input.requirementResponses ? {requirementResponses: input.requirementResponses} : {}),
                 additionalAvailableFieldPaths: intakeAvailableFieldPaths(input.dealBrief),
+                referenceDate: input.referenceDate,
               }),
             } satisfies ReconciliationOutput,
           };
