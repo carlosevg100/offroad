@@ -113,8 +113,31 @@ quatro perguntas futuras.
 ### Estado medido
 
 `credit-playbook/sufficiency`, `client-requests`, intake web e gateway documental formam uma base
-parcial. Falta consolidar um único state contract, substituir decisões de tela por eventos de
-domínio e provar que a lista se adapta após cada upload.
+parcial.
+
+### Incremento executável 01, contrato adaptativo do intake
+
+`credit-playbook/intake-state` passa a ser a projeção determinística canônica do M0. O contrato
+reconstrói o intake a partir de eventos imutáveis, valida os eventos na fronteira e produz as cinco
+saídas previstas neste plano: `CapitalNeedFrame`, `InformationCoverage`, `RequestRoadmap`,
+`ActiveRequestBatch` e `IntakeDecisionLog`.
+
+O lote ativo exige política datada e versionada, nunca excede cinco itens e só inclui uma
+solicitação depois de registrar a busca na sala classificada, a tentativa de derivação e a consulta
+a fonte pública permitida. Evidência encontrada em qualquer degrau satisfaz o requisito sem ser
+convertida em declaração do cliente. Ausência declarada permanece uma lacuna explícita, mas não é
+repetida sem fato novo. Reclassificação documental, respostas, autorização de assessor, mudança de
+perímetro e triagens são fatos do domínio, não estados locais de tela.
+
+Os testes do incremento cobrem replay estável, política fail-closed, limite do lote, upload que
+elimina quatro solicitações futuras, evidência derivada, ausência sem repetição, assessor com
+cliente segregado, grupo multi-entidade e hipótese de liquidez disfarçada sem reclassificação
+automática.
+
+Limite honesto: este incremento consolida o contrato e os invariantes no domínio. Persistência
+append-only dos eventos, adaptação da projeção web existente e telemetria de abandono e lotes ainda
+precisam ser conectadas antes de o M0 poder ser considerado candidato completo. Nenhum procedimento
+IN-01 a IN-26 foi promovido a `production` por esta entrega.
 
 ## 5. M1, Empresa e setor
 
