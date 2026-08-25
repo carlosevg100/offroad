@@ -82,6 +82,18 @@ describe("House Playbook language and conduct gate", () => {
     expect(audit.findings).toContainEqual(expect.objectContaining({ruleId: "LC-07", code: "bilingual_economic_divergence"}));
   });
 
+  it("recognizes equivalent written fractions across languages", () => {
+    const audit = auditConduct({
+      ...base(),
+      bilingualStatements: [{
+        id: "quorum",
+        pt: "Waiver por quórum de 2/3 dos credores.",
+        en: "Waiver by a two-thirds quorum of creditors.",
+      }],
+    });
+    expect(audit.findings.some((finding) => finding.code === "bilingual_economic_divergence")).toBe(false);
+  });
+
   it("blocks the confidentiality, authorization, disclaimer and conflict boundaries", () => {
     const {disclaimerId: _disclaimerId, ...withoutDisclaimer} = base();
     const audit = auditConduct({

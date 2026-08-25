@@ -164,6 +164,7 @@ describe("the indicative term sheet", () => {
     const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity, requestedTermMonths: 72});
     for (const term of sheet.terms) {
       expect(["capacity", "playbook", "company_request", "reconciled_fact"]).toContain(term.basis);
+      expect(term.supportIds.length, term.id).toBeGreaterThan(0);
       expect(term.rationale.pt.length).toBeGreaterThan(20);
       expect(term.rationale.en.length).toBeGreaterThan(20);
     }

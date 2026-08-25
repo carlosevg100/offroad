@@ -45,6 +45,8 @@ export type Term = {
   /** The value, formatted for reading. */
   value: {pt: string; en: string};
   basis: TermBasis;
+  /** Exact governed inputs that produced the term. No rendered term may invent its provenance. */
+  supportIds: string[];
   origin: TermOrigin;
   /** Why this value and not another. */
   rationale: {pt: string; en: string};
@@ -144,6 +146,7 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
       en: recommended ? formatMoney(recommended, currency, "en-US") : "to be determined",
     },
     basis: "capacity",
+    supportIds: ["capacity.requested", "capacity.recommended", `capacity.constraint.${input.capacity.bindingConstraint ?? "none"}`],
     // The amount is always something the company asked for — it is the one thing nobody else can
     // state on its behalf.
     origin: "requested",
@@ -186,6 +189,11 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     labels: {pt: "Prazo", en: "Tenor"},
     value: {pt: `${tenor.value} meses`, en: `${tenor.value} months`},
     basis: input.requestedTermMonths === undefined ? "playbook" : "company_request",
+    supportIds: [
+      `playbook.archetype.${input.archetypeId}.tenor`,
+      `market.band.${band.provenance}`,
+      ...(input.requestedTermMonths === undefined ? [] : ["transaction.desired_term_months"]),
+    ],
     origin: input.requestedTermMonths === undefined ? "proposed" : "requested",
     rationale:
       input.requestedTermMonths === undefined
@@ -222,6 +230,10 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     labels: {pt: "Carência", en: "Grace period"},
     value: {pt: `${grace.value} meses`, en: `${grace.value} months`},
     basis: input.requestedGraceMonths === undefined ? "playbook" : "company_request",
+    supportIds: [
+      `playbook.archetype.${input.archetypeId}.grace`,
+      ...(input.requestedGraceMonths === undefined ? [] : ["transaction.desired_grace_months"]),
+    ],
     origin: input.requestedGraceMonths === undefined ? "proposed" : "requested",
     rationale:
       input.requestedGraceMonths === undefined
@@ -257,6 +269,7 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     labels: {pt: "Amortização", en: "Amortisation"},
     value: {pt: definition.structure.amortization.join(" · "), en: definition.structure.amortization.join(" · ")},
     basis: "playbook",
+    supportIds: [`playbook.archetype.${input.archetypeId}.amortization`],
     origin: "proposed",
     rationale: {
       pt: "Formatos usuais para esta operação; o definitivo acompanha o perfil de geração.",
@@ -277,6 +290,10 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     labels: {pt: "Custo", en: "Pricing"},
     value: {pt: "definido pelo investidor", en: "set by the investor"},
     basis: "playbook",
+    supportIds: [
+      "playbook.boundary.investor_sets_pricing",
+      ...(input.expectedRate === undefined ? [] : ["transaction.expected_rate"]),
+    ],
     origin: input.expectedRate === undefined ? "proposed" : "requested",
     rationale: {
       pt: "A Offroad não precifica: o custo sai da conversa com quem toma o risco. O que este documento faz é chegar nessa conversa com os números conciliados e rastreáveis.",
