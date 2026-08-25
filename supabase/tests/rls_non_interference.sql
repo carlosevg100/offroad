@@ -2663,9 +2663,6 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'tenant rewrote the advisor authorization projection'; end if;
-
-  set local role postgres;
-  delete from public.organizations where id = advisor_org;
 end;
 $$;
 
