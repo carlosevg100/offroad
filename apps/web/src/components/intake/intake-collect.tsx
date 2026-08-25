@@ -57,6 +57,17 @@ export async function IntakeCollect({locale, session, documents, organizationId,
       ? "request"
       : stage ?? (answeredBrief === 0 ? "request" : "documents");
   const stageNumber = currentStage === "operation" ? 1 : currentStage === "request" ? 2 : 3;
+  const analysisScope = session.analysis_scope && typeof session.analysis_scope === "object" && !Array.isArray(session.analysis_scope)
+    ? session.analysis_scope
+    : null;
+  const scopeEntities = analysisScope && Array.isArray(analysisScope.entities) ? analysisScope.entities : [];
+  const borrower = scopeEntities.find((entry) => (
+    entry && typeof entry === "object" && !Array.isArray(entry) && entry.role === "borrower"
+  ));
+  const borrowerRecord = borrower && typeof borrower === "object" && !Array.isArray(borrower) ? borrower : null;
+  const authorization = session.advisor_authorization && typeof session.advisor_authorization === "object" && !Array.isArray(session.advisor_authorization)
+    ? session.advisor_authorization
+    : null;
   return (
     <section className={`${className ?? "intake-form"} intake-collect`}>
       <nav aria-label={t("guided.progressLabel")} className="intake-guide__progress">
@@ -90,6 +101,11 @@ export async function IntakeCollect({locale, session, documents, organizationId,
           selected={(checklist?.archetypeId ?? null) as ArchetypeId | null}
           action={setOperationAction}
           sessionId={session.id}
+          journey={session.journey === "originator" ? "originator" : "company"}
+          initialClientName={borrowerRecord && typeof borrowerRecord.legalName === "string" ? borrowerRecord.legalName : undefined}
+          initialAuthorityKind={authorization && typeof authorization.authorityKind === "string" ? authorization.authorityKind : undefined}
+          initialAuthorityReference={authorization && typeof authorization.declarationReference === "string" ? authorization.declarationReference : undefined}
+          authorityAlreadyDeclared={authorization?.status === "declared"}
         />
       ) : null}
 

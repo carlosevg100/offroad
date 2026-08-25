@@ -39,6 +39,27 @@ const routeRow = {
   },
 } as const;
 
+const scopeRow = {
+  event_id: "73000000-0000-4000-8000-000000000004",
+  event_type: "analysis_scope_recorded",
+  intake_session_id: sessionId,
+  occurred_at: "2026-08-25T12:00:02.000Z",
+  sequence: 3,
+  payload: {
+    scope: {
+      entities: [{
+        entityId: "organization:20000000-0000-4000-8000-000000000001",
+        legalName: "Rede Horizonte S.A.",
+        role: "borrower",
+        source: "member_organization",
+        status: "declared",
+      }],
+      reason: "The member organization is the primary borrower initially declared for this case.",
+      version: 1,
+    },
+  },
+} as const;
+
 function supabaseWith(rows: unknown[]) {
   const query = {
     select: () => query,
@@ -86,7 +107,7 @@ describe("intake event replay boundary", () => {
     const query = {
       select: () => query,
       eq: () => query,
-      order: async () => ({data: [frameRow, routeRow], error: null}),
+      order: async () => ({data: [frameRow, routeRow, scopeRow], error: null}),
     };
     const rpc = vi.fn(async (_name: string, args: {p_events: Array<{basisRevision: number}>}) => ({
       data: {events: args.p_events.map((_event, index) => ({eventId: String(index), replayed: false}))},
@@ -102,14 +123,14 @@ describe("intake event replay boundary", () => {
 
     expect(result.recorded).toBeGreaterThan(0);
     expect(rpc).toHaveBeenCalledOnce();
-    expect(rpc.mock.calls[0]?.[1].p_events.every((event) => event.basisRevision === 2)).toBe(true);
+    expect(rpc.mock.calls[0]?.[1].p_events.every((event) => event.basisRevision === 3)).toBe(true);
   });
 
   it("replays once when a concurrent fact makes the first request batch stale", async () => {
     const query = {
       select: () => query,
       eq: () => query,
-      order: async () => ({data: [frameRow, routeRow], error: null}),
+      order: async () => ({data: [frameRow, routeRow, scopeRow], error: null}),
     };
     const rpc = vi.fn()
       .mockResolvedValueOnce({data: null, error: {code: "40001", message: "intake_request_ladder_stale"}})

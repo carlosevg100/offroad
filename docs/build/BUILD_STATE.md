@@ -13,8 +13,10 @@ tentar derivação governada e consultar fonte pública permitida. Respostas par
 completas; exclusão de documento e limpeza de resposta são novos eventos, não mutações retroativas.
 
 As migrations `20260825160750_m0_intake_event_ledger.sql`,
-`20260825160803_m0_intake_projection_terminal_guard.sql` e
-`20260825171945_m0_capital_need_documents.sql` introduzem o ledger append-only e comandos atômicos
+`20260825160803_m0_intake_projection_terminal_guard.sql`,
+`20260825171945_m0_capital_need_documents.sql`,
+`20260825180214_m0_request_ladder_commands.sql` e
+`20260825185143_m0_scope_authorization_triage.sql` introduzem o ledger append-only e comandos atômicos
 para necessidade de capital, rota, respostas e recebimento, classificação e remoção de documentos.
 Cada comando mantém a projeção atual e o evento na mesma transação, com lock de sequência, hash,
 ator e idempotência. Tenants leem apenas o próprio histórico e não escrevem diretamente no ledger
@@ -23,9 +25,17 @@ ou nas projeções governadas. A classificação do worker segue a mesma ordem d
 `apps/web/src/lib/intake/replay.ts` valida a fronteira com Zod e reconstrói sessões novas com uma
 política datada. Quando o stream contém a necessidade de capital, a checklist usa a rota, os
 documentos classificados e a suficiência produzidos pelo replay; sessões antigas continuam
-legíveis por fallback explícito, sem inventar eventos. Escada de busca, perímetro, autorização,
-triagens e telemetria ainda estão pendentes. Nenhum procedimento de M0 foi promovido para
-`production`.
+legíveis por fallback explícito, sem inventar eventos. A escada governada, o perímetro econômico,
+a declaração de autorização do assessor e as triagens do dia zero já possuem eventos, projeções e
+comandos transacionais. Telemetria de abandono, perímetro multi-entidade derivado dos documentos,
+verificação da autorização e gold cases de M0 ainda estão pendentes. Nenhum procedimento de M0 foi
+promovido para `production`.
+
+O case de assessor agora separa a organização usuária da empresa economicamente analisada. A
+declaração inicial permite apenas preparar o case; sondagem de mercado e introdução qualificada não
+são inferidas e exigirão poderes próprios, evidência e gate posterior. Um case sem perímetro, sem
+autorização vigente do assessor ou com rota recusada não produz lote de solicitações. Uma triagem
+`review_required` permanece visível ao desk, mas não interrompe a coleta por si só.
 
 O branch Supabase `staging` foi rebaseado sobre produção antes da validação, preservando a migration
 anterior de respostas indisponíveis. Após os gates verdes, as duas migrations foram promovidas para
@@ -746,8 +756,9 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - Autorização de assessor, perímetro multi-entidade, urgência, triagem e hipótese de liquidez
   disfarçada entram no mesmo histórico. A hipótese de liquidez exige revisão e não muda sozinha o
   arquétipo declarado.
-- Persistência append-only e comandos atômicos já cobrem necessidade, rota, resposta e o ciclo
-  documental. Sessões novas são lidas por replay na checklist; sessões legadas mantêm fallback
-  explícito. Escopo ainda aberto: escada de busca, perímetro, autorização do assessor, triagens,
-  telemetria e gold cases de sala desorganizada e empresa com um único documento. O módulo M0 e os
-  procedimentos IN permanecem sem promoção institucional.
+- Persistência append-only e comandos atômicos já cobrem necessidade, rota, resposta, escada de
+  busca, perímetro econômico, declaração de autorização, triagem e o ciclo documental. Sessões
+  novas são lidas por replay na checklist; sessões legadas mantêm fallback explícito. Escopo ainda
+  aberto: escopo multi-entidade inferido e confirmado, verificação e revogação operacional da
+  autorização, telemetria de abandono e gold cases de sala desorganizada e empresa com um único
+  documento. O módulo M0 e os procedimentos IN permanecem sem promoção institucional.

@@ -65,7 +65,13 @@ export async function setWorkspaceIntakeOperation(formData: FormData) {
   const locale = localeFrom(formData);
   const sessionId = value(formData, "session_id");
   const runtime = await workspaceRuntime(locale, sessionId);
-  const outcome = await setArchetype(runtime, value(formData, "archetype"));
+  const outcome = await setArchetype(runtime, {
+    archetype: value(formData, "archetype"),
+    clientLegalName: value(formData, "client_legal_name"),
+    authorityKind: value(formData, "authority_kind"),
+    authorityReference: value(formData, "authority_reference"),
+    authorityConfirmed: value(formData, "authority_confirmed") === "confirmed",
+  });
   redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error, outcome.ok ? "request" : "operation"));
 }
 

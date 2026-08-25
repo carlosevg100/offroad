@@ -93,6 +93,8 @@ export type AnalysisEntity = {
   entityId: string;
   legalName: string;
   role: "borrower" | "operating_company" | "guarantor" | "holding" | "target" | "other";
+  source: "member_organization" | "company_declaration" | "advisor_declaration" | "document";
+  status: "declared" | "document_supported" | "confirmed";
 };
 
 export type AnalysisScope = {
@@ -104,9 +106,13 @@ export type AnalysisScope = {
 
 export type AdvisorAuthorization = {
   advisorOrganizationId: string;
-  clientOrganizationId: string;
-  scope: string;
-  evidenceReference: string;
+  clientEntityId: string;
+  authorityKind: "engagement_letter" | "mandate" | "power_of_attorney" | "board_resolution" | "company_confirmation" | "other";
+  status: "declared" | "documented" | "verified" | "revoked";
+  scopes: readonly ("prepare_case" | "market_sounding" | "qualified_introduction")[];
+  declarationReference?: string;
+  evidenceReferences: readonly string[];
+  version: number;
   recordedAt: string;
 };
 
@@ -115,8 +121,16 @@ export type IntakeRouteCheck = {
   outcome: "clear" | "review_required" | "routed" | "declined";
   rationale: string;
   evidenceIds: readonly string[];
+  version: number;
   recordedAt: string;
 };
+
+export type IntakePreparationBlock =
+  | "analysis_scope_missing"
+  | "advisor_authorization_missing"
+  | "advisor_authorization_revoked"
+  | "route_declined"
+  | "route_changed";
 
 export type LadderSource = "classified_room" | "declared_derivation" | "registered_public_source";
 export type LadderAttempt = {
@@ -292,6 +306,8 @@ export const intakeEventSchema = z.discriminatedUnion("type", [
         entityId: z.string().trim().min(1),
         legalName: z.string().trim().min(1),
         role: z.enum(["borrower", "operating_company", "guarantor", "holding", "target", "other"]),
+        source: z.enum(["member_organization", "company_declaration", "advisor_declaration", "document"]),
+        status: z.enum(["declared", "document_supported", "confirmed"]),
       }).strict()).min(1),
       reason: z.string().trim().min(1),
       version: z.number().int().positive(),
@@ -302,10 +318,18 @@ export const intakeEventSchema = z.discriminatedUnion("type", [
     type: z.literal("advisor_authorization_recorded"),
     authorization: z.object({
       advisorOrganizationId: z.string().trim().min(1),
-      clientOrganizationId: z.string().trim().min(1),
-      scope: z.string().trim().min(1),
-      evidenceReference: z.string().trim().min(1),
-    }).strict(),
+      clientEntityId: z.string().trim().min(1),
+      authorityKind: z.enum(["engagement_letter", "mandate", "power_of_attorney", "board_resolution", "company_confirmation", "other"]),
+      status: z.enum(["declared", "documented", "verified", "revoked"]),
+      scopes: z.array(z.enum(["prepare_case", "market_sounding", "qualified_introduction"])).min(1),
+      declarationReference: z.string().trim().min(1).optional(),
+      evidenceReferences: z.array(z.string().trim().min(1)),
+      version: z.number().int().positive(),
+    }).strict().superRefine((authorization, context) => {
+      if (["documented", "verified"].includes(authorization.status) && authorization.evidenceReferences.length === 0) {
+        context.addIssue({code: "custom", message: "documented authorization requires evidence"});
+      }
+    }),
   }).strict(),
   z.object({
     ...eventBaseShape,
@@ -315,6 +339,7 @@ export const intakeEventSchema = z.discriminatedUnion("type", [
       outcome: z.enum(["clear", "review_required", "routed", "declined"]),
       rationale: z.string().trim().min(1),
       evidenceIds: z.array(z.string().trim().min(1)),
+      version: z.number().int().positive(),
     }).strict(),
   }).strict(),
 ]);
@@ -394,6 +419,7 @@ export type IntakeState = {
   analysisScope: AnalysisScope | null;
   advisorAuthorization: AdvisorAuthorization | null;
   routeChecks: readonly IntakeRouteCheck[];
+  preparationBlocks: readonly IntakePreparationBlock[];
   receivedDocuments: readonly ReceivedDocument[];
   documents: readonly (ClassifiedDocument & {classificationVersion: number})[];
   ladderTraces: readonly RequestLadderTrace[];
@@ -451,6 +477,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
   const receivedDocuments = [...replay.receivedDocuments.values()].sort((left, right) => left.id.localeCompare(right.id));
   const documents = [...replay.documents.values()].sort((left, right) => left.id.localeCompare(right.id));
   const ladderTraces = [...replay.ladders.values()].sort((left, right) => left.requirementId.localeCompare(right.requirementId));
+  const preparationBlocks = preparationBlocksFor(replay);
   const fingerprint = hash({caseId, policy, events: parsedEvents});
 
   if (!replay.route) {
@@ -465,6 +492,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
       analysisScope: replay.scope,
       advisorAuthorization: replay.authorization,
       routeChecks: replay.routeChecks,
+      preparationBlocks,
       receivedDocuments,
       documents,
       ladderTraces,
@@ -487,7 +515,9 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
   const eligibleRequests = fullPlan.current.filter(({status}) =>
     ladderPermitsRequest(replay.ladders.get(status.requirement.id), replay.evidenceRevision)
   );
-  const selected = eligibleRequests.slice(0, policy.maxActiveRequests);
+  const selected = preparationBlocks.length === 0
+    ? eligibleRequests.slice(0, policy.maxActiveRequests)
+    : [];
   const activeIds = new Set(selected.map(({status}) => status.requirement.id));
   const pendingAtActiveStage = fullPlan.current
     .filter(({status}) => !activeIds.has(status.requirement.id))
@@ -496,9 +526,11 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
   const allOpenClientStage = openNow.length > 0
     ? openNow
     : report.byStage.structuring.filter((status) => !status.satisfied && !absenceIds.has(status.requirement.id));
-  const awaitingLadder = allOpenClientStage
-    .filter((status) => !ladderPermitsRequest(replay.ladders.get(status.requirement.id), replay.evidenceRevision))
-    .map((status) => status.requirement.id);
+  const awaitingLadder = preparationBlocks.length === 0
+    ? allOpenClientStage
+        .filter((status) => !ladderPermitsRequest(replay.ladders.get(status.requirement.id), replay.evidenceRevision))
+        .map((status) => status.requirement.id)
+    : [];
 
   addSuppressionLog(replay, report, generatedAt);
 
@@ -530,14 +562,14 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     queuedAfterActiveBatch: pendingAtActiveStage,
   };
 
-  const activeRequestBatch: ActiveRequestBatch = {
+  const activeRequestBatch: ActiveRequestBatch | null = selected.length > 0 ? {
     batchId: hash({caseId, generatedAt, policyVersion: policy.version, requirementIds: selected.map(({status}) => status.requirement.id)}),
     caseId,
     generatedAt,
     policyVersion: policy.version,
     maxItems: policy.maxActiveRequests,
     requests: selected.map((request) => activeRequest(request, replay.ladders.get(request.status.requirement.id)!)),
-  };
+  } : null;
 
   return {
     caseId,
@@ -550,6 +582,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     analysisScope: replay.scope,
     advisorAuthorization: replay.authorization,
     routeChecks: replay.routeChecks,
+    preparationBlocks,
     receivedDocuments,
     documents,
     ladderTraces,
@@ -645,12 +678,26 @@ function applyEvent(state: MutableReplay, event: IntakeEvent): void {
       break;
     }
     case "advisor_authorization_recorded": {
-      if (event.authorization.advisorOrganizationId === event.authorization.clientOrganizationId) throw new Error("advisor and client organizations must be distinct");
+      if (event.authorization.version !== (state.authorization?.version ?? 0) + 1) {
+        throw new Error("advisor authorization versions must be sequential");
+      }
+      const scope = state.scope?.entities.find((entity) => entity.entityId === event.authorization.clientEntityId);
+      if (!scope) throw new Error("advisor authorization client must belong to the analysis scope");
       state.authorization = {...event.authorization, recordedAt: event.occurredAt};
-      pushLog(state, event, "advisor_authorized", `Advisor authorization recorded for client ${event.authorization.clientOrganizationId}.`, [event.authorization.evidenceReference]);
+      pushLog(
+        state,
+        event,
+        "advisor_authorized",
+        `Advisor authorization version ${event.authorization.version} recorded for client entity ${event.authorization.clientEntityId} as ${event.authorization.status}.`,
+        event.authorization.evidenceReferences,
+      );
       break;
     }
     case "route_check_recorded": {
+      const priorVersion = state.routeChecks
+        .filter((check) => check.check === event.routeCheck.check)
+        .at(-1)?.version ?? 0;
+      if (event.routeCheck.version !== priorVersion + 1) throw new Error("route check versions must be sequential");
       state.routeChecks.push({...event.routeCheck, recordedAt: event.occurredAt});
       pushLog(state, event, "route_check_completed", `${event.routeCheck.check} completed with ${event.routeCheck.outcome}.`, event.routeCheck.evidenceIds);
       break;
@@ -693,6 +740,29 @@ function validateLadder(attempts: readonly LadderAttempt[]): void {
   if (foundAt >= 0 && foundAt !== attempts.length - 1) throw new Error("request ladder must stop when evidence is found");
 }
 
+/**
+ * Facts that must exist before a client request can be issued.
+ *
+ * A review-required check remains visible to the desk but does not halt collection. `routed` and
+ * `declined` do halt this route: continuing to ask against a path the system has already changed
+ * or refused would be operationally misleading.
+ */
+function preparationBlocksFor(state: MutableReplay): IntakePreparationBlock[] {
+  const blocks: IntakePreparationBlock[] = [];
+  if (!state.scope) blocks.push("analysis_scope_missing");
+
+  if (state.frame?.declaredBy.role === "advisor") {
+    if (!state.authorization) blocks.push("advisor_authorization_missing");
+    else if (state.authorization.status === "revoked") blocks.push("advisor_authorization_revoked");
+  }
+
+  const latestChecks = new Map<IntakeRouteCheck["check"], IntakeRouteCheck>();
+  for (const check of state.routeChecks) latestChecks.set(check.check, check);
+  if ([...latestChecks.values()].some((check) => check.outcome === "declined")) blocks.push("route_declined");
+  if ([...latestChecks.values()].some((check) => check.outcome === "routed")) blocks.push("route_changed");
+  return blocks;
+}
+
 function ladderPermitsRequest(trace: RequestLadderTrace | undefined, evidenceRevision: number): trace is RequestLadderTrace {
   return Boolean(
     trace &&
@@ -710,7 +780,7 @@ function ladderPermitsRequest(trace: RequestLadderTrace | undefined, evidenceRev
  * those limits instead of claiming that document contents or the internet were searched.
  */
 export function buildPendingRequestLadders(state: IntakeState): RequestLadderDraft[] {
-  if (!state.archetypeRoute || !state.requestRoadmap) return [];
+  if (!state.archetypeRoute || !state.requestRoadmap || state.preparationBlocks.length > 0) return [];
   const requirements = new Map(
     archetype(state.archetypeRoute.archetypeId).requirements.map((requirement) => [requirement.id, requirement]),
   );

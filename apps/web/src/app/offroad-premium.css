@@ -7587,6 +7587,31 @@ button[disabled].workspace-search,
 .intake-guide__intro p {max-width: 760px;}
 
 .intake-operation__options {grid-template-columns: repeat(2, minmax(0, 1fr));}
+.intake-operation__client {
+  grid-column: 1 / -1;
+  margin: 0 0 10px;
+  padding: 22px;
+  border: 1px solid #d6dadd;
+  background: #f7f8f6;
+}
+.intake-operation__client legend,
+.intake-operation__choice-label {
+  color: #5f686e;
+  font-size: 10px;
+  font-weight: 680;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.intake-operation__client > p {max-width: 760px; margin: 3px 0 17px; color: #687178; font-size: 12px; line-height: 1.55;}
+.intake-operation__client-grid {display: grid; grid-template-columns: 1.25fr .75fr; gap: 14px;}
+.intake-operation__client-grid label {display: grid; gap: 6px; color: #59636a; font-size: 10px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase;}
+.intake-operation__client-grid input,
+.intake-operation__client-grid select {width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid #cfd4d6; border-radius: 2px; background: #fff; color: #192025; font: inherit; font-size: 13px; text-transform: none;}
+.intake-operation__client-grid .intake-operation__reference {grid-column: 1 / -1;}
+.intake-operation__authority-confirmation {display: flex; align-items: flex-start; gap: 9px; margin-top: 15px; color: #252c30; font-size: 12px; line-height: 1.45;}
+.intake-operation__authority-confirmation input {margin-top: 2px; accent-color: #748f3c;}
+.intake-operation__client > small {display: block; margin: 8px 0 0 23px; color: #747d82; font-size: 10px;}
+.intake-operation__choice-label {grid-column: 1 / -1; margin-top: 2px;}
 .intake-operation__option {min-height: 82px; padding: 17px 18px; border-radius: 3px; background: #fbfbfa;}
 .intake-operation__option > span {display: grid; gap: 5px;}
 .intake-operation__option strong {font-size: 14px; font-weight: 620;}
@@ -7689,6 +7714,9 @@ button[disabled].workspace-search,
   .intake-start__journey {padding: 24px 20px;}
   .intake-start__steps li {grid-template-columns: 24px 26px minmax(0, 1fr);}
   .intake-guide__progress > span {align-items: flex-start; flex-direction: column; gap: 5px; font-size: 8px;}
+  .intake-operation__client {padding: 18px;}
+  .intake-operation__client-grid {grid-template-columns: 1fr;}
+  .intake-operation__client-grid .intake-operation__reference {grid-column: auto;}
   .intake-operation__options {grid-template-columns: 1fr;}
   .intake-request-tier > header {grid-template-columns: 24px minmax(0, 1fr);}
   .intake-request-tier > header .intake-checklist__progress {grid-column: 2;}

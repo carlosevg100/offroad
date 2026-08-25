@@ -833,6 +833,8 @@ export type Database = {
       }
       document_intake_sessions: {
         Row: {
+          advisor_authorization: Json | null
+          analysis_scope: Json | null
           archetype: string | null
           capital_consequence: string | null
           capital_currency: string | null
@@ -858,12 +860,15 @@ export type Database = {
           requested_grace_months: number | null
           requested_term_months: number | null
           result_summary: Json
+          route_checks: Json
           sector: string | null
           started_by: string
           status: string
           updated_at: string
         }
         Insert: {
+          advisor_authorization?: Json | null
+          analysis_scope?: Json | null
           archetype?: string | null
           capital_consequence?: string | null
           capital_currency?: string | null
@@ -889,12 +894,15 @@ export type Database = {
           requested_grace_months?: number | null
           requested_term_months?: number | null
           result_summary?: Json
+          route_checks?: Json
           sector?: string | null
           started_by: string
           status?: string
           updated_at?: string
         }
         Update: {
+          advisor_authorization?: Json | null
+          analysis_scope?: Json | null
           archetype?: string | null
           capital_consequence?: string | null
           capital_currency?: string | null
@@ -920,6 +928,7 @@ export type Database = {
           requested_grace_months?: number | null
           requested_term_months?: number | null
           result_summary?: Json
+          route_checks?: Json
           sector?: string | null
           started_by?: string
           status?: string
@@ -3834,6 +3843,26 @@ export type Database = {
           p_rationale: string
           p_retest_triggers?: string[]
           p_route_event_id: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      set_intake_operation_context_command: {
+        Args: {
+          p_archetype: string
+          p_authority_kind?: string | null
+          p_authority_reference?: string | null
+          p_authorization_event_id: string | null
+          p_client_legal_name?: string | null
+          p_confidence: string
+          p_early_triage_event_id: string
+          p_frame_event_id: string
+          p_group_scope_event_id: string
+          p_organization_id: string
+          p_rationale: string
+          p_retest_triggers?: string[]
+          p_route_event_id: string
+          p_scope_event_id: string
           p_session_id: string
         }
         Returns: Json

@@ -53,6 +53,26 @@ function eventRows() {
         },
       },
     },
+    {
+      event_id: "scope-event",
+      event_type: "analysis_scope_recorded",
+      intake_session_id: job.intake_session_id,
+      occurred_at: "2026-08-25T18:00:02.000Z",
+      sequence: 3,
+      payload: {
+        scope: {
+          entities: [{
+            entityId: `organization:${job.organization_id}`,
+            legalName: "Rede Horizonte S.A.",
+            role: "borrower",
+            source: "member_organization",
+            status: "declared",
+          }],
+          reason: "The member organization is the primary borrower initially declared for this case.",
+          version: 1,
+        },
+      },
+    },
   ];
 }
 
@@ -84,7 +104,7 @@ describe("worker request preparation", () => {
     expect(written[0]).toEqual(expect.objectContaining({
       eventId: expect.any(String),
       requirementId: expect.any(String),
-      basisRevision: 2,
+      basisRevision: 3,
       attempts: expect.arrayContaining([
         expect.objectContaining({source: "classified_room"}),
         expect.objectContaining({source: "registered_public_source", outcome: "not_permitted"}),

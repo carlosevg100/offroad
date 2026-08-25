@@ -212,9 +212,9 @@ export async function loadIntakeChecklist(input: {
   return {
     archetypeId,
     batchState: replayIsAuthoritative
-      ? replay.state.activeRequestBatch
+      ? (replay.state.activeRequestBatch?.requests.length ?? 0) > 0
         ? "ready"
-        : (replay.state.requestRoadmap?.awaitingLadder.length ?? 0) > 0
+        : (replay.state.requestRoadmap?.awaitingLadder.length ?? 0) > 0 || replay.state.preparationBlocks.length > 0
           ? "awaiting_evidence"
           : "complete"
       : activeRequirementIds.length > 0
