@@ -201,9 +201,9 @@ export async function recordInformationAnswer(
     p_session_id: sessionId,
     p_event_id: randomUUID(),
     p_requirement_id: input.requirementId,
-    p_answer: answer || null,
+    p_answer: answer || undefined,
     p_response: response,
-    p_note: note || null,
+    p_note: note || undefined,
   });
   if (error) {
     logIntakeFailure("record_answer", error);

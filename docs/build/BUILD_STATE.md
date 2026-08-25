@@ -12,12 +12,21 @@ política datada, no máximo cinco itens e só pede ao cliente depois de procura
 tentar derivação governada e consultar fonte pública permitida. Respostas parciais não contam como
 completas; exclusão de documento e limpeza de resposta são novos eventos, não mutações retroativas.
 
-A migration `20260825153249_m0_intake_event_ledger.sql` introduz o ledger append-only e os primeiros
+A migration `20260825154745_m0_intake_event_ledger.sql` introduz o ledger append-only e os primeiros
 dois comandos atômicos, arquétipo e resposta de informação. Cada comando mantém a projeção atual e o
 evento na mesma transação, com lock de sequência, hash, ator e idempotência. Tenants leem apenas o
 próprio histórico e não escrevem diretamente na tabela. Persistência dos demais eventos, replay
 integral na web e telemetria ainda estão explicitamente pendentes; nenhum procedimento de M0 foi
 promovido para `production`.
+
+O branch Supabase `staging` foi rebaseado sobre produção antes da validação, preservando a migration
+anterior de respostas indisponíveis. O schema medido mantém RLS habilitado e forçado no ledger,
+somente `SELECT` para `authenticated`, nenhuma permissão para `anon` e nenhuma escrita direta nas
+duas projeções agora governadas por comando. Os comandos têm `search_path` vazio, idempotência e
+escopo de sessão validado. O Security Advisor retornou zero findings. O gate local completo passou
+nos 38 pacotes; o teste de não interferência foi ajustado para não usar a escrita de arquétipo que o
+novo comando deliberadamente revogou. A promoção para produção continua condicionada ao novo CI
+verde da PR.
 
 ## House Playbook M10 em shadow, 25/08/2026
 

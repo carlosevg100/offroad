@@ -1730,6 +1730,59 @@ export type Database = {
         }
         Relationships: []
       }
+      intake_domain_events: {
+        Row: {
+          created_by: string
+          event_hash: string
+          event_id: string
+          event_type: string
+          id: string
+          intake_session_id: string
+          occurred_at: string
+          organization_id: string
+          payload: Json
+          payload_version: number
+          recorded_at: string
+          sequence: number
+        }
+        Insert: {
+          created_by: string
+          event_hash: string
+          event_id: string
+          event_type: string
+          id?: string
+          intake_session_id: string
+          occurred_at: string
+          organization_id: string
+          payload: Json
+          payload_version?: number
+          recorded_at?: string
+          sequence: number
+        }
+        Update: {
+          created_by?: string
+          event_hash?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          intake_session_id?: string
+          occurred_at?: string
+          organization_id?: string
+          payload?: Json
+          payload_version?: number
+          recorded_at?: string
+          sequence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_domain_events_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       intake_field_candidates: {
         Row: {
           anchor_precision: string | null
@@ -1862,73 +1915,6 @@ export type Database = {
             columns: ["organization_id", "processing_run_id"]
             isOneToOne: false
             referencedRelation: "processing_runs"
-            referencedColumns: ["organization_id", "id"]
-          },
-        ]
-      }
-      intake_domain_events: {
-        Row: {
-          created_by: string
-          event_hash: string
-          event_id: string
-          event_type: string
-          id: string
-          intake_session_id: string
-          occurred_at: string
-          organization_id: string
-          payload: Json
-          payload_version: number
-          recorded_at: string
-          sequence: number
-        }
-        Insert: {
-          created_by: string
-          event_hash: string
-          event_id: string
-          event_type: string
-          id?: string
-          intake_session_id: string
-          occurred_at: string
-          organization_id: string
-          payload: Json
-          payload_version?: number
-          recorded_at?: string
-          sequence: number
-        }
-        Update: {
-          created_by?: string
-          event_hash?: string
-          event_id?: string
-          event_type?: string
-          id?: string
-          intake_session_id?: string
-          occurred_at?: string
-          organization_id?: string
-          payload?: Json
-          payload_version?: number
-          recorded_at?: string
-          sequence?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "intake_domain_events_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "intake_domain_events_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "intake_domain_events_organization_id_intake_session_id_fkey"
-            columns: ["organization_id", "intake_session_id"]
-            isOneToOne: false
-            referencedRelation: "document_intake_sessions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -3725,9 +3711,9 @@ export type Database = {
       }
       record_intake_information_command: {
         Args: {
-          p_answer?: string | null
+          p_answer?: string
           p_event_id: string
-          p_note?: string | null
+          p_note?: string
           p_organization_id: string
           p_requirement_id: string
           p_response?: string

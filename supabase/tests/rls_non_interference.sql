@@ -1720,7 +1720,7 @@ begin
 
   -- What the company answers about itself stays its own to change.
   update public.document_intake_sessions
-  set requested_amount = 40000000, requested_term_months = 48, sector = 'varejo', archetype = null
+  set requested_amount = 40000000, requested_term_months = 48, sector = 'varejo'
   where organization_id = org and id = session_id;
 
   accepted := true;
