@@ -611,6 +611,114 @@ describe("adaptive intake state", () => {
     expect(state.routeChecks).toContainEqual(expect.objectContaining({check: "disguised_liquidity", outcome: "review_required"}));
   });
 
+  it("starts honestly from one useful document and asks only the next governed batch", () => {
+    let events = baseEvents();
+    events.push(nextEvent(events, {
+      type: "document_classified",
+      document: {id: "single-management-pack", kind: "management_accounts"},
+      classificationVersion: 1,
+    }));
+
+    const report = assessSufficiency("growth_expansion", [{id: "single-management-pack", kind: "management_accounts"}]);
+    const stillOpenNow = report.byStage.now.filter((status) => !status.satisfied).map((status) => status.requirement.id);
+    events = addLadders(events, stillOpenNow);
+    const state = replayIntake("case-1", policy, events);
+
+    expect(state.documents).toEqual([
+      expect.objectContaining({id: "single-management-pack", kind: "management_accounts"}),
+    ]);
+    expect(state.informationCoverage?.minimum.complete).toBe(false);
+    expect(state.activeRequestBatch?.requests.length).toBeGreaterThan(0);
+    expect(state.activeRequestBatch?.requests.length).toBeLessThanOrEqual(policy.maxActiveRequests);
+    expect(state.activeRequestBatch?.requests.every((request) => request.ladderTrace.attempts.length >= 3)).toBe(true);
+  });
+
+  it("does not turn a disorganized room into false coverage by counting files", () => {
+    let events = baseEvents();
+    for (const [index, name] of ["scan-sem-tipo.pdf", "scan-sem-tipo-copia.pdf", "export.txt"].entries()) {
+      events.push(nextEvent(events, {
+        type: "document_received",
+        document: {id: `unclassified-${index + 1}`, originalName: name},
+        actorId: "company-user-1",
+      }));
+    }
+    events.push(nextEvent(events, {
+      type: "document_classified",
+      document: {id: "classified-management-pack", kind: "management_accounts"},
+      classificationVersion: 1,
+    }));
+
+    const report = assessSufficiency("growth_expansion", [{id: "classified-management-pack", kind: "management_accounts"}]);
+    const stillOpenNow = report.byStage.now.filter((status) => !status.satisfied).map((status) => status.requirement.id);
+    events = addLadders(events, stillOpenNow);
+    const state = replayIntake("case-1", policy, events);
+
+    expect(state.receivedDocuments).toHaveLength(4);
+    expect(state.receivedDocuments.filter(({id}) => id.startsWith("unclassified-"))).toHaveLength(3);
+    expect(state.documents).toHaveLength(1);
+    expect(state.informationCoverage?.minimum).toEqual(report.minimum);
+    expect(state.informationCoverage?.minimum.complete).toBe(false);
+    expect(state.activeRequestBatch?.requests.length).toBeLessThanOrEqual(policy.maxActiveRequests);
+  });
+
+  it("isolates one advisor's authority and economic perimeter across client cases", () => {
+    const advisorCase = (caseId: string, clientEntityId: string, legalName: string): IntakeEvent[] => {
+      const events = baseEvents().map((event) => {
+        const common = {caseId, eventId: `${caseId}:${event.eventId}`};
+        if (event.type === "capital_need_declared") {
+          return {...event, ...common, frame: {...event.frame, declaredBy: {actorId: "advisor-user-1", role: "advisor" as const}}};
+        }
+        if (event.type === "analysis_scope_recorded") {
+          return {
+            ...event,
+            ...common,
+            scope: {
+              ...event.scope,
+              entities: [{
+                entityId: clientEntityId,
+                legalName,
+                role: "borrower" as const,
+                source: "advisor_declaration" as const,
+                status: "declared" as const,
+                evidenceReferences: [],
+              }],
+            },
+          };
+        }
+        return {...event, ...common};
+      }) as IntakeEvent[];
+      events.push({
+        type: "advisor_authorization_recorded",
+        eventId: `${caseId}:event-4`,
+        caseId,
+        sequence: 4,
+        occurredAt: at(4),
+        authorization: {
+          advisorOrganizationId: "advisor-org",
+          clientEntityId,
+          authorityKind: "engagement_letter",
+          status: "documented",
+          scopes: ["prepare_case"],
+          evidenceReferences: [`document:${caseId}:authority`],
+          version: 1,
+        },
+      });
+      return events;
+    };
+
+    const caseA = advisorCase("case-client-a", "client-a", "Cliente A S.A.");
+    const caseB = advisorCase("case-client-b", "client-b", "Cliente B Ltda.");
+    const stateA = replayIntake("case-client-a", policy, caseA);
+    const stateB = replayIntake("case-client-b", policy, caseB);
+
+    expect(stateA.advisorAuthorization).toEqual(expect.objectContaining({clientEntityId: "client-a", scopes: ["prepare_case"]}));
+    expect(stateB.advisorAuthorization).toEqual(expect.objectContaining({clientEntityId: "client-b", scopes: ["prepare_case"]}));
+    expect(stateA.analysisScope?.entities.map(({entityId}) => entityId)).toEqual(["client-a"]);
+    expect(stateB.analysisScope?.entities.map(({entityId}) => entityId)).toEqual(["client-b"]);
+    expect(stateA.advisorAuthorization?.scopes).not.toContain("qualified_introduction");
+    expect(() => replayIntake("case-client-a", policy, [...caseA, caseB[0]!])).toThrow(/another case/);
+  });
+
   it("fails closed on invalid policy or event order", () => {
     expect(() => replayIntake("case-1", {...policy, maxActiveRequests: 6}, baseEvents())).toThrow();
     expect(() => replayIntake("case-1", {...policy, validUntil: "2026-08-24"}, baseEvents())).toThrow(/expires/);

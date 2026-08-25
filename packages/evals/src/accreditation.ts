@@ -6,7 +6,7 @@ import {
   type CanonicalProcedure,
 } from "@offroad/credit-playbook";
 
-export const goldCasePortfolioVersion = "2026.08.25-v2";
+export const goldCasePortfolioVersion = "2026.08.25-v3";
 
 export const goldCaseRequirementSchema = z.object({
   id: z.string().regex(/^[a-z0-9][a-z0-9-]{2,79}$/),
@@ -29,6 +29,10 @@ export const goldCasePortfolio = [
   {id: "corporate-growth-adversarial", title: "Expansão com sala hostil e conflito material", archetype: "growth_expansion", scenarioClass: "dirty", status: "live", modules: ["M0", "M2", "M3", "M7", "M9", "M10"], proves: ["Conflitos permanecem visíveis, texto hostil não entra na base e material sem suporte é recusado."]},
   {id: "corporate-growth-eligibility-negative", title: "Capex de limitada com rota elegível alternativa", archetype: "growth_expansion", scenarioClass: "eligibility_negative", status: "live", modules: ["M4", "M5", "M10"], proves: ["Fechar uma rota jurídica não elimina a necessidade econômica nem inventa elegibilidade."]},
   {id: "dirty-working-capital", title: "Capital de giro com informação conflitante", archetype: "working_capital", scenarioClass: "dirty", status: "live", modules: ["M0", "M2", "M3", "M4", "M9"], proves: ["A base preserva conflito e separa pedido declarado de necessidade calculada."]},
+  {id: "m0-single-document", title: "Intake iniciado com um único documento útil", archetype: "growth_expansion", scenarioClass: "clean", status: "live", modules: ["M0"], proves: ["Um arquivo classificado recebe crédito apenas pela cobertura que entrega e gera um próximo lote curto, sem exigir data room completo."]},
+  {id: "m0-disorganized-room", title: "Sala desorganizada sem falsa completude", archetype: "growth_expansion", scenarioClass: "dirty", status: "live", modules: ["M0", "M10"], proves: ["Volume, duplicata e arquivo não classificado não viram evidência; somente cobertura suportada reduz a lista de solicitações."]},
+  {id: "m0-advisor-client-isolation", title: "Assessor com múltiplos clientes segregados", archetype: "cross_archetype", scenarioClass: "multi_entity", status: "live", modules: ["M0", "M10"], proves: ["Perímetro e autorização permanecem por case e poder de introdução qualificada não é herdado entre clientes."]},
+  {id: "m0-disguised-liquidity", title: "Liquidez de curto prazo descrita como capex", archetype: "growth_expansion", scenarioClass: "dirty", status: "live", modules: ["M0", "M4", "M9", "M10"], proves: ["A hipótese vira revisão explícita, preserva a rota declarada e não gera reclassificação ou promessa automática."]},
   {id: "receivables-portfolio-exhaustion", title: "Carteira de recebíveis e capacidade de cessão", archetype: "receivables", scenarioClass: "vertical_exhaustion", status: "live", modules: ["M2", "M3", "M4", "M5", "M9"], proves: ["Vinte ou mais cenários paramétricos cobrem concentração, atraso, elegibilidade, reconciliação e recusa correta."], caveat: "Este caso testa o ativo carteira. FIDC é possível veículo ou comprador e não deve ser tratado como sinônimo da carteira ou do instrumento."},
   {id: "refinancing-maturity-wall", title: "Refinanciamento e parede de vencimentos", archetype: "refinance", scenarioClass: "clean", status: "planned", modules: ["M2", "M3", "M4", "M5", "M6", "M7"], proves: ["Alongamento, custo pró-forma, não rolagem e cronograma sem criar uma nova parede."]},
   {id: "acquisition-pro-forma", title: "Aquisição com combinado pró-forma", archetype: "acquisition", scenarioClass: "clean", status: "planned", modules: ["M1", "M2", "M3", "M4", "M5", "M7"], proves: ["Sources and uses, dívida adquirida, sinergias separadas e capacidade combinada."]},

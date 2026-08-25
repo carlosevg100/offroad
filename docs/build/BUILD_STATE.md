@@ -757,8 +757,15 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   disfarçada entram no mesmo histórico. A hipótese de liquidez exige revisão e não muda sozinha o
   arquétipo declarado.
 - Persistência append-only e comandos atômicos já cobrem necessidade, rota, resposta, escada de
-  busca, perímetro econômico, declaração de autorização, triagem e o ciclo documental. Sessões
-  novas são lidas por replay na checklist; sessões legadas mantêm fallback explícito. Escopo ainda
-  aberto: escopo multi-entidade inferido e confirmado, verificação e revogação operacional da
-  autorização, telemetria de abandono e gold cases de sala desorganizada e empresa com um único
-  documento. O módulo M0 e os procedimentos IN permanecem sem promoção institucional.
+  busca, perímetro econômico, sugestão documental de entidade, decisão humana de escopo, ciclo de
+  autorização, triagem e documentos. Sessões novas são lidas por replay na checklist; sessões
+  legadas mantêm fallback explícito.
+- O funil anônimo de M0 mede entrada, operação, pedido, documentos e revisão usando apenas enums e
+  bandas de contagem. Autocapture, replay, page leave, persistência, perfil de pessoa e qualquer
+  contexto de case permanecem desligados. Abandono é inferido por coorte entre etapas.
+- Gold cases específicos de M0 cobrem sala desorganizada, empresa com um único documento, assessor
+  com vários clientes isolados, hipótese de liquidez disfarçada, grupo multi-entidade e documento
+  que elimina quatro solicitações futuras. A carteira de acreditação tem 18 cenários entre live,
+  partial e planned.
+- Escopo ainda aberto: piloto com uma empresa ou assessor real e revisão independente da versão
+  exata. O módulo M0 e os procedimentos IN permanecem sem promoção institucional.

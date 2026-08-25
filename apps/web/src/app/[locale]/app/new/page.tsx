@@ -70,7 +70,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
       <Link className="text-link" href={`/${locale}/app`}><ArrowLeft aria-hidden="true" size={14} />{t("overview")}</Link>
       {notice ? <p className="form-notice form-notice--error" role="alert">{notice}</p> : null}
 
-      {mode === "choice" ? <IntakeStartChoice actions={{start: startWorkspaceDocumentIntake, manual: chooseWorkspaceManualIntake}} context="workspace" locale={locale} /> : null}
+      {mode === "choice" ? <IntakeStartChoice actions={{start: startWorkspaceDocumentIntake, manual: chooseWorkspaceManualIntake}} context="workspace" journey={organization.organization_type === "originator" ? "originator" : "company"} locale={locale} /> : null}
 
       {mode === "documents" ? (
         !review?.session ? (
@@ -93,6 +93,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             locale={locale}
             manualHref={manualHref}
             session={review.session}
+            surface="workspace"
           />
         ) : (
           <IntakeCollect
@@ -117,6 +118,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             setOperationAction={setWorkspaceIntakeOperation}
             resolveScopeSuggestionAction={resolveWorkspaceScopeSuggestion}
             revokeAuthorizationAction={revokeWorkspaceAdvisorAuthorization}
+            surface="workspace"
             userId={userId}
           />
         )

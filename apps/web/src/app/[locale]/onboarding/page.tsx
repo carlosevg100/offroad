@@ -283,7 +283,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           </header>
           {errorMessage ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
-          {currentStep === "organization" && journey !== "capital_provider" && !intakeMode ? <IntakeStartChoice actions={{start: startDocumentIntake, manual: chooseManualIntake}} context="onboarding" locale={locale} /> : null}
+          {currentStep === "organization" && journey !== "capital_provider" && !intakeMode ? <IntakeStartChoice actions={{start: startDocumentIntake, manual: chooseManualIntake}} context="onboarding" journey={journey} locale={locale} /> : null}
 
           {currentStep === "organization" && (journey === "capital_provider" || intakeMode === "manual") ? (
             <form action={saveOrganizationStep} className="onboarding-stage__form">
@@ -361,6 +361,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 documents={intakeReview.documents}
                 issues={intakeReview.issues}
                 locale={locale}
+                surface="onboarding"
                 session={intakeReview.session}
               />
             ) : (
@@ -384,6 +385,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 setOperationAction={setIntakeOperation}
                 resolveScopeSuggestionAction={resolveOnboardingScopeSuggestion}
                 revokeAuthorizationAction={revokeOnboardingAdvisorAuthorization}
+                surface="onboarding"
                 userId={userId}
               />
             )
