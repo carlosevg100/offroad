@@ -1,8 +1,9 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.08.25-v3";
+export const financialCoreVersion = "2026.08.25-v4";
 
 export * from "./financial-truth";
+export * from "./operation";
 
 Decimal.set({precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -30, toExpPos: 30});
 

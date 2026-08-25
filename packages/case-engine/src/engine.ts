@@ -50,12 +50,15 @@ import {
 import {dataRoomIndex, planDataRoom, type DataRoomDocument, type DataRoomPlan} from "@offroad/data-room";
 import {
   assessCapacity,
+  buildOperationTruthSet,
   buildTermSheet,
   designCollateralPackage,
   type CapacityAssessment,
   type CollateralAsset,
   type CollateralPackage,
   type IndicativeTermSheet,
+  type OperationPolicies,
+  type OperationTruthSet,
 } from "@offroad/deal-structure";
 import {
   assessMandateFit,
@@ -72,7 +75,7 @@ import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@off
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.25-v5";
+export const caseEngineVersion = "2026.08.25-v6";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -115,6 +118,7 @@ export type CaseEngineInput = {
   requirementResponses?: RequirementResponses;
   receivablesCase?: ReceivablesCase;
   indexLevels?: {cdi: string; tlp: string; ipca: string; tr: string};
+  operationPolicies?: OperationPolicies;
   writeBrief?: (input: {
     archetypeId: ArchetypeId;
     locale: "pt" | "en";
@@ -134,6 +138,7 @@ export type CaseEngineState = {
   reconciliation: ReconciliationReport;
   readiness: ReadinessReport;
   capacity: CapacityAssessment | null;
+  operationTruth: OperationTruthSet;
   desk: DeskAnalysis | null;
   trajectory: Trajectory | null;
   receivables: ReceivablesAnalysis | null;
@@ -243,6 +248,7 @@ const metricsOutputSchema = z.object({
 const gapsOutputSchema = z.object({materialGapCount: z.number().int().nonnegative(), blockers: z.array(z.string())});
 const structureOutputSchema = z.object({
   capacity: z.unknown().nullable(),
+  operationTruth: z.unknown(),
   termSheet: z.unknown().nullable(),
   rating: z.unknown().nullable(),
   stress: z.array(z.unknown()),
@@ -294,7 +300,7 @@ type MetricsOutput = {
 type GapsOutput = {materialGapCount: number; blockers: string[]};
 type StructureOutput = Pick<
   CaseEngineState,
-  "capacity" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
+  "capacity" | "operationTruth" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
 >;
 type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInvocations"> & {
   proposedBrief: CaseBrief | null;
@@ -804,7 +810,17 @@ function structureCase(
   const verdict = deskVerdict && requested
     ? applyCapacityCondition(deskVerdict, requested, capacity)
     : deskVerdict;
-  return {capacity, termSheet, rating, stress, instruments, collateral, price, verdict};
+  const operationTruth = buildOperationTruthSet({
+    facts: reconciliation.facts,
+    financialTruth: reconciliation.financialTruth,
+    debtTruth: reconciliation.debtTruth,
+    capacity,
+    ...(requested ? {requestedAmount: requested} : {}),
+    ...(input.dealBrief.requestedTermMonths !== undefined ? {requestedTermMonths: input.dealBrief.requestedTermMonths} : {}),
+    referenceDate: input.referenceDate,
+    ...(input.operationPolicies ? {policies: input.operationPolicies} : {}),
+  });
+  return {capacity, operationTruth, termSheet, rating, stress, instruments, collateral, price, verdict};
 }
 
 function applyCapacityCondition(
