@@ -1,8 +1,9 @@
-import type {CanonicalProcedure, ProcedureOutputField, ProcedureRole, ProcedureStep} from "../procedure-contract";
+import type {CanonicalProcedure, ProcedureAuthority, ProcedureOutputField, ProcedureRole, ProcedureStep} from "../procedure-contract";
 import {canonicalProcedureSchema, compileProcedureRegistry} from "../procedure-contract";
 import {materialTemplates} from "../material-templates";
+import {referenceDataKeys} from "../reference-data";
 
-const VERSION = "2026.08.25-v1";
+const VERSION = "2026.08.25-v2";
 const SOURCE = "packages/credit-playbook/src/procedures/growth-capex.ts";
 
 type CandidateInput = {
@@ -29,6 +30,50 @@ type CandidateInput = {
 
 type CandidateOutputField = Omit<ProcedureOutputField, "evidenceRequired"> & {evidenceRequired?: boolean};
 
+type ProcedureKnowledge = {
+  houseProcedureIds: string[];
+  authorities: ProcedureAuthority[];
+  referenceDataKeys: string[];
+  legalReviewRequired: boolean;
+};
+
+const range = (prefix: string, start: number, end: number): string[] =>
+  Array.from({length: end - start + 1}, (_, index) => `${prefix}-${String(start + index).padStart(2, "0")}`);
+
+const knowledge = (
+  houseProcedureIds: string[],
+  authorities: ProcedureAuthority[],
+  referencedData: string[] = [],
+  legalReviewRequired = false,
+): ProcedureKnowledge => ({houseProcedureIds, authorities, referenceDataKeys: referencedData, legalReviewRequired});
+
+/**
+ * The 20 growth-capex runtime procedures are compiled projections of the House Playbook.
+ * This map is exhaustive by design: a candidate without canonical lineage cannot compile.
+ */
+const growthCapexKnowledge: Record<string, ProcedureKnowledge> = {
+  "frame-capital-need": knowledge(["IN-01", "IN-02", "IN-03", "IN-18", "IN-22", "IN-23", "IN-24", "IN-25", "IN-26", "EMP-20"], ["CASA", "DEF"]),
+  "plan-guided-information-growth-capex": knowledge(["IN-04", ...range("IN", 11, 17), "IN-21"], ["CASA", "DEF"], ["policy.intake.request_batch.max_items", "policy.intake.archetype-requirements"]),
+  "inventory-source-documents": knowledge(["IN-12", "IN-17", "IN-26", "MA-24", "MA-26"], ["CASA"]),
+  "extract-evidence-ledger": knowledge(["Q-18", "LC-01"], ["CASA", "DEF"]),
+  "spread-and-reconcile-financials": knowledge(range("Q", 1, 18), ["CASA", "DEF"], ["policy.reconciliation.tolerance", "policy.financial.materiality", "policy.financial.normalization", "policy.cash-flow.bridge", "policy.capex.maintenance", "policy.revenue-quality.cutoff", "policy.related-party.materiality", "policy.seasonality.materiality", "policy.currency.exposure", "policy.receivables.aging"]),
+  "build-debt-bridge-and-maturity": knowledge(range("D", 1, 31), ["CASA", "DEF", "LEI"], ["policy.debt.views", "policy.debt.cost-reconciliation", "policy.debt.maturity-concentration", "policy.debt.renewal-scenarios", "policy.concentration.materiality", "scenario.interest_rate.parallel_shock", "scenario.market.multi-factor", "scenario.short_term_non_renewal"], true),
+  "resolve-material-gaps": knowledge([...range("IN", 13, 17), "RF-14", "RF-15", "RF-16"], ["CASA"], ["policy.intake.request_batch.max_items"]),
+  "analyze-company-and-sector": knowledge(range("EMP", 1, 30), ["CASA", "DEF", "MERCADO", "HEURÍSTICA", "LEI"], ["policy.concentration.materiality", "policy.privacy.permitted-background-sources"], true),
+  "analyze-performance-and-cash-conversion": knowledge(range("Q", 1, 16), ["CASA", "DEF"], ["policy.reconciliation.tolerance", "policy.financial.materiality", "policy.financial.normalization", "policy.cash-flow.bridge", "policy.capex.maintenance"]),
+  "challenge-business-plan-and-downside": knowledge(["EMP-07", "EMP-08", "EMP-20", "Q-03", "Q-04", "Q-10", "Q-11", "OP-04"], ["CASA", "DEF", "HEURÍSTICA"], ["policy.business_plan.scenarios"]),
+  "size-capacity-and-sources-uses": knowledge(["Q-02", ...range("D", 24, 29), ...range("OP", 1, 4), "OP-06", "OP-07", ...range("ES", 1, 4)], ["CASA", "DEF", "HEURÍSTICA"], ["policy.cash-flow.bridge", "policy.capacity.minimum_headroom", "policy.transaction-sizing.materiality", "scenario.interest_rate.parallel_shock", "scenario.market.multi-factor", "scenario.short_term_non_renewal"]),
+  "design-financing-alternatives": knowledge(["ES-40", "ES-41", "ES-44", ...range("PR", 1, 12)], ["CASA", "MERCADO", "HEURÍSTICA", "LEI"], ["market.instrument.eligibility", "market.pricing.curves", "policy.pricing.sample-quality"], true),
+  "draft-indicative-structure": knowledge([...range("OP", 8, 11), ...range("ES", 1, 45)], ["CASA", "DEF", "MERCADO", "HEURÍSTICA", "LEI"], ["policy.capacity.minimum_headroom", "policy.structure.collateral_haircuts", "policy.structure.covenant_headroom", "market.instrument.eligibility", "market.pricing.curves"], true),
+  "compile-institutional-credit-memo": knowledge([...range("MA", 4, 16), ...range("MA", 28, 32), ...range("LC", 1, 13)], ["CASA", "DEF"], ["policy.material.numeric_rounding"]),
+  "compile-institutional-teaser": knowledge([...range("MA", 1, 3), ...range("MA", 28, 32), ...range("LC", 1, 13)], ["CASA", "DEF"], ["policy.material.numeric_rounding"]),
+  "compile-indicative-term-sheet": knowledge([...range("MA", 17, 21), ...range("MA", 28, 32), "LC-04", "LC-05", "LC-06"], ["CASA", "DEF", "LEI"], ["policy.material.numeric_rounding", "policy.structure.collateral_haircuts", "policy.structure.covenant_headroom", "market.instrument.eligibility", "market.pricing.curves"], true),
+  "organize-institutional-data-room": knowledge(["MA-14", "MA-24", "MA-25", "MA-26", "MA-31"], ["CASA"]),
+  "screen-investor-mandates": knowledge(range("MK", 1, 14), ["CASA", "MERCADO"], ["market.mandates", "policy.market.mandate_max_age"]),
+  "quality-control-growth-capex": knowledge([...range("RF", 1, 19), ...range("LC", 1, 13), ...range("MA", 28, 32)], ["CASA", "DEF", "HEURÍSTICA"], ["policy.qc.numeric_tolerance", "policy.material.numeric_rounding"]),
+  "execute-qualified-introduction": knowledge(["MK-15", "MK-16", "MK-17", "MK-18", "LC-08", "LC-10", "LC-11"], ["CASA", "MERCADO"], ["market.mandates", "policy.market.mandate_max_age", "policy.market.distribution-waves"]),
+};
+
 const commonEvidenceHierarchy = [
   "Demonstração auditada e nota explicativa do mesmo período e perímetro",
   "Informação intermediária revisada",
@@ -47,6 +92,8 @@ const baseOutput: CandidateOutputField[] = [
 ];
 
 function candidate(input: CandidateInput): CanonicalProcedure {
+  const procedureKnowledge = growthCapexKnowledge[input.id];
+  if (!procedureKnowledge) throw new Error(`missing House Playbook lineage for ${input.id}`);
   return canonicalProcedureSchema.parse({
     id: input.id,
     version: VERSION,
@@ -79,6 +126,7 @@ function candidate(input: CandidateInput): CanonicalProcedure {
       acceptance: ["nenhum achado material sem suporte", "estado bloqueado impede promoção da etapa", "PT e EN preservam identidade econômica"],
     },
     source: {path: `${SOURCE}#${input.id}`, effectiveDate: "2026-08-25"},
+    knowledge: procedureKnowledge,
     prerequisites: input.prerequisites,
     dependencies: input.dependencies ?? [],
     decisionRules: input.decisionRules,
@@ -630,6 +678,7 @@ export const growthCapexProcedures = [
 export const growthCapexProcedureRegistry = compileProcedureRegistry(
   growthCapexProcedures,
   materialTemplates.map((template) => template.id),
+  referenceDataKeys,
 );
 
-export const growthCapexProcedureRegistryVersion = "2026.08.25-v1";
+export const growthCapexProcedureRegistryVersion = "2026.08.25-v2";

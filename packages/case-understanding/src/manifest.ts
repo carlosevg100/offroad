@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 
 /** A reproducible record of every version and input that produced a case artifact. */
-export const artifactManifestSchemaVersion = "2026.08.25-v3";
+export const artifactManifestSchemaVersion = "2026.08.25-v4";
 
 export const modelInvocationManifestSchema = z.object({
   invocationId: z.string().min(1),
@@ -56,6 +56,14 @@ export const pipelineVersionManifestSchema = z.object({
   playbook: z.string().min(1),
   procedureCompiler: z.string().min(1),
   procedureRegistry: z.string().regex(/^[a-f0-9]{64}$/),
+  housePlaybook: z.object({
+    version: z.string().min(1),
+    sourceHash: z.string().regex(/^[a-f0-9]{64}$/),
+  }),
+  referenceDataRegistry: z.object({
+    version: z.string().min(1),
+    registryHash: z.string().regex(/^[a-f0-9]{64}$/),
+  }),
   materialTemplateRegistry: z.string().regex(/^[a-f0-9]{64}$/),
   marketData: z.object({version: z.string().min(1), asOf: z.iso.datetime()}),
   caseUnderstanding: z.string().min(1),

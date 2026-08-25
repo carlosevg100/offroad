@@ -633,7 +633,7 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   compilada carrega procedimento, versão, SHA-256 da fonte, versão do compiler, schema, templates,
   dependências, papel e etapa. Runtime só aceita pipeline determinístico, `peerHandoffs: false` e no
   máximo três chamadas estreitas de modelo.
-- A primeira vertical, expansão/capex corporativo, possui 19 procedimentos `candidate` cobrindo as
+- A primeira vertical, expansão/capex corporativo, possui 20 procedimentos `candidate` cobrindo as
   doze etapas: enquadramento, intake guiado, documentos, extração, spreading, ponte da dívida,
   lacunas, companhia/setor, desempenho, business plan/downside, capacidade, alternativas,
   estrutura, memo, teaser, term sheet, data room, matching, QC e introdução qualificada.
@@ -648,3 +648,30 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   governado nos evals.
 - Decisão registrada no ADR 0013. Nada desta entrega é chamado de produção institucional antes da
   promoção explícita de cada procedimento e template.
+
+## House Playbook completo, catálogo modular e acreditação, 25/08/2026
+
+- O v1 permanece como snapshot histórico. O `HOUSE-PLAYBOOK-COMPLETO-v2.md`, corrigido como
+  v2.1 governado, é a fonte editorial canônica: 11 módulos, 270 IDs em sequência, zero
+  duplicidade, zero referência interna quebrada, autoridade explícita em todas as entradas e zero
+  referência legada `E##`. O SHA-256 esperado fica no código e mudança sem nova versão falha.
+- As 270 entradas permanecem `readyToCompile: false`. O catálogo distingue workflow, cálculo,
+  método analítico, regra de decisão, lente setorial, referência de mercado, template, mandato,
+  distribuição, red flag e conduta. Um heading nunca vira chamada de modelo por conveniência.
+- Os 20 procedimentos `candidate` de growth/capex agora carregam lineage explícito para as entradas
+  do House Playbook, autoridades, dados versionados e necessidade de revisão jurídica.
+- O compiler recusa template, dependência ou reference-data key desconhecido. O primeiro registry
+  de dados sensíveis registra owner, fonte, data, validade e status. Parâmetros ainda sem fonte
+  aprovada ficam `required_missing` e bloqueiam promoção em vez de receber um número inventado.
+- O manifesto v4 registra hash e versão do House Playbook e do reference-data registry, além de
+  compiler, procedure registry e templates.
+- A carteira de acreditação explicita 14 casos entre `live`, `partial` e `planned`, inclusive sala
+  suja, multi-entidade, operação economicamente não suportável, identidade PT/EN e recebíveis. O
+  caso de recebíveis declara que FIDC é veículo possível, não sinônimo do ativo ou instrumento.
+- O promotion gate é individual e exige versão exata, predecessors em produção, unit, integração,
+  gold, adversarial, reference data vigente, QC de template, revisão jurídica quando aplicável e
+  revisão independente. Nenhum novo procedimento foi promovido a `production`.
+- Diagnóstico técnico, revisão do v2 e plano detalhado por módulo:
+  `docs/build/HOUSE_PLAYBOOK_TECHNICAL_AUDIT_2026-08-25.md`,
+  `docs/build/HOUSE_PLAYBOOK_V2_REVIEW_2026-08-25.md` e
+  `docs/build/HOUSE_PLAYBOOK_MODULE_EXECUTION_PLAN_2026-08-25.md`.

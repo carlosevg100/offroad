@@ -7,7 +7,7 @@ import {z} from "zod";
  * compiled projection directly and no runtime is allowed to invent a peer-to-peer handoff.
  */
 
-export const procedureCompilerVersion = "2026.08.25-v1";
+export const procedureCompilerVersion = "2026.08.25-v2";
 
 export const procedureMaturitySchema = z.enum(["draft", "candidate", "production"]);
 export type ProcedureMaturity = z.infer<typeof procedureMaturitySchema>;
@@ -24,6 +24,9 @@ export type ProcedureRole = z.infer<typeof procedureRoleSchema>;
 
 export const procedureStageSchema = z.number().int().min(1).max(12);
 export type ProcedureStage = z.infer<typeof procedureStageSchema>;
+
+export const procedureAuthoritySchema = z.enum(["LEI", "DEF", "CASA", "MERCADO", "HEURÍSTICA"]);
+export type ProcedureAuthority = z.infer<typeof procedureAuthoritySchema>;
 
 const bilingualSchema = z.object({pt: z.string().trim().min(1), en: z.string().trim().min(1)}).strict();
 
@@ -94,6 +97,12 @@ export const canonicalProcedureSchema = z.object({
   }).strict(),
   tests: qualitySchema,
   source: z.object({path: z.string().trim().min(1), effectiveDate: z.iso.date(), supersedes: z.string().min(1).optional()}).strict(),
+  knowledge: z.object({
+    houseProcedureIds: z.array(z.string().regex(/^(IN|EMP|Q|D|OP|ES|PR|MA|MK|RF|LC)-\d{2}$/)).default([]),
+    authorities: z.array(procedureAuthoritySchema).default([]),
+    referenceDataKeys: z.array(z.string().regex(/^[a-z][a-z0-9_.-]*$/)).default([]),
+    legalReviewRequired: z.boolean().default(false),
+  }).strict().default({houseProcedureIds: [], authorities: [], referenceDataKeys: [], legalReviewRequired: false}),
 
   /** Candidate and production detail. Drafts may omit these while the method is being written. */
   prerequisites: z.array(z.string().trim().min(1)).default([]),
@@ -116,12 +125,18 @@ export const canonicalProcedureSchema = z.object({
   duplicateIssues(procedure.output.fields.map((field) => field.id), ["output", "fields"], context);
   duplicateIssues(procedure.dependencies, ["dependencies"], context);
   duplicateIssues(procedure.templates, ["templates"], context);
+  duplicateIssues(procedure.knowledge.houseProcedureIds, ["knowledge", "houseProcedureIds"], context);
+  duplicateIssues(procedure.knowledge.authorities, ["knowledge", "authorities"], context);
+  duplicateIssues(procedure.knowledge.referenceDataKeys, ["knowledge", "referenceDataKeys"], context);
 
   if (procedure.runtime.maxModelCalls === 0 && procedure.runtime.modelPurpose.length > 0) {
     context.addIssue({code: "custom", path: ["runtime", "modelPurpose"], message: "a deterministic procedure cannot declare a model purpose"});
   }
   if (procedure.runtime.maxModelCalls > 0 && procedure.runtime.modelPurpose.length === 0) {
     context.addIssue({code: "custom", path: ["runtime", "modelPurpose"], message: "every model call needs a narrow declared purpose"});
+  }
+  if (procedure.knowledge.legalReviewRequired && !procedure.knowledge.authorities.includes("LEI")) {
+    context.addIssue({code: "custom", path: ["knowledge", "legalReviewRequired"], message: "legal review requires LEI authority"});
   }
 
   if (procedure.maturity === "draft") return;
@@ -155,6 +170,7 @@ export type CompiledProcedureSkill = {
   instructions: string;
   outputSchema: Record<string, unknown>;
   runtime: CanonicalProcedure["runtime"];
+  knowledge: CanonicalProcedure["knowledge"];
   templates: string[];
   dependencies: string[];
 };
@@ -175,22 +191,31 @@ export function compileProcedure(raw: CanonicalProcedure): CompiledProcedureSkil
     instructions: renderInstructions(procedure),
     outputSchema: outputJsonSchema(procedure.output.fields),
     runtime: procedure.runtime,
+    knowledge: procedure.knowledge,
     templates: [...procedure.templates],
     dependencies: [...procedure.dependencies],
   };
 }
 
-export function compileProcedureRegistry(procedures: readonly CanonicalProcedure[], templateIds: readonly string[]) {
+export function compileProcedureRegistry(
+  procedures: readonly CanonicalProcedure[],
+  templateIds: readonly string[],
+  referenceDataKeys: readonly string[] = [],
+) {
   const parsed = procedures.map((procedure) => canonicalProcedureSchema.parse(procedure));
   duplicateOrThrow(parsed.map((procedure) => procedure.id), "procedure");
   const ids = new Set(parsed.map((procedure) => procedure.id));
   const templates = new Set(templateIds);
+  const references = new Set(referenceDataKeys);
   for (const procedure of parsed) {
     for (const dependency of procedure.dependencies) {
       if (!ids.has(dependency)) throw new Error(`procedure ${procedure.id} depends on unknown procedure ${dependency}`);
     }
     for (const template of procedure.templates) {
       if (!templates.has(template)) throw new Error(`procedure ${procedure.id} references unknown template ${template}`);
+    }
+    for (const reference of procedure.knowledge.referenceDataKeys) {
+      if (!references.has(reference)) throw new Error(`procedure ${procedure.id} references unknown reference data ${reference}`);
     }
   }
   detectCycles(parsed);
@@ -237,6 +262,9 @@ function renderInstructions(procedure: CanonicalProcedure): string {
     "",
     "## Evidência",
     ...procedure.evidence.rules.map((rule) => `- ${rule}`),
+    ...(procedure.knowledge.houseProcedureIds.length ? ["", `Fontes do House Playbook: ${procedure.knowledge.houseProcedureIds.join(", ")}.`] : []),
+    ...(procedure.knowledge.referenceDataKeys.length ? [`Dados versionados obrigatórios: ${procedure.knowledge.referenceDataKeys.join(", ")}.`] : []),
+    ...(procedure.knowledge.legalReviewRequired ? ["Afirmações classificadas como LEI exigem fonte vigente e revisão especializada antes de impressão."] : []),
     "",
     "## Interrompa e devolva estado explícito quando",
     ...(procedure.stopConditions.length ? procedure.stopConditions : ["o contrato mínimo de evidência ou saída não puder ser satisfeito"]).map((condition) => `- ${condition}`),

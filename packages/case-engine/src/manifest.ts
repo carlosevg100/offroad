@@ -9,8 +9,12 @@ import {ontologyVersion} from "@offroad/credit-ontology";
 import {
   creditPlaybookVersion,
   growthCapexProcedureRegistry,
+  housePlaybookSourceHash,
+  housePlaybookSourceVersion,
   materialTemplateRegistryHash,
   procedureCompilerVersion,
+  referenceDataRegistryHash,
+  referenceDataRegistryVersion,
 } from "@offroad/credit-playbook";
 import {financialCoreVersion} from "@offroad/financial-core";
 import {marketReferenceVersion, provenance} from "@offroad/market-reference";
@@ -66,6 +70,14 @@ export function pipelineVersions(input: {snapshot: EconomicInputSnapshot; extrac
     playbook: creditPlaybookVersion,
     procedureCompiler: procedureCompilerVersion,
     procedureRegistry: growthCapexProcedureRegistry.registryHash,
+    housePlaybook: {
+      version: housePlaybookSourceVersion,
+      sourceHash: housePlaybookSourceHash,
+    },
+    referenceDataRegistry: {
+      version: referenceDataRegistryVersion,
+      registryHash: referenceDataRegistryHash,
+    },
     materialTemplateRegistry: materialTemplateRegistryHash,
     marketData: {
       version: marketReferenceVersion,
