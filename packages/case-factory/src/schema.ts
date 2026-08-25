@@ -15,6 +15,7 @@ export const factoryPerturbationSchema = z.discriminatedUnion("kind", [
     sourceDocument: z.string(),
     informationClass: informationClassSchema.default("management"),
     evidenceRank: z.number().int().min(1).max(7).default(5),
+    periodEnd: z.iso.date().optional(),
   }),
   z.object({kind: z.literal("security"), document: z.string(), mode: z.enum(["prompt_injection", "formula_injection", "cross_tenant_reference", "hidden_instruction"])}),
 ]);

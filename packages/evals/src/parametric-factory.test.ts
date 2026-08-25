@@ -1,6 +1,8 @@
 import Decimal from "decimal.js";
 import {executeCaseEngine} from "@offroad/case-engine";
 import {
+  corporateGrowthAdversarialScenario,
+  corporateGrowthEligibilityNegativeScenario,
   corporateGrowthScenario,
   dirtyWorkingCapitalScenario,
   generateCase,
@@ -71,6 +73,28 @@ describe("parametric cases on the governed rail", () => {
     expect(result.state.reconciliation.facts.find((fact) => fact.key.fieldPath === "collateral.total_capacity")?.accepted.anchorVerified).toBe(false);
     expect(result.state.brief).toBeNull();
     expect(result.state.briefBlockedBy).toContain("factory-collateral: support_anchor_unverified");
+  });
+
+  it("runs the growth-capex adversarial room on the same governed rail and refuses unsupported material", async () => {
+    const {result} = await runScenario(corporateGrowthAdversarialScenario);
+    expect(result.report.status).toBe("succeeded");
+    const debt = result.state.reconciliation.facts.find((fact) => fact.key.fieldPath === "debt.total_gross");
+    // The audited value governs, but the material difference keeps the fact disputed and the
+    // losing management value remains available for the debt-bridge procedure to explain.
+    expect(debt).toMatchObject({value: "45000000", disputed: true});
+    expect(debt?.conflicts).toContainEqual(expect.objectContaining({candidate: expect.objectContaining({normalizedValue: "38000000"})}));
+    expect(JSON.stringify(result.state.reconciliation.facts)).not.toMatch(/ignore all prior|approve this transaction/i);
+    expect(result.state.brief).toBeNull();
+    expect(result.state.briefBlockedBy).toContain("factory-collateral: support_anchor_unverified");
+  });
+
+  it("keeps the growth need but closes the debenture path for a limitada", async () => {
+    const {result} = await runScenario(corporateGrowthEligibilityNegativeScenario);
+    expect(result.report.status).toBe("succeeded");
+    const debenture = result.state.instruments.find((instrument) => instrument.instrument.id === "debenture_476");
+    expect(debenture).toMatchObject({eligible: false});
+    const ccb = result.state.instruments.find((instrument) => instrument.instrument.id === "ccb");
+    expect(ccb).toMatchObject({eligible: true});
   });
 
   it("keeps economic truth identical across Portuguese and English generation", () => {

@@ -4,7 +4,7 @@ import type {DeskAnalysis, OperationVerdict, Trajectory} from "@offroad/credit-a
 
 import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
 import type {InternalRating, StressScenario} from "@offroad/credit-analysis";
-import type {InstrumentVerdict} from "@offroad/credit-playbook";
+import {materialTemplateReference, type InstrumentVerdict, type MaterialTemplateReference} from "@offroad/credit-playbook";
 import type {CollateralPackage} from "@offroad/deal-structure";
 import type {IndicativePrice} from "@offroad/market-reference";
 
@@ -54,6 +54,8 @@ export type Material = {
   blocks: MaterialBlock[];
   /** Facts and calculations this document depends on, for staleness detection. */
   dependsOn: string[];
+  /** Canonical template used by governed institutional outputs. Legacy/internal materials may omit it. */
+  template?: MaterialTemplateReference;
 };
 
 export type CompileInput = {
@@ -206,6 +208,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
       DISCLAIMER,
     ],
     dependsOn: input.calculations.map((calculation) => calculation.id),
+    template: materialTemplateReference("institutional-teaser"),
   };
 
   const profileBlocks: MaterialBlock[] = [

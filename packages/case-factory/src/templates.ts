@@ -46,6 +46,38 @@ export const dirtyWorkingCapitalScenario: FactoryScenario = {
   ],
 };
 
+/**
+ * Same economics as the clean growth case, with the three failures the procedure library must
+ * surface rather than smooth over: a contradictory debt total, an unverified collateral anchor
+ * and an instruction embedded in an untrusted company document.
+ */
+export const corporateGrowthAdversarialScenario: FactoryScenario = {
+  ...corporateGrowthScenario,
+  id: "corporate-growth-adversarial-room",
+  seed: 4202,
+  perturbations: [
+    {
+      kind: "conflict",
+      fieldPath: "debt.total_gross",
+      alternateValue: "38000000",
+      sourceDocument: "management-deck.pdf",
+      informationClass: "management",
+      evidenceRank: 5,
+      periodEnd: "2025-12-31",
+    },
+    {kind: "evidence", fieldPath: "collateral.total_capacity", mode: "missing_anchor"},
+    {kind: "security", document: "capital-request.md", mode: "prompt_injection"},
+  ],
+};
+
+/** Legal-form negative control for instrument screening inside the same economic archetype. */
+export const corporateGrowthEligibilityNegativeScenario: FactoryScenario = {
+  ...corporateGrowthScenario,
+  id: "corporate-growth-ltda-instrument-negative",
+  seed: 4203,
+  company: {...corporateGrowthScenario.company, legalName: "Companhia Serra Azul Ltda.", legalForm: "ltda"},
+};
+
 export const receivablesScenario: FactoryScenario = {
   ...corporateGrowthScenario,
   id: "receivables-loan-tape",

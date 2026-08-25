@@ -8,7 +8,7 @@
  * Validated by the founder, an ex-investment banker — which is the only reason it is allowed
  * to exist. A playbook nobody with a desk behind them has read is one agent's opinion.
  */
-export const creditPlaybookVersion = "2026.08.25-v3";
+export const creditPlaybookVersion = "2026.08.25-v4";
 
 export * from "./types";
 export * from "./archetypes";
@@ -19,4 +19,7 @@ export * from "./taxonomy";
 export * from "./covenants";
 export * from "./dcm-blueprint";
 export * from "./client-requests";
+export * from "./procedure-contract";
+export * from "./material-templates";
+export * from "./procedures";
 export {commonClosing} from "./closing";

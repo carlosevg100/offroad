@@ -17,6 +17,7 @@
  */
 
 import type {Material, MaterialBlock, MaterialKind} from "@offroad/case-materials";
+import {materialTemplateReference} from "@offroad/credit-playbook";
 import type {ReadinessReport} from "@offroad/case-understanding";
 import {documentKindMap, type DocumentFolder, type DocumentKind} from "@offroad/credit-ontology";
 import type {ReconciliationException} from "@offroad/reconciliation";
@@ -267,5 +268,11 @@ export function dataRoomIndex(plan: DataRoomPlan): Material {
       en: "Internal index. Nothing in this room circulates before the state is releasable and the NDA is signed for the items so marked.",
     },
   });
-  return {kind: "data_room_index", title: {pt: "Sala de dados de saída", en: "Outbound data room"}, blocks, dependsOn: plan.entries.map((entry) => entry.id)};
+  return {
+    kind: "data_room_index",
+    title: {pt: "Sala de dados de saída", en: "Outbound data room"},
+    blocks,
+    dependsOn: plan.entries.map((entry) => entry.id),
+    template: materialTemplateReference("institutional-data-room-index"),
+  };
 }

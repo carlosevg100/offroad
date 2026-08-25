@@ -6,7 +6,12 @@ import {
   type CaseArtifactManifest,
 } from "@offroad/case-understanding";
 import {ontologyVersion} from "@offroad/credit-ontology";
-import {creditPlaybookVersion} from "@offroad/credit-playbook";
+import {
+  creditPlaybookVersion,
+  growthCapexProcedureRegistry,
+  materialTemplateRegistryHash,
+  procedureCompilerVersion,
+} from "@offroad/credit-playbook";
 import {financialCoreVersion} from "@offroad/financial-core";
 import {marketReferenceVersion, provenance} from "@offroad/market-reference";
 import {matchingCoreVersion} from "@offroad/matching-core";
@@ -59,6 +64,9 @@ export function pipelineVersions(input: {snapshot: EconomicInputSnapshot; extrac
     reconciliation: reconciliationVersion,
     financialCore: financialCoreVersion,
     playbook: creditPlaybookVersion,
+    procedureCompiler: procedureCompilerVersion,
+    procedureRegistry: growthCapexProcedureRegistry.registryHash,
+    materialTemplateRegistry: materialTemplateRegistryHash,
     marketData: {
       version: marketReferenceVersion,
       asOf: new Date(`${marketAsOf}T00:00:00.000Z`).toISOString(),

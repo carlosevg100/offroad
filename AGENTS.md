@@ -40,6 +40,10 @@ production borrower data into staging.
 10. **No fixture leakage.** Synthetic fixtures (Rede Horizonte, supermarket demo) are labeled
     synthetic and live in `packages/testing-fixtures`; fixture-specific text or numbers must
     never be hardcoded in production code paths.
+11. **One source, compiled execution.** Operational knowledge is edited only in canonical
+    procedures under `packages/credit-playbook`; runtime skills are compiled artifacts. Roles are
+    namespaces, never autonomous agents. Order, state, budgets and gates belong to the deterministic
+    pipeline. See ADR 0013 and `OFFROAD_DCM_OPERATING_CONSTITUTION.md`.
 
 Never weaken an RLS policy, a grant, or a check constraint to make a UI flow work. Fix the
 transaction, the bootstrap, or the query scope, and add a regression test.

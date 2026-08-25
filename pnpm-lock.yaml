@@ -462,6 +462,9 @@ importers:
       '@offroad/credit-ontology':
         specifier: workspace:*
         version: link:../credit-ontology
+      '@offroad/credit-playbook':
+        specifier: workspace:*
+        version: link:../credit-playbook
       '@offroad/reconciliation':
         specifier: workspace:*
         version: link:../reconciliation

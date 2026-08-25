@@ -51,6 +51,11 @@ describe("the credit memorandum", () => {
   const memo = creditMemo(shared);
   const text = JSON.stringify(memo.blocks);
 
+  it("records the canonical template that governed the document", () => {
+    expect(memo.template).toMatchObject({id: "institutional-credit-memo", version: "2026.08.25-v1"});
+    expect(memo.template?.registryHash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
   it("opens with the key terms a committee reads first", () => {
     const [first] = memo.blocks;
     expect(first?.type).toBe("callout");
@@ -83,6 +88,7 @@ describe("the term sheet", () => {
 
   it("states it is indicative and sets economic terms as key values", () => {
     const sheet = termSheetDocument(shared)!;
+    expect(sheet.template).toMatchObject({id: "indicative-term-sheet", version: "2026.08.25-v1"});
     const callout = sheet.blocks[0];
     expect(callout?.type).toBe("callout");
     const kv = sheet.blocks.find((block) => block.type === "kv" && block.rows.some((row) => row.label.pt === "Montante indicativo"));
@@ -106,6 +112,7 @@ describe("compileMaterials", () => {
     const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness});
     if (!outcome.ok) throw new Error("expected materials");
     expect(outcome.materials.map((material) => material.kind)).toEqual(["teaser", "credit_profile", "package"]);
+    expect(outcome.materials[0]?.template).toMatchObject({id: "institutional-teaser", version: "2026.08.25-v1"});
   });
 
   it("keeps every institutional material inside the DCM advisory boundary", () => {

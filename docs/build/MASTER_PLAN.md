@@ -361,3 +361,18 @@ Gate de aceite: todos os critérios do Blueprint passam, cálculos são reproduz
 Uma task só recebe `done` com: código completo; testes proporcionais; lint/typecheck/build; security review; accessibility/i18n quando houver UI; observabilidade; documentação; migration/rollback quando aplicável; evidência de aceite; nenhum TODO crítico oculto.
 
 Estados permitidos: `not_started`, `ready`, `in_progress`, `blocked_access`, `blocked_decision`, `in_review`, `done`.
+
+## 5. Biblioteca operacional executável
+
+Decisão arquitetural: ADR 0013.
+
+1. A Constituição Operacional é camada 0 e não é executada como prompt.
+2. Procedimentos canônicos são a única fonte de conhecimento editável.
+3. Skills são compiladas, fechadas por schema e executadas pelo pipeline determinístico.
+4. Papéis organizam responsabilidade; não são agentes autônomos.
+5. Templates são fechados dentro da vertical que os utiliza.
+6. A primeira vertical é expansão/capex corporativo e permanece `candidate` até revisão técnica,
+   gold cases, adversariais e quality gates.
+7. Próxima promoção: revisar os 19 procedimentos e quatro templates conteúdo a conteúdo, adicionar
+   cálculos e schemas específicos ainda representados por contratos genéricos, produzir os quatro
+   artefatos gold completos e medir a vertical inteira antes de promover qualquer item a production.

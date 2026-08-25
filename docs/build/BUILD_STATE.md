@@ -621,3 +621,30 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   e remove esse EXECUTE de `authenticated` antes de qualquer liberação externa (R-022).
 - Manifests antigos ou incompletos permanecem honestos por `capture.sources` e `capture.models`;
   captura parcial nunca deve liberar direcionamento externo nos gates seguintes.
+
+## Constituição, procedimentos compilados e vertical capex, 25/08/2026
+
+- O documento antes chamado House Playbook foi reclassificado como
+  `OFFROAD_DCM_OPERATING_CONSTITUTION.md`: camada 0 de mandato, princípios, fronteiras, linguagem e
+  gates. Ele agora proíbe expressamente sociedades de agentes autônomos e skills editadas como uma
+  segunda fonte de conhecimento.
+- `procedure-contract.ts` cria maturidade `draft`, `candidate` e `production`, o núcleo mínimo de
+  seis componentes, o contrato ampliado para promoção e o compiler determinístico. Toda skill
+  compilada carrega procedimento, versão, SHA-256 da fonte, versão do compiler, schema, templates,
+  dependências, papel e etapa. Runtime só aceita pipeline determinístico, `peerHandoffs: false` e no
+  máximo três chamadas estreitas de modelo.
+- A primeira vertical, expansão/capex corporativo, possui 19 procedimentos `candidate` cobrindo as
+  doze etapas: enquadramento, intake guiado, documentos, extração, spreading, ponte da dívida,
+  lacunas, companhia/setor, desempenho, business plan/downside, capacidade, alternativas,
+  estrutura, memo, teaser, term sheet, data room, matching, QC e introdução qualificada.
+- Teaser, memorando, term sheet e índice da sala de dados são templates canônicos versionados. Os
+  artefatos emitidos registram id, versão e hash do registry; templates permanecem `candidate` até
+  aprovação de conteúdo e evals.
+- O manifesto econômico passa a registrar também compiler, hash do registry de procedimentos e
+  hash dos templates. Alteração de conhecimento muda a linhagem da run.
+- A case factory ganhou duas variações de expansão: sala adversarial com dívida contraditória,
+  garantia sem âncora e prompt injection; e negativa de elegibilidade, em que a limitada mantém a
+  necessidade de expansão mas não pode seguir pela rota de debênture. Ambas atravessam o engine
+  governado nos evals.
+- Decisão registrada no ADR 0013. Nada desta entrega é chamado de produção institucional antes da
+  promoção explícita de cada procedimento e template.
