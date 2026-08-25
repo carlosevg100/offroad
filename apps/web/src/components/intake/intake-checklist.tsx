@@ -11,6 +11,11 @@ type OperationProps = {
   /** Sets the session's archetype (`archetype`, `session_id`, `locale`). */
   action: (formData: FormData) => Promise<void>;
   sessionId: string;
+  journey: "company" | "originator";
+  initialClientName?: string;
+  initialAuthorityKind?: string;
+  initialAuthorityReference?: string;
+  authorityAlreadyDeclared?: boolean;
 };
 
 const OPERATIONS: readonly ArchetypeId[] = [
@@ -31,7 +36,17 @@ const OPERATIONS: readonly ArchetypeId[] = [
  * the end, or inferring it from the documents, is how an intake ends up requesting things the
  * operation never needed.
  */
-export async function IntakeOperation({locale, selected, action, sessionId}: OperationProps) {
+export async function IntakeOperation({
+  locale,
+  selected,
+  action,
+  sessionId,
+  journey,
+  initialClientName,
+  initialAuthorityKind,
+  initialAuthorityReference,
+  authorityAlreadyDeclared,
+}: OperationProps) {
   const t = await getTranslations({locale, namespace: "Intake.operation"});
 
   return (
@@ -45,6 +60,40 @@ export async function IntakeOperation({locale, selected, action, sessionId}: Ope
       <form action={action} className="intake-operation__options">
         <input type="hidden" name="session_id" value={sessionId} />
         <input type="hidden" name="locale" value={locale} />
+        {journey === "originator" ? (
+          <fieldset className="intake-operation__client">
+            <legend>{t("clientLegend")}</legend>
+            <p>{t("clientBody")}</p>
+            <div className="intake-operation__client-grid">
+              <label>
+                <span>{t("clientLegalName")}</span>
+                <input autoComplete="organization" defaultValue={initialClientName} maxLength={240} minLength={2} name="client_legal_name" required />
+              </label>
+              <label>
+                <span>{t("authorityKind")}</span>
+                <select defaultValue={initialAuthorityKind ?? ""} name="authority_kind" required>
+                  <option disabled value="">{t("authorityChoose")}</option>
+                  <option value="engagement_letter">{t("authority_engagement_letter")}</option>
+                  <option value="mandate">{t("authority_mandate")}</option>
+                  <option value="company_confirmation">{t("authority_company_confirmation")}</option>
+                  <option value="power_of_attorney">{t("authority_power_of_attorney")}</option>
+                  <option value="board_resolution">{t("authority_board_resolution")}</option>
+                  <option value="other">{t("authority_other")}</option>
+                </select>
+              </label>
+              <label className="intake-operation__reference">
+                <span>{t("authorityReference")}</span>
+                <input defaultValue={initialAuthorityReference} maxLength={500} name="authority_reference" placeholder={t("authorityReferencePlaceholder")} />
+              </label>
+            </div>
+            <label className="intake-operation__authority-confirmation">
+              <input defaultChecked={authorityAlreadyDeclared} name="authority_confirmed" required type="checkbox" value="confirmed" />
+              <span>{t("authorityConfirmation")}</span>
+            </label>
+            <small>{t("authorityStatus")}</small>
+          </fieldset>
+        ) : null}
+        <div className="intake-operation__choice-label">{t("objectiveLegend")}</div>
         {OPERATIONS.map((id) => (
           <button
             key={id}

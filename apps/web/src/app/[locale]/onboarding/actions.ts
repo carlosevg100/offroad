@@ -159,7 +159,13 @@ export async function startDocumentIntake(formData: FormData) {
 export async function setIntakeOperation(formData: FormData) {
   const locale = localeFrom(formData);
   const {runtime} = await onboardingIntakeRuntime(locale, formData);
-  const outcome = await setArchetype(runtime, value(formData, "archetype"));
+  const outcome = await setArchetype(runtime, {
+    archetype: value(formData, "archetype"),
+    clientLegalName: value(formData, "client_legal_name"),
+    authorityKind: value(formData, "authority_kind"),
+    authorityReference: value(formData, "authority_reference"),
+    authorityConfirmed: value(formData, "authority_confirmed") === "confirmed",
+  });
   redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
 }
 

@@ -186,10 +186,33 @@ fato novo, sessão terminal, isolamento entre tenants e bloqueio de evidência f
 refaz o lote depois da classificação documental e a web o refaz depois de necessidade, resposta ou
 remoção. Uma colisão concorrente é reexecutada uma vez a partir do stream atualizado.
 
-Limite honesto: perímetro, autorização do assessor, triagens e telemetria de abandono e lotes ainda
-precisam de comandos e projeções completos. A escada M0 classifica a sala por tipo documental, não
+Limite honesto: a escada M0 classifica a sala por tipo documental, não
 afirma ter pesquisado conteúdo não extraído nem fonte pública sem cadastro governado. Nenhum
 procedimento IN-01 a IN-26 foi promovido a `production` por estas entregas.
+
+### Incremento executável 05, perímetro, autorização e triagem
+
+`set_intake_operation_context_command` transforma a primeira escolha da operação numa única
+transação: necessidade mínima, rota provisória, perímetro econômico, declaração de autorização
+quando o membro é assessor e duas triagens do dia zero. O comando antigo que criava rota sem
+perímetro deixa de ser alcançável pelo tenant.
+
+Organização da plataforma e empresa analisada são conceitos distintos. Para uma empresa usuária,
+o tomador inicial é a própria organização membro. Para um assessor, o tomador é uma entidade do
+case, com identificador estável por sessão, mesmo que não possua conta na Offroad. A autorização
+inicial nasce como `declared`, sem evidência fabricada, e contém apenas o poder `prepare_case`.
+Sondagem e introdução qualificada não são concedidas por extensão.
+
+O replay falha fechado: sem perímetro, sem autorização vigente do assessor, com autorização
+revogada ou com rota recusada ou alterada, não há escada nem lote ativo. `review_required` é um
+flag para o desk e não equivale a recusa. A interface pede ao assessor empresa cliente, base da
+autorização e confirmação explícita no mesmo passo do objetivo, sem criar uma etapa burocrática
+separada. Ao voltar, os valores governados são reapresentados para edição consciente.
+
+Staging validou o comando de empresa e de assessor em transações revertidas, retry, projeções,
+escopo estreito da autorização e retirada do comando legado. O Security Advisor permaneceu com
+zero findings; os avisos de performance continuam restritos aos índices ainda sem uso no banco
+vazio e à configuração informativa de conexões do Auth.
 
 ## 5. M1, Empresa e setor
 

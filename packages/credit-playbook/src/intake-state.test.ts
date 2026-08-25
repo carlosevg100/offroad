@@ -47,6 +47,24 @@ const baseEvents = (): IntakeEvent[] => [
       version: 1,
     },
   },
+  {
+    type: "analysis_scope_recorded",
+    eventId: "event-3",
+    caseId: "case-1",
+    sequence: 3,
+    occurredAt: at(3),
+    scope: {
+      version: 1,
+      reason: "A empresa declarante é a tomadora inicialmente considerada.",
+      entities: [{
+        entityId: "company-1",
+        legalName: "Rede Horizonte S.A.",
+        role: "borrower",
+        source: "member_organization",
+        status: "declared",
+      }],
+    },
+  },
 ];
 
 const unsuccessfulLadder = (): readonly LadderAttempt[] => [
@@ -57,6 +75,7 @@ const unsuccessfulLadder = (): readonly LadderAttempt[] => [
 
 const addLadders = (events: IntakeEvent[], requirementIds: readonly string[]): IntakeEvent[] => {
   const result = [...events];
+  const basisRevision = result.filter((event) => event.type !== "request_ladder_recorded").length;
   for (const requirementId of requirementIds) {
     const sequence = result.length + 1;
     result.push({
@@ -65,7 +84,7 @@ const addLadders = (events: IntakeEvent[], requirementIds: readonly string[]): I
       caseId: "case-1",
       sequence,
       occurredAt: at(sequence),
-      trace: {requirementId, attempts: unsuccessfulLadder(), basisRevision: 2, traceVersion: 1},
+      trace: {requirementId, attempts: unsuccessfulLadder(), basisRevision, traceVersion: 1},
     });
   }
   return result;
@@ -115,7 +134,7 @@ describe("adaptive intake state", () => {
 
   it("does not ask before the classified-room, derivation and public-source ladder is complete", () => {
     const initial = replayIntake("case-1", policy, baseEvents());
-    expect(initial.activeRequestBatch?.requests).toEqual([]);
+    expect(initial.activeRequestBatch).toBeNull();
     expect(initial.requestRoadmap?.awaitingLadder.length).toBeGreaterThan(4);
 
     const openNow = assessSufficiency("growth_expansion", []).byStage.now.map((status) => status.requirement.id);
@@ -123,6 +142,93 @@ describe("adaptive intake state", () => {
     expect(withLadders.activeRequestBatch?.requests).toHaveLength(3);
     expect(withLadders.activeRequestBatch?.requests.every((request) => request.ladderTrace.attempts.length === 3)).toBe(true);
     expect(withLadders.activeRequestBatch?.maxItems).toBe(3);
+  });
+
+  it("fails closed when the economic perimeter has not been declared", () => {
+    const withoutScope = baseEvents().slice(0, 2);
+    const openNow = assessSufficiency("growth_expansion", []).byStage.now.map((status) => status.requirement.id);
+    const state = replayIntake("case-1", policy, addLadders(withoutScope, openNow));
+
+    expect(state.preparationBlocks).toContain("analysis_scope_missing");
+    expect(state.activeRequestBatch).toBeNull();
+    expect(buildPendingRequestLadders(state)).toEqual([]);
+  });
+
+  it("does not issue requests for an advisor case without a current authorization", () => {
+    const events = baseEvents().map((event) => event.type === "capital_need_declared"
+      ? {...event, frame: {...event.frame, declaredBy: {actorId: "advisor-user-1", role: "advisor" as const}}}
+      : event) as IntakeEvent[];
+    const openNow = assessSufficiency("growth_expansion", []).byStage.now.map((status) => status.requirement.id);
+    const state = replayIntake("case-1", policy, addLadders(events, openNow));
+
+    expect(state.preparationBlocks).toContain("advisor_authorization_missing");
+    expect(state.activeRequestBatch).toBeNull();
+  });
+
+  it("stops preparation when advisor authority is revoked", () => {
+    const events = baseEvents().map((event) => {
+      if (event.type === "capital_need_declared") {
+        return {...event, frame: {...event.frame, declaredBy: {actorId: "advisor-user-1", role: "advisor" as const}}};
+      }
+      if (event.type === "analysis_scope_recorded") {
+        return {...event, scope: {...event.scope, entities: [{
+          entityId: "advisor-client:case-1:borrower",
+          legalName: "Indústria Exemplo S.A.",
+          role: "borrower" as const,
+          source: "advisor_declaration" as const,
+          status: "declared" as const,
+        }]}};
+      }
+      return event;
+    }) as IntakeEvent[];
+    events.push(nextEvent(events, {
+      type: "advisor_authorization_recorded",
+      authorization: {
+        advisorOrganizationId: "advisor-organization-1",
+        clientEntityId: "advisor-client:case-1:borrower",
+        authorityKind: "engagement_letter",
+        status: "revoked",
+        scopes: ["prepare_case"],
+        evidenceReferences: ["document:engagement-letter-1"],
+        version: 1,
+      },
+    }));
+
+    const state = replayIntake("case-1", policy, events);
+    expect(state.preparationBlocks).toContain("advisor_authorization_revoked");
+    expect(state.activeRequestBatch).toBeNull();
+    expect(buildPendingRequestLadders(state)).toEqual([]);
+  });
+
+  it("blocks a declined route but keeps review-required triage visible without blocking collection", () => {
+    const reviewEvents = baseEvents();
+    reviewEvents.push(nextEvent(reviewEvents, {
+      type: "route_check_recorded",
+      routeCheck: {
+        check: "group_scope",
+        outcome: "review_required",
+        rationale: "Related entities remain subject to document review.",
+        evidenceIds: ["event:event-3"],
+        version: 1,
+      },
+    }));
+    const reviewState = replayIntake("case-1", policy, reviewEvents);
+    expect(reviewState.preparationBlocks).toEqual([]);
+    expect(buildPendingRequestLadders(reviewState).length).toBeGreaterThan(0);
+
+    reviewEvents.push(nextEvent(reviewEvents, {
+      type: "route_check_recorded",
+      routeCheck: {
+        check: "early_triage",
+        outcome: "declined",
+        rationale: "The declared request is outside the current preparation scope.",
+        evidenceIds: ["event:event-1"],
+        version: 1,
+      },
+    }));
+    const declined = replayIntake("case-1", policy, reviewEvents);
+    expect(declined.preparationBlocks).toContain("route_declined");
+    expect(buildPendingRequestLadders(declined)).toEqual([]);
   });
 
   it("compiles honest ladder drafts and invalidates them when evidence changes", () => {
@@ -143,8 +249,8 @@ describe("adaptive intake state", () => {
       actorId: "company-user-1",
     }));
     const changed = replayIntake("case-1", policy, withLadders);
-    expect(changed.evidenceRevision).toBe(3);
-    expect(changed.activeRequestBatch?.requests).toEqual([]);
+    expect(changed.evidenceRevision).toBe(4);
+    expect(changed.activeRequestBatch).toBeNull();
     expect(changed.requestRoadmap?.awaitingLadder.length).toBeGreaterThan(4);
   });
 
@@ -171,7 +277,7 @@ describe("adaptive intake state", () => {
 
     const after = replayIntake("case-1", policy, events);
     const activeIds = new Set(active.map((request) => request.requirementId));
-    expect(after.activeRequestBatch?.requests.every((request) => !activeIds.has(request.requirementId))).toBe(true);
+    expect((after.activeRequestBatch?.requests ?? []).every((request) => !activeIds.has(request.requirementId))).toBe(true);
     expect(after.informationCoverage?.requirements.filter((status) => activeIds.has(status.requirement.id)).every((status) => status.satisfied)).toBe(true);
     expect(after.decisionLog.filter((entry) => entry.type === "request_suppressed" && activeIds.has(entry.summary.split(" ")[1]!))).toHaveLength(4);
   });
@@ -192,7 +298,7 @@ describe("adaptive intake state", () => {
     ];
 
     const state = replayIntake("case-1", policy, events);
-    expect(state.activeRequestBatch?.requests.some((request) => request.requirementId === first.requirementId)).toBe(false);
+    expect(state.activeRequestBatch?.requests.some((request) => request.requirementId === first.requirementId) ?? false).toBe(false);
     expect(state.requestRoadmap?.acknowledgedAbsence).toContain(first.requirementId);
     expect(state.informationCoverage?.acknowledgedAbsences).toContainEqual({
       requirementId: first.requirementId,
@@ -289,7 +395,7 @@ describe("adaptive intake state", () => {
       type: "request_ladder_recorded",
       trace: {
         requirementId,
-        basisRevision: 2,
+        basisRevision: 3,
         attempts: [
           {source: "classified_room", outcome: "not_found", detail: "Não encontrado na sala.", evidenceIds: []},
           {source: "declared_derivation", outcome: "found", detail: "Derivado de fatos conciliados.", evidenceIds: ["calc:capital-need:1"]},
@@ -312,7 +418,7 @@ describe("adaptive intake state", () => {
       type: "request_ladder_recorded",
       trace: {
         requirementId,
-        basisRevision: 2,
+        basisRevision: 3,
         attempts: [
           {source: "classified_room", outcome: "not_found", detail: "Não encontrado na sala.", evidenceIds: []},
           {source: "declared_derivation", outcome: "found", detail: "Derivado de fatos conciliados.", evidenceIds: ["calc:capital-need:1"]},
@@ -336,7 +442,7 @@ describe("adaptive intake state", () => {
       (entry) => entry.requirement.id === requirementId,
     );
 
-    expect(refreshed.evidenceRevision).toBe(3);
+    expect(refreshed.evidenceRevision).toBe(4);
     expect(refreshedStatus?.satisfied).toBe(false);
     expect(refreshed.requestRoadmap?.awaitingLadder).toContain(requirementId);
   });
@@ -344,29 +450,33 @@ describe("adaptive intake state", () => {
   it("preserves multi-entity scope and advisor authorization as case-level facts", () => {
     const events = baseEvents();
     events.push(nextEvent(events, {
-      type: "advisor_authorization_recorded",
-      authorization: {
-        advisorOrganizationId: "advisor-1",
-        clientOrganizationId: "client-1",
-        scope: "Originação e compartilhamento controlado deste caso.",
-        evidenceReference: "authorization:case-1:v1",
+      type: "analysis_scope_recorded",
+      scope: {
+        version: 2,
+        reason: "Holding toma a dívida; duas operadoras geram o fluxo.",
+        entities: [
+          {entityId: "holding", legalName: "Grupo Horizonte S.A.", role: "borrower", source: "advisor_declaration", status: "declared"},
+          {entityId: "op-1", legalName: "Horizonte Varejo Ltda.", role: "operating_company", source: "advisor_declaration", status: "declared"},
+          {entityId: "op-2", legalName: "Horizonte Logística Ltda.", role: "guarantor", source: "advisor_declaration", status: "declared"},
+        ],
       },
     }));
     events.push(nextEvent(events, {
-      type: "analysis_scope_recorded",
-      scope: {
+      type: "advisor_authorization_recorded",
+      authorization: {
+        advisorOrganizationId: "advisor-1",
+        clientEntityId: "holding",
+        authorityKind: "mandate",
+        status: "documented",
+        scopes: ["prepare_case", "market_sounding", "qualified_introduction"],
+        declarationReference: "Mandato para esta captação",
+        evidenceReferences: ["authorization:case-1:v1"],
         version: 1,
-        reason: "Holding toma a dívida; duas operadoras geram o fluxo.",
-        entities: [
-          {entityId: "holding", legalName: "Grupo Horizonte S.A.", role: "borrower"},
-          {entityId: "op-1", legalName: "Horizonte Varejo Ltda.", role: "operating_company"},
-          {entityId: "op-2", legalName: "Horizonte Logística Ltda.", role: "guarantor"},
-        ],
       },
     }));
 
     const state = replayIntake("case-1", policy, events);
-    expect(state.advisorAuthorization?.clientOrganizationId).toBe("client-1");
+    expect(state.advisorAuthorization?.clientEntityId).toBe("holding");
     expect(state.analysisScope?.entities).toHaveLength(3);
     expect(state.decisionLog.map((entry) => entry.type)).toEqual(expect.arrayContaining(["advisor_authorized", "analysis_scope_changed"]));
   });
@@ -380,6 +490,7 @@ describe("adaptive intake state", () => {
         outcome: "review_required",
         rationale: "Déficit de curto prazo antecede o capex; a causa precisa ser reconciliada com a companhia.",
         evidenceIds: ["calc:short-term-coverage:1", "source:debt-schedule:2026-07"],
+        version: 1,
       },
     }));
 

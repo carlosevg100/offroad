@@ -152,19 +152,67 @@ async function ensureReconciled(runtime: IntakeRuntime): Promise<void> {
  * decides which documents are required and which questions come back, so an unrecognised value
  * would produce a checklist for an operation that does not exist.
  */
-export async function setIntakeArchetype(runtime: IntakeRuntime, raw: string): Promise<IntakeOutcome> {
-  const archetype = parseArchetype(raw);
+const advisorAuthorityKinds = [
+  "engagement_letter",
+  "mandate",
+  "power_of_attorney",
+  "board_resolution",
+  "company_confirmation",
+  "other",
+] as const;
+
+type AdvisorAuthorityKind = (typeof advisorAuthorityKinds)[number];
+
+export async function setIntakeArchetype(
+  runtime: IntakeRuntime,
+  input: {
+    archetype: string;
+    clientLegalName?: string;
+    authorityKind?: string;
+    authorityReference?: string;
+    authorityConfirmed?: boolean;
+  },
+): Promise<IntakeOutcome> {
+  const archetype = parseArchetype(input.archetype);
   if (!archetype) return fail("validation");
 
-  const {error} = await runtime.supabase.rpc("set_intake_operation_command", {
+  const {data: session, error: sessionError} = await runtime.supabase
+    .from("document_intake_sessions")
+    .select("journey")
+    .eq("organization_id", runtime.organizationId)
+    .eq("id", runtime.sessionId)
+    .maybeSingle();
+  if (sessionError || !session) return fail("session");
+
+  const advisorCase = session.journey === "originator";
+  const clientLegalName = input.clientLegalName?.trim() ?? "";
+  const authorityReference = input.authorityReference?.trim() ?? "";
+  const authorityKind = advisorAuthorityKinds.includes(input.authorityKind as AdvisorAuthorityKind)
+    ? input.authorityKind as AdvisorAuthorityKind
+    : null;
+  if (
+    advisorCase && (
+      clientLegalName.length < 2 || clientLegalName.length > 240 || !authorityKind ||
+      authorityReference.length > 500 || !input.authorityConfirmed
+    )
+  ) return fail("validation");
+
+  const {error} = await runtime.supabase.rpc("set_intake_operation_context_command", {
     p_organization_id: runtime.organizationId,
     p_session_id: runtime.sessionId,
     p_frame_event_id: randomUUID(),
     p_route_event_id: randomUUID(),
+    p_scope_event_id: randomUUID(),
+    p_authorization_event_id: advisorCase ? randomUUID() : null,
+    p_early_triage_event_id: randomUUID(),
+    p_group_scope_event_id: randomUUID(),
     p_archetype: archetype,
     p_confidence: "medium",
     p_rationale: "Declared by the authorized organization member responsible for this guided intake.",
     p_retest_triggers: ["classified documents", "capital need detail"],
+    p_client_legal_name: advisorCase ? clientLegalName : null,
+    p_authority_kind: advisorCase ? authorityKind : null,
+    p_authority_reference: advisorCase && authorityReference ? authorityReference : null,
   });
   if (error) {
     logIntakeFailure("set_archetype", error);

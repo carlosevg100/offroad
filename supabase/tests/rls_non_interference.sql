@@ -2311,6 +2311,9 @@ declare
   session_id constant uuid := '73000000-0000-4000-8000-000000000001';
   frame_event constant uuid := '73000000-0000-4000-8000-000000000002';
   route_event constant uuid := '73000000-0000-4000-8000-000000000003';
+  scope_event constant uuid := '73000000-0000-4000-8000-000000000014';
+  early_triage_event constant uuid := '73000000-0000-4000-8000-000000000015';
+  group_scope_event constant uuid := '73000000-0000-4000-8000-000000000016';
   capital_event constant uuid := '73000000-0000-4000-8000-000000000004';
   document_id constant uuid := '73000000-0000-4000-8000-000000000005';
   receipt_event constant uuid := '73000000-0000-4000-8000-000000000006';
@@ -2360,38 +2363,58 @@ begin
     raise exception 'opportunity-scoped direct document insert regressed';
   end if;
 
-  outcome := public.set_intake_operation_command(
-    org_a, session_id, frame_event, route_event, 'growth_expansion', 'medium',
+  outcome := public.set_intake_operation_context_command(
+    org_a, session_id, frame_event, route_event, scope_event, null,
+    early_triage_event, group_scope_event, 'growth_expansion', 'medium',
     'Finalidade declarada pelo membro autorizado no intake guiado.',
-    array['documentos classificados', 'detalhes da necessidade de capital']
+    array['documentos classificados', 'detalhes da necessidade de capital'], null, null, null
   );
   if outcome #>> '{frame,replayed}' <> 'false'
     or outcome #>> '{route,replayed}' <> 'false'
+    or outcome #>> '{scope,replayed}' <> 'false'
+    or outcome #>> '{earlyTriage,replayed}' <> 'false'
+    or outcome #>> '{groupScope,replayed}' <> 'false'
     or (select archetype from public.document_intake_sessions where id = session_id) <> 'growth_expansion'
-    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 2 then
-    raise exception 'operation command did not atomically record the frame and route';
+    or (select analysis_scope #>> '{entities,0,entityId}' from public.document_intake_sessions where id = session_id)
+      <> 'organization:' || org_a::text
+    or (select route_checks #>> '{early_triage,outcome}' from public.document_intake_sessions where id = session_id) <> 'clear'
+    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 5 then
+    raise exception 'operation context command did not atomically record frame, route, scope and triage';
   end if;
 
-  outcome := public.set_intake_operation_command(
-    org_a, session_id, frame_event, route_event, 'growth_expansion', 'medium',
+  outcome := public.set_intake_operation_context_command(
+    org_a, session_id, frame_event, route_event, scope_event, null,
+    early_triage_event, group_scope_event, 'growth_expansion', 'medium',
     'Finalidade declarada pelo membro autorizado no intake guiado.',
-    array['documentos classificados', 'detalhes da necessidade de capital']
+    array['documentos classificados', 'detalhes da necessidade de capital'], null, null, null
   );
   if outcome #>> '{frame,replayed}' <> 'true'
     or outcome #>> '{route,replayed}' <> 'true'
-    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 2 then
-    raise exception 'operation command is not idempotent';
+    or outcome #>> '{scope,replayed}' <> 'true'
+    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 5 then
+    raise exception 'operation context command is not idempotent';
   end if;
 
   accepted := true;
   begin
-    perform public.set_intake_operation_command(
-      org_a, session_id, frame_event, route_event, 'refinance', 'medium',
-      'Tentativa de reutilizar as mesmas chaves para outro conteúdo.', '{}'::text[]
+    perform public.set_intake_operation_context_command(
+      org_a, session_id, frame_event, route_event, scope_event, null,
+      early_triage_event, group_scope_event, 'refinance', 'medium',
+      'Tentativa de reutilizar as mesmas chaves para outro conteúdo.', '{}'::text[], null, null, null
     );
   exception when unique_violation then accepted := false;
   end;
   if accepted then raise exception 'operation idempotency keys accepted different content'; end if;
+
+  accepted := true;
+  begin
+    perform public.set_intake_operation_command(
+      org_a, session_id, gen_random_uuid(), gen_random_uuid(), 'refinance', 'medium',
+      'A entrada antiga não pode criar uma operação sem perímetro econômico.', '{}'::text[]
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'legacy operation command remained callable'; end if;
 
   accepted := true;
   begin
@@ -2533,7 +2556,7 @@ begin
   exception when object_not_in_prerequisite_state then accepted := false;
   end;
   if accepted then raise exception 'terminal session accepted an information change'; end if;
-  if (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 8 then
+  if (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 11 then
     raise exception 'rejected terminal commands appended events';
   end if;
 
@@ -2543,7 +2566,7 @@ begin
       event_id, organization_id, intake_session_id, sequence, event_type, payload,
       event_hash, occurred_at, created_by
     ) values (
-      gen_random_uuid(), org_a, session_id, 9, 'information_cleared', '{}'::jsonb,
+      gen_random_uuid(), org_a, session_id, 12, 'information_cleared', '{}'::jsonb,
       repeat('a', 64), now(), '10000000-0000-4000-8000-000000000001'
     );
   exception when insufficient_privilege then accepted := false;
@@ -2584,6 +2607,67 @@ begin
 end;
 $$;
 
+-- An advisor tenant declares the external borrower separately from its own organization. The
+-- declaration permits preparation only and must never silently become market access authority.
+do $$
+declare
+  advisor_org constant uuid := '75000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '75000000-0000-4000-8000-000000000002';
+  frame_event constant uuid := '75000000-0000-4000-8000-000000000003';
+  route_event constant uuid := '75000000-0000-4000-8000-000000000004';
+  scope_event constant uuid := '75000000-0000-4000-8000-000000000005';
+  authorization_event constant uuid := '75000000-0000-4000-8000-000000000006';
+  early_triage_event constant uuid := '75000000-0000-4000-8000-000000000007';
+  group_scope_event constant uuid := '75000000-0000-4000-8000-000000000008';
+  outcome jsonb;
+  accepted boolean;
+begin
+  set local role postgres;
+  insert into public.organizations (id, organization_type, name, created_by)
+  values (advisor_org, 'originator', 'RLS Advisor', '10000000-0000-4000-8000-000000000001');
+  insert into public.organization_memberships (organization_id, user_id, role, status, joined_at)
+  values (advisor_org, '10000000-0000-4000-8000-000000000001', 'owner', 'active', now());
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, advisor_org, '10000000-0000-4000-8000-000000000001', 'originator', 'pt-BR');
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  outcome := public.set_intake_operation_context_command(
+    advisor_org, session_id, frame_event, route_event, scope_event, authorization_event,
+    early_triage_event, group_scope_event, 'refinance', 'medium',
+    'Finalidade e empresa declaradas pelo assessor responsável.', array['documentos classificados'],
+    'Indústria Exemplo S.A.', 'engagement_letter', 'Carta assinada em 20/08/2026'
+  );
+  if outcome #>> '{authorization,replayed}' <> 'false'
+    or (select analysis_scope #>> '{entities,0,legalName}' from public.document_intake_sessions where id = session_id)
+      <> 'Indústria Exemplo S.A.'
+    or (select analysis_scope #>> '{entities,0,entityId}' from public.document_intake_sessions where id = session_id)
+      = 'organization:' || advisor_org::text
+    or (select advisor_authorization ->> 'status' from public.document_intake_sessions where id = session_id) <> 'declared'
+    or (select advisor_authorization #>> '{scopes,0}' from public.document_intake_sessions where id = session_id) <> 'prepare_case'
+    or (select advisor_authorization #> '{evidenceReferences}' from public.document_intake_sessions where id = session_id) <> '[]'::jsonb
+    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 6 then
+    raise exception 'advisor case did not preserve the external borrower and narrow authority';
+  end if;
+
+  accepted := true;
+  begin
+    update public.document_intake_sessions
+    set advisor_authorization = advisor_authorization || '{"status":"verified"}'::jsonb
+    where id = session_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant rewrote the advisor authorization projection'; end if;
+
+  set local role postgres;
+  delete from public.organizations where id = advisor_org;
+end;
+$$;
+
 -- Request ladders are versioned against the evidence-bearing stream. Exact concurrent retries
 -- collapse to one trace; a new fact makes the prior trace stale and allocates the next version.
 do $$
@@ -2592,10 +2676,13 @@ declare
   session_id constant uuid := '74000000-0000-4000-8000-000000000001';
   frame_event constant uuid := '74000000-0000-4000-8000-000000000002';
   route_event constant uuid := '74000000-0000-4000-8000-000000000003';
-  ladder_event constant uuid := '74000000-0000-4000-8000-000000000004';
-  duplicate_ladder_event constant uuid := '74000000-0000-4000-8000-000000000005';
-  capital_event constant uuid := '74000000-0000-4000-8000-000000000006';
-  refreshed_ladder_event constant uuid := '74000000-0000-4000-8000-000000000007';
+  scope_event constant uuid := '74000000-0000-4000-8000-000000000004';
+  early_triage_event constant uuid := '74000000-0000-4000-8000-000000000005';
+  group_scope_event constant uuid := '74000000-0000-4000-8000-000000000006';
+  ladder_event constant uuid := '74000000-0000-4000-8000-000000000007';
+  duplicate_ladder_event constant uuid := '74000000-0000-4000-8000-000000000008';
+  capital_event constant uuid := '74000000-0000-4000-8000-000000000009';
+  refreshed_ladder_event constant uuid := '74000000-0000-4000-8000-000000000010';
   attempts constant jsonb := '[
     {"source":"classified_room","outcome":"not_found","detail":"No classified document kind discharges the requirement.","evidenceIds":[]},
     {"source":"declared_derivation","outcome":"not_found","detail":"No structured declaration resolves the requirement.","evidenceIds":[]},
@@ -2617,9 +2704,10 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
     true
   );
-  perform public.set_intake_operation_command(
-    org_a, session_id, frame_event, route_event, 'growth_expansion', 'medium',
-    'Finalidade declarada pelo membro autorizado.', array['documentos classificados']
+  perform public.set_intake_operation_context_command(
+    org_a, session_id, frame_event, route_event, scope_event, null,
+    early_triage_event, group_scope_event, 'growth_expansion', 'medium',
+    'Finalidade declarada pelo membro autorizado.', array['documentos classificados'], null, null, null
   );
 
   accepted := true;
@@ -2644,7 +2732,7 @@ begin
       jsonb_build_array(jsonb_build_object(
         'eventId', gen_random_uuid(),
         'requirementId', 'expansion_rationale',
-        'basisRevision', 2,
+        'basisRevision', 5,
         'attempts', found_attempts
       ))
     );
@@ -2657,11 +2745,11 @@ begin
     jsonb_build_array(jsonb_build_object(
       'eventId', ladder_event,
       'requirementId', 'expansion_rationale',
-      'basisRevision', 2,
+      'basisRevision', 5,
       'attempts', attempts
     ))
   );
-  if outcome ->> 'basisRevision' <> '2'
+  if outcome ->> 'basisRevision' <> '5'
     or outcome #>> '{events,0,replayed}' <> 'false'
     or (select count(*) from public.intake_domain_events
         where intake_session_id = session_id and event_type = 'request_ladder_recorded') <> 1 then
@@ -2673,7 +2761,7 @@ begin
     jsonb_build_array(jsonb_build_object(
       'eventId', ladder_event,
       'requirementId', 'expansion_rationale',
-      'basisRevision', 2,
+      'basisRevision', 5,
       'attempts', attempts
     ))
   );
@@ -2686,7 +2774,7 @@ begin
     jsonb_build_array(jsonb_build_object(
       'eventId', duplicate_ladder_event,
       'requirementId', 'expansion_rationale',
-      'basisRevision', 2,
+      'basisRevision', 5,
       'attempts', attempts
     ))
   );
@@ -2707,16 +2795,16 @@ begin
     jsonb_build_array(jsonb_build_object(
       'eventId', refreshed_ladder_event,
       'requirementId', 'expansion_rationale',
-      'basisRevision', 3,
+      'basisRevision', 6,
       'attempts', attempts
     ))
   );
-  if outcome ->> 'basisRevision' <> '3'
+  if outcome ->> 'basisRevision' <> '6'
     or not exists (
       select 1 from public.intake_domain_events event
       where event.event_id = refreshed_ladder_event
         and event.payload #>> '{trace,traceVersion}' = '2'
-        and event.payload #>> '{trace,basisRevision}' = '3'
+        and event.payload #>> '{trace,basisRevision}' = '6'
     ) then
     raise exception 'a new evidence revision did not allocate a new ladder trace';
   end if;
@@ -2731,7 +2819,7 @@ begin
       jsonb_build_array(jsonb_build_object(
         'eventId', gen_random_uuid(),
         'requirementId', 'expansion_rationale',
-        'basisRevision', 3,
+        'basisRevision', 6,
         'attempts', attempts
       ))
     );
@@ -2751,7 +2839,7 @@ begin
       jsonb_build_array(jsonb_build_object(
         'eventId', gen_random_uuid(),
         'requirementId', 'expansion_rationale',
-        'basisRevision', 3,
+        'basisRevision', 6,
         'attempts', attempts
       ))
     );
