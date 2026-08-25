@@ -4,6 +4,21 @@ Atualizado em: 2026-08-25
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## M0 adaptativo, 25/08/2026
+
+O contrato `@offroad/credit-playbook/intake-state` reconstrói o intake a partir de eventos e produz
+frame da necessidade, cobertura de informação, roadmap, lote ativo e log de decisões. O lote tem
+política datada, no máximo cinco itens e só pede ao cliente depois de procurar na sala classificada,
+tentar derivação governada e consultar fonte pública permitida. Respostas parciais não contam como
+completas; exclusão de documento e limpeza de resposta são novos eventos, não mutações retroativas.
+
+A migration `20260825153249_m0_intake_event_ledger.sql` introduz o ledger append-only e os primeiros
+dois comandos atômicos, arquétipo e resposta de informação. Cada comando mantém a projeção atual e o
+evento na mesma transação, com lock de sequência, hash, ator e idempotência. Tenants leem apenas o
+próprio histórico e não escrevem diretamente na tabela. Persistência dos demais eventos, replay
+integral na web e telemetria ainda estão explicitamente pendentes; nenhum procedimento de M0 foi
+promovido para `production`.
+
 ## House Playbook M10 em shadow, 25/08/2026
 
 As treze regras de linguagem e conduta, `LC-01` a `LC-13`, possuem agora procedimentos candidate

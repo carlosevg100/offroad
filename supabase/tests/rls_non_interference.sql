@@ -2305,6 +2305,125 @@ begin
 end;
 $$;
 
+-- Adaptive-intake events are append-only, tenant-isolated and synchronized atomically with the
+-- mutable projections the UI reads. Idempotency retries return the first event; reusing the key
+-- for different content fails closed.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '73000000-0000-4000-8000-000000000001';
+  route_event constant uuid := '73000000-0000-4000-8000-000000000002';
+  answer_event constant uuid := '73000000-0000-4000-8000-000000000003';
+  clear_event constant uuid := '73000000-0000-4000-8000-000000000004';
+  outcome jsonb;
+  accepted boolean;
+begin
+  set local role postgres;
+  insert into public.document_intake_sessions (
+    id, organization_id, started_by, journey, locale
+  ) values (
+    session_id, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR'
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
+  outcome := public.set_intake_archetype_command(
+    org_a, session_id, route_event, 'growth_expansion', 'medium',
+    'Declarado pelo membro autorizado durante o intake guiado.',
+    array['documentos classificados', 'detalhes da necessidade de capital']
+  );
+  if outcome ->> 'replayed' <> 'false'
+    or (select archetype from public.document_intake_sessions where id = session_id) <> 'growth_expansion'
+    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 1 then
+    raise exception 'archetype command did not update its projection and append one event';
+  end if;
+
+  outcome := public.set_intake_archetype_command(
+    org_a, session_id, route_event, 'growth_expansion', 'medium',
+    'Declarado pelo membro autorizado durante o intake guiado.',
+    array['documentos classificados', 'detalhes da necessidade de capital']
+  );
+  if outcome ->> 'replayed' <> 'true'
+    or (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 1 then
+    raise exception 'archetype command is not idempotent';
+  end if;
+
+  accepted := true;
+  begin
+    perform public.set_intake_archetype_command(
+      org_a, session_id, route_event, 'refinance', 'medium',
+      'Tentativa de reutilizar a mesma chave para outro conteúdo.', '{}'::text[]
+    );
+  exception when unique_violation then accepted := false;
+  end;
+  if accepted then raise exception 'idempotency key accepted different content'; end if;
+
+  perform public.record_intake_information_command(
+    org_a, session_id, answer_event, 'expansion_rationale',
+    'A expansão replica unidades maduras em três novas praças.', 'provided', null
+  );
+  if (select answer from public.intake_information_answers
+      where intake_session_id = session_id and requirement_id = 'expansion_rationale')
+      <> 'A expansão replica unidades maduras em três novas praças.' then
+    raise exception 'information command did not update its projection';
+  end if;
+
+  perform public.record_intake_information_command(
+    org_a, session_id, clear_event, 'expansion_rationale', null, 'provided', null
+  );
+  if exists (
+    select 1 from public.intake_information_answers
+    where intake_session_id = session_id and requirement_id = 'expansion_rationale'
+  ) or (select array_agg(event_type order by sequence) from public.intake_domain_events where intake_session_id = session_id)
+      <> array['archetype_routed', 'information_answered', 'information_cleared'] then
+    raise exception 'clearing did not preserve the event history';
+  end if;
+
+  accepted := true;
+  begin
+    insert into public.intake_domain_events (
+      event_id, organization_id, intake_session_id, sequence, event_type, payload,
+      event_hash, occurred_at, created_by
+    ) values (
+      gen_random_uuid(), org_a, session_id, 4, 'information_cleared', '{}'::jsonb,
+      repeat('a', 64), now(), '10000000-0000-4000-8000-000000000001'
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant inserted an arbitrary intake event'; end if;
+
+  accepted := true;
+  begin
+    update public.intake_domain_events set payload = '{"forged":true}'::jsonb
+    where organization_id = org_a and event_id = route_event;
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'tenant rewrote an intake event'; end if;
+
+  accepted := true;
+  begin
+    delete from public.intake_domain_events
+    where organization_id = org_a and event_id = route_event;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant deleted an intake event'; end if;
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  if (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 0 then
+    raise exception 'tenant B read tenant A intake events';
+  end if;
+end;
+$$;
+
 set local role postgres;
 
 rollback;
