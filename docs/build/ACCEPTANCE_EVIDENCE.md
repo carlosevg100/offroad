@@ -143,6 +143,7 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Advisors do Gate 8 em staging | Supabase Security + Performance Advisors | segurança: 0 lints; performance: 0 foreign keys sem índice | 2026-08-24 |
 | Não interferência do Gate 8 em staging | `supabase/tests/rls_non_interference.sql` | suíte integral aprovada: leitura própria, isolamento entre tenants, rollout sem escrita pelo tenant, capability forjada recusada, retry idempotente e resultado divergente rejeitado | 2026-08-24 |
 | Quality gate local do Gate 8 | lint, typecheck, testes e build | 38 pacotes aprovados; 6 testes do release governance, 40 do worker e 117 da web; build de produção verde | 2026-08-24 |
+| Promoção do schema do Gate 8 | Supabase production `ifnogpksgdadruooqydi` | cinco migrations aplicadas em ordem; Security Advisor com 0 lints; Performance Advisor com 0 foreign keys sem índice; zero políticas, execuções, comparações, inputs, resultados, cohorts ou decisões após a promoção | 2026-08-25 |
 | Cases reais do Gate 8 | cohorts `wave_1` e `wave_2` | **pendente**; nenhum fixture foi contabilizado como case real | 2026-08-24 |
 
 ## Regras
