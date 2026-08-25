@@ -175,7 +175,7 @@ export async function createOpportunity(formData: FormData) {
  * Saves the deal brief.
  *
  * The whole form is one submit rather than a field at a time: unlike the information answers,
- * these six move together — changing the amount usually changes the tenor, and saving them
+ * these facts move together because changing the objective usually changes amount and tenor, and saving them
  * separately would compute a fit against a half-updated request.
  */
 export async function saveWorkspaceDealBrief(formData: FormData) {
@@ -184,9 +184,13 @@ export async function saveWorkspaceDealBrief(formData: FormData) {
   const runtime = await workspaceRuntime(locale, sessionId);
 
   const parsed = dealBriefFormSchema.safeParse({
+    objective: value(formData, "objective"),
     amount: value(formData, "amount"),
+    currency: value(formData, "currency") || undefined,
+    urgency: value(formData, "urgency") || undefined,
     term_months: value(formData, "term_months"),
     grace_months: value(formData, "grace_months"),
+    consequence: value(formData, "consequence"),
     sector: value(formData, "sector"),
     geography: value(formData, "geography"),
     instruments: formData.getAll("instruments").map(String),

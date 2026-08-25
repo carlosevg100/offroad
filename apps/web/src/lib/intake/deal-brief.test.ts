@@ -45,7 +45,11 @@ describe("toDealBrief", () => {
   it("accepts a brief that is almost entirely empty", () => {
     // The normal state. A form that refuses to save until it is complete is a form people abandon.
     expect(toDealBrief(form())).toEqual({});
-    expect(toDealBrief(form({amount: "45.000.000"}))).toEqual({requestedAmount: "45000000.00"});
+    expect(toDealBrief(form({currency: "BRL"}))).toEqual({});
+    expect(toDealBrief(form({amount: "45.000.000", currency: "BRL"}))).toEqual({
+      requestedAmount: "45000000.00",
+      currency: "BRL",
+    });
   });
 
   it("refuses a number that was typed and could not be read", () => {
@@ -85,6 +89,10 @@ describe("dealBriefOf", () => {
   it("reads a row back into the shape the fit assessment consumes", () => {
     expect(
       dealBriefOf({
+        capital_objective: "Abrir três novas lojas.",
+        capital_currency: "BRL",
+        capital_urgency: "3_to_6_months",
+        capital_consequence: "Atender contratos já mapeados.",
         requested_amount: 45000000,
         requested_term_months: 60,
         requested_grace_months: 12,
@@ -95,9 +103,13 @@ describe("dealBriefOf", () => {
         expected_rate: "CDI + 4",
       }),
     ).toEqual({
+      objective: "Abrir três novas lojas.",
       requestedAmount: "45000000",
+      currency: "BRL",
+      urgency: "3_to_6_months",
       requestedTermMonths: 60,
       requestedGraceMonths: 12,
+      consequenceIfNotExecuted: "Atender contratos já mapeados.",
       sector: "varejo",
       geography: "SP",
       instruments: ["debenture"],
@@ -109,6 +121,10 @@ describe("dealBriefOf", () => {
   it("omits what the session does not carry, rather than emitting empties", () => {
     expect(
       dealBriefOf({
+        capital_objective: null,
+        capital_currency: null,
+        capital_urgency: null,
+        capital_consequence: null,
         requested_amount: null,
         requested_term_months: null,
         requested_grace_months: null,
@@ -123,18 +139,21 @@ describe("dealBriefOf", () => {
 });
 
 describe("briefCompleteness", () => {
-  it("counts only the fields that decide who could buy", () => {
-    // Grace shapes the structure; it never decides eligibility, so it is not one of the six.
+  it("counts the declared need and the fields that shape fit", () => {
+    // Grace shapes the structure but does not carry its own completion requirement.
     const full = briefCompleteness({
+      objective: "Abrir três novas lojas.",
       requestedAmount: "1",
+      urgency: "3_to_6_months",
       requestedTermMonths: 60,
       requestedGraceMonths: 12,
+      consequenceIfNotExecuted: "Perder a janela comercial.",
       sector: "varejo",
       geography: "SP",
       instruments: ["debenture"],
       collateralKinds: ["recebiveis"],
     });
-    expect(full).toEqual({answered: 6, total: 6, missing: []});
+    expect(full).toEqual({answered: 9, total: 9, missing: []});
   });
 
   it("treats an empty list as unanswered", () => {

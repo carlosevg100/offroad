@@ -138,10 +138,11 @@ export async function setIntakeArchetype(runtime: IntakeRuntime, raw: string): P
   const archetype = parseArchetype(raw);
   if (!archetype) return fail("validation");
 
-  const {error} = await runtime.supabase.rpc("set_intake_archetype_command", {
+  const {error} = await runtime.supabase.rpc("set_intake_operation_command", {
     p_organization_id: runtime.organizationId,
     p_session_id: runtime.sessionId,
-    p_event_id: randomUUID(),
+    p_frame_event_id: randomUUID(),
+    p_route_event_id: randomUUID(),
     p_archetype: archetype,
     p_confidence: "medium",
     p_rationale: "Declared by the authorized organization member responsible for this guided intake.",
@@ -367,18 +368,22 @@ export async function verifyIntakeDocuments(runtime: IntakeRuntime): Promise<Int
 }
 
 /**
- * Removes a document while the session is still open: the row goes first (RLS decides — only
- * intake documents of a non-confirmed session, not yet linked to an opportunity), then the
- * object. A leftover object without a row is harmless (private bucket, unreachable by the app).
+ * Removes a document while the session is still open. The command appends the removal event and
+ * deletes the row in one transaction; the private object is removed afterwards. Retrying the
+ * same database command returns the original object path, so storage cleanup remains possible.
  */
 export async function removeIntakeDocument(runtime: IntakeRuntime, documentId: string): Promise<IntakeOutcome> {
   const {supabase, organizationId, sessionId} = runtime;
   if (!documentId) return fail("validation");
-  const {data: document} = await supabase.from("source_documents").select("id, object_path").eq("organization_id", organizationId).eq("intake_session_id", sessionId).eq("id", documentId).maybeSingle();
-  if (!document) return fail("remove");
-  const {data: deleted, error} = await supabase.from("source_documents").delete().eq("organization_id", organizationId).eq("intake_session_id", sessionId).eq("id", documentId).select("id");
-  if (error || !deleted?.length) return fail("remove");
-  await supabase.storage.from("opportunity-documents").remove([document.object_path]);
+  const {data, error} = await supabase.rpc("remove_intake_document_command", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_event_id: randomUUID(),
+    p_document_id: documentId,
+  });
+  if (error || !data || typeof data !== "object" || Array.isArray(data)) return fail("remove");
+  const objectPath = typeof data.object_path === "string" ? data.object_path : null;
+  if (objectPath) await supabase.storage.from("opportunity-documents").remove([objectPath]);
   return ok(null);
 }
 

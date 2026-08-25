@@ -12,27 +12,33 @@ política datada, no máximo cinco itens e só pede ao cliente depois de procura
 tentar derivação governada e consultar fonte pública permitida. Respostas parciais não contam como
 completas; exclusão de documento e limpeza de resposta são novos eventos, não mutações retroativas.
 
-As migrations `20260825160750_m0_intake_event_ledger.sql` e
-`20260825160803_m0_intake_projection_terminal_guard.sql` introduzem o ledger append-only, os dois
-primeiros comandos atômicos, arquétipo e resposta de informação, e bloqueiam alterações nessas
-projeções depois que a sessão é confirmada ou cancelada. Cada comando mantém a projeção atual e o
-evento na mesma transação, com lock de sequência, hash, ator e idempotência. Tenants leem apenas o
-próprio histórico e não escrevem diretamente na tabela. Persistência dos demais eventos, replay
-integral na web e telemetria ainda estão explicitamente pendentes; nenhum procedimento de M0 foi
-promovido para `production`.
+As migrations `20260825160750_m0_intake_event_ledger.sql`,
+`20260825160803_m0_intake_projection_terminal_guard.sql` e
+`20260825171945_m0_capital_need_documents.sql` introduzem o ledger append-only e comandos atômicos
+para necessidade de capital, rota, respostas e recebimento, classificação e remoção de documentos.
+Cada comando mantém a projeção atual e o evento na mesma transação, com lock de sequência, hash,
+ator e idempotência. Tenants leem apenas o próprio histórico e não escrevem diretamente no ledger
+ou nas projeções governadas. A classificação do worker segue a mesma ordem de locks da remoção.
+
+`apps/web/src/lib/intake/replay.ts` valida a fronteira com Zod e reconstrói sessões novas com uma
+política datada. Quando o stream contém a necessidade de capital, a checklist usa a rota, os
+documentos classificados e a suficiência produzidos pelo replay; sessões antigas continuam
+legíveis por fallback explícito, sem inventar eventos. Escada de busca, perímetro, autorização,
+triagens e telemetria ainda estão pendentes. Nenhum procedimento de M0 foi promovido para
+`production`.
 
 O branch Supabase `staging` foi rebaseado sobre produção antes da validação, preservando a migration
 anterior de respostas indisponíveis. Após os gates verdes, as duas migrations foram promovidas para
 produção e seus timestamps registrados foram adotados como histórico canônico no repositório. O
-staging vazio foi então recuado até a última migration comum e rebaseado novamente, eliminando o
-drift sem alterar produção. O schema medido mantém RLS habilitado e forçado no ledger,
+staging vazio foi então recuado até a última migration comum e recebeu novamente o histórico
+canônico, eliminando drift sem alterar produção. O schema medido mantém RLS habilitado e forçado no ledger,
 somente `SELECT` para `authenticated`, nenhuma permissão para `anon` e nenhuma escrita direta nas
-duas projeções agora governadas por comando. Os comandos têm `search_path` vazio, idempotência e
-escopo de sessão validado. O Security Advisor retornou zero findings. O gate local completo passou
-nos 38 pacotes; o teste de não interferência foi ajustado para não usar a escrita de arquétipo que o
-novo comando deliberadamente revogou. O teste cobre também rejeição após estado terminal e a
-exclusão controlada com cascade. Produção manteve zero findings no Security Advisor; a merge da PR
-permanece condicionada ao CI verde sobre o histórico canônico.
+projeções agora governadas por comando. Os comandos têm `search_path` vazio, idempotência e escopo
+de sessão validado. O Security Advisor do staging retornou zero findings. A suíte remota de não
+interferência passou depois de um reset completo e cobre retry, conflito de idempotência, bloqueio
+de escrita direta, isolamento entre tenants, sessão terminal, ciclo documental e cascade de
+eliminação. O gate completo e a promoção para produção permanecem condicionados ao CI verde sobre
+o histórico canônico.
 
 ## House Playbook M10 em shadow, 25/08/2026
 
@@ -740,6 +746,8 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - Autorização de assessor, perímetro multi-entidade, urgência, triagem e hipótese de liquidez
   disfarçada entram no mesmo histórico. A hipótese de liquidez exige revisão e não muda sozinha o
   arquétipo declarado.
-- Escopo ainda aberto: persistência append-only, comandos atômicos, projeção da aplicação web,
+- Persistência append-only e comandos atômicos já cobrem necessidade, rota, resposta e o ciclo
+  documental. Sessões novas são lidas por replay na checklist; sessões legadas mantêm fallback
+  explícito. Escopo ainda aberto: escada de busca, perímetro, autorização do assessor, triagens,
   telemetria e gold cases de sala desorganizada e empresa com um único documento. O módulo M0 e os
   procedimentos IN permanecem sem promoção institucional.

@@ -834,6 +834,10 @@ export type Database = {
       document_intake_sessions: {
         Row: {
           archetype: string | null
+          capital_consequence: string | null
+          capital_currency: string | null
+          capital_objective: string | null
+          capital_urgency: string | null
           collateral_kinds: string[] | null
           confirmed_at: string | null
           created_at: string
@@ -861,6 +865,10 @@ export type Database = {
         }
         Insert: {
           archetype?: string | null
+          capital_consequence?: string | null
+          capital_currency?: string | null
+          capital_objective?: string | null
+          capital_urgency?: string | null
           collateral_kinds?: string[] | null
           confirmed_at?: string | null
           created_at?: string
@@ -888,6 +896,10 @@ export type Database = {
         }
         Update: {
           archetype?: string | null
+          capital_consequence?: string | null
+          capital_currency?: string | null
+          capital_objective?: string | null
+          capital_urgency?: string | null
           collateral_kinds?: string[] | null
           confirmed_at?: string | null
           created_at?: string
@@ -3709,6 +3721,27 @@ export type Database = {
         Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
         Returns: undefined
       }
+      record_intake_capital_need_command: {
+        Args: {
+          p_collateral_kinds?: string[]
+          p_consequence?: string
+          p_currency?: string
+          p_event_id: string
+          p_expected_rate?: string
+          p_geography?: string
+          p_instruments?: string[]
+          p_objective?: string
+          p_organization_id: string
+          p_requested_amount?: number
+          p_requested_grace_months?: number
+          p_requested_term_months?: number
+          p_sector?: string
+          p_session_id: string
+          p_urgency?: string
+          p_use_of_proceeds: string
+        }
+        Returns: Json
+      }
       record_intake_information_command: {
         Args: {
           p_answer?: string
@@ -3717,6 +3750,30 @@ export type Database = {
           p_organization_id: string
           p_requirement_id: string
           p_response?: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      register_intake_document_command: {
+        Args: {
+          p_bucket_id: string
+          p_byte_size: number
+          p_document_id: string
+          p_event_id: string
+          p_mime_type: string
+          p_object_path: string
+          p_organization_id: string
+          p_original_name: string
+          p_session_id: string
+          p_sha256: string
+        }
+        Returns: Json
+      }
+      remove_intake_document_command: {
+        Args: {
+          p_document_id: string
+          p_event_id: string
+          p_organization_id: string
           p_session_id: string
         }
         Returns: Json
@@ -3756,6 +3813,19 @@ export type Database = {
           p_organization_id: string
           p_rationale: string
           p_retest_triggers?: string[]
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      set_intake_operation_command: {
+        Args: {
+          p_archetype: string
+          p_confidence: string
+          p_frame_event_id: string
+          p_organization_id: string
+          p_rationale: string
+          p_retest_triggers?: string[]
+          p_route_event_id: string
           p_session_id: string
         }
         Returns: Json

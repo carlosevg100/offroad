@@ -152,11 +152,25 @@ O contrato de replay também registra `document_removed` e `information_cleared`
 tentação de reescrever a história. Resposta `partial` fica visível, mas não conta como requisito
 integralmente satisfeito.
 
-Limite honesto: os comandos de `capital_need_frame`, classificação e remoção documental, escada de
-busca, perímetro, autorização e triagens ainda precisam ser conectados ao ledger. A projeção web só
-será trocada integralmente pelo replay depois que o frame obrigatório existir no fluxo real, sem
-inventar CNPJ, urgência, prazo ou garantia para sessões legadas. Telemetria de abandono e lotes
-continua pendente. Nenhum procedimento IN-01 a IN-26 foi promovido a `production` por estas entregas.
+### Incremento executável 03, necessidade, documentos e replay na web
+
+`record_intake_capital_need_command` grava um snapshot parcial e honesto da necessidade, sem exigir
+ou inventar valor, urgência, prazo, garantia ou instrumento. A primeira escolha usa
+`set_intake_operation_command`, que acrescenta necessidade mínima e rota na mesma transação. O
+navegador registra o upload com `register_intake_document_command`; remoção e classificação também
+preservam evento e projeção em uma fronteira atômica, com ordem de locks única.
+
+`apps/web/src/lib/intake/replay.ts` valida payload, sequência e vigência antes de reconstruir o
+estado. A checklist usa o replay como autoridade nas sessões que já possuem o evento de necessidade
+de capital. Sessões legadas mantêm fallback explícito e não recebem frame sintético. Testes remotos
+em staging provam idempotência, isolamento entre organizações, bloqueio de escrita direta, sessão
+terminal, cascade e ciclo documental completo.
+
+Limite honesto: escada de busca, perímetro, autorização do assessor e triagens ainda precisam de
+comandos transacionais e telas derivadas do replay. Até lá, o planejador visual de solicitações usa
+o relatório reconstruído, mas não substitui a exigência futura de `request_ladder_recorded` antes
+de emitir cada pedido. Telemetria de abandono e lotes continua pendente. Nenhum procedimento IN-01
+a IN-26 foi promovido a `production` por estas entregas.
 
 ## 5. M1, Empresa e setor
 

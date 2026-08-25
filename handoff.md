@@ -1478,3 +1478,30 @@ Ordem vigente após o primeiro incremento de M10 e sua remediação M7: M0, M2, 
 lentes M1 necessárias, M6 e M8. A prioridade operacional imediata é fechar M0 e então M2 e M3 no
 código, porque sem intake adaptativo, spreading, conciliação, debt ledger e pontes completas não
 existe estrutura ou material institucional confiável.
+
+## 29. M0 transacional e replay da aplicação, 25/08/2026
+
+A fronteira do intake novo deixou de ser uma sequência de mutações independentes. A migration
+`20260825171945_m0_capital_need_documents.sql` acrescenta comandos idempotentes que mantêm evento e
+projeção juntos para necessidade de capital, rota e recebimento, classificação e remoção de
+documentos. A primeira escolha registra o frame mínimo e a rota numa transação. O frame aceita o
+que a companhia sabe sem exigir ou inferir valor, moeda, urgência, prazo, garantias ou instrumento.
+
+O upload do navegador continua direto para o bucket privado, mas o registro de um documento de
+sessão passa pelo comando atômico; falha de registro remove o objeto recém-enviado. Documentos de
+oportunidade mantêm a inserção direta sob RLS. Remoção registra o fato antes de apagar a linha e
+devolve o caminho para limpar o Storage. O worker registra mudança de classificação no mesmo
+commit do perfil e usa a mesma ordem de locks da remoção.
+
+`apps/web/src/lib/intake/replay.ts` carrega o ledger sob RLS, valida payload e sequência e executa a
+política `m0-intake-2026.08.25-v1`. A checklist passa a usar o replay quando encontra
+`capital_need_declared`; sessões anteriores mantêm fallback explícito. Não preencher eventos
+ausentes a partir das projeções. Payload inválido, sequência descontínua ou divergência entre rota
+reconstruída e projeção devem falhar fechados.
+
+Evidência medida no branch Supabase `staging`: reset até `20260825160803`, reaplicação integral da
+migration, suíte `rls_non_interference.sql` aprovada e Security Advisor com zero findings. A suíte
+cobre retry, conflito de chave, bloqueio de escrita direta, isolamento entre tenants, estado
+terminal, ciclo documental e cascade. Ainda faltam comandos e UI governados por replay para a
+escada IN-13, perímetro de análise, autorização do assessor e triagens. Nenhum procedimento M0 está
+promovido a `production`.

@@ -91,6 +91,28 @@ describe("adaptive intake state", () => {
     expect(left.status).toBe("collecting");
   });
 
+  it("accepts a day-zero capital need without inventing amount, tenor or collateral", () => {
+    const state = replayIntake("case-1", policy, [
+      {
+        type: "capital_need_declared",
+        eventId: "event-1",
+        caseId: "case-1",
+        sequence: 1,
+        occurredAt: at(1),
+        frame: {
+          useOfProceeds: "growth_expansion",
+          declaredBy: {actorId: "company-user-1", role: "company"},
+          version: 1,
+        },
+      },
+    ]);
+
+    expect(state.status).toBe("routing");
+    expect(state.capitalNeedFrame).toEqual(expect.objectContaining({useOfProceeds: "growth_expansion", version: 1}));
+    expect(state.capitalNeedFrame).not.toHaveProperty("requestedAmount");
+    expect(state.capitalNeedFrame).not.toHaveProperty("availableCollateral");
+  });
+
   it("does not ask before the classified-room, derivation and public-source ladder is complete", () => {
     const initial = replayIntake("case-1", policy, baseEvents());
     expect(initial.activeRequestBatch?.requests).toEqual([]);
@@ -187,6 +209,34 @@ describe("adaptive intake state", () => {
     expect(state.documents).toEqual([]);
     expect(state.informationCoverage?.requirements.find((entry) => entry.requirement.id === informationRequirement.id)?.answer).toBeUndefined();
     expect(state.decisionLog.map((entry) => entry.type)).toEqual(expect.arrayContaining(["requirement_cleared", "document_removed"]));
+  });
+
+  it("records and removes an uploaded document before classification", () => {
+    const events = baseEvents();
+    events.push(nextEvent(events, {
+      type: "document_received",
+      document: {
+        id: "upload-unclassified",
+        originalName: "balancete-julho.xlsx",
+        sha256: "a".repeat(64),
+        byteSize: 2048,
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
+      actorId: "company-user-1",
+    }));
+
+    const received = replayIntake("case-1", policy, events);
+    expect(received.receivedDocuments).toContainEqual(expect.objectContaining({id: "upload-unclassified"}));
+    expect(received.documents).toEqual([]);
+
+    events.push(nextEvent(events, {
+      type: "document_removed",
+      documentId: "upload-unclassified",
+      actorId: "company-user-1",
+    }));
+    const removed = replayIntake("case-1", policy, events);
+    expect(removed.receivedDocuments).toEqual([]);
+    expect(removed.decisionLog.map((entry) => entry.type)).toEqual(expect.arrayContaining(["document_received", "document_removed"]));
   });
 
   it("keeps a partial information answer visible without treating it as complete", () => {

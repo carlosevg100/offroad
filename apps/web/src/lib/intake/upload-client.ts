@@ -58,9 +58,10 @@ export async function sha256Hex(file: Blob) {
 }
 
 /**
- * Uploads files straight from the browser to the private bucket and registers them in
- * `source_documents` (RLS-protected; the tenant scope comes from the caller's session data).
- * The browser hash is stored as a first claim; the server recomputes it during processing.
+ * Uploads files straight from the browser to the private bucket. Opportunity documents retain
+ * their RLS-protected insert path. Intake documents are registered by one atomic command that
+ * writes both the source row and its immutable receipt. The browser hash is a first claim; the
+ * server recomputes it during processing.
  */
 export async function uploadDocuments(input: {
   supabase: SupabaseClient<Database>;
@@ -79,35 +80,61 @@ export async function uploadDocuments(input: {
       failure ??= "invalid";
       continue;
     }
-    const objectPath = `${organizationId}/${scopeId}/${crypto.randomUUID()}-${safeObjectName(file.name)}`;
+    const documentId = crypto.randomUUID();
+    const objectPath = `${organizationId}/${scopeId}/${documentId}-${safeObjectName(file.name)}`;
     const fileHash = await sha256Hex(file);
     const {error: uploadError} = await supabase.storage.from("opportunity-documents").upload(objectPath, file, {upsert: false, contentType: file.type || "application/octet-stream"});
     if (uploadError) {
       failure ??= "upload";
       continue;
     }
-    const {data, error: insertError} = await supabase.from("source_documents").insert({
-      organization_id: organizationId,
-      opportunity_id: scope.kind === "opportunity" ? scope.opportunityId : null,
-      intake_session_id: scope.kind === "session" ? scope.sessionId : null,
-      bucket_id: "opportunity-documents",
-      object_path: objectPath,
-      original_name: file.name,
-      mime_type: file.type || null,
-      byte_size: file.size,
-      // The hash the browser computed, which the server recomputes and overwrites once it has
-      // downloaded the object itself. Classification and processing status are the system's
-      // judgement and now carry column defaults: a browser that could set `processing_status`
-      // could declare a file clean before anything looked at it.
-      sha256: fileHash,
-      created_by: userId,
-    }).select("id, original_name, byte_size").single();
+    const registration = scope.kind === "session"
+      ? await supabase.rpc("register_intake_document_command", {
+          p_organization_id: organizationId,
+          p_session_id: scope.sessionId,
+          p_event_id: crypto.randomUUID(),
+          p_document_id: documentId,
+          p_bucket_id: "opportunity-documents",
+          p_object_path: objectPath,
+          p_original_name: file.name,
+          p_mime_type: file.type || "application/octet-stream",
+          p_byte_size: file.size,
+          p_sha256: fileHash,
+        })
+      : await supabase.from("source_documents").insert({
+          id: documentId,
+          organization_id: organizationId,
+          opportunity_id: scope.opportunityId,
+          intake_session_id: null,
+          bucket_id: "opportunity-documents",
+          object_path: objectPath,
+          original_name: file.name,
+          mime_type: file.type || null,
+          byte_size: file.size,
+          // The hash the browser computed, which the server recomputes and overwrites once it has
+          // downloaded the object itself. Classification and processing status are the system's
+          // judgement and carry column defaults.
+          sha256: fileHash,
+          created_by: userId,
+        }).select("id, original_name, byte_size").single();
+
+    const data = registration.data;
+    const insertError = registration.error;
     if (insertError || !data) {
       await supabase.storage.from("opportunity-documents").remove([objectPath]);
       failure ??= "register";
       continue;
     }
-    uploaded.push(data);
+    if (
+      typeof data === "object" && !Array.isArray(data) &&
+      typeof data.id === "string" && typeof data.original_name === "string" &&
+      typeof data.byte_size === "number"
+    ) {
+      uploaded.push({id: data.id, original_name: data.original_name, byte_size: data.byte_size});
+    } else {
+      await supabase.storage.from("opportunity-documents").remove([objectPath]);
+      failure ??= "register";
+    }
   }
   return {uploaded, failure};
 }
