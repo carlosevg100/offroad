@@ -21,6 +21,7 @@ import {
   semanticAuditSchema,
   type ClaimDecision,
 } from "@offroad/case-understanding";
+import {caseRunReportSchema} from "@offroad/case-runner";
 import {archetypeIdSchema} from "@offroad/credit-playbook";
 import {documentKindSchema} from "@offroad/credit-ontology";
 import {
@@ -37,6 +38,7 @@ import {sha256} from "@offroad/governed-retrieval";
 import {gatewayCallLogSchema, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import type {FactCandidate} from "@offroad/reconciliation";
 import {receivablesCaseSchema} from "@offroad/receivables-analysis";
+import {compareCaseExecutions, executionModeSchema} from "@offroad/release-governance";
 import {z} from "zod";
 
 import type {CaseAnalysisJob, QueueClient} from "./queue";
@@ -96,6 +98,15 @@ const rawCaseInputSchema = z.object({
   expected_model_calls: z.coerce.number().int().nonnegative(),
   claim_decisions: z.array(claimDecisionSchema).default([]),
   receivables_case: receivablesCaseSchema.optional(),
+  _execution: z.object({
+    id: z.uuid(),
+    mode: executionModeSchema,
+    baseline_execution_id: z.uuid().optional(),
+    input_fingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+    pipeline_version: z.string().min(1),
+    model_policy_version: z.string().min(1),
+    baseline_report: caseRunReportSchema.optional(),
+  }),
 });
 
 export type CaseAnalysisDependencies = {
@@ -119,6 +130,7 @@ export async function processCaseAnalysisJob(
   await dependencies.queue.writeStage(job, "case_analysis", "started");
   try {
     const raw = rawCaseInputSchema.parse(await dependencies.queue.loadCaseInput(job));
+    const useShadow = raw._execution.mode === "shadow";
     const locale = raw.session.locale === "en-US" ? "en" : "pt";
     const archetypeId = archetypeIdSchema.catch("other").parse(raw.session.archetype);
     const candidates = raw.candidates.map(toCandidate);
@@ -201,6 +213,7 @@ export async function processCaseAnalysisJob(
           }],
           schema: caseBriefSchema,
           schemaName: "case_brief",
+          useShadow,
         });
         writerProvider = generated.provider;
         const after = dependencies.gateway.spent();
@@ -315,22 +328,46 @@ export async function processCaseAnalysisJob(
       ],
     });
     const stateWithManifest = {...snapshot, manifestFingerprint: manifest.manifestFingerprint};
-    const manifestId = await dependencies.queue.recordCaseSnapshot(job, manifest, stateWithManifest);
+    let comparison;
+    if (raw._execution.mode !== "primary") {
+      if (!raw._execution.baseline_report) {
+        throw Object.assign(new Error("baseline report missing"), {code: "baseline_report_missing"});
+      }
+      comparison = compareCaseExecutions({
+        mode: raw._execution.mode,
+        baseline: raw._execution.baseline_report,
+        candidate: result.report,
+      });
+    }
+    await dependencies.queue.recordControlledExecution(job, result.report, manifest, comparison);
+    const manifestId = raw._execution.mode === "primary"
+      ? await dependencies.queue.recordCaseSnapshot(job, manifest, stateWithManifest)
+      : undefined;
     await dependencies.queue.writeStage(job, "case_analysis", "succeeded", {
       reportFingerprint: result.report.reportFingerprint,
       manifestFingerprint: manifest.manifestFingerprint,
       mandateCount: resolvedMandates.length,
+      executionMode: raw._execution.mode,
+      comparisonPassed: comparison?.passed,
+      criticalRegressions: comparison?.criticalCount ?? 0,
     });
     await dependencies.queue.complete(job, {
-      manifest_id: manifestId,
+      ...(manifestId ? {manifest_id: manifestId} : {}),
       report: result.report,
       match_details: result.state.matching,
+      ...(comparison ? {comparison} : {}),
       spend: dependencies.gateway.spent(),
       model_lineage: currentLineage,
       retrieval_lineage: privateRetrievalLineage,
     });
-    log("case.done", {job: job.job_id, manifest: manifestId, mandates: resolvedMandates.length});
-    return {status: "succeeded", manifestId};
+    log("case.done", {
+      job: job.job_id,
+      manifest: manifestId,
+      mandates: resolvedMandates.length,
+      mode: raw._execution.mode,
+      comparisonPassed: comparison?.passed,
+    });
+    return {status: "succeeded", ...(manifestId ? {manifestId} : {})};
   } catch (error) {
     await dependencies.queue.writeStage(job, "case_analysis", "failed", {code: errorCode(error)});
     await dependencies.queue.fail(job, {

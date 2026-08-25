@@ -42,7 +42,12 @@ export const documentJobSchema = claimedJobBase.extend({
 });
 export const caseAnalysisJobSchema = claimedJobBase.extend({
   kind: z.literal("case_analysis"),
-  payload: z.object({locale: z.enum(["pt-BR", "en-US"]).optional()}),
+  payload: z.object({
+    locale: z.enum(["pt-BR", "en-US"]).optional(),
+    execution_id: z.uuid().optional(),
+    execution_mode: z.enum(["primary", "shadow", "replay"]).default("primary"),
+    baseline_execution_id: z.uuid().optional(),
+  }),
 });
 export const claimedJobSchema = z.discriminatedUnion("kind", [documentJobSchema, caseAnalysisJobSchema]);
 export type ClaimedJob = z.infer<typeof claimedJobSchema>;
@@ -71,6 +76,7 @@ export type QueueClient = {
     limit?: number;
   }): Promise<unknown>;
   recordCaseSnapshot(job: CaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
+  recordControlledExecution(job: CaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
   fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
 };
@@ -171,7 +177,12 @@ export function createQueueClient(
         call("worker_load_claim_decisions", args),
       ]);
       if (!input || typeof input !== "object" || Array.isArray(input)) return input;
-      return {...input, claim_decisions: decisions};
+      const liveInput = {...input, claim_decisions: decisions};
+      return call("worker_freeze_case_input", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_live_input: liveInput,
+      });
     },
 
     async loadRetrievalContext(job, input) {
@@ -191,6 +202,17 @@ export function createQueueClient(
         p_capability_token: job.capability_token,
         p_manifest: manifest,
         p_case_state: state,
+      });
+      return String(data);
+    },
+
+    async recordControlledExecution(job, report, manifest, comparison) {
+      const data = await call("worker_record_controlled_execution", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_report: report,
+        p_manifest: manifest,
+        p_comparison: comparison ?? null,
       });
       return String(data);
     },

@@ -362,6 +362,73 @@ export type Database = {
           },
         ]
       }
+      case_execution_comparisons: {
+        Row: {
+          baseline_execution_id: string
+          candidate_execution_id: string
+          comparable: boolean
+          comparison_fingerprint: string
+          created_at: string
+          critical_count: number
+          differences: Json
+          id: string
+          mode: string
+          organization_id: string
+          passed: boolean
+          warning_count: number
+        }
+        Insert: {
+          baseline_execution_id: string
+          candidate_execution_id: string
+          comparable: boolean
+          comparison_fingerprint: string
+          created_at?: string
+          critical_count: number
+          differences: Json
+          id?: string
+          mode: string
+          organization_id: string
+          passed: boolean
+          warning_count: number
+        }
+        Update: {
+          baseline_execution_id?: string
+          candidate_execution_id?: string
+          comparable?: boolean
+          comparison_fingerprint?: string
+          created_at?: string
+          critical_count?: number
+          differences?: Json
+          id?: string
+          mode?: string
+          organization_id?: string
+          passed?: boolean
+          warning_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_execution_comparisons_organization_id_baseline_execut_fkey"
+            columns: ["organization_id", "baseline_execution_id"]
+            isOneToOne: false
+            referencedRelation: "controlled_case_executions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "case_execution_comparisons_organization_id_candidate_execu_fkey"
+            columns: ["organization_id", "candidate_execution_id"]
+            isOneToOne: true
+            referencedRelation: "controlled_case_executions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "case_execution_comparisons_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_retrieval_chunks: {
         Row: {
           chunk_key: string
@@ -587,6 +654,104 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      controlled_case_executions: {
+        Row: {
+          baseline_execution_id: string | null
+          comparison_passed: boolean | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          critical_regression_count: number
+          id: string
+          input_fingerprint: string | null
+          intake_session_id: string
+          manifest_fingerprint: string | null
+          mode: string
+          model_policy_version: string
+          organization_id: string
+          pipeline_version: string
+          processing_run_id: string
+          report_fingerprint: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          warning_count: number
+        }
+        Insert: {
+          baseline_execution_id?: string | null
+          comparison_passed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          critical_regression_count?: number
+          id?: string
+          input_fingerprint?: string | null
+          intake_session_id: string
+          manifest_fingerprint?: string | null
+          mode: string
+          model_policy_version: string
+          organization_id: string
+          pipeline_version: string
+          processing_run_id: string
+          report_fingerprint?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          warning_count?: number
+        }
+        Update: {
+          baseline_execution_id?: string | null
+          comparison_passed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          critical_regression_count?: number
+          id?: string
+          input_fingerprint?: string | null
+          intake_session_id?: string
+          manifest_fingerprint?: string | null
+          mode?: string
+          model_policy_version?: string
+          organization_id?: string
+          pipeline_version?: string
+          processing_run_id?: string
+          report_fingerprint?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          warning_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "controlled_case_executions_organization_id_baseline_execut_fkey"
+            columns: ["organization_id", "baseline_execution_id"]
+            isOneToOne: false
+            referencedRelation: "controlled_case_executions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "controlled_case_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "controlled_case_executions_organization_id_intake_session__fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "controlled_case_executions_organization_id_processing_run__fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: true
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -2323,6 +2488,53 @@ export type Database = {
           },
         ]
       }
+      organization_rollout_policies: {
+        Row: {
+          created_at: string
+          external_release_enabled: boolean
+          organization_id: string
+          policy_version: string
+          promotion_basis: string
+          state: string
+          target_model_policy_version: string
+          target_pipeline_version: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          external_release_enabled?: boolean
+          organization_id: string
+          policy_version?: string
+          promotion_basis?: string
+          state: string
+          target_model_policy_version?: string
+          target_pipeline_version?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          external_release_enabled?: boolean
+          organization_id?: string
+          policy_version?: string
+          promotion_basis?: string
+          state?: string
+          target_model_policy_version?: string
+          target_pipeline_version?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_rollout_policies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           city: string | null
@@ -2538,6 +2750,7 @@ export type Database = {
           attempts: number
           available_at: string
           capability_sha256: string | null
+          controlled_execution_id: string | null
           created_at: string
           id: string
           intake_session_id: string
@@ -2560,6 +2773,7 @@ export type Database = {
           attempts?: number
           available_at?: string
           capability_sha256?: string | null
+          controlled_execution_id?: string | null
           created_at?: string
           id?: string
           intake_session_id: string
@@ -2582,6 +2796,7 @@ export type Database = {
           attempts?: number
           available_at?: string
           capability_sha256?: string | null
+          controlled_execution_id?: string | null
           created_at?: string
           id?: string
           intake_session_id?: string
@@ -2601,6 +2816,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "processing_jobs_controlled_execution_fkey"
+            columns: ["organization_id", "controlled_execution_id"]
+            isOneToOne: false
+            referencedRelation: "controlled_case_executions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "processing_jobs_organization_id_intake_session_id_fkey"
             columns: ["organization_id", "intake_session_id"]
@@ -3479,6 +3701,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_freeze_case_input: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_live_input: Json
+        }
+        Returns: Json
+      }
       worker_heartbeat: {
         Args: {
           p_capability_token: string
@@ -3520,6 +3750,16 @@ export type Database = {
           p_case_state: Json
           p_job_id: string
           p_manifest: Json
+        }
+        Returns: string
+      }
+      worker_record_controlled_execution: {
+        Args: {
+          p_capability_token: string
+          p_comparison?: Json
+          p_job_id: string
+          p_manifest: Json
+          p_report: Json
         }
         Returns: string
       }

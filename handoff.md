@@ -57,8 +57,30 @@ uses forced RLS and exact organization, session, opportunity, document and run s
 See ADR 0010. The full code quality gate, database reconstruction, RLS
 non-interference suite and E2E job are green. The production project contains the
 governed retrieval schema and its supporting foreign-key indexes; Security Advisor
-has zero findings and Performance Advisor has zero unindexed foreign keys. Worker
-activation remains conditional on the deployment from `main`.
+has zero findings and Performance Advisor has zero unindexed foreign keys. Main deployed
+the worker task definition `offroad-document-worker:82` from commit `f7e3205`; ECS reported the
+service stable, so governed retrieval is active in the production worker.
+
+### Engineering update: controlled production, 24 August 2026
+
+Gate 8 is implemented behind ADR 0011 and is being proven in the isolated Supabase staging
+branch before production. `@offroad/release-governance` compares primary, shadow and replay reports
+without reading customer content. Input changes, status regressions and contract failures are
+critical; shadow wording drift remains visible; rollout transitions fail closed.
+
+The worker freezes the full private case input on first read. Retry returns that snapshot, and a
+shadow or replay copies the baseline snapshot instead of querying mutable intake tables. Candidate
+runs have their own `processing_run`, never replace the public case state, and record full reports
+only in the private schema. The browser can read its own content-free execution status but cannot
+change rollout state or write evidence.
+
+Rollout is organization-scoped: `off`, `shadow`, `canary`, `active`, `paused`. Ten distinct real
+cases are required for canary, another disjoint ten for active, and active additionally requires
+explicit external-release approval. Synthetic fixtures never count. The database and domain
+contracts are present in staging across all five Gate 8 migrations. The full RLS non-interference
+suite passes, Security Advisor has zero findings and Performance Advisor has zero unindexed foreign
+keys. Lint, typecheck, all tests and the production build pass across 38 packages. Production
+promotion and both real-case cohorts remain outstanding and must not be reported as complete.
 
 ### Engineering update: governed case worker, 24 August 2026
 

@@ -55,7 +55,21 @@ type Outcome<T> = {ok: true; value: T} | {ok: false; error: IntakeErrorCode};
  * Off is the safe default and stays the default: a run with no worker behind it parks the
  * intake session in `processing`, trading a working journey for one that hangs.
  */
-export function pipelineEnabledFor(organization: {pipeline_enabled?: boolean | null} | null | undefined): boolean {
+export function pipelineEnabledFor(organization: {
+  pipeline_enabled?: boolean | null;
+  /**
+   * The generated database type is intentionally `string` because the rollout states are
+   * protected by a SQL CHECK rather than a Postgres enum. Treat an unknown future value as
+   * disabled here so an application/database version skew fails closed.
+   */
+  rollout_state?: string | null;
+} | null | undefined): boolean {
+  if (organization?.rollout_state) {
+    return organization.pipeline_enabled === true
+      && ["shadow", "canary", "active"].includes(organization.rollout_state);
+  }
+  // Backward-compatible only for the rolling-deploy window in which application code may reach
+  // a project before the rollout-policy migration. Once the row exists, policy is authoritative.
   return organization?.pipeline_enabled === true;
 }
 

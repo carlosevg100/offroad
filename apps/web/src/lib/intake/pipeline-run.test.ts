@@ -116,6 +116,12 @@ describe("pipeline run switch", () => {
 
   it("is on only for an organization explicitly promoted", () => {
     expect(pipelineEnabledFor({pipeline_enabled: true})).toBe(true);
+    expect(pipelineEnabledFor({pipeline_enabled: true, rollout_state: "shadow"})).toBe(true);
+    expect(pipelineEnabledFor({pipeline_enabled: true, rollout_state: "canary"})).toBe(true);
+    expect(pipelineEnabledFor({pipeline_enabled: true, rollout_state: "active"})).toBe(true);
+    expect(pipelineEnabledFor({pipeline_enabled: true, rollout_state: "paused"})).toBe(false);
+    expect(pipelineEnabledFor({pipeline_enabled: true, rollout_state: "off"})).toBe(false);
+    expect(pipelineEnabledFor({pipeline_enabled: false, rollout_state: "active"})).toBe(false);
   });
 });
 

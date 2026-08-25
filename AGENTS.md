@@ -16,9 +16,10 @@ A pnpm + Turborepo monorepo for **Offroad Capital**, an AI-driven private-credit
 origination and market-access platform. One Next.js 16 app (`apps/web`) plus small
 deterministic domain packages (`packages/*`), backed by Supabase (Auth, Postgres 17 with
 RLS, private Storage) and deployed on Vercel from `main`. Production is
-`https://offroad.capital`; the single Supabase project (`offroad-development`,
-`sa-east-1`) **is** production, there is no staging database. Do not create throwaway
-data there.
+`https://offroad.capital`; Supabase project `offroad-development` (`sa-east-1`) **is** production.
+The isolated, data-less Supabase branch `staging` is the only database allowed for migration and
+rollout proof before production. Do not create throwaway data in production and never copy
+production borrower data into staging.
 
 ## 2. Non-negotiable invariants
 

@@ -53,6 +53,24 @@ pacotes. O PR #240 reconstruiu as migrations do zero e aprovou banco, RLS, lint,
 da promoção. O projeto de produção recebeu as duas migrations; o Security Advisor permaneceu com
 zero alertas e o Performance Advisor com zero chaves estrangeiras sem índice.
 
+O Gate 8 introduz `@offroad/release-governance` e ADR 0011. A primeira leitura do worker congela o
+input privado de cada case; retry, shadow e replay recebem o mesmo snapshot. A execução candidata
+usa run própria e nunca substitui o case público. Comparações tipadas distinguem input divergente,
+regressão de status, quebra de contrato, drift de output e aumento de custo. Rollout é um estado por
+organização que o tenant pode ler e não pode escrever. `active` exige dois cohorts distintos de dez
+cases reais e aprovação explícita; fixtures não contam.
+
+O branch Supabase `staging` está saudável, com o mesmo histórico de migrations e nenhum dado de
+produção. As migrations `20260824235937_controlled_production_rollout.sql`,
+`20260825000110_controlled_production_foreign_key_indexes.sql`,
+`20260825000811_controlled_release_commands.sql` e
+`20260825001020_fix_controlled_case_input_variable.sql` e
+`20260825001758_make_controlled_results_immutable.sql` foram provadas primeiro nesse ambiente. A
+suíte integral de não interferência passou, o Security Advisor retornou zero findings e o
+Performance Advisor, zero foreign keys sem índice. Lint, typecheck, todos os testes e o build estão
+verdes nos 38 pacotes. Produção ainda não recebeu este Gate e os vinte cases reais continuam
+pendentes.
+
 O Gate 6 adiciona `@offroad/receivables-analysis`. Ele separa FIDC, cessão de recebíveis e fonte de
 pagamento; calcula elegibilidade título a título, concentração, aging, inadimplência, perda,
 recuperação, diluição, recompra, substituição e prazo médio; concilia loan tape com contabilidade,

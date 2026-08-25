@@ -69,6 +69,7 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
       loadCaseInput: async () => ({}),
       loadRetrievalContext: async () => ({playbook_version: null, results: [], abstained: true}),
       recordCaseSnapshot: async () => "manifest-id",
+      recordControlledExecution: async () => "execution-id",
       complete: async (_job, result) => {
         calls.completed.push(result);
       },
