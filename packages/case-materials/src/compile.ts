@@ -12,6 +12,9 @@ import {diligenceQa} from "./diligence";
 import {creditMemo, termSheetDocument} from "./institutional";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
+import type {ConductAudit} from "@offroad/credit-playbook";
+
+import {auditCompiledMaterial} from "./conduct";
 
 /**
  * The documents a company takes to market, assembled from what was verified.
@@ -56,6 +59,8 @@ export type Material = {
   dependsOn: string[];
   /** Canonical template used by governed institutional outputs. Legacy/internal materials may omit it. */
   template?: MaterialTemplateReference;
+  /** Deterministic LC-01 to LC-13 audit of this exact compiled artifact. */
+  conductAudit?: ConductAudit;
 };
 
 export type CompileInput = {
@@ -334,7 +339,14 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
     blocks: [...material.blocks, DISCLAIMER],
   }));
 
-  return {ok: true, materials: [...governedInstitutional, teaser, creditProfile, packageMaterial]};
+  const materials = [...governedInstitutional, teaser, creditProfile, packageMaterial].map((material) => {
+    const conductAudit = auditCompiledMaterial(material);
+    return {...material, conductAudit};
+  });
+  // M10 remains candidate. The audit is attached in shadow so its debt can be measured and
+  // remediated template by template. Promotion, not an ad hoc code change, will turn the exact
+  // accredited fingerprint into a release blocker.
+  return {ok: true, materials};
 }
 
 /**

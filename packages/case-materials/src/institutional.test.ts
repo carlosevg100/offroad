@@ -103,28 +103,39 @@ describe("the term sheet", () => {
 describe("compileMaterials", () => {
   it("emits the memorandum and the term sheet ahead of the older materials when the desk ran", () => {
     const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness, desk, trajectory, termSheet});
-    expect(outcome.ok).toBe(true);
+    expect(outcome.ok, JSON.stringify(outcome)).toBe(true);
     if (!outcome.ok) return;
     expect(outcome.materials.map((material) => material.kind)).toEqual(["credit_memo", "term_sheet", "diligence_qa", "teaser", "credit_profile", "package"]);
   });
 
   it("emits neither when the desk did not run", () => {
     const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness});
-    if (!outcome.ok) throw new Error("expected materials");
+    if (!outcome.ok) throw new Error(`expected materials: ${JSON.stringify(outcome)}`);
     expect(outcome.materials.map((material) => material.kind)).toEqual(["teaser", "credit_profile", "package"]);
     expect(outcome.materials[0]?.template).toMatchObject({id: "institutional-teaser", version: "2026.08.25-v1"});
   });
 
   it("keeps every institutional material inside the DCM advisory boundary", () => {
     const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness, desk, trajectory, termSheet});
-    if (!outcome.ok) throw new Error("expected materials");
+    if (!outcome.ok) throw new Error(`expected materials: ${JSON.stringify(outcome)}`);
     for (const material of outcome.materials) {
       const serialized = JSON.stringify(material.blocks).toLowerCase();
       expect(serialized).not.toMatch(/offroad (aprova|aprovou|approved|recommends the investment)/);
       expect(serialized).not.toMatch(/(funding|captação) (garantido|garantida|confirmed|guaranteed)/);
       const disclaimer = material.blocks.find((block) => block.type === "disclaimer" && block.text.en.includes("acting as DCM adviser"));
       expect(disclaimer, `${material.kind} must state the advisory boundary`).toBeDefined();
+      expect(material.conductAudit?.fingerprint).toMatch(/^[a-f0-9]{64}$/u);
     }
+  });
+
+  it("records the current M7 debt in shadow instead of presenting it as accredited", () => {
+    const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness, desk, trajectory, termSheet});
+    if (!outcome.ok) throw new Error(`expected materials: ${JSON.stringify(outcome)}`);
+    const findings = outcome.materials.flatMap((material) => material.conductAudit?.findings ?? []);
+    expect(findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ruleId: "LC-01", code: "material_claim_without_support"}),
+      expect.objectContaining({ruleId: "LC-07", code: "bilingual_economic_divergence"}),
+    ]));
   });
 });
 

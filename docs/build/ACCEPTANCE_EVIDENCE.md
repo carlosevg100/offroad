@@ -1,5 +1,14 @@
 # Acceptance Evidence
 
+## House Playbook M10, 25/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Treze procedimentos de conduta | `procedure-contract.test.ts` | `LC-01` a `LC-13` compilam como candidates individualmente promovíveis, em pipeline determinístico, sem peer handoff e com zero chamadas de modelo |
+| Motor determinístico de conduta | `conduct-policy.test.ts` | claim sem suporte, promessa de funding, julgamento sem aprovação exata, drift PT/EN, cross-case, destinatário, conflito, disclaimer, compromisso sem registro, data relativa, surpresa sem causa e travessão possuem reason codes estáveis |
+| Shadow nos materiais | `case-materials/src/conduct.test.ts` e `institutional.test.ts` | cada artefato recebe versão, fingerprint e findings; promessa explícita é detectada sem reescrita silenciosa; enforcement permanece shadow até acreditação individual |
+| Dívida medida | audit shadow dos materiais existentes | term sheet e Q&A ainda possuem campos sem suporte de origem e pares econômicos PT/EN divergentes; correção pertence ao M7 antes da promoção de LC |
+
 ## Retrieval governado, 24/08/2026
 
 | Evidência | Verificação | Resultado |
