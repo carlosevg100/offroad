@@ -222,6 +222,86 @@ export async function setIntakeArchetype(
   return ok(null);
 }
 
+const scopeRoles = ["operating_company", "guarantor", "holding", "target", "other"] as const;
+type ScopeRole = (typeof scopeRoles)[number];
+
+/**
+ * Resolves one documentary entity suggestion without allowing the extractor to set the case
+ * perimeter. Confirmation appends both the new scope version and the suggestion decision in one
+ * database transaction; dismissal appends only the decision.
+ */
+export async function resolveAnalysisScopeSuggestion(
+  runtime: IntakeRuntime,
+  input: {suggestionId: string; decision: string; role?: string; reason: string},
+): Promise<IntakeOutcome> {
+  const suggestionId = input.suggestionId.trim();
+  const reason = input.reason.trim();
+  const decision = input.decision === "confirm" || input.decision === "dismiss" ? input.decision : null;
+  const role = scopeRoles.includes(input.role as ScopeRole) ? input.role as ScopeRole : null;
+  if (!decision || suggestionId.length < 1 || suggestionId.length > 200 || reason.length < 3 || reason.length > 1000) {
+    return fail("validation");
+  }
+  if (decision === "confirm" && !role) return fail("validation");
+
+  const {error} = await runtime.supabase.rpc("resolve_analysis_scope_suggestion_command", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+    p_suggestion_event_id: randomUUID(),
+    p_scope_event_id: decision === "confirm" ? randomUUID() : null,
+    p_suggestion_id: suggestionId,
+    p_decision: decision,
+    p_role: decision === "confirm" ? role : null,
+    p_reason: reason,
+  });
+  if (error) {
+    logIntakeFailure("resolve_scope_suggestion", error);
+    return fail(intakeErrorFrom(error, "save"));
+  }
+  await refreshIntakeRequests(runtime);
+  return ok(null);
+}
+
+/** Revocation is immediate and removes every effective advisor scope from the case. */
+export async function revokeAdvisorAuthorization(
+  runtime: IntakeRuntime,
+  reasonInput: string,
+): Promise<IntakeOutcome> {
+  const reason = reasonInput.trim();
+  if (reason.length < 3 || reason.length > 1000) return fail("validation");
+  const {error} = await runtime.supabase.rpc("revoke_advisor_authorization_command", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+    p_event_id: randomUUID(),
+    p_reason: reason,
+  });
+  if (error) {
+    logIntakeFailure("revoke_advisor_authorization", error);
+    return fail(intakeErrorFrom(error, "save"));
+  }
+  await refreshIntakeRequests(runtime);
+  return ok(null);
+}
+
+/** Internal operational check. It verifies evidence already attached and grants no new scope. */
+export async function verifyAdvisorAuthorization(
+  runtime: IntakeRuntime,
+  reasonInput: string,
+): Promise<IntakeOutcome> {
+  const reason = reasonInput.trim();
+  if (reason.length < 3 || reason.length > 1000) return fail("validation");
+  const {error} = await runtime.supabase.rpc("verify_advisor_authorization_command", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+    p_event_id: randomUUID(),
+    p_reason: reason,
+  });
+  if (error) {
+    logIntakeFailure("verify_advisor_authorization", error);
+    return fail(intakeErrorFrom(error, "save"));
+  }
+  return ok(null);
+}
+
 /**
  * Records one answer to the information request.
  *

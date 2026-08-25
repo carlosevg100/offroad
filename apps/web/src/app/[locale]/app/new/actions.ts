@@ -10,6 +10,8 @@ import {
   loadIntakeSession,
   processIntakeSession,
   recordInformationAnswer as recordAnswer,
+  resolveAnalysisScopeSuggestion,
+  revokeAdvisorAuthorization,
   setIntakeArchetype as setArchetype,
   removeIntakeDocument,
   resolveIntakeIssue,
@@ -117,6 +119,27 @@ export async function resolveWorkspaceIntakeIssue(formData: FormData) {
   const sessionId = value(formData, "session_id");
   const runtime = await workspaceRuntime(locale, sessionId);
   const outcome = await resolveIntakeIssue(runtime, {issueId: value(formData, "issue_id"), status: value(formData, "issue_status")});
+  redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
+}
+
+export async function resolveWorkspaceScopeSuggestion(formData: FormData) {
+  const locale = localeFrom(formData);
+  const sessionId = value(formData, "session_id");
+  const runtime = await workspaceRuntime(locale, sessionId);
+  const outcome = await resolveAnalysisScopeSuggestion(runtime, {
+    suggestionId: value(formData, "suggestion_id"),
+    decision: value(formData, "decision"),
+    role: value(formData, "role"),
+    reason: value(formData, "reason"),
+  });
+  redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
+}
+
+export async function revokeWorkspaceAdvisorAuthorization(formData: FormData) {
+  const locale = localeFrom(formData);
+  const sessionId = value(formData, "session_id");
+  const runtime = await workspaceRuntime(locale, sessionId);
+  const outcome = await revokeAdvisorAuthorization(runtime, value(formData, "reason"));
   redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
 }
 

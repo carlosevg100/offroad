@@ -7704,10 +7704,47 @@ button[disabled].workspace-search,
 .intake-brief__advanced > .intake-brief__row {margin-top: 18px;}
 .intake-brief__advanced > .intake-brief__set:last-child {margin-bottom: 18px;}
 
+.intake-governance {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(250px, .7fr);
+  gap: 20px;
+  padding: 22px;
+  border: 1px solid #d8dddc;
+  background: linear-gradient(135deg, #f8faf8 0%, #f3f5f3 100%);
+}
+.intake-governance > header {grid-column: 1 / -1; max-width: 780px;}
+.intake-governance > header h3 {margin: 5px 0 7px; font-size: clamp(23px, 2.5vw, 31px); letter-spacing: -.035em;}
+.intake-governance > header p,
+.intake-governance__scope > p,
+.intake-governance__authorization > p {margin: 0; color: #687278; font-size: 11px; line-height: 1.6;}
+.intake-governance__scope {display: grid; gap: 10px;}
+.intake-governance__label,
+.intake-governance__authorization > div {display: flex; align-items: center; gap: 8px; color: #293239; font-size: 12px;}
+.intake-governance__label svg,
+.intake-governance__authorization svg {color: #667e6b;}
+.intake-governance__scope article {display: grid; gap: 14px; padding: 17px; border: 1px solid #d9dedb; background: rgba(255,255,255,.82);}
+.intake-governance__scope article > div {display: flex; align-items: center; justify-content: space-between; gap: 12px;}
+.intake-governance__scope article > div > strong {font-size: 14px;}
+.intake-governance__scope article > div > small {display: inline-flex; align-items: center; gap: 5px; color: #778087; font-size: 9px;}
+.intake-governance__scope form {display: grid; grid-template-columns: minmax(180px, .7fr) minmax(220px, 1fr); align-items: end; gap: 10px;}
+.intake-governance label {display: grid; gap: 5px; color: #606b71; font-size: 9px; font-weight: 680; letter-spacing: .06em; text-transform: uppercase;}
+.intake-governance input,
+.intake-governance select {width: 100%; min-height: 40px; padding: 0 11px; border: 1px solid #ccd2d2; border-radius: 2px; background: #fff; color: #1b2226; font: inherit; font-size: 11px; text-transform: none;}
+.intake-governance__scope form > div {display: flex; grid-column: 1 / -1; gap: 8px;}
+.intake-governance__authorization {align-self: start; padding: 18px; border: 1px solid #ccd4cf; background: #eef2ee;}
+.intake-governance__authorization > div {flex-wrap: wrap;}
+.intake-governance__authorization > div span {margin-left: auto; padding: 3px 6px; border: 1px solid #aab7ae; color: #52675a; font: 8px ui-monospace, SFMono-Regular, monospace; letter-spacing: .07em; text-transform: uppercase;}
+.intake-governance__authorization > p {margin-top: 10px;}
+.intake-governance__authorization form {display: grid; gap: 9px; margin-top: 14px; padding-top: 13px; border-top: 1px solid #d5dcd7;}
+.intake-governance__authorization form .text-link {width: fit-content; border: 0; background: transparent; color: #6b3d36; cursor: pointer; font: inherit; font-size: 10px;}
+.intake-governance__authorization.is-revoked {border-color: #d2b9b5; background: #f6efee;}
+.intake-governance__authorization.is-revoked > div span {border-color: #d2b9b5; color: #7c4942;}
+
 @media (max-width: 900px) {
   .intake-start__journey {grid-template-columns: 1fr;}
   .intake-guide__documents {grid-template-columns: 1fr;}
   .intake-guide__documents .intake-upload__drop {position: relative; top: auto;}
+  .intake-governance {grid-template-columns: 1fr;}
 }
 
 @media (max-width: 640px) {
@@ -7723,4 +7760,6 @@ button[disabled].workspace-search,
   .intake-request-roadmap > div {grid-template-columns: 1fr;}
   .intake-request-roadmap article {border-right: 0; border-bottom: 1px solid #dfe2e2;}
   .intake-request-roadmap article:last-child {border-bottom: 0;}
+  .intake-governance {padding: 18px;}
+  .intake-governance__scope form {grid-template-columns: 1fr;}
 }

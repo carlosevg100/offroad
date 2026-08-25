@@ -12,6 +12,8 @@ import {
   loadIntakeSession,
   processIntakeSession,
   recordInformationAnswer as recordAnswer,
+  resolveAnalysisScopeSuggestion,
+  revokeAdvisorAuthorization,
   setIntakeArchetype as setArchetype,
   removeIntakeDocument as removeDocument,
   resolveIntakeIssue as resolveIssue,
@@ -217,6 +219,25 @@ export async function saveIntakeAnswer(formData: FormData) {
     response: value(formData, "response"),
     note: value(formData, "note"),
   });
+  redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
+}
+
+export async function resolveOnboardingScopeSuggestion(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const outcome = await resolveAnalysisScopeSuggestion(runtime, {
+    suggestionId: value(formData, "suggestion_id"),
+    decision: value(formData, "decision"),
+    role: value(formData, "role"),
+    reason: value(formData, "reason"),
+  });
+  redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
+}
+
+export async function revokeOnboardingAdvisorAuthorization(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const outcome = await revokeAdvisorAuthorization(runtime, value(formData, "reason"));
   redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
 }
 

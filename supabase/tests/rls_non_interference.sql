@@ -751,6 +751,62 @@ begin
     raise exception 'worker did not persist the profile and the layer';
   end if;
 
+  perform public.worker_record_candidates(
+    job_id,
+    capability,
+    jsonb_build_array(jsonb_build_object(
+      'extractor_key', 'scope.related_company',
+      'field_path', 'company.legal_name',
+      'field_group', 'company',
+      'label', 'Razão social mencionada',
+      'raw_value', 'Tenant A Related S.A.',
+      'normalized_value', to_jsonb('Tenant A Related S.A.'::text),
+      'value_type', 'text',
+      'information_class', 'audited',
+      'evidence_rank', 1,
+      'source_anchor', jsonb_build_object('kind', 'page', 'id', 'p1', 'page', 1),
+      'confidence', 0.93,
+      'extraction_method', 'native_text',
+      'anchor_verified', true,
+      'anchor_precision', 'page',
+      'entity_name', 'Tenant A Related S.A.',
+      'entity_scope', 'standalone',
+      'verifier_flags', '[]'::jsonb
+    ))
+  );
+
+  begin
+    perform public.worker_record_analysis_scope_suggestions(
+      job_id, repeat('y', 64), gen_random_uuid(),
+      jsonb_build_array(jsonb_build_object(
+        'suggestionId', 'suggestion:tenant-a-related',
+        'entityId', 'entity:tenant-a-related',
+        'legalName', 'Tenant A Related S.A.',
+        'suggestedRole', 'other'
+      ))
+    );
+    raise exception 'scope suggestion accepted a forged capability';
+  exception when insufficient_privilege then null;
+  end;
+
+  result := public.worker_record_analysis_scope_suggestions(
+    job_id, capability, '51000000-0000-4000-8000-000000000080',
+    jsonb_build_array(jsonb_build_object(
+      'suggestionId', 'suggestion:tenant-a-related',
+      'entityId', 'entity:tenant-a-related',
+      'legalName', 'Tenant A Related S.A.',
+      'suggestedRole', 'other'
+    ))
+  );
+  if result ->> 'replayed' <> 'false'
+    or (select analysis_scope_suggestions #>> '{items,0,status}'
+        from public.document_intake_sessions
+        where id = '40000000-0000-4000-8000-000000000003') <> 'pending'
+    or (select analysis_scope from public.document_intake_sessions
+        where id = '40000000-0000-4000-8000-000000000003') is not null then
+    raise exception 'worker did not persist a suggestion without expanding analysis scope';
+  end if;
+
   begin
     perform public.worker_record_retrieval_chunks(
       job_id,
@@ -2663,6 +2719,246 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'tenant rewrote the advisor authorization projection'; end if;
+end;
+$$;
+
+-- Document-derived entities remain suggestions until a tenant member resolves them. Confirming a
+-- suggestion expands the authoritative scope and its audit trail in one serialized command.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '76000000-0000-4000-8000-000000000001';
+  frame_event constant uuid := '76000000-0000-4000-8000-000000000002';
+  route_event constant uuid := '76000000-0000-4000-8000-000000000003';
+  scope_event constant uuid := '76000000-0000-4000-8000-000000000004';
+  early_triage_event constant uuid := '76000000-0000-4000-8000-000000000005';
+  group_scope_event constant uuid := '76000000-0000-4000-8000-000000000006';
+  pending_event constant uuid := '76000000-0000-4000-8000-000000000007';
+  suggestion_event constant uuid := '76000000-0000-4000-8000-000000000008';
+  expanded_scope_event constant uuid := '76000000-0000-4000-8000-000000000009';
+  pending_suggestions jsonb := '{
+    "items":[{
+      "suggestionId":"suggestion:related-company",
+      "entityId":"entity:related-company",
+      "legalName":"Controlada Operacional S.A.",
+      "suggestedRole":"operating_company",
+      "status":"pending",
+      "evidenceReferences":["document:76000000-0000-4000-8000-000000000010"]
+    }],
+    "version":1
+  }'::jsonb;
+  outcome jsonb;
+  accepted boolean;
+begin
+  set local role postgres;
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  perform public.set_intake_operation_context_command(
+    org_a, session_id, frame_event, route_event, scope_event, null,
+    early_triage_event, group_scope_event, 'growth_expansion', 'medium',
+    'Finalidade declarada pelo membro autorizado.', array['documentos classificados'], null, null, null
+  );
+
+  set local role postgres;
+  update public.document_intake_sessions
+  set analysis_scope_suggestions = pending_suggestions
+  where id = session_id;
+  perform private.append_intake_domain_event(
+    org_a, session_id, pending_event, 'analysis_scope_suggestions_recorded',
+    jsonb_build_object('suggestions', pending_suggestions), clock_timestamp(),
+    '10000000-0000-4000-8000-000000000001'
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  accepted := true;
+  begin
+    update public.document_intake_sessions
+    set analysis_scope_suggestions = '{"items":[],"version":2}'::jsonb
+    where id = session_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant rewrote the scope-suggestion projection directly'; end if;
+
+  outcome := public.resolve_analysis_scope_suggestion_command(
+    org_a, session_id, suggestion_event, expanded_scope_event,
+    'suggestion:related-company', 'confirm', 'operating_company',
+    'Entidade confirmada pelo responsável da organização.'
+  );
+  if outcome ->> 'replayed' <> 'false'
+    or (select jsonb_array_length(analysis_scope -> 'entities') from public.document_intake_sessions where id = session_id) <> 2
+    or (select analysis_scope_suggestions #>> '{items,0,status}' from public.document_intake_sessions where id = session_id) <> 'confirmed'
+    or not exists (
+      select 1 from public.intake_domain_events
+      where event_id = expanded_scope_event and event_type = 'analysis_scope_recorded'
+    ) then
+    raise exception 'confirmed suggestion did not expand scope atomically';
+  end if;
+
+  outcome := public.resolve_analysis_scope_suggestion_command(
+    org_a, session_id, suggestion_event, expanded_scope_event,
+    'suggestion:related-company', 'confirm', 'operating_company',
+    'Entidade confirmada pelo responsável da organização.'
+  );
+  if outcome ->> 'replayed' <> 'true' then
+    raise exception 'scope-suggestion decision is not idempotent';
+  end if;
+  accepted := true;
+  begin
+    perform public.resolve_analysis_scope_suggestion_command(
+      org_a, session_id, suggestion_event, expanded_scope_event,
+      'suggestion:related-company', 'confirm', 'operating_company', 'Outra justificativa.'
+    );
+  exception when unique_violation then accepted := false;
+  end;
+  if accepted then raise exception 'scope-suggestion event id accepted a different command'; end if;
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  accepted := true;
+  begin
+    perform public.resolve_analysis_scope_suggestion_command(
+      org_a, session_id, gen_random_uuid(), gen_random_uuid(),
+      'suggestion:related-company', 'confirm', 'operating_company', 'Tentativa entre tenants.'
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'cross-tenant member resolved a scope suggestion'; end if;
+
+  set local role postgres;
+  delete from public.document_intake_sessions where id = session_id;
+end;
+$$;
+
+-- Authorization is evidence-bearing and monotonic. Only an Offroad operator can verify it; the
+-- advisor tenant can revoke it, which irreversibly removes every active scope.
+do $$
+declare
+  advisor_org constant uuid := '75000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '75000000-0000-4000-8000-000000000002';
+  offroad_org constant uuid := '77000000-0000-4000-8000-000000000001';
+  documented_event constant uuid := '77000000-0000-4000-8000-000000000002';
+  verified_event constant uuid := '77000000-0000-4000-8000-000000000003';
+  revoked_event constant uuid := '77000000-0000-4000-8000-000000000004';
+  authorization_value jsonb;
+  outcome jsonb;
+  accepted boolean;
+begin
+  set local role postgres;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  authorization_value := (
+    select advisor_authorization || jsonb_build_object(
+      'status', 'documented',
+      'evidenceReferences', jsonb_build_array('document:77000000-0000-4000-8000-000000000010'),
+      'statusReason', 'Carta de contratação classificada.',
+      'version', 2
+    )
+    from public.document_intake_sessions where id = session_id
+  );
+  update public.document_intake_sessions set advisor_authorization = authorization_value where id = session_id;
+  perform private.append_intake_domain_event(
+    advisor_org, session_id, documented_event, 'advisor_authorization_recorded',
+    jsonb_build_object('authorization', authorization_value), clock_timestamp(),
+    '10000000-0000-4000-8000-000000000001'
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  accepted := true;
+  begin
+    perform public.verify_advisor_authorization_command(
+      advisor_org, session_id, verified_event, 'Documento conferido pela mesa Offroad.'
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'advisor verified its own authority'; end if;
+
+  set local role postgres;
+  insert into public.organizations (id, organization_type, name, created_by)
+  values (offroad_org, 'offroad', 'RLS Offroad Operator', '10000000-0000-4000-8000-000000000003');
+  insert into public.organization_memberships (organization_id, user_id, role, status, joined_at)
+  values (offroad_org, '10000000-0000-4000-8000-000000000003', 'owner', 'active', now());
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000003","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  outcome := public.verify_advisor_authorization_command(
+    advisor_org, session_id, verified_event, 'Documento conferido pela mesa Offroad.'
+  );
+  if outcome ->> 'replayed' <> 'false'
+    or (select advisor_authorization ->> 'status' from public.document_intake_sessions where id = session_id) <> 'verified' then
+    raise exception 'Offroad operator did not verify documented authority';
+  end if;
+  outcome := public.verify_advisor_authorization_command(
+    advisor_org, session_id, verified_event, 'Documento conferido pela mesa Offroad.'
+  );
+  if outcome ->> 'replayed' <> 'true' then
+    raise exception 'authorization verification is not idempotent';
+  end if;
+  accepted := true;
+  begin
+    perform public.verify_advisor_authorization_command(
+      advisor_org, session_id, verified_event, 'Outra justificativa de verificação.'
+    );
+  exception when unique_violation then accepted := false;
+  end;
+  if accepted then raise exception 'verification event id accepted a different command'; end if;
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  outcome := public.revoke_advisor_authorization_command(
+    advisor_org, session_id, revoked_event, 'Mandato encerrado pela organização responsável.'
+  );
+  if outcome ->> 'replayed' <> 'false'
+    or (select advisor_authorization ->> 'status' from public.document_intake_sessions where id = session_id) <> 'revoked'
+    or (select advisor_authorization -> 'scopes' from public.document_intake_sessions where id = session_id) <> '[]'::jsonb then
+    raise exception 'authorization revocation did not remove every active scope';
+  end if;
+  outcome := public.revoke_advisor_authorization_command(
+    advisor_org, session_id, revoked_event, 'Mandato encerrado pela organização responsável.'
+  );
+  if outcome ->> 'replayed' <> 'true' then
+    raise exception 'authorization revocation is not idempotent';
+  end if;
+  accepted := true;
+  begin
+    perform public.revoke_advisor_authorization_command(
+      advisor_org, session_id, revoked_event, 'Outra justificativa de revogação.'
+    );
+  exception when unique_violation then accepted := false;
+  end;
+  if accepted then raise exception 'revocation event id accepted a different command'; end if;
+
+  set local role postgres;
+  delete from public.document_intake_sessions where id = session_id;
 end;
 $$;
 

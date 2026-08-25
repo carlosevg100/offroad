@@ -62,6 +62,7 @@ const baseEvents = (): IntakeEvent[] => [
         role: "borrower",
         source: "member_organization",
         status: "declared",
+        evidenceReferences: [],
       }],
     },
   },
@@ -177,6 +178,7 @@ describe("adaptive intake state", () => {
           role: "borrower" as const,
           source: "advisor_declaration" as const,
           status: "declared" as const,
+          evidenceReferences: [],
         }]}};
       }
       return event;
@@ -188,8 +190,9 @@ describe("adaptive intake state", () => {
         clientEntityId: "advisor-client:case-1:borrower",
         authorityKind: "engagement_letter",
         status: "revoked",
-        scopes: ["prepare_case"],
+        scopes: [],
         evidenceReferences: ["document:engagement-letter-1"],
+        statusReason: "The advisor recorded that its engagement ended.",
         version: 1,
       },
     }));
@@ -455,9 +458,9 @@ describe("adaptive intake state", () => {
         version: 2,
         reason: "Holding toma a dívida; duas operadoras geram o fluxo.",
         entities: [
-          {entityId: "holding", legalName: "Grupo Horizonte S.A.", role: "borrower", source: "advisor_declaration", status: "declared"},
-          {entityId: "op-1", legalName: "Horizonte Varejo Ltda.", role: "operating_company", source: "advisor_declaration", status: "declared"},
-          {entityId: "op-2", legalName: "Horizonte Logística Ltda.", role: "guarantor", source: "advisor_declaration", status: "declared"},
+          {entityId: "holding", legalName: "Grupo Horizonte S.A.", role: "borrower", source: "advisor_declaration", status: "declared", evidenceReferences: []},
+          {entityId: "op-1", legalName: "Horizonte Varejo Ltda.", role: "operating_company", source: "advisor_declaration", status: "declared", evidenceReferences: []},
+          {entityId: "op-2", legalName: "Horizonte Logística Ltda.", role: "guarantor", source: "advisor_declaration", status: "declared", evidenceReferences: []},
         ],
       },
     }));
@@ -479,6 +482,115 @@ describe("adaptive intake state", () => {
     expect(state.advisorAuthorization?.clientEntityId).toBe("holding");
     expect(state.analysisScope?.entities).toHaveLength(3);
     expect(state.decisionLog.map((entry) => entry.type)).toEqual(expect.arrayContaining(["advisor_authorized", "analysis_scope_changed"]));
+  });
+
+  it("keeps documentary entity mentions pending until a person confirms the perimeter", () => {
+    const events = baseEvents();
+    events.push(nextEvent(events, {
+      type: "analysis_scope_suggestions_recorded",
+      suggestions: {
+        version: 1,
+        items: [{
+          suggestionId: "suggestion-op-1",
+          entityId: "document-entity-op-1",
+          legalName: "Horizonte Logística Ltda.",
+          suggestedRole: "other",
+          status: "pending",
+          evidenceReferences: ["document:org-chart-1"],
+        }],
+      },
+    }));
+
+    const pending = replayIntake("case-1", policy, events);
+    expect(pending.analysisScope?.entities).toHaveLength(1);
+    expect(pending.analysisScopeSuggestions?.items[0]).toEqual(expect.objectContaining({status: "pending"}));
+
+    events.push(nextEvent(events, {
+      type: "analysis_scope_recorded",
+      scope: {
+        version: 2,
+        reason: "A operadora foi confirmada a partir do organograma enviado.",
+        entities: [
+          {
+            entityId: "company-1",
+            legalName: "Rede Horizonte S.A.",
+            role: "borrower",
+            source: "member_organization",
+            status: "declared",
+            evidenceReferences: [],
+          },
+          {
+            entityId: "document-entity-op-1",
+            legalName: "Horizonte Logística Ltda.",
+            role: "operating_company",
+            source: "document",
+            status: "confirmed",
+            evidenceReferences: ["document:org-chart-1"],
+          },
+        ],
+      },
+    }));
+    events.push(nextEvent(events, {
+      type: "analysis_scope_suggestions_recorded",
+      suggestions: {
+        version: 2,
+        items: [{
+          suggestionId: "suggestion-op-1",
+          entityId: "document-entity-op-1",
+          legalName: "Horizonte Logística Ltda.",
+          suggestedRole: "other",
+          status: "confirmed",
+          evidenceReferences: ["document:org-chart-1"],
+          decisionReason: "Confirmada como operadora do grupo.",
+        }],
+      },
+    }));
+
+    const confirmed = replayIntake("case-1", policy, events);
+    expect(confirmed.analysisScope?.entities).toHaveLength(2);
+    expect(confirmed.analysisScopeSuggestions?.items[0]?.status).toBe("confirmed");
+  });
+
+  it("separates declared, documented, verified and revoked advisor authority without broadening it", () => {
+    const events = baseEvents().map((event) => {
+      if (event.type === "capital_need_declared") {
+        return {...event, frame: {...event.frame, declaredBy: {actorId: "advisor-user-1", role: "advisor" as const}}};
+      }
+      if (event.type === "analysis_scope_recorded") {
+        return {...event, scope: {...event.scope, entities: [{
+          entityId: "advisor-client",
+          legalName: "Cliente S.A.",
+          role: "borrower" as const,
+          source: "advisor_declaration" as const,
+          status: "declared" as const,
+          evidenceReferences: [],
+        }]}};
+      }
+      return event;
+    }) as IntakeEvent[];
+    const authorization = (status: "declared" | "documented" | "verified" | "revoked", version: number): IntakeEvent =>
+      nextEvent(events, {
+        type: "advisor_authorization_recorded",
+        authorization: {
+          advisorOrganizationId: "advisor-org",
+          clientEntityId: "advisor-client",
+          authorityKind: "engagement_letter",
+          status,
+          scopes: status === "revoked" ? [] : ["prepare_case"],
+          evidenceReferences: status === "declared" ? [] : ["document:authority-1"],
+          ...(status === "verified" ? {statusReason: "Documento conferido pela operação Offroad."} : {}),
+          ...(status === "revoked" ? {statusReason: "Engajamento encerrado pelo assessor."} : {}),
+          version,
+        },
+      });
+
+    events.push(authorization("declared", 1));
+    events.push(authorization("documented", 2));
+    events.push(authorization("verified", 3));
+    events.push(authorization("revoked", 4));
+    const state = replayIntake("case-1", policy, events);
+    expect(state.advisorAuthorization).toEqual(expect.objectContaining({status: "revoked", scopes: []}));
+    expect(state.preparationBlocks).toContain("advisor_authorization_revoked");
   });
 
   it("records disguised liquidity as a review gate instead of silently changing the archetype", () => {

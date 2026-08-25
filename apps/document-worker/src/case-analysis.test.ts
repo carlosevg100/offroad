@@ -111,6 +111,8 @@ describe("worker case analysis", () => {
       recordRetrievalChunks: async () => ({written: 0, sourceDocumentId: "source-1"}),
       loadIntakeEvents: async () => [],
       recordIntakeRequestLadders: async () => {},
+      recordAnalysisScopeSuggestions: async () => ({}),
+      documentAdvisorAuthorization: async () => ({}),
       loadCaseInput: async () => raw,
       loadRetrievalContext: async (_job, input) => {
         retrievalRequests.push(input);

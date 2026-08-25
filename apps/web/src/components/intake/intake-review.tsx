@@ -7,6 +7,7 @@ import type {CaseState} from "@/lib/intake/case-pipeline";
 import type {IntakeCandidate, IntakeDocument, IntakeIssue, IntakeReviewActionSet, IntakeSession} from "@/lib/intake/types";
 
 import {IntakeCase} from "./intake-case";
+import {IntakeGovernance} from "./intake-governance";
 
 type Props = {
   locale: string;
@@ -85,6 +86,13 @@ export async function IntakeReview({locale, session, documents, candidates, issu
       </header>
 
       {caseState !== undefined ? <IntakeCase caseState={caseState} locale={locale} sessionId={session.id} /> : null}
+
+      <IntakeGovernance
+        locale={locale}
+        resolveScopeSuggestion={actions.resolveScopeSuggestion}
+        revokeAuthorization={actions.revokeAuthorization}
+        session={session}
+      />
 
       <div className="intake-review__toolbar">
         <div><History size={14} /><span>{t("reviewedCounter", {reviewed, total: candidates.length})}</span></div>

@@ -70,6 +70,8 @@ export type QueueClient = {
   recordRetrievalChunks(job: DocumentJob, chunks: unknown[]): Promise<{written: number; sourceDocumentId: string}>;
   loadIntakeEvents(job: DocumentJob): Promise<unknown[]>;
   recordIntakeRequestLadders(job: DocumentJob, events: unknown[]): Promise<void>;
+  recordAnalysisScopeSuggestions(job: DocumentJob, eventId: string, suggestions: unknown[]): Promise<unknown>;
+  documentAdvisorAuthorization(job: DocumentJob, eventId: string): Promise<unknown>;
   loadCaseInput(job: CaseAnalysisJob): Promise<unknown>;
   loadRetrievalContext(job: CaseAnalysisJob, input: {
     query: string;
@@ -183,6 +185,23 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_events: events,
+      });
+    },
+
+    async recordAnalysisScopeSuggestions(job, eventId, suggestions) {
+      return call("worker_record_analysis_scope_suggestions", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_event_id: eventId,
+        p_suggestions: suggestions,
+      });
+    },
+
+    async documentAdvisorAuthorization(job, eventId) {
+      return call("worker_document_advisor_authorization", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_event_id: eventId,
       });
     },
 

@@ -846,6 +846,41 @@
       "documentsBody": "Comece pelo mínimo. Se já tiver materiais adicionais, envie tudo junto. A Offroad lê, classifica e mostra automaticamente o que cada arquivo atende.",
       "back": "Voltar à etapa anterior"
     },
+    "governance": {
+      "kicker": "PERÍMETRO E AUTORIZAÇÃO",
+      "title": "Confirme as fronteiras do case",
+      "body": "Os documentos podem revelar outras empresas do grupo. A Offroad sinaliza os nomes encontrados, mas somente você define quais entidades pertencem à análise e em qual papel.",
+      "scopeTitle": "Entidades encontradas nos documentos",
+      "scopeBody": "Confirme apenas entidades economicamente ligadas à operação. Uma menção em documento não amplia o perímetro automaticamente.",
+      "evidenceCount": "{count, plural, one {1 documento de origem} other {# documentos de origem}}",
+      "roleLabel": "Papel na operação",
+      "reasonLabel": "Base da decisão",
+      "reasonPlaceholder": "Ex.: operadora que gera o fluxo de pagamento",
+      "confirm": "Incluir no perímetro",
+      "dismiss": "Não pertence ao case",
+      "roles": {
+        "operatingCompany": "Empresa operacional",
+        "guarantor": "Garantidora",
+        "holding": "Holding",
+        "target": "Empresa-alvo",
+        "other": "Outra entidade relacionada"
+      },
+      "authorizationTitle": "Autorização do assessor",
+      "authorizationStatus": {
+        "declared": "Declarada",
+        "documented": "Documentada",
+        "verified": "Verificada",
+        "revoked": "Revogada"
+      },
+      "authorizationBody": {
+        "declared": "A preparação está amparada pela declaração registrada. Nenhuma autorização de sondagem ou introdução foi concedida.",
+        "documented": "O sistema localizou evidência documental da autorização. A conferência operacional permanece separada.",
+        "verified": "A evidência foi conferida pela operação Offroad. O escopo continua limitado à preparação do case.",
+        "revoked": "A preparação por este assessor foi interrompida. Nenhuma nova solicitação será emitida."
+      },
+      "revokeReason": "Motivo da revogação",
+      "revoke": "Revogar autorização"
+    },
     "uploader": {
       "startError": "Não foi possível iniciar o envio.",
       "invalidFile": "Um ou mais arquivos têm formato não suportado ou excedem 50 MB.",

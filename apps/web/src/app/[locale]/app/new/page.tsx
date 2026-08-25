@@ -26,6 +26,8 @@ import {
   setWorkspaceIntakeOperation,
   removeWorkspaceIntakeDocument,
   resolveWorkspaceIntakeIssue,
+  resolveWorkspaceScopeSuggestion,
+  revokeWorkspaceAdvisorAuthorization,
   reviewWorkspaceIntakeCandidate,
   startWorkspaceDocumentIntake,
 } from "./actions";
@@ -84,7 +86,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
               sessionId: review.session.id,
               locale: locale === "en-US" ? "en" : "pt",
             })}
-            actions={{accept: acceptWorkspaceIntakeCandidates, confirm: confirmWorkspaceDocumentIntake, process: processWorkspaceDocumentIntake, resolve: resolveWorkspaceIntakeIssue, review: reviewWorkspaceIntakeCandidate}}
+            actions={{accept: acceptWorkspaceIntakeCandidates, confirm: confirmWorkspaceDocumentIntake, process: processWorkspaceDocumentIntake, resolve: resolveWorkspaceIntakeIssue, review: reviewWorkspaceIntakeCandidate, resolveScopeSuggestion: resolveWorkspaceScopeSuggestion, revokeAuthorization: revokeWorkspaceAdvisorAuthorization}}
             candidates={review.candidates}
             documents={review.documents}
             issues={review.issues}
@@ -113,6 +115,8 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             dealBrief={dealBriefOf(review.session)}
             dealBriefAction={saveWorkspaceDealBrief}
             setOperationAction={setWorkspaceIntakeOperation}
+            resolveScopeSuggestionAction={resolveWorkspaceScopeSuggestion}
+            revokeAuthorizationAction={revokeWorkspaceAdvisorAuthorization}
             userId={userId}
           />
         )

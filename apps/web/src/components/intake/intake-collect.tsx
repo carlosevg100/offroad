@@ -13,6 +13,7 @@ import {IntakeChecklist, IntakeOperation} from "./intake-checklist";
 import {IntakeDeliveryMap} from "./intake-delivery-map";
 import {IntakeDealBrief} from "./intake-deal-brief";
 import {IntakeInformation} from "./intake-information";
+import {IntakeGovernance} from "./intake-governance";
 
 type Props = {
   locale: string;
@@ -40,13 +41,15 @@ type Props = {
   stage?: "operation" | "request" | "documents";
   /** Route used by the compact back action in the guided workspace flow. */
   backHref?: string;
+  resolveScopeSuggestionAction?: (formData: FormData) => Promise<void>;
+  revokeAuthorizationAction?: (formData: FormData) => Promise<void>;
 };
 
 /**
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref, resolveScopeSuggestionAction, revokeAuthorizationAction}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -94,6 +97,13 @@ export async function IntakeCollect({locale, session, documents, organizationId,
           <strong><LoaderCircle aria-hidden="true" className="spin" size={14} /> {t("collect.processingTitle")}</strong> {t("collect.processingBody")}
         </div>
       ) : null}
+
+      <IntakeGovernance
+        locale={locale}
+        resolveScopeSuggestion={resolveScopeSuggestionAction}
+        revokeAuthorization={revokeAuthorizationAction}
+        session={session}
+      />
 
       {currentStage === "operation" && setOperationAction ? (
         <IntakeOperation

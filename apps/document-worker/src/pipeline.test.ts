@@ -68,6 +68,8 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
       },
       loadIntakeEvents: async () => [],
       recordIntakeRequestLadders: async () => {},
+      recordAnalysisScopeSuggestions: async () => ({}),
+      documentAdvisorAuthorization: async () => ({}),
       loadCaseInput: async () => ({}),
       loadRetrievalContext: async () => ({playbook_version: null, results: [], abstained: true}),
       recordCaseSnapshot: async () => "manifest-id",
@@ -159,8 +161,8 @@ describe("a healthy document goes through every stage", () => {
       "store_layer",
       "profile",
       "usage",
-      "prepare_requests",
       "index_retrieval",
+      "prepare_requests",
     ]);
 
     // the layer really was uploaded, and its size is what got recorded
