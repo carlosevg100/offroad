@@ -14,9 +14,13 @@ vocabulário, promessas de resultado, disclaimer, identidade econômica PT e EN,
 conflito, registro escrito, desconhecidos com data, surpresa de diligência e forma da casa.
 
 `@offroad/case-materials` executa o controle sobre cada material compilado e anexa versão,
-fingerprint e findings. A execução está deliberadamente em shadow: o audit revelou dívida real de
-suporte campo a campo no term sheet e no Q&A e divergências bilíngues que precisam ser corrigidas no
-M7. Nenhuma regra LC será promovida para bloqueio de release antes de gold, adversarial, revisão
+fingerprint e findings. A primeira medição revelou que o contrato de material não distinguia fato,
+premissa e texto não material com precisão suficiente. A remediação M7 agora preserva essa taxonomia
+em parágrafos, key-values e callouts; cada termo indicativo declara os inputs governados que o
+produziram; perguntas de diligência em aberto não se passam por afirmações econômicas; e a fixture
+growth-capex governada termina com audit `pass` em todos os seis materiais. A execução continua em
+shadow. Esse `pass` mede o contrato atualmente coberto, não acredita a fonte nem encerra a cobertura
+de células tabulares. Nenhuma regra LC será promovida para bloqueio de release antes de gold, adversarial, revisão
 independente e, quando aplicável, revisão jurídica da versão exata.
 
 ## Fundações bulletproof, 24/08/2026

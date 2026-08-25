@@ -562,9 +562,13 @@ vazamento entre cases, conflito, destinatário não autorizado e divergência bi
 cobriam toda a linguagem proibida, todas as divulgações nem as comunicações de mercado. Em
 25/08/2026, `LC-01` a `LC-13` foram compilados como candidates individuais e o motor
 `conduct_policy` passou a produzir findings determinísticos. `case-materials` anexa o audit em
-shadow a cada artefato. O resultado mediu lacunas reais de suporte em campos do term sheet e Q&A e
-drift econômico PT/EN. O módulo continua candidate até esses débitos do M7 serem corrigidos e cada
-regra receber gold, adversarial e revisão independente da versão exata.
+shadow a cada artefato. A primeira medição encontrou lacunas reais e também uma falha de taxonomia:
+perguntas abertas e texto normativo eram tratados como fatos do case. A remediação M7 passou a
+transportar materialidade, classe do claim e suporte campo a campo, adicionou lineage declarado a
+cada termo e eliminou drift numérico da fixture growth-capex sem reduzir a sensibilidade do controle.
+Os seis materiais dessa fixture terminam em `pass` no contrato coberto. Isso ainda não acredita a
+fonte dos IDs nem cobre células de tabelas legadas. O módulo continua candidate até cada regra
+receber gold, adversarial, revisão independente e eventual revisão jurídica da versão exata.
 
 ## 15. Ondas de execução
 

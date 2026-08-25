@@ -123,6 +123,7 @@ const DEFAULT_ACRONYMS = new Set([
   "BRL", "USD", "EUR", "CDI", "IPCA", "CNPJ", "CPF", "EBITDA", "CFADS", "DSCR",
   "LTV", "FIDC", "CRI", "CRA", "CCB", "NCE", "ERP", "IFRS", "CPC", "DCM", "NDA",
   "M&A", "S.A.", "LTDA", "PT", "EN", "Q&A",
+  "CSLL", "ITR", "CFO", "DSO", "DIO", "DPO",
 ]);
 
 export function auditConduct(input: ConductAuditInput): ConductAudit {
@@ -235,6 +236,7 @@ function auditAcronyms(input: ConductAuditInput, findings: ConductFinding[]) {
 
 function economicTokens(text: string): string[] {
   const normalized = text
+    .replace(/\b(?:dois\s+terços|two[-\s]thirds)\b/giu, " 2/3 ")
     .replace(/R\$/gu, " BRL ")
     .replace(/US\$/gu, " USD ")
     .replace(/\s+/gu, " ");

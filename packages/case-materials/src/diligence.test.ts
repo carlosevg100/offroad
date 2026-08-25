@@ -75,5 +75,11 @@ describe("the diligence Q&A", () => {
     expect(material.kind).toBe("diligence_qa");
     expect(material.blocks.filter((block) => block.type === "kv")).toHaveLength(7);
     expect(material.blocks[0]!.type === "paragraph" && material.blocks[0]!.text.pt).toContain("35 perguntas");
+    const rows = material.blocks.filter((block) => block.type === "kv").flatMap((block) => block.type === "kv" ? block.rows : []);
+    const openRow = rows.find((row) => row.value.pt.startsWith("Em aberto:"));
+    const answeredRow = rows.find((row) => row.value.pt.includes("Banco Itaú"));
+    expect(openRow?.material).toBe(false);
+    expect(answeredRow).toMatchObject({material: true, claimKind: "fact"});
+    expect(answeredRow?.supportIds?.length).toBeGreaterThan(0);
   });
 });

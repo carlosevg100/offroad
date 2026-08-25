@@ -12,7 +12,7 @@ import {diligenceQa} from "./diligence";
 import {creditMemo, termSheetDocument} from "./institutional";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
-import type {ConductAudit} from "@offroad/credit-playbook";
+import type {ConductAudit, ConductClaimKind} from "@offroad/credit-playbook";
 
 import {auditCompiledMaterial} from "./conduct";
 
@@ -39,17 +39,26 @@ import {auditCompiledMaterial} from "./conduct";
 
 export type MaterialKind = "teaser" | "credit_profile" | "package" | "credit_memo" | "term_sheet" | "diligence_qa" | "data_room_index";
 
+type MaterialClaimMetadata = {
+  claimId?: string;
+  material?: boolean;
+  claimKind?: ConductClaimKind;
+  supportIds?: string[];
+  qualifierBasis?: string[];
+  approvedFingerprint?: string;
+};
+
 export type MaterialBlock =
   | {type: "heading"; text: {pt: string; en: string}}
-  | {type: "paragraph"; text: {pt: string; en: string}; claimId?: string; supportIds?: string[]}
+  | ({type: "paragraph"; text: {pt: string; en: string}} & MaterialClaimMetadata)
   | {type: "metrics"; items: Array<{label: {pt: string; en: string}; value: string; formatted: {pt: string; en: string}; supportIds: string[]}>}
   | {type: "table"; caption: {pt: string; en: string}; head: Array<{pt: string; en: string}>; rows: string[][]}
   | {type: "list"; items: Array<{pt: string; en: string}>}
   | {type: "disclaimer"; text: {pt: string; en: string}}
   /** Two-column terms a lawyer can mark up: label, value, and the basis beside it. */
-  | {type: "kv"; caption?: {pt: string; en: string}; rows: Array<{label: {pt: string; en: string}; value: {pt: string; en: string}; note?: {pt: string; en: string}; supportIds?: string[]}>}
+  | {type: "kv"; caption?: {pt: string; en: string}; rows: Array<({label: {pt: string; en: string}; value: {pt: string; en: string}; note?: {pt: string; en: string}} & MaterialClaimMetadata)>}
   /** A boxed card of labelled values: key terms at the top, basis of preparation at the end. */
-  | {type: "callout"; title: {pt: string; en: string}; items: Array<{label: {pt: string; en: string}; value: {pt: string; en: string}}>};
+  | {type: "callout"; title: {pt: string; en: string}; items: Array<({label: {pt: string; en: string}; value: {pt: string; en: string}} & MaterialClaimMetadata)>};
 
 export type Material = {
   kind: MaterialKind;
@@ -198,7 +207,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
 
   const metrics = metricsFrom(input.calculations, currency);
   const history = historyTable(input.facts, currency);
-  const summary: MaterialBlock = {type: "paragraph", text: {pt: input.brief.executiveSummary, en: input.brief.executiveSummary}};
+  const summary: MaterialBlock = {type: "paragraph", text: {pt: input.brief.executiveSummary, en: input.brief.executiveSummary}, material: false};
 
   const teaser: Material = {
     kind: "teaser",
@@ -229,6 +238,8 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
         type: "paragraph",
         text: {pt: claim.text, en: claim.text},
         claimId: claim.id,
+        material: claim.material,
+        claimKind: claim.kind === "public_source" ? "fact" : claim.kind,
         ...(claim.supportIds.length > 0 ? {supportIds: claim.supportIds} : {}),
       });
     }

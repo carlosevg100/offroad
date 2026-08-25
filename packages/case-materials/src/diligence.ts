@@ -251,7 +251,16 @@ export function diligenceQa(context: DiligenceContext, companyName?: string): Ma
       const rows = answers.filter((entry) => entry.section.pt === section);
       return [
         {type: "heading", text: rows[0]!.section},
-        {type: "kv", rows: rows.map((entry) => ({label: entry.question, value: entry.answer ?? bi("Em aberto: pedido à companhia.", "Open: requested from the company."), ...(entry.supportIds.length ? {supportIds: entry.supportIds} : {})}))},
+        {
+          type: "kv",
+          rows: rows.map((entry) => ({
+            label: entry.question,
+            value: entry.answer ?? bi("Em aberto: pedido à companhia.", "Open: requested from the company."),
+            material: entry.answer !== null,
+            ...(entry.answer !== null ? {claimKind: "fact" as const} : {}),
+            ...(entry.supportIds.length ? {supportIds: entry.supportIds} : {}),
+          })),
+        },
       ];
     }),
   ];

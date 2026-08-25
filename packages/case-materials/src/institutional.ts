@@ -163,8 +163,13 @@ function keyTerms(input: InstitutionalInput): MaterialBlock {
     type: "callout",
     title: bi("Termos-chave", "Key terms"),
     items: [
-      {label: bi("Tomadora", "Borrower"), value: bi(input.companyName ?? "Companhia (identidade sob autorização)", input.companyName ?? "Company (identity under authorisation)")},
-      ...(amount ? [{label: amount.labels, value: amount.value}] : []),
+      {
+        label: bi("Tomadora", "Borrower"),
+        value: bi(input.companyName ?? "Companhia (identidade sob autorização)", input.companyName ?? "Company (identity under authorisation)"),
+        material: Boolean(input.companyName),
+        supportIds: input.companyName ? ["company.legal_name"] : [],
+      },
+      ...(amount ? [{label: amount.labels, value: amount.value, material: true, claimKind: "premise" as const, supportIds: amount.supportIds}] : []),
       ...(lm
         ? [{
             label: bi("Destinação", "Use of proceeds"),
@@ -172,23 +177,32 @@ function keyTerms(input: InstitutionalInput): MaterialBlock {
               `${money(lm.covenantedBalance, "pt-BR")} quitação de linhas com covenant · ${money(lm.netNewMoney, "pt-BR")} recursos novos`,
               `${money(lm.covenantedBalance, "en-US")} covenanted-line takeout · ${money(lm.netNewMoney, "en-US")} new money`,
             ),
+            material: true,
+            claimKind: "calculation" as const,
+            supportIds: ["trajetoria.linhas_com_covenant", "trajetoria.dinheiro_novo_liquido"],
           }]
         : []),
-      ...(tenor ? [{label: tenor.labels, value: tenor.value}] : []),
-      ...(grace ? [{label: grace.labels, value: grace.value}] : []),
-      ...(pricing ? [{label: pricing.labels, value: pricing.value}] : []),
-      ...(input.rating ? [{label: bi("Perfil analítico indicativo", "Indicative analytical profile"), value: bi(`${input.rating.grade} de 10 (${({strong: "forte", adequate: "adequado", watch: "atenção", weak: "fraco", distressed: "crítico"})[input.rating.band]})`, `${input.rating.grade} of 10 (${input.rating.band})`)}] : []),
+      ...(tenor ? [{label: tenor.labels, value: tenor.value, material: true, claimKind: "premise" as const, supportIds: tenor.supportIds}] : []),
+      ...(grace ? [{label: grace.labels, value: grace.value, material: true, claimKind: "premise" as const, supportIds: grace.supportIds}] : []),
+      ...(pricing ? [{label: pricing.labels, value: pricing.value, material: true, claimKind: "premise" as const, supportIds: pricing.supportIds}] : []),
+      ...(input.rating ? [{label: bi("Perfil analítico indicativo", "Indicative analytical profile"), value: bi(`${input.rating.grade} de 10 (${({strong: "forte", adequate: "adequado", watch: "atenção", weak: "fraco", distressed: "crítico"})[input.rating.band]})`, `${input.rating.grade} of 10 (${input.rating.band})`), material: true, claimKind: "calculation" as const, supportIds: ["analysis.internal_rating"]}] : []),
       {
         label: bi("Alavancagem pré / pós", "Leverage pre / post"),
         value: bi(
           `${turns(desk.leverage.preTurns, "pt-BR")} / ${lm ? turns(lm.postLeverageAfterRefi, "pt-BR") : "n/d"}`,
           `${turns(desk.leverage.preTurns, "en-US")} / ${lm ? turns(lm.postLeverageAfterRefi, "en-US") : "n/a"}`,
         ),
+        material: true,
+        claimKind: "calculation" as const,
+        supportIds: ["desk.alavancagem_pre", ...(lm ? ["trajetoria.alavancagem_pos_refi"] : [])],
       },
       ...(firstStep
         ? [{
             label: bi("Covenant proposto (1º teste)", "Proposed covenant (first test)"),
             value: bi(`Dív. líq./EBITDA ≤ ${turns(firstStep.maximum, "pt-BR")} em ${firstStep.year}`, `Net debt/EBITDA ≤ ${turns(firstStep.maximum, "en-US")} in ${firstStep.year}`),
+            material: true,
+            claimKind: "premise" as const,
+            supportIds: [`trajetoria.${firstStep.year}.alavancagem_cortada`],
           }]
         : []),
     ],
@@ -202,16 +216,16 @@ function basisOfPreparation(input: InstitutionalInput): MaterialBlock {
     type: "callout",
     title: bi("Base de preparação", "Basis of preparation"),
     items: [
-      {label: bi("Data de referência", "Reference date"), value: bi(desk.assumptions.referenceDate, desk.assumptions.referenceDate)},
-      {label: bi("CDI assumido", "CDI assumed"), value: bi(`${pct(desk.assumptions.cdi, "pt-BR")} a.a.`, `${pct(desk.assumptions.cdi, "en-US")} p.a.`)},
+      {label: bi("Data de referência", "Reference date"), value: bi(desk.assumptions.referenceDate, desk.assumptions.referenceDate), material: true, claimKind: "premise", supportIds: ["desk.assumptions.reference_date"]},
+      {label: bi("CDI assumido", "CDI assumed"), value: bi(`${pct(desk.assumptions.cdi, "pt-BR")} a.a.`, `${pct(desk.assumptions.cdi, "en-US")} p.a.`), material: true, claimKind: "premise", supportIds: ["desk.assumptions.cdi"]},
       ...(trajectory
         ? [
-            {label: bi("Cenário cortado", "Cut scenario"), value: bi(`${pct(trajectory.assumptions.growthHaircut, "pt-BR")} do crescimento projetado removido; base auditada preservada`, `${pct(trajectory.assumptions.growthHaircut, "en-US")} of projected growth removed; audited base preserved`)},
-            {label: bi("Caixa", "Cash"), value: bi(`mantido constante em ${money(trajectory.assumptions.cashHeldFlat, "pt-BR")}`, `held flat at ${money(trajectory.assumptions.cashHeldFlat, "en-US")}`)},
-            {label: bi("Folga do covenant", "Covenant cushion"), value: bi(`${turns(trajectory.assumptions.covenantCushion, "pt-BR")} sobre o cenário cortado, piso de 2,50x`, `${turns(trajectory.assumptions.covenantCushion, "en-US")} over the cut scenario, 2.50x floor`)},
+            {label: bi("Cenário cortado", "Cut scenario"), value: bi(`${pct(trajectory.assumptions.growthHaircut, "pt-BR")} do crescimento projetado removido; base auditada preservada`, `${pct(trajectory.assumptions.growthHaircut, "en-US")} of projected growth removed; audited base preserved`), material: true, claimKind: "premise" as const, supportIds: ["trajetoria.assumptions.growth_haircut"]},
+            {label: bi("Caixa", "Cash"), value: bi(`mantido constante em ${money(trajectory.assumptions.cashHeldFlat, "pt-BR")}`, `held flat at ${money(trajectory.assumptions.cashHeldFlat, "en-US")}`), material: true, claimKind: "premise" as const, supportIds: ["trajetoria.assumptions.cash_held_flat"]},
+            {label: bi("Folga do covenant", "Covenant cushion"), value: bi(`${turns(trajectory.assumptions.covenantCushion, "pt-BR")} sobre o cenário cortado, piso de 2,50x`, `${turns(trajectory.assumptions.covenantCushion, "en-US")} over the cut scenario, 2.50x floor`), material: true, claimKind: "premise" as const, supportIds: ["trajetoria.assumptions.covenant_cushion"]},
           ]
         : []),
-      {label: bi("Rastreabilidade", "Traceability"), value: bi("Todo número cita o documento, a página e a célula de origem; ver Fontes.", "Every number cites the source document, page and cell; see Sources.")},
+      {label: bi("Rastreabilidade", "Traceability"), value: bi("Todo número cita o documento, a página e a célula de origem; ver Fontes.", "Every number cites the source document, page and cell; see Sources."), material: false},
     ],
   };
 }
@@ -223,6 +237,8 @@ const briefSection = (brief: CaseBrief, id: string): MaterialBlock[] => {
     type: "paragraph" as const,
     text: bi(claim.text, claim.text),
     claimId: claim.id,
+    material: claim.material,
+    claimKind: claim.kind === "public_source" ? "fact" : claim.kind,
     ...(claim.supportIds.length > 0 ? {supportIds: claim.supportIds} : {}),
   }));
 };
@@ -322,7 +338,9 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
           `${term.rationale.en} The company asked for ${term.divergence.requested.en}; ${term.divergence.reason.en}`,
         )
       : term.rationale,
-    supportIds: [] as string[],
+    supportIds: term.supportIds,
+    claimKind: "premise" as const,
+    material: true,
   }));
 
   const covenantText = trajectory
@@ -342,8 +360,8 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
     {
       type: "kv",
       rows: [
-        {label: bi("Tomadora", "Borrower"), value: bi(companyName ?? "Companhia (identidade divulgada mediante autorização)", companyName ?? "Company (identity disclosed upon authorisation)")},
-        {label: bi("Investidores", "Investors"), value: bi("Fundos de crédito privado e investidores qualificados selecionados pela assessora.", "Private credit funds and qualified investors selected by the adviser.")},
+        {label: bi("Tomadora", "Borrower"), value: bi(companyName ?? "Companhia (identidade divulgada mediante autorização)", companyName ?? "Company (identity disclosed upon authorisation)"), material: Boolean(companyName), supportIds: companyName ? ["company.legal_name"] : []},
+        {label: bi("Investidores", "Investors"), value: bi("Fundos de crédito privado e investidores qualificados selecionados pela assessora.", "Private credit funds and qualified investors selected by the adviser."), material: false},
       ],
     },
     {type: "heading", text: bi("Termos econômicos", "Economic terms")},
@@ -386,6 +404,9 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
         label: covenant.labels,
         value: covenant.definition,
         note: bi(`Aferição: ${covenant.test.pt} Descumprimento: ${covenant.breach.pt}${covenant.carveOuts.length ? ` Exceções: ${covenant.carveOuts.map((entry) => entry.pt).join(" ")}` : ""}`, `Test: ${covenant.test.en} Breach: ${covenant.breach.en}${covenant.carveOuts.length ? ` Carve-outs: ${covenant.carveOuts.map((entry) => entry.en).join(" ")}` : ""}`),
+        material: true,
+        claimKind: "premise" as const,
+        supportIds: [`playbook.covenant.${termSheet.archetypeId}.${covenant.id}`],
       })),
     },
     {type: "heading", text: bi("Condições precedentes", "Conditions precedent")},

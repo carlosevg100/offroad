@@ -17,10 +17,13 @@ promises, advisory disclaimer, bilingual economic identity, cross-case confident
 written records, qualified unknowns, diligence surprises and house form.
 
 `@offroad/case-materials` runs the policy on every compiled artifact and carries its version,
-fingerprint and findings. Enforcement is intentionally shadow. The first measurement exposed
-unsupported term-sheet and Q&A fields and bilingual economic drift. Those are M7 remediation work,
-not reasons to waive LC. No LC control is production until its exact fingerprint passes gold,
-adversarial, independent review and any required legal review.
+fingerprint and findings. Enforcement is intentionally shadow. The first measurement exposed both
+real lineage gaps and an over-broad material taxonomy. M7 remediation now carries materiality,
+claim class and support through paragraphs, key-values and callouts; every indicative term declares
+its governed inputs; open diligence questions remain explicitly non-material; and all six materials
+in the governed growth-capex fixture finish with a passing conduct audit for the covered contract.
+This pass is not source accreditation and legacy table cells still need explicit coverage. No LC control is production
+until its exact fingerprint passes gold, adversarial, independent review and any required legal review.
 
 ### Engineering update: bulletproof foundations, 24 August 2026
 
@@ -1471,6 +1474,7 @@ Leituras obrigatórias antes de aprofundar qualquer módulo:
 4. o source catalogue e o reference-data registry;
 5. o promotion gate e os casos de acreditação.
 
-Próxima ordem: M10, M0, M2, M3, M4, M5, M7, M9, lentes M1 necessárias, M6 e M8. A prioridade
-operacional imediata é fechar M2 e M3 no código, porque sem spreading, conciliação, debt ledger e
-pontes completas não existe estrutura ou material institucional confiável.
+Ordem vigente após o primeiro incremento de M10 e sua remediação M7: M0, M2, M3, M4, M5, M7, M9,
+lentes M1 necessárias, M6 e M8. A prioridade operacional imediata é fechar M0 e então M2 e M3 no
+código, porque sem intake adaptativo, spreading, conciliação, debt ledger e pontes completas não
+existe estrutura ou material institucional confiável.

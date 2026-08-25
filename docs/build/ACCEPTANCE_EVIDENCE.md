@@ -7,7 +7,7 @@
 | Treze procedimentos de conduta | `procedure-contract.test.ts` | `LC-01` a `LC-13` compilam como candidates individualmente promovíveis, em pipeline determinístico, sem peer handoff e com zero chamadas de modelo |
 | Motor determinístico de conduta | `conduct-policy.test.ts` | claim sem suporte, promessa de funding, julgamento sem aprovação exata, drift PT/EN, cross-case, destinatário, conflito, disclaimer, compromisso sem registro, data relativa, surpresa sem causa e travessão possuem reason codes estáveis |
 | Shadow nos materiais | `case-materials/src/conduct.test.ts` e `institutional.test.ts` | cada artefato recebe versão, fingerprint e findings; promessa explícita é detectada sem reescrita silenciosa; enforcement permanece shadow até acreditação individual |
-| Dívida medida | audit shadow dos materiais existentes | term sheet e Q&A ainda possuem campos sem suporte de origem e pares econômicos PT/EN divergentes; correção pertence ao M7 antes da promoção de LC |
+| Dívida medida e corrigida no contrato coberto | `institutional.test.ts`, `diligence.test.ts` e `deal-structure/index.test.ts` | fixture growth-capex fecha os seis materiais com audit `pass`; cada termo declara suporte governado; perguntas abertas são não materiais; fração escrita em PT e EN mantém identidade econômica; source accreditation e células tabulares continuam fora desta promoção |
 
 ## Retrieval governado, 24/08/2026
 

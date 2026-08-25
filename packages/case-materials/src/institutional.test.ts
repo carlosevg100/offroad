@@ -128,14 +128,12 @@ describe("compileMaterials", () => {
     }
   });
 
-  it("records the current M7 debt in shadow instead of presenting it as accredited", () => {
+  it("clears the M10 shadow controls for the governed growth-capex fixture", () => {
     const outcome = compileMaterials({brief, facts: [], calculations: [], exceptions: [], readiness, desk, trajectory, termSheet});
     if (!outcome.ok) throw new Error(`expected materials: ${JSON.stringify(outcome)}`);
     const findings = outcome.materials.flatMap((material) => material.conductAudit?.findings ?? []);
-    expect(findings).toEqual(expect.arrayContaining([
-      expect.objectContaining({ruleId: "LC-01", code: "material_claim_without_support"}),
-      expect.objectContaining({ruleId: "LC-07", code: "bilingual_economic_divergence"}),
-    ]));
+    expect(findings).toEqual([]);
+    expect(outcome.materials.every((material) => material.conductAudit?.status === "pass")).toBe(true);
   });
 });
 
