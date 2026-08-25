@@ -11,12 +11,13 @@ import type {Material, MaterialBlock} from "./compile";
 import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
 
 /**
- * The two documents a DCM house actually circulates: the investment memorandum and the term sheet.
+ * The two documents a DCM adviser prepares for a transaction: the credit memorandum and the
+ * indicative term sheet.
  *
  * The package that existed before was a credit profile with a term table appended. A desk
  * circulates something more specific. The memorandum opens with the key terms on one card, so
  * a portfolio manager knows in ten seconds what is being asked and on what basis, and then
- * builds the case in the order a committee reads it: the transaction, the company, the numbers,
+ * builds the case in the order a professional investor assesses it: the transaction, the company, the numbers,
  * the structure, the trajectory, the risks with their treatment, and the basis of preparation
  * stated in full. The term sheet is a two-column document that a lawyer can mark up: every
  * term with its value, its basis and, where the company asked for something the analysis does
@@ -53,7 +54,7 @@ export type InstitutionalInput = {
 };
 
 /**
- * The verdict, first, in the words a committee reads before anything else.
+ * Structure supportability first, before the analysis behind it.
  *
  * A memorandum that opens with the company and reaches the judgement on page nine is a
  * document written for its author. The reader wants to know whether the deal stands, what has
@@ -99,12 +100,12 @@ export function verdictSection(verdict: OperationVerdict): MaterialBlock[] {
 const termValue = (termSheet: IndicativeTermSheet | undefined, id: string) =>
   termSheet?.terms.find((term) => term.id === id);
 
-/** Rating factor by factor, the stress table, and the papers and security the profile admits. */
-export function committeeSection(input: InstitutionalInput): MaterialBlock[] {
+/** Analytical factors, stress, eligible instruments and the proposed security package. */
+export function creditConsiderationsSection(input: InstitutionalInput): MaterialBlock[] {
   const blocks: MaterialBlock[] = [];
   if (input.rating) {
     const r = input.rating;
-    blocks.push({type: "heading", text: bi("Rating interno", "Internal rating")});
+    blocks.push({type: "heading", text: bi("Perfil analítico indicativo", "Indicative analytical profile")});
     blocks.push({type: "paragraph", text: r.summary});
     blocks.push({type: "kv", caption: bi("Fatores", "Factors"), rows: r.factors.map((factor) => ({label: factor.labels, value: bi(factor.points === null ? "não avaliado" : `${factor.points} de 4 (peso ${factor.weight})`, factor.points === null ? "not assessed" : `${factor.points} of 4 (weight ${factor.weight})`), note: factor.rationale}))});
   }
@@ -126,7 +127,7 @@ export function committeeSection(input: InstitutionalInput): MaterialBlock[] {
   }
   if (input.price) {
     const p = input.price;
-    blocks.push({type: "heading", text: bi("Preço indicativo (documento interno)", "Indicative price (internal document)")});
+    blocks.push({type: "heading", text: bi("Referência indicativa de preço", "Indicative pricing reference")});
     blocks.push({type: "kv", rows: [
       {label: bi("Faixa", "Range"), value: bi(`CDI + ${(p.bps.min / 100).toFixed(2).replace(".", ",")}% a CDI + ${(p.bps.max / 100).toFixed(2).replace(".", ",")}% a.a.`, `CDI + ${(p.bps.min / 100).toFixed(2)}% to CDI + ${(p.bps.max / 100).toFixed(2)}% p.a.`), note: bi(`Base: banda ${p.rating} para ${p.instrument}, ${p.base.bps.min} a ${p.base.bps.max} bps.`, `Base: ${p.rating} band for ${p.instrument}, ${p.base.bps.min} to ${p.base.bps.max} bps.`)},
       ...p.adjustments.map((adjustment) => ({label: bi(`Ajuste: ${adjustment.id}`, `Adjustment: ${adjustment.id}`), value: bi(`${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`, `${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`), note: adjustment.rationale})),
@@ -176,7 +177,7 @@ function keyTerms(input: InstitutionalInput): MaterialBlock {
       ...(tenor ? [{label: tenor.labels, value: tenor.value}] : []),
       ...(grace ? [{label: grace.labels, value: grace.value}] : []),
       ...(pricing ? [{label: pricing.labels, value: pricing.value}] : []),
-      ...(input.rating ? [{label: bi("Rating interno", "Internal rating"), value: bi(`${input.rating.grade} de 10 (${({strong: "forte", adequate: "adequado", watch: "atenção", weak: "fraco", distressed: "crítico"})[input.rating.band]})`, `${input.rating.grade} of 10 (${input.rating.band})`)}] : []),
+      ...(input.rating ? [{label: bi("Perfil analítico indicativo", "Indicative analytical profile"), value: bi(`${input.rating.grade} de 10 (${({strong: "forte", adequate: "adequado", watch: "atenção", weak: "fraco", distressed: "crítico"})[input.rating.band]})`, `${input.rating.grade} of 10 (${input.rating.band})`)}] : []),
       {
         label: bi("Alavancagem pré / pós", "Leverage pre / post"),
         value: bi(
@@ -227,9 +228,9 @@ const briefSection = (brief: CaseBrief, id: string): MaterialBlock[] => {
 };
 
 /**
- * The investment memorandum, in the order a committee reads it.
+ * The lender-facing credit memorandum, compiled from the governed case record.
  */
-export function investmentMemo(input: InstitutionalInput): Material {
+export function creditMemo(input: InstitutionalInput): Material {
   const {brief, desk, trajectory, exceptions, companyName} = input;
   const su = trajectory ? sourcesAndUses(desk, trajectory) : null;
 
@@ -244,7 +245,7 @@ export function investmentMemo(input: InstitutionalInput): Material {
 
   const blocks: MaterialBlock[] = [
     keyTerms(input),
-    ...(input.verdict ? [{type: "heading" as const, text: n("Parecer sobre a operação", "Verdict on the operation")}, ...verdictSection(input.verdict)] : []),
+    ...(input.verdict ? [{type: "heading" as const, text: n("Suportabilidade e alternativas", "Supportability and alternatives")}, ...verdictSection(input.verdict)] : []),
     {type: "heading", text: n("Sumário executivo", "Executive summary")},
     {type: "paragraph", text: bi(brief.executiveSummary, brief.executiveSummary)},
 
@@ -286,8 +287,8 @@ export function investmentMemo(input: InstitutionalInput): Material {
         ]
       : []),
 
-    ...(committeeSection(input).length > 0
-      ? [{type: "heading" as const, text: n("Comitê: rating, sensibilidade, instrumentos e garantias", "Committee: rating, sensitivity, instruments and security")}, ...committeeSection(input)]
+    ...(creditConsiderationsSection(input).length > 0
+      ? [{type: "heading" as const, text: n("Principais considerações de crédito", "Key credit considerations")}, ...creditConsiderationsSection(input)]
       : []),
 
     {type: "heading", text: bi("Base de preparação", "Basis of preparation")},
@@ -295,9 +296,9 @@ export function investmentMemo(input: InstitutionalInput): Material {
   ];
 
   return {
-    kind: "investment_memo",
+    kind: "credit_memo",
     // The company is the rendered subtitle; putting it in the title too prints it twice.
-    title: bi("Investment Memorandum", "Investment Memorandum"),
+    title: bi("Memorando de Crédito", "Credit Memorandum"),
     blocks,
     dependsOn: [...input.calculations.map((calculation) => calculation.id), ...input.facts.map((fact) => fact.key.fieldPath)],
   };

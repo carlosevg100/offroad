@@ -34,7 +34,7 @@ export const outputArtifactManifestSchema = z.object({
   artifactId: z.string().min(1),
   kind: z.enum([
     "case_state",
-    "credit_opinion",
+    "structure_supportability",
     "teaser",
     "credit_memo",
     "term_sheet",

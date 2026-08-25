@@ -4,7 +4,7 @@ import {getTranslations} from "next-intl/server";
 import type {IntakeChecklist as Checklist} from "@/lib/intake/checklist";
 import type {IntakeDocumentSummary} from "@/lib/intake/types";
 
-export type DeliveryMapChecklist = Pick<Checklist, "byStage" | "unmatched">;
+export type DeliveryMapChecklist = Pick<Checklist, "activeBatch" | "resolved" | "unmatched">;
 
 type Props = {
   locale: string;
@@ -28,7 +28,7 @@ export async function IntakeDeliveryMap({locale, documents, checklist, sessionSt
   const t = await getTranslations({locale, namespace: "Intake.deliveryMap"});
   if (!checklist) return null;
 
-  const now = checklist.byStage.now.filter((item) => item.source === "document");
+  const now = [...checklist.resolved, ...checklist.activeBatch].filter((item) => item.source === "document");
   const delivered = now.filter((item) => item.satisfied);
   const unmatched = new Map(checklist.unmatched.map((entry) => [entry.name, entry.kind]));
   const processing = sessionStatus === "processing";

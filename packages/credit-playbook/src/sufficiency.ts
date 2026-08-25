@@ -92,10 +92,11 @@ const levelOrder: Record<RequirementLevel, number> = {minimum: 0, ideal: 1};
  * When an item is needed, defaulting from how much it matters.
  *
  * The two axes usually agree — what the desk cannot open a case without is what it needs now —
- * so the default carries almost every item and only `closing` is ever set by hand.
+ * so the default carries most items. True diligence and closing items are set explicitly and
+ * remain outside the client's current request batch.
  */
 export const stageOf = (requirement: Requirement): RequirementStage =>
-  requirement.stage ?? (requirement.level === "minimum" ? "now" : "diligence");
+  requirement.stage ?? (requirement.level === "minimum" ? "now" : "structuring");
 
 /**
  * Answers the checklist from what was read.
@@ -169,6 +170,7 @@ export function assessSufficiency(
     requirements,
     byStage: {
       now: requirements.filter((status) => status.stage === "now"),
+      structuring: requirements.filter((status) => status.stage === "structuring"),
       diligence: requirements.filter((status) => status.stage === "diligence"),
       closing: requirements.filter((status) => status.stage === "closing"),
     },

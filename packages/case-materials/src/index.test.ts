@@ -134,8 +134,8 @@ describe("materials are compiled, and refused when they should be", () => {
     if (!outcome.ok) return;
     for (const material of outcome.materials) {
       const disclaimer = material.blocks.find((block) => block.type === "disclaimer");
-      expect(disclaimer && disclaimer.type === "disclaimer" && disclaimer.text.pt).toContain("Não constitui oferta");
-      expect(disclaimer && disclaimer.type === "disclaimer" && disclaimer.text.en).toContain("not an offer");
+      expect(disclaimer && disclaimer.type === "disclaimer" && disclaimer.text.pt).toContain("não constituem parecer de crédito vinculante");
+      expect(disclaimer && disclaimer.type === "disclaimer" && disclaimer.text.en).toContain("do not constitute a binding credit opinion");
     }
   });
 });

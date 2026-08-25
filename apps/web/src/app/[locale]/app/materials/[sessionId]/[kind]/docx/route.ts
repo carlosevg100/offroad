@@ -12,7 +12,7 @@ import {resolveCaseState} from "@/lib/intake/case-pipeline";
  * Authorisation is the workspace boundary: RLS scopes every read to the caller's organization.
  */
 
-const kinds: readonly MaterialKind[] = ["investment_memo", "term_sheet", "diligence_qa", "teaser", "credit_profile", "package", "data_room_index"];
+const kinds: readonly MaterialKind[] = ["credit_memo", "term_sheet", "diligence_qa", "teaser", "credit_profile", "package", "data_room_index"];
 
 type Params = {params: Promise<{locale: string; sessionId: string; kind: string}>};
 

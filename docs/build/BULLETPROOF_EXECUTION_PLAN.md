@@ -12,7 +12,7 @@ case chega a um provedor de capital sem passar por gates explícitos.
 
 - parsers, OCR, classificação, extração ancorada e worker;
 - conciliação determinística, cálculos e análise de crédito;
-- parecer da operação, estrutura indicativa e materiais;
+- análise de suportabilidade, alternativas, estrutura indicativa e materiais;
 - gateway multi-provedor com budget, cassettes e structured outputs;
 - harness de extração, replay e execução da mesa sobre gold facts;
 - testes de RLS e defesas de parser;
@@ -26,7 +26,7 @@ recebíveis.
 
 - [x] ADR da taxonomia v2.
 - [x] Taxonomia ortogonal publicada pela ontologia.
-- [x] Seis estados operacionais e regra de direcionamento externo.
+- [x] Seis estados operacionais e regra de introdução qualificada autorizada.
 - [x] Schema do manifesto unificado.
 - [x] Contrato de gold case com oito camadas.
 - [x] Adaptador do catálogo legado de instrumentos para a taxonomia v2.

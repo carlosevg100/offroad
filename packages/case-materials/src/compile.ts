@@ -9,7 +9,7 @@ import type {CollateralPackage} from "@offroad/deal-structure";
 import type {IndicativePrice} from "@offroad/market-reference";
 
 import {diligenceQa} from "./diligence";
-import {investmentMemo, termSheetDocument} from "./institutional";
+import {creditMemo, termSheetDocument} from "./institutional";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
@@ -34,7 +34,7 @@ import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@
  * same decimal strings, never translated or re-rounded per locale.
  */
 
-export type MaterialKind = "teaser" | "credit_profile" | "package" | "investment_memo" | "term_sheet" | "diligence_qa" | "data_room_index";
+export type MaterialKind = "teaser" | "credit_profile" | "package" | "credit_memo" | "term_sheet" | "diligence_qa" | "data_room_index";
 
 export type MaterialBlock =
   | {type: "heading"; text: {pt: string; en: string}}
@@ -149,8 +149,8 @@ function historyTable(facts: readonly ReconciledFact[], currency: string): Mater
 const DISCLAIMER: MaterialBlock = {
   type: "disclaimer",
   text: {
-    pt: "Material preparado pela Offroad Capital a partir de informações fornecidas pela companhia, conciliadas e rastreadas até o documento de origem. Não constitui oferta, recomendação de investimento, compromisso de crédito ou garantia de captação. A Offroad atua como assessora; a decisão é de cada investidor.",
-    en: "Material prepared by Offroad Capital from information provided by the company, reconciled and traced to its source document. It is not an offer, an investment recommendation, a credit commitment or a guarantee of funding. Offroad acts as adviser; the decision belongs to each investor.",
+    pt: "Material preparado pela Offroad Capital, na qualidade de assessora de DCM, a partir de informações fornecidas pela companhia, conciliadas e rastreadas até o documento de origem. As análises e estruturas são indicativas e não constituem parecer de crédito vinculante, oferta, recomendação de investimento, compromisso de crédito ou garantia de captação. Cada financiador realiza seu próprio underwriting, diligência, comitê, negociação de termos e documentação definitiva.",
+    en: "Material prepared by Offroad Capital, acting as DCM adviser, from information provided by the company, reconciled and traced to its source document. Analyses and structures are indicative and do not constitute a binding credit opinion, offer, investment recommendation, credit commitment or funding assurance. Each capital provider performs its own underwriting, diligence, committee review, term negotiation and definitive documentation.",
   },
 };
 
@@ -320,13 +320,18 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
       ...(input.price ? {price: input.price} : {}),
       ...(input.verdict ? {verdict: input.verdict} : {}),
     };
-    institutional.push(investmentMemo(shared));
+    institutional.push(creditMemo(shared));
     const sheet = termSheetDocument(shared);
     if (sheet) institutional.push(sheet);
     institutional.push(diligenceQa({facts: input.facts, calculations: input.calculations, desk: input.desk, trajectory: input.trajectory ?? null}, input.companyName));
   }
 
-  return {ok: true, materials: [...institutional, teaser, creditProfile, packageMaterial]};
+  const governedInstitutional = institutional.map((material) => ({
+    ...material,
+    blocks: [...material.blocks, DISCLAIMER],
+  }));
+
+  return {ok: true, materials: [...governedInstitutional, teaser, creditProfile, packageMaterial]};
 }
 
 /**

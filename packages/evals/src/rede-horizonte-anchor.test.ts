@@ -106,7 +106,7 @@ describe("Rede Horizonte full-case anchor", () => {
     expect(state.verdict?.conditions.map((condition) => condition.id)).toContain("collateral-capacity-shortfall");
     expect(state.outcome).toMatchObject({
       state: gold.outcome!.state,
-      externalDirectionAllowed: gold.outcome!.externalDirectionAllowed,
+      qualifiedIntroductionAllowed: gold.outcome!.qualifiedIntroductionAllowed,
     });
     expect(state.outcome.reasons).toEqual(expect.arrayContaining(gold.outcome!.reasonsInclude));
   });

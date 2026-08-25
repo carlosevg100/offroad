@@ -12,7 +12,7 @@ import {DocumentIntakeUploader} from "./document-intake-uploader";
 import {IntakeChecklist, IntakeOperation} from "./intake-checklist";
 import {IntakeDeliveryMap} from "./intake-delivery-map";
 import {IntakeDealBrief} from "./intake-deal-brief";
-import {IntakeGapPurposes, IntakeInformation} from "./intake-information";
+import {IntakeInformation} from "./intake-information";
 
 type Props = {
   locale: string;
@@ -135,13 +135,11 @@ export async function IntakeCollect({locale, session, documents, organizationId,
       {currentStage === "documents" && checklist && answerAction ? (
         <IntakeInformation
           action={answerAction}
-          items={checklist.items.filter((item) => item.source === "information")}
+          items={checklist.activeBatch.filter((item) => item.source === "information")}
           locale={locale}
           sessionId={session.id}
         />
       ) : null}
-
-      {currentStage === "documents" && checklist ? <IntakeGapPurposes locale={locale} missingByPurpose={checklist.missingByPurpose} /> : null}
 
       {currentStage === "documents" ? <div className="intake-collect__process">
         <div><ShieldCheck size={15} /><span>{t("collect.notice")}</span></div>

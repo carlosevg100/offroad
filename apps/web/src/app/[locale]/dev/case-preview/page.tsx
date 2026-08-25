@@ -67,19 +67,17 @@ export default async function CasePreviewPage({params, searchParams}: {params: P
     id, label, satisfied, satisfiedBy, level: "minimum" as const, source: "document" as const, stage: "now" as const,
     rationale: "", purposes: [], accepts: [], ...(response ? {response} : {}),
   });
-  const checklist: DeliveryMapChecklist = {
-    byStage: {
-      now: [
+  const previewItems = [
         item("financials_historical", "Demonstrações financeiras dos últimos exercícios", true, ["02_Demonstracoes_Auditadas_2023_2025.pdf"]),
         item("financials_interim", "Posição contábil recente", true, ["03_Balancete_Gerencial_Jul2026.xls"]),
         item("debt_schedule", "Mapa de dívida com cronograma e garantias", true, ["04_Mapa_Divida_Jul2026.xlsx"]),
         item("corporate_identity", "Documentos societários", false),
         item("project_plan", "Plano do projeto com premissas e orçamento", false, [], "partial"),
         item("tax_clearance", "Certidões negativas", true, [], "not_applicable"),
-      ],
-      diligence: [],
-      closing: [],
-    },
+  ];
+  const checklist: DeliveryMapChecklist = {
+    activeBatch: previewItems.filter((entry) => !entry.satisfied),
+    resolved: previewItems.filter((entry) => entry.satisfied),
     unmatched: [{name: "09_Fotos_do_Galpao.zip", kind: "outro"}],
   };
   const documents = [

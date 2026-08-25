@@ -58,7 +58,7 @@ describe("parametric cases on the governed rail", () => {
 
       const fits = new Map(result.state.matching.fits.map((fit) => [fit.fundId, fit.verdict]));
       for (const expected of generated.gold.expectedMatches) expect(fits.get(expected.capitalProviderId)).toBe(expected.expected);
-      expect(result.state.outcome.externalDirectionAllowed).toBe(false);
+      expect(result.state.outcome.qualifiedIntroductionAllowed).toBe(false);
     },
   );
 

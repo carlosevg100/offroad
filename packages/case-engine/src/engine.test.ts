@@ -98,7 +98,7 @@ describe("the governed case engine", () => {
     expect(result.state.materialsBlockedBy).toContain("brief_unavailable");
     expect(result.state.matching.screened).toBe(true);
     expect(result.state.matching.fits[0]).toMatchObject({fundId: "fund-1", verdict: "possible"});
-    expect(result.state.outcome.externalDirectionAllowed).toBe(false);
+    expect(result.state.outcome.qualifiedIntroductionAllowed).toBe(false);
     expect(result.report.stages.every((stage) => stage.outputFingerprint?.length === 64)).toBe(true);
   });
 
@@ -157,7 +157,7 @@ describe("the governed case engine", () => {
     expect(result.state.receivables?.decision.status).toBe("not_viable");
     expect(result.state.receivables?.metrics.portfolio.concentrationAdjustedEligibleBalance).toBe("0.00");
     expect(result.state.outcome.reasons).toContain("trigger_eligible_share");
-    expect(result.state.outcome.externalDirectionAllowed).toBe(false);
+    expect(result.state.outcome.qualifiedIntroductionAllowed).toBe(false);
 
     const clean = await executeCaseEngine({
       runId: "run-receivables-clean",
