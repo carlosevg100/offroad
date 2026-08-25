@@ -1,4 +1,4 @@
-export const caseFactoryVersion = "2026.08.24-v1";
+export const caseFactoryVersion = "2026.08.25-v2";
 
 export * from "./schema";
 export * from "./generate";

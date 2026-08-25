@@ -1,6 +1,13 @@
 import {describe, expect, it} from "vitest";
 import Decimal from "decimal.js";
-import {corporateGrowthScenario, dirtyWorkingCapitalScenario, generateCase, receivablesScenario} from "./index";
+import {
+  corporateGrowthAdversarialScenario,
+  corporateGrowthEligibilityNegativeScenario,
+  corporateGrowthScenario,
+  dirtyWorkingCapitalScenario,
+  generateCase,
+  receivablesScenario,
+} from "./index";
 
 describe("parametric case factory", () => {
   it("derives documents, evidence and gold from one declarative economic scenario", () => {
@@ -38,5 +45,25 @@ describe("parametric case factory", () => {
     expect(overdue.div(balance).toNumber()).toBe(0.07);
     expect(topDebtor.div(balance).toNumber()).toBe(0.12);
     expect(generated.documents.find((document) => document.name === "receivables-aging.csv")?.content).toContain("receivable_id");
+  });
+
+  it("keeps growth-capex adversarial truth in gold while exposing conflicts and unsafe text to the rail", () => {
+    const generated = generateCase(corporateGrowthAdversarialScenario);
+    expect(generated.gold.fields).toContainEqual(expect.objectContaining({fieldPath: "debt.total_gross", value: "45000000"}));
+    expect(generated.candidates.filter((candidate) => candidate.fieldPath === "debt.total_gross")).toHaveLength(2);
+    expect(generated.candidates.find((candidate) => candidate.fieldPath === "collateral.total_capacity")?.anchorVerified).toBe(false);
+    expect(generated.documents.find((document) => document.name === "capital-request.md")?.securityFixtures).toContain("prompt_injection");
+    expect(generated.gold.expectedExceptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({kind: "conflict", fieldPath: "debt.total_gross"}),
+      expect.objectContaining({kind: "evidence", fieldPath: "collateral.total_capacity"}),
+      expect.objectContaining({kind: "security"}),
+    ]));
+  });
+
+  it("closes the debenture path for a limitada without changing the capital need archetype", () => {
+    const generated = generateCase(corporateGrowthEligibilityNegativeScenario);
+    expect(generated.scenario.archetypeId).toBe("growth_expansion");
+    expect(generated.gold.expectedStructures).toContainEqual(expect.objectContaining({instrument: "debenture", classification: "ineligible"}));
+    expect(generated.gold.expectedStructures).toContainEqual(expect.objectContaining({instrument: "ccb", classification: "preferred"}));
   });
 });

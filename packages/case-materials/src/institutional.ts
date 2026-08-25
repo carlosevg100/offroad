@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import type {CaseBrief} from "@offroad/case-understanding";
-import {covenantsFor, type InstrumentVerdict} from "@offroad/credit-playbook";
+import {covenantsFor, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
 import type {DeskAnalysis, InternalRating, OperationVerdict, StressScenario, Trajectory} from "@offroad/credit-analysis";
 import type {CollateralPackage} from "@offroad/deal-structure";
 import type {IndicativePrice} from "@offroad/market-reference";
@@ -297,6 +297,7 @@ export function creditMemo(input: InstitutionalInput): Material {
 
   return {
     kind: "credit_memo",
+    template: materialTemplateReference("institutional-credit-memo"),
     // The company is the rendered subtitle; putting it in the title too prints it twice.
     title: bi("Memorando de Crédito", "Credit Memorandum"),
     blocks,
@@ -426,6 +427,7 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
 
   return {
     kind: "term_sheet",
+    template: materialTemplateReference("indicative-term-sheet"),
     title: bi("Term Sheet indicativo", "Indicative Term Sheet"),
     blocks,
     dependsOn: [...input.calculations.map((calculation) => calculation.id), ...input.facts.map((fact) => fact.key.fieldPath)],

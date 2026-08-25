@@ -257,6 +257,7 @@ export function generateCase(raw: FactoryScenario): GeneratedCase {
         sourceDocument: perturbation.sourceDocument, informationClass: perturbation.informationClass,
         evidenceRank: perturbation.evidenceRank, confidence: 0.96, anchorVerified: true,
         anchor: {document: perturbation.sourceDocument, generatedConflict: perturbation.fieldPath},
+        ...(perturbation.periodEnd ? {periodEnd: perturbation.periodEnd} : {}),
       });
     }
     if (perturbation.kind === "evidence") {

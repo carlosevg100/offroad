@@ -1,8 +1,13 @@
-# Offroad Capital: House Playbook de Originação e Assessoria DCM
+# Offroad Capital: Constituição Operacional de Originação e Assessoria DCM
 
-Versão: 2026.08.25-v3
+Versão: 2026.08.25-v4
 
-Status: contrato operacional do produto
+Status: camada 0, contrato constitucional do produto
+
+Esta Constituição estabelece mandato, princípios, fronteiras, linguagem e gates. Ela não é um
+manual de execução de tarefas. O conhecimento técnico executável vive em procedimentos canônicos
+versionados. Skills são projeções compiladas desses procedimentos e nunca uma segunda base de
+conhecimento.
 
 ## 1. Mandato da Offroad
 
@@ -332,3 +337,56 @@ Cada etapa precisa de:
 Nenhuma etapa pode promover o case silenciosamente. Erro, ausência, conflito e baixa confiança são
 estados diferentes e precisam permanecer diferentes.
 
+## 7. Arquitetura obrigatória de conhecimento e execução
+
+### 7.1 Uma fonte de verdade, duas formas
+
+O procedimento canônico é a única fonte editável de conhecimento operacional. Dele derivam:
+
+1. a forma humana, usada para revisão pelo desk;
+2. a forma executável, compilada para instruções estreitas, schema de saída, ferramentas, limites,
+   referências de template e testes.
+
+Toda skill declara `procedure_id`, `procedure_version`, `source_hash`, `compiler_version`, templates,
+schemas e dependências. Uma correção é feita no procedimento e recompilada. É proibido corrigir a
+skill compilada diretamente ou manter uma segunda instrução divergente em prompt, código ou RAG.
+
+Cálculos e validações implementados em código continuam versionados separadamente, mas o
+procedimento canônico declara seu significado financeiro, inputs, outputs, tolerâncias e testes.
+
+### 7.2 Papel não é agente autônomo
+
+Os papéis `intake_evidence`, `financial_analysis`, `credit_structuring`,
+`institutional_materials`, `market_distribution` e `independent_quality_control` organizam
+responsabilidades, procedimentos, permissões e prompts. Eles não são agentes que conversam,
+negociam contexto ou delegam tarefas entre si.
+
+É uma violação desta Constituição implementar o processo principal como uma sociedade de agentes
+autônomos. A sequência, o estado, os budgets, as permissões, os retries, os gates e a promoção do
+case pertencem ao pipeline determinístico. Uma chamada de modelo recebe tarefa estreita, evidência
+governada, ferramentas permitidas e schema fechado. Sua saída passa por validação antes de persistir.
+
+### 7.3 Templates fazem parte da vertical
+
+Teaser, memorando, term sheet, modelo financeiro e índice da sala de dados são contratos do produto,
+não acabamento editorial. A skill que produz um material referencia a versão exata do template e
+só pode ser promovida junto com ele. Alteração de seção, cláusula, cálculo ou regra editorial muda o
+manifesto e exige reavaliação dos casos dependentes.
+
+### 7.4 Maturidade progressiva
+
+Um procedimento nasce `draft` com seis componentes mínimos: objetivo e produto, procedimento,
+saída estruturada, ligação a evidência, testes, versão e responsável. Torna-se `candidate` quando
+possui pré-requisitos, decisões, red flags, condições de interrupção e integração vertical. Somente
+se torna `production` após aprovação, templates compatíveis, gold cases, variantes adversariais,
+schemas, rastreabilidade e quality gates aprovados.
+
+### 7.5 Proibições explícitas
+
+- não executar skill cuja hash não corresponda ao procedimento aprovado;
+- não usar playbook, precedente ou referência de mercado como evidência do case;
+- não permitir handoff livre entre modelos;
+- não deixar modelo escolher sozinho a próxima etapa ou promover o case;
+- não publicar material sem template, fingerprint, autorização e auditoria vigentes;
+- não migrar aprovação humana ou de QC para uma nova versão material;
+- não chamar procedimento `candidate` de capacidade de produção.

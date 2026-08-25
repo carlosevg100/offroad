@@ -18,6 +18,7 @@
   "dependencies": {
     "@offroad/case-materials": "workspace:*",
     "@offroad/case-understanding": "workspace:*",
+    "@offroad/credit-playbook": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/reconciliation": "workspace:*"
   },

@@ -1399,3 +1399,29 @@ The first two foundation increments are now represented in code:
 Do not reintroduce the former count-and-timestamp cache key. Do not expose `processing_jobs.result`
 or `last_error` to tenants. A partial `capture` value is a real limitation and must become a release
 blocker when the integrated runner and external-direction gate are implemented next.
+
+## 27. Constituição e procedimentos executáveis, 25/08/2026
+
+O antigo House Playbook era uma constituição, não um manual de tarefa. Ele foi renomeado para
+`docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md` e agora registra três regras inegociáveis:
+
+1. procedimento canônico é a única fonte; skill é compilação, nunca segunda base editável;
+2. papéis são namespaces, não agentes autônomos; o pipeline determinístico governa execução;
+3. templates são contratos da vertical e evoluem junto com as skills que os produzem.
+
+Implementação:
+
+- `packages/credit-playbook/src/procedure-contract.ts`: schemas de maturidade, compiler, hash,
+  dependências, output schema e guard contra peer handoff;
+- `packages/credit-playbook/src/procedures/growth-capex.ts`: 19 procedimentos candidate nas doze
+  etapas;
+- `packages/credit-playbook/src/material-templates.ts`: teaser, memo, term sheet e data room
+  candidate, seção/cláusula por seção/cláusula;
+- `packages/case-understanding/src/manifest.ts`: lineage inclui compiler, registry e templates;
+- `packages/case-factory`: caso clean, adversarial e negativo de elegibilidade para growth capex;
+- ADR 0013: decisão e fronteiras.
+
+Não declarar essa biblioteca production. O contrato e o rail estão implementados, mas cada
+procedimento e template precisa de revisão técnica conteúdo a conteúdo e promoção explícita. O
+próximo incremento correto é fortalecer os outputs específicos, gerar memo, teaser, term sheet e
+modelo gold completos e executar as variações clean, condicional e negativa antes da promoção.
