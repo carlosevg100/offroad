@@ -8,6 +8,7 @@ import {
   growthCapexProcedures,
   materialTemplateRegistryHash,
   materialTemplates,
+  referenceDataKeys,
 } from "./index";
 
 const draft = (objective = "Executar uma atividade verificável.") => canonicalProcedureSchema.parse({
@@ -52,6 +53,29 @@ describe("canonical procedure contract", () => {
     expect(changed.sourceHash).not.toBe(first.sourceHash);
   });
 
+  it("carries House Playbook lineage and versioned reference data into the compiled skill", () => {
+    const procedure = canonicalProcedureSchema.parse({
+      ...draft(),
+      knowledge: {
+        houseProcedureIds: ["D-27"],
+        authorities: ["CASA", "MERCADO"],
+        referenceDataKeys: ["stress.interest_rate.parallel_shock"],
+        legalReviewRequired: false,
+      },
+    });
+    const skill = compileProcedure(procedure);
+    expect(skill.knowledge).toEqual(procedure.knowledge);
+    expect(skill.instructions).toContain("D-27");
+    expect(skill.instructions).toContain("stress.interest_rate.parallel_shock");
+  });
+
+  it("does not label a procedure for legal review without LEI authority", () => {
+    expect(() => canonicalProcedureSchema.parse({
+      ...draft(),
+      knowledge: {houseProcedureIds: ["ES-13"], authorities: ["CASA"], referenceDataKeys: [], legalReviewRequired: true},
+    })).toThrow(/LEI authority/);
+  });
+
   it("hard-codes deterministic orchestration and forbids peer handoffs", () => {
     for (const skill of growthCapexProcedureRegistry.skills) {
       expect(skill.runtime.orchestration).toBe("deterministic_pipeline");
@@ -64,6 +88,7 @@ describe("canonical procedure contract", () => {
   it("refuses unknown dependencies, templates and dependency cycles", () => {
     expect(() => compileProcedureRegistry([{...draft(), dependencies: ["unknown-procedure"]}], [])).toThrow(/unknown procedure/);
     expect(() => compileProcedureRegistry([{...draft(), templates: ["unknown-template"]}], [])).toThrow(/unknown template/);
+    expect(() => compileProcedureRegistry([{...draft(), knowledge: {...draft().knowledge, referenceDataKeys: ["unknown.reference"]}}], [], referenceDataKeys)).toThrow(/unknown reference data/);
     const one = {...draft(), id: "cycle-one", dependencies: ["cycle-two"]};
     const two = {...draft(), id: "cycle-two", dependencies: ["cycle-one"]};
     expect(() => compileProcedureRegistry([one, two], [])).toThrow(/cycle/);
@@ -75,6 +100,9 @@ describe("growth capex vertical", () => {
     expect(new Set(growthCapexProcedures.map((procedure) => procedure.blueprintStage))).toEqual(new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]));
     expect(growthCapexProcedures.length).toBeGreaterThanOrEqual(18);
     expect(growthCapexProcedures.every((procedure) => procedure.maturity === "candidate")).toBe(true);
+    expect(growthCapexProcedures.every((procedure) => procedure.knowledge.houseProcedureIds.length > 0)).toBe(true);
+    expect(growthCapexProcedures.flatMap((procedure) => procedure.knowledge.referenceDataKeys)
+      .every((key) => referenceDataKeys.includes(key))).toBe(true);
   });
 
   it("binds every material procedure to a canonical template", () => {

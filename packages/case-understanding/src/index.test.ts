@@ -18,6 +18,8 @@ describe("the case artifact manifest", () => {
     playbook: "playbook-v2",
     procedureCompiler: "compiler-v1",
     procedureRegistry: "a".repeat(64),
+    housePlaybook: {version: "house-v1", sourceHash: "c".repeat(64)},
+    referenceDataRegistry: {version: "reference-v1", registryHash: "d".repeat(64)},
     materialTemplateRegistry: "b".repeat(64),
     marketData: {version: "market-v1", asOf: "2026-08-24T00:00:00.000Z"},
     caseUnderstanding: "case-v2",

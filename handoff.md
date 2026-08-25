@@ -1413,7 +1413,7 @@ Implementação:
 
 - `packages/credit-playbook/src/procedure-contract.ts`: schemas de maturidade, compiler, hash,
   dependências, output schema e guard contra peer handoff;
-- `packages/credit-playbook/src/procedures/growth-capex.ts`: 19 procedimentos candidate nas doze
+- `packages/credit-playbook/src/procedures/growth-capex.ts`: 20 procedimentos candidate nas doze
   etapas;
 - `packages/credit-playbook/src/material-templates.ts`: teaser, memo, term sheet e data room
   candidate, seção/cláusula por seção/cláusula;
@@ -1425,3 +1425,38 @@ Não declarar essa biblioteca production. O contrato e o rail estão implementad
 procedimento e template precisa de revisão técnica conteúdo a conteúdo e promoção explícita. O
 próximo incremento correto é fortalecer os outputs específicos, gerar memo, teaser, term sheet e
 modelo gold completos e executar as variações clean, condicional e negativa antes da promoção.
+
+## 28. House Playbook completo e execução modular, 25/08/2026
+
+O v1 permanece como snapshot histórico. A fonte editorial canônica é
+`packages/credit-playbook/knowledge/HOUSE-PLAYBOOK-COMPLETO-v2.md`, corrigida como v2.1
+governado: 11 módulos, 270 entradas, autoridade explícita em todas, zero referência `E##` e
+fronteira pós-introdução explícita. O catálogo valida contagem, sequência, referências, autoridade,
+escopo e tipo de componente. Todas as entradas continuam bloqueadas para compilação automática.
+
+Correções técnicas centrais do v2.1: CFADS e ponte de caixa completos; capex de manutenção sem
+proxy universal de depreciação; concentração sem equivalência automática de crédito; debt ledger
+com múltiplas visões; ponte completa da despesa financeira; cenários de juros versionados; FIDC
+separado de carteira, documento e mecanismo; QC de material separado de parecer; e MK-19 a MK-28
+como referência futura não executável.
+
+Os 20 procedimentos da vertical growth/capex carregam agora os IDs canônicos dos quais derivam.
+`packages/credit-playbook/src/reference-data.ts` separa método de número vigente e mantém parâmetros
+sem fonte aprovada como `required_missing`. Isso é intencional e impede promover curva, haircut,
+headroom, stress ou tolerância como verdade de mercado sem source, as-of, owner e validade.
+
+O manifesto econômico v4 registra os fingerprints do House Playbook e do reference-data registry.
+`packages/evals/src/accreditation.ts` contém a carteira obrigatória de gold cases e o gate de
+promoção individual. Nenhum procedimento recebeu maturidade `production` nesta fase.
+
+Leituras obrigatórias antes de aprofundar qualquer módulo:
+
+1. `docs/build/HOUSE_PLAYBOOK_TECHNICAL_AUDIT_2026-08-25.md`;
+2. `docs/build/HOUSE_PLAYBOOK_V2_REVIEW_2026-08-25.md`;
+3. `docs/build/HOUSE_PLAYBOOK_MODULE_EXECUTION_PLAN_2026-08-25.md`;
+4. o source catalogue e o reference-data registry;
+5. o promotion gate e os casos de acreditação.
+
+Próxima ordem: M10, M0, M2, M3, M4, M5, M7, M9, lentes M1 necessárias, M6 e M8. A prioridade
+operacional imediata é fechar M2 e M3 no código, porque sem spreading, conciliação, debt ledger e
+pontes completas não existe estrutura ou material institucional confiável.
