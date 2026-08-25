@@ -71,7 +71,9 @@ Performance Advisor, zero foreign keys sem índice. Lint, typecheck, todos os te
 verdes nos 38 pacotes. As cinco migrations foram promovidas em ordem ao banco de produção em
 25/08/2026. A verificação posterior encontrou zero alertas de segurança, zero foreign keys sem
 índice e todos os ledgers do Gate 8 vazios, inclusive política de rollout e liberação externa. O
-deploy da aplicação e do worker e os vinte cases reais continuam pendentes.
+commit `ff7db5b` foi publicado na Vercel e no ECS em 25/08/2026. O worker está estável na task
+definition `offroad-document-worker:83`, e os smoke tests públicos de PT, EN, login e favicon
+retornaram HTTP 200. Os vinte cases reais continuam pendentes.
 
 O Gate 6 adiciona `@offroad/receivables-analysis`. Ele separa FIDC, cessão de recebíveis e fonte de
 pagamento; calcula elegibilidade título a título, concentração, aging, inadimplência, perda,

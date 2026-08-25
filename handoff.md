@@ -83,8 +83,10 @@ non-interference suite passes in staging, and the production Security Advisor ha
 the Performance Advisor has zero unindexed foreign keys. Immediately after database promotion,
 production contained zero rollout policies, controlled executions, comparisons, frozen inputs,
 frozen results, cohorts, cohort cases and release decisions. Lint, typecheck, all tests and the
-production build pass across 38 packages. Application and worker deployment plus both real-case
-cohorts remain outstanding and must not be reported as complete.
+production build pass across 38 packages. Commit `ff7db5b` is live in Vercel production and ECS
+task definition `offroad-document-worker:83`; the AWS service reported stable and the public PT,
+EN, login and favicon smoke tests returned HTTP 200. Both real-case cohorts remain outstanding and
+must not be reported as complete.
 
 ### Engineering update: governed case worker, 24 August 2026
 
