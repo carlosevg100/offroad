@@ -44,7 +44,7 @@ const resolvedBy = (declared: {response: RequirementResponse; note?: string} | u
 export type RequirementStatus = {
   requirement: Requirement;
   satisfied: boolean;
-  /** Documents that discharge it, by id — so the UI can link the tick to the file. */
+  /** Evidence that discharges it, by id. Document ids remain directly linkable by the UI. */
   satisfiedBy: string[];
   /** For information items: the answer the company gave, when it gave one. */
   answer?: string;
@@ -65,6 +65,16 @@ export type RequirementResponses = Readonly<Record<string, {response: Requiremen
 
 /** An answer the company typed, keyed by requirement id. */
 export type InformationAnswers = Readonly<Record<string, string | undefined>>;
+
+/**
+ * Evidence that resolves a requirement without asking the client for another file or answer.
+ *
+ * This is deliberately separate from `InformationAnswers`. A value derived from reconciled
+ * facts or obtained from a registered public source is not something the company declared.
+ * Keeping the two apart preserves IN-13 and IN-26: the system can stop asking while still
+ * showing exactly where the answer came from.
+ */
+export type RequirementEvidence = Readonly<Record<string, {evidenceIds: readonly string[]} | undefined>>;
 
 export type SufficiencyReport = {
   archetypeId: ArchetypeId;
@@ -112,6 +122,7 @@ export function assessSufficiency(
   documents: readonly ClassifiedDocument[],
   answers: InformationAnswers = {},
   responses: RequirementResponses = {},
+  requirementEvidence: RequirementEvidence = {},
 ): SufficiencyReport {
   const definition = archetype(archetypeId);
   const byKind = new Map<DocumentKind, string[]>();
@@ -125,6 +136,8 @@ export function assessSufficiency(
     .map((requirement) => {
       const stage = stageOf(requirement);
       const declared = responses[requirement.id];
+      const externallyResolvedBy = [...(requirementEvidence[requirement.id]?.evidenceIds ?? [])];
+      for (const id of externallyResolvedBy) matched.add(id);
 
       // An information item is discharged by the company answering, not by a file. A blank or
       // whitespace answer is not an answer: the item stays open rather than looking closed.
@@ -133,14 +146,17 @@ export function assessSufficiency(
         return {
           requirement,
           stage,
-          satisfied: Boolean(answer) || resolvedBy(declared),
-          satisfiedBy: [],
+          satisfied: Boolean(answer) || resolvedBy(declared) || externallyResolvedBy.length > 0,
+          satisfiedBy: externallyResolvedBy,
           ...(answer ? {answer} : {}),
           ...(declared ? {response: declared.response, ...(declared.note ? {note: declared.note} : {})} : {}),
         };
       }
 
-      const satisfiedBy = requirement.satisfiedBy.flatMap((kind) => byKind.get(kind) ?? []);
+      const satisfiedBy = [
+        ...requirement.satisfiedBy.flatMap((kind) => byKind.get(kind) ?? []),
+        ...externallyResolvedBy,
+      ];
       for (const id of satisfiedBy) matched.add(id);
       return {
         requirement,

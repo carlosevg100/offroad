@@ -694,3 +694,22 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   `docs/build/HOUSE_PLAYBOOK_TECHNICAL_AUDIT_2026-08-25.md`,
   `docs/build/HOUSE_PLAYBOOK_V2_REVIEW_2026-08-25.md` e
   `docs/build/HOUSE_PLAYBOOK_MODULE_EXECUTION_PLAN_2026-08-25.md`.
+
+## M0, contrato adaptativo do intake, 25/08/2026
+
+- `packages/credit-playbook/src/intake-state.ts` introduz uma única projeção determinística para
+  necessidade de capital, rota provisória, cobertura de informações, roadmap, lote ativo e log de
+  decisões. O estado é reconstruído por replay de eventos validados e carrega fingerprint SHA-256.
+- O sistema não pode emitir uma solicitação sem documentar os três primeiros degraus da escada
+  IN-13: sala classificada, derivação declarada e fonte pública registrada. Evidência encontrada
+  satisfaz o requisito sem se passar por resposta da companhia.
+- A política do lote precisa carregar versão, fonte, vigência e limite entre um e cinco. Ausência
+  declarada é preservada e retirada do lote vigente sem fechar silenciosamente a lacuna.
+- Uploads e respostas recalculam cobertura e lote. O teste gold deste incremento prova que quatro
+  solicitações ativas desaparecem quando o pacote correspondente é classificado.
+- Autorização de assessor, perímetro multi-entidade, urgência, triagem e hipótese de liquidez
+  disfarçada entram no mesmo histórico. A hipótese de liquidez exige revisão e não muda sozinha o
+  arquétipo declarado.
+- Escopo ainda aberto: persistência append-only, comandos atômicos, projeção da aplicação web,
+  telemetria e gold cases de sala desorganizada e empresa com um único documento. O módulo M0 e os
+  procedimentos IN permanecem sem promoção institucional.
