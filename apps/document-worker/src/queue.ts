@@ -68,6 +68,8 @@ export type QueueClient = {
   recordDocument(job: ClaimedJob, input: {scanResult?: unknown; profile?: unknown; layer?: unknown}): Promise<void>;
   recordCandidates(job: ClaimedJob, candidates: unknown[]): Promise<{written: number; replaced: number}>;
   recordRetrievalChunks(job: DocumentJob, chunks: unknown[]): Promise<{written: number; sourceDocumentId: string}>;
+  loadIntakeEvents(job: DocumentJob): Promise<unknown[]>;
+  recordIntakeRequestLadders(job: DocumentJob, events: unknown[]): Promise<void>;
   loadCaseInput(job: CaseAnalysisJob): Promise<unknown>;
   loadRetrievalContext(job: CaseAnalysisJob, input: {
     query: string;
@@ -165,6 +167,23 @@ export function createQueueClient(
         written: result.written ?? 0,
         sourceDocumentId: result.source_document_id ?? job.payload.source_document_id,
       };
+    },
+
+    async loadIntakeEvents(job) {
+      const data = await call("worker_load_intake_events", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+      });
+      if (!Array.isArray(data)) throw new Error("worker_load_intake_events returned a non-array payload");
+      return data;
+    },
+
+    async recordIntakeRequestLadders(job, events) {
+      await call("worker_record_intake_request_ladders", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_events: events,
+      });
     },
 
     async loadCaseInput(job) {

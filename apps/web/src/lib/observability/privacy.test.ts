@@ -12,6 +12,30 @@ describe("privacy-safe observability", () => {
       role: "owner",
       email: "person@example.com",
     })).toBeNull();
+    expect(parseProductEvent("intake_request_batch_viewed", {
+      locale: "pt-BR",
+      archetype: "growth_expansion",
+      state: "ready",
+      activeCount: 3,
+      hiddenOpenCount: 2,
+      companyName: "Private Company",
+    })).toBeNull();
+  });
+
+  it("accepts only aggregate request-batch telemetry", () => {
+    expect(parseProductEvent("intake_request_batch_viewed", {
+      locale: "pt-BR",
+      archetype: "growth_expansion",
+      state: "ready",
+      activeCount: 3,
+      hiddenOpenCount: 2,
+    })).toEqual({
+      locale: "pt-BR",
+      archetype: "growth_expansion",
+      state: "ready",
+      activeCount: 3,
+      hiddenOpenCount: 2,
+    });
   });
 
   it("removes PII, identifiers, request payloads and financial numbers", () => {

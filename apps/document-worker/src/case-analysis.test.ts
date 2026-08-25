@@ -109,6 +109,8 @@ describe("worker case analysis", () => {
       recordDocument: async () => {},
       recordCandidates: async () => ({written: 0, replaced: 0}),
       recordRetrievalChunks: async () => ({written: 0, sourceDocumentId: "source-1"}),
+      loadIntakeEvents: async () => [],
+      recordIntakeRequestLadders: async () => {},
       loadCaseInput: async () => raw,
       loadRetrievalContext: async (_job, input) => {
         retrievalRequests.push(input);

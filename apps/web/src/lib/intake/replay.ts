@@ -1,31 +1,16 @@
+import {randomUUID} from "node:crypto";
+
 import {
+  buildPendingRequestLadders,
   intakeEventSchema,
+  M0_INTAKE_POLICY,
   replayIntake,
   type IntakeEvent,
-  type IntakePolicy,
   type IntakeState,
 } from "@offroad/credit-playbook";
 import type {SupabaseClient} from "@supabase/supabase-js";
 
 import type {Database, Json} from "@/types/database";
-
-/**
- * The dated policy that makes one event stream produce one request state.
- *
- * M0 currently implements the event boundary through document classification. The date window
- * is deliberately explicit: changing request policy requires a new version instead of silently
- * changing the meaning of historical cases.
- */
-export const M0_INTAKE_POLICY = Object.freeze({
-  version: "m0-intake-2026.08.25-v1",
-  maxActiveRequests: 5,
-  source: {
-    title: "House Playbook M0 Intake",
-    reference: "IN-13, IN-14 and the M0 executable procedure contract",
-  },
-  asOf: "2026-08-25",
-  validUntil: "2030-12-31",
-} satisfies IntakePolicy);
 
 type IntakeEventRow = Pick<
   Database["public"]["Tables"]["intake_domain_events"]["Row"],
@@ -102,4 +87,50 @@ export async function loadIntakeReplay(input: {
       ),
     },
   };
+}
+
+/**
+ * Persists every request ladder that is stale or absent at the current evidence revision.
+ *
+ * The drafts are compiled by the canonical playbook. The database allocates trace versions and
+ * binds the whole batch to the evidence revision it locked, so a concurrent upload or answer
+ * cannot make a newly displayed request rely on an older search.
+ */
+export async function prepareIntakeRequestLadders(input: {
+  supabase: SupabaseClient<Database>;
+  organizationId: string;
+  sessionId: string;
+}): Promise<{recorded: number}> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const replay = await loadIntakeReplay(input);
+    if (replay.kind !== "ready") return {recorded: 0};
+
+    const drafts = buildPendingRequestLadders(replay.state);
+    if (drafts.length === 0) return {recorded: 0};
+
+    const {data, error} = await input.supabase.rpc("record_intake_request_ladders_command", {
+      p_organization_id: input.organizationId,
+      p_session_id: input.sessionId,
+      p_events: drafts.map((draft) => ({
+        eventId: randomUUID(),
+        requirementId: draft.requirementId,
+        attempts: draft.attempts,
+        basisRevision: replay.state.evidenceRevision,
+      })) as unknown as Json,
+    });
+    // One concurrent upload or answer is expected under active use. Replay once against the
+    // newly locked evidence revision; a second collision is surfaced instead of spinning.
+    if (error?.code === "40001" && attempt === 0) continue;
+    if (error) throw error;
+
+    const events = data && typeof data === "object" && !Array.isArray(data) && Array.isArray(data.events)
+      ? data.events
+      : [];
+    return {
+      recorded: events.filter((event) =>
+        event && typeof event === "object" && !Array.isArray(event) && event.replayed === false
+      ).length,
+    };
+  }
+  return {recorded: 0};
 }

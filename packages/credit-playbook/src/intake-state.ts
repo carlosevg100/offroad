@@ -28,6 +28,18 @@ export const intakePolicySchema = z.object({
 }).strict();
 export type IntakePolicy = z.infer<typeof intakePolicySchema>;
 
+/** The deployed M0 request policy. Changing it requires a new version and new replay evidence. */
+export const M0_INTAKE_POLICY = Object.freeze({
+  version: "m0-intake-2026.08.25-v1",
+  maxActiveRequests: 5,
+  source: {
+    title: "House Playbook M0 Intake",
+    reference: "IN-13, IN-14 and the M0 executable procedure contract",
+  },
+  asOf: "2026-08-25",
+  validUntil: "2030-12-31",
+} satisfies IntakePolicy);
+
 export const urgencyBandSchema = z.enum(["up_to_3_months", "3_to_6_months", "6_to_12_months", "no_rush"]);
 export type UrgencyBand = z.infer<typeof urgencyBandSchema>;
 
@@ -119,9 +131,13 @@ const ladderOrder = ["classified_room", "declared_derivation", "registered_publi
 export type RequestLadderTrace = {
   requirementId: string;
   attempts: readonly LadderAttempt[];
+  /** Revision of the evidence-bearing event stream searched by these attempts. */
+  basisRevision: number;
   recordedAt: string;
   traceVersion: number;
 };
+
+export type RequestLadderDraft = Pick<RequestLadderTrace, "requirementId" | "attempts">;
 
 type EventBase = {eventId: string; caseId: string; sequence: number; occurredAt: string};
 
@@ -264,6 +280,7 @@ export const intakeEventSchema = z.discriminatedUnion("type", [
     trace: z.object({
       requirementId: z.string().trim().min(1),
       attempts: z.array(ladderAttemptSchema).min(1).max(3),
+      basisRevision: z.number().int().nonnegative(),
       traceVersion: z.number().int().positive(),
     }).strict(),
   }).strict(),
@@ -369,6 +386,8 @@ export type IntakeState = {
   caseId: string;
   status: "framing" | "routing" | "collecting";
   revision: number;
+  /** Changes only when facts or evidence change, never when another ladder trace is appended. */
+  evidenceRevision: number;
   eventsFingerprint: string;
   capitalNeedFrame: CapitalNeedFrame | null;
   archetypeRoute: ArchetypeRoute | null;
@@ -385,6 +404,7 @@ export type IntakeState = {
 };
 
 type MutableReplay = {
+  evidenceRevision: number;
   frame: CapitalNeedFrame | null;
   route: ArchetypeRoute | null;
   scope: AnalysisScope | null;
@@ -411,6 +431,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
   assertEventStream(caseId, policy, parsedEvents);
 
   const replay: MutableReplay = {
+    evidenceRevision: 0,
     frame: null,
     route: null,
     scope: null,
@@ -437,6 +458,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
       caseId,
       status: replay.frame ? "routing" : "framing",
       revision: parsedEvents.length,
+      evidenceRevision: replay.evidenceRevision,
       eventsFingerprint: fingerprint,
       capitalNeedFrame: replay.frame,
       archetypeRoute: null,
@@ -453,7 +475,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     };
   }
 
-  const requirementEvidence = evidenceFromLadders(replay.ladders);
+  const requirementEvidence = evidenceFromLadders(replay.ladders, replay.evidenceRevision);
   const report = assessSufficiency(replay.route.archetypeId, documents, replay.answers, replay.responses, requirementEvidence);
   const absenceIds = new Set(
     report.requirements
@@ -462,7 +484,9 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
   );
   const eligibleReport = withoutAcknowledgedAbsences(report, absenceIds);
   const fullPlan = planClientRequests(eligibleReport, {batchSize: 5});
-  const eligibleRequests = fullPlan.current.filter(({status}) => ladderPermitsRequest(replay.ladders.get(status.requirement.id)));
+  const eligibleRequests = fullPlan.current.filter(({status}) =>
+    ladderPermitsRequest(replay.ladders.get(status.requirement.id), replay.evidenceRevision)
+  );
   const selected = eligibleRequests.slice(0, policy.maxActiveRequests);
   const activeIds = new Set(selected.map(({status}) => status.requirement.id));
   const pendingAtActiveStage = fullPlan.current
@@ -473,7 +497,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     ? openNow
     : report.byStage.structuring.filter((status) => !status.satisfied && !absenceIds.has(status.requirement.id));
   const awaitingLadder = allOpenClientStage
-    .filter((status) => !ladderPermitsRequest(replay.ladders.get(status.requirement.id)))
+    .filter((status) => !ladderPermitsRequest(replay.ladders.get(status.requirement.id), replay.evidenceRevision))
     .map((status) => status.requirement.id);
 
   addSuppressionLog(replay, report, generatedAt);
@@ -519,6 +543,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
     caseId,
     status: "collecting",
     revision: parsedEvents.length,
+    evidenceRevision: replay.evidenceRevision,
     eventsFingerprint: fingerprint,
     capitalNeedFrame: replay.frame,
     archetypeRoute: replay.route,
@@ -536,6 +561,7 @@ export function replayIntake(caseId: string, policyInput: IntakePolicy, events: 
 }
 
 function applyEvent(state: MutableReplay, event: IntakeEvent): void {
+  if (event.type !== "request_ladder_recorded") state.evidenceRevision += 1;
   switch (event.type) {
     case "capital_need_declared": {
       if (event.frame.version !== (state.frame?.version ?? 0) + 1) throw new Error("capital need versions must be sequential");
@@ -602,6 +628,9 @@ function applyEvent(state: MutableReplay, event: IntakeEvent): void {
     case "request_ladder_recorded": {
       assertKnownRequirement(state, event.trace.requirementId);
       validateLadder(event.trace.attempts);
+      if (event.trace.basisRevision !== state.evidenceRevision) {
+        throw new Error("request ladder basis revision does not match the evidence stream");
+      }
       const prior = state.ladders.get(event.trace.requirementId);
       if (event.trace.traceVersion !== (prior?.traceVersion ?? 0) + 1) throw new Error("request ladder versions must be sequential");
       state.ladders.set(event.trace.requirementId, {...event.trace, recordedAt: event.occurredAt});
@@ -664,13 +693,66 @@ function validateLadder(attempts: readonly LadderAttempt[]): void {
   if (foundAt >= 0 && foundAt !== attempts.length - 1) throw new Error("request ladder must stop when evidence is found");
 }
 
-function ladderPermitsRequest(trace: RequestLadderTrace | undefined): trace is RequestLadderTrace {
-  return Boolean(trace && trace.attempts.length === ladderOrder.length && trace.attempts.every((attempt) => attempt.outcome !== "found"));
+function ladderPermitsRequest(trace: RequestLadderTrace | undefined, evidenceRevision: number): trace is RequestLadderTrace {
+  return Boolean(
+    trace &&
+    trace.basisRevision === evidenceRevision &&
+    trace.attempts.length === ladderOrder.length &&
+    trace.attempts.every((attempt) => attempt.outcome !== "found")
+  );
 }
 
-function evidenceFromLadders(ladders: ReadonlyMap<string, RequestLadderTrace>): RequirementEvidence {
+/**
+ * Compiles the next missing requirements into honest request-ladder drafts.
+ *
+ * At M0 the classified-room check is document-kind based, declared derivation is limited to
+ * explicit answers, and no public source is registered as a substitute. The wording preserves
+ * those limits instead of claiming that document contents or the internet were searched.
+ */
+export function buildPendingRequestLadders(state: IntakeState): RequestLadderDraft[] {
+  if (!state.archetypeRoute || !state.requestRoadmap) return [];
+  const requirements = new Map(
+    archetype(state.archetypeRoute.archetypeId).requirements.map((requirement) => [requirement.id, requirement]),
+  );
+
+  return state.requestRoadmap.awaitingLadder.map((requirementId) => {
+    const requirement = requirements.get(requirementId);
+    if (!requirement) throw new Error(`unknown requirement ${requirementId} for request ladder`);
+    return {
+      requirementId,
+      attempts: [
+        {
+          source: "classified_room",
+          outcome: "not_found",
+          detail: "No classified document kind currently discharges this requirement.",
+          evidenceIds: [],
+        },
+        {
+          source: "declared_derivation",
+          outcome: requirement.source === "information" ? "not_found" : "not_applicable",
+          detail: requirement.source === "information"
+            ? "No current structured answer resolves this requirement."
+            : "This document requirement cannot be replaced by a declared answer.",
+          evidenceIds: [],
+        },
+        {
+          source: "registered_public_source",
+          outcome: "not_permitted",
+          detail: "No governed public source is registered as a substitute for this requirement.",
+          evidenceIds: [],
+        },
+      ],
+    };
+  });
+}
+
+function evidenceFromLadders(
+  ladders: ReadonlyMap<string, RequestLadderTrace>,
+  evidenceRevision: number,
+): RequirementEvidence {
   return Object.fromEntries(
     [...ladders.values()]
+      .filter((trace) => trace.basisRevision === evidenceRevision)
       .map((trace) => [trace.requirementId, trace.attempts.find((attempt) => attempt.outcome === "found")?.evidenceIds ?? []] as const)
       .filter(([, evidenceIds]) => evidenceIds.length > 0)
       .map(([requirementId, evidenceIds]) => [requirementId, {evidenceIds}]),

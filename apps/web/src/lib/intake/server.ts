@@ -13,6 +13,7 @@ import {parseList, parseLocalizedNumber} from "./format";
 import {pipelineEnabledFor, startProcessingRun} from "./pipeline-run";
 import {reconcileIntakeSession} from "./reconcile";
 import {parseArchetype} from "./checklist";
+import {prepareIntakeRequestLadders} from "./replay";
 import {archetype, requirementResponseSchema} from "@offroad/credit-playbook";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 import {reportServerFailure} from "@/lib/observability/report";
@@ -54,6 +55,23 @@ function logIntakeFailure(step: string, error: {code?: string; message?: string}
   // Through the one reporting path: the message is redacted before it leaves the process, and
   // the failure reaches the error view rather than only a log line.
   reportServerFailure({step: `intake.${step}`, error});
+}
+
+/**
+ * Refreshes the governed request batch after a fact changes.
+ *
+ * The preceding command already committed the user's fact, so a projection refresh must never
+ * make that successful write look failed. A refresh failure is reported and the next worker or
+ * command can safely retry because ladder events are append-only and idempotent by event id.
+ */
+async function refreshIntakeRequests(runtime: Pick<IntakeRuntime, "supabase" | "organizationId" | "sessionId">) {
+  try {
+    await prepareIntakeRequestLadders(runtime);
+  } catch (error) {
+    logIntakeFailure("prepare_request_ladders", {
+      message: error instanceof Error ? error.message : "request ladder refresh failed",
+    });
+  }
 }
 
 export async function loadIntakeSession(runtime: IntakeRuntime) {
@@ -152,6 +170,7 @@ export async function setIntakeArchetype(runtime: IntakeRuntime, raw: string): P
     logIntakeFailure("set_archetype", error);
     return fail(intakeErrorFrom(error, "save"));
   }
+  await refreshIntakeRequests(runtime);
   return ok(null);
 }
 
@@ -210,6 +229,7 @@ export async function recordInformationAnswer(
     logIntakeFailure("record_answer", error);
     return fail(intakeErrorFrom(error, "save"));
   }
+  await refreshIntakeRequests(runtime);
   return ok(null);
 }
 
@@ -384,6 +404,7 @@ export async function removeIntakeDocument(runtime: IntakeRuntime, documentId: s
   if (error || !data || typeof data !== "object" || Array.isArray(data)) return fail("remove");
   const objectPath = typeof data.object_path === "string" ? data.object_path : null;
   if (objectPath) await supabase.storage.from("opportunity-documents").remove([objectPath]);
+  await refreshIntakeRequests(runtime);
   return ok(null);
 }
 

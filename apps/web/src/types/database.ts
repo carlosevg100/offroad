@@ -3754,6 +3754,14 @@ export type Database = {
         }
         Returns: Json
       }
+      record_intake_request_ladders_command: {
+        Args: {
+          p_events: Json
+          p_organization_id: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
       register_intake_document_command: {
         Args: {
           p_bucket_id: string
@@ -3872,6 +3880,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_intake_events: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_retrieval_context: {
         Args: {
           p_allowed_fund_ids?: string[]
@@ -3918,6 +3930,10 @@ export type Database = {
           p_profile: Json
           p_scan_result: Json
         }
+        Returns: Json
+      }
+      worker_record_intake_request_ladders: {
+        Args: { p_capability_token: string; p_events: Json; p_job_id: string }
         Returns: Json
       }
       worker_record_retrieval_chunks: {

@@ -5,6 +5,9 @@ import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
 
 import type {Database} from "@/types/database";
+import {reportServerFailure} from "@/lib/observability/report";
+
+import {prepareIntakeRequestLadders} from "./replay";
 
 /**
  * The capital-need facts that shape preparation and market fit.
@@ -240,5 +243,17 @@ export async function saveDealBrief(input: {
     p_expected_rate: input.brief.expectedRate,
   });
 
-  return error ? {ok: false} : {ok: true};
+  if (error) return {ok: false};
+  try {
+    await prepareIntakeRequestLadders(input);
+  } catch (ladderError) {
+    // The capital need is already committed. Do not tell the user that save failed because a
+    // derived request projection could not refresh; report it and allow the next command or
+    // worker pass to retry safely.
+    reportServerFailure({
+      step: "intake.prepare_request_ladders",
+      error: {message: ladderError instanceof Error ? ladderError.message : "request ladder refresh failed"},
+    });
+  }
+  return {ok: true};
 }

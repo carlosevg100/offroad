@@ -1,9 +1,9 @@
 import type {SupabaseClient} from "@supabase/supabase-js";
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import type {Database} from "@/types/database";
 
-import {intakeEventFromRow, loadIntakeReplay} from "./replay";
+import {intakeEventFromRow, loadIntakeReplay, prepareIntakeRequestLadders} from "./replay";
 
 const sessionId = "73000000-0000-4000-8000-000000000001";
 
@@ -80,5 +80,47 @@ describe("intake event replay boundary", () => {
       organizationId: "20000000-0000-4000-8000-000000000001",
       sessionId,
     })).rejects.toThrow("continuous");
+  });
+
+  it("records requests against the replayed evidence revision", async () => {
+    const query = {
+      select: () => query,
+      eq: () => query,
+      order: async () => ({data: [frameRow, routeRow], error: null}),
+    };
+    const rpc = vi.fn(async (_name: string, args: {p_events: Array<{basisRevision: number}>}) => ({
+      data: {events: args.p_events.map((_event, index) => ({eventId: String(index), replayed: false}))},
+      error: null,
+    }));
+    const supabase = {from: () => query, rpc} as unknown as SupabaseClient<Database>;
+
+    const result = await prepareIntakeRequestLadders({
+      supabase,
+      organizationId: "20000000-0000-4000-8000-000000000001",
+      sessionId,
+    });
+
+    expect(result.recorded).toBeGreaterThan(0);
+    expect(rpc).toHaveBeenCalledOnce();
+    expect(rpc.mock.calls[0]?.[1].p_events.every((event) => event.basisRevision === 2)).toBe(true);
+  });
+
+  it("replays once when a concurrent fact makes the first request batch stale", async () => {
+    const query = {
+      select: () => query,
+      eq: () => query,
+      order: async () => ({data: [frameRow, routeRow], error: null}),
+    };
+    const rpc = vi.fn()
+      .mockResolvedValueOnce({data: null, error: {code: "40001", message: "intake_request_ladder_stale"}})
+      .mockResolvedValueOnce({data: {events: [{eventId: "new", replayed: false}]}, error: null});
+    const supabase = {from: () => query, rpc} as unknown as SupabaseClient<Database>;
+
+    await expect(prepareIntakeRequestLadders({
+      supabase,
+      organizationId: "20000000-0000-4000-8000-000000000001",
+      sessionId,
+    })).resolves.toEqual({recorded: 1});
+    expect(rpc).toHaveBeenCalledTimes(2);
   });
 });
