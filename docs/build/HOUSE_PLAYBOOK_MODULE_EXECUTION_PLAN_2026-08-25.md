@@ -134,10 +134,29 @@ elimina quatro solicitações futuras, evidência derivada, ausência sem repeti
 cliente segregado, grupo multi-entidade e hipótese de liquidez disfarçada sem reclassificação
 automática.
 
-Limite honesto: este incremento consolida o contrato e os invariantes no domínio. Persistência
-append-only dos eventos, adaptação da projeção web existente e telemetria de abandono e lotes ainda
-precisam ser conectadas antes de o M0 poder ser considerado candidato completo. Nenhum procedimento
-IN-01 a IN-26 foi promovido a `production` por esta entrega.
+### Incremento executável 02, ledger transacional do intake
+
+`intake_domain_events` persiste a história append-only por organização e sessão, com sequência
+alocada sob lock, hash SHA-256, chave de idempotência e ator autenticado. O navegador pode ler apenas
+o próprio tenant e não recebe qualquer grant de escrita. Mudança de arquétipo e resposta, ausência ou
+limpeza de informação passam por comandos tipados que atualizam a projeção relacional e acrescentam
+o evento na mesma transação. Reuso idempotente devolve o primeiro evento; a mesma chave com outro
+conteúdo falha fechada. A exclusão controlada do case continua removendo o ledger por cascade para
+preservar o direito de eliminação de dados.
+
+Sessões confirmadas ou canceladas rejeitam novas mudanças de arquétipo e informação. O bloqueio
+vive na fronteira das projeções, não apenas na interface, e preserva o cascade da exclusão
+controlada.
+
+O contrato de replay também registra `document_removed` e `information_cleared`, eliminando a
+tentação de reescrever a história. Resposta `partial` fica visível, mas não conta como requisito
+integralmente satisfeito.
+
+Limite honesto: os comandos de `capital_need_frame`, classificação e remoção documental, escada de
+busca, perímetro, autorização e triagens ainda precisam ser conectados ao ledger. A projeção web só
+será trocada integralmente pelo replay depois que o frame obrigatório existir no fluxo real, sem
+inventar CNPJ, urgência, prazo ou garantia para sessões legadas. Telemetria de abandono e lotes
+continua pendente. Nenhum procedimento IN-01 a IN-26 foi promovido a `production` por estas entregas.
 
 ## 5. M1, Empresa e setor
 

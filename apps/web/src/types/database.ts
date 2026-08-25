@@ -1730,6 +1730,59 @@ export type Database = {
         }
         Relationships: []
       }
+      intake_domain_events: {
+        Row: {
+          created_by: string
+          event_hash: string
+          event_id: string
+          event_type: string
+          id: string
+          intake_session_id: string
+          occurred_at: string
+          organization_id: string
+          payload: Json
+          payload_version: number
+          recorded_at: string
+          sequence: number
+        }
+        Insert: {
+          created_by: string
+          event_hash: string
+          event_id: string
+          event_type: string
+          id?: string
+          intake_session_id: string
+          occurred_at: string
+          organization_id: string
+          payload: Json
+          payload_version?: number
+          recorded_at?: string
+          sequence: number
+        }
+        Update: {
+          created_by?: string
+          event_hash?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          intake_session_id?: string
+          occurred_at?: string
+          organization_id?: string
+          payload?: Json
+          payload_version?: number
+          recorded_at?: string
+          sequence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_domain_events_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       intake_field_candidates: {
         Row: {
           anchor_precision: string | null
@@ -3656,6 +3709,18 @@ export type Database = {
         Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
         Returns: undefined
       }
+      record_intake_information_command: {
+        Args: {
+          p_answer?: string
+          p_event_id: string
+          p_note?: string
+          p_organization_id: string
+          p_requirement_id: string
+          p_response?: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
       review_intake_candidate: {
         Args: {
           p_candidate_id: string
@@ -3682,6 +3747,18 @@ export type Database = {
           source_anchor: Json
           source_document_id: string
         }[]
+      }
+      set_intake_archetype_command: {
+        Args: {
+          p_archetype: string
+          p_confidence: string
+          p_event_id: string
+          p_organization_id: string
+          p_rationale: string
+          p_retest_triggers?: string[]
+          p_session_id: string
+        }
+        Returns: Json
       }
       worker_claim_job: {
         Args: { p_lease_seconds?: number; p_worker_token: string }

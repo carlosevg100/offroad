@@ -156,6 +156,59 @@ describe("adaptive intake state", () => {
     });
   });
 
+  it("retracts an answer and a removed document without rewriting history", () => {
+    const informationRequirement = archetype("growth_expansion").requirements.find((item) => item.source === "information")!;
+    const documentRequirement = archetype("growth_expansion").requirements.find((item) => item.source !== "information" && item.source !== "notice" && item.satisfiedBy[0])!;
+    const events = baseEvents();
+    events.push(nextEvent(events, {
+      type: "information_answered",
+      requirementId: informationRequirement.id,
+      answer: "A expansão adiciona três lojas em praças já atendidas.",
+      response: "provided",
+      actorId: "company-user-1",
+    }));
+    events.push(nextEvent(events, {
+      type: "document_classified",
+      document: {id: "upload-to-remove", kind: documentRequirement.satisfiedBy[0]!},
+      classificationVersion: 1,
+    }));
+    events.push(nextEvent(events, {
+      type: "information_cleared",
+      requirementId: informationRequirement.id,
+      actorId: "company-user-1",
+    }));
+    events.push(nextEvent(events, {
+      type: "document_removed",
+      documentId: "upload-to-remove",
+      actorId: "company-user-1",
+    }));
+
+    const state = replayIntake("case-1", policy, events);
+    expect(state.documents).toEqual([]);
+    expect(state.informationCoverage?.requirements.find((entry) => entry.requirement.id === informationRequirement.id)?.answer).toBeUndefined();
+    expect(state.decisionLog.map((entry) => entry.type)).toEqual(expect.arrayContaining(["requirement_cleared", "document_removed"]));
+  });
+
+  it("keeps a partial information answer visible without treating it as complete", () => {
+    const requirement = archetype("growth_expansion").requirements.find((item) => item.source === "information")!;
+    const events = baseEvents();
+    events.push(nextEvent(events, {
+      type: "information_answered",
+      requirementId: requirement.id,
+      answer: "Temos a abertura por unidade, mas julho ainda está em fechamento.",
+      response: "partial",
+      note: "Julho será disponibilizado após o fechamento contábil.",
+      actorId: "company-user-1",
+    }));
+
+    const status = replayIntake("case-1", policy, events).informationCoverage?.requirements.find((entry) => entry.requirement.id === requirement.id);
+    expect(status).toEqual(expect.objectContaining({
+      answer: "Temos a abertura por unidade, mas julho ainda está em fechamento.",
+      response: "partial",
+      satisfied: false,
+    }));
+  });
+
   it("uses governed derived or public evidence without converting it into a client declaration", () => {
     const requirementId = assessSufficiency("growth_expansion", []).byStage.now[0]!.requirement.id;
     const events = baseEvents();

@@ -143,10 +143,11 @@ export function assessSufficiency(
       // whitespace answer is not an answer: the item stays open rather than looking closed.
       if (requirement.source === "information") {
         const answer = answers[requirement.id]?.trim();
+        const answerIsComplete = Boolean(answer) && !["partial", "after_nda", "unavailable"].includes(declared?.response ?? "provided");
         return {
           requirement,
           stage,
-          satisfied: Boolean(answer) || resolvedBy(declared) || externallyResolvedBy.length > 0,
+          satisfied: answerIsComplete || resolvedBy(declared) || externallyResolvedBy.length > 0,
           satisfiedBy: externallyResolvedBy,
           ...(answer ? {answer} : {}),
           ...(declared ? {response: declared.response, ...(declared.note ? {note: declared.note} : {})} : {}),

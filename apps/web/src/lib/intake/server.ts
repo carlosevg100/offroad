@@ -1,4 +1,4 @@
-import {createHash} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 
 import {buildAutoAcceptPolicy, measureAccuracy, type FeedbackRow} from "@offroad/extraction-learning";
 import {buildRedeHorizonteDocumentIntake} from "@offroad/testing-fixtures";
@@ -138,11 +138,15 @@ export async function setIntakeArchetype(runtime: IntakeRuntime, raw: string): P
   const archetype = parseArchetype(raw);
   if (!archetype) return fail("validation");
 
-  const {error} = await runtime.supabase
-    .from("document_intake_sessions")
-    .update({archetype})
-    .eq("organization_id", runtime.organizationId)
-    .eq("id", runtime.sessionId);
+  const {error} = await runtime.supabase.rpc("set_intake_archetype_command", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+    p_event_id: randomUUID(),
+    p_archetype: archetype,
+    p_confidence: "medium",
+    p_rationale: "Declared by the authorized organization member responsible for this guided intake.",
+    p_retest_triggers: ["classified documents", "capital need detail"],
+  });
   if (error) {
     logIntakeFailure("set_archetype", error);
     return fail(intakeErrorFrom(error, "save"));
@@ -162,7 +166,7 @@ export async function recordInformationAnswer(
   runtime: IntakeRuntime,
   input: {requirementId: string; answer?: string; response?: string; note?: string},
 ): Promise<IntakeOutcome> {
-  const {supabase, organizationId, sessionId, userId} = runtime;
+  const {supabase, organizationId, sessionId} = runtime;
 
   const {data: session} = await supabase
     .from("document_intake_sessions")
@@ -188,34 +192,19 @@ export async function recordInformationAnswer(
 
   // A document item's answer is the file, so `provided` there is expressed by uploading, not by
   // a row here — and an empty row of any kind is the company clearing a red mark with nothing.
-  if (!answer && !note) {
-    const {error} = await supabase
-      .from("intake_information_answers")
-      .delete()
-      .eq("organization_id", organizationId)
-      .eq("intake_session_id", sessionId)
-      .eq("requirement_id", input.requirementId);
-    return error ? fail(intakeErrorFrom(error, "save")) : ok(null);
-  }
-
   // "Does not apply" with no reason tells an investor only that somebody wanted the item gone.
   // The database enforces this too; refusing here gives the company an error it can act on.
   if ((response === "not_applicable" || response === "unavailable") && !note) return fail("validation");
 
-  const {error} = await supabase
-    .from("intake_information_answers")
-    .upsert(
-      {
-        organization_id: organizationId,
-        intake_session_id: sessionId,
-        requirement_id: input.requirementId,
-        answer: answer || null,
-        response,
-        note: note || null,
-        answered_by: userId,
-      },
-      {onConflict: "organization_id,intake_session_id,requirement_id"},
-    );
+  const {error} = await supabase.rpc("record_intake_information_command", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_event_id: randomUUID(),
+    p_requirement_id: input.requirementId,
+    p_answer: answer || undefined,
+    p_response: response,
+    p_note: note || undefined,
+  });
   if (error) {
     logIntakeFailure("record_answer", error);
     return fail(intakeErrorFrom(error, "save"));

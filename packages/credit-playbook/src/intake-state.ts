@@ -108,11 +108,20 @@ export type IntakeEvent =
   | (EventBase & {type: "capital_need_declared"; frame: Omit<CapitalNeedFrame, "declaredAt">})
   | (EventBase & {type: "archetype_routed"; route: Omit<ArchetypeRoute, "routedAt">})
   | (EventBase & {type: "document_classified"; document: ClassifiedDocument; classificationVersion: number})
-  | (EventBase & {type: "information_answered"; requirementId: string; answer: string; actorId: string})
+  | (EventBase & {type: "document_removed"; documentId: string; actorId: string})
+  | (EventBase & {
+      type: "information_answered";
+      requirementId: string;
+      answer: string;
+      response: Extract<RequirementResponse, "provided" | "partial">;
+      note?: string;
+      actorId: string;
+    })
+  | (EventBase & {type: "information_cleared"; requirementId: string; actorId: string})
   | (EventBase & {
       type: "absence_recorded";
       requirementId: string;
-      response: Extract<RequirementResponse, "unavailable" | "not_applicable" | "after_nda">;
+      response: Extract<RequirementResponse, "partial" | "unavailable" | "not_applicable" | "after_nda">;
       note?: string;
       actorId: string;
     })
@@ -169,16 +178,30 @@ export const intakeEventSchema = z.discriminatedUnion("type", [
   }).strict(),
   z.object({
     ...eventBaseShape,
+    type: z.literal("document_removed"),
+    documentId: z.string().trim().min(1),
+    actorId: z.string().trim().min(1),
+  }).strict(),
+  z.object({
+    ...eventBaseShape,
     type: z.literal("information_answered"),
     requirementId: z.string().trim().min(1),
     answer: z.string().trim().min(1),
+    response: z.enum(["provided", "partial"]),
+    note: z.string().trim().min(1).optional(),
+    actorId: z.string().trim().min(1),
+  }).strict(),
+  z.object({
+    ...eventBaseShape,
+    type: z.literal("information_cleared"),
+    requirementId: z.string().trim().min(1),
     actorId: z.string().trim().min(1),
   }).strict(),
   z.object({
     ...eventBaseShape,
     type: z.literal("absence_recorded"),
     requirementId: z.string().trim().min(1),
-    response: z.enum(["unavailable", "not_applicable", "after_nda"]),
+    response: z.enum(["partial", "unavailable", "not_applicable", "after_nda"]),
     note: z.string().trim().min(1).optional(),
     actorId: z.string().trim().min(1),
   }).strict(),
@@ -275,7 +298,9 @@ export type IntakeDecisionLogEntry = {
     | "capital_need_recorded"
     | "archetype_selected"
     | "document_classification_changed"
+    | "document_removed"
     | "requirement_answered"
+    | "requirement_cleared"
     | "absence_acknowledged"
     | "request_ladder_completed"
     | "analysis_scope_changed"
@@ -473,12 +498,27 @@ function applyEvent(state: MutableReplay, event: IntakeEvent): void {
       pushLog(state, event, "document_classification_changed", `Document ${event.document.id} classified as ${event.document.kind}.`, [event.document.id]);
       break;
     }
+    case "document_removed": {
+      if (!state.documents.delete(event.documentId)) throw new Error("removed document must exist in the event stream");
+      pushLog(state, event, "document_removed", `Document ${event.documentId} removed by ${event.actorId}.`, [event.documentId]);
+      break;
+    }
     case "information_answered": {
       if (!event.answer.trim()) throw new Error("information answer cannot be blank");
       assertKnownRequirement(state, event.requirementId);
       state.answers[event.requirementId] = event.answer.trim();
-      delete state.responses[event.requirementId];
+      state.responses[event.requirementId] = {
+        response: event.response,
+        ...(event.note?.trim() ? {note: event.note.trim()} : {}),
+      };
       pushLog(state, event, "requirement_answered", `Requirement ${event.requirementId} answered by ${event.actorId}.`);
+      break;
+    }
+    case "information_cleared": {
+      assertKnownRequirement(state, event.requirementId);
+      delete state.answers[event.requirementId];
+      delete state.responses[event.requirementId];
+      pushLog(state, event, "requirement_cleared", `Requirement ${event.requirementId} cleared by ${event.actorId}.`);
       break;
     }
     case "absence_recorded": {
