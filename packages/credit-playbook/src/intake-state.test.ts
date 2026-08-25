@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 
 import {archetype} from "./archetypes";
 import {assessSufficiency} from "./sufficiency";
-import {replayIntake, type IntakeEvent, type IntakePolicy, type LadderAttempt} from "./intake-state";
+import {buildPendingRequestLadders, replayIntake, type IntakeEvent, type IntakePolicy, type LadderAttempt} from "./intake-state";
 
 const policy: IntakePolicy = {
   version: "2026.08.25-v1",
@@ -65,7 +65,7 @@ const addLadders = (events: IntakeEvent[], requirementIds: readonly string[]): I
       caseId: "case-1",
       sequence,
       occurredAt: at(sequence),
-      trace: {requirementId, attempts: unsuccessfulLadder(), traceVersion: 1},
+      trace: {requirementId, attempts: unsuccessfulLadder(), basisRevision: 2, traceVersion: 1},
     });
   }
   return result;
@@ -123,6 +123,29 @@ describe("adaptive intake state", () => {
     expect(withLadders.activeRequestBatch?.requests).toHaveLength(3);
     expect(withLadders.activeRequestBatch?.requests.every((request) => request.ladderTrace.attempts.length === 3)).toBe(true);
     expect(withLadders.activeRequestBatch?.maxItems).toBe(3);
+  });
+
+  it("compiles honest ladder drafts and invalidates them when evidence changes", () => {
+    const initial = replayIntake("case-1", policy, baseEvents());
+    const drafts = buildPendingRequestLadders(initial);
+    expect(drafts.length).toBeGreaterThan(4);
+    expect(drafts[0]?.attempts.map(({source, outcome}) => ({source, outcome}))).toEqual(
+      unsuccessfulLadder().map(({source, outcome}) => ({source, outcome})),
+    );
+
+    const openNow = assessSufficiency("growth_expansion", []).byStage.now.map((status) => status.requirement.id);
+    const withLadders = addLadders(baseEvents(), openNow);
+    expect(replayIntake("case-1", policy, withLadders).activeRequestBatch?.requests).toHaveLength(4);
+
+    withLadders.push(nextEvent(withLadders, {
+      type: "document_received",
+      document: {id: "new-upload", originalName: "balancete.xlsx"},
+      actorId: "company-user-1",
+    }));
+    const changed = replayIntake("case-1", policy, withLadders);
+    expect(changed.evidenceRevision).toBe(3);
+    expect(changed.activeRequestBatch?.requests).toEqual([]);
+    expect(changed.requestRoadmap?.awaitingLadder.length).toBeGreaterThan(4);
   });
 
   it("recomputes the request list after a document batch and suppresses four future requests", () => {
@@ -266,6 +289,7 @@ describe("adaptive intake state", () => {
       type: "request_ladder_recorded",
       trace: {
         requirementId,
+        basisRevision: 2,
         attempts: [
           {source: "classified_room", outcome: "not_found", detail: "Não encontrado na sala.", evidenceIds: []},
           {source: "declared_derivation", outcome: "found", detail: "Derivado de fatos conciliados.", evidenceIds: ["calc:capital-need:1"]},
@@ -279,6 +303,42 @@ describe("adaptive intake state", () => {
     expect(status?.satisfied).toBe(true);
     expect(status?.satisfiedBy).toEqual(["calc:capital-need:1"]);
     expect(status?.answer).toBeUndefined();
+  });
+
+  it("invalidates evidence discovered by a ladder when the evidence stream changes", () => {
+    const requirementId = assessSufficiency("growth_expansion", []).byStage.now[0]!.requirement.id;
+    const events = baseEvents();
+    events.push(nextEvent(events, {
+      type: "request_ladder_recorded",
+      trace: {
+        requirementId,
+        basisRevision: 2,
+        attempts: [
+          {source: "classified_room", outcome: "not_found", detail: "Não encontrado na sala.", evidenceIds: []},
+          {source: "declared_derivation", outcome: "found", detail: "Derivado de fatos conciliados.", evidenceIds: ["calc:capital-need:1"]},
+        ],
+        traceVersion: 1,
+      },
+    }));
+    expect(
+      replayIntake("case-1", policy, events).informationCoverage?.requirements.find(
+        (entry) => entry.requirement.id === requirementId,
+      )?.satisfied,
+    ).toBe(true);
+
+    events.push(nextEvent(events, {
+      type: "document_received",
+      document: {id: "new-evidence", originalName: "novo-material.pdf"},
+      actorId: "company-user-1",
+    }));
+    const refreshed = replayIntake("case-1", policy, events);
+    const refreshedStatus = refreshed.informationCoverage?.requirements.find(
+      (entry) => entry.requirement.id === requirementId,
+    );
+
+    expect(refreshed.evidenceRevision).toBe(3);
+    expect(refreshedStatus?.satisfied).toBe(false);
+    expect(refreshed.requestRoadmap?.awaitingLadder).toContain(requirementId);
   });
 
   it("preserves multi-entity scope and advisor authorization as case-level facts", () => {

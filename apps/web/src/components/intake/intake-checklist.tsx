@@ -3,6 +3,7 @@ import {getTranslations} from "next-intl/server";
 
 import type {ArchetypeId} from "@offroad/credit-playbook";
 import type {IntakeChecklist as Checklist} from "@/lib/intake/checklist";
+import {IntakeBatchTelemetry} from "./intake-batch-telemetry";
 
 type OperationProps = {
   locale: string;
@@ -173,6 +174,15 @@ export async function IntakeChecklist({locale, checklist, sessionId, respond}: C
 
   return (
     <section className="intake-checklist intake-request-list">
+      {checklist.archetypeId ? (
+        <IntakeBatchTelemetry
+          activeCount={checklist.activeBatch.length}
+          archetype={checklist.archetypeId}
+          hiddenOpenCount={checklist.hiddenOpenCount}
+          locale={locale === "en-US" ? "en-US" : "pt-BR"}
+          state={checklist.batchState}
+        />
+      ) : null}
       <div className="intake-checklist__head">
         <span className="section-kicker">{t("requestKicker")}</span>
         <h3>{t("requestTitle")}</h3>

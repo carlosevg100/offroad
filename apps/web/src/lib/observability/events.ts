@@ -11,6 +11,21 @@ export const productEventSchemas = {
     role: z.enum(["owner", "admin", "member", "analyst", "relationship_manager", "compliance"]),
   }).strict(),
   opportunity_intake_created: z.object({locale, currency: z.string().regex(/^[A-Z]{3}$/)}).strict(),
+  intake_request_batch_viewed: z.object({
+    locale,
+    archetype: z.enum([
+      "growth_expansion",
+      "working_capital",
+      "refinance",
+      "acquisition",
+      "equipment_finance",
+      "venture_debt",
+      "other",
+    ]),
+    state: z.enum(["ready", "awaiting_evidence", "complete"]),
+    activeCount: z.number().int().min(0).max(5),
+    hiddenOpenCount: z.number().int().min(0).max(100),
+  }).strict(),
 } as const;
 
 export type ProductEventName = keyof typeof productEventSchemas;

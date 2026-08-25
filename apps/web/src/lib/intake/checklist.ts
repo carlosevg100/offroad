@@ -59,6 +59,8 @@ export type ChecklistItem = {
 
 export type IntakeChecklist = {
   archetypeId: ArchetypeId | null;
+  /** Aggregate lifecycle state for privacy-safe telemetry. */
+  batchState: "ready" | "awaiting_evidence" | "complete";
   minimum: SufficiencyReport["minimum"];
   ideal: SufficiencyReport["ideal"];
   items: ChecklistItem[];
@@ -177,6 +179,12 @@ export async function loadIntakeChecklist(input: {
       }
     : assessSufficiency(archetypeId, classified, answers, responses);
   const clientPlan = planClientRequests(report);
+  const replayActiveIds = replayIsAuthoritative
+    ? new Set(replay.state.activeRequestBatch?.requests.map((request) => request.requirementId) ?? [])
+    : null;
+  const activeRequirementIds = replayActiveIds
+    ? [...replayActiveIds]
+    : clientPlan.current.map(({status}) => status.requirement.id);
   const label = (kind: DocumentKind) => documentKindDefinition(kind).labels[locale];
   const grouped = missingByPurpose(report);
 
@@ -203,19 +211,41 @@ export async function loadIntakeChecklist(input: {
 
   return {
     archetypeId,
+    batchState: replayIsAuthoritative
+      ? replay.state.activeRequestBatch
+        ? "ready"
+        : (replay.state.requestRoadmap?.awaitingLadder.length ?? 0) > 0
+          ? "awaiting_evidence"
+          : "complete"
+      : activeRequirementIds.length > 0
+        ? "ready"
+        : "complete",
     minimum: report.minimum,
     ideal: report.ideal,
     items,
-    activeBatch: clientPlan.current.flatMap(({status}) => {
-      const item = itemById.get(status.requirement.id);
+    activeBatch: activeRequirementIds.flatMap((requirementId) => {
+      const item = itemById.get(requirementId);
       return item ? [item] : [];
     }),
     resolved: clientPlan.resolved.flatMap((status) => {
       const item = itemById.get(status.requirement.id);
       return item ? [item] : [];
     }),
-    roadmap: clientPlan.roadmap,
-    hiddenOpenCount: clientPlan.hiddenOpenCount,
+    roadmap: replayIsAuthoritative && replay.state.requestRoadmap
+      ? {
+          diligence: {
+            open: replay.state.requestRoadmap.stages.diligence.open,
+            total: replay.state.requestRoadmap.stages.diligence.total,
+          },
+          closing: {
+            open: replay.state.requestRoadmap.stages.closing.open,
+            total: replay.state.requestRoadmap.stages.closing.total,
+          },
+        }
+      : clientPlan.roadmap,
+    hiddenOpenCount: replayIsAuthoritative && replay.state.requestRoadmap
+      ? replay.state.requestRoadmap.queuedAfterActiveBatch.length
+      : clientPlan.hiddenOpenCount,
     byStage: {
       now: items.filter((item) => item.stage === "now"),
       structuring: items.filter((item) => item.stage === "structuring"),

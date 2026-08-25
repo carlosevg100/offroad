@@ -166,11 +166,30 @@ de capital. Sessões legadas mantêm fallback explícito e não recebem frame si
 em staging provam idempotência, isolamento entre organizações, bloqueio de escrita direta, sessão
 terminal, cascade e ciclo documental completo.
 
-Limite honesto: escada de busca, perímetro, autorização do assessor e triagens ainda precisam de
-comandos transacionais e telas derivadas do replay. Até lá, o planejador visual de solicitações usa
-o relatório reconstruído, mas não substitui a exigência futura de `request_ladder_recorded` antes
-de emitir cada pedido. Telemetria de abandono e lotes continua pendente. Nenhum procedimento IN-01
-a IN-26 foi promovido a `production` por estas entregas.
+### Incremento executável 04, escada governada e lote ativo
+
+Cada solicitação ao cliente passa a depender de `request_ladder_recorded` na mesma revisão de
+evidências exibida. Upload, reclassificação, resposta, mudança de necessidade, perímetro,
+autorização ou triagem invalidam a escada anterior. Evidência encontrada por uma escada stale não
+fecha requisito e o lote desaparece até a busca ser refeita.
+
+O compilador da escada vive no `credit-playbook`, compartilhado pela web e pelo worker. A escrita é
+transacional, versionada, idempotente e deduplica workers concorrentes sob lock. O comando rejeita
+um lote compilado contra revisão antiga. O membro da organização pode registrar apenas a busca
+negativa completa; não pode fabricar evidência positiva para suprimir uma solicitação. Evidência
+positiva exige uma capability vigente do worker. A interface usa exclusivamente o
+`ActiveRequestBatch` reconstruído quando o stream é autoritativo e preserva fallback apenas para
+sessões legadas.
+
+Testes de staging provam revisão stale, idempotência, deduplicação concorrente, nova versão após
+fato novo, sessão terminal, isolamento entre tenants e bloqueio de evidência forjada. O worker
+refaz o lote depois da classificação documental e a web o refaz depois de necessidade, resposta ou
+remoção. Uma colisão concorrente é reexecutada uma vez a partir do stream atualizado.
+
+Limite honesto: perímetro, autorização do assessor, triagens e telemetria de abandono e lotes ainda
+precisam de comandos e projeções completos. A escada M0 classifica a sala por tipo documental, não
+afirma ter pesquisado conteúdo não extraído nem fonte pública sem cadastro governado. Nenhum
+procedimento IN-01 a IN-26 foi promovido a `production` por estas entregas.
 
 ## 5. M1, Empresa e setor
 

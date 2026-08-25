@@ -66,6 +66,8 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
         calls.retrievalChunks.push(chunks);
         return {written: chunks.length, sourceDocumentId: job().payload.source_document_id};
       },
+      loadIntakeEvents: async () => [],
+      recordIntakeRequestLadders: async () => {},
       loadCaseInput: async () => ({}),
       loadRetrievalContext: async () => ({playbook_version: null, results: [], abstained: true}),
       recordCaseSnapshot: async () => "manifest-id",
@@ -157,6 +159,7 @@ describe("a healthy document goes through every stage", () => {
       "store_layer",
       "profile",
       "usage",
+      "prepare_requests",
       "index_retrieval",
     ]);
 

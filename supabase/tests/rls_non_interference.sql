@@ -2584,6 +2584,186 @@ begin
 end;
 $$;
 
+-- Request ladders are versioned against the evidence-bearing stream. Exact concurrent retries
+-- collapse to one trace; a new fact makes the prior trace stale and allocates the next version.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '74000000-0000-4000-8000-000000000001';
+  frame_event constant uuid := '74000000-0000-4000-8000-000000000002';
+  route_event constant uuid := '74000000-0000-4000-8000-000000000003';
+  ladder_event constant uuid := '74000000-0000-4000-8000-000000000004';
+  duplicate_ladder_event constant uuid := '74000000-0000-4000-8000-000000000005';
+  capital_event constant uuid := '74000000-0000-4000-8000-000000000006';
+  refreshed_ladder_event constant uuid := '74000000-0000-4000-8000-000000000007';
+  attempts constant jsonb := '[
+    {"source":"classified_room","outcome":"not_found","detail":"No classified document kind discharges the requirement.","evidenceIds":[]},
+    {"source":"declared_derivation","outcome":"not_found","detail":"No structured declaration resolves the requirement.","evidenceIds":[]},
+    {"source":"registered_public_source","outcome":"not_permitted","detail":"No governed public substitute is registered.","evidenceIds":[]}
+  ]'::jsonb;
+  found_attempts constant jsonb := '[
+    {"source":"classified_room","outcome":"found","detail":"Claimed evidence.","evidenceIds":["forged:evidence"]}
+  ]'::jsonb;
+  outcome jsonb;
+  accepted boolean;
+begin
+  set local role postgres;
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  perform public.set_intake_operation_command(
+    org_a, session_id, frame_event, route_event, 'growth_expansion', 'medium',
+    'Finalidade declarada pelo membro autorizado.', array['documentos classificados']
+  );
+
+  accepted := true;
+  begin
+    perform public.record_intake_request_ladders_command(
+      org_a, session_id,
+      jsonb_build_array(jsonb_build_object(
+        'eventId', gen_random_uuid(),
+        'requirementId', 'expansion_rationale',
+        'basisRevision', 1,
+        'attempts', attempts
+      ))
+    );
+  exception when serialization_failure then accepted := false;
+  end;
+  if accepted then raise exception 'stale request ladder was rebound to newer evidence'; end if;
+
+  accepted := true;
+  begin
+    perform public.record_intake_request_ladders_command(
+      org_a, session_id,
+      jsonb_build_array(jsonb_build_object(
+        'eventId', gen_random_uuid(),
+        'requirementId', 'expansion_rationale',
+        'basisRevision', 2,
+        'attempts', found_attempts
+      ))
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant manufactured positive request-ladder evidence'; end if;
+
+  outcome := public.record_intake_request_ladders_command(
+    org_a, session_id,
+    jsonb_build_array(jsonb_build_object(
+      'eventId', ladder_event,
+      'requirementId', 'expansion_rationale',
+      'basisRevision', 2,
+      'attempts', attempts
+    ))
+  );
+  if outcome ->> 'basisRevision' <> '2'
+    or outcome #>> '{events,0,replayed}' <> 'false'
+    or (select count(*) from public.intake_domain_events
+        where intake_session_id = session_id and event_type = 'request_ladder_recorded') <> 1 then
+    raise exception 'request ladder was not bound to the current evidence revision';
+  end if;
+
+  outcome := public.record_intake_request_ladders_command(
+    org_a, session_id,
+    jsonb_build_array(jsonb_build_object(
+      'eventId', ladder_event,
+      'requirementId', 'expansion_rationale',
+      'basisRevision', 2,
+      'attempts', attempts
+    ))
+  );
+  if outcome #>> '{events,0,replayed}' <> 'true' then
+    raise exception 'request ladder event id is not idempotent';
+  end if;
+
+  outcome := public.record_intake_request_ladders_command(
+    org_a, session_id,
+    jsonb_build_array(jsonb_build_object(
+      'eventId', duplicate_ladder_event,
+      'requirementId', 'expansion_rationale',
+      'basisRevision', 2,
+      'attempts', attempts
+    ))
+  );
+  if outcome #>> '{events,0,replayed}' <> 'true'
+    or outcome #>> '{events,0,eventId}' <> ladder_event::text
+    or (select count(*) from public.intake_domain_events
+        where intake_session_id = session_id and event_type = 'request_ladder_recorded') <> 1 then
+    raise exception 'concurrent equivalent request ladders were not collapsed';
+  end if;
+
+  perform public.record_intake_capital_need_command(
+    org_a, session_id, capital_event, 'growth_expansion',
+    'Abrir uma nova unidade.', null, null, null, null, null, null, null, null,
+    '{}'::text[], '{}'::text[], null
+  );
+  outcome := public.record_intake_request_ladders_command(
+    org_a, session_id,
+    jsonb_build_array(jsonb_build_object(
+      'eventId', refreshed_ladder_event,
+      'requirementId', 'expansion_rationale',
+      'basisRevision', 3,
+      'attempts', attempts
+    ))
+  );
+  if outcome ->> 'basisRevision' <> '3'
+    or not exists (
+      select 1 from public.intake_domain_events event
+      where event.event_id = refreshed_ladder_event
+        and event.payload #>> '{trace,traceVersion}' = '2'
+        and event.payload #>> '{trace,basisRevision}' = '3'
+    ) then
+    raise exception 'a new evidence revision did not allocate a new ladder trace';
+  end if;
+
+  set local role postgres;
+  update public.document_intake_sessions set status = 'confirmed' where id = session_id;
+  set local role authenticated;
+  accepted := true;
+  begin
+    perform public.record_intake_request_ladders_command(
+      org_a, session_id,
+      jsonb_build_array(jsonb_build_object(
+        'eventId', gen_random_uuid(),
+        'requirementId', 'expansion_rationale',
+        'basisRevision', 3,
+        'attempts', attempts
+      ))
+    );
+  exception when object_not_in_prerequisite_state then accepted := false;
+  end;
+  if accepted then raise exception 'terminal session accepted a request ladder'; end if;
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  accepted := true;
+  begin
+    perform public.record_intake_request_ladders_command(
+      org_a, session_id,
+      jsonb_build_array(jsonb_build_object(
+        'eventId', gen_random_uuid(),
+        'requirementId', 'expansion_rationale',
+        'basisRevision', 3,
+        'attempts', attempts
+      ))
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'cross-tenant member appended a request ladder'; end if;
+
+  set local role postgres;
+  delete from public.document_intake_sessions where id = session_id;
+end;
+$$;
+
 set local role postgres;
 
 rollback;

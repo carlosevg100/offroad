@@ -10,6 +10,7 @@ import {buildCaseChunks} from "@offroad/governed-retrieval";
 import {ModelGatewayError, type GatewayCallLog} from "@offroad/model-gateway";
 import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
 import type {DocumentJob, QueueClient} from "./queue";
+import {prepareWorkerIntakeRequests} from "./intake-requests";
 
 /**
  * What happens to one document, start to finish (P1 plan §5, stages E0–E1).
@@ -195,6 +196,11 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
         : {}),
     });
 
+    // A new classification changes the evidence revision and invalidates any earlier client
+    // request batch. Rebuild it before this job can complete, using only the immutable stream
+    // loaded through this job's short-lived capability.
+    const preparedRequests = await stage("prepare_requests", () => prepareWorkerIntakeRequests(job, queue));
+
     // ---- Governed case retrieval ------------------------------------------------------
     // Searchable context is derived only from the deterministic document layer. Each chunk
     // keeps the page, sheet, section or slide anchor that produced it, and the database
@@ -256,6 +262,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       detected: parsed.detected,
       ...(extracted ? {candidates: written, chunks_failed: extracted.chunks.failed} : {}),
       retrieval_chunks: indexed.written,
+      prepared_requests: preparedRequests,
       ...(deps.spend ? {spend: deps.spend()} : {}),
       ...(deps.lineage ? {model_lineage: deps.lineage()} : {}),
     });
