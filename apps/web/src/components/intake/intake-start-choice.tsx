@@ -3,9 +3,12 @@ import {getTranslations} from "next-intl/server";
 
 import type {IntakeContext, IntakeStartActionSet} from "@/lib/intake/types";
 
+import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
+
 type Props = {
   locale: string;
   context: IntakeContext;
+  journey: "company" | "originator";
   actions: IntakeStartActionSet;
 };
 
@@ -16,11 +19,18 @@ type Props = {
  * to make before it has even described the transaction. The guided journey asks the purpose
  * first, builds the request list from it, and lets files and direct answers coexist later.
  */
-export async function IntakeStartChoice({locale, context, actions}: Props) {
+export async function IntakeStartChoice({locale, context, journey, actions}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.start"});
   const isCase = context === "workspace";
   return (
     <section className="intake-start">
+      <IntakeJourneyTelemetry
+        journey={journey}
+        locale={locale}
+        stage="start"
+        state="open"
+        surface={context}
+      />
       <header>
         <span className="section-kicker">{isCase ? t("kickerCase") : t("kickerOnboarding")}</span>
         <h2>{isCase ? t("titleCase") : t("titleOnboarding")}</h2>

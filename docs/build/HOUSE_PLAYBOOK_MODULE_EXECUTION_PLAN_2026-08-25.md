@@ -214,6 +214,33 @@ escopo estreito da autorização e retirada do comando legado. O Security Adviso
 zero findings; os avisos de performance continuam restritos aos índices ainda sem uso no banco
 vazio e à configuração informativa de conexões do Auth.
 
+### Incremento executável 06, sugestão de perímetro e ciclo de autorização
+
+Entidades encontradas em documentos não entram automaticamente no perímetro econômico. O worker
+registra sugestões ligadas à evidência; membro autorizado confirma ou descarta cada uma e a decisão
+entra no stream imutável. Perímetro declarado, suportado por documento e confirmado continuam
+estados distintos.
+
+A autorização do assessor passa por `declared`, `documented`, `verified` e `revoked`. Documento
+classificado pode suportar a declaração e levá-la a `documented`, mas somente a operação Offroad
+pode verificar. Revogação remove poderes, bloqueia novas solicitações e impede introdução
+qualificada. Grants foram validados em staging para que escrita direta não contorne os comandos.
+
+### Incremento executável 07, telemetria anônima e gold cases de fechamento
+
+O funil M0 passa a emitir somente `intake_journey_stage_viewed`, com etapa, superfície, jornada,
+estado e bandas agregadas de documentos e solicitações. PostHog permanece sem autocapture, replay,
+page leave, persistência ou perfil de pessoa; DNT é respeitado e o schema rejeita qualquer campo de
+case, documento, valor ou identidade. Abandono é inferido pela passagem entre etapas, nunca por um
+evento enganoso de fechamento da página.
+
+Quatro gold cases explícitos completam a matriz específica de M0: início com um único documento,
+sala desorganizada sem falsa completude, assessor com vários clientes segregados e possível
+liquidez disfarçada de capex. Todos atravessam o replay canônico. A carteira de acreditação passa a
+18 cenários, mas nenhum procedimento IN é promovido: o piloto real e a revisão independente da
+versão exata continuam obrigatórios. Contrato de medição e critérios do piloto:
+`docs/build/M0_PILOT_MEASUREMENT_2026-08-25.md`.
+
 ## 5. M1, Empresa e setor
 
 ### Missão

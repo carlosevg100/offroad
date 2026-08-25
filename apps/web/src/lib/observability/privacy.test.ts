@@ -38,6 +38,28 @@ describe("privacy-safe observability", () => {
     });
   });
 
+  it("accepts a banded intake stage and rejects case-level context", () => {
+    const event = {
+      locale: "pt-BR",
+      surface: "workspace",
+      journey: "company",
+      stage: "documents",
+      state: "open",
+      evidenceBand: "two_to_five",
+      requestBand: "three_to_five",
+    };
+
+    expect(parseProductEvent("intake_journey_stage_viewed", event)).toEqual(event);
+    expect(parseProductEvent("intake_journey_stage_viewed", {
+      ...event,
+      intakeSessionId: "7990d3a9-115e-4ad0-b6a7-ae5ab56afc1a",
+    })).toBeNull();
+    expect(parseProductEvent("intake_journey_stage_viewed", {
+      ...event,
+      documentCount: 4,
+    })).toBeNull();
+  });
+
   it("removes PII, identifiers, request payloads and financial numbers", () => {
     const event: Event = {
       message: "person@example.com failed opportunity 7990d3a9-115e-4ad0-b6a7-ae5ab56afc1a for R$ 54000000",

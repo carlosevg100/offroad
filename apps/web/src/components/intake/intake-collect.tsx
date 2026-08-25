@@ -14,6 +14,7 @@ import {IntakeDeliveryMap} from "./intake-delivery-map";
 import {IntakeDealBrief} from "./intake-deal-brief";
 import {IntakeInformation} from "./intake-information";
 import {IntakeGovernance} from "./intake-governance";
+import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
 
 type Props = {
   locale: string;
@@ -43,13 +44,14 @@ type Props = {
   backHref?: string;
   resolveScopeSuggestionAction?: (formData: FormData) => Promise<void>;
   revokeAuthorizationAction?: (formData: FormData) => Promise<void>;
+  surface: "onboarding" | "workspace";
 };
 
 /**
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref, resolveScopeSuggestionAction, revokeAuthorizationAction}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -73,6 +75,15 @@ export async function IntakeCollect({locale, session, documents, organizationId,
     : null;
   return (
     <section className={`${className ?? "intake-form"} intake-collect`}>
+      <IntakeJourneyTelemetry
+        activeRequestCount={checklist?.activeBatch.length ?? 0}
+        documentCount={documents.length}
+        journey={session.journey === "originator" ? "originator" : "company"}
+        locale={locale}
+        stage={currentStage}
+        state={failed ? "failed" : processing ? "processing" : "open"}
+        surface={surface}
+      />
       <nav aria-label={t("guided.progressLabel")} className="intake-guide__progress">
         {[1, 2, 3].map((number) => (
           <span className={number === stageNumber ? "is-current" : number < stageNumber ? "is-complete" : ""} key={number}>

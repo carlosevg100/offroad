@@ -8,6 +8,7 @@ import type {IntakeCandidate, IntakeDocument, IntakeIssue, IntakeReviewActionSet
 
 import {IntakeCase} from "./intake-case";
 import {IntakeGovernance} from "./intake-governance";
+import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
 
 type Props = {
   locale: string;
@@ -19,6 +20,7 @@ type Props = {
   manualHref?: string;
   /** The desk's read of the case: readiness, capacity, structure, brief. Null before processing. */
   caseState?: CaseState | null;
+  surface: "onboarding" | "workspace";
 };
 
 const HIGH_CONFIDENCE = 0.85;
@@ -55,7 +57,7 @@ function issueEvidence(raw: unknown): IssueEvidence[] {
   });
 }
 
-export async function IntakeReview({locale, session, documents, candidates, issues, actions, manualHref, caseState}: Props) {
+export async function IntakeReview({locale, session, documents, candidates, issues, actions, manualHref, caseState, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.review"});
   const documentById = new Map(documents.map((document) => [document.id, document]));
   const openIssues = issues.filter((issue) => issue.status === "open");
@@ -76,6 +78,14 @@ export async function IntakeReview({locale, session, documents, candidates, issu
 
   return (
     <div className="intake-review">
+      <IntakeJourneyTelemetry
+        documentCount={documents.length}
+        journey={session.journey === "originator" ? "originator" : "company"}
+        locale={locale}
+        stage="review"
+        state="review_ready"
+        surface={surface}
+      />
       <header className="intake-review__hero">
         <div><span className="section-kicker">{t("kicker")}</span><h3>{t("title")}</h3><p>{t("body")}</p></div>
         <div className="intake-review__stats">

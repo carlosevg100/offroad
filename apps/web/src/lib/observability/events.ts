@@ -1,6 +1,12 @@
 import {z} from "zod";
 
 const locale = z.enum(["pt-BR", "en-US"]);
+const intakeJourney = z.enum(["company", "originator"]);
+const intakeSurface = z.enum(["onboarding", "workspace"]);
+const intakeStage = z.enum(["start", "operation", "request", "documents", "review"]);
+const intakeState = z.enum(["open", "processing", "failed", "review_ready"]);
+const evidenceBand = z.enum(["none", "single", "two_to_five", "six_plus"]);
+const requestBand = z.enum(["none", "one_to_two", "three_to_five"]);
 
 export const productEventSchemas = {
   marketing_demo_viewed: z.object({locale, origin: z.enum(["landing", "workspace"])}).strict(),
@@ -11,6 +17,15 @@ export const productEventSchemas = {
     role: z.enum(["owner", "admin", "member", "analyst", "relationship_manager", "compliance"]),
   }).strict(),
   opportunity_intake_created: z.object({locale, currency: z.string().regex(/^[A-Z]{3}$/)}).strict(),
+  intake_journey_stage_viewed: z.object({
+    locale,
+    surface: intakeSurface,
+    journey: intakeJourney,
+    stage: intakeStage,
+    state: intakeState,
+    evidenceBand,
+    requestBand,
+  }).strict(),
   intake_request_batch_viewed: z.object({
     locale,
     archetype: z.enum([

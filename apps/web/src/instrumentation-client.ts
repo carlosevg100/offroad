@@ -32,7 +32,10 @@ if (posthogToken) {
       disable_session_recording: true,
       person_profiles: "never",
       persistence: "memory",
-      opt_out_capturing_by_default: true,
+      // This is a deliberately anonymous product-health stream: no autocapture, replay,
+      // persistent identity or free-form properties. DNT still wins. Keeping the SDK opted out
+      // here made every allow-listed event below a no-op, so the intake funnel was not measurable.
+      opt_out_capturing_by_default: false,
       respect_dnt: true,
       disable_surveys: true,
       before_send(event) {

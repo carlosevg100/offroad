@@ -16,7 +16,7 @@ const evidence = (procedureId: string, procedureVersion: string) => promotionEvi
 
 describe("institutional procedure accreditation", () => {
   it("keeps an explicit portfolio of live, partial and planned cases", () => {
-    expect(goldCasePortfolio.map((item) => goldCaseRequirementSchema.parse(item))).toHaveLength(14);
+    expect(goldCasePortfolio.map((item) => goldCaseRequirementSchema.parse(item))).toHaveLength(18);
     expect(new Set(goldCasePortfolio.map((item) => item.status))).toEqual(new Set(["live", "partial", "planned"]));
     expect(goldCasePortfolio.find((item) => item.id === "receivables-portfolio-exhaustion")?.caveat).toMatch(/FIDC/);
   });
