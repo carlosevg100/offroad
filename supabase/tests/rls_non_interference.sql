@@ -2315,6 +2315,9 @@ declare
   route_event constant uuid := '73000000-0000-4000-8000-000000000002';
   answer_event constant uuid := '73000000-0000-4000-8000-000000000003';
   clear_event constant uuid := '73000000-0000-4000-8000-000000000004';
+  terminal_answer_event constant uuid := '73000000-0000-4000-8000-000000000005';
+  blocked_route_event constant uuid := '73000000-0000-4000-8000-000000000006';
+  blocked_answer_event constant uuid := '73000000-0000-4000-8000-000000000007';
   outcome jsonb;
   accepted boolean;
 begin
@@ -2384,6 +2387,38 @@ begin
     raise exception 'clearing did not preserve the event history';
   end if;
 
+  perform public.record_intake_information_command(
+    org_a, session_id, terminal_answer_event, 'expansion_rationale',
+    'Informação vigente no momento da confirmação.', 'provided', null
+  );
+
+  set local role postgres;
+  update public.document_intake_sessions set status = 'confirmed' where id = session_id;
+  set local role authenticated;
+
+  accepted := true;
+  begin
+    perform public.set_intake_archetype_command(
+      org_a, session_id, blocked_route_event, 'refinance', 'medium',
+      'Tentativa de alterar uma sessão já confirmada.', '{}'::text[]
+    );
+  exception when object_not_in_prerequisite_state then accepted := false;
+  end;
+  if accepted then raise exception 'terminal session accepted an archetype change'; end if;
+
+  accepted := true;
+  begin
+    perform public.record_intake_information_command(
+      org_a, session_id, blocked_answer_event, 'expansion_rationale',
+      'Tentativa de reescrever uma resposta confirmada.', 'provided', null
+    );
+  exception when object_not_in_prerequisite_state then accepted := false;
+  end;
+  if accepted then raise exception 'terminal session accepted an information change'; end if;
+  if (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 4 then
+    raise exception 'rejected terminal commands appended events';
+  end if;
+
   accepted := true;
   begin
     insert into public.intake_domain_events (
@@ -2420,6 +2455,13 @@ begin
   );
   if (select count(*) from public.intake_domain_events where intake_session_id = session_id) <> 0 then
     raise exception 'tenant B read tenant A intake events';
+  end if;
+
+  set local role postgres;
+  delete from public.document_intake_sessions where id = session_id;
+  if exists (select 1 from public.intake_domain_events where intake_session_id = session_id)
+    or exists (select 1 from public.intake_information_answers where intake_session_id = session_id) then
+    raise exception 'controlled session erasure did not cascade through intake history';
   end if;
 end;
 $$;

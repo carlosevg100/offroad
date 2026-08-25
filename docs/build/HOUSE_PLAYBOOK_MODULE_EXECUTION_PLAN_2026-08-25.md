@@ -144,6 +144,10 @@ o evento na mesma transação. Reuso idempotente devolve o primeiro evento; a me
 conteúdo falha fechada. A exclusão controlada do case continua removendo o ledger por cascade para
 preservar o direito de eliminação de dados.
 
+Sessões confirmadas ou canceladas rejeitam novas mudanças de arquétipo e informação. O bloqueio
+vive na fronteira das projeções, não apenas na interface, e preserva o cascade da exclusão
+controlada.
+
 O contrato de replay também registra `document_removed` e `information_cleared`, eliminando a
 tentação de reescrever a história. Resposta `partial` fica visível, mas não conta como requisito
 integralmente satisfeito.
