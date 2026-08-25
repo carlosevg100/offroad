@@ -213,6 +213,14 @@ describe("worker case analysis", () => {
       caseId: "worker-receivables-case",
       decision: {status: "ready_for_structuring", externalDirectionAllowed: false},
     });
+    const persistedReconciliation = persisted.reconciliation as {
+      financialTruth: {procedureCoverage: Array<{procedureId: string}>};
+      debtTruth: {procedureCoverage: Array<{procedureId: string}>};
+    };
+    expect(persistedReconciliation.financialTruth.procedureCoverage).toHaveLength(18);
+    expect(persistedReconciliation.debtTruth.procedureCoverage).toHaveLength(31);
+    expect(persistedReconciliation.financialTruth.procedureCoverage[0]?.procedureId).toBe("Q-01");
+    expect(persistedReconciliation.debtTruth.procedureCoverage[30]?.procedureId).toBe("D-31");
     expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
   });
 });

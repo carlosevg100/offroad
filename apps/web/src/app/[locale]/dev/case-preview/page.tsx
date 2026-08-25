@@ -1,5 +1,6 @@
 import {notFound} from "next/navigation";
 
+import {IntakeCase} from "@/components/intake/intake-case";
 import {IntakeDeliveryMap, type DeliveryMapChecklist} from "@/components/intake/intake-delivery-map";
 import {IntakeCommittee} from "@/components/intake/intake-committee";
 import {IntakeDataRoom} from "@/components/intake/intake-data-room";
@@ -13,6 +14,8 @@ import {designCollateralPackage} from "@offroad/deal-structure";
 import {planDataRoom} from "@offroad/data-room";
 import {auroraDeskState} from "@/lib/intake/dev/aurora-desk";
 import {nimbusDeskState} from "@/lib/intake/dev/nimbus-desk";
+import {executeCaseEngine, publicCaseRunReport, publicCaseState} from "@offroad/case-engine";
+import type {FactCandidate} from "@offroad/reconciliation";
 
 /**
  * Development-only preview of the desk panel, fed with Aurora's state.
@@ -56,10 +59,98 @@ async function noop() {
   "use server";
 }
 
+const truthFact = (
+  fieldPath: string,
+  normalizedValue: string,
+  valueType: FactCandidate["valueType"] = "number",
+  sourceDocument = "preview-financials",
+  periodEnd?: string,
+): FactCandidate => ({
+  fieldPath,
+  normalizedValue,
+  valueType,
+  sourceDocument,
+  evidenceRank: 1,
+  informationClass: "audited",
+  confidence: 0.99,
+  anchorVerified: true,
+  anchor: {kind: "table_cell", fieldPath},
+  ...(periodEnd ? {periodEnd} : {}),
+});
+
+async function truthPreviewState(locale: "pt" | "en") {
+  const period = "2025-12-31";
+  const result = await executeCaseEngine({
+    runId: "preview-m2-m3",
+    caseId: "preview-m2-m3",
+    archetypeId: "growth_expansion",
+    locale,
+    referenceDate: "2026-08-25",
+    candidates: [
+      truthFact("company.legal_name", "Companhia Horizonte S.A.", "text"),
+      truthFact("transaction.requested_amount", "40000000"),
+      truthFact("historical_financials.2025.revenue", "210000000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.ebitda", "31500000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.receivables", "38000000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.inventory", "27000000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.payables", "22000000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.cash", "12000000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.cash_taxes", "2800000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.maintenance_capex", "4500000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.working_capital_investment", "3200000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.fixed_charges", "900000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.total_assets", "180000000", "number", "preview-financials", period),
+      truthFact("historical_financials.2025.total_liabilities_equity", "180000000", "number", "preview-financials", period),
+      truthFact("debt.total_gross", "48500000", "number", "preview-debt"),
+      truthFact("debt.instruments.1.contract_id", "CCB-001", "text", "preview-debt"),
+      truthFact("debt.instruments.1.lender", "Banco Alfa", "text", "preview-debt"),
+      truthFact("debt.instruments.1.instrument_type", "CCB", "text", "preview-debt"),
+      truthFact("debt.instruments.1.principal", "28500000", "number", "preview-debt"),
+      truthFact("debt.instruments.1.currency", "BRL", "text", "preview-debt"),
+      truthFact("debt.instruments.1.indexer", "CDI", "text", "preview-debt"),
+      truthFact("debt.instruments.1.maturity", "2028-06-30", "date", "preview-debt"),
+      truthFact("debt.instruments.1.collateral", "Recebíveis", "text", "preview-debt"),
+      truthFact("debt.instruments.1.covenant_included", "true", "boolean", "preview-debt"),
+      truthFact("debt.instruments.1.capacity_obligation", "true", "boolean", "preview-debt"),
+      truthFact("debt.instruments.2.contract_id", "DEB-002", "text", "preview-debt"),
+      truthFact("debt.instruments.2.lender", "Debênture 1ª série", "text", "preview-debt"),
+      truthFact("debt.instruments.2.instrument_type", "Debênture", "text", "preview-debt"),
+      truthFact("debt.instruments.2.principal", "20000000", "number", "preview-debt"),
+      truthFact("debt.instruments.2.currency", "BRL", "text", "preview-debt"),
+      truthFact("debt.instruments.2.indexer", "CDI", "text", "preview-debt"),
+      truthFact("debt.instruments.2.maturity", "2029-12-31", "date", "preview-debt"),
+      truthFact("debt.instruments.2.collateral", "Quirografária", "text", "preview-debt"),
+      truthFact("debt.instruments.2.covenant_included", "true", "boolean", "preview-debt"),
+      truthFact("debt.instruments.2.capacity_obligation", "true", "boolean", "preview-debt"),
+      truthFact("debt.payments.1.instrument_id", "CCB-001", "text", "preview-debt"),
+      truthFact("debt.payments.1.date", "2027-06-30", "date", "preview-debt"),
+      truthFact("debt.payments.1.principal", "8000000", "number", "preview-debt"),
+      truthFact("debt.payments.1.interest", "4200000", "number", "preview-debt"),
+    ],
+    documents: [
+      {id: "preview-financials", kind: "audited_financial_statements"},
+      {id: "preview-debt", kind: "debt_schedule"},
+    ],
+    roomDocuments: [],
+    dealBrief: {requestedAmount: "40000000", sector: "Varejo"},
+    resolvedMandates: [],
+    externalReleaseApproved: false,
+  });
+  return {
+    ...publicCaseState(result.state),
+    modelInvocations: [],
+    caseRunReport: publicCaseRunReport(result.report),
+  };
+}
+
 export default async function CasePreviewPage({params, searchParams}: {params: Promise<{locale: string}>; searchParams: Promise<{case?: string}>}) {
   if (process.env.NODE_ENV === "production") notFound();
   const {locale} = await params;
   const {case: which} = await searchParams;
+  if (which === "truth") {
+    const state = await truthPreviewState(locale === "en-US" ? "en" : "pt");
+    return <main className="app-main" style={{margin: "0 auto", maxWidth: 1240, padding: "32px 20px"}}><IntakeCase caseState={state} locale={locale} sessionId="preview-m2-m3" /></main>;
+  }
   // `?case=nimbus` shows the cash-burning profile; anything else, Aurora.
   const state = which === "nimbus" ? nimbusDeskState() : auroraDeskState();
   const deal = {archetypeId: which === "nimbus" ? "venture_debt" : "growth_expansion", amount: which === "nimbus" ? "15000000" : "42300000", tenorMonths: which === "nimbus" ? 36 : 48, rating: "adequate" as const, sector: which === "nimbus" ? "software" : "materiais de construção", secured: which !== "nimbus", ...(which === "nimbus" ? {ventureBacked: true} : {})};

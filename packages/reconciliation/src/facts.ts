@@ -195,20 +195,22 @@ const fold = (text: string): string => text.toLowerCase().normalize("NFD").repla
  * name identifies a contract.
  */
 /** Groups where a name identifies the row, and the field that carries the name. */
-const identityGroups: ReadonlyArray<{group: string; key: string}> = [
-  {group: "debt.instruments", key: "lender"},
+const identityGroups: ReadonlyArray<{group: string; keys: string[]}> = [
+  // A bank is not a contract. Prefer contract/issuance/series; when it is absent, combine
+  // lender, instrument and maturity so two facilities from the same bank are not collapsed.
+  {group: "debt.instruments", keys: ["contract_id", "lender", "instrument_type", "maturity"]},
   // Nimbus measured the people case: the deck's management table and its cap table both list
   // the founders, and two tables gave the CEO twice with the same 28%.
-  {group: "company.controllers", key: "name"},
-  {group: "company.management", key: "name"},
-  {group: "customers.top_customers", key: "name"},
+  {group: "company.controllers", keys: ["name"]},
+  {group: "company.management", keys: ["name"]},
+  {group: "customers.top_customers", keys: ["name"]},
 ];
 
 export function mergeInstrumentsByIdentity(facts: readonly ReconciledFact[]): ReconciledFact[] {
-  return identityGroups.reduce<ReconciledFact[]>((current, entry) => mergeByIdentity(current, entry.group, entry.key), [...facts]);
+  return identityGroups.reduce<ReconciledFact[]>((current, entry) => mergeByIdentity(current, entry.group, entry.keys), [...facts]);
 }
 
-function mergeByIdentity(facts: readonly ReconciledFact[], group: string, identityKey: string): ReconciledFact[] {
+function mergeByIdentity(facts: readonly ReconciledFact[], group: string, identityKeys: string[]): ReconciledFact[] {
   const byTuple = new Map<number, ReconciledFact[]>();
   for (const fact of facts) {
     const match = indexedPath.exec(fact.key.fieldPath);
@@ -218,7 +220,17 @@ function mergeByIdentity(facts: readonly ReconciledFact[], group: string, identi
   }
   if (byTuple.size < 2) return [...facts];
   const identity = (tuple: ReconciledFact[]): string | null => {
-    const named = tuple.find((fact) => fact.key.fieldPath.endsWith(`.${identityKey}`));
+    if (group === "debt.instruments") {
+      const contract = tuple.find((fact) => fact.key.fieldPath.endsWith(".contract_id"));
+      if (contract) return `contract:${fold(contract.value)}`;
+      const lender = tuple.find((fact) => fact.key.fieldPath.endsWith(".lender"));
+      // An issuance/series label is itself the contractual identity across an ITR, an
+      // indenture and a corporate approval. An ordinary bank name is not.
+      if (lender && /(emiss|serie|series|debenture)/.test(fold(lender.value))) return `issuance:${fold(lender.value)}`;
+      const parts = identityKeys.slice(1).map((key) => tuple.find((fact) => fact.key.fieldPath.endsWith(`.${key}`))?.value).filter(Boolean);
+      return parts.length >= 2 ? `terms:${parts.map((value) => fold(value!)).join("|")}` : null;
+    }
+    const named = tuple.find((fact) => identityKeys.some((key) => fact.key.fieldPath.endsWith(`.${key}`)));
     return named ? fold(named.value) : null;
   };
   const canonical = new Map<string, number>();

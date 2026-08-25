@@ -8,7 +8,7 @@ import {
 import {ontologyVersion} from "@offroad/credit-ontology";
 import {
   creditPlaybookVersion,
-  growthCapexProcedureRegistry,
+  institutionalProcedureRegistryHash,
   housePlaybookSourceHash,
   housePlaybookSourceVersion,
   materialTemplateRegistryHash,
@@ -69,7 +69,7 @@ export function pipelineVersions(input: {snapshot: EconomicInputSnapshot; extrac
     financialCore: financialCoreVersion,
     playbook: creditPlaybookVersion,
     procedureCompiler: procedureCompilerVersion,
-    procedureRegistry: growthCapexProcedureRegistry.registryHash,
+    procedureRegistry: institutionalProcedureRegistryHash,
     housePlaybook: {
       version: housePlaybookSourceVersion,
       sourceHash: housePlaybookSourceHash,

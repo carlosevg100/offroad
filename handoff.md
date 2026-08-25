@@ -8,6 +8,31 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: M2 financial truth and M3 debt truth, 25 August 2026
+
+The deterministic case pipeline now compiles and persists two governed truth sets before
+subsequent structuring and materials work:
+
+- M2 financial truth covers the eighteen `Q-01` through `Q-18` procedures. It preserves
+  reported, adjusted, calculated and projected values separately; checks accounting identities;
+  builds explicit bridges for EBITDA, cash conversion, working capital and maintenance capex;
+  and reports missing or non-computable outputs rather than inventing a value.
+- M3 debt truth covers the thirty-one `D-01` through `D-31` procedures. It builds a
+  contract-level ledger, separate gross, net, covenant, capacity, quasi-debt, contingent and
+  off-balance views, twelve-month debt service, maturity and concentration analyses, debt and
+  interest bridges, liquidity coverage, governed stresses and cross-default propagation.
+
+Both modules use Decimal-based functions from `@offroad/financial-core`, carry evidence and
+exceptions in typed outputs, and expose exact per-procedure coverage in the private case snapshot.
+The document worker persists those snapshots and the borrower workspace renders their status,
+core outputs and open information needs. The full monorepo quality gate and responsive visual QA
+pass for the implementation.
+
+This means the technical rail is ready for a new end-to-end case. It does not mean every procedure
+is institutionally accredited. Each procedure remains a candidate until its exact fingerprint has
+passed the required gold case, adversarial cases, current house reference data and independent
+economic review. Missing policy inputs, including unapproved stress references, fail closed.
+
 ### Engineering update: language and conduct shadow gate, 25 August 2026
 
 House Playbook procedures `LC-01` through `LC-13` now compile as thirteen individually promotable
