@@ -61,10 +61,11 @@ has zero findings and Performance Advisor has zero unindexed foreign keys. Main 
 the worker task definition `offroad-document-worker:82` from commit `f7e3205`; ECS reported the
 service stable, so governed retrieval is active in the production worker.
 
-### Engineering update: controlled production, 24 August 2026
+### Engineering update: controlled production, 25 August 2026
 
-Gate 8 is implemented behind ADR 0011 and is being proven in the isolated Supabase staging
-branch before production. `@offroad/release-governance` compares primary, shadow and replay reports
+Gate 8 is implemented behind ADR 0011. Its five migrations were proven first in the isolated,
+data-less Supabase staging branch and then promoted to the production database.
+`@offroad/release-governance` compares primary, shadow and replay reports
 without reading customer content. Input changes, status regressions and contract failures are
 critical; shadow wording drift remains visible; rollout transitions fail closed.
 
@@ -77,10 +78,13 @@ change rollout state or write evidence.
 Rollout is organization-scoped: `off`, `shadow`, `canary`, `active`, `paused`. Ten distinct real
 cases are required for canary, another disjoint ten for active, and active additionally requires
 explicit external-release approval. Synthetic fixtures never count. The database and domain
-contracts are present in staging across all five Gate 8 migrations. The full RLS non-interference
-suite passes, Security Advisor has zero findings and Performance Advisor has zero unindexed foreign
-keys. Lint, typecheck, all tests and the production build pass across 38 packages. Production
-promotion and both real-case cohorts remain outstanding and must not be reported as complete.
+contracts are present in staging and production across all five Gate 8 migrations. The full RLS
+non-interference suite passes in staging, and the production Security Advisor has zero findings and
+the Performance Advisor has zero unindexed foreign keys. Immediately after database promotion,
+production contained zero rollout policies, controlled executions, comparisons, frozen inputs,
+frozen results, cohorts, cohort cases and release decisions. Lint, typecheck, all tests and the
+production build pass across 38 packages. Application and worker deployment plus both real-case
+cohorts remain outstanding and must not be reported as complete.
 
 ### Engineering update: governed case worker, 24 August 2026
 
