@@ -8,7 +8,7 @@ import {
   publicCaseState,
   type EconomicInputSnapshot,
 } from "@offroad/case-engine";
-import type {Material} from "@offroad/case-materials";
+import type {LanguageConductGovernance, Material} from "@offroad/case-materials";
 import {
   BRIEF_SYSTEM,
   SEMANTIC_AUDIT_SYSTEM,
@@ -170,6 +170,20 @@ const marketDistributionContextSchema=z.object({
     companyAuthorization:{authorized:false,fingerprint:null,scope:[],recipientIds:[]},
   }),
 });
+const conductContextSchema=z.object({
+  organizationId:z.string().uuid(),
+  policy:z.object({
+    version:z.string().min(1),status:z.enum(["active","invalidated"]),disclaimerId:z.string().min(1),
+    validFrom:z.iso.date(),validUntil:z.iso.date().nullable(),
+  }).nullable().default(null),
+  conflictReview:z.object({
+    caseFingerprint:z.string().regex(/^[0-9a-f]{64}$/),status:z.enum(["clear","disclosed_accepted","unresolved"]),
+    reviewedBy:z.string().uuid(),reviewedAt:z.string().datetime({offset:true}),
+  }).nullable().default(null),
+  diligenceSurprises:z.array(z.object({
+    id:z.string().min(1),description:z.string().min(1),responsibleProcedureId:z.string().nullable(),correctiveActionId:z.string().nullable(),
+  })).default([]),
+});
 const redFlagContextSchema=z.object({
   policy:z.object({
     version:z.string().min(1),
@@ -251,6 +265,7 @@ const rawCaseInputSchema = z.object({
   pricing_context: pricingContextSchema.nullable().default(null),
   market_distribution_context:marketDistributionContextSchema.nullable().default(null),
   red_flag_context:redFlagContextSchema.nullable().default(null),
+  conduct_context:conductContextSchema.nullable().default(null),
   _execution: z.object({
     id: z.uuid(),
     mode: executionModeSchema,
@@ -384,6 +399,24 @@ export async function processCaseAnalysisJob(
         }:null,
         declineCommunication:raw.red_flag_context.declineCommunication,
       }}:{}),
+      ...(raw.conduct_context?{languageConductGovernance:{
+        organizationId:raw.conduct_context.organizationId,
+        policy:raw.conduct_context.policy,
+        conflictReview:raw.conduct_context.conflictReview,
+        diligenceSurprises:raw.conduct_context.diligenceSurprises.map((surprise)=>({
+          id:surprise.id,description:surprise.description,
+          ...(surprise.responsibleProcedureId?{responsibleProcedureId:surprise.responsibleProcedureId}:{}),
+          ...(surprise.correctiveActionId?{correctiveActionId:surprise.correctiveActionId}:{}),
+        })),
+        ...(raw.market_distribution_context?.authorization&&raw.market_distribution_context.authorization.recipientIds[0]?{externalCommunication:{
+          targetOrganizationId:raw.conduct_context.organizationId,
+          targetCaseId:job.intake_session_id,
+          recipientId:raw.market_distribution_context.authorization.recipientIds[0],
+          recipientAuthorized:raw.market_distribution_context.authorization.revokedAt===null,
+          packageFingerprint:raw.market_distribution_context.authorization.materialFingerprint,
+          hasMaterialCommitment:false,
+        }}:{}),
+      } satisfies LanguageConductGovernance}:{}),
       writeBrief: async ({reconciliation, desk, trajectory}) => {
         const evidence = deskEvidence(desk, trajectory);
         const callStart = dependencies.lineage().length;

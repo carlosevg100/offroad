@@ -3364,6 +3364,50 @@ $$;
 
 set local role postgres;
 
+-- M10 keeps conflict review and communication evidence append-only, tenant-scoped and bound to
+-- exact economic and material fingerprints.
+insert into public.conduct_policies (
+  version,status,disclaimer_id,valid_from,rules,methodology_source,approved_by,approved_at
+) values (
+  '2026.08.25-v1','active','offroad-dcm-advisory-boundary-2026-08-25',current_date,
+  '{"externalRelease":"fail_closed"}'::jsonb,
+  'RLS fixture for the language and conduct governance boundary.',
+  '10000000-0000-4000-8000-000000000001',now()
+);
+
+set local role authenticated;
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
+do $$
+declare conflict_id uuid; communication_id uuid; surprise_id uuid;
+begin
+  conflict_id:=public.review_engagement_conflict(
+    '20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001',repeat('b',64),
+    'clear','[]'::jsonb,'A busca não identificou mandato oposto ou representação dos dois lados.'
+  );
+  communication_id:=public.record_material_communication(
+    '20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001',repeat('a',64),
+    'credit-team','email',repeat('c',64),false
+  );
+  surprise_id:=public.record_diligence_surprise(
+    '20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001',
+    'O financiador identificou uma restrição contratual que não constava do material recebido.','ES-13','gold-case-es-13'
+  );
+  if conflict_id is null or communication_id is null or surprise_id is null then raise exception 'M10 commands did not persist'; end if;
+  begin update public.engagement_conflict_reviews set rationale='tampered'; raise exception 'conflict ledger accepted update'; exception when insufficient_privilege then null; end;
+  begin delete from public.material_communication_records; raise exception 'communication ledger accepted delete'; exception when insufficient_privilege then null; end;
+end $$;
+
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',true);
+do $$
+declare accepted boolean:=true;
+begin
+  if (select count(*) from public.engagement_conflict_reviews)<>0 or (select count(*) from public.material_communication_records)<>0 or (select count(*) from public.diligence_surprises)<>0 then raise exception 'tenant B can read tenant A M10 data'; end if;
+  begin perform public.review_engagement_conflict('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001',repeat('d',64),'clear','[]'::jsonb,'Cross tenant review must never be accepted by the command.'); exception when insufficient_privilege then accepted:=false; end;
+  if accepted then raise exception 'tenant B appended M10 conflict review'; end if;
+end $$;
+
+set local role postgres;
+
 -- House pricing evidence is not a tenant data product. Even an authenticated organization owner
 -- cannot enumerate policies or observations; only the capability-bound worker can receive the
 -- governed aggregate context through its security-definer command.

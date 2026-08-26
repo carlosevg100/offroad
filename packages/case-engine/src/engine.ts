@@ -1,4 +1,4 @@
-import {buildMaterialTruthSet, compileMaterials, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
+import {buildLanguageConductTruthSet, buildMaterialTruthSet, compileMaterials, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
 import {runCase, type CaseRunPolicy, type CaseRunReport, type StageContext} from "@offroad/case-runner";
 import {
   assessReadiness,
@@ -99,7 +99,7 @@ import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@off
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.26-v11";
+export const caseEngineVersion = "2026.08.26-v12";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -152,6 +152,7 @@ export type CaseEngineInput = {
     mandateDecision?: MandateDecision | null;
     declineCommunication?: DeclineCommunication | null;
   };
+  languageConductGovernance?: LanguageConductGovernance;
   claimDecisions?: ClaimDecision[];
   informationAnswers?: InformationAnswers;
   requirementResponses?: RequirementResponses;
@@ -195,6 +196,7 @@ export type CaseEngineState = {
   structureTruth: StructureTruthSet;
   pricingTruth: PricingTruthSet;
   materialTruth: MaterialTruthSet;
+  languageConductTruth: LanguageConductTruthSet;
   redFlagTruth: RedFlagTruthSet;
   desk: DeskAnalysis | null;
   trajectory: Trajectory | null;
@@ -275,11 +277,16 @@ export type PublicRedFlagTruthSet={
   missingInputs:string[];
 };
 
-export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"|"materialTruth"|"redFlagTruth"> & {
+export type PublicLanguageConductTruthSet=Pick<LanguageConductTruthSet,
+  "version"|"status"|"internalMaterialsAllowed"|"externalReleaseAllowed"|"qualifiedIntroductionAllowed"|"blockerCodes"|"reviewCodes"
+>&{policyStatus:LanguageConductTruthSet["policy"]["status"]};
+
+export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"|"materialTruth"|"redFlagTruth"|"languageConductTruth"> & {
   matching: PublicMatchingSummary;
   pricingTruth: PublicPricingTruthSet;
   materialTruth:PublicMaterialTruthSet;
   redFlagTruth:PublicRedFlagTruthSet;
+  languageConductTruth:PublicLanguageConductTruthSet;
 };
 
 export function summarizeMatching(matching: CaseEngineState["matching"]): PublicMatchingSummary {
@@ -346,6 +353,16 @@ export function publicCaseState(state: CaseEngineState): PublicCaseEngineState {
       qualifiedIntroductionAllowed:state.redFlagTruth.mandate.qualifiedIntroductionAllowed,
       missingInputs:[...state.redFlagTruth.missingInputs],
     },
+    languageConductTruth:{
+      version:state.languageConductTruth.version,
+      status:state.languageConductTruth.status,
+      internalMaterialsAllowed:state.languageConductTruth.internalMaterialsAllowed,
+      externalReleaseAllowed:state.languageConductTruth.externalReleaseAllowed,
+      qualifiedIntroductionAllowed:state.languageConductTruth.qualifiedIntroductionAllowed,
+      blockerCodes:[...state.languageConductTruth.blockerCodes],
+      reviewCodes:[...state.languageConductTruth.reviewCodes],
+      policyStatus:state.languageConductTruth.policy.status,
+    },
   };
 }
 
@@ -355,9 +372,19 @@ export function publicCaseRunReport(report: CaseRunReport): CaseRunReport {
   if (!matching || matching.status !== "succeeded" || !matching.output) return report;
   const output = matching.output as CaseEngineState["matching"];
   const summary = summarizeMatching(output);
-  const stages = report.stages.map((stage) => stage.stage === "matching"
-    ? {...stage, output: summary, outputFingerprint: fingerprintJson(summary)}
-    : stage);
+  const stages = report.stages.map((stage) => {
+    if(stage.stage==="matching")return {...stage,output:summary,outputFingerprint:fingerprintJson(summary)};
+    if(stage.stage==="language_conduct"&&stage.status==="succeeded"&&stage.output){
+      const truth=(stage.output as LanguageConductOutput).languageConductTruth;
+      const output={languageConductTruth:{
+        version:truth.version,status:truth.status,internalMaterialsAllowed:truth.internalMaterialsAllowed,
+        externalReleaseAllowed:truth.externalReleaseAllowed,qualifiedIntroductionAllowed:truth.qualifiedIntroductionAllowed,
+        blockerCodes:truth.blockerCodes,reviewCodes:truth.reviewCodes,policyStatus:truth.policy.status,
+      }};
+      return {...stage,output,outputFingerprint:fingerprintJson(output)};
+    }
+    return stage;
+  });
   const payload = {
     ...report,
     stages,
@@ -440,6 +467,7 @@ const matchingOutputSchema = z.object({
   structuralExclusions: z.array(z.string()),
   marketTruth:z.unknown(),
 });
+const languageConductOutputSchema=z.object({languageConductTruth:z.unknown()});
 const outcomeOutputSchema = z.object({outcome: caseOutcomeSchema});
 
 type ExtractionOutput = Pick<CaseEngineInput, "candidates" | "documents" | "roomDocuments">;
@@ -467,6 +495,7 @@ type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInv
 type MaterialsOutput = Pick<CaseEngineState, "materials" | "materialsBlockedBy" | "materialTruth" | "dataRoom" | "claimRegistry"> & {
   audit: "not_run" | "pass" | "blocked";
 };
+type LanguageConductOutput={languageConductTruth:LanguageConductTruthSet};
 type MatchingOutput = CaseEngineState["matching"];
 type OutcomeOutput = {outcome: CaseOutcome};
 
@@ -795,6 +824,22 @@ export async function executeCaseEngine(
           return {output: {materials, materialsBlockedBy, materialTruth, dataRoom, audit, claimRegistry} satisfies MaterialsOutput};
         },
       },
+      language_conduct:{
+        outputSchema:languageConductOutputSchema,
+        execute:(context)=>{
+          const structure=outputOf<StructureOutput>(context,"structure");
+          const materials=outputOf<MaterialsOutput>(context,"materials");
+          const caseFingerprint=fingerprintJson({operationTruth:structure.operationTruth,structureTruth:structure.structureTruth,pricingTruth:structure.pricingTruth});
+          return {output:{languageConductTruth:buildLanguageConductTruthSet({
+            caseId:input.caseId,
+            referenceDate:input.referenceDate,
+            caseFingerprint,
+            materials:materials.materials,
+            dataRoom:materials.dataRoom,
+            ...(input.languageConductGovernance?{governance:input.languageConductGovernance}:{}),
+          })} satisfies LanguageConductOutput};
+        },
+      },
       matching: {
         outputSchema: matchingOutputSchema,
         execute: (context) => {
@@ -805,7 +850,8 @@ export async function executeCaseEngine(
           const fits = rankFits(input.resolvedMandates.map((mandate) => assessMandateFit(mandate, request)));
           const materials=outputOf<MaterialsOutput>(context,"materials");
           const redFlags=outputOf<RedFlagsOutput>(context,"red_flags").redFlagTruth;
-          const structural=[...structuralExclusions(fits),...(!redFlags.mandate.qualifiedIntroductionAllowed?["red_flag_governance_blocked"]:[])];
+          const languageConduct=outputOf<LanguageConductOutput>(context,"language_conduct").languageConductTruth;
+          const structural=[...structuralExclusions(fits),...(!redFlags.mandate.qualifiedIntroductionAllowed?["red_flag_governance_blocked"]:[]),...(!languageConduct.qualifiedIntroductionAllowed?["language_conduct_governance_blocked"]:[])];
           const materialFingerprint=materials.materialTruth.fingerprint;
           const marketTruth=buildMarketTruthSet({
             mandates:input.resolvedMandates,
@@ -837,6 +883,7 @@ export async function executeCaseEngine(
           const structure = outputOf<StructureOutput>(context, "structure");
           const materials = outputOf<MaterialsOutput>(context, "materials");
           const redFlags=outputOf<RedFlagsOutput>(context,"red_flags").redFlagTruth;
+          const languageConduct=outputOf<LanguageConductOutput>(context,"language_conduct").languageConductTruth;
           const matching = outputOf<MatchingOutput>(context, "matching");
           return {
             output: {
@@ -860,7 +907,7 @@ export async function executeCaseEngine(
                 mandateScreeningComplete: matching.screened,
                 platformExternalReleaseEnabled: input.externalReleaseApproved,
                 clientIntroductionAuthorized: false,
-                blockers: [...gaps.blockers, ...structure.structureTruth.exceptions.filter((exception) => exception.severity === "critical").map((exception) => exception.id),...redFlags.blockers],
+                blockers: [...gaps.blockers, ...structure.structureTruth.exceptions.filter((exception) => exception.severity === "critical").map((exception) => exception.id),...redFlags.blockers,...languageConduct.blockerCodes],
               }),
             } satisfies OutcomeOutput,
           };
@@ -883,6 +930,7 @@ export async function executeCaseEngine(
   const redFlags=stage<RedFlagsOutput>("red_flags").redFlagTruth;
   const claims = stage<ClaimsOutput>("claims");
   const materials = stage<MaterialsOutput>("materials");
+  const languageConduct=stage<LanguageConductOutput>("language_conduct").languageConductTruth;
   const matching = stage<MatchingOutput>("matching");
   const outcome = stage<OutcomeOutput>("outcome").outcome;
   return {
@@ -899,6 +947,7 @@ export async function executeCaseEngine(
       materials: materials.materials,
       materialsBlockedBy: materials.materialsBlockedBy,
       materialTruth:materials.materialTruth,
+      languageConductTruth:languageConduct,
       dataRoom: materials.dataRoom,
       matching,
       outcome,
