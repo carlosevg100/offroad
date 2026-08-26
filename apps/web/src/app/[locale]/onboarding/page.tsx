@@ -27,7 +27,8 @@ import {BrandMark} from "@/components/brand-mark";
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
-import {dealBriefOf} from "@/lib/intake/deal-brief";
+import {briefCompleteness, dealBriefOf} from "@/lib/intake/deal-brief";
+import {documentFirstProgress} from "@/lib/intake/onboarding-progress";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {OnboardingDocumentUploader} from "@/components/onboarding-document-uploader";
@@ -67,7 +68,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 export const metadata: Metadata = {title: "Institutional Profile", robots: {index: false, follow: false}};
 
-type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string}>};
+type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string; step?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
 const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate", "remove"];
@@ -176,7 +177,6 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const returnStep = currentStep !== persistedStep ? persistedStep : "";
   const currentIndex = Math.max(0, steps.indexOf(currentStep));
   const completedCount = furthestAvailableIndex;
-  const completionPercent = Math.max(12, Math.round((completedCount / steps.length) * 100));
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
   const JourneyIcon = journey === "company" ? Building2 : journey === "originator" ? Network : Landmark;
   const projectTitle = journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject");
@@ -188,6 +188,30 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const intakeReview = isDocumentFirst && intakeSessionId
     ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId})
     : null;
+  const intakeChecklist = intakeReview?.session
+    ? await loadIntakeChecklist({
+        supabase,
+        organizationId: organization.id,
+        sessionId: intakeReview.session.id,
+        locale: locale === "en-US" ? "en" : "pt",
+      })
+    : null;
+  const intakeDealBrief = intakeReview?.session ? dealBriefOf(intakeReview.session) : {};
+  const briefProgress = briefCompleteness(intakeDealBrief);
+  const guidedStep = state.step === "operation" || state.step === "request" || state.step === "documents" ? state.step : undefined;
+  const completionPercent = isDocumentFirst
+    ? documentFirstProgress({
+        objectiveSelected: Boolean(intakeChecklist?.archetypeId),
+        briefAnswered: briefProgress.answered,
+        briefTotal: briefProgress.total,
+        documentsUploaded: intakeReview?.documents.length ?? 0,
+        minimumSatisfied: intakeChecklist?.minimum.satisfied ?? 0,
+        minimumTotal: intakeChecklist?.minimum.total ?? 0,
+        idealSatisfied: intakeChecklist?.ideal.satisfied ?? 0,
+        idealTotal: intakeChecklist?.ideal.total ?? 0,
+        reviewReady: intakeReview?.session?.status === "review_ready" || intakeReview?.session?.status === "confirmed",
+      })
+    : Math.round((completedCount / steps.length) * 100);
   if (!intakeReview && currentStep === "documents" && opportunityId) {
     const result = await supabase.from("source_documents").select("id, original_name, byte_size").eq("organization_id", organization.id).eq("opportunity_id", opportunityId).order("created_at");
     documents = result.data ?? [];
@@ -368,12 +392,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               />
             ) : (
               <IntakeCollect
-                checklist={await loadIntakeChecklist({
-                  supabase,
-                  organizationId: organization.id,
-                  sessionId: intakeReview.session.id,
-                  locale: locale === "en-US" ? "en" : "pt",
-                })}
+                checklist={intakeChecklist}
                 className="onboarding-stage__form"
                 documents={intakeReview.documents}
                 locale={locale}
@@ -382,9 +401,15 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 removeAction={removeIntakeDocument}
                 session={intakeReview.session}
                 answerAction={saveIntakeAnswer}
-                dealBrief={dealBriefOf(intakeReview.session)}
+                dealBrief={intakeDealBrief}
                 dealBriefAction={saveDealBriefAction}
                 setOperationAction={setIntakeOperation}
+                stage={guidedStep}
+                stageHrefs={{
+                  operation: `/${locale}/onboarding?section=documents&step=operation`,
+                  request: `/${locale}/onboarding?section=documents&step=request`,
+                  documents: `/${locale}/onboarding?section=documents&step=documents`,
+                }}
                 resolveScopeSuggestionAction={resolveOnboardingScopeSuggestion}
                 revokeAuthorizationAction={revokeOnboardingAdvisorAuthorization}
                 surface="onboarding"

@@ -42,6 +42,8 @@ type Props = {
   stage?: "operation" | "request" | "documents";
   /** Route used by the compact back action in the guided workspace flow. */
   backHref?: string;
+  /** Direct routes for revisiting completed stages without discarding saved answers. */
+  stageHrefs?: Partial<Record<"operation" | "request" | "documents", string>>;
   resolveScopeSuggestionAction?: (formData: FormData) => Promise<void>;
   revokeAuthorizationAction?: (formData: FormData) => Promise<void>;
   surface: "onboarding" | "workspace";
@@ -51,7 +53,7 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref, stageHrefs, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -85,11 +87,15 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         surface={surface}
       />
       <nav aria-label={t("guided.progressLabel")} className="intake-guide__progress">
-        {[1, 2, 3].map((number) => (
-          <span className={number === stageNumber ? "is-current" : number < stageNumber ? "is-complete" : ""} key={number}>
-            <i>{number < stageNumber ? "✓" : number}</i>{t(`guided.step${number}`)}
-          </span>
-        ))}
+        {(["operation", "request", "documents"] as const).map((stageName, index) => {
+          const number = index + 1;
+          const className = number === stageNumber ? "is-current" : number < stageNumber ? "is-complete" : "";
+          const contents = <><i>{number < stageNumber ? "✓" : number}</i>{t(`guided.step${number}`)}</>;
+          const href = number < stageNumber ? stageHrefs?.[stageName] : undefined;
+          return href
+            ? <Link aria-label={`${t("guided.back")}: ${t(`guided.step${number}`)}`} className={className} href={href} key={stageName}>{contents}</Link>
+            : <span aria-current={number === stageNumber ? "step" : undefined} className={className} key={stageName}>{contents}</span>;
+        })}
       </nav>
 
       <div className="intake-collect__intro intake-guide__intro">
@@ -190,8 +196,8 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         {manualHref && failed ? <Link className="button button--ghost" href={manualHref}>{t("review.fillManually")}</Link> : null}
       </div> : null}
 
-      {backHref && currentStage !== "operation" ? (
-        <Link className="intake-guide__back" href={backHref}><ArrowLeft aria-hidden="true" size={14} />{t("guided.back")}</Link>
+      {(currentStage === "request" ? stageHrefs?.operation : currentStage === "documents" ? stageHrefs?.request : backHref) && currentStage !== "operation" ? (
+        <Link className="intake-guide__back" href={(currentStage === "request" ? stageHrefs?.operation : currentStage === "documents" ? stageHrefs?.request : backHref)!}><ArrowLeft aria-hidden="true" size={14} />{t("guided.back")}</Link>
       ) : null}
     </section>
   );

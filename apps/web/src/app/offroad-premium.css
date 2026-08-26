@@ -7890,7 +7890,7 @@ button[disabled].workspace-search,
   border-bottom: 1px solid #dde0e1;
 }
 
-.intake-guide__progress > span {
+.intake-guide__progress > :is(span, a) {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -7901,6 +7901,13 @@ button[disabled].workspace-search,
   letter-spacing: .06em;
   text-transform: uppercase;
 }
+
+.intake-guide__progress > a {
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.intake-guide__progress > a:hover {color: #1a2024;}
 
 .intake-guide__progress i {
   display: grid;
@@ -8101,7 +8108,7 @@ button[disabled].workspace-search,
   .intake-welcome__action {align-items: stretch; flex-direction: column;}
   .intake-welcome__action .button {width: 100%;}
   .intake-start__steps li {grid-template-columns: 24px 26px minmax(0, 1fr);}
-  .intake-guide__progress > span {align-items: flex-start; flex-direction: column; gap: 5px; font-size: 8px;}
+  .intake-guide__progress > :is(span, a) {align-items: flex-start; flex-direction: column; gap: 5px; font-size: 8px;}
   .intake-operation__client {padding: 18px;}
   .intake-operation__client-grid {grid-template-columns: 1fr;}
   .intake-operation__client-grid .intake-operation__reference {grid-column: auto;}
