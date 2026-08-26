@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## House Playbook M6, 25/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Treze procedimentos de pricing | `@offroad/credit-playbook` | PR-01 a PR-13 compilam como candidates com referência canônica, schemas, dados requeridos, testes, runtime determinístico, zero handoff entre agentes e zero chamada de modelo |
+| Motor governado | `@offroad/market-reference` | 11 testes cobrem faixa observada, custo all-in, amostra insuficiente, fonte não independente, comp vencido, garantia incompatível, falsa precisão, choque de regime, normalização de warrant ou fee que não fecha e abstenção para indexador sem curva validada |
+| Trânsito pela esteira | `@offroad/case-engine`, `@offroad/evals` e worker | toda run emite exatamente 13 estados PR; sem contexto de mercado a decisão é abstenção, não fallback para a grade estática |
+| Registro privado | migration `20260826010846_m6_pricing_registry.sql` | política e observações têm RLS forçado, grants de tenant revogados e leitura pelo worker condicionada à capability do job; reconstrução do banco ainda depende do job obrigatório do PR |
+| Fronteira pública | teste de `publicCaseState` | source IDs, owners, observações elegíveis e rejeitadas e resultados privados dos procedimentos não atravessam para o workspace; somente agregados e conclusão permanecem |
+| Superfície web | `IntakeCase` PT-BR e EN-US | card M6 comunica faixa, amostra, fontes, recência, custos e política ou exibe abstenção institucional sem número aproximado |
+| Quality gate local | `pnpm check` com Node 24.19 | 38 pacotes com lint, tipagem, testes e build de produção verdes; web com 127 testes, worker com 46, evals com 32 e playbook com 146 |
+
+M6 está implementado no trilho real como candidate. Nenhum número de mercado foi semeado. A
+primeira faixa de produção só poderá existir após política ativa aprovada e observações autorizadas,
+atuais e comparáveis. A migration ainda não é declarada aplicada até o CI reconstruir o banco e a
+promoção de `main` ser verificada.
+
 ## House Playbook M5, 25/08/2026
 
 | Evidência | Verificação | Resultado |

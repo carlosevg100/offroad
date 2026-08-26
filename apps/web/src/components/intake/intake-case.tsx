@@ -34,6 +34,26 @@ const multiple = (value: string | null, locale: string) => {
   return Number.isFinite(parsed) ? `${parsed.toLocaleString(intl(locale), {maximumFractionDigits: 2})}x` : value;
 };
 
+const basisPoints = (value: number | null, locale: string) => value === null
+  ? "N/D"
+  : `${value.toLocaleString(intl(locale), {maximumFractionDigits: 2})} bps`;
+
+const date = (value: string | null, locale: string) => {
+  if (!value) return "N/D";
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString(intl(locale), {timeZone: "UTC"});
+};
+
+const percentageRange = (value: {min: string; max: string} | null, locale: string) => {
+  if (!value) return "N/D";
+  const min = Number(value.min) * 100;
+  const max = Number(value.max) * 100;
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return "N/D";
+  const connector = locale === "en-US" ? "to" : "a";
+  const suffix = locale === "en-US" ? "p.a." : "a.a.";
+  return `${min.toLocaleString(intl(locale), {maximumFractionDigits: 2})}% ${connector} ${max.toLocaleString(intl(locale), {maximumFractionDigits: 2})}% ${suffix}`;
+};
+
 /**
  * The case as the desk sees it, on one screen.
  *
@@ -281,6 +301,50 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
           <span>{t("truthProcedures")}: <strong>{state.structureTruth.procedureCoverage.filter((item) => item.status === "completed").length}/45</strong></span>
           <span>{t("structureDayOne")}: <strong>{state.structureTruth.dayOne.passes === true ? t("structureCompatible") : state.structureTruth.dayOne.passes === false ? t("structureIncompatible") : t("structurePending")}</strong></span>
           <span>{t("truthOpenItems")}: <strong>{state.structureTruth.exceptions.length + new Set(state.structureTruth.procedureCoverage.flatMap((item) => item.missingInputs)).size}</strong></span>
+        </div>
+      </section>
+
+      <section className="case-pricing-truth">
+        <header className="case-truth__head">
+          <div>
+            <span className="section-kicker">M6</span>
+            <h3>{t("pricingTruthTitle")}</h3>
+          </div>
+          <span className={`case-truth__status is-${state.pricingTruth.status}`}>
+            {t(`truthStatus_${state.pricingTruth.status}`)}
+          </span>
+        </header>
+        <p>{t("pricingTruthBody")}</p>
+        {state.pricingTruth.indicativePrice ? (
+          <>
+            <div className="case-pricing-truth__reference">
+              <span>{t("pricingIndicativeReference")}</span>
+              <strong>
+                CDI + {(state.pricingTruth.indicativePrice.bps.min / 100).toLocaleString(intl(locale), {maximumFractionDigits: 2})}%
+                {" "}{t("pricingTo")}{" "}
+                CDI + {(state.pricingTruth.indicativePrice.bps.max / 100).toLocaleString(intl(locale), {maximumFractionDigits: 2})}% {t("pricingPerYear")}
+              </strong>
+              <small>{state.pricingTruth.indicativePrice.sentence[lang]}</small>
+            </div>
+            <dl className="case-truth__metrics">
+              <div><dt>{t("pricingSample")}</dt><dd>{state.pricingTruth.sample.eligibleCount}</dd></div>
+              <div><dt>{t("pricingSources")}</dt><dd>{state.pricingTruth.sample.distinctSources}</dd></div>
+              <div><dt>{t("pricingLatest")}</dt><dd>{date(state.pricingTruth.sample.latestObservation, locale)}</dd></div>
+              <div><dt>{t("pricingAnnualizedCosts")}</dt><dd>{basisPoints(state.pricingTruth.allIn.annualizedCostBps, locale)}</dd></div>
+              <div><dt>{t("pricingAllIn")}</dt><dd>{percentageRange(state.pricingTruth.allIn.totalRate, locale)}</dd></div>
+              <div><dt>{t("pricingPolicy")}</dt><dd>{state.pricingTruth.policyVersion}</dd></div>
+            </dl>
+          </>
+        ) : (
+          <div className="case-pricing-truth__abstention" role="status">
+            <strong>{t("pricingAbstentionTitle")}</strong>
+            <p>{t("pricingAbstentionBody")}</p>
+          </div>
+        )}
+        <div className="case-truth__summary">
+          <span>{t("truthProcedures")}: <strong>{state.pricingTruth.procedureCoverage.filter((item) => item.status === "completed").length}/13</strong></span>
+          <span>{t("pricingDecision")}: <strong>{state.pricingTruth.decision === "reference_available" ? t("pricingReferenceAvailable") : t("pricingNoReference")}</strong></span>
+          <span>{t("truthOpenItems")}: <strong>{state.pricingTruth.exceptions.length + new Set(state.pricingTruth.procedureCoverage.flatMap((item) => item.missingInputs)).size}</strong></span>
         </div>
       </section>
 

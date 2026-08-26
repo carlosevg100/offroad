@@ -8,6 +8,32 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: M6 governed pricing truth, 25 August 2026
+
+The real case rail now emits a `Pricing Truth Set` after M5 structure truth. PR-01 through PR-13
+compile from the canonical House Playbook as candidate procedures with deterministic execution,
+zero peer-agent handoffs and zero model calls. The engine selects observations only when risk band,
+instrument, sector, security, amortization, tenor, ticket, regime, validity, quality and aggregate
+authorization are compatible. Fee, OID, warrant and hedge components must tie to the normalized
+spread. The output is either an observed indicative range with sample, independent-source count,
+recency and all-in costs, or an explicit abstention.
+
+The previous hardcoded desk-practice grid remains a legacy fixture only and no longer drives the
+case pipeline. A range cannot be published from one deal, repeated source IDs, expired data,
+restricted observations, a regime shock or a deceptively narrow or wide sample. Offroad provides
+an indicative market reference, not a firm price, capital commitment, credit decision or substitute
+for lender diligence.
+
+The proprietary registry is represented by `pricing_policies` and `pricing_observations`. Both
+tables have forced RLS and no tenant grants. The ECS worker receives the governed context only
+through the existing short-lived job capability. The private snapshot retains observation lineage;
+the borrower workspace receives only aggregate counts, latest date, range, policy, costs and the
+procedure states. Source IDs, source owners, rejected observation IDs and per-procedure private
+results are removed at the public boundary. Until an approved active policy and authorized current
+observations exist, production behavior is deliberately `sem referência confiável` rather than a
+fabricated number. The code quality gate is green; database reconstruction and promotion remain
+subject to the PR database job.
+
 ### Engineering update: M5 indicative structure truth, 25 August 2026
 
 The governed structuring stage now emits a `Structure Truth Set` after M4 operation truth and

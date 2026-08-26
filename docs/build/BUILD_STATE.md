@@ -4,6 +4,26 @@ Atualizado em: 2026-08-25
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## M6, pricing governado e referência indicativa, 25/08/2026
+
+PR-01 a PR-13 agora existem como candidates compilados da fonte canônica. O runtime produz uma
+faixa apenas quando a amostra atinge política versionada de quantidade, fontes independentes,
+qualidade, validade, comparabilidade e largura. Instrumento, rating, setor, garantia, amortização,
+prazo, tíquete e regime são filtros explícitos. Fee, OID, warrant e hedge entram como componentes
+da normalização e precisam fechar matematicamente. Choque de regime, observação vencida, fonte
+repetida, restrição de confidencialidade ou falsa precisão produzem abstenção.
+
+A migration `20260826010846_m6_pricing_registry.sql` cria a política e o registro proprietário de
+observações. Os registros são ativos internos da Offroad, com RLS forçado e sem leitura para
+`anon` ou `authenticated`. O worker carrega o contexto pela capability do job. O estado privado
+preserva a linhagem; o estado público retém somente faixa, amostra agregada, recência, custos e
+decisão. A interface mostra a referência suportada ou explica que ainda não há base confiável.
+
+O gate local completo passou em Node 24.19 nos 38 pacotes. A reconstrução do banco, o teste remoto
+de não interferência e a promoção da migration dependem dos jobs obrigatórios do PR. Nenhuma
+política ou observação de mercado foi inventada ou semeada. Até a mesa aprovar política e dados
+atuais, o comportamento correto é abster-se.
+
 ## M2 e M3 no trilho governado, 25/08/2026
 
 M2 e M3 agora fazem parte do `@offroad/case-engine` e do worker de produção como objetos

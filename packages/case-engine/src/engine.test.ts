@@ -4,7 +4,7 @@ import {describe, expect, it} from "vitest";
 import {claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
 import {diversifiedReceivablesCase, receivablesParametricScenarios} from "@offroad/receivables-analysis";
 
-import {executeCaseEngine} from "./engine";
+import {executeCaseEngine, publicCaseState} from "./engine";
 
 const candidate = (
   fieldPath: string,
@@ -100,6 +100,14 @@ describe("the governed case engine", () => {
     expect(result.state.matching.fits[0]).toMatchObject({fundId: "fund-1", verdict: "possible"});
     expect(result.state.outcome.qualifiedIntroductionAllowed).toBe(false);
     expect(result.report.stages.every((stage) => stage.outputFingerprint?.length === 64)).toBe(true);
+
+    result.state.pricingTruth.sample.eligible.push({id: "private-observation", sourceId: "manager-name"} as never);
+    result.state.pricingTruth.sample.rejected.push({id: "private-rejection", reasons: ["different_sector"]});
+    result.state.pricingTruth.procedureCoverage[0]!.result = {sourceId: "manager-name", observations: ["private-observation"]};
+    const publicState = publicCaseState(result.state);
+    expect(publicState.pricingTruth.sample).toMatchObject({eligibleCount: 1, rejectedCount: 1});
+    expect(publicState.pricingTruth.procedureCoverage[0]?.result).toBeNull();
+    expect(JSON.stringify(publicState)).not.toMatch(/manager-name|private-observation|private-rejection/);
   });
 
   it("records model usage once and makes a produced brief pass the independent claim audit", async () => {
