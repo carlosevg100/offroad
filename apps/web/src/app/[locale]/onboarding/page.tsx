@@ -32,7 +32,7 @@ import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
-import {AgentPanel} from "@/components/intake/agent-panel";
+import {AgentPanel, type AgentPanelCopy} from "@/components/intake/agent-panel";
 import {OnboardingDocumentUploader} from "@/components/onboarding-document-uploader";
 import type {AppLocale} from "@/i18n/routing";
 import {loadIntakeReview} from "@/lib/intake/server";
@@ -253,6 +253,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         : state.error
           ? t("error")
           : null;
+  const agentCopy = t.raw("workspace.agent") as AgentPanelCopy;
 
   return (
     <main className="workspace-onboarding">
@@ -567,6 +568,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
               {agentAvailable ? (
                 <AgentPanel
+                  copy={agentCopy}
                   conversationState={agentConversation?.state ?? "idle"}
                   decideAction={decideAgentProposalAction}
                   locale={locale}
