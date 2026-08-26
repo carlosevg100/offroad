@@ -26,10 +26,21 @@ seu comando idempotente e auditável. O ADR 0014 fixa essa arquitetura e proíbe
 autônomos conversando entre si.
 
 O gate local `pnpm check` passou nos 41 pacotes em 26/08/2026. Os testes dirigidos somam 4 de work
-plan, 4 de pesquisa pública, 3 de contratos do agente, 6 do runner e 46 do worker. O banco local
-não foi reconstruído porque o host não dispõe de Docker, OrbStack, Colima ou Podman; portanto a
-migration permanece candidate até o job obrigatório de database no CI aplicar todo o histórico,
-executar a suíte RLS e o lint do schema. Nada desta entrega foi promovido a produção ainda.
+plan, 4 de pesquisa pública, 3 de contratos do agente, 6 do runner e 46 do worker. O CI obrigatório
+reconstruiu todas as migrations, passou a suíte RLS, lint do schema, E2E, lint, typecheck, testes e
+build. O advisor de staging encontrou cinco foreign keys novas sem índice; a migration
+`20260826203000_agent_workspace_index_hardening.sql` corrigiu todas antes da promoção.
+
+As duas migrations foram promovidas ao Supabase production como `20260826200143` e
+`20260826200443`. As três tabelas têm RLS forçado, somente `SELECT` autenticado, nenhuma permissão
+anônima, wrappers públicos invoker e implementações privadas definer. O Security Advisor retornou
+zero findings e o Performance Advisor não aponta foreign key sem índice. Os ledgers nasceram com
+zero registros. Os tipos TypeScript foram regenerados do schema de produção. O worker do commit
+`bb62b99` está estável no ECS como `offroad-document-worker:105`.
+
+A fundação está em produção. Ainda não existe chat cenográfico: a superfície conversacional só deve
+ser aberta quando uma proposta aceita puder passar pelo comando idempotente real do domínio e
+recalcular os estágios dependentes.
 
 ## M8, inteligência de mandato e introdução qualificada, 26/08/2026
 
