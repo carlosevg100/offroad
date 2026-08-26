@@ -421,9 +421,46 @@
       "guidanceEyebrow": "Offroad guidance",
       "guidanceTitle": "Start with what you have.",
       "guidanceBody": "You do not need to gather everything at once. As you progress, we show the essential information and the most useful next step.",
-      "autoSave": "Your progress is saved after each block.",
-      "comingSoon": "Coming soon",
-      "workPlan": {
+    "autoSave": "Your progress is saved after each block.",
+    "comingSoon": "Coming soon",
+    "agent": {
+      "eyebrow": "OFFROAD AGENT",
+      "title": "Discuss the transaction",
+      "body": "Explain a change or answer what is missing. The agent prepares the edit and shows its impact before applying it.",
+      "placeholder": "E.g. the intended amount is now BRL 50 million",
+      "send": "Send",
+      "states": {
+        "analyzing": "Analyzing your message",
+        "asking": "Waiting for your answer",
+        "proposing": "Proposal ready for review",
+        "idle": "Ready to help",
+        "failed": "This analysis could not be completed"
+      },
+      "preview": "CHANGE PREVIEW",
+      "impact": "Impact",
+      "accept": "Accept and apply",
+      "reject": "Discard",
+      "applied": "Change applied",
+      "rejected": "Proposal discarded",
+      "stale": "This preview is no longer current",
+      "control": "Nothing changes in the transaction without your confirmation.",
+      "monthValue": "{value} months",
+      "fields": {
+        "objective": "Objective",
+        "requestedAmount": "Requested amount",
+        "currency": "Currency",
+        "urgency": "Funding timeline",
+        "requestedTermMonths": "Facility term",
+        "requestedGraceMonths": "Grace period",
+        "consequenceIfNotExecuted": "Impact of not executing",
+        "sector": "Sector",
+        "geography": "Geography",
+        "instruments": "Instruments considered",
+        "collateralKinds": "Available collateral",
+        "expectedRate": "Pricing expectation"
+      }
+    },
+    "workPlan": {
         "status": {
           "pending": "Waiting for the previous step",
           "running": "Running now",

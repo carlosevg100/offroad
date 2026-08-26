@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {createAgentChangeProposal, proposalIsCurrent} from "./index";
+import {agentOperationBriefResponseSchema, createAgentChangeProposal, proposalIsCurrent} from "./index";
 
 const base = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -37,5 +37,51 @@ describe("agent change contracts", () => {
       patches: [{operation: "set", path: "/requestedAmount", value: 50_000_000, previousFingerprint: null}],
       evidence: [{kind: "public_source", id: "source-1"}],
     })).toThrow();
+  });
+
+  it("accepts a user-declared number while keeping the executable paths narrow", () => {
+    expect(() => createAgentChangeProposal({
+      ...base,
+      patches: [{operation: "set", path: "/requestedAmount", value: 50_000_000, previousFingerprint: null}],
+      evidence: [{kind: "user_statement", id: "33333333-3333-4333-8333-333333333333"}],
+    })).not.toThrow();
+
+    expect(agentOperationBriefResponseSchema.safeParse({
+      state: "proposing",
+      reply: "Preparei uma alteração para sua revisão.",
+      proposal: {
+        title: "Atualizar o volume pretendido",
+        rationale: "O novo valor foi informado diretamente pelo usuário nesta conversa.",
+        impactSummary: "Recalcula a análise e a estrutura indicativa.",
+        patches: [{operation: "set", path: "/requestedAmount", value: 50_000_000}],
+        recompute: ["metrics", "structure", "matching"],
+      },
+    }).success).toBe(true);
+
+    expect(agentOperationBriefResponseSchema.safeParse({
+      state: "proposing",
+      reply: "Tentativa inválida.",
+      proposal: {
+        title: "Alterar investidor",
+        rationale: "Esta tentativa sai do primeiro comando autorizado do agente.",
+        impactSummary: "Não deve ser aceita.",
+        patches: [{operation: "set", path: "/investor", value: "Fundo A"}],
+        recompute: ["matching"],
+      },
+    }).success).toBe(false);
+  });
+
+  it("does not let an idle response smuggle a proposal", () => {
+    expect(agentOperationBriefResponseSchema.safeParse({
+      state: "idle",
+      reply: "Nenhuma alteração é necessária.",
+      proposal: {
+        title: "Alterar valor",
+        rationale: "Esta proposta não pode viajar em uma resposta idle.",
+        impactSummary: "Mudaria a operação.",
+        patches: [{operation: "set", path: "/requestedAmount", value: 50_000_000}],
+        recompute: ["metrics"],
+      },
+    }).success).toBe(false);
   });
 });

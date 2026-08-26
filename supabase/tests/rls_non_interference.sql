@@ -3569,6 +3569,169 @@ $$;
 
 set local role postgres;
 
+-- Agent Offroad vertical: a tenant message becomes a capability-bound job and a preview. The
+-- operation changes only after explicit acceptance, the other tenant sees nothing, and an Agent
+-- failure cannot fail an independently processing intake session.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '40000000-0000-4000-8000-0000000000b1';
+  message_id constant uuid := 'a2000000-0000-4000-8000-000000000001';
+  assistant_id constant uuid := 'a2000000-0000-4000-8000-000000000002';
+  proposal_id constant uuid := 'a2000000-0000-4000-8000-000000000003';
+  event_id constant uuid := 'a2000000-0000-4000-8000-000000000004';
+  failure_message_id constant uuid := 'a2000000-0000-4000-8000-000000000005';
+  submitted jsonb;
+  replayed jsonb;
+  claim jsonb;
+  context jsonb;
+  applied jsonb;
+  failure_claim jsonb;
+  job_id uuid;
+  capability text;
+  snapshot text;
+begin
+  insert into public.document_intake_sessions (
+    id, organization_id, started_by, journey, locale, archetype, requested_amount, capital_currency
+  ) values (
+    session_id, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR',
+    'growth_expansion', 30000000, 'BRL'
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  submitted := public.submit_agent_message(
+    org_a, session_id, message_id, 'O valor pretendido passou para R$ 50 milhões.', 'pt-BR'
+  );
+  replayed := public.submit_agent_message(
+    org_a, session_id, message_id, 'O valor pretendido passou para R$ 50 milhões.', 'pt-BR'
+  );
+  if submitted ->> 'status' <> 'queued' or coalesce((replayed ->> 'replayed')::boolean, false) is not true then
+    raise exception 'agent message submission is not idempotent';
+  end if;
+  if (select requested_amount from public.document_intake_sessions where id = session_id) <> 30000000 then
+    raise exception 'agent message silently mutated the operation';
+  end if;
+
+  job_id := (submitted ->> 'job_id')::uuid;
+  set local role postgres;
+  update public.processing_jobs set available_at = '1900-01-01T00:00:00Z' where id = job_id;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  claim := public.worker_claim_job(repeat('w', 64), 600);
+  if claim ->> 'kind' <> 'agent_operation_brief' then
+    raise exception 'worker did not claim the Agent Offroad job: %', claim;
+  end if;
+  if (claim ->> 'job_id')::uuid <> job_id then
+    raise exception 'worker claimed the wrong Agent Offroad job';
+  end if;
+  capability := claim ->> 'capability_token';
+  context := public.worker_load_agent_context(job_id, capability);
+  snapshot := context ->> 'snapshot_fingerprint';
+  perform public.worker_record_agent_response(
+    job_id,
+    capability,
+    assistant_id,
+    '{"state":"proposing","reply":"Preparei a atualização do valor para sua revisão."}'::jsonb,
+    jsonb_build_object(
+      'schemaVersion', '2026.08.26-v1',
+      'id', proposal_id,
+      'caseId', session_id,
+      'baseManifestFingerprint', snapshot,
+      'proposalFingerprint', repeat('5', 64),
+      'target', 'operation_brief',
+      'title', 'Atualizar o valor pretendido',
+      'rationale', 'O novo valor foi informado diretamente pela empresa.',
+      'impactSummary', 'Atualiza o pedido e recalcula as etapas dependentes.',
+      'patches', jsonb_build_array(jsonb_build_object(
+        'operation', 'set', 'path', '/requestedAmount', 'value', 50000000,
+        'previousFingerprint', null
+      )),
+      'evidence', jsonb_build_array(jsonb_build_object(
+        'kind', 'user_statement', 'id', message_id
+      )),
+      'recompute', jsonb_build_array('metrics', 'gaps', 'structure', 'matching'),
+      'proposedBy', 'offroad_agent',
+      'proposedAt', clock_timestamp(),
+      'expiresAt', clock_timestamp() + interval '1 day'
+    )
+  );
+  perform public.worker_complete_job(job_id, capability, '{"state":"proposing"}'::jsonb);
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  if (select requested_amount from public.document_intake_sessions where id = session_id) <> 30000000
+    or (select status from public.agent_change_proposals where id = proposal_id) <> 'proposed' then
+    raise exception 'agent preview was not separated from application';
+  end if;
+  applied := public.accept_and_apply_agent_operation_brief_proposal(org_a, proposal_id, event_id);
+  if applied ->> 'status' <> 'applied'
+    or (select requested_amount from public.document_intake_sessions where id = session_id) <> 50000000 then
+    raise exception 'explicit Agent Offroad acceptance did not apply the operation update';
+  end if;
+
+  -- Queue a second turn, then simulate a concurrent document-processing state. Failing the
+  -- auxiliary Agent run must not fail the intake session itself.
+  submitted := public.submit_agent_message(
+    org_a, session_id, failure_message_id, 'Considere também uma carência maior.', 'pt-BR'
+  );
+  set local role postgres;
+  update public.processing_jobs set available_at = '1900-01-01T00:00:00Z'
+  where id = (submitted ->> 'job_id')::uuid;
+  update public.document_intake_sessions set status = 'processing' where id = session_id;
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  failure_claim := public.worker_claim_job(repeat('w', 64), 600);
+  if failure_claim ->> 'kind' <> 'agent_operation_brief' then
+    raise exception 'worker did not claim the Agent failure fixture';
+  end if;
+  perform public.worker_load_agent_context(
+    (failure_claim ->> 'job_id')::uuid, failure_claim ->> 'capability_token'
+  );
+  perform public.worker_record_agent_failure(
+    (failure_claim ->> 'job_id')::uuid, failure_claim ->> 'capability_token', 'agent_processing_failed'
+  );
+  perform public.worker_fail_job(
+    (failure_claim ->> 'job_id')::uuid, failure_claim ->> 'capability_token',
+    '{"code":"agent_processing_failed"}'::jsonb, false, 60
+  );
+  set local role postgres;
+  if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
+    raise exception 'Agent failure incorrectly failed the intake session';
+  end if;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  if (select count(*) from public.agent_conversations where intake_session_id = session_id) <> 0
+    or (select count(*) from public.agent_messages where intake_session_id = session_id) <> 0 then
+    raise exception 'tenant B read tenant A Agent Offroad conversation';
+  end if;
+end;
+$$;
+
+set local role postgres;
+
 -- House pricing evidence is not a tenant data product. Even an authenticated organization owner
 -- cannot enumerate policies or observations; only the capability-bound worker can receive the
 -- governed aggregate context through its security-definer command.

@@ -148,6 +148,9 @@ describe("worker case analysis", () => {
         return "manifest-1";
       },
       recordControlledExecution: async () => "execution-1",
+      loadAgentContext: async () => ({}),
+      recordAgentResponse: async () => ({}),
+      recordAgentFailure: async () => {},
       complete: async (_job, result) => { completed = result as Record<string, unknown>; },
       fail: async (_job, error) => { throw new Error(`the case should not fail: ${JSON.stringify(error)}`); },
     };

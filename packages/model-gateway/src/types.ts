@@ -16,6 +16,7 @@ export type TaskKind =
   | "map_accounts"
   | "explain_exception"
   | "case_brief"
+  | "agent_operation_brief"
   | "write_output"
   | "audit_evidence"
   | "localize";

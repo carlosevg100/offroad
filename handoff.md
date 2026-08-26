@@ -1676,3 +1676,26 @@ cobre retry, conflito de chave, bloqueio de escrita direta, isolamento entre ten
 terminal, ciclo documental e cascade. Ainda faltam comandos e UI governados por replay para a
 escada IN-13, perímetro de análise, autorização do assessor e triagens. Nenhum procedimento M0 está
 promovido a `production`.
+
+## 30. Agente Offroad, primeira vertical transacional, 26/08/2026
+
+A primeira vertical executável atua apenas no brief declarado da operação. Ela foi desenhada para
+provar o contrato completo antes de ampliar a autoridade do Agente: mensagem do usuário, run e job
+atômicos; worker capability-bound; uma chamada estreita de modelo; resposta ou pergunta; proposta
+tipada; preview; confirmação explícita; aplicação pelo comando canônico de M0; recomputação das
+solicitações.
+
+Arquivos centrais:
+
+- `packages/agent-contracts/src/index.ts`: paths, valores e resposta permitidos;
+- `apps/document-worker/src/agent-operation-brief.ts`: prompt de autoridade estreita, guard de
+  suporte numérico e montagem da proposta;
+- `apps/web/src/components/intake/agent-panel.tsx`: conversa, estados reais e preview com
+  `Aceitar e aplicar`;
+- migrations `20260826230000` a `20260826233000`: conversa append-only, mensagens, queue, comandos
+  capability-bound, aceite e aplicação transacionais e isolamento de falha auxiliar;
+- `supabase/tests/rls_non_interference.sql`: teste E2E do contrato e do isolamento entre tenants.
+
+Não aumentar a autoridade pelo prompt. A próxima vertical deve ganhar schema, comando de aplicação,
+preview e testes próprios. O Agente não aprova crédito, não compromete capital, não escolhe
+financiador sem o rail de matching e não transforma contexto público em evidência da companhia.
