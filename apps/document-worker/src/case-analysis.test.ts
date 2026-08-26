@@ -221,6 +221,10 @@ describe("worker case analysis", () => {
     expect(persistedReconciliation.debtTruth.procedureCoverage).toHaveLength(31);
     expect(persistedReconciliation.financialTruth.procedureCoverage[0]?.procedureId).toBe("Q-01");
     expect(persistedReconciliation.debtTruth.procedureCoverage[30]?.procedureId).toBe("D-31");
+    const persistedOperation = persisted.operationTruth as {procedureCoverage: Array<{procedureId: string}>};
+    expect(persistedOperation.procedureCoverage).toHaveLength(14);
+    expect(persistedOperation.procedureCoverage[0]?.procedureId).toBe("OP-01");
+    expect(persistedOperation.procedureCoverage[13]?.procedureId).toBe("OP-14");
     expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
   });
 });

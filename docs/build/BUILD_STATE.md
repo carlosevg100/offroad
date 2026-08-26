@@ -797,3 +797,23 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   partial e planned.
 - Escopo ainda aberto: piloto com uma empresa ou assessor real e revisão independente da versão
   exata. O módulo M0 e os procedimentos IN permanecem sem promoção institucional.
+
+## M4, verdade operacional e fontes e usos, 25/08/2026
+
+- `@offroad/financial-core` passou a calcular de forma determinística necessidade econômica,
+  identidade de fontes e usos, posição pró-forma, capital de giro incremental por período, custo
+  de excesso de funding e cobertura do cronograma de desembolso. Todas as contas usam Decimal.
+- `@offroad/deal-structure` produz um `Operation Truth Set` único com pedido declarado,
+  necessidade calculada, linhas por entidade, moeda, data e tranche, fontes condicionais,
+  posição pró-forma, cenários, efeitos da operação, tranches, condições precedentes, ponte e
+  take-out, cronograma, decisão de esperar, usos mistos e versão material confirmada.
+- OP-01 a OP-14 foram compilados como candidates da fonte canônica. O runtime é pipeline
+  determinístico, sem peer handoff e sem chamada de modelo. Referências de materialidade,
+  buffer, custos, condições precedentes, lag de desembolso, uso geral e decisão de espera ficam
+  explicitamente `required_missing` até receberem valor, fonte, data, validade e dono.
+- A ontologia ganhou os campos necessários para extração operacional. O case engine inclui M4 na
+  etapa de estruturação, o worker persiste os 14 estados e a interface apresenta pedido,
+  necessidade, fontes, usos, diferença e dívida líquida pró-forma.
+- Casos adversariais bloqueiam sources and uses desenquadrado, mês sem cobertura e ponte sem
+  take-out ou plano alternativo. O módulo permanece candidate até reference data vigente,
+  revisão independente e promoção do fingerprint exato.

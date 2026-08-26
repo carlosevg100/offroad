@@ -5,7 +5,7 @@ import {z} from "zod";
  * Market-sensitive numbers and house policy parameters live here, not inside procedure prose.
  * Missing values are explicit blockers. They are never replaced by a model estimate.
  */
-export const referenceDataRegistryVersion = "2026.08.25-v2";
+export const referenceDataRegistryVersion = "2026.08.25-v3";
 
 export const referenceDataStatusSchema = z.enum(["required_missing", "draft", "approved", "expired"]);
 export type ReferenceDataStatus = z.infer<typeof referenceDataStatusSchema>;
@@ -88,6 +88,13 @@ export const referenceDataRegistry = [
   missing("scenario.market.multi-factor", "scenario", "Governed base, downside and severe scenarios across rates, inflation, foreign exchange and correlated operating effects.", "Head de Análise Financeira", ["D-27", "OP-04", "MA-13"]),
   missing("scenario.short_term_non_renewal", "scenario", "Versioned assumptions for non-renewal of short-term lines.", "Head de Análise Financeira", ["D-28"]),
   missing("policy.transaction-sizing.materiality", "house_policy", "Materiality for request-to-calculated differences, residual uses, buffers and excess funding.", "Head de DCM e Estruturação", ["OP-01", "OP-02", "OP-07", "ES-45"]),
+  missing("policy.transaction-sizing.residual", "house_policy", "Zero or explicitly approved residual tolerance for sources-and-uses identities by currency and scale.", "Head de DCM e Estruturação", ["OP-02"]),
+  missing("policy.transaction-sizing.execution-buffer", "house_policy", "Permitted execution-buffer methodology by archetype and project maturity.", "Head de DCM e Estruturação", ["OP-01", "OP-07"]),
+  missing("policy.transaction-costs", "methodology_parameter", "Complete transaction-cost catalogue and treatment by instrument and source of payment.", "Head de DCM e Estruturação", ["OP-01", "OP-02", "OP-03"]),
+  missing("policy.conditions-precedent.catalogue", "house_policy", "Conditions-precedent catalogue by use of proceeds, archetype and evidence required for satisfaction.", "Head de DCM e Estruturação", ["OP-09"]),
+  missing("policy.disbursement.lag", "methodology_parameter", "Maximum permitted lag between physical uses and financing availability by archetype.", "Head de DCM e Estruturação", ["OP-08", "OP-11"]),
+  missing("policy.mixed-use.general-purpose", "house_policy", "Maximum unidentified general-corporate-purpose use and classification rules for mixed-use operations.", "Head de DCM e Estruturação", ["OP-13"]),
+  missing("policy.wait-analysis", "house_policy", "Required comparison of waiting cost, expected structural gain, milestone and client decision.", "Head de DCM e Estruturação", ["OP-12"]),
   missing("policy.structure.collateral_haircuts", "methodology_parameter", "Collateral-specific eligibility, haircut and coverage conventions.", "Head de DCM e Estruturação", ["ES-08", "ES-09", "ES-10", "ES-11", "ES-12", "ES-13", "ES-14", "ES-15", "ES-16", "ES-17", "ES-18", "ES-19"]),
   missing("policy.structure.covenant_headroom", "methodology_parameter", "Covenant calibration and minimum headroom conventions by metric and downside.", "Head de DCM e Estruturação", ["ES-23", "ES-24", "ES-25", "ES-26", "ES-27", "ES-28", "ES-29", "ES-30", "ES-31", "ES-32"]),
   missing("market.pricing.curves", "market_observation", "Comparable private-credit pricing observations normalized for index, date, tenor, size and security.", "Head de Mercado e Distribuição", ["PR-01", "PR-02", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07", "PR-10", "PR-11", "PR-12", "PR-13"]),

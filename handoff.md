@@ -8,6 +8,21 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: M4 operation truth, 25 August 2026
+
+The governed structuring stage now emits an `Operation Truth Set` before institutional materials
+or mandate screening. It compares the stated request with a calculated need, ties sources and uses,
+recalculates debt and cash pro forma, measures incremental working capital and excess carry, tests
+draw timing, and preserves tranches, conditions precedent, bridge and take-out, mixed uses and the
+confirmed version of the transaction as separate structured products.
+
+The implementation is deterministic and Decimal-based. OP-01 through OP-14 compile from the
+canonical House Playbook as candidates with no model calls or peer-agent execution. The worker
+persists all fourteen coverage states and the borrower workspace renders the core outputs and open
+items. Missing house policy or market references remain explicit blockers; no model supplies a
+substitute. Full monorepo check and responsive visual QA are green. M5 structuring is the next
+module and must consume this truth set rather than reconstructing the operation from prose.
+
 ### Engineering update: M2 financial truth and M3 debt truth, 25 August 2026
 
 The deterministic case pipeline now compiles and persists two governed truth sets before

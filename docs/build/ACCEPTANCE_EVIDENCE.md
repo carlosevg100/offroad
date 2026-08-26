@@ -1,5 +1,21 @@
 # Acceptance Evidence
 
+## House Playbook M4, 25/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Matemática operacional determinística | `@offroad/financial-core` | 14 testes no pacote; necessidade, fontes e usos, pró-forma, NCG incremental, carry e cronograma usam Decimal e preservam trace |
+| Verdade operacional M4 | `@offroad/deal-structure` | 33 testes no pacote; caso limpo fecha pedido, necessidade e identidade; mismatch, período descoberto e bridge sem take-out bloqueiam sem estimativa silenciosa |
+| Skills compiladas | `@offroad/credit-playbook` | OP-01 a OP-14 candidates, lineage canônico, runtime determinístico, zero peer handoff, zero chamadas de modelo; 142 testes do pacote |
+| Ontologia operacional | `@offroad/credit-ontology` | fontes e usos por entidade, moeda, data e tranche; NCG, custos, buffer, tranches, CPs, bridge, cronograma, espera, usos mistos e versão material reconhecidos |
+| Trânsito e persistência | `@offroad/case-engine`, `@offroad/evals`, `@offroad/document-worker` | toda run emite 14 estados OP; 32 evals e 46 testes do worker preservam o truth set no snapshot público sanitizado |
+| Superfície web | preview local descartável, desktop 1440 px e mobile 390 px | pedido, necessidade, fontes, usos, diferença, pró-forma e cobertura legíveis; `body.scrollWidth` igual ao viewport nos dois breakpoints |
+| Quality gate completo | `pnpm check` com Node 24.19.0 | 38 pacotes com lint, typecheck, todos os testes e build de produção verdes; 28 páginas geradas |
+
+M4 está implementado no trilho real e pronto para teste funcional como candidate. A promoção
+institucional permanece bloqueada até aprovação dos dados de referência, revisão independente e
+aceite do fingerprint exato.
+
 ## House Playbook M2 e M3, 25/08/2026
 
 | Evidência | Verificação | Resultado |

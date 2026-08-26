@@ -6417,7 +6417,8 @@ button[disabled].workspace-search,
 }
 
 .case-financial-truth,
-.case-debt-truth {
+.case-debt-truth,
+.case-operation-truth {
   border: 1px solid var(--line);
   border-radius: 12px;
   min-width: 0;
@@ -6433,7 +6434,10 @@ button[disabled].workspace-search,
 
 .case-truth__head h3 { margin-top: 5px; }
 .case-financial-truth > p,
-.case-debt-truth > p { color: var(--muted); font-size: .86rem; line-height: 1.55; }
+.case-debt-truth > p,
+.case-operation-truth > p { color: var(--muted); font-size: .86rem; line-height: 1.55; }
+
+.case-operation-truth { margin-top: 1rem; }
 
 .case-truth__status {
   border: 1px solid var(--line);

@@ -216,6 +216,32 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         </section>
       </div>
 
+      <section className="case-operation-truth">
+        <header className="case-truth__head">
+          <div>
+            <span className="section-kicker">M4</span>
+            <h3>{t("operationTruthTitle")}</h3>
+          </div>
+          <span className={`case-truth__status is-${state.operationTruth.status}`}>
+            {t(`truthStatus_${state.operationTruth.status}`)}
+          </span>
+        </header>
+        <p>{t("operationTruthBody")}</p>
+        <dl className="case-truth__metrics">
+          <div><dt>{t("operationRequested")}</dt><dd>{state.operationTruth.request.amount ? money(state.operationTruth.request.amount, locale) : t("notInformed")}</dd></div>
+          <div><dt>{t("operationCalculatedNeed")}</dt><dd>{state.operationTruth.calculatedNeed ? money(state.operationTruth.calculatedNeed.value, locale) : t("notInformed")}</dd></div>
+          <div><dt>{t("operationSources")}</dt><dd>{money(state.operationTruth.sourcesAndUses.totalSources, locale)}</dd></div>
+          <div><dt>{t("operationUses")}</dt><dd>{money(state.operationTruth.sourcesAndUses.totalUses, locale)}</dd></div>
+          <div><dt>{t("operationDifference")}</dt><dd>{money(state.operationTruth.sourcesAndUses.difference, locale)}</dd></div>
+          <div><dt>{t("operationProFormaDebt")}</dt><dd>{state.operationTruth.proForma ? money(state.operationTruth.proForma.netDebt, locale) : t("notInformed")}</dd></div>
+        </dl>
+        <div className="case-truth__summary">
+          <span>{t("truthProcedures")}: <strong>{state.operationTruth.procedureCoverage.filter((item) => item.status === "completed").length}/14</strong></span>
+          <span>{t("operationTie")}: <strong>{state.operationTruth.sourcesAndUses.status === "pass" ? t("operationTied") : t("operationNotTied")}</strong></span>
+          <span>{t("truthOpenItems")}: <strong>{state.operationTruth.exceptions.length + new Set(state.operationTruth.procedureCoverage.flatMap((item) => item.missingInputs)).size}</strong></span>
+        </div>
+      </section>
+
       {/* The committee pack: grade, shocks, papers, security. */}
       <IntakeCommittee
         collateral={state.collateral ?? null}
