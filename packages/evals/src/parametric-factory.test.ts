@@ -13,7 +13,7 @@ import {supportedSemanticAudit} from "@offroad/case-understanding";
 import {toReceivablesCaseFromSimpleTape} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
-const stages = ["extraction", "reconciliation", "metrics", "gaps", "structure", "red_flags", "claims", "materials", "matching", "outcome"];
+const stages = ["extraction", "reconciliation", "metrics", "gaps", "structure", "red_flags", "claims", "materials", "language_conduct", "matching", "outcome"];
 
 async function runScenario(scenario: FactoryScenario) {
   const generated = generateCase(scenario);
@@ -45,7 +45,7 @@ async function runScenario(scenario: FactoryScenario) {
 
 describe("parametric cases on the governed rail", () => {
   it.each([corporateGrowthScenario, dirtyWorkingCapitalScenario, receivablesScenario])(
-    "runs $id through all nine governed stages and preserves the answer key",
+    "runs $id through all eleven governed stages and preserves the answer key",
     async (scenario) => {
       const {generated, result} = await runScenario(scenario);
       expect(result.report.status).toBe("succeeded");

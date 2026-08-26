@@ -51,7 +51,7 @@ const documents = [
 ];
 
 describe("the governed case engine", () => {
-  it("runs all ten layers through real domain engines and keeps an unavailable writer as a domain state", async () => {
+  it("runs all eleven layers through real domain engines and keeps an unavailable writer as a domain state", async () => {
     const result = await executeCaseEngine({
       runId: "run-1",
       caseId: "case-1",
@@ -90,6 +90,7 @@ describe("the governed case engine", () => {
       "red_flags",
       "claims",
       "materials",
+      "language_conduct",
       "matching",
       "outcome",
     ]);
