@@ -250,7 +250,7 @@ create trigger agent_change_proposals_audit
 revoke all privileges on public.agent_change_proposals from anon, authenticated;
 grant select on public.agent_change_proposals to authenticated;
 
-create or replace function public.record_agent_change_proposal(
+create or replace function private.record_agent_change_proposal(
   p_organization_id uuid,
   p_session_id uuid,
   p_proposal jsonb
@@ -395,7 +395,20 @@ begin
 end;
 $$;
 
-create or replace function public.decide_agent_change_proposal(
+create or replace function public.record_agent_change_proposal(
+  p_organization_id uuid,
+  p_session_id uuid,
+  p_proposal jsonb
+)
+returns uuid
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.record_agent_change_proposal(p_organization_id, p_session_id, p_proposal);
+$$;
+
+create or replace function private.decide_agent_change_proposal(
   p_organization_id uuid,
   p_proposal_id uuid,
   p_decision text,
@@ -439,9 +452,29 @@ begin
 end;
 $$;
 
+create or replace function public.decide_agent_change_proposal(
+  p_organization_id uuid,
+  p_proposal_id uuid,
+  p_decision text,
+  p_reason text
+)
+returns text
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.decide_agent_change_proposal(
+    p_organization_id, p_proposal_id, p_decision, p_reason
+  );
+$$;
+
+revoke all on function private.record_agent_change_proposal(uuid, uuid, jsonb) from public, anon;
 revoke all on function public.record_agent_change_proposal(uuid, uuid, jsonb) from public, anon;
+revoke all on function private.decide_agent_change_proposal(uuid, uuid, text, text) from public, anon;
 revoke all on function public.decide_agent_change_proposal(uuid, uuid, text, text) from public, anon;
+grant execute on function private.record_agent_change_proposal(uuid, uuid, jsonb) to authenticated;
 grant execute on function public.record_agent_change_proposal(uuid, uuid, jsonb) to authenticated;
+grant execute on function private.decide_agent_change_proposal(uuid, uuid, text, text) to authenticated;
 grant execute on function public.decide_agent_change_proposal(uuid, uuid, text, text) to authenticated;
 
 comment on table public.agent_change_proposals is
