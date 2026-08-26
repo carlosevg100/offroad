@@ -36,11 +36,11 @@ export async function IntakeStartChoice({locale, context, journey, actions}: Pro
 
         <div className="intake-welcome__explanation">
           <span className="section-kicker">{t("howKicker")}</span>
-          <h2>{t("howTitle")}</h2>
+          <h2><span>{t("howTitlePrimary")}</span> <span>{t("howTitleMuted")}</span></h2>
           <div className="intake-welcome__narrative">
-            <p>{t("howIntro")}</p>
-            <p>{t("howAnalysis")}</p>
-            <p>{t("howMarket")}</p>
+            <div><span>01</span><p>{t("howIntro")}</p></div>
+            <div><span>02</span><p>{t("howAnalysis")}</p></div>
+            <div><span>03</span><p>{t("howMarket")}</p></div>
           </div>
         </div>
 

@@ -144,23 +144,24 @@
 }
 
 /* First-use orientation: one welcome, one explanation and one clear action. */
-.workspace-welcome--intro {
+.workspace-welcome.workspace-welcome--intro {
   display: block;
   padding-bottom: 34px;
 }
 
-.workspace-welcome--intro h1 {
+.workspace-welcome.workspace-welcome--intro h1 {
   margin-top: 11px;
   font-size: clamp(40px, 5vw, 64px);
 }
 
-.workspace-welcome--intro > div:first-child > p:last-child {
-  max-width: 780px;
+.workspace-welcome.workspace-welcome--intro > div:first-child > p:last-child {
+  width: min(100%, 1180px);
+  max-width: none;
   font-size: 14px;
   line-height: 1.7;
 }
 
-.workspace-editor-layout--welcome {
+.workspace-editor-layout.workspace-editor-layout--welcome {
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -174,37 +175,69 @@
 
 .intake-welcome__explanation {
   display: grid;
-  grid-template-columns: minmax(250px, .72fr) minmax(0, 1.28fr);
-  column-gap: clamp(36px, 6vw, 88px);
-  row-gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 22px;
 }
 
 .intake-welcome__explanation > .section-kicker {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
 
 .intake-welcome__explanation h2 {
-  max-width: 520px;
+  max-width: 1120px;
   margin: 0;
-  font-size: clamp(30px, 3.8vw, 52px);
+  font-size: clamp(34px, 4.2vw, 58px);
   font-weight: 540;
   letter-spacing: -.052em;
-  line-height: 1.02;
+  line-height: 1.04;
+}
+
+.intake-welcome__explanation h2 span:first-child {
+  color: #171c20;
+}
+
+.intake-welcome__explanation h2 span:last-child {
+  color: #a6a8a3;
 }
 
 .intake-welcome__narrative {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0;
+  padding-top: 10px;
+  border-top: 1px solid #daddda;
+}
+
+.intake-welcome__narrative > div {
+  display: grid;
   align-content: start;
-  gap: 16px;
+  grid-template-columns: 25px minmax(0, 1fr);
+  gap: 11px;
+  padding: 22px clamp(18px, 2.4vw, 32px) 4px;
+}
+
+.intake-welcome__narrative > div:first-child {
+  padding-left: 0;
+}
+
+.intake-welcome__narrative > div + div {
+  border-left: 1px solid #e0e2df;
+}
+
+.intake-welcome__narrative > div > span {
   padding-top: 3px;
+  color: #919696;
+  font: 9px ui-monospace, SFMono-Regular, monospace;
+  letter-spacing: .08em;
 }
 
 .intake-welcome__narrative p {
-  max-width: 680px;
+  max-width: none;
   margin: 0;
   color: #5f686e;
-  font-size: 13px;
-  line-height: 1.72;
+  font-size: 12px;
+  line-height: 1.68;
 }
 
 .intake-welcome__roles {
@@ -8049,6 +8082,10 @@ button[disabled].workspace-search,
 @media (max-width: 900px) {
   .intake-start__journey {grid-template-columns: 1fr;}
   .intake-welcome__explanation {grid-template-columns: 1fr;}
+  .intake-welcome__narrative {grid-template-columns: 1fr;}
+  .intake-welcome__narrative > div,
+  .intake-welcome__narrative > div:first-child {padding: 18px 0;}
+  .intake-welcome__narrative > div + div {border-top: 1px solid #e0e2df; border-left: 0;}
   .intake-welcome__roles {grid-template-columns: 1fr;}
   .intake-welcome__roles > section,
   .intake-welcome__roles > section + section {padding-inline: 0;}
