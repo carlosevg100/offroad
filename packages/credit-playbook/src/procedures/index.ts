@@ -5,4 +5,5 @@ export * from "./operation";
 export * from "./pricing";
 export * from "./structure";
 export * from "./materials";
+export * from "./market-distribution";
 export * from "./registry";

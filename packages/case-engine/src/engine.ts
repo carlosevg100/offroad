@@ -1,4 +1,4 @@
-import {buildMaterialTruthSet, compileMaterials, type Material, type MaterialTruthSet} from "@offroad/case-materials";
+import {buildMaterialTruthSet, compileMaterials, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
 import {runCase, type CaseRunPolicy, type CaseRunReport, type StageContext} from "@offroad/case-runner";
 import {
   assessReadiness,
@@ -65,12 +65,17 @@ import {
 } from "@offroad/deal-structure";
 import {
   assessMandateFit,
+  buildMarketTruthSet,
   rankFits,
   structuralExclusions,
   type CollateralKind,
   type DealRequest,
   type Instrument,
   type MandateFit,
+  type MarketTruthSet,
+  type IntroductionRecipient,
+  type QualifiedIntroductionAuthorization,
+  type QualifiedIntroductionRecord,
   type ResolvedMandate,
 } from "@offroad/fund-mandate";
 import {
@@ -87,7 +92,7 @@ import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@off
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.26-v9";
+export const caseEngineVersion = "2026.08.26-v10";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -125,6 +130,14 @@ export type CaseEngineInput = {
   dealBrief: CaseDealBrief;
   resolvedMandates: ResolvedMandate[];
   externalReleaseApproved: boolean;
+  materialRelease?: MaterialExternalReleaseEvidence;
+  marketGovernance?: {
+    mandateMaxAgeMonths: number | null;
+    waveLimit: number | null;
+    recipients?: IntroductionRecipient[];
+    authorization?: QualifiedIntroductionAuthorization | null;
+    introductions?: QualifiedIntroductionRecord[];
+  };
   claimDecisions?: ClaimDecision[];
   informationAnswers?: InformationAnswers;
   requirementResponses?: RequirementResponses;
@@ -190,6 +203,7 @@ export type CaseEngineState = {
     screened: boolean;
     fits: MandateFit[];
     structuralExclusions: string[];
+    marketTruth: MarketTruthSet;
   };
   outcome: CaseOutcome;
   modelInvocations: unknown[];
@@ -204,6 +218,14 @@ export type PublicMatchingSummary = {
   structuralExclusions: string[];
   unlockedBy: string[];
   ourGaps: string[];
+  marketTruth: PublicMarketTruthSet;
+};
+
+export type PublicMarketTruthSet=Omit<MarketTruthSet,"shortlist"|"distribution"|"introductions"|"procedureCoverage">&{
+  shortlist:{eligible:number;blockedByGovernance:number;requiringConfirmation:number};
+  distribution:Omit<MarketTruthSet["distribution"],"recipients">&{recipientCount:number};
+  introductions:Omit<MarketTruthSet["introductions"],"records">;
+  procedureCoverage:Array<Omit<MarketTruthSet["procedureCoverage"][number],"result">&{result:null}>;
 };
 
 export type PublicPricingTruthSet = Omit<PricingTruthSet, "sample" | "allIn" | "procedureCoverage"> & {
@@ -236,6 +258,7 @@ export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingT
 };
 
 export function summarizeMatching(matching: CaseEngineState["matching"]): PublicMatchingSummary {
+  const {recipients,...publicDistribution}=matching.marketTruth.distribution;
   return {
     screened: matching.screened,
     counts: {
@@ -246,6 +269,17 @@ export function summarizeMatching(matching: CaseEngineState["matching"]): Public
     structuralExclusions: [...matching.structuralExclusions],
     unlockedBy: [...new Set(matching.fits.flatMap((fit) => fit.unlockedBy))].sort(),
     ourGaps: [...new Set(matching.fits.flatMap((fit) => fit.ourGaps))].sort(),
+    marketTruth:{
+      ...matching.marketTruth,
+      shortlist:{
+        eligible:matching.marketTruth.shortlist.filter((entry)=>entry.eligibleForShortlist).length,
+        blockedByGovernance:matching.marketTruth.shortlist.filter((entry)=>entry.blockers.length>0).length,
+        requiringConfirmation:matching.marketTruth.shortlist.filter((entry)=>entry.confirmations.length>0).length,
+      },
+      distribution:{...publicDistribution,recipientCount:recipients.length},
+      introductions:{ready:matching.marketTruth.introductions.ready,introduced:matching.marketTruth.introductions.introduced,blocked:matching.marketTruth.introductions.blocked},
+      procedureCoverage:matching.marketTruth.procedureCoverage.map((procedure)=>({...procedure,result:null})),
+    },
   };
 }
 
@@ -369,6 +403,7 @@ const matchingOutputSchema = z.object({
   screened: z.boolean(),
   fits: z.array(z.unknown()),
   structuralExclusions: z.array(z.string()),
+  marketTruth:z.unknown(),
 });
 const outcomeOutputSchema = z.object({outcome: caseOutcomeSchema});
 
@@ -693,7 +728,13 @@ export async function executeCaseEngine(
               });
             }
           }
-          const materialTruth=buildMaterialTruthSet({materials,dataRoom,modelAvailable:reconciliation.facts.length>0});
+          const materialTruth=buildMaterialTruthSet({
+            materials,
+            dataRoom,
+            modelAvailable:reconciliation.facts.length>0,
+            claimAuditApproved:claimRegistry?.publication.allowed===true,
+            ...(input.materialRelease?{release:input.materialRelease}:{}),
+          });
           return {output: {materials, materialsBlockedBy, materialTruth, dataRoom, audit, claimRegistry} satisfies MaterialsOutput};
         },
       },
@@ -705,11 +746,27 @@ export async function executeCaseEngine(
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const request = requestForMatching(input, structure, metrics, reconciliation);
           const fits = rankFits(input.resolvedMandates.map((mandate) => assessMandateFit(mandate, request)));
+          const materials=outputOf<MaterialsOutput>(context,"materials");
+          const structural=structuralExclusions(fits);
+          const materialFingerprint=materials.materialTruth.fingerprint;
+          const marketTruth=buildMarketTruthSet({
+            mandates:input.resolvedMandates,
+            fits,
+            structuralExclusions:structural,
+            mandateMaxAgeMonths:input.marketGovernance?.mandateMaxAgeMonths??null,
+            waveLimit:input.marketGovernance?.waveLimit??null,
+            caseFingerprint:fingerprintJson({operationTruth:structure.operationTruth,structureTruth:structure.structureTruth,pricingTruth:structure.pricingTruth}),
+            materialGate:{releaseDecision:materials.materialTruth.releaseDecision,fingerprint:materialFingerprint,recipientIds:materials.materialTruth.release.companyAuthorization.recipientIds},
+            ...(input.marketGovernance?.recipients?{recipients:input.marketGovernance.recipients}:{}),
+            ...(input.marketGovernance?.authorization?{authorization:input.marketGovernance.authorization}:{}),
+            ...(input.marketGovernance?.introductions?{introductions:input.marketGovernance.introductions}:{}),
+          });
           return {
             output: {
               screened: input.resolvedMandates.length > 0,
               fits,
-              structuralExclusions: structuralExclusions(fits),
+              structuralExclusions: structural,
+              marketTruth,
             } satisfies MatchingOutput,
           };
         },

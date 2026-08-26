@@ -3148,6 +3148,132 @@ $$;
 
 set local role postgres;
 
+-- M8 stops at an append-only qualified introduction. The company authorizes an exact material
+-- fingerprint for named recipients only after a separate technical-review attestation.
+insert into public.market_distribution_policies (
+  version, status, valid_from, mandate_max_age_months, wave_limit,
+  learning_gate_anchor_count, methodology_source, approved_by, approved_at
+) values (
+  'rls-m8-v1', 'active', current_date, 6, 3, 1,
+  'RLS fixture for the governed qualified-introduction boundary.',
+  '10000000-0000-4000-8000-000000000001', now()
+);
+insert into public.qualified_introduction_plans (
+  id, organization_id, intake_session_id, case_fingerprint, material_fingerprint,
+  wave_limit, created_by
+) values (
+  '81000000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  repeat('b', 64), repeat('a', 64), 3,
+  '10000000-0000-4000-8000-000000000001'
+);
+insert into public.qualified_introduction_recipients (
+  id, organization_id, intake_session_id, plan_id, fund_directory_id,
+  recipient_name, contact_id, contact_name, mandate_fingerprint, rationale,
+  material_manifest, position, is_anchor
+) values (
+  '82000000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  '81000000-0000-4000-8000-000000000001',
+  '70000000-0000-4000-8000-000000000701',
+  'RLS Governed Retrieval Fund', 'credit-team', 'Credit Team', repeat('c', 64),
+  'The current governed mandate accepts the transaction profile and ticket.',
+  '["teaser","credit_memo","term_sheet"]'::jsonb, 1, true
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+begin
+  if (select count(*) from public.qualified_introduction_plans) <> 1
+    or (select count(*) from public.qualified_introduction_recipients) <> 1 then
+    raise exception 'tenant A cannot read its own qualified-introduction plan';
+  end if;
+  perform public.attest_qualified_introduction_plan_technical_review(
+    '81000000-0000-4000-8000-000000000001', repeat('a', 64)
+  );
+  perform public.authorize_qualified_introduction_plan(
+    '81000000-0000-4000-8000-000000000001', repeat('a', 64)
+  );
+  if (select status from public.qualified_introduction_plans
+      where id = '81000000-0000-4000-8000-000000000001') <> 'authorized' then
+    raise exception 'exact-fingerprint technical review and company authorization did not persist';
+  end if;
+  begin
+    update public.qualified_introduction_plans set wave_limit = 10
+    where id = '81000000-0000-4000-8000-000000000001';
+    raise exception 'tenant directly modified an authorized introduction plan';
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+set local role postgres;
+insert into public.qualified_introductions (
+  id, organization_id, intake_session_id, plan_id, recipient_id, fund_directory_id,
+  contact_id, case_fingerprint, material_fingerprint, mandate_fingerprint, rationale,
+  material_manifest, authorization_snapshot, introduced_by
+) values (
+  '83000000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  '81000000-0000-4000-8000-000000000001',
+  '82000000-0000-4000-8000-000000000001',
+  '70000000-0000-4000-8000-000000000701',
+  'credit-team', repeat('b', 64), repeat('a', 64), repeat('c', 64),
+  'Qualified introduction of the exact authorized package to the named contact.',
+  '["teaser","credit_memo","term_sheet"]'::jsonb,
+  '{"scope":["qualified_introduction"]}'::jsonb,
+  '10000000-0000-4000-8000-000000000001'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+begin
+  if (select count(*) from public.qualified_introductions) <> 1 then
+    raise exception 'tenant A cannot read its own qualified-introduction record';
+  end if;
+  begin
+    update public.qualified_introductions set rationale = 'tampered';
+    raise exception 'qualified-introduction ledger accepted an update';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    delete from public.qualified_introductions;
+    raise exception 'qualified-introduction ledger accepted a delete';
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+begin
+  if (select count(*) from public.qualified_introduction_plans) <> 0
+    or (select count(*) from public.qualified_introduction_recipients) <> 0
+    or (select count(*) from public.qualified_introductions) <> 0 then
+    raise exception 'tenant B can read tenant A qualified-introduction data';
+  end if;
+end;
+$$;
+
+set local role postgres;
+
 -- House pricing evidence is not a tenant data product. Even an authenticated organization owner
 -- cannot enumerate policies or observations; only the capability-bound worker can receive the
 -- governed aggregate context through its security-definer command.

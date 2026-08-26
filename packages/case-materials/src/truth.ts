@@ -12,6 +12,8 @@ export type MaterialReleaseEvidence = {
   companyAuthorization: {authorized: boolean; fingerprint: string | null; scope: string[]; recipientIds: string[]};
 };
 
+export type MaterialExternalReleaseEvidence = Pick<MaterialReleaseEvidence, "technicalReview" | "companyAuthorization">;
+
 export type MaterialProcedureResult = {
   procedureId: `MA-${string}`;
   status: Status;
@@ -24,6 +26,7 @@ export type MaterialProcedureResult = {
 
 export type MaterialTruthSet = {
   version: string;
+  fingerprint: string;
   templateRegistryHash: string;
   status: "complete" | "partial" | "blocked";
   releaseDecision: "internal_only" | "ready_for_authorization" | "authorized_for_named_recipients";
@@ -56,8 +59,7 @@ type MaterialRoomPlan = {
   releasable:boolean;
 };
 
-const emptyRelease = (): MaterialReleaseEvidence => ({
-  crossValidation:{approved:false,fingerprint:null},claimAudit:{approved:false,fingerprint:null},
+const emptyExternalRelease = (): MaterialExternalReleaseEvidence => ({
   technicalReview:{approved:false,fingerprint:null,reviewedBy:null,reviewedAt:null},
   companyAuthorization:{authorized:false,fingerprint:null,scope:[],recipientIds:[]},
 });
@@ -69,6 +71,18 @@ function stable(value: unknown): string {
   return JSON.stringify(value) ?? "undefined";
 }
 const sha = (value: unknown) => createHash("sha256").update(stable(value)).digest("hex");
+
+export function materialPackageFingerprint(input:{materials:readonly Material[];dataRoom:MaterialRoomPlan}):string{
+  return sha({
+    materials:input.materials,
+    dataRoom:{
+      entries:input.dataRoom.entries.map(({id,tier,heldBy})=>({id,tier,heldBy})),
+      folders:input.dataRoom.folders.map(({id})=>({id})),
+      counts:input.dataRoom.counts,
+      releasable:input.dataRoom.releasable,
+    },
+  });
+}
 
 function claimRows(block: MaterialBlock, prefix: string): Array<{key:string;value:string;artifactValue:string;supportIds:string[];material:boolean;comparable:boolean}> {
   if (block.type === "paragraph") return block.material ? [{key:block.claimId??prefix,value:`${block.text.pt}\u0000${block.text.en}`,artifactValue:block.text.pt,supportIds:block.supportIds??[],material:true,comparable:false}] : [];
@@ -90,8 +104,9 @@ function bilingual(block: MaterialBlock): boolean {
   return pairs.every((pair)=>pair.pt.trim().length>0&&pair.en.trim().length>0);
 }
 
-export function buildMaterialTruthSet(input:{materials:readonly Material[];dataRoom:MaterialRoomPlan;modelAvailable:boolean;release?:MaterialReleaseEvidence}):MaterialTruthSet {
-  const release=input.release??emptyRelease();
+export function buildMaterialTruthSet(input:{materials:readonly Material[];dataRoom:MaterialRoomPlan;modelAvailable:boolean;claimAuditApproved?:boolean;release?:MaterialExternalReleaseEvidence}):MaterialTruthSet {
+  const externalRelease=input.release??emptyExternalRelease();
+  const packageFingerprint=materialPackageFingerprint(input);
   const exceptions:MaterialTruthSet["exceptions"]=[];
   const missing=new Set<string>();
   const artifacts=input.materials.map((material)=>{
@@ -137,10 +152,18 @@ export function buildMaterialTruthSet(input:{materials:readonly Material[];dataR
 
   const status=(ok:boolean,available:boolean=true):Status=>ok?"completed":available?"blocked":"not_computable";
   const result=(procedureId:`MA-${string}`,s:Status,value:Record<string,unknown>|null,procedureMissing:string[]=[],evidenceCount=0):MaterialProcedureResult=>({procedureId,status:s,result:value,outputCount:value?Object.keys(value).length:0,evidenceCount,missingInputs:procedureMissing,exceptionIds:exceptions.filter((exception)=>exception.affectedProcedures.includes(procedureId)).map((exception)=>exception.id)});
+  const claimAuditClear=input.claimAuditApproved===true&&artifacts.every((artifact)=>artifact.conductStatus==="pass"&&!artifact.unsupportedMaterialClaims.length);
+  const release:MaterialReleaseEvidence={
+    crossValidation:{approved:conflicts.length===0,fingerprint:conflicts.length===0?packageFingerprint:null},
+    claimAudit:{approved:claimAuditClear,fingerprint:claimAuditClear?packageFingerprint:null},
+    technicalReview:externalRelease.technicalReview,
+    companyAuthorization:externalRelease.companyAuthorization,
+  };
   const releaseFingerprints=[release.crossValidation.fingerprint,release.claimAudit.fingerprint,release.technicalReview.fingerprint,release.companyAuthorization.fingerprint];
   const materialGateClear=!exceptions.some((exception)=>exception.severity==="critical")&&input.dataRoom.releasable;
-  const releaseReady=materialGateClear&&release.crossValidation.approved&&release.claimAudit.approved&&release.technicalReview.approved;
-  const releaseAuthorized=releaseReady&&release.companyAuthorization.authorized&&release.companyAuthorization.recipientIds.length>0&&releaseFingerprints.every(Boolean)&&new Set(releaseFingerprints).size===1;
+  const exactFingerprints=releaseFingerprints.every((fingerprint)=>fingerprint===packageFingerprint);
+  const releaseReady=materialGateClear&&release.crossValidation.approved&&release.claimAudit.approved&&release.technicalReview.approved&&exactFingerprints;
+  const releaseAuthorized=releaseReady&&release.companyAuthorization.authorized&&release.companyAuthorization.recipientIds.length>0&&exactFingerprints;
   const coverage:MaterialProcedureResult[]=[
     result("MA-01",status(clean("teaser"),exists("teaser")),exists("teaser")?{artifact:byKind.get("teaser")}:null,exists("teaser")?[]:["teaser"],byKind.get("teaser")?.supportCount??0),
     result("MA-02",status(clean("teaser"),exists("teaser")),exists("teaser")?{anonymous:!input.materials.find((m)=>m.kind==="teaser")?.title.pt.includes(":")}:null,exists("teaser")?[]:["teaser"],0),
@@ -161,5 +184,5 @@ export function buildMaterialTruthSet(input:{materials:readonly Material[];dataR
   ];
   if(coverage.length!==32)throw new Error(`material procedure coverage expected 32, received ${coverage.length}`);
   const critical=exceptions.some((exception)=>exception.severity==="critical");
-  return {version:materialTruthVersion,templateRegistryHash:materialTemplateRegistryHash,status:critical?"blocked":coverage.every((entry)=>entry.status==="completed"||entry.status==="not_applicable")?"complete":"partial",releaseDecision:releaseAuthorized?"authorized_for_named_recipients":releaseReady?"ready_for_authorization":"internal_only",artifacts,consistency:{status:conflicts.length?"blocked":"pass",conflicts},room:{releasable:input.dataRoom.releasable,ready:input.dataRoom.counts.ready,held:input.dataRoom.counts.held,requested:input.dataRoom.counts.requested,hygieneIssues},release,exceptions,missingInputs:[...missing].sort(),procedureCoverage:coverage};
+  return {version:materialTruthVersion,fingerprint:packageFingerprint,templateRegistryHash:materialTemplateRegistryHash,status:critical?"blocked":coverage.every((entry)=>entry.status==="completed"||entry.status==="not_applicable")?"complete":"partial",releaseDecision:releaseAuthorized?"authorized_for_named_recipients":releaseReady?"ready_for_authorization":"internal_only",artifacts,consistency:{status:conflicts.length?"blocked":"pass",conflicts},room:{releasable:input.dataRoom.releasable,ready:input.dataRoom.counts.ready,held:input.dataRoom.counts.held,requested:input.dataRoom.counts.requested,hygieneIssues},release,exceptions,missingInputs:[...missing].sort(),procedureCoverage:coverage};
 }

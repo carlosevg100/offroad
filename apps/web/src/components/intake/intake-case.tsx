@@ -1,4 +1,4 @@
-import {AlertTriangle, FileDown, FileText, Info, Landmark, Printer, Table2} from "lucide-react";
+import {AlertTriangle, FileDown, FileText, Info, Printer, Table2} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
@@ -480,13 +480,7 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
             <Table2 aria-hidden="true" size={13} /> {t("modelDownload")}
           </a>
         ) : null}
-        {sessionId && state.rating ? (
-          <a className="button button--ghost" href={`/${locale}/app/sounding/${sessionId}`}>
-            <Landmark aria-hidden="true" size={13} /> {t("soundingOpen")}
-          </a>
-        ) : (
-          <p className="form-notice">{t("modelBlocked")}</p>
-        )}
+        {!sessionId || state.reconciliation.facts.length===0?<p className="form-notice">{t("modelBlocked")}</p>:null}
       </div>
 
       <div className="case-materials">
@@ -534,6 +528,36 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
           <p className="form-notice">{t("materialsBlocked")}</p>
         )}
       </div>
+
+      <section className="case-market-truth">
+        <header className="case-truth__head">
+          <div>
+            <span className="section-kicker">M8</span>
+            <h3>{t("marketTruthTitle")}</h3>
+          </div>
+          <span className={`case-truth__status is-${state.matching.marketTruth.status}`}>
+            {t(`truthStatus_${state.matching.marketTruth.status}`)}
+          </span>
+        </header>
+        <p>{t("marketTruthBody")}</p>
+        <dl className="case-truth__metrics">
+          <div><dt>{t("marketMandatesScreened")}</dt><dd>{state.matching.marketTruth.mandateRegistry.total}</dd></div>
+          <div><dt>{t("marketEligible")}</dt><dd>{state.matching.marketTruth.shortlist.eligible}</dd></div>
+          <div><dt>{t("marketToConfirm")}</dt><dd>{state.matching.marketTruth.shortlist.requiringConfirmation}</dd></div>
+          <div><dt>{t("marketExcluded")}</dt><dd>{state.matching.counts.excluded}</dd></div>
+          <div><dt>{t("marketMandatesStale")}</dt><dd>{state.matching.marketTruth.mandateRegistry.stale}</dd></div>
+          <div><dt>{t("marketIntroduced")}</dt><dd>{state.matching.marketTruth.introductions.introduced}</dd></div>
+        </dl>
+        <div className={`case-market-truth__boundary ${state.matching.marketTruth.distribution.ready?"is-ready":""}`}>
+          <strong>{state.matching.marketTruth.distribution.ready?t("marketReadyTitle"):t("marketPendingTitle")}</strong>
+          <p>{state.matching.marketTruth.distribution.ready?t("marketReadyBody"):t("marketPendingBody")}</p>
+        </div>
+        <div className="case-truth__summary">
+          <span>{t("truthProcedures")}: <strong>{state.matching.marketTruth.procedureCoverage.filter((item)=>item.status==="completed").length}/18</strong></span>
+          <span>{t("marketRuntimeBoundary")}: <strong>{t("marketQualifiedIntroduction")}</strong></span>
+          <span>{t("truthOpenItems")}: <strong>{state.matching.marketTruth.missingInputs.length+state.matching.marketTruth.exceptions.length}</strong></span>
+        </div>
+      </section>
     </section>
   );
 }

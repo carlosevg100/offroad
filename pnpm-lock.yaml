@@ -144,9 +144,6 @@ importers:
       '@offroad/reconciliation':
         specifier: workspace:*
         version: link:../../packages/reconciliation
-      '@offroad/sounding':
-        specifier: workspace:*
-        version: link:../../packages/sounding
       '@offroad/testing-fixtures':
         specifier: workspace:*
         version: link:../../packages/testing-fixtures
