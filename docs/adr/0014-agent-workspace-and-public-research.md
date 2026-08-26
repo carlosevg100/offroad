@@ -91,3 +91,16 @@ não pode falhar o processamento independente do data room.
 Esta vertical não escreve materiais, não escolhe financiadores, não aprova crédito, não conduz
 diligência e não compromete capital. Novos comandos do Agente devem repetir o mesmo padrão de
 contrato estreito, preview, confirmação, aplicação canônica e teste de não interferência.
+
+## Primeira vertical da jornada guiada, 26/08/2026
+
+Os sete marcos são uma projeção de estados reais, não sete páginas cenográficas. Empresa, operação
+e informações são os três marcos de entrada. Entendimento, esclarecimentos, pacote e investidores
+só avançam quando a sessão, o processamento, a revisão, os artefatos e a autorização compatíveis
+existirem. A interface pode mostrar os próximos marcos bloqueados, mas não pode marcá-los como
+concluídos por estimativa.
+
+O início da jornada e o salvamento do marco da empresa são comandos transacionais. Identificação,
+contexto livre e material institucional são formas complementares de fornecer o mesmo contexto; o
+cliente não escolhe entre um fluxo de documentos e outro manual. O progresso começa em zero,
+permite retorno aos marcos iniciados e preserva histórico ao recomeçar uma tentativa.

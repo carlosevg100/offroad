@@ -4,6 +4,7 @@ import {getTranslations} from "next-intl/server";
 import type {IntakeContext, IntakeStartActionSet} from "@/lib/intake/types";
 
 import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
+import {IntakeActionSubmit} from "./intake-action-submit";
 
 type Props = {
   locale: string;
@@ -69,7 +70,7 @@ export async function IntakeStartChoice({locale, context, journey, actions}: Pro
 
         <form action={actions.start} className="intake-welcome__action">
           <input name="locale" type="hidden" value={locale} />
-          <button className="button" type="submit">{t("guidedCta")}<ArrowRight size={15} /></button>
+          <IntakeActionSubmit idle={t("guidedCta")} pending={t("guidedCtaPending")} />
           <span>{t("welcomeActionTime")}</span>
         </form>
 

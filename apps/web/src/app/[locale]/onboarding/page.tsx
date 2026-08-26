@@ -29,7 +29,7 @@ import {BrandMark} from "@/components/brand-mark";
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
-import {dealBriefOf} from "@/lib/intake/deal-brief";
+import {briefCompleteness, dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {AgentPanel, type AgentPanelCopy} from "@/components/intake/agent-panel";
@@ -62,6 +62,7 @@ import {
   saveAdvisedCompanyStep,
   saveContactStep,
   saveFundingStep,
+  saveGuidedCompanyProfile,
   saveFundStep,
   saveMandateStep,
   saveOrganizationStep,
@@ -158,7 +159,8 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const contactAnswers = answerObject(answers, "contact");
   const intakeMode = text(answers.intake_mode);
   const intakeSessionId = text(answers.intake_session_id);
-  const requestedIntakeStage = state.stage === "operation" || state.stage === "request" || state.stage === "documents"
+  const guidedCompanyAnswers = answerObject(answers, "company_profile");
+  const requestedIntakeStage = state.stage === "company" || state.stage === "operation" || state.stage === "request" || state.stage === "documents"
     ? state.stage
     : undefined;
   const isDocumentFirst = journey !== "capital_provider" && intakeMode === "documents";
@@ -218,7 +220,42 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         expectedDocumentCount: intakeReview?.documents.length ?? documents.length,
       })
     : null;
-  const completionPercent = workPlan?.completionPercent ?? registrationCompletionPercent;
+  const intakeSession = intakeReview?.session ?? null;
+  const intakeBrief = intakeSession ? dealBriefOf(intakeSession) : {};
+  const companyProfileComplete = Object.keys(guidedCompanyAnswers).length > 0;
+  const guidedMilestones = ["company", "operation", "information", "understanding", "clarifications", "package", "investors"] as const;
+  const guidedMilestoneIndex = requestedIntakeStage === "company" || !companyProfileComplete
+    ? 0
+    : requestedIntakeStage === "operation"
+      || requestedIntakeStage === "request"
+      || !intakeSession?.archetype
+      || briefCompleteness(intakeBrief).answered === 0
+      ? 1
+      : requestedIntakeStage === "documents" || intakeSession.status === "collecting"
+        ? 2
+        : intakeSession.status === "processing"
+          ? 3
+          : intakeSession.status === "review_ready"
+            ? 4
+            : intakeSession.status === "confirmed"
+              ? 5
+              : 2;
+  const flowSteps = isDocumentFirst ? guidedMilestones : steps;
+  const flowCurrentIndex = isDocumentFirst ? guidedMilestoneIndex : currentIndex;
+  const flowAvailableIndex = isDocumentFirst ? guidedMilestoneIndex : furthestAvailableIndex;
+  const completionPercent = isDocumentFirst
+    ? Math.round((guidedMilestoneIndex / (guidedMilestones.length - 1)) * 100)
+    : workPlan?.completionPercent ?? registrationCompletionPercent;
+  const flowStepLabel = (step: string) => isDocumentFirst
+    ? tIntake(`guided.milestoneLabels.${step}`)
+    : t(`workspace.nodes.${journey}.${step}`);
+  const flowStepHref = (step: string) => {
+    if (!isDocumentFirst) return `/${locale}/onboarding?section=${step}`;
+    if (step === "company") return `/${locale}/onboarding?stage=company`;
+    if (step === "operation") return `/${locale}/onboarding?stage=operation`;
+    if (step === "information") return `/${locale}/onboarding?stage=documents`;
+    return `/${locale}/onboarding`;
+  };
   const agentAvailable = Boolean(
     intakeSessionId
     && intakeReview?.session?.archetype
@@ -288,20 +325,20 @@ export default async function OnboardingPage({params, searchParams}: Props) {
             <div className="workspace-project">
               <div className="workspace-project__header"><ChevronDown aria-hidden="true" size={13} /><FolderOpen aria-hidden="true" size={15} /><strong>{projectTitle}</strong></div>
               <div className="workspace-project__nodes">
-                {steps.map((step, index) => {
-                  const nodeClassName = index === currentIndex ? "workspace-project__node is-current" : index < furthestAvailableIndex ? "workspace-project__node is-complete" : index === furthestAvailableIndex ? "workspace-project__node is-available" : "workspace-project__node is-locked";
+                {flowSteps.map((step, index) => {
+                  const nodeClassName = index === flowCurrentIndex ? "workspace-project__node is-current" : index < flowAvailableIndex ? "workspace-project__node is-complete" : index === flowAvailableIndex ? "workspace-project__node is-available" : "workspace-project__node is-locked";
                   const nodeContents = (
                     <>
-                      <span>{index < furthestAvailableIndex ? <Check aria-hidden="true" size={10} /> : index > furthestAvailableIndex ? <LockKeyhole aria-hidden="true" size={10} /> : <ChevronRight aria-hidden="true" size={10} />}</span>
-                      <strong>{t(`workspace.nodes.${journey}.${step}`)}</strong>
-                      {index !== currentIndex && index <= furthestAvailableIndex ? <PencilLine aria-hidden="true" size={11} /> : null}
+                      <span>{index < flowAvailableIndex ? <Check aria-hidden="true" size={10} /> : index > flowAvailableIndex ? <LockKeyhole aria-hidden="true" size={10} /> : <ChevronRight aria-hidden="true" size={10} />}</span>
+                      <strong>{flowStepLabel(step)}</strong>
+                      {index !== flowCurrentIndex && index <= flowAvailableIndex ? <PencilLine aria-hidden="true" size={11} /> : null}
                     </>
                   );
 
                   return (
                     <div className={nodeClassName} key={step}>
-                      {index <= furthestAvailableIndex ? (
-                        <Link aria-current={index === currentIndex ? "page" : undefined} className="workspace-node-control" href={`/${locale}/onboarding?section=${step}`}>
+                      {index <= flowAvailableIndex ? (
+                        <Link aria-current={index === flowCurrentIndex ? "page" : undefined} className="workspace-node-control" href={flowStepHref(step)}>
                           {nodeContents}
                         </Link>
                       ) : (
@@ -322,7 +359,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
       <section className="workspace-shell">
         <header className="workspace-topbar">
-          <div className="workspace-breadcrumb"><PanelLeft aria-hidden="true" size={16} /><span>{organization.name}</span><ChevronRight aria-hidden="true" size={12} /><strong>{projectTitle}</strong><ChevronRight aria-hidden="true" size={12} /><em>{t(`workspace.nodes.${journey}.${currentStep}`)}</em></div>
+          <div className="workspace-breadcrumb"><PanelLeft aria-hidden="true" size={16} /><span>{organization.name}</span><ChevronRight aria-hidden="true" size={12} /><strong>{projectTitle}</strong><ChevronRight aria-hidden="true" size={12} /><em>{isDocumentFirst ? flowStepLabel(guidedMilestones[guidedMilestoneIndex]) : t(`workspace.nodes.${journey}.${currentStep}`)}</em></div>
           <div className="workspace-topbar__actions"><span className="workspace-saved"><Check aria-hidden="true" size={12} />{t("workspace.saved")}</span><button aria-disabled="true" aria-label={t("workspace.help")} disabled title={t("workspace.comingSoon")} type="button"><HelpCircle aria-hidden="true" size={16} /></button><button aria-disabled="true" aria-label={t("workspace.notifications")} disabled title={t("workspace.comingSoon")} type="button"><Bell aria-hidden="true" size={16} /></button></div>
         </header>
 
@@ -334,7 +371,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
           <div className={isFirstOnboardingStart ? "workspace-editor-layout workspace-editor-layout--welcome" : "workspace-editor-layout"}>
             <section className={isFirstOnboardingStart ? "onboarding-stage workspace-editor workspace-editor--welcome" : "onboarding-stage workspace-editor"}>
-          {!isFirstOnboardingStart ? <header className="onboarding-stage__header">
+          {!isFirstOnboardingStart && !isDocumentFirst ? <header className="onboarding-stage__header">
             <span>{t("workspace.currentActivity")}</span>
             <h2>{t(`workspace.nodes.${journey}.${currentStep}`)}</h2>
             <p>{t(`steps.${journey}.${currentStep}.body`)}</p>
@@ -405,7 +442,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
             </form>
           ) : null}
 
-          {currentStep === "documents" && isDocumentFirst ? (
+          {(currentStep === "organization" || currentStep === "documents") && isDocumentFirst ? (
             !intakeReview?.session ? <p className="form-notice form-notice--error">{tIntake("errors.session")}</p> : intakeReview.session.status === "review_ready" ? (
               <IntakeReview
                 caseState={await resolveCaseState({
@@ -432,6 +469,15 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                   locale: locale === "en-US" ? "en" : "pt",
                 })}
                 className="onboarding-stage__form"
+                companyProfile={{
+                  name: text(guidedCompanyAnswers.name) || (organization.name.includes("em cadastro") ? "" : organization.name),
+                  legalName: text(guidedCompanyAnswers.legal_name) || organization.legal_name || "",
+                  website: text(guidedCompanyAnswers.website) || organization.website || "",
+                  description: text(guidedCompanyAnswers.description) || organization.description || "",
+                  identifierLast4: text(guidedCompanyAnswers.identifier_last4),
+                }}
+                companyProfileAction={saveGuidedCompanyProfile}
+                companyProfileComplete={companyProfileComplete}
                 documents={intakeReview.documents}
                 locale={locale}
                 organizationId={organization.id}
@@ -440,7 +486,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 restartAction={restartDocumentIntake}
                 session={intakeReview.session}
                 answerAction={saveIntakeAnswer}
-                dealBrief={dealBriefOf(intakeReview.session)}
+                dealBrief={intakeBrief}
                 dealBriefAction={saveDealBriefAction}
                 setOperationAction={setIntakeOperation}
                 resolveScopeSuggestionAction={resolveOnboardingScopeSuggestion}
@@ -564,10 +610,10 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                         <small>{t(`workspace.workPlan.status.${task.status as WorkPlanStatus}`)}</small>
                       </p>
                     </div>
-                  )) : steps.map((step, index) => (
-                    <div className={index < currentIndex ? "is-complete" : index === currentIndex ? "is-current" : ""} key={step}>
-                      <span>{index < currentIndex ? <Check aria-hidden="true" size={11} /> : null}</span>
-                      <p><strong>{t(`workspace.nodes.${journey}.${step}`)}</strong><small>{index < currentIndex ? t("workspace.complete") : index === currentIndex ? t("workspace.now") : t("workspace.later")}</small></p>
+                  )) : flowSteps.map((step, index) => (
+                    <div className={index < flowCurrentIndex ? "is-complete" : index === flowCurrentIndex ? "is-current" : ""} key={step}>
+                      <span>{index < flowCurrentIndex ? <Check aria-hidden="true" size={11} /> : null}</span>
+                      <p><strong>{flowStepLabel(step)}</strong><small>{index < flowCurrentIndex ? t("workspace.complete") : index === flowCurrentIndex ? t("workspace.now") : t("workspace.later")}</small></p>
                     </div>
                   ))}
                 </div>

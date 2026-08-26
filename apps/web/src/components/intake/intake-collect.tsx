@@ -15,6 +15,17 @@ import {IntakeDealBrief} from "./intake-deal-brief";
 import {IntakeInformation} from "./intake-information";
 import {IntakeGovernance} from "./intake-governance";
 import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
+import {IntakeCompanyProfile} from "./intake-company-profile";
+
+type GuidedStage = "company" | "operation" | "request" | "documents";
+
+type CompanyProfile = {
+  name?: string;
+  legalName?: string;
+  website?: string;
+  description?: string;
+  identifierLast4?: string;
+};
 
 type Props = {
   locale: string;
@@ -39,7 +50,11 @@ type Props = {
   dealBrief?: DealBrief;
   dealBriefAction?: (formData: FormData) => Promise<void>;
   /** Current screen in the guided workspace flow. Onboarding derives it from saved answers. */
-  stage?: "operation" | "request" | "documents";
+  stage?: GuidedStage;
+  /** The onboarding journey starts with the company, before asking what it wants to finance. */
+  companyProfile?: CompanyProfile;
+  companyProfileComplete?: boolean;
+  companyProfileAction?: (formData: FormData) => Promise<void>;
   /** Route used by the compact back action in the guided workspace flow. */
   backHref?: string;
   /** Base route used to navigate between the three guided stages without mutating saved answers. */
@@ -55,19 +70,28 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref, stageBaseHref, restartAction, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, restartAction, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
   const answeredBrief = briefCompleteness(dealBrief ?? {}).answered;
-  const currentStage = !checklist?.archetypeId
+  const currentStage: GuidedStage = surface === "onboarding" && (stage === "company" || !companyProfileComplete)
+    ? "company"
+    : !checklist?.archetypeId
     ? "operation"
     : stage === "documents" && answeredBrief === 0
       ? "request"
       : stage ?? (answeredBrief === 0 ? "request" : "documents");
-  const stageNumber = currentStage === "operation" ? 1 : currentStage === "request" ? 2 : 3;
+  const milestoneNumber = currentStage === "company" ? 1 : currentStage === "documents" ? 3 : 2;
+  const introKey = surface === "workspace"
+    ? currentStage === "operation" ? "workspaceOperation" : currentStage === "request" ? "workspaceRequest" : "workspaceDocuments"
+    : currentStage;
   const resolvedBackHref = backHref ?? (stageBaseHref && currentStage !== "operation"
-    ? `${stageBaseHref}?stage=${currentStage === "documents" ? "request" : "operation"}`
+    ? currentStage === "company"
+      ? undefined
+      : `${stageBaseHref}?stage=${currentStage === "documents" ? "request" : currentStage === "request" ? "operation" : "company"}`
+    : stageBaseHref && surface === "onboarding" && currentStage === "operation"
+      ? `${stageBaseHref}?stage=company`
     : undefined);
   const analysisScope = session.analysis_scope && typeof session.analysis_scope === "object" && !Array.isArray(session.analysis_scope)
     ? session.analysis_scope
@@ -91,13 +115,24 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         state={failed ? "failed" : processing ? "processing" : "open"}
         surface={surface}
       />
-      <nav aria-label={t("guided.progressLabel")} className="intake-guide__progress">
-        {[1, 2, 3].map((number) => (
-          <span className={number === stageNumber ? "is-current" : number < stageNumber ? "is-complete" : ""} key={number}>
-            <i>{number < stageNumber ? "✓" : number}</i>{t(`guided.step${number}`)}
-          </span>
-        ))}
-      </nav>
+      {surface === "onboarding" ? (
+        <nav aria-label={t("guided.progressLabel")} className="intake-milestones">
+          {[1, 2, 3, 4, 5, 6, 7].map((number) => (
+            <span className={number === milestoneNumber ? "is-current" : number < milestoneNumber ? "is-complete" : "is-locked"} key={number}>
+              <i>{number < milestoneNumber ? "✓" : String(number).padStart(2, "0")}</i>
+              <b>{t(`guided.milestones.${number}`)}</b>
+            </span>
+          ))}
+        </nav>
+      ) : (
+        <nav aria-label={t("guided.progressLabel")} className="intake-guide__progress">
+          {[1, 2, 3].map((number) => (
+            <span className={number === milestoneNumber ? "is-current" : number < milestoneNumber ? "is-complete" : ""} key={number}>
+              <i>{number < milestoneNumber ? "✓" : number}</i>{t(`guided.step${number}`)}
+            </span>
+          ))}
+        </nav>
+      )}
 
       {(resolvedBackHref || restartAction) ? (
         <div className="intake-guide__navigation">
@@ -123,9 +158,9 @@ export async function IntakeCollect({locale, session, documents, organizationId,
       ) : null}
 
       <div className="intake-collect__intro intake-guide__intro">
-        <span className="section-kicker">{t(`guided.${currentStage}Kicker`)}</span>
-        <h3>{t(`guided.${currentStage}Title`)}</h3>
-        <p>{t(`guided.${currentStage}Body`)}</p>
+        <span className="section-kicker">{t(`guided.${introKey}Kicker`)}</span>
+        <h3>{t(`guided.${introKey}Title`)}</h3>
+        <p>{t(`guided.${introKey}Body`)}</p>
       </div>
 
       {failed ? (
@@ -139,12 +174,25 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         </div>
       ) : null}
 
-      <IntakeGovernance
+      {currentStage !== "company" ? <IntakeGovernance
         locale={locale}
         resolveScopeSuggestion={resolveScopeSuggestionAction}
         revokeAuthorization={revokeAuthorizationAction}
         session={session}
-      />
+      /> : null}
+
+      {currentStage === "company" && companyProfileAction ? (
+        <IntakeCompanyProfile
+          action={companyProfileAction}
+          documents={documents}
+          locale={locale}
+          organizationId={organizationId}
+          profile={companyProfile}
+          removeAction={removeAction}
+          sessionId={session.id}
+          userId={userId}
+        />
+      ) : null}
 
       {currentStage === "operation" && setOperationAction ? (
         <IntakeOperation
