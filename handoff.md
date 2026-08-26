@@ -8,6 +8,31 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: M5 indicative structure truth, 25 August 2026
+
+The governed structuring stage now emits a `Structure Truth Set` after M4 operation truth and
+before mandate screening. It evaluates the smallest of the cash-flow, collateral and market
+envelopes; calculates deterministic SAC, Price, bullet and balloon schedules; tests base and
+downside debt-service coverage; measures covenant headroom and maturity concentration; and keeps
+security mechanics, clauses, definitions, structural subordination, intercreditor terms and
+day-one compatibility as separate auditable products.
+
+ES-01 through ES-45 compile from the canonical House Playbook as candidate procedures. The runtime
+uses Decimal-based functions, governed dated reference families and narrow deterministic calls. It
+does not let a model invent a rate, haircut, covenant, route, repayment source or legal conclusion.
+Missing policy, missing reference data, inadequate collateral, a maturity wall, absent take-out or
+an unsupported downside produces a local exception and can block external distribution without
+preventing the desk from preparing internal analysis and alternatives.
+
+The case engine, worker and evals preserve all forty-five procedure states, and matching consumes
+the supported proposed amount rather than the unsupported borrower request. The borrower workspace
+shows the indicative amount, binding constraint, tenor, repayment profile, downside DSCR,
+collateral coverage, day-one compatibility and open items. This is an advisory structuring output:
+Offroad does not commit capital, issue a credit approval or replace the lender's diligence. The
+implementation quality gate is green; institutional promotion still requires current house data,
+the required gold and adversarial cases, independent economic review and legal review where the
+procedure calls for it. M6 governed pricing is the next module.
+
 ### Engineering update: M4 operation truth, 25 August 2026
 
 The governed structuring stage now emits an `Operation Truth Set` before institutional materials

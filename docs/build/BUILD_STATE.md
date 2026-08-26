@@ -798,6 +798,27 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - Escopo ainda aberto: piloto com uma empresa ou assessor real e revisão independente da versão
   exata. O módulo M0 e os procedimentos IN permanecem sem promoção institucional.
 
+## M5, estrutura indicativa e compatibilidade, 25/08/2026
+
+- `@offroad/financial-core` calcula cronogramas SAC, Price, bullet e balloon com carência paga ou
+  capitalizada, taxa nominal ou efetiva, cobertura por período, folga de covenant e concentração
+  de vencimentos usando Decimal.
+- `@offroad/deal-structure` produz um `Structure Truth Set` com os 45 estados ES, envelope de
+  capacidade, proposta indicativa, cronograma e cobertura, pacote e mecânica de garantias,
+  covenants, cláusulas, subordinação, intercreditor, checagens do dia um, ajustes e exceções.
+- O menor limite entre fluxo de caixa, garantia e mercado governa o sizing. Matching recebe esse
+  montante suportado, não o pedido original quando ele excede o envelope. Fontes e usos abertos,
+  downside insuficiente, maturity wall, bullet sem fonte de pagamento, garantia inadequada e
+  incompatibilidade no dia um falham de forma explícita.
+- ES-01 a ES-45 são candidates derivados da fonte canônica, com reference data versionada,
+  execução determinística, zero peer handoff e zero chamada de modelo. Parâmetro ausente não vira
+  hipótese silenciosa. O card privado exibe montante, restrição, prazo, amortização, DSCR,
+  cobertura de garantias, compatibilidade e pontos abertos em PT-BR e EN-US.
+- O output é de assessoria e estruturação indicativa. A Offroad não compromete capital, não emite
+  aprovação de crédito e não substitui a diligência do financiador. Promoção institucional exige
+  gold cases, adversariais, referências vigentes, revisão econômica independente e revisão legal
+  nos procedimentos aplicáveis.
+
 ## M4, verdade operacional e fontes e usos, 25/08/2026
 
 - `@offroad/financial-core` passou a calcular de forma determinística necessidade econômica,

@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## House Playbook M5, 25/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Matemática de estrutura determinística | `@offroad/financial-core` | 19 testes no pacote; SAC, Price, bullet, balloon, carência, capitalização, cobertura, headroom e concentração calculados com Decimal |
+| Verdade de estrutura M5 | `@offroad/deal-structure` | 36 testes no pacote; 45 procedimentos sempre emitidos, proposta limitada pelo menor envelope e casos adversariais bloqueados sem valor inventado |
+| Skills e referências governadas | `@offroad/credit-playbook` | ES-01 a ES-45 candidates, lineage canônico, famílias de referência com fonte, data, validade e dono, zero peer handoff e zero chamadas de modelo; 145 testes |
+| Ontologia de estrutura | `@offroad/credit-ontology` | 22 testes; cenários de CFADS, políticas, garantias, covenants, definições, subordinação, intercreditor, compatibilidade, instrumento, comprador e all-in reconhecidos |
+| Trânsito, matching e persistência | `@offroad/case-engine`, `@offroad/evals`, `@offroad/document-worker` | matching usa o montante suportado; 32 evals e 46 testes do worker preservam os 45 estados ES no snapshot sanitizado |
+| Superfície web | componente privado PT-BR e EN-US | montante, restrição, prazo, amortização, downside DSCR, cobertura, compatibilidade e lacunas possuem rótulos institucionais; validação autenticada fica para o preview Vercel |
+| Quality gate completo | `pnpm check` com Node 24.19.0 | 38 pacotes com lint, typecheck, todos os testes e build de produção verdes; web com 127 testes e 28 páginas geradas |
+
+M5 está implementado no trilho real como candidate. O resultado é uma proposta indicativa de
+estrutura, não um compromisso de capital nem uma aprovação de crédito. A promoção institucional
+permanece bloqueada até dados de casa vigentes, gold e adversarial cases, revisão econômica
+independente, revisão legal aplicável e aceite do fingerprint exato.
+
 ## House Playbook M4, 25/08/2026
 
 | Evidência | Verificação | Resultado |

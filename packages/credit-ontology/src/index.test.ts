@@ -116,6 +116,7 @@ describe("field catalog", () => {
     expect(resolveFieldPath("interim_financials.2026_07.ebitda_ltm")?.params).toEqual({period: "2026_07", window: "ltm"});
     expect(resolveFieldPath("interim_financials.2026_07.cash")?.params).toEqual({period: "2026_07"});
     expect(resolveFieldPath("debt.instruments.3.balance")?.params).toEqual({index: 3});
+    expect(resolveFieldPath("structure.cfads_scenarios.2.periods.17.cfads")?.params).toEqual({index: 2, subindex: 17});
     expect(resolveFieldPath("projections.2028.key_assumptions.2.driver")?.params).toEqual({period: "2028", index: 2});
     expect(resolveFieldPath("company.unknown_field")).toBeNull();
     expect(resolveFieldPath("historical_financials.20xx.revenue")).toBeNull();
