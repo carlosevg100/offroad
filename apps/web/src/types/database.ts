@@ -5106,6 +5106,10 @@ export type Database = {
         }
         Returns: Json
       }
+      restart_onboarding_intake: {
+        Args: { p_organization_id: string; p_session_id: string }
+        Returns: undefined
+      }
       review_case_red_flag: {
         Args: {
           p_decision: string

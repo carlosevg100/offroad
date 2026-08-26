@@ -208,6 +208,32 @@ begin
     raise exception 'owner command did not remove a document from an open intake session';
   end if;
 
+  -- An unfinished document-first onboarding can be restarted by its creator. The attempt is
+  -- cancelled, not deleted, and only registration identity survives in onboarding progress.
+  insert into public.onboarding_progress (organization_id, user_id, journey, current_step, answers)
+  values (
+    org,
+    '10000000-0000-4000-8000-000000000001',
+    'company',
+    'documents',
+    jsonb_build_object(
+      'registration', jsonb_build_object('full_name', 'RLS Owner'),
+      'intake_mode', 'documents',
+      'intake_session_id', '40000000-0000-4000-8000-000000000002'
+    )
+  );
+  perform public.restart_onboarding_intake(org, '40000000-0000-4000-8000-000000000002');
+  if (select status from public.document_intake_sessions where id = '40000000-0000-4000-8000-000000000002') <> 'cancelled' then
+    raise exception 'restart_onboarding_intake did not cancel the unfinished session';
+  end if;
+  if (select current_step from public.onboarding_progress where organization_id = org and journey = 'company') <> 'organization'
+    or (select answers from public.onboarding_progress where organization_id = org and journey = 'company')
+      <> '{"registration":{"full_name":"RLS Owner"}}'::jsonb then
+    raise exception 'restart_onboarding_intake did not restore the welcome state precisely';
+  end if;
+  -- Replaying the same command is harmless and leaves the same auditable result.
+  perform public.restart_onboarding_intake(org, '40000000-0000-4000-8000-000000000002');
+
   perform public.begin_intake_processing(org, session_id);
   if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
     raise exception 'begin_intake_processing did not mark the session processing';
@@ -319,6 +345,13 @@ begin
     raise exception 'session was not confirmed';
   end if;
 
+  begin
+    perform public.restart_onboarding_intake(org, session_id);
+    raise exception 'restart_onboarding_intake cancelled a confirmed case';
+  exception
+    when sqlstate '55000' then null;
+  end;
+
   -- Idempotent: confirming again returns the same opportunity and creates nothing.
   result := public.confirm_document_intake(org, session_id, 'pt-BR');
   second_opportunity := (result ->> 'opportunity_id')::uuid;
@@ -428,6 +461,12 @@ begin
   begin
     perform public.begin_intake_processing('20000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000001');
     raise exception 'tenant B reprocessed tenant A intake session';
+  exception
+    when insufficient_privilege then null;
+  end;
+  begin
+    perform public.restart_onboarding_intake('20000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000002');
+    raise exception 'tenant B restarted tenant A onboarding';
   exception
     when insufficient_privilege then null;
   end;

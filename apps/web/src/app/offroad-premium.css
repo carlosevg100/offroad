@@ -8250,6 +8250,40 @@ button[disabled].workspace-search,
 .intake-guide__progress .is-complete {color: #526b61;}
 .intake-guide__progress .is-complete i {border-color: #8ba092; background: #edf2ee;}
 
+.intake-guide__navigation {
+  display: flex;
+  min-height: 34px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-top: 12px;
+}
+
+.intake-guide__restart {position: relative; margin-left: auto; color: #6d767b; font-size: 11px;}
+.intake-guide__restart summary {
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  gap: 7px;
+  list-style: none;
+  transition: color .18s ease;
+}
+.intake-guide__restart summary::-webkit-details-marker {display: none;}
+.intake-guide__restart summary:hover {color: #1a2024;}
+.intake-guide__restart > div {
+  position: absolute;
+  z-index: 4;
+  top: 26px;
+  right: 0;
+  width: min(340px, calc(100vw - 48px));
+  padding: 16px;
+  border: 1px solid #d4d8d9;
+  background: #fff;
+  box-shadow: 0 14px 34px rgb(20 27 31 / 10%);
+}
+.intake-guide__restart p {margin: 0 0 13px; color: #5f686e; font-size: 11px; line-height: 1.55;}
+.intake-guide__restart .button {width: 100%; min-height: 38px; font-size: 10px;}
+
 .intake-guide__intro {
   max-width: 820px;
   padding: 8px 0 4px;
@@ -8435,6 +8469,9 @@ button[disabled].workspace-search,
   .intake-welcome__action .button {width: 100%;}
   .intake-start__steps li {grid-template-columns: 24px 26px minmax(0, 1fr);}
   .intake-guide__progress > span {align-items: flex-start; flex-direction: column; gap: 5px; font-size: 8px;}
+  .intake-guide__navigation {align-items: stretch; flex-direction: column;}
+  .intake-guide__restart {margin-left: 0;}
+  .intake-guide__restart > div {position: static; width: 100%; margin-top: 10px; box-shadow: none;}
   .intake-operation__client {padding: 18px;}
   .intake-operation__client-grid {grid-template-columns: 1fr;}
   .intake-operation__client-grid .intake-operation__reference {grid-column: auto;}

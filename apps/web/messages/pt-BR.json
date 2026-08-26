@@ -939,7 +939,10 @@
       "documentsKicker": "ETAPA 3 DE 3",
       "documentsTitle": "Sua lista de informações, na ordem certa",
       "documentsBody": "Comece pelo mínimo. Se já tiver materiais adicionais, envie tudo junto. A Offroad lê, classifica e mostra automaticamente o que cada arquivo atende.",
-      "back": "Voltar à etapa anterior"
+      "back": "Voltar à etapa anterior",
+      "restart": "Recomeçar esta captação",
+      "restartBody": "Esta tentativa será encerrada e você voltará à apresentação inicial. Sua conta e sua organização permanecem intactas.",
+      "restartConfirm": "Encerrar e recomeçar"
     },
     "governance": {
       "kicker": "PERÍMETRO E AUTORIZAÇÃO",

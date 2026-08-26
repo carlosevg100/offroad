@@ -1,4 +1,4 @@
-import {AlertTriangle, ArrowLeft, ArrowRight, LoaderCircle, ShieldCheck} from "lucide-react";
+import {AlertTriangle, ArrowLeft, ArrowRight, LoaderCircle, RotateCcw, ShieldCheck} from "lucide-react";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
@@ -42,6 +42,10 @@ type Props = {
   stage?: "operation" | "request" | "documents";
   /** Route used by the compact back action in the guided workspace flow. */
   backHref?: string;
+  /** Base route used to navigate between the three guided stages without mutating saved answers. */
+  stageBaseHref?: string;
+  /** Cancels only this unfinished onboarding session and returns to the welcome screen. */
+  restartAction?: (formData: FormData) => Promise<void>;
   resolveScopeSuggestionAction?: (formData: FormData) => Promise<void>;
   revokeAuthorizationAction?: (formData: FormData) => Promise<void>;
   surface: "onboarding" | "workspace";
@@ -51,7 +55,7 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, backHref, stageBaseHref, restartAction, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -62,6 +66,9 @@ export async function IntakeCollect({locale, session, documents, organizationId,
       ? "request"
       : stage ?? (answeredBrief === 0 ? "request" : "documents");
   const stageNumber = currentStage === "operation" ? 1 : currentStage === "request" ? 2 : 3;
+  const resolvedBackHref = backHref ?? (stageBaseHref && currentStage !== "operation"
+    ? `${stageBaseHref}?stage=${currentStage === "documents" ? "request" : "operation"}`
+    : undefined);
   const analysisScope = session.analysis_scope && typeof session.analysis_scope === "object" && !Array.isArray(session.analysis_scope)
     ? session.analysis_scope
     : null;
@@ -91,6 +98,29 @@ export async function IntakeCollect({locale, session, documents, organizationId,
           </span>
         ))}
       </nav>
+
+      {(resolvedBackHref || restartAction) ? (
+        <div className="intake-guide__navigation">
+          {resolvedBackHref ? (
+            <Link className="intake-guide__back" href={resolvedBackHref}>
+              <ArrowLeft aria-hidden="true" size={14} />{t("guided.back")}
+            </Link>
+          ) : <span />}
+          {restartAction ? (
+            <details className="intake-guide__restart">
+              <summary><RotateCcw aria-hidden="true" size={13} />{t("guided.restart")}</summary>
+              <div>
+                <p>{t("guided.restartBody")}</p>
+                <form action={restartAction}>
+                  <input name="locale" type="hidden" value={locale} />
+                  <input name="session_id" type="hidden" value={session.id} />
+                  <button className="button button--ghost" type="submit">{t("guided.restartConfirm")}</button>
+                </form>
+              </div>
+            </details>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="intake-collect__intro intake-guide__intro">
         <span className="section-kicker">{t(`guided.${currentStage}Kicker`)}</span>
@@ -190,9 +220,6 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         {manualHref && failed ? <Link className="button button--ghost" href={manualHref}>{t("review.fillManually")}</Link> : null}
       </div> : null}
 
-      {backHref && currentStage !== "operation" ? (
-        <Link className="intake-guide__back" href={backHref}><ArrowLeft aria-hidden="true" size={14} />{t("guided.back")}</Link>
-      ) : null}
     </section>
   );
 }

@@ -56,6 +56,7 @@ import {
   removeIntakeDocument,
   resolveIntakeIssue,
   resolveOnboardingScopeSuggestion,
+  restartDocumentIntake,
   revokeOnboardingAdvisorAuthorization,
   reviewIntakeCandidate,
   saveAdvisedCompanyStep,
@@ -72,7 +73,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 export const metadata: Metadata = {title: "Institutional Profile", robots: {index: false, follow: false}};
 
-type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string}>};
+type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string; stage?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
 const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate", "remove"];
@@ -157,6 +158,9 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const contactAnswers = answerObject(answers, "contact");
   const intakeMode = text(answers.intake_mode);
   const intakeSessionId = text(answers.intake_session_id);
+  const requestedIntakeStage = state.stage === "operation" || state.stage === "request" || state.stage === "documents"
+    ? state.stage
+    : undefined;
   const isDocumentFirst = journey !== "capital_provider" && intakeMode === "documents";
   const steps = isDocumentFirst
     ? ["documents", "review"]
@@ -420,6 +424,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               />
             ) : (
               <IntakeCollect
+                {...(requestedIntakeStage ? {stage: requestedIntakeStage} : {})}
                 checklist={await loadIntakeChecklist({
                   supabase,
                   organizationId: organization.id,
@@ -432,6 +437,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 organizationId={organization.id}
                 processAction={processDocumentIntake}
                 removeAction={removeIntakeDocument}
+                restartAction={restartDocumentIntake}
                 session={intakeReview.session}
                 answerAction={saveIntakeAnswer}
                 dealBrief={dealBriefOf(intakeReview.session)}
@@ -440,6 +446,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 resolveScopeSuggestionAction={resolveOnboardingScopeSuggestion}
                 revokeAuthorizationAction={revokeOnboardingAdvisorAuthorization}
                 surface="onboarding"
+                stageBaseHref={`/${locale}/onboarding`}
                 userId={userId}
               />
             )

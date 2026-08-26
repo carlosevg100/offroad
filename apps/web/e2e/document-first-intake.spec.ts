@@ -84,6 +84,20 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-brief")).toBeVisible();
     await expectNoErrorNotice(page);
 
+    // The guided onboarding is navigable in both directions. Restarting closes only the current
+    // attempt and returns to the welcome screen, so a person is never trapped in a stale case.
+    await page.locator(".intake-guide__back").click();
+    await expect(page).toHaveURL(/stage=operation/);
+    await expect(page.locator(".intake-operation__options")).toBeVisible();
+    await page.locator(".intake-guide__restart summary").click();
+    await page.locator(".intake-guide__restart button[type=submit]").click();
+    await expect(page.locator(".intake-start")).toBeVisible();
+    await expect(page.locator(".workspace-welcome h1")).toHaveText("Bem-vindo.");
+
+    await page.locator(".intake-welcome__action button[type=submit]").click();
+    await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
+    await expect(page.locator(".intake-brief")).toBeVisible();
+
     // Typed the way a person types, not the way a parser prefers.
     await page.locator("#brief-amount").fill("45 milhões");
     await page.locator("#brief-term").fill("60");
