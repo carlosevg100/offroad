@@ -8,10 +8,11 @@
  * brief that fails the evidence audit cannot be quoted from, because its sentences are exactly
  * what would be quoted.
  */
-export const caseMaterialsVersion = "2026.08.20-v1";
+export const caseMaterialsVersion = "2026.08.26-v2";
 
 export * from "./compile";
 export * from "./desk-sections";
 export * from "./institutional";
 export * from "./diligence";
 export * from "./conduct";
+export * from "./truth";

@@ -70,6 +70,8 @@ export type Material = {
   template?: MaterialTemplateReference;
   /** Deterministic LC-01 to LC-13 audit of this exact compiled artifact. */
   conductAudit?: ConductAudit;
+  /** Canonical section ids actually compiled, in document order. */
+  sections?: string[];
 };
 
 export type CompileInput = {
@@ -223,6 +225,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
     ],
     dependsOn: input.calculations.map((calculation) => calculation.id),
     template: materialTemplateReference("institutional-teaser"),
+    sections:["transaction_snapshot","company_profile","financial_snapshot","structure_snapshot","fit_and_open_points"],
   };
 
   const profileBlocks: MaterialBlock[] = [

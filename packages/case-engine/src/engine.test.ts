@@ -219,6 +219,8 @@ describe("the governed case engine", () => {
     expect(pending.state.claimRegistry?.claims[0]?.status).toBe("pending_approval");
     expect(pending.state.materials).toEqual([]);
     expect(pending.state.dataRoom.releasable).toBe(false);
+    expect(pending.state.materialTruth.procedureCoverage).toHaveLength(32);
+    expect(pending.state.materialTruth.releaseDecision).toBe("internal_only");
 
     const approved = await run([{
       claimId: judgment.id,
@@ -230,5 +232,8 @@ describe("the governed case engine", () => {
     }]);
     expect(approved.state.claimRegistry?.publication.allowed).toBe(true);
     expect(approved.state.materials.length).toBeGreaterThan(0);
+    expect(approved.state.materialTruth.procedureCoverage.map((entry)=>entry.procedureId)).toEqual(
+      Array.from({length:32},(_,index)=>`MA-${String(index+1).padStart(2,"0")}`),
+    );
   });
 });

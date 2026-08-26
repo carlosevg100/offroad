@@ -1,4 +1,4 @@
-import {compileMaterials, type Material} from "@offroad/case-materials";
+import {buildMaterialTruthSet, compileMaterials, type Material, type MaterialTruthSet} from "@offroad/case-materials";
 import {runCase, type CaseRunPolicy, type CaseRunReport, type StageContext} from "@offroad/case-runner";
 import {
   assessReadiness,
@@ -87,7 +87,7 @@ import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@off
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.25-v8";
+export const caseEngineVersion = "2026.08.26-v9";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -167,6 +167,7 @@ export type CaseEngineState = {
   operationTruth: OperationTruthSet;
   structureTruth: StructureTruthSet;
   pricingTruth: PricingTruthSet;
+  materialTruth: MaterialTruthSet;
   desk: DeskAnalysis | null;
   trajectory: Trajectory | null;
   receivables: ReceivablesAnalysis | null;
@@ -220,9 +221,18 @@ export type PublicPricingTruthSet = Omit<PricingTruthSet, "sample" | "allIn" | "
   procedureCoverage: Array<Omit<PricingTruthSet["procedureCoverage"][number], "result"> & {result: null}>;
 };
 
-export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"> & {
+export type PublicMaterialTruthSet = Omit<MaterialTruthSet,"procedureCoverage"|"release"> & {
+  procedureCoverage:Array<Omit<MaterialTruthSet["procedureCoverage"][number],"result">&{result:null}>;
+  release:Omit<MaterialTruthSet["release"],"technicalReview"|"companyAuthorization">&{
+    technicalReview:{approved:boolean;fingerprint:string|null;reviewedAt:string|null};
+    companyAuthorization:{authorized:boolean;fingerprint:string|null;scope:string[];recipientCount:number};
+  };
+};
+
+export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"|"materialTruth"> & {
   matching: PublicMatchingSummary;
   pricingTruth: PublicPricingTruthSet;
+  materialTruth:PublicMaterialTruthSet;
 };
 
 export function summarizeMatching(matching: CaseEngineState["matching"]): PublicMatchingSummary {
@@ -257,6 +267,16 @@ export function publicCaseState(state: CaseEngineState): PublicCaseEngineState {
         componentCount: state.pricingTruth.allIn.components.length,
       },
       procedureCoverage: state.pricingTruth.procedureCoverage.map((procedure) => ({...procedure, result: null})),
+    },
+    materialTruth:{
+      ...state.materialTruth,
+      procedureCoverage:state.materialTruth.procedureCoverage.map((procedure)=>({...procedure,result:null})),
+      release:{
+        crossValidation:state.materialTruth.release.crossValidation,
+        claimAudit:state.materialTruth.release.claimAudit,
+        technicalReview:{approved:state.materialTruth.release.technicalReview.approved,fingerprint:state.materialTruth.release.technicalReview.fingerprint,reviewedAt:state.materialTruth.release.technicalReview.reviewedAt},
+        companyAuthorization:{authorized:state.materialTruth.release.companyAuthorization.authorized,fingerprint:state.materialTruth.release.companyAuthorization.fingerprint,scope:state.materialTruth.release.companyAuthorization.scope,recipientCount:state.materialTruth.release.companyAuthorization.recipientIds.length},
+      },
     },
   };
 }
@@ -333,6 +353,7 @@ const claimsOutputSchema = z.object({
 const materialsOutputSchema = z.object({
   materials: z.array(z.unknown()),
   materialsBlockedBy: z.array(z.string()),
+  materialTruth:z.unknown(),
   dataRoom: z.object({
     version: z.string(),
     folders: z.array(z.unknown()),
@@ -372,7 +393,7 @@ type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInv
   semanticAudit: NormalizedSemanticAudit | null;
   usage: {costUsd: number; modelCalls: number};
 };
-type MaterialsOutput = Pick<CaseEngineState, "materials" | "materialsBlockedBy" | "dataRoom" | "claimRegistry"> & {
+type MaterialsOutput = Pick<CaseEngineState, "materials" | "materialsBlockedBy" | "materialTruth" | "dataRoom" | "claimRegistry"> & {
   audit: "not_run" | "pass" | "blocked";
 };
 type MatchingOutput = CaseEngineState["matching"];
@@ -672,7 +693,8 @@ export async function executeCaseEngine(
               });
             }
           }
-          return {output: {materials, materialsBlockedBy, dataRoom, audit, claimRegistry} satisfies MaterialsOutput};
+          const materialTruth=buildMaterialTruthSet({materials,dataRoom,modelAvailable:reconciliation.facts.length>0});
+          return {output: {materials, materialsBlockedBy, materialTruth, dataRoom, audit, claimRegistry} satisfies MaterialsOutput};
         },
       },
       matching: {
@@ -758,6 +780,7 @@ export async function executeCaseEngine(
       claimRegistry: materials.claimRegistry,
       materials: materials.materials,
       materialsBlockedBy: materials.materialsBlockedBy,
+      materialTruth:materials.materialTruth,
       dataRoom: materials.dataRoom,
       matching,
       outcome,

@@ -296,15 +296,15 @@ export function creditMemo(input: InstitutionalInput): Material {
       index === 0 && block.type === "heading" ? {...block, text: n("Fatores de risco e tratamento", "Risk factors and treatment")} : block,
     ),
 
+    ...(creditConsiderationsSection(input).length > 0
+      ? [{type: "heading" as const, text: n("Principais considerações de crédito", "Key credit considerations")}, ...creditConsiderationsSection(input)]
+      : []),
+
     ...(exceptions.length > 0
       ? [
           {type: "heading" as const, text: n("Pontos em aberto", "Open points")},
           {type: "list" as const, items: exceptions.map((exception) => bi(exception.description, exception.description))},
         ]
-      : []),
-
-    ...(creditConsiderationsSection(input).length > 0
-      ? [{type: "heading" as const, text: n("Principais considerações de crédito", "Key credit considerations")}, ...creditConsiderationsSection(input)]
       : []),
 
     {type: "heading", text: bi("Base de preparação", "Basis of preparation")},
@@ -317,6 +317,12 @@ export function creditMemo(input: InstitutionalInput): Material {
     // The company is the rendered subtitle; putting it in the title too prints it twice.
     title: bi("Memorando de Crédito", "Credit Memorandum"),
     blocks,
+    sections:[
+      "key_terms",
+      ...(input.verdict?["supportability"]:[]),
+      "executive_summary","transaction","company","historical_performance","capital_structure",
+      "business_plan","risks","credit_considerations",...(exceptions.length?["open_points"]:[]),"basis",
+    ],
     dependsOn: [...input.calculations.map((calculation) => calculation.id), ...input.facts.map((fact) => fact.key.fieldPath)],
   };
 }
@@ -451,6 +457,7 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
     template: materialTemplateReference("indicative-term-sheet"),
     title: bi("Term Sheet indicativo", "Indicative Term Sheet"),
     blocks,
+    sections:["parties","facility","use_of_proceeds","economics","security","covenants","conditions","events","process_terms"],
     dependsOn: [...input.calculations.map((calculation) => calculation.id), ...input.facts.map((fact) => fact.key.fieldPath)],
   };
 }

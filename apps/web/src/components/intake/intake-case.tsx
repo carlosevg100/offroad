@@ -490,7 +490,18 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
       </div>
 
       <div className="case-materials">
-        <h3>{t("materialsTitle")}</h3>
+        <div className="case-truth__header">
+          <h3>{t("materialsTitle")}</h3>
+          <span className={`case-truth__status is-${state.materialTruth.status}`}>
+            {t(`truthStatus_${state.materialTruth.status}`)}
+          </span>
+        </div>
+        <p>{t("materialTruthBody")}</p>
+        <div className="case-truth__footer">
+          <span>{t("truthProcedures")}: <strong>{state.materialTruth.procedureCoverage.filter((item)=>item.status==="completed").length}/32</strong></span>
+          <span>{t("materialRelease")}: <strong>{t(`materialRelease_${state.materialTruth.releaseDecision}`)}</strong></span>
+          <span>{t("materialConsistency")}: <strong>{state.materialTruth.consistency.status==="pass"?t("materialConsistent"):t("materialConflicted")}</strong></span>
+        </div>
         {materials.length > 0 ? (
           <ul>
             {materials.map((material) => {
