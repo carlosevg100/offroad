@@ -22,6 +22,61 @@ type Props = {
 export async function IntakeStartChoice({locale, context, journey, actions}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.start"});
   const isCase = context === "workspace";
+
+  if (!isCase) {
+    return (
+      <section className="intake-start intake-start--welcome">
+        <IntakeJourneyTelemetry
+          journey={journey}
+          locale={locale}
+          stage="start"
+          state="open"
+          surface={context}
+        />
+
+        <div className="intake-welcome__explanation">
+          <span className="section-kicker">{t("howKicker")}</span>
+          <h2>{t("howTitle")}</h2>
+          <div className="intake-welcome__narrative">
+            <p>{t("howIntro")}</p>
+            <p>{t("howAnalysis")}</p>
+            <p>{t("howMarket")}</p>
+          </div>
+        </div>
+
+        <div className="intake-welcome__roles">
+          <section>
+            <header><span>01</span><h3>{t("youDoTitle")}</h3></header>
+            <ol>
+              <li><span>1</span><p>{t("youDo1")}</p></li>
+              <li><span>2</span><p>{t("youDo2")}</p></li>
+              <li><span>3</span><p>{t("youDo3")}</p></li>
+            </ol>
+          </section>
+          <section className="intake-welcome__roles-offroad">
+            <header><span>02</span><h3>{t("offroadDoesTitle")}</h3></header>
+            <ol>
+              <li><span>4</span><p>{t("offroadDoes1")}</p></li>
+              <li><span>5</span><p>{t("offroadDoes2")}</p></li>
+              <li><span>6</span><p>{t("offroadDoes3")}</p></li>
+            </ol>
+          </section>
+        </div>
+
+        <form action={actions.start} className="intake-welcome__action">
+          <input name="locale" type="hidden" value={locale} />
+          <div>
+            <strong>{t("welcomeActionTitle")}</strong>
+            <p>{t("welcomeActionBody")}</p>
+          </div>
+          <button className="button" type="submit">{t("guidedCta")}<ArrowRight size={15} /></button>
+        </form>
+
+        <div className="intake-start__security"><ShieldCheck size={15} /><span>{t("security")}</span></div>
+      </section>
+    );
+  }
+
   return (
     <section className="intake-start">
       <IntakeJourneyTelemetry

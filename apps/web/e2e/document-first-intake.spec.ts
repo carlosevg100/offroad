@@ -66,11 +66,15 @@ test.describe("Document-first intake (company journey)", () => {
 
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
     await expect(page.locator(".intake-start")).toBeVisible();
+    await expect(page.locator(".workspace-welcome h1")).toHaveText("Bem-vindo.");
+    await expect(page.locator(".intake-welcome__roles")).toContainText("Você faz");
+    await expect(page.locator(".intake-welcome__roles")).toContainText("A Offroad faz");
+    await expect(page.getByText("Vamos preparar seu primeiro case.")).toHaveCount(0);
   });
 
   test("starts with documents, uploads the data room and processes it", async () => {
     await page.goto("/pt-BR/onboarding");
-    await page.locator(".intake-start__journey button[type=submit]").click();
+    await page.locator(".intake-welcome__action button[type=submit]").click();
     await expect(page.locator(".intake-collect")).toBeVisible();
 
     // The operation decides the checklist; the brief decides who could buy the paper. Neither
