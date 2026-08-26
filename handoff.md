@@ -1692,7 +1692,7 @@ Arquivos centrais:
   suporte numérico e montagem da proposta;
 - `apps/web/src/components/intake/agent-panel.tsx`: conversa, estados reais e preview com
   `Aceitar e aplicar`;
-- migrations `20260826230000` a `20260826233000`: conversa append-only, mensagens, queue, comandos
+- migrations `20260826203944`, `20260826204254`, `20260826204338` e `20260826205046`: conversa append-only, mensagens, queue, comandos
   capability-bound, aceite e aplicação transacionais e isolamento de falha auxiliar;
 - `supabase/tests/rls_non_interference.sql`: teste E2E do contrato e do isolamento entre tenants.
 
