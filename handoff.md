@@ -1699,3 +1699,22 @@ Arquivos centrais:
 Não aumentar a autoridade pelo prompt. A próxima vertical deve ganhar schema, comando de aplicação,
 preview e testes próprios. O Agente não aprova crédito, não compromete capital, não escolhe
 financiador sem o rail de matching e não transforma contexto público em evidência da companhia.
+
+## 31. Onboarding reversível, 26/08/2026
+
+O fluxo document-first não deve prender uma pessoa numa captação incompleta. `IntakeCollect` aceita
+navegação explícita entre Objetivo, Pedido e Informações, exibida no topo da etapa. O retorno usa a
+mesma sessão e preserva respostas e uploads.
+
+Para começar de novo, a interface exige confirmação e chama `restart_onboarding_intake`. O comando
+cancela somente a sessão incompleta criada pelo próprio usuário e restaura o onboarding ao
+`Bem-vindo`, preservando conta, organização e dados de registro. Nenhuma evidência é apagada. Casos
+confirmados ou em processamento não podem ser reiniciados por esse comando.
+
+Arquivos centrais:
+
+- `apps/web/src/components/intake/intake-collect.tsx`: navegação e confirmação;
+- `apps/web/src/app/[locale]/onboarding/actions.ts`: ação server-side;
+- `supabase/migrations/20260826221128_restart_onboarding_intake.sql`: fronteira transacional;
+- `supabase/tests/rls_non_interference.sql`: propriedade, idempotência e não interferência;
+- `apps/web/e2e/document-first-intake.spec.ts`: retorno, reinício e novo começo no navegador.

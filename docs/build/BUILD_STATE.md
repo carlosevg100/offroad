@@ -962,3 +962,18 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - O teste remoto integral de RLS prova idempotência, isolamento, preview sem mutação, aplicação
   explícita e falha auxiliar sem contaminar uma sessão de documentos em processamento. O Security
   Advisor de staging permanece com zero findings.
+
+## Navegação reversível e reinício do onboarding, 26/08/2026
+
+- O intake guiado permite voltar de `Pedido` para `Objetivo` e de `Informações` para `Pedido` no
+  topo da área de trabalho. Respostas já persistidas permanecem intactas ao navegar.
+- A pessoa pode encerrar uma tentativa incompleta e voltar ao `Bem-vindo` por uma confirmação
+  explícita. Conta e organização permanecem; a sessão antiga muda para `cancelled`, sem apagar
+  documentos ou histórico silenciosamente.
+- A função `restart_onboarding_intake` verifica autenticação, tipo e vínculo da organização,
+  propriedade da sessão e estado. Sessões `confirmed` ou `processing` falham fechadas.
+- O reset afeta apenas o onboarding do autor e preserva somente os dados de registro. A suíte RLS
+  cobre idempotência, isolamento entre tenants e proteção de casos confirmados.
+- O estado preso de `carlosevg@gmail.com` em produção foi corrigido operacionalmente da mesma
+  forma: a tentativa vazia foi cancelada e o onboarding voltou ao início, sem excluir a conta ou a
+  organização.

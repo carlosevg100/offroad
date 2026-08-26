@@ -939,7 +939,10 @@
       "documentsKicker": "STEP 3 OF 3",
       "documentsTitle": "Your information list, in the right order",
       "documentsBody": "Start with the minimum. If you already have additional materials, upload everything together. Offroad reads, classifies and shows what each file covers.",
-      "back": "Back to the previous step"
+      "back": "Back to the previous step",
+      "restart": "Restart this financing",
+      "restartBody": "This attempt will be closed and you will return to the introduction. Your account and organization remain unchanged.",
+      "restartConfirm": "Close and restart"
     },
     "governance": {
       "kicker": "SCOPE AND AUTHORIZATION",

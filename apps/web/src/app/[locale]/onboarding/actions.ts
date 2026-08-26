@@ -159,6 +159,25 @@ export async function startDocumentIntake(formData: FormData) {
   redirect(onboardingUrl(locale));
 }
 
+/**
+ * Returns document-first onboarding to its welcome state without deleting history.
+ * The database command owns the transaction: it cancels only the caller's unfinished session
+ * and clears only the journey answers, preserving the account and registration identity.
+ */
+export async function restartDocumentIntake(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const {error} = await runtime.supabase.rpc("restart_onboarding_intake", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+  });
+  if (error) {
+    reportServerFailure({step: "intake.restart_onboarding", error});
+    redirect(onboardingUrl(locale, "save"));
+  }
+  redirect(onboardingUrl(locale));
+}
+
 export async function setIntakeOperation(formData: FormData) {
   const locale = localeFrom(formData);
   const {runtime} = await onboardingIntakeRuntime(locale, formData);

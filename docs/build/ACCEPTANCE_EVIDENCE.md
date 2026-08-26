@@ -291,6 +291,7 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 
 | Agente Offroad, primeira vertical | contratos + worker + UI + migrations `20260826203944`, `20260826204254`, `20260826204338` e `20260826205046` | mensagem vira job capability-bound; resposta pode perguntar ou propor; nenhuma mutação acontece antes da confirmação; proposta stale falha fechada; falha auxiliar não falha o intake | 2026-08-26 |
 | Não interferência do Agente em staging | `supabase/tests/rls_non_interference.sql` remoto | idempotência, isolamento entre tenants, preview, aceite e aplicação transacionais e separação do processamento documental aprovados; Security Advisor com 0 findings | 2026-08-26 |
+| Voltar e recomeçar onboarding | `document-first-intake.spec.ts`, `restart_onboarding_intake` e `rls_non_interference.sql` | navegação Objetivo → Pedido → Objetivo; encerramento confirmado preserva conta, organização e auditoria; sessão vira `cancelled`; onboarding volta ao `Bem-vindo`; replay é idempotente; sessão confirmada e outro tenant são recusados; Security Advisor de staging com 0 findings | 2026-08-26 |
 
 ## Regras
 
