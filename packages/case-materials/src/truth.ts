@@ -104,11 +104,12 @@ function bilingual(block: MaterialBlock): boolean {
   return pairs.every((pair)=>pair.pt.trim().length>0&&pair.en.trim().length>0);
 }
 
-export function buildMaterialTruthSet(input:{materials:readonly Material[];dataRoom:MaterialRoomPlan;modelAvailable:boolean;claimAuditApproved?:boolean;release?:MaterialExternalReleaseEvidence}):MaterialTruthSet {
+export function buildMaterialTruthSet(input:{materials:readonly Material[];dataRoom:MaterialRoomPlan;modelAvailable:boolean;claimAuditApproved?:boolean;release?:MaterialExternalReleaseEvidence;governanceBlockers?:readonly string[]}):MaterialTruthSet {
   const externalRelease=input.release??emptyExternalRelease();
   const packageFingerprint=materialPackageFingerprint(input);
   const exceptions:MaterialTruthSet["exceptions"]=[];
   const missing=new Set<string>();
+  for(const blocker of input.governanceBlockers??[])exceptions.push({id:`external-governance:${blocker}`,severity:"critical",message:"External release is blocked by governed case controls.",affectedProcedures:["MA-32"]});
   const artifacts=input.materials.map((material)=>{
     const rows=material.blocks.flatMap((block,index)=>claimRows(block,`${material.kind}:${index}`));
     const unsupported=rows.filter((row)=>row.material&&row.supportIds.length===0).map((row)=>row.key);

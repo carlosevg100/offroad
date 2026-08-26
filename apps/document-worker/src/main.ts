@@ -184,7 +184,7 @@ async function main(): Promise<void> {
           job: job?.job_id,
           status: outcome.status,
           ms: Date.now() - startedAt,
-          stages: "stages" in outcome ? outcome.stages.length : 9,
+          stages: "stages" in outcome ? outcome.stages.length : 10,
           costUsd: spent.costUsd,
           modelCalls: spent.calls,
         });

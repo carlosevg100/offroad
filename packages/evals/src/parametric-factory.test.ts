@@ -13,7 +13,7 @@ import {supportedSemanticAudit} from "@offroad/case-understanding";
 import {toReceivablesCaseFromSimpleTape} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
-const stages = ["extraction", "reconciliation", "metrics", "gaps", "structure", "claims", "materials", "matching", "outcome"];
+const stages = ["extraction", "reconciliation", "metrics", "gaps", "structure", "red_flags", "claims", "materials", "matching", "outcome"];
 
 async function runScenario(scenario: FactoryScenario) {
   const generated = generateCase(scenario);
