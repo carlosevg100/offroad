@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -70,6 +70,100 @@ export type Database = {
             columns: ["source_organization_id", "projection_id"]
             isOneToOne: false
             referencedRelation: "published_opportunity_projections"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      agent_change_proposals: {
+        Row: {
+          base_manifest_fingerprint: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reason: string | null
+          expires_at: string
+          id: string
+          impact_summary: string
+          intake_session_id: string
+          organization_id: string
+          proposal: Json
+          proposal_fingerprint: string
+          proposed_at: string
+          proposed_by: string
+          proposed_by_kind: string
+          rationale: string
+          source_manifest_id: string
+          status: string
+          target: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          base_manifest_fingerprint: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          expires_at: string
+          id: string
+          impact_summary: string
+          intake_session_id: string
+          organization_id: string
+          proposal: Json
+          proposal_fingerprint: string
+          proposed_at: string
+          proposed_by: string
+          proposed_by_kind: string
+          rationale: string
+          source_manifest_id: string
+          status?: string
+          target: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          base_manifest_fingerprint?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          expires_at?: string
+          id?: string
+          impact_summary?: string
+          intake_session_id?: string
+          organization_id?: string
+          proposal?: Json
+          proposal_fingerprint?: string
+          proposed_at?: string
+          proposed_by?: string
+          proposed_by_kind?: string
+          rationale?: string
+          source_manifest_id?: string
+          status?: string
+          target?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_change_proposals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_change_proposals_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "agent_change_proposals_organization_id_source_manifest_id_fkey"
+            columns: ["organization_id", "source_manifest_id"]
+            isOneToOne: false
+            referencedRelation: "case_artifact_manifests"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -429,6 +523,56 @@ export type Database = {
           },
         ]
       }
+      case_red_flag_reviews: {
+        Row: {
+          created_at: string
+          decided_at: string
+          decided_by: string
+          decision: string
+          evidence_ids: Json
+          flag_fingerprint: string
+          flag_id: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          rationale: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string
+          decided_by: string
+          decision: string
+          evidence_ids?: Json
+          flag_fingerprint: string
+          flag_id: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          rationale: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string
+          decided_by?: string
+          decision?: string
+          evidence_ids?: Json
+          flag_fingerprint?: string
+          flag_id?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          rationale?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_red_flag_reviews_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       case_retrieval_chunks: {
         Row: {
           chunk_key: string
@@ -657,6 +801,51 @@ export type Database = {
           },
         ]
       }
+      conduct_policies: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          disclaimer_id: string
+          id: string
+          methodology_source: string
+          rules: Json
+          status: string
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          disclaimer_id: string
+          id?: string
+          methodology_source: string
+          rules?: Json
+          status?: string
+          updated_at?: string
+          valid_from: string
+          valid_until?: string | null
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          disclaimer_id?: string
+          id?: string
+          methodology_source?: string
+          rules?: Json
+          status?: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       controlled_case_executions: {
         Row: {
           baseline_execution_id: string | null
@@ -751,6 +940,107 @@ export type Database = {
             columns: ["organization_id", "processing_run_id"]
             isOneToOne: true
             referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      decline_communications: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          intake_session_id: string
+          mandate_decision_fingerprint: string
+          mandate_decision_id: string
+          message_fingerprint: string
+          organization_id: string
+          recipient: string
+          sent_at: string
+          sent_by: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          id?: string
+          intake_session_id: string
+          mandate_decision_fingerprint: string
+          mandate_decision_id: string
+          message_fingerprint: string
+          organization_id: string
+          recipient: string
+          sent_at?: string
+          sent_by: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          intake_session_id?: string
+          mandate_decision_fingerprint?: string
+          mandate_decision_id?: string
+          message_fingerprint?: string
+          organization_id?: string
+          recipient?: string
+          sent_at?: string
+          sent_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decline_communications_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "decline_communications_organization_id_mandate_decision_id_fkey"
+            columns: ["organization_id", "mandate_decision_id"]
+            isOneToOne: false
+            referencedRelation: "offroad_mandate_decisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      diligence_surprises: {
+        Row: {
+          corrective_action_id: string | null
+          created_at: string
+          description: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          reported_at: string
+          reported_by: string
+          responsible_procedure_id: string | null
+        }
+        Insert: {
+          corrective_action_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          reported_at?: string
+          reported_by: string
+          responsible_procedure_id?: string | null
+        }
+        Update: {
+          corrective_action_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          reported_at?: string
+          reported_by?: string
+          responsible_procedure_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diligence_surprises_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -1140,6 +1430,53 @@ export type Database = {
             columns: ["organization_id", "source_document_id"]
             isOneToOne: false
             referencedRelation: "source_documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      engagement_conflict_reviews: {
+        Row: {
+          case_fingerprint: string
+          counterparties: Json
+          created_at: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          rationale: string
+          reviewed_at: string
+          reviewed_by: string
+          status: string
+        }
+        Insert: {
+          case_fingerprint: string
+          counterparties?: Json
+          created_at?: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          rationale: string
+          reviewed_at?: string
+          reviewed_by: string
+          status: string
+        }
+        Update: {
+          case_fingerprint?: string
+          counterparties?: Json
+          created_at?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          rationale?: string
+          reviewed_at?: string
+          reviewed_by?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "engagement_conflict_reviews_organization_id_intake_session_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -2202,6 +2539,54 @@ export type Database = {
           },
         ]
       }
+      market_distribution_policies: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          learning_gate_anchor_count: number
+          mandate_max_age_months: number
+          methodology_source: string
+          status: string
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          version: string
+          wave_limit: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          learning_gate_anchor_count?: number
+          mandate_max_age_months: number
+          methodology_source: string
+          status?: string
+          updated_at?: string
+          valid_from: string
+          valid_until?: string | null
+          version: string
+          wave_limit: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          learning_gate_anchor_count?: number
+          mandate_max_age_months?: number
+          methodology_source?: string
+          status?: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          version?: string
+          wave_limit?: number
+        }
+        Relationships: []
+      }
       match_results: {
         Row: {
           created_at: string
@@ -2322,6 +2707,106 @@ export type Database = {
             columns: ["organization_id", "scenario_version_id"]
             isOneToOne: false
             referencedRelation: "scenario_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      material_communication_records: {
+        Row: {
+          channel: string
+          content_fingerprint: string
+          created_at: string
+          has_material_commitment: boolean
+          id: string
+          intake_session_id: string
+          organization_id: string
+          package_fingerprint: string
+          recipient_id: string
+          recorded_at: string
+          recorded_by: string
+        }
+        Insert: {
+          channel: string
+          content_fingerprint: string
+          created_at?: string
+          has_material_commitment?: boolean
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          package_fingerprint: string
+          recipient_id: string
+          recorded_at?: string
+          recorded_by: string
+        }
+        Update: {
+          channel?: string
+          content_fingerprint?: string
+          created_at?: string
+          has_material_commitment?: boolean
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          package_fingerprint?: string
+          recipient_id?: string
+          recorded_at?: string
+          recorded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_communication_record_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      offroad_mandate_decisions: {
+        Row: {
+          assessment_fingerprint: string
+          conditions: Json
+          created_at: string
+          decided_at: string
+          decided_by: string
+          decision: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          path_back: string | null
+          reason_codes: Json
+        }
+        Insert: {
+          assessment_fingerprint: string
+          conditions?: Json
+          created_at?: string
+          decided_at?: string
+          decided_by: string
+          decision: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          path_back?: string | null
+          reason_codes?: Json
+        }
+        Update: {
+          assessment_fingerprint?: string
+          conditions?: Json
+          created_at?: string
+          decided_at?: string
+          decided_by?: string
+          decision?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          path_back?: string | null
+          reason_codes?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offroad_mandate_decisions_organization_id_intake_session_i_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -2822,6 +3307,171 @@ export type Database = {
           },
         ]
       }
+      pricing_observations: {
+        Row: {
+          aggregate_authorized: boolean
+          amortization_class: string
+          amount: number
+          confidentiality: string
+          created_at: string
+          evidence_locator: Json
+          fee_bps: number
+          hedge_bps: number
+          id: string
+          indexer: string
+          instrument: string
+          normalization_method: string
+          normalized_spread_bps: number | null
+          observed_on: string
+          oid_bps: number
+          quality: number
+          quoted_spread_bps: number
+          rating: string
+          regime: string
+          sector_group: string
+          security_class: string
+          source_id: string
+          source_kind: string
+          source_owner: string
+          status: string
+          tenor_months: number
+          valid_until: string
+          warrant_bps: number
+        }
+        Insert: {
+          aggregate_authorized?: boolean
+          amortization_class: string
+          amount: number
+          confidentiality: string
+          created_at?: string
+          evidence_locator: Json
+          fee_bps?: number
+          hedge_bps?: number
+          id?: string
+          indexer: string
+          instrument: string
+          normalization_method: string
+          normalized_spread_bps?: number | null
+          observed_on: string
+          oid_bps?: number
+          quality: number
+          quoted_spread_bps: number
+          rating: string
+          regime: string
+          sector_group: string
+          security_class: string
+          source_id: string
+          source_kind: string
+          source_owner: string
+          status: string
+          tenor_months: number
+          valid_until: string
+          warrant_bps?: number
+        }
+        Update: {
+          aggregate_authorized?: boolean
+          amortization_class?: string
+          amount?: number
+          confidentiality?: string
+          created_at?: string
+          evidence_locator?: Json
+          fee_bps?: number
+          hedge_bps?: number
+          id?: string
+          indexer?: string
+          instrument?: string
+          normalization_method?: string
+          normalized_spread_bps?: number | null
+          observed_on?: string
+          oid_bps?: number
+          quality?: number
+          quoted_spread_bps?: number
+          rating?: string
+          regime?: string
+          sector_group?: string
+          security_class?: string
+          source_id?: string
+          source_kind?: string
+          source_owner?: string
+          status?: string
+          tenor_months?: number
+          valid_until?: string
+          warrant_bps?: number
+        }
+        Relationships: []
+      }
+      pricing_policies: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          default_indexer: string
+          id: string
+          index_levels: Json
+          max_amount_ratio: number
+          max_band_width_bps: number
+          max_tenor_delta_months: number
+          methodology_source: string
+          min_amount_ratio: number
+          min_band_width_bps: number
+          min_distinct_sources: number
+          min_observations: number
+          min_quality: number
+          regime: string
+          status: string
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          default_indexer: string
+          id?: string
+          index_levels: Json
+          max_amount_ratio: number
+          max_band_width_bps: number
+          max_tenor_delta_months: number
+          methodology_source: string
+          min_amount_ratio: number
+          min_band_width_bps: number
+          min_distinct_sources: number
+          min_observations: number
+          min_quality: number
+          regime: string
+          status?: string
+          updated_at?: string
+          valid_from: string
+          valid_until?: string | null
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          default_indexer?: string
+          id?: string
+          index_levels?: Json
+          max_amount_ratio?: number
+          max_band_width_bps?: number
+          max_tenor_delta_months?: number
+          methodology_source?: string
+          min_amount_ratio?: number
+          min_band_width_bps?: number
+          min_distinct_sources?: number
+          min_observations?: number
+          min_quality?: number
+          regime?: string
+          status?: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       processing_jobs: {
         Row: {
           attempts: number
@@ -3090,6 +3740,143 @@ export type Database = {
           },
         ]
       }
+      public_research_runs: {
+        Row: {
+          created_at: string
+          created_by: string
+          failures: Json
+          id: string
+          intake_session_id: string
+          organization_id: string
+          plan: Json
+          processing_run_id: string
+          provider_chain: Json
+          query_fingerprint: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          failures?: Json
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          plan: Json
+          processing_run_id: string
+          provider_chain?: Json
+          query_fingerprint: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          failures?: Json
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          plan?: Json
+          processing_run_id?: string
+          provider_chain?: Json
+          query_fingerprint?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_research_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_research_runs_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "public_research_runs_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      public_research_sources: {
+        Row: {
+          content_hash: string
+          context_class: string
+          created_at: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          provider: string
+          published_at: string | null
+          research_run_id: string
+          retrieved_at: string
+          snippet: string
+          title: string
+          topic: string
+          url: string
+        }
+        Insert: {
+          content_hash: string
+          context_class?: string
+          created_at?: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          provider: string
+          published_at?: string | null
+          research_run_id: string
+          retrieved_at: string
+          snippet?: string
+          title: string
+          topic: string
+          url: string
+        }
+        Update: {
+          content_hash?: string
+          context_class?: string
+          created_at?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          provider?: string
+          published_at?: string | null
+          research_run_id?: string
+          retrieved_at?: string
+          snippet?: string
+          title?: string
+          topic?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_research_sources_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_research_sources_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "public_research_sources_organization_id_research_run_id_fkey"
+            columns: ["organization_id", "research_run_id"]
+            isOneToOne: false
+            referencedRelation: "public_research_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       published_opportunity_projections: {
         Row: {
           amount_max: number
@@ -3173,6 +3960,278 @@ export type Database = {
             referencedColumns: ["organization_id", "id"]
           },
         ]
+      }
+      qualified_introduction_plans: {
+        Row: {
+          authorized_at: string | null
+          authorized_by: string | null
+          case_fingerprint: string
+          created_at: string
+          created_by: string
+          id: string
+          intake_session_id: string
+          material_fingerprint: string
+          organization_id: string
+          revoked_at: string | null
+          revoked_by: string | null
+          status: string
+          technical_review_fingerprint: string | null
+          technical_reviewed_at: string | null
+          technical_reviewed_by: string | null
+          updated_at: string
+          wave_limit: number
+        }
+        Insert: {
+          authorized_at?: string | null
+          authorized_by?: string | null
+          case_fingerprint: string
+          created_at?: string
+          created_by: string
+          id?: string
+          intake_session_id: string
+          material_fingerprint: string
+          organization_id: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          technical_review_fingerprint?: string | null
+          technical_reviewed_at?: string | null
+          technical_reviewed_by?: string | null
+          updated_at?: string
+          wave_limit: number
+        }
+        Update: {
+          authorized_at?: string | null
+          authorized_by?: string | null
+          case_fingerprint?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          intake_session_id?: string
+          material_fingerprint?: string
+          organization_id?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          technical_review_fingerprint?: string | null
+          technical_reviewed_at?: string | null
+          technical_reviewed_by?: string | null
+          updated_at?: string
+          wave_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_introduction_plans_organization_id_intake_sessio_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      qualified_introduction_recipients: {
+        Row: {
+          contact_id: string
+          contact_name: string
+          created_at: string
+          fund_directory_id: string
+          id: string
+          intake_session_id: string
+          is_anchor: boolean
+          mandate_fingerprint: string
+          material_manifest: Json
+          organization_id: string
+          plan_id: string
+          position: number
+          rationale: string
+          recipient_name: string
+        }
+        Insert: {
+          contact_id: string
+          contact_name: string
+          created_at?: string
+          fund_directory_id: string
+          id?: string
+          intake_session_id: string
+          is_anchor?: boolean
+          mandate_fingerprint: string
+          material_manifest: Json
+          organization_id: string
+          plan_id: string
+          position: number
+          rationale: string
+          recipient_name: string
+        }
+        Update: {
+          contact_id?: string
+          contact_name?: string
+          created_at?: string
+          fund_directory_id?: string
+          id?: string
+          intake_session_id?: string
+          is_anchor?: boolean
+          mandate_fingerprint?: string
+          material_manifest?: Json
+          organization_id?: string
+          plan_id?: string
+          position?: number
+          rationale?: string
+          recipient_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_introduction_recipi_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_recipients_fund_directory_id_fkey"
+            columns: ["fund_directory_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_recipients_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introduction_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      qualified_introductions: {
+        Row: {
+          authorization_snapshot: Json
+          case_fingerprint: string
+          contact_id: string
+          fund_directory_id: string
+          id: string
+          intake_session_id: string
+          introduced_at: string
+          introduced_by: string
+          mandate_fingerprint: string
+          material_fingerprint: string
+          material_manifest: Json
+          organization_id: string
+          plan_id: string
+          rationale: string
+          recipient_id: string
+        }
+        Insert: {
+          authorization_snapshot: Json
+          case_fingerprint: string
+          contact_id: string
+          fund_directory_id: string
+          id?: string
+          intake_session_id: string
+          introduced_at?: string
+          introduced_by: string
+          mandate_fingerprint: string
+          material_fingerprint: string
+          material_manifest: Json
+          organization_id: string
+          plan_id: string
+          rationale: string
+          recipient_id: string
+        }
+        Update: {
+          authorization_snapshot?: Json
+          case_fingerprint?: string
+          contact_id?: string
+          fund_directory_id?: string
+          id?: string
+          intake_session_id?: string
+          introduced_at?: string
+          introduced_by?: string
+          mandate_fingerprint?: string
+          material_fingerprint?: string
+          material_manifest?: Json
+          organization_id?: string
+          plan_id?: string
+          rationale?: string
+          recipient_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_introductions_fund_directory_id_fkey"
+            columns: ["fund_directory_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualified_introductions_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introductions_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introduction_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introductions_organization_id_recipient_id_fkey"
+            columns: ["organization_id", "recipient_id"]
+            isOneToOne: true
+            referencedRelation: "qualified_introduction_recipients"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      red_flag_policies: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          materiality: Json
+          methodology_source: string
+          response_sla: Json
+          status: string
+          thresholds: Json
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          materiality?: Json
+          methodology_source: string
+          response_sla?: Json
+          status?: string
+          thresholds?: Json
+          updated_at?: string
+          valid_from: string
+          valid_until?: string | null
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          materiality?: Json
+          methodology_source?: string
+          response_sla?: Json
+          status?: string
+          thresholds?: Json
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          version?: string
+        }
+        Relationships: []
       }
       scenario_versions: {
         Row: {
@@ -3601,6 +4660,14 @@ export type Database = {
         }
         Returns: Json
       }
+      attest_qualified_introduction_plan_technical_review: {
+        Args: { p_material_fingerprint: string; p_plan_id: string }
+        Returns: string
+      }
+      authorize_qualified_introduction_plan: {
+        Args: { p_material_fingerprint: string; p_plan_id: string }
+        Returns: string
+      }
       begin_intake_processing: {
         Args: { p_organization_id: string; p_session_id: string }
         Returns: undefined
@@ -3665,6 +4732,27 @@ export type Database = {
         }
         Returns: string
       }
+      decide_agent_change_proposal: {
+        Args: {
+          p_decision: string
+          p_organization_id: string
+          p_proposal_id: string
+          p_reason: string
+        }
+        Returns: string
+      }
+      decide_offroad_mandate: {
+        Args: {
+          p_assessment_fingerprint: string
+          p_conditions?: Json
+          p_decision: string
+          p_intake_session_id: string
+          p_organization_id: string
+          p_path_back?: string
+          p_reason_codes?: Json
+        }
+        Returns: string
+      }
       fail_intake_session: {
         Args: {
           p_organization_id: string
@@ -3689,6 +4777,14 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      record_agent_change_proposal: {
+        Args: {
+          p_organization_id: string
+          p_proposal: Json
+          p_session_id: string
+        }
+        Returns: string
       }
       record_case_model_spend: {
         Args: {
@@ -3717,6 +4813,28 @@ export type Database = {
           p_organization_id: string
           p_reason: string
           p_session_id: string
+        }
+        Returns: string
+      }
+      record_decline_communication: {
+        Args: {
+          p_channel: string
+          p_intake_session_id: string
+          p_mandate_decision_fingerprint: string
+          p_mandate_decision_id: string
+          p_message_fingerprint: string
+          p_organization_id: string
+          p_recipient: string
+        }
+        Returns: string
+      }
+      record_diligence_surprise: {
+        Args: {
+          p_corrective_action_id?: string
+          p_description: string
+          p_intake_session_id: string
+          p_organization_id: string
+          p_responsible_procedure_id?: string
         }
         Returns: string
       }
@@ -3774,6 +4892,18 @@ export type Database = {
         }
         Returns: Json
       }
+      record_material_communication: {
+        Args: {
+          p_channel: string
+          p_content_fingerprint: string
+          p_has_material_commitment?: boolean
+          p_intake_session_id: string
+          p_organization_id: string
+          p_package_fingerprint: string
+          p_recipient_id: string
+        }
+        Returns: string
+      }
       register_intake_document_command: {
         Args: {
           p_bucket_id: string
@@ -3798,6 +4928,43 @@ export type Database = {
         }
         Returns: Json
       }
+      resolve_analysis_scope_suggestion_command: {
+        Args: {
+          p_decision: string
+          p_organization_id: string
+          p_reason: string
+          // The non-STRICT SQL function requires NULL for the dismiss branch.
+          p_role: string | null
+          p_scope_event_id: string | null
+          p_session_id: string
+          p_suggestion_event_id: string
+          p_suggestion_id: string
+        }
+        Returns: Json
+      }
+      review_case_red_flag: {
+        Args: {
+          p_decision: string
+          p_evidence_ids?: Json
+          p_flag_fingerprint: string
+          p_flag_id: string
+          p_intake_session_id: string
+          p_organization_id: string
+          p_rationale: string
+        }
+        Returns: string
+      }
+      review_engagement_conflict: {
+        Args: {
+          p_case_fingerprint: string
+          p_counterparties: Json
+          p_intake_session_id: string
+          p_organization_id: string
+          p_rationale: string
+          p_status: string
+        }
+        Returns: string
+      }
       review_intake_candidate: {
         Args: {
           p_candidate_id: string
@@ -3808,6 +4975,19 @@ export type Database = {
           p_session_id: string
         }
         Returns: undefined
+      }
+      revoke_advisor_authorization_command: {
+        Args: {
+          p_event_id: string
+          p_organization_id: string
+          p_reason: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      revoke_qualified_introduction_plan: {
+        Args: { p_plan_id: string }
+        Returns: string
       }
       search_case_retrieval: {
         Args: {
@@ -3853,6 +5033,7 @@ export type Database = {
       set_intake_operation_context_command: {
         Args: {
           p_archetype: string
+          // The non-STRICT SQL function requires NULL outside the advisor journey.
           p_authority_kind?: string | null
           p_authority_reference?: string | null
           p_authorization_event_id: string | null
@@ -3866,28 +5047,6 @@ export type Database = {
           p_retest_triggers?: string[]
           p_route_event_id: string
           p_scope_event_id: string
-          p_session_id: string
-        }
-        Returns: Json
-      }
-      resolve_analysis_scope_suggestion_command: {
-        Args: {
-          p_decision: string
-          p_organization_id: string
-          p_reason: string
-          p_role: string | null
-          p_scope_event_id: string | null
-          p_session_id: string
-          p_suggestion_event_id: string
-          p_suggestion_id: string
-        }
-        Returns: Json
-      }
-      revoke_advisor_authorization_command: {
-        Args: {
-          p_event_id: string
-          p_organization_id: string
-          p_reason: string
           p_session_id: string
         }
         Returns: Json
@@ -3907,6 +5066,14 @@ export type Database = {
       }
       worker_complete_job: {
         Args: { p_capability_token: string; p_job_id: string; p_result?: Json }
+        Returns: Json
+      }
+      worker_document_advisor_authorization: {
+        Args: {
+          p_capability_token: string
+          p_event_id: string
+          p_job_id: string
+        }
         Returns: Json
       }
       worker_fail_job: {
@@ -3958,6 +5125,15 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_analysis_scope_suggestions: {
+        Args: {
+          p_capability_token: string
+          p_event_id: string
+          p_job_id: string
+          p_suggestions: Json
+        }
+        Returns: Json
+      }
       worker_record_candidates: {
         Args: {
           p_candidates: Json
@@ -3999,22 +5175,14 @@ export type Database = {
         Args: { p_capability_token: string; p_events: Json; p_job_id: string }
         Returns: Json
       }
-      worker_record_analysis_scope_suggestions: {
+      worker_record_public_research: {
         Args: {
           p_capability_token: string
-          p_event_id: string
           p_job_id: string
-          p_suggestions: Json
+          p_plan: Json
+          p_result: Json
         }
-        Returns: Json
-      }
-      worker_document_advisor_authorization: {
-        Args: {
-          p_capability_token: string
-          p_event_id: string
-          p_job_id: string
-        }
-        Returns: Json
+        Returns: string
       }
       worker_record_retrieval_chunks: {
         Args: { p_capability_token: string; p_chunks: Json; p_job_id: string }

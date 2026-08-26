@@ -1,7 +1,6 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 18 August 2026, `main` after PRs #41, #44, #46, #47, #48, #49
-> and this documentation PR (previous baseline: `30b87f7`, PR #40).
+> Current as of 26 August 2026, `main` after PR #271 (`ab7bc27`).
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
@@ -32,10 +31,20 @@ explicitly rejects a network of autonomous agents in favor of the existing deter
 
 Migration `20260826190359_agent_workspace_foundation.sql` adds forced-RLS research lineage and
 agent-proposal ledgers, capability-bound worker writes, tenant commands and cross-tenant tests.
-Local `pnpm check` is green across 41 packages. The host has no local container runtime, so the
-migration has not been replayed locally; database acceptance, generated types, deployment and
-production smoke checks remain pending the mandatory CI database job. Do not report this increment
-as deployed or active in production until those gates and the release evidence are complete.
+Migration `20260826203000_agent_workspace_index_hardening.sql` covers every new foreign key. Both
+were tested first on the isolated Supabase `staging` branch and promoted to production as remote
+versions `20260826200143` and `20260826200443`. Production has forced RLS on all three ledgers,
+authenticated read only, no anonymous grants, public invoker wrappers, private definer
+implementations, zero Security Advisor findings and no unindexed foreign keys. All three ledgers
+were empty immediately after promotion.
+
+Local `pnpm check` and the mandatory CI database, E2E and quality jobs are green across 41 packages.
+The generated database types now reflect the production schema. Commit `bb62b99` is deployed in
+ECS as `offroad-document-worker:105`, image tag `bb62b995dade`, and the service reported stable.
+The worker has the existing OpenAI secret and uses its governed public web-search adapter when no
+optional Perplexity secret is configured. This foundation is active in production. The future
+conversation surface remains intentionally absent until accepted proposals can be applied through
+real idempotent domain commands.
 
 ### Engineering update: M8 governed mandate screening and qualified introduction, 26 August 2026
 

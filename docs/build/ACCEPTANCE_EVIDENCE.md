@@ -11,11 +11,16 @@
 | Alterações conversacionais | `@offroad/agent-contracts` | proposta tipada, ligada ao manifesto, com preview, evidência, impacto, recomputação, expiração e regra que impede número apoiado apenas por fonte pública |
 | Persistência e isolamento | migration e `rls_non_interference.sql` | RLS forçado, nenhuma escrita direta do tenant, pesquisa escrita por capability, proposta decidida por comando e tenant cruzado bloqueado |
 | Quality gate local | `pnpm check` | lint, typecheck, testes e build de produção verdes nos 41 pacotes; web gerou 28 rotas |
+| CI obrigatório | GitHub Quality run `33008949043` | database, RLS, schema lint, E2E, lint, typecheck, testes e build verdes; Vercel preview verde |
+| Staging antes de produção | Supabase branch `staging` | migrations rebaseadas sobre produção; fundação e hardening aplicados; Security Advisor com zero findings e nenhuma foreign key nova sem índice |
+| Schema de produção | Supabase `ifnogpksgdadruooqydi` | remote migrations `20260826200143` e `20260826200443`; RLS forçado; sem grant anônimo; somente leitura autenticada; wrappers públicos invoker e implementações privadas definer |
+| Estado inicial dos ledgers | SQL de verificação em produção | zero pesquisas, zero fontes e zero propostas imediatamente após a promoção |
+| Worker de produção | GitHub deploy run `33007845496` | imagem `bb62b995dade`; task definition `offroad-document-worker:105`; ECS service stable |
+| Tipos do banco | `apps/web/src/types/database.ts` | regenerados diretamente do schema de produção após a promoção |
 
-Aceitação local de código está verde. Aceitação de banco e release continua aberta até o CI
-reconstruir todas as migrations em Supabase efêmero, executar a suíte RLS, lintar o schema e validar
-o E2E. O host local não possui runtime de containers após a queda de energia, por isso nenhum
-resultado de banco ou produção é alegado nesta etapa.
+Aceitação de código, banco, isolamento e worker está verde em produção. A superfície conversacional
+continua fora do produto por decisão arquitetural: ela só entra quando aceitar uma proposta puder
+acionar um comando de domínio real, idempotente, auditável e com recomputação explícita.
 
 ## House Playbook M8, 26/08/2026
 
