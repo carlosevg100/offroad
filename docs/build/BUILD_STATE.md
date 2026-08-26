@@ -12,7 +12,7 @@ exclui incompatibilidades de forma binária, registra confirmações pendentes e
 qualitativa sem percentual fictício. MK-19 a MK-28 permanecem `not_applicable`: NDA, diligence,
 book, alocação, negociação, documentação, funding e closing estão fora da fronteira atual.
 
-A migration `20260825233231_m8_qualified_introductions.sql` cria política versionada, plano,
+A migration `20260826040000_m8_qualified_introductions.sql` cria política versionada, plano,
 destinatários nomeados e ledger append-only da introdução. Todas as tabelas de case têm RLS
 forçado, leitura restrita ao tenant e nenhuma escrita direta pelo usuário. Revisão técnica e
 autorização da companhia são comandos distintos. Ambas, o plano, o pacote e cada mandato precisam
