@@ -1505,7 +1505,10 @@ begin
   -- A registered fund reads and declares on its own record, and only its own.
   set local role postgres;
   update public.fund_directory
-  set claimed_by_organization_id = (select id from public.organizations order by created_at limit 1),
+  -- Use the authenticated fixture's organization explicitly. The fixtures share
+  -- the same created_at value, so ordering only by created_at is nondeterministic
+  -- and can assign the fund to another tenant depending on the query plan.
+  set claimed_by_organization_id = '20000000-0000-4000-8000-000000000001'::uuid,
       claimed_at = now(),
       status = 'registered'
   where id = fund_id;
