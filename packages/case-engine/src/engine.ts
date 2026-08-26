@@ -73,12 +73,21 @@ import {
   type MandateFit,
   type ResolvedMandate,
 } from "@offroad/fund-mandate";
-import {indicativePrice, type IndicativePrice, type PricedInstrument} from "@offroad/market-reference";
+import {
+  buildPricingTruthSet,
+  type GovernedPriceAdjustment,
+  type IndicativePrice,
+  type PricedInstrument,
+  type PricingCostComponent,
+  type PricingObservation,
+  type PricingPolicy,
+  type PricingTruthSet,
+} from "@offroad/market-reference";
 import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@offroad/reconciliation";
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.25-v7";
+export const caseEngineVersion = "2026.08.25-v8";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -123,6 +132,19 @@ export type CaseEngineInput = {
   indexLevels?: {cdi: string; tlp: string; ipca: string; tr: string};
   operationPolicies?: OperationPolicies;
   structurePolicies?: StructurePolicies;
+  pricing?: {
+    policy: PricingPolicy;
+    observations: PricingObservation[];
+    adjustments?: GovernedPriceAdjustment[];
+    costs?: PricingCostComponent[];
+    weightedAverageLifeYears?: string;
+    sectorGroup: string;
+    indexer: "cdi" | "ipca" | "fixed" | "other";
+    indexerRationale?: string;
+    targetBuyer?: string;
+    expectedSpreadBps?: number;
+    currentAllIn?: string;
+  };
   writeBrief?: (input: {
     archetypeId: ArchetypeId;
     locale: "pt" | "en";
@@ -144,6 +166,7 @@ export type CaseEngineState = {
   capacity: CapacityAssessment | null;
   operationTruth: OperationTruthSet;
   structureTruth: StructureTruthSet;
+  pricingTruth: PricingTruthSet;
   desk: DeskAnalysis | null;
   trajectory: Trajectory | null;
   receivables: ReceivablesAnalysis | null;
@@ -182,8 +205,24 @@ export type PublicMatchingSummary = {
   ourGaps: string[];
 };
 
-export type PublicCaseEngineState = Omit<CaseEngineState, "matching"> & {
+export type PublicPricingTruthSet = Omit<PricingTruthSet, "sample" | "allIn" | "procedureCoverage"> & {
+  sample: {
+    eligibleCount: number;
+    rejectedCount: number;
+    distinctSources: number;
+    latestObservation: string | null;
+  };
+  allIn: {
+    annualizedCostBps: number | null;
+    totalRate: {min: string; max: string} | null;
+    componentCount: number;
+  };
+  procedureCoverage: Array<Omit<PricingTruthSet["procedureCoverage"][number], "result"> & {result: null}>;
+};
+
+export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"> & {
   matching: PublicMatchingSummary;
+  pricingTruth: PublicPricingTruthSet;
 };
 
 export function summarizeMatching(matching: CaseEngineState["matching"]): PublicMatchingSummary {
@@ -201,7 +240,25 @@ export function summarizeMatching(matching: CaseEngineState["matching"]): Public
 }
 
 export function publicCaseState(state: CaseEngineState): PublicCaseEngineState {
-  return {...state, matching: summarizeMatching(state.matching)};
+  return {
+    ...state,
+    matching: summarizeMatching(state.matching),
+    pricingTruth: {
+      ...state.pricingTruth,
+      sample: {
+        eligibleCount: state.pricingTruth.sample.eligible.length,
+        rejectedCount: state.pricingTruth.sample.rejected.length,
+        distinctSources: state.pricingTruth.sample.distinctSources,
+        latestObservation: state.pricingTruth.sample.latestObservation,
+      },
+      allIn: {
+        annualizedCostBps: state.pricingTruth.allIn.annualizedCostBps,
+        totalRate: state.pricingTruth.allIn.totalRate,
+        componentCount: state.pricingTruth.allIn.components.length,
+      },
+      procedureCoverage: state.pricingTruth.procedureCoverage.map((procedure) => ({...procedure, result: null})),
+    },
+  };
 }
 
 /** Runner evidence is retained, but fund identities and mandate detail stay in the worker job. */
@@ -255,6 +312,7 @@ const structureOutputSchema = z.object({
   capacity: z.unknown().nullable(),
   operationTruth: z.unknown(),
   structureTruth: z.unknown(),
+  pricingTruth: z.unknown(),
   termSheet: z.unknown().nullable(),
   rating: z.unknown().nullable(),
   stress: z.array(z.unknown()),
@@ -306,7 +364,7 @@ type MetricsOutput = {
 type GapsOutput = {materialGapCount: number; blockers: string[]};
 type StructureOutput = Pick<
   CaseEngineState,
-  "capacity" | "operationTruth" | "structureTruth" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
+  "capacity" | "operationTruth" | "structureTruth" | "pricingTruth" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
 >;
 type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInvocations"> & {
   proposedBrief: CaseBrief | null;
@@ -789,16 +847,6 @@ function structureCase(
   const collateralAssets = collateralAssetsOf(reconciliation, metrics.desk);
   const collateral = requested && collateralAssets.length > 0 ? designCollateralPackage({assets: collateralAssets, amount: requested}) : null;
   const preferredInstrument = instruments.find((entry) => entry.eligible)?.instrument.id as PricedInstrument | undefined;
-  const price = rating && preferredInstrument && requested
-    ? indicativePrice({
-        instrument: preferredInstrument,
-        rating: rating.band,
-        cdi: input.indexLevels?.cdi ?? "0.105",
-        amount: requested,
-        ...(input.dealBrief.requestedTermMonths !== undefined ? {tenorMonths: input.dealBrief.requestedTermMonths} : {}),
-        ...(collateral ? {collateralCoverage: collateral.coverageAchieved} : {}),
-      })
-    : null;
   const deskVerdict = metrics.desk && requested
     ? judgeOperation({
         desk: metrics.desk,
@@ -839,7 +887,42 @@ function structureCase(
     referenceDate: input.referenceDate,
     ...(input.structurePolicies ? {policies: input.structurePolicies} : {}),
   });
-  return {capacity, operationTruth, structureTruth, termSheet, rating, stress, instruments, collateral, price, verdict};
+  const selectedCollateralClasses = structureTruth.security.package?.lines
+    .filter((line) => line.selected)
+    .map((line) => line.asset.type)
+    .sort() ?? [];
+  const pricingSecurityClass = selectedCollateralClasses.length > 0
+    ? `secured:${[...new Set(selectedCollateralClasses)].join("+")}`
+    : "unsecured";
+  const pricingTarget = input.pricing && rating && preferredInstrument && input.indexLevels?.cdi && structureTruth.proposal.amount && structureTruth.proposal.termMonths && structureTruth.proposal.amortizationFormat
+    ? {
+        instrument: preferredInstrument,
+        rating: rating.band,
+        cdi: input.indexLevels.cdi,
+        tenorMonths: structureTruth.proposal.termMonths,
+        securityClass: pricingSecurityClass,
+        amortizationClass: structureTruth.proposal.amortizationFormat,
+        sectorGroup: input.pricing.sectorGroup,
+        amount: structureTruth.proposal.amount,
+        indexer: input.pricing.indexer,
+        ...(input.pricing.indexerRationale ? {indexerRationale: input.pricing.indexerRationale} : {}),
+        ...(input.pricing.targetBuyer ? {targetBuyer: input.pricing.targetBuyer} : {}),
+        ...(input.pricing.expectedSpreadBps !== undefined ? {expectedSpreadBps: input.pricing.expectedSpreadBps} : {}),
+        ...(input.pricing.currentAllIn ? {currentAllIn: input.pricing.currentAllIn} : {}),
+      }
+    : null;
+  const pricingTruth = buildPricingTruthSet({
+    target: pricingTarget,
+    ...(input.pricing ? {
+      policy: input.pricing.policy,
+      observations: input.pricing.observations,
+      ...(input.pricing.adjustments ? {adjustments: input.pricing.adjustments} : {}),
+      ...(input.pricing.costs ? {costs: input.pricing.costs} : {}),
+      ...(input.pricing.weightedAverageLifeYears ? {weightedAverageLifeYears: input.pricing.weightedAverageLifeYears} : {}),
+    } : {}),
+  });
+  const price = pricingTruth.indicativePrice;
+  return {capacity, operationTruth, structureTruth, pricingTruth, termSheet, rating, stress, instruments, collateral, price, verdict};
 }
 
 function applyCapacityCondition(

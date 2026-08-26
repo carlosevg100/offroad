@@ -5,7 +5,7 @@ import {z} from "zod";
  * Market-sensitive numbers and house policy parameters live here, not inside procedure prose.
  * Missing values are explicit blockers. They are never replaced by a model estimate.
  */
-export const referenceDataRegistryVersion = "2026.08.25-v4";
+export const referenceDataRegistryVersion = "2026.08.25-v5";
 
 export const referenceDataStatusSchema = z.enum(["required_missing", "draft", "approved", "expired"]);
 export type ReferenceDataStatus = z.infer<typeof referenceDataStatusSchema>;
@@ -116,6 +116,14 @@ export const referenceDataRegistry = [
   missing("policy.structure.mandate-ticket", "market_observation", "Confirmed ticket and indivisibility constraints from currently aligned mandates.", "Head de Mercado e Distribuição", ["ES-41", "ES-45"]),
   missing("market.pricing.curves", "market_observation", "Comparable private-credit pricing observations normalized for index, date, tenor, size and security.", "Head de Mercado e Distribuição", ["PR-01", "PR-02", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07", "PR-10", "PR-11", "PR-12", "PR-13"]),
   missing("policy.pricing.sample-quality", "methodology_parameter", "Minimum sample, comparability, weighting, validity and abstention rules for pricing references.", "Head de Mercado e Distribuição", ["PR-01", "PR-02", "PR-03", "PR-04", "PR-07", "PR-09", "PR-12"]),
+  missing("policy.pricing.communication-width", "house_policy", "Minimum and maximum supported width for communicating an indicative pricing range.", "Head de Mercado e Distribuição", ["PR-01", "PR-09"]),
+  missing("policy.pricing.regime", "methodology_parameter", "Current market-regime identifier and the recorded conditions that invalidate prior observations.", "Head de Mercado e Distribuição", ["PR-02", "PR-07", "PR-12", "PR-13"]),
+  missing("market.pricing.security-premiums", "market_observation", "Observed paired security-package deltas with count, source, date and validity.", "Head de Mercado e Distribuição", ["PR-03", "PR-08"]),
+  missing("market.pricing.tenor-curve", "market_observation", "Observed tenor curve and appetite breakpoints by risk profile.", "Head de Mercado e Distribuição", ["PR-04"]),
+  missing("market.pricing.size-liquidity", "market_observation", "Observed ticket, fixed-cost, liquidity and distribution adjustments.", "Head de Mercado e Distribuição", ["PR-05"]),
+  missing("market.pricing.indexer-basis", "market_observation", "Current indexer curves, mandate acceptance and normalization bases.", "Head de Mercado e Distribuição", ["PR-02", "PR-06", "PR-10"]),
+  missing("policy.pricing.cost-catalogue", "methodology_parameter", "Source hierarchy and annualization method for issuance, legal, security, monitoring and distribution costs.", "Head de DCM e Estruturação", ["PR-10", "PR-11"]),
+  missing("market.pricing.observation-registry", "market_observation", "Authorized pricing observations with source, status, quality, confidentiality and aggregate-use controls.", "Head de Mercado e Distribuição", ["PR-02", "PR-07", "PR-12", "PR-13"]),
   missing("market.instrument.eligibility", "legal_reference", "Current legal, corporate and operational eligibility constraints by instrument and structure.", "Head de DCM e Estruturação", ["ES-03", "ES-42", "ES-43"]),
   missing("market.mandates", "market_observation", "Versioned institution, vehicle, mandate, contact and appetite observations used for screening.", "Head de Mercado e Distribuição", ["MK-01", "MK-02", "MK-03", "MK-04", "MK-05", "MK-06", "MK-07", "MK-08", "MK-09", "MK-10", "MK-11", "MK-12", "MK-13", "MK-14"]),
   missing("policy.market.mandate_max_age", "house_policy", "Maximum age by mandate field before it becomes stale or requires confirmation.", "Head de Mercado e Distribuição", ["MK-11", "MK-12", "MK-13"]),

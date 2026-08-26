@@ -67,6 +67,54 @@ const claimDecisionSchema = z.object({
   decidedAt: z.string().datetime({offset: true}),
   reason: z.string().min(3).max(1000).optional(),
 });
+const pricingDecimalStringSchema = z.union([z.string(), z.number()]).transform((value) => String(value));
+const pricingContextSchema = z.object({
+  policy: z.object({
+    version: z.string().min(1),
+    asOf: z.iso.date(),
+    regime: z.string().min(1),
+    status: z.enum(["active", "invalidated"]),
+    minObservations: z.coerce.number().int().min(2),
+    minDistinctSources: z.coerce.number().int().min(2),
+    minQuality: z.coerce.number().min(0).max(1),
+    maxTenorDeltaMonths: z.coerce.number().int().nonnegative(),
+    minAmountRatio: pricingDecimalStringSchema,
+    maxAmountRatio: pricingDecimalStringSchema,
+    minBandWidthBps: z.coerce.number().int().positive(),
+    maxBandWidthBps: z.coerce.number().int().positive(),
+  }),
+  indexLevels: z.object({cdi: pricingDecimalStringSchema, ipca: pricingDecimalStringSchema, tlp: pricingDecimalStringSchema, tr: pricingDecimalStringSchema}),
+  indexer: z.enum(["cdi", "ipca", "fixed", "other"]),
+  observations: z.array(z.object({
+    id: z.string().uuid(),
+    sourceId: z.string().min(1),
+    sourceOwner: z.string().min(1),
+    sourceKind: z.enum(["public_closing", "direct_manager_confirmation", "term_sheet", "indication", "sounding", "authorized_historical"]),
+    confidentiality: z.enum(["public", "aggregated_confidential", "restricted_internal"]),
+    observedOn: z.iso.date(),
+    validUntil: z.iso.date(),
+    status: z.enum(["closed", "term", "indication", "sounding"]),
+    instrument: z.enum(["ccb", "nce", "debenture_476", "debenture_160", "cra", "cri", "fidc", "venture_debt", "finame", "leasing"]),
+    rating: z.enum(["strong", "adequate", "watch", "weak", "distressed"]),
+    normalizedSpreadBps: z.coerce.number(),
+    normalizationMethod: z.string().min(1),
+    tenorMonths: z.coerce.number().int().positive(),
+    securityClass: z.string().min(1),
+    amortizationClass: z.string().min(1),
+    sectorGroup: z.string().min(1),
+    amount: pricingDecimalStringSchema,
+    regime: z.string().min(1),
+    quality: z.coerce.number().min(0).max(1),
+    aggregateAuthorized: z.boolean(),
+    economics: z.object({
+      quotedSpreadBps: z.coerce.number(),
+      feeBps: z.coerce.number(),
+      oidBps: z.coerce.number(),
+      warrantBps: z.coerce.number(),
+      hedgeBps: z.coerce.number(),
+    }),
+  })),
+});
 const rawCaseInputSchema = z.object({
   session: recordSchema,
   run: recordSchema,
@@ -98,6 +146,7 @@ const rawCaseInputSchema = z.object({
   expected_model_calls: z.coerce.number().int().nonnegative(),
   claim_decisions: z.array(claimDecisionSchema).default([]),
   receivables_case: receivablesCaseSchema.optional(),
+  pricing_context: pricingContextSchema.nullable().default(null),
   _execution: z.object({
     id: z.uuid(),
     mode: executionModeSchema,
@@ -190,6 +239,15 @@ export async function processCaseAnalysisJob(
       resolvedMandates,
       claimDecisions: raw.claim_decisions as ClaimDecision[],
       ...(raw.receivables_case ? {receivablesCase: raw.receivables_case} : {}),
+      ...(raw.pricing_context ? {
+        indexLevels: raw.pricing_context.indexLevels,
+        pricing: {
+          policy: raw.pricing_context.policy,
+          observations: raw.pricing_context.observations,
+          sectorGroup: stringOr(raw.session.sector, "unknown"),
+          indexer: raw.pricing_context.indexer,
+        },
+      } : {}),
       externalReleaseApproved: false,
       writeBrief: async ({reconciliation, desk, trajectory}) => {
         const evidence = deskEvidence(desk, trajectory);

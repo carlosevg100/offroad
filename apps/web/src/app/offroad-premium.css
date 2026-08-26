@@ -6419,7 +6419,8 @@ button[disabled].workspace-search,
 .case-financial-truth,
 .case-debt-truth,
 .case-operation-truth,
-.case-structure-truth {
+.case-structure-truth,
+.case-pricing-truth {
   border: 1px solid var(--line);
   border-radius: 12px;
   min-width: 0;
@@ -6437,10 +6438,49 @@ button[disabled].workspace-search,
 .case-financial-truth > p,
 .case-debt-truth > p,
 .case-operation-truth > p,
-.case-structure-truth > p { color: var(--muted); font-size: .86rem; line-height: 1.55; }
+.case-structure-truth > p,
+.case-pricing-truth > p { color: var(--muted); font-size: .86rem; line-height: 1.55; }
 
 .case-operation-truth,
-.case-structure-truth { margin-top: 1rem; }
+.case-structure-truth,
+.case-pricing-truth { margin-top: 1rem; }
+
+.case-pricing-truth__reference {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border-left: 3px solid var(--accent);
+  display: grid;
+  gap: 7px;
+  margin: 18px 0;
+  padding: 16px 18px;
+}
+
+.case-pricing-truth__reference > span,
+.case-pricing-truth__reference > small {
+  color: var(--muted);
+}
+
+.case-pricing-truth__reference > span {
+  font-size: .68rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.case-pricing-truth__reference > strong {
+  font-size: 1.18rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.case-pricing-truth__reference > small { line-height: 1.5; }
+
+.case-pricing-truth__abstention {
+  background: #f7f5f0;
+  border: 1px solid var(--line);
+  margin: 18px 0;
+  padding: 16px 18px;
+}
+
+.case-pricing-truth__abstention strong { font-size: .9rem; }
+.case-pricing-truth__abstention p { color: var(--muted); font-size: .82rem; line-height: 1.55; margin: 6px 0 0; }
 
 .case-truth__status {
   border: 1px solid var(--line);

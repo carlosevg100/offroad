@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const marketReferenceVersion = "2026.08.24-v1";
+export const marketReferenceVersion = "2026.08.25-v2";
 
 /**
  * What this kind of paper costs for this kind of credit, as the desk's reference and nothing
@@ -134,3 +134,5 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
     },
   };
 }
+
+export * from "./pricing-truth";

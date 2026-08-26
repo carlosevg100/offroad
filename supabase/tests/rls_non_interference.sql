@@ -3148,6 +3148,37 @@ $$;
 
 set local role postgres;
 
+-- House pricing evidence is not a tenant data product. Even an authenticated organization owner
+-- cannot enumerate policies or observations; only the capability-bound worker can receive the
+-- governed aggregate context through its security-definer command.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+declare
+  accepted boolean;
+begin
+  accepted := true;
+  begin
+    perform 1 from public.pricing_policies limit 1;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant could read proprietary pricing policies'; end if;
+
+  accepted := true;
+  begin
+    perform 1 from public.pricing_observations limit 1;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant could read proprietary pricing observations'; end if;
+end;
+$$;
+
+set local role postgres;
+
 rollback;
 
 select 'rls_non_interference_passed' as result;
