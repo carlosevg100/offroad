@@ -8,7 +8,7 @@ type Props = {
   locale: string;
   surface: "onboarding" | "workspace";
   journey: "company" | "originator";
-  stage: "start" | "operation" | "request" | "documents" | "review";
+  stage: "start" | "company" | "operation" | "request" | "documents" | "review";
   state: "open" | "processing" | "failed" | "review_ready";
   documentCount?: number;
   activeRequestCount?: number;

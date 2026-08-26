@@ -18,7 +18,6 @@ import {
   removeIntakeDocument as removeDocument,
   resolveIntakeIssue as resolveIssue,
   reviewIntakeCandidate as reviewCandidate,
-  startIntakeSession,
   type IntakeRuntime,
 } from "@/lib/intake/server";
 import {dealBriefFormSchema, saveDealBrief, toDealBrief} from "@/lib/intake/deal-brief";
@@ -144,19 +143,55 @@ export async function chooseManualIntake(formData: FormData) {
 
 export async function startDocumentIntake(formData: FormData) {
   const locale = localeFrom(formData);
-  const context = await onboardingContext(locale);
-  if (context.journey === "capital_provider") redirect(onboardingUrl(locale));
-  const outcome = await startIntakeSession({supabase: context.supabase, organizationId: context.organizationId, userId: context.userId, locale, journey: context.journey});
-  if (!outcome.ok) redirect(onboardingUrl(locale, outcome.error));
-  const {error} = await context.supabase.from("onboarding_progress").update({
-    answers: {...context.answers, intake_mode: "documents", intake_session_id: outcome.value},
-    current_step: "documents",
-  }).eq("organization_id", context.organizationId).eq("user_id", context.userId).eq("journey", context.journey);
+  const supabase = await createClient();
+  if (!supabase) redirect(onboardingUrl(locale, "provider"));
+  const {error} = await supabase.rpc("start_onboarding_intake", {p_locale: locale});
   if (error) {
-    reportServerFailure({step: "intake.onboarding_progress_documents", error});
-    redirect(onboardingUrl(locale, "save"));
+    reportServerFailure({step: "intake.start_onboarding", error});
+    redirect(onboardingUrl(locale, error.code === "P0002" ? "step" : "session"));
   }
-  redirect(onboardingUrl(locale));
+  redirect(`/${locale}/onboarding?stage=company`);
+}
+
+const guidedCompanySchema = z.object({
+  name: z.string().trim().min(2).max(160),
+  legalName: z.string().trim().max(200),
+  website: z.union([z.literal(""), z.string().url().max(500)]),
+  description: z.string().trim().max(5000),
+  identifier: z.string().trim().max(40),
+});
+
+/** Saves the first guided milestone. Company context can come from prose or from a document
+ * already uploaded into the session; the database command validates that at least one exists. */
+export async function saveGuidedCompanyProfile(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const parsed = guidedCompanySchema.safeParse({
+    name: value(formData, "company_name"),
+    legalName: value(formData, "legal_name"),
+    website: value(formData, "website"),
+    description: value(formData, "description"),
+    identifier: value(formData, "legal_identifier").replace(/[^0-9A-Za-z]/g, ""),
+  });
+  if (!parsed.success) redirect(`/${locale}/onboarding?stage=company&error=validation`);
+
+  const identifierHash = parsed.data.identifier
+    ? `\\x${createHash("sha256").update(parsed.data.identifier).digest("hex")}`
+    : undefined;
+  const {error} = await runtime.supabase.rpc("save_guided_company_profile", {
+    p_session_id: runtime.sessionId,
+    p_name: parsed.data.name,
+    p_legal_name: parsed.data.legalName || null,
+    p_website: parsed.data.website || null,
+    p_description: parsed.data.description || null,
+    p_identifier_hash: identifierHash ?? null,
+    p_identifier_last4: parsed.data.identifier.slice(-4) || null,
+  });
+  if (error) {
+    reportServerFailure({step: "intake.save_guided_company", error});
+    redirect(`/${locale}/onboarding?stage=company&error=${error.code === "22023" ? "validation" : "save"}`);
+  }
+  redirect(`/${locale}/onboarding?stage=operation`);
 }
 
 /**
@@ -188,7 +223,7 @@ export async function setIntakeOperation(formData: FormData) {
     authorityReference: value(formData, "authority_reference"),
     authorityConfirmed: value(formData, "authority_confirmed") === "confirmed",
   });
-  redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
+  redirect(outcome.ok ? `/${locale}/onboarding?stage=request` : onboardingUrl(locale, outcome.error));
 }
 
 /**
@@ -227,7 +262,7 @@ export async function saveDealBriefAction(formData: FormData) {
     sessionId: runtime.sessionId,
     brief,
   });
-  redirect(onboardingUrl(locale, saved.ok ? undefined : "save"));
+  redirect(saved.ok ? `/${locale}/onboarding?stage=documents` : onboardingUrl(locale, "save"));
 }
 
 export async function submitAgentMessageAction(formData: FormData) {

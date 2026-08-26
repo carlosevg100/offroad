@@ -25,6 +25,18 @@ async function expectNoErrorNotice(page: Page) {
   await expect(page.locator(".form-notice--error")).toHaveCount(0);
 }
 
+async function completeCompanyMilestone(page: Page) {
+  await expect(page.locator(".intake-company")).toBeVisible();
+  await expect(page.locator(".intake-collect")).toContainText("ETAPA 1 DE 7");
+  await page.locator('input[name="company_name"]').fill("Rede Horizonte Supermercados");
+  await page.locator('input[name="legal_name"]').fill("Rede Horizonte Supermercados S.A.");
+  await page.locator('input[name="website"]').fill("https://redehorizonte.example.com");
+  await page.locator('textarea[name="description"]').fill("Rede regional de supermercados com operação no Sudeste e plano de expansão de lojas.");
+  await page.locator('.intake-company__actions button[type="submit"]').click();
+  await expect(page.locator(".intake-operation__options")).toBeVisible();
+  await expect(page.locator(".intake-collect")).toContainText("ETAPA 2 DE 7");
+}
+
 test.describe("Document-first intake (company journey)", () => {
   // One browser context for the whole journey so the authenticated session carries across steps.
   let context: BrowserContext;
@@ -76,6 +88,7 @@ test.describe("Document-first intake (company journey)", () => {
     await page.goto("/pt-BR/onboarding");
     await page.locator(".intake-welcome__action button[type=submit]").click();
     await expect(page.locator(".intake-collect")).toBeVisible();
+    await completeCompanyMilestone(page);
 
     // The operation decides the checklist; the brief decides who could buy the paper. Neither
     // needs a document, and both come before the upload in the conversation a desk actually has.
@@ -89,12 +102,16 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator(".intake-guide__back").click();
     await expect(page).toHaveURL(/stage=operation/);
     await expect(page.locator(".intake-operation__options")).toBeVisible();
+    await page.locator(".intake-guide__back").click();
+    await expect(page).toHaveURL(/stage=company/);
+    await expect(page.locator(".intake-company")).toBeVisible();
     await page.locator(".intake-guide__restart summary").click();
     await page.locator(".intake-guide__restart button[type=submit]").click();
     await expect(page.locator(".intake-start")).toBeVisible();
     await expect(page.locator(".workspace-welcome h1")).toHaveText("Bem-vindo.");
 
     await page.locator(".intake-welcome__action button[type=submit]").click();
+    await completeCompanyMilestone(page);
     await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
     await expect(page.locator(".intake-brief")).toBeVisible();
 

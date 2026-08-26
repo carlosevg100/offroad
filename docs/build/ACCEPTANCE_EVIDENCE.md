@@ -1,5 +1,19 @@
 # Acceptance Evidence
 
+## Intake guiado em sete marcos, 26/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Arquitetura visível | onboarding PT-BR e EN-US | sete marcos canônicos; nenhum contador legado `1 de 3` no onboarding |
+| Primeiro marco | interface e comando `save_guided_company_profile` | identificação compacta, contexto livre ou documento, persistência atômica e avanço para operação |
+| Início sem estado parcial | comando `start_onboarding_intake` | sessão e ponteiro de onboarding são criados ou retomados na mesma transação |
+| Navegação | E2E `document-first-intake.spec.ts` | voltar de pedido para operação e de operação para empresa; recomeçar cancela só a tentativa corrente |
+| Progresso | projeção dos sete marcos | começa em 0%, acompanha o marco persistido e não conclui trabalho futuro por antecipação |
+| Feedback de clique | `IntakeActionSubmit` | botão entra imediatamente em estado pendente e bloqueia submissões duplicadas |
+| Staging | teste SQL transacional | start, sessão `collecting`, perfil, organização, company e avanço para operação validados com rollback |
+| Segurança | Supabase Security Advisor staging | zero findings após as duas migrations |
+| Quality gate | `pnpm check` e gate web repetido | 41 pacotes verdes; 18 arquivos e 127 testes web verdes; build com 28 rotas |
+
 ## Workspace do Agente Offroad e pesquisa pública, 26/08/2026
 
 | Evidência | Verificação | Resultado |

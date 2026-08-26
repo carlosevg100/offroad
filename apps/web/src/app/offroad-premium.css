@@ -8250,6 +8250,32 @@ button[disabled].workspace-search,
 .intake-guide__progress .is-complete {color: #526b61;}
 .intake-guide__progress .is-complete i {border-color: #8ba092; background: #edf2ee;}
 
+.intake-milestones {
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-block: 1px solid #e0e3e2;
+}
+
+.intake-milestones > span {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  padding: 13px 10px 14px;
+  border-right: 1px solid #e8eae9;
+  color: #9a9fa1;
+}
+
+.intake-milestones > span:last-child {border-right: 0;}
+.intake-milestones i {font: 9px ui-monospace, SFMono-Regular, monospace; font-style: normal; letter-spacing: .08em;}
+.intake-milestones b {overflow: hidden; font-size: 9px; font-weight: 650; letter-spacing: .035em; line-height: 1.25; text-overflow: ellipsis; text-transform: uppercase;}
+.intake-milestones .is-current {background: #f5f7f4; color: #1b2225;}
+.intake-milestones .is-current::after {position: absolute; right: 10px; bottom: 0; left: 10px; height: 2px; background: #789645; content: "";}
+.intake-milestones .is-current i {color: #6f8e3d;}
+.intake-milestones .is-complete {color: #58705f;}
+.intake-milestones .is-locked {background: #fcfcfb;}
+
 .intake-guide__navigation {
   display: flex;
   min-height: 34px;
@@ -8291,6 +8317,30 @@ button[disabled].workspace-search,
 
 .intake-guide__intro h3 {font-size: clamp(31px, 4vw, 52px); line-height: 1.02;}
 .intake-guide__intro p {max-width: 760px;}
+
+.intake-company {display: grid; gap: 22px;}
+.intake-company__form {display: grid; gap: 24px;}
+.intake-company__identity {display: grid; align-items: start; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px;}
+.intake-company__identity label,
+.intake-company__context {display: grid; gap: 7px;}
+.intake-company__identity label > span,
+.intake-company__context > label {color: #626a6e; font-size: 9px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;}
+.intake-company__identity input,
+.intake-company__context textarea {box-sizing: border-box; width: 100%; border: 1px solid #d6dada; border-radius: 5px; outline: 0; background: #fbfbfa; color: #1a2024; font: inherit; transition: border-color .18s ease, box-shadow .18s ease;}
+.intake-company__identity input {height: 46px; padding: 0 13px;}
+.intake-company__context textarea {min-height: 154px; padding: 14px; resize: vertical; line-height: 1.55;}
+.intake-company__identity input:focus,
+.intake-company__context textarea:focus {border-color: #718842; box-shadow: 0 0 0 3px rgb(113 136 66 / 10%);}
+.intake-company__identity small,
+.intake-company__context small {min-height: 14px; color: #858b8e; font-size: 9px; line-height: 1.45;}
+.intake-company__context {padding-top: 4px;}
+.intake-company__context .section-kicker {margin-bottom: 2px; color: #748348;}
+.intake-company__or {display: flex; align-items: center; gap: 14px; color: #858b8d; font-size: 10px;}
+.intake-company__or::before,
+.intake-company__or::after {height: 1px; flex: 1; background: #e1e4e2; content: "";}
+.intake-company__actions {display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-top: 22px; border-top: 1px solid #e2e4e3;}
+.intake-company__actions p {max-width: 520px; margin: 0; color: #70787c; font-size: 10px; line-height: 1.5;}
+.intake-company__actions .button {flex: 0 0 auto;}
 
 .intake-operation__options {grid-template-columns: repeat(2, minmax(0, 1fr));}
 .intake-operation__client {
@@ -8469,6 +8519,10 @@ button[disabled].workspace-search,
   .intake-welcome__action .button {width: 100%;}
   .intake-start__steps li {grid-template-columns: 24px 26px minmax(0, 1fr);}
   .intake-guide__progress > span {align-items: flex-start; flex-direction: column; gap: 5px; font-size: 8px;}
+  .intake-milestones {overflow-x: auto; grid-template-columns: repeat(7, minmax(112px, 1fr));}
+  .intake-company__identity {grid-template-columns: 1fr;}
+  .intake-company__actions {align-items: stretch; flex-direction: column;}
+  .intake-company__actions .button {width: 100%;}
   .intake-guide__navigation {align-items: stretch; flex-direction: column;}
   .intake-guide__restart {margin-left: 0;}
   .intake-guide__restart > div {position: static; width: 100%; margin-top: 10px; box-shadow: none;}

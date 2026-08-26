@@ -4,6 +4,26 @@ Atualizado em: 2026-08-26
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Intake guiado em sete marcos, 26/08/2026
+
+O onboarding de empresas e assessores deixou de renderizar o fluxo legado de três formulários.
+A jornada visível agora segue os sete marcos definidos no ADR 0014: empresa, operação, informações,
+entendimento, esclarecimentos, pacote institucional e investidores. Os três primeiros marcos são
+ações do cliente; os quatro seguintes representam trabalho real e permanecem bloqueados até que o
+estado persistido correspondente exista. O percentual parte de zero e é derivado do marco atual.
+
+O primeiro marco combina identificação compacta, explicação livre da companhia e upload opcional
+de material institucional. O usuário pode voltar aos marcos já iniciados ou cancelar somente a
+tentativa corrente. O botão `Começar` apresenta estado pendente imediatamente e o início da jornada
+passou de várias chamadas independentes para um único comando transacional no banco.
+
+As migrations `20260826224711_start_onboarding_intake_atomic.sql` e
+`20260826225428_guided_company_profile_collecting_status.sql` criam os comandos atômicos de início
+e salvamento do primeiro marco. O teste dirigido no Supabase staging comprovou sessão
+`collecting`, atualização do progresso, persistência da empresa e avanço para operação na mesma
+transação. O Security Advisor de staging retornou zero findings. O gate local completo passou nos
+41 pacotes; a aplicação web também passou 127 testes e build de produção com 28 rotas.
+
 ## Workspace do Agente Offroad e pesquisa pública governada, 26/08/2026
 
 O pipeline real agora publica eventos seguros de início e término para cada estágio econômico. O

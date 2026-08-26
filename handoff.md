@@ -7,6 +7,23 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: seven-milestone guided intake, 26 August 2026
+
+The borrower and advisor onboarding now exposes the seven milestones fixed by ADR 0014 instead of
+the legacy three-step presentation: company, transaction, initial information, preliminary
+understanding, clarifications, institutional package and investors. Only work that exists is
+unlocked. The first milestone is a compact company introduction with free-form context or an
+existing institutional document, followed by the transaction objective and the tailored request.
+Previously visited milestones are navigable and restarting cancels only the unfinished attempt.
+
+Starting the journey and saving the company milestone are atomic database commands. This removes
+the former partial-session failure mode and shortens the start path. The UI immediately exposes a
+pending state so navigation is never silent. Migrations `20260826224711` and `20260826225428` were
+validated on Supabase staging with a transactional caller-owned fixture and zero Security Advisor
+findings. Local lint, typecheck, tests and production build are green across all 41 packages; the
+web suite contains 127 passing tests. Production promotion remains gated by mandatory CI and the
+post-deploy authenticated journey check.
+
 ### Engineering update: Agent workspace foundation and governed public research, 26 August 2026
 
 The case rail now emits borrower-safe started and terminal events for each deterministic economic

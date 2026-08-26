@@ -234,6 +234,37 @@ begin
   -- Replaying the same command is harmless and leaves the same auditable result.
   perform public.restart_onboarding_intake(org, '40000000-0000-4000-8000-000000000002');
 
+  -- Starting the new guided journey is one atomic command: a session and its onboarding pointer
+  -- either both exist or neither does. The first company milestone is saved by the same rule.
+  returned_session := public.start_onboarding_intake('pt-BR');
+  if returned_session is null
+    or (select current_step from public.onboarding_progress where organization_id = org and journey = 'company') <> 'organization'
+    or (select answers ->> 'guided_milestone' from public.onboarding_progress where organization_id = org and journey = 'company') <> 'company'
+    or (select answers ->> 'intake_session_id' from public.onboarding_progress where organization_id = org and journey = 'company') <> returned_session::text then
+    raise exception 'start_onboarding_intake did not atomically open the company milestone';
+  end if;
+
+  perform public.save_guided_company_profile(
+    returned_session,
+    'RLS Tenant A Atualizada',
+    'RLS Tenant A S.A.',
+    'https://example.invalid',
+    'Companhia operacional usada somente pelo teste de isolamento.',
+    decode(repeat('a', 64), 'hex'),
+    '0001'
+  );
+  if (select current_step from public.onboarding_progress where organization_id = org and journey = 'company') <> 'documents'
+    or (select answers ->> 'guided_milestone' from public.onboarding_progress where organization_id = org and journey = 'company') <> 'operation'
+    or (select name from public.organizations where id = org) <> 'RLS Tenant A Atualizada'
+    or not exists (
+      select 1 from public.companies
+      where organization_id = org
+        and display_name = 'RLS Tenant A Atualizada'
+        and legal_identifier_last4 = '0001'
+    ) then
+    raise exception 'save_guided_company_profile did not persist the first milestone atomically';
+  end if;
+
   perform public.begin_intake_processing(org, session_id);
   if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
     raise exception 'begin_intake_processing did not mark the session processing';
@@ -1474,7 +1505,10 @@ begin
   -- A registered fund reads and declares on its own record, and only its own.
   set local role postgres;
   update public.fund_directory
-  set claimed_by_organization_id = (select id from public.organizations order by created_at limit 1),
+  -- Use the authenticated fixture's organization explicitly. The fixtures share
+  -- the same created_at value, so ordering only by created_at is nondeterministic
+  -- and can assign the fund to another tenant depending on the query plan.
+  set claimed_by_organization_id = '20000000-0000-4000-8000-000000000001'::uuid,
       claimed_at = now(),
       status = 'registered'
   where id = fund_id;

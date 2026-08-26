@@ -5157,6 +5157,18 @@ export type Database = {
         Args: { p_plan_id: string }
         Returns: string
       }
+      save_guided_company_profile: {
+        Args: {
+          p_description: string | null
+          p_identifier_hash: string | null
+          p_identifier_last4: string | null
+          p_legal_name: string | null
+          p_name: string
+          p_session_id: string
+          p_website: string | null
+        }
+        Returns: undefined
+      }
       search_case_retrieval: {
         Args: {
           p_limit?: number
@@ -5218,6 +5230,10 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      start_onboarding_intake: {
+        Args: { p_locale: string }
+        Returns: string
       }
       submit_agent_message: {
         Args: {
