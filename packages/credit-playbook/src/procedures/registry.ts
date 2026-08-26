@@ -6,6 +6,7 @@ import {languageConductProcedureRegistry} from "./language-conduct";
 import {operationProcedureRegistry} from "./operation";
 import {pricingProcedureRegistry} from "./pricing";
 import {structureProcedureRegistry} from "./structure";
+import {materialProcedureRegistry} from "./materials";
 
 export const institutionalProcedureRegistryHash = createHash("sha256")
   .update(JSON.stringify({
@@ -15,5 +16,6 @@ export const institutionalProcedureRegistryHash = createHash("sha256")
     operation: operationProcedureRegistry.registryHash,
     pricing: pricingProcedureRegistry.registryHash,
     structure: structureProcedureRegistry.registryHash,
+    materials: materialProcedureRegistry.registryHash,
   }))
   .digest("hex");

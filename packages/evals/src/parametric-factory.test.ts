@@ -74,6 +74,11 @@ describe("parametric cases on the governed rail", () => {
       );
       expect(result.state.pricingTruth.decision).toBe("abstain");
       expect(result.state.pricingTruth.indicativePrice).toBeNull();
+      expect(result.state.materialTruth.procedureCoverage).toHaveLength(32);
+      expect(result.state.materialTruth.procedureCoverage.map((entry)=>entry.procedureId)).toEqual(
+        Array.from({length:32},(_,index)=>`MA-${String(index+1).padStart(2,"0")}`),
+      );
+      expect(result.state.materialTruth.releaseDecision).toBe("internal_only");
       expect(result.state.reconciliation.financialTruth.procedureCoverage.every((entry) =>
         ["completed", "partial", "blocked", "not_computable"].includes(entry.status),
       )).toBe(true);

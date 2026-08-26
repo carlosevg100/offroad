@@ -4,6 +4,29 @@ Atualizado em: 2026-08-25
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## M7, materiais institucionais e sala governada, 26/08/2026
+
+MA-01 a MA-32 agora existem como candidates compilados da fonte canônica, com método operacional e
+verificação específicos para cada procedimento, e não como um checklist genérico. O Case Engine emite um
+`Material Truth Set` depois da compilação de teaser, memorando de crédito, term sheet indicativo,
+Q&A, modelo e sala. Cada artefato recebe fingerprint determinístico, referência exata do template,
+estado do audit de conduta, cobertura de suporte, completude bilíngue, disclaimer e contrato de
+seções. O runtime detecta claim material sem evidência, template vencido, seção obrigatória ausente
+ou fora de ordem e divergência econômica entre artefatos que consomem a mesma base.
+
+A liberação externa é fail-closed. Produzir um documento no workspace não autoriza sua circulação.
+MA-32 só conclui quando validação cruzada, auditoria de claims, revisão técnica e autorização da
+companhia apontam para o mesmo fingerprint e a autorização contém destinatários nomeados. Até a
+camada de autorização e introdução do M8 ser ligada ao comando persistente, o estado correto do M7
+em produção é `internal_only`. Esse gate confirma consistência e divulgação de uma versão; não
+aprova crédito, não recomenda investimento e não compromete capital.
+
+O estado público preserva apenas o resultado e as contagens necessárias ao workspace. Identidade
+do revisor e lista de destinatários não atravessam a fronteira. Os resultados privados de cada
+procedimento também são removidos. O manifesto econômico passou a incorporar o registry dos 32
+procedimentos e a versão do compilador de materiais, invalidando corretamente qualquer artefato
+gerado por conhecimento ou template anterior.
+
 ## M6, pricing governado e referência indicativa, 25/08/2026
 
 PR-01 a PR-13 agora existem como candidates compilados da fonte canônica. O runtime produz uma

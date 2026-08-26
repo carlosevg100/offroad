@@ -239,6 +239,11 @@ describe("worker case analysis", () => {
     expect(persistedPricing.procedureCoverage[12]?.procedureId).toBe("PR-13");
     expect(persistedPricing.decision).toBe("abstain");
     expect(persistedPricing.indicativePrice).toBeNull();
+    const persistedMaterials=persisted.materialTruth as {releaseDecision:string;procedureCoverage:Array<{procedureId:string;result:unknown}>};
+    expect(persistedMaterials.procedureCoverage).toHaveLength(32);
+    expect(persistedMaterials.procedureCoverage[0]).toMatchObject({procedureId:"MA-01",result:null});
+    expect(persistedMaterials.procedureCoverage[31]).toMatchObject({procedureId:"MA-32",result:null});
+    expect(persistedMaterials.releaseDecision).toBe("internal_only");
     expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
   });
 });

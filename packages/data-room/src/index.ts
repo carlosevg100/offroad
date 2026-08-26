@@ -274,5 +274,6 @@ export function dataRoomIndex(plan: DataRoomPlan): Material {
     blocks,
     dependsOn: plan.entries.map((entry) => entry.id),
     template: materialTemplateReference("institutional-data-room-index"),
+    sections:["corporate","financial","debt","project","offroad_materials","open_items"],
   };
 }

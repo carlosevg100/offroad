@@ -4,4 +4,5 @@ export * from "./financial-debt-truth";
 export * from "./operation";
 export * from "./pricing";
 export * from "./structure";
+export * from "./materials";
 export * from "./registry";

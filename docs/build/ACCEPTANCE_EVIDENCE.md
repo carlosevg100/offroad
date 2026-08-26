@@ -1,5 +1,20 @@
 # Acceptance Evidence
 
+## House Playbook M7, 26/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Trinta e dois procedimentos de materiais | `@offroad/credit-playbook` | MA-01 a MA-32 compilam como candidates determinísticos, derivados da fonte canônica, cada um com método e verificação próprios, sem handoff entre agentes e sem chamada de modelo |
+| Material Truth Set | `@offroad/case-materials` | emite 32 estados, fingerprints, template e seções, suporte, disclaimer, identidade bilíngue, consistência, higiene da sala e decisão de circulação |
+| Gate de circulação | testes de `materialTruth` | ausência de autorização mantém `internal_only`; somente quatro carimbos do mesmo fingerprint e destinatários nomeados concluem MA-32; claim órfão bloqueia a liberação |
+| Trânsito e persistência | `@offroad/case-engine`, `@offroad/evals` e worker | o truth set atravessa a esteira, integra o manifesto e persiste no snapshot; resultados privados dos procedimentos são removidos na fronteira pública |
+| Superfície web | workspace PT-BR e EN-US | estado, procedimentos concluídos, consistência e condição de circulação ficam visíveis antes dos links dos artefatos |
+| Quality gate dirigido | playbook, materials, engine, evals, worker e web | 149 testes do playbook, 37 de materiais, 4 do engine, 32 evals, 46 do worker e typecheck web verdes antes do gate completo |
+
+M7 está implementado no trilho real como candidate. A geração no workspace é interna e não equivale
+a distribuição. A persistência da autorização por versão, escopo e destinatário será conectada ao
+fluxo de introdução qualificada no M8; até lá, nenhuma execução pode declarar circulação externa.
+
 ## House Playbook M6, 25/08/2026
 
 | Evidência | Verificação | Resultado |

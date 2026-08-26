@@ -8,6 +8,25 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: M7 governed institutional materials, 26 August 2026
+
+The real case rail now emits a `Material Truth Set` over the teaser, issuer-side credit memorandum,
+indicative term sheet, diligence Q&A, financial model and outbound room. MA-01 through MA-32 compile
+from the canonical House Playbook as candidate procedures with procedure-specific execution and verification,
+not one generic material checklist. Each artifact is tied to the current
+template registry, exact section contract, deterministic fingerprint, evidence links, conduct
+audit, bilingual completeness and advisory disclaimer. Cross-material values that use the same
+governed support are compared before release.
+
+Compilation and circulation are deliberately separate. Materials may exist inside the private
+workspace while MA-32 remains `internal_only`. External circulation requires cross-validation,
+claim audit, technical review and company authorisation to reference the same exact fingerprint,
+plus named recipients and a releasable room. This gate approves consistency and disclosure of that
+version. It does not approve credit, recommend an investment or commit capital. Reviewer identity,
+recipient identities and private procedure results are removed at the borrower-facing boundary.
+The persistent authorisation and qualified-introduction command belongs to M8 and is not inferred
+from document generation or the platform rollout flag.
+
 ### Engineering update: M6 governed pricing truth, 25 August 2026
 
 The real case rail now emits a `Pricing Truth Set` after M5 structure truth. PR-01 through PR-13
