@@ -1,8 +1,35 @@
 # Build State
 
-Atualizado em: 2026-08-25
+Atualizado em: 2026-08-26
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Workspace do Agente Offroad e pesquisa pública governada, 26/08/2026
+
+O pipeline real agora publica eventos seguros de início e término para cada estágio econômico. O
+novo `@offroad/work-plan` transforma esses eventos em quatorze tarefas compreensíveis, agregando
+todos os documentos e o case sem copiar inputs, outputs, erros privados ou identidades de fundos.
+A interface de onboarding consome essa projeção: o percentual deixa de começar artificialmente em
+12% e uma tarefa só é concluída depois que o trabalho correspondente foi persistido.
+
+`@offroad/public-research` adiciona uma fronteira separada de contexto externo. Consultas aceitam
+somente identidade pública, setor e geografia, bloqueiam e-mail, identificadores, valores e
+métricas financeiras privadas, usam adaptadores Perplexity e OpenAI com fontes e orçamento
+limitados e preservam URL, data, trecho, provedor e hash. Os achados são registrados como
+`external_context`; não substituem documento, fato reconciliado, cálculo ou critério de mandato.
+
+`@offroad/agent-contracts` define perguntas contextuais e propostas de mudança tipadas, ligadas ao
+fingerprint exato do manifesto, com evidência, impacto, patches, etapas a recalcular e validade. A
+migration `20260826190359_agent_workspace_foundation.sql` persiste pesquisa e propostas sob RLS
+forçado. Aceitar uma proposta não aplica a alteração: cada mutação de domínio ainda dependerá de
+seu comando idempotente e auditável. O ADR 0014 fixa essa arquitetura e proíbe implementar agentes
+autônomos conversando entre si.
+
+O gate local `pnpm check` passou nos 41 pacotes em 26/08/2026. Os testes dirigidos somam 4 de work
+plan, 4 de pesquisa pública, 3 de contratos do agente, 6 do runner e 46 do worker. O banco local
+não foi reconstruído porque o host não dispõe de Docker, OrbStack, Colima ou Podman; portanto a
+migration permanece candidate até o job obrigatório de database no CI aplicar todo o histórico,
+executar a suíte RLS e o lint do schema. Nada desta entrega foi promovido a produção ainda.
 
 ## M8, inteligência de mandato e introdução qualificada, 26/08/2026
 

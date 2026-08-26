@@ -5473,6 +5473,37 @@ summary:focus-visible {
   background: #8eaa57;
 }
 
+.workspace-checklist > div.is-running {
+  color: #20252a;
+}
+
+.workspace-checklist > div.is-running > span {
+  border-color: #8eaa57;
+  color: #6d8d30;
+}
+
+.workspace-checklist > div.is-running svg {
+  animation: workspace-plan-spin 1.2s linear infinite;
+}
+
+.workspace-checklist > div.is-blocked {
+  color: #685d3d;
+}
+
+.workspace-checklist > div.is-blocked > span {
+  border-color: #b8a36b;
+  background: #f7f2e5;
+}
+
+.workspace-checklist > div.is-failed {
+  color: #8c3732;
+}
+
+.workspace-checklist > div.is-failed > span {
+  border-color: #c78f88;
+  background: #fbefed;
+}
+
 .workspace-checklist > div.is-complete {
   color: #5c6556;
 }
@@ -5481,6 +5512,25 @@ summary:focus-visible {
   border-color: #8eaa57;
   background: #eef3e5;
   color: #6d8d30;
+}
+
+.workspace-checklist--work-plan {
+  gap: 0;
+}
+
+.workspace-checklist--work-plan > div {
+  min-height: 38px;
+  padding: 5px 0;
+}
+
+@keyframes workspace-plan-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-checklist > div.is-running svg {
+    animation: none;
+  }
 }
 
 .workspace-inspector__guidance {

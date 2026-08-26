@@ -8,6 +8,35 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: Agent workspace foundation and governed public research, 26 August 2026
+
+The case rail now emits borrower-safe started and terminal events for each deterministic economic
+stage. `@offroad/work-plan` projects those persisted events into fourteen understandable tasks and
+aggregates document work without exposing source content, model output, private errors or fund
+identity. The onboarding inspector consumes the projection. Its percentage no longer has a fake
+12% floor and cannot mark work complete before the matching event exists.
+
+`@offroad/public-research` is a separate external-context rail. Its input contract accepts only
+public company identity, website, sector and geography; guards reject e-mail, identifiers,
+transaction values and private financial metrics. Perplexity Search and OpenAI web search are
+provider adapters with bounded queries and results. Every source keeps URL, title, retrieval date,
+provider, topic, snippet and content hash. Public findings do not become borrower evidence,
+reconciled facts, calculations or mandate criteria. The public case snapshot receives only the
+run ID, status and aggregate counts.
+
+`@offroad/agent-contracts` defines the future conversational mutation boundary: a proposal is tied
+to the exact current manifest, carries typed patches, evidence, rationale, impact, affected stages
+and expiry, and must be previewed and accepted. Acceptance does not mutate the case. Domain-specific
+idempotent commands remain required to apply any change. ADR 0014 records the architecture and
+explicitly rejects a network of autonomous agents in favor of the existing deterministic pipeline.
+
+Migration `20260826190359_agent_workspace_foundation.sql` adds forced-RLS research lineage and
+agent-proposal ledgers, capability-bound worker writes, tenant commands and cross-tenant tests.
+Local `pnpm check` is green across 41 packages. The host has no local container runtime, so the
+migration has not been replayed locally; database acceptance, generated types, deployment and
+production smoke checks remain pending the mandatory CI database job. Do not report this increment
+as deployed or active in production until those gates and the release evidence are complete.
+
 ### Engineering update: M8 governed mandate screening and qualified introduction, 26 August 2026
 
 The real case rail now emits a `Market Truth Set` over the current mandate registry. MK-01 through

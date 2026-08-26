@@ -12,12 +12,14 @@ import {
   HelpCircle,
   Landmark,
   LockKeyhole,
+  LoaderCircle,
   Network,
   PanelLeft,
   PencilLine,
   Plus,
   Search,
 } from "lucide-react";
+import {projectWorkPlan, type WorkPlanStatus} from "@offroad/work-plan";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 import Link from "next/link";
@@ -176,7 +178,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const returnStep = currentStep !== persistedStep ? persistedStep : "";
   const currentIndex = Math.max(0, steps.indexOf(currentStep));
   const completedCount = furthestAvailableIndex;
-  const completionPercent = Math.max(12, Math.round((completedCount / steps.length) * 100));
+  const registrationCompletionPercent = Math.round((completedCount / steps.length) * 100);
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
   const JourneyIcon = journey === "company" ? Building2 : journey === "originator" ? Network : Landmark;
   const projectTitle = journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject");
@@ -192,6 +194,23 @@ export default async function OnboardingPage({params, searchParams}: Props) {
     const result = await supabase.from("source_documents").select("id, original_name, byte_size").eq("organization_id", organization.id).eq("opportunity_id", opportunityId).order("created_at");
     documents = result.data ?? [];
   }
+  const {data: latestProcessingRun} = intakeSessionId
+    ? await supabase
+        .from("processing_runs")
+        .select("id, status, stages")
+        .eq("organization_id", organization.id)
+        .eq("intake_session_id", intakeSessionId)
+        .order("run_no", {ascending: false})
+        .limit(1)
+        .maybeSingle()
+    : {data: null};
+  const workPlan = latestProcessingRun
+    ? projectWorkPlan({
+        events: latestProcessingRun.stages,
+        expectedDocumentCount: intakeReview?.documents.length ?? documents.length,
+      })
+    : null;
+  const completionPercent = workPlan?.completionPercent ?? registrationCompletionPercent;
 
   const errorMessage = state.error === "documents"
     ? t("documentsRequired")
@@ -496,8 +515,16 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               <section className="workspace-inspector__panel">
                 <div className="workspace-inspector__heading"><div><span>{t("workspace.casePreparation")}</span><strong>{t("workspace.inConstruction")}</strong></div><span className="workspace-inspector__percent">{completionPercent}%</span></div>
                 <div className="workspace-inspector__bar"><i style={{width: `${completionPercent}%`}} /></div>
-                <div className="workspace-checklist">
-                  {steps.map((step, index) => (
+                <div className={workPlan ? "workspace-checklist workspace-checklist--work-plan" : "workspace-checklist"}>
+                  {workPlan ? workPlan.tasks.map((task) => (
+                    <div className={`is-${task.status}`} key={task.id}>
+                      <span>{task.status === "completed" ? <Check aria-hidden="true" size={11} /> : task.status === "running" ? <LoaderCircle aria-hidden="true" size={11} /> : null}</span>
+                      <p>
+                        <strong>{t(`workspace.workPlan.tasks.${task.id}`)}</strong>
+                        <small>{t(`workspace.workPlan.status.${task.status as WorkPlanStatus}`)}</small>
+                      </p>
+                    </div>
+                  )) : steps.map((step, index) => (
                     <div className={index < currentIndex ? "is-complete" : index === currentIndex ? "is-current" : ""} key={step}>
                       <span>{index < currentIndex ? <Check aria-hidden="true" size={11} /> : null}</span>
                       <p><strong>{t(`workspace.nodes.${journey}.${step}`)}</strong><small>{index < currentIndex ? t("workspace.complete") : index === currentIndex ? t("workspace.now") : t("workspace.later")}</small></p>

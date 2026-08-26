@@ -1,5 +1,11 @@
 import {buildLanguageConductTruthSet, buildMaterialTruthSet, compileMaterials, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
-import {runCase, type CaseRunPolicy, type CaseRunReport, type StageContext} from "@offroad/case-runner";
+import {
+  runCase,
+  type CaseRunPolicy,
+  type CaseRunReport,
+  type RunCaseInput,
+  type StageContext,
+} from "@offroad/case-runner";
 import {
   assessReadiness,
   auditBrief,
@@ -136,6 +142,7 @@ export type CaseEngineInput = {
   roomDocuments: DataRoomDocument[];
   dealBrief: CaseDealBrief;
   resolvedMandates: ResolvedMandate[];
+  onStage?: RunCaseInput["onStage"];
   externalReleaseApproved: boolean;
   materialRelease?: MaterialExternalReleaseEvidence;
   marketGovernance?: {
@@ -538,6 +545,7 @@ export async function executeCaseEngine(
     inputSchema,
     policy,
     versions: {caseEngine: caseEngineVersion},
+    ...(input.onStage ? {onStage: input.onStage} : {}),
     stages: {
       extraction: {
         outputSchema: extractionOutputSchema,

@@ -27,6 +27,7 @@
     "@offroad/receivables-analysis": "workspace:*",
     "@offroad/release-governance": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
+    "@offroad/public-research": "workspace:*",
     "@supabase/supabase-js": "2.112.3",
     "zod": "4.4.3"
   },

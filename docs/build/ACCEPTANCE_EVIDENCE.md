@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## Workspace do Agente Offroad e pesquisa pública, 26/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Progresso real | `@offroad/case-runner`, worker e `@offroad/work-plan` | 11 estágios internos emitem eventos seguros; 14 tarefas públicas são projetadas sobre eventos persistidos e múltiplos documentos |
+| Percentual não fabricado | onboarding PT-BR e EN-US | piso fixo de 12% removido; antes da execução o progresso é o cadastro real, depois passa a ser o plano processado |
+| Pesquisa pública governada | `@offroad/public-research` | 5 temas, queries públicas limitadas, bloqueio de identificadores e valores privados, fallback entre provedores, deduplicação e lineage por fonte |
+| Separação de evidência | worker, ADR 0014 e migration | pesquisa persiste como `external_context` e entra no snapshot apenas como status e contagens; não altera fato, cálculo ou matching |
+| Alterações conversacionais | `@offroad/agent-contracts` | proposta tipada, ligada ao manifesto, com preview, evidência, impacto, recomputação, expiração e regra que impede número apoiado apenas por fonte pública |
+| Persistência e isolamento | migration e `rls_non_interference.sql` | RLS forçado, nenhuma escrita direta do tenant, pesquisa escrita por capability, proposta decidida por comando e tenant cruzado bloqueado |
+| Quality gate local | `pnpm check` | lint, typecheck, testes e build de produção verdes nos 41 pacotes; web gerou 28 rotas |
+
+Aceitação local de código está verde. Aceitação de banco e release continua aberta até o CI
+reconstruir todas as migrations em Supabase efêmero, executar a suíte RLS, lintar o schema e validar
+o E2E. O host local não possui runtime de containers após a queda de energia, por isso nenhum
+resultado de banco ou produção é alegado nesta etapa.
+
 ## House Playbook M8, 26/08/2026
 
 | Evidência | Verificação | Resultado |

@@ -55,12 +55,31 @@ describe("integrated case runner", () => {
     expect(report.reportFingerprint).toHaveLength(64);
   });
 
+  it("publishes safe started and terminal events for every real stage", async () => {
+    const events: unknown[] = [];
+    await runCase({...base, stages: definitions(), onStage: (event) => { events.push(event); }});
+    expect(events).toHaveLength(caseStageIds.length * 2);
+    expect(events.map((event) => {
+      const typed = event as {stage: string; status: string};
+      return `${typed.stage}:${typed.status}`;
+    })).toEqual(caseStageIds.flatMap((stage) => [`${stage}:started`, `${stage}:succeeded`]));
+    expect(JSON.stringify(events)).not.toContain("received");
+    expect(JSON.stringify(events)).not.toContain("Empresa Teste");
+  });
+
   it("classifies a layer failure and never persists the private exception message", async () => {
-    const report = await runCase({...base, stages: definitions({failAt: "reconciliation"})});
+    const events: unknown[] = [];
+    const report = await runCase({
+      ...base,
+      stages: definitions({failAt: "reconciliation"}),
+      onStage: (event) => { events.push(event); },
+    });
     expect(report.status).toBe("failed");
     expect(report.stages[1]).toMatchObject({stage: "reconciliation", status: "failed", failureKind: "reconciliation", code: "stage_execution_failed"});
     expect(report.stages.slice(2).every((stage) => stage.status === "skipped")).toBe(true);
     expect(JSON.stringify(report)).not.toContain("private details");
+    expect(JSON.stringify(events)).not.toContain("private details");
+    expect(events).toHaveLength(caseStageIds.length + 2);
   });
 
   it("distinguishes a deliberate evidence hold from a technical failure", async () => {

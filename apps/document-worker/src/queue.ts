@@ -79,6 +79,7 @@ export type QueueClient = {
     precedentPurpose?: string;
     limit?: number;
   }): Promise<unknown>;
+  recordPublicResearch(job: CaseAnalysisJob, plan: unknown, result: unknown): Promise<string>;
   recordCaseSnapshot(job: CaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
   recordControlledExecution(job: CaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
@@ -232,6 +233,15 @@ export function createQueueClient(
         p_precedent_purpose: input.precedentPurpose ?? null,
         p_limit: input.limit ?? 20,
       });
+    },
+    async recordPublicResearch(job, plan, result) {
+      const data = await call("worker_record_public_research", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_plan: plan,
+        p_result: result,
+      });
+      return z.uuid().parse(data);
     },
 
     async recordCaseSnapshot(job, manifest, state) {

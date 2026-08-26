@@ -423,6 +423,31 @@
       "guidanceBody": "Você não precisa reunir tudo de uma vez. A cada avanço, indicamos as informações essenciais e o próximo passo mais útil.",
       "autoSave": "Seu progresso é salvo a cada bloco.",
       "comingSoon": "Em breve",
+      "workPlan": {
+        "status": {
+          "pending": "Aguardando a etapa anterior",
+          "running": "Em execução agora",
+          "completed": "Concluído com registro",
+          "blocked": "Aguardando esclarecimento",
+          "failed": "Precisa ser reprocessado"
+        },
+        "tasks": {
+          "secure_documents": "Receber e verificar os documentos",
+          "read_and_classify": "Ler e classificar os materiais",
+          "organize_evidence": "Organizar informações e evidências",
+          "prepare_information_request": "Preparar a lista do que ainda falta",
+          "research_public_context": "Pesquisar contexto público da companhia e do setor",
+          "load_house_method": "Aplicar o método Offroad ao caso",
+          "reconcile_sources": "Conciliar as fontes entre si",
+          "analyze_financials": "Analisar números e capacidade financeira",
+          "identify_gaps": "Identificar lacunas e esclarecimentos",
+          "evaluate_structures": "Avaliar alternativas de estrutura",
+          "assess_risks": "Examinar riscos e pontos de atenção",
+          "prepare_institutional_materials": "Preparar e validar os materiais",
+          "screen_mandates": "Verificar aderência aos mandatos",
+          "prepare_next_step": "Definir o próximo passo qualificado"
+        }
+      },
       "nodes": {
         "company": {
           "organization": "Começar",

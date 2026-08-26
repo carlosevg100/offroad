@@ -23,7 +23,7 @@ import {
   type RedFlagPolicy,
   type RedFlagReview,
 } from "@offroad/case-understanding";
-import {caseRunReportSchema} from "@offroad/case-runner";
+import {caseRunReportSchema, type CaseStageEvent} from "@offroad/case-runner";
 import {archetypeIdSchema} from "@offroad/credit-playbook";
 import {documentKindSchema} from "@offroad/credit-ontology";
 import {
@@ -38,6 +38,12 @@ import {
 } from "@offroad/fund-mandate";
 import {sha256} from "@offroad/governed-retrieval";
 import {gatewayCallLogSchema, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
+import {
+  buildPublicResearchPlan,
+  runPublicResearch,
+  type PublicSearchProvider,
+  type ResearchRun,
+} from "@offroad/public-research";
 import type {FactCandidate} from "@offroad/reconciliation";
 import {receivablesCaseSchema} from "@offroad/receivables-analysis";
 import {compareCaseExecutions, executionModeSchema} from "@offroad/release-governance";
@@ -281,6 +287,7 @@ export type CaseAnalysisDependencies = {
   queue: QueueClient;
   gateway: ModelGateway;
   lineage: () => GatewayCallLog[];
+  researchProviders?: PublicSearchProvider[];
   now?: () => Date;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -321,6 +328,13 @@ export async function processCaseAnalysisJob(
       ...raw.directory_mandates.map(directoryMandate),
       ...raw.registered_mandates.map(registeredMandate),
     ].map((mandate) => resolveMandate(mandate, {asOf: referenceDate(dependencies.now)}));
+    const publicResearch = await collectPublicResearch({
+      queue: dependencies.queue,
+      job,
+      candidates,
+      session: raw.session,
+      providers: dependencies.researchProviders ?? [],
+    });
 
     // The house playbook is retrieved by an approved version before a model writes anything.
     // It may guide the analysis, but it is never evidence about this company. Case passages stay
@@ -356,6 +370,7 @@ export async function processCaseAnalysisJob(
       roomDocuments,
       dealBrief: dealBrief(raw.session),
       resolvedMandates,
+      onStage: (event) => persistCaseStage(dependencies.queue, job, event),
       claimDecisions: raw.claim_decisions as ClaimDecision[],
       ...(raw.receivables_case ? {receivablesCase: raw.receivables_case} : {}),
       ...(raw.pricing_context ? {
@@ -522,6 +537,7 @@ export async function processCaseAnalysisJob(
     }));
     const snapshot = {
       ...publicState,
+      externalResearch: publicResearch,
       modelInvocations: currentLineage,
       caseRunReport: publicReport,
       fingerprint: inputFingerprint,
@@ -576,6 +592,8 @@ export async function processCaseAnalysisJob(
       executionMode: raw._execution.mode,
       comparisonPassed: comparison?.passed,
       criticalRegressions: comparison?.criticalCount ?? 0,
+      publicResearchStatus: publicResearch.status,
+      publicResearchSourceCount: publicResearch.sourceCount,
     });
     await dependencies.queue.complete(job, {
       ...(manifestId ? {manifest_id: manifestId} : {}),
@@ -605,6 +623,85 @@ export async function processCaseAnalysisJob(
     log("case.failed", {job: job.job_id, code: errorCode(error)});
     return {status: "failed"};
   }
+}
+
+type PublicResearchSummary = {
+  status: "succeeded" | "partial" | "abstained" | "skipped";
+  sourceCount: number;
+  topicCounts: Record<string, number>;
+  researchRunId: string | null;
+};
+
+async function collectPublicResearch(input: {
+  queue: QueueClient;
+  job: CaseAnalysisJob;
+  candidates: FactCandidate[];
+  session: Record<string, unknown>;
+  providers: PublicSearchProvider[];
+}): Promise<PublicResearchSummary> {
+  const legalName = publicCandidate(input.candidates, "company.legal_name");
+  if (!legalName || input.providers.length === 0) {
+    await input.queue.writeStage(input.job, "public_research", "skipped", {
+      code: legalName ? "public_research_provider_unavailable" : "public_identity_unavailable",
+    });
+    return {status: "skipped", sourceCount: 0, topicCounts: {}, researchRunId: null};
+  }
+  const website = publicCandidate(input.candidates, "company.website");
+  const plan = buildPublicResearchPlan({
+    legalName,
+    ...(website && z.url().safeParse(website).success ? {website} : {}),
+    ...(typeof input.session.sector === "string" && input.session.sector.trim() ? {sector: input.session.sector} : {}),
+    ...(typeof input.session.geography === "string" && input.session.geography.trim() ? {geography: input.session.geography} : {}),
+  });
+  await input.queue.writeStage(input.job, "public_research", "started");
+  const result = await runPublicResearch({plan, providers: input.providers, maxSourcesPerQuery: 5});
+  const persisted = {
+    ...result,
+    providerChain: input.providers.map((provider) => provider.id),
+  } satisfies ResearchRun & {providerChain: string[]};
+  const researchRunId = await input.queue.recordPublicResearch(input.job, plan, persisted);
+  const topicCounts = result.sources.reduce<Record<string, number>>((counts, source) => {
+    counts[source.topic] = (counts[source.topic] ?? 0) + 1;
+    return counts;
+  }, {});
+  await input.queue.writeStage(input.job, "public_research", "succeeded", {
+    status: result.status,
+    sourceCount: result.sources.length,
+    topicCounts,
+    researchRunId,
+  });
+  return {status: result.status, sourceCount: result.sources.length, topicCounts, researchRunId};
+}
+
+function publicCandidate(candidates: FactCandidate[], fieldPath: string): string | null {
+  return candidates
+    .filter((candidate) => candidate.fieldPath === fieldPath && candidate.anchorVerified)
+    .sort((left, right) => left.evidenceRank - right.evidenceRank)[0]
+    ?.normalizedValue.trim() || null;
+}
+
+async function persistCaseStage(
+  queue: QueueClient,
+  job: CaseAnalysisJob,
+  event: CaseStageEvent,
+): Promise<void> {
+  if (event.status === "started") {
+    await queue.writeStage(job, `case:${event.stage}`, "started");
+    return;
+  }
+  await queue.writeStage(
+    job,
+    `case:${event.stage}`,
+    event.status === "blocked" ? "failed" : event.status,
+    {
+      outcome: event.status,
+      durationMs: event.durationMs,
+      ...(event.failureKind ? {failureKind: event.failureKind} : {}),
+      ...(event.code ? {code: event.code} : {}),
+      ...(event.outputFingerprint ? {outputFingerprint: event.outputFingerprint} : {}),
+    },
+    {model_calls: event.usage.modelCalls, model_cost_usd: event.usage.costUsd},
+  );
 }
 
 async function loadRetrieval(

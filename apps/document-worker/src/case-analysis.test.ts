@@ -1,4 +1,5 @@
 import type {ModelGateway, GatewayCallLog} from "@offroad/model-gateway";
+import {caseStageIds} from "@offroad/case-runner";
 import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
@@ -44,6 +45,7 @@ describe("worker case analysis", () => {
     const stages: Array<{stage: string; status: string}> = [];
     const modelCalls: Array<{task: string; provider?: string}> = [];
     const retrievalRequests: Array<{query: string; allowedFundIds?: string[]}> = [];
+    let publicResearchRecord: {plan: unknown; result: unknown} | null = null;
     const raw = {
       session: {
         id: job.intake_session_id,
@@ -137,6 +139,10 @@ describe("worker case analysis", () => {
           abstained: false,
         };
       },
+      recordPublicResearch: async (_job, plan, result) => {
+        publicResearchRecord = {plan, result};
+        return "ffffffff-ffff-4fff-8fff-ffffffffffff";
+      },
       recordCaseSnapshot: async (_job, _manifest, state) => {
         recordedState = state as Record<string, unknown>;
         return "manifest-1";
@@ -187,14 +193,37 @@ describe("worker case analysis", () => {
       queue,
       gateway,
       lineage: () => spent.calls ? [invocation] : [],
+      researchProviders: [{
+        id: "official",
+        search: async (query) => [{
+          provider: "official",
+          topic: query.topic,
+          title: `Fonte ${query.topic}`,
+          url: `https://example.com/${query.topic}`,
+          snippet: "Contexto público.",
+          publishedAt: null,
+          retrievedAt: "2026-08-24T13:00:00.000Z",
+          contentHash: "f".repeat(64),
+        }],
+      }],
       now: () => new Date("2026-08-24T13:00:00.000Z"),
     });
 
     expect(outcome).toEqual({status: "succeeded", manifestId: "manifest-1"});
-    expect(stages).toEqual([
+    expect(stages.slice(0, 5)).toEqual([
       {stage: "case_analysis", status: "started"},
+      {stage: "public_research", status: "started"},
+      {stage: "public_research", status: "succeeded"},
       {stage: "retrieval", status: "started"},
       {stage: "retrieval", status: "succeeded"},
+    ]);
+    expect(stages.filter((event) => event.stage.startsWith("case:"))).toEqual(
+      caseStageIds.flatMap((stage) => [
+        {stage: `case:${stage}`, status: "started"},
+        {stage: `case:${stage}`, status: "succeeded"},
+      ]),
+    );
+    expect(stages.slice(-3)).toEqual([
       {stage: "mandate_retrieval", status: "started"},
       {stage: "mandate_retrieval", status: "succeeded"},
       {stage: "case_analysis", status: "succeeded"},
@@ -214,6 +243,9 @@ describe("worker case analysis", () => {
       primary: {playbookVersion: "2026.08.24-v2", sourceCounts: {house_playbook: 1}},
       mandates: {allowedFundCount: 1},
     });
+    expect(publicResearchRecord).not.toBeNull();
+    expect((publicResearchRecord as unknown as {result: {sources: unknown[]}}).result.sources).toHaveLength(5);
+    expect(persisted.externalResearch).toMatchObject({status: "succeeded", sourceCount: 5});
     expect(privateResult.retrieval_lineage).toMatchObject({
       primary: {resultIds: ["71100000-0000-4000-8000-000000000003"]},
     });
