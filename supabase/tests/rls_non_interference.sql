@@ -3408,6 +3408,160 @@ end $$;
 
 set local role postgres;
 
+-- Public research is capability-written external context. Agent proposals are immutable,
+-- snapshot-bound impact previews: a tenant can decide them, never rewrite or apply them by
+-- editing the ledger directly.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '40000000-0000-4000-8000-0000000000a1';
+  run_id constant uuid := '60000000-0000-4000-8000-0000000000a1';
+  proposal_id constant uuid := 'a1000000-0000-4000-8000-000000000001';
+  claim jsonb;
+  job_id uuid;
+  capability text;
+  manifest_id uuid;
+  research_id uuid;
+  accepted boolean;
+begin
+  set local role postgres;
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values (session_id, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+  insert into public.processing_runs (
+    id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
+  ) values (
+    run_id, org_a, session_id, 1, 'manual', 'running', 'agent-workspace-test',
+    '10000000-0000-4000-8000-000000000001'
+  );
+  insert into public.processing_jobs (
+    organization_id, processing_run_id, intake_session_id, kind, status, available_at
+  ) values (org_a, run_id, session_id, 'case_analysis', 'queued', '2000-01-01T00:00:00Z');
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  claim := public.worker_claim_job(repeat('w', 64), 600);
+  if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
+    raise exception 'worker did not claim the public-research fixture';
+  end if;
+  job_id := (claim->>'job_id')::uuid;
+  capability := claim->>'capability_token';
+
+  research_id := public.worker_record_public_research(
+    job_id,
+    capability,
+    '[{"topic":"identity","query":"Empresa Exemplo site oficial Brasil"}]'::jsonb,
+    jsonb_build_object(
+      'status', 'succeeded',
+      'providerChain', jsonb_build_array('official'),
+      'failures', '[]'::jsonb,
+      'sources', jsonb_build_array(jsonb_build_object(
+        'topic', 'identity',
+        'provider', 'official',
+        'title', 'Empresa Exemplo',
+        'url', 'https://example.com/institucional',
+        'snippet', 'Contexto público, mantido fora das evidências fornecidas pela companhia.',
+        'retrievedAt', '2026-08-26T12:00:00.000Z',
+        'contentHash', repeat('1', 64)
+      ))
+    )
+  );
+  if research_id is null
+    or (select count(*) from public.public_research_sources where research_run_id = research_id) <> 1 then
+    raise exception 'capability-bound public research did not persist';
+  end if;
+
+  manifest_id := public.worker_record_case_snapshot(
+    job_id,
+    capability,
+    jsonb_build_object(
+      'schemaVersion', '2026.08.24-v2',
+      'caseId', session_id::text,
+      'runId', run_id::text,
+      'createdAt', '2026-08-26T12:01:00.000Z',
+      'locale', 'pt-BR',
+      'inputFingerprint', repeat('2', 64),
+      'manifestFingerprint', repeat('3', 64),
+      'capture', jsonb_build_object('sources', 'complete', 'models', 'complete'),
+      'versions', '{}'::jsonb,
+      'models', '[]'::jsonb,
+      'sources', '[]'::jsonb,
+      'outputs', '[]'::jsonb
+    ),
+    jsonb_build_object('fingerprint', repeat('2', 64), 'locale', 'pt')
+  );
+  if manifest_id is null then raise exception 'agent proposal fixture has no manifest'; end if;
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  if public.record_agent_change_proposal(
+    org_a,
+    session_id,
+    jsonb_build_object(
+      'schemaVersion', '2026.08.26-v1',
+      'id', proposal_id,
+      'caseId', session_id,
+      'baseManifestFingerprint', repeat('3', 64),
+      'proposalFingerprint', repeat('4', 64),
+      'target', 'operation_brief',
+      'title', 'Esclarecer a destinação dos recursos',
+      'rationale', 'O documento institucional não separa investimento físico de capital de giro.',
+      'impactSummary', 'Atualiza somente o contexto da operação e recalcula as etapas dependentes.',
+      'patches', jsonb_build_array(jsonb_build_object(
+        'operation', 'set',
+        'path', '/capitalNeed/useOfProceeds',
+        'value', 'Expansão e capital de giro',
+        'previousFingerprint', null
+      )),
+      'evidence', jsonb_build_array(jsonb_build_object(
+        'kind', 'document_anchor', 'id', 'source-document:page-2'
+      )),
+      'recompute', jsonb_build_array('reconciliation', 'metrics', 'gaps', 'structure'),
+      'proposedBy', 'offroad_agent',
+      'proposedAt', '2026-08-26T12:02:00.000Z',
+      'expiresAt', '2099-08-26T12:02:00.000Z'
+    )
+  ) <> proposal_id then
+    raise exception 'snapshot-bound agent proposal did not persist';
+  end if;
+  if public.decide_agent_change_proposal(org_a, proposal_id, 'accepted', 'Confirmado pelo responsável da empresa.') <> 'accepted' then
+    raise exception 'agent proposal decision did not persist';
+  end if;
+
+  accepted := true;
+  begin
+    update public.agent_change_proposals set impact_summary = 'silent mutation' where id = proposal_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant rewrote an agent proposal directly'; end if;
+
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  if (select count(*) from public.public_research_runs where id = research_id) <> 0
+    or (select count(*) from public.public_research_sources where research_run_id = research_id) <> 0
+    or (select count(*) from public.agent_change_proposals where id = proposal_id) <> 0 then
+    raise exception 'tenant B read tenant A research or agent proposal';
+  end if;
+  accepted := true;
+  begin
+    perform public.decide_agent_change_proposal(org_a, proposal_id, 'rejected', 'Tentativa entre organizações.');
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant B decided tenant A agent proposal'; end if;
+end;
+$$;
+
+set local role postgres;
+
 -- House pricing evidence is not a tenant data product. Even an authenticated organization owner
 -- cannot enumerate policies or observations; only the capability-bound worker can receive the
 -- governed aggregate context through its security-definer command.

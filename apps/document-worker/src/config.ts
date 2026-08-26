@@ -38,6 +38,7 @@ const schema = z.object({
 
   ANTHROPIC_API_KEY: z.string().min(20).optional(),
   OPENAI_API_KEY: z.string().min(20).optional(),
+  PERPLEXITY_API_KEY: z.string().min(20).optional(),
 
   PIPELINE_VERSION: z.string().min(1).default("f2-2026.08.24"),
   LEASE_SECONDS: z.coerce.number().int().min(60).max(3600).default(600),
@@ -88,6 +89,7 @@ export function describeConfig(config: WorkerConfig): Record<string, string | nu
     virusScanRequired: config.REQUIRE_VIRUS_SCAN,
     anthropicKey: config.ANTHROPIC_API_KEY ? "present" : "absent",
     openaiKey: config.OPENAI_API_KEY ? "present" : "absent",
+    perplexityKey: config.PERPLEXITY_API_KEY ? "present" : "absent",
     ocrLanguages: config.OCR_LANGUAGES,
     maxCostUsdPerJob: config.MODEL_MAX_COST_USD_PER_JOB,
     maxCallsPerJob: config.MODEL_MAX_CALLS_PER_JOB,

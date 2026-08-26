@@ -423,6 +423,31 @@
       "guidanceBody": "You do not need to gather everything at once. As you progress, we show the essential information and the most useful next step.",
       "autoSave": "Your progress is saved after each block.",
       "comingSoon": "Coming soon",
+      "workPlan": {
+        "status": {
+          "pending": "Waiting for the previous step",
+          "running": "Running now",
+          "completed": "Completed and recorded",
+          "blocked": "Waiting for clarification",
+          "failed": "Needs to be reprocessed"
+        },
+        "tasks": {
+          "secure_documents": "Receive and verify documents",
+          "read_and_classify": "Read and classify materials",
+          "organize_evidence": "Organize information and evidence",
+          "prepare_information_request": "Prepare the remaining information list",
+          "research_public_context": "Research public company and sector context",
+          "load_house_method": "Apply the Offroad method to the case",
+          "reconcile_sources": "Reconcile sources against one another",
+          "analyze_financials": "Analyze financials and financing capacity",
+          "identify_gaps": "Identify gaps and clarifications",
+          "evaluate_structures": "Evaluate structure alternatives",
+          "assess_risks": "Review risks and points of attention",
+          "prepare_institutional_materials": "Prepare and validate materials",
+          "screen_mandates": "Screen mandate alignment",
+          "prepare_next_step": "Define the next qualified step"
+        }
+      },
       "nodes": {
         "company": {
           "organization": "Get started",

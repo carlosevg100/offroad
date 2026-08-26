@@ -61,6 +61,18 @@ export const caseStageRecordSchema = z.object({
 });
 export type CaseStageRecord = z.infer<typeof caseStageRecordSchema>;
 
+export type CaseStageEvent =
+  | {stage: CaseStageId; status: "started"}
+  | {
+      stage: CaseStageId;
+      status: StageStatus;
+      failureKind?: StageFailureKind;
+      code?: string;
+      outputFingerprint?: string;
+      usage: StageUsage;
+      durationMs: number;
+    };
+
 export const caseRunReportSchema = z.object({
   schemaVersion: z.literal("2026.08.26-v3"),
   runId: z.string().min(1),
@@ -118,6 +130,8 @@ export type RunCaseInput = {
   stages: Record<CaseStageId, StageDefinition>;
   policy: CaseRunPolicy;
   versions: Record<string, string>;
+  /** Publishes borrower-safe progress without outputs, inputs or exception messages. */
+  onStage?: (event: CaseStageEvent) => Promise<void> | void;
   now?: () => Date;
   monotonicNow?: () => number;
 };
@@ -164,12 +178,21 @@ export async function runCase(input: RunCaseInput): Promise<CaseRunReport> {
 
   for (const stage of caseStageIds) {
     if (stopped) {
-      records.push({stage, status: "skipped", usage: {costUsd: 0, modelCalls: 0}, durationMs: 0});
+      const record: CaseStageRecord = {
+        stage,
+        status: "skipped",
+        usage: {costUsd: 0, modelCalls: 0},
+        durationMs: 0,
+      };
+      records.push(record);
+      await publishStage(input.onStage, record);
       continue;
     }
 
     const definition = input.stages[stage];
     const started = monotonicNow();
+    await input.onStage?.({stage, status: "started"});
+    let record: CaseStageRecord;
     try {
       const execution = await definition.execute({
         runId: input.runId,
@@ -185,43 +208,43 @@ export async function runCase(input: RunCaseInput): Promise<CaseRunReport> {
       });
       const budgetCode = budgetViolation(stage, stageUsage, usage, input.policy);
       if (budgetCode) {
-        records.push({
+        record = {
           stage,
           status: "failed",
           failureKind: "budget",
           code: budgetCode,
           usage: stageUsage,
           durationMs: elapsed(started, monotonicNow()),
-        });
+        };
         usage.costUsd += stageUsage.costUsd;
         usage.modelCalls += stageUsage.modelCalls;
-        stopped = true;
-        continue;
+      } else {
+        outputs[stage] = output;
+        usage.costUsd += stageUsage.costUsd;
+        usage.modelCalls += stageUsage.modelCalls;
+        record = {
+          stage,
+          status: "succeeded",
+          output,
+          outputFingerprint: fingerprintJson(output),
+          usage: stageUsage,
+          durationMs: elapsed(started, monotonicNow()),
+        };
       }
-
-      outputs[stage] = output;
-      usage.costUsd += stageUsage.costUsd;
-      usage.modelCalls += stageUsage.modelCalls;
-      records.push({
-        stage,
-        status: "succeeded",
-        output,
-        outputFingerprint: fingerprintJson(output),
-        usage: stageUsage,
-        durationMs: elapsed(started, monotonicNow()),
-      });
     } catch (error) {
       const blocked = error instanceof CaseStageBlocked;
-      records.push({
+      record = {
         stage,
         status: blocked ? "blocked" : "failed",
         failureKind: error instanceof z.ZodError ? "contract" : failureKindOf[stage],
         code: blocked ? error.code : error instanceof z.ZodError ? "invalid_stage_output" : errorCode(error),
         usage: {costUsd: 0, modelCalls: 0},
         durationMs: elapsed(started, monotonicNow()),
-      });
-      stopped = true;
+      };
     }
+    records.push(record);
+    await publishStage(input.onStage, record);
+    stopped = record.status === "failed" || record.status === "blocked";
   }
 
   const completedAt = now().toISOString();
@@ -243,6 +266,22 @@ export async function runCase(input: RunCaseInput): Promise<CaseRunReport> {
     versions: input.versions,
   };
   return caseRunReportSchema.parse({...payload, reportFingerprint: fingerprintJson(payload)});
+}
+
+async function publishStage(
+  listener: RunCaseInput["onStage"],
+  record: CaseStageRecord,
+): Promise<void> {
+  if (!listener) return;
+  await listener({
+    stage: record.stage,
+    status: record.status,
+    usage: record.usage,
+    durationMs: record.durationMs,
+    ...(record.failureKind ? {failureKind: record.failureKind} : {}),
+    ...(record.code ? {code: record.code} : {}),
+    ...(record.outputFingerprint ? {outputFingerprint: record.outputFingerprint} : {}),
+  });
 }
 
 function budgetViolation(stage: CaseStageId, current: StageUsage, prior: StageUsage, policy: CaseRunPolicy): string | null {

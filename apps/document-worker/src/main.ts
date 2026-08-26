@@ -10,6 +10,7 @@ import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClassifier} from "@offroad/document-classification";
 import {createStorageUrlGuard} from "./storage-url";
 import {processCaseAnalysisJob} from "./case-analysis";
+import {createOpenAIWebSearchProvider, createPerplexitySearchProvider} from "@offroad/public-research";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -79,6 +80,10 @@ async function main(): Promise<void> {
     ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
     ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
   };
+  const researchProviders = [
+    ...(config.PERPLEXITY_API_KEY ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})] : []),
+    ...(config.OPENAI_API_KEY ? [createOpenAIWebSearchProvider({apiKey: config.OPENAI_API_KEY})] : []),
+  ];
   const newGateway = () => {
     const calls: GatewayCallLog[] = [];
     const gateway = createModelGateway({
@@ -175,6 +180,7 @@ async function main(): Promise<void> {
           queue,
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
+          researchProviders,
           log,
         })
       : processDocumentJob(job, dependenciesFor(gatewayRun)))
