@@ -143,6 +143,189 @@
   font-size: 11px;
 }
 
+/* First-use orientation: one welcome, one explanation and one clear action. */
+.workspace-welcome--intro {
+  display: block;
+  padding-bottom: 34px;
+}
+
+.workspace-welcome--intro h1 {
+  margin-top: 11px;
+  font-size: clamp(40px, 5vw, 64px);
+}
+
+.workspace-welcome--intro > div:first-child > p:last-child {
+  max-width: 780px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.workspace-editor-layout--welcome {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.workspace-editor--welcome.onboarding-stage {
+  padding: clamp(32px, 4vw, 58px);
+}
+
+.intake-start--welcome {
+  gap: clamp(28px, 4vw, 48px);
+}
+
+.intake-welcome__explanation {
+  display: grid;
+  grid-template-columns: minmax(250px, .72fr) minmax(0, 1.28fr);
+  column-gap: clamp(36px, 6vw, 88px);
+  row-gap: 18px;
+}
+
+.intake-welcome__explanation > .section-kicker {
+  grid-column: 1 / -1;
+}
+
+.intake-welcome__explanation h2 {
+  max-width: 520px;
+  margin: 0;
+  font-size: clamp(30px, 3.8vw, 52px);
+  font-weight: 540;
+  letter-spacing: -.052em;
+  line-height: 1.02;
+}
+
+.intake-welcome__narrative {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding-top: 3px;
+}
+
+.intake-welcome__narrative p {
+  max-width: 680px;
+  margin: 0;
+  color: #5f686e;
+  font-size: 13px;
+  line-height: 1.72;
+}
+
+.intake-welcome__roles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-block: 1px solid #daddda;
+}
+
+.intake-welcome__roles > section {
+  padding: 28px clamp(20px, 3vw, 38px) 30px 0;
+}
+
+.intake-welcome__roles > section + section {
+  padding-right: 0;
+  padding-left: clamp(20px, 3vw, 38px);
+  border-left: 1px solid #daddda;
+}
+
+.intake-welcome__roles header {
+  display: flex;
+  margin-bottom: 22px;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.intake-welcome__roles header span {
+  color: #8b9293;
+  font: 9px ui-monospace, SFMono-Regular, monospace;
+  letter-spacing: .1em;
+}
+
+.intake-welcome__roles h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 620;
+  letter-spacing: -.025em;
+}
+
+.intake-welcome__roles ol {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.intake-welcome__roles li {
+  display: grid;
+  min-height: 54px;
+  padding: 13px 0;
+  align-items: center;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  border-top: 1px solid #e3e5e2;
+}
+
+.intake-welcome__roles li:last-child {
+  border-bottom: 1px solid #e3e5e2;
+}
+
+.intake-welcome__roles li > span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid #cfd4d0;
+  border-radius: 50%;
+  color: #697174;
+  font: 9px ui-monospace, SFMono-Regular, monospace;
+}
+
+.intake-welcome__roles li p {
+  margin: 0;
+  color: #343c40;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.intake-welcome__roles-offroad {
+  background: linear-gradient(90deg, rgb(113 139 74 / 4%), transparent 72%);
+}
+
+.intake-welcome__roles-offroad li > span {
+  border-color: #aebe96;
+  color: #58702f;
+  background: #f4f7ef;
+}
+
+.intake-welcome__action {
+  display: flex;
+  padding: 22px 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  border: 1px solid #d6dad6;
+  background: #f7f8f5;
+}
+
+.intake-welcome__action div {
+  display: grid;
+  gap: 5px;
+}
+
+.intake-welcome__action strong {
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.intake-welcome__action p {
+  max-width: 660px;
+  margin: 0;
+  color: #6b7377;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.intake-welcome__action .button {
+  min-width: 160px;
+  flex: 0 0 auto;
+}
+
 .intake-collect {
   gap: 24px;
 }
@@ -7865,6 +8048,11 @@ button[disabled].workspace-search,
 
 @media (max-width: 900px) {
   .intake-start__journey {grid-template-columns: 1fr;}
+  .intake-welcome__explanation {grid-template-columns: 1fr;}
+  .intake-welcome__roles {grid-template-columns: 1fr;}
+  .intake-welcome__roles > section,
+  .intake-welcome__roles > section + section {padding-inline: 0;}
+  .intake-welcome__roles > section + section {border-top: 1px solid #daddda; border-left: 0;}
   .intake-guide__documents {grid-template-columns: 1fr;}
   .intake-guide__documents .intake-upload__drop {position: relative; top: auto;}
   .intake-governance {grid-template-columns: 1fr;}
@@ -7872,6 +8060,9 @@ button[disabled].workspace-search,
 
 @media (max-width: 640px) {
   .intake-start__journey {padding: 24px 20px;}
+  .workspace-editor--welcome.onboarding-stage {padding: 24px 20px;}
+  .intake-welcome__action {align-items: stretch; flex-direction: column;}
+  .intake-welcome__action .button {width: 100%;}
   .intake-start__steps li {grid-template-columns: 24px 26px minmax(0, 1fr);}
   .intake-guide__progress > span {align-items: flex-start; flex-direction: column; gap: 5px; font-size: 8px;}
   .intake-operation__client {padding: 18px;}

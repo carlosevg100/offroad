@@ -180,6 +180,8 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
   const JourneyIcon = journey === "company" ? Building2 : journey === "originator" ? Network : Landmark;
   const projectTitle = journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject");
+  const isFirstOnboardingStart = currentStep === "organization" && journey !== "capital_provider" && !intakeMode;
+  const welcomeBody = journey === "originator" ? t("workspace.welcomeBodyOriginator") : t("workspace.welcomeBodyCompany");
 
   let documents: Array<{id: string; original_name: string; byte_size: number | null}> = [];
   const opportunityId = text(answers.opportunity_id);
@@ -269,18 +271,18 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         </header>
 
         <div className="workspace-scroll">
-          <header className="workspace-welcome">
-            <div><p className="section-kicker">{journeyTitle}</p><h1>{t("workspace.welcomeTitle")}</h1><p>{t("workspace.welcomeBody")}</p></div>
-            <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div>
+          <header className={isFirstOnboardingStart ? "workspace-welcome workspace-welcome--intro" : "workspace-welcome"}>
+            <div><p className="section-kicker">{isFirstOnboardingStart ? t("workspace.welcomeEyebrow") : journeyTitle}</p><h1>{isFirstOnboardingStart ? t("workspace.welcomeTitle") : t("workspace.progressTitle")}</h1><p>{isFirstOnboardingStart ? welcomeBody : t("workspace.progressBody")}</p></div>
+            {!isFirstOnboardingStart ? <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div> : null}
           </header>
 
-          <div className="workspace-editor-layout">
-            <section className="onboarding-stage workspace-editor">
-          <header className="onboarding-stage__header">
+          <div className={isFirstOnboardingStart ? "workspace-editor-layout workspace-editor-layout--welcome" : "workspace-editor-layout"}>
+            <section className={isFirstOnboardingStart ? "onboarding-stage workspace-editor workspace-editor--welcome" : "onboarding-stage workspace-editor"}>
+          {!isFirstOnboardingStart ? <header className="onboarding-stage__header">
             <span>{t("workspace.currentActivity")}</span>
             <h2>{t(`workspace.nodes.${journey}.${currentStep}`)}</h2>
             <p>{t(`steps.${journey}.${currentStep}.body`)}</p>
-          </header>
+          </header> : null}
           {errorMessage ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
           {currentStep === "organization" && journey !== "capital_provider" && !intakeMode ? <IntakeStartChoice actions={{start: startDocumentIntake, manual: chooseManualIntake}} context="onboarding" journey={journey} locale={locale} /> : null}
@@ -490,7 +492,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           ) : null}
             </section>
 
-            <aside className="workspace-inspector">
+            {!isFirstOnboardingStart ? <aside className="workspace-inspector">
               <section className="workspace-inspector__panel">
                 <div className="workspace-inspector__heading"><div><span>{t("workspace.casePreparation")}</span><strong>{t("workspace.inConstruction")}</strong></div><span className="workspace-inspector__percent">{completionPercent}%</span></div>
                 <div className="workspace-inspector__bar"><i style={{width: `${completionPercent}%`}} /></div>
@@ -510,7 +512,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <p>{t("workspace.guidanceBody")}</p>
                 <div><Check aria-hidden="true" size={13} /><span>{t("workspace.autoSave")}</span></div>
               </section>
-            </aside>
+            </aside> : null}
           </div>
         </div>
       </section>
