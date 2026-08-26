@@ -48,28 +48,29 @@ export async function IntakeStartChoice({locale, context, journey, actions}: Pro
           <section>
             <header><span>01</span><h3>{t("youDoTitle")}</h3></header>
             <ol>
-              <li><span>1</span><p>{t("youDo1")}</p></li>
-              <li><span>2</span><p>{t("youDo2")}</p></li>
-              <li><span>3</span><p>{t("youDo3")}</p></li>
+              <li><span>1</span><div><strong>{t("youDo1Title")}</strong><p>{t("youDo1Body")}</p></div></li>
+              <li><span>2</span><div><strong>{t("youDo2Title")}</strong><p>{t("youDo2Body")}</p></div></li>
+              <li><span>3</span><div><strong>{t("youDo3Title")}</strong><p>{t("youDo3Body")}</p></div></li>
+              <li><span>4</span><div><strong>{t("youDo4Title")}</strong><p>{t("youDo4Body")}</p></div></li>
             </ol>
           </section>
           <section className="intake-welcome__roles-offroad">
             <header><span>02</span><h3>{t("offroadDoesTitle")}</h3></header>
             <ol>
-              <li><span>4</span><p>{t("offroadDoes1")}</p></li>
-              <li><span>5</span><p>{t("offroadDoes2")}</p></li>
-              <li><span>6</span><p>{t("offroadDoes3")}</p></li>
+              <li><span>5</span><div><strong>{t("offroadDoes1Title")}</strong><p>{t("offroadDoes1Body")}</p></div></li>
+              <li><span>6</span><div><strong>{t("offroadDoes2Title")}</strong><p>{t("offroadDoes2Body")}</p></div></li>
+              <li><span>7</span><div><strong>{t("offroadDoes3Title")}</strong><p>{t("offroadDoes3Body")}</p></div></li>
+              <li><span>8</span><div><strong>{t("offroadDoes4Title")}</strong><p>{t("offroadDoes4Body")}</p></div></li>
+              <li><span>9</span><div><strong>{t("offroadDoes5Title")}</strong><p>{t("offroadDoes5Body")}</p></div></li>
+              <li><span>10</span><div><strong>{t("offroadDoes6Title")}</strong><p>{t("offroadDoes6Body")}</p></div></li>
             </ol>
           </section>
         </div>
 
         <form action={actions.start} className="intake-welcome__action">
           <input name="locale" type="hidden" value={locale} />
-          <div>
-            <strong>{t("welcomeActionTitle")}</strong>
-            <p>{t("welcomeActionBody")}</p>
-          </div>
           <button className="button" type="submit">{t("guidedCta")}<ArrowRight size={15} /></button>
+          <span>{t("welcomeActionTime")}</span>
         </form>
 
         <div className="intake-start__security"><ShieldCheck size={15} /><span>{t("security")}</span></div>
