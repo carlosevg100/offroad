@@ -202,7 +202,7 @@
 
 .intake-welcome__narrative {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1fr) minmax(0, 1.4fr);
   align-items: stretch;
   gap: 0;
   padding-top: 10px;
@@ -286,9 +286,9 @@
 
 .intake-welcome__roles li {
   display: grid;
-  min-height: 54px;
-  padding: 13px 0;
-  align-items: center;
+  min-height: 82px;
+  padding: 16px 0;
+  align-items: start;
   grid-template-columns: 28px minmax(0, 1fr);
   gap: 12px;
   border-top: 1px solid #e3e5e2;
@@ -309,11 +309,23 @@
   font: 9px ui-monospace, SFMono-Regular, monospace;
 }
 
+.intake-welcome__roles li > div {
+  display: grid;
+  gap: 5px;
+}
+
+.intake-welcome__roles li strong {
+  color: #252b2f;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
 .intake-welcome__roles li p {
   margin: 0;
-  color: #343c40;
-  font-size: 12px;
-  line-height: 1.5;
+  color: #687176;
+  font-size: 10.5px;
+  line-height: 1.58;
 }
 
 .intake-welcome__roles-offroad {
@@ -336,22 +348,10 @@
   background: #f7f8f5;
 }
 
-.intake-welcome__action div {
-  display: grid;
-  gap: 5px;
-}
-
-.intake-welcome__action strong {
-  font-size: 14px;
-  font-weight: 620;
-}
-
-.intake-welcome__action p {
-  max-width: 660px;
-  margin: 0;
+.intake-welcome__action > span {
+  margin-right: auto;
   color: #6b7377;
   font-size: 11px;
-  line-height: 1.5;
 }
 
 .intake-welcome__action .button {
