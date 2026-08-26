@@ -3274,6 +3274,96 @@ $$;
 
 set local role postgres;
 
+-- M9 findings remain signals until a qualified human binds a review to the exact
+-- fingerprint. The resulting mandate decision is Offroad's own engagement decision.
+insert into public.red_flag_policies (
+  version, status, valid_from, thresholds, materiality, response_sla,
+  methodology_source, approved_by, approved_at
+) values (
+  'rls-m9-v1', 'active', current_date,
+  '{"inventoryRevenueGrowthGapPct":"10","changingInformationVersions":3}'::jsonb,
+  '{"critical":"desk_decision"}'::jsonb,
+  '{"criticalHours":4}'::jsonb,
+  'RLS fixture for fingerprint-bound red-flag governance.',
+  '10000000-0000-4000-8000-000000000001', now()
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+declare
+  decision_id uuid;
+  communication_id uuid;
+begin
+  perform public.review_case_red_flag(
+    '20000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    'RF-15', repeat('d', 64), 'confirmed',
+    'A companhia recusou o analítico essencial solicitado para concluir o caso.',
+    '["intake:essential-analytic"]'::jsonb
+  );
+  decision_id := public.decide_offroad_mandate(
+    '20000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    repeat('e', 64), 'decline', '["RF-15"]'::jsonb, '[]'::jsonb,
+    'Reabrir o mandato após a entrega do analítico essencial solicitado.'
+  );
+  communication_id := public.record_decline_communication(
+    '20000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    decision_id, repeat('f', 64), 'email', 'company@example.com', repeat('a', 64)
+  );
+  if communication_id is null
+    or (select count(*) from public.case_red_flag_reviews) <> 1
+    or (select count(*) from public.offroad_mandate_decisions) <> 1
+    or (select count(*) from public.decline_communications) <> 1 then
+    raise exception 'tenant A did not persist the governed M9 ledger';
+  end if;
+  begin
+    update public.case_red_flag_reviews set rationale = 'tampered';
+    raise exception 'red-flag review ledger accepted an update';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    delete from public.offroad_mandate_decisions;
+    raise exception 'mandate-decision ledger accepted a delete';
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+declare accepted boolean := true;
+begin
+  if (select count(*) from public.case_red_flag_reviews) <> 0
+    or (select count(*) from public.offroad_mandate_decisions) <> 0
+    or (select count(*) from public.decline_communications) <> 0 then
+    raise exception 'tenant B can read tenant A M9 governance data';
+  end if;
+  begin
+    perform public.review_case_red_flag(
+      '20000000-0000-4000-8000-000000000001',
+      '40000000-0000-4000-8000-000000000001',
+      'RF-15', repeat('d', 64), 'false_positive',
+      'Cross-tenant mutation must never reach the append-only review ledger.', '[]'::jsonb
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant B appended a review to tenant A'; end if;
+end;
+$$;
+
+set local role postgres;
+
 -- House pricing evidence is not a tenant data product. Even an authenticated organization owner
 -- cannot enumerate policies or observations; only the capability-bound worker can receive the
 -- governed aggregate context through its security-definer command.

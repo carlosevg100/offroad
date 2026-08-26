@@ -20,6 +20,8 @@ import {
   fingerprintJson,
   semanticAuditSchema,
   type ClaimDecision,
+  type RedFlagPolicy,
+  type RedFlagReview,
 } from "@offroad/case-understanding";
 import {caseRunReportSchema} from "@offroad/case-runner";
 import {archetypeIdSchema} from "@offroad/credit-playbook";
@@ -168,6 +170,53 @@ const marketDistributionContextSchema=z.object({
     companyAuthorization:{authorized:false,fingerprint:null,scope:[],recipientIds:[]},
   }),
 });
+const redFlagContextSchema=z.object({
+  policy:z.object({
+    version:z.string().min(1),
+    status:z.enum(["active","invalidated"]),
+    validFrom:z.iso.date(),
+    validUntil:z.iso.date().nullable(),
+    thresholds:z.object({
+      inventoryRevenueGrowthGapPct:pricingDecimalStringSchema.optional(),
+      pmrIncreaseDays:pricingDecimalStringSchema.optional(),
+      stableRevenueChangePct:pricingDecimalStringSchema.optional(),
+      highCashToDebtPct:pricingDecimalStringSchema.optional(),
+      highDebtCostPct:pricingDecimalStringSchema.optional(),
+      managementBiasPct:pricingDecimalStringSchema.optional(),
+      periodEndRevenuePct:pricingDecimalStringSchema.optional(),
+      changingInformationVersions:z.coerce.number().int().positive().optional(),
+    }),
+    materiality:recordSchema.default({}),
+    responseSla:recordSchema.default({}),
+  }),
+  reviews:z.array(z.object({
+    flagId:z.string().regex(/^RF-(0[1-9]|1\d|20)$/),
+    flagFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+    decision:z.enum(["confirmed","false_positive","treated","accepted_risk"]),
+    rationale:z.string().min(20).max(2000),
+    evidenceIds:z.array(z.string()),
+    decidedBy:z.string().uuid(),
+    decidedAt:z.string().datetime({offset:true}),
+  })).default([]),
+  mandateDecision:z.object({
+    id:z.string().uuid().optional(),
+    assessmentFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+    decision:z.enum(["continue","continue_with_conditions","decline"]),
+    reasonCodes:z.array(z.string()),
+    conditions:z.array(z.string()),
+    pathBack:z.string().nullable(),
+    decidedBy:z.string().uuid(),
+    decidedAt:z.string().datetime({offset:true}),
+  }).nullable().default(null),
+  declineCommunication:z.object({
+    mandateDecisionFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+    channel:z.string().min(1),
+    recipient:z.string().min(1),
+    sentBy:z.string().uuid(),
+    sentAt:z.string().datetime({offset:true}),
+    messageFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+  }).nullable().default(null),
+});
 const rawCaseInputSchema = z.object({
   session: recordSchema,
   run: recordSchema,
@@ -201,6 +250,7 @@ const rawCaseInputSchema = z.object({
   receivables_case: receivablesCaseSchema.optional(),
   pricing_context: pricingContextSchema.nullable().default(null),
   market_distribution_context:marketDistributionContextSchema.nullable().default(null),
+  red_flag_context:redFlagContextSchema.nullable().default(null),
   _execution: z.object({
     id: z.uuid(),
     mode: executionModeSchema,
@@ -311,6 +361,29 @@ export async function processCaseAnalysisJob(
         introductions:raw.market_distribution_context.introductions,
       }}:{}),
       ...(raw.market_distribution_context?{materialRelease:raw.market_distribution_context.materialRelease}:{}),
+      ...(raw.red_flag_context?{redFlagGovernance:{
+        policy:{
+          version:raw.red_flag_context.policy.version,
+          status:raw.red_flag_context.policy.status,
+          validFrom:raw.red_flag_context.policy.validFrom,
+          validUntil:raw.red_flag_context.policy.validUntil,
+          thresholds:Object.fromEntries(
+            Object.entries(raw.red_flag_context.policy.thresholds)
+              .filter(([,value])=>value!==undefined),
+          ) as RedFlagPolicy["thresholds"],
+        },
+        reviews:raw.red_flag_context.reviews as RedFlagReview[],
+        mandateDecision:raw.red_flag_context.mandateDecision?{
+          assessmentFingerprint:raw.red_flag_context.mandateDecision.assessmentFingerprint,
+          decision:raw.red_flag_context.mandateDecision.decision,
+          reasonCodes:raw.red_flag_context.mandateDecision.reasonCodes,
+          conditions:raw.red_flag_context.mandateDecision.conditions,
+          pathBack:raw.red_flag_context.mandateDecision.pathBack,
+          decidedBy:raw.red_flag_context.mandateDecision.decidedBy,
+          decidedAt:raw.red_flag_context.mandateDecision.decidedAt,
+        }:null,
+        declineCommunication:raw.red_flag_context.declineCommunication,
+      }}:{}),
       writeBrief: async ({reconciliation, desk, trajectory}) => {
         const evidence = deskEvidence(desk, trajectory);
         const callStart = dependencies.lineage().length;

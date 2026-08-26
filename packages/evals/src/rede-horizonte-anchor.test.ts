@@ -62,7 +62,7 @@ describe("Rede Horizonte full-case anchor", () => {
     const {state} = result;
 
     expect(result.report.status).toBe("succeeded");
-    expect(result.report.stages).toHaveLength(9);
+    expect(result.report.stages).toHaveLength(10);
     expect(result.report.stages.every((stage) => stage.status === "succeeded")).toBe(true);
 
     for (const expected of gold.calculations) {

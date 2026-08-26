@@ -49,7 +49,8 @@ describe("integrated case runner", () => {
     expect(report.status).toBe("succeeded");
     expect(report.stages.map((stage) => stage.stage)).toEqual(caseStageIds);
     expect(report.stages.every((stage) => stage.status === "succeeded")).toBe(true);
-    expect(report.stages[8]?.output).toEqual({stage: "outcome", received: 8});
+    const outcomeIndex=caseStageIds.indexOf("outcome");
+    expect(report.stages[outcomeIndex]?.output).toEqual({stage: "outcome", received: outcomeIndex});
     expect(report.stages.every((stage) => stage.outputFingerprint?.length === 64)).toBe(true);
     expect(report.reportFingerprint).toHaveLength(64);
   });
@@ -65,8 +66,9 @@ describe("integrated case runner", () => {
   it("distinguishes a deliberate evidence hold from a technical failure", async () => {
     const report = await runCase({...base, stages: definitions({blockAt: "materials"})});
     expect(report.status).toBe("blocked");
-    expect(report.stages[6]).toMatchObject({failureKind: "material", code: "material_evidence_missing", status: "blocked"});
-    expect(report.stages[7]?.status).toBe("skipped");
+    const materialsIndex=caseStageIds.indexOf("materials");
+    expect(report.stages[materialsIndex]).toMatchObject({failureKind: "material", code: "material_evidence_missing", status: "blocked"});
+    expect(report.stages[materialsIndex+1]?.status).toBe("skipped");
   });
 
   it("turns invalid output into a contract failure at the exact layer", async () => {
@@ -80,13 +82,14 @@ describe("integrated case runner", () => {
       stages: definitions({usageAt: "claims"}),
       policy: {maxCostUsd: 10, maxModelCalls: 10, stages: {claims: {costUsd: 1}}},
     });
-    expect(stageReport.stages[5]).toMatchObject({failureKind: "budget", code: "stage_cost_budget_exceeded", status: "failed"});
+    const claimsIndex=caseStageIds.indexOf("claims");
+    expect(stageReport.stages[claimsIndex]).toMatchObject({failureKind: "budget", code: "stage_cost_budget_exceeded", status: "failed"});
 
     const totalReport = await runCase({
       ...base,
       stages: definitions({usageAt: "claims"}),
       policy: {maxCostUsd: 1, maxModelCalls: 10},
     });
-    expect(totalReport.stages[5]).toMatchObject({failureKind: "budget", code: "case_cost_budget_exceeded", status: "failed"});
+    expect(totalReport.stages[claimsIndex]).toMatchObject({failureKind: "budget", code: "case_cost_budget_exceeded", status: "failed"});
   });
 });

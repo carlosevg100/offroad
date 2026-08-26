@@ -14,7 +14,7 @@ function report(overrides: Partial<CaseRunReport> = {}, mutate?: (stages: CaseSt
   }));
   mutate?.(stages);
   return {
-    schemaVersion: "2026.08.24-v1",
+    schemaVersion: "2026.08.26-v2",
     runId: "run-1",
     caseId: "case-1",
     status: "succeeded",

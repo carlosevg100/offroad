@@ -5,7 +5,7 @@ import {z} from "zod";
  * Market-sensitive numbers and house policy parameters live here, not inside procedure prose.
  * Missing values are explicit blockers. They are never replaced by a model estimate.
  */
-export const referenceDataRegistryVersion = "2026.08.25-v5";
+export const referenceDataRegistryVersion = "2026.08.26-v6";
 
 export const referenceDataStatusSchema = z.enum(["required_missing", "draft", "approved", "expired"]);
 export type ReferenceDataStatus = z.infer<typeof referenceDataStatusSchema>;
@@ -131,6 +131,10 @@ export const referenceDataRegistry = [
   missing("policy.material.question-sets", "house_policy", "Versioned anticipated Q&A coverage by archetype and materiality.", "Head de Materiais Institucionais", ["MA-22", "MA-23"]),
   missing("policy.material.numeric_rounding", "house_policy", "Rounding, display and cross-material comparison rules for every financial metric.", "Head de Materiais Institucionais", ["MA-28", "MA-30", "MA-31"]),
   missing("policy.qc.numeric_tolerance", "house_policy", "Independent QC tolerances by calculation and material output, including zero-tolerance identities.", "Responsável independente de Quality Control", ["MA-31", "MA-32", "LC-01"]),
+  missing("policy.red-flags.detectors", "methodology_parameter", "Versioned detector windows, thresholds, evidence minima and known false positives for RF-01 through RF-17.", "Head de DCM e Quality Control", ["RF-01", "RF-02", "RF-03", "RF-04", "RF-05", "RF-06", "RF-07", "RF-08", "RF-09", "RF-10", "RF-11", "RF-12", "RF-13", "RF-14", "RF-15", "RF-16", "RF-17"]),
+  missing("policy.red-flags.materiality", "house_policy", "Severity, family composition, escalation, external-output blocking and mandate-decision rules.", "Head de DCM e Quality Control", ["RF-18", "RF-19"]),
+  missing("policy.red-flags.response-sla", "house_policy", "Operational response windows, acceptable substitutes and decline-communication timing.", "Head de DCM e Quality Control", ["RF-15", "RF-20"]),
+  missing("market.peer-benchmarks", "market_observation", "Dated peer and sector operating ranges used only when comparability and source are governed.", "Head de Análise Financeira", ["RF-03"]),
 ] as const satisfies readonly ReferenceDataEntry[];
 
 export const referenceDataKeys = referenceDataRegistry.map((entry) => entry.key);

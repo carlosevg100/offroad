@@ -6,4 +6,5 @@ export * from "./pricing";
 export * from "./structure";
 export * from "./materials";
 export * from "./market-distribution";
+export * from "./red-flags";
 export * from "./registry";

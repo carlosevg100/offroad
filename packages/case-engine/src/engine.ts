@@ -4,6 +4,7 @@ import {
   assessReadiness,
   auditBrief,
   buildClaimRegistry,
+  buildRedFlagTruthSet,
   caseBriefSchema,
   caseOutcomeSchema,
   claimFingerprint,
@@ -18,6 +19,12 @@ import {
   type CaseOutcome,
   type NormalizedSemanticAudit,
   type ReadinessReport,
+  type DeclineCommunication,
+  type MandateDecision,
+  type RedFlagDetectorObservation,
+  type RedFlagPolicy,
+  type RedFlagReview,
+  type RedFlagTruthSet,
   type SemanticAudit,
 } from "@offroad/case-understanding";
 import {
@@ -92,7 +99,7 @@ import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@off
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.26-v10";
+export const caseEngineVersion = "2026.08.26-v11";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -138,6 +145,13 @@ export type CaseEngineInput = {
     authorization?: QualifiedIntroductionAuthorization | null;
     introductions?: QualifiedIntroductionRecord[];
   };
+  redFlagGovernance?: {
+    policy?: RedFlagPolicy | null;
+    detectorObservations?: RedFlagDetectorObservation[];
+    reviews?: RedFlagReview[];
+    mandateDecision?: MandateDecision | null;
+    declineCommunication?: DeclineCommunication | null;
+  };
   claimDecisions?: ClaimDecision[];
   informationAnswers?: InformationAnswers;
   requirementResponses?: RequirementResponses;
@@ -181,6 +195,7 @@ export type CaseEngineState = {
   structureTruth: StructureTruthSet;
   pricingTruth: PricingTruthSet;
   materialTruth: MaterialTruthSet;
+  redFlagTruth: RedFlagTruthSet;
   desk: DeskAnalysis | null;
   trajectory: Trajectory | null;
   receivables: ReceivablesAnalysis | null;
@@ -251,10 +266,20 @@ export type PublicMaterialTruthSet = Omit<MaterialTruthSet,"procedureCoverage"|"
   };
 };
 
-export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"|"materialTruth"> & {
+export type PublicRedFlagTruthSet={
+  version:string;
+  status:"clear"|"attention_required"|"decision_required"|"declined";
+  counts:{open:number;treated:number;notComputable:number};
+  externalOutputsAllowed:boolean;
+  qualifiedIntroductionAllowed:boolean;
+  missingInputs:string[];
+};
+
+export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"|"materialTruth"|"redFlagTruth"> & {
   matching: PublicMatchingSummary;
   pricingTruth: PublicPricingTruthSet;
   materialTruth:PublicMaterialTruthSet;
+  redFlagTruth:PublicRedFlagTruthSet;
 };
 
 export function summarizeMatching(matching: CaseEngineState["matching"]): PublicMatchingSummary {
@@ -284,6 +309,7 @@ export function summarizeMatching(matching: CaseEngineState["matching"]): Public
 }
 
 export function publicCaseState(state: CaseEngineState): PublicCaseEngineState {
+  const openFlags=state.redFlagTruth.findings.filter((finding)=>finding.status==="candidate"||finding.status==="confirmed").length;
   return {
     ...state,
     matching: summarizeMatching(state.matching),
@@ -311,6 +337,14 @@ export function publicCaseState(state: CaseEngineState): PublicCaseEngineState {
         technicalReview:{approved:state.materialTruth.release.technicalReview.approved,fingerprint:state.materialTruth.release.technicalReview.fingerprint,reviewedAt:state.materialTruth.release.technicalReview.reviewedAt},
         companyAuthorization:{authorized:state.materialTruth.release.companyAuthorization.authorized,fingerprint:state.materialTruth.release.companyAuthorization.fingerprint,scope:state.materialTruth.release.companyAuthorization.scope,recipientCount:state.materialTruth.release.companyAuthorization.recipientIds.length},
       },
+    },
+    redFlagTruth:{
+      version:state.redFlagTruth.version,
+      status:state.redFlagTruth.mandate.decision?.decision==="decline"?"declined":state.redFlagTruth.mandate.decisionStatus==="missing"&&state.redFlagTruth.mandate.recommendation==="decline_review_required"?"decision_required":openFlags>0||state.redFlagTruth.missingInputs.length>0?"attention_required":"clear",
+      counts:{open:openFlags,treated:state.redFlagTruth.findings.filter((finding)=>finding.status==="treated"||finding.status==="false_positive"||finding.status==="accepted_risk").length,notComputable:state.redFlagTruth.findings.filter((finding)=>finding.status==="not_computable").length},
+      externalOutputsAllowed:state.redFlagTruth.mandate.externalOutputsAllowed,
+      qualifiedIntroductionAllowed:state.redFlagTruth.mandate.qualifiedIntroductionAllowed,
+      missingInputs:[...state.redFlagTruth.missingInputs],
     },
   };
 }
@@ -375,6 +409,7 @@ const structureOutputSchema = z.object({
   price: z.unknown().nullable(),
   verdict: z.unknown().nullable(),
 });
+const redFlagsOutputSchema=z.object({redFlagTruth:z.unknown()});
 const claimsOutputSchema = z.object({
   brief: caseBriefSchema.nullable(),
   proposedBrief: caseBriefSchema.nullable(),
@@ -422,6 +457,7 @@ type StructureOutput = Pick<
   CaseEngineState,
   "capacity" | "operationTruth" | "structureTruth" | "pricingTruth" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
 >;
+type RedFlagsOutput={redFlagTruth:RedFlagTruthSet};
 type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInvocations"> & {
   proposedBrief: CaseBrief | null;
   numericAudit: AuditReport | null;
@@ -571,6 +607,25 @@ export async function executeCaseEngine(
           output: structureCase(input, outputOf<ReconciliationOutput>(context, "reconciliation").reconciliation, outputOf<MetricsOutput>(context, "metrics")),
         }),
       },
+      red_flags:{
+        outputSchema:redFlagsOutputSchema,
+        execute:(context)=>{
+          const {reconciliation}=outputOf<ReconciliationOutput>(context,"reconciliation");
+          const structure=outputOf<StructureOutput>(context,"structure");
+          const caseFingerprint=fingerprintJson({facts:reconciliation.facts,financialTruth:reconciliation.financialTruth,debtTruth:reconciliation.debtTruth,operationTruth:structure.operationTruth,structureTruth:structure.structureTruth});
+          return {output:{redFlagTruth:buildRedFlagTruthSet({
+            referenceDate:input.referenceDate,
+            caseFingerprint,
+            facts:reconciliation.facts,
+            exceptions:reconciliation.exceptions,
+            ...(input.redFlagGovernance?.policy!==undefined?{policy:input.redFlagGovernance.policy}:{}),
+            ...(input.redFlagGovernance?.detectorObservations?{detectorObservations:input.redFlagGovernance.detectorObservations}:{}),
+            ...(input.redFlagGovernance?.reviews?{reviews:input.redFlagGovernance.reviews}:{}),
+            ...(input.redFlagGovernance?.mandateDecision!==undefined?{mandateDecision:input.redFlagGovernance.mandateDecision}:{}),
+            ...(input.redFlagGovernance?.declineCommunication!==undefined?{declineCommunication:input.redFlagGovernance.declineCommunication}:{}),
+          })} satisfies RedFlagsOutput};
+        },
+      },
       claims: {
         outputSchema: claimsOutputSchema,
         execute: async (context) => {
@@ -657,6 +712,7 @@ export async function executeCaseEngine(
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
           const structure = outputOf<StructureOutput>(context, "structure");
+          const redFlags=outputOf<RedFlagsOutput>(context,"red_flags").redFlagTruth;
           const claims = outputOf<ClaimsOutput>(context, "claims");
           const extracted = outputOf<ExtractionOutput>(context, "extraction");
           let materials: Material[] = [];
@@ -733,6 +789,7 @@ export async function executeCaseEngine(
             dataRoom,
             modelAvailable:reconciliation.facts.length>0,
             claimAuditApproved:claimRegistry?.publication.allowed===true,
+            governanceBlockers:redFlags.mandate.externalOutputsAllowed?[]:redFlags.blockers,
             ...(input.materialRelease?{release:input.materialRelease}:{}),
           });
           return {output: {materials, materialsBlockedBy, materialTruth, dataRoom, audit, claimRegistry} satisfies MaterialsOutput};
@@ -747,7 +804,8 @@ export async function executeCaseEngine(
           const request = requestForMatching(input, structure, metrics, reconciliation);
           const fits = rankFits(input.resolvedMandates.map((mandate) => assessMandateFit(mandate, request)));
           const materials=outputOf<MaterialsOutput>(context,"materials");
-          const structural=structuralExclusions(fits);
+          const redFlags=outputOf<RedFlagsOutput>(context,"red_flags").redFlagTruth;
+          const structural=[...structuralExclusions(fits),...(!redFlags.mandate.qualifiedIntroductionAllowed?["red_flag_governance_blocked"]:[])];
           const materialFingerprint=materials.materialTruth.fingerprint;
           const marketTruth=buildMarketTruthSet({
             mandates:input.resolvedMandates,
@@ -778,6 +836,7 @@ export async function executeCaseEngine(
           const gaps = outputOf<GapsOutput>(context, "gaps");
           const structure = outputOf<StructureOutput>(context, "structure");
           const materials = outputOf<MaterialsOutput>(context, "materials");
+          const redFlags=outputOf<RedFlagsOutput>(context,"red_flags").redFlagTruth;
           const matching = outputOf<MatchingOutput>(context, "matching");
           return {
             output: {
@@ -801,7 +860,7 @@ export async function executeCaseEngine(
                 mandateScreeningComplete: matching.screened,
                 platformExternalReleaseEnabled: input.externalReleaseApproved,
                 clientIntroductionAuthorized: false,
-                blockers: [...gaps.blockers, ...structure.structureTruth.exceptions.filter((exception) => exception.severity === "critical").map((exception) => exception.id)],
+                blockers: [...gaps.blockers, ...structure.structureTruth.exceptions.filter((exception) => exception.severity === "critical").map((exception) => exception.id),...redFlags.blockers],
               }),
             } satisfies OutcomeOutput,
           };
@@ -821,6 +880,7 @@ export async function executeCaseEngine(
   const reconciliation = stage<ReconciliationOutput>("reconciliation").reconciliation;
   const metrics = stage<MetricsOutput>("metrics");
   const structure = stage<StructureOutput>("structure");
+  const redFlags=stage<RedFlagsOutput>("red_flags").redFlagTruth;
   const claims = stage<ClaimsOutput>("claims");
   const materials = stage<MaterialsOutput>("materials");
   const matching = stage<MatchingOutput>("matching");
@@ -831,6 +891,7 @@ export async function executeCaseEngine(
       reconciliation,
       ...metrics,
       ...structure,
+      redFlagTruth:redFlags,
       brief: claims.brief,
       briefBlockedBy: claims.briefBlockedBy,
       modelInvocations: claims.modelInvocations,

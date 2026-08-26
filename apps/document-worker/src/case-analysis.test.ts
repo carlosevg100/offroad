@@ -95,6 +95,14 @@ describe("worker case analysis", () => {
       expected_model_calls: 0,
       receivables_case: diversifiedReceivablesCase("worker-receivables-case"),
       market_distribution_context:{version:"2026.08.26-v1",status:"active",mandateMaxAgeMonths:12,waveLimit:3,learningGateAnchorCount:2},
+      red_flag_context:{
+        policy:{
+          version:"2026.08.26-v1",status:"active",validFrom:"2026-08-01",validUntil:null,
+          thresholds:{inventoryRevenueGrowthGapPct:"10",changingInformationVersions:3},
+          materiality:{},responseSla:{},
+        },
+        reviews:[],mandateDecision:null,declineCommunication:null,
+      },
       _execution: {
         id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         mode: "primary",
@@ -245,6 +253,17 @@ describe("worker case analysis", () => {
     expect(persistedMaterials.procedureCoverage[0]).toMatchObject({procedureId:"MA-01",result:null});
     expect(persistedMaterials.procedureCoverage[31]).toMatchObject({procedureId:"MA-32",result:null});
     expect(persistedMaterials.releaseDecision).toBe("internal_only");
+    const persistedRedFlags=persisted.redFlagTruth as {
+      status:string;
+      counts:{total:number;pending:number};
+      externalOutputsAllowed:boolean;
+    };
+    expect(persistedRedFlags).toMatchObject({
+      status:"decision_required",
+      counts:{open:1,treated:0,notComputable:16},
+      externalOutputsAllowed:false,
+    });
+    expect(persistedRedFlags).not.toHaveProperty("findings");
     expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
   });
 });

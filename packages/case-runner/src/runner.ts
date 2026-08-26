@@ -7,6 +7,7 @@ export const caseStageIds = [
   "metrics",
   "gaps",
   "structure",
+  "red_flags",
   "claims",
   "materials",
   "matching",
@@ -60,7 +61,7 @@ export const caseStageRecordSchema = z.object({
 export type CaseStageRecord = z.infer<typeof caseStageRecordSchema>;
 
 export const caseRunReportSchema = z.object({
-  schemaVersion: z.literal("2026.08.24-v1"),
+  schemaVersion: z.literal("2026.08.26-v2"),
   runId: z.string().min(1),
   caseId: z.string().min(1),
   status: z.enum(["succeeded", "blocked", "failed"]),
@@ -126,6 +127,7 @@ const failureKindOf: Record<CaseStageId, StageFailureKind> = {
   metrics: "calculation",
   gaps: "policy",
   structure: "policy",
+  red_flags: "policy",
   claims: "policy",
   materials: "material",
   matching: "matching",
@@ -227,7 +229,7 @@ export async function runCase(input: RunCaseInput): Promise<CaseRunReport> {
       ? "blocked" as const
       : "succeeded" as const;
   const payload = {
-    schemaVersion: "2026.08.24-v1" as const,
+    schemaVersion: "2026.08.26-v2" as const,
     runId: input.runId,
     caseId: input.caseId,
     status,
