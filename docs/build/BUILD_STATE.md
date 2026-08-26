@@ -13,16 +13,20 @@ prazo, tíquete e regime são filtros explícitos. Fee, OID, warrant e hedge ent
 da normalização e precisam fechar matematicamente. Choque de regime, observação vencida, fonte
 repetida, restrição de confidencialidade ou falsa precisão produzem abstenção.
 
-A migration `20260826010846_m6_pricing_registry.sql` cria a política e o registro proprietário de
+A migration `20260826013647_m6_pricing_registry.sql` cria a política e o registro proprietário de
 observações. Os registros são ativos internos da Offroad, com RLS forçado e sem leitura para
 `anon` ou `authenticated`. O worker carrega o contexto pela capability do job. O estado privado
 preserva a linhagem; o estado público retém somente faixa, amostra agregada, recência, custos e
 decisão. A interface mostra a referência suportada ou explica que ainda não há base confiável.
 
-O gate local completo passou em Node 24.19 nos 38 pacotes. A reconstrução do banco, o teste remoto
-de não interferência e a promoção da migration dependem dos jobs obrigatórios do PR. Nenhuma
-política ou observação de mercado foi inventada ou semeada. Até a mesa aprovar política e dados
-atuais, o comportamento correto é abster-se.
+O gate local completo passou em Node 24.19 nos 38 pacotes e os jobs obrigatórios do PR #260,
+incluindo reconstrução do banco, RLS e E2E remoto, ficaram verdes. As migrations
+`20260826013647_m6_pricing_registry.sql` e
+`20260826013815_m6_pricing_registry_advisor_hardening.sql` estão aplicadas em produção. O Security
+Advisor não reporta findings do registro de pricing e o Performance Advisor não reporta foreign
+keys sem índice nesse perímetro. Os avisos de índices ainda não utilizados são esperados enquanto
+as tabelas permanecerem vazias. Nenhuma política ou observação de mercado foi inventada ou
+semeada. Até a mesa aprovar política e dados atuais, o comportamento correto é abster-se.
 
 ## M2 e M3 no trilho governado, 25/08/2026
 

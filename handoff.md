@@ -31,8 +31,10 @@ the borrower workspace receives only aggregate counts, latest date, range, polic
 procedure states. Source IDs, source owners, rejected observation IDs and per-procedure private
 results are removed at the public boundary. Until an approved active policy and authorized current
 observations exist, production behavior is deliberately `sem referência confiável` rather than a
-fabricated number. The code quality gate is green; database reconstruction and promotion remain
-subject to the PR database job.
+fabricated number. PR #260 passed database reconstruction, RLS, remote E2E and the complete quality
+gate. Migrations `20260826013647` and `20260826013815` are applied in production. The Supabase
+Security Advisor reports no pricing-registry finding and the Performance Advisor reports no
+unindexed foreign key in this perimeter.
 
 ### Engineering update: M5 indicative structure truth, 25 August 2026
 
