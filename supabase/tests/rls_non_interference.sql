@@ -3469,10 +3469,17 @@ begin
       ))
     )
   );
+  set local role postgres;
   if research_id is null
     or (select count(*) from public.public_research_sources where research_run_id = research_id) <> 1 then
     raise exception 'capability-bound public research did not persist';
   end if;
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
 
   manifest_id := public.worker_record_case_snapshot(
     job_id,
