@@ -6420,7 +6420,8 @@ button[disabled].workspace-search,
 .case-debt-truth,
 .case-operation-truth,
 .case-structure-truth,
-.case-pricing-truth {
+.case-pricing-truth,
+.case-market-truth {
   border: 1px solid var(--line);
   border-radius: 12px;
   min-width: 0;
@@ -6440,10 +6441,22 @@ button[disabled].workspace-search,
 .case-operation-truth > p,
 .case-structure-truth > p,
 .case-pricing-truth > p { color: var(--muted); font-size: .86rem; line-height: 1.55; }
+.case-market-truth > p { color: var(--muted); font-size: .86rem; line-height: 1.55; }
 
 .case-operation-truth,
 .case-structure-truth,
-.case-pricing-truth { margin-top: 1rem; }
+.case-pricing-truth,
+.case-market-truth { margin-top: 1rem; }
+
+.case-market-truth__boundary {
+  background: #f7f5f0;
+  border-left: 3px solid var(--line-strong);
+  margin: 18px 0;
+  padding: 14px 16px;
+}
+.case-market-truth__boundary.is-ready { border-left-color: var(--accent); }
+.case-market-truth__boundary strong { font-size: .9rem; }
+.case-market-truth__boundary p { color: var(--muted); font-size: .82rem; line-height: 1.55; margin: 5px 0 0; }
 
 .case-pricing-truth__reference {
   background: color-mix(in srgb, var(--accent) 7%, transparent);

@@ -94,6 +94,7 @@ describe("worker case analysis", () => {
       model_lineage: [],
       expected_model_calls: 0,
       receivables_case: diversifiedReceivablesCase("worker-receivables-case"),
+      market_distribution_context:{version:"2026.08.26-v1",status:"active",mandateMaxAgeMonths:12,waveLimit:3,learningGateAnchorCount:2},
       _execution: {
         id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         mode: "primary",

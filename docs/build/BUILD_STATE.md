@@ -4,6 +4,27 @@ Atualizado em: 2026-08-25
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## M8, inteligência de mandato e introdução qualificada, 26/08/2026
+
+MK-01 a MK-18 agora existem como candidates compilados da fonte canônica e alimentam um `Market
+Truth Set` no Case Engine. O runtime resolve a proveniência e a validade dos critérios duros,
+exclui incompatibilidades de forma binária, registra confirmações pendentes e monta uma shortlist
+qualitativa sem percentual fictício. MK-19 a MK-28 permanecem `not_applicable`: NDA, diligence,
+book, alocação, negociação, documentação, funding e closing estão fora da fronteira atual.
+
+A migration `20260826040000_m8_qualified_introductions.sql` cria política versionada, plano,
+destinatários nomeados e ledger append-only da introdução. Todas as tabelas de case têm RLS
+forçado, leitura restrita ao tenant e nenhuma escrita direta pelo usuário. Revisão técnica e
+autorização da companhia são comandos distintos. Ambas, o plano, o pacote e cada mandato precisam
+apontar para os fingerprints exatos e atuais. O worker carrega esse contexto somente pela
+capability curta do job.
+
+O estado público mostra contagens agregadas e a fronteira operacional. Fundos, contatos,
+observações de mandato, ordem da onda e resultados privados dos procedimentos não atravessam para
+o workspace. A rota antiga de sounding redireciona ao case e seu código mutável foi removido da
+aplicação ativa. A implementação permanece candidate até a migration, a suíte de não interferência,
+o CI, o deploy e a verificação em produção concluírem.
+
 ## M7, materiais institucionais e sala governada, 26/08/2026
 
 MA-01 a MA-32 agora existem como candidates compilados da fonte canônica, com método operacional e
@@ -16,9 +37,9 @@ ou fora de ordem e divergência econômica entre artefatos que consomem a mesma 
 
 A liberação externa é fail-closed. Produzir um documento no workspace não autoriza sua circulação.
 MA-32 só conclui quando validação cruzada, auditoria de claims, revisão técnica e autorização da
-companhia apontam para o mesmo fingerprint e a autorização contém destinatários nomeados. Até a
-camada de autorização e introdução do M8 ser ligada ao comando persistente, o estado correto do M7
-em produção é `internal_only`. Esse gate confirma consistência e divulgação de uma versão; não
+companhia apontam para o mesmo fingerprint e a autorização contém destinatários nomeados. A camada
+persistente de revisão, autorização e introdução foi ligada pelo M8. Sem essas decisões exatas, o
+estado correto do M7 continua `internal_only`. Esse gate confirma consistência e divulgação de uma versão; não
 aprova crédito, não recomenda investimento e não compromete capital.
 
 O estado público preserva apenas o resultado e as contagens necessárias ao workspace. Identidade

@@ -79,6 +79,12 @@ describe("parametric cases on the governed rail", () => {
         Array.from({length:32},(_,index)=>`MA-${String(index+1).padStart(2,"0")}`),
       );
       expect(result.state.materialTruth.releaseDecision).toBe("internal_only");
+      expect(result.state.matching.marketTruth.procedureCoverage).toHaveLength(28);
+      expect(result.state.matching.marketTruth.procedureCoverage.map((entry)=>entry.procedureId)).toEqual(
+        Array.from({length:28},(_,index)=>`MK-${String(index+1).padStart(2,"0")}`),
+      );
+      expect(result.state.matching.marketTruth.procedureCoverage.slice(18).every((entry)=>entry.status==="not_applicable")).toBe(true);
+      expect(result.state.matching.marketTruth.boundary).toBe("qualified_introduction");
       expect(result.state.reconciliation.financialTruth.procedureCoverage.every((entry) =>
         ["completed", "partial", "blocked", "not_computable"].includes(entry.status),
       )).toBe(true);

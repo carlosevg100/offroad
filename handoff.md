@@ -8,6 +8,27 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: M8 governed mandate screening and qualified introduction, 26 August 2026
+
+The real case rail now emits a `Market Truth Set` over the current mandate registry. MK-01 through
+MK-18 compile from the canonical House Playbook and execute inside the existing deterministic
+pipeline. MK-19 through MK-28 remain explicit `not_applicable` reference procedures because the
+current product ends at qualified introduction. Hard filters are binary and explainable. Missing,
+stale, divergent or inferred hard-filter data blocks the recipient rather than becoming an
+unrestricted mandate. Ranking never emits a fabricated percentage.
+
+The persistent release path joins M7 and M8 by exact fingerprint. Cross-material validation and
+claim audit are deterministic gates over the generated package. A separate Offroad technical
+review and company authorization must reference that same package and named recipients. The first
+wave is bounded by a versioned house policy; fund, vehicle, contact, rationale and mandate
+fingerprint remain private. Each completed introduction is append-only. The borrower-facing state
+contains only aggregate counts and status.
+
+The active product no longer exposes the legacy sounding, book or allocation workflow. Its URL is
+a safe redirect to the case. NDA, diligence, negotiation, documentation, funding and closing are
+not represented as work performed by Offroad. This gate authorizes disclosure and records a
+qualified introduction. It does not approve credit, recommend an investment or commit capital.
+
 ### Engineering update: M7 governed institutional materials, 26 August 2026
 
 The real case rail now emits a `Material Truth Set` over the teaser, issuer-side credit memorandum,
@@ -24,8 +45,8 @@ claim audit, technical review and company authorisation to reference the same ex
 plus named recipients and a releasable room. This gate approves consistency and disclosure of that
 version. It does not approve credit, recommend an investment or commit capital. Reviewer identity,
 recipient identities and private procedure results are removed at the borrower-facing boundary.
-The persistent authorisation and qualified-introduction command belongs to M8 and is not inferred
-from document generation or the platform rollout flag.
+The persistent authorisation and qualified-introduction command is connected by M8 and is never
+inferred from document generation or the platform rollout flag.
 
 ### Engineering update: M6 governed pricing truth, 25 August 2026
 

@@ -1,5 +1,20 @@
 # Acceptance Evidence
 
+## House Playbook M8, 26/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Dezoito procedimentos executáveis de mercado | `@offroad/credit-playbook` | MK-01 a MK-18 candidates com métodos e verificações específicos; MK-19 a MK-28 são referência pós-introdução e permanecem `not_applicable` |
+| Screening governado | `@offroad/fund-mandate` | filtros duros binários, proveniência, validade, divergência, shortlist qualitativa e ausência de percentual fictício cobertos por testes |
+| Gate M7 para M8 | `@offroad/case-materials` e `@offroad/case-engine` | pacote recebe fingerprint único; validação cruzada, claim audit, revisão técnica e autorização da companhia precisam apontar para a mesma versão e destinatários nomeados |
+| Persistência e isolamento | migration M8 e `rls_non_interference.sql` | política, plano, destinatários e introdução append-only; RLS forçado, sem DML direto, tenant cruzado bloqueado e comandos separados de revisão e autorização |
+| Fronteira pública | `publicCaseState`, worker e web | identidades, contatos, ordem da onda, observações e resultados privados não são expostos; somente contagens e status chegam ao workspace |
+| Superfície legada | rota `/app/sounding/<sessão>` | redirect seguro para o case; actions, servidor e componente de book e alocação removidos da aplicação ativa |
+
+M8 está implementado no branch como candidate. A aceitação final exige reconstrução integral do
+banco pelo CI, aplicação da migration em produção, advisors, tipos regenerados, deploy do worker e
+verificação da rota e do estado público em `offroad.capital`.
+
 ## House Playbook M7, 26/08/2026
 
 | Evidência | Verificação | Resultado |
@@ -12,8 +27,8 @@
 | Quality gate dirigido | playbook, materials, engine, evals, worker e web | 149 testes do playbook, 37 de materiais, 4 do engine, 32 evals, 46 do worker e typecheck web verdes antes do gate completo |
 
 M7 está implementado no trilho real como candidate. A geração no workspace é interna e não equivale
-a distribuição. A persistência da autorização por versão, escopo e destinatário será conectada ao
-fluxo de introdução qualificada no M8; até lá, nenhuma execução pode declarar circulação externa.
+a distribuição. A persistência da autorização por versão, escopo e destinatário está conectada ao
+fluxo de introdução qualificada pelo M8; sem o gate completo, nenhuma execução declara circulação externa.
 
 ## House Playbook M6, 25/08/2026
 

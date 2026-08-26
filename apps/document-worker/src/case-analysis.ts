@@ -115,6 +115,59 @@ const pricingContextSchema = z.object({
     }),
   })),
 });
+const marketDistributionContextSchema=z.object({
+  version:z.string().min(1),
+  status:z.enum(["active","invalidated"]),
+  mandateMaxAgeMonths:z.coerce.number().int().min(1).max(24),
+  waveLimit:z.coerce.number().int().min(1).max(20),
+  learningGateAnchorCount:z.coerce.number().int().min(1).max(20),
+  recipients:z.array(z.object({
+    fundId:z.string().min(1),
+    contactId:z.string().min(1),
+    rationale:z.string().min(1),
+    materialKinds:z.array(z.string().min(1)),
+    materialFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+    mandateFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+    order:z.coerce.number().int().positive(),
+    anchor:z.boolean(),
+  })).default([]),
+  authorization:z.object({
+    id:z.string().min(1),
+    caseFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+    materialFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+    authorizedBy:z.string().min(1),
+    authorizedAt:z.string().datetime({offset:true}),
+    recipientIds:z.array(z.string().min(1)),
+    scope:z.array(z.string().min(1)),
+    revokedAt:z.string().datetime({offset:true}).nullable().default(null),
+  }).nullable().default(null),
+  introductions:z.array(z.object({
+    id:z.string().min(1),
+    fundId:z.string().min(1),
+    contactId:z.string().min(1),
+    materialFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
+    authorizationId:z.string().min(1),
+    introducedBy:z.string().min(1),
+    introducedAt:z.string().datetime({offset:true}),
+  })).default([]),
+  materialRelease:z.object({
+    technicalReview:z.object({
+      approved:z.boolean(),
+      fingerprint:z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+      reviewedBy:z.string().nullable(),
+      reviewedAt:z.string().datetime({offset:true}).nullable(),
+    }),
+    companyAuthorization:z.object({
+      authorized:z.boolean(),
+      fingerprint:z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+      scope:z.array(z.string()),
+      recipientIds:z.array(z.string()),
+    }),
+  }).default({
+    technicalReview:{approved:false,fingerprint:null,reviewedBy:null,reviewedAt:null},
+    companyAuthorization:{authorized:false,fingerprint:null,scope:[],recipientIds:[]},
+  }),
+});
 const rawCaseInputSchema = z.object({
   session: recordSchema,
   run: recordSchema,
@@ -147,6 +200,7 @@ const rawCaseInputSchema = z.object({
   claim_decisions: z.array(claimDecisionSchema).default([]),
   receivables_case: receivablesCaseSchema.optional(),
   pricing_context: pricingContextSchema.nullable().default(null),
+  market_distribution_context:marketDistributionContextSchema.nullable().default(null),
   _execution: z.object({
     id: z.uuid(),
     mode: executionModeSchema,
@@ -249,6 +303,14 @@ export async function processCaseAnalysisJob(
         },
       } : {}),
       externalReleaseApproved: false,
+      ...(raw.market_distribution_context?{marketGovernance:{
+        mandateMaxAgeMonths:raw.market_distribution_context.status==="active"?raw.market_distribution_context.mandateMaxAgeMonths:null,
+        waveLimit:raw.market_distribution_context.status==="active"?raw.market_distribution_context.waveLimit:null,
+        recipients:raw.market_distribution_context.recipients,
+        authorization:raw.market_distribution_context.authorization,
+        introductions:raw.market_distribution_context.introductions,
+      }}:{}),
+      ...(raw.market_distribution_context?{materialRelease:raw.market_distribution_context.materialRelease}:{}),
       writeBrief: async ({reconciliation, desk, trajectory}) => {
         const evidence = deskEvidence(desk, trajectory);
         const callStart = dependencies.lineage().length;
@@ -309,8 +371,8 @@ export async function processCaseAnalysisJob(
     // Semantic retrieval can add context after that decision; it cannot rescue an excluded or
     // incomplete mandate. UUID validation also prevents fixture labels or malformed ids from
     // crossing the database boundary.
-    const allowedFundIds = result.state.matching.fits
-      .filter((fit) => fit.verdict === "fits")
+    const allowedFundIds = result.state.matching.marketTruth.shortlist
+      .filter((fit) => fit.verdict === "fits" && fit.eligibleForShortlist)
       .map((fit) => fit.fundId)
       .filter((fundId) => z.uuid().safeParse(fundId).success)
       .sort();

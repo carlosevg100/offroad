@@ -288,8 +288,8 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
               mandate: box,
               request: `${request.termMonths} meses`,
               explanation: L(
-                "O prazo não cabe. Prazo costuma ser o parâmetro mais fácil de renegociar de todos, então vale testar antes de descartar o fundo.",
-                "The tenor does not fit. Tenor is usually the easiest parameter to move, so it is worth testing before dropping the fund.",
+                "O prazo está fora do mandato confirmado e exclui este fundo da shortlist atual. Se houver indício de mudança, o mandato deve ser reconfirmado antes de qualquer inclusão.",
+                "The tenor is outside the confirmed mandate and excludes this fund from the current shortlist. If there is evidence of a change, the mandate must be reconfirmed before any inclusion.",
               ),
             };
       })(),

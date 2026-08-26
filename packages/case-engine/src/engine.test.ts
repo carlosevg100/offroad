@@ -76,6 +76,7 @@ describe("the governed case engine", () => {
         collateralKinds: ["recebiveis"],
       },
       resolvedMandates: [resolveMandate(mandate(), {asOf: "2026-08-24"})],
+      marketGovernance:{mandateMaxAgeMonths:12,waveLimit:3},
       externalReleaseApproved: false,
     });
 
@@ -98,6 +99,8 @@ describe("the governed case engine", () => {
     expect(result.state.materialsBlockedBy).toContain("brief_unavailable");
     expect(result.state.matching.screened).toBe(true);
     expect(result.state.matching.fits[0]).toMatchObject({fundId: "fund-1", verdict: "possible"});
+    expect(result.state.matching.marketTruth.procedureCoverage).toHaveLength(28);
+    expect(result.state.matching.marketTruth.procedureCoverage.slice(18).every((entry)=>entry.status==="not_applicable")).toBe(true);
     expect(result.state.outcome.qualifiedIntroductionAllowed).toBe(false);
     expect(result.report.stages.every((stage) => stage.outputFingerprint?.length === 64)).toBe(true);
 
@@ -108,6 +111,8 @@ describe("the governed case engine", () => {
     expect(publicState.pricingTruth.sample).toMatchObject({eligibleCount: 1, rejectedCount: 1});
     expect(publicState.pricingTruth.procedureCoverage[0]?.result).toBeNull();
     expect(JSON.stringify(publicState)).not.toMatch(/manager-name|private-observation|private-rejection/);
+    expect(JSON.stringify(publicState.matching)).not.toContain("Fundo Institucional");
+    expect(publicState.matching.marketTruth.shortlist).toMatchObject({eligible:1,requiringConfirmation:1});
   });
 
   it("records model usage once and makes a produced brief pass the independent claim audit", async () => {
