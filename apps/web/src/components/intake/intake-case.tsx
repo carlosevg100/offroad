@@ -28,6 +28,12 @@ const ratio = (value: string | null, locale: string) => {
   return Number.isFinite(parsed) ? `${(parsed * 100).toLocaleString(intl(locale), {maximumFractionDigits: 1})}%` : value;
 };
 
+const multiple = (value: string | null, locale: string) => {
+  if (value === null) return "N/D";
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? `${parsed.toLocaleString(intl(locale), {maximumFractionDigits: 2})}x` : value;
+};
+
 /**
  * The case as the desk sees it, on one screen.
  *
@@ -44,6 +50,16 @@ const ratio = (value: string | null, locale: string) => {
 export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.case"});
   const lang = asLocale(locale);
+  const structureConstraint = (value: string | null) => {
+    if (!value) return t("notInformed");
+    const known = new Set(["cash_flow", "collateral", "market", "arr_and_round", "existing_covenant"]);
+    return known.has(value) ? t(`structureConstraint_${value}`) : value.replaceAll("_", " ");
+  };
+  const repaymentFormat = (value: string | null) => {
+    if (!value) return t("notInformed");
+    const known = new Set(["sac", "price", "bullet", "balloon"]);
+    return known.has(value) ? t(`structureRepayment_${value}`) : value.replaceAll("_", " ");
+  };
 
   if (!state) {
     return (
@@ -239,6 +255,32 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
           <span>{t("truthProcedures")}: <strong>{state.operationTruth.procedureCoverage.filter((item) => item.status === "completed").length}/14</strong></span>
           <span>{t("operationTie")}: <strong>{state.operationTruth.sourcesAndUses.status === "pass" ? t("operationTied") : t("operationNotTied")}</strong></span>
           <span>{t("truthOpenItems")}: <strong>{state.operationTruth.exceptions.length + new Set(state.operationTruth.procedureCoverage.flatMap((item) => item.missingInputs)).size}</strong></span>
+        </div>
+      </section>
+
+      <section className="case-structure-truth">
+        <header className="case-truth__head">
+          <div>
+            <span className="section-kicker">M5</span>
+            <h3>{t("structureTruthTitle")}</h3>
+          </div>
+          <span className={`case-truth__status is-${state.structureTruth.status}`}>
+            {t(`truthStatus_${state.structureTruth.status}`)}
+          </span>
+        </header>
+        <p>{t("structureTruthBody")}</p>
+        <dl className="case-truth__metrics">
+          <div><dt>{t("structureProposedAmount")}</dt><dd>{state.structureTruth.proposal.amount ? money(state.structureTruth.proposal.amount, locale) : t("notInformed")}</dd></div>
+          <div><dt>{t("structureBindingConstraint")}</dt><dd>{structureConstraint(state.structureTruth.proposal.bindingConstraint)}</dd></div>
+          <div><dt>{t("structureTerm")}</dt><dd>{state.structureTruth.proposal.termMonths === null ? t("notInformed") : t("months", {count: state.structureTruth.proposal.termMonths})}</dd></div>
+          <div><dt>{t("structureRepayment")}</dt><dd>{repaymentFormat(state.structureTruth.proposal.amortizationFormat)}</dd></div>
+          <div><dt>{t("structureDownsideDscr")}</dt><dd>{multiple(state.structureTruth.proposal.minimumDownsideDscr, locale)}</dd></div>
+          <div><dt>{t("structureCollateralCoverage")}</dt><dd>{multiple(state.structureTruth.proposal.collateralCoverage, locale)}</dd></div>
+        </dl>
+        <div className="case-truth__summary">
+          <span>{t("truthProcedures")}: <strong>{state.structureTruth.procedureCoverage.filter((item) => item.status === "completed").length}/45</strong></span>
+          <span>{t("structureDayOne")}: <strong>{state.structureTruth.dayOne.passes === true ? t("structureCompatible") : state.structureTruth.dayOne.passes === false ? t("structureIncompatible") : t("structurePending")}</strong></span>
+          <span>{t("truthOpenItems")}: <strong>{state.structureTruth.exceptions.length + new Set(state.structureTruth.procedureCoverage.flatMap((item) => item.missingInputs)).size}</strong></span>
         </div>
       </section>
 

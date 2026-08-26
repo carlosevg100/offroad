@@ -5,7 +5,7 @@ import {z} from "zod";
  * Market-sensitive numbers and house policy parameters live here, not inside procedure prose.
  * Missing values are explicit blockers. They are never replaced by a model estimate.
  */
-export const referenceDataRegistryVersion = "2026.08.25-v3";
+export const referenceDataRegistryVersion = "2026.08.25-v4";
 
 export const referenceDataStatusSchema = z.enum(["required_missing", "draft", "approved", "expired"]);
 export type ReferenceDataStatus = z.infer<typeof referenceDataStatusSchema>;
@@ -97,6 +97,23 @@ export const referenceDataRegistry = [
   missing("policy.wait-analysis", "house_policy", "Required comparison of waiting cost, expected structural gain, milestone and client decision.", "Head de DCM e Estruturação", ["OP-12"]),
   missing("policy.structure.collateral_haircuts", "methodology_parameter", "Collateral-specific eligibility, haircut and coverage conventions.", "Head de DCM e Estruturação", ["ES-08", "ES-09", "ES-10", "ES-11", "ES-12", "ES-13", "ES-14", "ES-15", "ES-16", "ES-17", "ES-18", "ES-19"]),
   missing("policy.structure.covenant_headroom", "methodology_parameter", "Covenant calibration and minimum headroom conventions by metric and downside.", "Head de DCM e Estruturação", ["ES-23", "ES-24", "ES-25", "ES-26", "ES-27", "ES-28", "ES-29", "ES-30", "ES-31", "ES-32"]),
+  missing("policy.structure.leverage-bands", "market_observation", "Versioned leverage bands by sector, cyclicality, size, security and risk profile.", "Head de DCM e Estruturação", ["ES-01", "ES-03", "ES-23", "ES-45"]),
+  missing("policy.structure.coverage-floors", "house_policy", "Minimum DSCR and auxiliary ICR floors by profile, scenario and amortisation format.", "Head de DCM e Estruturação", ["ES-02", "ES-03", "ES-04", "ES-05", "ES-24"]),
+  missing("policy.structure.repayment-design", "methodology_parameter", "Rules for SAC, Price, bullet, balloon, grace, PIK, seasonality and ramp-up design.", "Head de DCM e Estruturação", ["ES-05", "ES-06", "ES-07", "ES-08", "ES-09"]),
+  missing("policy.structure.construction-delay", "methodology_parameter", "Required delay margin by project and construction archetype.", "Head de DCM e Estruturação", ["ES-09"]),
+  missing("policy.structure.reserve-account", "house_policy", "Reserve-account sizing, funding, replenishment and lock-up mechanics by risk profile.", "Head de DCM e Estruturação", ["ES-08", "ES-09", "ES-17", "ES-25"]),
+  missing("policy.structure.collateral-coverage", "market_observation", "Minimum post-haircut collateral coverage by borrower and facility profile.", "Head de DCM e Estruturação", ["ES-03", "ES-11", "ES-13", "ES-20"]),
+  missing("policy.structure.appraisal-validity", "house_policy", "Maximum appraisal age and independence requirements by asset class.", "Head de DCM e Estruturação", ["ES-13", "ES-15"]),
+  missing("policy.structure.maturity-concentration", "house_policy", "Maximum consolidated maturity concentration by period and borrower profile.", "Head de DCM e Estruturação", ["ES-10", "ES-42"]),
+  missing("policy.structure.cross-default-threshold", "house_policy", "Cross-default threshold and scope by company size and group perimeter.", "Head de DCM e Estruturação", ["ES-28", "ES-33"]),
+  missing("policy.structure.reporting-cadence", "house_policy", "Feasible information obligations and delivery windows by reporting capability.", "Head de DCM e Estruturação", ["ES-30"]),
+  missing("policy.structure.cure-waiver", "house_policy", "Cure periods, equity-cure limits and waiver process by event type.", "Head de DCM e Estruturação", ["ES-32", "ES-33"]),
+  missing("policy.structure.acceleration-events", "legal_reference", "Current calibrated catalogue of indicative acceleration events and materiality conventions.", "Head Jurídico e Head de DCM", ["ES-33", "ES-34", "ES-35"]),
+  missing("policy.structure.corporate-authority", "legal_reference", "Corporate authorisation and guarantee-capacity requirements by issuer and guarantor legal form.", "Head Jurídico e Head de DCM", ["ES-36", "ES-37", "ES-42"]),
+  missing("policy.structure.intercreditor", "legal_reference", "Intercreditor trigger, priority, standstill and consent requirements.", "Head Jurídico e Head de DCM", ["ES-22", "ES-39", "ES-42"]),
+  missing("policy.structure.minimum-sellable", "market_observation", "Minimum sellable structure and complexity budget by ticket, buyer type and execution route.", "Head de Mercado e Distribuição", ["ES-40", "ES-41", "ES-44"]),
+  missing("policy.structure.route-catalogue", "legal_reference", "Versioned separation of asset, obligation document, financing mechanism, vehicle, investor and required service providers.", "Head Jurídico e Head de DCM", ["ES-41", "ES-44"]),
+  missing("policy.structure.mandate-ticket", "market_observation", "Confirmed ticket and indivisibility constraints from currently aligned mandates.", "Head de Mercado e Distribuição", ["ES-41", "ES-45"]),
   missing("market.pricing.curves", "market_observation", "Comparable private-credit pricing observations normalized for index, date, tenor, size and security.", "Head de Mercado e Distribuição", ["PR-01", "PR-02", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07", "PR-10", "PR-11", "PR-12", "PR-13"]),
   missing("policy.pricing.sample-quality", "methodology_parameter", "Minimum sample, comparability, weighting, validity and abstention rules for pricing references.", "Head de Mercado e Distribuição", ["PR-01", "PR-02", "PR-03", "PR-04", "PR-07", "PR-09", "PR-12"]),
   missing("market.instrument.eligibility", "legal_reference", "Current legal, corporate and operational eligibility constraints by instrument and structure.", "Head de DCM e Estruturação", ["ES-03", "ES-42", "ES-43"]),

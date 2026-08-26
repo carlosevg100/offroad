@@ -8,10 +8,11 @@
  * indicative by construction and carries no price: the desk does not know what an investor
  * will charge, and inventing a rate is the fastest way to lose a company's trust.
  */
-export const dealStructureVersion = "2026.08.25-v2";
+export const dealStructureVersion = "2026.08.25-v3";
 
 export * from "./capacity";
 export * from "./termsheet";
 export * from "./market";
 export * from "./collateral";
 export * from "./operation";
+export * from "./structure";

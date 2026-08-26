@@ -79,7 +79,7 @@ describe("worker case analysis", () => {
         fund_id: "f1111111-1111-4111-8111-111111111111",
         fund_name: "Fundo Confidencial",
         observations: [
-          observation("ticket", {min: "10000000", max: "100000000"}),
+          observation("ticket", {min: "2000000", max: "100000000"}),
           observation("term_months", {min: 24, max: 72}),
           observation("sectors", ["Varejo"]),
           observation("instruments", ["ccb"]),
@@ -225,6 +225,10 @@ describe("worker case analysis", () => {
     expect(persistedOperation.procedureCoverage).toHaveLength(14);
     expect(persistedOperation.procedureCoverage[0]?.procedureId).toBe("OP-01");
     expect(persistedOperation.procedureCoverage[13]?.procedureId).toBe("OP-14");
+    const persistedStructure = persisted.structureTruth as {procedureCoverage: Array<{procedureId: string}>};
+    expect(persistedStructure.procedureCoverage).toHaveLength(45);
+    expect(persistedStructure.procedureCoverage[0]?.procedureId).toBe("ES-01");
+    expect(persistedStructure.procedureCoverage[44]?.procedureId).toBe("ES-45");
     expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
   });
 });

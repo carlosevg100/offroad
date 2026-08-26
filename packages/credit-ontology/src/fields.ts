@@ -57,7 +57,7 @@ export type FieldCanonical =
   | {kind: "enum"; values: readonly string[]; synonyms: Readonly<Record<string, string>>};
 
 export type FieldDefinition = {
-  /** Pattern with placeholders: `{period}` (2025 | 2026_07), `{i}` (index), `{ytd}` (optional `_7m`/`_ytd`/`_ltm` suffix). */
+  /** Pattern with placeholders: `{period}` (2025 | 2026_07), `{i}` (index), `{j}` (nested index), `{ytd}` (optional `_7m`/`_ytd`/`_ltm` suffix). */
   pattern: string;
   group: FieldGroup;
   valueType: FieldValueType;
@@ -134,6 +134,82 @@ const financialMetrics: Array<[key: string, pt: string, en: string, synonymsPt: 
 const historical = financialMetrics.map(([key, pt, en, spt, sen]) => f(`historical_financials.{period}.${key}`, "historical_financials", "number", "money", "material", pt, en, spt, sen));
 const interim = financialMetrics.map(([key, pt, en, spt, sen]) => f(`interim_financials.{period}.${key}{ytd}`, "interim_financials", "number", "money", "material", pt, en, spt, sen));
 const projected = financialMetrics.map(([key, pt, en, spt, sen]) => f(`projections.{period}.${key}`, "projections", "number", "money", "material", `${pt} (projetado)`, `${en} (projected)`, spt, sen));
+
+const sf = (pattern: string, valueType: FieldValueType, unit: FieldUnit, pt: string, en: string) =>
+  f(pattern, "transaction", valueType, unit, "material", pt, en);
+const structureFields: FieldDefinition[] = [
+  sf("structure.capacity.covenant_limit", "number", "money", "Limite por covenant existente", "Existing covenant capacity limit"),
+  sf("structure.mandate.ticket_min", "number", "money", "Tíquete mínimo do mandato", "Mandate minimum ticket"),
+  sf("structure.mandate.ticket_max", "number", "money", "Tíquete máximo do mandato", "Mandate maximum ticket"),
+  sf("structure.term_months", "number", "months", "Prazo proposto", "Proposed tenor"),
+  sf("structure.grace_months", "number", "months", "Carência proposta", "Proposed grace"),
+  sf("structure.amortization_format", "text", "text", "Formato de amortização", "Amortisation format"),
+  sf("structure.sizing_annual_rate", "number", "percent", "Taxa anual para dimensionamento", "Annual sizing rate"),
+  sf("structure.rate_convention", "text", "text", "Convenção da taxa", "Rate convention"),
+  sf("structure.grace_interest", "text", "text", "Juros durante a carência", "Interest during grace"),
+  sf("structure.balloon_percent", "number", "percent", "Percentual de balão", "Balloon percentage"),
+  sf("structure.bullet_repayment_source", "text", "text", "Fonte de repagamento do bullet", "Bullet repayment source"),
+  sf("structure.cfads_scenarios.{i}.name", "text", "text", "Cenário de CFADS", "CFADS scenario"),
+  sf("structure.cfads_scenarios.{i}.periods.{j}.period", "number", "count", "Período do cenário", "Scenario period"),
+  sf("structure.cfads_scenarios.{i}.periods.{j}.cfads", "number", "money", "CFADS do período", "Period CFADS"),
+  sf("structure.seasonality.material", "boolean", "boolean", "Sazonalidade material", "Material seasonality"),
+  sf("structure.seasonality.design", "text", "text", "Desenho sazonal proposto", "Proposed seasonal design"),
+  sf("structure.seasonality.reserve_mechanism", "text", "text", "Mecanismo de liquidez sazonal", "Seasonal liquidity mechanism"),
+  sf("structure.project_milestones.{i}.description", "text", "text", "Marco físico do projeto", "Project physical milestone"),
+  sf("structure.project_milestones.{i}.date", "date", "date", "Data do marco físico", "Physical milestone date"),
+  sf("structure.reserve.months", "number", "months", "Meses de conta reserva", "Reserve account months"),
+  sf("structure.reserve.funding", "text", "text", "Formação da conta reserva", "Reserve account funding"),
+  sf("structure.reserve.replenishment", "text", "text", "Recomposição da conta reserva", "Reserve replenishment"),
+  sf("structure.reserve.lockup", "text", "text", "Trava da conta reserva", "Reserve lock-up"),
+  sf("structure.bank_guarantee.provider", "text", "text", "Garantidor bancário", "Bank guarantee provider"),
+  sf("structure.bank_guarantee.rating", "text", "text", "Rating do garantidor", "Guarantor rating"),
+  sf("structure.bank_guarantee.expiry", "date", "date", "Vencimento da garantia", "Guarantee expiry"),
+  sf("structure.bank_guarantee.renewal", "text", "text", "Renovação da garantia", "Guarantee renewal"),
+  sf("structure.bank_guarantee.exclusions", "list", "list", "Exclusões da garantia", "Guarantee exclusions"),
+  sf("structure.dedicated_flow.perimeter", "text", "text", "Perímetro do fluxo dedicado", "Dedicated flow perimeter"),
+  sf("structure.dedicated_flow.waterfall", "text", "text", "Cascata de pagamentos", "Payment waterfall"),
+  sf("structure.dedicated_flow.incremental_cost", "number", "money", "Custo incremental da estrutura", "Incremental structure cost"),
+  sf("structure.shared_security.status", "text", "text", "Status da garantia compartilhada", "Shared security status"),
+  sf("structure.shared_security.release_path", "text", "text", "Caminho de liberação", "Security release path"),
+  sf("structure.shared_security.intercreditor_path", "text", "text", "Caminho de intercreditor", "Intercreditor path"),
+  ...[
+    ["receivables", "domicile_account"], ["receivables", "coverage_ratio"], ["receivables", "replenishment_rule"], ["receivables", "eligibility"],
+    ["property", "independent_appraisal"], ["property", "appraisal_date"], ["property", "title_and_lien_search"], ["property", "liquidity_adjustment"],
+    ["inventory", "independent_monitoring"], ["inventory", "custodian"], ["inventory", "identifiability"], ["inventory", "minimum_turnover"],
+    ["equipment", "resale_evidence"], ["equipment", "useful_life"], ["equipment", "insurance"], ["equipment", "registered_lien"],
+    ["vehicles", "resale_evidence"], ["vehicles", "useful_life"], ["vehicles", "insurance"], ["vehicles", "registered_lien"],
+    ["shares", "shareholders_agreement"], ["shares", "enforcement_feasibility"], ["shares", "rights_while_outstanding"],
+    ["guarantee", "existing_guarantees"], ["guarantee", "evidenced_reachable_net_worth"],
+  ].map(([asset, check]) => sf(`structure.security.${asset}.${check}`, "boolean", "boolean", `Verificação de garantia: ${asset} ${check}`, `Security check: ${asset} ${check}`)),
+  sf("structure.covenants.{i}.name", "text", "text", "Covenant proposto", "Proposed covenant"),
+  sf("structure.covenants.{i}.definition", "text", "text", "Definição do covenant", "Covenant definition"),
+  sf("structure.covenants.{i}.limit", "number", "ratio", "Limite do covenant", "Covenant limit"),
+  sf("structure.covenants.{i}.frequency", "text", "text", "Frequência do covenant", "Covenant frequency"),
+  sf("structure.covenants.{i}.cure", "text", "text", "Cura do covenant", "Covenant cure"),
+  ...["dividends", "negative_pledge", "additional_debt", "cross_default", "cash_sweep", "reporting", "cure_waiver", "acceleration", "change_of_control", "mac"].map((clause) =>
+    sf(`structure.${clause}.summary`, "text", "text", `Cláusula indicativa: ${clause}`, `Indicative clause: ${clause}`),
+  ),
+  ...["debt", "ebitda", "cash", "cfads", "ifrs16"].map((term) =>
+    sf(`structure.definitions.${term}`, "text", "text", `Definição: ${term}`, `Definition: ${term}`),
+  ),
+  sf("structure.issuer.entity", "text", "text", "Emissor proposto", "Proposed issuer"),
+  sf("structure.issuer.justification", "text", "text", "Justificativa do emissor", "Issuer rationale"),
+  sf("structure.issuer.compensations.{i}.description", "text", "text", "Compensação estrutural", "Structural compensation"),
+  sf("structure.guarantors.{i}.entity", "text", "text", "Garantidor do grupo", "Group guarantor"),
+  sf("structure.guarantors.{i}.limit", "number", "money", "Limite do garantidor", "Guarantor limit"),
+  sf("structure.guarantors.{i}.authority_confirmed", "boolean", "boolean", "Autorização do garantidor confirmada", "Guarantor authority confirmed"),
+  sf("structure.structural_subordination.exists", "boolean", "boolean", "Subordinação estrutural", "Structural subordination"),
+  sf("structure.structural_subordination.mitigation", "text", "text", "Mitigação da subordinação", "Subordination mitigation"),
+  sf("structure.intercreditor.creditor_map", "text", "text", "Mapa de credores", "Creditor map"),
+  sf("structure.intercreditor.consents", "text", "text", "Consentimentos necessários", "Required consents"),
+  sf("structure.intercreditor.priority", "text", "text", "Prioridade pretendida", "Intended priority"),
+  sf("structure.intercreditor.standstill", "text", "text", "Standstill indicativo", "Indicative standstill"),
+  sf("structure.day_one.negative_pledge_compliant", "boolean", "boolean", "Compatibilidade com negative pledge", "Negative pledge compatibility"),
+  sf("structure.day_one.corporate_authority_complete", "boolean", "boolean", "Autorização societária completa", "Corporate authority complete"),
+  sf("structure.selected_instrument", "text", "text", "Instrumento selecionado", "Selected instrument"),
+  sf("structure.target_buyer", "text", "text", "Comprador alvo", "Target buyer"),
+  sf("structure.all_in", "text", "text", "Custo all-in indicativo", "Indicative all-in cost"),
+];
 
 const withCanonical = (field: FieldDefinition, canonical: FieldCanonical): FieldDefinition => ({...field, canonical});
 
@@ -229,6 +305,7 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("transaction.self_funding", "transaction", "number", "money", "material", "Autofinanciamento", "Self funding", ["recursos próprios"], ["own funds"]),
   f("transaction.refinanced_debt", "transaction", "number", "money", "material", "Dívida liquidada pela operação", "Debt refinanced by the transaction", ["dívida refinanciada"], []),
   f("transaction.fees_paid_from_cash", "transaction", "number", "money", "material", "Custos pagos com caixa", "Fees paid from cash", [], []),
+  ...structureFields,
   f("transaction.incremental_working_capital_schedule.{i}.period", "transaction", "text", "text", "material", "NCG incremental: período", "Incremental working capital: period", [], []),
   f("transaction.incremental_working_capital_schedule.{i}.incremental_revenue", "transaction", "number", "money", "material", "NCG incremental: receita", "Incremental working capital: revenue", [], []),
   f("transaction.incremental_working_capital_schedule.{i}.incremental_cogs", "transaction", "number", "money", "material", "NCG incremental: custo", "Incremental working capital: COGS", [], []),
@@ -321,6 +398,7 @@ export const fieldCatalog: readonly FieldDefinition[] = [
   f("project.name", "project", "text", "text", "supporting", "Nome do projeto", "Project name", [], []),
   f("project.description", "project", "text", "text", "supporting", "Descrição do projeto", "Project description", [], []),
   f("project.total_cost", "project", "number", "money", "material", "Custo total do projeto", "Total project cost", ["investimento total", "capex total"], ["total investment"]),
+  f("project.ramp_up_months", "project", "number", "months", "material", "Ramp-up do projeto", "Project ramp-up", ["rampa de maturação"], ["ramp-up period"]),
   f("project.company_cash", "project", "number", "money", "material", "Caixa próprio no projeto", "Company cash contribution", ["recursos próprios"], ["equity from cash"]),
   f("project.shareholder_equity", "project", "number", "money", "material", "Aporte dos sócios", "Shareholder equity contribution", ["aporte de capital"], ["equity injection"]),
   f("project.third_party_debt", "project", "number", "money", "material", "Dívida de terceiros no projeto", "Third-party debt", [], []),
@@ -471,6 +549,7 @@ export function compilePattern(pattern: string): RegExp {
         .replace(/[.*+?^${}()|[\]\\]/g, (m) => (m === "{" || m === "}" ? m : `\\${m}`))
         .replace("{period}", "(?<period>\\d{4}(?:_\\d{2})?)")
         .replace("{i}", "(?<index>\\d+)")
+        .replace("{j}", "(?<subindex>\\d+)")
         .replace("{ytd}", "(?<window>_\\d{1,2}m|_ytd|_ltm)?"),
     )
     .join("\\.");
@@ -479,7 +558,7 @@ export function compilePattern(pattern: string): RegExp {
 
 export type ResolvedField = {
   definition: FieldDefinition;
-  params: {period?: string; index?: number; window?: "ytd" | "ltm" | undefined; ytdMonths?: number};
+  params: {period?: string; index?: number; subindex?: number; window?: "ytd" | "ltm" | undefined; ytdMonths?: number};
 };
 
 /** Resolves a concrete field path (e.g. `interim_financials.2026_07.revenue_7m`) to its catalog definition. */
@@ -491,6 +570,7 @@ export function resolveFieldPath(path: string): ResolvedField | null {
     const params: ResolvedField["params"] = {};
     if (groups.period) params.period = groups.period;
     if (groups.index) params.index = Number(groups.index);
+    if (groups.subindex) params.subindex = Number(groups.subindex);
     if (groups.window) {
       const ytd = /^_(\d{1,2})m$/.exec(groups.window);
       if (ytd) {

@@ -51,6 +51,7 @@ import {dataRoomIndex, planDataRoom, type DataRoomDocument, type DataRoomPlan} f
 import {
   assessCapacity,
   buildOperationTruthSet,
+  buildStructureTruthSet,
   buildTermSheet,
   designCollateralPackage,
   type CapacityAssessment,
@@ -59,6 +60,8 @@ import {
   type IndicativeTermSheet,
   type OperationPolicies,
   type OperationTruthSet,
+  type StructurePolicies,
+  type StructureTruthSet,
 } from "@offroad/deal-structure";
 import {
   assessMandateFit,
@@ -75,7 +78,7 @@ import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@off
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.25-v6";
+export const caseEngineVersion = "2026.08.25-v7";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -119,6 +122,7 @@ export type CaseEngineInput = {
   receivablesCase?: ReceivablesCase;
   indexLevels?: {cdi: string; tlp: string; ipca: string; tr: string};
   operationPolicies?: OperationPolicies;
+  structurePolicies?: StructurePolicies;
   writeBrief?: (input: {
     archetypeId: ArchetypeId;
     locale: "pt" | "en";
@@ -139,6 +143,7 @@ export type CaseEngineState = {
   readiness: ReadinessReport;
   capacity: CapacityAssessment | null;
   operationTruth: OperationTruthSet;
+  structureTruth: StructureTruthSet;
   desk: DeskAnalysis | null;
   trajectory: Trajectory | null;
   receivables: ReceivablesAnalysis | null;
@@ -249,6 +254,7 @@ const gapsOutputSchema = z.object({materialGapCount: z.number().int().nonnegativ
 const structureOutputSchema = z.object({
   capacity: z.unknown().nullable(),
   operationTruth: z.unknown(),
+  structureTruth: z.unknown(),
   termSheet: z.unknown().nullable(),
   rating: z.unknown().nullable(),
   stress: z.array(z.unknown()),
@@ -300,7 +306,7 @@ type MetricsOutput = {
 type GapsOutput = {materialGapCount: number; blockers: string[]};
 type StructureOutput = Pick<
   CaseEngineState,
-  "capacity" | "operationTruth" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
+  "capacity" | "operationTruth" | "structureTruth" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
 >;
 type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInvocations"> & {
   proposedBrief: CaseBrief | null;
@@ -641,9 +647,9 @@ export async function executeCaseEngine(
               outcome: deriveCaseOutcome({
                 informationSufficient: !metrics.readiness.blockers.some((blocker) => blocker.id === "minimum_documents"),
                 materialGapCount: gaps.materialGapCount,
-                analysisComplete: metrics.receivables
+                analysisComplete: structure.structureTruth.status !== "blocked" && (metrics.receivables
                   ? true
-                  : Boolean(metrics.desk && structure.capacity && structure.verdict),
+                  : Boolean(metrics.desk && structure.capacity && structure.verdict)),
                 ...(structure.verdict
                   ? {
                       structureSupportability:
@@ -658,7 +664,7 @@ export async function executeCaseEngine(
                 mandateScreeningComplete: matching.screened,
                 platformExternalReleaseEnabled: input.externalReleaseApproved,
                 clientIntroductionAuthorized: false,
-                blockers: gaps.blockers,
+                blockers: [...gaps.blockers, ...structure.structureTruth.exceptions.filter((exception) => exception.severity === "critical").map((exception) => exception.id)],
               }),
             } satisfies OutcomeOutput,
           };
@@ -820,7 +826,20 @@ function structureCase(
     referenceDate: input.referenceDate,
     ...(input.operationPolicies ? {policies: input.operationPolicies} : {}),
   });
-  return {capacity, operationTruth, termSheet, rating, stress, instruments, collateral, price, verdict};
+  const structureTruth = buildStructureTruthSet({
+    archetypeId: input.archetypeId,
+    facts: reconciliation.facts,
+    financialTruth: reconciliation.financialTruth,
+    debtTruth: reconciliation.debtTruth,
+    operationTruth,
+    capacity,
+    termSheet,
+    collateral,
+    instruments,
+    referenceDate: input.referenceDate,
+    ...(input.structurePolicies ? {policies: input.structurePolicies} : {}),
+  });
+  return {capacity, operationTruth, structureTruth, termSheet, rating, stress, instruments, collateral, price, verdict};
 }
 
 function applyCapacityCondition(
@@ -912,19 +931,20 @@ function requestForMatching(
   metrics: MetricsOutput,
   reconciliation: ReconciliationReport,
 ): DealRequest {
+  const proposedAmount = structure.structureTruth.proposal.amount ?? input.dealBrief.requestedAmount;
   const eligible = structure.instruments
     .filter((entry) => entry.eligible)
     .map((entry) => legacyInstrumentMap[entry.instrument.id])
     .filter((entry): entry is Instrument => Boolean(entry));
-  const deskLeverage = input.dealBrief.requestedAmount
-    ? metrics.desk?.leverage.scenarios.find((scenario) => scenario.amount === input.dealBrief.requestedAmount)?.postTurns
+  const deskLeverage = proposedAmount
+    ? metrics.desk?.leverage.scenarios.find((scenario) => scenario.amount === proposedAmount)?.postTurns
     : metrics.desk?.leverage.scenarios[0]?.postTurns;
   const leverage = deskLeverage
     ?? reconciliation.calculations.find((calculation) => calculation.id === "leverage_post_transaction")?.value
     ?? reconciliation.facts.find((fact) => fact.key.fieldPath === "leverage.post_transaction_net_debt_ebitda")?.value;
   const dscr = reconciliation.facts.find((fact) => fact.key.fieldPath === "projections.minimum_dscr")?.value;
   return {
-    ...(input.dealBrief.requestedAmount ? {amount: input.dealBrief.requestedAmount} : {}),
+    ...(proposedAmount ? {amount: proposedAmount} : {}),
     ...(input.dealBrief.requestedTermMonths !== undefined ? {termMonths: input.dealBrief.requestedTermMonths} : {}),
     ...(input.dealBrief.sector ? {sector: input.dealBrief.sector} : {}),
     ...(input.dealBrief.geography ? {geography: input.dealBrief.geography} : {}),
