@@ -289,6 +289,9 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Deploy controlado do Gate 8 | commit `ff7db5b`, Vercel e ECS | Quality em `main` verde; Vercel production concluída; `offroad-document-worker:83` estável; PT, EN, login e favicon com HTTP 200; banco permaneceu sem liberação externa ou ledgers inesperados | 2026-08-25 |
 | Cases reais do Gate 8 | cohorts `wave_1` e `wave_2` | **pendente**; nenhum fixture foi contabilizado como case real | 2026-08-24 |
 
+| Agente Offroad, primeira vertical | contratos + worker + UI + migrations `20260826203944`, `20260826204254`, `20260826204338` e `20260826205046` | mensagem vira job capability-bound; resposta pode perguntar ou propor; nenhuma mutação acontece antes da confirmação; proposta stale falha fechada; falha auxiliar não falha o intake | 2026-08-26 |
+| Não interferência do Agente em staging | `supabase/tests/rls_non_interference.sql` remoto | idempotência, isolamento entre tenants, preview, aceite e aplicação transacionais e separação do processamento documental aprovados; Security Advisor com 0 findings | 2026-08-26 |
+
 ## Regras
 
 - Guardar screenshots de review em artefatos/CI, não inflar o repositório sem necessidade.

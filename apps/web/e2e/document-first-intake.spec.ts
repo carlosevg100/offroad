@@ -99,6 +99,9 @@ test.describe("Document-first intake (company journey)", () => {
     await expectNoErrorNotice(page);
     await expect(page.locator(".intake-request-list")).toBeVisible();
     await expect(page.locator(".intake-upload")).toBeVisible();
+    await expect(page.locator(".agent-panel")).toBeVisible();
+    await expect(page.locator(".agent-panel__header h3")).toHaveText("Converse sobre a operação");
+    await expect(page.locator(".agent-panel footer")).toContainText("Nada muda na operação sem sua confirmação.");
 
     await page.locator(".intake-upload input[type=file]").setInputFiles(dataRoomFiles);
     await expect(page.locator(".intake-upload__files header span")).toHaveText(String(dataRoomExpectations.documents), {timeout: 120_000});

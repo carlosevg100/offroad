@@ -75,6 +75,9 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
       recordPublicResearch: async () => "ffffffff-ffff-4fff-8fff-ffffffffffff",
       recordCaseSnapshot: async () => "manifest-id",
       recordControlledExecution: async () => "execution-id",
+      loadAgentContext: async () => ({}),
+      recordAgentResponse: async () => ({}),
+      recordAgentFailure: async () => {},
       complete: async (_job, result) => {
         calls.completed.push(result);
       },

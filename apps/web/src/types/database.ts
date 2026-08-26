@@ -77,6 +77,7 @@ export type Database = {
       agent_change_proposals: {
         Row: {
           base_manifest_fingerprint: string
+          base_projection_updated_at: string | null
           created_at: string
           decided_at: string | null
           decided_by: string | null
@@ -92,7 +93,8 @@ export type Database = {
           proposed_by: string
           proposed_by_kind: string
           rationale: string
-          source_manifest_id: string
+          source_manifest_id: string | null
+          source_message_id: string | null
           status: string
           target: string
           title: string
@@ -100,6 +102,7 @@ export type Database = {
         }
         Insert: {
           base_manifest_fingerprint: string
+          base_projection_updated_at?: string | null
           created_at?: string
           decided_at?: string | null
           decided_by?: string | null
@@ -115,7 +118,8 @@ export type Database = {
           proposed_by: string
           proposed_by_kind: string
           rationale: string
-          source_manifest_id: string
+          source_manifest_id?: string | null
+          source_message_id?: string | null
           status?: string
           target: string
           title: string
@@ -123,6 +127,7 @@ export type Database = {
         }
         Update: {
           base_manifest_fingerprint?: string
+          base_projection_updated_at?: string | null
           created_at?: string
           decided_at?: string | null
           decided_by?: string | null
@@ -138,7 +143,8 @@ export type Database = {
           proposed_by?: string
           proposed_by_kind?: string
           rationale?: string
-          source_manifest_id?: string
+          source_manifest_id?: string | null
+          source_message_id?: string | null
           status?: string
           target?: string
           title?: string
@@ -164,6 +170,148 @@ export type Database = {
             columns: ["organization_id", "source_manifest_id"]
             isOneToOne: false
             referencedRelation: "case_artifact_manifests"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "agent_change_proposals_source_message_fkey"
+            columns: ["organization_id", "source_message_id"]
+            isOneToOne: false
+            referencedRelation: "agent_messages"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      agent_conversations: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_conversations_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: true
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      agent_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          created_by: string
+          error_code: string | null
+          id: string
+          intake_session_id: string
+          locale: string
+          metadata: Json
+          organization_id: string
+          proposal_id: string | null
+          reply_to_message_id: string | null
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          created_by: string
+          error_code?: string | null
+          id: string
+          intake_session_id: string
+          locale: string
+          metadata?: Json
+          organization_id: string
+          proposal_id?: string | null
+          reply_to_message_id?: string | null
+          role: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          created_by?: string
+          error_code?: string | null
+          id?: string
+          intake_session_id?: string
+          locale?: string
+          metadata?: Json
+          organization_id?: string
+          proposal_id?: string | null
+          reply_to_message_id?: string | null
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_messages_organization_id_conversation_id_fkey"
+            columns: ["organization_id", "conversation_id"]
+            isOneToOne: false
+            referencedRelation: "agent_conversations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "agent_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_messages_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "agent_messages_organization_id_proposal_id_fkey"
+            columns: ["organization_id", "proposal_id"]
+            isOneToOne: false
+            referencedRelation: "agent_change_proposals"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "agent_messages_organization_id_reply_to_message_id_fkey"
+            columns: ["organization_id", "reply_to_message_id"]
+            isOneToOne: false
+            referencedRelation: "agent_messages"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -4644,6 +4792,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_and_apply_agent_operation_brief_proposal: {
+        Args: {
+          p_event_id: string
+          p_organization_id: string
+          p_proposal_id: string
+        }
+        Returns: Json
+      }
       accept_intake_candidates: {
         Args: {
           p_candidate_ids: string[]
@@ -4651,6 +4807,14 @@ export type Database = {
           p_session_id: string
         }
         Returns: number
+      }
+      apply_agent_operation_brief_proposal: {
+        Args: {
+          p_event_id: string
+          p_organization_id: string
+          p_proposal_id: string
+        }
+        Returns: Json
       }
       attach_intake_session_to_opportunity: {
         Args: {
@@ -5051,6 +5215,16 @@ export type Database = {
         }
         Returns: Json
       }
+      submit_agent_message: {
+        Args: {
+          p_content: string
+          p_locale: string
+          p_message_id: string
+          p_organization_id: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
       verify_advisor_authorization_command: {
         Args: {
           p_event_id: string
@@ -5102,6 +5276,10 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_load_agent_context: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_case_input: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -5122,6 +5300,24 @@ export type Database = {
           p_limit?: number
           p_precedent_purpose?: string
           p_query: string
+        }
+        Returns: Json
+      }
+      worker_record_agent_failure: {
+        Args: {
+          p_capability_token: string
+          p_error_code: string
+          p_job_id: string
+        }
+        Returns: undefined
+      }
+      worker_record_agent_response: {
+        Args: {
+          p_assistant_message_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_proposal?: Json
+          p_response: Json
         }
         Returns: Json
       }

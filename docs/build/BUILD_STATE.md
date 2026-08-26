@@ -944,3 +944,21 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - Casos adversariais bloqueiam sources and uses desenquadrado, mês sem cobertura e ponte sem
   take-out ou plano alternativo. O módulo permanece candidate até reference data vigente,
   revisão independente e promoção do fingerprint exato.
+
+## Agente Offroad, primeira vertical transacional, 26/08/2026
+
+- O workspace passou a exibir uma conversa real e contextual depois da seleção do arquétipo da
+  operação. Mensagens entram em fila, o estado de análise é real e a interface atualiza enquanto o
+  worker processa, sem simular progresso.
+- `@offroad/agent-contracts` limita a primeira vertical aos campos do brief da operação e aos
+  respectivos tipos, enums e limites. O modelo pode fazer uma pergunta, responder sem alteração ou
+  preparar uma proposta. Ele não grava o case.
+- A fila ganhou `agent_operation_brief`. O worker carrega apenas o contexto autorizado, executa uma
+  chamada estreita pelo model gateway e exige suporte numérico direto da última declaração. Uma
+  declaração da empresa permanece `user_statement`, nunca evidência reconciliada.
+- Conversas, mensagens e propostas são segregadas por organização, append-only para o tenant e
+  escritas por comandos atômicos. A alteração só chega à projeção pelo comando canônico de M0
+  depois de confirmação explícita e desde que fingerprint e `updated_at` continuem atuais.
+- O teste remoto integral de RLS prova idempotência, isolamento, preview sem mutação, aplicação
+  explícita e falha auxiliar sem contaminar uma sessão de documentos em processamento. O Security
+  Advisor de staging permanece com zero findings.

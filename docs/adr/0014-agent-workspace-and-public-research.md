@@ -73,3 +73,21 @@ sistema imprevisível e sem trilha de auditoria.
 - o usuário acompanha o que foi feito, o que falta, o resultado disponível e a próxima ação;
 - o rollout ocorrerá em verticais: observabilidade do pipeline, plano visível, pesquisa pública e,
   por último, comandos reversíveis do Agente Offroad.
+
+## Primeira vertical executável, 26/08/2026
+
+A primeira vertical do Agente atua somente sobre o brief declarado da operação. Uma mensagem do
+usuário cria atomicamente uma conversa, uma mensagem append-only, uma run e um job. O worker usa
+capability efêmera e uma única chamada estreita de modelo para responder, pedir um esclarecimento ou
+preparar uma proposta tipada. A mensagem do usuário é registrada como declaração, nunca como fato
+reconciliado.
+
+A proposta aceita apenas campos e valores enumerados do brief. Ela carrega fingerprint do estado,
+origem, impacto, recomputações e validade. A interface mostra a prévia e exige a ação explícita
+`Aceitar e aplicar`; aceitar e aplicar são transições distintas dentro da mesma transação. Estado
+alterado, proposta vencida ou sessão terminal tornam a proposta stale. Uma falha desta run auxiliar
+não pode falhar o processamento independente do data room.
+
+Esta vertical não escreve materiais, não escolhe financiadores, não aprova crédito, não conduz
+diligência e não compromete capital. Novos comandos do Agente devem repetir o mesmo padrão de
+contrato estreito, preview, confirmação, aplicação canônica e teste de não interferência.

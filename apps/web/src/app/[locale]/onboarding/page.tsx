@@ -32,6 +32,7 @@ import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
+import {AgentPanel, type AgentPanelCopy} from "@/components/intake/agent-panel";
 import {OnboardingDocumentUploader} from "@/components/onboarding-document-uploader";
 import type {AppLocale} from "@/i18n/routing";
 import {loadIntakeReview} from "@/lib/intake/server";
@@ -48,6 +49,8 @@ import {
   previousOnboardingStep,
   processDocumentIntake,
   saveIntakeAnswer,
+  submitAgentMessageAction,
+  decideAgentProposalAction,
   saveDealBriefAction,
   setIntakeOperation,
   removeIntakeDocument,
@@ -200,6 +203,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         .select("id, status, stages")
         .eq("organization_id", organization.id)
         .eq("intake_session_id", intakeSessionId)
+        .neq("pipeline_version", "agent-operation-brief-v1")
         .order("run_no", {ascending: false})
         .limit(1)
         .maybeSingle()
@@ -211,6 +215,34 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       })
     : null;
   const completionPercent = workPlan?.completionPercent ?? registrationCompletionPercent;
+  const agentAvailable = Boolean(
+    intakeSessionId
+    && intakeReview?.session?.archetype
+    && !["confirmed", "cancelled"].includes(intakeReview.session.status),
+  );
+  const {data: agentConversation} = agentAvailable
+    ? await supabase.from("agent_conversations")
+        .select("id, state")
+        .eq("organization_id", organization.id)
+        .eq("intake_session_id", intakeSessionId)
+        .maybeSingle()
+    : {data: null};
+  const [{data: agentMessages}, {data: agentProposals}] = agentConversation
+    ? await Promise.all([
+        supabase.from("agent_messages")
+          .select("id, role, status, content, proposal_id, metadata")
+          .eq("organization_id", organization.id)
+          .eq("conversation_id", agentConversation.id)
+          .order("created_at", {ascending: true})
+          .limit(30),
+        supabase.from("agent_change_proposals")
+          .select("id, status, title, rationale, impact_summary, proposal")
+          .eq("organization_id", organization.id)
+          .eq("intake_session_id", intakeSessionId)
+          .order("proposed_at", {ascending: true})
+          .limit(30),
+      ])
+    : [{data: []}, {data: []}];
 
   const errorMessage = state.error === "documents"
     ? t("documentsRequired")
@@ -221,6 +253,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         : state.error
           ? t("error")
           : null;
+  const agentCopy = t.raw("workspace.agent") as AgentPanelCopy;
 
   return (
     <main className="workspace-onboarding">
@@ -533,12 +566,25 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 </div>
               </section>
 
-              <section className="workspace-inspector__panel workspace-inspector__guidance">
-                <span>{t("workspace.guidanceEyebrow")}</span>
-                <h3>{t("workspace.guidanceTitle")}</h3>
-                <p>{t("workspace.guidanceBody")}</p>
-                <div><Check aria-hidden="true" size={13} /><span>{t("workspace.autoSave")}</span></div>
-              </section>
+              {agentAvailable ? (
+                <AgentPanel
+                  copy={agentCopy}
+                  conversationState={agentConversation?.state ?? "idle"}
+                  decideAction={decideAgentProposalAction}
+                  locale={locale}
+                  messages={agentMessages ?? []}
+                  proposals={agentProposals ?? []}
+                  sessionId={intakeSessionId}
+                  submitAction={submitAgentMessageAction}
+                />
+              ) : (
+                <section className="workspace-inspector__panel workspace-inspector__guidance">
+                  <span>{t("workspace.guidanceEyebrow")}</span>
+                  <h3>{t("workspace.guidanceTitle")}</h3>
+                  <p>{t("workspace.guidanceBody")}</p>
+                  <div><Check aria-hidden="true" size={13} /><span>{t("workspace.autoSave")}</span></div>
+                </section>
+              )}
             </aside> : null}
           </div>
         </div>

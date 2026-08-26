@@ -421,9 +421,46 @@
       "guidanceEyebrow": "Orientação Offroad",
       "guidanceTitle": "Comece com o que você tem.",
       "guidanceBody": "Você não precisa reunir tudo de uma vez. A cada avanço, indicamos as informações essenciais e o próximo passo mais útil.",
-      "autoSave": "Seu progresso é salvo a cada bloco.",
-      "comingSoon": "Em breve",
-      "workPlan": {
+    "autoSave": "Seu progresso é salvo a cada bloco.",
+    "comingSoon": "Em breve",
+    "agent": {
+      "eyebrow": "AGENTE OFFROAD",
+      "title": "Converse sobre a operação",
+      "body": "Explique uma mudança ou responda ao que faltar. O agente prepara a alteração e mostra o impacto antes de aplicar.",
+      "placeholder": "Ex.: o valor pretendido passou para R$ 50 milhões",
+      "send": "Enviar",
+      "states": {
+        "analyzing": "Analisando sua mensagem",
+        "asking": "Aguardando sua resposta",
+        "proposing": "Proposta pronta para revisão",
+        "idle": "Pronto para ajudar",
+        "failed": "Não foi possível concluir esta análise"
+      },
+      "preview": "PRÉVIA DA ALTERAÇÃO",
+      "impact": "Impacto",
+      "accept": "Aceitar e aplicar",
+      "reject": "Descartar",
+      "applied": "Alteração aplicada",
+      "rejected": "Proposta descartada",
+      "stale": "Esta prévia ficou desatualizada",
+      "control": "Nada muda na operação sem sua confirmação.",
+      "monthValue": "{value} meses",
+      "fields": {
+        "objective": "Objetivo",
+        "requestedAmount": "Valor pretendido",
+        "currency": "Moeda",
+        "urgency": "Prazo para captação",
+        "requestedTermMonths": "Prazo da operação",
+        "requestedGraceMonths": "Carência",
+        "consequenceIfNotExecuted": "Impacto de não executar",
+        "sector": "Setor",
+        "geography": "Geografia",
+        "instruments": "Instrumentos considerados",
+        "collateralKinds": "Garantias disponíveis",
+        "expectedRate": "Expectativa de custo"
+      }
+    },
+    "workPlan": {
         "status": {
           "pending": "Aguardando a etapa anterior",
           "running": "Em execução agora",

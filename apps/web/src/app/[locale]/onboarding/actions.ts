@@ -1,6 +1,6 @@
 "use server";
 
-import {createHash} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 
 import {redirect} from "next/navigation";
 import {z} from "zod";
@@ -26,6 +26,7 @@ import type {IntakeErrorCode} from "@/lib/intake/types";
 import {createClient} from "@/lib/supabase/server";
 import type {Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
+import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 
 type Journey = "company" | "originator" | "capital_provider";
 type AnswerMap = Record<string, Json | undefined>;
@@ -208,6 +209,72 @@ export async function saveDealBriefAction(formData: FormData) {
     brief,
   });
   redirect(onboardingUrl(locale, saved.ok ? undefined : "save"));
+}
+
+export async function submitAgentMessageAction(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const content = value(formData, "message");
+  if (content.length < 1 || content.length > 4000) redirect(onboardingUrl(locale, "validation"));
+  const {error} = await runtime.supabase.rpc("submit_agent_message", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+    p_message_id: randomUUID(),
+    p_content: content,
+    p_locale: locale,
+  });
+  if (error) {
+    reportServerFailure({step: "agent.submit_message", error});
+    redirect(onboardingUrl(locale, "save"));
+  }
+  redirect(onboardingUrl(locale));
+}
+
+export async function decideAgentProposalAction(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const proposalId = value(formData, "proposal_id");
+  const decision = value(formData, "decision");
+  if (!z.string().uuid().safeParse(proposalId).success || !["accept", "reject"].includes(decision)) {
+    redirect(onboardingUrl(locale, "validation"));
+  }
+
+  if (decision === "reject") {
+    const {error} = await runtime.supabase.rpc("decide_agent_change_proposal", {
+      p_organization_id: runtime.organizationId,
+      p_proposal_id: proposalId,
+      p_decision: "rejected",
+      p_reason: "rejected_by_user",
+    });
+    if (error) {
+      reportServerFailure({step: "agent.reject_proposal", error});
+      redirect(onboardingUrl(locale, "save"));
+    }
+    redirect(onboardingUrl(locale));
+  }
+
+  const {data, error} = await runtime.supabase.rpc("accept_and_apply_agent_operation_brief_proposal", {
+    p_organization_id: runtime.organizationId,
+    p_proposal_id: proposalId,
+    p_event_id: randomUUID(),
+  });
+  if (error || !data || typeof data !== "object" || Array.isArray(data) || data.status !== "applied") {
+    reportServerFailure({step: "agent.accept_apply_proposal", error: error ?? {message: "proposal was not applied"}});
+    redirect(onboardingUrl(locale, "save"));
+  }
+  try {
+    await prepareIntakeRequestLadders({
+      supabase: runtime.supabase,
+      organizationId: runtime.organizationId,
+      sessionId: runtime.sessionId,
+    });
+  } catch (ladderError) {
+    reportServerFailure({
+      step: "agent.prepare_request_ladders",
+      error: {message: ladderError instanceof Error ? ladderError.message : "request ladder refresh failed"},
+    });
+  }
+  redirect(onboardingUrl(locale));
 }
 
 export async function saveIntakeAnswer(formData: FormData) {

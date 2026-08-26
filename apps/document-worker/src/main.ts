@@ -11,6 +11,7 @@ import {createClassifier} from "@offroad/document-classification";
 import {createStorageUrlGuard} from "./storage-url";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {createOpenAIWebSearchProvider, createPerplexitySearchProvider} from "@offroad/public-research";
+import {processAgentOperationBriefJob} from "./agent-operation-brief";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -183,6 +184,8 @@ async function main(): Promise<void> {
           researchProviders,
           log,
         })
+      : job.kind === "agent_operation_brief"
+        ? processAgentOperationBriefJob(job, {queue, gateway: gatewayRun.gateway, log})
       : processDocumentJob(job, dependenciesFor(gatewayRun)))
       .then((outcome) => {
         const spent = gatewayRun.gateway.spent();
