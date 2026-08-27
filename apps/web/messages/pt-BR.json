@@ -536,8 +536,7 @@
         "pending": "Registrando aceite",
         "acceptedTitle": "Termos de confidencialidade aceitos.",
         "acceptedBody": " Sua captação continua privada e nenhuma informação será compartilhada sem sua autorização.",
-        "returnCta": "Voltar à captação",
-        "version": "Termos {version}. O registro inclui versão, hash, declarações, data, usuário, organização e metadados técnicos disponíveis."
+        "returnCta": "Voltar à captação"
       },
       "project": {
         "kicker": "SUA CAPTAÇÃO",

@@ -92,7 +92,6 @@ export async function PrivateProjectSetup({
             </details>
             <div className="private-project-gate__submit">
               <Link className="button" href={returnHref}>{t("terms.returnCta")}</Link>
-              <small className="private-project-gate__version">{t("terms.version", {version: legalDocument?.version ?? ""})}</small>
             </div>
           </div>
         ) : <form action={acceptAction} className="private-project-gate__form">
@@ -123,7 +122,6 @@ export async function PrivateProjectSetup({
             <small>{t("terms.ctaNote")}</small>
             <IntakeActionSubmit idle={t("terms.cta")} pending={t("terms.pending")} />
           </div>
-          <small className="private-project-gate__version">{t("terms.version", {version: legalDocument?.version ?? ""})}</small>
         </form>}
       </section>
     );
