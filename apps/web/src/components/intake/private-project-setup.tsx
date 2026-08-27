@@ -16,6 +16,8 @@ type Props = {
     version: string;
     rendered_text: string;
     body_sections: Json;
+    acceptance_statement: string;
+    information_rights_statement: string;
   } | null;
   profile: {
     fullName: string;
@@ -63,7 +65,7 @@ export async function PrivateProjectSetup({
       <section className="private-project-gate private-project-gate--terms">
         <header className="private-project-gate__header private-project-gate__legal-header">
           <span className="section-kicker">{t("terms.kicker")}</span>
-          <h2>{legalDocument?.title ?? t("terms.title")}</h2>
+          <h2>{t("terms.title")}</h2>
           <p>{t("terms.intro")}</p>
         </header>
 
@@ -76,7 +78,10 @@ export async function PrivateProjectSetup({
           ))}
         </div>
 
-        <p className="private-project-gate__declaration"><span>{t("terms.authorityPrefix")}</span> <strong>{t("terms.authorityEmphasis")}</strong> {t("terms.authoritySuffix")}</p>
+        <aside className="private-project-gate__boundary">
+          <ShieldCheck aria-hidden="true" size={17} />
+          <p><strong>{t("terms.boundaryTitle")}</strong>{t("terms.boundaryBody")}</p>
+        </aside>
 
         {termsAccepted ? (
           <div className="private-project-gate__accepted">
@@ -92,6 +97,10 @@ export async function PrivateProjectSetup({
           </div>
         ) : <form action={acceptAction} className="private-project-gate__form">
           <input name="locale" type="hidden" value={locale} />
+          <details className="private-project-gate__full-terms">
+            <summary>{t("terms.fullTerms")}</summary>
+            <p>{legalDocument?.rendered_text ?? t("terms.fullTermsFallback")}</p>
+          </details>
           <div className="private-project-gate__signatory-fields">
             <label>
               <span>{t("terms.name")}</span>
@@ -103,14 +112,15 @@ export async function PrivateProjectSetup({
             </label>
           </div>
           <label className="private-project-gate__check">
-            <input name="authority_declared" required type="checkbox" value="confirmed" />
-            <span>{t("terms.declaration")}</span>
+            <input name="terms_agreed" required type="checkbox" value="confirmed" />
+            <span>{legalDocument?.acceptance_statement ?? t("terms.declaration")}</span>
+          </label>
+          <label className="private-project-gate__check">
+            <input name="information_rights_declared" required type="checkbox" value="confirmed" />
+            <span>{legalDocument?.information_rights_statement ?? t("terms.informationRightsDeclaration")}</span>
           </label>
           <div className="private-project-gate__submit">
-            <details className="private-project-gate__full-terms">
-              <summary>{t("terms.fullTerms")}</summary>
-              <p>{legalDocument?.rendered_text ?? t("terms.fullTermsFallback")}</p>
-            </details>
+            <small>{t("terms.ctaNote")}</small>
             <IntakeActionSubmit idle={t("terms.cta")} pending={t("terms.pending")} />
           </div>
           <small className="private-project-gate__version">{t("terms.version", {version: legalDocument?.version ?? ""})}</small>

@@ -3183,49 +3183,67 @@ export type Database = {
       }
       organization_legal_acceptances: {
         Row: {
+          acceptance_method: string
+          acceptance_statement: string
           accepted_at: string
           accepted_by: string
-          authority_declared: boolean
+          accepted_ip: unknown
+          accepted_user_agent: string | null
           created_at: string
           document_hash: string
           document_key: string
           document_version: string
           id: string
+          information_rights_declared: boolean
+          information_rights_statement: string
           legal_document_id: string
           locale: string
           organization_id: string
           signatory_name: string
           signatory_title: string | null
+          terms_agreed: boolean
         }
         Insert: {
+          acceptance_method?: string
+          acceptance_statement: string
           accepted_at?: string
           accepted_by: string
-          authority_declared: boolean
+          accepted_ip?: unknown
+          accepted_user_agent?: string | null
           created_at?: string
           document_hash: string
           document_key: string
           document_version: string
           id?: string
+          information_rights_declared: boolean
+          information_rights_statement: string
           legal_document_id: string
           locale: string
           organization_id: string
           signatory_name: string
           signatory_title?: string | null
+          terms_agreed: boolean
         }
         Update: {
+          acceptance_method?: string
+          acceptance_statement?: string
           accepted_at?: string
           accepted_by?: string
-          authority_declared?: boolean
+          accepted_ip?: unknown
+          accepted_user_agent?: string | null
           created_at?: string
           document_hash?: string
           document_key?: string
           document_version?: string
           id?: string
+          information_rights_declared?: boolean
+          information_rights_statement?: string
           legal_document_id?: string
           locale?: string
           organization_id?: string
           signatory_name?: string
           signatory_title?: string | null
+          terms_agreed?: boolean
         }
         Relationships: [
           {
@@ -3491,12 +3509,14 @@ export type Database = {
       }
       platform_legal_documents: {
         Row: {
+          acceptance_statement: string
           body_sections: Json
           created_at: string
           document_hash: string
           document_key: string
           effective_at: string
           id: string
+          information_rights_statement: string
           locale: string
           rendered_text: string
           status: string
@@ -3504,12 +3524,14 @@ export type Database = {
           version: string
         }
         Insert: {
+          acceptance_statement: string
           body_sections: Json
           created_at?: string
           document_hash: string
           document_key: string
           effective_at: string
           id?: string
+          information_rights_statement: string
           locale: string
           rendered_text: string
           status?: string
@@ -3517,12 +3539,14 @@ export type Database = {
           version: string
         }
         Update: {
+          acceptance_statement?: string
           body_sections?: Json
           created_at?: string
           document_hash?: string
           document_key?: string
           effective_at?: string
           id?: string
+          information_rights_statement?: string
           locale?: string
           rendered_text?: string
           status?: string
@@ -4998,10 +5022,11 @@ export type Database = {
       }
       accept_private_workspace_terms: {
         Args: {
-          p_authority_declared: boolean
+          p_information_rights_declared: boolean
           p_locale: string
           p_signatory_name: string
-          p_signatory_title: string | null
+          p_signatory_title: string
+          p_terms_agreed: boolean
         }
         Returns: string
       }

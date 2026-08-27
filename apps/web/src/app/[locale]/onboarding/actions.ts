@@ -163,11 +163,13 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
   const parsed = z.object({
     signatoryName: z.string().trim().min(2).max(160),
     signatoryTitle: z.string().trim().min(2).max(160),
-    authorityDeclared: z.literal("confirmed"),
+    termsAgreed: z.literal("confirmed"),
+    informationRightsDeclared: z.literal("confirmed"),
   }).safeParse({
     signatoryName: value(formData, "signatory_name"),
     signatoryTitle: value(formData, "signatory_title"),
-    authorityDeclared: value(formData, "authority_declared"),
+    termsAgreed: value(formData, "terms_agreed"),
+    informationRightsDeclared: value(formData, "information_rights_declared"),
   });
   if (!parsed.success) redirect(`/${locale}/onboarding?setup=terms&error=validation`);
 
@@ -176,7 +178,8 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
     p_locale: locale,
     p_signatory_name: parsed.data.signatoryName,
     p_signatory_title: parsed.data.signatoryTitle,
-    p_authority_declared: true,
+    p_terms_agreed: true,
+    p_information_rights_declared: true,
   });
   if (error) {
     reportServerFailure({step: "intake.accept_private_workspace_terms", error});

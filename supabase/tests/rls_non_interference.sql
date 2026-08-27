@@ -239,11 +239,19 @@ begin
   -- either both exist or neither does. Gate 0 first records an exact-version acceptance, then
   -- creates a named private project with a representation declaration.
   perform public.accept_private_workspace_terms(
-    'pt-BR', 'RLS Owner', 'Diretor', true
+    'pt-BR', 'RLS Owner', 'Diretor', true, true
   );
   if (select count(*) from public.organization_legal_acceptances
       where organization_id = org and document_key = 'private_workspace_terms') <> 1 then
     raise exception 'private workspace acceptance was not recorded exactly once';
+  end if;
+  if not (select terms_agreed and information_rights_declared
+          from public.organization_legal_acceptances
+          where organization_id = org and document_key = 'private_workspace_terms')
+    or (select char_length(acceptance_statement)
+        from public.organization_legal_acceptances
+        where organization_id = org and document_key = 'private_workspace_terms') < 20 then
+    raise exception 'private workspace acceptance did not preserve both exact declarations';
   end if;
   begin
     update public.organization_legal_acceptances set signatory_name = 'Tampered'

@@ -1,5 +1,21 @@
 # Acceptance Evidence
 
+## Gate jurídico inicial v3, 27/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Termo integral | documento `2026-08-27-v3`, PT-BR e EN-US | nove cláusulas materiais, sem repetição do resumo e com hash SHA-256 de 64 caracteres |
+| Escopo do primeiro aceite | texto integral, resumo e interface | somente preparação privada; sem mandato, exclusividade, prova de representação ou autorização de distribuição |
+| Manifestação inequívoca | dois controles obrigatórios | aceite da versão integral e confirmação do direito de fornecer informações são declarações separadas e preservadas literalmente |
+| Evidência técnica | `organization_legal_acceptances` | versão, hash, declarações, usuário, organização, data, método, IP e user agent quando disponíveis |
+| Imutabilidade e isolamento | migration e suíte RLS | registro append-only, função autenticada com organização derivada da sessão e nenhuma execução anônima |
+| Staging | schema e documentos ativos | somente v3 ativa por idioma; v1 e v2 preservadas como `superseded`; assinatura nova da RPC confirmada |
+| Segurança | Supabase Security Advisor staging | zero findings |
+| Gate local completo | `pnpm check` | 41 pacotes verdes; 19 arquivos e 135 testes web; build de produção com 28 rotas |
+
+O E2E autenticado completo e a promoção de produção continuam pendentes e não são contabilizados
+como evidência concluída nesta seção.
+
 ## Máquina de estados canônica do onboarding, 27/08/2026
 
 | Evidência | Verificação | Resultado |

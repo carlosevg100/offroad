@@ -8634,6 +8634,10 @@ button[disabled].workspace-search,
   font-size: 12px;
 }
 
+.private-project-gate--terms .private-project-gate__boundary {
+  margin-top: 28px;
+}
+
 .private-project-gate__form {
   display: grid;
   gap: 24px;
@@ -8916,6 +8920,13 @@ button[disabled].workspace-search,
   max-width: none;
 }
 
+.private-project-gate--terms .private-project-gate__form > .private-project-gate__full-terms {
+  margin-top: 26px;
+  padding: 15px 16px;
+  border: 1px solid #e4e2dd;
+  background: #fafaf9;
+}
+
 .private-project-gate__signatory-fields {
   display: grid;
   margin: 30px 0 25px;
@@ -8963,6 +8974,10 @@ button[disabled].workspace-search,
   background: transparent;
 }
 
+.private-project-gate--terms .private-project-gate__check + .private-project-gate__check {
+  margin-top: 15px;
+}
+
 .private-project-gate--terms .private-project-gate__check input {
   width: 15px;
   height: 15px;
@@ -8984,6 +8999,13 @@ button[disabled].workspace-search,
   align-items: center;
   gap: 18px;
   border: 0;
+}
+
+.private-project-gate--terms .private-project-gate__submit > small {
+  max-width: 44ch;
+  color: #707984;
+  font-size: 10px;
+  line-height: 1.5;
 }
 
 .private-project-gate__full-terms {
@@ -9010,7 +9032,7 @@ button[disabled].workspace-search,
 }
 
 .private-project-gate__full-terms p {
-  max-height: 210px;
+  max-height: 360px;
   margin: 14px 0 0;
   overflow-y: auto;
   white-space: pre-line;
