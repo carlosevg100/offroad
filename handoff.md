@@ -8,6 +8,28 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: receivables A1 Vertentes fixture and static metrics, 27 August 2026
+
+The first receivables training case now lives inside the repository. Vertentes A1-03 contains 21
+synthetic raw intake files, reserved generator truth, a compressed canonical universe, frozen
+expected outputs and a SHA-256 manifest. Raw inputs and reserved truth are deliberately separate:
+future extraction tests must start from raw, while deterministic finance tests may consume the
+canonical gold. Crossing that boundary is fixture leakage.
+
+`@offroad/financial-core` is now the only implementation of the migrated static receivables
+mathematics: portfolio values, weighted terms, simple and daily countback DSO, seven-bucket aging,
+Top 1, Top 5, Top 10, Top 50 and HHI concentration by obligor and economic group. Outputs carry
+dataset hash, source anchors, period, universe and formula version. `@offroad/receivables-analysis`
+adapts its legacy input contract to the canonical universe and consumes these metrics instead of
+maintaining duplicate formulas.
+
+The legacy Vertentes eligibility answer was corrected. Independent exclusion totals double-counted
+overlapping receivables. The exclusive waterfall produces BRL 8,877,495.23 eligible, or 74.619108%,
+under the synthetic scenario policy. That policy remains estimated and cannot support a hard buyer
+fit conclusion. This increment approves the fixture, contracts and static calculations only.
+Dynamic performance, debt, pricing, CET, advance rate and regulation-backed eligibility remain
+pending behind their own gates.
+
 ### Engineering update: legal acceptance v3, 27 August 2026
 
 The first company and advisor gate now separates a concise operational summary from the complete

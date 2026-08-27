@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import {calculateStaticReceivablesMetrics, type MeasuredMetric, type StaticReceivablesMetrics} from "@offroad/financial-core";
 
 import {
   receivablesCaseSchema,
@@ -7,6 +8,7 @@ import {
   type ReceivablesCase,
   type ReceivablesDecision,
 } from "./schema";
+import {canonicalizeLegacyReceivablesCase} from "./canonical";
 
 Decimal.set({precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -30, toExpPos: 30});
 
@@ -20,6 +22,13 @@ const sum = (values: readonly Decimal.Value[]) => values.reduce<Decimal>((total,
 const safeRatio = (numerator: Decimal, denominator: Decimal) => denominator.isZero() ? ZERO : numerator.div(denominator);
 const utc = (value: string) => Date.parse(`${value}T00:00:00.000Z`);
 const daysBetween = (from: string, to: string) => Math.floor((utc(to) - utc(from)) / DAY);
+
+function requiredMetricValue(metric: MeasuredMetric): string {
+  if (metric.status !== "measured" || metric.value === null) {
+    throw new RangeError(`required static metric is not evaluable: ${metric.id}`);
+  }
+  return metric.value;
+}
 
 export type ReceivableEligibility = {
   receivableId: string;
@@ -53,6 +62,7 @@ export type TriggerResult = {
 export type ReceivablesAnalysis = {
   version: "2026.08.24-v1";
   caseId: string;
+  staticMetrics: StaticReceivablesMetrics;
   analyzedReceivables: ReceivableEligibility[];
   metrics: {
     portfolio: {
@@ -204,6 +214,8 @@ function compareTrigger(id: string, actual: Decimal, threshold: Decimal, compari
 
 export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
   const input = receivablesCaseSchema.parse(raw);
+  const canonical = canonicalizeLegacyReceivablesCase(input);
+  const staticMetrics = calculateStaticReceivablesMetrics(canonical.universe, {datasetHash: canonical.datasetHash});
   const analyzedReceivables = input.portfolio.map((item): ReceivableEligibility => ({
     receivableId: item.id,
     debtorId: item.debtorId,
@@ -211,31 +223,29 @@ export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
     balance: money(d(item.outstandingBalance)),
     ...eligibilityReasons(item, input),
   }));
-  const total = sum(input.portfolio.map((item) => item.outstandingBalance));
+  const total = d(requiredMetricValue(staticMetrics.portfolio.totalOpenValue));
   const eligibleIds = new Set(analyzedReceivables.filter((item) => item.eligible).map((item) => item.receivableId));
   const eligibleItems = input.portfolio.filter((item) => eligibleIds.has(item.id));
   const preliminaryEligible = sum(eligibleItems.map((item) => item.outstandingBalance));
   const adjustedEligible = adjustedForConcentration(eligibleItems, d(input.policy.maxSingleDebtorShare), d(input.policy.maxDebtorGroupShare));
   const debtors = balancesBy(input.portfolio, (item) => item.debtorId);
   const groups = balancesBy(input.portfolio, (item) => item.debtorGroupId ?? item.debtorId);
-  const debtorConcentration = concentration(debtors, total);
-  const groupConcentration = concentration(groups, total);
+  const debtorConcentration = {
+    top: d(staticMetrics.concentration.openByObligor.top_1.value ?? 0),
+    topFive: d(staticMetrics.concentration.openByObligor.top_5.value ?? 0),
+    herfindahl: d(staticMetrics.concentration.openByObligor.herfindahl.value ?? 0),
+  };
+  const groupConcentration = {
+    top: d(staticMetrics.concentration.openByEconomicGroup.top_1.value ?? 0),
+  };
 
   const aging = {
-    current: ZERO,
-    days_1_30: ZERO,
-    days_31_60: ZERO,
-    days_61_90: ZERO,
-    days_91_plus: ZERO,
+    current: d(requiredMetricValue(staticMetrics.aging.not_due)),
+    days_1_30: d(requiredMetricValue(staticMetrics.aging.past_due_1_15)).plus(requiredMetricValue(staticMetrics.aging.past_due_16_30)),
+    days_31_60: d(requiredMetricValue(staticMetrics.aging.past_due_31_60)),
+    days_61_90: d(requiredMetricValue(staticMetrics.aging.past_due_61_90)),
+    days_91_plus: d(requiredMetricValue(staticMetrics.aging.past_due_91_180)).plus(requiredMetricValue(staticMetrics.aging.past_due_over_180)),
   };
-  for (const item of analyzedReceivables) {
-    const balance = d(item.balance);
-    if (item.daysPastDue === 0) aging.current = aging.current.plus(balance);
-    else if (item.daysPastDue <= 30) aging.days_1_30 = aging.days_1_30.plus(balance);
-    else if (item.daysPastDue <= 60) aging.days_31_60 = aging.days_31_60.plus(balance);
-    else if (item.daysPastDue <= 90) aging.days_61_90 = aging.days_61_90.plus(balance);
-    else aging.days_91_plus = aging.days_91_plus.plus(balance);
-  }
   const overdue1 = aging.days_1_30.plus(aging.days_31_60).plus(aging.days_61_90).plus(aging.days_91_plus);
   const overdue30 = aging.days_31_60.plus(aging.days_61_90).plus(aging.days_91_plus);
   const overdue90 = aging.days_91_plus;
@@ -246,10 +256,7 @@ export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
   const substitution = sum(input.portfolio.map((item) => item.substitutedInPeriod));
   const originated = sum(input.portfolio.map((item) => item.originalAmount));
   const netLoss = Decimal.max(defaulted.minus(recovered), ZERO);
-  const weightedRemaining = total.isZero() ? ZERO : input.portfolio.reduce((acc, item) => {
-    const remaining = Math.max(0, daysBetween(input.referenceDate, item.dueDate));
-    return acc.plus(d(item.outstandingBalance).times(remaining));
-  }, ZERO).div(total);
+  const weightedRemaining = d(staticMetrics.portfolio.weightedRemainingTermDays.value ?? 0);
 
   const verifiedBalance = sum(input.portfolio.filter((item) => item.evidenceVerified).map((item) => item.outstandingBalance));
   const anchoredBalance = sum(input.portfolio.filter((item) => item.anchorVerified).map((item) => item.outstandingBalance));
@@ -368,6 +375,7 @@ export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
   return {
     version: "2026.08.24-v1",
     caseId: input.id,
+    staticMetrics,
     analyzedReceivables,
     metrics: {
       portfolio: {

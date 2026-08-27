@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "2026.08.27-v1",
+  "caseId": "A1-03",
+  "fixtureId": "vertentes-a1-03-v1",
+  "synthetic": true,
+  "generator": {
+    "seed": 20260826,
+    "source": "packages/testing-fixtures/generators/vertentes",
+    "version": "2026.08.26-v1"
+  },
+  "dates": {
+    "reportingDate": "2026-06-30",
+    "latestOriginationDate": "2026-06-28",
+    "dataStartDate": "2024-07-01",
+    "dataEndDate": "2026-06-28"
+  },
+  "counts": {
+    "rawFiles": 21,
+    "receivables": 34397,
+    "obligors": 1200,
+    "economicGroups": 1199,
+    "settlements": 30734,
+    "dilutions": 4840,
+    "extensions": 340
+  },
+  "rawFiles": [
+    {
+      "path": "documentos/comercial/Faturamento por cliente.xlsx",
+      "bytes": 92692,
+      "sha256": "98ef47cbea07cfd64911e8f015ad0db048ed7c3ca0412fa812b6a9f875536b82"
+    },
+    {
+      "path": "documentos/comercial/Orcamento 2026 v4 FINAL (2).xlsx",
+      "bytes": 6604,
+      "sha256": "7d3302015e6f9ad04c2b22c6cf4a314d106c9668b92d1777e66e1b8f8ae69576"
+    },
+    {
+      "path": "documentos/contabil/BALANCETE JUN26.pdf",
+      "bytes": 36763,
+      "sha256": "01731eae1ddbac58483797f83d15385d7ef850fad3764fce5f72c1911ca041ec"
+    },
+    {
+      "path": "documentos/contabil/Balanco e DRE 2023-2024-2025.pdf",
+      "bytes": 37965,
+      "sha256": "f60e3846d425516d91a2d0938ee7b12ff64f6f6c90145acb4416f25f051c0105"
+    },
+    {
+      "path": "documentos/contabil/razao clientes 2024-2025.xlsx",
+      "bytes": 7321,
+      "sha256": "73408995a29bcaecc107c1aa7335d1efcaee6c31ed2ff234423052231c15d688"
+    },
+    {
+      "path": "documentos/divida/Contrato Desconto Duplicatas - Banco Santa Cruz.pdf",
+      "bytes": 49432,
+      "sha256": "d0bdc125b9951bad0a3bcbd1bf792ddcfdcf7da76911930031dc0de206a02dad"
+    },
+    {
+      "path": "documentos/divida/Contrato Fomento Mercantil - Prime.pdf",
+      "bytes": 48143,
+      "sha256": "7071b8a3f08e24e00581219adc76dd4aa427154031a8bf57cba91162428e6f26"
+    },
+    {
+      "path": "documentos/divida/Convenio Risco Sacado - Itau.pdf",
+      "bytes": 46865,
+      "sha256": "b0614ce5329ff05bbcd57dfc630b4cf978d1a694a264e405906398722017fcd3"
+    },
+    {
+      "path": "documentos/divida/posicao bancaria.xlsx",
+      "bytes": 6109,
+      "sha256": "f24fc88689bc026d7a582d5de2e07b7489b1944b9bb24aef3b1a07b5245b847d"
+    },
+    {
+      "path": "documentos/recebiveis/AGING.xlsx",
+      "bytes": 795168,
+      "sha256": "f75bf28ecf5af0bd2fc6dde15a1439114cb412bfe2b2ec60250eacea16f1cfee"
+    },
+    {
+      "path": "documentos/recebiveis/Cadastro de Sacados.xlsx",
+      "bytes": 74587,
+      "sha256": "b89f7b96d8c51162cb6021f68cfea4921f512aad2d95b38e20634a399897cd75"
+    },
+    {
+      "path": "documentos/recebiveis/Devolucoes e abatimentos.xlsx",
+      "bytes": 6959,
+      "sha256": "3f4ad571a240001c6177320fe49955382a12872437293b1a289336754d3cf9da"
+    },
+    {
+      "path": "documentos/recebiveis/NFs amostra.zip",
+      "bytes": 375219,
+      "sha256": "ebf1b44b8567833b754d421195f67a8330bdeb87236d594ef38f716722da7710"
+    },
+    {
+      "path": "documentos/recebiveis/Politica de Credito e Cobranca.pdf",
+      "bytes": 47317,
+      "sha256": "faa07a69dfb23147f2756615f5df96aaed595d68adfb82886e3648958620c243"
+    },
+    {
+      "path": "documentos/recebiveis/titulos_em_aberto_e_liquidados.csv",
+      "bytes": 6551842,
+      "sha256": "aab6854d27513fe1db980e9b951a4707b505cde236fd665bb6137eedc241aaa6"
+    },
+    {
+      "path": "intake/_estilo.css",
+      "bytes": 1112,
+      "sha256": "41a02ac8850dfce7c46f5175a27c4882dc457a057934d895378e4bbe365bce50"
+    },
+    {
+      "path": "intake/01-sobre-a-empresa.html",
+      "bytes": 3661,
+      "sha256": "43eb95cd81d70593b2f61b223208d780abec225127aa0c56404df20eb74e0a74"
+    },
+    {
+      "path": "intake/01-sobre-a-empresa.pdf",
+      "bytes": 30362,
+      "sha256": "f1cae2d9be02a2c7e2172128b1a83b87fe38141986655f48f71f705f5ba031ec"
+    },
+    {
+      "path": "intake/02-o-que-queremos-fazer.html",
+      "bytes": 3640,
+      "sha256": "731c23752954a1c49d87ae60058957597e48a4670814490cd9f6e83ba81c2be1"
+    },
+    {
+      "path": "intake/02-o-que-queremos-fazer.pdf",
+      "bytes": 29293,
+      "sha256": "8f13b23c880e4c70535e9672e4a171336d229fe2406fb7a5492fb3464e73fede"
+    },
+    {
+      "path": "LEIA-ME.md",
+      "bytes": 2535,
+      "sha256": "cf06f470e0b4aff7281c49756a9ee986108d58560cae9d6cd5415707a20f3e48"
+    }
+  ],
+  "reservedTruth": [
+    {
+      "path": "source/base-final.json",
+      "bytes": 8875522,
+      "sha256": "7a1ecdaad496394e42b545916b1cf9aa13cefdd8798e9855400420859bd1eb8c"
+    },
+    {
+      "path": "source/obligors.json",
+      "bytes": 123488,
+      "sha256": "326156dba55ab77b9b2d98e225044d50ccca03377a3ada1a602525a25ff6cfbe"
+    }
+  ],
+  "normalized": {
+    "path": "normalized/universe.json.gz",
+    "bytes": 1495830,
+    "sha256": "41c5581b0c0b7d52dd76223abb04e25f44669a520a5db887a4bb99390b84c442",
+    "uncompressedBytes": 27819156,
+    "uncompressedSha256": "8d68a1f7837c44d84816364eff56aade4c3824262aa49a0932b0c84d75b70029"
+  },
+  "expectedFiles": [
+    {
+      "path": "defects.json",
+      "bytes": 1137,
+      "sha256": "ab7f59e690a89ce406eb7150dd48e76d386abf005d9e3697ee4e7b64c966b1fb"
+    },
+    {
+      "path": "illustrative-eligibility.json",
+      "bytes": 868,
+      "sha256": "5a6cc1de26d908e58cae29d2954be91f9971c7b5779e03633c86388bdf6b6881"
+    },
+    {
+      "path": "static-metrics.json",
+      "bytes": 1594,
+      "sha256": "3370fc3a0eb302344a53c56e76eafee72903b33ddd9667e6cec20462a4f13407"
+    }
+  ],
+  "knownLimitations": [
+    "The raw tape overwrites 340 original due dates and does not expose extension event dates.",
+    "The cancelled-invoice flag exists only in reserved synthetic truth until invoice-sample reconciliation is implemented.",
+    "Buyer criteria in illustrative-eligibility.json are estimated scenario parameters, not confirmed mandate data."
+  ]
+}

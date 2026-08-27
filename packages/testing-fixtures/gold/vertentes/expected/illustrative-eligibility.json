@@ -1,0 +1,28 @@
+{
+  "version": "2026.08.27-v1",
+  "status": "estimated_policy_not_buyer_confirmed",
+  "reportingDate": "2026-06-30",
+  "policy": {
+    "id": "vertentes-a1-03-illustrative",
+    "pastDueMaximumDays": 30,
+    "excludeRelatedParties": true,
+    "excludeCancelledInvoices": true,
+    "maximumEconomicGroupShareOfOpenPortfolio": "0.03",
+    "allocationPriority": [
+      "past_due_over_30",
+      "related_party",
+      "cancelled_invoice",
+      "economic_group_concentration"
+    ]
+  },
+  "exclusiveExclusions": {
+    "past_due_over_30": "2434733.02",
+    "related_party": "95047.5",
+    "cancelled_invoice": "438024.58",
+    "economic_group_concentration": "51779.972",
+    "total": "3019585.072"
+  },
+  "eligibleOpenValue": "8877495.228",
+  "eligibleShare": "0.74619108",
+  "warning": "This scenario policy is estimated and cannot support a hard buyer-fit decision."
+}

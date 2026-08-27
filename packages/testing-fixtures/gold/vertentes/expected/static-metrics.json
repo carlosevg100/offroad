@@ -1,0 +1,57 @@
+{
+  "version": "2026.08.27-v1",
+  "reportingDate": "2026-06-30",
+  "latestOriginationDate": "2026-06-28",
+  "dataStartDate": "2024-07-01",
+  "portfolio": {
+    "titleCount": "34397",
+    "totalFaceValue": "125019151.13",
+    "trailing365Origination": "66171555.98",
+    "averageTicket": "3634.59461959",
+    "totalOpenValue": "11897080.3",
+    "weightedOriginalTermDays": "42.03656726",
+    "weightedCurrentTermDays": "43.84274975",
+    "weightedRemainingTermDays": "16.37226055",
+    "simpleDsoDays": "65.62388091",
+    "countbackDsoDays": "67.35649175"
+  },
+  "aging": {
+    "not_due": "7948357.44",
+    "past_due_1_15": "975207.05",
+    "past_due_16_30": "538782.79",
+    "past_due_31_60": "707805.61",
+    "past_due_61_90": "367687.94",
+    "past_due_91_180": "740128.24",
+    "past_due_over_180": "619111.23"
+  },
+  "concentration": {
+    "trailing365ByObligor": {
+      "top_1": "0.05065588",
+      "top_5": "0.15795632",
+      "top_10": "0.24349499",
+      "top_50": "0.47177155",
+      "herfindahl": "0.00910384"
+    },
+    "trailing365ByEconomicGroup": {
+      "top_1": "0.05065588",
+      "top_5": "0.17130204",
+      "top_10": "0.25684071",
+      "top_50": "0.47449186",
+      "herfindahl": "0.00977959"
+    },
+    "openByObligor": {
+      "top_1": "0.03716461",
+      "top_5": "0.14601011",
+      "top_10": "0.20675822",
+      "top_50": "0.40845968",
+      "herfindahl": "0.00718537"
+    },
+    "openByEconomicGroup": {
+      "top_1": "0.03716461",
+      "top_5": "0.15650668",
+      "top_10": "0.21677767",
+      "top_50": "0.41125804",
+      "herfindahl": "0.0076728"
+    }
+  }
+}
