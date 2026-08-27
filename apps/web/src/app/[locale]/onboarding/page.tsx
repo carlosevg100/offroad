@@ -59,6 +59,7 @@ import {
   resolveIntakeIssue,
   resolveOnboardingScopeSuggestion,
   restartDocumentIntake,
+  returnToPrivateProjectSetup,
   revokeOnboardingAdvisorAuthorization,
   reviewIntakeCandidate,
   saveAdvisedCompanyStep,
@@ -278,6 +279,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const completionPercent = isDocumentFirst
     ? Math.round((guidedMilestoneIndex / (guidedMilestones.length - 1)) * 100)
     : workPlan?.completionPercent ?? registrationCompletionPercent;
+  const isFreshGuidedIntake = Boolean(
+    intakeSession
+    && !companyProfileComplete
+    && !intakeSession.archetype
+    && briefCompleteness(intakeBrief).answered === 0
+    && (intakeReview?.documents.length ?? 0) === 0,
+  );
   const flowStepLabel = (step: string) => isDocumentFirst
     ? tIntake(`guided.milestoneLabels.${step}`)
     : t(`workspace.nodes.${journey}.${step}`);
@@ -397,9 +405,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
         <div className="workspace-scroll">
           {!isPrivateTermsStep ? (
-            <header className={isFirstOnboardingStart || isPrivateSetupStep ? "workspace-welcome workspace-welcome--intro" : "workspace-welcome"}>
-              <div><p className="section-kicker">{isFirstOnboardingStart || isPrivateSetupStep ? t("workspace.welcomeEyebrow") : journeyTitle}</p><h1>{isFirstOnboardingStart ? t("workspace.welcomeTitle") : isPrivateSetupStep ? t("privateProject.workspaceTitle") : t("workspace.progressTitle")}</h1><p>{isFirstOnboardingStart ? welcomeBody : isPrivateSetupStep ? t("privateProject.workspaceBody") : t("workspace.progressBody")}</p></div>
-              {!isFirstOnboardingStart && !isPrivateSetupStep ? <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div> : null}
+            <header className={isFirstOnboardingStart || isPrivateSetupStep ? "workspace-welcome workspace-welcome--intro" : isFreshGuidedIntake ? "workspace-welcome workspace-welcome--start" : "workspace-welcome"}>
+              <div>
+                <p className="section-kicker">{isFirstOnboardingStart || isPrivateSetupStep ? t("workspace.welcomeEyebrow") : journeyTitle}</p>
+                <h1>{isFirstOnboardingStart ? t("workspace.welcomeTitle") : isPrivateSetupStep ? t("privateProject.workspaceTitle") : isFreshGuidedIntake ? t("workspace.startTitle") : t("workspace.progressTitle")}</h1>
+                <p>{isFirstOnboardingStart ? welcomeBody : isPrivateSetupStep ? t("privateProject.workspaceBody") : isFreshGuidedIntake ? <>{t("workspace.startBody")} <strong>{t("workspace.startBodyEmphasis")}</strong></> : t("workspace.progressBody")}</p>
+              </div>
+              {!isFirstOnboardingStart && !isPrivateSetupStep && !isFreshGuidedIntake ? <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div> : null}
             </header>
           ) : null}
 
@@ -529,7 +541,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 organizationId={organization.id}
                 processAction={processDocumentIntake}
                 removeAction={removeIntakeDocument}
-                restartAction={restartDocumentIntake}
+                {...(isFreshGuidedIntake ? {backAction: returnToPrivateProjectSetup} : {restartAction: restartDocumentIntake})}
                 session={intakeReview.session}
                 answerAction={saveIntakeAnswer}
                 dealBrief={intakeBrief}

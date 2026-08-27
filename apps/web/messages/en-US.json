@@ -409,6 +409,9 @@
       "welcomeTitle": "Welcome.",
       "welcomeBodyCompany": "Our mission is to help your company organize, plan and structure a private credit financing. As simply as possible.",
       "welcomeBodyOriginator": "Our mission is to help you organize, plan and structure private credit financings for your clients. As simply as possible.",
+      "startTitle": "Let’s begin the process of structuring your financing.",
+      "startBody": "We start with the essentials: the company, the transaction and the documents you already have.",
+      "startBodyEmphasis": "It takes about ten minutes. We handle the rest.",
       "progressTitle": "Your financing, step by step.",
       "progressBody": "Continue where you left off. Offroad shows what is organized, what is still missing and the next useful step.",
       "readiness": "Transaction readiness",
@@ -1040,6 +1043,7 @@
       "workspaceDocumentsTitle": "Your information list, in the right order",
       "workspaceDocumentsBody": "Start with the minimum. If you already have additional materials, upload everything together. Offroad reads, classifies and shows what each file covers.",
       "back": "Back to the previous step",
+      "backToProject": "Back and edit the project",
       "restart": "Restart this financing",
       "restartBody": "This attempt will be closed and you will return to the introduction. Your account and organization remain unchanged.",
       "restartConfirm": "Close and restart"

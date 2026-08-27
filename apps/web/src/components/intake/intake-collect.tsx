@@ -57,6 +57,8 @@ type Props = {
   companyProfileAction?: (formData: FormData) => Promise<void>;
   /** Route used by the compact back action in the guided workspace flow. */
   backHref?: string;
+  /** Returns a new, still-empty intake to project setup so its identifying choices can be edited. */
+  backAction?: (formData: FormData) => Promise<void>;
   /** Base route used to navigate between the three guided stages without mutating saved answers. */
   stageBaseHref?: string;
   /** Cancels only this unfinished onboarding session and returns to the welcome screen. */
@@ -70,7 +72,7 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, restartAction, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, backAction, stageBaseHref, restartAction, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -134,12 +136,20 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         </nav>
       )}
 
-      {(resolvedBackHref || restartAction) ? (
+      {(resolvedBackHref || backAction || restartAction) ? (
         <div className="intake-guide__navigation">
           {resolvedBackHref ? (
             <Link className="intake-guide__back" href={resolvedBackHref}>
               <ArrowLeft aria-hidden="true" size={14} />{t("guided.back")}
             </Link>
+          ) : backAction ? (
+            <form action={backAction}>
+              <input name="locale" type="hidden" value={locale} />
+              <input name="session_id" type="hidden" value={session.id} />
+              <button className="intake-guide__back" type="submit">
+                <ArrowLeft aria-hidden="true" size={14} />{t("guided.backToProject")}
+              </button>
+            </form>
           ) : <span />}
           {restartAction ? (
             <details className="intake-guide__restart">
