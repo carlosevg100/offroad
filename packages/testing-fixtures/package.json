@@ -18,6 +18,7 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "nimbus": "tsx scripts/build-nimbus.ts",
     "vertentes": "tsx scripts/build-vertentes.ts",
+    "vertentes:structure-cost-oracle": "python3 scripts/oracle-vertentes-structure-cost.py",
     "vertentes:benchmark": "tsx scripts/benchmark-vertentes.ts",
     "test": "vitest run --exclude 'dist/**' --passWithNoTests",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "@offroad/financial-core": "workspace:*",
+    "@offroad/receivables-analysis": "workspace:*",
     "jszip": "3.10.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }

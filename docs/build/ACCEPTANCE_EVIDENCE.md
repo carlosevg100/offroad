@@ -1,6 +1,6 @@
 # Acceptance Evidence
 
-## Vertical de recebíveis A1, fixture Vertentes e métricas estáticas e dinâmicas, 27/08/2026
+## Vertical de recebíveis A1, gate matemático integral da Fase 1, 27/08/2026
 
 | Evidência | Verificação | Resultado |
 |---|---|---|
@@ -17,14 +17,20 @@
 | Invariantes | aging, concentração e replay | aging reconcilia integralmente com a posição; cortes são monotônicos; ordem dos títulos não altera a saída |
 | Procedência | inspeção de todas as métricas | 100% com hash do dataset, universo, período, fórmula versionada e ao menos uma âncora |
 | Cascata ilustrativa | exclusões mutuamente exclusivas | R$ 3.019.585,07 excluídos e R$ 8.877.495,23 elegíveis; política marcada como estimada e incapaz de decidir buyer fit |
-| Regressão focada | financial-core, receivables-analysis e testing-fixtures | 43 + 35 + 23 testes verdes; typecheck verde nos três pacotes |
+| Ponte da dívida | igualdade exata com oráculo independente | R$ 12 milhões declarados; R$ 22,26 milhões ajustados; R$ 20,94 milhões líquidos; 5,453125x sobre EBITDA reportado de R$ 3,84 milhões |
+| Conversão de taxa | regimes por dentro e por fora | desconto sobre face e custo sobre recursos líquidos permanecem distintos; CDI e spread em dias úteis são compostos separadamente |
+| CET | fluxos datados, tarifas e tributos explícitos | factoring Prime: R$ 94.570 líquidos e 62,448085% a.a. antes de tributos; ausência de tributo retorna CET incompleto e nenhuma imputação |
+| Advance rate | hipótese governada e rastreável | 92,904117% no cenário Vertentes; perda ajustada é proxy estimada declarada, não falsa perda esperada de safra nem política de comprador |
+| Orquestração canônica | `analyzeReceivablesPhaseOne` | composição sem matemática duplicada; caso incompleto permanece incompleto; quatro fronteiras externas permanecem falsas |
+| Regressão focada | financial-core, receivables-analysis e testing-fixtures | 53 + 38 + 25 testes verdes; typecheck verde nos três pacotes |
 | Gate integral | `pnpm check` em Node 24.19 | lint, typecheck, testes e build verdes nos 41 pacotes; web com 135 testes e 28 rotas |
-| Performance local | Node 24, carteira integral, dez iterações | estático 312,09 ms mediana e 321,47 ms p95; dinâmico 1.074,42 ms mediana e 1.113,34 ms p95 |
+| Performance local | Node 24, carteira integral | estático 318,65 ms mediana e 353,71 ms p95; dinâmico 1.082,61 ms mediana e 1.112,66 ms p95; relatório integral 1.414,71 ms mediana e 1.455,08 ms p95 |
 
-Esta evidência promove roll rate, safras, diluição total, perda ajustada, pontualidade e
-prorrogações no perímetro descrito. Não promove atribuição de diluição por causa, série temporal de
-prorrogação, dívida, CET, advance rate ou elegibilidade por regulamento. Cada grupo restante exige
-gold e gate próprios.
+Esta evidência promove o perímetro matemático e de procedência da Fase 1. Ela não
+promove atribuição de diluição por causa, série temporal de prorrogação, tributo não
+fornecido, elegibilidade por regulamento, buyer fit, recomendação ou introdução. O
+motor passou no gate. O caso Vertentes permanece incompleto onde a entrada é
+incompleta.
 
 ## Gate jurídico inicial v3, 27/08/2026
 

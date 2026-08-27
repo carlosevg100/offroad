@@ -8,7 +8,7 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
-### Engineering update: receivables A1 Vertentes static and dynamic metrics, 27 August 2026
+### Engineering update: receivables A1 Vertentes complete Phase 1 math gate, 27 August 2026
 
 The first receivables training case now lives inside the repository. Vertentes A1-03 contains 21
 synthetic raw intake files, reserved generator truth, a compressed canonical universe, frozen
@@ -42,9 +42,26 @@ median.
 The legacy Vertentes eligibility answer was corrected. Independent exclusion totals double-counted
 overlapping receivables. The exclusive waterfall produces BRL 8,877,495.23 eligible, or 74.619108%,
 under the synthetic scenario policy. That policy remains estimated and cannot support a hard buyer
-fit conclusion. This increment approves the fixture, contracts and the measured static and dynamic
-perimeters above. Debt, pricing, CET, advance rate, event-level dilution causes, extension timing
-and regulation-backed eligibility remain pending behind their own gates.
+fit conclusion.
+
+The Phase 1 structure and cost perimeter is now implemented in `financial-core`: adjusted debt,
+inside and outside rate conversion, dated cash-flow CET and implicit advance rate. An independent
+Python oracle confirms the frozen Vertentes outputs. Adjusted gross debt is BRL 22.26m, adjusted
+net debt is BRL 20.94m and leverage is 5.453125x on evidenced reported EBITDA of BRL 3.84m. The
+legacy BRL 4.16m EBITDA assumption had no intake-room support and is preserved only as a documented
+correction.
+
+The Prime factoring example produces BRL 94,570 net proceeds and 62.448085% annual CET before tax.
+Because tax treatment was not supplied, the proposal remains incomplete and the engine does not
+impute IOF. The 92.904117% advance rate is an estimated scenario. Historical adjusted loss is
+carried as an explicit governed proxy, not mislabeled as a mature-cohort expected loss or buyer
+policy.
+
+`analyzeReceivablesPhaseOne` composes the canonical engines without adding a second mathematics
+implementation. Its audit report separates engine-gate status from case completeness and keeps
+external direction, buyer recommendation, qualified introduction and credit approval false. Phase
+1 now approves deterministic mathematics, replay and provenance. Regulation-backed contractual
+eligibility is next. Buyer fit remains outside that next gate.
 
 ### Engineering update: legal acceptance v3, 27 August 2026
 

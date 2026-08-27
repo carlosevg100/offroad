@@ -1,0 +1,145 @@
+{
+  "version": "2026.08.27-v1",
+  "reportingDate": "2026-06-30",
+  "universeId": "vertentes-a1-03-v1",
+  "currency": "BRL",
+  "debt": {
+    "companyDeclaredDebt": {
+      "value": "12000000",
+      "source": {
+        "kind": "document",
+        "documentId": "vertentes/raw/empresa/intake/02-o-que-queremos-fazer.pdf",
+        "documentHash": "8f13b23c880e4c70535e9672e4a171336d229fe2406fb7a5492fb3464e73fede",
+        "page": 2,
+        "paragraph": "declared bank debt"
+      }
+    },
+    "cash": {
+      "value": "1320000",
+      "source": {
+        "kind": "document",
+        "documentId": "vertentes/raw/empresa/documentos/contabil/BALANCETE JUN26.pdf",
+        "documentHash": "01731eae1ddbac58483797f83d15385d7ef850fad3764fce5f72c1911ca041ec",
+        "page": 1,
+        "paragraph": "accounts 1.1.01.001 and 1.1.01.002"
+      }
+    },
+    "ebitdaForLeverage": {
+      "value": "3840000",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "basis": "reported",
+      "source": {
+        "kind": "document",
+        "documentId": "vertentes/raw/empresa/documentos/contabil/Balanco e DRE 2023-2024-2025.pdf",
+        "documentHash": "f60e3846d425516d91a2d0938ee7b12ff64f6f6c90145acb4416f25f051c0105",
+        "page": 1,
+        "paragraph": "resultado antes de depreciacao, financeiro e impostos, 2025"
+      }
+    },
+    "positions": [
+      {
+        "id": "bb-working-capital",
+        "creditor": "Banco do Brasil",
+        "category": "bank_debt",
+        "principal": "4900000",
+        "declarationStatus": "company_declared",
+        "sources": [{"kind": "file", "fileId": "vertentes/raw/empresa/documentos/divida/posicao bancaria.xlsx", "fileHash": "f24fc88689bc026d7a582d5de2e07b7489b1944b9bb24aef3b1a07b5245b847d", "sheet": "Posicao", "row": 5}]
+      },
+      {
+        "id": "itau-working-capital",
+        "creditor": "Itau Unibanco",
+        "category": "bank_debt",
+        "principal": "3500000",
+        "declarationStatus": "company_declared",
+        "sources": [{"kind": "file", "fileId": "vertentes/raw/empresa/documentos/divida/posicao bancaria.xlsx", "fileHash": "f24fc88689bc026d7a582d5de2e07b7489b1944b9bb24aef3b1a07b5245b847d", "sheet": "Posicao", "row": 6}]
+      },
+      {
+        "id": "sicoob-overdraft",
+        "creditor": "Sicoob",
+        "category": "bank_debt",
+        "principal": "2100000",
+        "declarationStatus": "company_declared",
+        "sources": [{"kind": "file", "fileId": "vertentes/raw/empresa/documentos/divida/posicao bancaria.xlsx", "fileHash": "f24fc88689bc026d7a582d5de2e07b7489b1944b9bb24aef3b1a07b5245b847d", "sheet": "Posicao", "row": 7}]
+      },
+      {
+        "id": "bb-finame",
+        "creditor": "Banco do Brasil",
+        "category": "bank_debt",
+        "principal": "2000000",
+        "declarationStatus": "company_declared",
+        "sources": [{"kind": "file", "fileId": "vertentes/raw/empresa/documentos/divida/posicao bancaria.xlsx", "fileHash": "f24fc88689bc026d7a582d5de2e07b7489b1944b9bb24aef3b1a07b5245b847d", "sheet": "Posicao", "row": 8}]
+      },
+      {
+        "id": "santa-cruz-recourse-discount",
+        "creditor": "Banco Santa Cruz",
+        "category": "receivables_assignment_with_recourse",
+        "principal": "4180000",
+        "declarationStatus": "identified_not_declared",
+        "sources": [
+          {"kind": "document", "documentId": "vertentes/raw/empresa/documentos/contabil/BALANCETE JUN26.pdf", "documentHash": "01731eae1ddbac58483797f83d15385d7ef850fad3764fce5f72c1911ca041ec", "page": 1, "paragraph": "account 2.1.02.004"},
+          {"kind": "document", "documentId": "vertentes/raw/empresa/documentos/divida/Contrato Desconto Duplicatas - Banco Santa Cruz.pdf", "documentHash": "d0bdc125b9951bad0a3bcbd1bf792ddcfdcf7da76911930031dc0de206a02dad", "page": 1, "clause": "3.2"}
+        ]
+      },
+      {
+        "id": "itau-reverse-factoring",
+        "creditor": "Itau Unibanco",
+        "category": "reverse_factoring",
+        "principal": "2960000",
+        "declarationStatus": "identified_not_declared",
+        "sources": [
+          {"kind": "document", "documentId": "vertentes/raw/empresa/documentos/contabil/BALANCETE JUN26.pdf", "documentHash": "01731eae1ddbac58483797f83d15385d7ef850fad3764fce5f72c1911ca041ec", "page": 1, "paragraph": "account 2.1.01.007"},
+          {"kind": "document", "documentId": "vertentes/raw/empresa/documentos/divida/Convenio Risco Sacado - Itau.pdf", "documentHash": "b0614ce5329ff05bbcd57dfc630b4cf978d1a694a264e405906398722017fcd3", "page": 1, "clause": "2.2"}
+        ]
+      },
+      {
+        "id": "prime-factoring",
+        "creditor": "Prime Fomento Mercantil",
+        "category": "factoring_with_recourse",
+        "principal": "1740000",
+        "declarationStatus": "identified_not_declared",
+        "sources": [
+          {"kind": "document", "documentId": "vertentes/raw/empresa/documentos/contabil/BALANCETE JUN26.pdf", "documentHash": "01731eae1ddbac58483797f83d15385d7ef850fad3764fce5f72c1911ca041ec", "page": 1, "paragraph": "account 2.1.02.006"},
+          {"kind": "document", "documentId": "vertentes/raw/empresa/documentos/divida/Contrato Fomento Mercantil - Prime.pdf", "documentHash": "7071b8a3f08e24e00581219adc76dd4aa427154031a8bf57cba91162428e6f26", "page": 1, "clause": "3.2"}
+        ]
+      },
+      {
+        "id": "federal-tax-installment",
+        "creditor": "Fazenda Nacional",
+        "category": "tax_installment",
+        "principal": "880000",
+        "declarationStatus": "identified_not_declared",
+        "sources": [{"kind": "document", "documentId": "vertentes/raw/empresa/documentos/contabil/BALANCETE JUN26.pdf", "documentHash": "01731eae1ddbac58483797f83d15385d7ef850fad3764fce5f72c1911ca041ec", "page": 1, "paragraph": "account 2.1.04.008"}]
+      }
+    ]
+  },
+  "rateScenarios": {
+    "primeFactoring": {
+      "faceValue": "100000",
+      "startDate": "2026-01-01",
+      "maturityDate": "2026-02-12",
+      "calendarDays": 42,
+      "monthlyOutsideDiscountRate": "0.0345",
+      "adValoremRate": "0.006",
+      "source": {"kind": "document", "documentId": "vertentes/raw/empresa/documentos/divida/Contrato Fomento Mercantil - Prime.pdf", "documentHash": "7071b8a3f08e24e00581219adc76dd4aa427154031a8bf57cba91162428e6f26", "page": 1, "clause": "2.1-2.2"}
+    },
+    "institutionalIllustration": {
+      "faceValue": "100000",
+      "calendarDays": 61,
+      "businessDays": 42,
+      "annualRates": ["0.1365", "0.06"],
+      "source": {"kind": "document", "documentId": "docs/knowledge/recebiveis/fichas/A1-mercantil-fidc-multicedente.md", "documentHash": "ce7e2b797e71d5c44a6f5f5a54ff405c07ae11b64c2fc88949ca179ba5a36f2d", "paragraph": "III.1 didactic example"}
+    }
+  },
+  "advanceRateScenario": {
+    "periodStart": "2024-07-01",
+    "expectedDilution": "0.02447267",
+    "expectedDilutionBasis": "Measured dilution share of total 24-month origination, used as a governed forward proxy for this scenario.",
+    "dilutionStressMultiplier": "1.5",
+    "expectedLossRate": "0.01616655",
+    "expectedLossBasis": "Adjusted final write-off share of total 24-month origination, used as a proxy and not as a measured mature-cohort expected loss.",
+    "lossStressMultiplier": "1.5",
+    "operationalReserve": "0.01",
+    "status": "estimated_scenario_not_buyer_confirmed"
+  }
+}

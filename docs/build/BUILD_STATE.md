@@ -4,7 +4,7 @@ Atualizado em: 2026-08-26
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
-## Vertical de recebíveis A1, fixture Vertentes e métricas estáticas e dinâmicas, 27/08/2026
+## Vertical de recebíveis A1, gate matemático integral da Fase 1, 27/08/2026
 
 O caso sintético Vertentes A1-03 passou a existir dentro de `@offroad/testing-fixtures` com os 21
 arquivos de entrada, a verdade reservada do gerador, a representação canônica comprimida, hashes e
@@ -38,14 +38,30 @@ A auditoria encontrou um erro material no gabarito legado: exclusões calculadas
 independente contavam títulos sobrepostos mais de uma vez. A cascata exclusiva correta, sob a
 política sintética estimada do caso, produz R$ 8.877.495,23 de carteira elegível e 74,619108%, não
 R$ 8.618.471. Esse cenário continua rotulado como estimado e não representa critério confirmado de
-comprador. A promoção aprova fixture, contratos e métricas estáticas e dinâmicas. Dívida, CET,
-advance rate e elegibilidade por regulamento permanecem em gates posteriores.
+comprador.
+
+O bloco de estrutura e custo agora fecha a ponte da dívida, conversões de taxas por dentro e por
+fora, CET por fluxos datados e advance rate implícito. Um segundo oráculo Python independente
+confirma cada valor. A dívida ajustada é R$ 22,26 milhões, a dívida líquida é R$ 20,94 milhões e a
+alavancagem é 5,453125x sobre EBITDA reportado de R$ 3,84 milhões. O gabarito legado usava um EBITDA
+ajustado de R$ 4,16 milhões sem suporte documental e foi corrigido com rastreabilidade.
+
+No exemplo Prime, desconto mensal por fora e tarifa ad valorem produzem R$ 94.570 de recursos
+líquidos e CET de 62,448085% ao ano antes de tributos. Como o tratamento tributário não foi
+fornecido, o resultado continua incompleto e nenhum IOF é imputado. O advance rate de 92,904117% é
+um cenário estimado. A perda ajustada da carteira é identificada como proxy governada, não como
+perda esperada de safra nem como política real de comprador.
+
+`@offroad/receivables-analysis` ganhou uma orquestração canônica sem aritmética econômica duplicada.
+O relatório diferencia gate matemático de completude do caso e mantém recomendação, buyer fit,
+introdução e aprovação de crédito desabilitados. A Fase 1 aprova contratos, cálculos, replay e
+procedência. Elegibilidade regulatória e contratual é o próximo gate.
 
 Os testes focados cobrem hashes de entrada, verdade e expected outputs, replay independente da
 ordem, datas economicamente distintas, fronteiras de aging, invariantes, procedência e igualdade
-exata com o gold. O benchmark local em Node 24, carteira integral e dez iterações registrou mediana
-de 312,09 ms e p95 de 321,47 ms para o cálculo estático, e mediana de 1.074,42 ms e p95 de 1.113,34
-ms para o cálculo dinâmico integral.
+exata com o gold. O benchmark local em Node 24 registrou mediana de 318,65 ms para o cálculo
+estático, 1.082,61 ms para o dinâmico e 1.414,71 ms para o relatório integral da Fase 1 sobre
+34.397 títulos.
 
 ## Gate jurídico inicial v3, 27/08/2026
 

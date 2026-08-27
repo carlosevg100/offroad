@@ -5,16 +5,24 @@ import {fileURLToPath} from "node:url";
 import {gunzipSync} from "node:zlib";
 
 import {
+  calculateAdjustedDebtBridge,
   calculateDynamicReceivablesMetrics,
+  calculateImplicitAdvanceRate,
+  calculateSingleMaturityReceivablesProposal,
   calculateStaticReceivablesMetrics,
+  convertReceivablesRate,
   receivablesAgingBuckets,
   receivablesRollDestinations,
   receivablesVintageHorizons,
+  type AdjustedDebtBridgeInput,
   type ConcentrationCut,
+  type GovernedRateAssumption,
   type MeasuredMetric,
   type ReceivablesAgingBucket,
+  type ReceivablesProposalCharge,
   type ReceivablesUniverse,
 } from "@offroad/financial-core";
+import {analyzeReceivablesPhaseOne} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
 type ExpectedStatic = {
@@ -62,6 +70,52 @@ type IllustrativeEligibility = {
   eligibleShare: string;
 };
 
+type StructureCostInput = {
+  version: string;
+  reportingDate: "2026-06-30";
+  universeId: string;
+  currency: string;
+  debt: Omit<AdjustedDebtBridgeInput, "reportingDate" | "currency" | "universeId" | "datasetHash">;
+  rateScenarios: {
+    primeFactoring: {
+      faceValue: string;
+      startDate: "2026-01-01";
+      maturityDate: "2026-02-12";
+      calendarDays: number;
+      monthlyOutsideDiscountRate: string;
+      adValoremRate: string;
+      source: ReceivablesProposalCharge["source"];
+    };
+    institutionalIllustration: {
+      faceValue: string;
+      calendarDays: number;
+      businessDays: number;
+      annualRates: readonly string[];
+      source: ReceivablesProposalCharge["source"];
+    };
+  };
+  advanceRateScenario: {
+    periodStart: "2024-07-01";
+    expectedDilution: string;
+    expectedDilutionBasis: string;
+    dilutionStressMultiplier: string;
+    expectedLossRate: string;
+    expectedLossBasis: string;
+    lossStressMultiplier: string;
+    operationalReserve: string;
+    status: string;
+  };
+};
+
+type ExpectedStructureCost = {
+  version: string;
+  debt: Record<string, string>;
+  primeFactoring: Record<string, string>;
+  institutionalIllustration: Record<string, string>;
+  advanceRateScenario: Record<string, string>;
+  legacyCorrections: readonly string[];
+};
+
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, "..");
 const goldRoot = join(packageRoot, "gold", "vertentes");
@@ -75,6 +129,8 @@ const universe = JSON.parse(uncompressed.toString("utf8")) as ReceivablesUnivers
 const expected = readJson<ExpectedStatic>(join(goldRoot, "expected", "static-metrics.json"));
 const expectedDynamic = readJson<ExpectedDynamic>(join(goldRoot, "expected", "dynamic-metrics.json"));
 const illustrativeEligibility = readJson<IllustrativeEligibility>(join(goldRoot, "expected", "illustrative-eligibility.json"));
+const structureCostInput = readJson<StructureCostInput>(join(goldRoot, "source", "structure-cost-input.json"));
+const expectedStructureCost = readJson<ExpectedStructureCost>(join(goldRoot, "expected", "structure-cost.json"));
 
 const cents = (value: string) => {
   const [integer = "0", fraction = ""] = value.split(".");
@@ -311,4 +367,207 @@ describe("Vertentes A1-03 gold", () => {
     const second = calculateDynamicReceivablesMetrics(reversed, {datasetHash: manifest.normalized.uncompressedSha256});
     expect(second).toEqual(first);
   }, 20_000);
+
+  it("matches the independent debt, rate, CET and advance-rate oracle", () => {
+    const debt = calculateAdjustedDebtBridge({
+      ...structureCostInput.debt,
+      reportingDate: structureCostInput.reportingDate,
+      currency: structureCostInput.currency,
+      universeId: structureCostInput.universeId,
+      datasetHash: manifest.normalized.uncompressedSha256,
+    });
+    expect(debt.version).toBe(expectedStructureCost.version);
+    expect({
+      companyDeclaredDebt: debt.companyDeclaredDebt.value,
+      declaredPositionSubtotal: debt.declaredPositionSubtotal.value,
+      identifiedNotDeclaredSubtotal: debt.identifiedNotDeclaredSubtotal.value,
+      declaredPositionMismatch: debt.declaredPositionMismatch.value,
+      adjustedGrossDebt: debt.adjustedGrossDebt.value,
+      adjustmentToCompanyDeclaration: debt.adjustmentToCompanyDeclaration.value,
+      cash: debt.cash.value,
+      adjustedNetDebt: debt.adjustedNetDebt.value,
+      ebitdaForLeverage: debt.ebitdaForLeverage.value,
+      ebitdaBasis: structureCostInput.debt.ebitdaForLeverage.basis,
+      adjustedNetLeverage: debt.adjustedNetLeverage.value,
+    }).toEqual(expectedStructureCost.debt);
+    expect(debt.quality.warnings).toContain("financial obligations identified outside the company-declared debt amount");
+    expect(debt.ebitdaForLeverage.period).toMatchObject({startDate: "2025-01-01", endDate: "2025-12-31"});
+    expect(debt.adjustedGrossDebt.provenance.anchors.length).toBeGreaterThanOrEqual(9);
+
+    const factoringInput = structureCostInput.rateScenarios.primeFactoring;
+    const factoring = calculateSingleMaturityReceivablesProposal({
+      reportingDate: structureCostInput.reportingDate,
+      universeId: structureCostInput.universeId,
+      datasetHash: manifest.normalized.uncompressedSha256,
+      currency: structureCostInput.currency,
+      faceValue: factoringInput.faceValue,
+      startDate: factoringInput.startDate,
+      maturityDate: factoringInput.maturityDate,
+      quote: {regime: "outside_simple_monthly", monthlyDiscountRate: factoringInput.monthlyOutsideDiscountRate},
+      charges: [{id: "ad-valorem", kind: "ad_valorem_face_fee", rate: factoringInput.adValoremRate, source: factoringInput.source}],
+      taxTreatment: {status: "not_provided"},
+      source: factoringInput.source,
+    });
+    expect({
+      sourceRegime: factoring.rateConversion.sourceRegime,
+      acquisitionPriceBeforeFees: factoring.rateConversion.acquisitionPrice.value,
+      discountAmount: factoring.rateConversion.discountAmount.value,
+      discountShareOfFace: factoring.rateConversion.discountShareOfFace.value,
+      effectivePeriodRateBeforeFees: factoring.rateConversion.effectivePeriodRate.value,
+      effectiveMonthlyRateBeforeFees: factoring.rateConversion.effectiveMonthlyRate.value,
+      effectiveAnnualRateBeforeFees: factoring.rateConversion.effectiveAnnualRate.value,
+      adValoremFee: factoring.chargeAmounts[0]?.amount,
+      netInitialProceeds: factoring.cet.netInitialProceeds.value,
+      cetMonthly: factoring.cet.effectiveMonthlyRate.value,
+      cetAnnual: factoring.cet.effectiveAnnualRate.value,
+      taxInputStatus: factoringInput === undefined ? "unreachable" : "not_provided",
+    }).toEqual(expectedStructureCost.primeFactoring);
+    expect(factoring.cet.status).toBe("calculated_with_missing_tax_input");
+
+    const institutionalInput = structureCostInput.rateScenarios.institutionalIllustration;
+    const institutional = convertReceivablesRate({
+      reportingDate: structureCostInput.reportingDate,
+      universeId: structureCostInput.universeId,
+      datasetHash: manifest.normalized.uncompressedSha256,
+      currency: structureCostInput.currency,
+      faceValue: institutionalInput.faceValue,
+      calendarDays: institutionalInput.calendarDays,
+      quote: {regime: "inside_compound_annual_business", annualRates: institutionalInput.annualRates, businessDays: institutionalInput.businessDays},
+      source: institutionalInput.source,
+    });
+    expect({
+      sourceRegime: institutional.sourceRegime,
+      acquisitionPrice: institutional.acquisitionPrice.value,
+      discountAmount: institutional.discountAmount.value,
+      effectivePeriodRate: institutional.effectivePeriodRate.value,
+      effectiveMonthlyRate: institutional.effectiveMonthlyRate.value,
+      effectiveAnnualRate: institutional.effectiveAnnualRate.value,
+    }).toEqual(expectedStructureCost.institutionalIllustration);
+
+    const dynamic = calculateDynamicReceivablesMetrics(universe, {datasetHash: manifest.normalized.uncompressedSha256});
+    const scenario = structureCostInput.advanceRateScenario;
+    expect(dynamic.dilution.shareOfOrigination.value).toBe(scenario.expectedDilution);
+    expect(dynamic.repurchaseAndLoss.adjustedLossShare.value).toBe(scenario.expectedLossRate);
+    const estimated = (id: string, value: string, method: string, basis = method): GovernedRateAssumption => ({
+      id,
+      value,
+      basis,
+      provenance: {
+        kind: "estimated",
+        method,
+        sources: ["Vertentes governed scenario"],
+        asOf: structureCostInput.reportingDate,
+        owner: "credit desk",
+        confidence: "medium",
+        validUntil: "2026-09-30",
+      },
+    });
+    const advanceRate = calculateImplicitAdvanceRate({
+      reportingDate: structureCostInput.reportingDate,
+      periodStart: scenario.periodStart,
+      universeId: structureCostInput.universeId,
+      expectedDilution: estimated(
+        "expected-dilution",
+        dynamic.dilution.shareOfOrigination.value!,
+        "measured historical dilution used as a governed forward proxy",
+        scenario.expectedDilutionBasis,
+      ),
+      dilutionStressMultiplier: estimated("dilution-stress", scenario.dilutionStressMultiplier, "scenario stress on measured dilution"),
+      expectedLossRate: estimated(
+        "expected-loss",
+        dynamic.repurchaseAndLoss.adjustedLossShare.value!,
+        "portfolio adjusted loss share used as an explicit proxy until a mature-cohort expected loss is governed",
+        scenario.expectedLossBasis,
+      ),
+      lossStressMultiplier: estimated("loss-stress", scenario.lossStressMultiplier, "scenario stress on measured adjusted loss"),
+      operationalReserve: estimated("operational-reserve", scenario.operationalReserve, "scenario operating reserve"),
+    });
+    expect({
+      status: scenario.status,
+      stressedDilutionReserve: advanceRate.stressedDilutionReserve.value,
+      stressedLossReserve: advanceRate.stressedLossReserve.value,
+      operationalReserve: advanceRate.operationalReserve.value,
+      totalReserve: advanceRate.totalReserve.value,
+      implicitAdvanceRate: advanceRate.implicitAdvanceRate.value,
+    }).toEqual(expectedStructureCost.advanceRateScenario);
+    expect(advanceRate.implicitAdvanceRate.inputs.map((item) => item.provenance.kind)).toEqual([
+      "estimated",
+      "estimated",
+      "estimated",
+      "estimated",
+      "estimated",
+    ]);
+  }, 30_000);
+
+  it("assembles the Phase 1 audit report without turning analysis into buyer direction", () => {
+    const factoring = structureCostInput.rateScenarios.primeFactoring;
+    const scenario = structureCostInput.advanceRateScenario;
+    const estimated = (id: string, value: string, method: string, basis = method): GovernedRateAssumption => ({
+      id,
+      value,
+      basis,
+      provenance: {
+        kind: "estimated",
+        method,
+        sources: ["Vertentes governed scenario"],
+        asOf: structureCostInput.reportingDate,
+        owner: "credit desk",
+        confidence: "medium",
+        validUntil: "2026-09-30",
+      },
+    });
+    const report = analyzeReceivablesPhaseOne({
+      universe,
+      datasetHash: manifest.normalized.uncompressedSha256,
+      adjustedDebt: structureCostInput.debt,
+      proposals: [{
+        id: "prime-factoring",
+        proposal: {
+          faceValue: factoring.faceValue,
+          startDate: factoring.startDate,
+          maturityDate: factoring.maturityDate,
+          quote: {regime: "outside_simple_monthly", monthlyDiscountRate: factoring.monthlyOutsideDiscountRate},
+          charges: [{id: "ad-valorem", kind: "ad_valorem_face_fee", rate: factoring.adValoremRate, source: factoring.source}],
+          taxTreatment: {status: "not_provided"},
+          source: factoring.source,
+        },
+      }],
+      advanceRate: {
+        periodStart: scenario.periodStart,
+        expectedDilution: estimated(
+          "expected-dilution",
+          scenario.expectedDilution,
+          "measured historical dilution used as a governed forward proxy",
+          scenario.expectedDilutionBasis,
+        ),
+        expectedLossRate: estimated(
+          "expected-loss",
+          scenario.expectedLossRate,
+          "portfolio adjusted loss share used as an explicit proxy until a mature-cohort expected loss is governed",
+          scenario.expectedLossBasis,
+        ),
+        dilutionStressMultiplier: estimated("dilution-stress", scenario.dilutionStressMultiplier, "scenario stress on measured dilution"),
+        lossStressMultiplier: estimated("loss-stress", scenario.lossStressMultiplier, "scenario stress on measured adjusted loss"),
+        operationalReserve: estimated("operational-reserve", scenario.operationalReserve, "scenario operating reserve"),
+      },
+    });
+
+    expect(report.quality.status).toBe("incomplete");
+    expect(report.quality.blockers).toEqual([
+      "coverage:assignmentsAndLiens:not_provided",
+      "coverage:extensions:partial",
+      "metric:repurchase.share_of_assigned:not_evaluable",
+      "proposal:prime-factoring:complete_cet_not_available",
+    ]);
+    expect(report.proposals[0]?.result.cet.effectiveAnnualRate.value).toBe(expectedStructureCost.primeFactoring.cetAnnual);
+    expect(report.adjustedDebt?.adjustedNetLeverage.value).toBe(expectedStructureCost.debt.adjustedNetLeverage);
+    expect(report.implicitAdvanceRate?.implicitAdvanceRate.value).toBe(expectedStructureCost.advanceRateScenario.implicitAdvanceRate);
+    expect(report.implicitAdvanceRate?.implicitAdvanceRate.inputs[2]?.basis).toBe(scenario.expectedLossBasis);
+    expect(report.boundaries).toEqual({
+      externalDirectionAllowed: false,
+      buyerRecommendationAllowed: false,
+      qualifiedIntroductionAllowed: false,
+      creditApprovalExpressed: false,
+    });
+  }, 30_000);
 });

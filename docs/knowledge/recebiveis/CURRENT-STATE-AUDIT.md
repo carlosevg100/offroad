@@ -23,6 +23,23 @@ Não haverá dois motores matemáticos. Os cálculos hoje existentes em
 `receivables-analysis` serão migrados ou substituídos por chamadas ao
 `financial-core` antes da promoção.
 
+## Estado após o gate da Fase 1
+
+As fórmulas promovidas de métricas estáticas, métricas dinâmicas, dívida ajustada,
+taxas, CET e advance rate agora vivem exclusivamente em `financial-core`. O novo
+`analyzeReceivablesPhaseOne` é uma camada canônica de composição e não contém
+aritmética econômica própria. Ele produz bloqueios, alertas, limitações e fronteiras
+explícitas.
+
+O arquivo legado `analyze.ts` permanece como protótipo e regressão. Seu borrowing
+base, waterfall, triggers e política default não são acreditados pela Fase 1. Não
+devem ser conectados a produto, matching ou distribuição até migração procedimento
+por procedimento para os contratos canônicos.
+
+O caso Vertentes prova a Fase 1 contra oráculos independentes, mas continua
+`incomplete` por dados ausentes. Aprovação do motor não equivale a completude do
+caso. Essa separação é deliberada.
+
 ## O que já é aproveitável
 
 - Validação de chaves e âncoras duplicadas.
@@ -68,4 +85,3 @@ Até a conclusão da Fase 1:
 - os testes existentes permanecem como regressão de comportamento, mas o novo gold
   Vertentes passa a ser a régua de aprovação;
 - a migração é incremental e mantém o monorepo verde a cada entrega.
-

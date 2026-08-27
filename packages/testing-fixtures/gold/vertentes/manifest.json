@@ -140,6 +140,11 @@
       "path": "source/obligors.json",
       "bytes": 123488,
       "sha256": "326156dba55ab77b9b2d98e225044d50ccca03377a3ada1a602525a25ff6cfbe"
+    },
+    {
+      "path": "source/structure-cost-input.json",
+      "bytes": 7310,
+      "sha256": "c8d0b453225797b7a732a119115ba12bccac21ba82aa080068ebb11e307bd91a"
     }
   ],
   "normalized": {
@@ -169,6 +174,11 @@
       "path": "static-metrics.json",
       "bytes": 1594,
       "sha256": "3370fc3a0eb302344a53c56e76eafee72903b33ddd9667e6cec20462a4f13407"
+    },
+    {
+      "path": "structure-cost.json",
+      "bytes": 1877,
+      "sha256": "ab8450322d3fc92893578e7cfccdcb78315393c8152e0e05acf2c0c1bf771e06"
     }
   ],
   "knownLimitations": [
