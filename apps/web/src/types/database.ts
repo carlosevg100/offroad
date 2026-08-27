@@ -3184,66 +3184,69 @@ export type Database = {
       organization_legal_acceptances: {
         Row: {
           acceptance_method: string
-          acceptance_statement: string
+          acceptance_statement: string | null
           accepted_at: string
           accepted_by: string
           accepted_ip: unknown
           accepted_user_agent: string | null
+          authority_declared: boolean | null
           created_at: string
           document_hash: string
           document_key: string
           document_version: string
           id: string
-          information_rights_declared: boolean
-          information_rights_statement: string
+          information_rights_declared: boolean | null
+          information_rights_statement: string | null
           legal_document_id: string
           locale: string
           organization_id: string
           signatory_name: string
           signatory_title: string | null
-          terms_agreed: boolean
+          terms_agreed: boolean | null
         }
         Insert: {
           acceptance_method?: string
-          acceptance_statement: string
+          acceptance_statement?: string | null
           accepted_at?: string
           accepted_by: string
           accepted_ip?: unknown
           accepted_user_agent?: string | null
+          authority_declared?: boolean | null
           created_at?: string
           document_hash: string
           document_key: string
           document_version: string
           id?: string
-          information_rights_declared: boolean
-          information_rights_statement: string
+          information_rights_declared?: boolean | null
+          information_rights_statement?: string | null
           legal_document_id: string
           locale: string
           organization_id: string
           signatory_name: string
           signatory_title?: string | null
-          terms_agreed: boolean
+          terms_agreed?: boolean | null
         }
         Update: {
           acceptance_method?: string
-          acceptance_statement?: string
+          acceptance_statement?: string | null
           accepted_at?: string
           accepted_by?: string
           accepted_ip?: unknown
           accepted_user_agent?: string | null
+          authority_declared?: boolean | null
           created_at?: string
           document_hash?: string
           document_key?: string
           document_version?: string
           id?: string
-          information_rights_declared?: boolean
-          information_rights_statement?: string
+          information_rights_declared?: boolean | null
+          information_rights_statement?: string | null
           legal_document_id?: string
           locale?: string
           organization_id?: string
           signatory_name?: string
           signatory_title?: string | null
-          terms_agreed?: boolean
+          terms_agreed?: boolean | null
         }
         Relationships: [
           {

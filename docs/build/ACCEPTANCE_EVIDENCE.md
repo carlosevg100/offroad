@@ -10,11 +10,13 @@
 | Evidência técnica | `organization_legal_acceptances` | versão, hash, declarações, usuário, organização, data, método, IP e user agent quando disponíveis |
 | Imutabilidade e isolamento | migration e suíte RLS | registro append-only, função autenticada com organização derivada da sessão e nenhuma execução anônima |
 | Staging | schema e documentos ativos | somente v3 ativa por idioma; v1 e v2 preservadas como `superseded`; assinatura nova da RPC confirmada |
-| Segurança | Supabase Security Advisor staging | zero findings |
+| Evidência legada | leitura de produção após migration | v1 e v2 preservam `authority_declared = true`; os campos exclusivos do v3 continuam nulos, sem reinterpretação retroativa |
+| Segurança | Supabase Security Advisor staging e produção | zero findings |
 | Gate local completo | `pnpm check` | 41 pacotes verdes; 19 arquivos e 135 testes web; build de produção com 28 rotas |
+| CI obrigatório | banco, RLS, lint, E2E e qualidade | todos os jobs do PR #281 verdes |
 
-O E2E autenticado completo e a promoção de produção continuam pendentes e não são contabilizados
-como evidência concluída nesta seção.
+O schema e o documento v3 estão ativos em produção. A verificação visual pós-deploy permanece uma
+evidência separada da validade jurídica do texto.
 
 ## Máquina de estados canônica do onboarding, 27/08/2026
 
