@@ -44,6 +44,14 @@ function legalSections(value: Json | undefined): LegalSection[] {
   });
 }
 
+function customerFacingLegalText(value: string | undefined, fallback: string) {
+  if (!value) return fallback;
+  return value
+    .replace(/(^|\n)(?:Versão|Version)\s+[^\n]+(?=\n|$)/, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export async function PrivateProjectSetup({
   locale,
   mode,
@@ -61,6 +69,7 @@ export async function PrivateProjectSetup({
 
   if (mode === "terms") {
     const sections = legalSections(legalDocument?.body_sections);
+    const fullTermsText = customerFacingLegalText(legalDocument?.rendered_text, t("terms.fullTermsFallback"));
     return (
       <section className="private-project-gate private-project-gate--terms">
         <header className="private-project-gate__header private-project-gate__legal-header">
@@ -88,7 +97,7 @@ export async function PrivateProjectSetup({
             <div><Check aria-hidden="true" size={15} /><span><strong>{t("terms.acceptedTitle")}</strong>{t("terms.acceptedBody")}</span></div>
             <details className="private-project-gate__full-terms">
               <summary>{t("terms.fullTerms")}</summary>
-              <p>{legalDocument?.rendered_text ?? t("terms.fullTermsFallback")}</p>
+              <p>{fullTermsText}</p>
             </details>
             <div className="private-project-gate__submit">
               <Link className="button" href={returnHref}>{t("terms.returnCta")}</Link>
@@ -98,7 +107,7 @@ export async function PrivateProjectSetup({
           <input name="locale" type="hidden" value={locale} />
           <details className="private-project-gate__full-terms">
             <summary>{t("terms.fullTerms")}</summary>
-            <p>{legalDocument?.rendered_text ?? t("terms.fullTermsFallback")}</p>
+            <p>{fullTermsText}</p>
           </details>
           <div className="private-project-gate__signatory-fields">
             <label>
@@ -112,7 +121,7 @@ export async function PrivateProjectSetup({
           </div>
           <label className="private-project-gate__check">
             <input name="terms_agreed" required type="checkbox" value="confirmed" />
-            <span>{legalDocument?.acceptance_statement ?? t("terms.declaration")}</span>
+            <span>{t("terms.declaration")}</span>
           </label>
           <label className="private-project-gate__check">
             <input name="information_rights_declared" required type="checkbox" value="confirmed" />
