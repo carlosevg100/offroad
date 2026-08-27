@@ -235,13 +235,37 @@ begin
   perform public.restart_onboarding_intake(org, '40000000-0000-4000-8000-000000000002');
 
   -- Starting the new guided journey is one atomic command: a session and its onboarding pointer
-  -- either both exist or neither does. The first company milestone is saved by the same rule.
-  returned_session := public.start_onboarding_intake('pt-BR');
+  -- either both exist or neither does. Gate 0 first records an exact-version acceptance, then
+  -- creates a named private project with a representation declaration.
+  perform public.accept_private_workspace_terms(
+    'pt-BR', 'RLS Owner', 'Diretor', true
+  );
+  if (select count(*) from public.organization_legal_acceptances
+      where organization_id = org and document_key = 'private_workspace_terms') <> 1 then
+    raise exception 'private workspace acceptance was not recorded exactly once';
+  end if;
+  begin
+    update public.organization_legal_acceptances set signatory_name = 'Tampered'
+    where organization_id = org;
+    raise exception 'legal acceptance ledger accepted an update';
+  exception when insufficient_privilege then null;
+  end;
+
+  returned_session := public.start_onboarding_intake(
+    'pt-BR', 'Projeto Atlas', 'identified_restricted', true
+  );
   if returned_session is null
     or (select current_step from public.onboarding_progress where organization_id = org and journey = 'company') <> 'organization'
     or (select answers ->> 'guided_milestone' from public.onboarding_progress where organization_id = org and journey = 'company') <> 'company'
     or (select answers ->> 'intake_session_id' from public.onboarding_progress where organization_id = org and journey = 'company') <> returned_session::text then
     raise exception 'start_onboarding_intake did not atomically open the company milestone';
+  end if;
+  if (select project_name from public.document_intake_sessions where id = returned_session) <> 'Projeto Atlas'
+    or (select privacy_status from public.document_intake_sessions where id = returned_session) <> 'private'
+    or (select representation_status from public.document_intake_sessions where id = returned_session) <> 'declared'
+    or (select count(*) from public.project_representation_evidence
+        where organization_id = org and intake_session_id = returned_session) <> 1 then
+    raise exception 'private project identity or representation declaration was not created atomically';
   end if;
 
   perform public.save_guided_company_profile(
@@ -3271,6 +3295,32 @@ begin
   perform public.attest_qualified_introduction_plan_technical_review(
     '81000000-0000-4000-8000-000000000001', repeat('a', 64)
   );
+  begin
+    perform public.authorize_qualified_introduction_plan(
+      '81000000-0000-4000-8000-000000000001', repeat('a', 64)
+    );
+    raise exception 'unverified representation authorized external distribution';
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+set local role postgres;
+update public.document_intake_sessions
+set representation_kind = 'company', representation_status = 'verified',
+    representation_verified_by = '10000000-0000-4000-8000-000000000001',
+    representation_verified_at = now()
+where organization_id = '20000000-0000-4000-8000-000000000001'
+  and id = '40000000-0000-4000-8000-000000000001';
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+begin
   perform public.authorize_qualified_introduction_plan(
     '81000000-0000-4000-8000-000000000001', repeat('a', 64)
   );
@@ -3302,7 +3352,7 @@ insert into public.qualified_introductions (
   'credit-team', repeat('b', 64), repeat('a', 64), repeat('c', 64),
   'Qualified introduction of the exact authorized package to the named contact.',
   '["teaser","credit_memo","term_sheet"]'::jsonb,
-  '{"scope":["qualified_introduction"]}'::jsonb,
+  '{"scope":["qualified_introduction"],"identityPolicy":"identified_restricted"}'::jsonb,
   '10000000-0000-4000-8000-000000000001'
 );
 

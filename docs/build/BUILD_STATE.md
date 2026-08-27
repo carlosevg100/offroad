@@ -4,6 +4,31 @@ Atualizado em: 2026-08-26
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Confidencialidade, identidade do projeto e gate de representação, 27/08/2026
+
+O início do onboarding de empresas e assessores passou a ter uma etapa anterior à coleta. O usuário
+aceita um compromisso versionado de confidencialidade e autorização de trabalho, escolhe um
+codinome para o projeto e define se a futura abordagem será identificada e restrita ou começará por
+um teaser blind. O aceite inicia somente a preparação privada. E-mail pessoal continua permitido e
+nunca é tratado como prova de representação.
+
+O banco preserva o texto exato aceito, hash, versão, usuário, organização e data em um ledger
+imutável. A relação com a companhia nasce como declaração e evolui separadamente por evidências
+adequadas ao caso, como função societária, registro corporativo, carta de contratação, mandato,
+confirmação da companhia, procuração ou aprovação corporativa. A coleta e a análise podem avançar
+enquanto essa confirmação é concluída, mas nenhuma distribuição pode ocorrer antes dela.
+
+O gate de saída é aplicado no banco, não apenas na interface. Uma introdução qualificada exige, ao
+mesmo tempo, representação verificada, fingerprint exato do material aprovado, política de
+identidade idêntica à do projeto e destinatários individualmente autorizados. Revogar a autorização
+devolve o projeto ao estado privado. A migration canônica é
+`20260827005724_private_project_authorization_gate.sql`.
+
+O schema foi aplicado em produção, os tipos TypeScript foram regenerados e a suíte RLS completa
+passou dentro de uma transação revertida no banco real. O Security Advisor retornou zero findings;
+os avisos de performance são índices sem uso em tabelas ainda vazias, não foreign keys sem índice
+nem regressões desta entrega. O gate local completo passou nos 41 pacotes.
+
 ## Intake guiado em sete marcos, 26/08/2026
 
 O onboarding de empresas e assessores deixou de renderizar o fluxo legado de três formulários.

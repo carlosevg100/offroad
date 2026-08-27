@@ -508,6 +508,55 @@
         }
       }
     },
+    "privateProject": {
+      "workspaceTitle": "Before you begin.",
+      "workspaceBody": "Set the information safeguards, project name and company identity policy. Work begins in a private environment.",
+      "status": {
+        "private": {"title": "Private preparation", "body": "No external distribution authorized"},
+        "verified": {"title": "Representation confirmed", "body": "Distribution still requires authorization"},
+        "authorized": {"title": "Distribution authorized", "body": "Limited to the approved package and recipients"}
+      },
+      "terms": {
+        "kicker": "CONFIDENTIALITY AND CONTROL",
+        "title": "Confidentiality and work authorization",
+        "intro": "This commitment governs the start of the project. It protects private preparation and clearly separates internal work from any market outreach.",
+        "boundaryTitle": "Preparation is not distribution.",
+        "boundaryBody": "The acceptance below allows Offroad to work with the information inside the private environment. Before any external contact, we will confirm representation and request a separate authorization covering the materials, company identity and each recipient.",
+        "name": "Full name",
+        "titleLabel": "Title or relationship to the company",
+        "declarationTitle": "I confirm that I may initiate this work.",
+        "declarationBody": " I declare that I am authorized to provide the submitted information and initiate the private preparation of this project. I understand that distribution requires additional verification and authorization.",
+        "cta": "Accept and continue",
+        "pending": "Recording acceptance",
+        "version": "Terms {version}. The record includes the version, date, user and organization."
+      },
+      "project": {
+        "kicker": "PROJECT IDENTITY",
+        "title": "Name the project.",
+        "intro": "The codename organizes the entire financing inside Offroad and identifies the related documents, analyses and materials.",
+        "name": "Project name",
+        "namePlaceholder": "E.g. Project Atlas",
+        "nameHelp": "Use a short, distinct codename. You can create other projects under the same account.",
+        "identityLegend": "How to identify the company during initial outreach",
+        "identityIntro": "This preference can be changed before distribution is authorized.",
+        "identifiedTitle": "Identified, restricted distribution",
+        "identifiedBody": "The company is named only to previously selected and authorized capital providers. This reduces ambiguity and makes the discussion more direct.",
+        "blindTitle": "Blind teaser for initial outreach",
+        "blindBody": "The identity is withheld during the first contact and disclosed only after a new authorization. This may protect the name but tends to reduce context and efficiency.",
+        "recommended": "Recommended",
+        "identityControl": "Nothing will be shared now. This choice only prepares the future distribution policy.",
+        "companyDeclarationTitle": "I declare that I represent the company in this project.",
+        "companyDeclarationBody": " Offroad may confirm this relationship during preparation. Until then, the project remains private.",
+        "advisorDeclarationTitle": "I declare that I am authorized to advise the company on this project.",
+        "advisorDeclarationBody": " Offroad will request suitable evidence during preparation. Until then, the project remains private.",
+        "privateState": "Private preparation",
+        "verifiedState": "Representation confirmed",
+        "authorizedState": "Authorized for distribution",
+        "cta": "Create private project",
+        "pending": "Creating project",
+        "ctaNote": "The next step begins with the company and the project it intends to pursue."
+      }
+    },
     "journeyCompany": "Company",
     "journeyOriginator": "Advisor or originator",
     "journeyProvider": "Investor or capital provider",

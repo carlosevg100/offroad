@@ -1287,14 +1287,21 @@ export type Database = {
           extraction_version: string
           geography: string | null
           id: string
+          identity_policy: string
           instruments: string[] | null
           journey: string
           locale: string
           opportunity_id: string | null
           organization_id: string
           pipeline_version: string | null
+          privacy_status: string
           processing_completed_at: string | null
           processing_started_at: string | null
+          project_name: string | null
+          representation_kind: string | null
+          representation_status: string
+          representation_verified_at: string | null
+          representation_verified_by: string | null
           requested_amount: number | null
           requested_grace_months: number | null
           requested_term_months: number | null
@@ -1322,14 +1329,21 @@ export type Database = {
           extraction_version?: string
           geography?: string | null
           id?: string
+          identity_policy?: string
           instruments?: string[] | null
           journey: string
           locale?: string
           opportunity_id?: string | null
           organization_id: string
           pipeline_version?: string | null
+          privacy_status?: string
           processing_completed_at?: string | null
           processing_started_at?: string | null
+          project_name?: string | null
+          representation_kind?: string | null
+          representation_status?: string
+          representation_verified_at?: string | null
+          representation_verified_by?: string | null
           requested_amount?: number | null
           requested_grace_months?: number | null
           requested_term_months?: number | null
@@ -1357,14 +1371,21 @@ export type Database = {
           extraction_version?: string
           geography?: string | null
           id?: string
+          identity_policy?: string
           instruments?: string[] | null
           journey?: string
           locale?: string
           opportunity_id?: string | null
           organization_id?: string
           pipeline_version?: string | null
+          privacy_status?: string
           processing_completed_at?: string | null
           processing_started_at?: string | null
+          project_name?: string | null
+          representation_kind?: string | null
+          representation_status?: string
+          representation_verified_at?: string | null
+          representation_verified_by?: string | null
           requested_amount?: number | null
           requested_grace_months?: number | null
           requested_term_months?: number | null
@@ -3160,6 +3181,69 @@ export type Database = {
           },
         ]
       }
+      organization_legal_acceptances: {
+        Row: {
+          accepted_at: string
+          accepted_by: string
+          authority_declared: boolean
+          created_at: string
+          document_hash: string
+          document_key: string
+          document_version: string
+          id: string
+          legal_document_id: string
+          locale: string
+          organization_id: string
+          signatory_name: string
+          signatory_title: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          accepted_by: string
+          authority_declared: boolean
+          created_at?: string
+          document_hash: string
+          document_key: string
+          document_version: string
+          id?: string
+          legal_document_id: string
+          locale: string
+          organization_id: string
+          signatory_name: string
+          signatory_title?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          accepted_by?: string
+          authority_declared?: boolean
+          created_at?: string
+          document_hash?: string
+          document_key?: string
+          document_version?: string
+          id?: string
+          legal_document_id?: string
+          locale?: string
+          organization_id?: string
+          signatory_name?: string
+          signatory_title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_legal_acceptances_legal_document_id_fkey"
+            columns: ["legal_document_id"]
+            isOneToOne: false
+            referencedRelation: "platform_legal_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_legal_acceptances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_memberships: {
         Row: {
           created_at: string
@@ -3404,6 +3488,48 @@ export type Database = {
             referencedColumns: ["organization_id", "id"]
           },
         ]
+      }
+      platform_legal_documents: {
+        Row: {
+          body_sections: Json
+          created_at: string
+          document_hash: string
+          document_key: string
+          effective_at: string
+          id: string
+          locale: string
+          rendered_text: string
+          status: string
+          title: string
+          version: string
+        }
+        Insert: {
+          body_sections: Json
+          created_at?: string
+          document_hash: string
+          document_key: string
+          effective_at: string
+          id?: string
+          locale: string
+          rendered_text: string
+          status?: string
+          title: string
+          version: string
+        }
+        Update: {
+          body_sections?: Json
+          created_at?: string
+          document_hash?: string
+          document_key?: string
+          effective_at?: string
+          id?: string
+          locale?: string
+          rendered_text?: string
+          status?: string
+          title?: string
+          version?: string
+        }
+        Relationships: []
       }
       precedent_authorizations: {
         Row: {
@@ -3825,6 +3951,65 @@ export type Database = {
         }
         Relationships: []
       }
+      project_representation_evidence: {
+        Row: {
+          created_at: string
+          evidence_reference: string | null
+          evidence_type: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          representation_kind: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          statement: string
+          status: string
+          submitted_by: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_reference?: string | null
+          evidence_type: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          representation_kind: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          statement: string
+          status?: string
+          submitted_by: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evidence_reference?: string | null
+          evidence_type?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          representation_kind?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          statement?: string
+          status?: string
+          submitted_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_representation_eviden_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       provider_contacts: {
         Row: {
           created_at: string
@@ -4117,6 +4302,7 @@ export type Database = {
           created_at: string
           created_by: string
           id: string
+          identity_policy: string
           intake_session_id: string
           material_fingerprint: string
           organization_id: string
@@ -4136,6 +4322,7 @@ export type Database = {
           created_at?: string
           created_by: string
           id?: string
+          identity_policy?: string
           intake_session_id: string
           material_fingerprint: string
           organization_id: string
@@ -4155,6 +4342,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           id?: string
+          identity_policy?: string
           intake_session_id?: string
           material_fingerprint?: string
           organization_id?: string
@@ -4808,6 +4996,15 @@ export type Database = {
         }
         Returns: number
       }
+      accept_private_workspace_terms: {
+        Args: {
+          p_authority_declared: boolean
+          p_locale: string
+          p_signatory_name: string
+          p_signatory_title: string | null
+        }
+        Returns: string
+      }
       apply_agent_operation_brief_proposal: {
         Args: {
           p_event_id: string
@@ -5097,7 +5294,6 @@ export type Database = {
           p_decision: string
           p_organization_id: string
           p_reason: string
-          // The non-STRICT SQL function requires NULL for the dismiss branch.
           p_role: string | null
           p_scope_event_id: string | null
           p_session_id: string
@@ -5213,7 +5409,6 @@ export type Database = {
       set_intake_operation_context_command: {
         Args: {
           p_archetype: string
-          // The non-STRICT SQL function requires NULL outside the advisor journey.
           p_authority_kind?: string | null
           p_authority_reference?: string | null
           p_authorization_event_id: string | null
@@ -5232,7 +5427,12 @@ export type Database = {
         Returns: Json
       }
       start_onboarding_intake: {
-        Args: { p_locale: string }
+        Args: {
+          p_identity_policy: string
+          p_locale: string
+          p_project_name: string
+          p_representation_declared: boolean
+        }
         Returns: string
       }
       submit_agent_message: {

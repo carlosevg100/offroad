@@ -1,5 +1,6 @@
 import {ArrowRight, FileSearch, ListChecks, ShieldCheck, Waypoints} from "lucide-react";
 import {getTranslations} from "next-intl/server";
+import Link from "next/link";
 
 import type {IntakeContext, IntakeStartActionSet} from "@/lib/intake/types";
 
@@ -11,6 +12,7 @@ type Props = {
   context: IntakeContext;
   journey: "company" | "originator";
   actions: IntakeStartActionSet;
+  startHref?: string;
 };
 
 /**
@@ -20,7 +22,7 @@ type Props = {
  * to make before it has even described the transaction. The guided journey asks the purpose
  * first, builds the request list from it, and lets files and direct answers coexist later.
  */
-export async function IntakeStartChoice({locale, context, journey, actions}: Props) {
+export async function IntakeStartChoice({locale, context, journey, actions, startHref}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.start"});
   const isCase = context === "workspace";
 
@@ -68,11 +70,15 @@ export async function IntakeStartChoice({locale, context, journey, actions}: Pro
           </section>
         </div>
 
-        <form action={actions.start} className="intake-welcome__action">
-          <input name="locale" type="hidden" value={locale} />
-          <IntakeActionSubmit idle={t("guidedCta")} pending={t("guidedCtaPending")} />
+        <div className="intake-welcome__action">
+          {startHref ? <Link className="button" href={startHref}>{t("guidedCta")}<ArrowRight aria-hidden="true" size={15} /></Link> : (
+            <form action={actions.start}>
+              <input name="locale" type="hidden" value={locale} />
+              <IntakeActionSubmit idle={t("guidedCta")} pending={t("guidedCtaPending")} />
+            </form>
+          )}
           <span>{t("welcomeActionTime")}</span>
-        </form>
+        </div>
 
         <div className="intake-start__security"><ShieldCheck size={15} /><span>{t("security")}</span></div>
       </section>
