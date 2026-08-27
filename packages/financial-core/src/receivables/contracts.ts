@@ -142,6 +142,7 @@ export type AssignmentOrLien = {
   receivableId: string;
   kind: "assignment" | "fiduciary_assignment" | "lien" | "other";
   effectiveDate: IsoDate;
+  amount: string | null;
   assigneeOrBeneficiary: string;
   withRecourse: boolean | "unknown";
   source: SourceAnchor;
@@ -189,6 +190,22 @@ export type ProposalCashFlow = {
   source: SourceAnchor;
 };
 
+export type PerformanceEventCoverage = {
+  status: "complete" | "partial" | "not_provided";
+  startDate: IsoDate | null;
+  endDate: IsoDate | null;
+  basis: string;
+  limitations: readonly string[];
+};
+
+export type ReceivablesEventCoverage = {
+  settlements: PerformanceEventCoverage;
+  dilutions: PerformanceEventCoverage;
+  extensions: PerformanceEventCoverage;
+  repurchases: PerformanceEventCoverage;
+  assignmentsAndLiens: PerformanceEventCoverage;
+};
+
 export type ReceivablesUniverse = {
   id: string;
   dates: ReceivablesAnalysisDates;
@@ -201,6 +218,7 @@ export type ReceivablesUniverse = {
   assignmentsAndLiens: readonly AssignmentOrLien[];
   obligors: readonly Obligor[];
   economicGroups: readonly EconomicGroup[];
+  eventCoverage: ReceivablesEventCoverage;
 };
 
 export const receivablesAgingBuckets = [

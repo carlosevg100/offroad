@@ -149,6 +149,13 @@ const universe = {
   assignmentsAndLiens: [],
   obligors: normalizedObligors,
   economicGroups,
+  eventCoverage: {
+    settlements: {status: "complete", startDate: "2024-07-01", endDate: "2026-06-30", basis: "reserved synthetic truth reconciled to the raw title tape", limitations: []},
+    dilutions: {status: "complete", startDate: "2024-07-01", endDate: "2026-06-30", basis: "reserved synthetic truth reconciled to the raw title tape", limitations: ["event-level causes are not identified; the raw cause schedule is monthly and aggregate"]},
+    extensions: {status: "partial", startDate: "2024-07-01", endDate: "2026-06-30", basis: "reserved synthetic truth compared with overwritten due dates in the raw title tape", limitations: ["extension event dates are unavailable"]},
+    repurchases: {status: "complete", startDate: "2024-07-01", endDate: "2026-06-30", basis: "reserved synthetic truth", limitations: ["the synthetic case contains no repurchase events"]},
+    assignmentsAndLiens: {status: "not_provided", startDate: null, endDate: null, basis: "raw room", limitations: ["title-level assigned volume is not available in the intake"]},
+  },
 };
 
 mkdirSync(normalizedRoot, {recursive: true});

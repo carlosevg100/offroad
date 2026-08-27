@@ -5,6 +5,7 @@ export const financialCoreVersion = "2026.08.27-v6";
 export * from "./financial-truth";
 export * from "./operation";
 export * from "./receivables/contracts";
+export * from "./receivables/dynamic-metrics";
 export * from "./receivables/static-metrics";
 export * from "./structure";
 

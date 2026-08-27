@@ -1,0 +1,6865 @@
+{
+  "version": "2026.08.27-v1",
+  "rollRates": [
+    {
+      "fromDate": "2024-07-31",
+      "toDate": "2024-08-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "4410027.28",
+          "transitions": {
+            "not_due": {
+              "amount": "1528207.4",
+              "rate": "0.34653015"
+            },
+            "past_due_1_15": {
+              "amount": "632741.65",
+              "rate": "0.14347794"
+            },
+            "past_due_16_30": {
+              "amount": "162528.74",
+              "rate": "0.03685436"
+            },
+            "past_due_31_60": {
+              "amount": "2074.26",
+              "rate": "0.00047035"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "2084475.23",
+              "rate": "0.4726672"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "21700.67",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "21700.67",
+              "rate": "1"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2024-08-31",
+      "toDate": "2024-09-30",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "6411829.75",
+          "transitions": {
+            "not_due": {
+              "amount": "1860186.21",
+              "rate": "0.29011784"
+            },
+            "past_due_1_15": {
+              "amount": "822495.35",
+              "rate": "0.12827779"
+            },
+            "past_due_16_30": {
+              "amount": "396355.52",
+              "rate": "0.06181629"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3332792.67",
+              "rate": "0.51978808"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "643614.32",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "192303.31",
+              "rate": "0.29878656"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "451311.01",
+              "rate": "0.70121344"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "162528.74",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "114105.2",
+              "rate": "0.70206168"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "48423.54",
+              "rate": "0.29793832"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "2074.26",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "2074.26",
+              "rate": "1"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": "0"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2024-09-30",
+      "toDate": "2024-10-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7271780.42",
+          "transitions": {
+            "not_due": {
+              "amount": "1965823.85",
+              "rate": "0.27033598"
+            },
+            "past_due_1_15": {
+              "amount": "999356.89",
+              "rate": "0.13742946"
+            },
+            "past_due_16_30": {
+              "amount": "402680.62",
+              "rate": "0.05537579"
+            },
+            "past_due_31_60": {
+              "amount": "9298.52",
+              "rate": "0.00127871"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3894620.54",
+              "rate": "0.53558005"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "823503.52",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "212332",
+              "rate": "0.25783982"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "611171.52",
+              "rate": "0.74216018"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "396355.52",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "265421.52",
+              "rate": "0.66965516"
+            },
+            "past_due_61_90": {
+              "amount": "16839.25",
+              "rate": "0.04248522"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "114094.75",
+              "rate": "0.28785962"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "306408.51",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "242454.43",
+              "rate": "0.79127838"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "63954.08",
+              "rate": "0.20872162"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "2074.26",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "248.58",
+              "rate": "0.11984033"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "1825.68",
+              "rate": "0.88015967"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2024-10-31",
+      "toDate": "2024-11-30",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7141647.26",
+          "transitions": {
+            "not_due": {
+              "amount": "1881004.15",
+              "rate": "0.26338519"
+            },
+            "past_due_1_15": {
+              "amount": "1026065.79",
+              "rate": "0.14367355"
+            },
+            "past_due_16_30": {
+              "amount": "410728.38",
+              "rate": "0.05751171"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3823848.94",
+              "rate": "0.53542954"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1021460.18",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "313648.7",
+              "rate": "0.30705916"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "707811.48",
+              "rate": "0.69294084"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "402680.62",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "289199.14",
+              "rate": "0.7181849"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "113481.48",
+              "rate": "0.2818151"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "487052.04",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "434725.75",
+              "rate": "0.8925653"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "52326.29",
+              "rate": "0.1074347"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "259293.68",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "191959.52",
+              "rate": "0.740317"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "67334.16",
+              "rate": "0.259683"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "248.58",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "248.58",
+              "rate": "1"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2024-11-30",
+      "toDate": "2024-12-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "6780131.89",
+          "transitions": {
+            "not_due": {
+              "amount": "1878260.5",
+              "rate": "0.27702418"
+            },
+            "past_due_1_15": {
+              "amount": "951891.7",
+              "rate": "0.14039427"
+            },
+            "past_due_16_30": {
+              "amount": "339371.95",
+              "rate": "0.05005389"
+            },
+            "past_due_31_60": {
+              "amount": "10740.69",
+              "rate": "0.00158414"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3599867.05",
+              "rate": "0.53094351"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1036637.93",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "282460.78",
+              "rate": "0.27247776"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "754177.15",
+              "rate": "0.72752224"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "410728.38",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "245134.89",
+              "rate": "0.59682969"
+            },
+            "past_due_61_90": {
+              "amount": "21655.4",
+              "rate": "0.05272438"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "143938.09",
+              "rate": "0.35044593"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "602847.84",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "428912.42",
+              "rate": "0.71147708"
+            },
+            "past_due_91_180": {
+              "amount": "7258.5",
+              "rate": "0.01204035"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "166676.92",
+              "rate": "0.27648257"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "434725.75",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "347382.29",
+              "rate": "0.79908377"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "87343.46",
+              "rate": "0.20091623"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "191959.52",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "136453.83",
+              "rate": "0.7108469"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "55505.69",
+              "rate": "0.2891531"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2024-12-31",
+      "toDate": "2025-01-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "5989645.45",
+          "transitions": {
+            "not_due": {
+              "amount": "1437947.63",
+              "rate": "0.24007225"
+            },
+            "past_due_1_15": {
+              "amount": "960022.65",
+              "rate": "0.16028038"
+            },
+            "past_due_16_30": {
+              "amount": "354886.99",
+              "rate": "0.05925008"
+            },
+            "past_due_31_60": {
+              "amount": "62959.42",
+              "rate": "0.01051138"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3173828.76",
+              "rate": "0.52988592"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "971043.25",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "279945.98",
+              "rate": "0.28829404"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "691097.27",
+              "rate": "0.71170596"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "339371.95",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "225254.11",
+              "rate": "0.66373815"
+            },
+            "past_due_61_90": {
+              "amount": "26412.84",
+              "rate": "0.07782859"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "87705",
+              "rate": "0.25843326"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "538336.36",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "388500.26",
+              "rate": "0.72166825"
+            },
+            "past_due_91_180": {
+              "amount": "16860.69",
+              "rate": "0.03131999"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "132975.41",
+              "rate": "0.24701176"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "450567.82",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "377509.72",
+              "rate": "0.83785327"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "73058.1",
+              "rate": "0.16214673"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "491094.62",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "429941.69",
+              "rate": "0.87547628"
+            },
+            "past_due_over_180": {
+              "amount": "390.61",
+              "rate": "0.00079539"
+            },
+            "resolved": {
+              "amount": "60762.32",
+              "rate": "0.12372834"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "0",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": null
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-01-31",
+      "toDate": "2025-02-28",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "5234657.26",
+          "transitions": {
+            "not_due": {
+              "amount": "1588282.39",
+              "rate": "0.30341669"
+            },
+            "past_due_1_15": {
+              "amount": "898324.97",
+              "rate": "0.17161104"
+            },
+            "past_due_16_30": {
+              "amount": "353579.92",
+              "rate": "0.06754595"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "2394469.98",
+              "rate": "0.45742631"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "991723.92",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "26291.63",
+              "rate": "0.02651104"
+            },
+            "past_due_31_60": {
+              "amount": "304881.85",
+              "rate": "0.30742613"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "660550.44",
+              "rate": "0.66606283"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "354886.99",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "251649.32",
+              "rate": "0.70909706"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "103237.67",
+              "rate": "0.29090294"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "568159.51",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "61920.56",
+              "rate": "0.10898446"
+            },
+            "past_due_61_90": {
+              "amount": "382716.55",
+              "rate": "0.67360758"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "123522.4",
+              "rate": "0.21740796"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "414913.1",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "24698.44",
+              "rate": "0.05952678"
+            },
+            "past_due_91_180": {
+              "amount": "289214.42",
+              "rate": "0.69704818"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "101000.24",
+              "rate": "0.24342504"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "824312.1",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "584609.85",
+              "rate": "0.70920935"
+            },
+            "past_due_over_180": {
+              "amount": "122054.83",
+              "rate": "0.14806871"
+            },
+            "resolved": {
+              "amount": "117647.42",
+              "rate": "0.14272194"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "390.61",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "390.61",
+              "rate": "1"
+            },
+            "resolved": {
+              "amount": "0",
+              "rate": "0"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-02-28",
+      "toDate": "2025-03-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "6147278.59",
+          "transitions": {
+            "not_due": {
+              "amount": "1858621.62",
+              "rate": "0.30234869"
+            },
+            "past_due_1_15": {
+              "amount": "1059670.34",
+              "rate": "0.1723804"
+            },
+            "past_due_16_30": {
+              "amount": "306582.08",
+              "rate": "0.04987281"
+            },
+            "past_due_31_60": {
+              "amount": "5464.94",
+              "rate": "0.000889"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "2916939.61",
+              "rate": "0.4745091"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "898324.97",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "283549.17",
+              "rate": "0.31564209"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "614775.8",
+              "rate": "0.68435791"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "379871.55",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "268753.38",
+              "rate": "0.70748489"
+            },
+            "past_due_61_90": {
+              "amount": "7594.9",
+              "rate": "0.01999334"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "103523.27",
+              "rate": "0.27252178"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "618451.73",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "462792.56",
+              "rate": "0.7483083"
+            },
+            "past_due_91_180": {
+              "amount": "13340.18",
+              "rate": "0.02157028"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "142318.99",
+              "rate": "0.23012142"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "407414.99",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "311471.83",
+              "rate": "0.76450754"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "95943.16",
+              "rate": "0.23549246"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "873824.27",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "481427.36",
+              "rate": "0.55094299"
+            },
+            "past_due_over_180": {
+              "amount": "244642.93",
+              "rate": "0.27996811"
+            },
+            "resolved": {
+              "amount": "147753.98",
+              "rate": "0.16908889"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "122445.44",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "119219.11",
+              "rate": "0.97365088"
+            },
+            "resolved": {
+              "amount": "3226.33",
+              "rate": "0.02634912"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-03-31",
+      "toDate": "2025-04-30",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7591049.08",
+          "transitions": {
+            "not_due": {
+              "amount": "2285824.53",
+              "rate": "0.30112103"
+            },
+            "past_due_1_15": {
+              "amount": "1090104.09",
+              "rate": "0.14360388"
+            },
+            "past_due_16_30": {
+              "amount": "420529.65",
+              "rate": "0.05539809"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3794590.81",
+              "rate": "0.499877"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1081727.48",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "306584.33",
+              "rate": "0.28342104"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "775143.15",
+              "rate": "0.71657896"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "306582.08",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "204032.23",
+              "rate": "0.66550605"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "102549.85",
+              "rate": "0.33449395"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "557767.49",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "384054.72",
+              "rate": "0.68855702"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "173712.77",
+              "rate": "0.31144298"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "470387.46",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "337867.78",
+              "rate": "0.71827548"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "132519.68",
+              "rate": "0.28172452"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "806239.37",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "459286.3",
+              "rate": "0.56966494"
+            },
+            "past_due_over_180": {
+              "amount": "201374.85",
+              "rate": "0.24977055"
+            },
+            "resolved": {
+              "amount": "145578.22",
+              "rate": "0.18056451"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "363862.04",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "351446.16",
+              "rate": "0.96587751"
+            },
+            "resolved": {
+              "amount": "12415.88",
+              "rate": "0.03412249"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-04-30",
+      "toDate": "2025-05-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7550584.97",
+          "transitions": {
+            "not_due": {
+              "amount": "2105761.56",
+              "rate": "0.27888721"
+            },
+            "past_due_1_15": {
+              "amount": "1031357.01",
+              "rate": "0.13659299"
+            },
+            "past_due_16_30": {
+              "amount": "527736.86",
+              "rate": "0.06989351"
+            },
+            "past_due_31_60": {
+              "amount": "30540.57",
+              "rate": "0.0040448"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3855188.97",
+              "rate": "0.5105815"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1090104.09",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "249634.68",
+              "rate": "0.22900077"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "840469.41",
+              "rate": "0.77099923"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "420529.65",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "270203.4",
+              "rate": "0.64253115"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "150326.25",
+              "rate": "0.35746885"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "510616.56",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "422833.12",
+              "rate": "0.82808344"
+            },
+            "past_due_91_180": {
+              "amount": "7063.11",
+              "rate": "0.01383251"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "80720.33",
+              "rate": "0.15808404"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "384054.72",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "303950.53",
+              "rate": "0.79142506"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "80104.19",
+              "rate": "0.20857494"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "797154.08",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "518604.3",
+              "rate": "0.65056971"
+            },
+            "past_due_over_180": {
+              "amount": "174531.92",
+              "rate": "0.21894377"
+            },
+            "resolved": {
+              "amount": "104017.86",
+              "rate": "0.13048652"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "552821.01",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "526875.53",
+              "rate": "0.95306712"
+            },
+            "resolved": {
+              "amount": "25945.48",
+              "rate": "0.04693288"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-05-31",
+      "toDate": "2025-06-30",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7216082.19",
+          "transitions": {
+            "not_due": {
+              "amount": "1885945.8",
+              "rate": "0.26135315"
+            },
+            "past_due_1_15": {
+              "amount": "1146799.95",
+              "rate": "0.15892279"
+            },
+            "past_due_16_30": {
+              "amount": "517859.87",
+              "rate": "0.07176469"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3665476.57",
+              "rate": "0.50795937"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1048769.34",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "295883.7",
+              "rate": "0.28212467"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "752885.64",
+              "rate": "0.71787533"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "527736.86",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "350918.89",
+              "rate": "0.6649505"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "176817.97",
+              "rate": "0.3350495"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "550378.65",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "459110.96",
+              "rate": "0.83417291"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "91267.69",
+              "rate": "0.16582709"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "422833.12",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "381754.93",
+              "rate": "0.90285011"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "41078.19",
+              "rate": "0.09714989"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "829617.94",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "478264.57",
+              "rate": "0.57648774"
+            },
+            "past_due_over_180": {
+              "amount": "199416.17",
+              "rate": "0.24037109"
+            },
+            "resolved": {
+              "amount": "151937.2",
+              "rate": "0.18314117"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "701407.45",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "682627.76",
+              "rate": "0.9732257"
+            },
+            "resolved": {
+              "amount": "18779.69",
+              "rate": "0.0267743"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-06-30",
+      "toDate": "2025-07-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "6884378.56",
+          "transitions": {
+            "not_due": {
+              "amount": "2002766.96",
+              "rate": "0.29091471"
+            },
+            "past_due_1_15": {
+              "amount": "976676.65",
+              "rate": "0.14186853"
+            },
+            "past_due_16_30": {
+              "amount": "449091.01",
+              "rate": "0.06523334"
+            },
+            "past_due_31_60": {
+              "amount": "11230.18",
+              "rate": "0.00163126"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3444613.76",
+              "rate": "0.50035217"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1151350.27",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "382050.68",
+              "rate": "0.33182837"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "769299.59",
+              "rate": "0.66817163"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "517859.87",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "345349.52",
+              "rate": "0.66687832"
+            },
+            "past_due_61_90": {
+              "amount": "16660.13",
+              "rate": "0.03217112"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "155850.22",
+              "rate": "0.30095056"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "646802.59",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "445984.39",
+              "rate": "0.68952165"
+            },
+            "past_due_91_180": {
+              "amount": "15470.73",
+              "rate": "0.02391878"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "185347.47",
+              "rate": "0.28655957"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "459110.96",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "366932.97",
+              "rate": "0.79922503"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "92177.99",
+              "rate": "0.20077497"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "860019.5",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "432247.99",
+              "rate": "0.50260255"
+            },
+            "past_due_over_180": {
+              "amount": "199424.8",
+              "rate": "0.23188404"
+            },
+            "resolved": {
+              "amount": "228346.71",
+              "rate": "0.26551341"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "882043.93",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "843632.48",
+              "rate": "0.95645177"
+            },
+            "resolved": {
+              "amount": "38411.45",
+              "rate": "0.04354823"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-07-31",
+      "toDate": "2025-08-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "6790756.46",
+          "transitions": {
+            "not_due": {
+              "amount": "1771512.28",
+              "rate": "0.26087113"
+            },
+            "past_due_1_15": {
+              "amount": "917065.79",
+              "rate": "0.13504619"
+            },
+            "past_due_16_30": {
+              "amount": "496240.68",
+              "rate": "0.07307591"
+            },
+            "past_due_31_60": {
+              "amount": "38060.19",
+              "rate": "0.00560471"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3567877.52",
+              "rate": "0.52540207"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "981627.91",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "268067.06",
+              "rate": "0.27308419"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "713560.85",
+              "rate": "0.72691581"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "449091.01",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "275844.08",
+              "rate": "0.61422757"
+            },
+            "past_due_61_90": {
+              "amount": "30093.45",
+              "rate": "0.06700969"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "143153.48",
+              "rate": "0.31876274"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "738630.38",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "600586.47",
+              "rate": "0.81310827"
+            },
+            "past_due_91_180": {
+              "amount": "18807.25",
+              "rate": "0.02546233"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "119236.66",
+              "rate": "0.1614294"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "462644.52",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "362977.12",
+              "rate": "0.78457024"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "99667.4",
+              "rate": "0.21542976"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "814651.69",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "512131.61",
+              "rate": "0.62865101"
+            },
+            "past_due_over_180": {
+              "amount": "190898.69",
+              "rate": "0.23433167"
+            },
+            "resolved": {
+              "amount": "111621.39",
+              "rate": "0.13701732"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "1043057.28",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "1004013.27",
+              "rate": "0.96256772"
+            },
+            "resolved": {
+              "amount": "39044.01",
+              "rate": "0.03743228"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-08-31",
+      "toDate": "2025-09-30",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7102230.97",
+          "transitions": {
+            "not_due": {
+              "amount": "1909299.72",
+              "rate": "0.26883098"
+            },
+            "past_due_1_15": {
+              "amount": "883365.22",
+              "rate": "0.12437855"
+            },
+            "past_due_16_30": {
+              "amount": "479479.2",
+              "rate": "0.06751107"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3830086.83",
+              "rate": "0.5392794"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "941777.11",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "312982.96",
+              "rate": "0.33233231"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "628794.15",
+              "rate": "0.66766769"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "496240.68",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "371006.88",
+              "rate": "0.74763496"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "125233.8",
+              "rate": "0.25236504"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "581971.33",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "495849.18",
+              "rate": "0.85201651"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "86122.15",
+              "rate": "0.14798349"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "630679.92",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "570321.16",
+              "rate": "0.90429573"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "60358.76",
+              "rate": "0.09570427"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "893915.98",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "522671.16",
+              "rate": "0.58469831"
+            },
+            "past_due_over_180": {
+              "amount": "174412.04",
+              "rate": "0.1951101"
+            },
+            "resolved": {
+              "amount": "196832.78",
+              "rate": "0.22019159"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "1194911.96",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "1147647.61",
+              "rate": "0.96044533"
+            },
+            "resolved": {
+              "amount": "47264.35",
+              "rate": "0.03955467"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-09-30",
+      "toDate": "2025-10-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7800271.77",
+          "transitions": {
+            "not_due": {
+              "amount": "2311252.12",
+              "rate": "0.29630405"
+            },
+            "past_due_1_15": {
+              "amount": "1039985.72",
+              "rate": "0.13332686"
+            },
+            "past_due_16_30": {
+              "amount": "437418.65",
+              "rate": "0.05607736"
+            },
+            "past_due_31_60": {
+              "amount": "23026.66",
+              "rate": "0.00295203"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3988588.62",
+              "rate": "0.5113397"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "907620.17",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "254053.71",
+              "rate": "0.27991193"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "653566.46",
+              "rate": "0.72008807"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "479479.2",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "258779.3",
+              "rate": "0.53970913"
+            },
+            "past_due_61_90": {
+              "amount": "53524.29",
+              "rate": "0.11163006"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "167175.61",
+              "rate": "0.34866082"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "683989.84",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "544979.63",
+              "rate": "0.79676568"
+            },
+            "past_due_91_180": {
+              "amount": "4867.7",
+              "rate": "0.00711663"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "134142.51",
+              "rate": "0.19611769"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "495849.18",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "383972.15",
+              "rate": "0.77437286"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "111877.03",
+              "rate": "0.22562714"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "1092992.32",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "634700.17",
+              "rate": "0.58069957"
+            },
+            "past_due_over_180": {
+              "amount": "230418.89",
+              "rate": "0.21081474"
+            },
+            "resolved": {
+              "amount": "227873.26",
+              "rate": "0.20848569"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "1322059.65",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "1277331.27",
+              "rate": "0.96616765"
+            },
+            "resolved": {
+              "amount": "44728.38",
+              "rate": "0.03383235"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-10-31",
+      "toDate": "2025-11-30",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7934667.16",
+          "transitions": {
+            "not_due": {
+              "amount": "2267904.72",
+              "rate": "0.28582229"
+            },
+            "past_due_1_15": {
+              "amount": "1017614.06",
+              "rate": "0.12824912"
+            },
+            "past_due_16_30": {
+              "amount": "456252.87",
+              "rate": "0.0575012"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "4192895.51",
+              "rate": "0.5284274"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1060186.71",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "374935.84",
+              "rate": "0.35365076"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "685250.87",
+              "rate": "0.64634924"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "437418.65",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "272920.4",
+              "rate": "0.62393407"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "164498.25",
+              "rate": "0.37606593"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "535859.67",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "367408.55",
+              "rate": "0.68564322"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "168451.12",
+              "rate": "0.31435678"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "598503.92",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "515802.39",
+              "rate": "0.86181957"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "82701.53",
+              "rate": "0.13818043"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "1023540.02",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "752191.31",
+              "rate": "0.73489194"
+            },
+            "past_due_over_180": {
+              "amount": "168549.17",
+              "rate": "0.16467277"
+            },
+            "resolved": {
+              "amount": "102799.54",
+              "rate": "0.10043529"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "1507750.16",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "1425340.79",
+              "rate": "0.94534282"
+            },
+            "resolved": {
+              "amount": "82409.37",
+              "rate": "0.05465718"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-11-30",
+      "toDate": "2025-12-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "9440762.54",
+          "transitions": {
+            "not_due": {
+              "amount": "2587161.76",
+              "rate": "0.27404161"
+            },
+            "past_due_1_15": {
+              "amount": "1030589.71",
+              "rate": "0.10916382"
+            },
+            "past_due_16_30": {
+              "amount": "503799.65",
+              "rate": "0.0533643"
+            },
+            "past_due_31_60": {
+              "amount": "2961.19",
+              "rate": "0.00031366"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "5316250.23",
+              "rate": "0.56311661"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1045015.47",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "355424.38",
+              "rate": "0.34011399"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "689591.09",
+              "rate": "0.65988601"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "456252.87",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "201246.06",
+              "rate": "0.44108448"
+            },
+            "past_due_61_90": {
+              "amount": "12037.77",
+              "rate": "0.02638399"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "242969.04",
+              "rate": "0.53253153"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "647856.24",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "444959.64",
+              "rate": "0.68681848"
+            },
+            "past_due_91_180": {
+              "amount": "7486.25",
+              "rate": "0.01155542"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "195410.35",
+              "rate": "0.3016261"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "367408.55",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "303346.31",
+              "rate": "0.82563759"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "64062.24",
+              "rate": "0.17436241"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "1267993.7",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "689192.35",
+              "rate": "0.54352979"
+            },
+            "past_due_over_180": {
+              "amount": "372773.62",
+              "rate": "0.29398697"
+            },
+            "resolved": {
+              "amount": "206027.73",
+              "rate": "0.16248324"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "1593889.96",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "1546479.44",
+              "rate": "0.97025483"
+            },
+            "resolved": {
+              "amount": "47410.52",
+              "rate": "0.02974517"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2025-12-31",
+      "toDate": "2026-01-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7135922.49",
+          "transitions": {
+            "not_due": {
+              "amount": "1490337.71",
+              "rate": "0.20885004"
+            },
+            "past_due_1_15": {
+              "amount": "1052348.4",
+              "rate": "0.14747195"
+            },
+            "past_due_16_30": {
+              "amount": "377469.24",
+              "rate": "0.05289705"
+            },
+            "past_due_31_60": {
+              "amount": "27547.46",
+              "rate": "0.00386039"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "4188219.68",
+              "rate": "0.58692057"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1044202.23",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "263922.17",
+              "rate": "0.25275005"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "780280.06",
+              "rate": "0.74724995"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "503799.65",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "295680.03",
+              "rate": "0.58690003"
+            },
+            "past_due_61_90": {
+              "amount": "31883.5",
+              "rate": "0.06328607"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "176236.12",
+              "rate": "0.3498139"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "559631.63",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "426736.77",
+              "rate": "0.76253154"
+            },
+            "past_due_91_180": {
+              "amount": "8486.36",
+              "rate": "0.01516419"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "124408.5",
+              "rate": "0.22230427"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "456997.41",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "396485.69",
+              "rate": "0.86758848"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "60511.72",
+              "rate": "0.13241152"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "1000024.91",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "639388.14",
+              "rate": "0.63937221"
+            },
+            "past_due_over_180": {
+              "amount": "275806.02",
+              "rate": "0.27579915"
+            },
+            "resolved": {
+              "amount": "84830.75",
+              "rate": "0.08482864"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "1919253.06",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "1894786.16",
+              "rate": "0.98725186"
+            },
+            "resolved": {
+              "amount": "24466.9",
+              "rate": "0.01274814"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2026-01-31",
+      "toDate": "2026-02-28",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "5609840.36",
+          "transitions": {
+            "not_due": {
+              "amount": "1617644.89",
+              "rate": "0.28835845"
+            },
+            "past_due_1_15": {
+              "amount": "920094.39",
+              "rate": "0.16401436"
+            },
+            "past_due_16_30": {
+              "amount": "350445.91",
+              "rate": "0.06246985"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "2721655.17",
+              "rate": "0.48515733"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1087555.23",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "32586.22",
+              "rate": "0.02996282"
+            },
+            "past_due_31_60": {
+              "amount": "324999.93",
+              "rate": "0.29883533"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "729969.08",
+              "rate": "0.67120185"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "377469.24",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "243512.1",
+              "rate": "0.64511773"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "133957.14",
+              "rate": "0.35488227"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "587149.66",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "21139.4",
+              "rate": "0.03600343"
+            },
+            "past_due_61_90": {
+              "amount": "460637.38",
+              "rate": "0.78453146"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "105372.88",
+              "rate": "0.17946511"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "458620.27",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "18944.46",
+              "rate": "0.04130751"
+            },
+            "past_due_91_180": {
+              "amount": "330312.34",
+              "rate": "0.72023057"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "109363.47",
+              "rate": "0.23846192"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "1044360.19",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "502233.61",
+              "rate": "0.48090076"
+            },
+            "past_due_over_180": {
+              "amount": "369218.01",
+              "rate": "0.35353512"
+            },
+            "resolved": {
+              "amount": "172908.57",
+              "rate": "0.16556411"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "2170592.18",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "2112545.57",
+              "rate": "0.97325771"
+            },
+            "resolved": {
+              "amount": "58046.61",
+              "rate": "0.02674229"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2026-02-28",
+      "toDate": "2026-03-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "6577499.05",
+          "transitions": {
+            "not_due": {
+              "amount": "1937987.2",
+              "rate": "0.29463892"
+            },
+            "past_due_1_15": {
+              "amount": "1019310.57",
+              "rate": "0.15496932"
+            },
+            "past_due_16_30": {
+              "amount": "323184.27",
+              "rate": "0.04913483"
+            },
+            "past_due_31_60": {
+              "amount": "21227.83",
+              "rate": "0.00322734"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "3275789.18",
+              "rate": "0.49802959"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "920094.39",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "210081.2",
+              "rate": "0.2283257"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "710013.19",
+              "rate": "0.7716743"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "383032.13",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "243947.53",
+              "rate": "0.63688529"
+            },
+            "past_due_61_90": {
+              "amount": "9273.41",
+              "rate": "0.02421053"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "129811.19",
+              "rate": "0.33890418"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "589651.43",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "492303.48",
+              "rate": "0.83490594"
+            },
+            "past_due_91_180": {
+              "amount": "3859.85",
+              "rate": "0.00654599"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "93488.1",
+              "rate": "0.15854808"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "479581.84",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "332050.52",
+              "rate": "0.69237509"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "147531.32",
+              "rate": "0.30762491"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "832545.95",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "540360.33",
+              "rate": "0.64904565"
+            },
+            "past_due_over_180": {
+              "amount": "133171.53",
+              "rate": "0.15995697"
+            },
+            "resolved": {
+              "amount": "159014.09",
+              "rate": "0.19099737"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "2481763.58",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "2455077.59",
+              "rate": "0.98924717"
+            },
+            "resolved": {
+              "amount": "26685.99",
+              "rate": "0.01075283"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2026-03-31",
+      "toDate": "2026-04-30",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "8139899.2",
+          "transitions": {
+            "not_due": {
+              "amount": "2433780.58",
+              "rate": "0.29899395"
+            },
+            "past_due_1_15": {
+              "amount": "1060339.55",
+              "rate": "0.13026446"
+            },
+            "past_due_16_30": {
+              "amount": "363484.29",
+              "rate": "0.04465464"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "4282294.78",
+              "rate": "0.52608695"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1050765.73",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "274276.58",
+              "rate": "0.26102543"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "776489.15",
+              "rate": "0.73897457"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "323184.27",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "227646.01",
+              "rate": "0.70438456"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "95538.26",
+              "rate": "0.29561544"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "475256.56",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "403973.84",
+              "rate": "0.85001213"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "71282.72",
+              "rate": "0.14998787"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "501576.89",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "415024.59",
+              "rate": "0.82743962"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "86552.3",
+              "rate": "0.17256038"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "876270.7",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "502551.2",
+              "rate": "0.57351136"
+            },
+            "past_due_over_180": {
+              "amount": "199465.37",
+              "rate": "0.22762985"
+            },
+            "resolved": {
+              "amount": "174254.13",
+              "rate": "0.19885879"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "2588249.12",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "2553493.19",
+              "rate": "0.98657164"
+            },
+            "resolved": {
+              "amount": "34755.93",
+              "rate": "0.01342836"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2026-04-30",
+      "toDate": "2026-05-31",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "8154488.73",
+          "transitions": {
+            "not_due": {
+              "amount": "2006744",
+              "rate": "0.24609072"
+            },
+            "past_due_1_15": {
+              "amount": "1097719.93",
+              "rate": "0.13461542"
+            },
+            "past_due_16_30": {
+              "amount": "481506.01",
+              "rate": "0.05904797"
+            },
+            "past_due_31_60": {
+              "amount": "23740.48",
+              "rate": "0.00291134"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "4544778.31",
+              "rate": "0.55733455"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1069129.78",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "330892.25",
+              "rate": "0.3094968"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "738237.53",
+              "rate": "0.6905032"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "363484.29",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "234435.15",
+              "rate": "0.64496639"
+            },
+            "past_due_61_90": {
+              "amount": "23009.48",
+              "rate": "0.06330254"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "106039.66",
+              "rate": "0.29173107"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "501922.59",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "337321.48",
+              "rate": "0.67205877"
+            },
+            "past_due_91_180": {
+              "amount": "9846.18",
+              "rate": "0.01961693"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "154754.93",
+              "rate": "0.3083243"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "403973.84",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "300287.7",
+              "rate": "0.74333452"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "103686.14",
+              "rate": "0.25666548"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "917575.79",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "552683.62",
+              "rate": "0.60233021"
+            },
+            "past_due_over_180": {
+              "amount": "229225.36",
+              "rate": "0.24981627"
+            },
+            "resolved": {
+              "amount": "135666.81",
+              "rate": "0.14785352"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "2752958.56",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "2699595.63",
+              "rate": "0.98061615"
+            },
+            "resolved": {
+              "amount": "53362.93",
+              "rate": "0.01938385"
+            }
+          }
+        }
+      }
+    },
+    {
+      "fromDate": "2026-05-31",
+      "toDate": "2026-06-30",
+      "rows": {
+        "not_due": {
+          "sourceExposure": "7583642.61",
+          "transitions": {
+            "not_due": {
+              "amount": "2175771.25",
+              "rate": "0.28690319"
+            },
+            "past_due_1_15": {
+              "amount": "894526.92",
+              "rate": "0.11795478"
+            },
+            "past_due_16_30": {
+              "amount": "475439.13",
+              "rate": "0.06269271"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "4037905.31",
+              "rate": "0.53244931"
+            }
+          }
+        },
+        "past_due_1_15": {
+          "sourceExposure": "1124433.93",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "332501.79",
+              "rate": "0.29570594"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "791932.14",
+              "rate": "0.70429406"
+            }
+          }
+        },
+        "past_due_16_30": {
+          "sourceExposure": "481506.01",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "289047.63",
+              "rate": "0.60029911"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "192458.38",
+              "rate": "0.39970089"
+            }
+          }
+        },
+        "past_due_31_60": {
+          "sourceExposure": "589067.88",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "473163.16",
+              "rate": "0.80324047"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "115904.72",
+              "rate": "0.19675953"
+            }
+          }
+        },
+        "past_due_61_90": {
+          "sourceExposure": "360330.96",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "305539.75",
+              "rate": "0.84794199"
+            },
+            "past_due_over_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "resolved": {
+              "amount": "54791.21",
+              "rate": "0.15205801"
+            }
+          }
+        },
+        "past_due_91_180": {
+          "sourceExposure": "862817.5",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "520154.33",
+              "rate": "0.60285556"
+            },
+            "past_due_over_180": {
+              "amount": "159796.44",
+              "rate": "0.18520306"
+            },
+            "resolved": {
+              "amount": "182866.73",
+              "rate": "0.21194138"
+            }
+          }
+        },
+        "past_due_over_180": {
+          "sourceExposure": "2928820.99",
+          "transitions": {
+            "not_due": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_1_15": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_16_30": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_31_60": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_61_90": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_91_180": {
+              "amount": "0",
+              "rate": "0"
+            },
+            "past_due_over_180": {
+              "amount": "2828689.1",
+              "rate": "0.96581154"
+            },
+            "resolved": {
+              "amount": "100131.89",
+              "rate": "0.03418846"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "vintages": [
+    {
+      "cohortMonth": "2024-07",
+      "titleCount": 1245,
+      "faceValue": "4476181.22",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "554552.47",
+          "unresolvedShare": "0.12388964"
+        },
+        "60": {
+          "unresolvedAmount": "415133.16",
+          "unresolvedShare": "0.09274271"
+        },
+        "90": {
+          "unresolvedAmount": "326379.14",
+          "unresolvedShare": "0.07291464"
+        },
+        "120": {
+          "unresolvedAmount": "268793.01",
+          "unresolvedShare": "0.06004963"
+        },
+        "180": {
+          "unresolvedAmount": "210340.62",
+          "unresolvedShare": "0.04699109"
+        },
+        "360": {
+          "unresolvedAmount": "174893.6",
+          "unresolvedShare": "0.03907206"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2024-08",
+      "titleCount": 1331,
+      "faceValue": "4929820.82",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "657920.95",
+          "unresolvedShare": "0.13345738"
+        },
+        "60": {
+          "unresolvedAmount": "553002.75",
+          "unresolvedShare": "0.11217502"
+        },
+        "90": {
+          "unresolvedAmount": "461734.23",
+          "unresolvedShare": "0.09366146"
+        },
+        "120": {
+          "unresolvedAmount": "350986.21",
+          "unresolvedShare": "0.07119655"
+        },
+        "180": {
+          "unresolvedAmount": "253477.8",
+          "unresolvedShare": "0.05141724"
+        },
+        "360": {
+          "unresolvedAmount": "222500.44",
+          "unresolvedShare": "0.04513358"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2024-09",
+      "titleCount": 1568,
+      "faceValue": "5439314.91",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "649138.76",
+          "unresolvedShare": "0.11934201"
+        },
+        "60": {
+          "unresolvedAmount": "486266.77",
+          "unresolvedShare": "0.08939853"
+        },
+        "90": {
+          "unresolvedAmount": "404585",
+          "unresolvedShare": "0.07438161"
+        },
+        "120": {
+          "unresolvedAmount": "313430.73",
+          "unresolvedShare": "0.0576232"
+        },
+        "180": {
+          "unresolvedAmount": "204580.68",
+          "unresolvedShare": "0.03761148"
+        },
+        "360": {
+          "unresolvedAmount": "150278.74",
+          "unresolvedShare": "0.02762825"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2024-10",
+      "titleCount": 1362,
+      "faceValue": "5213395",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "521870.57",
+          "unresolvedShare": "0.10010187"
+        },
+        "60": {
+          "unresolvedAmount": "427373.32",
+          "unresolvedShare": "0.08197601"
+        },
+        "90": {
+          "unresolvedAmount": "313899.41",
+          "unresolvedShare": "0.06021017"
+        },
+        "120": {
+          "unresolvedAmount": "239865.71",
+          "unresolvedShare": "0.0460095"
+        },
+        "180": {
+          "unresolvedAmount": "175997.64",
+          "unresolvedShare": "0.03375874"
+        },
+        "360": {
+          "unresolvedAmount": "107260.93",
+          "unresolvedShare": "0.0205741"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2024-11",
+      "titleCount": 1349,
+      "faceValue": "4940534.6",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "736367.84",
+          "unresolvedShare": "0.14904619"
+        },
+        "60": {
+          "unresolvedAmount": "637586.29",
+          "unresolvedShare": "0.12905208"
+        },
+        "90": {
+          "unresolvedAmount": "494906.87",
+          "unresolvedShare": "0.10017274"
+        },
+        "120": {
+          "unresolvedAmount": "394398.31",
+          "unresolvedShare": "0.07982908"
+        },
+        "180": {
+          "unresolvedAmount": "285929.05",
+          "unresolvedShare": "0.05787411"
+        },
+        "360": {
+          "unresolvedAmount": "217777.27",
+          "unresolvedShare": "0.0440797"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2024-12",
+      "titleCount": 1269,
+      "faceValue": "4197352.96",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "638497.1",
+          "unresolvedShare": "0.15211899"
+        },
+        "60": {
+          "unresolvedAmount": "487766.54",
+          "unresolvedShare": "0.11620813"
+        },
+        "90": {
+          "unresolvedAmount": "310363.47",
+          "unresolvedShare": "0.07394267"
+        },
+        "120": {
+          "unresolvedAmount": "224696.74",
+          "unresolvedShare": "0.05353296"
+        },
+        "180": {
+          "unresolvedAmount": "165367.72",
+          "unresolvedShare": "0.0393981"
+        },
+        "360": {
+          "unresolvedAmount": "118461.92",
+          "unresolvedShare": "0.02822301"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-01",
+      "titleCount": 1106,
+      "faceValue": "3834563.61",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "647949.52",
+          "unresolvedShare": "0.16897608"
+        },
+        "60": {
+          "unresolvedAmount": "530509.35",
+          "unresolvedShare": "0.13834934"
+        },
+        "90": {
+          "unresolvedAmount": "432246.53",
+          "unresolvedShare": "0.11272379"
+        },
+        "120": {
+          "unresolvedAmount": "277659.72",
+          "unresolvedShare": "0.07240973"
+        },
+        "180": {
+          "unresolvedAmount": "175902.59",
+          "unresolvedShare": "0.04587291"
+        },
+        "360": {
+          "unresolvedAmount": "143940.78",
+          "unresolvedShare": "0.03753772"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-02",
+      "titleCount": 1172,
+      "faceValue": "4560979.61",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "534861.21",
+          "unresolvedShare": "0.11726893"
+        },
+        "60": {
+          "unresolvedAmount": "396734.36",
+          "unresolvedShare": "0.08698446"
+        },
+        "90": {
+          "unresolvedAmount": "339219.95",
+          "unresolvedShare": "0.07437436"
+        },
+        "120": {
+          "unresolvedAmount": "270451.16",
+          "unresolvedShare": "0.05929673"
+        },
+        "180": {
+          "unresolvedAmount": "217753.76",
+          "unresolvedShare": "0.04774276"
+        },
+        "360": {
+          "unresolvedAmount": "147401.49",
+          "unresolvedShare": "0.03231795"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-03",
+      "titleCount": 1575,
+      "faceValue": "5789086.41",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "755772.99",
+          "unresolvedShare": "0.13055134"
+        },
+        "60": {
+          "unresolvedAmount": "597528.39",
+          "unresolvedShare": "0.10321635"
+        },
+        "90": {
+          "unresolvedAmount": "443633.97",
+          "unresolvedShare": "0.07663281"
+        },
+        "120": {
+          "unresolvedAmount": "367202.43",
+          "unresolvedShare": "0.06343012"
+        },
+        "180": {
+          "unresolvedAmount": "205569.34",
+          "unresolvedShare": "0.03550981"
+        },
+        "360": {
+          "unresolvedAmount": "123503.39",
+          "unresolvedShare": "0.02133383"
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-04",
+      "titleCount": 1532,
+      "faceValue": "5279226.8",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "752911.09",
+          "unresolvedShare": "0.14261768"
+        },
+        "60": {
+          "unresolvedAmount": "584220.82",
+          "unresolvedShare": "0.11066409"
+        },
+        "90": {
+          "unresolvedAmount": "491694.42",
+          "unresolvedShare": "0.09313758"
+        },
+        "120": {
+          "unresolvedAmount": "389384.13",
+          "unresolvedShare": "0.0737578"
+        },
+        "180": {
+          "unresolvedAmount": "257937.24",
+          "unresolvedShare": "0.0488589"
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-05",
+      "titleCount": 1439,
+      "faceValue": "5170612.21",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "806904.63",
+          "unresolvedShare": "0.15605592"
+        },
+        "60": {
+          "unresolvedAmount": "675051.37",
+          "unresolvedShare": "0.1305554"
+        },
+        "90": {
+          "unresolvedAmount": "534858.7",
+          "unresolvedShare": "0.10344204"
+        },
+        "120": {
+          "unresolvedAmount": "433132.93",
+          "unresolvedShare": "0.08376821"
+        },
+        "180": {
+          "unresolvedAmount": "400907.37",
+          "unresolvedShare": "0.07753576"
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-06",
+      "titleCount": 1332,
+      "faceValue": "5016527",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "735412.17",
+          "unresolvedShare": "0.14659787"
+        },
+        "60": {
+          "unresolvedAmount": "611962.55",
+          "unresolvedShare": "0.12198929"
+        },
+        "90": {
+          "unresolvedAmount": "472158.47",
+          "unresolvedShare": "0.09412059"
+        },
+        "120": {
+          "unresolvedAmount": "399041.64",
+          "unresolvedShare": "0.0795454"
+        },
+        "180": {
+          "unresolvedAmount": "298922.41",
+          "unresolvedShare": "0.05958752"
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-07",
+      "titleCount": 1236,
+      "faceValue": "4883891.97",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "748917.05",
+          "unresolvedShare": "0.15334431"
+        },
+        "60": {
+          "unresolvedAmount": "611707.22",
+          "unresolvedShare": "0.12524995"
+        },
+        "90": {
+          "unresolvedAmount": "497458.01",
+          "unresolvedShare": "0.10185688"
+        },
+        "120": {
+          "unresolvedAmount": "457462.08",
+          "unresolvedShare": "0.09366753"
+        },
+        "180": {
+          "unresolvedAmount": "355071.05",
+          "unresolvedShare": "0.07270248"
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-08",
+      "titleCount": 1566,
+      "faceValue": "5391810.89",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "704749.61",
+          "unresolvedShare": "0.13070741"
+        },
+        "60": {
+          "unresolvedAmount": "466462.6",
+          "unresolvedShare": "0.08651316"
+        },
+        "90": {
+          "unresolvedAmount": "358697.56",
+          "unresolvedShare": "0.06652636"
+        },
+        "120": {
+          "unresolvedAmount": "266490.83",
+          "unresolvedShare": "0.04942511"
+        },
+        "180": {
+          "unresolvedAmount": "156982.78",
+          "unresolvedShare": "0.02911504"
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-09",
+      "titleCount": 1646,
+      "faceValue": "5953855.16",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "748950.11",
+          "unresolvedShare": "0.12579246"
+        },
+        "60": {
+          "unresolvedAmount": "563801.92",
+          "unresolvedShare": "0.09469527"
+        },
+        "90": {
+          "unresolvedAmount": "440833.21",
+          "unresolvedShare": "0.07404164"
+        },
+        "120": {
+          "unresolvedAmount": "322457.67",
+          "unresolvedShare": "0.05415948"
+        },
+        "180": {
+          "unresolvedAmount": "211846.82",
+          "unresolvedShare": "0.03558145"
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-10",
+      "titleCount": 1574,
+      "faceValue": "5678239.16",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "631209.47",
+          "unresolvedShare": "0.11116289"
+        },
+        "60": {
+          "unresolvedAmount": "453086.8",
+          "unresolvedShare": "0.07979354"
+        },
+        "90": {
+          "unresolvedAmount": "352667.57",
+          "unresolvedShare": "0.06210862"
+        },
+        "120": {
+          "unresolvedAmount": "264050.7",
+          "unresolvedShare": "0.04650222"
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-11",
+      "titleCount": 1983,
+      "faceValue": "7241267.21",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "844196.09",
+          "unresolvedShare": "0.11658126"
+        },
+        "60": {
+          "unresolvedAmount": "675995.55",
+          "unresolvedShare": "0.09335321"
+        },
+        "90": {
+          "unresolvedAmount": "500066.32",
+          "unresolvedShare": "0.06905785"
+        },
+        "120": {
+          "unresolvedAmount": "398309.74",
+          "unresolvedShare": "0.05500553"
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2025-12",
+      "titleCount": 1227,
+      "faceValue": "4591226.98",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "594878.52",
+          "unresolvedShare": "0.12956853"
+        },
+        "60": {
+          "unresolvedAmount": "495231.63",
+          "unresolvedShare": "0.10786477"
+        },
+        "90": {
+          "unresolvedAmount": "411576.89",
+          "unresolvedShare": "0.0896442"
+        },
+        "120": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2026-01",
+      "titleCount": 1159,
+      "faceValue": "4194969.74",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "548119.22",
+          "unresolvedShare": "0.13066107"
+        },
+        "60": {
+          "unresolvedAmount": "400291.64",
+          "unresolvedShare": "0.09542182"
+        },
+        "90": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "120": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2026-02",
+      "titleCount": 1462,
+      "faceValue": "4993203.37",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": "599404.72",
+          "unresolvedShare": "0.12004412"
+        },
+        "60": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "90": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "120": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2026-03",
+      "titleCount": 1771,
+      "faceValue": "6331015.43",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "60": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "90": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "120": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2026-04",
+      "titleCount": 1577,
+      "faceValue": "5774159.04",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "60": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "90": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "120": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2026-05",
+      "titleCount": 1425,
+      "faceValue": "5651548.53",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "60": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "90": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "120": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    },
+    {
+      "cohortMonth": "2026-06",
+      "titleCount": 1491,
+      "faceValue": "5486368.5",
+      "horizons": {
+        "30": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "60": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "90": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "120": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "180": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        },
+        "360": {
+          "unresolvedAmount": null,
+          "unresolvedShare": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dilutionAmount": "3059552.71",
+    "dilutionShareOfOrigination": "0.02447267",
+    "repurchasedAmount": "0",
+    "repurchaseShareOfAssigned": null,
+    "finalWrittenOffAmount": "2021128.64",
+    "finalWrittenOffShare": "0.01616655",
+    "adjustedLossAmount": "2021128.64",
+    "adjustedLossShare": "0.01616655",
+    "dueTitleCount": "32397",
+    "dueFaceValue": "117573046.56",
+    "punctualByCount": "0.24153471",
+    "punctualByValue": "0.24128437",
+    "extendedTitleCount": "340",
+    "extendedTitleShare": "0.00988458",
+    "extendedFaceValue": "1337826.55",
+    "extendedFaceShare": "0.01070097",
+    "weightedExtensionDays": "168.7867543"
+  }
+}

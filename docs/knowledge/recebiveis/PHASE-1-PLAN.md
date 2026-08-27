@@ -130,7 +130,8 @@ de datas inválidas, valores negativos e títulos duplicados.
 - Aging soma o universo.
 - Concentrações somam 100% do universo aplicável.
 - Elegíveis mais excluídos somam o total sem dupla contagem.
-- Perda acumulada não diminui quando a janela aumenta.
+- A curva de não pagamento por safra não aumenta quando o horizonte se alonga; perda
+  realizada acumulada só é testada separadamente quando há data do evento de baixa.
 - Ponte de dívida reconcilia abertura, movimentos e fechamento.
 - Formatos economicamente equivalentes produzem o mesmo CET.
 - Ordem dos registros não altera o resultado.
@@ -169,10 +170,18 @@ recomendação automática a compradores.
 
 ## 9. Estado medido em 27/08/2026
 
-Entregas 1 a 4 concluídas para o caso Vertentes: contratos, especificação, auditoria,
-fixture com gold e métricas estáticas. O pacote de orquestração já consome a fonte
-canônica para os cálculos migrados. Entregas 5 e 6 continuam pendentes. A entrega 7
-está concluída somente no perímetro estático.
+Entregas 1 a 5 concluídas para o caso Vertentes: contratos, especificação, auditoria,
+fixture com gold, métricas estáticas e métricas dinâmicas. O pacote de orquestração
+consome a fonte canônica para os cálculos migrados. A entrega 6 continua pendente. A
+entrega 7 está concluída nos perímetros estático e dinâmico.
+
+O gold dinâmico é produzido por um oráculo Python independente do motor TypeScript e
+cobre 23 transições mensais e 24 safras. Roll rate usa vencimento original para não
+esconder atraso por prorrogação. A métrica de safra é chamada explicitamente de curva
+de não pagamento no horizonte, não de write-off. O caso não tem volume cedido, então
+a taxa de recompra sobre cessões retorna `not_evaluable`, mesmo com zero recompras na
+verdade sintética. Causas de diluição continuam não classificadas no nível do título e
+essa limitação permanece visível.
 
 O gabarito legado foi preservado para auditoria, mas sua carteira elegível foi
 corrigida porque somava exclusões sobrepostas. A política usada nessa simulação é

@@ -4,7 +4,7 @@ Atualizado em: 2026-08-26
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
-## Vertical de recebíveis A1, fixture Vertentes e métricas estáticas, 27/08/2026
+## Vertical de recebíveis A1, fixture Vertentes e métricas estáticas e dinâmicas, 27/08/2026
 
 O caso sintético Vertentes A1-03 passou a existir dentro de `@offroad/testing-fixtures` com os 21
 arquivos de entrada, a verdade reservada do gerador, a representação canônica comprimida, hashes e
@@ -20,17 +20,32 @@ declara universo, período, fórmula versionada, hash do dataset e âncoras de o
 denominador retorna `not_evaluable`; não vira zero. `@offroad/receivables-analysis` consome essa
 fonte canônica e deixou de recalcular localmente as métricas migradas.
 
+O universo canônico passou a declarar cobertura de liquidação, diluição, prorrogação, recompra e
+cessão ou gravame.
+Isso impede que evento não fornecido seja interpretado como zero. O cálculo dinâmico reconstrói 23
+transições mensais usando o vencimento original, calcula 24 safras nos horizontes de 30, 60, 90,
+120, 180 e 360 dias, diluição, write-off final, perda ajustada, liquidação pontual e prorrogação por
+quantidade, valor e dias ponderados. Safras ainda imaturas retornam `not_evaluable`. Taxa de
+recompra também retorna `not_evaluable` quando o volume cedido, seu denominador econômico, não
+existe.
+
+O gold dinâmico vem de um oráculo Python independente do motor TypeScript e compara cada célula da
+matriz e de cada safra. A curva calculada é de não pagamento no horizonte e não é rotulada como
+evento de write-off. A diluição total é 2,447267% da originação, mas o caso não identifica causa no
+nível de título; a saída conserva `other` e emite a limitação em vez de inventar a abertura.
+
 A auditoria encontrou um erro material no gabarito legado: exclusões calculadas de forma
 independente contavam títulos sobrepostos mais de uma vez. A cascata exclusiva correta, sob a
 política sintética estimada do caso, produz R$ 8.877.495,23 de carteira elegível e 74,619108%, não
 R$ 8.618.471. Esse cenário continua rotulado como estimado e não representa critério confirmado de
-comprador. A promoção aprova somente fixture, contratos e métricas estáticas. Métricas dinâmicas,
-dívida, CET, advance rate e elegibilidade por regulamento permanecem em gates posteriores.
+comprador. A promoção aprova fixture, contratos e métricas estáticas e dinâmicas. Dívida, CET,
+advance rate e elegibilidade por regulamento permanecem em gates posteriores.
 
 Os testes focados cobrem hashes de entrada, verdade e expected outputs, replay independente da
 ordem, datas economicamente distintas, fronteiras de aging, invariantes, procedência e igualdade
 exata com o gold. O benchmark local em Node 24, carteira integral e dez iterações registrou mediana
-de 235,90 ms e p95 de 240,15 ms para o cálculo estático.
+de 312,09 ms e p95 de 321,47 ms para o cálculo estático, e mediana de 1.074,42 ms e p95 de 1.113,34
+ms para o cálculo dinâmico integral.
 
 ## Gate jurídico inicial v3, 27/08/2026
 

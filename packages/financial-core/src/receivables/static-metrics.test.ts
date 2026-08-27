@@ -21,7 +21,10 @@ function universe(): ReceivablesUniverse {
       {id: "r2", currency: "BRL", faceValue: "200", openValue: "50", issueDate: "2026-06-29", originalDueDate: "2026-07-29", currentDueDate: "2026-08-28", obligorId: "o2", economicGroupId: "g1", status: "open", source: source(3)},
       {id: "r3", currency: "BRL", faceValue: "300", openValue: "0", issueDate: "2026-06-30", originalDueDate: "2026-07-30", currentDueDate: "2026-07-30", obligorId: "o3", economicGroupId: "g2", status: "settled", source: source(4)},
     ],
-    settlements: [],
+    settlements: [
+      {id: "s2", receivableId: "r2", date: "2026-06-30", amount: "150", source: source(20)},
+      {id: "s3", receivableId: "r3", date: "2026-06-30", amount: "300", source: source(21)},
+    ],
     dilutions: [],
     extensions: [],
     repurchases: [],
@@ -35,6 +38,13 @@ function universe(): ReceivablesUniverse {
       {id: "g1", name: "Group One", obligorIds: ["o1", "o2"], source: source(10)},
       {id: "g2", name: "Group Two", obligorIds: ["o3"], source: source(12)},
     ],
+    eventCoverage: {
+      settlements: {status: "complete", startDate: "2025-07-01", endDate: "2026-06-30", basis: "test fixture", limitations: []},
+      dilutions: {status: "complete", startDate: "2025-07-01", endDate: "2026-06-30", basis: "test fixture", limitations: []},
+      extensions: {status: "complete", startDate: "2025-07-01", endDate: "2026-06-30", basis: "test fixture", limitations: []},
+      repurchases: {status: "complete", startDate: "2025-07-01", endDate: "2026-06-30", basis: "test fixture", limitations: []},
+      assignmentsAndLiens: {status: "not_provided", startDate: null, endDate: null, basis: "test fixture", limitations: []},
+    },
   };
 }
 

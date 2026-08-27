@@ -144,16 +144,21 @@
   ],
   "normalized": {
     "path": "normalized/universe.json.gz",
-    "bytes": 1495830,
-    "sha256": "41c5581b0c0b7d52dd76223abb04e25f44669a520a5db887a4bb99390b84c442",
-    "uncompressedBytes": 27819156,
-    "uncompressedSha256": "8d68a1f7837c44d84816364eff56aade4c3824262aa49a0932b0c84d75b70029"
+    "bytes": 1496413,
+    "sha256": "d942fd247f5e46c6b7ebcd3ce5db881aa0cb26f412d8c4341b16d32713823340",
+    "uncompressedBytes": 27820191,
+    "uncompressedSha256": "7c9fd0ecf23316ee117a13e4538bd8f61923a40188d15eea107a7b4da5094651"
   },
   "expectedFiles": [
     {
       "path": "defects.json",
       "bytes": 1137,
       "sha256": "ab7f59e690a89ce406eb7150dd48e76d386abf005d9e3697ee4e7b64c966b1fb"
+    },
+    {
+      "path": "dynamic-metrics.json",
+      "bytes": 176913,
+      "sha256": "70ea5d0d7bb2b81a7aa27a57c4a4e94aa01e0f4d7000dd8447adbf453347c465"
     },
     {
       "path": "illustrative-eligibility.json",

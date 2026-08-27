@@ -1,5 +1,11 @@
 import Decimal from "decimal.js";
-import {calculateStaticReceivablesMetrics, type MeasuredMetric, type StaticReceivablesMetrics} from "@offroad/financial-core";
+import {
+  calculateDynamicReceivablesMetrics,
+  calculateStaticReceivablesMetrics,
+  type DynamicReceivablesMetrics,
+  type MeasuredMetric,
+  type StaticReceivablesMetrics,
+} from "@offroad/financial-core";
 
 import {
   receivablesCaseSchema,
@@ -63,6 +69,7 @@ export type ReceivablesAnalysis = {
   version: "2026.08.24-v1";
   caseId: string;
   staticMetrics: StaticReceivablesMetrics;
+  dynamicMetrics: DynamicReceivablesMetrics;
   analyzedReceivables: ReceivableEligibility[];
   metrics: {
     portfolio: {
@@ -216,6 +223,7 @@ export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
   const input = receivablesCaseSchema.parse(raw);
   const canonical = canonicalizeLegacyReceivablesCase(input);
   const staticMetrics = calculateStaticReceivablesMetrics(canonical.universe, {datasetHash: canonical.datasetHash});
+  const dynamicMetrics = calculateDynamicReceivablesMetrics(canonical.universe, {datasetHash: canonical.datasetHash});
   const analyzedReceivables = input.portfolio.map((item): ReceivableEligibility => ({
     receivableId: item.id,
     debtorId: item.debtorId,
@@ -376,6 +384,7 @@ export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
     version: "2026.08.24-v1",
     caseId: input.id,
     staticMetrics,
+    dynamicMetrics,
     analyzedReceivables,
     metrics: {
       portfolio: {
