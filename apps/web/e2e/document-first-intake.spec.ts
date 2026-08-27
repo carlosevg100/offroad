@@ -41,8 +41,9 @@ async function startPrivateProject(page: Page, projectName: string, acceptTerms 
   await page.locator(".intake-welcome__action a").click();
 
   if (acceptTerms) {
-    await expect(page.locator(".private-project-gate")).toContainText("Confidencialidade e autorização de trabalho");
-    await expect(page.locator(".private-project-gate")).toContainText("Preparar não significa distribuir.");
+    await expect(page.locator(".private-project-gate--terms h2")).toHaveText("Confidencialidade");
+    await expect(page.locator(".private-project-gate--terms")).toContainText("Nenhum material é apresentado a investidores sem autorização prévia e específica da companhia");
+    await expect(page.locator(".private-project-gate--terms")).toContainText("Não constitui contratação, exclusividade ou mandato");
     await page.locator('input[name="authority_declared"]').check();
     await page.locator('.private-project-gate__form button[type="submit"]').click();
   }

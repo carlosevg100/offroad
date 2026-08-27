@@ -1,4 +1,4 @@
-import {Check, Eye, EyeOff, LockKeyhole, ShieldCheck} from "lucide-react";
+import {Check, Eye, EyeOff, ShieldCheck} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import {IntakeActionSubmit} from "@/components/intake/intake-action-submit";
@@ -13,6 +13,7 @@ type Props = {
   legalDocument?: {
     title: string;
     version: string;
+    rendered_text: string;
     body_sections: Json;
   } | null;
   profile: {
@@ -47,8 +48,8 @@ export async function PrivateProjectSetup({
   if (mode === "terms") {
     const sections = legalSections(legalDocument?.body_sections);
     return (
-      <section className="private-project-gate">
-        <header className="private-project-gate__header">
+      <section className="private-project-gate private-project-gate--terms">
+        <header className="private-project-gate__header private-project-gate__legal-header">
           <span className="section-kicker">{t("terms.kicker")}</span>
           <h2>{legalDocument?.title ?? t("terms.title")}</h2>
           <p>{t("terms.intro")}</p>
@@ -63,31 +64,32 @@ export async function PrivateProjectSetup({
           ))}
         </div>
 
-        <div className="private-project-gate__boundary">
-          <LockKeyhole aria-hidden="true" size={18} />
-          <div><strong>{t("terms.boundaryTitle")}</strong><p>{t("terms.boundaryBody")}</p></div>
-        </div>
+        <p className="private-project-gate__declaration"><span>{t("terms.authorityPrefix")}</span> <strong>{t("terms.authorityEmphasis")}</strong> {t("terms.authoritySuffix")}</p>
 
         <form action={acceptAction} className="private-project-gate__form">
           <input name="locale" type="hidden" value={locale} />
-          <div className="form-grid form-grid--onboarding">
-            <label className="field">
+          <div className="private-project-gate__signatory-fields">
+            <label>
               <span>{t("terms.name")}</span>
               <input defaultValue={profile.fullName} maxLength={160} minLength={2} name="signatory_name" required />
             </label>
-            <label className="field">
+            <label>
               <span>{t("terms.titleLabel")}</span>
-              <input defaultValue={profile.jobTitle} maxLength={160} name="signatory_title" />
+              <input defaultValue={profile.jobTitle} maxLength={160} minLength={2} name="signatory_title" required />
             </label>
           </div>
           <label className="private-project-gate__check">
             <input name="authority_declared" required type="checkbox" value="confirmed" />
-            <span><strong>{t("terms.declarationTitle")}</strong>{t("terms.declarationBody")}</span>
+            <span>{t("terms.declaration")}</span>
           </label>
           <div className="private-project-gate__submit">
+            <details className="private-project-gate__full-terms">
+              <summary>{t("terms.fullTerms")}</summary>
+              <p>{legalDocument?.rendered_text ?? t("terms.fullTermsFallback")}</p>
+            </details>
             <IntakeActionSubmit idle={t("terms.cta")} pending={t("terms.pending")} />
-            <small>{t("terms.version", {version: legalDocument?.version ?? ""})}</small>
           </div>
+          <small className="private-project-gate__version">{t("terms.version", {version: legalDocument?.version ?? ""})}</small>
         </form>
       </section>
     );
@@ -148,4 +150,3 @@ export async function PrivateProjectSetup({
     </section>
   );
 }
-
