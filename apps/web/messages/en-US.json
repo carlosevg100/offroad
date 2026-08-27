@@ -536,8 +536,7 @@
         "pending": "Recording acceptance",
         "acceptedTitle": "Confidentiality terms accepted.",
         "acceptedBody": " Your financing remains private and no information will be shared without your authorization.",
-        "returnCta": "Return to the financing",
-        "version": "Terms {version}. The record includes version, hash, declarations, date, user, organization and available technical metadata."
+        "returnCta": "Return to the financing"
       },
       "project": {
         "kicker": "YOUR FINANCING",
