@@ -30,7 +30,7 @@ a taxa que ele oferecer. A Offroad roda processo com cinco a dez compradores ao 
 tempo, com o mesmo pacote, no mesmo prazo. Isso é o que um assessor entrega, e é o
 que a empresa não consegue fazer sozinha.
 
-## As cinco frentes
+## As seis frentes
 
 | # | Módulo | O que contém | Estado |
 |---|---|---|---|

@@ -1781,3 +1781,33 @@ Arquivos centrais:
 - `supabase/migrations/20260826221128_restart_onboarding_intake.sql`: fronteira transacional;
 - `supabase/tests/rls_non_interference.sql`: propriedade, idempotência e não interferência;
 - `apps/web/e2e/document-first-intake.spec.ts`: retorno, reinício e novo começo no navegador.
+
+## 32. Vertical de recebíveis, especificação canônica, 27/08/2026
+
+A base em `docs/knowledge/recebiveis` foi confrontada com o código existente antes de iniciar a
+calculadora A1. A especificação canônica agora resolve matriz, datas, aging, procedência, escopos
+de elegibilidade e estados de aderência. São 39 células sustentáveis, oito core e 282 casos
+mínimos. A classificação pode ser multilabel.
+
+Arquivos obrigatórios para a próxima sessão:
+
+1. `docs/knowledge/recebiveis/BRIEFING-CODEX.md`;
+2. `docs/knowledge/recebiveis/CANONICAL-SPEC.md`;
+3. `docs/knowledge/recebiveis/CURRENT-STATE-AUDIT.md`;
+4. `docs/knowledge/recebiveis/PHASE-1-PLAN.md`;
+5. a ficha e os casos A1.
+
+`packages/financial-core/src/receivables/contracts.ts` contém o primeiro contrato canônico de
+datas, eventos, âncoras, procedência, aging e elegibilidade. O teste cobre todas as fronteiras e
+impede usar estimativa em decisão rígida.
+
+Existe uma implementação anterior em `packages/receivables-analysis`. Ela preserva bons controles
+de schema, reconciliação e cenários, mas não está acreditada: calcula fora do `financial-core`, usa
+cinco faixas de aging, mistura policy default com o caso e não emite procedência completa. O plano
+é reaproveitá-la como orquestrador, migrando toda matemática para o `financial-core`. Não criar um
+terceiro motor e não promover os defaults atuais como política real de comprador.
+
+O próximo incremento é migrar o caso Vertentes para `testing-fixtures`, separar raw, normalized,
+intermediate e expected, resolver formalmente `reporting_date` versus
+`latest_origination_date`, completar o gold e só então implementar as métricas estáticas. A
+Fase 0 passou em lint, typecheck, testes e build nos 41 pacotes.

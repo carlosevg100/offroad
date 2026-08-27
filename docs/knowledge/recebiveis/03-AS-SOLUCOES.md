@@ -45,7 +45,7 @@ casos que chegam.
 | Risco sacado | Definido pelo sacado | Prazo da NF | CDI + 1,5% a 4% a.a. | Lastro, risco do sacado | Sim, para o fornecedor | Dias |
 | Conta garantida com cessão | R$ 500k a R$ 30mm | Rotativo | CDI + 6% a 15% a.a. | Garantia | Não | Dias |
 | CCB com cessão fiduciária | R$ 2mm a R$ 100mm | 12 a 48 meses | CDI + 4% a 10% a.a. | Garantia | Não | 30 a 60 dias |
-| FIDC multicedente | Cota de R$ 25k | Aberto | CDI + 2% a 5% na sênior | Lastro | Sim | 15 a 45 dias por cedente |
+| FIDC multicedente | Limite de cessão por cedente, a confirmar | Conforme a carteira | Referência de mercado a confirmar | Lastro | Depende do teste contábil aplicável | Prazo por cedente, a confirmar |
 | FIDC dedicado | R$ 20mm a R$ 500mm | 36 a 60 meses | CDI + 2,5% a 5% na sênior | Lastro | Sim, sem coobrigação | 90 a 180 dias |
 | Certificado de Recebíveis | R$ 10mm a R$ 300mm | 24 a 120 meses | CDI + 2% a 6% a.a. | Lastro | Sim | 60 a 150 dias |
 | CRI | R$ 20mm a R$ 1bn | 60 a 180 meses | IPCA + 6% a 11% a.a. | Lastro imobiliário | Sim | 90 a 180 dias |
@@ -56,6 +56,11 @@ casos que chegam.
 Leitura da tabela: **desce a lista, cai o custo e sobe o tempo, o tíquete mínimo e a
 exigência estrutural.** Toda a arte da recomendação está em achar a linha em que a
 economia de custo paga a estrutura e o prazo.
+
+As faixas deste quadro são hipóteses de pesquisa `[E]`, não regras executáveis nem
+cotações. Só entram no sistema depois de promovidas ao registro governado com fonte,
+data, validade e responsável. Desreconhecimento contábil depende da transferência de
+riscos e benefícios e da análise aplicável, não do nome do instrumento.
 
 ---
 

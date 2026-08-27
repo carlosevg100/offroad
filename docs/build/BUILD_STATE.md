@@ -1062,3 +1062,18 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - O estado preso de `carlosevg@gmail.com` em produção foi corrigido operacionalmente da mesma
   forma: a tentativa vazia foi cancelada e o onboarding voltou ao início, sem excluir a conta ou a
   organização.
+
+## Recebíveis, especificação canônica e gate da Fase 1, 27/08/2026
+
+- A vertical foi congelada em 39 células sustentáveis, com oito células core e banco mínimo de
+  282 casos. Os 20 casos A1 existentes são cobertura adicional.
+- Datas de relatório, última originação e intervalo do histórico são conceitos distintos. O
+  aging canônico possui sete faixas sem sobreposição e preserva vencimento original e vigente.
+- Contratos econômicos, procedência e escopos de elegibilidade foram adicionados ao
+  `financial-core`. Decisão rígida não aceita estimativa como evidência.
+- `packages/receivables-analysis` foi auditado como protótipo de orquestração. Seus controles são
+  aproveitáveis, mas os cálculos locais, cinco faixas de aging, policy defaults sem governança e
+  ausência de procedência completa impedem promoção.
+- O plano aprovado migra a matemática para `financial-core`, mantém a orquestração no pacote
+  vertical e usa o caso Vertentes como gold completo. A vertical continua candidate até cumprir o
+  gate documentado em `docs/knowledge/recebiveis/PHASE-1-PLAN.md`.

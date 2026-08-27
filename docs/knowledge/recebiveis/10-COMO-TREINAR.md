@@ -73,9 +73,10 @@ prazo, safra e defeito.
 
 **A calibração é o trabalho.** Uma carteira sintética que não parece real não testa
 nada. A Vertentes levou várias iterações até bater ticket médio, prazo ponderado, DSO,
-perda acima de 180 dias e diluição em faixa plausível. Descobrimos ali que a data base
-precisa ser igual à última emissão, senão o pipeline recente some e o DSO sai pela
-metade. Cada categoria vai ter uma descoberta dessas.
+perda acima de 180 dias e diluição em faixa plausível. Descobrimos ali que data de
+relatório e última emissão precisam ser registradas separadamente. Usar uma no lugar
+da outra sem declarar a convenção faz o pipeline recente sumir e distorce o DSO. Cada
+categoria vai ter uma descoberta dessas.
 
 ---
 
@@ -141,14 +142,17 @@ e é o material mais próximo de um gabarito produzido por terceiro.
 Classificação e cálculo se medem contra gabarito. Recomendação, não. Ela se mede por
 sobrevivência.
 
-**O desenho.** Para cada recomendação, cinco agentes independentes, cada um encarnando
-o comitê de crédito de um comprador específico, com o regulamento daquele comprador em
-mãos, com uma instrução única: **rejeitar**. Cada um devolve motivo de rejeição, ou
-aprovação condicionada, ou aprovação.
+**O desenho.** Para cada recomendação, cinco passes independentes e restritos de
+revisão, cada um representando a lente de crédito de um comprador específico. Os
+passes recebem a mesma saída estruturada, o regulamento daquele comprador e a
+instrução de procurar motivo de rejeição. Eles não conversam entre si e não executam
+ações. Cada passe devolve motivo de rejeição, aprovação condicionada ou ausência de
+objeção, sempre em schema fechado e com procedência.
 
-**A leitura.** Recomendação que sobrevive a três de cinco está pronta. Rejeitada por
-três ou mais pelo mesmo motivo, o problema não é o comprador, é a recomendação, e ela
-volta.
+**A leitura.** Recomendação que passa em três de cinco lentes avança para revisão
+responsável. Rejeitada por três ou mais pelo mesmo motivo, o problema não é o
+comprador, é a recomendação, e ela volta. Esse placar é uma régua de teste, nunca um
+sign-off de crédito nem uma decisão autônoma do sistema.
 
 **Por que isso funciona.** É o único jeito de medir julgamento sem operação real. E
 reproduz exatamente o que acontece na vida: a mesa não erra por calcular errado, erra
