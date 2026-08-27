@@ -145,6 +145,7 @@ export async function PrivateProjectSetup({
     journey={journey}
     locale={locale}
     project={project}
+    representationAlreadyDeclared={termsAccepted}
   />;
 }
 
@@ -156,6 +157,7 @@ export async function PrivateProjectForm({
   journey,
   locale,
   project,
+  representationAlreadyDeclared = false,
 }: {
   action: (formData: FormData) => Promise<void>;
   backHref: string;
@@ -163,6 +165,7 @@ export async function PrivateProjectForm({
   journey: "company" | "originator";
   locale: string;
   project?: {name: string; identityPolicy: string};
+  representationAlreadyDeclared?: boolean;
 }) {
   const t = await getTranslations({locale, namespace: "Onboarding.privateProject"});
   const representationCopy = journey === "originator"
@@ -183,7 +186,6 @@ export async function PrivateProjectForm({
         <label className="field private-project-gate__project-name">
           <span>{t("project.name")}</span>
           <input autoComplete="off" defaultValue={project?.name} maxLength={80} minLength={2} name="project_name" placeholder={t("project.namePlaceholder")} required />
-          <small>{t("project.nameHelp")}</small>
         </label>
 
         <fieldset className="private-project-gate__identity">
@@ -199,10 +201,9 @@ export async function PrivateProjectForm({
             <span className="private-project-gate__option-icon"><EyeOff aria-hidden="true" size={18} /></span>
             <span><strong>{t("project.blindTitle")}</strong><p>{t("project.blindBody")}</p></span>
           </label>
-          <aside><ShieldCheck aria-hidden="true" size={17} /><p>{t("project.identityControl")}</p></aside>
         </fieldset>
 
-        {editingExistingProject ? <input name="representation_declared" type="hidden" value="confirmed" /> : (
+        {editingExistingProject || representationAlreadyDeclared ? <input name="representation_declared" type="hidden" value="confirmed" /> : (
           <label className="private-project-gate__check">
             <input name="representation_declared" required type="checkbox" value="confirmed" />
             <span><strong>{representationCopy.title}</strong>{representationCopy.body}</span>

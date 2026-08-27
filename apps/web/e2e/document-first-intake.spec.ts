@@ -55,7 +55,8 @@ async function startPrivateProject(page: Page, projectName: string, acceptTerms 
   await expect(page.locator(".private-project-gate--project")).toBeVisible();
   await page.locator('input[name="project_name"]').fill(projectName);
   await expect(page.locator('input[name="identity_policy"][value="identified_restricted"]')).toBeChecked();
-  await page.locator('input[name="representation_declared"]').check();
+  await expect(page.locator('input[name="representation_declared"]')).toHaveAttribute("type", "hidden");
+  await expect(page.locator('input[name="representation_declared"]')).toHaveValue("confirmed");
   await page.locator('.private-project-gate__form button[type="submit"]').click();
   await expect(page.locator(".intake-collect")).toBeVisible();
 }
