@@ -106,6 +106,10 @@ test.describe("Document-first intake (company journey)", () => {
   test("starts with documents, uploads the data room and processes it", async () => {
     await page.goto("/pt-BR/onboarding");
     await startPrivateProject(page, `Projeto Horizonte ${runId}`, true);
+    await expect(page.locator(".workspace-welcome h1")).toHaveText("Vamos começar o processo para estruturar sua captação.");
+    await expect(page.locator(".workspace-welcome")).toContainText("Leva cerca de dez minutos. O resto é com a gente.");
+    await expect(page.locator(".intake-guide__back")).toHaveText("Voltar e editar o projeto");
+    await expect(page.locator(".intake-guide__restart")).toHaveCount(0);
     await completeCompanyMilestone(page);
 
     // The operation decides the checklist; the brief decides who could buy the paper. Neither

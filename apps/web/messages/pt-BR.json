@@ -409,6 +409,9 @@
       "welcomeTitle": "Bem-vindo.",
       "welcomeBodyCompany": "Nossa missão é ajudar sua empresa a organizar, planejar e estruturar uma captação de crédito privado. Do jeito mais simples possível.",
       "welcomeBodyOriginator": "Nossa missão é ajudar você a organizar, planejar e estruturar captações de crédito privado para seus clientes. Do jeito mais simples possível.",
+      "startTitle": "Vamos começar o processo para estruturar sua captação.",
+      "startBody": "Começa com o essencial: a companhia, a operação e os documentos que você já tem.",
+      "startBodyEmphasis": "Leva cerca de dez minutos. O resto é com a gente.",
       "progressTitle": "Sua captação, passo a passo.",
       "progressBody": "Continue de onde parou. A Offroad mostra o que já está organizado, o que ainda falta e qual é o próximo passo.",
       "readiness": "Preparação da operação",
@@ -1040,6 +1043,7 @@
       "workspaceDocumentsTitle": "Sua lista de informações, na ordem certa",
       "workspaceDocumentsBody": "Comece pelo mínimo. Se já tiver materiais adicionais, envie tudo junto. A Offroad lê, classifica e mostra automaticamente o que cada arquivo atende.",
       "back": "Voltar à etapa anterior",
+      "backToProject": "Voltar e editar o projeto",
       "restart": "Recomeçar esta captação",
       "restartBody": "Esta tentativa será encerrada e você voltará à apresentação inicial. Sua conta e sua organização permanecem intactas.",
       "restartConfirm": "Encerrar e recomeçar"

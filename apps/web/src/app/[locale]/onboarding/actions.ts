@@ -258,6 +258,27 @@ export async function restartDocumentIntake(formData: FormData) {
   redirect(onboardingUrl(locale));
 }
 
+/**
+ * Leaves an empty first milestone and returns directly to project setup.
+ *
+ * Starting the intake creates its private session, so editing the project name or identity policy
+ * first closes that empty session. The same transactional database command used by restart keeps
+ * account, organization and legal acceptance intact; only this unfinished financing is replaced.
+ */
+export async function returnToPrivateProjectSetup(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const {error} = await runtime.supabase.rpc("restart_onboarding_intake", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+  });
+  if (error) {
+    reportServerFailure({step: "intake.return_to_project_setup", error});
+    redirect(onboardingUrl(locale, "save"));
+  }
+  redirect(`/${locale}/onboarding?setup=project`);
+}
+
 export async function setIntakeOperation(formData: FormData) {
   const locale = localeFrom(formData);
   const {runtime} = await onboardingIntakeRuntime(locale, formData);
