@@ -1,5 +1,23 @@
 # Acceptance Evidence
 
+## Vertical de recebíveis A1, fixture Vertentes e métricas estáticas, 27/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Sala sintética integral | manifesto e SHA-256 dos 21 arquivos `raw` | 21 de 21 preservados; nenhuma entidade ou informação real |
+| Verdade reservada | hashes de `source`, `normalized` e `expected` | arquivos íntegros e separados da entrada que futuros testes de extração poderão ler |
+| Datas canônicas | reporting, última originação e intervalo | 30/06/2026, 28/06/2026 e 01/07/2024 a 28/06/2026 permanecem distintos |
+| Métricas estáticas | igualdade exata com gold | 34.397 títulos; R$ 125.019.151,13 de face; R$ 11.897.080,30 em aberto; prazos, DSO, aging, Top N e HHI aprovados |
+| Invariantes | aging, concentração e replay | aging reconcilia integralmente com a posição; cortes são monotônicos; ordem dos títulos não altera a saída |
+| Procedência | inspeção de todas as métricas | 100% com hash do dataset, universo, período, fórmula versionada e ao menos uma âncora |
+| Cascata ilustrativa | exclusões mutuamente exclusivas | R$ 3.019.585,07 excluídos e R$ 8.877.495,23 elegíveis; política marcada como estimada e incapaz de decidir buyer fit |
+| Regressão focada | financial-core, receivables-analysis e testing-fixtures | 39 + 35 + 20 testes verdes; typecheck verde nos três pacotes |
+| Gate integral | `pnpm check` em Node 24.19 | lint, typecheck, testes e build verdes nos 41 pacotes; web com 135 testes e 28 rotas |
+| Performance local | Node 24, carteira integral, dez iterações | mediana 235,90 ms; p95 240,15 ms |
+
+Esta evidência não promove roll rate, safras, diluição por causa, perda ajustada, dívida, CET,
+advance rate ou elegibilidade por regulamento. Cada grupo exige gold e gate próprios.
+
 ## Gate jurídico inicial v3, 27/08/2026
 
 | Evidência | Verificação | Resultado |

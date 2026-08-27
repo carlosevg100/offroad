@@ -40,6 +40,9 @@ describe("receivables and FIDC vertical", () => {
       topDebtorShare: "0.03333333",
       topGroupShare: "0.10000000",
     });
+    expect(result.staticMetrics.portfolio.totalOpenValue.value).toBe("6000000");
+    expect(result.staticMetrics.portfolio.totalOpenValue.provenance.kind).toBe("measured");
+    expect(result.staticMetrics.aging.past_due_31_60.value).toBe("0");
     expect(result.reconciliation.tapeToAccounting).toMatchObject({difference: "0.00", status: "tied"});
     expect(result.reconciliation.tapeCollectionsToAccounting).toMatchObject({difference: "0.00", status: "tied"});
     expect(result.reconciliation.collectionsToCash).toMatchObject({difference: "0.00", status: "tied"});

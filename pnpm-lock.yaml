@@ -840,12 +840,19 @@ importers:
 
   packages/receivables-analysis:
     dependencies:
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0
       zod:
         specifier: 4.4.3
         version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
 
   packages/reconciliation:
     dependencies:
@@ -900,6 +907,9 @@ importers:
 
   packages/testing-fixtures:
     dependencies:
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       jszip:
         specifier: 3.10.1
         version: 3.10.1

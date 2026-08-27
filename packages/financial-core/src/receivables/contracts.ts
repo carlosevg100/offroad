@@ -120,7 +120,8 @@ export type DilutionEvent = {
 export type ExtensionEvent = {
   id: string;
   receivableId: string;
-  date: IsoDate;
+  date: IsoDate | null;
+  identifiedAt: IsoDate;
   previousDueDate: IsoDate;
   newDueDate: IsoDate;
   reason?: string;
@@ -283,4 +284,3 @@ export function assertHardEligibilityProvenance(result: BuyerFitResult): void {
     }
   }
 }
-

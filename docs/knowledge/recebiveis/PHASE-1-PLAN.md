@@ -166,3 +166,14 @@ alerta ou `não avaliado`, conforme o contrato. Nunca gera imputação silencios
 Nenhuma entrega é promovida ao produto antes de concluir seu próprio conjunto de
 testes. A aprovação da Fase 1 libera a construção do motor de elegibilidade, não a
 recomendação automática a compradores.
+
+## 9. Estado medido em 27/08/2026
+
+Entregas 1 a 4 concluídas para o caso Vertentes: contratos, especificação, auditoria,
+fixture com gold e métricas estáticas. O pacote de orquestração já consome a fonte
+canônica para os cálculos migrados. Entregas 5 e 6 continuam pendentes. A entrega 7
+está concluída somente no perímetro estático.
+
+O gabarito legado foi preservado para auditoria, mas sua carteira elegível foi
+corrigida porque somava exclusões sobrepostas. A política usada nessa simulação é
+estimada, não é mandato confirmado de comprador e não pode produzir decisão rígida.

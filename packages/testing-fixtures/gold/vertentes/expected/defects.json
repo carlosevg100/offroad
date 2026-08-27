@@ -1,0 +1,13 @@
+{
+  "version": "2026.08.27-v1",
+  "defects": [
+    {"id": "economic_group_split", "expectedCount": 1, "effect": "obligor concentration understates economic-group concentration"},
+    {"id": "unmarked_extensions", "expectedCount": 340, "effect": "current due dates conceal the original delinquency path"},
+    {"id": "related_party_obligor", "expectedCount": 1, "effect": "related-party receivables require explicit exclusion or policy treatment"},
+    {"id": "undeclared_recourse_and_debt", "expectedAmount": "9760000", "effect": "adjusted gross debt exceeds the declared bank position"},
+    {"id": "accounting_reconciliation_difference", "expectedAmount": "1900000", "effect": "the receivables ledger does not reconcile to accounting"},
+    {"id": "cancelled_invoice_open", "expectedCount": 120, "effect": "open receivables lack valid invoice support"},
+    {"id": "dilution_misclassification", "expectedAmount": "3059552.71", "effect": "net revenue and portfolio dilution are misstated"},
+    {"id": "triangular_revenue_spike", "expectedPeriod": "2025-11", "expectedIncrease": "0.34", "effect": "revenue quality is overstated"}
+  ]
+}
