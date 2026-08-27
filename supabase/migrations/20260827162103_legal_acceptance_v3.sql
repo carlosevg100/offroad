@@ -274,12 +274,15 @@ These Terms set out the commitments undertaken by Offroad Capital, responsible f
   now()
 );
 
--- Rename the earlier, overly broad corporate-authority assertion. Gate 0 requires only the right
--- to provide information for a private analysis. Corporate representation is a distinct ledger.
+-- Preserve the earlier corporate-authority assertion exactly as historical evidence. It must not
+-- be renamed or reinterpreted. V3 records a narrower information-rights declaration in a distinct
+-- column, while corporate representation remains a separate downstream ledger.
 alter table public.organization_legal_acceptances
-  rename column authority_declared to information_rights_declared;
+  alter column authority_declared drop not null,
+  drop constraint organization_legal_acceptances_authority_declared_check;
 
 alter table public.organization_legal_acceptances
+  add column information_rights_declared boolean,
   add column terms_agreed boolean,
   add column acceptance_statement text,
   add column information_rights_statement text,
@@ -287,23 +290,19 @@ alter table public.organization_legal_acceptances
   add column accepted_ip inet,
   add column accepted_user_agent text;
 
-update public.organization_legal_acceptances acceptance
-set
-  terms_agreed = true,
-  acceptance_statement = document.acceptance_statement,
-  information_rights_statement = document.information_rights_statement
-from public.platform_legal_documents document
-where document.id = acceptance.legal_document_id;
-
 alter table public.organization_legal_acceptances
-  alter column terms_agreed set not null,
-  alter column acceptance_statement set not null,
-  alter column information_rights_statement set not null,
-  add constraint organization_legal_acceptances_terms_agreed_check check (terms_agreed),
+  add constraint organization_legal_acceptances_authority_declared_check
+    check (authority_declared is null or authority_declared),
+  add constraint organization_legal_acceptances_information_rights_declared_check
+    check (information_rights_declared is null or information_rights_declared),
+  add constraint organization_legal_acceptances_terms_agreed_check
+    check (terms_agreed is null or terms_agreed),
   add constraint organization_legal_acceptances_acceptance_statement_check
-    check (char_length(trim(acceptance_statement)) between 20 and 1000),
+    check (acceptance_statement is null
+      or char_length(trim(acceptance_statement)) between 20 and 1000),
   add constraint organization_legal_acceptances_information_rights_statement_check
-    check (char_length(trim(information_rights_statement)) between 20 and 1000),
+    check (information_rights_statement is null
+      or char_length(trim(information_rights_statement)) between 20 and 1000),
   add constraint organization_legal_acceptances_acceptance_method_check
     check (acceptance_method in ('clickwrap')),
   add constraint organization_legal_acceptances_user_agent_check
@@ -406,6 +405,7 @@ begin
     accepted_by,
     signatory_name,
     signatory_title,
+    authority_declared,
     information_rights_declared,
     terms_agreed,
     acceptance_statement,
@@ -423,6 +423,7 @@ begin
     caller_id,
     trim(p_signatory_name),
     nullif(trim(coalesce(p_signatory_title, '')), ''),
+    null,
     true,
     true,
     legal_document.acceptance_statement,
@@ -469,9 +470,13 @@ grant execute on function public.accept_private_workspace_terms(text, text, text
   to authenticated;
 
 comment on column public.organization_legal_acceptances.acceptance_statement is
-  'Exact clickwrap contract assent displayed for the accepted legal document version.';
+  'Exact clickwrap contract assent displayed for V3 and later acceptances; null for legacy rows.';
 comment on column public.organization_legal_acceptances.information_rights_statement is
-  'Exact limited-purpose information-rights declaration displayed at acceptance.';
+  'Exact limited-purpose information-rights declaration for V3 and later; null for legacy rows.';
+comment on column public.organization_legal_acceptances.authority_declared is
+  'Historical corporate-authority assertion from V1/V2; null for V3 and later acceptances.';
+comment on column public.organization_legal_acceptances.information_rights_declared is
+  'Limited-purpose right-to-provide-information declaration from V3 and later; null for legacy rows.';
 comment on column public.organization_legal_acceptances.accepted_ip is
   'Client IP observed by the Data API at acceptance, when available.';
 comment on column public.organization_legal_acceptances.accepted_user_agent is

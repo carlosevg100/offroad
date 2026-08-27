@@ -18,12 +18,13 @@ companhia, não constitui mandato, exclusividade ou contratação comercial e n�
 com financiadores. Representação verificada e autorização de distribuição da versão exata dos
 materiais continuam sendo gates posteriores e independentes.
 
-A migration `20260827160047_legal_acceptance_v3.sql` está aplicada no Supabase staging. O ledger
+A migration `20260827162103_legal_acceptance_v3.sql` está aplicada em staging e produção. O ledger
 imutável preserva versão, hash, texto exato das duas declarações, usuário, organização, data,
 método de aceite e, quando disponíveis no Data API, IP e user agent. O Security Advisor de staging
-retornou zero findings. O `pnpm check` passou nos 41 pacotes, incluindo 135 testes web e build de
-produção com 28 rotas. Produção permanece inalterada até PR, CI obrigatório e promoção controlada
-da migration.
+e produção retornou zero findings. Os aceites v1 e v2 existentes não foram reescritos nem
+reinterpretados: a declaração histórica de autoridade permanece verdadeira em sua coluna original
+e os novos campos permanecem nulos. O `pnpm check`, a reconstrução completa do banco, a suíte RLS e
+o E2E autenticado passaram no CI do PR #281.
 
 ## Máquina de estados canônica do onboarding, 27/08/2026
 

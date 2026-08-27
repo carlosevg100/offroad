@@ -23,11 +23,12 @@ The immutable ledger records the document hash and version, both exact statement
 organization, timestamp, clickwrap method and available request metadata. IP and user agent are
 derived by the database from Data API request headers instead of being trusted client input.
 
-Migration `20260827160047_legal_acceptance_v3.sql` is applied only to the Supabase staging branch.
-Staging has one active v3 document per locale, no anonymous RPC execution and zero Security
-Advisor findings. The complete `pnpm check` is green across 41 packages, including 135 web tests
-and the production build. Production promotion remains pending PR and mandatory CI. The legal
-entity name, CNPJ, address, support
+Migration `20260827162103_legal_acceptance_v3.sql` is applied to staging and production. Both have
+one active v3 document per locale, no anonymous RPC execution and zero Security Advisor findings.
+Existing v1 and v2 acceptance rows were not rewritten: their original authority assertion remains
+in its original column and every v3-only field remains null. PR #281 passed database reconstruction,
+RLS, authenticated E2E and the full quality gate before merge. The legal entity name, CNPJ,
+address, support
 channel, retention schedule and selected forum still require counsel-approved completion before
 the text should be treated as the final external legal form.
 
