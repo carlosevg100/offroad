@@ -5033,6 +5033,10 @@ export type Database = {
         }
         Returns: string
       }
+      get_onboarding_bootstrap: {
+        Args: { p_locale: string }
+        Returns: Json
+      }
       apply_agent_operation_brief_proposal: {
         Args: {
           p_event_id: string
