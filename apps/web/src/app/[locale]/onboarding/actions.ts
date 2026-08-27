@@ -174,7 +174,7 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
   const locale = localeFrom(formData);
   const parsed = z.object({
     signatoryName: z.string().trim().min(2).max(160),
-    signatoryTitle: z.string().trim().max(160),
+    signatoryTitle: z.string().trim().min(2).max(160),
     authorityDeclared: z.literal("confirmed"),
   }).safeParse({
     signatoryName: value(formData, "signatory_name"),
@@ -187,7 +187,7 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
   const {error} = await context.supabase.rpc("accept_private_workspace_terms", {
     p_locale: locale,
     p_signatory_name: parsed.data.signatoryName,
-    p_signatory_title: parsed.data.signatoryTitle || null,
+    p_signatory_title: parsed.data.signatoryTitle,
     p_authority_declared: true,
   });
   if (error) {

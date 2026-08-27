@@ -197,7 +197,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const projectTitle = storedProjectName || (journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject"));
   const {data: activeLegalDocument} = journey === "capital_provider" ? {data: null} : await supabase
     .from("platform_legal_documents")
-    .select("id, title, version, document_hash, body_sections")
+    .select("id, title, version, document_hash, rendered_text, body_sections")
     .eq("document_key", "private_workspace_terms")
     .eq("locale", locale)
     .eq("status", "active")
@@ -396,13 +396,15 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         </header>
 
         <div className="workspace-scroll">
-          <header className={isFirstOnboardingStart || isPrivateSetupStep ? "workspace-welcome workspace-welcome--intro" : "workspace-welcome"}>
-            <div><p className="section-kicker">{isFirstOnboardingStart || isPrivateSetupStep ? t("workspace.welcomeEyebrow") : journeyTitle}</p><h1>{isFirstOnboardingStart ? t("workspace.welcomeTitle") : isPrivateSetupStep ? t("privateProject.workspaceTitle") : t("workspace.progressTitle")}</h1><p>{isFirstOnboardingStart ? welcomeBody : isPrivateSetupStep ? t("privateProject.workspaceBody") : t("workspace.progressBody")}</p></div>
-            {!isFirstOnboardingStart && !isPrivateSetupStep ? <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div> : null}
-          </header>
+          {!isPrivateTermsStep ? (
+            <header className={isFirstOnboardingStart || isPrivateSetupStep ? "workspace-welcome workspace-welcome--intro" : "workspace-welcome"}>
+              <div><p className="section-kicker">{isFirstOnboardingStart || isPrivateSetupStep ? t("workspace.welcomeEyebrow") : journeyTitle}</p><h1>{isFirstOnboardingStart ? t("workspace.welcomeTitle") : isPrivateSetupStep ? t("privateProject.workspaceTitle") : t("workspace.progressTitle")}</h1><p>{isFirstOnboardingStart ? welcomeBody : isPrivateSetupStep ? t("privateProject.workspaceBody") : t("workspace.progressBody")}</p></div>
+              {!isFirstOnboardingStart && !isPrivateSetupStep ? <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div> : null}
+            </header>
+          ) : null}
 
-          <div className={isFirstOnboardingStart || isPrivateSetupStep ? "workspace-editor-layout workspace-editor-layout--welcome" : "workspace-editor-layout"}>
-            <section className={isFirstOnboardingStart || isPrivateSetupStep ? "onboarding-stage workspace-editor workspace-editor--welcome" : "onboarding-stage workspace-editor"}>
+          <div className={isPrivateTermsStep ? "workspace-editor-layout workspace-editor-layout--legal" : isFirstOnboardingStart || isPrivateSetupStep ? "workspace-editor-layout workspace-editor-layout--welcome" : "workspace-editor-layout"}>
+            <section className={isPrivateTermsStep ? "onboarding-stage workspace-editor workspace-editor--legal" : isFirstOnboardingStart || isPrivateSetupStep ? "onboarding-stage workspace-editor workspace-editor--welcome" : "onboarding-stage workspace-editor"}>
           {!isFirstOnboardingStart && !isDocumentFirst ? <header className="onboarding-stage__header">
             <span>{t("workspace.currentActivity")}</span>
             <h2>{t(`workspace.nodes.${journey}.${currentStep}`)}</h2>
