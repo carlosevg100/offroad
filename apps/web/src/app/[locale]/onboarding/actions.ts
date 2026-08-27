@@ -173,8 +173,9 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
   });
   if (!parsed.success) redirect(`/${locale}/onboarding?setup=terms&error=validation`);
 
-  const context = await onboardingContext(locale);
-  const {error} = await context.supabase.rpc("accept_private_workspace_terms", {
+  const supabase = await createClient();
+  if (!supabase) redirect(onboardingUrl(locale, "provider"));
+  const {error} = await supabase.rpc("accept_private_workspace_terms", {
     p_locale: locale,
     p_signatory_name: parsed.data.signatoryName,
     p_signatory_title: parsed.data.signatoryTitle,
@@ -185,8 +186,7 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
     reportServerFailure({step: "intake.accept_private_workspace_terms", error});
     redirect(`/${locale}/onboarding?setup=terms&error=save`);
   }
-  const existingSessionId = typeof context.answers.intake_session_id === "string" ? context.answers.intake_session_id : "";
-  redirect(existingSessionId ? `/${locale}/onboarding` : `/${locale}/onboarding?setup=project`);
+  redirect(`/${locale}/onboarding?setup=project`);
 }
 
 const guidedCompanySchema = z.object({

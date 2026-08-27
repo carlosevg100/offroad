@@ -39,7 +39,7 @@ import {loadIntakeReview} from "@/lib/intake/server";
 import type {IntakeErrorCode} from "@/lib/intake/types";
 import {resolveBorrowerOnboardingView} from "@/lib/onboarding/state-machine";
 import {createClient} from "@/lib/supabase/server";
-import type {Json} from "@/types/database";
+import type {Database, Json} from "@/types/database";
 
 import {
   acceptHighConfidenceCandidates,
@@ -74,6 +74,24 @@ export const metadata: Metadata = {title: "Institutional Profile", robots: {inde
 type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string; stage?: string; setup?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
+type OrganizationRow = Database["public"]["Tables"]["organizations"]["Row"];
+type OnboardingBootstrap = {
+  user_id: string;
+  organization: Pick<OrganizationRow, "id" | "name" | "legal_name" | "website" | "country_code" | "state_code" | "city" | "sector" | "subsector" | "provider_type" | "description">;
+  progress: {journey: Journey; current_step: string; answers: Json; completed_at: string | null};
+  profile: {full_name: string | null; job_title: string | null} | null;
+  legal_document: {
+    id: string;
+    title: string;
+    version: string;
+    document_hash: string;
+    rendered_text: string;
+    body_sections: Json;
+    acceptance_statement: string;
+    information_rights_statement: string;
+  } | null;
+  terms_accepted: boolean;
+};
 const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate", "remove"];
 
 function answerObject(answers: AnswerMap, key: string): AnswerMap {
@@ -132,18 +150,12 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   ]);
   const supabase = await createClient();
   if (!supabase) redirect(`/${locale}/login?error=provider`);
-
-  const {data: claimsData, error: claimsError} = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (claimsError || !userId) redirect(`/${locale}/login`);
-  const {data: membership} = await supabase.from("organization_memberships").select("organization_id").eq("user_id", userId).eq("status", "active").limit(1).maybeSingle();
-  if (!membership) redirect(`/${locale}/signup?error=session`);
-  const [{data: organization}, {data: progress}, {data: profile}] = await Promise.all([
-    supabase.from("organizations").select("id, name, legal_name, website, country_code, state_code, city, sector, subsector, provider_type, description").eq("id", membership.organization_id).single(),
-    supabase.from("onboarding_progress").select("journey, current_step, answers, completed_at").eq("organization_id", membership.organization_id).eq("user_id", userId).maybeSingle(),
-    supabase.from("profiles").select("full_name, job_title").eq("id", userId).maybeSingle(),
-  ]);
-  if (!organization || !progress) redirect(`/${locale}/signup?error=session`);
+  const {data: bootstrapData, error: bootstrapError} = await supabase.rpc("get_onboarding_bootstrap", {p_locale: locale});
+  if (bootstrapError || !bootstrapData) {
+    redirect(bootstrapError?.code === "42501" ? `/${locale}/login` : `/${locale}/signup?error=session`);
+  }
+  const bootstrap = bootstrapData as unknown as OnboardingBootstrap;
+  const {user_id: userId, organization, progress, profile, legal_document: activeLegalDocument} = bootstrap;
   if (progress.completed_at) redirect(`/${locale}/app`);
 
   const journey = progress.journey as Journey;
@@ -191,28 +203,11 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
   const JourneyIcon = journey === "company" ? Building2 : journey === "originator" ? Network : Landmark;
   const projectTitle = storedProjectName || (journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject"));
-  const {data: activeLegalDocument} = journey === "capital_provider" ? {data: null} : await supabase
-    .from("platform_legal_documents")
-    .select("id, title, version, document_hash, rendered_text, body_sections, acceptance_statement, information_rights_statement")
-    .eq("document_key", "private_workspace_terms")
-    .eq("locale", locale)
-    .eq("status", "active")
-    .lte("effective_at", new Date().toISOString())
-    .order("effective_at", {ascending: false})
-    .limit(1)
-    .maybeSingle();
-  const {data: termsAcceptance} = activeLegalDocument ? await supabase
-    .from("organization_legal_acceptances")
-    .select("id")
-    .eq("organization_id", organization.id)
-    .eq("document_key", "private_workspace_terms")
-    .eq("document_version", activeLegalDocument.version)
-    .eq("document_hash", activeLegalDocument.document_hash)
-    .maybeSingle() : {data: null};
+  const termsAcceptance = bootstrap.terms_accepted;
   const requestedSetup = state.setup === "terms" || state.setup === "project" ? state.setup : null;
   const onboardingView = resolveBorrowerOnboardingView({
     journey,
-    termsAccepted: Boolean(termsAcceptance),
+    termsAccepted: termsAcceptance,
     requestedSetup,
     session: intakeReview?.session ? {
       id: intakeReview.session.id,
@@ -444,7 +439,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               }}
               returnHref={onboardingView === "confidentiality_review" ? `/${locale}/onboarding?setup=project` : `/${locale}/onboarding`}
               startAction={startDocumentIntake}
-              termsAccepted={Boolean(termsAcceptance)}
+              termsAccepted={termsAcceptance}
               termsHref={`/${locale}/onboarding?setup=terms`}
             />
           ) : null}
