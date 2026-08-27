@@ -910,6 +910,9 @@ importers:
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../financial-core
+      '@offroad/receivables-analysis':
+        specifier: workspace:*
+        version: link:../receivables-analysis
       jszip:
         specifier: 3.10.1
         version: 3.10.1

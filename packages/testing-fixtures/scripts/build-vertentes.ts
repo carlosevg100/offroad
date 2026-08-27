@@ -35,6 +35,7 @@ const normalizedRoot = join(goldRoot, "normalized");
 const expectedRoot = join(goldRoot, "expected");
 const basePath = join(sourceRoot, "base-final.json");
 const obligorsPath = join(sourceRoot, "obligors.json");
+const structureCostInputPath = join(sourceRoot, "structure-cost-input.json");
 const tapeRelative = "documentos/recebiveis/titulos_em_aberto_e_liquidados.csv";
 const obligorsRelative = "documentos/recebiveis/Cadastro de Sacados.xlsx";
 const tapePath = join(rawRoot, tapeRelative);
@@ -188,6 +189,7 @@ const manifest = {
   reservedTruth: [
     {path: "source/base-final.json", bytes: statSync(basePath).size, sha256: truthHash},
     {path: "source/obligors.json", bytes: statSync(obligorsPath).size, sha256: hashFile(obligorsPath)},
+    {path: "source/structure-cost-input.json", bytes: statSync(structureCostInputPath).size, sha256: hashFile(structureCostInputPath)},
   ],
   normalized: {
     path: "normalized/universe.json.gz",

@@ -31,6 +31,18 @@ comprador. Logo, o resultado não autoriza direcionamento de mercado.
 
 ## Estado de aprovação
 
-Esta entrega aprova somente contratos, qualidade de entrada e métricas estáticas.
-Roll rates, safras, diluição por causa, perda ajustada, dívida, CET, advance rate e
-elegibilidade por regulamento permanecem pendentes até seus gates próprios.
+O gate matemático da Fase 1 está aprovado para contratos canônicos, métricas
+estáticas, métricas dinâmicas, dívida ajustada, conversão de taxas, CET e cenário de
+advance rate. Os golds estático, dinâmico e de estrutura e custo são calculados por
+oráculos Python independentes do motor TypeScript.
+
+Isso não torna o caso economicamente completo. O CET da proposta de factoring ainda
+não inclui tributos porque o dado não foi fornecido. O volume cedido, necessário
+para calcular recompra sobre cessões, também não existe. A abertura de diluição por
+causa e a data de algumas prorrogações permanecem limitadas pela entrada. Cada saída
+falha fechada e conserva a lacuna.
+
+O advance rate de 92,904117% é apenas um cenário estimado. A perda ajustada histórica
+é usada como proxy explicitamente governada, não como perda esperada de safra nem
+como regra confirmada de comprador. Elegibilidade regulatória e contratual é o
+próximo gate. Matching, recomendação e introdução continuam proibidos.

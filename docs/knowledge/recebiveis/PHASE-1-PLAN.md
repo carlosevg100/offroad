@@ -170,10 +170,11 @@ recomendação automática a compradores.
 
 ## 9. Estado medido em 27/08/2026
 
-Entregas 1 a 5 concluídas para o caso Vertentes: contratos, especificação, auditoria,
-fixture com gold, métricas estáticas e métricas dinâmicas. O pacote de orquestração
-consome a fonte canônica para os cálculos migrados. A entrega 6 continua pendente. A
-entrega 7 está concluída nos perímetros estático e dinâmico.
+As sete entregas estão concluídas no perímetro matemático e de procedência da Fase 1.
+`financial-core` é a única implementação das fórmulas promovidas.
+`receivables-analysis/src/phase-one.ts` apenas injeta o contexto canônico, chama os
+motores e produz um relatório de qualidade, limitações e fronteiras. O protótipo
+legado continua isolado e não virou uma segunda fonte de matemática.
 
 O gold dinâmico é produzido por um oráculo Python independente do motor TypeScript e
 cobre 23 transições mensais e 24 safras. Roll rate usa vencimento original para não
@@ -183,6 +184,31 @@ a taxa de recompra sobre cessões retorna `not_evaluable`, mesmo com zero recomp
 verdade sintética. Causas de diluição continuam não classificadas no nível do título e
 essa limitação permanece visível.
 
+O bloco de estrutura e custo também possui oráculo Python independente. A ponte da
+dívida identifica R$ 22,26 milhões de dívida bruta ajustada e R$ 20,94 milhões de
+dívida líquida, contra R$ 12 milhões declarados pela companhia. A alavancagem usa o
+EBITDA reportado e evidenciado de R$ 3,84 milhões, sem fabricar o ajuste de R$ 4,16
+milhões do gabarito legado.
+
+A proposta de factoring diferencia desconto sobre valor de face de custo efetivo
+sobre recursos líquidos. Para R$ 100 mil, 42 dias, desconto simples por fora de
+3,45% ao mês e tarifa ad valorem de 0,60%, o CET antes de tributos é 62,448085% ao
+ano. Como o tratamento tributário não foi fornecido, o relatório retorna
+`calculated_with_missing_tax_input` e mantém o caso `incomplete`. Não imputa IOF.
+
+O advance rate é um cenário estimado, não uma política de comprador. Diluição
+observada é medida. A perda ajustada da carteira é usada somente como proxy
+governada e identificada, não como falsa perda esperada de safra. Multiplicadores e
+reservas preservam método, base, validade, responsável e procedência.
+
 O gabarito legado foi preservado para auditoria, mas sua carteira elegível foi
 corrigida porque somava exclusões sobrepostas. A política usada nessa simulação é
 estimada, não é mandato confirmado de comprador e não pode produzir decisão rígida.
+O relatório canônico mantém `externalDirectionAllowed`, `buyerRecommendationAllowed`,
+`qualifiedIntroductionAllowed` e `creditApprovalExpressed` como falsos.
+
+O gate da Fase 1 aprova cálculo, replay e procedência. Não declara que o caso
+Vertentes está completo. As lacunas ainda visíveis incluem tributos da proposta,
+volume cedido para a taxa de recompra, causa granular de diluição e momento exato de
+algumas prorrogações. A próxima fase é elegibilidade regulatória e contratual com
+política governada. Buyer fit permanece fora desse próximo gate.

@@ -1,0 +1,50 @@
+{
+  "version": "2026.08.27-v1",
+  "debt": {
+    "companyDeclaredDebt": "12000000",
+    "declaredPositionSubtotal": "12500000",
+    "identifiedNotDeclaredSubtotal": "9760000",
+    "declaredPositionMismatch": "500000",
+    "adjustedGrossDebt": "22260000",
+    "adjustmentToCompanyDeclaration": "10260000",
+    "cash": "1320000",
+    "adjustedNetDebt": "20940000",
+    "ebitdaForLeverage": "3840000",
+    "ebitdaBasis": "reported",
+    "adjustedNetLeverage": "5.453125"
+  },
+  "primeFactoring": {
+    "sourceRegime": "outside_simple_monthly",
+    "acquisitionPriceBeforeFees": "95170",
+    "discountAmount": "4830",
+    "discountShareOfFace": "0.0483",
+    "effectivePeriodRateBeforeFees": "0.05075129",
+    "effectiveMonthlyRateBeforeFees": "0.03599365",
+    "effectiveAnnualRateBeforeFees": "0.53760448",
+    "adValoremFee": "600",
+    "netInitialProceeds": "94570",
+    "cetMonthly": "0.04068431",
+    "cetAnnual": "0.62448085",
+    "taxInputStatus": "not_provided"
+  },
+  "institutionalIllustration": {
+    "sourceRegime": "inside_compound_annual_business",
+    "acquisitionPrice": "96943.96591253",
+    "discountAmount": "3056.03408747",
+    "effectivePeriodRate": "0.03152372",
+    "effectiveMonthlyRate": "0.01538121",
+    "effectiveAnnualRate": "0.2040772"
+  },
+  "advanceRateScenario": {
+    "status": "estimated_scenario_not_buyer_confirmed",
+    "stressedDilutionReserve": "0.03670901",
+    "stressedLossReserve": "0.02424983",
+    "operationalReserve": "0.01",
+    "totalReserve": "0.07095883",
+    "implicitAdvanceRate": "0.92904117"
+  },
+  "legacyCorrections": [
+    "The legacy 57.4% annual factoring estimate applied the period charge to face value. CET uses net borrower proceeds and is higher.",
+    "The legacy 5.03x leverage used a 4.16m adjusted EBITDA unsupported by the intake room. The executable gold uses the evidenced 3.84m reported 2025 EBITDA."
+  ]
+}
