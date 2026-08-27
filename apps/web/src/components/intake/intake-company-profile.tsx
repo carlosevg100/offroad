@@ -41,7 +41,7 @@ export async function IntakeCompanyProfile({action, documents, locale, organizat
         <div className="intake-company__identity">
           <label><span>{t("name")}</span><input autoComplete="organization" defaultValue={profile?.name ?? ""} maxLength={160} minLength={2} name="company_name" required /></label>
           <label><span>{t("legalName")}</span><input defaultValue={profile?.legalName ?? ""} maxLength={200} name="legal_name" /></label>
-          <label><span>{t("identifier")}</span><input aria-describedby="company-identifier-note" inputMode="numeric" maxLength={40} name="legal_identifier" placeholder={profile?.identifierLast4 ? `•••• ${profile.identifierLast4}` : ""} /><small id="company-identifier-note">{t("identifierNote")}</small></label>
+          <label><span>{t("identifier")}</span><input inputMode="numeric" maxLength={40} name="legal_identifier" placeholder={profile?.identifierLast4 ? `•••• ${profile.identifierLast4}` : ""} /></label>
           <label><span>{t("website")}</span><input defaultValue={profile?.website ?? ""} maxLength={500} name="website" type="url" /></label>
         </div>
 

@@ -34,20 +34,18 @@ import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {PrivateProjectSetup} from "@/components/intake/private-project-setup";
 import {AgentPanel, type AgentPanelCopy} from "@/components/intake/agent-panel";
-import {OnboardingDocumentUploader} from "@/components/onboarding-document-uploader";
 import type {AppLocale} from "@/i18n/routing";
 import {loadIntakeReview} from "@/lib/intake/server";
 import type {IntakeErrorCode} from "@/lib/intake/types";
+import {resolveBorrowerOnboardingView} from "@/lib/onboarding/state-machine";
 import {createClient} from "@/lib/supabase/server";
 import type {Json} from "@/types/database";
 
 import {
   acceptHighConfidenceCandidates,
   acceptPrivateWorkspaceTerms,
-  chooseManualIntake,
   completeOnboarding,
   confirmDocumentIntake,
-  finishDocumentsStep,
   previousOnboardingStep,
   processDocumentIntake,
   saveIntakeAnswer,
@@ -58,13 +56,9 @@ import {
   removeIntakeDocument,
   resolveIntakeIssue,
   resolveOnboardingScopeSuggestion,
-  restartDocumentIntake,
-  returnToPrivateProjectSetup,
   revokeOnboardingAdvisorAuthorization,
   reviewIntakeCandidate,
-  saveAdvisedCompanyStep,
   saveContactStep,
-  saveFundingStep,
   saveGuidedCompanyProfile,
   saveFundStep,
   saveMandateStep,
@@ -121,9 +115,9 @@ function StepActions({locale, returnStep, back = true, backLabel, continueLabel}
   );
 }
 
-function EditSectionLink({locale, target, label, add = false}: {locale: string; target: string; label: string; add?: boolean}) {
+function EditSectionLink({locale, target, href, label, add = false}: {locale: string; target?: string; href?: string; label: string; add?: boolean}) {
   return (
-    <Link className="onboarding-edit-action" href={`/${locale}/onboarding?section=${target}`}>
+    <Link className="onboarding-edit-action" href={href ?? `/${locale}/onboarding?section=${target}`}>
       {add ? <Plus aria-hidden="true" size={13} /> : <PencilLine aria-hidden="true" size={13} />}<span>{label}</span>
     </Link>
   );
@@ -156,43 +150,44 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const persistedStep = progress.current_step;
   const answers = (progress.answers ?? {}) as AnswerMap;
   const organizationAnswers = answerObject(answers, "organization");
-  const companyAnswers = answerObject(answers, "advised_company");
   const fundingAnswers = answerObject(answers, "funding");
   const fundAnswers = answerObject(answers, "fund");
   const mandateAnswers = answerObject(answers, "mandate");
   const contactAnswers = answerObject(answers, "contact");
-  const intakeMode = text(answers.intake_mode);
   const intakeSessionId = text(answers.intake_session_id);
   const storedProjectName = text(answers.project_name);
   const guidedCompanyAnswers = answerObject(answers, "company_profile");
+  const intakeReview = journey !== "capital_provider" && intakeSessionId
+    ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId})
+    : null;
   const requestedIntakeStage = state.stage === "company" || state.stage === "operation" || state.stage === "request" || state.stage === "documents"
     ? state.stage
     : undefined;
-  const isDocumentFirst = journey !== "capital_provider" && intakeMode === "documents";
-  const steps = isDocumentFirst
-    ? ["documents", "review"]
-    : journey === "company"
-    ? ["organization", "funding", "documents", "review"]
-    : journey === "originator"
-      ? ["organization", "company", "funding", "documents", "review"]
-      : ["organization", "fund", "mandate", "contacts", "review"];
-  const furthestAvailableIndex = isDocumentFirst
-    ? Number(answers.documents_uploaded ?? 0) > 0 ? 1 : 0
-    : journey === "company"
-    ? Number(answers.documents_uploaded ?? 0) > 0 ? 3 : typeof answers.opportunity_id === "string" ? 2 : typeof answers.company_id === "string" ? 1 : 0
-    : journey === "originator"
-      ? Number(answers.documents_uploaded ?? 0) > 0 ? 4 : typeof answers.opportunity_id === "string" ? 3 : typeof answers.company_id === "string" ? 2 : typeof answers.organization === "object" ? 1 : 0
-      : typeof answers.contact_id === "string" ? 4 : typeof answers.mandate_id === "string" ? 3 : typeof answers.fund_id === "string" ? 2 : typeof answers.organization === "object" ? 1 : 0;
+  const isDocumentFirst = journey !== "capital_provider"
+    && Boolean(intakeReview?.session && intakeReview.session.status !== "cancelled");
+  // Borrowers and advisors are routed exclusively by `resolveBorrowerOnboardingView` and the
+  // seven guided milestones below. These steps belong only to the separate capital-provider
+  // onboarding and must never become a second borrower path.
+  const providerSteps = ["organization", "fund", "mandate", "contacts", "review"];
+  const providerFurthestAvailableIndex = typeof answers.contact_id === "string"
+    ? 4
+    : typeof answers.mandate_id === "string"
+      ? 3
+      : typeof answers.fund_id === "string"
+        ? 2
+        : typeof answers.organization === "object"
+          ? 1
+          : 0;
   const requestedSection = typeof state.section === "string"
-    && steps.includes(state.section)
-    && steps.indexOf(state.section) <= furthestAvailableIndex
+    && journey === "capital_provider"
+    && providerSteps.includes(state.section)
+    && providerSteps.indexOf(state.section) <= providerFurthestAvailableIndex
     ? state.section
     : null;
   const currentStep = requestedSection ?? persistedStep;
   const returnStep = currentStep !== persistedStep ? persistedStep : "";
-  const currentIndex = Math.max(0, steps.indexOf(currentStep));
-  const completedCount = furthestAvailableIndex;
-  const registrationCompletionPercent = Math.round((completedCount / steps.length) * 100);
+  const currentIndex = Math.max(0, providerSteps.indexOf(currentStep));
+  const registrationCompletionPercent = Math.round((providerFurthestAvailableIndex / providerSteps.length) * 100);
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
   const JourneyIcon = journey === "company" ? Building2 : journey === "originator" ? Network : Landmark;
   const projectTitle = storedProjectName || (journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject"));
@@ -214,23 +209,23 @@ export default async function OnboardingPage({params, searchParams}: Props) {
     .eq("document_version", activeLegalDocument.version)
     .eq("document_hash", activeLegalDocument.document_hash)
     .maybeSingle() : {data: null};
-  const needsPrivateTerms = journey !== "capital_provider" && !termsAcceptance;
   const requestedSetup = state.setup === "terms" || state.setup === "project" ? state.setup : null;
-  const isPrivateTermsStep = journey !== "capital_provider" && needsPrivateTerms && Boolean(requestedSetup || intakeMode);
-  const isProjectSetupStep = journey !== "capital_provider" && !needsPrivateTerms && !intakeMode && Boolean(requestedSetup);
+  const onboardingView = resolveBorrowerOnboardingView({
+    journey,
+    termsAccepted: Boolean(termsAcceptance),
+    requestedSetup,
+    session: intakeReview?.session ? {
+      id: intakeReview.session.id,
+      status: intakeReview.session.status,
+      projectName: intakeReview.session.project_name,
+    } : null,
+  });
+  const isPrivateTermsStep = onboardingView === "confidentiality" || onboardingView === "confidentiality_review";
+  const isProjectSetupStep = onboardingView === "project_setup" || onboardingView === "project_edit";
   const isPrivateSetupStep = isPrivateTermsStep || isProjectSetupStep;
-  const isFirstOnboardingStart = currentStep === "organization" && journey !== "capital_provider" && !intakeMode && !requestedSetup;
+  const isFirstOnboardingStart = onboardingView === "welcome";
   const welcomeBody = journey === "originator" ? t("workspace.welcomeBodyOriginator") : t("workspace.welcomeBodyCompany");
 
-  let documents: Array<{id: string; original_name: string; byte_size: number | null}> = [];
-  const opportunityId = text(answers.opportunity_id);
-  const intakeReview = isDocumentFirst && intakeSessionId
-    ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId})
-    : null;
-  if (!intakeReview && currentStep === "documents" && opportunityId) {
-    const result = await supabase.from("source_documents").select("id, original_name, byte_size").eq("organization_id", organization.id).eq("opportunity_id", opportunityId).order("created_at");
-    documents = result.data ?? [];
-  }
   const {data: latestProcessingRun} = intakeSessionId
     ? await supabase
         .from("processing_runs")
@@ -245,7 +240,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const workPlan = latestProcessingRun
     ? projectWorkPlan({
         events: latestProcessingRun.stages,
-        expectedDocumentCount: intakeReview?.documents.length ?? documents.length,
+        expectedDocumentCount: intakeReview?.documents.length ?? 0,
       })
     : null;
   const intakeSession = intakeReview?.session ?? null;
@@ -273,9 +268,9 @@ export default async function OnboardingPage({params, searchParams}: Props) {
             : intakeSession.status === "confirmed"
               ? 5
               : 2;
-  const flowSteps = isDocumentFirst ? guidedMilestones : steps;
-  const flowCurrentIndex = isDocumentFirst ? guidedMilestoneIndex : currentIndex;
-  const flowAvailableIndex = isDocumentFirst ? guidedMilestoneIndex : furthestAvailableIndex;
+  const flowSteps = journey !== "capital_provider" ? guidedMilestones : providerSteps;
+  const flowCurrentIndex = journey !== "capital_provider" ? isDocumentFirst ? guidedMilestoneIndex : -1 : currentIndex;
+  const flowAvailableIndex = journey !== "capital_provider" ? isDocumentFirst ? guidedMilestoneIndex : -1 : providerFurthestAvailableIndex;
   const completionPercent = isDocumentFirst
     ? Math.round((guidedMilestoneIndex / (guidedMilestones.length - 1)) * 100)
     : workPlan?.completionPercent ?? registrationCompletionPercent;
@@ -286,11 +281,11 @@ export default async function OnboardingPage({params, searchParams}: Props) {
     && briefCompleteness(intakeBrief).answered === 0
     && (intakeReview?.documents.length ?? 0) === 0,
   );
-  const flowStepLabel = (step: string) => isDocumentFirst
+  const flowStepLabel = (step: string) => journey !== "capital_provider"
     ? tIntake(`guided.milestoneLabels.${step}`)
     : t(`workspace.nodes.${journey}.${step}`);
   const flowStepHref = (step: string) => {
-    if (!isDocumentFirst) return `/${locale}/onboarding?section=${step}`;
+    if (journey === "capital_provider") return `/${locale}/onboarding?section=${step}`;
     if (step === "company") return `/${locale}/onboarding?stage=company`;
     if (step === "operation") return `/${locale}/onboarding?stage=operation`;
     if (step === "information") return `/${locale}/onboarding?stage=documents`;
@@ -335,6 +330,15 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           ? t("error")
           : null;
   const agentCopy = t.raw("workspace.agent") as AgentPanelCopy;
+  const breadcrumbLabel = journey === "capital_provider"
+    ? t(`workspace.nodes.${journey}.${currentStep}`)
+    : onboardingView === "confidentiality" || onboardingView === "confidentiality_review"
+      ? t("privateProject.terms.title")
+      : onboardingView === "project_setup" || onboardingView === "project_edit"
+        ? t("privateProject.project.name")
+        : onboardingView === "welcome"
+          ? t("workspace.welcomeTitle")
+          : flowStepLabel(guidedMilestones[guidedMilestoneIndex]);
 
   return (
     <main className="workspace-onboarding">
@@ -399,7 +403,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
       <section className="workspace-shell">
         <header className="workspace-topbar">
-          <div className="workspace-breadcrumb"><PanelLeft aria-hidden="true" size={16} /><span>{organization.name}</span><ChevronRight aria-hidden="true" size={12} /><strong>{projectTitle}</strong><ChevronRight aria-hidden="true" size={12} /><em>{isDocumentFirst ? flowStepLabel(guidedMilestones[guidedMilestoneIndex]) : t(`workspace.nodes.${journey}.${currentStep}`)}</em></div>
+          <div className="workspace-breadcrumb"><PanelLeft aria-hidden="true" size={16} /><span>{organization.name}</span><ChevronRight aria-hidden="true" size={12} /><strong>{projectTitle}</strong><ChevronRight aria-hidden="true" size={12} /><em>{breadcrumbLabel}</em></div>
           <div className="workspace-topbar__actions"><span className="workspace-saved"><Check aria-hidden="true" size={12} />{t("workspace.saved")}</span><button aria-disabled="true" aria-label={t("workspace.help")} disabled title={t("workspace.comingSoon")} type="button"><HelpCircle aria-hidden="true" size={16} /></button><button aria-disabled="true" aria-label={t("workspace.notifications")} disabled title={t("workspace.comingSoon")} type="button"><Bell aria-hidden="true" size={16} /></button></div>
         </header>
 
@@ -417,14 +421,14 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
           <div className={isPrivateTermsStep ? "workspace-editor-layout workspace-editor-layout--legal" : isFirstOnboardingStart || isPrivateSetupStep ? "workspace-editor-layout workspace-editor-layout--welcome" : "workspace-editor-layout"}>
             <section className={isPrivateTermsStep ? "onboarding-stage workspace-editor workspace-editor--legal" : isFirstOnboardingStart || isPrivateSetupStep ? "onboarding-stage workspace-editor workspace-editor--welcome" : "onboarding-stage workspace-editor"}>
-          {!isFirstOnboardingStart && !isDocumentFirst ? <header className="onboarding-stage__header">
+          {journey === "capital_provider" && !isFirstOnboardingStart ? <header className="onboarding-stage__header">
             <span>{t("workspace.currentActivity")}</span>
             <h2>{t(`workspace.nodes.${journey}.${currentStep}`)}</h2>
             <p>{t(`steps.${journey}.${currentStep}.body`)}</p>
           </header> : null}
           {errorMessage ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
-          {currentStep === "organization" && journey !== "capital_provider" && !intakeMode && !requestedSetup ? <IntakeStartChoice actions={{start: startDocumentIntake, manual: chooseManualIntake}} context="onboarding" journey={journey} locale={locale} startHref={`/${locale}/onboarding?setup=terms`} /> : null}
+          {onboardingView === "welcome" ? <IntakeStartChoice actions={{start: startDocumentIntake}} context="onboarding" journey={journey as "company" | "originator"} locale={locale} startHref={`/${locale}/onboarding?setup=terms`} /> : null}
 
           {isPrivateTermsStep || isProjectSetupStep ? (
             <PrivateProjectSetup
@@ -434,17 +438,24 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               locale={locale}
               mode={isPrivateTermsStep ? "terms" : "project"}
               profile={{fullName: profile?.full_name ?? "", jobTitle: profile?.job_title ?? ""}}
+              project={{
+                name: intakeReview?.session?.project_name ?? storedProjectName,
+                identityPolicy: intakeReview?.session?.identity_policy ?? text(answers.identity_policy) ?? "identified_restricted",
+              }}
+              returnHref={onboardingView === "confidentiality_review" ? `/${locale}/onboarding?setup=project` : `/${locale}/onboarding`}
               startAction={startDocumentIntake}
+              termsAccepted={Boolean(termsAcceptance)}
+              termsHref={`/${locale}/onboarding?setup=terms`}
             />
           ) : null}
 
-          {currentStep === "organization" && (journey === "capital_provider" || intakeMode === "manual") ? (
+          {currentStep === "organization" && journey === "capital_provider" ? (
             <form action={saveOrganizationStep} className="onboarding-stage__form">
               <FormContext locale={locale} returnStep={returnStep} />
               <div className="form-grid form-grid--onboarding">
-                <label className="field field--wide"><span>{journey === "company" ? t("companyName") : t("organizationName")}</span><input defaultValue={organization.name.includes("em cadastro") ? "" : organization.name} maxLength={160} minLength={2} name="organization_name" required /></label>
+                <label className="field field--wide"><span>{t("organizationName")}</span><input defaultValue={organization.name.includes("em cadastro") ? "" : organization.name} maxLength={160} minLength={2} name="organization_name" required /></label>
                 <label className="field"><span>{t("legalName")}</span><input defaultValue={organization.legal_name ?? ""} maxLength={200} name="legal_name" /></label>
-                <label className="field"><span>{t("legalIdentifier")}</span><input aria-describedby="identifier-note" inputMode="numeric" maxLength={40} name="legal_identifier" placeholder={text(organizationAnswers.identifier_last4) ? `•••• ${text(organizationAnswers.identifier_last4)}` : ""} /><small id="identifier-note">{t("identifierNote")}</small></label>
+                <label className="field"><span>{t("legalIdentifier")}</span><input inputMode="numeric" maxLength={40} name="legal_identifier" placeholder={text(organizationAnswers.identifier_last4) ? `•••• ${text(organizationAnswers.identifier_last4)}` : ""} /></label>
                 <label className="field"><span>{t("website")}</span><input defaultValue={organization.website ?? ""} maxLength={500} name="website" type="url" /></label>
                 <label className="field"><span>{t("phone")}</span><input autoComplete="tel" maxLength={40} name="phone" type="tel" /></label>
                 <label className="field"><span>{t("country")}</span><select defaultValue={organization.country_code ?? "BR"} name="country_code"><option value="BR">Brasil</option><option value="US">United States</option><option value="GB">United Kingdom</option></select></label>
@@ -453,54 +464,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 <label className="field"><span>{t("sector")}</span><input defaultValue={organization.sector ?? ""} maxLength={160} name="sector" /></label>
                 <label className="field"><span>{t("subsector")}</span><input defaultValue={organization.subsector ?? ""} maxLength={160} name="subsector" /></label>
                 {journey === "capital_provider" ? <label className="field"><span>{t("providerType")}</span><select defaultValue={organization.provider_type ?? "fund_manager"} name="provider_type"><option value="fund_manager">{t("providerTypes.fundManager")}</option><option value="fidc_manager">{t("providerTypes.fidcManager")}</option><option value="factor">{t("providerTypes.factor")}</option><option value="bank">{t("providerTypes.bank")}</option><option value="family_office">{t("providerTypes.familyOffice")}</option><option value="alternative_lender">{t("providerTypes.alternative")}</option><option value="other">{t("providerTypes.other")}</option></select></label> : null}
-                {journey !== "company" ? <label className="field field--wide"><span>{t("description")}</span><textarea defaultValue={organization.description ?? ""} maxLength={2000} name="description" rows={4} /></label> : null}
+                <label className="field field--wide"><span>{t("description")}</span><textarea defaultValue={organization.description ?? ""} maxLength={2000} name="description" rows={4} /></label>
               </div>
               <StepActions back={false} backLabel={tIntake("errors.back")} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
             </form>
           ) : null}
 
-          {currentStep === "company" ? (
-            <form action={saveAdvisedCompanyStep} className="onboarding-stage__form">
-              <FormContext locale={locale} returnStep={returnStep} />
-              <div className="form-grid form-grid--onboarding">
-                <label className="field"><span>{t("companyName")}</span><input defaultValue={text(companyAnswers.display_name)} maxLength={160} minLength={2} name="company_name" required /></label>
-                <label className="field"><span>{t("legalName")}</span><input defaultValue={text(companyAnswers.legal_name)} maxLength={200} minLength={2} name="company_legal_name" required /></label>
-                <label className="field"><span>{t("legalIdentifier")}</span><input inputMode="numeric" maxLength={40} name="legal_identifier" /></label>
-                <label className="field"><span>{t("country")}</span><select defaultValue="BR" name="country_code"><option value="BR">Brasil</option><option value="US">United States</option></select></label>
-                <label className="field"><span>{t("website")}</span><input defaultValue={text(companyAnswers.website)} name="website" type="url" /></label>
-                <label className="field"><span>{t("sector")}</span><input defaultValue={text(companyAnswers.sector)} name="sector" /></label>
-                <label className="field"><span>{t("subsector")}</span><input defaultValue={text(companyAnswers.subsector)} name="subsector" /></label>
-                <label className="field"><span>{t("relationship")}</span><select defaultValue={text(companyAnswers.relationship) || "engaged_advisor"} name="relationship"><option value="engaged_advisor">{t("relationships.engaged")}</option><option value="exclusive_mandate">{t("relationships.exclusive")}</option><option value="company_authorized">{t("relationships.authorized")}</option></select></label>
-                <label className="field"><span>{t("authorityKind")}</span><select defaultValue={text(companyAnswers.authority_kind) || "mandate"} name="authority_kind"><option value="mandate">{t("authorityKinds.mandate")}</option><option value="power_of_attorney">{t("authorityKinds.power")}</option><option value="board_resolution">{t("authorityKinds.board")}</option><option value="other">{t("authorityKinds.other")}</option></select></label>
-                <label className="field"><span>{t("authorityReference")}</span><input defaultValue={text(companyAnswers.authority_reference)} name="authority_reference" /></label>
-                <label className="field"><span>{t("companyContact")}</span><input defaultValue={text(companyAnswers.contact_name)} name="company_contact_name" /></label>
-                <label className="field"><span>{t("companyContactEmail")}</span><input defaultValue={text(companyAnswers.contact_email)} name="company_contact_email" type="email" /></label>
-              </div>
-              <StepActions backLabel={tIntake("errors.back")} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
-            </form>
-          ) : null}
-
-          {currentStep === "funding" ? (
-            <form action={saveFundingStep} className="onboarding-stage__form">
-              <FormContext locale={locale} returnStep={returnStep} />
-              <div className="form-grid form-grid--onboarding">
-                <label className="field"><span>{t("purposeCategory")}</span><select defaultValue={text(fundingAnswers.purpose_category) || "growth"} name="purpose_category"><option value="working_capital">{t("purposes.workingCapital")}</option><option value="growth">{t("purposes.growth")}</option><option value="capex">Capex</option><option value="acquisition">{t("purposes.acquisition")}</option><option value="equipment">{t("purposes.equipment")}</option><option value="refinance">{t("purposes.refinance")}</option><option value="other">{t("purposes.other")}</option></select></label>
-                <label className="field"><span>{t("desiredTiming")}</span><input defaultValue={text(fundingAnswers.desired_timing)} maxLength={500} name="desired_timing" /></label>
-                <label className="field field--wide"><span>{t("purposeSummary")}</span><textarea defaultValue={text(fundingAnswers.purpose_summary)} maxLength={500} minLength={3} name="purpose_summary" required rows={3} /></label>
-                <label className="field field--wide"><span>{t("rationale")}</span><textarea defaultValue={text(fundingAnswers.rationale)} maxLength={4000} name="rationale" required rows={4} /></label>
-                <label className="field"><span>{t("requestedAmount")}</span><input defaultValue={text(fundingAnswers.requested_amount)} min="1" name="requested_amount" required step="0.01" type="number" /></label>
-                <label className="field"><span>{t("currency")}</span><select defaultValue={text(fundingAnswers.currency) || "BRL"} name="currency"><option value="BRL">BRL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></label>
-                <label className="field"><span>{t("desiredTerm")}</span><input defaultValue={text(fundingAnswers.desired_term_months)} max="360" min="1" name="desired_term_months" type="number" /></label>
-                <label className="field"><span>{t("repaymentSource")}</span><input defaultValue={text(fundingAnswers.repayment_source)} maxLength={2000} name="repayment_source" /></label>
-                <label className="field field--wide"><span>{t("strategicImportance")}</span><textarea defaultValue={text(fundingAnswers.strategic_importance)} maxLength={3000} name="strategic_importance" rows={3} /></label>
-                <label className="field field--wide"><span>{t("expectedOutcome")}</span><textarea defaultValue={text(fundingAnswers.expected_outcome)} maxLength={3000} name="expected_outcome" rows={3} /></label>
-                <label className="field field--wide"><span>{t("collateral")}</span><textarea defaultValue={text(fundingAnswers.collateral_summary)} maxLength={2000} name="collateral_summary" rows={3} /></label>
-              </div>
-              <StepActions backLabel={tIntake("errors.back")} continueLabel={t("continue")} locale={locale} returnStep={returnStep} />
-            </form>
-          ) : null}
-
-          {(currentStep === "organization" || currentStep === "documents") && isDocumentFirst && !isPrivateSetupStep ? (
+          {onboardingView === "guided" && isDocumentFirst ? (
             !intakeReview?.session ? <p className="form-notice form-notice--error">{tIntake("errors.session")}</p> : intakeReview.session.status === "review_ready" ? (
               <IntakeReview
                 caseState={await resolveCaseState({
@@ -541,7 +511,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 organizationId={organization.id}
                 processAction={processDocumentIntake}
                 removeAction={removeIntakeDocument}
-                {...(isFreshGuidedIntake ? {backAction: returnToPrivateProjectSetup} : {restartAction: restartDocumentIntake})}
+                {...(isFreshGuidedIntake ? {backHref: `/${locale}/onboarding?setup=project`} : {})}
                 session={intakeReview.session}
                 answerAction={saveIntakeAnswer}
                 dealBrief={intakeBrief}
@@ -554,25 +524,6 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 userId={userId}
               />
             )
-          ) : currentStep === "documents" ? (
-            <div className="onboarding-stage__form">
-              <OnboardingDocumentUploader copy={{
-                title: t("uploadTitle"),
-                body: t("uploadBody"),
-                choose: t("uploadChoose"),
-                drop: t("uploadDrop"),
-                uploading: t("uploading"),
-                error: t("uploadError"),
-                categories: t("uploadCategories"),
-                received: t("uploadReceived"),
-                guidanceTitle: t("uploadGuidanceTitle"),
-                guidanceBody: t("uploadGuidanceBody"),
-                essential: {title: t("uploadGuidance.essential.title"), items: [t("uploadGuidance.essential.financials"), t("uploadGuidance.essential.trialBalances"), t("uploadGuidance.essential.debtSchedule")]},
-                recommended: {title: t("uploadGuidance.recommended.title"), items: [t("uploadGuidance.recommended.projections"), t("uploadGuidance.recommended.presentation"), t("uploadGuidance.recommended.transaction")]},
-                complementary: {title: t("uploadGuidance.complementary.title"), items: [t("uploadGuidance.complementary.contracts"), t("uploadGuidance.complementary.cim"), t("uploadGuidance.complementary.other")]},
-              }} initialDocuments={documents} opportunityId={opportunityId} organizationId={organization.id} userId={userId} />
-              <form action={finishDocumentsStep}><FormContext locale={locale} returnStep={returnStep} /><StepActions backLabel={tIntake("errors.back")} continueLabel={t("review")} locale={locale} returnStep={returnStep} /></form>
-            </div>
           ) : null}
 
           {currentStep === "fund" ? (
@@ -628,11 +579,11 @@ export default async function OnboardingPage({params, searchParams}: Props) {
             </form>
           ) : null}
 
-          {currentStep === "review" ? (
+          {(journey === "capital_provider" && currentStep === "review") || onboardingView === "completion" ? (
             <form action={completeOnboarding} className="onboarding-stage__form">
               <FormContext locale={locale} returnStep="" />
               <div className="onboarding-review">
-                <article><span>01</span><div><strong>{organization.name}</strong><p>{organization.legal_name || t("notProvided")}</p></div><EditSectionLink label={t("workspace.edit")} locale={locale} target="organization" /></article>
+                <article><span>01</span><div><strong>{organization.name}</strong><p>{organization.legal_name || t("notProvided")}</p></div><EditSectionLink {...(journey === "capital_provider" ? {} : {href: `/${locale}/onboarding?stage=company`})} label={t("workspace.edit")} locale={locale} target="organization" /></article>
                 {journey === "capital_provider" ? (
                   <>
                     <article><span>02</span><div><strong>{text(fundAnswers.name)}</strong><p>{text(fundAnswers.strategy)}</p></div><EditSectionLink label={t("workspace.edit")} locale={locale} target="fund" /></article>
@@ -641,14 +592,18 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                   </>
                 ) : (
                   <>
-                    <article><span>02</span><div><strong>{text(fundingAnswers.purpose_summary)}</strong><p>{text(fundingAnswers.currency)} {text(fundingAnswers.requested_amount)}</p></div><EditSectionLink label={t("workspace.edit")} locale={locale} target="funding" /></article>
-                    <article><span>03</span><div><strong>{t("documentsReady", {count: Number(answers.documents_uploaded ?? 0)})}</strong><p>{t("documentsReviewBody")}</p></div><EditSectionLink add label={t("workspace.addDocuments")} locale={locale} target="documents" /></article>
+                    <article><span>02</span><div><strong>{text(fundingAnswers.purpose_summary)}</strong><p>{text(fundingAnswers.currency)} {text(fundingAnswers.requested_amount)}</p></div><EditSectionLink href={`/${locale}/onboarding?stage=request`} label={t("workspace.edit")} locale={locale} /></article>
+                    <article><span>03</span><div><strong>{t("documentsReady", {count: Number(answers.documents_uploaded ?? 0)})}</strong><p>{t("documentsReviewBody")}</p></div><EditSectionLink add href={`/${locale}/onboarding?stage=documents`} label={t("workspace.addDocuments")} locale={locale} /></article>
                   </>
                 )}
               </div>
               <div className="onboarding-submit-note"><strong>{t("reviewNoticeTitle")}</strong><p>{journey === "capital_provider" ? t("reviewNoticeProvider") : t("reviewNoticeOriginating")}</p></div>
               <div className="onboarding-actions">
-                <button className="button button--ghost" formAction={previousOnboardingStep} formNoValidate><ArrowLeft aria-hidden="true" size={15} /></button>
+                {journey === "capital_provider" ? (
+                  <button className="button button--ghost" formAction={previousOnboardingStep} formNoValidate><ArrowLeft aria-hidden="true" size={15} /></button>
+                ) : (
+                  <Link className="button button--ghost" href={`/${locale}/onboarding?stage=documents`}><ArrowLeft aria-hidden="true" size={15} /></Link>
+                )}
                 <button className="button" type="submit">{journey === "capital_provider" ? t("activateMandate") : t("submitOpportunity")}<ArrowRight aria-hidden="true" size={15} /></button>
               </div>
             </form>

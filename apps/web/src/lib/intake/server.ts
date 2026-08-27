@@ -361,14 +361,28 @@ export async function recordInformationAnswer(
   return ok(null);
 }
 
-/** Starts a session for the tenant. `journey` follows the organization type. */
-export async function startIntakeSession(input: {supabase: SupabaseClient<Database>; organizationId: string; userId: string; locale: AppLocale; journey: "company" | "originator"}) {
-  const {data, error} = await input.supabase.from("document_intake_sessions").insert({organization_id: input.organizationId, started_by: input.userId, journey: input.journey, locale: input.locale}).select("id").single();
+/** Starts a named private project for the tenant. `journey` follows the organization type. */
+export async function startIntakeSession(input: {
+  supabase: SupabaseClient<Database>;
+  organizationId: string;
+  userId: string;
+  locale: AppLocale;
+  journey: "company" | "originator";
+  projectName: string;
+  identityPolicy: "identified_restricted" | "blind_initial";
+}) {
+  const {data, error} = await input.supabase.rpc("start_workspace_intake", {
+    p_organization_id: input.organizationId,
+    p_locale: input.locale,
+    p_project_name: input.projectName,
+    p_identity_policy: input.identityPolicy,
+    p_representation_declared: true,
+  });
   if (error || !data) {
     logIntakeFailure("start_session", error);
-    return fail<string>("session");
+    return fail<string>(error?.code === "23505" ? "duplicate" : "session");
   }
-  return ok(data.id);
+  return ok(data);
 }
 
 async function markSessionFailed(runtime: IntakeRuntime, reason: string) {

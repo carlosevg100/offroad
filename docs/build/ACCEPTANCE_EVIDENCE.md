@@ -1,5 +1,21 @@
 # Acceptance Evidence
 
+## Máquina de estados canônica do onboarding, 27/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Uma única jornada para empresa e assessor | `resolveBorrowerOnboardingView` | boas-vindas, confidencialidade, identificação da captação, sete marcos guiados e conclusão; nenhuma etapa do formulário legado participa da decisão |
+| Pré-condições invioláveis | 8 testes unitários do resolvedor | parâmetros de URL não pulam aceite, nome da captação ou retomada persistida; financiador permanece isolado em sua própria jornada |
+| Voltar e Editar sem destruição | página, actions e especificação E2E | navegação abre uma visão reversível; não cancela sessão, não apaga documento e não cria uma segunda captação |
+| Nova captação no workspace | `/app/new` e `start_workspace_intake` | o caminho manual foi removido; toda nova captação exige nome, política de identidade e declaração de representação |
+| Atomicidade | migrations `20260827221500` e `20260827224000` | sessão nomeada, privacidade e evidência de representação são criadas ou atualizadas em uma única transação |
+| Staging | teste SQL transacional com rollback | primeira captação, edição idempotente e captação posterior preservaram IDs, nomes, estados e uma única evidência |
+| Segurança | Supabase Security Advisor staging | zero findings após as duas migrations |
+| Quality gate web | lint, typecheck, testes e build | 19 arquivos e 135 testes verdes; build de produção com 28 rotas |
+
+O E2E autenticado completo permanece como gate obrigatório do CI. Ele não foi declarado como
+executado localmente porque o Docker local estava indisponível durante esta revisão.
+
 ## Intake guiado em sete marcos, 26/08/2026
 
 | Evidência | Verificação | Resultado |
@@ -7,7 +23,7 @@
 | Arquitetura visível | onboarding PT-BR e EN-US | sete marcos canônicos; nenhum contador legado `1 de 3` no onboarding |
 | Primeiro marco | interface e comando `save_guided_company_profile` | identificação compacta, contexto livre ou documento, persistência atômica e avanço para operação |
 | Início sem estado parcial | comando `start_onboarding_intake` | sessão e ponteiro de onboarding são criados ou retomados na mesma transação |
-| Navegação | E2E `document-first-intake.spec.ts` | voltar de pedido para operação e de operação para empresa; recomeçar cancela só a tentativa corrente |
+| Navegação | E2E `document-first-intake.spec.ts` | voltar entre etapas e editar a identificação preservam a mesma sessão; não existe reinício destrutivo na interface |
 | Progresso | projeção dos sete marcos | começa em 0%, acompanha o marco persistido e não conclui trabalho futuro por antecipação |
 | Feedback de clique | `IntakeActionSubmit` | botão entra imediatamente em estado pendente e bloqueia submissões duplicadas |
 | Staging | teste SQL transacional | start, sessão `collecting`, perfil, organização, company e avanço para operação validados com rollback |

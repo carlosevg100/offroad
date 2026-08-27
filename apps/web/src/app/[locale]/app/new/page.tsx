@@ -1,4 +1,4 @@
-import {ArrowLeft, ArrowRight, Info} from "lucide-react";
+import {ArrowLeft} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
@@ -9,7 +9,7 @@ import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
-import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
+import {PrivateProjectForm} from "@/components/intake/private-project-setup";
 import type {AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadIntakeReview} from "@/lib/intake/server";
@@ -17,9 +17,7 @@ import type {IntakeErrorCode} from "@/lib/intake/types";
 
 import {
   acceptWorkspaceIntakeCandidates,
-  chooseWorkspaceManualIntake,
   confirmWorkspaceDocumentIntake,
-  createOpportunity,
   processWorkspaceDocumentIntake,
   saveWorkspaceIntakeAnswer,
   saveWorkspaceDealBrief,
@@ -55,7 +53,8 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
   if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
 
   const notice = state.error ? tIntake(`errors.${intakeErrorCodes.includes(state.error) ? state.error as IntakeErrorCode : "save"}`) : null;
-  const mode = state.mode === "manual" || state.mode === "documents" ? state.mode : "choice";
+  if (state.mode === "manual") redirect(`/${locale}/app/new`);
+  const mode = state.mode === "documents" ? "documents" : "choice";
   const sessionId = typeof state.session === "string" ? state.session : "";
   const guidedStep = state.step === "operation" || state.step === "request" || state.step === "documents" ? state.step : undefined;
   const review = mode === "documents" && sessionId
@@ -63,14 +62,19 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
     : null;
   if (review?.session?.status === "confirmed" && review.session.opportunity_id) redirect(`/${locale}/app/opportunities/${review.session.opportunity_id}`);
 
-  const manualHref = `/${locale}/app/new?mode=manual${sessionId ? `&session=${sessionId}` : ""}`;
-
   return (
     <main className="app-canvas intake-page">
       <Link className="text-link" href={`/${locale}/app`}><ArrowLeft aria-hidden="true" size={14} />{t("overview")}</Link>
       {notice ? <p className="form-notice form-notice--error" role="alert">{notice}</p> : null}
 
-      {mode === "choice" ? <IntakeStartChoice actions={{start: startWorkspaceDocumentIntake, manual: chooseWorkspaceManualIntake}} context="workspace" journey={organization.organization_type === "originator" ? "originator" : "company"} locale={locale} /> : null}
+      {mode === "choice" ? (
+        <PrivateProjectForm
+          action={startWorkspaceDocumentIntake}
+          backHref={`/${locale}/app`}
+          journey={organization.organization_type === "originator" ? "originator" : "company"}
+          locale={locale}
+        />
+      ) : null}
 
       {mode === "documents" ? (
         !review?.session ? (
@@ -91,7 +95,6 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             documents={review.documents}
             issues={review.issues}
             locale={locale}
-            manualHref={manualHref}
             session={review.session}
             surface="workspace"
           />
@@ -107,7 +110,6 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             })}
             documents={review.documents}
             locale={locale}
-            manualHref={manualHref}
             organizationId={organization.id}
             processAction={processWorkspaceDocumentIntake}
             removeAction={removeWorkspaceIntakeDocument}
@@ -124,31 +126,6 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
         )
       ) : null}
 
-      {mode === "manual" ? (
-        <>
-          <header className="intake-header"><p className="section-kicker">{t("newEyebrow")}</p><h1>{t("newTitle")}</h1></header>
-          <div className="intake-layout">
-            <form action={createOpportunity} className="intake-form">
-              <input name="locale" type="hidden" value={locale} />
-              {sessionId ? <input name="session_id" type="hidden" value={sessionId} /> : null}
-              <label className="field field--wide"><span>{t("legalName")}</span><input maxLength={200} minLength={2} name="legal_name" required /></label>
-              <label className="field"><span>{t("sector")}</span><select defaultValue="food_retail" name="sector"><option value="food_retail">{t("sectors.foodRetail")}</option><option value="logistics">{t("sectors.logistics")}</option><option value="manufacturing">{t("sectors.manufacturing")}</option><option value="technology">{t("sectors.technology")}</option><option value="healthcare">{t("sectors.healthcare")}</option></select></label>
-              <label className="field field--wide"><span>{t("purpose")}</span><textarea maxLength={500} minLength={3} name="purpose" required rows={4} /></label>
-              <label className="field"><span>{t("requestedAmount")}</span><input inputMode="decimal" name="requested_amount" placeholder="50000000" required /></label>
-              <label className="field"><span>{t("currency")}</span><select defaultValue="BRL" name="currency"><option value="BRL">BRL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></label>
-              <label className="field"><span>{t("term")}</span><input defaultValue={48} max={360} min={1} name="desired_term_months" required type="number" /></label>
-              <button className="button intake-submit" type="submit">{t("submit")}<ArrowRight aria-hidden="true" size={16} /></button>
-            </form>
-            <aside className="intake-note">
-              <Info aria-hidden="true" size={20} /><p>{t("requestNote")}</p>
-              <div><span>01</span><p>{t("useOfProceeds.growthCapex")}</p></div>
-              <div><span>02</span><p>{t("useOfProceeds.workingCapital")}</p></div>
-              <div><span>03</span><p>{t("useOfProceeds.refinancing")}</p></div>
-              <div><span>04</span><p>{t("useOfProceeds.acquisition")}</p></div>
-            </aside>
-          </div>
-        </>
-      ) : null}
     </main>
   );
 }

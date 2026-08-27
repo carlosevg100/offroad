@@ -1,5 +1,4 @@
 import {AlertTriangle, ArrowRight, Check, ChevronDown, FileText, History} from "lucide-react";
-import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
 import {anchorText, displayCandidateValue, editableCandidateValue, intakeGroups} from "@/lib/intake/format";
@@ -17,7 +16,6 @@ type Props = {
   candidates: IntakeCandidate[];
   issues: IntakeIssue[];
   actions: IntakeReviewActionSet;
-  manualHref?: string;
   /** The desk's read of the case: readiness, capacity, structure, brief. Null before processing. */
   caseState?: CaseState | null;
   surface: "onboarding" | "workspace";
@@ -57,7 +55,7 @@ function issueEvidence(raw: unknown): IssueEvidence[] {
   });
 }
 
-export async function IntakeReview({locale, session, documents, candidates, issues, actions, manualHref, caseState, surface}: Props) {
+export async function IntakeReview({locale, session, documents, candidates, issues, actions, caseState, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.review"});
   const documentById = new Map(documents.map((document) => [document.id, document]));
   const openIssues = issues.filter((issue) => issue.status === "open");
@@ -190,7 +188,6 @@ export async function IntakeReview({locale, session, documents, candidates, issu
         <section className="intake-review__empty">
           <FileText aria-hidden="true" size={22} />
           <div><strong>{t("emptyTitle")}</strong><p>{t("emptyBody")}</p></div>
-          {manualHref ? <Link className="button button--ghost" href={manualHref}>{t("fillManually")}<ArrowRight size={14} /></Link> : null}
         </section>
       ) : (
         <section className="intake-confirm">

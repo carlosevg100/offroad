@@ -108,8 +108,18 @@ test.describe("Document-first intake (company journey)", () => {
     await startPrivateProject(page, `Projeto Horizonte ${runId}`, true);
     await expect(page.locator(".workspace-welcome h1")).toHaveText("Vamos começar o processo para estruturar sua captação.");
     await expect(page.locator(".workspace-welcome")).toContainText("Leva cerca de dez minutos. O resto é com a gente.");
-    await expect(page.locator(".intake-guide__back")).toHaveText("Voltar e editar o projeto");
+    await expect(page.locator(".intake-guide__back")).toHaveText("Voltar à etapa anterior");
     await expect(page.locator(".intake-guide__restart")).toHaveCount(0);
+
+    // Project setup is a real preceding step. Editing it is reversible and keeps the same intake
+    // session instead of cancelling the financing behind a Back link.
+    await page.locator(".intake-guide__back").click();
+    await expect(page).toHaveURL(/setup=project/);
+    await expect(page.locator(".private-project-gate--project")).toBeVisible();
+    await expect(page.locator('input[name="project_name"]')).toHaveValue(`Projeto Horizonte ${runId}`);
+    await page.locator('input[name="project_name"]').fill(`Projeto Horizonte Atualizado ${runId}`);
+    await page.locator('.private-project-gate__form button[type="submit"]').click();
+    await expect(page).toHaveURL(/stage=company/);
     await completeCompanyMilestone(page);
 
     // The operation decides the checklist; the brief decides who could buy the paper. Neither
@@ -119,21 +129,19 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-brief")).toBeVisible();
     await expectNoErrorNotice(page);
 
-    // The guided onboarding is navigable in both directions. Restarting closes only the current
-    // attempt and returns to the welcome screen, so a person is never trapped in a stale case.
+    // The guided onboarding is navigable in both directions without changing lifecycle state.
     await page.locator(".intake-guide__back").click();
     await expect(page).toHaveURL(/stage=operation/);
     await expect(page.locator(".intake-operation__options")).toBeVisible();
     await page.locator(".intake-guide__back").click();
     await expect(page).toHaveURL(/stage=company/);
     await expect(page.locator(".intake-company")).toBeVisible();
-    await page.locator(".intake-guide__restart summary").click();
-    await page.locator(".intake-guide__restart button[type=submit]").click();
-    await expect(page.locator(".intake-start")).toBeVisible();
-    await expect(page.locator(".workspace-welcome h1")).toHaveText("Bem-vindo.");
-
-    await startPrivateProject(page, `Projeto Horizonte B ${runId}`);
-    await completeCompanyMilestone(page);
+    await page.locator(".intake-guide__back").click();
+    await expect(page.locator(".private-project-gate--project")).toBeVisible();
+    await expect(page.locator('input[name="project_name"]')).toHaveValue(`Projeto Horizonte Atualizado ${runId}`);
+    await page.locator('.private-project-gate__form button[type="submit"]').click();
+    await expect(page.locator(".intake-company")).toBeVisible();
+    await page.goto("/pt-BR/onboarding?stage=operation");
     await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
     await expect(page.locator(".intake-brief")).toBeVisible();
 
@@ -206,7 +214,10 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("an unknown document set yields the honest empty state in the workspace flow", async () => {
     await page.goto("/pt-BR/app/new");
-    await page.locator(".intake-start__journey button[type=submit]").click();
+    await expect(page.locator(".private-project-gate--project")).toBeVisible();
+    await page.locator('input[name="project_name"]').fill(`Projeto Desconhecido ${runId}`);
+    await page.locator('input[name="representation_declared"]').check();
+    await page.locator('.private-project-gate__form button[type="submit"]').click();
     await expect(page).toHaveURL(/mode=documents&session=/);
     await expect(page.locator(".intake-collect")).toBeVisible();
 
