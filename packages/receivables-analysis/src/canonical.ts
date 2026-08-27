@@ -78,6 +78,13 @@ export function canonicalizeLegacyReceivablesCase(input: ReceivablesCase): Canon
       obligorIds: [...members].sort(),
       source: obligorSource.get([...members][0]!)!,
     })),
+    eventCoverage: {
+      settlements: {status: "not_provided", startDate: null, endDate: null, basis: "legacy aggregate input", limitations: ["title-level settlement events are unavailable"]},
+      dilutions: {status: "not_provided", startDate: null, endDate: null, basis: "legacy aggregate input", limitations: ["dilution is aggregated on the title record"]},
+      extensions: {status: "not_provided", startDate: null, endDate: null, basis: "legacy aggregate input", limitations: ["original due-date history is unavailable"]},
+      repurchases: {status: "not_provided", startDate: null, endDate: null, basis: "legacy aggregate input", limitations: ["repurchase is aggregated on the title record"]},
+      assignmentsAndLiens: {status: "not_provided", startDate: null, endDate: null, basis: "legacy aggregate input", limitations: ["title-level assignment amounts are unavailable"]},
+    },
   };
 
   return {

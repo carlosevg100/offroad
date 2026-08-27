@@ -43,6 +43,9 @@ describe("receivables and FIDC vertical", () => {
     expect(result.staticMetrics.portfolio.totalOpenValue.value).toBe("6000000");
     expect(result.staticMetrics.portfolio.totalOpenValue.provenance.kind).toBe("measured");
     expect(result.staticMetrics.aging.past_due_31_60.value).toBe("0");
+    expect(result.dynamicMetrics.rollRates.status).toBe("not_evaluable");
+    expect(result.dynamicMetrics.vintages.status).toBe("not_evaluable");
+    expect(result.dynamicMetrics.dilution.totalAmount.status).toBe("not_evaluable");
     expect(result.reconciliation.tapeToAccounting).toMatchObject({difference: "0.00", status: "tied"});
     expect(result.reconciliation.tapeCollectionsToAccounting).toMatchObject({difference: "0.00", status: "tied"});
     expect(result.reconciliation.collectionsToCash).toMatchObject({difference: "0.00", status: "tied"});

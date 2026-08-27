@@ -8,7 +8,7 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
-### Engineering update: receivables A1 Vertentes fixture and static metrics, 27 August 2026
+### Engineering update: receivables A1 Vertentes static and dynamic metrics, 27 August 2026
 
 The first receivables training case now lives inside the repository. Vertentes A1-03 contains 21
 synthetic raw intake files, reserved generator truth, a compressed canonical universe, frozen
@@ -16,19 +16,35 @@ expected outputs and a SHA-256 manifest. Raw inputs and reserved truth are delib
 future extraction tests must start from raw, while deterministic finance tests may consume the
 canonical gold. Crossing that boundary is fixture leakage.
 
-`@offroad/financial-core` is now the only implementation of the migrated static receivables
-mathematics: portfolio values, weighted terms, simple and daily countback DSO, seven-bucket aging,
-Top 1, Top 5, Top 10, Top 50 and HHI concentration by obligor and economic group. Outputs carry
-dataset hash, source anchors, period, universe and formula version. `@offroad/receivables-analysis`
-adapts its legacy input contract to the canonical universe and consumes these metrics instead of
+`@offroad/financial-core` is now the only implementation of the migrated static and dynamic
+receivables mathematics. Static outputs include portfolio values, weighted terms, simple and daily
+countback DSO, seven-bucket aging, Top 1, Top 5, Top 10, Top 50 and HHI concentration. Dynamic
+outputs include 23 monthly roll matrices, 24 origination vintages at six horizons, dilution,
+write-off and adjusted loss, punctual settlement and extension metrics. Outputs carry dataset
+hash, source anchors, period, universe and formula version. `@offroad/receivables-analysis` adapts
+its legacy input contract to the canonical universe and consumes these metrics instead of
 maintaining duplicate formulas.
+
+Every performance, assignment and lien event family declares whether its history is complete,
+partial or not provided. This is a
+hard semantic boundary: missing repurchase data cannot become a measured zero. Monthly rolls use
+the original due date so an extension cannot erase the prior delinquency path. Vintage curves are
+named unresolved-at-horizon and are not mislabeled as write-off events. Vertentes has complete
+synthetic zero repurchases but no assigned-volume denominator, so the repurchase rate is correctly
+`not_evaluable`. Its dilution causes are not linked at title level and remain explicitly
+unclassified.
+
+The dynamic gold is produced by an independent Python oracle that does not import the TypeScript
+engine. Every roll cell, vintage horizon and portfolio metric is compared exactly. On Node 24 and
+the full 34,397-title portfolio, ten runs measured 312.09 ms static median and 1,074.42 ms dynamic
+median.
 
 The legacy Vertentes eligibility answer was corrected. Independent exclusion totals double-counted
 overlapping receivables. The exclusive waterfall produces BRL 8,877,495.23 eligible, or 74.619108%,
 under the synthetic scenario policy. That policy remains estimated and cannot support a hard buyer
-fit conclusion. This increment approves the fixture, contracts and static calculations only.
-Dynamic performance, debt, pricing, CET, advance rate and regulation-backed eligibility remain
-pending behind their own gates.
+fit conclusion. This increment approves the fixture, contracts and the measured static and dynamic
+perimeters above. Debt, pricing, CET, advance rate, event-level dilution causes, extension timing
+and regulation-backed eligibility remain pending behind their own gates.
 
 ### Engineering update: legal acceptance v3, 27 August 2026
 

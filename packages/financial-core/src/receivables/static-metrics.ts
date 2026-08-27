@@ -12,7 +12,7 @@ import {
 
 const ZERO = new Decimal(0);
 const DAY_MS = 86_400_000;
-const FORMULA_VERSION = "2026.08.27-v1";
+export const receivablesMetricsFormulaVersion = "2026.08.27-v1";
 
 export type MetricPeriod = {
   reportingDate: IsoDate;
@@ -34,7 +34,7 @@ export type ConcentrationCut = "top_1" | "top_5" | "top_10" | "top_50";
 export type ConcentrationMetrics = Record<ConcentrationCut, MeasuredMetric> & {herfindahl: MeasuredMetric};
 
 export type StaticReceivablesMetrics = {
-  version: typeof FORMULA_VERSION;
+  version: typeof receivablesMetricsFormulaVersion;
   universeId: string;
   portfolio: {
     titleCount: MeasuredMetric;
@@ -61,9 +61,9 @@ export type StaticReceivablesMetrics = {
 };
 
 const decimal = (value: Decimal.Value) => new Decimal(value);
-const canonical = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
+export const canonicalMetricValue = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
 
-function utcDate(value: IsoDate): Date {
+export function receivablesUtcDate(value: IsoDate): Date {
   const date = new Date(`${value}T00:00:00.000Z`);
   if (Number.isNaN(date.valueOf()) || date.toISOString().slice(0, 10) !== value) {
     throw new RangeError(`invalid ISO date: ${value}`);
@@ -71,12 +71,12 @@ function utcDate(value: IsoDate): Date {
   return date;
 }
 
-function daysBetween(from: IsoDate, to: IsoDate): number {
-  return Math.floor((utcDate(to).valueOf() - utcDate(from).valueOf()) / DAY_MS);
+export function receivablesDaysBetween(from: IsoDate, to: IsoDate): number {
+  return Math.floor((receivablesUtcDate(to).valueOf() - receivablesUtcDate(from).valueOf()) / DAY_MS);
 }
 
-function shiftDays(value: IsoDate, days: number): IsoDate {
-  const date = utcDate(value);
+export function shiftReceivablesDays(value: IsoDate, days: number): IsoDate {
+  const date = receivablesUtcDate(value);
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10) as IsoDate;
 }
@@ -92,7 +92,7 @@ function safeRatio(numerator: Decimal, denominator: Decimal, label: string): Dec
   return numerator.div(denominator);
 }
 
-function sourceAnchors(universe: ReceivablesUniverse): SourceAnchor[] {
+export function collectReceivablesSourceAnchors(universe: ReceivablesUniverse): SourceAnchor[] {
   const unique = new Map<string, SourceAnchor>();
   const add = (anchor: SourceAnchor) => {
     if (anchor.kind === "file") {
@@ -111,6 +111,7 @@ function sourceAnchors(universe: ReceivablesUniverse): SourceAnchor[] {
   universe.dilutions.forEach((item) => add(item.source));
   universe.extensions.forEach((item) => add(item.source));
   universe.repurchases.forEach((item) => add(item.source));
+  universe.assignmentsAndLiens.forEach((item) => add(item.source));
   const sortKey = (anchor: SourceAnchor) => {
     if (anchor.kind === "file") return `file:${anchor.fileId}:${anchor.fileHash}`;
     if (anchor.kind === "document") return `document:${anchor.documentId}:${anchor.documentHash ?? ""}`;
@@ -119,7 +120,7 @@ function sourceAnchors(universe: ReceivablesUniverse): SourceAnchor[] {
   return [...unique.values()].sort((left, right) => sortKey(left).localeCompare(sortKey(right)));
 }
 
-function measuredMetric(input: {
+export function measuredReceivablesMetric(input: {
   id: string;
   value: Decimal;
   unit: MeasuredMetric["unit"];
@@ -136,7 +137,7 @@ function measuredMetric(input: {
 }): MeasuredMetric {
   return {
     id: input.id,
-    value: canonical(input.value),
+    value: canonicalMetricValue(input.value),
     status: "measured",
     unit: input.unit,
     period: input.period,
@@ -148,7 +149,7 @@ function measuredMetric(input: {
       reportingDate: input.period.reportingDate,
       inclusions: input.inclusions ?? [],
       exclusions: input.exclusions ?? [],
-      formula: {id: input.formulaId, version: FORMULA_VERSION},
+      formula: {id: input.formulaId, version: receivablesMetricsFormulaVersion},
       ...(input.numerator === undefined ? {} : {numerator: input.numerator}),
       ...(input.denominator === undefined ? {} : {denominator: input.denominator}),
       unit: input.unit,
@@ -158,7 +159,7 @@ function measuredMetric(input: {
   };
 }
 
-function notEvaluableMetric(input: {
+export function notEvaluableReceivablesMetric(input: {
   id: string;
   unit: MeasuredMetric["unit"];
   period: MetricPeriod;
@@ -168,7 +169,7 @@ function notEvaluableMetric(input: {
   formulaId: string;
   warning: string;
 }): MeasuredMetric {
-  const measured = measuredMetric({...input, value: ZERO, warnings: [input.warning]});
+  const measured = measuredReceivablesMetric({...input, value: ZERO, warnings: [input.warning]});
   return {...measured, value: null, status: "not_evaluable"};
 }
 
@@ -182,11 +183,34 @@ export function validateReceivablesUniverse(universe: ReceivablesUniverse): read
   let latestIssue: IsoDate | undefined;
 
   if (universe.receivables.length === 0) throw new RangeError("receivables universe cannot be empty");
-  utcDate(universe.dates.reportingDate);
-  utcDate(universe.dates.latestOriginationDate);
-  utcDate(universe.dates.dataStartDate);
-  utcDate(universe.dates.dataEndDate);
+  receivablesUtcDate(universe.dates.reportingDate);
+  receivablesUtcDate(universe.dates.latestOriginationDate);
+  receivablesUtcDate(universe.dates.dataStartDate);
+  receivablesUtcDate(universe.dates.dataEndDate);
   if (universe.dates.dataStartDate > universe.dates.dataEndDate) throw new RangeError("data start date cannot follow data end date");
+
+  for (const [eventType, coverage] of Object.entries(universe.eventCoverage)) {
+    if (coverage.basis.trim().length === 0) throw new RangeError(`${eventType} coverage basis is required`);
+    if (coverage.status === "not_provided") {
+      if (coverage.startDate !== null || coverage.endDate !== null) {
+        throw new RangeError(`${eventType} coverage dates must be null when data was not provided`);
+      }
+      warnings.push(`${eventType}_events_not_provided`);
+      continue;
+    }
+    if (coverage.startDate === null || coverage.endDate === null) {
+      throw new RangeError(`${eventType} coverage interval is required`);
+    }
+    receivablesUtcDate(coverage.startDate);
+    receivablesUtcDate(coverage.endDate);
+    if (coverage.startDate > coverage.endDate) throw new RangeError(`${eventType} coverage interval is invalid`);
+    if (coverage.status === "complete"
+      && (coverage.startDate > universe.dates.dataStartDate || coverage.endDate < universe.dates.reportingDate)) {
+      throw new RangeError(`${eventType} complete coverage must span the declared history through the reporting date`);
+    }
+    if (coverage.status === "partial") warnings.push(`${eventType}_events_partially_covered`);
+    warnings.push(...coverage.limitations.map((limitation) => `${eventType}:${limitation}`));
+  }
 
   for (const item of universe.receivables) {
     if (ids.has(item.id)) throw new RangeError(`duplicate receivable id: ${item.id}`);
@@ -208,6 +232,77 @@ export function validateReceivablesUniverse(universe: ReceivablesUniverse): read
     }
     earliestIssue = earliestIssue === undefined || item.issueDate < earliestIssue ? item.issueDate : earliestIssue;
     latestIssue = latestIssue === undefined || item.issueDate > latestIssue ? item.issueDate : latestIssue;
+  }
+
+  const titleById = new Map(universe.receivables.map((item) => [item.id, item]));
+  const eventIds = new Set<string>();
+  const validateEventId = (id: string) => {
+    if (eventIds.has(id)) throw new RangeError(`duplicate performance event id: ${id}`);
+    eventIds.add(id);
+  };
+  const resolvedByTitle = new Map<string, Decimal>();
+  const addResolution = (receivableId: string, amount: string) => {
+    resolvedByTitle.set(receivableId, (resolvedByTitle.get(receivableId) ?? ZERO).plus(amount));
+  };
+  for (const item of universe.settlements) {
+    validateEventId(item.id);
+    const title = titleById.get(item.receivableId);
+    if (title === undefined) throw new RangeError(`unknown receivable ${item.receivableId} on settlement ${item.id}`);
+    receivablesUtcDate(item.date);
+    if (item.date < title.issueDate || item.date > universe.dates.reportingDate) throw new RangeError(`settlement ${item.id} falls outside its observable lifecycle`);
+    if (decimal(item.amount).lte(0)) throw new RangeError(`settlement ${item.id} amount must be positive`);
+    addResolution(item.receivableId, item.amount);
+  }
+  for (const item of universe.dilutions) {
+    validateEventId(item.id);
+    const title = titleById.get(item.receivableId);
+    if (title === undefined) throw new RangeError(`unknown receivable ${item.receivableId} on dilution ${item.id}`);
+    receivablesUtcDate(item.date);
+    if (item.date < title.issueDate || item.date > universe.dates.reportingDate) throw new RangeError(`dilution ${item.id} falls outside its observable lifecycle`);
+    if (decimal(item.amount).lte(0)) throw new RangeError(`dilution ${item.id} amount must be positive`);
+    addResolution(item.receivableId, item.amount);
+  }
+  for (const item of universe.repurchases) {
+    validateEventId(item.id);
+    const title = titleById.get(item.receivableId);
+    if (title === undefined) throw new RangeError(`unknown receivable ${item.receivableId} on repurchase ${item.id}`);
+    receivablesUtcDate(item.date);
+    if (item.date < title.issueDate || item.date > universe.dates.reportingDate) throw new RangeError(`repurchase ${item.id} falls outside its observable lifecycle`);
+    if (decimal(item.amount).lte(0)) throw new RangeError(`repurchase ${item.id} amount must be positive`);
+    addResolution(item.receivableId, item.amount);
+  }
+  for (const item of universe.extensions) {
+    validateEventId(item.id);
+    const title = titleById.get(item.receivableId);
+    if (title === undefined) throw new RangeError(`unknown receivable ${item.receivableId} on extension ${item.id}`);
+    receivablesUtcDate(item.identifiedAt);
+    receivablesUtcDate(item.previousDueDate);
+    receivablesUtcDate(item.newDueDate);
+    if (item.date !== null) receivablesUtcDate(item.date);
+    if (item.newDueDate <= item.previousDueDate) throw new RangeError(`extension ${item.id} must move the due date forward`);
+  }
+  for (const item of universe.assignmentsAndLiens) {
+    validateEventId(item.id);
+    if (!titleById.has(item.receivableId)) throw new RangeError(`unknown receivable ${item.receivableId} on assignment or lien ${item.id}`);
+    receivablesUtcDate(item.effectiveDate);
+    if (item.effectiveDate > universe.dates.reportingDate) throw new RangeError(`assignment or lien ${item.id} follows the reporting date`);
+    if (item.amount !== null && decimal(item.amount).lte(0)) throw new RangeError(`assignment or lien ${item.id} amount must be positive when provided`);
+  }
+  for (const [receivableId, resolved] of resolvedByTitle) {
+    const face = decimal(titleById.get(receivableId)!.faceValue);
+    if (resolved.gt(face)) throw new RangeError(`performance events exceed face value on receivable ${receivableId}`);
+  }
+  if ([universe.eventCoverage.settlements, universe.eventCoverage.dilutions, universe.eventCoverage.repurchases]
+    .every((coverage) => coverage.status === "complete")) {
+    for (const title of universe.receivables) {
+      const expectedResidual = Decimal.max(decimal(title.faceValue).minus(resolvedByTitle.get(title.id) ?? ZERO), ZERO);
+      if (title.status === "open" && !expectedResidual.eq(title.openValue)) {
+        throw new RangeError(`open value does not reconcile to complete performance events on receivable ${title.id}`);
+      }
+      if (title.status === "settled" && !expectedResidual.isZero()) {
+        throw new RangeError(`settled receivable ${title.id} is not fully resolved by performance events`);
+      }
+    }
   }
 
   if (currencies.size !== 1 || !currencies.has(universe.currency)) throw new RangeError("all receivables must use the universe currency");
@@ -234,7 +329,7 @@ function concentrationMetrics(input: {
   const sorted = [...input.values.values()].sort((left, right) => right.comparedTo(left));
   const cuts: Array<[ConcentrationCut, number]> = [["top_1", 1], ["top_5", 5], ["top_10", 10], ["top_50", 50]];
   if (input.denominator.lte(0)) {
-    const unavailable = (suffix: string) => notEvaluableMetric({
+    const unavailable = (suffix: string) => notEvaluableReceivablesMetric({
       id: `${input.idPrefix}.${suffix}`,
       unit: "ratio",
       period: input.period,
@@ -254,7 +349,7 @@ function concentrationMetrics(input: {
   }
   const cutMetrics = Object.fromEntries(cuts.map(([cut, count]) => {
     const numerator = sum(sorted.slice(0, count));
-    return [cut, measuredMetric({
+    return [cut, measuredReceivablesMetric({
       id: `${input.idPrefix}.${cut}`,
       value: safeRatio(numerator, input.denominator, `${input.idPrefix}.${cut}`),
       unit: "ratio",
@@ -263,15 +358,15 @@ function concentrationMetrics(input: {
       anchors: input.anchors,
       universe: input.universe,
       formulaId: "receivables.concentration.share",
-      numerator: canonical(numerator),
-      denominator: canonical(input.denominator),
+      numerator: canonicalMetricValue(numerator),
+      denominator: canonicalMetricValue(input.denominator),
       inclusions: [`largest ${count} ${input.idPrefix.includes("group") ? "economic groups" : "obligors"}`],
     })];
   })) as Record<ConcentrationCut, MeasuredMetric>;
   const herfindahl = sum([...input.values.values()].map((value) => safeRatio(value, input.denominator, `${input.idPrefix}.herfindahl`).pow(2)));
   return {
     ...cutMetrics,
-    herfindahl: measuredMetric({
+    herfindahl: measuredReceivablesMetric({
       id: `${input.idPrefix}.herfindahl`,
       value: herfindahl,
       unit: "ratio",
@@ -280,7 +375,7 @@ function concentrationMetrics(input: {
       anchors: input.anchors,
       universe: input.universe,
       formulaId: "receivables.concentration.herfindahl",
-      denominator: canonical(input.denominator),
+      denominator: canonicalMetricValue(input.denominator),
     }),
   };
 }
@@ -304,7 +399,7 @@ function countbackDso(universe: ReceivablesUniverse, openBalance: Decimal): Deci
     }
     remaining = Decimal.max(remaining.minus(originated), ZERO);
     days = days.plus(1);
-    cursor = shiftDays(cursor, -1);
+    cursor = shiftReceivablesDays(cursor, -1);
   }
   return days;
 }
@@ -315,7 +410,7 @@ export function calculateStaticReceivablesMetrics(
 ): StaticReceivablesMetrics {
   if (!/^[a-f0-9]{64}$/i.test(options.datasetHash)) throw new RangeError("dataset hash must be a SHA-256 hex digest");
   const qualityWarnings = validateReceivablesUniverse(universe);
-  const anchors = sourceAnchors(universe);
+  const anchors = collectReceivablesSourceAnchors(universe);
   if (anchors.length === 0) throw new RangeError("at least one source anchor is required");
 
   const allPeriod: MetricPeriod = {
@@ -323,7 +418,7 @@ export function calculateStaticReceivablesMetrics(
     startDate: universe.dates.dataStartDate,
     endDate: universe.dates.dataEndDate,
   };
-  const trailingStart = shiftDays(universe.dates.reportingDate, -364);
+  const trailingStart = shiftReceivablesDays(universe.dates.reportingDate, -364);
   const trailingPeriod: MetricPeriod = {
     reportingDate: universe.dates.reportingDate,
     startDate: trailingStart,
@@ -339,12 +434,12 @@ export function calculateStaticReceivablesMetrics(
   const totalOpen = sum(universe.receivables.map((item) => item.openValue));
   const trailing = universe.receivables.filter((item) => item.issueDate >= trailingStart && item.issueDate <= universe.dates.reportingDate);
   const trailingFace = sum(trailing.map((item) => item.faceValue));
-  const originalTermNumerator = sum(universe.receivables.map((item) => decimal(item.faceValue).mul(daysBetween(item.issueDate, item.originalDueDate))));
-  const currentTermNumerator = sum(universe.receivables.map((item) => decimal(item.faceValue).mul(daysBetween(item.issueDate, item.currentDueDate))));
-  const remainingTermNumerator = sum(universe.receivables.map((item) => decimal(item.openValue).mul(Math.max(0, daysBetween(universe.dates.reportingDate, item.currentDueDate)))));
+  const originalTermNumerator = sum(universe.receivables.map((item) => decimal(item.faceValue).mul(receivablesDaysBetween(item.issueDate, item.originalDueDate))));
+  const currentTermNumerator = sum(universe.receivables.map((item) => decimal(item.faceValue).mul(receivablesDaysBetween(item.issueDate, item.currentDueDate))));
+  const remainingTermNumerator = sum(universe.receivables.map((item) => decimal(item.openValue).mul(Math.max(0, receivablesDaysBetween(universe.dates.reportingDate, item.currentDueDate)))));
   const titleCount = decimal(universe.receivables.length);
 
-  const metric = (input: Omit<Parameters<typeof measuredMetric>[0], "datasetHash" | "anchors">) => measuredMetric({
+  const metric = (input: Omit<Parameters<typeof measuredReceivablesMetric>[0], "datasetHash" | "anchors">) => measuredReceivablesMetric({
     ...input,
     datasetHash: options.datasetHash,
     anchors,
@@ -356,7 +451,7 @@ export function calculateStaticReceivablesMetrics(
   for (const item of universe.receivables) {
     const open = decimal(item.openValue);
     if (open.isZero()) continue;
-    const daysPastDue = daysBetween(item.currentDueDate, universe.dates.reportingDate);
+    const daysPastDue = receivablesDaysBetween(item.currentDueDate, universe.dates.reportingDate);
     const bucket = agingBucketForDaysPastDue(daysPastDue);
     agingValues[bucket] = agingValues[bucket].plus(open);
     openByObligor.set(item.obligorId, (openByObligor.get(item.obligorId) ?? ZERO).plus(open));
@@ -373,21 +468,21 @@ export function calculateStaticReceivablesMetrics(
   }
 
   return {
-    version: FORMULA_VERSION,
+    version: receivablesMetricsFormulaVersion,
     universeId: universe.id,
     portfolio: {
       titleCount: metric({id: "portfolio.title_count", value: titleCount, unit: "count", period: allPeriod, universe: "all receivables originated in the declared interval", formulaId: "receivables.count"}),
       totalFaceValue: metric({id: "portfolio.total_face_value", value: totalFace, unit: "BRL", period: allPeriod, universe: "all receivables originated in the declared interval", formulaId: "receivables.sum_face_value"}),
       trailing365Origination: metric({id: "portfolio.trailing_365_origination", value: trailingFace, unit: "BRL", period: trailingPeriod, universe: "receivables originated during the inclusive trailing 365-day interval", formulaId: "receivables.trailing_365_origination"}),
-      averageTicket: metric({id: "portfolio.average_ticket", value: safeRatio(totalFace, titleCount, "average ticket"), unit: "BRL", period: allPeriod, universe: "all receivables originated in the declared interval", formulaId: "receivables.average_ticket", numerator: canonical(totalFace), denominator: canonical(titleCount)}),
+      averageTicket: metric({id: "portfolio.average_ticket", value: safeRatio(totalFace, titleCount, "average ticket"), unit: "BRL", period: allPeriod, universe: "all receivables originated in the declared interval", formulaId: "receivables.average_ticket", numerator: canonicalMetricValue(totalFace), denominator: canonicalMetricValue(titleCount)}),
       totalOpenValue: metric({id: "portfolio.total_open_value", value: totalOpen, unit: "BRL", period: snapshotPeriod, universe: "open receivable balance at the reporting date", formulaId: "receivables.sum_open_value"}),
-      weightedOriginalTermDays: metric({id: "portfolio.weighted_original_term_days", value: safeRatio(originalTermNumerator, totalFace, "weighted original term"), unit: "days", period: allPeriod, universe: "all receivables originated in the declared interval", formulaId: "receivables.weighted_original_term", numerator: canonical(originalTermNumerator), denominator: canonical(totalFace)}),
-      weightedCurrentTermDays: metric({id: "portfolio.weighted_current_term_days", value: safeRatio(currentTermNumerator, totalFace, "weighted current term"), unit: "days", period: allPeriod, universe: "all receivables originated in the declared interval", formulaId: "receivables.weighted_current_term", numerator: canonical(currentTermNumerator), denominator: canonical(totalFace)}),
-      weightedRemainingTermDays: metric({id: "portfolio.weighted_remaining_term_days", value: totalOpen.isZero() ? ZERO : remainingTermNumerator.div(totalOpen), unit: "days", period: snapshotPeriod, universe: "open receivable balance at the reporting date", formulaId: "receivables.weighted_remaining_term", numerator: canonical(remainingTermNumerator), denominator: canonical(totalOpen)}),
+      weightedOriginalTermDays: metric({id: "portfolio.weighted_original_term_days", value: safeRatio(originalTermNumerator, totalFace, "weighted original term"), unit: "days", period: allPeriod, universe: "all receivables originated in the declared interval", formulaId: "receivables.weighted_original_term", numerator: canonicalMetricValue(originalTermNumerator), denominator: canonicalMetricValue(totalFace)}),
+      weightedCurrentTermDays: metric({id: "portfolio.weighted_current_term_days", value: safeRatio(currentTermNumerator, totalFace, "weighted current term"), unit: "days", period: allPeriod, universe: "all receivables originated in the declared interval", formulaId: "receivables.weighted_current_term", numerator: canonicalMetricValue(currentTermNumerator), denominator: canonicalMetricValue(totalFace)}),
+      weightedRemainingTermDays: metric({id: "portfolio.weighted_remaining_term_days", value: totalOpen.isZero() ? ZERO : remainingTermNumerator.div(totalOpen), unit: "days", period: snapshotPeriod, universe: "open receivable balance at the reporting date", formulaId: "receivables.weighted_remaining_term", numerator: canonicalMetricValue(remainingTermNumerator), denominator: canonicalMetricValue(totalOpen)}),
       simpleDsoDays: trailingFace.lte(0)
-        ? notEvaluableMetric({id: "portfolio.simple_dso_days", unit: "days", period: trailingPeriod, datasetHash: options.datasetHash, anchors, universe: "open balance divided by trailing 365-day origination", formulaId: "receivables.simple_dso", warning: "trailing_365_origination_unavailable"})
-        : metric({id: "portfolio.simple_dso_days", value: totalOpen.mul(365).div(trailingFace), unit: "days", period: trailingPeriod, universe: "open balance divided by trailing 365-day origination", formulaId: "receivables.simple_dso", numerator: canonical(totalOpen.mul(365)), denominator: canonical(trailingFace)}),
-      countbackDsoDays: metric({id: "portfolio.countback_dso_days", value: countbackDso(universe, totalOpen), unit: "days", period: allPeriod, universe: "daily origination consumed backwards from the reporting date until the open balance is covered", formulaId: "receivables.daily_countback_dso", numerator: canonical(totalOpen), denominator: "daily origination series"}),
+        ? notEvaluableReceivablesMetric({id: "portfolio.simple_dso_days", unit: "days", period: trailingPeriod, datasetHash: options.datasetHash, anchors, universe: "open balance divided by trailing 365-day origination", formulaId: "receivables.simple_dso", warning: "trailing_365_origination_unavailable"})
+        : metric({id: "portfolio.simple_dso_days", value: totalOpen.mul(365).div(trailingFace), unit: "days", period: trailingPeriod, universe: "open balance divided by trailing 365-day origination", formulaId: "receivables.simple_dso", numerator: canonicalMetricValue(totalOpen.mul(365)), denominator: canonicalMetricValue(trailingFace)}),
+      countbackDsoDays: metric({id: "portfolio.countback_dso_days", value: countbackDso(universe, totalOpen), unit: "days", period: allPeriod, universe: "daily origination consumed backwards from the reporting date until the open balance is covered", formulaId: "receivables.daily_countback_dso", numerator: canonicalMetricValue(totalOpen), denominator: "daily origination series"}),
     },
     aging: Object.fromEntries(receivablesAgingBuckets.map((bucket) => [bucket, metric({
       id: `aging.${bucket}`,

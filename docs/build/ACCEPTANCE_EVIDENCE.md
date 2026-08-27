@@ -1,6 +1,6 @@
 # Acceptance Evidence
 
-## Vertical de recebíveis A1, fixture Vertentes e métricas estáticas, 27/08/2026
+## Vertical de recebíveis A1, fixture Vertentes e métricas estáticas e dinâmicas, 27/08/2026
 
 | Evidência | Verificação | Resultado |
 |---|---|---|
@@ -8,15 +8,23 @@
 | Verdade reservada | hashes de `source`, `normalized` e `expected` | arquivos íntegros e separados da entrada que futuros testes de extração poderão ler |
 | Datas canônicas | reporting, última originação e intervalo | 30/06/2026, 28/06/2026 e 01/07/2024 a 28/06/2026 permanecem distintos |
 | Métricas estáticas | igualdade exata com gold | 34.397 títulos; R$ 125.019.151,13 de face; R$ 11.897.080,30 em aberto; prazos, DSO, aging, Top N e HHI aprovados |
+| Cobertura de eventos | contrato e validação | liquidação, diluição, prorrogação, recompra e cessão ou gravame distinguem `complete`, `partial` e `not_provided`; ausência nunca vira zero silencioso |
+| Roll rate | 23 matrizes mensais contra oráculo independente | cada linha reconcilia exposição de origem com oito destinos e usa vencimento original |
+| Safras | 24 coortes e seis horizontes contra oráculo independente | curva de não pagamento em 30, 60, 90, 120, 180 e 360 dias; coorte imatura falha fechada |
+| Performance da carteira | igualdade exata com oráculo | diluição 2,447267%; write-off final 1,616655%; pontualidade 24,153471% por quantidade e 24,128437% por valor |
+| Prorrogações | 340 títulos identificados | 0,988458% dos títulos; 1,070097% da face; 168,7867543 dias ponderados; série temporal indisponível porque a data do evento não veio no intake |
+| Recompra | zero eventos com cobertura sintética completa | valor zero medido; taxa sobre volume cedido `not_evaluable` porque o denominador não existe |
 | Invariantes | aging, concentração e replay | aging reconcilia integralmente com a posição; cortes são monotônicos; ordem dos títulos não altera a saída |
 | Procedência | inspeção de todas as métricas | 100% com hash do dataset, universo, período, fórmula versionada e ao menos uma âncora |
 | Cascata ilustrativa | exclusões mutuamente exclusivas | R$ 3.019.585,07 excluídos e R$ 8.877.495,23 elegíveis; política marcada como estimada e incapaz de decidir buyer fit |
-| Regressão focada | financial-core, receivables-analysis e testing-fixtures | 39 + 35 + 20 testes verdes; typecheck verde nos três pacotes |
+| Regressão focada | financial-core, receivables-analysis e testing-fixtures | 43 + 35 + 23 testes verdes; typecheck verde nos três pacotes |
 | Gate integral | `pnpm check` em Node 24.19 | lint, typecheck, testes e build verdes nos 41 pacotes; web com 135 testes e 28 rotas |
-| Performance local | Node 24, carteira integral, dez iterações | mediana 235,90 ms; p95 240,15 ms |
+| Performance local | Node 24, carteira integral, dez iterações | estático 312,09 ms mediana e 321,47 ms p95; dinâmico 1.074,42 ms mediana e 1.113,34 ms p95 |
 
-Esta evidência não promove roll rate, safras, diluição por causa, perda ajustada, dívida, CET,
-advance rate ou elegibilidade por regulamento. Cada grupo exige gold e gate próprios.
+Esta evidência promove roll rate, safras, diluição total, perda ajustada, pontualidade e
+prorrogações no perímetro descrito. Não promove atribuição de diluição por causa, série temporal de
+prorrogação, dívida, CET, advance rate ou elegibilidade por regulamento. Cada grupo restante exige
+gold e gate próprios.
 
 ## Gate jurídico inicial v3, 27/08/2026
 

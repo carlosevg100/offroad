@@ -5,8 +5,11 @@ import {fileURLToPath} from "node:url";
 import {gunzipSync} from "node:zlib";
 
 import {
+  calculateDynamicReceivablesMetrics,
   calculateStaticReceivablesMetrics,
   receivablesAgingBuckets,
+  receivablesRollDestinations,
+  receivablesVintageHorizons,
   type ConcentrationCut,
   type MeasuredMetric,
   type ReceivablesAgingBucket,
@@ -22,6 +25,25 @@ type ExpectedStatic = {
   portfolio: Record<string, string>;
   aging: Record<ReceivablesAgingBucket, string>;
   concentration: Record<string, Record<ConcentrationCut | "herfindahl", string>>;
+};
+
+type ExpectedDynamic = {
+  version: string;
+  rollRates: Array<{
+    fromDate: string;
+    toDate: string;
+    rows: Record<ReceivablesAgingBucket, {
+      sourceExposure: string;
+      transitions: Record<string, {amount: string; rate: string | null}>;
+    }>;
+  }>;
+  vintages: Array<{
+    cohortMonth: string;
+    titleCount: number;
+    faceValue: string;
+    horizons: Record<string, {unresolvedAmount: string | null; unresolvedShare: string | null}>;
+  }>;
+  summary: Record<string, string | null>;
 };
 
 type VertentesManifest = {
@@ -51,6 +73,7 @@ const compressed = readFileSync(join(goldRoot, manifest.normalized.path));
 const uncompressed = gunzipSync(compressed);
 const universe = JSON.parse(uncompressed.toString("utf8")) as ReceivablesUniverse;
 const expected = readJson<ExpectedStatic>(join(goldRoot, "expected", "static-metrics.json"));
+const expectedDynamic = readJson<ExpectedDynamic>(join(goldRoot, "expected", "dynamic-metrics.json"));
 const illustrativeEligibility = readJson<IllustrativeEligibility>(join(goldRoot, "expected", "illustrative-eligibility.json"));
 
 const cents = (value: string) => {
@@ -75,6 +98,64 @@ function allMetrics(result: ReturnType<typeof calculateStaticReceivablesMetrics>
     ...Object.values(result.concentration.trailing365ByEconomicGroup),
     ...Object.values(result.concentration.openByObligor),
     ...Object.values(result.concentration.openByEconomicGroup),
+  ];
+}
+
+function dynamicValues(result: ReturnType<typeof calculateDynamicReceivablesMetrics>): ExpectedDynamic {
+  return {
+    version: result.version,
+    rollRates: result.rollRates.periods.map((period) => ({
+      fromDate: period.fromDate,
+      toDate: period.toDate,
+      rows: Object.fromEntries(receivablesAgingBuckets.map((bucket) => [bucket, {
+        sourceExposure: period.rows[bucket].sourceExposure,
+        transitions: Object.fromEntries(receivablesRollDestinations.map((destination) => [destination, {
+          amount: period.rows[bucket].transitions[destination].amount,
+          rate: period.rows[bucket].transitions[destination].rate.value,
+        }])),
+      }])) as ExpectedDynamic["rollRates"][number]["rows"],
+    })),
+    vintages: result.vintages.cohorts.map((cohort) => ({
+      cohortMonth: cohort.cohortMonth,
+      titleCount: cohort.titleCount,
+      faceValue: cohort.faceValue,
+      horizons: Object.fromEntries(receivablesVintageHorizons.map((horizon) => [String(horizon), {
+        unresolvedAmount: cohort.horizons[horizon].unresolvedAmount,
+        unresolvedShare: cohort.horizons[horizon].unresolvedShare.value,
+      }])),
+    })),
+    summary: {
+      dilutionAmount: result.dilution.totalAmount.value,
+      dilutionShareOfOrigination: result.dilution.shareOfOrigination.value,
+      repurchasedAmount: result.repurchaseAndLoss.repurchasedAmount.value,
+      repurchaseShareOfAssigned: result.repurchaseAndLoss.repurchaseShareOfAssigned.value,
+      finalWrittenOffAmount: result.repurchaseAndLoss.finalWrittenOffAmount.value,
+      finalWrittenOffShare: result.repurchaseAndLoss.finalWrittenOffShare.value,
+      adjustedLossAmount: result.repurchaseAndLoss.adjustedLossAmount.value,
+      adjustedLossShare: result.repurchaseAndLoss.adjustedLossShare.value,
+      dueTitleCount: result.punctualSettlement.dueTitleCount.value,
+      dueFaceValue: result.punctualSettlement.dueFaceValue.value,
+      punctualByCount: result.punctualSettlement.punctualByCount.value,
+      punctualByValue: result.punctualSettlement.punctualByValue.value,
+      extendedTitleCount: result.extensions.extendedTitleCount.value,
+      extendedTitleShare: result.extensions.extendedTitleShare.value,
+      extendedFaceValue: result.extensions.extendedFaceValue.value,
+      extendedFaceShare: result.extensions.extendedFaceShare.value,
+      weightedExtensionDays: result.extensions.weightedExtensionDays.value,
+    },
+  };
+}
+
+function allDynamicMetrics(result: ReturnType<typeof calculateDynamicReceivablesMetrics>): MeasuredMetric[] {
+  return [
+    ...result.rollRates.periods.flatMap((period) => Object.values(period.rows).flatMap((row) => Object.values(row.transitions).map((transition) => transition.rate))),
+    ...result.vintages.cohorts.flatMap((cohort) => receivablesVintageHorizons.map((horizon) => cohort.horizons[horizon].unresolvedShare)),
+    result.dilution.totalAmount,
+    result.dilution.shareOfOrigination,
+    ...Object.values(result.dilution.byReason).flatMap((reason) => [reason.amount, reason.shareOfOrigination]),
+    ...Object.values(result.repurchaseAndLoss),
+    ...Object.values(result.punctualSettlement),
+    ...Object.values(result.extensions),
   ];
 }
 
@@ -181,4 +262,53 @@ describe("Vertentes A1-03 gold", () => {
     const second = calculateStaticReceivablesMetrics(reversed, {datasetHash: manifest.normalized.uncompressedSha256});
     expect(second).toEqual(first);
   }, 10_000);
+
+  it("matches the independent dynamic oracle for every roll, vintage and portfolio metric", () => {
+    const result = calculateDynamicReceivablesMetrics(universe, {datasetHash: manifest.normalized.uncompressedSha256});
+    expect(result.rollRates.status).toBe("measured");
+    expect(result.vintages.status).toBe("measured");
+    expect(dynamicValues(result)).toEqual(expectedDynamic);
+  }, 20_000);
+
+  it("reconciles dynamic invariants and keeps provenance on every cell", () => {
+    const result = calculateDynamicReceivablesMetrics(universe, {datasetHash: manifest.normalized.uncompressedSha256});
+    for (const period of result.rollRates.periods) {
+      for (const row of Object.values(period.rows)) {
+        const amounts = receivablesRollDestinations.reduce((total, destination) => total + fixed8(row.transitions[destination].amount), 0n);
+        expect(amounts).toBe(fixed8(row.sourceExposure));
+        if (row.sourceExposure !== "0") {
+          const rates = receivablesRollDestinations.reduce((total, destination) => total + fixed8(measuredValue(row.transitions[destination].rate)), 0n);
+          expect(Number(rates)).toBeCloseTo(100_000_000, -1);
+        }
+      }
+    }
+    for (const cohort of result.vintages.cohorts) {
+      const observed = receivablesVintageHorizons
+        .map((horizon) => cohort.horizons[horizon].unresolvedShare)
+        .filter((metric) => metric.status === "measured")
+        .map((metric) => Number(measuredValue(metric)));
+      for (let index = 1; index < observed.length; index += 1) expect(observed[index]).toBeLessThanOrEqual(observed[index - 1]!);
+    }
+    for (const metric of allDynamicMetrics(result)) {
+      expect(metric.provenance.datasetHash).toBe(manifest.normalized.uncompressedSha256);
+      expect(metric.provenance.anchors.length).toBeGreaterThan(0);
+      expect(metric.provenance.formula.version).toBe(expectedDynamic.version);
+    }
+    expect(result.repurchaseAndLoss.repurchaseShareOfAssigned.status).toBe("not_evaluable");
+    expect(result.repurchaseAndLoss.repurchaseShareOfAssigned.warnings).toContain("assigned_volume_denominator_unavailable_or_incomplete");
+    expect(result.quality.warnings).toContain("extension timing series cannot be calculated");
+  }, 20_000);
+
+  it("replays dynamic metrics identically regardless of input ordering", () => {
+    const first = calculateDynamicReceivablesMetrics(universe, {datasetHash: manifest.normalized.uncompressedSha256});
+    const reversed: ReceivablesUniverse = {
+      ...universe,
+      receivables: [...universe.receivables].reverse(),
+      settlements: [...universe.settlements].reverse(),
+      dilutions: [...universe.dilutions].reverse(),
+      extensions: [...universe.extensions].reverse(),
+    };
+    const second = calculateDynamicReceivablesMetrics(reversed, {datasetHash: manifest.normalized.uncompressedSha256});
+    expect(second).toEqual(first);
+  }, 20_000);
 });

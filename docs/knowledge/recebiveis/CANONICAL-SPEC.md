@@ -92,6 +92,18 @@ Prorrogação não apaga o vencimento original. O sistema preserva vencimento or
 vencimento vigente e eventos de extensão para produzir as duas leituras quando
 necessário.
 
+Cada família de eventos de performance e cessão declara cobertura `complete`, `partial` ou
+`not_provided`, com intervalo, base e limitações. Array vazio só significa zero quando
+a cobertura é completa; nos demais estados significa ausência ou insuficiência de
+evidência.
+
+Roll rate mensal parte da exposição bruta ainda não resolvida em cada faixa no fim do
+mês e reconcilia 100% desse saldo com a faixa do mês seguinte ou `resolved`. Usa o
+vencimento original. Safra usa o mês de emissão e mede a exposição ainda não resolvida
+em 30, 60, 90, 120, 180 e 360 dias após o vencimento original. É uma curva de não
+pagamento e deve ser monotonicamente não crescente; não é chamada de perda realizada.
+Write-off só existe como série quando a data do evento de baixa foi fornecida.
+
 ## 6. Procedência
 
 Toda afirmação numérica ou normativa é `[M]` medida, `[C]` citada ou `[E]` estimada.
