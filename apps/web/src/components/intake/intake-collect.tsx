@@ -1,4 +1,4 @@
-import {AlertTriangle, ArrowLeft, ArrowRight, LoaderCircle, RotateCcw, ShieldCheck} from "lucide-react";
+import {AlertTriangle, ArrowLeft, ArrowRight, LoaderCircle, ShieldCheck} from "lucide-react";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
@@ -36,8 +36,6 @@ type Props = {
   processAction: (formData: FormData) => Promise<void>;
   /** Removes one uploaded document while the session is open (`document_id`, `session_id`, `locale`). */
   removeAction?: (formData: FormData) => Promise<void>;
-  /** Where to send the user if they prefer to type instead (optional). */
-  manualHref?: string;
   /** Wrapper class differs between onboarding (`onboarding-stage__form`) and workspace (`intake-form`). */
   className?: string;
   /** Sets which operation the company is asking for (`archetype`, `session_id`, `locale`). */
@@ -57,12 +55,8 @@ type Props = {
   companyProfileAction?: (formData: FormData) => Promise<void>;
   /** Route used by the compact back action in the guided workspace flow. */
   backHref?: string;
-  /** Returns a new, still-empty intake to project setup so its identifying choices can be edited. */
-  backAction?: (formData: FormData) => Promise<void>;
   /** Base route used to navigate between the three guided stages without mutating saved answers. */
   stageBaseHref?: string;
-  /** Cancels only this unfinished onboarding session and returns to the welcome screen. */
-  restartAction?: (formData: FormData) => Promise<void>;
   resolveScopeSuggestionAction?: (formData: FormData) => Promise<void>;
   revokeAuthorizationAction?: (formData: FormData) => Promise<void>;
   surface: "onboarding" | "workspace";
@@ -72,7 +66,7 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, manualHref, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, backAction, stageBaseHref, restartAction, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -90,7 +84,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
     : currentStage;
   const resolvedBackHref = backHref ?? (stageBaseHref && currentStage !== "operation"
     ? currentStage === "company"
-      ? undefined
+      ? surface === "onboarding" ? `${stageBaseHref}?setup=project` : undefined
       : `${stageBaseHref}?stage=${currentStage === "documents" ? "request" : currentStage === "request" ? "operation" : "company"}`
     : stageBaseHref && surface === "onboarding" && currentStage === "operation"
       ? `${stageBaseHref}?stage=company`
@@ -136,34 +130,11 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         </nav>
       )}
 
-      {(resolvedBackHref || backAction || restartAction) ? (
+      {resolvedBackHref ? (
         <div className="intake-guide__navigation">
-          {resolvedBackHref ? (
-            <Link className="intake-guide__back" href={resolvedBackHref}>
-              <ArrowLeft aria-hidden="true" size={14} />{t("guided.back")}
-            </Link>
-          ) : backAction ? (
-            <form action={backAction}>
-              <input name="locale" type="hidden" value={locale} />
-              <input name="session_id" type="hidden" value={session.id} />
-              <button className="intake-guide__back" type="submit">
-                <ArrowLeft aria-hidden="true" size={14} />{t("guided.backToProject")}
-              </button>
-            </form>
-          ) : <span />}
-          {restartAction ? (
-            <details className="intake-guide__restart">
-              <summary><RotateCcw aria-hidden="true" size={13} />{t("guided.restart")}</summary>
-              <div>
-                <p>{t("guided.restartBody")}</p>
-                <form action={restartAction}>
-                  <input name="locale" type="hidden" value={locale} />
-                  <input name="session_id" type="hidden" value={session.id} />
-                  <button className="button button--ghost" type="submit">{t("guided.restartConfirm")}</button>
-                </form>
-              </div>
-            </details>
-          ) : null}
+          <Link className="intake-guide__back" href={resolvedBackHref}>
+            <ArrowLeft aria-hidden="true" size={14} />{t("guided.back")}
+          </Link>
         </div>
       ) : null}
 
@@ -275,7 +246,6 @@ export async function IntakeCollect({locale, session, documents, organizationId,
             {failed || processing ? t("collect.retry") : t("collect.analyze")}<ArrowRight size={15} />
           </button>
         </form>
-        {manualHref && failed ? <Link className="button button--ghost" href={manualHref}>{t("review.fillManually")}</Link> : null}
       </div> : null}
 
     </section>

@@ -175,6 +175,7 @@ declare
   candidate_id uuid;
   amount_candidate uuid;
   returned_session uuid;
+  workspace_session uuid;
   n integer;
   title_length integer;
 begin
@@ -266,6 +267,35 @@ begin
     or (select count(*) from public.project_representation_evidence
         where organization_id = org and intake_session_id = returned_session) <> 1 then
     raise exception 'private project identity or representation declaration was not created atomically';
+  end if;
+
+  -- Editing project setup updates the same open session. Back and Edit must never cancel or
+  -- duplicate the financing, and the declaration ledger remains idempotent.
+  if public.start_onboarding_intake(
+      'pt-BR', 'Projeto Atlas Atualizado', 'blind_initial', true
+    ) <> returned_session then
+    raise exception 'editing project setup created a second intake session';
+  end if;
+  if (select project_name from public.document_intake_sessions where id = returned_session) <> 'Projeto Atlas Atualizado'
+    or (select identity_policy from public.document_intake_sessions where id = returned_session) <> 'blind_initial'
+    or (select status from public.document_intake_sessions where id = returned_session) <> 'collecting'
+    or (select count(*) from public.project_representation_evidence
+        where organization_id = org and intake_session_id = returned_session) <> 1 then
+    raise exception 'editing project setup did not update the same private project idempotently';
+  end if;
+
+  -- Later financings use a separate atomic command but the same confidentiality, identity and
+  -- representation contract. They do not mutate onboarding_progress or reuse the first session.
+  workspace_session := public.start_workspace_intake(
+    org, 'pt-BR', 'Projeto Workspace', 'identified_restricted', true
+  );
+  if workspace_session is null
+    or (select project_name from public.document_intake_sessions where id = workspace_session) <> 'Projeto Workspace'
+    or (select privacy_status from public.document_intake_sessions where id = workspace_session) <> 'private'
+    or (select representation_kind from public.document_intake_sessions where id = workspace_session) <> 'company'
+    or (select count(*) from public.project_representation_evidence
+        where organization_id = org and intake_session_id = workspace_session) <> 1 then
+    raise exception 'start_workspace_intake did not create the private project and evidence atomically';
   end if;
 
   perform public.save_guided_company_profile(

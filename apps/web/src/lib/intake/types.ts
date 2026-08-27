@@ -28,7 +28,6 @@ export type IntakeReviewActionSet = {
 
 export type IntakeStartActionSet = {
   start: (formData: FormData) => Promise<void>;
-  manual: (formData: FormData) => Promise<void>;
 };
 
 /** Error codes carried in the `?error=` query parameter by intake actions. */

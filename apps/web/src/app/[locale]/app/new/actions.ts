@@ -1,6 +1,7 @@
 "use server";
 
 import {redirect} from "next/navigation";
+import {z} from "zod";
 
 import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -48,17 +49,29 @@ async function workspaceRuntime(locale: AppLocale, sessionId: string): Promise<I
   return runtime;
 }
 
-export async function chooseWorkspaceManualIntake(formData: FormData) {
-  const locale = localeFrom(formData);
-  await requireWorkspace(locale);
-  redirect(`/${locale}/app/new?mode=manual`);
-}
-
 export async function startWorkspaceDocumentIntake(formData: FormData) {
   const locale = localeFrom(formData);
+  const parsed = z.object({
+    projectName: z.string().trim().min(2).max(80),
+    identityPolicy: z.enum(["identified_restricted", "blind_initial"]),
+    representationDeclared: z.literal("confirmed"),
+  }).safeParse({
+    projectName: value(formData, "project_name"),
+    identityPolicy: value(formData, "identity_policy"),
+    representationDeclared: value(formData, "representation_declared"),
+  });
+  if (!parsed.success) redirect(`/${locale}/app/new?error=validation`);
   const {supabase, organization, userId} = await requireWorkspace(locale);
   if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
-  const outcome = await startIntakeSession({supabase, organizationId: organization.id, userId, locale, journey: organization.organization_type === "originator" ? "originator" : "company"});
+  const outcome = await startIntakeSession({
+    supabase,
+    organizationId: organization.id,
+    userId,
+    locale,
+    journey: organization.organization_type === "originator" ? "originator" : "company",
+    projectName: parsed.data.projectName,
+    identityPolicy: parsed.data.identityPolicy,
+  });
   if (!outcome.ok) redirect(`/${locale}/app/new?error=${outcome.error}`);
   redirect(intakeUrl(locale, outcome.value, undefined, "operation"));
 }
@@ -159,45 +172,6 @@ export async function confirmWorkspaceDocumentIntake(formData: FormData) {
   const outcome = await confirmIntakeCase(runtime);
   if (!outcome.ok) redirect(intakeUrl(locale, sessionId, outcome.error));
   redirect(`/${locale}/app/opportunities/${outcome.value.opportunityId}`);
-}
-
-export async function createOpportunity(formData: FormData) {
-  const locale = localeFrom(formData);
-  const {supabase, organization} = await requireWorkspace(locale);
-  if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
-  const amount = value(formData, "requested_amount").replace(",", ".");
-  const term = Number(value(formData, "desired_term_months"));
-
-  if (!/^\d{1,15}(?:\.\d{1,2})?$/.test(amount) || !Number.isInteger(term) || term < 1 || term > 360) {
-    redirect(`/${locale}/app/new?mode=manual&error=validation`);
-  }
-
-  const {data, error} = await supabase.rpc("create_opportunity_intake", {
-    p_organization_id: organization.id,
-    p_legal_name: value(formData, "legal_name"),
-    p_sector: value(formData, "sector"),
-    p_purpose: value(formData, "purpose"),
-    // PostgREST accepts numeric strings and preserves decimal precision.
-    p_requested_amount: amount as unknown as number,
-    p_currency: value(formData, "currency"),
-    p_desired_term_months: term,
-    p_output_locale: locale,
-  });
-
-  if (error || !data) redirect(`/${locale}/app/new?mode=manual&error=save`);
-  const sessionId = value(formData, "session_id");
-  if (sessionId) {
-    // Manual completion after a document session: keep the uploaded files attached to the new case.
-    // One command instead of three writes. Linking the documents, confirming the session and
-    // stamping the time used to be three separate statements, and a failure between any two of
-    // them left documents belonging to an opportunity the session did not admit to.
-    await supabase.rpc("attach_intake_session_to_opportunity", {
-      p_organization_id: organization.id,
-      p_session_id: sessionId,
-      p_opportunity_id: data,
-    });
-  }
-  redirect(`/${locale}/app/opportunities/${data}`);
 }
 
 /**

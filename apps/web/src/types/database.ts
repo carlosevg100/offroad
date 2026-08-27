@@ -5435,6 +5435,16 @@ export type Database = {
         }
         Returns: string
       }
+      start_workspace_intake: {
+        Args: {
+          p_identity_policy: string
+          p_locale: string
+          p_organization_id: string
+          p_project_name: string
+          p_representation_declared: boolean
+        }
+        Returns: string
+      }
       submit_agent_message: {
         Args: {
           p_content: string

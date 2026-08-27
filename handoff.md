@@ -7,6 +7,26 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: canonical onboarding state machine, 27 August 2026
+
+The borrower and advisor onboarding now has one route contract: welcome, versioned
+confidentiality, named private financing, then the seven guided milestones. A pure state resolver
+enforces every prerequisite. URL parameters can open reversible Back and Edit views but cannot
+create, advance or cancel persisted state. Older unnamed sessions are forced through project
+identification instead of falling into a legacy page.
+
+Legacy company and advisor step arrays, manual intake, destructive restart navigation and the old
+three-step workspace entry were removed from the active surfaces. Capital-provider registration
+remains separate and is now the only consumer of its legacy institutional step engine. Every later
+financing in the workspace starts with the same project-name, identity-policy and representation
+contract as the first one.
+
+`start_onboarding_intake` now creates or configures the same active private session. Editing a name
+or identity policy does not create a duplicate, cancel a case or discard documents. The behavior
+was verified transactionally on Supabase staging and the Security Advisor remained clean. The full
+diagnosis, transition table and acceptance contract are in
+`docs/build/ONBOARDING_STATE_MACHINE_REVIEW_2026-08-27.md`.
+
 ### Engineering update: seven-milestone guided intake, 26 August 2026
 
 The borrower and advisor onboarding now exposes the seven milestones fixed by ADR 0014 instead of
@@ -14,7 +34,8 @@ the legacy three-step presentation: company, transaction, initial information, p
 understanding, clarifications, institutional package and investors. Only work that exists is
 unlocked. The first milestone is a compact company introduction with free-form context or an
 existing institutional document, followed by the transaction objective and the tailored request.
-Previously visited milestones are navigable and restarting cancels only the unfinished attempt.
+Previously visited milestones are navigable. Back and Edit are non-destructive and never cancel an
+unfinished attempt.
 
 Starting the journey and saving the company milestone are atomic database commands. This removes
 the former partial-session failure mode and shortens the start path. The UI immediately exposes a

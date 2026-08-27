@@ -129,18 +129,6 @@ async function onboardingIntakeRuntime(locale: AppLocale, formData: FormData): P
   return {runtime, context};
 }
 
-export async function chooseManualIntake(formData: FormData) {
-  const locale = localeFrom(formData);
-  const context = await onboardingContext(locale);
-  if (context.journey === "capital_provider") redirect(onboardingUrl(locale));
-  const {error} = await context.supabase.from("onboarding_progress").update({
-    answers: {...context.answers, intake_mode: "manual"},
-    current_step: "organization",
-  }).eq("organization_id", context.organizationId).eq("user_id", context.userId).eq("journey", context.journey);
-  if (error) redirect(onboardingUrl(locale, "save"));
-  redirect(onboardingUrl(locale));
-}
-
 export async function startDocumentIntake(formData: FormData) {
   const locale = localeFrom(formData);
   const parsed = z.object({
@@ -237,46 +225,6 @@ export async function saveGuidedCompanyProfile(formData: FormData) {
     redirect(`/${locale}/onboarding?stage=company&error=${error.code === "22023" ? "validation" : "save"}`);
   }
   redirect(`/${locale}/onboarding?stage=operation`);
-}
-
-/**
- * Returns document-first onboarding to its welcome state without deleting history.
- * The database command owns the transaction: it cancels only the caller's unfinished session
- * and clears only the journey answers, preserving the account and registration identity.
- */
-export async function restartDocumentIntake(formData: FormData) {
-  const locale = localeFrom(formData);
-  const {runtime} = await onboardingIntakeRuntime(locale, formData);
-  const {error} = await runtime.supabase.rpc("restart_onboarding_intake", {
-    p_organization_id: runtime.organizationId,
-    p_session_id: runtime.sessionId,
-  });
-  if (error) {
-    reportServerFailure({step: "intake.restart_onboarding", error});
-    redirect(onboardingUrl(locale, "save"));
-  }
-  redirect(onboardingUrl(locale));
-}
-
-/**
- * Leaves an empty first milestone and returns directly to project setup.
- *
- * Starting the intake creates its private session, so editing the project name or identity policy
- * first closes that empty session. The same transactional database command used by restart keeps
- * account, organization and legal acceptance intact; only this unfinished financing is replaced.
- */
-export async function returnToPrivateProjectSetup(formData: FormData) {
-  const locale = localeFrom(formData);
-  const {runtime} = await onboardingIntakeRuntime(locale, formData);
-  const {error} = await runtime.supabase.rpc("restart_onboarding_intake", {
-    p_organization_id: runtime.organizationId,
-    p_session_id: runtime.sessionId,
-  });
-  if (error) {
-    reportServerFailure({step: "intake.return_to_project_setup", error});
-    redirect(onboardingUrl(locale, "save"));
-  }
-  redirect(`/${locale}/onboarding?setup=project`);
 }
 
 export async function setIntakeOperation(formData: FormData) {
@@ -527,6 +475,7 @@ const organizationSchema = z.object({
 export async function saveOrganizationStep(formData: FormData) {
   const locale = localeFrom(formData);
   const context = await onboardingContext(locale);
+  if (context.journey !== "capital_provider") redirect(`/${locale}/onboarding?error=step`);
   const parsed = organizationSchema.safeParse({
     organizationName: value(formData, "organization_name"),
     legalName: value(formData, "legal_name"),
@@ -541,7 +490,7 @@ export async function saveOrganizationStep(formData: FormData) {
   });
   if (!parsed.success) redirect(`/${locale}/onboarding?error=validation`);
 
-  const providerType = context.journey === "capital_provider" ? value(formData, "provider_type") : null;
+  const providerType = value(formData, "provider_type");
   const description = value(formData, "description");
   const {error: organizationError} = await context.supabase
     .from("organizations")
@@ -564,38 +513,7 @@ export async function saveOrganizationStep(formData: FormData) {
     await context.supabase.from("profiles").update({phone: parsed.data.phone}).eq("id", context.userId);
   }
 
-  let companyId = typeof context.answers.company_id === "string" ? context.answers.company_id : null;
-  if (context.journey === "company") {
-    const hash = parsed.data.identifier ? `\\x${createHash("sha256").update(parsed.data.identifier).digest("hex")}` : null;
-    const companyPayload = {
-      legal_name: parsed.data.legalName || parsed.data.organizationName,
-      display_name: parsed.data.organizationName,
-      jurisdiction_code: parsed.data.countryCode,
-      legal_identifier_hash: hash,
-      legal_identifier_last4: parsed.data.identifier.slice(-4) || null,
-      sector: optional(parsed.data.sector),
-      subsector: optional(parsed.data.subsector),
-      website: optional(parsed.data.website),
-      headquarters_city: optional(parsed.data.city),
-      headquarters_state: optional(parsed.data.stateCode),
-    };
-    if (companyId) {
-      const {error} = await context.supabase.from("companies").update(companyPayload).eq("organization_id", context.organizationId).eq("id", companyId);
-      if (error) redirect(`/${locale}/onboarding?error=save`);
-    } else {
-      const {data, error} = await context.supabase.from("companies").insert({
-        ...companyPayload,
-        organization_id: context.organizationId,
-        reporting_currency: "BRL",
-        created_by: context.userId,
-      }).select("id").single();
-      if (error || !data) redirect(`/${locale}/onboarding?error=save`);
-      companyId = data.id;
-    }
-  }
-
-  const nextStep = context.journey === "capital_provider" ? "fund" : context.journey === "originator" ? "company" : "funding";
-  await updateProgress(context, "organization", nextStep, {
+  await updateProgress(context, "organization", "fund", {
     organization: {
       name: parsed.data.organizationName,
       legal_name: parsed.data.legalName,
@@ -609,165 +527,7 @@ export async function saveOrganizationStep(formData: FormData) {
       description,
       identifier_last4: parsed.data.identifier.slice(-4),
     },
-    company_id: companyId,
   }, locale, value(formData, "return_step"));
-}
-
-export async function saveAdvisedCompanyStep(formData: FormData) {
-  const locale = localeFrom(formData);
-  const context = await onboardingContext(locale);
-  if (context.journey !== "originator") redirect(`/${locale}/onboarding?error=step`);
-  const legalName = value(formData, "company_legal_name");
-  const displayName = value(formData, "company_name") || legalName;
-  const identifier = value(formData, "legal_identifier").replace(/[^0-9A-Za-z]/g, "");
-  if (legalName.length < 2 || displayName.length < 2) redirect(`/${locale}/onboarding?error=validation`);
-
-  let companyId = typeof context.answers.company_id === "string" ? context.answers.company_id : null;
-  const payload = {
-    legal_name: legalName,
-    display_name: displayName,
-    jurisdiction_code: value(formData, "country_code").toUpperCase() || "BR",
-    legal_identifier_hash: identifier ? `\\x${createHash("sha256").update(identifier).digest("hex")}` : null,
-    legal_identifier_last4: identifier.slice(-4) || null,
-    sector: optional(value(formData, "sector")),
-    subsector: optional(value(formData, "subsector")),
-    website: optional(value(formData, "website")),
-  };
-  if (companyId) {
-    const {error} = await context.supabase.from("companies").update(payload).eq("organization_id", context.organizationId).eq("id", companyId);
-    if (error) redirect(`/${locale}/onboarding?error=save`);
-  } else {
-    const {data, error} = await context.supabase.from("companies").insert({
-      ...payload,
-      organization_id: context.organizationId,
-      reporting_currency: "BRL",
-      created_by: context.userId,
-    }).select("id").single();
-    if (error || !data) redirect(`/${locale}/onboarding?error=save`);
-    companyId = data.id;
-  }
-
-  await updateProgress(context, "company", "funding", {
-    company_id: companyId,
-    advised_company: {
-      legal_name: legalName,
-      display_name: displayName,
-      sector: value(formData, "sector"),
-      subsector: value(formData, "subsector"),
-      website: value(formData, "website"),
-      relationship: value(formData, "relationship"),
-      authority_kind: value(formData, "authority_kind"),
-      authority_reference: value(formData, "authority_reference"),
-      contact_name: value(formData, "company_contact_name"),
-      contact_email: value(formData, "company_contact_email"),
-    },
-  }, locale, value(formData, "return_step"));
-}
-
-export async function saveFundingStep(formData: FormData) {
-  const locale = localeFrom(formData);
-  const context = await onboardingContext(locale);
-  if (context.journey === "capital_provider") redirect(`/${locale}/onboarding?error=step`);
-  const companyId = typeof context.answers.company_id === "string" ? context.answers.company_id : null;
-  if (!companyId) redirect(`/${locale}/onboarding?error=company`);
-
-  const requestedAmount = Number(value(formData, "requested_amount"));
-  const termValue = Number(value(formData, "desired_term_months"));
-  const purpose = value(formData, "purpose_summary");
-  if (!Number.isFinite(requestedAmount) || requestedAmount <= 0 || purpose.length < 3 || purpose.length > 500) redirect(`/${locale}/onboarding?error=validation`);
-
-  let capitalRequestId = typeof context.answers.capital_request_id === "string" ? context.answers.capital_request_id : null;
-  let opportunityId = typeof context.answers.opportunity_id === "string" ? context.answers.opportunity_id : null;
-  const requestPayload = {
-    purpose,
-    purpose_category: value(formData, "purpose_category") || null,
-    rationale: optional(value(formData, "rationale")),
-    strategic_importance: optional(value(formData, "strategic_importance")),
-    expected_outcome: optional(value(formData, "expected_outcome")),
-    desired_timing: optional(value(formData, "desired_timing")),
-    repayment_source: optional(value(formData, "repayment_source")),
-    collateral_summary: optional(value(formData, "collateral_summary")),
-    requested_amount: requestedAmount,
-    currency: value(formData, "currency").toUpperCase() || "BRL",
-    desired_term_months: Number.isInteger(termValue) && termValue > 0 ? termValue : null,
-    output_locale: locale,
-    status: "draft",
-  };
-
-  if (capitalRequestId) {
-    const {error} = await context.supabase.from("capital_requests").update(requestPayload).eq("organization_id", context.organizationId).eq("id", capitalRequestId);
-    if (error) redirect(`/${locale}/onboarding?error=save`);
-  } else {
-    const {data, error} = await context.supabase.from("capital_requests").insert({...requestPayload, organization_id: context.organizationId, company_id: companyId, created_by: context.userId}).select("id").single();
-    if (error || !data) redirect(`/${locale}/onboarding?error=save`);
-    capitalRequestId = data.id;
-  }
-
-  const {data: company} = await context.supabase.from("companies").select("display_name, legal_name").eq("organization_id", context.organizationId).eq("id", companyId).single();
-  const title = `${company?.display_name || company?.legal_name || "Empresa"} · ${purpose}`.slice(0, 180);
-  if (opportunityId) {
-    const {error} = await context.supabase.from("opportunities").update({title, purpose, requested_amount: requestedAmount, currency: requestPayload.currency}).eq("organization_id", context.organizationId).eq("id", opportunityId);
-    if (error) redirect(`/${locale}/onboarding?error=save`);
-  } else {
-    const {data, error} = await context.supabase.from("opportunities").insert({
-      organization_id: context.organizationId,
-      company_id: companyId,
-      capital_request_id: capitalRequestId,
-      title,
-      purpose,
-      requested_amount: requestedAmount,
-      currency: requestPayload.currency,
-      lead_user_id: context.userId,
-      created_by: context.userId,
-    }).select("id").single();
-    if (error || !data) redirect(`/${locale}/onboarding?error=save`);
-    opportunityId = data.id;
-  }
-
-  if (context.journey === "originator" && opportunityId) {
-    const advised = (context.answers.advised_company ?? {}) as AnswerMap;
-    const evidenceKind = typeof advised.authority_kind === "string" && advised.authority_kind ? advised.authority_kind : "mandate";
-    const {count} = await context.supabase.from("authority_evidence").select("id", {head: true, count: "exact"}).eq("organization_id", context.organizationId).eq("opportunity_id", opportunityId);
-    if ((count ?? 0) === 0) {
-      await context.supabase.from("authority_evidence").insert({
-        organization_id: context.organizationId,
-        opportunity_id: opportunityId,
-        representative_user_id: context.userId,
-        evidence_kind: evidenceKind,
-        evidence_reference: typeof advised.authority_reference === "string" ? advised.authority_reference : null,
-        powers: ["prepare", "structure"],
-      });
-    }
-  }
-
-  await updateProgress(context, "funding", "documents", {
-    capital_request_id: capitalRequestId,
-    opportunity_id: opportunityId,
-    funding: {
-      purpose_category: requestPayload.purpose_category,
-      purpose_summary: purpose,
-      rationale: requestPayload.rationale,
-      strategic_importance: requestPayload.strategic_importance,
-      expected_outcome: requestPayload.expected_outcome,
-      desired_timing: requestPayload.desired_timing,
-      requested_amount: requestedAmount,
-      currency: requestPayload.currency,
-      desired_term_months: requestPayload.desired_term_months,
-      repayment_source: requestPayload.repayment_source,
-      collateral_summary: requestPayload.collateral_summary,
-    },
-  }, locale, value(formData, "return_step"));
-}
-
-export async function finishDocumentsStep(formData: FormData) {
-  const locale = localeFrom(formData);
-  const context = await onboardingContext(locale);
-  if (context.journey === "capital_provider") redirect(`/${locale}/onboarding?error=step`);
-  const opportunityId = typeof context.answers.opportunity_id === "string" ? context.answers.opportunity_id : null;
-  if (!opportunityId) redirect(`/${locale}/onboarding?error=company`);
-  const {count} = await context.supabase.from("source_documents").select("id", {head: true, count: "exact"}).eq("organization_id", context.organizationId).eq("opportunity_id", opportunityId);
-  if ((count ?? 0) < 1) redirect(`/${locale}/onboarding?error=documents`);
-  await updateProgress(context, "documents", "review", {documents_uploaded: count ?? 0}, locale, value(formData, "return_step"));
 }
 
 export async function saveFundStep(formData: FormData) {
@@ -892,36 +652,21 @@ export async function completeOnboarding(formData: FormData) {
 }
 
 function sectionIsAvailable(journey: Journey, target: string, answers: AnswerMap) {
+  if (journey !== "capital_provider") return false;
   if (target === "organization") return true;
-  if (journey === "company") {
-    if (target === "funding") return typeof answers.company_id === "string";
-    if (target === "documents") return typeof answers.opportunity_id === "string";
-    if (target === "review") return Number(answers.documents_uploaded ?? 0) > 0;
-  }
-  if (journey === "originator") {
-    if (target === "company") return typeof answers.organization === "object";
-    if (target === "funding") return typeof answers.company_id === "string";
-    if (target === "documents") return typeof answers.opportunity_id === "string";
-    if (target === "review") return Number(answers.documents_uploaded ?? 0) > 0;
-  }
-  if (journey === "capital_provider") {
-    if (target === "fund") return typeof answers.organization === "object";
-    if (target === "mandate") return typeof answers.fund_id === "string";
-    if (target === "contacts") return typeof answers.mandate_id === "string";
-    if (target === "review") return typeof answers.contact_id === "string";
-  }
+  if (target === "fund") return typeof answers.organization === "object";
+  if (target === "mandate") return typeof answers.fund_id === "string";
+  if (target === "contacts") return typeof answers.mandate_id === "string";
+  if (target === "review") return typeof answers.contact_id === "string";
   return false;
 }
 
 export async function previousOnboardingStep(formData: FormData) {
   const locale = localeFrom(formData);
   const context = await onboardingContext(locale);
-  const previous: Record<Journey, Record<string, string>> = {
-    company: {funding: "organization", documents: "funding", review: "documents"},
-    originator: {company: "organization", funding: "company", documents: "funding", review: "documents"},
-    capital_provider: {fund: "organization", mandate: "fund", contacts: "mandate", review: "contacts"},
-  };
-  const destination = previous[context.journey][context.currentStep];
+  if (context.journey !== "capital_provider") redirect(`/${locale}/onboarding`);
+  const previous: Record<string, string> = {fund: "organization", mandate: "fund", contacts: "mandate", review: "contacts"};
+  const destination = previous[context.currentStep];
   if (!destination) redirect(`/${locale}/onboarding`);
   const {error} = await context.supabase.from("onboarding_progress").update({current_step: destination}).eq("organization_id", context.organizationId).eq("user_id", context.userId).eq("journey", context.journey);
   if (error) redirect(`/${locale}/onboarding?error=save`);

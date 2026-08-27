@@ -4,6 +4,24 @@ Atualizado em: 2026-08-26
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Máquina de estados canônica do onboarding, 27/08/2026
+
+Empresa e assessor agora têm uma única sequência executável: boas-vindas, confidencialidade,
+identificação da captação e sete marcos guiados. `resolveBorrowerOnboardingView` concentra as
+decisões de tela e não permite que parâmetros de URL ultrapassem pré-condições. Voltar e Editar são
+operações de navegação, sem efeito no ciclo de vida da sessão.
+
+Os arrays e regras dos formulários antigos deixaram de governar empresa e assessor. O mecanismo
+legado restante é exclusivo do cadastro de financiadores. A rota de nova captação também passou a
+exigir nome, política de identidade e declaração de representação antes de criar uma sessão, de
+modo que primeira e próximas captações obedecem ao mesmo contrato.
+
+A migration `20260827221500_configure_existing_onboarding_intake.sql` transforma o comando inicial
+em create-or-configure. Editar o projeto preserva ID, documentos e status e não duplica a evidência
+de declaração. A migration e o cenário transacional foram validados no Supabase staging; o
+Security Advisor retornou zero findings. O relatório completo está em
+`docs/build/ONBOARDING_STATE_MACHINE_REVIEW_2026-08-27.md`.
+
 ## Confidencialidade, identidade do projeto e gate de representação, 27/08/2026
 
 O início do onboarding de empresas e assessores passou a ter uma etapa anterior à coleta. O usuário
