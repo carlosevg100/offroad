@@ -1,11 +1,35 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 26 August 2026, `main` after PR #271 (`ab7bc27`).
+> Current as of 27 August 2026, `main` at `cf16727`, with legal gate v3 validated on staging in
+> branch `feat/legal-acceptance-v3`.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Engineering update: legal acceptance v3, 27 August 2026
+
+The first company and advisor gate now separates a concise operational summary from the complete
+Confidentiality and Preliminary Work Authorization Terms. The active version is
+`2026-08-27-v3` in PT-BR and EN-US. Users make two distinct affirmative declarations: assent to
+the exact full version and confirmation that they may provide the information for this private
+analysis.
+
+This acceptance permits only private preparation. It does not prove corporate representation,
+appoint Offroad, create exclusivity, authorize market outreach or guarantee financing. Verified
+representation and version-specific distribution approval remain independent downstream gates.
+The immutable ledger records the document hash and version, both exact statements, user,
+organization, timestamp, clickwrap method and available request metadata. IP and user agent are
+derived by the database from Data API request headers instead of being trusted client input.
+
+Migration `20260827160047_legal_acceptance_v3.sql` is applied only to the Supabase staging branch.
+Staging has one active v3 document per locale, no anonymous RPC execution and zero Security
+Advisor findings. The complete `pnpm check` is green across 41 packages, including 135 web tests
+and the production build. Production promotion remains pending PR and mandatory CI. The legal
+entity name, CNPJ, address, support
+channel, retention schedule and selected forum still require counsel-approved completion before
+the text should be treated as the final external legal form.
 
 ### Engineering update: canonical onboarding state machine, 27 August 2026
 

@@ -4,6 +4,27 @@ Atualizado em: 2026-08-26
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Gate jurídico inicial v3, 27/08/2026
+
+O primeiro aceite de empresas e assessores deixou de exibir um resumo duplicado como se fosse o
+termo integral. A versão `2026-08-27-v3` contém o Termo de Confidencialidade e Autorização de
+Trabalho Preliminar completo em português e inglês, com resumo operacional separado e duas
+manifestações inequívocas: concordância com a versão integral e confirmação do direito de fornecer
+as informações para análise privada.
+
+O gate autoriza somente compreender a companhia, organizar e conciliar informações, analisar
+alternativas e preparar materiais dentro do ambiente privado. Não prova representação da
+companhia, não constitui mandato, exclusividade ou contratação comercial e não autoriza contato
+com financiadores. Representação verificada e autorização de distribuição da versão exata dos
+materiais continuam sendo gates posteriores e independentes.
+
+A migration `20260827160047_legal_acceptance_v3.sql` está aplicada no Supabase staging. O ledger
+imutável preserva versão, hash, texto exato das duas declarações, usuário, organização, data,
+método de aceite e, quando disponíveis no Data API, IP e user agent. O Security Advisor de staging
+retornou zero findings. O `pnpm check` passou nos 41 pacotes, incluindo 135 testes web e build de
+produção com 28 rotas. Produção permanece inalterada até PR, CI obrigatório e promoção controlada
+da migration.
+
 ## Máquina de estados canônica do onboarding, 27/08/2026
 
 Empresa e assessor agora têm uma única sequência executável: boas-vindas, confidencialidade,

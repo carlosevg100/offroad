@@ -193,7 +193,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const projectTitle = storedProjectName || (journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject"));
   const {data: activeLegalDocument} = journey === "capital_provider" ? {data: null} : await supabase
     .from("platform_legal_documents")
-    .select("id, title, version, document_hash, rendered_text, body_sections")
+    .select("id, title, version, document_hash, rendered_text, body_sections, acceptance_statement, information_rights_statement")
     .eq("document_key", "private_workspace_terms")
     .eq("locale", locale)
     .eq("status", "active")

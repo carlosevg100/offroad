@@ -41,10 +41,14 @@ async function startPrivateProject(page: Page, projectName: string, acceptTerms 
   await page.locator(".intake-welcome__action a").click();
 
   if (acceptTerms) {
-    await expect(page.locator(".private-project-gate--terms h2")).toHaveText("Confidencialidade");
-    await expect(page.locator(".private-project-gate--terms")).toContainText("Nenhum material é apresentado a investidores sem autorização prévia e específica da companhia");
-    await expect(page.locator(".private-project-gate--terms")).toContainText("Não constitui contratação, exclusividade ou mandato");
-    await page.locator('input[name="authority_declared"]').check();
+    await expect(page.locator(".private-project-gate--terms h2")).toHaveText("Antes de começar, protegemos suas informações.");
+    await expect(page.locator(".private-project-gate--terms")).toContainText("Nada vai ao mercado sem outro aceite");
+    await expect(page.locator(".private-project-gate--terms")).toContainText("Este aceite não comprova representação perante terceiros");
+    await page.locator(".private-project-gate__full-terms summary").click();
+    await expect(page.locator(".private-project-gate__full-terms")).toContainText("4. NENHUMA DISTRIBUIÇÃO AUTOMÁTICA");
+    await expect(page.locator(".private-project-gate__full-terms")).toContainText("Este Termo não constitui contratação de assessoria, exclusividade, mandato");
+    await page.locator('input[name="terms_agreed"]').check();
+    await page.locator('input[name="information_rights_declared"]').check();
     await page.locator('.private-project-gate__form button[type="submit"]').click();
   }
 
