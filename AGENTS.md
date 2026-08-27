@@ -159,3 +159,13 @@ enforced · migration + regenerated types · deterministic and tested financial 
 material claims keep evidence · telemetry inside the allowlist · `pnpm check` green ·
 preview and production verified · ledgers and `handoff.md` updated · no hidden TODO,
 fallback, synthetic claim, or unreported limitation.
+
+## Receivables vertical (first training vertical)
+
+The knowledge base for the receivables-financing vertical lives in
+[`docs/knowledge/recebiveis/`](docs/knowledge/recebiveis/). Any agent working on
+analysis, eligibility, case testing, or training for this vertical must read
+[`docs/knowledge/recebiveis/BRIEFING-CODEX.md`](docs/knowledge/recebiveis/BRIEFING-CODEX.md)
+first; it defines the five-layer architecture (all financial math is deterministic
+code, never model output), the provenance rule ([M]/[C]/[E] on every numeric or
+normative claim), the reading order, the build phases, and the acceptance bars.
