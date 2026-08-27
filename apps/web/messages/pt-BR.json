@@ -508,6 +508,55 @@
         }
       }
     },
+    "privateProject": {
+      "workspaceTitle": "Antes de começar.",
+      "workspaceBody": "Definimos a proteção das informações, o nome do projeto e como a companhia será identificada. O trabalho começa em ambiente privado.",
+      "status": {
+        "private": {"title": "Em preparação privada", "body": "Nenhuma distribuição externa autorizada"},
+        "verified": {"title": "Representação confirmada", "body": "Distribuição ainda depende de autorização"},
+        "authorized": {"title": "Distribuição autorizada", "body": "Limitada ao pacote e destinatários aprovados"}
+      },
+      "terms": {
+        "kicker": "CONFIDENCIALIDADE E CONTROLE",
+        "title": "Confidencialidade e autorização de trabalho",
+        "intro": "Este é o compromisso que rege o início do projeto. Ele protege a preparação privada e separa claramente o trabalho interno de qualquer abordagem ao mercado.",
+        "boundaryTitle": "Preparar não significa distribuir.",
+        "boundaryBody": "O aceite abaixo permite que a Offroad trabalhe nas informações dentro do ambiente privado. Antes de qualquer contato externo, confirmaremos a representação e pediremos uma autorização separada para os materiais, a identificação da companhia e cada destinatário.",
+        "name": "Nome completo",
+        "titleLabel": "Cargo ou relação com a companhia",
+        "declarationTitle": "Confirmo que posso iniciar este trabalho.",
+        "declarationBody": " Declaro que estou autorizado a disponibilizar as informações enviadas e a iniciar a preparação privada deste projeto. Entendo que a distribuição dependerá de verificação e autorização adicionais.",
+        "cta": "Aceitar e continuar",
+        "pending": "Registrando aceite",
+        "version": "Termos {version}. O registro inclui versão, data, usuário e organização."
+      },
+      "project": {
+        "kicker": "IDENTIDADE DO PROJETO",
+        "title": "Dê um nome ao projeto.",
+        "intro": "O codinome organiza toda a captação no ambiente Offroad e passa a identificar documentos, análises e materiais relacionados.",
+        "name": "Nome do projeto",
+        "namePlaceholder": "Ex.: Projeto Atlas",
+        "nameHelp": "Use um codinome curto e distinto. Você poderá criar outros projetos nesta mesma conta.",
+        "identityLegend": "Como identificar a companhia na abordagem inicial",
+        "identityIntro": "Essa preferência poderá ser alterada antes da autorização de distribuição.",
+        "identifiedTitle": "Identificada, em distribuição restrita",
+        "identifiedBody": "A companhia é apresentada pelo nome apenas aos financiadores previamente selecionados e autorizados. Isso reduz ambiguidade e torna a conversa mais objetiva.",
+        "blindTitle": "Blind teaser na abordagem inicial",
+        "blindBody": "A identidade fica oculta no primeiro contato e só é revelada após uma nova autorização. Pode proteger o nome, mas tende a limitar contexto e eficiência.",
+        "recommended": "Recomendado",
+        "identityControl": "Nada será compartilhado agora. Esta escolha apenas prepara a futura política de distribuição.",
+        "companyDeclarationTitle": "Declaro que represento a companhia neste projeto.",
+        "companyDeclarationBody": " A Offroad poderá confirmar essa relação durante a preparação. Até lá, o projeto permanece privado.",
+        "advisorDeclarationTitle": "Declaro que estou autorizado a assessorar a companhia neste projeto.",
+        "advisorDeclarationBody": " A Offroad solicitará uma comprovação adequada durante a preparação. Até lá, o projeto permanece privado.",
+        "privateState": "Em preparação privada",
+        "verifiedState": "Representação confirmada",
+        "authorizedState": "Autorizado para distribuição",
+        "cta": "Criar projeto privado",
+        "pending": "Criando projeto",
+        "ctaNote": "A próxima etapa começa pela companhia e pelo projeto que ela pretende realizar."
+      }
+    },
     "journeyCompany": "Empresa",
     "journeyOriginator": "Assessor ou originador",
     "journeyProvider": "Investidor ou provedor de capital",

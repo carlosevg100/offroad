@@ -32,6 +32,7 @@ import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {briefCompleteness, dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
+import {PrivateProjectSetup} from "@/components/intake/private-project-setup";
 import {AgentPanel, type AgentPanelCopy} from "@/components/intake/agent-panel";
 import {OnboardingDocumentUploader} from "@/components/onboarding-document-uploader";
 import type {AppLocale} from "@/i18n/routing";
@@ -42,6 +43,7 @@ import type {Json} from "@/types/database";
 
 import {
   acceptHighConfidenceCandidates,
+  acceptPrivateWorkspaceTerms,
   chooseManualIntake,
   completeOnboarding,
   confirmDocumentIntake,
@@ -74,7 +76,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 export const metadata: Metadata = {title: "Institutional Profile", robots: {index: false, follow: false}};
 
-type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string; stage?: string}>};
+type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string; stage?: string; setup?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
 const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate", "remove"];
@@ -141,9 +143,10 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   if (claimsError || !userId) redirect(`/${locale}/login`);
   const {data: membership} = await supabase.from("organization_memberships").select("organization_id").eq("user_id", userId).eq("status", "active").limit(1).maybeSingle();
   if (!membership) redirect(`/${locale}/signup?error=session`);
-  const [{data: organization}, {data: progress}] = await Promise.all([
+  const [{data: organization}, {data: progress}, {data: profile}] = await Promise.all([
     supabase.from("organizations").select("id, name, legal_name, website, country_code, state_code, city, sector, subsector, provider_type, description").eq("id", membership.organization_id).single(),
     supabase.from("onboarding_progress").select("journey, current_step, answers, completed_at").eq("organization_id", membership.organization_id).eq("user_id", userId).maybeSingle(),
+    supabase.from("profiles").select("full_name, job_title").eq("id", userId).maybeSingle(),
   ]);
   if (!organization || !progress) redirect(`/${locale}/signup?error=session`);
   if (progress.completed_at) redirect(`/${locale}/app`);
@@ -159,6 +162,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const contactAnswers = answerObject(answers, "contact");
   const intakeMode = text(answers.intake_mode);
   const intakeSessionId = text(answers.intake_session_id);
+  const storedProjectName = text(answers.project_name);
   const guidedCompanyAnswers = answerObject(answers, "company_profile");
   const requestedIntakeStage = state.stage === "company" || state.stage === "operation" || state.stage === "request" || state.stage === "documents"
     ? state.stage
@@ -190,8 +194,31 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const registrationCompletionPercent = Math.round((completedCount / steps.length) * 100);
   const journeyTitle = journey === "company" ? t("journeyCompany") : journey === "originator" ? t("journeyOriginator") : t("journeyProvider");
   const JourneyIcon = journey === "company" ? Building2 : journey === "originator" ? Network : Landmark;
-  const projectTitle = journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject");
-  const isFirstOnboardingStart = currentStep === "organization" && journey !== "capital_provider" && !intakeMode;
+  const projectTitle = storedProjectName || (journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject"));
+  const {data: activeLegalDocument} = journey === "capital_provider" ? {data: null} : await supabase
+    .from("platform_legal_documents")
+    .select("id, title, version, document_hash, body_sections")
+    .eq("document_key", "private_workspace_terms")
+    .eq("locale", locale)
+    .eq("status", "active")
+    .lte("effective_at", new Date().toISOString())
+    .order("effective_at", {ascending: false})
+    .limit(1)
+    .maybeSingle();
+  const {data: termsAcceptance} = activeLegalDocument ? await supabase
+    .from("organization_legal_acceptances")
+    .select("id")
+    .eq("organization_id", organization.id)
+    .eq("document_key", "private_workspace_terms")
+    .eq("document_version", activeLegalDocument.version)
+    .eq("document_hash", activeLegalDocument.document_hash)
+    .maybeSingle() : {data: null};
+  const needsPrivateTerms = journey !== "capital_provider" && !termsAcceptance;
+  const requestedSetup = state.setup === "terms" || state.setup === "project" ? state.setup : null;
+  const isPrivateTermsStep = journey !== "capital_provider" && needsPrivateTerms && Boolean(requestedSetup || intakeMode);
+  const isProjectSetupStep = journey !== "capital_provider" && !needsPrivateTerms && !intakeMode && Boolean(requestedSetup);
+  const isPrivateSetupStep = isPrivateTermsStep || isProjectSetupStep;
+  const isFirstOnboardingStart = currentStep === "organization" && journey !== "capital_provider" && !intakeMode && !requestedSetup;
   const welcomeBody = journey === "originator" ? t("workspace.welcomeBodyOriginator") : t("workspace.welcomeBodyCompany");
 
   let documents: Array<{id: string; original_name: string; byte_size: number | null}> = [];
@@ -221,6 +248,11 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       })
     : null;
   const intakeSession = intakeReview?.session ?? null;
+  const trustStatus = intakeSession?.privacy_status === "distribution_authorized"
+    ? "authorized"
+    : intakeSession?.representation_status === "verified"
+      ? "verified"
+      : "private";
   const intakeBrief = intakeSession ? dealBriefOf(intakeSession) : {};
   const companyProfileComplete = Object.keys(guidedCompanyAnswers).length > 0;
   const guidedMilestones = ["company", "operation", "information", "understanding", "clarifications", "package", "investors"] as const;
@@ -353,7 +385,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         </nav>
 
         <div className="workspace-sidebar__footer">
-          <div className="workspace-sidebar__status"><span /><div><strong>{t("workspace.privateWorkspace")}</strong><small>{t("workspace.privateWorkspaceBody")}</small></div></div>
+          <div className="workspace-sidebar__status"><span /><div><strong>{t(`privateProject.status.${trustStatus}.title`)}</strong><small>{t(`privateProject.status.${trustStatus}.body`)}</small></div></div>
         </div>
       </aside>
 
@@ -364,13 +396,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         </header>
 
         <div className="workspace-scroll">
-          <header className={isFirstOnboardingStart ? "workspace-welcome workspace-welcome--intro" : "workspace-welcome"}>
-            <div><p className="section-kicker">{isFirstOnboardingStart ? t("workspace.welcomeEyebrow") : journeyTitle}</p><h1>{isFirstOnboardingStart ? t("workspace.welcomeTitle") : t("workspace.progressTitle")}</h1><p>{isFirstOnboardingStart ? welcomeBody : t("workspace.progressBody")}</p></div>
-            {!isFirstOnboardingStart ? <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div> : null}
+          <header className={isFirstOnboardingStart || isPrivateSetupStep ? "workspace-welcome workspace-welcome--intro" : "workspace-welcome"}>
+            <div><p className="section-kicker">{isFirstOnboardingStart || isPrivateSetupStep ? t("workspace.welcomeEyebrow") : journeyTitle}</p><h1>{isFirstOnboardingStart ? t("workspace.welcomeTitle") : isPrivateSetupStep ? t("privateProject.workspaceTitle") : t("workspace.progressTitle")}</h1><p>{isFirstOnboardingStart ? welcomeBody : isPrivateSetupStep ? t("privateProject.workspaceBody") : t("workspace.progressBody")}</p></div>
+            {!isFirstOnboardingStart && !isPrivateSetupStep ? <div className="workspace-readiness-summary"><span>{t("workspace.readiness")}</span><strong>{completionPercent}%</strong><div><i style={{width: `${completionPercent}%`}} /></div></div> : null}
           </header>
 
-          <div className={isFirstOnboardingStart ? "workspace-editor-layout workspace-editor-layout--welcome" : "workspace-editor-layout"}>
-            <section className={isFirstOnboardingStart ? "onboarding-stage workspace-editor workspace-editor--welcome" : "onboarding-stage workspace-editor"}>
+          <div className={isFirstOnboardingStart || isPrivateSetupStep ? "workspace-editor-layout workspace-editor-layout--welcome" : "workspace-editor-layout"}>
+            <section className={isFirstOnboardingStart || isPrivateSetupStep ? "onboarding-stage workspace-editor workspace-editor--welcome" : "onboarding-stage workspace-editor"}>
           {!isFirstOnboardingStart && !isDocumentFirst ? <header className="onboarding-stage__header">
             <span>{t("workspace.currentActivity")}</span>
             <h2>{t(`workspace.nodes.${journey}.${currentStep}`)}</h2>
@@ -378,7 +410,19 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           </header> : null}
           {errorMessage ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
-          {currentStep === "organization" && journey !== "capital_provider" && !intakeMode ? <IntakeStartChoice actions={{start: startDocumentIntake, manual: chooseManualIntake}} context="onboarding" journey={journey} locale={locale} /> : null}
+          {currentStep === "organization" && journey !== "capital_provider" && !intakeMode && !requestedSetup ? <IntakeStartChoice actions={{start: startDocumentIntake, manual: chooseManualIntake}} context="onboarding" journey={journey} locale={locale} startHref={`/${locale}/onboarding?setup=terms`} /> : null}
+
+          {isPrivateTermsStep || isProjectSetupStep ? (
+            <PrivateProjectSetup
+              acceptAction={acceptPrivateWorkspaceTerms}
+              journey={journey as "company" | "originator"}
+              legalDocument={activeLegalDocument}
+              locale={locale}
+              mode={isPrivateTermsStep ? "terms" : "project"}
+              profile={{fullName: profile?.full_name ?? "", jobTitle: profile?.job_title ?? ""}}
+              startAction={startDocumentIntake}
+            />
+          ) : null}
 
           {currentStep === "organization" && (journey === "capital_provider" || intakeMode === "manual") ? (
             <form action={saveOrganizationStep} className="onboarding-stage__form">
@@ -442,7 +486,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
             </form>
           ) : null}
 
-          {(currentStep === "organization" || currentStep === "documents") && isDocumentFirst ? (
+          {(currentStep === "organization" || currentStep === "documents") && isDocumentFirst && !isPrivateSetupStep ? (
             !intakeReview?.session ? <p className="form-notice form-notice--error">{tIntake("errors.session")}</p> : intakeReview.session.status === "review_ready" ? (
               <IntakeReview
                 caseState={await resolveCaseState({
@@ -597,7 +641,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           ) : null}
             </section>
 
-            {!isFirstOnboardingStart ? <aside className="workspace-inspector">
+            {!isFirstOnboardingStart && !isPrivateSetupStep ? <aside className="workspace-inspector">
               <section className="workspace-inspector__panel">
                 <div className="workspace-inspector__heading"><div><span>{t("workspace.casePreparation")}</span><strong>{t("workspace.inConstruction")}</strong></div><span className="workspace-inspector__percent">{completionPercent}%</span></div>
                 <div className="workspace-inspector__bar"><i style={{width: `${completionPercent}%`}} /></div>

@@ -37,6 +37,24 @@ async function completeCompanyMilestone(page: Page) {
   await expect(page.locator(".intake-collect")).toContainText("ETAPA 2 DE 7");
 }
 
+async function startPrivateProject(page: Page, projectName: string, acceptTerms = false) {
+  await page.locator(".intake-welcome__action a").click();
+
+  if (acceptTerms) {
+    await expect(page.locator(".private-project-gate")).toContainText("Confidencialidade e autorização de trabalho");
+    await expect(page.locator(".private-project-gate")).toContainText("Preparar não significa distribuir.");
+    await page.locator('input[name="authority_declared"]').check();
+    await page.locator('.private-project-gate__form button[type="submit"]').click();
+  }
+
+  await expect(page.locator(".private-project-gate--project")).toBeVisible();
+  await page.locator('input[name="project_name"]').fill(projectName);
+  await expect(page.locator('input[name="identity_policy"][value="identified_restricted"]')).toBeChecked();
+  await page.locator('input[name="representation_declared"]').check();
+  await page.locator('.private-project-gate__form button[type="submit"]').click();
+  await expect(page.locator(".intake-collect")).toBeVisible();
+}
+
 test.describe("Document-first intake (company journey)", () => {
   // One browser context for the whole journey so the authenticated session carries across steps.
   let context: BrowserContext;
@@ -86,8 +104,7 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("starts with documents, uploads the data room and processes it", async () => {
     await page.goto("/pt-BR/onboarding");
-    await page.locator(".intake-welcome__action button[type=submit]").click();
-    await expect(page.locator(".intake-collect")).toBeVisible();
+    await startPrivateProject(page, `Projeto Horizonte ${runId}`, true);
     await completeCompanyMilestone(page);
 
     // The operation decides the checklist; the brief decides who could buy the paper. Neither
@@ -110,7 +127,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-start")).toBeVisible();
     await expect(page.locator(".workspace-welcome h1")).toHaveText("Bem-vindo.");
 
-    await page.locator(".intake-welcome__action button[type=submit]").click();
+    await startPrivateProject(page, `Projeto Horizonte B ${runId}`);
     await completeCompanyMilestone(page);
     await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
     await expect(page.locator(".intake-brief")).toBeVisible();

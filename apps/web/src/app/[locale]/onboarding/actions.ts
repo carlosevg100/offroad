@@ -143,14 +143,59 @@ export async function chooseManualIntake(formData: FormData) {
 
 export async function startDocumentIntake(formData: FormData) {
   const locale = localeFrom(formData);
+  const parsed = z.object({
+    projectName: z.string().trim().min(2).max(80),
+    identityPolicy: z.enum(["identified_restricted", "blind_initial"]),
+    representationDeclared: z.literal("confirmed"),
+  }).safeParse({
+    projectName: value(formData, "project_name"),
+    identityPolicy: value(formData, "identity_policy"),
+    representationDeclared: value(formData, "representation_declared"),
+  });
+  if (!parsed.success) redirect(`/${locale}/onboarding?setup=project&error=validation`);
+
   const supabase = await createClient();
   if (!supabase) redirect(onboardingUrl(locale, "provider"));
-  const {error} = await supabase.rpc("start_onboarding_intake", {p_locale: locale});
+  const {error} = await supabase.rpc("start_onboarding_intake", {
+    p_locale: locale,
+    p_project_name: parsed.data.projectName,
+    p_identity_policy: parsed.data.identityPolicy,
+    p_representation_declared: true,
+  });
   if (error) {
     reportServerFailure({step: "intake.start_onboarding", error});
-    redirect(onboardingUrl(locale, error.code === "P0002" ? "step" : "session"));
+    const errorCode = error.message.includes("project_name_already_in_use") ? "duplicate" : error.code === "P0002" ? "step" : "session";
+    redirect(`/${locale}/onboarding?setup=project&error=${errorCode}`);
   }
   redirect(`/${locale}/onboarding?stage=company`);
+}
+
+export async function acceptPrivateWorkspaceTerms(formData: FormData) {
+  const locale = localeFrom(formData);
+  const parsed = z.object({
+    signatoryName: z.string().trim().min(2).max(160),
+    signatoryTitle: z.string().trim().max(160),
+    authorityDeclared: z.literal("confirmed"),
+  }).safeParse({
+    signatoryName: value(formData, "signatory_name"),
+    signatoryTitle: value(formData, "signatory_title"),
+    authorityDeclared: value(formData, "authority_declared"),
+  });
+  if (!parsed.success) redirect(`/${locale}/onboarding?setup=terms&error=validation`);
+
+  const context = await onboardingContext(locale);
+  const {error} = await context.supabase.rpc("accept_private_workspace_terms", {
+    p_locale: locale,
+    p_signatory_name: parsed.data.signatoryName,
+    p_signatory_title: parsed.data.signatoryTitle || null,
+    p_authority_declared: true,
+  });
+  if (error) {
+    reportServerFailure({step: "intake.accept_private_workspace_terms", error});
+    redirect(`/${locale}/onboarding?setup=terms&error=save`);
+  }
+  const existingSessionId = typeof context.answers.intake_session_id === "string" ? context.answers.intake_session_id : "";
+  redirect(existingSessionId ? `/${locale}/onboarding` : `/${locale}/onboarding?setup=project`);
 }
 
 const guidedCompanySchema = z.object({
