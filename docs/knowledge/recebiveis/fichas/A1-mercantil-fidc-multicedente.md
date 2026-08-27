@@ -455,10 +455,11 @@ conclui dele.
 ## VII.1 A régua, fórmula a fórmula
 
 ```
-carteira          = títulos em aberto na data base, não liquidados
-data_base         = data da última emissão presente na base
-                    (regra de calibração: data posterior faz o pipeline recente
-                     sumir e o DSO sair pela metade, aprendido na Vertentes)
+carteira          = títulos em aberto na reporting_date, não liquidados
+reporting_date    = data de corte declarada para a posição e o relatório
+latest_orig_date  = data da última emissão presente na base
+                    (as duas datas permanecem separadas; cada métrica declara qual
+                     utiliza, porque trocar uma pela outra distorce o pipeline e o DSO)
 
 prazo_medio       = Σ(valor_i × (venc_i − emis_i)) / Σ(valor_i)
 

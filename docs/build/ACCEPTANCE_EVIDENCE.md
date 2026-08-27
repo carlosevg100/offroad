@@ -281,6 +281,9 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Supabase Security Advisor | projeto `ifnogpksgdadruooqydi` após migration profissional | zero security lints; avisos de performance apenas para índices ainda não usados | 2026-08-16 |
 | QA do cadastro | browser local e screenshots em 1265, 1024 e 500 px | hierarquia, seleção de perfil, formulário e recovery sem defeitos críticos; responsividade compactada no mobile | 2026-08-16 |
 | Quality gate do cadastro | `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` | todos aprovados; web com 11 testes e monorepo com 18 testes; 28 páginas/rotas geradas | 2026-08-16 |
+| Contratos canônicos de recebíveis | `financial-core/src/receivables/contracts.test.ts` | 16 testes: fronteiras das sete faixas de aging, rejeição de dia fracionário, bloqueio de estimativa em decisão rígida e aceite de fonte citada | 2026-08-27 |
+| Auditoria da vertical de recebíveis | `CANONICAL-SPEC.md`, `CURRENT-STATE-AUDIT.md` e `PHASE-1-PLAN.md` | matriz corrigida para 39 células e 282 casos mínimos; datas separadas; escopos, denominadores e estados de aderência formalizados; protótipo existente mantido sem promoção | 2026-08-27 |
+| Quality gate da Fase 0 de recebíveis | `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` | 41 pacotes aprovados; `financial-core` com 35 testes; web com 135; worker com 48; build Next.js com 28 páginas/rotas | 2026-08-27 |
 | Domínio transacional | Resend + DNS GoDaddy | `offroad.capital` verificado em `sa-east-1`; DKIM, SPF e MX publicados e aprovados | 2026-08-16 |
 | SMTP de autenticação | Supabase Auth SMTP Settings | `auth@offroad.capital` via `smtp.resend.com:465`, TLS e credencial armazenada pelo provider | 2026-08-16 |
 | Entrega transacional | Resend API / endereço controlado de teste | mensagem enviada por `auth@offroad.capital` com evento final `delivered` | 2026-08-16 |

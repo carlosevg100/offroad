@@ -169,3 +169,8 @@ analysis, eligibility, case testing, or training for this vertical must read
 first; it defines the five-layer architecture (all financial math is deterministic
 code, never model output), the provenance rule ([M]/[C]/[E] on every numeric or
 normative claim), the reading order, the build phases, and the acceptance bars.
+Canonical decisions that resolve conflicts in the research corpus live in
+[`docs/knowledge/recebiveis/CANONICAL-SPEC.md`](docs/knowledge/recebiveis/CANONICAL-SPEC.md).
+The existing `packages/receivables-analysis` package is an orchestration prototype;
+its financial calculations must migrate to `packages/financial-core` before the
+vertical can be promoted.

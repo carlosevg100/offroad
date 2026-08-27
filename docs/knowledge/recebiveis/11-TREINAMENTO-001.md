@@ -32,18 +32,18 @@ quatro portas do [módulo 1](01-QUEM-COMPRA.md).
 | C Serviço a PJ | **C1 núcleo** | C2 | C3 | . |
 | D Contrato recorrente | D1 | . | D3 | **D4 núcleo** |
 | E Cartão e adquirente | **E1 núcleo** | . | E3 | E4 |
-| F Saúde contra operadora | F1 | F2 | F3 | **F4** |
+| F Saúde contra operadora | F1 | F2 | F3 | F4 |
 | G Mensalidade contra PF | G1 | . | . | **G4 núcleo** |
-| H Agro | **H1** | H2 | H3 | **H4** |
-| I Setor público | I1 | **I2** | I3 | . |
+| H Agro | H1 | H2 | H3 | H4 |
+| I Setor público | I1 | I2 | I3 | . |
 | J Obra e medição | . | J2 | **J3 núcleo** | J4 |
-| K Imobiliário | . | . | K3 | **K4 núcleo** |
+| K Imobiliário | . | . | K3 | K4 |
 | L Carteira de crédito originada | **L1 núcleo** | . | L3 | L4 |
 | M Marketplace | M1 | . | . | M4 |
-| N Exportação | . | . | **N3** | . |
+| N Exportação | . | . | N3 | . |
 
 Ponto significa combinação que não se sustenta e não recebe ficha. Sobram trinta e
-sete células, das quais **oito são núcleo** e respondem pela maior parte do volume.
+nove células, das quais **oito são núcleo** e respondem pela maior parte do volume.
 
 **Ordem de produção.** As oito núcleo primeiro, na ordem A1, E1, B2, C1, L1, D4, G4,
 J3. Depois as adjacentes de cada núcleo. Por último as periféricas.
@@ -86,8 +86,10 @@ Por célula núcleo, **doze casos**. Por célula não núcleo, **seis**.
 | Real | 6 | Elegibilidade, recomendação, defeito |
 | Difícil | 4 | Detecção do que foi deliberadamente mascarado |
 
-Oito células núcleo a doze casos, mais vinte e nove células a seis, dá **duzentos e
-setenta casos**. Cada um com acervo, base analítica, defeitos plantados e gabarito.
+Oito células núcleo a doze casos, mais trinta e uma células a seis, dá **duzentos e
+oitenta e dois casos mínimos**. Casos adicionais ampliam a cobertura sem reduzir o
+mínimo das demais células. Cada um tem acervo, base analítica, defeitos plantados e
+gabarito.
 
 ## As dimensões de variação
 
@@ -196,7 +198,7 @@ Traduzindo o pedido em capacidade verificável.
 |---|---|
 | Módulos 1, 2 e 3 de conhecimento | Escritos |
 | Método de treinamento | Escrito |
-| Matriz de células | Definida, trinta e sete células |
+| Matriz de células | Definida, trinta e nove células |
 | Ficha padrão A1 | Escrita, é a referência de profundidade |
 | Corpus de regulamentos | Não iniciado, e destrava a camada 3 |
 | Fichas das demais sete núcleo | Não iniciadas |

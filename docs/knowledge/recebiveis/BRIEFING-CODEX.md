@@ -50,7 +50,9 @@ Tudo em `docs/knowledge/recebiveis/`. A ordem importa:
 | 4 | `03-AS-SOLUCOES.md` | Os formatos de operação e quando cada um serve |
 | 5 | `fichas/A1-mercantil-fidc-multicedente.md` | **O manual de mesa da célula núcleo**, 12 partes: título, cessão, preço, tributo, contabilidade, operação, análise, contrato, compradores, playbook. É o padrão de profundidade de tudo |
 | 6 | `casos/A1-mercantil-b2b-CASOS.md` | Os 20 casos de treinamento da célula A1, com gabaritos |
-| 7 | `10-COMO-TREINAR.md` e `11-TREINAMENTO-001.md` | O método de treinamento, a matriz de 37 células, o formato de gabarito, a disciplina antialucinação |
+| 7 | `10-COMO-TREINAR.md` e `11-TREINAMENTO-001.md` | O método de treinamento, a matriz de 39 células, o formato de gabarito, a disciplina antialucinação |
+| 8 | `CANONICAL-SPEC.md` | As decisões canônicas que resolvem ambiguidades de escopo, datas, aging, procedência e elegibilidade |
+| 9 | `CURRENT-STATE-AUDIT.md` | O que pode ser reaproveitado do protótipo existente e o que bloqueia sua promoção |
 
 Referências vivas fora desta pasta: o caso sintético completo da Vertentes (acervo de
 21 arquivos, base de 34 mil títulos, gabarito medido) e seus geradores, hoje em
@@ -62,15 +64,15 @@ quando a esteira de testes for construída. Os 10 instrumentos existentes em
 
 ### Fase 1 · A calculadora da célula A1
 Implementar a régua completa da Parte VII da ficha A1 como código tipado e testado,
-dentro do padrão de `packages/financial-core` ou como pacote irmão
-(`packages/receivables-analytics`): prazo médio ponderado, DSO simples e countback,
+dentro de `packages/financial-core/src/receivables`: prazo médio ponderado, DSO simples e countback,
 concentração por raiz de CNPJ e por grupo, aging nas 7 faixas, roll rate, perda por
 safra nas 6 janelas, diluição, recompra e perda ajustada, liquidação pontual,
 prorrogação, ponte de dívida ajustada, CET de proposta (com conversão por dentro/por
 fora da Parte III.2 da ficha e tarifas por título), advance rate implícito.
 **Toda função com testes de igualdade exata contra valores do gabarito da Vertentes.**
-Regra de calibração aprendida: a data base é a data da última emissão da base, nunca
-posterior.
+Datas canônicas: cada execução declara `reporting_date` e
+`latest_origination_date` separadamente. A métrica usa a data exigida por sua fórmula,
+sem inferência silenciosa.
 
 ### Fase 2 · O motor de elegibilidade
 Estrutura tipada de critérios por comprador (schema no fim de `01-QUEM-COMPRA.md` e
