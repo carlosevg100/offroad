@@ -1126,7 +1126,7 @@ begin
   with realistic_chunks as (
     select
       n,
-      left(string_agg(format(
+      left('Receita dívida capacidade pagamento estrutura expansão ' || string_agg(format(
         'recebivel_%s_%s sacado_%s vencimento_%s valor_%s status_documental_%s',
         n, token_no, token_no, token_no, token_no, token_no
       ), ' ' order by token_no), 11000) as content
