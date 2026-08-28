@@ -108,6 +108,7 @@ const observed = <T>(value: T): ReceivablesMandateObservation<T> => ({
   sourceKind: "relationship_confirmation",
   sourceId: `gold-${JSON.stringify(value)}`,
   sourceLabel: "Frozen synthetic provider confirmation",
+  recordedBy: "analyst-1",
   observedAt: "2026-08-20",
   validUntil: "2026-09-30",
 });

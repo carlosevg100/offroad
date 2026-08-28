@@ -137,6 +137,41 @@ export const receivablesEligibilityFactIds = [
 
 export type ReceivablesEligibilityFactId = typeof receivablesEligibilityFactIds[number];
 
+export type ReceivablesFactResolutionDefinition = {
+  id: ReceivablesEligibilityFactId;
+  safeState: "true" | "false";
+  /** A route-level safe assertion always requires evidence covering the complete relevant universe. */
+  safeCoverage: "complete";
+  /** Only a known unresolved prior right is adverse enough to decide from partial coverage. */
+  adverseHandling: "complete_only" | "any_confirmed_observation";
+  unresolvedRequest: string;
+};
+
+/**
+ * Canonical semantics used to resolve evidence into route facts. Knowledge remains here;
+ * the analysis package only executes this versioned contract.
+ */
+export const receivablesFactResolutionDefinitions: readonly ReceivablesFactResolutionDefinition[] = [
+  {id: "claim_existence_evidenced", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Entregar a relação completa dos créditos, com documento de origem e identificador por título."},
+  {id: "cedent_ownership_confirmed", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Comprovar a titularidade do cedente para o universo de créditos considerado."},
+  {id: "contractual_assignability_confirmed", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Entregar os contratos comerciais aplicáveis para verificar restrições à cessão."},
+  {id: "unresolved_prior_assignment_or_lien", safeState: "false", safeCoverage: "complete", adverseHandling: "any_confirmed_observation", unresolvedRequest: "Comprovar, título a título, a ausência ou a resolução de cessões, ônus e gravames anteriores."},
+  {id: "performance_or_delivery_evidenced", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Entregar comprovantes de entrega, aceite ou prestação para os créditos considerados."},
+  {id: "title_control_and_duplicate_check_available", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Disponibilizar controle verificável de titularidade, pagamentos, ônus e duplicidade."},
+  {id: "debtor_notice_or_acknowledgement_feasible", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Confirmar como será feita a ciência do sacado e a instrução de pagamento."},
+  {id: "analytical_tape_available", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Entregar a carteira completa em base analítica reconciliável, título a título."},
+  {id: "historical_performance_available", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Entregar histórico suficiente de pagamentos, atrasos, perdas, diluições, recompras e prorrogações."},
+  {id: "controlled_collections_feasible", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Descrever e evidenciar o fluxo de cobrança, recebimento e reconciliação."},
+  {id: "servicing_capability_available", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Identificar responsáveis e processos de originação, cobrança, baixa e conciliação."},
+  {id: "buyer_confirmed_program_available", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Confirmar a existência e a aplicabilidade do programa patrocinado pelo sacado."},
+  {id: "recurring_origination_available", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Comprovar volume e recorrência de originação compatíveis com a utilização pretendida."},
+  {id: "economically_viable_scale_confirmed", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Comprovar escala econômica após custos fixos, operacionais e de estruturação."},
+  {id: "institutional_vehicle_governance_ready", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Confirmar governança, prestadores e controles necessários ao veículo dedicado."},
+  {id: "company_credit_package_available", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Completar o pacote de informações financeiras, societárias e operacionais da companhia."},
+  {id: "eligible_collateral_pool_identified", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Identificar a carteira elegível oferecida em garantia e suas regras de substituição."},
+  {id: "security_perfection_feasible", safeState: "true", safeCoverage: "complete", adverseHandling: "complete_only", unresolvedRequest: "Confirmar a viabilidade de formalização, registro e controle da garantia."},
+];
+
 export type FinancingMechanism =
   | "receivable_purchase"
   | "corporate_credit_secured_by_receivables"

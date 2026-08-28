@@ -54,7 +54,7 @@ const measured = (universeId: string, value: string): {value: string; provenance
   provenance: {kind: "measured", datasetHash, anchors: [source], universe: universeId, reportingDate: "2026-08-27", inclusions: ["synthetic"], exclusions: [], formula: {id: "provider-gold", version: cases.version}},
 });
 const observation = <T>(value: T, sourceKind: ReceivablesMandateObservation<T>["sourceKind"] = "direct_declaration"): ReceivablesMandateObservation<T> => ({
-  value, sourceKind, sourceId: `${sourceKind}-${JSON.stringify(value)}`, sourceLabel: "Synthetic provider gold", observedAt: "2026-08-01", validUntil: "2026-09-30",
+  value, sourceKind, sourceId: `${sourceKind}-${JSON.stringify(value)}`, sourceLabel: "Synthetic provider gold", recordedBy: "analyst-1", observedAt: "2026-08-01", validUntil: "2026-09-30",
 });
 const threshold = <T>(value: T) => ({mode: "threshold" as const, value});
 

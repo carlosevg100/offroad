@@ -156,6 +156,9 @@ describe("Vertentes Phase 3 raw-document replay", () => {
     expect(rawDetection.evidenceCoverage.warnings).toEqual([
       "archive:documentos/recebiveis/NFs amostra.zip:invalid_nfe_access_key_length",
     ]);
+    expect(rawDetection.routeFacts.find((fact) => fact.id === "cedent_ownership_confirmed")?.state).toBe("unknown");
+    expect(rawDetection.routeFacts.find((fact) => fact.id === "unresolved_prior_assignment_or_lien")?.state).toBe("unknown");
+    expect(rawDetection.routeFacts.find((fact) => fact.id === "title_control_and_duplicate_check_available")?.state).toBe("unknown");
   });
 
   it("proves exact deterministic math and leaves only unresolved route and live-program gates", () => {

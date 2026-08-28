@@ -99,6 +99,39 @@ matching dos dois programas sintéticos ainda não foram implementados de ponta 
 ponta. O harness está pronto; o caso Vertentes ainda não está acreditado. O contrato
 e o próximo gate estão em [`PHASE-3-HARNESS.md`](PHASE-3-HARNESS.md).
 
+## Estado após o gate da Fase 4
+
+O replay Vertentes parte dos arquivos brutos permitidos, lê a carteira completa e
+a amostra fiscal e reproduz os oito defeitos e quatro perguntas congelados. A
+amostra não é extrapolada e o universo normalizado não substitui leitura de
+documentos. O contrato completo está em
+[`PHASE-4-RAW-DETECTION.md`](PHASE-4-RAW-DETECTION.md).
+
+## Estado após o gate da Fase 5
+
+`receivables-analysis/contract-facts.ts` resolve observações contratuais e
+operacionais em fatos de elegibilidade com cobertura, escopo, validade, responsável
+e procedência. Evidência estimada, vencida ou apenas parcial em direção favorável
+não decide. Evidência conflitante permanece `unknown`. Ônus anterior conhecido
+mantém o gate fechado até segregação ou resolução.
+
+O detector bruto deixou de inferir titularidade completa, inexistência de ônus ou
+controle de duplicidade a partir da ausência de ocorrência, de uma amostra fiscal ou
+de uma tape. Esses fatos agora permanecem desconhecidos até a prova adequada.
+
+`fund-mandate/receivables-provider.ts` separa verdade de política de pesquisa de
+mercado. Declaração direta, confirmação de relacionamento e regra publicada podem
+sustentar política enquanto vigentes. Transação observada e inferência de mesa são
+somente pesquisa e triagem. Apetite e capacidade ao vivo continuam exigindo
+declaração direta ou relacionamento confirmado. Toda observação identifica quem a
+registrou.
+
+O runner aceita observações e executa a resolução canônica antes da elegibilidade de
+rota. O caminho anterior de fatos já resolvidos permanece somente como fronteira de
+adapter e regressão. Os limites externos continuam falsos. O contrato e os golds
+estão em
+[`PHASE-5-CONTRACT-AND-MARKET-GATES.md`](PHASE-5-CONTRACT-AND-MARKET-GATES.md).
+
 ## O que já é aproveitável
 
 - Validação de chaves e âncoras duplicadas.

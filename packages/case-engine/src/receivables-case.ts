@@ -3,6 +3,8 @@ import type {ReceivablesProviderMandate} from "@offroad/fund-mandate";
 import {
   analyzeReceivablesPhaseOne,
   type ReceivablesEligibilityFact,
+  type ReceivablesFactObservation,
+  type ReceivablesFactResolutionReport,
   type ReceivablesPhaseOneInput,
   type ReceivablesPhaseOneReport,
   type ReceivablesPhaseTwoBReport,
@@ -13,6 +15,7 @@ import {
 import {
   analyzeCanonicalReceivablesPhaseTwo,
   analyzeCanonicalReceivablesProviderFit,
+  resolveCanonicalReceivablesContractFacts,
 } from "./receivables";
 
 export const receivablesCasePipelineVersion = "2026.08.27-v1";
@@ -54,7 +57,12 @@ export type ReceivablesCasePipelineInput = {
   caseId: string;
   classification: ReceivablesCaseClassification;
   phaseOne: ReceivablesPhaseOneInput;
-  routeFacts: readonly ReceivablesEligibilityFact[];
+  /** Legacy/pre-resolved adapter boundary. Prefer routeFactResolution for production inputs. */
+  routeFacts?: readonly ReceivablesEligibilityFact[];
+  routeFactResolution?: {
+    asOf: string;
+    observations: readonly ReceivablesFactObservation[];
+  };
   titleClassificationsByRoute?: Parameters<typeof analyzeCanonicalReceivablesPhaseTwo>[0]["titleClassificationsByRoute"];
   providerFit: {
     asOf: string;
@@ -71,6 +79,7 @@ export type ReceivablesCasePipelineReport = {
   caseId: string;
   classification: ReceivablesCaseClassification;
   phaseOne: ReceivablesPhaseOneReport;
+  factResolution: ReceivablesFactResolutionReport | null;
   phaseTwoA: ReceivablesPhaseTwoReport;
   phaseTwoB: ReceivablesPhaseTwoBReport;
   defects: readonly ReceivablesDetectedDefect[];
@@ -127,11 +136,20 @@ export function runReceivablesCasePipeline(input: ReceivablesCasePipelineInput):
   assertUniqueIds(input.defects, "defect");
   assertUniqueIds(input.questions, "question");
 
+  const suppliedFacts = input.routeFacts !== undefined;
+  const suppliedObservations = input.routeFactResolution !== undefined;
+  if (suppliedFacts === suppliedObservations) {
+    throw new RangeError("provide exactly one of routeFacts or routeFactResolution");
+  }
+
   const phaseOne = analyzeReceivablesPhaseOne(input.phaseOne);
+  const factResolution = input.routeFactResolution
+    ? resolveCanonicalReceivablesContractFacts(input.routeFactResolution)
+    : null;
   const phaseTwoA = analyzeCanonicalReceivablesPhaseTwo({
     phaseOne,
     universe: input.phaseOne.universe,
-    facts: input.routeFacts,
+    facts: factResolution?.facts ?? input.routeFacts ?? [],
     ...(input.titleClassificationsByRoute === undefined
       ? {}
       : {titleClassificationsByRoute: input.titleClassificationsByRoute}),
@@ -152,6 +170,7 @@ export function runReceivablesCasePipeline(input: ReceivablesCasePipelineInput):
   if (input.classification.cellIds.length === 0) blockers.push("classification_cell_missing");
   if (input.classification.evidence.length === 0) blockers.push("classification_evidence_missing");
   if (phaseOne.quality.status === "incomplete") blockers.push("phase_one_incomplete");
+  if (factResolution?.quality.status === "incomplete") blockers.push("contract_fact_resolution_incomplete");
   if (phaseTwoA.quality.status === "incomplete") blockers.push("phase_two_a_incomplete");
   if (phaseTwoB.quality.status === "incomplete") blockers.push("phase_two_b_incomplete");
 
@@ -179,6 +198,7 @@ export function runReceivablesCasePipeline(input: ReceivablesCasePipelineInput):
     caseId: input.caseId,
     classification: input.classification,
     phaseOne,
+    factResolution,
     phaseTwoA,
     phaseTwoB,
     defects: input.defects,

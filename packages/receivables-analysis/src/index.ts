@@ -8,3 +8,4 @@ export * from "./phase-one";
 export * from "./phase-two";
 export * from "./phase-two-b";
 export * from "./raw-detection";
+export * from "./contract-facts";

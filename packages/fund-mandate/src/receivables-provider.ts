@@ -25,6 +25,8 @@ export type ReceivablesMandateObservation<T> = {
   sourceKind: ReceivablesMandateSourceKind;
   sourceId: string;
   sourceLabel: string;
+  recordedBy: string;
+  sourceUrl?: string;
   observedAt: string;
   validUntil: string;
 };
@@ -124,6 +126,21 @@ const sourcePriority: Readonly<Record<ReceivablesMandateSourceKind, number>> = {
   desk_inference: 5,
 };
 
+const decisionSourceKinds = new Set<ReceivablesMandateSourceKind>([
+  "direct_declaration",
+  "relationship_confirmation",
+  "published_rule",
+]);
+
+function mandateDate(value: string, label: string, endOfDay = false): number {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new RangeError(`invalid ${label}: ${value}`);
+  const parsed = Date.parse(`${value}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}Z`);
+  if (!Number.isFinite(parsed) || new Date(parsed).toISOString().slice(0, 10) !== value) {
+    throw new RangeError(`invalid ${label}: ${value}`);
+  }
+  return parsed;
+}
+
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).sort().join(",")}]`;
   if (value && typeof value === "object") {
@@ -140,17 +157,18 @@ function resolveCriterion<T>(
   asOf: string,
 ): ResolvedReceivablesMandateCriterion<T> | null {
   if (observations.length === 0) return null;
-  const asOfTime = Date.parse(`${asOf}T00:00:00.000Z`);
-  if (!Number.isFinite(asOfTime)) throw new RangeError(`invalid mandate as-of date: ${asOf}`);
+  const asOfTime = mandateDate(asOf, "mandate as-of date");
   for (const observation of observations) {
-    const observedAt = Date.parse(`${observation.observedAt}T00:00:00.000Z`);
-    const validUntil = Date.parse(`${observation.validUntil}T23:59:59.999Z`);
-    if (!Number.isFinite(observedAt) || !Number.isFinite(validUntil)) throw new RangeError(`invalid mandate observation date: ${observation.sourceId}`);
+    if (observation.sourceId.trim().length === 0) throw new RangeError("mandate observation source id is required");
+    if (observation.sourceLabel.trim().length === 0) throw new RangeError(`mandate observation source label is required: ${observation.sourceId}`);
+    if (observation.recordedBy.trim().length === 0) throw new RangeError(`mandate observation recorder is required: ${observation.sourceId}`);
+    const observedAt = mandateDate(observation.observedAt, `mandate observation date for ${observation.sourceId}`);
+    const validUntil = mandateDate(observation.validUntil, `mandate observation validity for ${observation.sourceId}`, true);
     if (observedAt > asOfTime) throw new RangeError(`future mandate observation: ${observation.sourceId}`);
     if (validUntil < observedAt) throw new RangeError(`mandate observation expires before it is observed: ${observation.sourceId}`);
   }
   const currentAt = (observation: ReceivablesMandateObservation<T>) =>
-    Date.parse(`${observation.validUntil}T23:59:59.999Z`) >= asOfTime;
+    mandateDate(observation.validUntil, `mandate observation validity for ${observation.sourceId}`, true) >= asOfTime;
   const ordered = [...observations].sort((left, right) =>
     Number(currentAt(right)) - Number(currentAt(left))
     || sourcePriority[left.sourceKind] - sourcePriority[right.sourceKind]
@@ -159,9 +177,12 @@ function resolveCriterion<T>(
   const accepted = ordered[0]!;
   const current = currentAt(accepted);
   const confirmed = accepted.sourceKind === "direct_declaration" || accepted.sourceKind === "relationship_confirmation";
-  const decisionUseAllowed = current && accepted.sourceKind !== "desk_inference";
+  const decisionUseAllowed = current && decisionSourceKinds.has(accepted.sourceKind);
   const divergent = ordered.slice(1).some((observation) =>
-    currentAt(observation) && canonical(observation.value) !== canonical(accepted.value));
+    currentAt(observation)
+    && decisionSourceKinds.has(observation.sourceKind)
+    && decisionUseAllowed
+    && canonical(observation.value) !== canonical(accepted.value));
   return {value: accepted.value, accepted, others: ordered.slice(1), current, confirmed, decisionUseAllowed, divergent};
 }
 
@@ -187,6 +208,10 @@ export function resolveReceivablesProviderMandate(
   asOf: string,
 ): ResolvedReceivablesProviderMandate {
   if (!Number.isInteger(mandate.version) || mandate.version < 1) throw new RangeError("mandate version must be a positive integer");
+  const asOfTime = mandateDate(asOf, "mandate as-of date");
+  if (mandateDate(mandate.effectiveFrom, "mandate effective date") > asOfTime) {
+    throw new RangeError(`mandate is not effective as of ${asOf}`);
+  }
   const resolved = Object.fromEntries(entries.map(([criterionId, field]) => [field, resolveCriterion(mandate[field] as readonly ReceivablesMandateObservation<unknown>[], asOf)])) as Record<string, ResolvedReceivablesMandateCriterion<unknown> | null>;
   const missingCriteria = entries.filter(([, field]) => resolved[field] === null).map(([criterionId]) => criterionId);
   const staleCriteria = entries.filter(([, field]) => resolved[field]?.current === false).map(([criterionId]) => criterionId);

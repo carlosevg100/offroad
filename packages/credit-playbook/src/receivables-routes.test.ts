@@ -1,6 +1,11 @@
 import {describe, expect, it} from "vitest";
 
-import {receivablesEligibilitySources, receivablesRouteDefinitions} from "./receivables-routes";
+import {
+  receivablesEligibilityFactIds,
+  receivablesEligibilitySources,
+  receivablesFactResolutionDefinitions,
+  receivablesRouteDefinitions,
+} from "./receivables-routes";
 
 describe("canonical receivables route catalogue", () => {
   it("separates routes, capital providers and service providers", () => {
@@ -34,5 +39,13 @@ describe("canonical receivables route catalogue", () => {
       expect(route.deskCharacteristics.provenanceClass).toBe("estimated");
       expect(route.criteria.some((criterion) => criterion.sourceIds.length === 0)).toBe(false);
     }
+  });
+
+  it("defines exactly one evidence-resolution contract for every route fact", () => {
+    expect(receivablesFactResolutionDefinitions).toHaveLength(receivablesEligibilityFactIds.length);
+    expect(new Set(receivablesFactResolutionDefinitions.map((definition) => definition.id)).size)
+      .toBe(receivablesFactResolutionDefinitions.length);
+    expect(receivablesFactResolutionDefinitions.map((definition) => definition.id).sort())
+      .toEqual([...receivablesEligibilityFactIds].sort());
   });
 });

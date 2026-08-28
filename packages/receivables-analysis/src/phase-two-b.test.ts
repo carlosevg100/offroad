@@ -66,7 +66,7 @@ const metrics: ReceivablesProviderMetricSet = {
 };
 
 const observed = <T>(value: T, sourceKind: ReceivablesMandateObservation<T>["sourceKind"] = "direct_declaration", validUntil = "2026-09-30"): ReceivablesMandateObservation<T> => ({
-  value, sourceKind, sourceId: `${sourceKind}-${JSON.stringify(value)}`, sourceLabel: "Synthetic mandate evidence", observedAt: "2026-08-01", validUntil,
+  value, sourceKind, sourceId: `${sourceKind}-${JSON.stringify(value)}`, sourceLabel: "Synthetic mandate evidence", recordedBy: "analyst-1", observedAt: "2026-08-01", validUntil,
 });
 const threshold = <T>(value: T) => ({mode: "threshold" as const, value});
 const provider = (
@@ -166,6 +166,16 @@ describe("receivables Phase 2B provider mandate fit", () => {
     const report = analyzeReceivablesPhaseTwoB({phaseTwoA, universe, asOf: "2026-08-27", metrics, mandates: [mandate], titleClassificationsByProgram: {financeira: classifications}});
     expect(report.providers[0]?.status).toBe("policy_fit_confirmed");
     expect(report.providers[0]?.blockers).toContain("available_capacity_not_current_and_confirmed");
+    expect(report.boundaries.internalShortlistAllowed).toBe(false);
+  });
+
+  it("uses observed transactions for research only, never as confirmed policy", () => {
+    const mandate = resolveReceivablesProviderMandate(provider("financeira", "credit_finance_company", "financial_institution_receivables_discount", {
+      eligibleRoutes: [observed(["financial_institution_receivables_discount"], "observed_transaction")],
+    }), "2026-08-27");
+    const report = analyzeReceivablesPhaseTwoB({phaseTwoA, universe, asOf: "2026-08-27", metrics, mandates: [mandate], titleClassificationsByProgram: {financeira: classifications}});
+    expect(report.providers[0]?.criterionResults.find((entry) => entry.criterionId === "eligible_routes")?.status).toBe("not_evaluated");
+    expect(report.providers[0]?.status).toBe("not_evaluated");
     expect(report.boundaries.internalShortlistAllowed).toBe(false);
   });
 
