@@ -1,7 +1,8 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 28 August 2026. The receivables Phase 4 work is based on `main`
-> commit `118efa1` and remains subject to PR, CI and merge until this note is updated.
+> Current as of 28 August 2026. Receivables Phase 4 was merged through PR #296
+> and promoted from `main` commit `2977501` to Vercel production and the ECS
+> document worker.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the

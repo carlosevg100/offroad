@@ -28,6 +28,10 @@ pipeline. Factoring, financeiras, bancos, SCDs e FIDCs estão no catálogo, mas
 cessibilidade, entrega, ônus anteriores e mandatos live não podem ser inventados a
 partir desta sala. Detalhes: `docs/knowledge/recebiveis/PHASE-4-RAW-DETECTION.md`.
 
+A entrega foi promovida por meio do PR #296. O gate integral do `main`, o rollout do
+worker de documentos e o deployment de produção da Vercel concluíram sem falhas;
+`offroad.capital` respondeu HTTP 200 após a promoção.
+
 ## Vertical de recebíveis, harness E2E da Fase 3, 27/08/2026
 
 O `@offroad/case-engine` ganhou um runner único para classificação, Fase 1, Fase 2A,
