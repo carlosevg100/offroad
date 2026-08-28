@@ -27,23 +27,27 @@ export async function parseCsv(input: ParseInput): Promise<ParseResult> {
 
   const delimiter = detectDelimiter(text);
 
-  let records: string[][];
+  let parsedRecords: string[][];
   try {
-    records = parse(text, {
+    parsedRecords = parse(text, {
       delimiter,
       relax_quotes: true,
       relax_column_count: true,
       skip_empty_lines: true,
       bom: true,
       trim: false,
-      to: parserLimits.maxRowsPerTable,
+      // Read one sentinel row beyond the accepted limit so an exactly-full file is not
+      // falsely reported as truncated and a larger file can never be truncated silently.
+      to: parserLimits.maxRowsPerTable + 1,
     }) as string[][];
   } catch (error) {
     throw new ParserError(`the file could not be read as CSV: ${(error as Error).message}`);
   }
 
-  if (records.length === 0) throw new ParserError("the file has no rows", "no_text");
-  if (records.length >= parserLimits.maxRowsPerTable) {
+  if (parsedRecords.length === 0) throw new ParserError("the file has no rows", "no_text");
+  const rowsTruncated = parsedRecords.length > parserLimits.maxRowsPerTable;
+  const records = parsedRecords.slice(0, parserLimits.maxRowsPerTable);
+  if (rowsTruncated) {
     warnings.push({code: "limit_reached", message: `only the first ${parserLimits.maxRowsPerTable} rows were read`});
   }
 
@@ -51,9 +55,13 @@ export async function parseCsv(input: ParseInput): Promise<ParseResult> {
   const cells: LayerCell[] = [];
   const texts: string[] = [];
 
+  let cellsTruncated = false;
   records.forEach((record, rowIndex) => {
     record.forEach((rawValue, columnIndex) => {
-      if (cells.length >= parserLimits.maxCellsPerSheet) return;
+      if (cells.length >= parserLimits.maxCellsPerSheet) {
+        if (rawValue.trim() !== "") cellsTruncated = true;
+        return;
+      }
       const value = rawValue.trim();
       if (value === "") return;
       const ref = `${columnLetters(columnIndex)}${rowIndex + 1}`;
@@ -62,6 +70,14 @@ export async function parseCsv(input: ParseInput): Promise<ParseResult> {
       texts.push(budget.take(value));
     });
   });
+
+  if (cellsTruncated) {
+    warnings.push({
+      code: "limit_reached",
+      message: `only the first ${parserLimits.maxCellsPerSheet} filled cells were read`,
+      where: `s${name}`,
+    });
+  }
 
   if (cells.length === 0) throw new ParserError("the file has no filled cells", "no_text");
 

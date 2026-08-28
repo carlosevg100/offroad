@@ -15,12 +15,12 @@ import {ParserError, parserLimits, type ParserWarning} from "./types";
  */
 export type OrderedNode = Record<string, unknown>;
 
-export async function openOoxml(bytes: Uint8Array): Promise<JSZip> {
+export async function openSafeZip(bytes: Uint8Array, label = "package"): Promise<JSZip> {
   let zip: JSZip;
   try {
     zip = await JSZip.loadAsync(bytes);
   } catch (error) {
-    throw new ParserError(`the file is not a readable OOXML package: ${(error as Error).message}`);
+    throw new ParserError(`the file is not a readable ${label}: ${(error as Error).message}`);
   }
 
   const entries = Object.values(zip.files);
@@ -46,6 +46,10 @@ export async function openOoxml(bytes: Uint8Array): Promise<JSZip> {
   }
 
   return zip;
+}
+
+export async function openOoxml(bytes: Uint8Array): Promise<JSZip> {
+  return openSafeZip(bytes, "OOXML package");
 }
 
 const xmlParser = new XMLParser({

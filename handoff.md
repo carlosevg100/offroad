@@ -1,12 +1,41 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 27 August 2026, `main` at `cf16727`, with legal gate v3 validated on staging in
-> branch `feat/legal-acceptance-v3`.
+> Current as of 28 August 2026. The receivables Phase 4 work is based on `main`
+> commit `118efa1` and remains subject to PR, CI and merge until this note is updated.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Engineering update: receivables raw-document detection Phase 4, 28 August 2026
+
+The Vertentes replay now starts from the permitted raw room rather than using the
+normalized universe as a substitute for document understanding. The CSV parser
+reads all 34,397 receivables without silently dropping the tail. A safe NF-e archive
+parser reads invoices and registered cancellation events while preserving file and
+entry-level provenance.
+
+Deterministic controls reproduce all eight frozen Vertentes defects and all four
+required client questions with 100% defect recall and precision. Findings cover
+economic-group fragmentation, unmarked extensions, a possible related obligor,
+omitted debt and recourse, a reconciliation adjustment, cancelled invoices still
+open, misclassified dilution and a monthly origination outlier. Every conclusion is
+anchored to delivered evidence; reserved fixture truth, expected outputs and guide
+files are excluded from runtime input.
+
+The fiscal archive is treated as a sample. Seventy cancellation events yield 41
+matches to open titles and are never extrapolated to the full portfolio. Malformed
+synthetic access keys remain explicit data-quality warnings. Contractual
+assignability, delivery evidence, prior title-level liens and debtor-notice
+feasibility remain unknown when not evidenced.
+
+The pipeline therefore stays red only on compatible live programs and overall
+completion. Factoring and finance companies are first-class catalogue routes beside
+banks, SCDs and FIDCs, but no buyer shortlist is fabricated without resolved hard
+facts, current mandate and confirmed capacity. External recommendation, contact,
+qualified introduction and credit approval remain disabled. The measured contract
+and limitations are in `docs/knowledge/recebiveis/PHASE-4-RAW-DETECTION.md`.
 
 ### Engineering update: receivables Phase 3 E2E harness, 27 August 2026
 
@@ -16,13 +45,13 @@ defects and client questions. Its evaluator enforces exact calculations,
 classification accuracy, defect recall and precision, exact program and question
 sets, exhaustive delivered-evidence search and complete provenance.
 
-A compact synthetic gold replay passes every gate. The Vertentes A1-03 baseline
-passes six of six selected deterministic calculations but deliberately remains red:
-raw-document extraction has not yet produced the eight planted defects, the two
-synthetic programs or the four required questions. This distinction is mandatory.
-The harness is implemented; Vertentes is not yet an accredited end-to-end case.
-Reserved truth cannot be used as detector input. External recommendation, contact,
-qualified introduction and credit approval remain disabled.
+A compact synthetic gold replay passes every gate. The original Vertentes A1-03
+baseline passed six of six selected deterministic calculations and deliberately
+remained red on raw detection, questions and programs. Phase 4 above has since
+closed the raw detector and question gaps without fixture leakage. Vertentes is
+still not an accredited end-to-end case because contractual hard facts and live
+programs remain unresolved. External recommendation, contact, qualified
+introduction and credit approval remain disabled.
 
 ### Engineering update: receivables provider mandates Phase 2B, 27 August 2026
 

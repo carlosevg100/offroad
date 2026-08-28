@@ -3,7 +3,7 @@ import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 import {describe, expect, it} from "vitest";
 import {indexLayer} from "@offroad/document-intelligence";
-import {ParserError, detectType, parseDocument} from "./index";
+import {ParserError, detectType, parseDocument, parseNfeArchive} from "./index";
 import {parsePdf} from "./pdf";
 import {columnLetters} from "./csv";
 import {detectScaleDeclarations} from "./scale";
@@ -15,6 +15,17 @@ const dataRoom = join(
   "testing-fixtures",
   "assets",
   "rede-horizonte",
+);
+
+const vertentesDataRoom = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "testing-fixtures",
+  "assets",
+  "vertentes",
+  "raw",
+  "empresa",
 );
 
 const files = {
@@ -259,6 +270,35 @@ describe("csv", () => {
     const text = "Conta\tValor\n3.1.01\t1000\n";
     const result = await parseDocument(csvInput(new TextEncoder().encode(text), "export.tsv"));
     expect(result.layer.sheets?.[0]?.cells.find((cell) => cell.ref === "B2")?.v).toBe("1000");
+  });
+
+  it("reads a complete institutional receivables tape without losing the portfolio tail", async () => {
+    const fileName = "titulos_em_aberto_e_liquidados.csv";
+    const bytes = new Uint8Array(readFileSync(join(vertentesDataRoom, "documentos", "recebiveis", fileName)));
+    const result = await parseDocument(csvInput(bytes, fileName));
+    const cells = result.layer.sheets?.[0]?.cells ?? [];
+
+    expect(cells.some((cell) => cell.ref === "A34398")).toBe(true);
+    expect(cells.some((cell) => cell.ref === "O34398")).toBe(true);
+    expect(result.warnings.filter((warning) => warning.code === "limit_reached")).toEqual([]);
+  }, 30_000);
+});
+
+describe("NF-e archive", () => {
+  it("reads only the invoices and registered cancellation events present in the sample", async () => {
+    const bytes = new Uint8Array(readFileSync(join(vertentesDataRoom, "documentos", "recebiveis", "NFs amostra.zip")));
+    const result = await parseNfeArchive({
+      bytes,
+      archiveId: "vertentes-nfe-sample",
+      fileHash: "e".repeat(64),
+    });
+
+    expect(result.invoices).toHaveLength(200);
+    expect(result.cancellations).toHaveLength(70);
+    expect(result.cancellations.every((event) => event.eventCode === "110111")).toBe(true);
+    expect(result.cancellations.every((event) => event.accessKeyValid === false)).toBe(true);
+    expect(result.warnings).toHaveLength(270);
+    expect(result.warnings.every((warning) => warning.message === "NF-e access key is not 44 digits")).toBe(true);
   });
 });
 

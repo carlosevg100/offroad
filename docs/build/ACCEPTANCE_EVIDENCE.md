@@ -1,5 +1,19 @@
 # Acceptance Evidence
 
+## Vertical de recebíveis, leitura bruta e detectores da Fase 4, 28/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Tape sem truncamento | teste real de `document-parsers` | linha 34.398 e última coluna presentes; nenhum `limit_reached` |
+| Amostra fiscal | `parseNfeArchive` | 200 NF-e e 70 cancelamentos lidos; nenhuma extrapolação além dos XMLs presentes |
+| Fronteira do fixture | loader do replay | somente `documentos/**` e PDFs de `intake/**`; nenhum `gold`, `source`, `expected`, HTML, CSS ou guia |
+| Defeitos Vertentes | replay bruto | 8/8 detectados, recall 100% e precisão 100%, com valores e âncoras reproduzíveis |
+| Perguntas Vertentes | replay bruto | 4/4, cada uma ligada a gatilho medido e busca exaustiva na evidência entregue |
+| Procedência | relatório dos detectores | hash do dataset, universo, período, fórmula e âncoras nos arquivos brutos |
+| Amostra não extrapolada | conciliação NF-e × carteira | 41 títulos abertos cancelados encontrados dentro da amostra; o número não vira estimativa do universo |
+| Gate honesto de mercado | avaliação E2E | somente `compatible_programs` e `pipeline_incomplete` falham; shortlist live não é fabricada |
+| Fronteira institucional | resultado do pipeline | recomendação, contato, introdução e aprovação continuam bloqueados |
+
 ## Vertical de recebíveis, harness E2E da Fase 3, 27/08/2026
 
 | Evidência | Verificação | Resultado |
@@ -7,15 +21,16 @@
 | Runner único | `runReceivablesCasePipeline` | Fases 1, 2A e 2B, classificação, defeitos e perguntas compõem uma execução governada |
 | Gold replay | teste sintético completo | cálculo, classificação, defeito, programa, pergunta e procedência passam simultaneamente |
 | Vertentes matemática | seis cálculos do gold | seis de seis exatos a partir do universo canônico |
-| Vertentes baseline | avaliação de caso completo | 0/8 detectores, 0/2 programas e 0/4 perguntas, reprovação explícita e permanente até implementação real |
+| Vertentes baseline histórico | avaliação original do harness | 0/8 detectores, 0/2 programas e 0/4 perguntas antes da Fase 4; preservado como evidência da barra vermelha inicial |
 | Perguntas | contrato do runner e do evaluator | lista exata, gatilho não estimado, busca exaustiva em toda evidência entregue e zero pergunta já respondida |
 | Matching live | resultado da Fase 2B | apetite e capacidade carregam source IDs próprios; shortlist somente com ambos atuais e confirmados |
 | Procedência derivada | coletor de métricas | métricas compostas conservam a procedência de todos os inputs governados |
 | Fronteira institucional | relatório final | recomendação externa, contato, introdução qualificada e aprovação de crédito permanecem falsos |
 
-O harness é aceito como infraestrutura de avaliação. A Vertentes não é aceita como
-caso E2E até a leitura dos arquivos brutos, os detectores, as perguntas e o matching
-atingirem integralmente a régua congelada.
+O harness é aceito como infraestrutura de avaliação. A leitura bruta, os detectores
+e as perguntas foram fechados na Fase 4; a Vertentes ainda não é um caso E2E
+integralmente acreditado porque hard facts contratuais e programas live permanecem
+sem comprovação.
 
 ## Vertical de recebíveis, programas e mandatos da Fase 2B, 27/08/2026
 
