@@ -405,6 +405,18 @@ o fingerprint que torna a aprovação válida.
 
 Evidências são adicionadas somente depois de execução real. Nenhum item pendente implica funcionamento.
 
+## Índice de retrieval de grande volume, 28/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Run controlado 4, `811c0914-ec53-44a7-8327-463a51585554` | 16 documentos concluídos; o CSV de títulos falhou após três tentativas exclusivamente em `worker_record_retrieval_chunks`; 64 chamadas e US$ 2,3725 registrados até o bloqueio |
+| Camada determinística do CSV | 22.229.284 bytes, uma sheet e 1.500.369 tokens estimados; o documento foi lido e armazenado antes do timeout |
+| Correção no branch | chunks de até 12.000 caracteres, auditoria por lote e circuit breaker de 30 s mantendo o limite capability-bound de 2.000 linhas |
+| Teste de package | `@offroad/governed-retrieval`: 22 testes aprovados, incluindo segmentação de tape no limite governado |
+| Quality gate local | `pnpm check`: lint, typecheck, testes e build aprovados nos 41 pacotes |
+| Staging | migration `20260828223532_bound_large_retrieval_index` aplicada; Security Advisor com zero lints |
+| Prova ainda necessária | CI completo, deployment do worker e novo run integral do mesmo caso controlado em produção |
+
 ## Slice vertical inicial
 
 | Evidência | Comando/artefato | Resultado | Data |
