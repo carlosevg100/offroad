@@ -20,6 +20,8 @@
 | Jornada no navegador | PR #300, run `33201518095`, job `98951932682` | stack Supabase limpa, build contra o stack local e suíte Playwright aprovados em 3m24s |
 | Quality em CI | PR #300, run `33201518095`, job `98951932357` | lint, typecheck, todos os testes e builds dos 41 pacotes aprovados em 6m06s |
 | Preview | Vercel `JBC2476ADgjeMzs95y2SS7hwaNKy` | deployment de preview concluído e check aprovado |
+| Staging schema | Supabase branch `staging`, ref `lxmpsxwlpmfisbauakaz` | migration aplicada; tabela e RPCs presentes; zero fragmentos antes do teste; Security Advisor com zero lints |
+| Staging performance | Supabase Performance Advisor | encontrou as duas novas FKs sem índice de cobertura; correção adicionada em `20260828191000_receivables_evidence_fk_indexes.sql` antes de produção |
 
 O candidate passou revisão e CI, mas ainda não é produção. A aceitação da Fase 7 exige,
 em ordem: staging, deploy do worker e web, replay controlado

@@ -90,6 +90,8 @@ financiador, critérios internos e plano de mandato não são expostos à compan
 - painel de recebíveis em português e inglês;
 - testes de codec, parser, integração do worker, não vazamento, ausência de histórico, RLS e
   contexto privado de programas;
+- índices de cobertura separados para as FKs de documento e execução, validados pelo Performance
+  Advisor antes de produção;
 - `pnpm check` verde em Node 24.19.0 nos 41 pacotes.
 
 ## Gates ainda abertos
