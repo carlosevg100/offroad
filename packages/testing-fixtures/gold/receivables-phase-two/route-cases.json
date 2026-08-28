@@ -1,0 +1,177 @@
+{
+  "version": "2026.08.27-v1",
+  "synthetic": true,
+  "cases": [
+    {
+      "id": "all-ready",
+      "facts": {
+        "claim_existence_evidenced": "true",
+        "cedent_ownership_confirmed": "true",
+        "contractual_assignability_confirmed": "true",
+        "unresolved_prior_assignment_or_lien": "false",
+        "performance_or_delivery_evidenced": "true",
+        "title_control_and_duplicate_check_available": "true",
+        "debtor_notice_or_acknowledgement_feasible": "true",
+        "analytical_tape_available": "true",
+        "historical_performance_available": "true",
+        "controlled_collections_feasible": "true",
+        "servicing_capability_available": "true",
+        "buyer_confirmed_program_available": "true",
+        "recurring_origination_available": "true",
+        "economically_viable_scale_confirmed": "true",
+        "institutional_vehicle_governance_ready": "true",
+        "company_credit_package_available": "true",
+        "eligible_collateral_pool_identified": "true",
+        "security_perfection_feasible": "true"
+      },
+      "expected": {
+        "factoring_purchase": "technically_eligible",
+        "financial_institution_receivables_discount": "technically_eligible",
+        "digital_credit_receivables_purchase": "technically_eligible",
+        "fidc_multicedent_assignment": "technically_eligible",
+        "buyer_confirmed_payables_program": "technically_eligible",
+        "secured_revolving_facility": "technically_eligible",
+        "ccb_with_fiduciary_assignment": "technically_eligible",
+        "dedicated_receivables_vehicle": "technically_eligible",
+        "receivables_certificate_securitisation": "technically_eligible"
+      }
+    },
+    {
+      "id": "quick-route-without-institutional-data",
+      "facts": {
+        "claim_existence_evidenced": "true",
+        "cedent_ownership_confirmed": "true",
+        "contractual_assignability_confirmed": "true",
+        "unresolved_prior_assignment_or_lien": "false",
+        "performance_or_delivery_evidenced": "true",
+        "title_control_and_duplicate_check_available": "true",
+        "debtor_notice_or_acknowledgement_feasible": "true",
+        "analytical_tape_available": "unknown",
+        "historical_performance_available": "unknown",
+        "controlled_collections_feasible": "unknown",
+        "servicing_capability_available": "unknown",
+        "buyer_confirmed_program_available": "false",
+        "recurring_origination_available": "unknown",
+        "economically_viable_scale_confirmed": "unknown",
+        "institutional_vehicle_governance_ready": "unknown",
+        "company_credit_package_available": "true",
+        "eligible_collateral_pool_identified": "true",
+        "security_perfection_feasible": "true"
+      },
+      "expected": {
+        "factoring_purchase": "technically_eligible",
+        "financial_institution_receivables_discount": "technically_eligible",
+        "digital_credit_receivables_purchase": "technically_eligible",
+        "fidc_multicedent_assignment": "conditionally_eligible",
+        "buyer_confirmed_payables_program": "ineligible",
+        "secured_revolving_facility": "technically_eligible",
+        "ccb_with_fiduciary_assignment": "technically_eligible",
+        "dedicated_receivables_vehicle": "conditionally_eligible",
+        "receivables_certificate_securitisation": "conditionally_eligible"
+      }
+    },
+    {
+      "id": "prior-assignment-unresolved",
+      "facts": {
+        "claim_existence_evidenced": "true",
+        "cedent_ownership_confirmed": "true",
+        "contractual_assignability_confirmed": "true",
+        "unresolved_prior_assignment_or_lien": "true",
+        "performance_or_delivery_evidenced": "true",
+        "title_control_and_duplicate_check_available": "true",
+        "debtor_notice_or_acknowledgement_feasible": "true",
+        "analytical_tape_available": "true",
+        "historical_performance_available": "true",
+        "controlled_collections_feasible": "true",
+        "servicing_capability_available": "true",
+        "buyer_confirmed_program_available": "true",
+        "recurring_origination_available": "true",
+        "economically_viable_scale_confirmed": "true",
+        "institutional_vehicle_governance_ready": "true",
+        "company_credit_package_available": "true",
+        "eligible_collateral_pool_identified": "true",
+        "security_perfection_feasible": "true"
+      },
+      "expected": {
+        "factoring_purchase": "ineligible",
+        "financial_institution_receivables_discount": "ineligible",
+        "digital_credit_receivables_purchase": "ineligible",
+        "fidc_multicedent_assignment": "ineligible",
+        "buyer_confirmed_payables_program": "technically_eligible",
+        "secured_revolving_facility": "ineligible",
+        "ccb_with_fiduciary_assignment": "ineligible",
+        "dedicated_receivables_vehicle": "ineligible",
+        "receivables_certificate_securitisation": "ineligible"
+      }
+    },
+    {
+      "id": "delivery-proof-remediable",
+      "facts": {
+        "claim_existence_evidenced": "true",
+        "cedent_ownership_confirmed": "true",
+        "contractual_assignability_confirmed": "true",
+        "unresolved_prior_assignment_or_lien": "false",
+        "performance_or_delivery_evidenced": "false",
+        "title_control_and_duplicate_check_available": "true",
+        "debtor_notice_or_acknowledgement_feasible": "true",
+        "analytical_tape_available": "true",
+        "historical_performance_available": "true",
+        "controlled_collections_feasible": "true",
+        "servicing_capability_available": "true",
+        "buyer_confirmed_program_available": "true",
+        "recurring_origination_available": "true",
+        "economically_viable_scale_confirmed": "true",
+        "institutional_vehicle_governance_ready": "true",
+        "company_credit_package_available": "true",
+        "eligible_collateral_pool_identified": "true",
+        "security_perfection_feasible": "true"
+      },
+      "expected": {
+        "factoring_purchase": "conditionally_eligible",
+        "financial_institution_receivables_discount": "conditionally_eligible",
+        "digital_credit_receivables_purchase": "conditionally_eligible",
+        "fidc_multicedent_assignment": "conditionally_eligible",
+        "buyer_confirmed_payables_program": "conditionally_eligible",
+        "secured_revolving_facility": "technically_eligible",
+        "ccb_with_fiduciary_assignment": "technically_eligible",
+        "dedicated_receivables_vehicle": "conditionally_eligible",
+        "receivables_certificate_securitisation": "conditionally_eligible"
+      }
+    },
+    {
+      "id": "ownership-only-estimated",
+      "estimatedFacts": ["cedent_ownership_confirmed"],
+      "facts": {
+        "claim_existence_evidenced": "true",
+        "cedent_ownership_confirmed": "true",
+        "contractual_assignability_confirmed": "true",
+        "unresolved_prior_assignment_or_lien": "false",
+        "performance_or_delivery_evidenced": "true",
+        "title_control_and_duplicate_check_available": "true",
+        "debtor_notice_or_acknowledgement_feasible": "true",
+        "analytical_tape_available": "true",
+        "historical_performance_available": "true",
+        "controlled_collections_feasible": "true",
+        "servicing_capability_available": "true",
+        "buyer_confirmed_program_available": "true",
+        "recurring_origination_available": "true",
+        "economically_viable_scale_confirmed": "true",
+        "institutional_vehicle_governance_ready": "true",
+        "company_credit_package_available": "true",
+        "eligible_collateral_pool_identified": "true",
+        "security_perfection_feasible": "true"
+      },
+      "expected": {
+        "factoring_purchase": "not_evaluated",
+        "financial_institution_receivables_discount": "not_evaluated",
+        "digital_credit_receivables_purchase": "not_evaluated",
+        "fidc_multicedent_assignment": "not_evaluated",
+        "buyer_confirmed_payables_program": "not_evaluated",
+        "secured_revolving_facility": "not_evaluated",
+        "ccb_with_fiduciary_assignment": "not_evaluated",
+        "dedicated_receivables_vehicle": "not_evaluated",
+        "receivables_certificate_securitisation": "not_evaluated"
+      }
+    }
+  ]
+}

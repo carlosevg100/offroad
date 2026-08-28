@@ -19,14 +19,15 @@ tratados como escolha técnica obrigatória no início do intake.
 
 ## 2. Unidade de especialização
 
-A unidade é a **célula**, formada por `categoria de recebível × porta de
-financiamento`. Uma companhia pode ter mais de uma categoria e a recomendação pode
-combinar mais de uma célula. A classificação é, portanto, multilabel.
+A unidade é a **célula**, formada por `categoria de recebível × rota de
+financiamento`. Uma companhia pode ter mais de uma categoria e mais de uma rota
+tecnicamente possível. A classificação é, portanto, multilabel. FIDC é um veículo e
+uma fonte possível de capital, não um instrumento universal nem sinônimo da rota.
 
 A matriz possui **39 células sustentáveis**. As oito células core, na ordem de
 construção, são:
 
-1. A1 · venda mercantil B2B × FIDC multicedente
+1. A1 · venda mercantil B2B × cessão para FIDC multicedente
 2. E1 · cartão e adquirente × FIDC multicedente
 3. B2 · fornecedor de grande grupo × risco sacado
 4. C1 · serviço a PJ × FIDC multicedente
@@ -159,6 +160,40 @@ O resultado não é um booleano único. Os estados permitidos são:
 Uma fonte pública pode comprovar elegibilidade normativa. Não comprova, por si só,
 política interna, capacidade disponível ou apetite atual.
 
+### 8.1 Dois gates que não podem ser confundidos
+
+A camada 3 possui dois gates consecutivos:
+
+1. `route_eligibility`: verifica se o direito existe, pertence ao cedente, pode ser
+   cedido ou gravado, não está duplicado e se os controles operacionais necessários
+   são implementáveis;
+2. `buyer_mandate_fit`: confronta a carteira já analisada com política, capacidade e
+   apetite atuais de uma entidade financiadora identificada.
+
+O primeiro gate compara rotas. O segundo compara compradores reais. Nenhuma regra
+estimada pode reprovar título, rota ou comprador. Na ausência de regulamento,
+política, capacidade ou denominador, a resposta é `not_evaluated`.
+
+### 8.2 Taxonomia de rotas e participantes
+
+O catálogo canônico separa quatro dimensões:
+
+- mecanismo econômico: compra ou cessão, crédito corporativo garantido por
+  recebíveis, programa do sacado ou securitização;
+- rota: factoring, desconto por instituição financeira, aquisição digital, FIDC
+  multicedente, risco sacado, linha rotativa, CCB com cessão fiduciária, veículo
+  dedicado ou Certificado de Recebíveis;
+- fonte de capital: banco, financeira, SCD, factoring, fundo ou FIDC, family office,
+  investidor institucional ou programa patrocinado pelo sacado;
+- prestador ou canal: plataforma tecnológica, gestora, administrador, custodiante,
+  registradora, securitizadora, agente fiduciário ou servicer.
+
+Uma plataforma sem entidade de crédito ou veículo financiador identificado é canal,
+não fonte de capital. Uma securitizadora é prestadora e emissora; não é tratada como
+compradora com capital próprio sem evidência específica. Factoring permanece rota
+legítima, potencialmente mais rápida e frequentemente mais cara, mas velocidade e
+custo são observações de mesa `[E]`, nunca critério rígido ou recomendação.
+
 ## 9. Diretório normalizado de mercado
 
 O diretório separa:
@@ -199,3 +234,19 @@ A calculadora A1 somente é aprovada quando:
 - o replay do mesmo caso produz saída idêntica;
 - testes de fronteira e invariantes passam;
 - o conjunto de testes existente no repositório permanece verde.
+
+## 12. Gate da Fase 2A: elegibilidade de rota
+
+O gate é aprovado quando:
+
+- todas as rotas usam o mesmo conjunto versionado de fatos e critérios;
+- todo critério possui fonte primária ou oficial citada;
+- estimativa jamais produz `ineligible` ou `technically_eligible`;
+- cada rota separa fonte de capital de canal, veículo e prestador;
+- conflito de titularidade, cessão ou gravame anterior falha fechado;
+- pendência remediável produz `conditionally_eligible`, com a ação necessária;
+- ausência de fato rígido produz `not_evaluated`, sem inferência;
+- quando houver classificação título a título, o denominador é completo, exclusivo
+  e reconcilia integralmente com a carteira aberta;
+- aderência a mandato, recomendação de comprador, contato e aprovação de crédito
+  permanecem desabilitados.

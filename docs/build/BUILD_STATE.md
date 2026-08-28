@@ -1,8 +1,36 @@
 # Build State
 
-Atualizado em: 2026-08-26
+Atualizado em: 2026-08-27
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Vertical de recebíveis, elegibilidade técnica de rotas da Fase 2A, 27/08/2026
+
+O catálogo canônico deixou de tratar FIDC como sinônimo de financiamento por
+recebíveis. `@offroad/credit-playbook` agora separa mecanismo econômico, rota, fonte
+de capital e prestador em nove rotas: factoring, desconto por banco ou financeira,
+aquisição digital por SCD ou estrutura parceira, FIDC multicedente, programa do
+sacado, linha rotativa garantida, CCB com cessão fiduciária, veículo dedicado e
+securitização com Certificados de Recebíveis.
+
+Cada critério possui referência primária do Planalto ou oficial de BCB e CVM. O
+executor determinístico em `@offroad/receivables-analysis` retorna elegível,
+condicional, não avaliado ou inelegível. Estimativas de velocidade e custo aparecem
+somente como observação de mesa e não participam da decisão. Titularidade incerta não
+é aceita; cessão ou gravame anterior não resolvido bloqueia; pendência documental ou
+operacional remediável condiciona.
+
+`@offroad/financial-core` ganhou o agregador título a título. Ele exige classificação
+completa e exclusiva dos recebíveis abertos, reconcilia 100% do denominador e impede
+exclusão rígida baseada em estimativa. A regra legal permanece fora do pacote
+matemático. `@offroad/case-engine` compila a fonte do playbook no executor, evitando
+catálogo duplicado.
+
+Cinco casos sintéticos congelados, inclusive dupla cessão, comprovante de entrega
+pendente, titularidade apenas estimada e rota rápida sem dados institucionais, são
+validados por oráculo Python independente. O gate não faz matching de entidade,
+recomendação, contato, introdução ou aprovação de crédito. Esses limites permanecem
+falsos até a Fase 2B com mandatos governados e atuais.
 
 ## Vertical de recebíveis A1, gate matemático integral da Fase 1, 27/08/2026
 

@@ -1,5 +1,25 @@
 # Acceptance Evidence
 
+## Vertical de recebíveis, elegibilidade de rotas da Fase 2A, 27/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Catálogo canônico | `@offroad/credit-playbook` | nove rotas, sem FIDC como única saída e sem confundir capital, veículo, canal ou prestador |
+| Fontes normativas | teste de catálogo | todo critério possui fonte primária do Planalto ou oficial de BCB ou CVM consultada em 27/08/2026 |
+| Factoring e financeiras | catálogo e teste do executor | factoring, banco, SCFI e SCD aparecem como fontes distintas; velocidade e economia estimadas não decidem elegibilidade |
+| Executor determinístico | `@offroad/receivables-analysis` | quatro estados explícitos; ausência de fato rígido abstém; pendência remediável condiciona; violação citada bloqueia |
+| Denominador título a título | `@offroad/financial-core` | classificações completas, exclusivas e reconciliadas; título ausente, duplicado ou exclusão estimada falham fechado |
+| Uma fonte, uma execução | `@offroad/case-engine` | catálogo do playbook é injetado no executor; nenhum segundo catálogo de conhecimento é mantido |
+| Gold adversarial | cinco casos sintéticos | rota integral, rota rápida, cessão anterior, prova de entrega pendente e titularidade estimada |
+| Oráculo independente | `oracle-receivables-routes.py` | cinco de cinco casos verificados sem importar o motor TypeScript |
+| Fronteira institucional | relatório da Fase 2A | buyer mandate, recomendação, contato externo, introdução qualificada e aprovação de crédito permanecem falsos |
+| Testes focados | playbook, financial-core, receivables-analysis e case-engine | 157, 55, 41 e 11 testes verdes antes do gate integral |
+| Gate integral | `pnpm check` em Node 24.19 | lint, typecheck, testes e build verdes; 41 de 41 tarefas concluídas e web com 28 rotas de produção |
+
+Este gate promove somente elegibilidade técnica de rota. Percentual por mandato,
+política interna, capacidade disponível, apetite atual e ranking de financiadores
+dependem da Fase 2B e não foram inferidos de material público.
+
 ## Vertical de recebíveis A1, gate matemático integral da Fase 1, 27/08/2026
 
 | Evidência | Verificação | Resultado |

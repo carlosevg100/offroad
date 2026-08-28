@@ -23,7 +23,7 @@ Quem esquecer isso escreve o produto errado.
 |---|---|---|
 | 1 Classificação | Ler o intake e identificar a categoria e a célula da operação | Modelo, guiado pelo catálogo |
 | 2 Cálculo | Toda métrica financeira: prazo médio, DSO, concentração, aging, roll rate, perda por safra, diluição, recompra, dívida ajustada, CET | **Código determinístico, nunca modelo** |
-| 3 Elegibilidade | Confrontar métricas com critérios de compradores | **Código determinístico** |
+| 3 Elegibilidade | Verificar rotas e depois confrontar métricas com mandatos confirmados | **Código determinístico** |
 | 4 Recomendação | Portas, compradores, ajustes, trajetória | Modelo, restringido pelas camadas 1 a 3 |
 | 5 Redação | Material por tipo de comprador | Modelo, sob a doutrina de templates |
 
@@ -75,12 +75,17 @@ Datas canônicas: cada execução declara `reporting_date` e
 sem inferência silenciosa.
 
 ### Fase 2 · O motor de elegibilidade
-Estrutura tipada de critérios por comprador (schema no fim de `01-QUEM-COMPRA.md` e
-seção 2 de `11-TREINAMENTO-001.md`), avaliação título a título, e a saída correta:
-**elegibilidade é percentual da carteira por comprador, nunca sim ou não**, mais a
-lista de incompatíveis com a cláusula exata que barra e o ajuste que destrava.
-Semear com os critérios [C] já citados (Multiplica, SB Crédito, RDF) e deixar os [E]
-marcados como não avaliados até o corpus de regulamentos entrar.
+Executar dois gates distintos. A Fase 2A compara rotas com requisitos jurídicos,
+contratuais e operacionais citados. A Fase 2B confronta a carteira com política,
+capacidade e apetite confirmados de compradores identificados. A saída título a
+título usa percentual da carteira, com denominador explícito e lista exclusiva de
+incompatíveis, nunca um booleano opaco.
+
+O catálogo de rotas não se limita a FIDC. Ele cobre factoring, bancos, financeiras,
+SCDs e estruturas digitais, FIDC multicedente, risco sacado, linha garantida, CCB com
+cessão fiduciária, veículo dedicado e securitização. Canal tecnológico, veículo,
+fonte de capital e prestador são entidades diferentes. Critérios [E] ficam como
+`not_evaluated` e nunca reprovam ou aprovam uma rota.
 
 ### Fase 3 · A esteira de casos
 Harness que roda um caso (acervo de entrada) de ponta a ponta pelas 5 camadas e
