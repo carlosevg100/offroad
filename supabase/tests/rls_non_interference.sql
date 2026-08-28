@@ -1630,7 +1630,7 @@ begin
     'Financeira Recebíveis RLS S.A.',
     'credit_finance_company',
     'registered',
-    '20000000-0000-4000-8000-000000000001',
+    '20000000-0000-4000-8000-000000000003',
     now()
   ) returning id into provider_id;
 
@@ -1685,7 +1685,7 @@ begin
   set local role authenticated;
   perform set_config(
     'request.jwt.claims',
-    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    '{"sub":"10000000-0000-4000-8000-000000000003","role":"authenticated","aal":"aal1"}',
     true
   );
   select count(*) into visible from public.capital_provider_programs where id = program_row_id;
@@ -1702,7 +1702,7 @@ begin
     'declared',
     current_date,
     current_date + 30,
-    '10000000-0000-4000-8000-000000000001'
+    '10000000-0000-4000-8000-000000000003'
   );
   begin
     update public.capital_provider_programs
