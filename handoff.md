@@ -8,6 +8,30 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: receivables route eligibility Phase 2A, 27 August 2026
+
+Receivables financing is no longer modelled as “FIDC or nothing.” The canonical
+playbook defines nine routes and separates the economic mechanism, the route, the
+capital provider and supporting service providers. Banks, credit finance companies,
+SCDs, factorings, FIDCs, private-credit funds, family offices and institutional
+investors are distinct capital-provider capabilities. Technology platforms,
+securitisation companies, fund administrators, custodians and servicers do not become
+buyers unless a distinct funding entity is evidenced.
+
+`@offroad/receivables-analysis` executes the compiled catalogue deterministically.
+It treats ownership, assignability and unresolved prior rights as hard gates;
+remediable document and operating gaps as conditions; and missing or estimated hard
+facts as `not_evaluated`. Desk observations that factoring may be faster and more
+expensive never decide eligibility. `@offroad/financial-core` owns only the decimal
+allocation math and requires every open title to appear exactly once.
+
+`@offroad/case-engine` is the compilation boundary between the canonical playbook and
+the executor. Five frozen synthetic cases are checked against an independent Python
+oracle. This is Phase 2A only: no live mandate has been matched and buyer
+recommendation, market direction, qualified introduction and credit approval remain
+disabled. Phase 2B must add governed buyer policy, current capacity and current
+appetite without scraping them into facts.
+
 ### Engineering update: receivables A1 Vertentes complete Phase 1 math gate, 27 August 2026
 
 The first receivables training case now lives inside the repository. Vertentes A1-03 contains 21

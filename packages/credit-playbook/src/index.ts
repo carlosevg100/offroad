@@ -26,4 +26,5 @@ export * from "./material-templates";
 export * from "./conduct-policy";
 export * from "./procedures";
 export * from "./house-playbook";
+export * from "./receivables-routes";
 export {commonClosing} from "./closing";

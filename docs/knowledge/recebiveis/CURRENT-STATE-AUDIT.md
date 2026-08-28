@@ -40,6 +40,25 @@ O caso Vertentes prova a Fase 1 contra oráculos independentes, mas continua
 `incomplete` por dados ausentes. Aprovação do motor não equivale a completude do
 caso. Essa separação é deliberada.
 
+## Estado após o primeiro gate da Fase 2
+
+`credit-playbook/receivables-routes.ts` é a fonte canônica do catálogo de rotas e de
+seus critérios citados. O catálogo cobre nove rotas e separa mecanismo, rota, fonte
+de capital e prestador. `receivables-analysis/phase-two.ts` aplica os critérios sem
+aritmética econômica e sem modelo. `financial-core/eligibility-allocation.ts` apenas
+fecha o denominador título a título; não conhece regra legal ou mandato.
+
+O gate promovido é elegibilidade técnica de rota, não buyer fit. FIDC não é tratado
+como única saída. Factoring, bancos, financeiras, SCDs, fundos e investidores
+institucionais aparecem conforme sua capacidade jurídica e econômica. Securitizadora
+e plataforma tecnológica permanecem prestadores ou canais, salvo evidência de uma
+entidade financiadora distinta.
+
+O motor retorna `technically_eligible`, `conditionally_eligible`, `not_evaluated` ou
+`ineligible`. Estimativa não decide. Gravame ou cessão anterior não resolvidos
+bloqueiam. Pendência operacional remediável condiciona. O matching de entidade,
+capacidade e apetite atuais continua fora deste gate.
+
 ## O que já é aproveitável
 
 - Validação de chaves e âncoras duplicadas.
