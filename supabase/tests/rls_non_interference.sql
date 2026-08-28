@@ -996,8 +996,8 @@ begin
   if (
     select extraction_method
     from public.intake_field_candidates
-    where organization_id = tenant_a
-      and intake_session_id = session_a
+    where organization_id = '20000000-0000-4000-8000-000000000001'
+      and intake_session_id = '40000000-0000-4000-8000-000000000003'
       and extractor_key = 'scope.related_company'
   ) <> 'llm_anchored' then
     raise exception 'worker did not normalize legacy model_extraction to llm_anchored';
