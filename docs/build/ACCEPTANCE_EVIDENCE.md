@@ -1,5 +1,24 @@
 # Acceptance Evidence
 
+## Vertical de recebíveis, coleta governada de evidências da Fase 6, 28/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Fonte única | catálogo `receivables-evidence` | 18 fatos, 18 definições únicas, todas com evidência aceitável, padrão de conclusão e declaração isolada proibida como prova |
+| Lote operacional | gold do compilador | lote atual limitado a cinco tarefas; demais itens permanecem em backlog ordenado |
+| Evidência já entregue | cobertura completa | fato seguro concluído desaparece do plano e não é solicitado novamente |
+| Amostra | cobertura parcial favorável | tarefa pede somente a cobertura remanescente e preserva contagem coberta e universo total |
+| Achado adverso | cessão anterior em um título | tarefa crítica de resolução ou segregação antecede pedidos genéricos |
+| Fontes divergentes | duas observações vigentes | tarefa crítica de reconciliação, sem escolha silenciosa |
+| Verdade de mercado | transação observada e inferência | apetite e capacidade continuam abertos até confirmação direta ou de relacionamento |
+| Diversidade de compradores | mandato sintético | compilador opera por programa e `providerKind`, inclusive `factoring_company`; não pressupõe FIDC |
+| Replay Vertentes | eval bruto | carteira e pacote financeiro reconhecidos; titularidade, gravames e controle de duplicidade permanecem tarefas abertas |
+| Fronteira | planos da operação e de mandatos | sem consulta externa executada, contato automático, recomendação ao cliente ou divulgação de identidade |
+| Gate integral | `pnpm check`, Node 24.19.0 | lint, typecheck, testes e build verdes nos 41 pacotes; 160 testes do playbook, 29 do case engine e 37 de evals |
+
+O contrato da Fase 6 transforma lacuna em trabalho auditável. Ele ainda não integra registradoras,
+SEFAZ, bureaus nem CRM e não acredita o caso completo.
+
 ## Vertical de recebíveis, fatos contratuais e verdade de mercado da Fase 5, 28/08/2026
 
 | Evidência | Verificação | Resultado |

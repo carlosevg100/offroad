@@ -209,6 +209,24 @@ describe("Vertentes Phase 3 raw-document replay", () => {
     });
     const evaluation = evaluateReceivablesPhaseThree(pipeline, gold);
 
+    const operationTasks = [...pipeline.evidenceCollection.operation.currentBatch, ...pipeline.evidenceCollection.operation.backlog];
+    const requestedFactIds = operationTasks.flatMap((task) => task.factIds);
+    expect(pipeline.evidenceCollection.operation.currentBatch.length).toBeLessThanOrEqual(5);
+    expect(pipeline.evidenceCollection.operation.completedFactIds).toEqual(expect.arrayContaining([
+      "claim_existence_evidenced",
+      "company_credit_package_available",
+    ]));
+    expect(requestedFactIds).toEqual(expect.arrayContaining([
+      "cedent_ownership_confirmed",
+      "unresolved_prior_assignment_or_lien",
+      "title_control_and_duplicate_check_available",
+    ]));
+    expect(pipeline.evidenceCollection.operation.boundaries).toMatchObject({
+      manualAttestationDecidesRouteFacts: false,
+      externalVerificationExecuted: false,
+      externalContactAllowed: false,
+    });
+
     expect(evaluation.calculation).toMatchObject({exact: gold.calculations.length, accuracy: 1, missing: [], divergent: []});
     expect(evaluation.classification.accuracy).toBe(1);
     expect(evaluation.defects).toMatchObject({expected: 8, detected: 8, recall: 1, precision: 1});

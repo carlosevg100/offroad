@@ -1,13 +1,31 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 28 August 2026. Receivables Phase 4 is live from the release
-> recorded on `main` commit `0938367`. Phase 5 adds governed contractual-fact
-> resolution and narrows which market sources may decide policy.
+> Current as of 28 August 2026. Receivables Phase 5 is live on `main`. Phase 6
+> adds governed evidence collection for operation facts and provider mandates.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Engineering update: receivables evidence collection Phase 6, 28 August 2026
+
+The canonical playbook now specifies how each of the 18 route facts can be evidenced, why it
+matters and what closes it. The case engine compiles those definitions against evidence already
+seen and returns a current batch of at most five tasks plus an ordered backlog. Complete safe
+evidence is not requested again. Favourable samples require only the remaining coverage;
+conflicts require reconciliation; prior assignments, liens and locks require release, resolution
+or segregation.
+
+Provider-program governance uses a separate internal plan. Missing, stale and divergent policy
+are distinguished from live appetite and available capacity. Observed transactions and desk
+inference cannot confirm live state. The plan works across banks, finance companies, SCDs,
+factoring companies, FIDCs, private-credit funds and the other provider kinds in the route
+catalogue; it does not collapse receivables financing into FIDC.
+
+Neither plan performs a registry lookup, contacts a provider, exposes provider identity or
+authorizes company-facing direction. The exact contract and gold cases are in
+`docs/knowledge/recebiveis/PHASE-6-EVIDENCE-COLLECTION.md`.
 
 ### Engineering update: receivables contractual facts and market truth Phase 5, 28 August 2026
 
