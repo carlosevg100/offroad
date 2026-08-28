@@ -23,7 +23,7 @@ const DOCUMENT = "50000000-0000-4000-8000-000000000003";
  * `supabase/tests/rls_non_interference.sql` answers it against a real database.
  */
 function storageDouble(options: {failDownload?: boolean; failUpload?: boolean} = {}) {
-  const calls: {bucket: string; kind: "download" | "upload"; path: string; expiresIn?: number}[] = [];
+  const calls: {bucket: string; kind: "download" | "upload"; path: string; expiresIn?: number; upsert?: boolean}[] = [];
   const supabase = {
     storage: {
       from(bucket: string) {
@@ -33,8 +33,8 @@ function storageDouble(options: {failDownload?: boolean; failUpload?: boolean} =
             if (options.failDownload) return {data: null, error: {message: "denied"}};
             return {data: {signedUrl: `https://storage.invalid/storage/v1/object/sign/${bucket}/${path}?token=download`}, error: null};
           },
-          async createSignedUploadUrl(path: string) {
-            calls.push({bucket, kind: "upload", path});
+          async createSignedUploadUrl(path: string, uploadOptions?: {upsert?: boolean}) {
+            calls.push({bucket, kind: "upload", path, upsert: uploadOptions?.upsert});
             if (options.failUpload) return {data: null, error: {message: "denied"}};
             return {data: {signedUrl: `https://storage.invalid/storage/v1/object/upload/sign/${bucket}/${path}?token=upload`, token: "upload", path}, error: null};
           },
@@ -85,6 +85,7 @@ describe("pipeline run links", () => {
 
     expect(calls.filter((call) => call.kind === "download").every((call) => call.bucket === "opportunity-documents")).toBe(true);
     expect(calls.filter((call) => call.kind === "upload").every((call) => call.bucket === "document-layers")).toBe(true);
+    expect(calls.filter((call) => call.kind === "upload").every((call) => call.upsert === true)).toBe(true);
     expect(calls.find((call) => call.kind === "download")?.expiresIn).toBe(PIPELINE_LINK_TTL_SECONDS);
   });
 
