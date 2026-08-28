@@ -466,6 +466,56 @@ export type Database = {
           },
         ]
       }
+      capital_provider_programs: {
+        Row: {
+          cnpj: string | null
+          created_at: string
+          id: string
+          legal_entity_name: string | null
+          program_name: string
+          provider_id: string
+          provider_kind: string
+          recorded_by: string | null
+          route_ids: string[]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          legal_entity_name?: string | null
+          program_name: string
+          provider_id: string
+          provider_kind: string
+          recorded_by?: string | null
+          route_ids: string[]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          legal_entity_name?: string | null
+          program_name?: string
+          provider_id?: string
+          provider_kind?: string
+          recorded_by?: string | null
+          route_ids?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_provider_programs_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       capital_requests: {
         Row: {
           collateral_summary: string | null
@@ -2005,10 +2055,12 @@ export type Database = {
           id: string
           note: string | null
           observed_at: string
+          program_id: string | null
           provenance: string
           recorded_at: string
           recorded_by: string | null
           source_url: string | null
+          valid_until: string | null
           value: Json
         }
         Insert: {
@@ -2017,10 +2069,12 @@ export type Database = {
           id?: string
           note?: string | null
           observed_at: string
+          program_id?: string | null
           provenance: string
           recorded_at?: string
           recorded_by?: string | null
           source_url?: string | null
+          valid_until?: string | null
           value: Json
         }
         Update: {
@@ -2029,10 +2083,12 @@ export type Database = {
           id?: string
           note?: string | null
           observed_at?: string
+          program_id?: string | null
           provenance?: string
           recorded_at?: string
           recorded_by?: string | null
           source_url?: string | null
+          valid_until?: string | null
           value?: Json
         }
         Relationships: [
@@ -2042,6 +2098,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "fund_directory"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fund_mandate_observations_program_fk"
+            columns: ["fund_id", "program_id"]
+            isOneToOne: false
+            referencedRelation: "capital_provider_programs"
+            referencedColumns: ["provider_id", "id"]
           },
         ]
       }

@@ -1614,6 +1614,117 @@ begin
 end;
 $$;
 
+-- A receivables program belongs to one exact provider record. Ordinary tenants cannot enumerate
+-- programs or mandates; a claimed provider can declare only against its own program, and every
+-- observation remains append-only.
+do $$
+declare
+  provider_id uuid;
+  program_row_id uuid;
+  visible integer;
+begin
+  set local role postgres;
+  insert into public.fund_directory (
+    legal_name, kind, status, claimed_by_organization_id, claimed_at
+  ) values (
+    'Financeira Recebíveis RLS S.A.',
+    'credit_finance_company',
+    'registered',
+    '20000000-0000-4000-8000-000000000001',
+    now()
+  ) returning id into provider_id;
+
+  insert into public.capital_provider_programs (
+    provider_id, program_name, provider_kind, route_ids, status
+  ) values (
+    provider_id,
+    'Desconto mercantil RLS',
+    'credit_finance_company',
+    array['financial_institution_receivables_discount'],
+    'active'
+  ) returning id into program_row_id;
+
+  insert into public.fund_mandate_observations (
+    fund_id, program_id, criterion, value, provenance, observed_at, valid_until, note
+  ) values (
+    provider_id,
+    program_row_id,
+    'available_capacity',
+    '"15000000"'::jsonb,
+    'conversation',
+    current_date,
+    current_date + 30,
+    'capacidade sintética do teste RLS'
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  select count(*) into visible from public.capital_provider_programs where id = program_row_id;
+  if visible <> 0 then
+    raise exception 'an unrelated tenant can read a capital-provider program';
+  end if;
+  begin
+    insert into public.capital_provider_programs (
+      provider_id, program_name, provider_kind, route_ids, recorded_by
+    ) values (
+      provider_id,
+      'Programa intruso',
+      'credit_finance_company',
+      array['financial_institution_receivables_discount'],
+      '10000000-0000-4000-8000-000000000002'
+    );
+    raise exception 'an unrelated tenant inserted a capital-provider program';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  select count(*) into visible from public.capital_provider_programs where id = program_row_id;
+  if visible <> 1 then
+    raise exception 'the claimed provider cannot read its own capital program';
+  end if;
+  insert into public.fund_mandate_observations (
+    fund_id, program_id, criterion, value, provenance, observed_at, valid_until, recorded_by
+  ) values (
+    provider_id,
+    program_row_id,
+    'live_appetite',
+    'true'::jsonb,
+    'declared',
+    current_date,
+    current_date + 30,
+    '10000000-0000-4000-8000-000000000001'
+  );
+  begin
+    update public.capital_provider_programs
+      set provider_id = gen_random_uuid()
+      where id = program_row_id;
+    raise exception 'a provider rewrote the owner of its capital program';
+  exception
+    when insufficient_privilege then null;
+  end;
+  begin
+    update public.fund_mandate_observations
+      set valid_until = current_date + 60
+      where fund_mandate_observations.program_id = program_row_id;
+    raise exception 'a provider rewrote append-only program evidence';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  set local role postgres;
+end;
+$$;
+
 -- ---------------------------------------------------------------------------------------------
 -- The evidence chain is not writable by the company whose evidence it is.
 --

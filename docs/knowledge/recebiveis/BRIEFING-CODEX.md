@@ -87,6 +87,13 @@ cessão fiduciária, veículo dedicado e securitização. Canal tecnológico, ve
 fonte de capital e prestador são entidades diferentes. Critérios [E] ficam como
 `not_evaluated` e nunca reprovam ou aprovam uma rota.
 
+A Fase 2B usa programas de capital identificados, não uma lista genérica de fundos.
+Cada observação de política, capacidade e apetite declara fonte, data e validade. A
+shortlist ao vivo exige capacidade e apetite atuais confirmados. Banco, financeira,
+SCD, factoring, FIDC, fundo privado, family office, investidor institucional e
+programa de sacado concorrem pelo mesmo contrato; nenhum tipo é default. Cheques
+parciais podem compor a solução e são alocados deterministicamente.
+
 ### Fase 3 · A esteira de casos
 Harness que roda um caso (acervo de entrada) de ponta a ponta pelas 5 camadas e
 compara com o gabarito: métricas exatas, defeitos encontrados (recall e precisão),

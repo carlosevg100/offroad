@@ -59,6 +59,32 @@ O motor retorna `technically_eligible`, `conditionally_eligible`, `not_evaluated
 bloqueiam. Pendência operacional remediável condiciona. O matching de entidade,
 capacidade e apetite atuais continua fora deste gate.
 
+## Estado após o segundo gate da Fase 2
+
+`fund-mandate/receivables-provider.ts` substitui o atalho fund-centric por um
+contrato normalizado de instituição, programa, rota e observação de mandato. O
+universo inclui banco, financeira, SCD, factoring, FIDC, fundo privado, family
+office, investidor institucional e programa patrocinado pelo sacado. Uma entidade
+pode manter vários programas, cada um com política, validade, capacidade e apetite
+próprios.
+
+`receivables-analysis/phase-two-b.ts` confronta o caso da Fase 2A com esses programas
+sem modelo e sem score mágico. O executor distingue política atendida, apetite ao
+vivo confirmado, elegibilidade condicional, não avaliado e inelegível. Capacidade e
+apetite somente liberam shortlist quando foram confirmados diretamente ou por
+relacionamento confirmado e continuam vigentes.
+
+`financial-core/receivables/provider-allocation.ts` calcula o envelope de alocação
+com precisão decimal. Um cheque parcial continua útil quando atende o mínimo do
+programa, mesmo sem cobrir o pedido inteiro. O teto é o menor entre saldo solicitado,
+tíquete máximo, capacidade confirmada e colateral elegível. Matching técnico não
+autoriza recomendação à companhia, contato ou introdução.
+
+A persistência agora registra programas em `capital_provider_programs` e liga cada
+observação append-only ao programa exato. RLS foi validada em staging: outros tenants
+não enumeram programas, e o provedor só declara observações contra seu próprio
+programa. O auditor de segurança não encontrou alertas.
+
 ## O que já é aproveitável
 
 - Validação de chaves e âncoras duplicadas.
@@ -70,7 +96,7 @@ capacidade e apetite atuais continua fora deste gate.
 - Cenários adversariais parametrizados.
 - Separação conceitual entre FIDC, cessão e fonte de pagamento.
 
-## O que impede aprovação
+## Dívida técnica remanescente no protótipo legado
 
 1. Parte dos cálculos financeiros vive fora do `financial-core`.
 2. A validação de valores usa conversão para `Number`, incompatível com a regra de

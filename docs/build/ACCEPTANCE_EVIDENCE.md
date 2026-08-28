@@ -1,5 +1,24 @@
 # Acceptance Evidence
 
+## Vertical de recebíveis, programas e mandatos da Fase 2B, 27/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Contrato de mercado | `@offroad/fund-mandate` | instituição, programa, rota, política, capacidade e apetite permanecem conceitos separados |
+| Universo de compradores | catálogo e testes | banco, financeira, SCD, factoring, FIDC, fundo privado, family office, investidor institucional e programa de sacado, sem default por tipo |
+| Procedência e validade | resolver de observações | toda regra carrega fonte e janela de validade; divergência é visível; capacidade e apetite exigem confirmação |
+| Matching determinístico | `@offroad/receivables-analysis` | cinco estados explícitos, sem score mágico; métrica estimada abstém e capacidade não confirmada bloqueia shortlist ao vivo |
+| Alocação | `@offroad/financial-core` | cheque parcial preservado; teto no menor entre pedido, tíquete, capacidade e colateral elegível |
+| Gold adversarial | seis casos sintéticos | factoring e financeira sem FIDC, SCD sem capacidade confirmada, rota indisponível, estimativa e pool insuficiente |
+| Oráculo independente | `oracle-receivables-providers.py` | seis casos verificados sem importar o motor TypeScript |
+| Persistência | migration `receivables_provider_programs` | programas normalizados e observações ligadas ao programa exato, append-only |
+| Isolamento em staging | smoke test RLS | tenant não relacionado vê zero; provedor lê o próprio programa e não reescreve ownership ou evidência |
+| Segurança Supabase | database advisor | zero alertas de segurança após a migration |
+| Fronteira institucional | relatório da Fase 2B | recomendação à companhia, contato, distribuição, introdução qualificada e aprovação de crédito permanecem falsos |
+
+Este gate cria uma shortlist técnica interna e governada. Ele não transforma aderência
+em oferta, aprovação, compromisso de capital ou autorização de contato.
+
 ## Vertical de recebíveis, elegibilidade de rotas da Fase 2A, 27/08/2026
 
 | Evidência | Verificação | Resultado |

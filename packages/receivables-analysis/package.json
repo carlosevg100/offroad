@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@offroad/financial-core": "workspace:*",
+    "@offroad/fund-mandate": "workspace:*",
     "decimal.js": "10.6.0",
     "zod": "4.4.3"
   },
