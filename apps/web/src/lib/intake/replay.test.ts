@@ -79,6 +79,26 @@ describe("intake event replay boundary", () => {
     });
   });
 
+  it("removes database idempotency metadata before parsing the strict domain event", () => {
+    expect(intakeEventFromRow({
+      ...scopeRow,
+      payload: {...scopeRow.payload, requestHash: "a".repeat(64)} as unknown as
+        Database["public"]["Tables"]["intake_domain_events"]["Row"]["payload"],
+    })).toMatchObject({
+      type: "analysis_scope_recorded",
+      caseId: sessionId,
+      scope: {version: 1},
+    });
+  });
+
+  it("still rejects unknown business payload fields", () => {
+    expect(() => intakeEventFromRow({
+      ...scopeRow,
+      payload: {...scopeRow.payload, unexpectedBusinessField: true} as unknown as
+        Database["public"]["Tables"]["intake_domain_events"]["Row"]["payload"],
+    })).toThrow();
+  });
+
   it("rebuilds the routed state and reports which domains the stream covers", async () => {
     const replay = await loadIntakeReplay({
       supabase: supabaseWith([frameRow, routeRow]),

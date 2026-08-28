@@ -38,8 +38,14 @@ export function intakeEventFromRow(row: IntakeEventRow): IntakeEvent {
     throw new Error("invalid intake event payload");
   }
 
+  // Database commands add `requestHash` to the event envelope for idempotency. It is transport
+  // metadata, not part of the strict economic event schema, so remove only this named field at
+  // the storage trust boundary. Unknown business fields must continue to fail closed.
+  const domainPayload = {...row.payload} as Record<string, Json | undefined>;
+  delete domainPayload.requestHash;
+
   return intakeEventSchema.parse({
-    ...(row.payload as Record<string, Json | undefined>),
+    ...domainPayload,
     eventId: row.event_id,
     caseId: row.intake_session_id,
     sequence: Number(row.sequence),
