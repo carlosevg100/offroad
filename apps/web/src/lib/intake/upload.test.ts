@@ -9,7 +9,7 @@ describe("document upload rules", () => {
     expect(isAcceptedDocument({name: "erp.xlsx", size: DOCUMENT_MAX_BYTES})).toBe(true);
     expect(isAcceptedDocument({name: "erp.xlsx", size: DOCUMENT_MAX_BYTES + 1})).toBe(false);
     expect(isAcceptedDocument({name: "script.exe", size: 10})).toBe(false);
-    expect(isAcceptedDocument({name: "archive.zip", size: 10})).toBe(false);
+    expect(isAcceptedDocument({name: "nfe-amostra.zip", size: 10})).toBe(true);
     expect(isAcceptedDocument({name: "empty.pdf", size: 0})).toBe(false);
     expect(isAcceptedDocument({name: "noextension", size: 10})).toBe(false);
   });
@@ -34,7 +34,7 @@ describe("the door accepts everything the engine can read", () => {
    * Writing the list out makes the two sides visible to the same reader, so widening one without
    * the other fails here instead of failing a company.
    */
-  const readsDirectly = ["pdf", "csv", "tsv", "prn", "txt", "xlsx", "xls", "xlsb", "ods", "fods", "dbf", "docx", "pptx", "jpg", "jpeg", "png", "webp"];
+  const readsDirectly = ["pdf", "csv", "tsv", "prn", "txt", "xlsx", "xls", "xlsb", "ods", "fods", "dbf", "docx", "pptx", "jpg", "jpeg", "png", "webp", "zip"];
   const convertedByTheWorker = ["doc", "ppt", "rtf", "odt", "odp", "wpd"];
 
   it.each([...readsDirectly, ...convertedByTheWorker])("accepts .%s", (extension) => {
@@ -43,7 +43,7 @@ describe("the door accepts everything the engine can read", () => {
 
   it("still refuses what nothing can read", () => {
     // The list is a capability statement, not an open door: an executable is not a document.
-    for (const extension of ["exe", "dmg", "zip", "sh", "app", "sql"]) {
+    for (const extension of ["exe", "dmg", "tar", "gz", "rar", "7z", "sh", "app", "sql"]) {
       expect(isAcceptedDocument({name: `x.${extension}`, size: 2048})).toBe(false);
     }
   });

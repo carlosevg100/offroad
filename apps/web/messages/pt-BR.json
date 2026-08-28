@@ -1076,7 +1076,7 @@
       "dropTitle": "Arraste seus documentos para começar",
       "dropBody": "Ou selecione arquivos do seu computador. Você pode enviar tudo de uma vez.",
       "select": "Selecionar documentos",
-      "formats": "PDF · Excel · CSV · Word · PowerPoint · Imagens · Texto · 50 MB por arquivo",
+      "formats": "PDF · Excel · CSV · ZIP de NF-e · Word · PowerPoint · Imagens · Texto · 50 MB por arquivo",
       "received": "Documentos recebidos",
       "remove": "Remover documento"
     },

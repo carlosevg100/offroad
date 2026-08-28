@@ -16,8 +16,8 @@ export type UploadScope = {kind: "session"; sessionId: string} | {kind: "opportu
  * was built for exactly that: it reads OpenDocument, the binary Excel dialects and dBase
  * directly, and converts the older Microsoft and WordPerfect formats through the worker.
  *
- * This list had never caught up. The engine read `.ods`, `.xlsb`, `.dbf`, `.rtf`, `.odt`, `.odp`
- * and `.tsv`; the browser refused all seven before they left the sender's machine, and the
+ * This list had never caught up. The engine read `.ods`, `.xlsb`, `.dbf`, `.rtf`, `.odt`, `.odp`,
+ * `.tsv` and NF-e `.zip` archives; the browser refused them before they left the sender's machine, and the
  * refusal is the one failure the sender experiences as "this product does not want my files".
  * `upload.test.ts` now holds the two sides together.
  */
@@ -27,6 +27,8 @@ export const DOCUMENT_ALLOWED_EXTENSIONS = new Set([
   "xlsx", "xls", "xlsb", "ods", "fods", "dbf",
   "docx", "pptx",
   "jpg", "jpeg", "png", "webp",
+  // NF-e archives are unpacked and normalized by the receivables evidence compiler.
+  "zip",
   // Converted by the worker into the modern equivalent, then parsed normally
   "doc", "ppt", "rtf", "odt", "odp", "wpd",
 ]);
