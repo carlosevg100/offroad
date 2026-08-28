@@ -82,7 +82,7 @@ describe("candidate rows", () => {
   it("proposes nothing as primary and accepts nothing — precedence is reconciliation's call", () => {
     const row = toCandidateRow(candidate(), {evidenceRank: 1});
     expect(row.is_primary).toBe(false);
-    expect(row.extraction_method).toBe("model_extraction");
+    expect(row.extraction_method).toBe("llm_anchored");
   });
 
   it("records an unverified candidate with its flags instead of dropping it", () => {
