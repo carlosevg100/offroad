@@ -120,19 +120,24 @@ describe("case chunks", () => {
     expect(chunks.every((entry) => entry.citation.anchor.id === "sec1")).toBe(true);
   });
 
-  it("uses the governed 12,000-character ceiling for large operational tapes", () => {
+  it("indexes a large operational tape as a bounded schema digest", () => {
     const layer: DocumentLayer = {
       documentId: "doc-a",
       documentVersion: 1,
-      kind: "spreadsheet",
+      kind: "csv",
       sheets: [{
         name: "CARTEIRA",
         hidden: false,
-        cells: Array.from({length: 1_000}, (_, index) => ({
-          ref: `A${index + 1}`,
-          v: `titulo-${index + 1}-${"recebivel".repeat(14)}`,
-          t: "s" as const,
-        })),
+        cells: [
+          {ref: "A1", v: "titulo", t: "s" as const},
+          {ref: "B1", v: "sacado", t: "s" as const},
+          {ref: "C1", v: "valor", t: "s" as const},
+          ...Array.from({length: 5_100}, (_, index) => ({
+            ref: `A${index + 2}`,
+            v: `titulo-confidencial-${index + 1}`,
+            t: "s" as const,
+          })),
+        ],
         tables: [],
       }],
       scaleDeclarations: [],
@@ -148,10 +153,14 @@ describe("case chunks", () => {
       layer,
     });
 
-    expect(chunks.length).toBeGreaterThan(1);
-    expect(chunks.every((entry) => entry.content.length <= 12_000)).toBe(true);
-    expect(chunks.some((entry) => entry.content.length > 6_000)).toBe(true);
-    expect(chunks.every((entry) => entry.citation.anchor.id === "sCARTEIRA")).toBe(true);
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0]?.content).toContain("Base operacional: Carteira de recebíveis");
+    expect(chunks[0]?.content).toContain("A: titulo | B: sacado | C: valor");
+    expect(chunks[0]?.content).not.toContain("titulo-confidencial-5100");
+    expect(chunks[0]).toMatchObject({
+      citation: {anchor: {id: "sCARTEIRA", representation: "schema_digest"}},
+      tags: expect.arrayContaining(["operational_tape", "schema_digest", "full_evidence_preserved"]),
+    });
   });
 });
 

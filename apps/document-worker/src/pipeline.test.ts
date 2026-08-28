@@ -248,6 +248,12 @@ describe("a healthy document goes through every stage", () => {
     expect(outcome.status).toBe("succeeded");
     expect(extract).not.toHaveBeenCalled();
     expect(calls.candidates).toEqual([]);
+    expect(calls.retrievalChunks).toHaveLength(1);
+    expect(calls.retrievalChunks[0]).toHaveLength(1);
+    expect(calls.retrievalChunks[0]?.[0]).toMatchObject({
+      source_anchor: {representation: "schema_digest"},
+      tags: expect.arrayContaining(["operational_tape", "schema_digest", "full_evidence_preserved"]),
+    });
     expect(calls.completed[0]).toMatchObject({
       extraction: {
         mode: "deterministic_only",
