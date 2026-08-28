@@ -80,10 +80,10 @@ export function pipelineEnabledFor(organization: {
  * and `private.storage_opportunity_id` take folder 1 and folder 2), so the path itself is what
  * keeps one tenant from writing into another's prefix.
  *
- * The last segment is unique per attempt rather than per document version. That is what lets
- * the bucket keep insert-only permissions: a reprocess writes a new object and repoints the
- * `document_layers` row at it, so nobody needs the right to overwrite, and the layer a fact
- * was cited from is still there to be read.
+ * The last segment is unique per processing run rather than per document version. A retry of
+ * the same job reuses that exact object path, while a later reprocess writes a new object and
+ * repoints the `document_layers` row at it. The signed token permits idempotent replacement of
+ * only that one run-scoped object; it does not grant general update access to the bucket.
  */
 export function layerObjectPath(input: {
   organizationId: string;
@@ -135,7 +135,10 @@ export async function signPipelineDocuments(input: {
       sourceDocumentId: document.id,
       attemptId: newAttemptId(),
     });
-    const upload = await input.supabase.storage.from("document-layers").createSignedUploadUrl(objectPath);
+    // A worker retry must be able to store the same deterministic layer again after a later
+    // stage failed. Without an upsert-scoped token, Storage rejects the second PUT before the
+    // worker can reach the failed stage, turning a recoverable database timeout into poison.
+    const upload = await input.supabase.storage.from("document-layers").createSignedUploadUrl(objectPath, {upsert: true});
     if (upload.error || !upload.data?.signedUrl) return {ok: false, error: "processing"};
 
     entries.push({

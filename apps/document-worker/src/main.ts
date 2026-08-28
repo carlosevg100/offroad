@@ -123,7 +123,10 @@ async function main(): Promise<void> {
     uploadLayer: async (url, body) => {
       const response = await fetch(guardStorageUrl("layer_upload_url", url), {
         method: "PUT",
-        headers: {"content-type": "application/json"},
+        // The URL was minted with an upsert-scoped token. Replaying the same deterministic
+        // layer after a later stage failed must be idempotent, while the token remains bound
+        // to this one run-scoped object path.
+        headers: {"content-type": "application/json", "x-upsert": "true"},
         // Node's fetch wants a BodyInit; a copy into a Buffer is the cheapest way there.
         body: Buffer.from(body),
       });

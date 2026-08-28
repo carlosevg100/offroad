@@ -848,6 +848,7 @@ declare
   manifest jsonb;
   manifest_id uuid;
   retrieval jsonb;
+  bulk_chunks jsonb;
   evidence_payload bytea := convert_to('receivables-evidence-fixture', 'utf8');
   evidence_result jsonb;
 begin
@@ -1117,6 +1118,28 @@ begin
     raise exception 'worker did not persist its parser-anchored retrieval chunk: %', result;
   end if;
 
+  -- A realistic receivables tape produces hundreds or thousands of parser-anchored chunks.
+  -- The worker command must replace that index atomically without a row-by-row timeout.
+  select jsonb_agg(jsonb_build_object(
+    'chunk_key', format('50000000-0000-4000-8000-000000000003:v1:tape:%s', n),
+    'content', format('Receita do título de recebível sintético %s com sacado, vencimento, valor e status documental.', n),
+    'content_hash', encode(extensions.digest(
+      format('Receita do título de recebível sintético %s com sacado, vencimento, valor e status documental.', n),
+      'sha256'
+    ), 'hex'),
+    'locale', 'pt-BR',
+    'source_anchor', jsonb_build_object('kind', 'sheet', 'id', 'sCARTEIRA', 'sheet', 'CARTEIRA', 'part', n),
+    'tags', jsonb_build_array('sheet', 'visible')
+  ) order by n)
+  into bulk_chunks
+  from generate_series(1, 1200) as series(n);
+
+  perform set_config('statement_timeout', '8s', true);
+  result := public.worker_record_retrieval_chunks(job_id, capability, bulk_chunks);
+  if (result->>'written')::integer <> 1200 then
+    raise exception 'worker did not atomically replace a high-volume retrieval index: %', result;
+  end if;
+
   result := public.worker_complete_job(job_id, capability, '{"documents":1, "spend": {"costUsd": 0.42, "calls": 3}}'::jsonb);
   if (result->>'pending_jobs')::integer <> 1 then
     raise exception 'the final document did not enqueue case analysis';
@@ -1265,6 +1288,14 @@ declare
 begin
   -- The worker intentionally has no tenant membership, so inspect persistence only after
   -- returning to the database owner. The value must be JSON null, never SQL NULL.
+  if (
+    select count(*)
+    from public.case_retrieval_chunks
+    where source_document_id = document_id
+  ) <> 1200 then
+    raise exception 'worker did not persist the complete high-volume retrieval index';
+  end if;
+
   if not exists (
     select 1
     from public.intake_field_candidates
@@ -1315,8 +1346,8 @@ declare
   accepted boolean;
 begin
   if (select count(*) from public.case_retrieval_chunks
-      where source_document_id = '50000000-0000-4000-8000-000000000003') <> 1 then
-    raise exception 'tenant A could not read its own governed case chunk';
+      where source_document_id = '50000000-0000-4000-8000-000000000003') <> 1200 then
+    raise exception 'tenant A could not read its complete governed case index';
   end if;
   if (select count(*) from public.house_playbook_versions) <> 0
     or (select count(*) from public.house_playbook_chunks) <> 0
