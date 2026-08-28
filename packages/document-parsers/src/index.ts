@@ -44,6 +44,13 @@ export {parseCsv, csvParserVersion, columnLetters} from "./csv";
 export {parseDocx, docxParserVersion} from "./docx";
 export {parsePptx, pptxParserVersion} from "./pptx";
 export {parseImageWithOcr, pagesFromOcr, ocrLayerVersion} from "./ocr";
+export {
+  parseNfeArchive,
+  nfeArchiveParserVersion,
+  type NfeArchiveInvoice,
+  type NfeArchiveCancellation,
+  type NfeArchiveParseResult,
+} from "./nfe-archive";
 export {detectCfbSubtype, cfbMimeTypes, type CfbSubtype} from "./cfb";
 
 const ooxml = {

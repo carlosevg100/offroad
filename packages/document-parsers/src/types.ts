@@ -67,8 +67,11 @@ export const parserLimits = {
   maxBytes: 100 * 1024 * 1024,
   maxPages: 1_500,
   maxSheets: 200,
-  maxCellsPerSheet: 300_000,
-  maxRowsPerTable: 20_000,
+  // A receivables tape routinely carries tens of thousands of titles. The limits stay
+  // finite, but must cover the accredited Vertentes case (34,397 rows × 15 columns)
+  // without silently dropping the portfolio tail.
+  maxCellsPerSheet: 1_000_000,
+  maxRowsPerTable: 100_000,
   maxBlocksPerPage: 4_000,
   maxCharactersPerBlock: 20_000,
   maxTotalCharacters: 20_000_000,
