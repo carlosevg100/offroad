@@ -4,6 +4,34 @@ Atualizado em: 2026-08-27
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Vertical de recebíveis, programas e mandatos da Fase 2B, 27/08/2026
+
+O matching deixou de partir de um cadastro genérico de fundos. O contrato canônico
+agora separa instituição, entidade legal, programa ou veículo, rota, política,
+apetite e capacidade. O universo inclui bancos, financeiras, SCDs, factorings,
+FIDCs, fundos privados, family offices, investidores institucionais e programas de
+sacados. FIDC não recebe prioridade nem é necessário para que uma alternativa seja
+promovida.
+
+`@offroad/fund-mandate` resolve observações versionadas com fonte, data e validade.
+Capacidade e apetite ao vivo precisam de confirmação direta ou de relacionamento;
+inferência e fonte expirada não liberam shortlist. `@offroad/receivables-analysis`
+aplica os critérios ao caso da Fase 2A sem score opaco e conserva abstenção quando a
+métrica é estimada ou o denominador está ausente.
+
+`@offroad/financial-core` calcula o envelope de alocação com precisão decimal. Um
+programa pode financiar parte de uma operação maior; o limite confirmado é o menor
+entre pedido, tíquete máximo, capacidade confirmada e colateral elegível. A falta de
+cobertura integral não elimina um cheque parcial que atende ao mínimo.
+
+O banco ganhou `capital_provider_programs` e observações de mandato vinculadas ao
+programa exato, append-only e protegidas por RLS. Staging passou no smoke test de
+isolamento e o auditor de segurança retornou zero alertas. Seis casos sintéticos,
+incluindo factoring e financeira sem qualquer FIDC compatível, capacidade inferida,
+rota indisponível, métrica estimada e colateral insuficiente, são verificados por
+oráculo Python independente. Recomendação à companhia, contato, distribuição,
+introdução qualificada e aprovação de crédito continuam desabilitados.
+
 ## Vertical de recebíveis, elegibilidade técnica de rotas da Fase 2A, 27/08/2026
 
 O catálogo canônico deixou de tratar FIDC como sinônimo de financiamento por

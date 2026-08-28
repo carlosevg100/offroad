@@ -84,6 +84,7 @@ export type ReceivablesPhaseTwoReport = {
   version: typeof receivablesPhaseTwoReportVersion;
   analysisLayer: "deterministic_route_eligibility";
   phaseOne: {version: string; status: ReceivablesPhaseOneReport["quality"]["status"]};
+  universe: {id: string; datasetHash: string; reportingDate: string};
   routes: readonly ReceivablesRouteEligibilityResult[];
   providerUniverse: readonly string[];
   quality: {
@@ -188,6 +189,7 @@ export function analyzeReceivablesPhaseTwo(input: ReceivablesPhaseTwoInput): Rec
     version: receivablesPhaseTwoReportVersion,
     analysisLayer: "deterministic_route_eligibility",
     phaseOne: {version: input.phaseOne.version, status: input.phaseOne.quality.status},
+    universe: {id: input.universe.id, datasetHash: input.phaseOne.universe.datasetHash, reportingDate: input.universe.dates.reportingDate},
     routes,
     providerUniverse: unique(routes.flatMap((route) => route.capitalProviderTypes)),
     quality: {status: blockers.length === 0 ? "complete_for_route_screening" : "incomplete", blockers, warnings},

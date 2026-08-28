@@ -843,6 +843,9 @@ importers:
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../financial-core
+      '@offroad/fund-mandate':
+        specifier: workspace:*
+        version: link:../fund-mandate
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0

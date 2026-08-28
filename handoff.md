@@ -8,6 +8,32 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: receivables provider mandates Phase 2B, 27 August 2026
+
+Receivables buyer fit is no longer fund-centric. The canonical contract separates
+the provider institution, legal entity, capital program, executable routes, policy,
+current appetite and confirmed capacity. Banks, credit finance companies, SCDs,
+factorings, FIDCs, private-credit funds, family offices, institutional investors and
+buyer-sponsored programs share one governed contract. FIDC is neither the default
+nor a prerequisite for a viable shortlist.
+
+Each mandate observation has source, observation date, validity and provenance.
+Current capacity and live appetite only support an internal live shortlist when
+directly declared or relationship-confirmed and still current. Public rules and desk
+inferences may support research, but cannot become invented live appetite.
+
+`@offroad/receivables-analysis` deterministically matches a Phase 2A case to the
+resolved program policies. `@offroad/financial-core` calculates the allocation
+envelope and deliberately retains valid partial cheques. Six frozen synthetic cases
+are checked by an independent Python oracle, including non-FIDC-only solutions.
+
+The database now has a provider-program layer and append-only program mandate
+observations. Staging RLS tests prove tenant isolation and provider ownership; the
+Supabase security advisor reports zero findings. Company-facing recommendation,
+external contact, distribution, qualified introduction and credit approval remain
+disabled. Phase 3 must prove the combined pipeline end to end before any product
+surface consumes this shortlist.
+
 ### Engineering update: receivables route eligibility Phase 2A, 27 August 2026
 
 Receivables financing is no longer modelled as “FIDC or nothing.” The canonical

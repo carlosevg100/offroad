@@ -250,3 +250,49 @@ O gate é aprovado quando:
   e reconcilia integralmente com a carteira aberta;
 - aderência a mandato, recomendação de comprador, contato e aprovação de crédito
   permanecem desabilitados.
+
+## 13. Gate da Fase 2B: aderência a programas de capital
+
+O comprador não é uma categoria abstrata e FIDC não é a alternativa padrão. A
+unidade de comparação é um **programa de capital identificado**, operado por uma
+entidade legal identificada. A mesma instituição pode manter programas com rotas,
+políticas, equipes, capacidade e apetite distintos.
+
+O diretório e o executor precisam separar:
+
+- a instituição ou grupo;
+- a entidade legal e o CNPJ;
+- o programa ou veículo específico;
+- as rotas que o programa pode executar;
+- a política de crédito e de elegibilidade;
+- o apetite atual;
+- a capacidade disponível confirmada;
+- a fonte, a data, a validade e o responsável por cada observação.
+
+O universo permitido inclui bancos, financeiras ou SCFIs, SCDs, factorings, FIDCs,
+fundos de crédito privado, family offices, investidores institucionais e programas
+patrocinados por sacados. Nenhum tipo recebe prioridade estrutural. O resultado
+depende do caso, da rota tecnicamente disponível e do mandato vigente.
+
+Uma observação pública ou inferida pode apoiar pesquisa e triagem, mas não confirma
+capacidade nem apetite. A shortlist interna ao vivo exige capacidade e apetite
+confirmados por declaração direta ou relacionamento confirmado, dentro da validade.
+Informação expirada ou divergente bloqueia a promoção, sem eliminar silenciosamente
+o programa do universo de pesquisa.
+
+O tamanho pedido não exige que um único programa cubra toda a operação. Um programa
+que atende o tíquete mínimo pode compor uma solução com outros financiadores até o
+menor entre seu tíquete máximo, sua capacidade confirmada, o colateral elegível e o
+saldo solicitado. A alocação é matemática do `financial-core`; critérios e fontes
+continuam fora do pacote matemático.
+
+O gate é aprovado quando:
+
+- programas não FIDC podem ser promovidos sem existir qualquer FIDC compatível;
+- toda observação de mandato possui procedência e validade;
+- ausência de denominador ou métrica estimada produz abstenção, nunca reprovação;
+- capacidade e apetite não confirmados impedem shortlist ao vivo;
+- cheque parcial válido não é descartado por não cobrir 100% do pedido;
+- a alocação respeita tíquete, capacidade, colateral elegível e saldo solicitado;
+- recomendação à companhia, contato, distribuição, introdução qualificada e
+  aprovação de crédito permanecem desabilitados.
