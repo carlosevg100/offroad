@@ -1,5 +1,24 @@
 # Acceptance Evidence
 
+## Vertical de recebíveis, fatos contratuais e verdade de mercado da Fase 5, 28/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Fonte canônica | catálogo de resolução | 18 fatos de elegibilidade e 18 definições únicas, sem lacuna ou duplicidade |
+| Resolução determinística | golds de `contract-facts` | cobertura completa resolve; amostra favorável, estimativa e fonte vencida abstêm; conflito permanece desconhecido |
+| Ônus anterior | cenário adversarial parcial | um ônus confirmado em parte da carteira bloqueia, sem exigir falsa prova negativa prévia |
+| Ausência não é prova | replay bruto Vertentes | titularidade, inexistência de ônus e controle de duplicidade permanecem desconhecidos sem evidência adequada |
+| Verdade de mercado | resolver de mandatos | declaração direta, relacionamento confirmado e regra publicada podem sustentar política; transação observada e inferência são somente pesquisa |
+| Responsabilidade | observações de mandato | `recordedBy` obrigatório, além da fonte, data e validade |
+| Integração | `runReceivablesCasePipeline` | observações são resolvidas antes da Fase 2A; exatamente um caminho de fatos é aceito |
+| Regressão Vertentes | avaliação E2E | detectores continuam reproduzidos sem promover fatos contratuais ausentes nem fabricar programa ao vivo |
+| Gate integral | `pnpm check`, Node 24.19.0 | lint, typecheck, testes e build verdes nos 41 pacotes; 54 testes de análise, 38 de mandatos, 21 do case engine e 37 de evals |
+| Fronteira institucional | relatório final | recomendação, contato, distribuição, introdução qualificada e aprovação de crédito permanecem falsos |
+
+Este gate torna explícita a passagem entre evidência e decisão de rota. Ele não
+acredita a Vertentes de ponta a ponta: hard facts contratuais e programas live
+continuam dependendo de comprovação real.
+
 ## Vertical de recebíveis, leitura bruta e detectores da Fase 4, 28/08/2026
 
 | Evidência | Verificação | Resultado |

@@ -4,6 +4,33 @@ Atualizado em: 2026-08-28
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Vertical de recebíveis, fatos contratuais e verdade de mercado da Fase 5, 28/08/2026
+
+O catálogo canônico agora define como resolver os 18 fatos usados pela
+elegibilidade técnica. Cada observação traz escopo, cobertura, data, validade,
+fonte, responsável e procedência. Ausência de ocorrência, amostra favorável,
+estimativa e fonte vencida não comprovam um fato para a carteira. Evidência
+material divergente permanece desconhecida; ônus anterior conhecido mantém as
+rotas afetadas fechadas mesmo quando aparece em parte do universo.
+
+O detector bruto da Vertentes deixou de concluir titularidade, inexistência de
+ônus e controle de duplicidade a partir da tape ou da amostra fiscal. O runner do
+caso recebe observações e resolve o contrato antes de executar a elegibilidade de
+rotas; o caminho anterior com fatos pré-resolvidos existe somente como adapter de
+regressão.
+
+Observações de mandato agora identificam quem as registrou e separam política de
+pesquisa de mercado. Transação observada e inferência de mesa ajudam a pesquisar,
+mas não decidem política nem liberam shortlist. Regra publicada pode sustentar
+política vigente; apetite e capacidade ao vivo continuam exigindo declaração
+direta ou confirmação de relacionamento.
+
+O gate integral local passou em Node 24.19.0 nos 41 pacotes: lint, typecheck,
+testes e build. Entre os pacotes centrais, passaram 54 testes de
+`receivables-analysis`, 38 de `fund-mandate`, 21 de `case-engine` e 37 de `evals`.
+Recomendação, contato, distribuição, introdução qualificada e aprovação de crédito
+continuam desabilitados. Contrato: `docs/knowledge/recebiveis/PHASE-5-CONTRACT-AND-MARKET-GATES.md`.
+
 ## Vertical de recebíveis, leitura bruta e detectores da Fase 4, 28/08/2026
 
 A Vertentes deixou de usar o universo normalizado como substituto da leitura dos

@@ -1,7 +1,10 @@
-import {receivablesRouteDefinitions} from "@offroad/credit-playbook";
+import {receivablesFactResolutionDefinitions, receivablesRouteDefinitions} from "@offroad/credit-playbook";
 import {
   analyzeReceivablesPhaseTwo,
   analyzeReceivablesPhaseTwoB,
+  resolveReceivablesContractFacts,
+  type ReceivablesFactObservation,
+  type ReceivablesFactResolutionReport,
   type ReceivablesPhaseTwoInput,
   type ReceivablesPhaseTwoBInput,
   type ReceivablesPhaseTwoBReport,
@@ -18,6 +21,18 @@ import {
  * deterministic executor. No second route catalogue is maintained in runtime code.
  */
 export const canonicalReceivablesRouteCatalogue: readonly ReceivablesRouteDefinitionInput[] = receivablesRouteDefinitions;
+
+export const canonicalReceivablesFactResolutionCatalogue = receivablesFactResolutionDefinitions;
+
+export function resolveCanonicalReceivablesContractFacts(input: {
+  asOf: string;
+  observations: readonly ReceivablesFactObservation[];
+}): ReceivablesFactResolutionReport {
+  return resolveReceivablesContractFacts({
+    ...input,
+    definitions: canonicalReceivablesFactResolutionCatalogue,
+  });
+}
 
 export function analyzeCanonicalReceivablesPhaseTwo(
   input: Omit<ReceivablesPhaseTwoInput, "routes">,

@@ -1,13 +1,41 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 28 August 2026. Receivables Phase 4 was merged through PR #296
-> and promoted from `main` commit `2977501` to Vercel production and the ECS
-> document worker.
+> Current as of 28 August 2026. Receivables Phase 4 is live from the release
+> recorded on `main` commit `0938367`. Phase 5 adds governed contractual-fact
+> resolution and narrows which market sources may decide policy.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Engineering update: receivables contractual facts and market truth Phase 5, 28 August 2026
+
+Route facts no longer need to arrive as unexamined booleans. The canonical
+playbook defines all 18 fact-resolution contracts and
+`@offroad/receivables-analysis` resolves scoped observations with coverage,
+validity, source owner and provenance before route eligibility runs. Missing
+evidence never proves a fact. A favourable sample, an estimate or an expired
+source cannot decide a portfolio fact. Conflicting current evidence remains
+unknown. A confirmed prior assignment or lien blocks even when found in only part
+of the portfolio.
+
+The Vertentes raw detector therefore no longer infers full ownership, absence of
+prior rights or duplicate-control availability from a tape or fiscal sample. Its
+measured defects and questions remain intact, while contractual hard facts stay
+open until the proper evidence exists.
+
+Market truth is narrower as well. Direct declarations, confirmed relationship
+updates and published rules may support current policy. Observed transactions and
+desk inference are research inputs only; they cannot decide policy or fabricate a
+live shortlist. Every mandate observation records its human or system owner. Live
+appetite and capacity still require direct or relationship confirmation.
+
+`@offroad/case-engine` resolves these observations before Phase 2A and retains the
+pre-resolved input only as an adapter and regression boundary. The full local gate
+passed on Node 24.19.0 across all 41 packages. No product surface is authorised to
+recommend, contact, distribute, introduce or approve a transaction; those external
+boundaries remain false.
 
 ### Engineering update: receivables raw-document detection Phase 4, 28 August 2026
 

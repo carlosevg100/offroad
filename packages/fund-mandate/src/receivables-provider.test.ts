@@ -16,6 +16,7 @@ const observation = <T>(
   sourceKind,
   sourceId: `${sourceKind}-${JSON.stringify(value)}`,
   sourceLabel: "Confirmação registrada para teste",
+  recordedBy: "analyst-1",
   observedAt,
   validUntil,
 });
@@ -55,13 +56,30 @@ describe("receivables provider mandate", () => {
     expect(resolved.unconfirmedCriteria).toEqual([]);
   });
 
-  it("does not treat observed deals as confirmed live capacity", () => {
+  it("does not treat observed deals as policy or confirmed live capacity", () => {
     const resolved = resolveReceivablesProviderMandate(mandate({
       availableCapacity: [observation("15000000", "observed_transaction")],
     }), "2026-08-27");
-    expect(resolved.availableCapacity?.decisionUseAllowed).toBe(true);
+    expect(resolved.availableCapacity?.decisionUseAllowed).toBe(false);
     expect(resolved.availableCapacity?.confirmed).toBe(false);
     expect(resolved.unconfirmedCriteria).toContain("available_capacity");
+  });
+
+  it("uses a published rule for policy but not as confirmed live appetite", () => {
+    const resolved = resolveReceivablesProviderMandate(mandate({
+      eligibleRoutes: [observation(["financial_institution_receivables_discount"], "published_rule")],
+      liveAppetite: [observation(true, "published_rule")],
+    }), "2026-08-27");
+    expect(resolved.eligibleRoutes?.decisionUseAllowed).toBe(true);
+    expect(resolved.liveAppetite?.decisionUseAllowed).toBe(true);
+    expect(resolved.liveAppetite?.confirmed).toBe(false);
+    expect(resolved.unconfirmedCriteria).toContain("live_appetite");
+  });
+
+  it("requires an identified recorder for every mandate observation", () => {
+    expect(() => resolveReceivablesProviderMandate(mandate({
+      liveAppetite: [{...observation(true), recordedBy: ""}],
+    }), "2026-08-27")).toThrow("recorder is required");
   });
 
   it("uses a current observation instead of letting a stale higher-priority source block it", () => {
@@ -94,5 +112,12 @@ describe("receivables provider mandate", () => {
     expect(() => resolveReceivablesProviderMandate(mandate({
       liveAppetite: [observation(true, "direct_declaration", "2026-09-01", "2026-09-30")],
     }), "2026-08-27")).toThrow("future mandate observation");
+  });
+
+  it("rejects impossible dates and a mandate version that is not effective yet", () => {
+    expect(() => resolveReceivablesProviderMandate(mandate(), "2026-02-31"))
+      .toThrow("invalid mandate as-of date");
+    expect(() => resolveReceivablesProviderMandate(mandate({effectiveFrom: "2026-08-28"}), "2026-08-27"))
+      .toThrow("mandate is not effective");
   });
 });
