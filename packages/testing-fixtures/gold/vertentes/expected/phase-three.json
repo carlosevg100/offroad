@@ -1,0 +1,36 @@
+{
+  "version": "2026.08.27-v1",
+  "caseId": "vertentes-a1-03",
+  "classification": {
+    "categoryIds": ["receivables_financing"],
+    "cellIds": ["A1-03_mercantil_b2b_multicedent"]
+  },
+  "calculations": [
+    {"id": "phaseOne.staticMetrics.portfolio.totalOpenValue", "value": "11897080.3"},
+    {"id": "phaseOne.dynamicMetrics.dilution.shareOfOrigination", "value": "0.02447267"},
+    {"id": "phaseOne.dynamicMetrics.repurchaseAndLoss.adjustedLossShare", "value": "0.01616655"},
+    {"id": "phaseOne.adjustedDebt.adjustedNetDebt", "value": "20940000"},
+    {"id": "phaseOne.proposals[0].result.cet.effectiveAnnualRate", "value": "0.62448085"},
+    {"id": "phaseOne.implicitAdvanceRate.implicitAdvanceRate", "value": "0.92904117"}
+  ],
+  "defectIds": [
+    "accounting_reconciliation_difference",
+    "cancelled_invoice_open",
+    "dilution_misclassification",
+    "economic_group_split",
+    "related_party_obligor",
+    "triangular_revenue_spike",
+    "undeclared_recourse_and_debt",
+    "unmarked_extensions"
+  ],
+  "compatibleProgramIds": [
+    "synthetic-factoring-vertentes",
+    "synthetic-finance-company-vertentes"
+  ],
+  "questionIds": [
+    "assigned_volume_for_repurchase_rate",
+    "dilution_reason_breakdown",
+    "extension_event_dates",
+    "tax_treatment_for_complete_cet"
+  ]
+}

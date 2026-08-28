@@ -35,6 +35,7 @@
     "@offroad/case-factory": "workspace:*",
     "@offroad/data-room": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
+    "@offroad/financial-core": "workspace:*",
     "@offroad/credit-analysis": "workspace:*",
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",

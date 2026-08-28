@@ -649,6 +649,9 @@ importers:
       '@offroad/document-parsers':
         specifier: workspace:*
         version: link:../document-parsers
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       '@offroad/fund-mandate':
         specifier: workspace:*
         version: link:../fund-mandate

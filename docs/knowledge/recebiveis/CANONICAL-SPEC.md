@@ -296,3 +296,26 @@ O gate é aprovado quando:
 - a alocação respeita tíquete, capacidade, colateral elegível e saldo solicitado;
 - recomendação à companhia, contato, distribuição, introdução qualificada e
   aprovação de crédito permanecem desabilitados.
+
+## 14. Gate da Fase 3: caso completo
+
+A Fase 3 não é aprovada por um agregado genérico. Cada caso possui gold versionado
+para cálculos, classificação, defeitos, programas e perguntas. O runner executa as
+camadas em ordem e conserva a procedência de toda afirmação.
+
+O gate exige simultaneamente:
+
+- 100% de igualdade exata nos cálculos congelados;
+- pelo menos 95% de acurácia na classificação multilabel;
+- pelo menos 90% de recall e 85% de precisão nos defeitos plantados;
+- conjunto exato de programas compatíveis, cada um com fontes atuais de política,
+  apetite e capacidade;
+- conjunto exato de perguntas, cada uma ligada a um gatilho medido ou citado, após
+  busca exaustiva na evidência já entregue;
+- 100% de procedência;
+- todas as fronteiras de recomendação externa, contato, introdução e aprovação de
+  crédito ainda fechadas.
+
+Replay sobre universo canônico prova matemática e composição. Acreditação de
+extração exige começar nos arquivos brutos. Verdade reservada e expected output
+nunca entram como input de detector.

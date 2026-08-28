@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## Vertical de recebíveis, harness E2E da Fase 3, 27/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Runner único | `runReceivablesCasePipeline` | Fases 1, 2A e 2B, classificação, defeitos e perguntas compõem uma execução governada |
+| Gold replay | teste sintético completo | cálculo, classificação, defeito, programa, pergunta e procedência passam simultaneamente |
+| Vertentes matemática | seis cálculos do gold | seis de seis exatos a partir do universo canônico |
+| Vertentes baseline | avaliação de caso completo | 0/8 detectores, 0/2 programas e 0/4 perguntas, reprovação explícita e permanente até implementação real |
+| Perguntas | contrato do runner e do evaluator | lista exata, gatilho não estimado, busca exaustiva em toda evidência entregue e zero pergunta já respondida |
+| Matching live | resultado da Fase 2B | apetite e capacidade carregam source IDs próprios; shortlist somente com ambos atuais e confirmados |
+| Procedência derivada | coletor de métricas | métricas compostas conservam a procedência de todos os inputs governados |
+| Fronteira institucional | relatório final | recomendação externa, contato, introdução qualificada e aprovação de crédito permanecem falsos |
+
+O harness é aceito como infraestrutura de avaliação. A Vertentes não é aceita como
+caso E2E até a leitura dos arquivos brutos, os detectores, as perguntas e o matching
+atingirem integralmente a régua congelada.
+
 ## Vertical de recebíveis, programas e mandatos da Fase 2B, 27/08/2026
 
 | Evidência | Verificação | Resultado |

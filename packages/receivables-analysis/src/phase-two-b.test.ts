@@ -119,6 +119,18 @@ describe("receivables Phase 2B provider mandate fit", () => {
     expect(report.providers.find((entry) => entry.programId === "factoring")?.status).toBe("live_appetite_confirmed");
     expect(report.providers.find((entry) => entry.programId === "financeira")?.status).toBe("live_appetite_confirmed");
     expect(report.providers.find((entry) => entry.programId === "fidc")?.status).toBe("ineligible");
+    expect(report.providers.find((entry) => entry.programId === "factoring")?.marketConfirmation).toEqual({
+      liveAppetite: {
+        current: true,
+        confirmed: true,
+        sourceId: "relationship_confirmation-true",
+      },
+      availableCapacity: {
+        current: true,
+        confirmed: true,
+        sourceId: "relationship_confirmation-\"10000000\"",
+      },
+    });
     expect(report.boundaries).toMatchObject({internalShortlistAllowed: true, externalDirectionAllowed: false, qualifiedIntroductionAllowed: false});
     expect(JSON.stringify(report)).not.toMatch(/score|percentage|ranking/);
   });

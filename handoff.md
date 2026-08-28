@@ -8,6 +8,22 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: receivables Phase 3 E2E harness, 27 August 2026
+
+The receivables vertical now has one governed case runner across classification,
+Phase 1 mathematics, Phase 2A route eligibility, Phase 2B program fit, detected
+defects and client questions. Its evaluator enforces exact calculations,
+classification accuracy, defect recall and precision, exact program and question
+sets, exhaustive delivered-evidence search and complete provenance.
+
+A compact synthetic gold replay passes every gate. The Vertentes A1-03 baseline
+passes six of six selected deterministic calculations but deliberately remains red:
+raw-document extraction has not yet produced the eight planted defects, the two
+synthetic programs or the four required questions. This distinction is mandatory.
+The harness is implemented; Vertentes is not yet an accredited end-to-end case.
+Reserved truth cannot be used as detector input. External recommendation, contact,
+qualified introduction and credit approval remain disabled.
+
 ### Engineering update: receivables provider mandates Phase 2B, 27 August 2026
 
 Receivables buyer fit is no longer fund-centric. The canonical contract separates

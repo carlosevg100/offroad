@@ -4,6 +4,21 @@ Atualizado em: 2026-08-27
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Vertical de recebíveis, harness E2E da Fase 3, 27/08/2026
+
+O `@offroad/case-engine` ganhou um runner único para classificação, Fase 1, Fase 2A,
+Fase 2B, defeitos e perguntas. O `@offroad/evals` aplica os gates congelados de
+cálculo, classificação, defeitos, programas, perguntas e procedência. Apetite atual
+e capacidade disponível agora preservam seus source IDs no resultado do matching.
+
+Um gold replay compacto passa todos os gates. A Vertentes tem um novo gold de Fase 3
+e um baseline que fecha exatamente seis cálculos a partir do universo canônico, mas
+falha honestamente nos oito detectores, nos dois programas sintéticos e nas quatro
+perguntas ainda ausentes. Isso separa harness pronto de caso acreditado. Nenhuma
+superfície de produto consome a shortlist e nenhuma fronteira externa foi aberta.
+
+Detalhes: `docs/knowledge/recebiveis/PHASE-3-HARNESS.md`.
+
 ## Vertical de recebíveis, programas e mandatos da Fase 2B, 27/08/2026
 
 O matching deixou de partir de um cadastro genérico de fundos. O contrato canônico

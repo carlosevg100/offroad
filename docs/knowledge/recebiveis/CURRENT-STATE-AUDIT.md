@@ -85,6 +85,20 @@ observação append-only ao programa exato. RLS foi validada em staging: outros 
 não enumeram programas, e o provedor só declara observações contra seu próprio
 programa. O auditor de segurança não encontrou alertas.
 
+## Estado do harness da Fase 3
+
+`case-engine/receivables-case.ts` agora compõe as Fases 1, 2A e 2B em uma única
+execução governada e acrescenta os contratos de classificação, defeitos e perguntas.
+`evals/receivables-phase-three.ts` aplica a régua congelada de cálculo,
+classificação, recall e precisão de defeitos, programas, perguntas e procedência.
+
+Um gold replay sintético passa a esteira completa. O baseline Vertentes fecha seis de
+seis cálculos selecionados, mas permanece reprovado de forma explícita porque a
+extração dos arquivos brutos, os oito detectores, os quatro gatilhos de pergunta e o
+matching dos dois programas sintéticos ainda não foram implementados de ponta a
+ponta. O harness está pronto; o caso Vertentes ainda não está acreditado. O contrato
+e o próximo gate estão em [`PHASE-3-HARNESS.md`](PHASE-3-HARNESS.md).
+
 ## O que já é aproveitável
 
 - Validação de chaves e âncoras duplicadas.
