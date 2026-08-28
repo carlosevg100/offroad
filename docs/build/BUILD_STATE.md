@@ -4,6 +4,30 @@ Atualizado em: 2026-08-28
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Vertical de recebíveis, coleta governada de evidências da Fase 6, 28/08/2026
+
+Os 18 fatos de elegibilidade agora possuem uma definição canônica de coleta no
+`credit-playbook`: etapa, lote, prioridade, instrução, motivo, evidências aceitáveis e padrão de
+conclusão. A lista não é duplicada no runner nem em prompt de agente.
+
+O `case-engine` compila as lacunas reais em um lote atual de no máximo cinco tarefas e backlog
+ordenado. Evidência completa e segura não volta a ser pedida. Amostra favorável pede a cobertura
+remanescente; estimativa pede substituição; fonte vencida pede atualização; conflito pede
+reconciliação; e cessão, trava ou gravame conhecido pede resolução, liberação ou segregação antes
+da coleta genérica. Declaração isolada nunca completa um fato de rota.
+
+Mandatos também produzem um plano interno de governança: política faltante, vencida ou divergente
+fica separada da confirmação de apetite e capacidade atuais. Transação observada e inferência da
+mesa continuam incapazes de confirmar o estado ao vivo. O plano não executa contato, consulta
+externa, recomendação ou divulgação de identidade.
+
+O replay bruto da Vertentes reconhece o que já foi comprovado nos arquivos e mantém titularidade,
+gravames e controle de duplicidade como trabalho aberto. Contrato e golds:
+`docs/knowledge/recebiveis/PHASE-6-EVIDENCE-COLLECTION.md`.
+
+O gate integral passou em Node 24.19.0 nos 41 pacotes: lint, typecheck, testes e build. Os pacotes
+alterados fecharam com 160 testes de `credit-playbook`, 29 de `case-engine` e 37 de `evals`.
+
 ## Vertical de recebíveis, fatos contratuais e verdade de mercado da Fase 5, 28/08/2026
 
 O catálogo canônico agora define como resolver os 18 fatos usados pela

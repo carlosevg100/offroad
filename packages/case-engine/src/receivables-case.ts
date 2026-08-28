@@ -1,5 +1,6 @@
 import type {AssertionProvenance} from "@offroad/financial-core";
-import type {ReceivablesProviderMandate} from "@offroad/fund-mandate";
+import {resolveReceivablesProviderMandate, type ReceivablesProviderMandate} from "@offroad/fund-mandate";
+import {receivablesEvidenceCollectionDefinitions} from "@offroad/credit-playbook";
 import {
   analyzeReceivablesPhaseOne,
   type ReceivablesEligibilityFact,
@@ -15,10 +16,17 @@ import {
 import {
   analyzeCanonicalReceivablesPhaseTwo,
   analyzeCanonicalReceivablesProviderFit,
+  canonicalReceivablesFactResolutionCatalogue,
   resolveCanonicalReceivablesContractFacts,
 } from "./receivables";
+import {
+  buildReceivablesMandateCollectionPlan,
+  buildReceivablesOperationCollectionPlan,
+  type ReceivablesMandateCollectionPlan,
+  type ReceivablesOperationCollectionPlan,
+} from "./receivables-evidence-collection";
 
-export const receivablesCasePipelineVersion = "2026.08.27-v1";
+export const receivablesCasePipelineVersion = "2026.08.28-v2";
 
 export type ReceivablesCaseClassification = {
   categoryIds: readonly string[];
@@ -82,6 +90,10 @@ export type ReceivablesCasePipelineReport = {
   factResolution: ReceivablesFactResolutionReport | null;
   phaseTwoA: ReceivablesPhaseTwoReport;
   phaseTwoB: ReceivablesPhaseTwoBReport;
+  evidenceCollection: {
+    operation: ReceivablesOperationCollectionPlan;
+    mandates: ReceivablesMandateCollectionPlan;
+  };
   defects: readonly ReceivablesDetectedDefect[];
   questions: readonly ReceivablesClientQuestion[];
   internalShortlistProgramIds: readonly string[];
@@ -164,6 +176,22 @@ export function runReceivablesCasePipeline(input: ReceivablesCasePipelineInput):
       ? {}
       : {titleClassificationsByProgram: input.providerFit.titleClassificationsByProgram}),
   });
+  const routeFacts = factResolution?.facts ?? input.routeFacts ?? [];
+  const evidenceCollection = {
+    operation: buildReceivablesOperationCollectionPlan({
+      asOf: input.routeFactResolution?.asOf ?? input.providerFit.asOf,
+      definitions: receivablesEvidenceCollectionDefinitions,
+      resolutionDefinitions: canonicalReceivablesFactResolutionCatalogue,
+      facts: routeFacts,
+      ...(input.routeFactResolution ? {observations: input.routeFactResolution.observations} : {}),
+      factResolution,
+      phaseTwoA,
+    }),
+    mandates: buildReceivablesMandateCollectionPlan({
+      asOf: input.providerFit.asOf,
+      mandates: input.providerFit.mandates.map((mandate) => resolveReceivablesProviderMandate(mandate, input.providerFit.asOf)),
+    }),
+  };
 
   const blockers: string[] = [];
   if (input.classification.categoryIds.length === 0) blockers.push("classification_category_missing");
@@ -201,6 +229,7 @@ export function runReceivablesCasePipeline(input: ReceivablesCasePipelineInput):
     factResolution,
     phaseTwoA,
     phaseTwoB,
+    evidenceCollection,
     defects: input.defects,
     questions: input.questions,
     internalShortlistProgramIds,
