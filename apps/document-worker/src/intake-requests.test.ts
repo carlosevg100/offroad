@@ -93,6 +93,18 @@ describe("worker request preparation", () => {
     expect(() => intakeEventFromWorkerRow({...eventRows()[0], sequence: 0})).toThrow();
   });
 
+  it("removes database idempotency metadata before strict domain replay", () => {
+    const row = {
+      ...eventRows()[2],
+      payload: {...eventRows()[2]!.payload, requestHash: "a".repeat(64)},
+    };
+
+    expect(intakeEventFromWorkerRow(row)).toMatchObject({
+      type: "analysis_scope_recorded",
+      scope: {version: 1},
+    });
+  });
+
   it("materializes a governed batch from replayed evidence", async () => {
     const {client, record} = queue(eventRows());
 
