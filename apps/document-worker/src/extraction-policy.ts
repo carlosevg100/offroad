@@ -1,5 +1,6 @@
 import type {DocumentProfile} from "@offroad/document-classification";
 import type {ParseResult} from "@offroad/document-parsers";
+import {maxSemanticTabularCells} from "@offroad/governed-retrieval";
 
 /**
  * Generic field extraction is designed for financial statements, contracts and narrative
@@ -12,7 +13,7 @@ import type {ParseResult} from "@offroad/document-parsers";
  * 11,516 cells became 129 extraction windows and 130 model calls for one workbook.
  */
 
-export const maxGenericTabularCells = 5_000;
+export const maxGenericTabularCells = maxSemanticTabularCells;
 
 export type GenericExtractionPolicy =
   | {
