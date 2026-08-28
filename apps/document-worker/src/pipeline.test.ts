@@ -210,6 +210,52 @@ describe("a healthy document goes through every stage", () => {
     expect(started).toContain("gate");
     expect(started).toContain("parse");
   });
+
+  it("does not send a large operational tape cell by cell to the model", async () => {
+    const rows = Array.from(
+      {length: 900},
+      (_, index) => `${index + 1},Sacado ${index + 1},100,2026-08-31,aberto,BRL`,
+    );
+    const largeTape = new TextEncoder().encode([
+      "titulo,sacado,valor,vencimento,status,moeda",
+      ...rows,
+    ].join("\n"));
+    const extract = vi.fn(async () => ({
+      candidates: [],
+      absentFields: [],
+      malformed: 0,
+      chunks: {total: 1, failed: 0},
+    }));
+    const {deps, calls} = fakes({
+      download: async () => largeTape,
+      extract,
+      classify: async () => ({
+        profile: {
+          document_kind: "receivables_aging",
+          information_class: "accounting",
+          evidence_rank: 3,
+          confidence: 0.96,
+        },
+      }),
+    });
+
+    const outcome = await processDocumentJob(job({
+      original_name: "titulos.csv",
+      byte_size: largeTape.byteLength,
+      sha256: sha256Of(largeTape),
+    }), deps);
+
+    expect(outcome.status).toBe("succeeded");
+    expect(extract).not.toHaveBeenCalled();
+    expect(calls.candidates).toEqual([]);
+    expect(calls.completed[0]).toMatchObject({
+      extraction: {
+        mode: "deterministic_only",
+        reason: "high_volume_tabular_dataset",
+      },
+    });
+    expect(calls.stages).toContainEqual({stage: "extract", status: "succeeded"});
+  });
 });
 
 describe("failures are classified by whether retrying could ever help", () => {

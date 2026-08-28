@@ -18,6 +18,7 @@ import {
   encodeReceivablesEvidence,
   fiscalArchiveEvidence,
 } from "./receivables-evidence";
+import {genericExtractionPolicy} from "./extraction-policy";
 
 /**
  * What happens to one document, start to finish (P1 plan §5, stages E0–E1).
@@ -286,7 +287,8 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     // human has to look at is information and a fact quietly dropped is not.
     let extracted: ExtractedCandidates | null = null;
     let written = 0;
-    if (deps.extract) {
+    const extractionPolicy = genericExtractionPolicy(parsed, classified.profile);
+    if (deps.extract && extractionPolicy.mode === "model") {
       extracted = await stage("extract", () =>
         deps.extract!({parsed, profile: classified.profile, fileName: payload.original_name, ...(payload.locale ? {locale: payload.locale} : {})}),
       );
@@ -315,6 +317,14 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
           suggestions,
         ));
       }
+    } else if (deps.extract) {
+      // The full deterministic layer and the receivables evidence fragment were already stored
+      // above. This stage records an intentional routing decision, not a missing extraction.
+      // Keeping it on the timeline lets operations distinguish a governed bypass from a worker
+      // that silently skipped a file.
+      stages.push("extract");
+      await queue.writeStage(job, "extract", "started", extractionPolicy);
+      await queue.writeStage(job, "extract", "succeeded", extractionPolicy);
     }
 
     if (classified.profile.document_kind === "advisor_authority_evidence") {
@@ -335,6 +345,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       warnings: parsed.warnings,
       detected: parsed.detected,
       ...(extracted ? {candidates: written, chunks_failed: extracted.chunks.failed} : {}),
+      extraction: extractionPolicy,
       retrieval_chunks: indexed.written,
       prepared_requests: preparedRequests,
       ...(deps.spend ? {spend: deps.spend()} : {}),
