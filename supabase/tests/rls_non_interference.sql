@@ -1136,8 +1136,7 @@ begin
 
   perform set_config('statement_timeout', '8s', true);
   result := public.worker_record_retrieval_chunks(job_id, capability, bulk_chunks);
-  if (result->>'written')::integer <> 1200
-    or (select count(*) from public.case_retrieval_chunks where source_document_id = '50000000-0000-4000-8000-000000000003') <> 1200 then
+  if (result->>'written')::integer <> 1200 then
     raise exception 'worker did not atomically replace a high-volume retrieval index: %', result;
   end if;
 
@@ -1289,6 +1288,14 @@ declare
 begin
   -- The worker intentionally has no tenant membership, so inspect persistence only after
   -- returning to the database owner. The value must be JSON null, never SQL NULL.
+  if (
+    select count(*)
+    from public.case_retrieval_chunks
+    where source_document_id = document_id
+  ) <> 1200 then
+    raise exception 'worker did not persist the complete high-volume retrieval index';
+  end if;
+
   if not exists (
     select 1
     from public.intake_field_candidates
