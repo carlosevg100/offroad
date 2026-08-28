@@ -75,7 +75,9 @@ jobs:
       # Dropping those is plausible but unverified, and this job is the last gate before a
       # migration reaches the only Supabase project we have.
       - name: Start local Supabase and apply migrations
-        run: supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,mailpit,logflare,vector
+        run: |
+          supabase stop --no-backup || true
+          supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,mailpit,logflare,vector
 
       - name: Resolve local database URL
         id: db
@@ -131,7 +133,9 @@ jobs:
 
       # Full local stack: Auth (OTP e-mails land in the local mail sink), PostgREST, Storage, Kong.
       - name: Start local Supabase and apply migrations
-        run: supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
+        run: |
+          supabase stop --no-backup || true
+          supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
 
       # This stack has no document worker, so the journey test runs the deterministic extractor:
       # with the pipeline on, intake correctly waits in `processing` for a worker that does not
