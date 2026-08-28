@@ -34,9 +34,15 @@ function labelFor(fieldPath: string, locale: string | undefined): string {
 
 /** A candidate as `worker_record_candidates` expects it. */
 export function toCandidateRow(candidate: VerifiedCandidate, options: {locale?: string; evidenceRank: number}) {
+  const numeric = candidate.value_type === "number"
+    ? Number(candidate.normalized_value)
+    : null;
   const normalized =
     candidate.value_type === "number"
-      ? Number(candidate.normalized_value)
+      // JSON.stringify converts NaN/Infinity to JSON null. Make that state explicit here so an
+      // unparseable, evidence-linked proposal remains reviewable instead of crashing the whole
+      // document at the database boundary.
+      ? Number.isFinite(numeric) ? numeric : null
       : candidate.value_type === "boolean"
         ? candidate.normalized_value === "true"
         : candidate.value_type === "list"

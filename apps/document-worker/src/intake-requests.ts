@@ -23,8 +23,13 @@ const intakeEventRowSchema = z.object({
 /** Converts a capability-scoped database row at the worker trust boundary. */
 export function intakeEventFromWorkerRow(input: unknown): IntakeEvent {
   const row = intakeEventRowSchema.parse(input);
+  // `requestHash` is transport metadata used by the database command for idempotency. It is
+  // deliberately not part of the economic domain event, whose schemas stay strict so unknown
+  // business fields cannot slip through. Remove only this named envelope field at the trust
+  // boundary before replaying the event.
+  const {requestHash: _requestHash, ...domainPayload} = row.payload;
   return intakeEventSchema.parse({
-    ...row.payload,
+    ...domainPayload,
     eventId: row.event_id,
     caseId: row.intake_session_id,
     sequence: row.sequence,

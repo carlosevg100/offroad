@@ -96,4 +96,16 @@ describe("candidate rows", () => {
     expect(toCandidateRow(candidate({value_type: "list", normalized_value: '["Franca","Araraquara"]'}), {evidenceRank: 1}).normalized_value).toEqual(["Franca", "Araraquara"]);
     expect(toCandidateRow(candidate({value_type: "text", normalized_value: "SP"}), {evidenceRank: 1}).normalized_value).toBe("SP");
   });
+
+  it("keeps an unparseable numeric proposal reviewable instead of emitting NaN", () => {
+    const row = toCandidateRow(candidate({
+      normalized_value: "not-a-number",
+      anchor_verified: false,
+      verifier_flags: ["value_unparseable"],
+    }), {evidenceRank: 1});
+
+    expect(row.normalized_value).toBeNull();
+    expect(row.raw_value).toBe("185.400");
+    expect(row.verifier_flags).toContain("value_unparseable");
+  });
 });
