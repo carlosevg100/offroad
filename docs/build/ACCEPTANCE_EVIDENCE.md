@@ -13,6 +13,7 @@
 | Amostra não extrapolada | conciliação NF-e × carteira | 41 títulos abertos cancelados encontrados dentro da amostra; o número não vira estimativa do universo |
 | Gate honesto de mercado | avaliação E2E | somente `compatible_programs` e `pipeline_incomplete` falham; shortlist live não é fabricada |
 | Fronteira institucional | resultado do pipeline | recomendação, contato, introdução e aprovação continuam bloqueados |
+| Promoção | PR #296, Quality `33152006657`, worker `33152006577`, Vercel `dpl_895EToY6n1D484XpWKn76VwbWuez` | `main` em `2977501`; todos os checks verdes, rollout estável e domínio principal respondendo HTTP 200 |
 
 ## Vertical de recebíveis, harness E2E da Fase 3, 27/08/2026
 
