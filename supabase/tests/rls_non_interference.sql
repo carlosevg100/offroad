@@ -1346,8 +1346,8 @@ declare
   accepted boolean;
 begin
   if (select count(*) from public.case_retrieval_chunks
-      where source_document_id = '50000000-0000-4000-8000-000000000003') <> 1 then
-    raise exception 'tenant A could not read its own governed case chunk';
+      where source_document_id = '50000000-0000-4000-8000-000000000003') <> 1200 then
+    raise exception 'tenant A could not read its complete governed case index';
   end if;
   if (select count(*) from public.house_playbook_versions) <> 0
     or (select count(*) from public.house_playbook_chunks) <> 0
