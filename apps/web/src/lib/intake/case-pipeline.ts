@@ -21,6 +21,58 @@ import type {Database, Json} from "@/types/database";
 export type CaseState = Omit<PublicCaseEngineState, "modelInvocations"> & {
   modelInvocations: GatewayCallLog[];
   caseRunReport: Awaited<ReturnType<typeof executeCaseEngine>>["report"];
+  economicFingerprint?: string;
+  receivablesVertical?: {
+    version: "2026.08.28-v1";
+    status: "needs_requested_amount" | "analyzed";
+    fingerprint: string;
+    evidenceCoverage: {delivered: number; searched: number; complete: boolean; warnings: readonly string[]};
+    classification: {categoryIds: readonly string[]; cellIds: readonly string[]};
+    defects: readonly {id: string; description: string; measured?: {value: string; unit: string}}[];
+    questions: readonly {id: string; text: string}[];
+    pipeline: null | {
+      version: string;
+      quality: {status: "complete_for_phase_three_evaluation" | "incomplete"; blockers: readonly string[]; warnings: readonly string[]};
+      phaseOne: {
+        universe: {currency: string; reportingDate: string};
+        staticMetrics: {
+          portfolio: {
+            titleCount: {value: string | null};
+            totalFaceValue: {value: string | null};
+            totalOpenValue: {value: string | null};
+            weightedRemainingTermDays: {value: string | null};
+          };
+          concentration: {
+            openByEconomicGroup: {
+              top_1: {value: string | null};
+              top_10: {value: string | null};
+            };
+          };
+        };
+        quality: {status: string; blockers: readonly string[]; warnings: readonly string[]; limitations: readonly string[]};
+      };
+      routes: readonly {id: string; status: string; blockers: readonly string[]; conditions: readonly string[]}[];
+      evidenceCollection: {
+        currentBatch: readonly {
+          id: string;
+          title: string;
+          priority: string;
+          clientInstructions: readonly string[];
+          whyItMatters: readonly string[];
+          acceptedEvidence: readonly string[];
+        }[];
+        backlog: readonly {id: string}[];
+        completedFactIds: readonly string[];
+        summary: {openTasks: number; currentTasks: number; factsCompleted: number; factsOpen: number};
+      };
+      boundaries: {
+        companyFacingRecommendationAllowed: false;
+        externalDirectionAllowed: false;
+        qualifiedIntroductionAllowed: false;
+        creditApprovalExpressed: false;
+      };
+    };
+  };
 };
 
 async function loadCandidates(
@@ -286,7 +338,9 @@ export async function resolveCaseState(input: {
   if (sessionError) throw sessionError;
   const summary = (session?.result_summary ?? {}) as Record<string, unknown>;
   const snapshot = summary.case_state as (CaseState & {fingerprint?: string; locale?: string}) | undefined;
-  if (snapshot?.fingerprint === fingerprint && snapshot.locale === locale) return snapshot;
+  if ((snapshot?.economicFingerprint === fingerprint || snapshot?.fingerprint === fingerprint) && snapshot.locale === locale) {
+    return snapshot;
+  }
 
   return buildCaseState({supabase, organizationId, sessionId, locale});
 }

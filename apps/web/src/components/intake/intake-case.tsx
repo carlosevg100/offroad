@@ -91,12 +91,92 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
   }
 
   const {readiness, capacity, termSheet, brief, materials} = state;
+  const receivables = state.receivablesVertical;
   const readinessLabel =
     readiness.state === "blocked" ? t("readinessBlocked") : readiness.state === "ready" ? t("readinessReady") : t("readinessInProgress");
 
   return (
     <section className="intake-case">
       <span className="section-kicker">{t("kicker")}</span>
+
+      {receivables ? (
+        <section className="case-receivables">
+          <header className="case-truth__head">
+            <div>
+              <span className="section-kicker">{t("receivablesKicker")}</span>
+              <h3>{t("receivablesTitle")}</h3>
+            </div>
+            <span className={`case-truth__status ${receivables.status === "analyzed" ? "is-complete" : "is-blocked"}`}>
+              {receivables.status === "analyzed" ? t("receivablesAnalyzed") : t("receivablesNeedsAmount")}
+            </span>
+          </header>
+          <p>{t("receivablesBody")}</p>
+
+          {receivables.pipeline ? (
+            <>
+              <dl className="case-receivables__metrics">
+                <div>
+                  <dt>{t("receivablesTitles")}</dt>
+                  <dd>{receivables.pipeline.phaseOne.staticMetrics.portfolio.titleCount.value ?? t("notInformed")}</dd>
+                </div>
+                <div>
+                  <dt>{t("receivablesOpenBalance")}</dt>
+                  <dd>{receivables.pipeline.phaseOne.staticMetrics.portfolio.totalOpenValue.value
+                    ? money(receivables.pipeline.phaseOne.staticMetrics.portfolio.totalOpenValue.value, locale)
+                    : t("notInformed")}</dd>
+                </div>
+                <div>
+                  <dt>{t("receivablesTopOne")}</dt>
+                  <dd>{ratio(receivables.pipeline.phaseOne.staticMetrics.concentration.openByEconomicGroup.top_1.value, locale)}</dd>
+                </div>
+                <div>
+                  <dt>{t("receivablesRemainingTerm")}</dt>
+                  <dd>{receivables.pipeline.phaseOne.staticMetrics.portfolio.weightedRemainingTermDays.value
+                    ? t("receivablesDays", {count: Math.round(Number(receivables.pipeline.phaseOne.staticMetrics.portfolio.weightedRemainingTermDays.value))})
+                    : t("notInformed")}</dd>
+                </div>
+              </dl>
+
+              <div className="case-receivables__columns">
+                <section>
+                  <h4>{t("receivablesFindings")}</h4>
+                  {receivables.defects.length > 0 ? (
+                    <ul className="case-receivables__findings">
+                      {receivables.defects.slice(0, 5).map((finding) => (
+                        <li key={finding.id}>{finding.description}</li>
+                      ))}
+                    </ul>
+                  ) : <p className="form-notice">{t("receivablesNoFindings")}</p>}
+                </section>
+                <section>
+                  <h4>{t("receivablesNextBatch")}</h4>
+                  <p>{t("receivablesNextBatchBody", {count: receivables.pipeline.evidenceCollection.currentBatch.length})}</p>
+                  {receivables.pipeline.evidenceCollection.currentBatch.length > 0 ? (
+                    <ol className="case-receivables__tasks">
+                      {receivables.pipeline.evidenceCollection.currentBatch.map((task) => (
+                        <li key={task.id}>
+                          <strong>{task.title}</strong>
+                          <span>{task.clientInstructions[0]}</span>
+                          <small>{task.whyItMatters[0]}</small>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : <p className="form-notice">{t("receivablesBatchComplete")}</p>}
+                </section>
+              </div>
+            </>
+          ) : (
+            <p className="case-receivables__notice">{t("receivablesAmountBody")}</p>
+          )}
+
+          <footer>
+            {t("receivablesCoverage", {
+              delivered: receivables.evidenceCoverage.delivered,
+              searched: receivables.evidenceCoverage.searched,
+            })}
+          </footer>
+        </section>
+      ) : null}
 
       {/* Readiness: five components, because one number is not actionable. */}
       <div className={`case-readiness case-readiness--${readiness.state}`}>

@@ -1,4 +1,5 @@
 import {
+  canonicalReceivablesRouteCatalogue,
   caseEngineVersion,
   executeCaseEngine,
   invocationManifest,
@@ -6,6 +7,8 @@ import {
   pipelineVersions,
   publicCaseRunReport,
   publicCaseState,
+  runReceivablesCasePipeline,
+  type ReceivablesCasePipelineReport,
   type EconomicInputSnapshot,
 } from "@offroad/case-engine";
 import type {LanguageConductGovernance, Material} from "@offroad/case-materials";
@@ -34,6 +37,11 @@ import {
   type CollateralKind,
   type Instrument,
   type Mandate,
+  type ReceivablesCapitalProviderKind,
+  type ReceivablesMandateObservation,
+  type ReceivablesMandateSourceKind,
+  type ReceivablesPolicyRule,
+  type ReceivablesProviderMandate,
   type Sourced,
 } from "@offroad/fund-mandate";
 import {sha256} from "@offroad/governed-retrieval";
@@ -45,11 +53,26 @@ import {
   type ResearchRun,
 } from "@offroad/public-research";
 import type {FactCandidate} from "@offroad/reconciliation";
-import {receivablesCaseSchema} from "@offroad/receivables-analysis";
+import {
+  analyzeReceivablesPhaseOne,
+  buildReceivablesRawUniverse,
+  detectReceivablesRawEvidence,
+  receivablesCaseSchema,
+  type ReceivablesProviderMetricSet,
+  type ReceivablesEvidenceDocument,
+  type ReceivablesFiscalArchiveEvidence,
+} from "@offroad/receivables-analysis";
 import {compareCaseExecutions, executionModeSchema} from "@offroad/release-governance";
+import Decimal from "decimal.js";
 import {z} from "zod";
 
 import type {CaseAnalysisJob, QueueClient} from "./queue";
+import {
+  decodeReceivablesEvidence,
+  receivablesEvidenceDocumentSchema,
+  receivablesEvidenceEnvelopeSchema,
+  receivablesFiscalArchiveEvidenceSchema,
+} from "./receivables-evidence";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const retrievalContextSchema = z.object({
@@ -237,6 +260,43 @@ const redFlagContextSchema=z.object({
     messageFingerprint:z.string().regex(/^[0-9a-f]{64}$/),
   }).nullable().default(null),
 });
+const receivablesProviderKindSchema = z.enum([
+  "bank",
+  "credit_finance_company",
+  "digital_credit_company",
+  "factoring_company",
+  "fidc",
+  "private_credit_fund",
+  "family_office",
+  "institutional_investor",
+  "buyer_sponsored_program",
+]);
+const receivablesProviderContextSchema = z.object({
+  programs: z.array(z.object({
+    id: z.uuid(),
+    provider_id: z.uuid(),
+    provider_legal_name: z.string().min(1),
+    program_name: z.string().min(1),
+    provider_kind: receivablesProviderKindSchema,
+    route_ids: z.array(z.string().min(1)).min(1),
+    status: z.enum(["mapped", "confirming", "active"]),
+    created_at: z.string().min(10),
+    updated_at: z.string().min(10),
+  })),
+  observations: z.array(z.object({
+    id: z.uuid(),
+    provider_id: z.uuid(),
+    program_id: z.uuid(),
+    criterion: z.string().min(1),
+    value: z.unknown(),
+    provenance: z.enum(["declared", "conversation", "published", "observed", "inferred"]),
+    observed_at: z.string().min(10),
+    valid_until: z.string().min(10).nullable(),
+    note: z.string().nullable(),
+    source_url: z.string().nullable(),
+    recorded_by: z.string().nullable(),
+  })),
+});
 const rawCaseInputSchema = z.object({
   session: recordSchema,
   run: recordSchema,
@@ -268,6 +328,8 @@ const rawCaseInputSchema = z.object({
   expected_model_calls: z.coerce.number().int().nonnegative(),
   claim_decisions: z.array(claimDecisionSchema).default([]),
   receivables_case: receivablesCaseSchema.optional(),
+  receivables_evidence: z.array(receivablesEvidenceEnvelopeSchema).default([]),
+  receivables_provider_context: receivablesProviderContextSchema.default({programs: [], observations: []}),
   pricing_context: pricingContextSchema.nullable().default(null),
   market_distribution_context:marketDistributionContextSchema.nullable().default(null),
   red_flag_context:redFlagContextSchema.nullable().default(null),
@@ -509,6 +571,8 @@ export async function processCaseAnalysisJob(
 
     const publicState = publicCaseState(result.state);
     const publicReport = publicCaseRunReport(result.report);
+    const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now));
+    const receivablesVertical = receivables?.publicReport ?? null;
     const economic = economicInput(raw);
     const extractionVersion = stringOr(raw.session.extraction_version, "unknown");
     const versions = pipelineVersions({snapshot: economic, extractionVersion});
@@ -526,6 +590,7 @@ export async function processCaseAnalysisJob(
       caseEngine: caseEngineVersion,
       retrieval: privateRetrievalLineage,
     });
+    const economicFingerprint = fingerprintJson({economics: economic, versions, caseEngine: caseEngineVersion});
     const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
     const currentLineage = dependencies.lineage();
     const allLineage = [...(priorLineage.success ? priorLineage.data : []), ...currentLineage];
@@ -537,10 +602,12 @@ export async function processCaseAnalysisJob(
     }));
     const snapshot = {
       ...publicState,
+      ...(receivablesVertical ? {receivablesVertical} : {}),
       externalResearch: publicResearch,
       modelInvocations: currentLineage,
       caseRunReport: publicReport,
       fingerprint: inputFingerprint,
+      economicFingerprint,
       locale,
       retrieval: publicRetrievalLineage,
     };
@@ -562,6 +629,11 @@ export async function processCaseAnalysisJob(
       outputs: [
         {artifactId: `${job.intake_session_id}:case_state`, kind: "case_state", sha256: fingerprintJson(snapshot)},
         {artifactId: `${job.intake_session_id}:mandate_screen`, kind: "mandate_screen", sha256: fingerprintJson(result.state.matching)},
+        ...(receivables?.privateReport ? [{
+          artifactId: `${job.intake_session_id}:receivables_vertical_private`,
+          kind: "other" as const,
+          sha256: fingerprintJson(receivables.privateReport),
+        }] : []),
         ...publicState.materials.map((material, index) => ({
           artifactId: `${job.intake_session_id}:${material.kind}:${index + 1}`,
           kind: artifactKind(material.kind),
@@ -594,11 +666,13 @@ export async function processCaseAnalysisJob(
       criticalRegressions: comparison?.criticalCount ?? 0,
       publicResearchStatus: publicResearch.status,
       publicResearchSourceCount: publicResearch.sourceCount,
+      receivablesVerticalStatus: receivablesVertical?.status ?? "not_detected",
     });
     await dependencies.queue.complete(job, {
       ...(manifestId ? {manifest_id: manifestId} : {}),
       report: result.report,
       match_details: result.state.matching,
+      ...(receivables?.privateReport ? {receivables_analysis: receivables.privateReport} : {}),
       ...(comparison ? {comparison} : {}),
       spend: dependencies.gateway.spent(),
       model_lineage: currentLineage,
@@ -623,6 +697,348 @@ export async function processCaseAnalysisJob(
     log("case.failed", {job: job.job_id, code: errorCode(error)});
     return {status: "failed"};
   }
+}
+
+type PublicReceivablesVertical = {
+  version: "2026.08.28-v1";
+  status: "needs_requested_amount" | "analyzed";
+  fingerprint: string;
+  evidenceCoverage: {
+    delivered: number;
+    searched: number;
+    complete: boolean;
+    warnings: readonly string[];
+  };
+  classification: {
+    categoryIds: readonly string[];
+    cellIds: readonly string[];
+  };
+  defects: ReceivablesCasePipelineReport["defects"];
+  questions: ReceivablesCasePipelineReport["questions"];
+  pipeline: null | {
+    version: ReceivablesCasePipelineReport["version"];
+    quality: ReceivablesCasePipelineReport["quality"];
+    phaseOne: ReceivablesCasePipelineReport["phaseOne"];
+    routes: readonly {
+      id: string;
+      status: string;
+      blockers: readonly string[];
+      conditions: readonly string[];
+    }[];
+    evidenceCollection: ReceivablesCasePipelineReport["evidenceCollection"]["operation"];
+    boundaries: ReceivablesCasePipelineReport["boundaries"];
+  };
+};
+
+/**
+ * Reconstructs the receivables analysis only from immutable evidence captured by the worker.
+ * This is intentionally a parallel, borrower-safe vertical report. Provider identities,
+ * mandate collection tasks and the internal shortlist never cross this boundary.
+ */
+function buildReceivablesVertical(
+  raw: z.infer<typeof rawCaseInputSchema>,
+  asOf: string,
+): {publicReport: PublicReceivablesVertical; privateReport: ReceivablesCasePipelineReport | null} | null {
+  if (raw.receivables_evidence.length === 0) return null;
+
+  const documents: ReceivablesEvidenceDocument[] = [];
+  const fiscalArchives: ReceivablesFiscalArchiveEvidence[] = [];
+  for (const envelope of raw.receivables_evidence) {
+    const decoded = decodeReceivablesEvidence(envelope);
+    if (envelope.content_kind === "document_layer") {
+      documents.push(receivablesEvidenceDocumentSchema.parse(decoded));
+    } else {
+      fiscalArchives.push(receivablesFiscalArchiveEvidenceSchema.parse(decoded));
+    }
+  }
+  const evidenceHashes = raw.receivables_evidence.map((entry) => entry.content_sha256).sort();
+  const datasetHash = sha256(evidenceHashes.join(":"));
+  const caseId = String(raw.session.id ?? raw._execution.id);
+  const built = buildReceivablesRawUniverse({universeId: caseId, datasetHash, documents});
+  if (!built.phaseOne) return null;
+
+  const reportingDate = built.phaseOne.universe.dates.reportingDate;
+  const detection = detectReceivablesRawEvidence({
+    universeId: caseId,
+    reportingDate,
+    datasetHash,
+    documents,
+    fiscalArchives,
+  });
+  const fingerprint = fingerprintJson({
+    version: "2026.08.28-v1",
+    datasetHash,
+    evidenceHashes,
+    requestedAmount: raw.session.requested_amount ?? null,
+  });
+  const common = {
+    version: "2026.08.28-v1" as const,
+    fingerprint,
+    evidenceCoverage: {
+      delivered: detection.evidenceCoverage.deliveredEvidenceIds.length,
+      searched: detection.evidenceCoverage.searchedEvidenceIds.length,
+      complete: detection.evidenceCoverage.complete,
+      warnings: [...new Set([...built.warnings, ...detection.evidenceCoverage.warnings])].sort(),
+    },
+    classification: {
+      categoryIds: built.classification.categoryIds,
+      cellIds: built.classification.cellIds,
+    },
+    defects: detection.defects,
+    questions: detection.questions,
+  };
+
+  const requestedAmount = numericString(raw.session.requested_amount);
+  if (!requestedAmount || Number(requestedAmount) <= 0) {
+    return {publicReport: {...common, status: "needs_requested_amount", pipeline: null}, privateReport: null};
+  }
+
+  const factIds = new Set(canonicalReceivablesRouteCatalogue.flatMap((route) => (
+    route.criteria.map((criterion) => criterion.factId)
+  )));
+  const routeFacts = [...factIds].sort().map((id) => detection.routeFacts.find((fact) => fact.id === id) ?? ({
+    id,
+    state: "unknown" as const,
+    explanation: "A evidência necessária para decidir este ponto ainda não foi entregue.",
+  }));
+  const requestedAmountProvenance = {
+    kind: "measured" as const,
+    datasetHash,
+    anchors: [{
+      kind: "event" as const,
+      eventId: `intake:${caseId}:requested_amount`,
+      sourceSystem: "offroad_intake",
+      occurredAt: reportingDate,
+    }],
+    universe: caseId,
+    reportingDate,
+    inclusions: ["requested amount declared in the governed intake"],
+    exclusions: [],
+    formula: {id: "declared_requested_amount", version: "1"},
+    unit: "BRL",
+  };
+  const phaseOne = analyzeReceivablesPhaseOne(built.phaseOne);
+  const report = runReceivablesCasePipeline({
+    caseId,
+    classification: built.classification,
+    phaseOne: built.phaseOne,
+    routeFacts,
+    providerFit: {
+      asOf,
+      metrics: receivablesProviderMetrics(phaseOne, requestedAmount, requestedAmountProvenance),
+      mandates: receivablesProviderMandates(raw.receivables_provider_context, asOf),
+    },
+    defects: detection.defects,
+    questions: detection.questions,
+  });
+
+  return {
+    privateReport: report,
+    publicReport: {
+      ...common,
+      status: "analyzed",
+      pipeline: {
+      version: report.version,
+      quality: report.quality,
+      phaseOne: report.phaseOne,
+      routes: report.phaseTwoA.routes.map((route) => ({
+        id: route.routeId,
+        status: route.status,
+        blockers: route.criterionResults
+          .filter((criterion) => criterion.status === "fail" || criterion.status === "not_evaluated")
+          .map((criterion) => criterion.reason),
+        conditions: route.criterionResults
+          .filter((criterion) => criterion.status === "condition")
+          .map((criterion) => criterion.reason),
+      })),
+      evidenceCollection: report.evidenceCollection.operation,
+        boundaries: report.boundaries,
+      },
+    },
+  };
+}
+
+type ReceivablesProviderContext = z.infer<typeof receivablesProviderContextSchema>;
+type ProviderObservation = ReceivablesProviderContext["observations"][number];
+type ProviderProgram = ReceivablesProviderContext["programs"][number];
+
+const decimalValueSchema = z.union([z.string(), z.number()]).transform(String);
+const decimalRangeValueSchema = z.object({min: decimalValueSchema, max: decimalValueSchema});
+const integerValueSchema = z.coerce.number().int().nonnegative();
+const policyRuleSchema = <T>(value: z.ZodType<T>) => z.union([
+  z.object({mode: z.literal("threshold"), value}),
+  z.object({mode: z.literal("no_restriction")}),
+  z.object({mode: z.literal("case_by_case"), note: z.string().min(1)}),
+  value.transform((threshold) => ({mode: "threshold" as const, value: threshold})),
+]);
+
+function receivablesProviderMandates(
+  context: ReceivablesProviderContext,
+  asOf: string,
+): ReceivablesProviderMandate[] {
+  return context.programs.flatMap((program) => {
+    const createdAt = datePart(program.created_at);
+    if (!createdAt || createdAt > asOf) return [];
+    const observations = context.observations.filter((entry) => (
+      entry.provider_id === program.provider_id
+      && entry.program_id === program.id
+      && datePart(entry.observed_at) !== null
+      && datePart(entry.observed_at)! <= asOf
+    ));
+    const routes = providerObservations(observations, "eligible_routes", z.array(z.string().min(1)), program);
+    const eligibleRoutes = routes.length > 0 ? routes : [{
+      value: program.route_ids,
+      sourceKind: "desk_inference" as const,
+      sourceId: `program:${program.id}:mapped_routes`,
+      sourceLabel: `${program.provider_legal_name} · ${program.program_name} · mapeamento interno`,
+      recordedBy: "offroad-market-desk",
+      observedAt: createdAt,
+      validUntil: asOf,
+    }];
+    const effectiveFrom = [createdAt, ...observations.map((entry) => datePart(entry.observed_at)).filter((value): value is string => value !== null)]
+      .sort()[0] ?? createdAt;
+    return [{
+      mandateId: `${program.id}:v${Math.max(1, observations.length)}`,
+      providerId: program.provider_id,
+      providerLegalName: program.provider_legal_name,
+      programId: program.id,
+      programName: program.program_name,
+      providerKind: program.provider_kind as ReceivablesCapitalProviderKind,
+      version: Math.max(1, observations.length),
+      effectiveFrom,
+      eligibleRoutes,
+      currencies: providerObservations(observations, "currencies", z.array(z.string().min(1)), program),
+      ticket: providerObservations(observations, "ticket", policyRuleSchema(decimalRangeValueSchema), program),
+      weightedAverageTermDays: providerObservations(observations, "weighted_average_term_days", policyRuleSchema(decimalRangeValueSchema), program),
+      minimumHistoryMonths: providerObservations(observations, "minimum_history_months", policyRuleSchema(integerValueSchema), program),
+      maximumPastDueOver30Ratio: providerObservations(observations, "maximum_past_due_over_30_ratio", policyRuleSchema(decimalValueSchema), program),
+      maximumPastDueOver90Ratio: providerObservations(observations, "maximum_past_due_over_90_ratio", policyRuleSchema(decimalValueSchema), program),
+      maximumDilutionRatio: providerObservations(observations, "maximum_dilution_ratio", policyRuleSchema(decimalValueSchema), program),
+      maximumAdjustedLossRatio: providerObservations(observations, "maximum_adjusted_loss_ratio", policyRuleSchema(decimalValueSchema), program),
+      maximumSingleObligorRatio: providerObservations(observations, "maximum_single_obligor_ratio", policyRuleSchema(decimalValueSchema), program),
+      maximumTopTenObligorRatio: providerObservations(observations, "maximum_top_ten_obligor_ratio", policyRuleSchema(decimalValueSchema), program),
+      minimumEligiblePortfolioAmount: providerObservations(observations, "minimum_eligible_portfolio_amount", policyRuleSchema(decimalValueSchema), program),
+      liveAppetite: providerObservations(observations, "live_appetite", z.boolean(), program),
+      availableCapacity: providerObservations(observations, "available_capacity", decimalValueSchema, program),
+    }];
+  });
+}
+
+function providerObservations<T>(
+  observations: readonly ProviderObservation[],
+  criterion: string,
+  schema: z.ZodType<T>,
+  program: ProviderProgram,
+): ReceivablesMandateObservation<T>[] {
+  return observations.filter((entry) => entry.criterion === criterion).flatMap((entry) => {
+    const value = schema.safeParse(entry.value);
+    const observedAt = datePart(entry.observed_at);
+    const validUntil = datePart(entry.valid_until);
+    if (!value.success || !observedAt || !validUntil) return [];
+    const sourceUrl = entry.source_url?.trim();
+    return [{
+      value: value.data,
+      sourceKind: mandateSourceKind(entry.provenance),
+      sourceId: entry.id,
+      sourceLabel: entry.note?.trim() || `${program.provider_legal_name} · ${program.program_name}`,
+      recordedBy: entry.recorded_by?.trim() || "offroad-market-desk",
+      ...(sourceUrl ? {sourceUrl} : {}),
+      observedAt,
+      validUntil,
+    }];
+  });
+}
+
+function mandateSourceKind(value: ProviderObservation["provenance"]): ReceivablesMandateSourceKind {
+  if (value === "declared") return "direct_declaration";
+  if (value === "conversation") return "relationship_confirmation";
+  if (value === "published") return "published_rule";
+  if (value === "observed") return "observed_transaction";
+  return "desk_inference";
+}
+
+function datePart(value: string | null): string | null {
+  if (!value) return null;
+  const date = value.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
+}
+
+function receivablesProviderMetrics(
+  phaseOne: ReceivablesCasePipelineReport["phaseOne"],
+  requestedAmount: string,
+  requestedAmountProvenance: ReceivablesProviderMetricSet["requestedAmount"]["provenance"],
+): ReceivablesProviderMetricSet {
+  const measured = (metric: {value: string | null; status: string; provenance: ReceivablesProviderMetricSet["requestedAmount"]["provenance"]}) => (
+    metric.status === "measured" && metric.value !== null
+      ? {value: metric.value, provenance: metric.provenance}
+      : undefined
+  );
+  const weightedAverageTermDays = measured(phaseOne.staticMetrics.portfolio.weightedOriginalTermDays);
+  const dilutionRatio = measured(phaseOne.dynamicMetrics.dilution.shareOfOrigination);
+  const adjustedLossRatio = measured(phaseOne.dynamicMetrics.repurchaseAndLoss.adjustedLossShare);
+  const singleObligorRatio = measured(phaseOne.staticMetrics.concentration.openByEconomicGroup.top_1);
+  const topTenObligorRatio = measured(phaseOne.staticMetrics.concentration.openByEconomicGroup.top_10);
+  const pastDueOver30Ratio = agingRatio(phaseOne, ["past_due_31_60", "past_due_61_90", "past_due_91_180", "past_due_over_180"], "receivables.past_due_over_30_share");
+  const pastDueOver90Ratio = agingRatio(phaseOne, ["past_due_91_180", "past_due_over_180"], "receivables.past_due_over_90_share");
+  const historyMonths = historyMonthsMetric(phaseOne);
+  return {
+    currency: phaseOne.universe.currency,
+    requestedAmount: {value: requestedAmount, provenance: requestedAmountProvenance},
+    ...(weightedAverageTermDays ? {weightedAverageTermDays} : {}),
+    ...(historyMonths ? {historyMonths} : {}),
+    ...(pastDueOver30Ratio ? {pastDueOver30Ratio} : {}),
+    ...(pastDueOver90Ratio ? {pastDueOver90Ratio} : {}),
+    ...(dilutionRatio ? {dilutionRatio} : {}),
+    ...(adjustedLossRatio ? {adjustedLossRatio} : {}),
+    ...(singleObligorRatio ? {singleObligorRatio} : {}),
+    ...(topTenObligorRatio ? {topTenObligorRatio} : {}),
+  };
+}
+
+function agingRatio(
+  phaseOne: ReceivablesCasePipelineReport["phaseOne"],
+  buckets: readonly (keyof ReceivablesCasePipelineReport["phaseOne"]["staticMetrics"]["aging"])[],
+  formulaId: string,
+): ReceivablesProviderMetricSet["pastDueOver30Ratio"] | undefined {
+  const total = phaseOne.staticMetrics.portfolio.totalOpenValue;
+  if (total.status !== "measured" || total.value === null || new Decimal(total.value).lte(0)) return undefined;
+  const metrics = buckets.map((bucket) => phaseOne.staticMetrics.aging[bucket]);
+  if (metrics.some((metric) => metric.status !== "measured" || metric.value === null)) return undefined;
+  const numerator = metrics.reduce((sum, metric) => sum.plus(metric.value ?? 0), new Decimal(0));
+  return {
+    value: numerator.div(total.value).toDecimalPlaces(8).toFixed(),
+    provenance: {
+      ...total.provenance,
+      inclusions: [...buckets],
+      exclusions: ["not_due", "past_due_1_15", "past_due_16_30"].filter((bucket) => !buckets.includes(bucket as never)),
+      formula: {id: formulaId, version: "2026.08.28-v1"},
+      numerator: numerator.toFixed(),
+      denominator: total.value,
+      unit: "ratio",
+    },
+  };
+}
+
+function historyMonthsMetric(
+  phaseOne: ReceivablesCasePipelineReport["phaseOne"],
+): ReceivablesProviderMetricSet["historyMonths"] | undefined {
+  const start = new Date(`${phaseOne.universe.dataStartDate}T00:00:00.000Z`);
+  const end = new Date(`${phaseOne.universe.dataEndDate}T00:00:00.000Z`);
+  if (!Number.isFinite(start.valueOf()) || !Number.isFinite(end.valueOf()) || end < start) return undefined;
+  const months = Math.max(0, (end.getUTCFullYear() - start.getUTCFullYear()) * 12 + end.getUTCMonth() - start.getUTCMonth());
+  const source = phaseOne.staticMetrics.portfolio.totalFaceValue;
+  return {
+    value: String(months),
+    provenance: {
+      ...source.provenance,
+      inclusions: ["inclusive period from the earliest covered date through the latest covered date"],
+      exclusions: [],
+      formula: {id: "receivables.history_months", version: "2026.08.28-v1"},
+      numerator: String(months),
+      denominator: "1",
+      unit: "months",
+    },
+  };
 }
 
 type PublicResearchSummary = {

@@ -5609,6 +5609,14 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_receivables_evidence: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_receivables_provider_context: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_claim_decisions: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -5643,6 +5651,20 @@ export type Database = {
           p_job_id: string
           p_proposal?: Json
           p_response: Json
+        }
+        Returns: Json
+      }
+      worker_record_receivables_evidence: {
+        Args: {
+          p_capability_token: string
+          p_content_kind: string
+          p_content_sha256: string
+          p_job_id: string
+          p_payload_base64: string
+          p_payload_sha256: string
+          p_schema_version: string
+          p_source_sha256: string
+          p_uncompressed_bytes: number
         }
         Returns: Json
       }

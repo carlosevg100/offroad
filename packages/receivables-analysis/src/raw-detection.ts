@@ -1,7 +1,13 @@
 import Decimal from "decimal.js";
-import type {AssertionProvenance, IsoDate, SourceAnchor} from "@offroad/financial-core";
+import type {
+  AssertionProvenance,
+  IsoDate,
+  ReceivablesUniverse,
+  SourceAnchor,
+} from "@offroad/financial-core";
 
 import type {ReceivablesEligibilityFact} from "./phase-two";
+import type {ReceivablesPhaseOneInput} from "./phase-one";
 
 export const receivablesRawDetectionVersion = "2026.08.28-v1";
 
@@ -122,6 +128,9 @@ type TapeRow = {
   issueDate: IsoDate;
   dueDate: IsoDate;
   faceValue: Decimal;
+  paymentDate: IsoDate | null;
+  paidValue: Decimal;
+  dilutionValue: Decimal;
   status: string;
 };
 
@@ -305,9 +314,183 @@ function tapeRows(dataset: SheetDataset | null): TapeRow[] {
       issueDate,
       dueDate,
       faceValue,
+      paymentDate: isoDate(value(row, column("DT_PAGAMENTO"))),
+      paidValue: decimal(value(row, column("VLR_PAGO"))) ?? new Decimal(0),
+      dilutionValue: decimal(value(row, column("VLR_ABATIMENTO"))) ?? new Decimal(0),
       status: fold(value(row, column("SITUACAO"))),
     }];
   });
+}
+
+export type ReceivablesRawUniverseBuild = {
+  phaseOne: ReceivablesPhaseOneInput | null;
+  classification: {
+    categoryIds: readonly string[];
+    cellIds: readonly string[];
+    evidence: readonly AssertionProvenance[];
+  };
+  warnings: readonly string[];
+};
+
+/**
+ * Builds the narrow mathematical input directly from the delivered title tape. Missing event
+ * series remain missing; a blank column or absent file is never converted into a zero-event
+ * history. The result is intentionally incomplete until the room supports every dynamic
+ * series, debt bridge and proposal assumption required by Phase 1.
+ */
+export function buildReceivablesRawUniverse(input: {
+  universeId: string;
+  datasetHash: string;
+  documents: readonly ReceivablesEvidenceDocument[];
+}): ReceivablesRawUniverseBuild {
+  if (!/^[a-f0-9]{64}$/.test(input.datasetHash)) throw new RangeError("raw universe dataset hash must be SHA-256");
+  const dataset = findDataset(input.documents, [
+    "NUM TITULO", "CNPJ SACADO", "DT EMISSAO", "DT VENCIMENTO", "VLR TITULO", "SITUACAO",
+  ]);
+  const tape = tapeRows(dataset);
+  if (!dataset || tape.length === 0) {
+    return {
+      phaseOne: null,
+      classification: {categoryIds: [], cellIds: [], evidence: []},
+      warnings: ["receivables_tape_not_identified"],
+    };
+  }
+
+  const latestOriginationDate = tape.map((title) => title.issueDate).sort().at(-1)!;
+  const dataStartDate = tape.map((title) => title.issueDate).sort()[0]!;
+  const observedDates = tape.flatMap((title) => [title.issueDate, ...(title.paymentDate ? [title.paymentDate] : [])]);
+  const reportingDate = observedDates.sort().at(-1)!;
+  const titleSource = (title: TapeRow): SourceAnchor => rowAnchor(title.row);
+  const normalizedStatus = (status: string): ReceivablesUniverse["receivables"][number]["status"] => {
+    if (/liquid|pago|baixado/.test(status)) return "settled";
+    if (/cancel/.test(status)) return "cancelled";
+    if (/recompr/.test(status)) return "repurchased";
+    if (/perda|write.?off|baixado prejuizo/.test(status)) return "written_off";
+    return "open";
+  };
+  const receivables = tape.map((title, index): ReceivablesUniverse["receivables"][number] => {
+    const status = normalizedStatus(title.status);
+    const openValue = status === "open"
+      ? Decimal.max(title.faceValue.minus(title.paidValue).minus(title.dilutionValue), 0)
+      : new Decimal(0);
+    const obligorId = title.obligorTaxId || `name:${fold(title.obligorName)}`;
+    return {
+      id: `${title.titleId || "title"}:${title.row.row}:${index + 1}`,
+      ...(title.titleId ? {externalId: title.titleId} : {}),
+      currency: "BRL",
+      faceValue: title.faceValue.toFixed(2),
+      openValue: openValue.toFixed(2),
+      issueDate: title.issueDate,
+      originalDueDate: title.dueDate,
+      currentDueDate: title.dueDate,
+      obligorId,
+      ...(title.obligorTaxId.length >= 8 ? {economicGroupId: title.obligorTaxId.slice(0, 8)} : {}),
+      status,
+      source: titleSource(title),
+    };
+  });
+  const receivableIdByRow = new Map(tape.map((title, index) => [title.row.row, receivables[index]!.id]));
+  const settlements = tape.flatMap((title, index): ReceivablesUniverse["settlements"] => {
+    if (!title.paymentDate || !title.paidValue.gt(0)) return [];
+    return [{
+      id: `settlement:${receivableIdByRow.get(title.row.row)!}:${index + 1}`,
+      receivableId: receivableIdByRow.get(title.row.row)!,
+      date: title.paymentDate,
+      amount: title.paidValue.toFixed(2),
+      source: titleSource(title),
+    }];
+  });
+  const obligorById = new Map<string, ReceivablesUniverse["obligors"][number]>();
+  for (const title of tape) {
+    const id = title.obligorTaxId || `name:${fold(title.obligorName)}`;
+    if (obligorById.has(id)) continue;
+    obligorById.set(id, {
+      id,
+      legalName: title.obligorName || id,
+      ...(title.obligorTaxId.length >= 8 ? {
+        taxIdRoot: title.obligorTaxId.slice(0, 8),
+        economicGroupId: title.obligorTaxId.slice(0, 8),
+      } : {}),
+      relatedParty: "unknown",
+      source: titleSource(title),
+    });
+  }
+  const groupMembers = new Map<string, string[]>();
+  for (const obligor of obligorById.values()) {
+    if (!obligor.economicGroupId) continue;
+    groupMembers.set(obligor.economicGroupId, [...(groupMembers.get(obligor.economicGroupId) ?? []), obligor.id]);
+  }
+  const economicGroups: ReceivablesUniverse["economicGroups"] = [...groupMembers.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([id, obligorIds]) => ({
+      id,
+      name: `CNPJ root ${id}`,
+      obligorIds: [...new Set(obligorIds)].sort(),
+      source: obligorById.get(obligorIds[0]!)!.source,
+    }));
+
+  const settled = tape.filter((title) => normalizedStatus(title.status) === "settled");
+  const settlementsComplete = settled.every((title) => title.paymentDate !== null && title.paidValue.gt(0));
+  const dilutionObserved = tape.some((title) => title.dilutionValue.gt(0));
+  const universe: ReceivablesUniverse = {
+    id: input.universeId,
+    dates: {reportingDate, latestOriginationDate, dataStartDate, dataEndDate: reportingDate},
+    currency: "BRL",
+    receivables,
+    settlements,
+    dilutions: [],
+    extensions: [],
+    repurchases: [],
+    assignmentsAndLiens: [],
+    obligors: [...obligorById.values()].sort((left, right) => left.id.localeCompare(right.id)),
+    economicGroups,
+    eventCoverage: {
+      settlements: {
+        status: settlementsComplete ? "complete" : "partial",
+        startDate: dataStartDate,
+        endDate: reportingDate,
+        basis: "delivered receivables tape payment date and paid amount columns",
+        limitations: settlementsComplete ? [] : ["one or more settled titles lacks payment date or paid amount"],
+      },
+      dilutions: {
+        status: dilutionObserved ? "partial" : "not_provided",
+        startDate: dilutionObserved ? dataStartDate : null,
+        endDate: dilutionObserved ? reportingDate : null,
+        basis: dilutionObserved ? "delivered title-level allowance amount without reliable event date or cause" : "delivered room",
+        limitations: dilutionObserved ? ["dilution event date and cause are not available title by title"] : ["dilution history was not identified"],
+      },
+      extensions: {status: "not_provided", startDate: null, endDate: null, basis: "delivered room", limitations: ["original due date and extension event history were not identified"]},
+      repurchases: {status: "not_provided", startDate: null, endDate: null, basis: "delivered room", limitations: ["repurchase and substitution history were not identified"]},
+      assignmentsAndLiens: {status: "not_provided", startDate: null, endDate: null, basis: "delivered room", limitations: ["title-level prior assignment and lien history were not identified"]},
+    },
+  };
+  const classificationEvidence = measured({
+    datasetHash: input.datasetHash,
+    universeId: input.universeId,
+    reportingDate,
+    anchors: [fileAnchor(dataset.document, {sheet: dataset.sheet})],
+    formula: "receivables_tape_b2b_classification",
+    inclusions: ["title identifier, corporate obligor tax id, issue date, due date, face value and status columns"],
+    exclusions: ["consumer receivables without corporate obligor tax id"],
+  });
+  return {
+    phaseOne: {
+      universe,
+      datasetHash: input.datasetHash,
+      limitations: [
+        "original due dates were not independently evidenced",
+        "dilution events lack reliable title-level dates and causes",
+        "repurchases, substitutions, assignments and liens were not delivered title by title",
+        "debt bridge, financing proposal and advance-rate assumptions remain pending",
+      ],
+    },
+    classification: {
+      categoryIds: ["trade_receivables"],
+      cellIds: ["mercantil_b2b"],
+      evidence: [classificationEvidence],
+    },
+    warnings: [],
+  };
 }
 
 function defect(id: string, description: string, provenance: AssertionProvenance, value?: string, unit?: "BRL" | "count" | "ratio" | "period"): ReceivablesRawDetectedDefect {

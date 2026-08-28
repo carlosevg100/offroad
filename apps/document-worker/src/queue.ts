@@ -78,6 +78,15 @@ export type QueueClient = {
   recordDocument(job: ClaimedJob, input: {scanResult?: unknown; profile?: unknown; layer?: unknown}): Promise<void>;
   recordCandidates(job: ClaimedJob, candidates: unknown[]): Promise<{written: number; replaced: number}>;
   recordRetrievalChunks(job: DocumentJob, chunks: unknown[]): Promise<{written: number; sourceDocumentId: string}>;
+  recordReceivablesEvidence(job: DocumentJob, input: {
+    contentKind: "document_layer" | "nfe_archive";
+    schemaVersion: string;
+    sourceSha256: string;
+    contentSha256: string;
+    payloadSha256: string;
+    uncompressedBytes: number;
+    payloadBase64: string;
+  }): Promise<{written: boolean; replayed: boolean; source_document_id: string; content_sha256: string}>;
   loadIntakeEvents(job: DocumentJob): Promise<unknown[]>;
   recordIntakeRequestLadders(job: DocumentJob, events: unknown[]): Promise<void>;
   recordAnalysisScopeSuggestions(job: DocumentJob, eventId: string, suggestions: unknown[]): Promise<unknown>;
@@ -183,6 +192,26 @@ export function createQueueClient(
         written: result.written ?? 0,
         sourceDocumentId: result.source_document_id ?? job.payload.source_document_id,
       };
+    },
+
+    async recordReceivablesEvidence(job, input) {
+      const data = await call("worker_record_receivables_evidence", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_content_kind: input.contentKind,
+        p_schema_version: input.schemaVersion,
+        p_source_sha256: input.sourceSha256,
+        p_content_sha256: input.contentSha256,
+        p_payload_sha256: input.payloadSha256,
+        p_uncompressed_bytes: input.uncompressedBytes,
+        p_payload_base64: input.payloadBase64,
+      });
+      return z.object({
+        written: z.boolean(),
+        replayed: z.boolean(),
+        source_document_id: z.uuid(),
+        content_sha256: z.string().regex(/^[a-f0-9]{64}$/),
+      }).parse(data);
     },
 
     async loadIntakeEvents(job) {
