@@ -1008,26 +1008,50 @@ begin
   result := public.worker_record_candidates(
     job_id,
     capability,
-    jsonb_build_array(jsonb_build_object(
-      'extractor_key', 'scope.unparseable_number',
-      'field_path', 'transaction.requested_amount',
-      'field_group', 'transaction',
-      'label', 'Valor solicitado',
-      'raw_value', 'a definir',
-      'normalized_value', 'null'::jsonb,
-      'value_type', 'number',
-      'information_class', 'company_document',
-      'evidence_rank', 7,
-      'source_anchor', jsonb_build_object('kind', 'page', 'id', 'p2', 'page', 2),
-      'confidence', 0.42,
-      'extraction_method', 'llm_anchored',
-      'anchor_verified', false,
-      'anchor_precision', 'page',
-      'verifier_flags', jsonb_build_array('value_unparseable')
-    ))
+    jsonb_build_array(
+      -- Candidate writes replace the complete proposal set for a document. Keep the related
+      -- company proposal in the new set so the following scope-suggestion contract still has
+      -- its required evidence.
+      jsonb_build_object(
+        'extractor_key', 'scope.related_company',
+        'field_path', 'company.legal_name',
+        'field_group', 'company',
+        'label', 'Razão social mencionada',
+        'raw_value', 'Tenant A Related S.A.',
+        'normalized_value', to_jsonb('Tenant A Related S.A.'::text),
+        'value_type', 'text',
+        'information_class', 'audited',
+        'evidence_rank', 1,
+        'source_anchor', jsonb_build_object('kind', 'page', 'id', 'p1', 'page', 1),
+        'confidence', 0.93,
+        'extraction_method', 'llm_anchored',
+        'anchor_verified', true,
+        'anchor_precision', 'page',
+        'entity_name', 'Tenant A Related S.A.',
+        'entity_scope', 'standalone',
+        'verifier_flags', '[]'::jsonb
+      ),
+      jsonb_build_object(
+        'extractor_key', 'scope.unparseable_number',
+        'field_path', 'transaction.requested_amount',
+        'field_group', 'transaction',
+        'label', 'Valor solicitado',
+        'raw_value', 'a definir',
+        'normalized_value', 'null'::jsonb,
+        'value_type', 'number',
+        'information_class', 'company_document',
+        'evidence_rank', 7,
+        'source_anchor', jsonb_build_object('kind', 'page', 'id', 'p2', 'page', 2),
+        'confidence', 0.42,
+        'extraction_method', 'llm_anchored',
+        'anchor_verified', false,
+        'anchor_precision', 'page',
+        'verifier_flags', jsonb_build_array('value_unparseable')
+      )
+    )
   );
 
-  if (result->>'written')::integer <> 1 then
+  if (result->>'written')::integer <> 2 then
     raise exception 'worker did not persist the unparseable proposal: %', result;
   end if;
 
