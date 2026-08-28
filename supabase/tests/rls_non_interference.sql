@@ -782,6 +782,7 @@ $$;
 
 -- Platform research is private market infrastructure. A case worker may read it only through
 -- its live case capability; neither borrower tenant can enumerate the provider or program.
+reset role;
 do $$
 begin
   insert into public.fund_directory (id, legal_name, kind, status)
