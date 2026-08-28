@@ -1003,6 +1003,42 @@ begin
     raise exception 'worker did not normalize legacy model_extraction to llm_anchored';
   end if;
 
+  -- A proposal may be anchored while its value remains unparseable. JSON null is evidence of
+  -- that state; it must not become SQL NULL and abort every other candidate in the document.
+  perform public.worker_record_candidates(
+    job_id,
+    capability,
+    jsonb_build_array(jsonb_build_object(
+      'extractor_key', 'scope.unparseable_number',
+      'field_path', 'transaction.requested_amount',
+      'field_group', 'transaction',
+      'label', 'Valor solicitado',
+      'raw_value', 'a definir',
+      'normalized_value', 'null'::jsonb,
+      'value_type', 'number',
+      'information_class', 'company_document',
+      'evidence_rank', 7,
+      'source_anchor', jsonb_build_object('kind', 'page', 'id', 'p2', 'page', 2),
+      'confidence', 0.42,
+      'extraction_method', 'llm_anchored',
+      'anchor_verified', false,
+      'anchor_precision', 'page',
+      'verifier_flags', jsonb_build_array('value_unparseable')
+    ))
+  );
+
+  if not exists (
+    select 1
+    from public.intake_field_candidates
+    where organization_id = '20000000-0000-4000-8000-000000000001'
+      and intake_session_id = '40000000-0000-4000-8000-000000000003'
+      and extractor_key = 'scope.unparseable_number'
+      and normalized_value is not null
+      and normalized_value = 'null'::jsonb
+  ) then
+    raise exception 'worker did not preserve an unparseable proposal as JSON null';
+  end if;
+
   begin
     perform public.worker_record_analysis_scope_suggestions(
       job_id, repeat('y', 64), gen_random_uuid(),
