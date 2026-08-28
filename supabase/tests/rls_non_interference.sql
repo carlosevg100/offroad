@@ -1122,9 +1122,9 @@ begin
   -- The worker command must replace that index atomically without a row-by-row timeout.
   select jsonb_agg(jsonb_build_object(
     'chunk_key', format('50000000-0000-4000-8000-000000000003:v1:tape:%s', n),
-    'content', format('Título de recebível sintético %s com sacado, vencimento, valor e status documental.', n),
+    'content', format('Receita do título de recebível sintético %s com sacado, vencimento, valor e status documental.', n),
     'content_hash', encode(extensions.digest(
-      format('Título de recebível sintético %s com sacado, vencimento, valor e status documental.', n),
+      format('Receita do título de recebível sintético %s com sacado, vencimento, valor e status documental.', n),
       'sha256'
     ), 'hex'),
     'locale', 'pt-BR',
