@@ -63,7 +63,11 @@ export function toCandidateRow(candidate: VerifiedCandidate, options: {locale?: 
       ...(candidate.additional_anchors.length > 0 ? {additional: candidate.additional_anchors} : {}),
     },
     confidence: candidate.confidence,
-    extraction_method: "model_extraction",
+    // `llm_anchored` is the canonical database method for model-produced facts whose
+    // source anchor was verified. Keep this vocabulary aligned with the schema contract;
+    // `model_extraction` was an obsolete worker-only label and is normalized at the RPC
+    // boundary for backwards compatibility with workers already in flight.
+    extraction_method: "llm_anchored",
     // Primacy and acceptance are reconciliation's call, not extraction's.
     is_primary: false,
     anchor_verified: candidate.anchor_verified,

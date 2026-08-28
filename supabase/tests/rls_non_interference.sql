@@ -982,7 +982,9 @@ begin
       'evidence_rank', 1,
       'source_anchor', jsonb_build_object('kind', 'page', 'id', 'p1', 'page', 1),
       'confidence', 0.93,
-      'extraction_method', 'native_text',
+      -- A worker from before the vocabulary migration may still send its former label.
+      -- The command boundary must normalize it to the canonical, schema-valid method.
+      'extraction_method', 'model_extraction',
       'anchor_verified', true,
       'anchor_precision', 'page',
       'entity_name', 'Tenant A Related S.A.',
@@ -990,6 +992,16 @@ begin
       'verifier_flags', '[]'::jsonb
     ))
   );
+
+  if (
+    select extraction_method
+    from public.intake_field_candidates
+    where organization_id = '20000000-0000-4000-8000-000000000001'
+      and intake_session_id = '40000000-0000-4000-8000-000000000003'
+      and extractor_key = 'scope.related_company'
+  ) <> 'llm_anchored' then
+    raise exception 'worker did not normalize legacy model_extraction to llm_anchored';
+  end if;
 
   begin
     perform public.worker_record_analysis_scope_suggestions(
