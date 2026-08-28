@@ -2039,3 +2039,21 @@ O próximo incremento é migrar o caso Vertentes para `testing-fixtures`, separa
 intermediate e expected, resolver formalmente `reporting_date` versus
 `latest_origination_date`, completar o gold e só então implementar as métricas estáticas. A
 Fase 0 passou em lint, typecheck, testes e build nos 41 pacotes.
+
+## 33. Aceite controlado da Vertentes e retrieval de grande volume, 28/08/2026
+
+O run `811c0914-ec53-44a7-8327-463a51585554` é a prova negativa que governa o próximo release.
+Dezesseis documentos terminaram; o CSV `titulos_em_aberto_e_liquidados.csv` foi lido em camada
+determinística de 22,2 MB, mas três tentativas de gravar o índice pesquisável expiraram. Não tratar
+esse run como sucesso e não iniciar novo processamento pago antes do release da correção.
+
+A migration `20260828223532_bound_large_retrieval_index.sql` troca auditoria por linha por auditoria
+de lote por documento e limita a função capability-bound a 30 segundos. O chunker usa o teto já
+aceito pelo schema, 12.000 caracteres, reduzindo linhas sem descartar texto ou âncoras. O teste RLS
+agora usa cerca de 5,7 milhões de caracteres, e não placeholders curtos. Staging aceitou a migration
+e está com Security Advisor limpo; `pnpm check` passou localmente.
+
+Próxima sequência obrigatória: CI integral, squash merge, migration em produção, deploy estável do
+worker, novo run da mesma sessão controlada e verificação por SQL de 17 jobs documentais, análise de
+caso, `run=succeeded`, `session=review_ready` e chunks não vazios para o CSV. Só depois avaliar a
+qualidade econômica e a interface de revisão.

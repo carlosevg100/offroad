@@ -1317,3 +1317,21 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - O plano aprovado migra a matemática para `financial-core`, mantém a orquestração no pacote
   vertical e usa o caso Vertentes como gold completo. A vertical continua candidate até cumprir o
   gate documentado em `docs/knowledge/recebiveis/PHASE-1-PLAN.md`.
+
+## Índice governado para tapes operacionais, 28/08/2026
+
+- O quarto run controlado da Vertentes processou 16 de 17 documentos na primeira tentativa. A
+  camada determinística do CSV de títulos possui 22,2 MB e aproximadamente 1,5 milhão de tokens;
+  sua indexação expôs que o teste anterior com 1.200 conteúdos curtos não reproduzia o custo real
+  de `tsvector`, GIN e auditoria.
+- `buildCaseChunks` passa a usar o limite governado de 12.000 caracteres. O conteúdo e a âncora são
+  preservados, mas tapes extensos exigem aproximadamente metade das linhas de índice.
+- `case_retrieval_chunks` deixa de emitir um evento de auditoria por fragmento. Insert, update e
+  delete são auditados por lote e documento, com quantidade, sessão, versão e run. A operação
+  capability-bound continua atômica, valida hashes, recusa mais de 2.000 chunks e agora possui
+  circuit breaker interno de 30 segundos.
+- O teste de banco reproduz aproximadamente 5,7 milhões de caracteres com 520 conteúdos variados,
+  verifica persistência integral, auditoria única por documento e orçamento de 25 segundos. A
+  migration foi aplicada no branch `staging`; Security Advisor continua sem findings.
+- O run controlado seguinte em produção é obrigatório antes de declarar a vertical pronta. A
+  aprovação local de `pnpm check` e o schema de staging não substituem essa prova.

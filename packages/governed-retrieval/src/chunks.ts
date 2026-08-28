@@ -73,7 +73,10 @@ export function buildCaseChunks(input: {
     });
   }
 
-  const maxCharacters = input.maxCharacters ?? 6_000;
+  // Operational tapes contain millions of characters in a single sheet. Use the database's
+  // governed maximum so the same evidence is preserved with fewer rows, audits and GIN entries.
+  // Explicit smaller values remain available to callers and tests that need finer passages.
+  const maxCharacters = input.maxCharacters ?? 12_000;
   return containers.flatMap((container) =>
     splitText(container.text, maxCharacters).flatMap((content, part) => {
       if (content.trim().length < 20) return [];

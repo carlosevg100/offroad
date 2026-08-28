@@ -849,6 +849,8 @@ declare
   manifest_id uuid;
   retrieval jsonb;
   bulk_chunks jsonb;
+  retrieval_started_at timestamptz;
+  retrieval_elapsed interval;
   evidence_payload bytea := convert_to('receivables-evidence-fixture', 'utf8');
   evidence_result jsonb;
 begin
@@ -1118,26 +1120,40 @@ begin
     raise exception 'worker did not persist its parser-anchored retrieval chunk: %', result;
   end if;
 
-  -- A realistic receivables tape produces hundreds or thousands of parser-anchored chunks.
-  -- The worker command must replace that index atomically without a row-by-row timeout.
+  -- Reproduce the controlled production tape: about six million searchable characters split
+  -- into governed chunks near the 12,000-character ceiling. Short placeholder strings passed
+  -- while hiding the real tsvector, GIN and audit cost, so this gate uses varied title tokens.
+  with realistic_chunks as (
+    select
+      n,
+      left(string_agg(format(
+        'recebivel_%s_%s sacado_%s vencimento_%s valor_%s status_documental_%s',
+        n, token_no, token_no, token_no, token_no, token_no
+      ), ' ' order by token_no), 11000) as content
+    from generate_series(1, 520) as chunks(n)
+    cross join generate_series(1, 260) as tokens(token_no)
+    group by n
+  )
   select jsonb_agg(jsonb_build_object(
     'chunk_key', format('50000000-0000-4000-8000-000000000003:v1:tape:%s', n),
-    'content', format('Receita do título de recebível sintético %s com sacado, vencimento, valor e status documental.', n),
-    'content_hash', encode(extensions.digest(
-      format('Receita do título de recebível sintético %s com sacado, vencimento, valor e status documental.', n),
-      'sha256'
-    ), 'hex'),
+    'content', content,
+    'content_hash', encode(extensions.digest(content, 'sha256'), 'hex'),
     'locale', 'pt-BR',
     'source_anchor', jsonb_build_object('kind', 'sheet', 'id', 'sCARTEIRA', 'sheet', 'CARTEIRA', 'part', n),
     'tags', jsonb_build_array('sheet', 'visible')
   ) order by n)
   into bulk_chunks
-  from generate_series(1, 1200) as series(n);
+  from realistic_chunks;
 
   perform set_config('statement_timeout', '8s', true);
+  retrieval_started_at := clock_timestamp();
   result := public.worker_record_retrieval_chunks(job_id, capability, bulk_chunks);
-  if (result->>'written')::integer <> 1200 then
+  retrieval_elapsed := clock_timestamp() - retrieval_started_at;
+  if (result->>'written')::integer <> 520 then
     raise exception 'worker did not atomically replace a high-volume retrieval index: %', result;
+  end if;
+  if retrieval_elapsed > interval '25 seconds' then
+    raise exception 'realistic retrieval indexing exceeded the bounded performance budget: %', retrieval_elapsed;
   end if;
 
   result := public.worker_complete_job(job_id, capability, '{"documents":1, "spend": {"costUsd": 0.42, "calls": 3}}'::jsonb);
@@ -1292,8 +1308,19 @@ begin
     select count(*)
     from public.case_retrieval_chunks
     where source_document_id = document_id
-  ) <> 1200 then
+  ) <> 520 then
     raise exception 'worker did not persist the complete high-volume retrieval index';
+  end if;
+
+  if (
+    select count(*)
+    from public.audit_events
+    where resource_type = 'case_retrieval_chunks'
+      and resource_id = document_id::text
+      and metadata ->> 'operation' = 'INSERT'
+      and (metadata ->> 'row_count')::integer = 520
+  ) <> 1 then
+    raise exception 'the governed retrieval replacement was not audited as one document batch';
   end if;
 
   if not exists (
@@ -1346,7 +1373,7 @@ declare
   accepted boolean;
 begin
   if (select count(*) from public.case_retrieval_chunks
-      where source_document_id = '50000000-0000-4000-8000-000000000003') <> 1200 then
+      where source_document_id = '50000000-0000-4000-8000-000000000003') <> 520 then
     raise exception 'tenant A could not read its complete governed case index';
   end if;
   if (select count(*) from public.house_playbook_versions) <> 0

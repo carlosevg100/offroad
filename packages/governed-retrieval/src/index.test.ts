@@ -119,6 +119,40 @@ describe("case chunks", () => {
     expect(chunks.every((entry) => entry.content.length <= 200)).toBe(true);
     expect(chunks.every((entry) => entry.citation.anchor.id === "sec1")).toBe(true);
   });
+
+  it("uses the governed 12,000-character ceiling for large operational tapes", () => {
+    const layer: DocumentLayer = {
+      documentId: "doc-a",
+      documentVersion: 1,
+      kind: "spreadsheet",
+      sheets: [{
+        name: "CARTEIRA",
+        hidden: false,
+        cells: Array.from({length: 1_000}, (_, index) => ({
+          ref: `A${index + 1}`,
+          v: `titulo-${index + 1}-${"recebivel".repeat(14)}`,
+          t: "s" as const,
+        })),
+        tables: [],
+      }],
+      scaleDeclarations: [],
+      stats: {sheetCount: 1},
+    };
+
+    const chunks = buildCaseChunks({
+      organizationId: orgA,
+      intakeSessionId: sessionA,
+      sourceDocumentId: "doc-a",
+      documentVersion: 1,
+      sourceLabel: "Carteira de recebíveis",
+      layer,
+    });
+
+    expect(chunks.length).toBeGreaterThan(1);
+    expect(chunks.every((entry) => entry.content.length <= 12_000)).toBe(true);
+    expect(chunks.some((entry) => entry.content.length > 6_000)).toBe(true);
+    expect(chunks.every((entry) => entry.citation.anchor.id === "sCARTEIRA")).toBe(true);
+  });
 });
 
 describe("governed retrieval", () => {
