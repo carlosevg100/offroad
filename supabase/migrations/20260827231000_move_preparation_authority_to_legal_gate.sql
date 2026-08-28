@@ -5,7 +5,8 @@
 update public.platform_legal_documents
 set status = 'superseded'
 where document_key = 'private_workspace_terms'
-  and status = 'active';
+  and status = 'active'
+  and version <> '2026-08-27-v4';
 
 insert into public.platform_legal_documents (
   document_key,
@@ -49,7 +50,8 @@ select
   now()
 from public.platform_legal_documents
 where document_key = 'private_workspace_terms'
-  and version = '2026-08-27-v3';
+  and version = '2026-08-27-v3'
+on conflict (document_key, version, locale) do nothing;
 
 create or replace function private.accept_private_workspace_terms(
   p_locale text,
@@ -181,4 +183,3 @@ $$;
 
 comment on column public.organization_legal_acceptances.authority_declared is
   'True when the user explicitly declared authority to begin private preparation on behalf of the company. This is not verification of authority for external distribution.';
-
