@@ -967,7 +967,7 @@ begin
   exception when unique_violation then null;
   end;
 
-  perform public.worker_record_candidates(
+  result := public.worker_record_candidates(
     job_id,
     capability,
     jsonb_build_array(jsonb_build_object(
@@ -1005,7 +1005,7 @@ begin
 
   -- A proposal may be anchored while its value remains unparseable. JSON null is evidence of
   -- that state; it must not become SQL NULL and abort every other candidate in the document.
-  perform public.worker_record_candidates(
+  result := public.worker_record_candidates(
     job_id,
     capability,
     jsonb_build_array(jsonb_build_object(
@@ -1027,16 +1027,8 @@ begin
     ))
   );
 
-  if not exists (
-    select 1
-    from public.intake_field_candidates
-    where organization_id = '20000000-0000-4000-8000-000000000001'
-      and intake_session_id = '40000000-0000-4000-8000-000000000003'
-      and extractor_key = 'scope.unparseable_number'
-      and normalized_value is not null
-      and normalized_value = 'null'::jsonb
-  ) then
-    raise exception 'worker did not preserve an unparseable proposal as JSON null';
+  if (result->>'written')::integer <> 1 then
+    raise exception 'worker did not persist the unparseable proposal: %', result;
   end if;
 
   begin
@@ -1247,6 +1239,20 @@ declare
   session_id constant uuid := '40000000-0000-4000-8000-000000000003';
   document_id constant uuid := '50000000-0000-4000-8000-000000000003';
 begin
+  -- The worker intentionally has no tenant membership, so inspect persistence only after
+  -- returning to the database owner. The value must be JSON null, never SQL NULL.
+  if not exists (
+    select 1
+    from public.intake_field_candidates
+    where organization_id = '20000000-0000-4000-8000-000000000001'
+      and intake_session_id = '40000000-0000-4000-8000-000000000003'
+      and extractor_key = 'scope.unparseable_number'
+      and normalized_value is not null
+      and normalized_value = 'null'::jsonb
+  ) then
+    raise exception 'worker did not preserve an unparseable proposal as JSON null';
+  end if;
+
   if (select status from public.processing_runs where intake_session_id = session_id) <> 'succeeded' then
     raise exception 'the run did not reach succeeded after its jobs finished';
   end if;
