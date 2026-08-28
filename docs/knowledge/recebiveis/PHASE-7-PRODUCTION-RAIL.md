@@ -2,8 +2,8 @@
 
 Data: 28/08/2026
 
-Status: candidate. Implementação e gate local concluídos; CI de banco, staging e replay controlado
-de produção ainda obrigatórios.
+Status: candidate. Implementação, gate local e CI de banco concluídos; staging e replay controlado
+de produção ainda obrigatórios. CI aprovado no PR #300, run `33201518095`.
 
 ## Objetivo
 
@@ -94,8 +94,8 @@ financiador, critérios internos e plano de mandato não são expostos à compan
 
 ## Gates ainda abertos
 
-1. GitHub CI deve reconstruir todas as migrations e aprovar RLS e lint. A máquina local não possui
-   Docker e não substitui este gate.
+1. Concluído no PR #300: GitHub CI reconstruiu todas as migrations e aprovou RLS, lint, Playwright
+   e o quality gate dos 41 pacotes no run `33201518095`.
 2. Aplicar a migration em staging, confirmar Security Advisor sem achados e executar o caso por
    upload real, sem inserção manual de payload.
 3. Repetir o mesmo processamento e provar mesmo fingerprint e nenhuma duplicação de fragmento.

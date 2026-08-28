@@ -32,9 +32,10 @@ distribution or credit approval.
 
 Local Node 24 `pnpm check` is green across all 41 packages. The worker has 51 passing tests, web
 135 and evals 38, including the 34,397-title raw replay. This computer has no Docker, so the new
-migration has not been accepted locally. Do not promote or describe Phase 7 as production-ready
-until the required GitHub database job rebuilds every migration from zero, passes the full RLS
-suite and lint, staging succeeds and one controlled real-upload case completes in production with
+migration was accepted by the required GitHub database job instead: PR #300 run `33201518095`
+rebuilt every migration from zero and passed the full RLS suite, schema lint, browser E2E and
+monorepo quality gate. Do not describe Phase 7 as production-ready until staging succeeds and one
+controlled real-upload case completes in production with
 an idempotent replay and an isolation check. Do not seed fake providers merely to make matching
 look populated; an empty real programme universe is a valid, explicit state.
 

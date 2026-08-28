@@ -30,9 +30,10 @@ O gate local integral passou em Node 24.19.0 nos 41 pacotes: lint, typecheck, te
 worker fechou 51 testes; o web, 135; evals, 38; e o replay bruto processou 34.397 títulos. A
 reconstrução local do banco não pôde ser executada nesta máquina porque não há Docker. Por isso a
 Fase 7 continua candidate até o job obrigatório `Database (migrations, RLS, lint)` aplicar todo o
-histórico do zero, executar `rls_non_interference.sql` e aprovar a migration em CI. Depois disso,
-staging e um caso controlado em produção ainda são gates obrigatórios antes da declaração de
-prontidão oficial.
+histórico do zero, executar `rls_non_interference.sql` e aprovar a migration em CI. Esse gate
+passou no PR #300, run `33201518095`, junto com Playwright e o quality gate dos 41 pacotes.
+Staging e um caso controlado em produção continuam obrigatórios antes da declaração de prontidão
+oficial.
 
 ## Vertical de recebíveis, coleta governada de evidências da Fase 6, 28/08/2026
 

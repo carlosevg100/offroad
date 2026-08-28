@@ -16,9 +16,13 @@
 | Gate integral local | `pnpm check`, Node 24.19.0 | lint, typecheck, testes e build verdes nos 41 pacotes; worker 51 testes, web 135, evals 38; Next.js e bundle do worker concluídos |
 | Banco local | `supabase db reset` | não executado: a máquina não possui Docker. Não é aceite; o job obrigatório de banco no PR precisa reconstruir o schema e aprovar RLS e lint |
 | Segurança estática | `git diff --check` e busca de segredos | diff sem whitespace inválido; nenhum token OpenAI, Anthropic ou Resend encontrado nos arquivos do incremento |
+| Banco em CI | PR #300, run `33201518095`, job `98951932689` | todas as migrations aplicadas do zero; `rls_non_interference.sql` e lint dos schemas `public` e `private` aprovados em 1m52s |
+| Jornada no navegador | PR #300, run `33201518095`, job `98951932682` | stack Supabase limpa, build contra o stack local e suíte Playwright aprovados em 3m24s |
+| Quality em CI | PR #300, run `33201518095`, job `98951932357` | lint, typecheck, todos os testes e builds dos 41 pacotes aprovados em 6m06s |
+| Preview | Vercel `JBC2476ADgjeMzs95y2SS7hwaNKy` | deployment de preview concluído e check aprovado |
 
-Esta evidência local aprova o código para revisão, não para produção. A aceitação da Fase 7 exige,
-em ordem: CI completo, migration e RLS verdes, staging, deploy do worker e web, replay controlado
+O candidate passou revisão e CI, mas ainda não é produção. A aceitação da Fase 7 exige,
+em ordem: staging, deploy do worker e web, replay controlado
 com um upload real, repetição idempotente, falha adversarial e verificação de isolamento.
 
 ## Vertical de recebíveis, coleta governada de evidências da Fase 6, 28/08/2026
