@@ -1,12 +1,43 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 28 August 2026. Receivables Phase 5 is live on `main`. Phase 6
-> adds governed evidence collection for operation facts and provider mandates.
+> Current as of 28 August 2026. Receivables Phase 6 is live on `main`. Phase 7 is
+> a candidate branch that connects actual uploads to the full governed vertical; it is not live
+> until database CI, staging and the controlled production replay below are complete.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Engineering update: receivables production rail Phase 7, 28 August 2026
+
+The prior production worker could execute the receivables vertical only when an internal
+`receivables_case` object had already been assembled. The real upload journey never assembled it.
+Phase 7 closes that gap: accepted spreadsheets and fiscal NF-e archives become immutable,
+hash-addressed private evidence fragments; the case job loads only current documents from its own
+session; and the deterministic builder reconstructs the title universe from that frozen input.
+
+The reconstructed case executes the existing calculation, defect, route-eligibility, evidence and
+mandate pipelines. Provider context is loaded privately at the exact capital-program level and
+covers banks, finance companies, SCDs, factorings, FIDCs, private-credit funds, family offices,
+institutional providers and buyer-sponsored programs. Missing or malformed observations remain
+missing. A programme route without exact current evidence remains desk inference and cannot become
+live appetite or capacity.
+
+The full report, including provider identity and internal mandate work, remains in the private job
+result and is fingerprinted in the artifact manifest. The borrower snapshot is deliberately
+narrow: measured metrics, evidence coverage, detected issues, route conditions, blockers and the
+next evidence batch. It contains no provider names, shortlist or contacts and does not authorize
+distribution or credit approval.
+
+Local Node 24 `pnpm check` is green across all 41 packages. The worker has 51 passing tests, web
+135 and evals 38, including the 34,397-title raw replay. This computer has no Docker, so the new
+migration was accepted by the required GitHub database job instead: PR #300 run `33201518095`
+rebuilt every migration from zero and passed the full RLS suite, schema lint, browser E2E and
+monorepo quality gate. Do not describe Phase 7 as production-ready until staging succeeds and one
+controlled real-upload case completes in production with
+an idempotent replay and an isolation check. Do not seed fake providers merely to make matching
+look populated; an empty real programme universe is a valid, explicit state.
 
 ### Engineering update: receivables evidence collection Phase 6, 28 August 2026
 

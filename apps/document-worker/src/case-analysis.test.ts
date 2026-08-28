@@ -1,10 +1,12 @@
 import type {ModelGateway, GatewayCallLog} from "@offroad/model-gateway";
 import {caseStageIds} from "@offroad/case-runner";
+import {parseDocument} from "@offroad/document-parsers";
 import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
 import {processCaseAnalysisJob} from "./case-analysis";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
+import {documentEvidence, encodeReceivablesEvidence} from "./receivables-evidence";
 
 const job: CaseAnalysisJob = {
   claimed: true,
@@ -46,6 +48,25 @@ describe("worker case analysis", () => {
     const modelCalls: Array<{task: string; provider?: string}> = [];
     const retrievalRequests: Array<{query: string; allowedFundIds?: string[]}> = [];
     let publicResearchRecord: {plan: unknown; result: unknown} | null = null;
+    const receivablesDocumentId = "11111111-1111-4111-8111-111111111111";
+    const receivablesFileHash = "9".repeat(64);
+    const parsedReceivables = await parseDocument({
+      bytes: new TextEncoder().encode([
+        "NUM_TITULO,CNPJ_SACADO,NOME_SACADO,DT_EMISSAO,DT_VENCIMENTO,VLR_TITULO,SITUACAO,DT_PAGAMENTO,VLR_PAGO",
+        "NF-1,11222333000144,Comprador A,2026-06-01,2026-07-01,100000,ABERTO,,",
+        "NF-2,22333444000155,Comprador B,2026-05-01,2026-06-01,50000,LIQUIDADO,2026-06-03,50000",
+      ].join("\n")),
+      documentId: receivablesDocumentId,
+      documentVersion: 1,
+      fileName: "carteira.csv",
+      localeHint: "pt-BR",
+    });
+    const encodedReceivables = encodeReceivablesEvidence(documentEvidence({
+      documentId: receivablesDocumentId,
+      fileName: "carteira.csv",
+      fileHash: receivablesFileHash,
+      parsed: parsedReceivables,
+    }));
     const raw = {
       session: {
         id: job.intake_session_id,
@@ -95,6 +116,47 @@ describe("worker case analysis", () => {
       registered_mandates: [],
       model_lineage: [],
       expected_model_calls: 0,
+      receivables_evidence: [{
+        source_document_id: receivablesDocumentId,
+        document_version: 1,
+        content_kind: "document_layer",
+        schema_version: encodedReceivables.schemaVersion,
+        source_sha256: receivablesFileHash,
+        content_sha256: encodedReceivables.contentSha256,
+        payload_sha256: encodedReceivables.payloadSha256,
+        codec: "gzip-json-v1",
+        uncompressed_bytes: encodedReceivables.uncompressedBytes,
+        payload_base64: encodedReceivables.payloadBase64,
+      }],
+      receivables_provider_context: {
+        programs: [{
+          id: "21111111-1111-4111-8111-111111111111",
+          provider_id: "31111111-1111-4111-8111-111111111111",
+          provider_legal_name: "Financeira Privada Confidencial S.A.",
+          program_name: "Desconto de recebíveis",
+          provider_kind: "credit_finance_company",
+          route_ids: ["financial_institution_receivables_discount"],
+          status: "active",
+          created_at: "2026-08-01T00:00:00.000Z",
+          updated_at: "2026-08-20T00:00:00.000Z",
+        }],
+        observations: [
+          providerObservation("eligible_routes", ["financial_institution_receivables_discount"]),
+          providerObservation("currencies", ["BRL"]),
+          providerObservation("ticket", {min: "100000", max: "50000000"}),
+          providerObservation("weighted_average_term_days", {min: "1", max: "180"}),
+          providerObservation("minimum_history_months", 1),
+          providerObservation("maximum_past_due_over_30_ratio", "0.25"),
+          providerObservation("maximum_past_due_over_90_ratio", "0.15"),
+          providerObservation("maximum_dilution_ratio", {mode: "case_by_case", note: "Confirmar histórico de diluição."}),
+          providerObservation("maximum_adjusted_loss_ratio", {mode: "case_by_case", note: "Confirmar histórico de perdas."}),
+          providerObservation("maximum_single_obligor_ratio", "0.80"),
+          providerObservation("maximum_top_ten_obligor_ratio", "1"),
+          providerObservation("minimum_eligible_portfolio_amount", "100000"),
+          providerObservation("live_appetite", true, "conversation"),
+          providerObservation("available_capacity", "15000000", "conversation"),
+        ],
+      },
       receivables_case: diversifiedReceivablesCase("worker-receivables-case"),
       market_distribution_context:{version:"2026.08.26-v1",status:"active",mandateMaxAgeMonths:12,waveLimit:3,learningGateAnchorCount:2},
       red_flag_context:{
@@ -120,6 +182,12 @@ describe("worker case analysis", () => {
       recordDocument: async () => {},
       recordCandidates: async () => ({written: 0, replaced: 0}),
       recordRetrievalChunks: async () => ({written: 0, sourceDocumentId: "source-1"}),
+      recordReceivablesEvidence: async () => ({
+        written: true,
+        replayed: false,
+        source_document_id: "11111111-1111-4111-8111-111111111111",
+        content_sha256: "a".repeat(64),
+      }),
       loadIntakeEvents: async () => [],
       recordIntakeRequestLadders: async () => {},
       recordAnalysisScopeSuggestions: async () => ({}),
@@ -257,6 +325,33 @@ describe("worker case analysis", () => {
       caseId: "worker-receivables-case",
       decision: {status: "ready_for_structuring", externalDirectionAllowed: false},
     });
+    expect(persisted.receivablesVertical).toMatchObject({
+      version: "2026.08.28-v1",
+      status: "analyzed",
+      classification: {categoryIds: ["trade_receivables"], cellIds: ["mercantil_b2b"]},
+      evidenceCoverage: {delivered: 1, searched: 1},
+      pipeline: {
+        boundaries: {
+          companyFacingRecommendationAllowed: false,
+          externalDirectionAllowed: false,
+          qualifiedIntroductionAllowed: false,
+          creditApprovalExpressed: false,
+        },
+      },
+    });
+    expect(JSON.stringify(persisted.receivablesVertical)).not.toContain("Fundo Confidencial");
+    expect(JSON.stringify(persisted.receivablesVertical)).not.toContain("Financeira Privada Confidencial");
+    expect(privateResult.receivables_analysis).toMatchObject({
+      phaseTwoB: {summary: {screened: 1}},
+      evidenceCollection: {mandates: {summary: {programsReviewed: 1}}},
+      boundaries: {
+        companyFacingRecommendationAllowed: false,
+        externalDirectionAllowed: false,
+        qualifiedIntroductionAllowed: false,
+        creditApprovalExpressed: false,
+      },
+    });
+    expect(JSON.stringify(privateResult.receivables_analysis)).toContain("Financeira Privada Confidencial");
     const persistedReconciliation = persisted.reconciliation as {
       financialTruth: {procedureCoverage: Array<{procedureId: string}>};
       debtTruth: {procedureCoverage: Array<{procedureId: string}>};
@@ -320,4 +415,22 @@ function fact(fieldPath: string, normalizedValue: unknown, valueType = "number")
 
 function observation(criterion: string, value: unknown) {
   return {criterion, value, provenance: "declared", observed_at: "2026-08-01", note: null};
+}
+
+let providerObservationSequence = 0;
+function providerObservation(criterion: string, value: unknown, provenance = "declared") {
+  providerObservationSequence += 1;
+  return {
+    id: `51111111-1111-4111-8111-${String(providerObservationSequence).padStart(12, "0")}`,
+    provider_id: "31111111-1111-4111-8111-111111111111",
+    program_id: "21111111-1111-4111-8111-111111111111",
+    criterion,
+    value,
+    provenance,
+    observed_at: "2026-08-01",
+    valid_until: "2026-09-30",
+    note: null,
+    source_url: null,
+    recorded_by: "41111111-1111-4111-8111-111111111111",
+  };
 }

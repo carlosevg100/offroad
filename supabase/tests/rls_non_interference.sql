@@ -780,6 +780,52 @@ begin
 end;
 $$;
 
+-- Platform research is private market infrastructure. A case worker may read it only through
+-- its live case capability; neither borrower tenant can enumerate the provider or program.
+reset role;
+do $$
+begin
+  insert into public.fund_directory (id, legal_name, kind, status)
+  values (
+    '70000000-0000-4000-8000-000000000799',
+    'Financeira Privada do Trilho de Produção S.A.',
+    'credit_finance_company',
+    'mapped'
+  );
+  insert into public.capital_provider_programs (
+    id, provider_id, program_name, provider_kind, route_ids, status
+  ) values (
+    '71000000-0000-4000-8000-000000000799',
+    '70000000-0000-4000-8000-000000000799',
+    'Desconto privado de recebíveis',
+    'credit_finance_company',
+    array['financial_institution_receivables_discount'],
+    'active'
+  );
+  insert into public.fund_mandate_observations (
+    id, fund_id, program_id, criterion, value, provenance, observed_at, valid_until, note
+  ) values
+    (
+      '72000000-0000-4000-8000-000000000799',
+      '70000000-0000-4000-8000-000000000799',
+      '71000000-0000-4000-8000-000000000799',
+      'eligible_routes',
+      '["financial_institution_receivables_discount"]'::jsonb,
+      'conversation', current_date, current_date + 30,
+      'rotas confirmadas no teste de produção'
+    ),
+    (
+      '72000000-0000-4000-8000-000000000798',
+      '70000000-0000-4000-8000-000000000799',
+      '71000000-0000-4000-8000-000000000799',
+      'live_appetite',
+      'true'::jsonb,
+      'conversation', current_date, current_date + 30,
+      'apetite confirmado no teste de produção'
+    );
+end;
+$$;
+
 -- The worker: no membership anywhere, works only through the commands.
 reset role;
 set local role authenticated;
@@ -802,6 +848,8 @@ declare
   manifest jsonb;
   manifest_id uuid;
   retrieval jsonb;
+  evidence_payload bytea := convert_to('receivables-evidence-fixture', 'utf8');
+  evidence_result jsonb;
 begin
   -- RLS gives the worker account nothing on its own
   if (select count(*) from public.processing_runs) <> 0 then
@@ -882,6 +930,42 @@ begin
   if result->>'profile_id' is null or result->>'layer_id' is null then
     raise exception 'worker did not persist the profile and the layer';
   end if;
+
+  begin
+    perform public.worker_record_receivables_evidence(
+      job_id, repeat('y', 64), 'document_layer', '2026.08.28-v1', repeat('d', 64),
+      repeat('e', 64), encode(extensions.digest(evidence_payload, 'sha256'), 'hex'),
+      octet_length(evidence_payload), encode(evidence_payload, 'base64')
+    );
+    raise exception 'receivables evidence accepted a forged capability';
+  exception when insufficient_privilege then null;
+  end;
+
+  evidence_result := public.worker_record_receivables_evidence(
+    job_id, capability, 'document_layer', '2026.08.28-v1', repeat('d', 64),
+    repeat('e', 64), encode(extensions.digest(evidence_payload, 'sha256'), 'hex'),
+    octet_length(evidence_payload), encode(evidence_payload, 'base64')
+  );
+  if evidence_result->>'written' <> 'true' or evidence_result->>'replayed' <> 'false' then
+    raise exception 'worker did not persist receivables evidence: %', evidence_result;
+  end if;
+  evidence_result := public.worker_record_receivables_evidence(
+    job_id, capability, 'document_layer', '2026.08.28-v1', repeat('d', 64),
+    repeat('e', 64), encode(extensions.digest(evidence_payload, 'sha256'), 'hex'),
+    octet_length(evidence_payload), encode(evidence_payload, 'base64')
+  );
+  if evidence_result->>'written' <> 'false' or evidence_result->>'replayed' <> 'true' then
+    raise exception 'receivables evidence replay was not idempotent: %', evidence_result;
+  end if;
+  begin
+    perform public.worker_record_receivables_evidence(
+      job_id, capability, 'document_layer', '2026.08.28-v1', repeat('d', 64),
+      repeat('f', 64), encode(extensions.digest(evidence_payload, 'sha256'), 'hex'),
+      octet_length(evidence_payload), encode(evidence_payload, 'base64')
+    );
+    raise exception 'receivables evidence accepted an immutable conflict';
+  exception when unique_violation then null;
+  end;
 
   perform public.worker_record_candidates(
     job_id,
@@ -1006,7 +1090,11 @@ begin
 
   case_input := public.worker_load_case_input(case_job_id, case_capability);
   if case_input->'session'->>'id' <> '40000000-0000-4000-8000-000000000003'
-    or jsonb_array_length(case_input->'documents') <> 1 then
+    or jsonb_array_length(case_input->'documents') <> 1
+    or jsonb_array_length(case_input->'receivables_evidence') <> 1
+    or jsonb_array_length(case_input->'receivables_provider_context'->'programs') <> 1
+    or jsonb_array_length(case_input->'receivables_provider_context'->'observations') <> 2
+    or case_input->'receivables_evidence'->0->>'source_sha256' <> repeat('d', 64) then
     raise exception 'case capability did not load its scoped evidence';
   end if;
   begin

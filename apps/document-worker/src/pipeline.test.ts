@@ -46,6 +46,7 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
     uploaded: [] as number[],
     candidates: [] as unknown[][],
     retrievalChunks: [] as unknown[][],
+    receivablesEvidence: [] as unknown[],
   };
 
   const deps: PipelineDependencies = {
@@ -65,6 +66,15 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
       recordRetrievalChunks: async (_job, chunks) => {
         calls.retrievalChunks.push(chunks);
         return {written: chunks.length, sourceDocumentId: job().payload.source_document_id};
+      },
+      recordReceivablesEvidence: async (_job, input) => {
+        calls.receivablesEvidence.push(input);
+        return {
+          written: true,
+          replayed: false,
+          source_document_id: job().payload.source_document_id,
+          content_sha256: input.contentSha256,
+        };
       },
       loadIntakeEvents: async () => [],
       recordIntakeRequestLadders: async () => {},
@@ -162,6 +172,7 @@ describe("a healthy document goes through every stage", () => {
       "download",
       "gate",
       "parse",
+      "store_receivables_evidence",
       "store_layer",
       "profile",
       "usage",
@@ -177,6 +188,12 @@ describe("a healthy document goes through every stage", () => {
     expect(recorded.layer?.object_path).toBe("org/session/dre.layer.json");
     expect(Object.keys(recorded.layer?.parser_versions ?? {}).length).toBeGreaterThan(0);
     expect(calls.retrievalChunks).toHaveLength(1);
+    expect(calls.receivablesEvidence).toHaveLength(1);
+    expect(calls.receivablesEvidence[0]).toMatchObject({
+      contentKind: "document_layer",
+      sourceSha256: sha256Of(bytes),
+      schemaVersion: "2026.08.28-v1",
+    });
     expect(calls.retrievalChunks[0]?.[0]).toMatchObject({
       chunk_key: expect.stringContaining("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee:v1"),
       locale: "pt-BR",

@@ -1,6 +1,7 @@
 import {
   ParserError,
   parseDocument,
+  parseNfeArchive,
   type OcrEngine,
   type DocumentConverter,
   type ParseResult,
@@ -12,6 +13,11 @@ import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
 import type {DocumentJob, QueueClient} from "./queue";
 import {prepareWorkerIntakeRequests} from "./intake-requests";
 import {buildScopeSuggestionInputs, deterministicJobEventId} from "./intake-governance";
+import {
+  documentEvidence,
+  encodeReceivablesEvidence,
+  fiscalArchiveEvidence,
+} from "./receivables-evidence";
 
 /**
  * What happens to one document, start to finish (P1 plan §5, stages E0–E1).
@@ -139,6 +145,41 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
 
     await queue.recordDocument(job, {scanResult: verdict});
 
+    // Fiscal XML archives are evidence, not generic documents. They deliberately bypass the
+    // Office/PDF parser and are stored as a bounded sample. A random ZIP is not accepted as an
+    // empty sample: that would make an unread archive look like evidence of no cancellations.
+    if (payload.original_name.toLowerCase().endsWith(".zip")) {
+      const archive = await stage("parse_nfe_archive", () => parseNfeArchive({
+        bytes,
+        archiveId: payload.source_document_id,
+        fileHash: verdict.sha256,
+      }));
+      if (archive.invoices.length === 0 && archive.cancellations.length === 0) {
+        throw new ParserError("the ZIP contains no supported NF-e invoice or cancellation event", "unsupported_format");
+      }
+      const encoded = encodeReceivablesEvidence(fiscalArchiveEvidence(archive));
+      await stage("store_receivables_evidence", () => queue.recordReceivablesEvidence(job, {
+        contentKind: "nfe_archive",
+        schemaVersion: encoded.schemaVersion,
+        sourceSha256: verdict.sha256,
+        contentSha256: encoded.contentSha256,
+        payloadSha256: encoded.payloadSha256,
+        uncompressedBytes: encoded.uncompressedBytes,
+        payloadBase64: encoded.payloadBase64,
+      }));
+      const preparedRequests = await stage("prepare_requests", () => prepareWorkerIntakeRequests(job, queue));
+      await queue.complete(job, {
+        document_kind: "other",
+        fiscal_archive: {invoices: archive.invoices.length, cancellations: archive.cancellations.length},
+        warnings: archive.warnings,
+        prepared_requests: preparedRequests,
+        ...(deps.spend ? {spend: deps.spend()} : {}),
+        ...(deps.lineage ? {model_lineage: deps.lineage()} : {}),
+      });
+      log("document.done", {job: job.job_id, kind: "nfe_archive", invoices: archive.invoices.length});
+      return {status: "succeeded", stages, documentKind: "other"};
+    }
+
     // ---- E2 layer --------------------------------------------------------------------
     const parsed = await stage("parse", () =>
       parseDocument(
@@ -158,6 +199,22 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     );
 
     const layerBody = new TextEncoder().encode(JSON.stringify(parsed.layer));
+
+    const receivablesEvidence = encodeReceivablesEvidence(documentEvidence({
+      documentId: payload.source_document_id,
+      fileName: payload.original_name,
+      fileHash: verdict.sha256,
+      parsed,
+    }));
+    await stage("store_receivables_evidence", () => queue.recordReceivablesEvidence(job, {
+      contentKind: "document_layer",
+      schemaVersion: receivablesEvidence.schemaVersion,
+      sourceSha256: verdict.sha256,
+      contentSha256: receivablesEvidence.contentSha256,
+      payloadSha256: receivablesEvidence.payloadSha256,
+      uncompressedBytes: receivablesEvidence.uncompressedBytes,
+      payloadBase64: receivablesEvidence.payloadBase64,
+    }));
 
     if (payload.layer_upload_url && payload.layer_object_path) {
       await stage("store_layer", () => deps.uploadLayer(payload.layer_upload_url!, layerBody));

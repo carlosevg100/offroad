@@ -4,6 +4,37 @@ Atualizado em: 2026-08-28
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Vertical de recebíveis, trilho real de produção da Fase 7, 28/08/2026
+
+O worker deixou de depender de um objeto `receivables_case` montado manualmente. CSV, XLSX e
+XLS entregues pela jornada real agora produzem fragmentos canônicos comprimidos, endereçados por
+hash e persistidos exclusivamente no schema `private`. Arquivos ZIP aceitos são lidos como pacote
+fiscal de NF-e; ZIP vazio ou genérico é recusado. Repetição byte-idêntica é idempotente e tentativa
+de substituir a mesma versão por conteúdo diferente falha como violação de integridade.
+
+O processamento do caso carrega somente as versões atuais dos documentos da própria sessão e
+congela exatamente esses fragmentos no input da execução. A partir deles, o montador reconstrói a
+carteira título a título, preserva séries de eventos ausentes como ausentes, executa os controles,
+calcula as métricas da Fase 1, avalia as rotas da Fase 2A e cruza os programas governados da Fase
+2B. Bancos, financeiras, SCDs, factorings, FIDCs, fundos privados, family offices, investidores
+institucionais e programas patrocinados por sacados usam o mesmo contrato; FIDC não é default nem
+pré-requisito.
+
+O relatório completo, incluindo identidades e critérios de programas, permanece no resultado
+privado do job. O snapshot público contém somente classificação, métricas, cobertura, achados,
+condições, bloqueios e o próximo lote de evidências. Nenhum nome de financiador, shortlist,
+observação interna ou contato é exposto à companhia. Ausência do valor pretendido produz
+`needs_requested_amount`; ausência de uma série histórica não vira zero.
+
+O gate local integral passou em Node 24.19.0 nos 41 pacotes: lint, typecheck, testes e build. O
+worker fechou 51 testes; o web, 135; evals, 38; e o replay bruto processou 34.397 títulos. A
+reconstrução local do banco não pôde ser executada nesta máquina porque não há Docker. Por isso a
+Fase 7 continua candidate até o job obrigatório `Database (migrations, RLS, lint)` aplicar todo o
+histórico do zero, executar `rls_non_interference.sql` e aprovar a migration em CI. Esse gate
+passou no PR #300, run `33201518095`, junto com Playwright e o quality gate dos 41 pacotes.
+Staging e um caso controlado em produção continuam obrigatórios antes da declaração de prontidão
+oficial.
+
 ## Vertical de recebíveis, coleta governada de evidências da Fase 6, 28/08/2026
 
 Os 18 fatos de elegibilidade agora possuem uma definição canônica de coleta no

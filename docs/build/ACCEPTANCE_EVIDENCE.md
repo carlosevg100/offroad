@@ -1,5 +1,32 @@
 # Acceptance Evidence
 
+## Vertical de recebíveis, trilho real de produção da Fase 7, 28/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Entrada real | teste do document worker | CSV/XLSX/XLS passa pelo parser da fila e produz fragmento canônico; ZIP é aceito somente como pacote fiscal NF-e não vazio |
+| Persistência imutável | codec + migration | payload `gzip-json-v1`, SHA-256 e tamanho verificados; replay idêntico é idempotente; conflito de bytes na mesma versão é recusado |
+| Escopo do caso | RPC capability-bound | o worker carrega somente documentos atuais da organização e sessão do job; capability forjada e outro case falham |
+| Reconstrução | gold entregue pelo caminho do worker | títulos reais são reconstruídos dos fragmentos, sem objeto `receivables_case` artesanal e sem consultar fixture reservado |
+| Ausência não é zero | eval de 34.397 títulos | histórico de eventos não entregue permanece `not_provided`; nenhuma taxa de evento é fabricada |
+| Universo de capital | provider context privado | bancos, financeiras, SCDs, factorings, FIDCs, fundos privados, family offices, institucionais e buyer-sponsored são adaptados por programa exato |
+| Verdade de mandato | observações versionadas | política sem observação exata permanece inferência de mesa; apetite e capacidade dependem de fonte vigente permitida |
+| Fronteira pública | teste integrado do worker | identidade de programa aparece no relatório privado e não aparece no snapshot da companhia; aprovação de crédito e saída externa permanecem falsas |
+| Interface | web PT-BR e EN-US | painel apresenta títulos, saldo, prazo, concentração, achados, cobertura e próximo lote; estado sem valor pretendido é explícito |
+| Gate integral local | `pnpm check`, Node 24.19.0 | lint, typecheck, testes e build verdes nos 41 pacotes; worker 51 testes, web 135, evals 38; Next.js e bundle do worker concluídos |
+| Banco local | `supabase db reset` | não executado: a máquina não possui Docker. Não é aceite; o job obrigatório de banco no PR precisa reconstruir o schema e aprovar RLS e lint |
+| Segurança estática | `git diff --check` e busca de segredos | diff sem whitespace inválido; nenhum token OpenAI, Anthropic ou Resend encontrado nos arquivos do incremento |
+| Banco em CI | PR #300, run `33201518095`, job `98951932689` | todas as migrations aplicadas do zero; `rls_non_interference.sql` e lint dos schemas `public` e `private` aprovados em 1m52s |
+| Jornada no navegador | PR #300, run `33201518095`, job `98951932682` | stack Supabase limpa, build contra o stack local e suíte Playwright aprovados em 3m24s |
+| Quality em CI | PR #300, run `33201518095`, job `98951932357` | lint, typecheck, todos os testes e builds dos 41 pacotes aprovados em 6m06s |
+| Preview | Vercel `JBC2476ADgjeMzs95y2SS7hwaNKy` | deployment de preview concluído e check aprovado |
+| Staging schema | Supabase branch `staging`, ref `lxmpsxwlpmfisbauakaz` | migration aplicada; tabela e RPCs presentes; zero fragmentos antes do teste; Security Advisor com zero lints |
+| Staging performance | Supabase Performance Advisor | encontrou as duas novas FKs sem índice de cobertura; correção adicionada em `20260828191000_receivables_evidence_fk_indexes.sql` antes de produção |
+
+O candidate passou revisão e CI, mas ainda não é produção. A aceitação da Fase 7 exige,
+em ordem: staging, deploy do worker e web, replay controlado
+com um upload real, repetição idempotente, falha adversarial e verificação de isolamento.
+
 ## Vertical de recebíveis, coleta governada de evidências da Fase 6, 28/08/2026
 
 | Evidência | Verificação | Resultado |

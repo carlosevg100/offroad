@@ -16,7 +16,12 @@ import type {
   ReceivablesProposalCharge,
   ReceivablesUniverse,
 } from "@offroad/financial-core";
-import {detectReceivablesRawEvidence, type ReceivablesRawDetectionReport} from "@offroad/receivables-analysis";
+import {
+  buildReceivablesRawUniverse,
+  detectReceivablesRawEvidence,
+  type ReceivablesEvidenceDocument,
+  type ReceivablesRawDetectionReport,
+} from "@offroad/receivables-analysis";
 import {beforeAll, describe, expect, it} from "vitest";
 
 import {
@@ -65,8 +70,14 @@ const structure = readJson<Structure>(join(goldRoot, "source", "structure-cost-i
 const gold = readJson<ReceivablesPhaseThreeGold>(join(goldRoot, "expected", "phase-three.json"));
 
 let rawDetection: ReceivablesRawDetectionReport;
+let rawDocuments: ReceivablesEvidenceDocument[];
+let rawDatasetHash: string;
 
-async function loadRawDetection(): Promise<ReceivablesRawDetectionReport> {
+async function loadRawDetection(): Promise<{
+  detection: ReceivablesRawDetectionReport;
+  documents: ReceivablesEvidenceDocument[];
+  datasetHash: string;
+}> {
   const paths = manifest.rawFiles.map((entry) => entry.path).filter((path) => (
     path.startsWith("documentos/") && !path.endsWith(".zip")
   ) || (
@@ -95,13 +106,13 @@ async function loadRawDetection(): Promise<ReceivablesRawDetectionReport> {
   const datasetHash = createHash("sha256")
     .update([...documents.map((document) => document.fileHash), archive.fileHash].sort().join(":"))
     .digest("hex");
-  return detectReceivablesRawEvidence({
+  return {detection: detectReceivablesRawEvidence({
     universeId: manifest.fixtureId,
     reportingDate: manifest.dates.reportingDate,
     datasetHash,
     documents,
     fiscalArchives: [archive],
-  });
+  }), documents, datasetHash};
 }
 
 const estimated = (id: string, value: string, method: string, basis = method): GovernedRateAssumption => ({
@@ -135,8 +146,30 @@ const measured = (value: string): {value: string; provenance: AssertionProvenanc
 
 describe("Vertentes Phase 3 raw-document replay", () => {
   beforeAll(async () => {
-    rawDetection = await loadRawDetection();
+    const loaded = await loadRawDetection();
+    rawDetection = loaded.detection;
+    rawDocuments = loaded.documents;
+    rawDatasetHash = loaded.datasetHash;
   }, 60_000);
+
+  it("reconstructs the governed universe directly from the delivered tape", () => {
+    const built = buildReceivablesRawUniverse({
+      universeId: manifest.fixtureId,
+      datasetHash: rawDatasetHash,
+      documents: rawDocuments,
+    });
+    expect(built.classification).toMatchObject({
+      categoryIds: ["trade_receivables"],
+      cellIds: ["mercantil_b2b"],
+    });
+    expect(built.phaseOne?.universe.receivables).toHaveLength(34_397);
+    expect(built.phaseOne?.universe.eventCoverage.dilutions.status).not.toBe("complete");
+    expect(built.phaseOne?.universe.eventCoverage.repurchases.status).toBe("not_provided");
+    expect(built.phaseOne?.limitations).toEqual(expect.arrayContaining([
+      "repurchases, substitutions, assignments and liens were not delivered title by title",
+      "debt bridge, financing proposal and advance-rate assumptions remain pending",
+    ]));
+  });
 
   it("detects the planted control failures from delivered evidence without reading reserved truth", () => {
     expect(rawDetection.defects.map((item) => item.id)).toEqual(gold.defectIds);
