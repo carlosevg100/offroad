@@ -1076,7 +1076,7 @@
       "dropTitle": "Drop your documents to get started",
       "dropBody": "Or select files from your computer. You can upload everything at once.",
       "select": "Select documents",
-      "formats": "PDF · Excel · CSV · Word · PowerPoint · Images · Text · 50 MB per file",
+      "formats": "PDF · Excel · CSV · NF-e ZIP · Word · PowerPoint · Images · Text · 50 MB per file",
       "received": "Documents received",
       "remove": "Remove document"
     },
