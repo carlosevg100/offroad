@@ -15,3 +15,4 @@ export * from "./compare";
 export * from "./gold-rede-horizonte";
 export * from "./rede-horizonte-anchor";
 export * from "./accreditation";
+export * from "./receivables-phase-three";

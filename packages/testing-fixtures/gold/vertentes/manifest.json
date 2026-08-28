@@ -171,6 +171,11 @@
       "sha256": "5a6cc1de26d908e58cae29d2954be91f9971c7b5779e03633c86388bdf6b6881"
     },
     {
+      "path": "phase-three.json",
+      "bytes": 1297,
+      "sha256": "f8192b0ec7c0cb3fc8bc9c3953d944cb6b4be6fc98f492d0e0d21cf02609b6a2"
+    },
+    {
       "path": "static-metrics.json",
       "bytes": 1594,
       "sha256": "3370fc3a0eb302344a53c56e76eafee72903b33ddd9667e6cec20462a4f13407"

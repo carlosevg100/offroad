@@ -67,6 +67,10 @@ export type ReceivablesProviderFitResult = {
   criterionResults: readonly ReceivablesProviderCriterionResult[];
   portfolioAllocation: ReceivablesEligibilityAllocation | null;
   allocationEnvelope: ReceivablesProviderAllocationEnvelope | null;
+  marketConfirmation: {
+    liveAppetite: {current: boolean; confirmed: boolean; sourceId: string} | null;
+    availableCapacity: {current: boolean; confirmed: boolean; sourceId: string} | null;
+  };
   blockers: readonly string[];
   conditions: readonly string[];
 };
@@ -332,6 +336,18 @@ function evaluateProvider(
     criterionResults: criteria,
     portfolioAllocation,
     allocationEnvelope,
+    marketConfirmation: {
+      liveAppetite: mandate.liveAppetite ? {
+        current: mandate.liveAppetite.current,
+        confirmed: mandate.liveAppetite.confirmed,
+        sourceId: mandate.liveAppetite.accepted.sourceId,
+      } : null,
+      availableCapacity: mandate.availableCapacity ? {
+        current: mandate.availableCapacity.current,
+        confirmed: mandate.availableCapacity.confirmed,
+        sourceId: mandate.availableCapacity.accepted.sourceId,
+      } : null,
+    },
     blockers,
     conditions,
   };
