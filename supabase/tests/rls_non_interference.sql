@@ -2158,9 +2158,13 @@ declare
   run_id uuid;
   accepted boolean;
   link text;
+  layer_path text;
+  layer_link text;
 begin
   path := org::text || '/' || session_id::text || '/spend.pdf';
   link := 'https://p.supabase.co/storage/v1/object/sign/opportunity-documents/' || path;
+  layer_path := org::text || '/' || session_id::text || '/' || doc_id::text || '/1.json';
+  layer_link := 'https://p.supabase.co/storage/v1/object/upload/sign/document-layers/' || layer_path;
 
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
@@ -2170,7 +2174,12 @@ begin
   );
 
   first_run := public.begin_processing_run(org, session_id, 'manual',
-    jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+    jsonb_build_array(jsonb_build_object(
+      'source_document_id', doc_id,
+      'download_url', link,
+      'layer_object_path', layer_path,
+      'layer_upload_url', layer_link
+    )), 'test');
   run_id := (first_run->>'processing_run_id')::uuid;
 
   -- Put the month over the ceiling by recording what that run cost.
@@ -2194,7 +2203,12 @@ begin
   accepted := true;
   begin
     perform public.begin_processing_run(org, session_id, 'manual',
-      jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+      jsonb_build_array(jsonb_build_object(
+        'source_document_id', doc_id,
+        'download_url', link,
+        'layer_object_path', layer_path,
+        'layer_upload_url', layer_link
+      )), 'test');
   exception when others then accepted := false;
   end;
   if accepted then raise exception 'begin_processing_run started a run past the month ceiling'; end if;
@@ -2208,7 +2222,12 @@ begin
   set local role authenticated;
 
   perform public.begin_processing_run(org, session_id, 'manual',
-    jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+    jsonb_build_array(jsonb_build_object(
+      'source_document_id', doc_id,
+      'download_url', link,
+      'layer_object_path', layer_path,
+      'layer_upload_url', layer_link
+    )), 'test');
 end;
 $$;
 
