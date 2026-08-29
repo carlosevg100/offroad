@@ -3701,6 +3701,7 @@ begin
   );
   result := public.begin_processing_run(org, reused_session, 'reprocess', '[]'::jsonb, 'f2-2026.08.24', '{"max_cost_usd":5}'::jsonb);
   run_id := (result->>'processing_run_id')::uuid;
+  set local role postgres;
   if (select count(*) from public.processing_jobs where processing_run_id = run_id and kind = 'document_pipeline') <> 0
     or (select count(*) from public.processing_jobs where processing_run_id = run_id and kind = 'case_analysis') <> 1 then
     raise exception 'unchanged retry did not reuse document work and queue only case analysis';
