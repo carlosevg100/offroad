@@ -4,6 +4,29 @@ Atualizado em: 2026-08-29
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Deal State persistente, gates executáveis e contenção de custo, 29/08/2026
+
+O worker deixou de tratar análise, materiais, matching e introdução como uma única execução.
+O estado canônico do caso agora é persistido em objetos versionados e fingerprintados:
+entendimento, findings, esclarecimentos, decisão de estrutura, plano de produção, materiais,
+revisão do pacote, tela de matching e autorização de saída. Cada objeto declara exatamente quais
+versões anteriores consumiu. Alteração upstream invalida a progressão dependente, e repetição do
+mesmo input é idempotente.
+
+Os gates agora são executáveis. O modo diagnóstico organiza evidências, produz entendimento e
+findings e para antes de qualquer material ou busca de mandato. Materiais exigem entendimento e
+estrutura confirmados, além do plano de produção aprovado. Matching exige pacote aprovado.
+Introdução exige autorização explícita de saída. O replay diagnóstico provou zero chamadas de
+modelo e zero gasto; o fluxo integral autorizado continua coberto como regressão, mas não foi
+executado contra APIs pagas nesta entrega.
+
+As migrations `20260829151323`, `20260829151523` e `20260829152233` passaram no branch `staging`
+do Supabase. RLS e FORCE RLS estão ativos, escrita direta do tenant é negada, dependências são
+validadas por fingerprint, retries exatos retornam o mesmo objeto e isolamento entre organizações
+foi provado em transação. O Security Advisor reportou zero lints. O `pnpm check` integral passou
+nos 42 pacotes com lint, typecheck, testes e build. Esta capacidade permanece fora de produção até
+merge, CI e promoção das migrations. Nenhum caso pago deve ser executado antes dessa promoção.
+
 ## Fronteira executiva e feedback pós-introdução, 29/08/2026
 
 O fluxo canônico agora possui uma topologia executiva imutável de sete fases: `Understand`,

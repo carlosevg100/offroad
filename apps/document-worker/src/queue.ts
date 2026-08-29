@@ -107,6 +107,13 @@ export type QueueClient = {
     limit?: number;
   }): Promise<unknown>;
   recordPublicResearch(job: CaseAnalysisJob, plan: unknown, result: unknown): Promise<string>;
+  recordDealStateObject(job: CaseAnalysisJob, input: {
+    objectType: string;
+    status: string;
+    inputFingerprint: string;
+    payload: unknown;
+    dependencies?: unknown[];
+  }): Promise<string>;
   recordCaseSnapshot(job: CaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
   recordControlledExecution(job: CaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
@@ -290,6 +297,19 @@ export function createQueueClient(
         p_capability_token: job.capability_token,
         p_plan: plan,
         p_result: result,
+      });
+      return z.uuid().parse(data);
+    },
+
+    async recordDealStateObject(job, input) {
+      const data = await call("worker_record_deal_state_object", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_object_type: input.objectType,
+        p_status: input.status,
+        p_input_fingerprint: input.inputFingerprint,
+        p_payload: input.payload,
+        p_dependencies: input.dependencies ?? [],
       });
       return z.uuid().parse(data);
     },

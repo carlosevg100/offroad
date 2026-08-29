@@ -56,6 +56,9 @@ importers:
       '@offroad/document-parsers':
         specifier: workspace:*
         version: link:../../packages/document-parsers
+      '@offroad/domain-contracts':
+        specifier: workspace:*
+        version: link:../../packages/domain-contracts
       '@offroad/fund-mandate':
         specifier: workspace:*
         version: link:../../packages/fund-mandate

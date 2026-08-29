@@ -9,6 +9,29 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: versioned Deal State and executable gates, 29 August 2026
+
+The canonical workflow is now enforced by persisted state rather than documentation alone.
+`deal_state_objects` is an append-only, tenant-scoped ledger of versioned understanding snapshots,
+findings, clarifications, structure decisions, production plans, material artifacts, package
+reviews, match screens and release authorizations. Every downstream object names the exact
+upstream fingerprints it consumed. Exact retries are idempotent and stale dependencies cannot
+silently cross a gate.
+
+The document worker now has a bounded diagnostic mode. It organizes evidence and records an
+understanding snapshot plus findings, then stops with zero model calls, zero mandate retrieval and
+zero material or matching spend. Material production requires confirmed understanding, confirmed
+structure and an approved production plan. Matching requires an approved package. Introduction
+requires a release authorization tied to that package. The formerly available fully authorized
+path remains a regression test, not an automatic default.
+
+The schema and RLS passed on the Supabase staging branch, including direct-write denial,
+cross-tenant isolation, exact fingerprint dependencies and replay idempotence. The complete local
+quality gate is green across 42 packages. Production has not received these migrations at the time
+of this note. Do not run another paid full case until the PR, database CI and production schema
+promotion are complete. Even after promotion, run diagnostic confirmation first and unlock later
+blocks one at a time.
+
 ### Founder decision: canonical product workflow, 29 August 2026
 
 The product journey is now frozen in
