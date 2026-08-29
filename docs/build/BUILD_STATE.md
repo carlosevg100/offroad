@@ -20,12 +20,18 @@ Introdução exige autorização explícita de saída. O replay diagnóstico pro
 modelo e zero gasto; o fluxo integral autorizado continua coberto como regressão, mas não foi
 executado contra APIs pagas nesta entrega.
 
-As migrations `20260829151323`, `20260829151523` e `20260829152233` passaram no branch `staging`
-do Supabase. RLS e FORCE RLS estão ativos, escrita direta do tenant é negada, dependências são
-validadas por fingerprint, retries exatos retornam o mesmo objeto e isolamento entre organizações
-foi provado em transação. O Security Advisor reportou zero lints. O `pnpm check` integral passou
-nos 42 pacotes com lint, typecheck, testes e build. Esta capacidade permanece fora de produção até
-merge, CI e promoção das migrations. Nenhum caso pago deve ser executado antes dessa promoção.
+As migrations passaram primeiro no branch `staging` do Supabase como `20260829151323`,
+`20260829151523` e `20260829152233`. RLS e FORCE RLS estão ativos, escrita direta do tenant é
+negada, dependências são validadas por fingerprint, retries exatos retornam o mesmo objeto e
+isolamento entre organizações foi provado em transação. O PR #314 aprovou reconstrução integral do
+banco, suíte completa de RLS, Playwright, lint, typecheck, testes, build e Vercel. O worker foi
+promovido ao ECS e estabilizou.
+
+Produção recebeu o mesmo schema como `20260829154103`, `20260829154114` e `20260829154126`.
+A inspeção estrutural confirmou quatro políticas, RLS e FORCE RLS, ausência de acesso anônimo,
+SELECT tenant-scoped e nenhuma escrita direta de `authenticated`. O Security Advisor reportou zero
+lints. O ledger entrou vazio e nenhuma API paga foi executada. O primeiro teste produtivo deve
+permanecer diagnóstico e parar para confirmação antes de liberar estrutura, materiais ou matching.
 
 ## Fronteira executiva e feedback pós-introdução, 29/08/2026
 

@@ -26,11 +26,13 @@ requires a release authorization tied to that package. The formerly available fu
 path remains a regression test, not an automatic default.
 
 The schema and RLS passed on the Supabase staging branch, including direct-write denial,
-cross-tenant isolation, exact fingerprint dependencies and replay idempotence. The complete local
-quality gate is green across 42 packages. Production has not received these migrations at the time
-of this note. Do not run another paid full case until the PR, database CI and production schema
-promotion are complete. Even after promotion, run diagnostic confirmation first and unlock later
-blocks one at a time.
+cross-tenant isolation, exact fingerprint dependencies and replay idempotence. PR #314 and its
+post-merge run both passed database reconstruction, the complete RLS suite, Playwright and the
+42-package quality gate. The worker is stable on ECS. Production received migrations
+`20260829154103`, `20260829154114` and `20260829154126`; structural inspection and the Security
+Advisor are clean. The ledger entered production empty and no paid model run was made. Start the
+next controlled test in diagnostic mode, confirm the resulting Deal State, and unlock later blocks
+one at a time.
 
 ### Founder decision: canonical product workflow, 29 August 2026
 
