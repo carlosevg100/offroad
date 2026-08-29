@@ -274,11 +274,14 @@ export function createQueueClient(
       ]);
       if (!input || typeof input !== "object" || Array.isArray(input)) return input;
       const liveInput = {...input, claim_decisions: decisions};
-      return call("worker_freeze_case_input", {
+      const frozen = await call("worker_freeze_case_input", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_live_input: liveInput,
       });
+      if (!frozen || typeof frozen !== "object" || Array.isArray(frozen)) return frozen;
+      const priorCaseReport = await call("worker_load_prior_case_report", args);
+      return {...frozen, prior_case_report: priorCaseReport};
     },
 
     async loadRetrievalContext(job, input) {

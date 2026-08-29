@@ -1437,3 +1437,30 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   migration foi aplicada no branch `staging`; Security Advisor continua sem findings.
 - O run controlado seguinte em produção é obrigatório antes de declarar a vertical pronta. A
   aprovação local de `pnpm check` e o schema de staging não substituem essa prova.
+
+## Request Router, TaskSpec registry e Case Graph incremental, 29/08/2026
+
+- `@offroad/agent-contracts` possui um Request Router determinístico que separa intenção, escopo
+  `knowledge | case | market` e efeito `none | proposal | commit | external`. Pedidos hipotéticos
+  não alteram estado; alterações viram proposta; aprovação continua exigindo comando governado;
+  contato externo é recusado fora do Market Graph.
+- `@offroad/work-plan` contém o registro canônico das 80 TaskSpecs da arquitetura-alvo. IDs,
+  dependências, aciclicidade, classe de execução e fronteira de efeitos são validados em teste.
+  Todos os nós permanecem `specified` por padrão. Presença no registry não significa executor,
+  interface, E2E ou produção.
+- `@offroad/case-runner` v4 deixou de ser um loop serial. Os 11 estágios atualmente consumidos em
+  produção formam um DAG real, com descendentes bloqueados por dependência, ramificações
+  determinísticas paralelas e no máximo uma tarefa com modelo por lote para proteger orçamento.
+- Cada TaskRun registra TaskSpec, dependências e fingerprints, input, output, ferramentas
+  permitidas e usadas, fontes, tentativas, término, duração, custo e cache hit. Ferramenta fora do
+  contrato ou chamada de modelo numa tarefa determinística falha no schema.
+- O cache incremental é isolado por caso e inclui versão da TaskSpec, case engine, pipeline,
+  política de modelos e prompts. Mudança no pedido invalida somente a estrutura e seus
+  descendentes no teste; extração e análise não afetadas são reutilizadas.
+- O relatório anterior é carregado pelo worker somente depois do congelamento do input. A
+  migration `20260829183106_task_dag_prior_report.sql` cria a leitura capability-bound do último
+  run primário bem-sucedido sem expor o relatório ao navegador. Staging aceitou a migration;
+  função privada, wrapper público, grants e índice foram verificados, `anon` não executa e o
+  Security Advisor ficou com zero findings. A prova funcional integral ainda depende do job
+  `database`; produção não foi alterada nesta mudança.
+- `pnpm check` completo com Node 24.19.0 passou nos 42 pacotes. Nenhuma API paga foi chamada.

@@ -105,6 +105,16 @@ describe("the governed case engine", () => {
     expect(result.state.matching.marketTruth.procedureCoverage.slice(18).every((entry)=>entry.status==="not_applicable")).toBe(true);
     expect(result.state.outcome.qualifiedIntroductionAllowed).toBe(false);
     expect(result.report.stages.every((stage) => stage.outputFingerprint?.length === 64)).toBe(true);
+    expect(result.report.taskRuns).toHaveLength(11);
+    expect(result.report.taskRuns.find((task) => task.taskId === "metrics")).toMatchObject({
+      workflow: "case",
+      phase: "diagnose",
+      cacheHit: false,
+      toolsUsed: ["readiness", "financial_core", "credit_analysis"],
+    });
+    expect(result.report.taskRuns.find((task) => task.taskId === "reconciliation")?.sourceIds).toEqual([
+      "d1", "d2", "d3", "d4", "d5", "d6", "source-1",
+    ]);
 
     result.state.pricingTruth.sample.eligible.push({id: "private-observation", sourceId: "manager-name"} as never);
     result.state.pricingTruth.sample.rejected.push({id: "private-rejection", reasons: ["different_sector"]});

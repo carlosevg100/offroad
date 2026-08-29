@@ -112,4 +112,57 @@ describe("agent operation brief worker", () => {
     await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
     expect(recordedResponse?.state).toBe("asking");
   });
+
+  it("routes an external instruction and refuses to turn it into an operation patch", async () => {
+    let recordedResponse: Record<string, unknown> | undefined;
+    let completed: Record<string, unknown> | undefined;
+    let modelInput = "";
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "Pode enviar o material ao Fundo Alfa.",
+        brief: {requestedAmount: 40_000_000, currency: "BRL"},
+        snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-08-26T12:00:00.000Z",
+        manifest_id: null,
+        recent_messages: [],
+      }),
+      recordAgentResponse: async (_job: unknown, _messageId: string, response: unknown, proposal: unknown) => {
+        recordedResponse = response as Record<string, unknown>;
+        expect(proposal).toBeUndefined();
+        return {};
+      },
+      complete: async (_job: unknown, result: unknown) => { completed = result as Record<string, unknown>; },
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async (request: {input: Array<{type: string; text?: string}>}) => {
+        modelInput = request.input[0]?.text ?? "";
+        return {
+          output: {
+            state: "proposing",
+            reply: "Vou preparar o envio.",
+            proposal: {
+              title: "Preparar envio",
+              rationale: "O usuário solicitou o contato com um financiador específico.",
+              impactSummary: "Libera o contato externo.",
+              patches: [{operation: "set", path: "/objective", value: "Enviar ao Fundo Alfa"}],
+              recompute: ["matching"],
+            },
+          },
+          usage: {inputTokens: 100, outputTokens: 60, cachedInputTokens: 0},
+        };
+      },
+      spent: () => ({costUsd: 0.12, calls: 1}),
+    } as unknown as ModelGateway;
+
+    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(modelInput).toContain('"intent":"authorize_external"');
+    expect(recordedResponse).toMatchObject({state: "idle"});
+    expect(completed?.request_route).toMatchObject({intent: "authorize_external", effect: "external"});
+  });
 });

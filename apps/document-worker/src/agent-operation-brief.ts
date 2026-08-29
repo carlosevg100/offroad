@@ -3,7 +3,9 @@ import {randomUUID} from "node:crypto";
 import {
   agentOperationBriefResponseSchema,
   createAgentChangeProposal,
+  routeWorkspaceRequest,
   type AgentOperationBriefResponse,
+  type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
 import {z} from "zod";
@@ -60,6 +62,7 @@ export async function processAgentOperationBriefJob(
   try {
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));
+    const route = routeWorkspaceRequest({message: context.message, surface: "operation_brief"});
     const completion = await gateway.complete({
       task: "agent_operation_brief",
       system: SYSTEM,
@@ -68,6 +71,7 @@ export async function processAgentOperationBriefJob(
         text: JSON.stringify({
           locale: context.locale,
           currentBrief: context.brief,
+          requestRoute: route,
           recentConversation: context.recent_messages.map(({role, content}) => ({role, content})),
           latestUserMessage: context.message,
         }),
@@ -75,11 +79,22 @@ export async function processAgentOperationBriefJob(
       schema: agentOperationBriefResponseSchema,
       schemaName: "agent_operation_brief_response_v1",
       maxOutputTokens: 6_000,
-      metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
+      metadata: {
+        jobId: job.job_id,
+        messageId: context.message_id,
+        sessionId: context.session_id,
+        requestIntent: route.intent,
+        requestScope: route.scope,
+        requestEffect: route.effect,
+      },
       cacheKey: "agent-operation-brief-v1",
     });
 
-    const response = enforceDirectNumericalSupport(completion.output, context.message, context.locale);
+    const response = enforceDirectNumericalSupport(
+      enforceRouteAuthority(completion.output, route, context.locale),
+      context.message,
+      context.locale,
+    );
     const now = new Date();
     const proposal = response.proposal
       ? createAgentChangeProposal({
@@ -105,11 +120,15 @@ export async function processAgentOperationBriefJob(
       messageId: assistantMessageId,
       state: response.state,
       proposalId: proposal?.id,
+      requestIntent: route.intent,
+      requestScope: route.scope,
+      requestEffect: route.effect,
     }, completion.usage as unknown as Record<string, number>);
     await queue.complete(job, {
       assistantMessageId,
       proposalId: proposal?.id,
       state: response.state,
+      request_route: route,
       spend: gateway.spent(),
     });
     return proposal ? {status: "succeeded", proposalId: proposal.id} : {status: "succeeded"};
@@ -127,6 +146,42 @@ export async function processAgentOperationBriefJob(
     await queue.fail(job, {code: "agent_processing_failed", spend: gateway.spent()}, {retryable: false});
     return {status: "failed"};
   }
+}
+
+function enforceRouteAuthority(
+  response: AgentOperationBriefResponse,
+  route: WorkspaceRequestRoute,
+  locale: "pt-BR" | "en-US",
+): AgentOperationBriefResponse {
+  if (route.allowedOnCurrentSurface && route.effect === "proposal") return response;
+  if (route.effect === "none" && !response.proposal) return response;
+  if (route.intent === "clarify" && response.state === "asking" && !response.proposal) return response;
+
+  if (route.intent === "authorize_external") {
+    return {
+      state: "idle",
+      reply: locale === "pt-BR"
+        ? "Esta conversa não envia materiais nem contata financiadores. A introdução só pode ser autorizada na etapa de mercado, para destinatários e versões específicos."
+        : "This conversation does not send materials or contact lenders. An introduction can only be authorized in the market stage for specific recipients and versions.",
+    };
+  }
+  if (route.intent === "approve") {
+    return {
+      state: "idle",
+      reply: locale === "pt-BR"
+        ? "Registrei sua intenção, mas esta conversa não confirma uma decisão do caso. A aprovação precisa ocorrer no objeto e na versão correspondentes."
+        : "I recorded your intent, but this conversation cannot confirm a case decision. Approval must occur on the corresponding object and version.",
+    };
+  }
+  if (route.intent === "compile") {
+    return {
+      state: "idle",
+      reply: locale === "pt-BR"
+        ? "A produção de materiais exige uma estrutura confirmada e um plano de produção aprovado. Esta conversa pode ajudar a corrigir o pedido, mas não libera os artefatos."
+        : "Material production requires a confirmed structure and an approved production plan. This conversation can help correct the request, but it cannot release artifacts.",
+    };
+  }
+  return {...response, proposal: undefined, state: response.clarification ? "asking" : "idle"};
 }
 
 function enforceDirectNumericalSupport(

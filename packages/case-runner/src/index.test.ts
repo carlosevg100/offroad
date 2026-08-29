@@ -1,6 +1,16 @@
 import {describe, expect, it} from "vitest";
 import {z} from "zod";
-import {CaseStageBlocked, caseStageIds, runCase, type CaseStageId, type StageContext, type StageDefinition} from "./index";
+import {
+  CaseStageBlocked,
+  InMemoryTaskResultCache,
+  caseStageIds,
+  caseTaskSpecs,
+  runCase,
+  taskCacheFromReport,
+  type CaseStageId,
+  type StageContext,
+  type StageDefinition,
+} from "./index";
 
 const inputSchema = z.object({company: z.string(), amount: z.string()});
 const outputSchema = z.object({stage: z.string(), received: z.number()});
@@ -44,7 +54,7 @@ const base = {
 };
 
 describe("integrated case runner", () => {
-  it("executes every governed layer in order and fingerprints each output", async () => {
+  it("executes every governed layer through the graph and fingerprints each output", async () => {
     const report = await runCase({...base, stages: definitions()});
     expect(report.status).toBe("succeeded");
     expect(report.stages.map((stage) => stage.stage)).toEqual(caseStageIds);
@@ -52,6 +62,9 @@ describe("integrated case runner", () => {
     const outcomeIndex=caseStageIds.indexOf("outcome");
     expect(report.stages[outcomeIndex]?.output).toEqual({stage: "outcome", received: outcomeIndex});
     expect(report.stages.every((stage) => stage.outputFingerprint?.length === 64)).toBe(true);
+    expect(report.taskRuns).toHaveLength(caseStageIds.length);
+    expect(report.taskRuns.map((task) => task.taskId)).toEqual(caseStageIds);
+    expect(report.taskRuns.every((task) => task.terminationReason === "completed")).toBe(true);
     expect(report.reportFingerprint).toHaveLength(64);
   });
 
@@ -59,10 +72,17 @@ describe("integrated case runner", () => {
     const events: unknown[] = [];
     await runCase({...base, stages: definitions(), onStage: (event) => { events.push(event); }});
     expect(events).toHaveLength(caseStageIds.length * 2);
-    expect(events.map((event) => {
-      const typed = event as {stage: string; status: string};
-      return `${typed.stage}:${typed.status}`;
-    })).toEqual(caseStageIds.flatMap((stage) => [`${stage}:started`, `${stage}:succeeded`]));
+    const typedEvents = events as Array<{stage: CaseStageId; status: string}>;
+    for (const stage of caseStageIds) {
+      expect(typedEvents.filter((event) => event.stage === stage).map((event) => event.status)).toEqual(["started", "succeeded"]);
+    }
+    for (const spec of caseTaskSpecs) {
+      const startedIndex = typedEvents.findIndex((event) => event.stage === spec.id && event.status === "started");
+      for (const dependency of spec.dependencies) {
+        const completedIndex = typedEvents.findIndex((event) => event.stage === dependency && event.status === "succeeded");
+        expect(completedIndex).toBeLessThan(startedIndex);
+      }
+    }
     expect(JSON.stringify(events)).not.toContain("received");
     expect(JSON.stringify(events)).not.toContain("Empresa Teste");
   });
@@ -110,5 +130,60 @@ describe("integrated case runner", () => {
       policy: {maxCostUsd: 1, maxModelCalls: 10},
     });
     expect(totalReport.stages[claimsIndex]).toMatchObject({failureKind: "budget", code: "case_cost_budget_exceeded", status: "failed"});
+  });
+
+  it("runs independent ready tasks in parallel", async () => {
+    const started: CaseStageId[] = [];
+    let release: (() => void) | undefined;
+    const hold = new Promise<void>((resolve) => { release = resolve; });
+    const parallelDefinitions = definitions();
+    for (const stage of ["gaps", "structure", "claims"] as const) {
+      parallelDefinitions[stage] = {
+        outputSchema,
+        execute: async ({outputs}) => {
+          started.push(stage);
+          if (started.length === 3) release?.();
+          await hold;
+          return {output: {stage, received: Object.keys(outputs).length}};
+        },
+      };
+    }
+    const report = await runCase({...base, stages: parallelDefinitions});
+    expect(started).toEqual(["gaps", "structure", "claims"]);
+    expect(report.status).toBe("succeeded");
+  });
+
+  it("reuses unchanged task results and invalidates only the affected descendants", async () => {
+    const cache = new InMemoryTaskResultCache();
+    const executionCounts = new Map<CaseStageId, number>();
+    const cachedDefinitions = definitions();
+    for (const stage of caseStageIds) {
+      cachedDefinitions[stage] = {
+        ...cachedDefinitions[stage],
+        selectInput: stage === "extraction"
+          ? (input) => ({company: (input as {company: string}).company})
+          : stage === "structure"
+            ? (input) => ({amount: (input as {amount: string}).amount})
+            : () => null,
+        execute: (context) => {
+          executionCounts.set(stage, (executionCounts.get(stage) ?? 0) + 1);
+          return {output: {stage, received: Object.keys(context.outputs).length}};
+        },
+      };
+    }
+    const first = await runCase({...base, runId: "cache-1", stages: cachedDefinitions, taskCache: cache});
+    executionCounts.clear();
+    const report = await runCase({
+      ...base,
+      runId: "cache-2",
+      input: {...base.input, amount: "2000000"},
+      stages: cachedDefinitions,
+      taskCache: taskCacheFromReport(first),
+    });
+    expect(report.taskRuns.find((task) => task.taskId === "extraction")?.cacheHit).toBe(true);
+    expect(report.taskRuns.find((task) => task.taskId === "structure")?.cacheHit).toBe(false);
+    expect(executionCounts.has("extraction")).toBe(false);
+    expect(executionCounts.get("structure")).toBe(1);
+    expect(report.taskRuns.find((task) => task.taskId === "matching")?.cacheHit).toBe(false);
   });
 });

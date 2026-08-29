@@ -143,6 +143,8 @@ export type CaseEngineInput = {
   dealBrief: CaseDealBrief;
   resolvedMandates: ResolvedMandate[];
   onStage?: RunCaseInput["onStage"];
+  taskCache?: RunCaseInput["taskCache"];
+  runtimeVersions?: Record<string, string>;
   externalReleaseApproved: boolean;
   materialRelease?: MaterialExternalReleaseEvidence;
   marketGovernance?: {
@@ -395,6 +397,12 @@ export function publicCaseRunReport(report: CaseRunReport): CaseRunReport {
   const payload = {
     ...report,
     stages,
+    taskRuns: report.taskRuns.map((task) => {
+      const publicStage = stages.find((stage) => stage.stage === task.taskId);
+      return publicStage?.outputFingerprint
+        ? {...task, outputFingerprint: publicStage.outputFingerprint}
+        : task;
+    }),
   };
   const {reportFingerprint: _priorFingerprint, ...withoutFingerprint} = payload;
   return {...withoutFingerprint, reportFingerprint: fingerprintJson(withoutFingerprint)};
@@ -524,6 +532,12 @@ const intakeAvailableFieldPaths = (dealBrief: CaseDealBrief): string[] => [
   ...(dealBrief.sector ? ["company.sector"] : []),
 ];
 
+const caseSourceIds = (input: CaseEngineInput): string[] => [...new Set([
+  ...input.candidates.map((candidate) => candidate.sourceDocument),
+  ...input.documents.map((document) => document.id),
+  ...input.roomDocuments.map((document) => document.id),
+].filter(Boolean))].sort();
+
 function currentApprovedJudgments(brief: CaseBrief, decisions: readonly ClaimDecision[]): string[] {
   return brief.sections.flatMap((section) => section.claims)
     .filter((claim) => {
@@ -544,21 +558,32 @@ export async function executeCaseEngine(
     input,
     inputSchema,
     policy,
-    versions: {caseEngine: caseEngineVersion},
+    versions: {caseEngine: caseEngineVersion, ...input.runtimeVersions},
     ...(input.onStage ? {onStage: input.onStage} : {}),
+    ...(input.taskCache ? {taskCache: input.taskCache} : {}),
     stages: {
       extraction: {
         outputSchema: extractionOutputSchema,
+        selectInput: () => ({candidates: input.candidates, documents: input.documents, roomDocuments: input.roomDocuments}),
         execute: () => ({
           output: {
             candidates: input.candidates,
             documents: input.documents,
             roomDocuments: input.roomDocuments,
           } satisfies ExtractionOutput,
+          trace: {toolsUsed: ["document_candidates", "document_inventory"], sourceIds: caseSourceIds(input)},
         }),
       },
       reconciliation: {
         outputSchema: reconciliationOutputSchema,
+        selectInput: () => ({
+          archetypeId: input.archetypeId,
+          locale: input.locale,
+          informationAnswers: input.informationAnswers,
+          requirementResponses: input.requirementResponses,
+          dealBrief: input.dealBrief,
+          referenceDate: input.referenceDate,
+        }),
         execute: (context) => {
           const extracted = outputOf<ExtractionOutput>(context, "extraction");
           return {
@@ -574,11 +599,21 @@ export async function executeCaseEngine(
                 referenceDate: input.referenceDate,
               }),
             } satisfies ReconciliationOutput,
+            trace: {toolsUsed: ["reconciliation", "evidence_ledger"], sourceIds: caseSourceIds(input)},
           };
         },
       },
       metrics: {
         outputSchema: metricsOutputSchema,
+        selectInput: () => ({
+          archetypeId: input.archetypeId,
+          informationAnswers: input.informationAnswers,
+          requirementResponses: input.requirementResponses,
+          dealBrief: input.dealBrief,
+          referenceDate: input.referenceDate,
+          indexLevels: input.indexLevels,
+          receivablesCase: input.receivablesCase,
+        }),
         execute: (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const readiness = assessReadiness({
@@ -617,11 +652,16 @@ export async function executeCaseEngine(
               deskMissing: deskInputs.missing,
               clientQuestions: questionsForCompany(desk, trajectory, deskInputs.missing),
             } satisfies MetricsOutput,
+            trace: {
+              toolsUsed: ["readiness", "financial_core", "credit_analysis", ...(input.receivablesCase ? ["receivables_analysis"] : [])],
+              sourceIds: caseSourceIds(input),
+            },
           };
         },
       },
       gaps: {
         outputSchema: gapsOutputSchema,
+        selectInput: () => null,
         execute: (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
@@ -635,17 +675,30 @@ export async function executeCaseEngine(
                 ...(metrics.receivables?.decision.blockingCodes ?? []),
               ],
             } satisfies GapsOutput,
+            trace: {toolsUsed: ["readiness", "information_request"], sourceIds: caseSourceIds(input)},
           };
         },
       },
       structure: {
         outputSchema: structureOutputSchema,
+        selectInput: () => ({
+          archetypeId: input.archetypeId,
+          locale: input.locale,
+          referenceDate: input.referenceDate,
+          dealBrief: input.dealBrief,
+          indexLevels: input.indexLevels,
+          operationPolicies: input.operationPolicies,
+          structurePolicies: input.structurePolicies,
+          pricing: input.pricing,
+        }),
         execute: (context) => ({
           output: structureCase(input, outputOf<ReconciliationOutput>(context, "reconciliation").reconciliation, outputOf<MetricsOutput>(context, "metrics")),
+          trace: {toolsUsed: ["financial_core", "deal_structure", "instrument_catalogue", "market_reference"], sourceIds: caseSourceIds(input)},
         }),
       },
       red_flags:{
         outputSchema:redFlagsOutputSchema,
+        selectInput:()=>({referenceDate:input.referenceDate,redFlagGovernance:input.redFlagGovernance}),
         execute:(context)=>{
           const {reconciliation}=outputOf<ReconciliationOutput>(context,"reconciliation");
           const structure=outputOf<StructureOutput>(context,"structure");
@@ -660,11 +713,12 @@ export async function executeCaseEngine(
             ...(input.redFlagGovernance?.reviews?{reviews:input.redFlagGovernance.reviews}:{}),
             ...(input.redFlagGovernance?.mandateDecision!==undefined?{mandateDecision:input.redFlagGovernance.mandateDecision}:{}),
             ...(input.redFlagGovernance?.declineCommunication!==undefined?{declineCommunication:input.redFlagGovernance.declineCommunication}:{}),
-          })} satisfies RedFlagsOutput};
+          })} satisfies RedFlagsOutput,trace:{toolsUsed:["red_flag_truth","red_flag_review"],sourceIds:caseSourceIds(input)}};
         },
       },
       claims: {
         outputSchema: claimsOutputSchema,
+        selectInput: () => ({archetypeId: input.archetypeId, locale: input.locale, claimDecisions: input.claimDecisions, writerAvailable: Boolean(input.writeBrief), verifierAvailable: Boolean(input.verifyBrief)}),
         execute: async (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
@@ -678,7 +732,7 @@ export async function executeCaseEngine(
               modelInvocations: [],
               usage: {costUsd: 0, modelCalls: 0},
             };
-            return {output, usage: output.usage};
+            return {output, usage: output.usage, trace: {toolsUsed: [], sourceIds: caseSourceIds(input)}};
           }
           const written = await input.writeBrief({
             archetypeId: input.archetypeId,
@@ -740,11 +794,12 @@ export async function executeCaseEngine(
             modelInvocations: [...(written.modelInvocations ?? []), ...verifierInvocations],
             usage,
           };
-          return {output, usage};
+          return {output, usage, trace: {toolsUsed: ["case_brief_writer", "claim_auditor"], sourceIds: caseSourceIds(input)}};
         },
       },
       materials: {
         outputSchema: materialsOutputSchema,
+        selectInput: () => ({claimDecisions: input.claimDecisions, materialRelease: input.materialRelease}),
         execute: (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
@@ -829,11 +884,12 @@ export async function executeCaseEngine(
             governanceBlockers:redFlags.mandate.externalOutputsAllowed?[]:redFlags.blockers,
             ...(input.materialRelease?{release:input.materialRelease}:{}),
           });
-          return {output: {materials, materialsBlockedBy, materialTruth, dataRoom, audit, claimRegistry} satisfies MaterialsOutput};
+          return {output: {materials, materialsBlockedBy, materialTruth, dataRoom, audit, claimRegistry} satisfies MaterialsOutput,trace:{toolsUsed:["case_materials","data_room","claim_registry"],sourceIds:caseSourceIds(input)}};
         },
       },
       language_conduct:{
         outputSchema:languageConductOutputSchema,
+        selectInput:()=>({referenceDate:input.referenceDate,languageConductGovernance:input.languageConductGovernance}),
         execute:(context)=>{
           const structure=outputOf<StructureOutput>(context,"structure");
           const materials=outputOf<MaterialsOutput>(context,"materials");
@@ -845,11 +901,12 @@ export async function executeCaseEngine(
             materials:materials.materials,
             dataRoom:materials.dataRoom,
             ...(input.languageConductGovernance?{governance:input.languageConductGovernance}:{}),
-          })} satisfies LanguageConductOutput};
+          })} satisfies LanguageConductOutput,trace:{toolsUsed:["language_conduct_truth","release_gate"],sourceIds:caseSourceIds(input)}};
         },
       },
       matching: {
         outputSchema: matchingOutputSchema,
+        selectInput: () => ({dealBrief: input.dealBrief, resolvedMandates: input.resolvedMandates, marketGovernance: input.marketGovernance}),
         execute: (context) => {
           const structure = outputOf<StructureOutput>(context, "structure");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
@@ -880,11 +937,13 @@ export async function executeCaseEngine(
               structuralExclusions: structural,
               marketTruth,
             } satisfies MatchingOutput,
+            trace: {toolsUsed: ["fund_mandate", "matching_core", "market_truth"], sourceIds: caseSourceIds(input)},
           };
         },
       },
       outcome: {
         outputSchema: outcomeOutputSchema,
+        selectInput: () => ({externalReleaseApproved: input.externalReleaseApproved}),
         execute: (context) => {
           const metrics = outputOf<MetricsOutput>(context, "metrics");
           const gaps = outputOf<GapsOutput>(context, "gaps");
@@ -918,6 +977,7 @@ export async function executeCaseEngine(
                 blockers: [...gaps.blockers, ...structure.structureTruth.exceptions.filter((exception) => exception.severity === "critical").map((exception) => exception.id),...redFlags.blockers,...languageConduct.blockerCodes],
               }),
             } satisfies OutcomeOutput,
+            trace: {toolsUsed: ["case_outcome"], sourceIds: caseSourceIds(input)},
           };
         },
       },

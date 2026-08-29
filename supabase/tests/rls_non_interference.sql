@@ -2705,10 +2705,16 @@ declare
   session_id constant uuid := '72000000-0000-4000-8000-000000000001';
   run_id constant uuid := '72000000-0000-4000-8000-000000000002';
   execution_id constant uuid := '72000000-0000-4000-8000-000000000003';
+  run_id_two constant uuid := '72000000-0000-4000-8000-000000000004';
+  execution_id_two constant uuid := '72000000-0000-4000-8000-000000000005';
   job_id uuid;
   capability text;
+  job_id_two uuid;
+  capability_two text;
   claim jsonb;
+  claim_two jsonb;
   frozen jsonb;
+  prior_report jsonb;
   accepted boolean;
 begin
   set local role postgres;
@@ -2793,6 +2799,51 @@ begin
   perform public.worker_complete_job(job_id, capability, jsonb_build_object(
     'spend', jsonb_build_object('costUsd', 0, 'calls', 0)
   ));
+
+  set local role postgres;
+  insert into public.processing_runs (
+    id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
+  ) values (
+    run_id_two, org_a, session_id, 2, 'manual', 'running', 'test-controlled-v2',
+    '10000000-0000-4000-8000-000000000001'
+  );
+  update public.document_intake_sessions
+  set current_run_id = run_id_two, status = 'processing'
+  where id = session_id;
+  insert into public.controlled_case_executions (
+    id, organization_id, intake_session_id, processing_run_id, mode, status,
+    pipeline_version, model_policy_version, created_by
+  ) values (
+    execution_id_two, org_a, session_id, run_id_two, 'primary', 'queued',
+    'test-controlled-v2', 'test-model-policy', '10000000-0000-4000-8000-000000000001'
+  );
+  insert into public.processing_jobs (
+    organization_id, processing_run_id, intake_session_id, kind, status, available_at,
+    controlled_execution_id, payload
+  ) values (
+    org_a, run_id_two, session_id, 'case_analysis', 'queued', '2000-01-01T00:00:00Z',
+    execution_id_two, jsonb_build_object(
+      'locale', 'pt-BR', 'execution_id', execution_id_two, 'execution_mode', 'primary'
+    )
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  claim_two := public.worker_claim_job(repeat('w', 64), 600);
+  if claim_two ->> 'kind' <> 'case_analysis' then raise exception 'incremental case job was not claimed'; end if;
+  job_id_two := (claim_two ->> 'job_id')::uuid;
+  capability_two := claim_two ->> 'capability_token';
+  prior_report := public.worker_load_prior_case_report(job_id_two, capability_two);
+  if prior_report ->> 'reportFingerprint' <> repeat('7', 64) then
+    raise exception 'worker did not receive the prior successful report for the same case';
+  end if;
+  perform public.worker_fail_job(
+    job_id_two, capability_two, '{"code":"test_cleanup"}'::jsonb, false, 60
+  );
 
   perform set_config(
     'request.jwt.claims',
