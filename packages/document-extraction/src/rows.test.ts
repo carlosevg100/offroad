@@ -5,7 +5,7 @@ import type {z} from "zod";
 
 import {extractDocument} from "./extract";
 import type {DocumentProfile} from "@offroad/document-intelligence";
-import {tableRowPasses} from "./rows";
+import {tableBatchPasses, tableRowPasses} from "./rows";
 
 /** A debt schedule the shape Aurora's arrives in: header row, seven contracts, a total. */
 const debtLayer: DocumentLayer = documentLayerSchema.parse({
@@ -71,12 +71,13 @@ const gatewayRecording = (record: string[], systems: string[] = []) => {
     async complete<TSchema extends z.ZodType>(request: {schema: TSchema; system: string; input: Array<{text: string}>}) {
       record.push(request.input[0]!.text);
       systems.push(request.system);
-      // Every row pass answers with index 1, the way a model that was never told the number
-      // would: the orchestration is what makes the index right.
-      const row = /\[(sDívida\.t1\.r\d+)\]/.exec(request.input[0]!.text);
-      const lender = /\[sDívida\.t1\.r\d+\]\s*([^|\n]+)/.exec(request.input[0]!.text);
-      const candidates = request.input[0]!.text.includes("Esta é a linha") && row && lender
-        ? [{field_path: "debt.instruments.i.lender", value_raw: lender[1]!.trim(), value_type: "text", scale: 1, information_class: "management", anchor: {kind: "table_row", id: row[1]!}, quote: lender[1]!.trim(), confidence: 0.9}]
+      // The table call deliberately returns the same literal path for every row. The cited
+      // anchor, not the model's numbering, is what binds each deterministic tuple index.
+      const candidates = request.input[0]!.text.includes("Esta é a tabela")
+        ? [...request.input[0]!.text.matchAll(/\[(sDívida\.t1\.r\d+)\]\s*([^|\n]+)/g)].map((match) => ({
+            field_path: "debt.instruments.i.lender", value_raw: match[2]!.trim(), value_type: "text", scale: 1,
+            information_class: "management", anchor: {kind: "table_row", id: match[1]!}, quote: match[2]!.trim(), confidence: 0.9,
+          }))
         : [];
       const output = request.schema.parse({candidates, absent_fields: [], document_alerts: []});
       return {
@@ -89,8 +90,8 @@ const gatewayRecording = (record: string[], systems: string[] = []) => {
   } as unknown as ModelGateway;
 };
 
-describe("the extractor runs one pass per data row, with the index pre-bound", () => {
-  it("gives every row the same cacheable prefix and writes the index itself", async () => {
+describe("the extractor runs one paid pass per table, with indices bound from anchors", () => {
+  it("reads every eligible row in one pass and writes each index itself", async () => {
     const prompts: string[] = [];
     const systems: string[] = [];
     const result = await extractDocument({
@@ -100,21 +101,29 @@ describe("the extractor runs one pass per data row, with the index pre-bound", (
       gateway: gatewayRecording(prompts, systems),
     });
 
-    // One whole-document chunk plus three row passes.
-    expect(result.chunks.total).toBe(4);
-    const rowPrompts = prompts.filter((prompt) => prompt.includes("Esta é a linha"));
-    expect(rowPrompts).toHaveLength(3);
-    // Every row pass asks for the literal index; only the placement names the row.
-    expect(rowPrompts[0]).toContain("debt.instruments.i.lender");
+    // One whole-document chunk plus one table pass, independent of row count.
+    expect(result.chunks.total).toBe(2);
+    const tablePrompts = prompts.filter((prompt) => prompt.includes("Esta é a tabela"));
+    expect(tablePrompts).toHaveLength(1);
+    expect(tablePrompts[0]).toContain("debt.instruments.i.lender");
     expect(systems.every((system) => !system.includes("debt.instruments"))).toBe(true);
-    expect(rowPrompts[0]).toContain("Esta é a linha 1");
-    expect(rowPrompts[2]).toContain("Esta é a linha 3");
-    expect(rowPrompts[0]).toContain("Banco Itaú");
-    expect(rowPrompts[0]).not.toContain("Bradesco");
-    // The model answered the literal `i` on every row; the numbers on the candidates are the desk's.
+    expect(tablePrompts[0]).toContain("com 3 linhas de dados");
+    expect(tablePrompts[0]).toContain("Banco Itaú");
+    expect(tablePrompts[0]).toContain("Bradesco");
+    // The model answered the literal `i` on every row; cited anchors determine the numbers.
     expect(result.candidates.map((candidate) => candidate.field_path).filter((path) => path.endsWith(".lender")).sort()).toEqual([
       "debt.instruments.1.lender", "debt.instruments.2.lender", "debt.instruments.3.lender",
     ]);
+  });
+});
+
+describe("table batches", () => {
+  it("turns any eligible row count into one pass per table", () => {
+    const batches = tableBatchPasses(indexLayer(debtLayer));
+    expect(batches).toHaveLength(1);
+    expect(batches[0]?.rows.map((row) => row.instance)).toEqual([1, 2, 3]);
+    expect(batches[0]?.evidenceText).toContain("Banco Itaú");
+    expect(batches[0]?.evidenceText).toContain("Sicredi");
   });
 });
 

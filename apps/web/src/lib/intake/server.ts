@@ -420,12 +420,6 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
   const {data: documents} = await supabase.from("source_documents").select("id, original_name, sha256").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("created_at");
   if (!documents?.length) return fail("documents");
 
-  const begin = await supabase.rpc("begin_intake_processing", {p_organization_id: organizationId, p_session_id: sessionId});
-  if (begin.error) {
-    logIntakeFailure("begin_processing", begin.error);
-    return fail(intakeErrorFrom(begin.error, "processing"));
-  }
-
   // Content verification: recompute SHA-256 from the stored objects so the extractor and the
   // audit trail rely on server-verified hashes, never on the browser's claim. The pipeline
   // needs this too — the worker's gate refuses any file whose bytes do not match what the app
@@ -452,6 +446,15 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     // The session stays `processing`; the worker's last job is what moves it on. Returning
     // here is the point — the fixture path must not also write a generation of candidates.
     return ok(null);
+  }
+
+  // The fixture path owns one disposable generation and therefore clears the prior result.
+  // The production pipeline does not: it reuses immutable ready documents and replaces only
+  // the candidates of documents that actually changed or failed.
+  const begin = await supabase.rpc("begin_intake_processing", {p_organization_id: organizationId, p_session_id: sessionId});
+  if (begin.error) {
+    logIntakeFailure("begin_processing", begin.error);
+    return fail(intakeErrorFrom(begin.error, "processing"));
   }
   const verifiedDocuments = documents.map((document) => ({...document, sha256: verification.value.hashes.get(document.id) ?? document.sha256}));
 

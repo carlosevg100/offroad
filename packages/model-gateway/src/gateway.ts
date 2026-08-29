@@ -2,7 +2,7 @@ import {createHash, randomUUID} from "node:crypto";
 import {z} from "zod";
 import {cassetteKey, type CassetteMode, type CassetteStore} from "./cassette";
 import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
-import {estimateCostUsd, listPrices, type ModelPrice} from "./pricing";
+import {estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {stripNulls} from "./adapters/openai";
 import {
@@ -40,14 +40,23 @@ export type ModelGatewayConfig = {
 
 export type ModelGateway = {
   complete<TSchema extends z.ZodType>(request: GatewayRequest<TSchema>): Promise<GatewayResult<z.infer<TSchema>>>;
-  spent(): {costUsd: number; calls: number};
+  spent(): {costUsd: number; calls: number; unknownCostCalls: number; budgetExposureUsd: number};
 };
+
+// OpenAI documents a 10% uplift for regional processing. Reserving that margin before a call
+// keeps the budget valid regardless of whether a deployment uses global or regional routing;
+// the ledger still records the provider-reported token estimate without inventing a surcharge.
+const PREFLIGHT_PRICE_SAFETY_FACTOR = 1.1;
 
 export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   const policies = config.policies ?? defaultTaskPolicies;
   const prices = config.prices ?? listPrices;
   const now = config.now ?? (() => Date.now());
-  const spent = {costUsd: 0, calls: 0};
+  const spent = {costUsd: 0, calls: 0, unknownCostCalls: 0};
+  // Budget exposure is deliberately more conservative than the billing estimate. A provider
+  // error can happen after tokens were consumed but before usage reaches us; that call keeps
+  // its preflight reservation instead of being treated as free.
+  let budgetExposureUsd = 0;
 
   const adapterFor = (provider: Provider): ProviderAdapter => {
     const adapter = config.adapters[provider];
@@ -61,13 +70,6 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       useShadow: request.useShadow,
       experimentalModels: config.experimentalModels,
     });
-    if (config.budget?.maxCalls !== undefined && spent.calls >= config.budget.maxCalls) {
-      throw new ModelGatewayError(`call budget exhausted (${spent.calls}/${config.budget.maxCalls})`, "budget_exceeded", spent);
-    }
-    if (config.budget?.maxCostUsd !== undefined && spent.costUsd >= config.budget.maxCostUsd) {
-      throw new ModelGatewayError(`cost budget exhausted (${spent.costUsd.toFixed(4)}/${config.budget.maxCostUsd})`, "budget_exceeded", spent);
-    }
-
     const input = config.redaction === false ? request.input : redactParts(request.input, config.redaction ?? {});
     const schemaJson = z.toJSONSchema(request.schema);
     const promptFingerprint = fingerprint({system: request.system, schemaName: request.schemaName, schema: schemaJson});
@@ -76,6 +78,9 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     const candidates: ModelRef[] = fallback ? [primary, fallback] : [primary];
 
     for (const [index, ref] of candidates.entries()) {
+      if (config.budget?.maxCalls !== undefined && spent.calls >= config.budget.maxCalls) {
+        throw new ModelGatewayError(`call budget exhausted (${spent.calls}/${config.budget.maxCalls})`, "budget_exceeded", {...spent, exposureUsd: budgetExposureUsd});
+      }
       const adapterRequest: AdapterRequest = {
         model: ref.model,
         effort: ref.effort,
@@ -89,6 +94,23 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       if (request.cacheKey) adapterRequest.cacheKey = request.cacheKey;
       if (request.thinking) adapterRequest.thinking = request.thinking;
       if (request.metadata) adapterRequest.metadata = request.metadata;
+
+      // Refuse before the provider call, not after it. The old check only looked at already
+      // spent dollars, so a single large request could cross the ceiling and be billed in full.
+      const inputTokens = adapterRequest.input.reduce((total, part) => total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
+      const reservationUsd = estimateCostUsd(ref.model, {
+        inputTokens,
+        cachedInputTokens: 0,
+        outputTokens: adapterRequest.maxOutputTokens,
+      }, prices) * PREFLIGHT_PRICE_SAFETY_FACTOR;
+      if (config.budget?.maxCostUsd !== undefined && budgetExposureUsd + reservationUsd > config.budget.maxCostUsd) {
+        throw new ModelGatewayError(
+          `cost budget would be exceeded (${budgetExposureUsd.toFixed(4)} + ${reservationUsd.toFixed(4)} > ${config.budget.maxCostUsd})`,
+          "budget_exceeded",
+          {...spent, exposureUsd: budgetExposureUsd, reservationUsd},
+        );
+      }
+      budgetExposureUsd += reservationUsd;
 
       const startedAt = now();
       let response: AdapterResponse | undefined;
@@ -114,6 +136,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         if (error instanceof ModelGatewayError && error.code === "cassette_missing") throw error;
         attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error)});
         spent.calls += 1;
+        spent.unknownCostCalls += 1;
         emit(config, {
           request,
           ref,
@@ -131,6 +154,9 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
 
       const latencyMs = now() - startedAt;
       const costUsd = fromCassette ? 0 : estimateCostUsd(ref.model, response.usage, prices);
+      // Successful usage replaces the conservative reservation with the measured estimate.
+      // Cassette calls release it entirely because no provider was invoked.
+      budgetExposureUsd += costUsd - reservationUsd;
       spent.costUsd += costUsd;
       spent.calls += fromCassette ? 0 : 1;
 
@@ -169,7 +195,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     throw new ModelGatewayError(`all model attempts failed for task "${request.task}"`, "all_attempts_failed", attempts);
   };
 
-  return {complete, spent: () => ({...spent})};
+  return {complete, spent: () => ({...spent, budgetExposureUsd})};
 }
 
 function redactParts(parts: ContentPart[], options: RedactionOptions): ContentPart[] {
@@ -206,6 +232,7 @@ function emit(
     outputFingerprint: entry.outputFingerprint,
     usage,
     costUsd: entry.costUsd,
+    costStatus: entry.fromCassette ? "cassette" : entry.response ? "measured" : "unknown",
     latencyMs: entry.latencyMs,
     stopReason: entry.response?.stopReason ?? "other",
     usedFallback: entry.usedFallback,

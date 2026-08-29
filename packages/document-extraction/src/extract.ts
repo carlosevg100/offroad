@@ -13,7 +13,7 @@ import {
 
 import {renderEvidence, type RenderOptions} from "./evidence";
 import {buildExtractionPrompt, extractionSystem, targetFields} from "./prompt";
-import {tableRowPasses} from "./rows";
+import {tableBatchPasses} from "./rows";
 
 /**
  * One document in, verified candidates out (P1 plan §7, stage E3).
@@ -225,23 +225,22 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     usage.outputTokens += outcome.outputTokens;
   }
 
-  // ---- row passes: the orchestration enumerates, the model reads --------------------------
+  // ---- table passes: the orchestration enumerates, the model reads once -------------------
   //
-  // Wide tables measured this in: a seven-line debt schedule asked for as one task returned one
-  // candidate and zero absences. Each detected data row now runs as its own pass, with the
-  // indexed patterns bound to that row's number, and a row-pass candidate outranks a whole-doc
-  // candidate for the same field, because it carries the sharper anchor.
+  // Wide tables need a focused pass, but a paid call per row made cost proportional to row
+  // count. One pass per table keeps the focus while the cited row anchor, not the model, decides
+  // the tuple index. A 500-row tape therefore costs one mapping call rather than 500 calls.
   const indexedFields = fields.filter((field) => field.pattern.includes("{i}"));
-  const rowPasses = indexedFields.length > 0 ? tableRowPasses(index, {fields: indexedFields}) : [];
+  const tablePasses = indexedFields.length > 0 ? tableBatchPasses(index, {fields: indexedFields}) : [];
   const rowFieldPaths = new Set<string>();
-  // One prefix for every row of the document: `{i}` stays unbound here and the index is written
-  // onto the candidates below, which also stops a model from numbering two rows the same.
+  // `{i}` stays unbound in the prompt. The cited row anchor binds it below, which also stops a
+  // model from numbering two rows the same or inventing a row number.
   const rowSystem = extractionSystem({fields: indexedFields, row: true});
   const bindIndex = (path: string, instance: number) => path.replace(/\.(?:i|\d{1,3})\./, `.${instance}.`);
 
-  const rowOutcomes = await mapWithConcurrency(rowPasses, concurrency, async (pass, position): Promise<PassOutcome> => {
+  const rowOutcomes = await mapWithConcurrency(tablePasses, concurrency, async (pass, position): Promise<PassOutcome> => {
     const passNumber = chunks.length + position + 1;
-    options.onProgress?.({stage: "chunk_started", chunk: passNumber, total: chunks.length + rowPasses.length});
+    options.onProgress?.({stage: "chunk_started", chunk: passNumber, total: chunks.length + tablePasses.length});
     try {
       const result = await gateway.complete({
         task: "extract_fields",
@@ -250,26 +249,33 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
           profile,
           fileName: options.fileName,
           fields: indexedFields,
-          evidence: {text: pass.evidenceText, index: pass.instance, total: rowPasses.length},
-          row: {instance: pass.instance, tableId: pass.tableId},
+          evidence: {text: pass.evidenceText, index: position + 1, total: tablePasses.length},
+          rowBatch: {tableId: pass.tableId, rows: pass.rows.length},
         })}],
         schema: salvageExtractorOutputSchema,
         schemaName: "extractor_output",
-        maxOutputTokens: options.maxOutputTokens ?? 2_000,
-        cacheKey: `extract-row:${profile.kind}`,
+        maxOutputTokens: options.maxOutputTokens ?? 4_000,
+        cacheKey: `extract-table:${profile.kind}`,
         ...(options.model ? {model: options.model} : {}),
         // A row pass reads cells; there is nothing to reason about, and reasoning bills as output.
         thinking: "off",
-        metadata: {document: profile.documentId, chunk: `row:${pass.rowAnchorId}`},
+        metadata: {document: profile.documentId, chunk: `table:${pass.tableId}`},
       });
 
+      const instanceForAnchor = (anchorId: string): number | null => {
+        const row = pass.rows.find((candidateRow) => anchorId === candidateRow.rowAnchorId || anchorId.startsWith(`${candidateRow.rowAnchorId}.`));
+        return row?.instance ?? null;
+      };
       const kept = result.output.candidates
         .filter((candidate): candidate is RawExtractionCandidate => candidate !== null)
-        .map((candidate) => ({...candidate, field_path: bindIndex(candidate.field_path, pass.instance)}));
+        .flatMap((candidate) => {
+          const instance = instanceForAnchor(candidate.anchor.id);
+          return instance === null ? [] : [{...candidate, field_path: bindIndex(candidate.field_path, instance)}];
+        });
       options.onProgress?.({
         stage: "chunk_finished",
         chunk: passNumber,
-        total: chunks.length + rowPasses.length,
+        total: chunks.length + tablePasses.length,
         candidates: kept.length,
         malformed: 0,
         costUsd: result.costUsd,
@@ -278,7 +284,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
       // absences from row passes are ignored on purpose.
       return {ok: true, kept, dropped: result.output.candidates.length - kept.length, absent: [], alerts: [], costUsd: result.costUsd, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens};
     } catch (error) {
-      options.onProgress?.({stage: "chunk_failed", chunk: passNumber, total: chunks.length + rowPasses.length, message: (error as Error).message});
+      options.onProgress?.({stage: "chunk_failed", chunk: passNumber, total: chunks.length + tablePasses.length, message: (error as Error).message});
       return {ok: false, message: (error as Error).message};
     }
   });
@@ -302,7 +308,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
   // other's confidence downstream.
   const deduped = rowFieldPaths.size > 0
     ? raw.filter((candidate, position) => {
-        const fromRowPass = rowPasses.some((pass) => candidate.anchor.id === pass.rowAnchorId || candidate.anchor.id.startsWith(`${pass.rowAnchorId}.`));
+        const fromRowPass = tablePasses.some((pass) => pass.rows.some((row) => candidate.anchor.id === row.rowAnchorId || candidate.anchor.id.startsWith(`${row.rowAnchorId}.`)));
         if (fromRowPass) return true;
         void position;
         return !rowFieldPaths.has(candidate.field_path);
@@ -326,7 +332,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     rejected: report.rejected,
     absentFields: [...absentFields],
     alerts,
-    chunks: {total: chunks.length + rowPasses.length, failed},
+    chunks: {total: chunks.length + tablePasses.length, failed},
     malformed,
     usage,
   };

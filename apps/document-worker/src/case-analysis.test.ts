@@ -33,6 +33,7 @@ const invocation: GatewayCallLog = {
   outputFingerprint: "c".repeat(64),
   usage: {inputTokens: 100, outputTokens: 20, cachedInputTokens: 0},
   costUsd: 0.1,
+  costStatus: "measured",
   latencyMs: 10,
   stopReason: "end",
   usedFallback: false,

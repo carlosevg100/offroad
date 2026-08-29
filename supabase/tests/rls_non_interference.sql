@@ -2158,9 +2158,13 @@ declare
   run_id uuid;
   accepted boolean;
   link text;
+  layer_path text;
+  layer_link text;
 begin
   path := org::text || '/' || session_id::text || '/spend.pdf';
   link := 'https://p.supabase.co/storage/v1/object/sign/opportunity-documents/' || path;
+  layer_path := org::text || '/' || session_id::text || '/' || doc_id::text || '/1.json';
+  layer_link := 'https://p.supabase.co/storage/v1/object/upload/sign/document-layers/' || layer_path;
 
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
@@ -2170,7 +2174,12 @@ begin
   );
 
   first_run := public.begin_processing_run(org, session_id, 'manual',
-    jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+    jsonb_build_array(jsonb_build_object(
+      'source_document_id', doc_id,
+      'download_url', link,
+      'layer_object_path', layer_path,
+      'layer_upload_url', layer_link
+    )), 'test');
   run_id := (first_run->>'processing_run_id')::uuid;
 
   -- Put the month over the ceiling by recording what that run cost.
@@ -2194,7 +2203,12 @@ begin
   accepted := true;
   begin
     perform public.begin_processing_run(org, session_id, 'manual',
-      jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+      jsonb_build_array(jsonb_build_object(
+        'source_document_id', doc_id,
+        'download_url', link,
+        'layer_object_path', layer_path,
+        'layer_upload_url', layer_link
+      )), 'test');
   exception when others then accepted := false;
   end;
   if accepted then raise exception 'begin_processing_run started a run past the month ceiling'; end if;
@@ -2208,7 +2222,12 @@ begin
   set local role authenticated;
 
   perform public.begin_processing_run(org, session_id, 'manual',
-    jsonb_build_array(jsonb_build_object('source_document_id', doc_id, 'download_url', link)), 'test');
+    jsonb_build_array(jsonb_build_object(
+      'source_document_id', doc_id,
+      'download_url', link,
+      'layer_object_path', layer_path,
+      'layer_upload_url', layer_link
+    )), 'test');
 end;
 $$;
 
@@ -3613,6 +3632,86 @@ begin
 
   set local role postgres;
   delete from public.document_intake_sessions where id = session_id;
+end;
+$$;
+
+-- Economic pipeline invariants: cancellation is terminal and an unchanged retry reuses paid
+-- document work. These run against real triggers and security-definer functions, not mocks.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+declare
+  org constant uuid := '20000000-0000-4000-8000-000000000001';
+  cancelled_session constant uuid := '40000000-0000-4000-8000-000000000091';
+  cancelled_document constant uuid := '50000000-0000-4000-8000-000000000091';
+  reused_session constant uuid := '40000000-0000-4000-8000-000000000092';
+  reused_document constant uuid := '50000000-0000-4000-8000-000000000092';
+  result jsonb;
+  run_id uuid;
+begin
+  insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
+  values
+    (cancelled_session, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR'),
+    (reused_session, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
+
+  perform public.register_intake_document_command(
+    org, cancelled_session, '51000000-0000-4000-8000-000000000091', cancelled_document,
+    'opportunity-documents', org::text || '/' || cancelled_session::text || '/cancelled.pdf',
+    'cancelled.pdf', 'application/pdf', 4096, repeat('a', 64)
+  );
+  result := public.begin_processing_run(
+    org, cancelled_session, 'upload', jsonb_build_array(jsonb_build_object(
+      'source_document_id', cancelled_document,
+      'download_url', 'https://p.supabase.co/storage/v1/object/sign/opportunity-documents/' || org::text || '/' || cancelled_session::text || '/cancelled.pdf?token=one',
+      'layer_object_path', org::text || '/' || cancelled_session::text || '/cancelled.layer.json',
+      'layer_upload_url', 'https://p.supabase.co/storage/v1/object/upload/sign/document-layers/' || org::text || '/' || cancelled_session::text || '/cancelled.layer.json'
+    )), 'f2-2026.08.24', '{"max_cost_usd":5}'::jsonb
+  );
+  run_id := (result->>'processing_run_id')::uuid;
+  set local role postgres;
+  update public.processing_runs set status = 'cancelled', completed_at = now() where id = run_id;
+  update public.processing_jobs set status = 'cancelled' where processing_run_id = run_id and kind = 'document_pipeline';
+  if exists (select 1 from public.processing_jobs where processing_run_id = run_id and kind = 'case_analysis') then
+    raise exception 'cancelled document work enqueued paid case analysis';
+  end if;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  perform public.register_intake_document_command(
+    org, reused_session, '51000000-0000-4000-8000-000000000092', reused_document,
+    'opportunity-documents', org::text || '/' || reused_session::text || '/reused.pdf',
+    'reused.pdf', 'application/pdf', 4096, repeat('b', 64)
+  );
+  set local role postgres;
+  update public.source_documents set processing_status = 'ready' where id = reused_document;
+  update public.document_intake_sessions set pipeline_version = 'f2-2026.08.24' where id = reused_session;
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  result := public.begin_processing_run(org, reused_session, 'reprocess', '[]'::jsonb, 'f2-2026.08.24', '{"max_cost_usd":5}'::jsonb);
+  run_id := (result->>'processing_run_id')::uuid;
+  set local role postgres;
+  if (select count(*) from public.processing_jobs where processing_run_id = run_id and kind = 'document_pipeline') <> 0
+    or (select count(*) from public.processing_jobs where processing_run_id = run_id and kind = 'case_analysis') <> 1 then
+    raise exception 'unchanged retry did not reuse document work and queue only case analysis';
+  end if;
+  if (select (versions->>'reused_document_count')::integer from public.processing_runs where id = run_id) <> 1 then
+    raise exception 'unchanged retry did not record reuse provenance';
+  end if;
+  if (select (payload->'model_budget'->>'max_cost_usd')::numeric from public.processing_jobs where processing_run_id = run_id and kind = 'case_analysis') <> 1 then
+    raise exception 'case analysis did not receive its hard model budget';
+  end if;
 end;
 $$;
 

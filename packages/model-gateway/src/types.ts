@@ -121,6 +121,8 @@ export type GatewayCallLog = {
   outputFingerprint: string;
   usage: Usage;
   costUsd: number;
+  /** `unknown` means the provider call failed before usage was returned; it is never "free". */
+  costStatus: "measured" | "unknown" | "cassette";
   latencyMs: number;
   stopReason: StopReason;
   usedFallback: boolean;

@@ -173,9 +173,13 @@ export function buildExtractionPrompt(input: {
   evidence: {text: string; index: number; total: number};
   /** A row pass: the evidence is one data row, and the index every {i} takes is `instance`. */
   row?: {instance: number; tableId: string};
+  /** A table pass: all rows are read once and indices are rebound from cited anchors in code. */
+  rowBatch?: {tableId: string; rows: number};
 }): string {
   const {evidence} = input;
-  const placement = input.row
+  const placement = input.rowBatch
+    ? `Esta é a tabela ${input.rowBatch.tableId}, com ${input.rowBatch.rows} linhas de dados. Leia cada linha uma única vez. Mantenha o literal \`i\` nos caminhos: o sistema substitui esse índice deterministicamente a partir da âncora citada. Produza candidatos somente para a linha exata que contém o valor. Ignore totais, subtotais e cabeçalhos repetidos.`
+    : input.row
     ? `Esta é a linha ${input.row.instance} da tabela ${input.row.tableId}, mostrada com o cabeçalho de colunas. Extraia apenas desta linha e mantenha o literal \`i\` nos caminhos. Se a linha for um total, um subtotal ou um cabeçalho repetido, não produza candidato nenhum.`
     : evidence.total > 1
       ? `Este é o trecho ${evidence.index} de ${evidence.total} deste documento. Extraia apenas o que estiver neste trecho; o que faltar aqui pode estar em outro e não deve ser inventado nem marcado como ausente por falta de contexto.`
@@ -185,13 +189,13 @@ export function buildExtractionPrompt(input: {
     "## Documento",
     renderDocumentContext(input.profile, input.fileName),
     "",
-    ...targetFieldsBlock({fields: input.fields, ...(input.row ? {row: true} : {})}),
+    ...targetFieldsBlock({fields: input.fields, ...((input.row || input.rowBatch) ? {row: true} : {})}),
     "",
     // Aurora's trial balance measured what happens when this rule sits far from the evidence:
     // the model wrote `interim_financials.2026_7m.revenue_7m` and all nine candidates were
     // refused as unknown fields. It is cheap and it stays here.
     "## Forma dos caminhos",
-    ...(input.row
+    ...((input.row || input.rowBatch)
       ? ["Mantenha o literal `i` onde o caminho tem o índice da linha.", "{period} vira o período concreto: 2025 para exercício, 2026_07 para ano_mês com dois dígitos."]
       : [
           "{period} vira o período concreto: 2025 para exercício, 2026_07 para ano_mês com dois dígitos (nunca 2026_7 nem 2026_7m).",

@@ -33,6 +33,19 @@ export const PIPELINE_VERSION = "f2-2026.08.24";
  */
 export const PIPELINE_LINK_TTL_SECONDS = 3_600;
 
+/**
+ * Economic contract for a production case. The database persists and distributes it to jobs;
+ * the worker enforces the smaller of these values and its environment ceiling.
+ */
+export const DEFAULT_RUN_BUDGET = {
+  max_cost_usd: 5,
+  max_calls: 160,
+  document_max_cost_usd: 0.75,
+  document_max_calls: 8,
+  case_max_cost_usd: 1,
+  case_max_calls: 4,
+} as const;
+
 export type ProcessingTrigger = "upload" | "manual" | "answer" | "reprocess" | "document_removed";
 
 export type ProcessingRunStarted = {
@@ -97,6 +110,7 @@ export function layerObjectPath(input: {
 export type PipelineDocument = {
   id: string;
   object_path: string;
+  processing_status?: string | null;
 };
 
 export type SignedDocumentEntry = {
@@ -166,20 +180,37 @@ export async function startProcessingRun(input: {
   budget?: Record<string, number>;
   newAttemptId?: () => string;
 }): Promise<Outcome<ProcessingRunStarted>> {
-  const {data: documents, error: documentsError} = await input.supabase
-    .from("source_documents")
-    .select("id, object_path")
-    .eq("organization_id", input.organizationId)
-    .eq("intake_session_id", input.sessionId)
-    .order("created_at");
+  const [{data: documents, error: documentsError}, {data: session, error: sessionError}] = await Promise.all([
+    input.supabase
+      .from("source_documents")
+      .select("id, object_path, processing_status")
+      .eq("organization_id", input.organizationId)
+      .eq("intake_session_id", input.sessionId)
+      .order("created_at"),
+    input.supabase
+      .from("document_intake_sessions")
+      .select("pipeline_version")
+      .eq("organization_id", input.organizationId)
+      .eq("id", input.sessionId)
+      .maybeSingle(),
+  ]);
   if (documentsError) return {ok: false, error: "processing"};
+  if (sessionError || !session) return {ok: false, error: "session"};
   if (!documents?.length) return {ok: false, error: "documents"};
+
+  // Reuse is only legal under the same pipeline contract. A ready immutable document with the
+  // same version already has a verified layer and candidates; paying a provider to read it
+  // again would change neither evidence nor answer. A pipeline-version change is an explicit
+  // full rebuild and signs every document.
+  const documentsToProcess = session.pipeline_version === PIPELINE_VERSION
+    ? documents.filter((document) => document.processing_status !== "ready")
+    : documents;
 
   const signed = await signPipelineDocuments({
     supabase: input.supabase,
     organizationId: input.organizationId,
     sessionId: input.sessionId,
-    documents,
+    documents: documentsToProcess,
     ...(input.newAttemptId ? {newAttemptId: input.newAttemptId} : {}),
   });
   if (!signed.ok) return signed;
@@ -190,7 +221,7 @@ export async function startProcessingRun(input: {
     p_trigger: input.trigger,
     p_documents: signed.value as unknown as Json,
     p_pipeline_version: PIPELINE_VERSION,
-    ...(input.budget ? {p_budget: input.budget as unknown as Json} : {}),
+    p_budget: (input.budget ?? DEFAULT_RUN_BUDGET) as unknown as Json,
   });
   // The ceiling is not a processing failure, and telling somebody to try again when trying
   // again cannot work is the kind of small dishonesty that costs a user an afternoon.

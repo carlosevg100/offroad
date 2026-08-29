@@ -219,11 +219,11 @@ describe("gateway", () => {
     expect(result.effort).toBe("medium");
     expect(result.usedFallback).toBe(false);
     expect(result.costUsd).toBeCloseTo((6_000 * 3 + 4_000 * 0.3 + 500 * 15) / 1_000_000, 6);
-    expect(gateway.spent()).toEqual({costUsd: result.costUsd, calls: 1});
+    expect(gateway.spent()).toMatchObject({costUsd: result.costUsd, calls: 1, unknownCostCalls: 0});
     const sent = anthropic.calls[0]?.input[0];
     expect(sent?.type === "text" ? sent.text : "").toContain("529.***.***-**");
     expect(sent?.type === "text" ? sent.text : "").toContain("[email]");
-    expect(anthropic.calls[0]?.maxOutputTokens).toBe(16_000);
+    expect(anthropic.calls[0]?.maxOutputTokens).toBe(8_000);
     expect(logs).toHaveLength(1);
     expect(JSON.stringify(logs[0])).not.toContain("Demonstrações");
     expect(logs[0]?.schemaName).toBe("document_profile");
@@ -269,6 +269,8 @@ describe("gateway", () => {
 
     await gateway.complete(baseRequest);
     expect(logs.map((log) => log.outcome)).toEqual(["error", "ok"]);
+    expect(logs.map((log) => log.costStatus)).toEqual(["unknown", "measured"]);
+    expect(gateway.spent().unknownCostCalls).toBe(1);
     expect(gateway.spent().calls).toBe(2);
     expect(JSON.stringify(logs)).not.toContain("private content");
   });
@@ -283,9 +285,20 @@ describe("gateway", () => {
     const gateway = createModelGateway({adapters: {anthropic}, budget: {maxCalls: 1}});
     await gateway.complete(baseRequest);
     await expect(gateway.complete(baseRequest)).rejects.toMatchObject({code: "budget_exceeded"});
-    const costly = createModelGateway({adapters: {anthropic: fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5}), ok("claude-sonnet-5", {kind: "other", confidence: 0.5})])}, budget: {maxCostUsd: 0.000001}});
-    await costly.complete(baseRequest);
+    const costly = createModelGateway({adapters: {anthropic: fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5})])}, budget: {maxCostUsd: 0.000001}});
     await expect(costly.complete(baseRequest)).rejects.toMatchObject({code: "budget_exceeded"});
+  });
+
+  it("reserves the worst-case request before calling a provider and keeps failed-call exposure", async () => {
+    const anthropic = fakeAdapter("anthropic", [new Error("usage unavailable"), ok("claude-sonnet-5", {kind: "other", confidence: 0.5})]);
+    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
+    const gateway = createModelGateway({
+      adapters: {anthropic, openai},
+      budget: {maxCostUsd: 0.02, maxCalls: 2},
+    });
+    await expect(gateway.complete({...baseRequest, maxOutputTokens: 1_000})).rejects.toMatchObject({code: "budget_exceeded"});
+    expect(anthropic.calls).toHaveLength(1);
+    expect(openai.calls).toHaveLength(0);
   });
 
   it("uses the shadow model when asked and honours model overrides within the allowlist", async () => {

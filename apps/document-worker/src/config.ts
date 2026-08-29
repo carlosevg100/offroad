@@ -18,17 +18,17 @@ const schema = z.object({
   /**
    * What one document is allowed to cost in model calls before the job is stopped.
    *
-   * A measured case runs about US$ 2.50 across its whole data room, so a single document
-   * reaching five dollars is a loop or a pathological file, not a large company. The ceiling
-   * exists to make that finite: without one, a document that keeps re-chunking bills until
-   * somebody notices, and the first person to notice is the invoice.
+   * The database allocates a share of the case-wide ceiling to each paid document. This
+   * environment value is a second, independent stop and defaults to one dollar; the worker
+   * always enforces the smaller number. Without both, a re-chunking loop can bill until the
+   * first person to notice is reading the provider invoice.
    *
    * Deliberately per job rather than per process. A process-wide ceiling would make the worker
    * refuse every document after some arbitrary one, turning a spend problem into an outage.
    */
-  MODEL_MAX_COST_USD_PER_JOB: z.coerce.number().positive().default(12),
+  MODEL_MAX_COST_USD_PER_JOB: z.coerce.number().positive().default(1),
   /** The same bound expressed in calls, which catches a loop before the cost does. */
-  MODEL_MAX_CALLS_PER_JOB: z.coerce.number().int().positive().default(800),
+  MODEL_MAX_CALLS_PER_JOB: z.coerce.number().int().positive().default(8),
   SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
   /** Dedicated service account that belongs to no organization. */
   WORKER_ACCOUNT_EMAIL: z.email(),
