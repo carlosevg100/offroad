@@ -1,5 +1,27 @@
 # Acceptance Evidence
 
+## Deal State, gates e contenção de custo, 29/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Estado persistente | schema e contratos TypeScript | objetos versionados, fingerprintados e tenant-scoped para entendimento, estrutura, produção, materiais, matching e autorização |
+| Dependência exata | RPC append-only e testes SQL | downstream aceita somente os fingerprints upstream declarados; versão alterada não atravessa o gate antigo |
+| Idempotência | replay SQL em staging | retry exato retorna o mesmo ID; replay do worker não supersede confirmação ou aprovação existente |
+| Diagnóstico econômico | teste E2E do worker | zero chamadas de modelo, zero gasto e nenhuma recuperação de mandatos antes dos gates |
+| Gate de materiais | contratos e teste E2E | exige entendimento confirmado, estrutura confirmada e plano de produção aprovado |
+| Gate de matching | contratos e teste E2E | exige pacote aprovado; nenhuma identidade ou shortlist é produzida antes disso |
+| Gate de introdução | contratos e teste E2E | exige autorização explícita vinculada ao fingerprint do pacote aprovado |
+| Persistência do worker | teste de pipeline | entendimento e findings são gravados primeiro; objetos posteriores aparecem somente conforme os gates |
+| RLS de staging | transação tenant-scoped | SELECT isolado por organização; INSERT e UPDATE diretos negados; cross-tenant bloqueado |
+| Advisors | Supabase staging | zero security lints; somente avisos de índices novos ainda sem uso |
+| Testes focados | domain-contracts e document-worker | 5 testes de contrato e 59 testes do worker verdes |
+| Gate integral local | `pnpm check` | 42 de 42 pacotes verdes em lint, typecheck, testes e build |
+
+O teste SQL legado completo ainda encontra uma falha anterior e não relacionada no requisito de
+auditoria de substituição do governed retrieval. Os testes novos e isolados de Deal State passaram.
+Docker não estava disponível para reconstrução local do banco. Por isso CI de banco e promoção
+controlada continuam obrigatórios antes de produção.
+
 ## Fronteira executiva e feedback pós-introdução, 29/08/2026
 
 | Evidência | Verificação | Resultado |

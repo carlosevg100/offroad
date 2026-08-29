@@ -4425,6 +4425,123 @@ $$;
 
 set local role postgres;
 
+-- Deal-state confirmations are append-only commands bound to exact upstream fingerprints.
+insert into public.document_intake_sessions (
+  id, organization_id, started_by, journey, locale, status
+) values (
+  '97000000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000001',
+  '10000000-0000-4000-8000-000000000001',
+  'company', 'pt-BR', 'collecting'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '97000000-0000-4000-8000-000000000001';
+  understanding_id uuid;
+  understanding_retry_id uuid;
+  structure_id uuid;
+  production_id uuid;
+  understanding_fingerprint text;
+  structure_fingerprint text;
+  accepted boolean;
+begin
+  understanding_id := public.record_deal_state_object(
+    org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('1', 64),
+    '{"summary":"confirmed understanding"}'::jsonb, '[]'::jsonb
+  );
+  understanding_retry_id := public.record_deal_state_object(
+    org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('1', 64),
+    '{"summary":"confirmed understanding"}'::jsonb, '[]'::jsonb
+  );
+  if understanding_retry_id is distinct from understanding_id then
+    raise exception 'an exact deal-state retry created another version';
+  end if;
+  select object_fingerprint into understanding_fingerprint
+  from public.deal_state_objects where id = understanding_id;
+
+  accepted := true;
+  begin
+    perform public.record_deal_state_object(
+      org_a, session_id, 'structure_decision', 'confirmed', repeat('2', 64),
+      '{"decision":"target structure"}'::jsonb,
+      jsonb_build_array(jsonb_build_object(
+        'objectType', 'understanding_snapshot', 'objectFingerprint', repeat('f', 64)
+      ))
+    );
+  exception when object_not_in_prerequisite_state then accepted := false;
+  end;
+  if accepted then raise exception 'a structure decision accepted a stale understanding fingerprint'; end if;
+
+  structure_id := public.record_deal_state_object(
+    org_a, session_id, 'structure_decision', 'confirmed', repeat('2', 64),
+    '{"decision":"target structure"}'::jsonb,
+    jsonb_build_array(jsonb_build_object(
+      'objectType', 'understanding_snapshot', 'objectFingerprint', understanding_fingerprint
+    ))
+  );
+  select object_fingerprint into structure_fingerprint
+  from public.deal_state_objects where id = structure_id;
+
+  production_id := public.record_deal_state_object(
+    org_a, session_id, 'production_plan', 'approved', repeat('3', 64),
+    '{"artifacts":["teaser","model","indicative_term_sheet"]}'::jsonb,
+    jsonb_build_array(jsonb_build_object(
+      'objectType', 'structure_decision', 'objectFingerprint', structure_fingerprint
+    ))
+  );
+  if production_id is null or (select count(*) from public.deal_state_objects) <> 3 then
+    raise exception 'the governed deal-state chain was not persisted';
+  end if;
+
+  accepted := true;
+  begin
+    insert into public.deal_state_objects (
+      organization_id, intake_session_id, object_type, object_version, status,
+      input_fingerprint, object_fingerprint, payload, dependencies, created_by, created_by_kind
+    ) values (
+      org_a, session_id, 'release_authorization', 1, 'approved',
+      repeat('4', 64), repeat('5', 64), '{}'::jsonb, '[]'::jsonb,
+      '10000000-0000-4000-8000-000000000001', 'user'
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant directly forged a release authorization'; end if;
+
+  accepted := true;
+  begin
+    update public.deal_state_objects set payload = '{"tampered":true}'::jsonb
+    where id = production_id;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant directly rewrote a governed deal-state object'; end if;
+end;
+$$;
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+begin
+  if (select count(*) from public.deal_state_objects
+      where intake_session_id = '97000000-0000-4000-8000-000000000001') <> 0 then
+    raise exception 'tenant B read tenant A deal-state objects';
+  end if;
+end;
+$$;
+
+set local role postgres;
+
 rollback;
 
 select 'rls_non_interference_passed' as result;

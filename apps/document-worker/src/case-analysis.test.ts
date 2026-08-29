@@ -4,7 +4,7 @@ import {parseDocument} from "@offroad/document-parsers";
 import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
-import {processCaseAnalysisJob} from "./case-analysis";
+import {caseAnalysisExecutionPlan, processCaseAnalysisJob} from "./case-analysis";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
 import {documentEvidence, encodeReceivablesEvidence} from "./receivables-evidence";
 
@@ -42,12 +42,45 @@ const invocation: GatewayCallLog = {
 };
 
 describe("worker case analysis", () => {
+  it("defaults to a zero-model diagnostic plan before governed confirmations", () => {
+    expect(caseAnalysisExecutionPlan({
+      stage: "diagnose",
+      gates: {
+        understandingConfirmed: false,
+        structureConfirmed: false,
+        productionPlanApproved: false,
+        packageApproved: false,
+        releaseAuthorized: false,
+      },
+      objectFingerprints: {},
+    })).toEqual({produceMaterials: false, screenMandates: false, introduce: false});
+  });
+
+  it("does not unlock matching merely because materials are allowed", () => {
+    expect(caseAnalysisExecutionPlan({
+      stage: "prepare",
+      gates: {
+        understandingConfirmed: true,
+        structureConfirmed: true,
+        productionPlanApproved: true,
+        packageApproved: false,
+        releaseAuthorized: false,
+      },
+      objectFingerprints: {
+        understanding_snapshot: "1".repeat(64),
+        structure_decision: "2".repeat(64),
+        production_plan: "3".repeat(64),
+      },
+    })).toEqual({produceMaterials: true, screenMandates: false, introduce: false});
+  });
+
   it("persists a borrower-safe snapshot and keeps fund identity in the private job result", async () => {
     let recordedState: Record<string, unknown> | null = null;
     let completed: Record<string, unknown> | null = null;
     const stages: Array<{stage: string; status: string}> = [];
     const modelCalls: Array<{task: string; provider?: string}> = [];
     const retrievalRequests: Array<{query: string; allowedFundIds?: string[]}> = [];
+    const dealStateWrites: Array<{objectType: string; status: string}> = [];
     let publicResearchRecord: {plan: unknown; result: unknown} | null = null;
     const receivablesDocumentId = "11111111-1111-4111-8111-111111111111";
     const receivablesFileHash = "9".repeat(64);
@@ -168,6 +201,23 @@ describe("worker case analysis", () => {
         },
         reviews:[],mandateDecision:null,declineCommunication:null,
       },
+      deal_workflow: {
+        stage: "introduce",
+        gates: {
+          understandingConfirmed: true,
+          structureConfirmed: true,
+          productionPlanApproved: true,
+          packageApproved: true,
+          releaseAuthorized: true,
+        },
+        objectFingerprints: {
+          understanding_snapshot: "1".repeat(64),
+          structure_decision: "2".repeat(64),
+          production_plan: "3".repeat(64),
+          package_review: "4".repeat(64),
+          release_authorization: "5".repeat(64),
+        },
+      },
       _execution: {
         id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         mode: "primary",
@@ -211,6 +261,10 @@ describe("worker case analysis", () => {
       recordPublicResearch: async (_job, plan, result) => {
         publicResearchRecord = {plan, result};
         return "ffffffff-ffff-4fff-8fff-ffffffffffff";
+      },
+      recordDealStateObject: async (_job, input) => {
+        dealStateWrites.push({objectType: input.objectType, status: input.status});
+        return "f1000000-0000-4000-8000-000000000001";
       },
       recordCaseSnapshot: async (_job, _manifest, state) => {
         recordedState = state as Record<string, unknown>;
@@ -318,6 +372,8 @@ describe("worker case analysis", () => {
     expect(publicResearchRecord).not.toBeNull();
     expect((publicResearchRecord as unknown as {result: {sources: unknown[]}}).result.sources).toHaveLength(5);
     expect(persisted.externalResearch).toMatchObject({status: "succeeded", sourceCount: 5});
+    expect(persisted.dealWorkflow).toMatchObject({stage: "introduce"});
+    expect(persisted.executionPlan).toEqual({produceMaterials: true, screenMandates: true, introduce: true});
     expect(privateResult.retrieval_lineage).toMatchObject({
       primary: {resultIds: ["71100000-0000-4000-8000-000000000003"]},
     });
@@ -396,6 +452,56 @@ describe("worker case analysis", () => {
     });
     expect(persistedRedFlags).not.toHaveProperty("findings");
     expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
+    expect(dealStateWrites).toEqual([
+      {objectType: "understanding_snapshot", status: "pending_confirmation"},
+      {objectType: "finding_register", status: "draft"},
+      {objectType: "structure_option", status: "draft"},
+      {objectType: "production_plan", status: "pending_confirmation"},
+      {objectType: "material_artifact", status: "pending_confirmation"},
+      {objectType: "match_screen", status: "draft"},
+    ]);
+
+    modelCalls.length = 0;
+    retrievalRequests.length = 0;
+    dealStateWrites.length = 0;
+    stages.length = 0;
+    recordedState = null;
+    completed = null;
+    spent = {costUsd: 0, calls: 0};
+    const diagnosticOutcome = await processCaseAnalysisJob(job, {
+      queue: {...queue, loadCaseInput: async () => ({
+        ...raw,
+        deal_workflow: {
+          stage: "diagnose",
+          gates: {
+            understandingConfirmed: false,
+            structureConfirmed: false,
+            productionPlanApproved: false,
+            packageApproved: false,
+            releaseAuthorized: false,
+          },
+          objectFingerprints: {},
+        },
+      })},
+      gateway,
+      lineage: () => spent.calls ? [invocation] : [],
+      researchProviders: [],
+      now: () => new Date("2026-08-24T13:00:00.000Z"),
+    });
+    expect(diagnosticOutcome).toEqual({status: "succeeded", manifestId: "manifest-1"});
+    expect(modelCalls).toEqual([]);
+    expect(spent).toEqual({costUsd: 0, calls: 0});
+    expect(retrievalRequests).toHaveLength(1);
+    expect(stages.some((event) => event.stage === "mandate_retrieval")).toBe(false);
+    expect(dealStateWrites).toEqual([
+      {objectType: "understanding_snapshot", status: "pending_confirmation"},
+      {objectType: "finding_register", status: "draft"},
+    ]);
+    expect(recordedState).toMatchObject({
+      dealWorkflow: {stage: "diagnose"},
+      executionPlan: {produceMaterials: false, screenMandates: false, introduce: false},
+    });
+    expect(completed).not.toHaveProperty("match_details");
   });
 });
 

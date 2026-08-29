@@ -30,6 +30,12 @@ import {caseRunReportSchema, type CaseStageEvent} from "@offroad/case-runner";
 import {archetypeIdSchema} from "@offroad/credit-playbook";
 import {documentKindSchema} from "@offroad/credit-ontology";
 import {
+  dealWorkflowAllows,
+  dealWorkflowStateSchema,
+  initialDealWorkflowState,
+  type DealWorkflowState,
+} from "@offroad/domain-contracts";
+import {
   collateralKindSchema,
   instrumentSchema,
   mandateProvenanceSchema,
@@ -334,6 +340,7 @@ const rawCaseInputSchema = z.object({
   market_distribution_context:marketDistributionContextSchema.nullable().default(null),
   red_flag_context:redFlagContextSchema.nullable().default(null),
   conduct_context:conductContextSchema.nullable().default(null),
+  deal_workflow: dealWorkflowStateSchema.default(initialDealWorkflowState),
   _execution: z.object({
     id: z.uuid(),
     mode: executionModeSchema,
@@ -359,6 +366,37 @@ export type CaseAnalysisOutcome = {
   manifestId?: string;
 };
 
+export type CaseAnalysisExecutionPlan = {
+  produceMaterials: boolean;
+  screenMandates: boolean;
+  introduce: boolean;
+};
+
+export function caseAnalysisExecutionPlan(workflow: DealWorkflowState): CaseAnalysisExecutionPlan {
+  const hasFingerprint = (type: keyof DealWorkflowState["objectFingerprints"]) => (
+    workflow.objectFingerprints[type] !== undefined
+  );
+  const produceMaterials = dealWorkflowAllows(workflow, "prepare")
+    && workflow.gates.understandingConfirmed
+    && workflow.gates.structureConfirmed
+    && workflow.gates.productionPlanApproved
+    && hasFingerprint("understanding_snapshot")
+    && hasFingerprint("structure_decision")
+    && hasFingerprint("production_plan");
+  const screenMandates = produceMaterials
+    && dealWorkflowAllows(workflow, "match")
+    && workflow.gates.packageApproved
+    && hasFingerprint("package_review");
+  return {
+    produceMaterials,
+    screenMandates,
+    introduce: screenMandates
+      && dealWorkflowAllows(workflow, "introduce")
+      && workflow.gates.releaseAuthorized
+      && hasFingerprint("release_authorization"),
+  };
+}
+
 export async function processCaseAnalysisJob(
   job: CaseAnalysisJob,
   dependencies: CaseAnalysisDependencies,
@@ -367,6 +405,7 @@ export async function processCaseAnalysisJob(
   await dependencies.queue.writeStage(job, "case_analysis", "started");
   try {
     const raw = rawCaseInputSchema.parse(await dependencies.queue.loadCaseInput(job));
+    const executionPlan = caseAnalysisExecutionPlan(raw.deal_workflow);
     const useShadow = raw._execution.mode === "shadow";
     const locale = raw.session.locale === "en-US" ? "en" : "pt";
     const archetypeId = archetypeIdSchema.catch("other").parse(raw.session.archetype);
@@ -386,10 +425,12 @@ export async function processCaseAnalysisJob(
         byteSize: numberOr(document.byte_size, 0),
       };
     });
-    const resolvedMandates = [
-      ...raw.directory_mandates.map(directoryMandate),
-      ...raw.registered_mandates.map(registeredMandate),
-    ].map((mandate) => resolveMandate(mandate, {asOf: referenceDate(dependencies.now)}));
+    const resolvedMandates = executionPlan.screenMandates
+      ? [
+          ...raw.directory_mandates.map(directoryMandate),
+          ...raw.registered_mandates.map(registeredMandate),
+        ].map((mandate) => resolveMandate(mandate, {asOf: referenceDate(dependencies.now)}))
+      : [];
     const publicResearch = await collectPublicResearch({
       queue: dependencies.queue,
       job,
@@ -445,14 +486,14 @@ export async function processCaseAnalysisJob(
         },
       } : {}),
       externalReleaseApproved: false,
-      ...(raw.market_distribution_context?{marketGovernance:{
+      ...(executionPlan.screenMandates&&raw.market_distribution_context?{marketGovernance:{
         mandateMaxAgeMonths:raw.market_distribution_context.status==="active"?raw.market_distribution_context.mandateMaxAgeMonths:null,
         waveLimit:raw.market_distribution_context.status==="active"?raw.market_distribution_context.waveLimit:null,
         recipients:raw.market_distribution_context.recipients,
         authorization:raw.market_distribution_context.authorization,
         introductions:raw.market_distribution_context.introductions,
       }}:{}),
-      ...(raw.market_distribution_context?{materialRelease:raw.market_distribution_context.materialRelease}:{}),
+      ...(executionPlan.screenMandates&&raw.market_distribution_context?{materialRelease:raw.market_distribution_context.materialRelease}:{}),
       ...(raw.red_flag_context?{redFlagGovernance:{
         policy:{
           version:raw.red_flag_context.policy.version,
@@ -485,7 +526,7 @@ export async function processCaseAnalysisJob(
           ...(surprise.responsibleProcedureId?{responsibleProcedureId:surprise.responsibleProcedureId}:{}),
           ...(surprise.correctiveActionId?{correctiveActionId:surprise.correctiveActionId}:{}),
         })),
-        ...(raw.market_distribution_context?.authorization&&raw.market_distribution_context.authorization.recipientIds[0]?{externalCommunication:{
+        ...(executionPlan.introduce&&raw.market_distribution_context?.authorization&&raw.market_distribution_context.authorization.recipientIds[0]?{externalCommunication:{
           targetOrganizationId:raw.conduct_context.organizationId,
           targetCaseId:job.intake_session_id,
           recipientId:raw.market_distribution_context.authorization.recipientIds[0],
@@ -494,7 +535,7 @@ export async function processCaseAnalysisJob(
           hasMaterialCommitment:false,
         }}:{}),
       } satisfies LanguageConductGovernance}:{}),
-      writeBrief: async ({reconciliation, desk, trajectory}) => {
+      ...(executionPlan.produceMaterials ? {writeBrief: async ({reconciliation, desk, trajectory}) => {
         const evidence = deskEvidence(desk, trajectory);
         const callStart = dependencies.lineage().length;
         const before = dependencies.gateway.spent();
@@ -547,7 +588,7 @@ export async function processCaseAnalysisJob(
           usage: {costUsd: after.costUsd - before.costUsd, modelCalls: after.calls - before.calls},
           modelInvocations: dependencies.lineage().slice(callStart),
         };
-      },
+      }} : {}),
     });
 
     // Only mandates that already passed every structured criterion may unlock their open notes.
@@ -560,18 +601,20 @@ export async function processCaseAnalysisJob(
       .filter((fundId) => z.uuid().safeParse(fundId).success)
       .sort();
     const mandateQuery = "mandato OR ticket OR prazo OR setor OR instrumento OR garantia OR retorno";
-    const mandateRetrieval = await loadRetrieval(
-      dependencies.queue,
-      job,
-      mandateQuery,
-      allowedFundIds,
-      log,
-      "mandate_retrieval",
-    );
+    const mandateRetrieval = executionPlan.screenMandates
+      ? await loadRetrieval(
+          dependencies.queue,
+          job,
+          mandateQuery,
+          allowedFundIds,
+          log,
+          "mandate_retrieval",
+        )
+      : retrievalContextSchema.parse({playbook_version: null, results: [], abstained: true});
 
     const publicState = publicCaseState(result.state);
     const publicReport = publicCaseRunReport(result.report);
-    const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now));
+    const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now), executionPlan.screenMandates);
     const receivablesVertical = receivables?.publicReport ?? null;
     const economic = economicInput(raw);
     const extractionVersion = stringOr(raw.session.extraction_version, "unknown");
@@ -609,8 +652,23 @@ export async function processCaseAnalysisJob(
       fingerprint: inputFingerprint,
       economicFingerprint,
       locale,
+      dealWorkflow: raw.deal_workflow,
+      executionPlan,
       retrieval: publicRetrievalLineage,
     };
+    const dealStateObjectIds = raw._execution.mode === "primary"
+      ? await persistDealStateObjects({
+          queue: dependencies.queue,
+          job,
+          raw,
+          inputFingerprint,
+          publicState,
+          publicResearch,
+          receivablesVertical,
+          executionPlan,
+        })
+      : [];
+    const snapshotWithDealState = {...snapshot, dealStateObjectIds};
     const manifest = buildCaseArtifactManifest({
       caseId: job.intake_session_id,
       runId: job.processing_run_id,
@@ -627,8 +685,12 @@ export async function processCaseAnalysisJob(
       models: allLineage.map((call) => invocationManifest(call as GatewayCallLog)),
       sources,
       outputs: [
-        {artifactId: `${job.intake_session_id}:case_state`, kind: "case_state", sha256: fingerprintJson(snapshot)},
-        {artifactId: `${job.intake_session_id}:mandate_screen`, kind: "mandate_screen", sha256: fingerprintJson(result.state.matching)},
+        {artifactId: `${job.intake_session_id}:case_state`, kind: "case_state", sha256: fingerprintJson(snapshotWithDealState)},
+        ...(executionPlan.screenMandates ? [{
+          artifactId: `${job.intake_session_id}:mandate_screen`,
+          kind: "mandate_screen" as const,
+          sha256: fingerprintJson(result.state.matching),
+        }] : []),
         ...(receivables?.privateReport ? [{
           artifactId: `${job.intake_session_id}:receivables_vertical_private`,
           kind: "other" as const,
@@ -641,7 +703,7 @@ export async function processCaseAnalysisJob(
         })),
       ],
     });
-    const stateWithManifest = {...snapshot, manifestFingerprint: manifest.manifestFingerprint};
+    const stateWithManifest = {...snapshotWithDealState, manifestFingerprint: manifest.manifestFingerprint};
     let comparison;
     if (raw._execution.mode !== "primary") {
       if (!raw._execution.baseline_report) {
@@ -667,16 +729,21 @@ export async function processCaseAnalysisJob(
       publicResearchStatus: publicResearch.status,
       publicResearchSourceCount: publicResearch.sourceCount,
       receivablesVerticalStatus: receivablesVertical?.status ?? "not_detected",
+      dealWorkflowStage: raw.deal_workflow.stage,
+      materialsAllowed: executionPlan.produceMaterials,
+      matchingAllowed: executionPlan.screenMandates,
     });
     await dependencies.queue.complete(job, {
       ...(manifestId ? {manifest_id: manifestId} : {}),
       report: result.report,
-      match_details: result.state.matching,
+      ...(executionPlan.screenMandates ? {match_details: result.state.matching} : {}),
       ...(receivables?.privateReport ? {receivables_analysis: receivables.privateReport} : {}),
       ...(comparison ? {comparison} : {}),
       spend: dependencies.gateway.spent(),
       model_lineage: currentLineage,
       retrieval_lineage: privateRetrievalLineage,
+      deal_workflow: raw.deal_workflow,
+      execution_plan: executionPlan,
     });
     log("case.done", {
       job: job.job_id,
@@ -697,6 +764,110 @@ export async function processCaseAnalysisJob(
     log("case.failed", {job: job.job_id, code: errorCode(error)});
     return {status: "failed"};
   }
+}
+
+async function persistDealStateObjects(input: {
+  queue: QueueClient;
+  job: CaseAnalysisJob;
+  raw: z.infer<typeof rawCaseInputSchema>;
+  inputFingerprint: string;
+  publicState: ReturnType<typeof publicCaseState>;
+  publicResearch: unknown;
+  receivablesVertical: PublicReceivablesVertical | null;
+  executionPlan: CaseAnalysisExecutionPlan;
+}): Promise<string[]> {
+  const ids: string[] = [];
+  ids.push(await input.queue.recordDealStateObject(input.job, {
+    objectType: "understanding_snapshot",
+    status: "pending_confirmation",
+    inputFingerprint: input.inputFingerprint,
+    payload: {
+      schemaVersion: "2026.08.29-v1",
+      caseId: input.job.intake_session_id,
+      locale: input.raw.session.locale ?? "pt-BR",
+      readiness: input.publicState.readiness,
+      reconciliation: input.publicState.reconciliation,
+      operationTruth: input.publicState.operationTruth,
+      externalResearch: input.publicResearch,
+      receivablesVertical: input.receivablesVertical,
+    },
+  }));
+  ids.push(await input.queue.recordDealStateObject(input.job, {
+    objectType: "finding_register",
+    status: "draft",
+    inputFingerprint: input.inputFingerprint,
+    payload: {
+      schemaVersion: "2026.08.29-v1",
+      readiness: input.publicState.readiness,
+      reconciliation: input.publicState.reconciliation,
+      redFlagTruth: input.publicState.redFlagTruth,
+      receivablesVertical: input.receivablesVertical,
+    },
+  }));
+
+  const understandingFingerprint = input.raw.deal_workflow.objectFingerprints.understanding_snapshot;
+  if (input.raw.deal_workflow.gates.understandingConfirmed && understandingFingerprint) {
+    ids.push(await input.queue.recordDealStateObject(input.job, {
+      objectType: "structure_option",
+      status: "draft",
+      inputFingerprint: input.inputFingerprint,
+      dependencies: [{objectType: "understanding_snapshot", objectFingerprint: understandingFingerprint}],
+      payload: {
+        schemaVersion: "2026.08.29-v1",
+        capacity: input.publicState.capacity,
+        operationTruth: input.publicState.operationTruth,
+        structureTruth: input.publicState.structureTruth,
+        pricingTruth: input.publicState.pricingTruth,
+      },
+    }));
+  }
+
+  const structureFingerprint = input.raw.deal_workflow.objectFingerprints.structure_decision;
+  if (input.raw.deal_workflow.gates.structureConfirmed && structureFingerprint) {
+    ids.push(await input.queue.recordDealStateObject(input.job, {
+      objectType: "production_plan",
+      status: "pending_confirmation",
+      inputFingerprint: input.inputFingerprint,
+      dependencies: [{objectType: "structure_decision", objectFingerprint: structureFingerprint}],
+      payload: {
+        schemaVersion: "2026.08.29-v1",
+        artifacts: ["teaser", "financial_model", "indicative_term_sheet", "data_room_index"],
+        sourceCaseFingerprint: input.inputFingerprint,
+      },
+    }));
+  }
+
+  const productionFingerprint = input.raw.deal_workflow.objectFingerprints.production_plan;
+  if (input.executionPlan.produceMaterials && productionFingerprint) {
+    ids.push(await input.queue.recordDealStateObject(input.job, {
+      objectType: "material_artifact",
+      status: "pending_confirmation",
+      inputFingerprint: input.inputFingerprint,
+      dependencies: [{objectType: "production_plan", objectFingerprint: productionFingerprint}],
+      payload: {
+        schemaVersion: "2026.08.29-v1",
+        materials: input.publicState.materials,
+        materialTruth: input.publicState.materialTruth,
+        dataRoom: input.publicState.dataRoom,
+      },
+    }));
+  }
+
+  const packageFingerprint = input.raw.deal_workflow.objectFingerprints.package_review;
+  if (input.executionPlan.screenMandates && packageFingerprint) {
+    ids.push(await input.queue.recordDealStateObject(input.job, {
+      objectType: "match_screen",
+      status: "draft",
+      inputFingerprint: input.inputFingerprint,
+      dependencies: [{objectType: "package_review", objectFingerprint: packageFingerprint}],
+      payload: {
+        schemaVersion: "2026.08.29-v1",
+        matching: input.publicState.matching,
+      },
+    }));
+  }
+
+  return ids;
 }
 
 type PublicReceivablesVertical = {
@@ -738,6 +909,7 @@ type PublicReceivablesVertical = {
 function buildReceivablesVertical(
   raw: z.infer<typeof rawCaseInputSchema>,
   asOf: string,
+  includeProviderFit: boolean,
 ): {publicReport: PublicReceivablesVertical; privateReport: ReceivablesCasePipelineReport | null} | null {
   if (raw.receivables_evidence.length === 0) return null;
 
@@ -826,7 +998,7 @@ function buildReceivablesVertical(
     providerFit: {
       asOf,
       metrics: receivablesProviderMetrics(phaseOne, requestedAmount, requestedAmountProvenance),
-      mandates: receivablesProviderMandates(raw.receivables_provider_context, asOf),
+      mandates: includeProviderFit ? receivablesProviderMandates(raw.receivables_provider_context, asOf) : [],
     },
     defects: detection.defects,
     questions: detection.questions,

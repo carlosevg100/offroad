@@ -1142,6 +1142,75 @@ export type Database = {
           },
         ]
       }
+      deal_state_objects: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          created_by_kind: string
+          dependencies: Json
+          id: string
+          input_fingerprint: string
+          intake_session_id: string
+          object_fingerprint: string
+          object_type: string
+          object_version: number
+          organization_id: string
+          payload: Json
+          status: string
+          superseded_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          created_by_kind: string
+          dependencies?: Json
+          id?: string
+          input_fingerprint: string
+          intake_session_id: string
+          object_fingerprint: string
+          object_type: string
+          object_version: number
+          organization_id: string
+          payload?: Json
+          status: string
+          superseded_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          created_by_kind?: string
+          dependencies?: Json
+          id?: string
+          input_fingerprint?: string
+          intake_session_id?: string
+          object_fingerprint?: string
+          object_type?: string
+          object_version?: number
+          organization_id?: string
+          payload?: Json
+          status?: string
+          superseded_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_state_objects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_state_objects_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       decline_communications: {
         Row: {
           channel: string
@@ -5354,6 +5423,18 @@ export type Database = {
         }
         Returns: string
       }
+      record_deal_state_object: {
+        Args: {
+          p_dependencies?: Json
+          p_input_fingerprint: string
+          p_object_type: string
+          p_organization_id: string
+          p_payload: Json
+          p_session_id: string
+          p_status: string
+        }
+        Returns: string
+      }
       record_decline_communication: {
         Args: {
           p_channel: string
@@ -5785,6 +5866,18 @@ export type Database = {
           p_job_id: string
           p_manifest: Json
           p_report: Json
+        }
+        Returns: string
+      }
+      worker_record_deal_state_object: {
+        Args: {
+          p_capability_token: string
+          p_dependencies?: Json
+          p_input_fingerprint: string
+          p_job_id: string
+          p_object_type: string
+          p_payload: Json
+          p_status: string
         }
         Returns: string
       }
