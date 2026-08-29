@@ -49,6 +49,38 @@ describe("canonical procedure contract", () => {
     expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "production", owner: {role: candidate.owner.role}})).toThrow(/approver|examples/i);
   });
 
+  it("does not promote a documented candidate without an executor, persistence and evaluation evidence", () => {
+    const candidate = growthCapexProcedures[0]!;
+    expect(() => canonicalProcedureSchema.parse({
+      ...candidate,
+      maturity: "production",
+      owner: {...candidate.owner, approvedBy: "Head de Crédito"},
+    })).toThrow(/executable implementation evidence/i);
+  });
+
+  it("carries verified implementation evidence into a production skill", () => {
+    const candidate = growthCapexProcedures[0]!;
+    const production = canonicalProcedureSchema.parse({
+      ...candidate,
+      maturity: "production",
+      owner: {...candidate.owner, approvedBy: "Head de Crédito"},
+      implementation: {
+        executor: {module: "@offroad/case-engine", exportName: "runProcedure"},
+        resultContract: "offroad.test.result.v1",
+        connectedProductStates: ["understanding_in_progress"],
+        persistence: {mode: "persisted", target: "case_procedure_results"},
+        evaluation: {
+          unitTestFiles: ["packages/case-engine/src/procedure.test.ts"],
+          goldCaseIds: ["gold:clean"],
+          adversarialCaseIds: ["adversarial:conflict"],
+          e2eScenarioIds: ["e2e:understanding"],
+          costEvalIds: ["cost:understanding"],
+        },
+      },
+    });
+    expect(compileProcedure(production).implementation).toEqual(production.implementation);
+  });
+
   it("compiles reproducibly and changes the source hash when knowledge changes", () => {
     const first = compileProcedure(draft());
     const again = compileProcedure(draft());

@@ -9,3 +9,4 @@ export * from "./manifest";
 export * from "./receivables";
 export * from "./receivables-case";
 export * from "./receivables-evidence-collection";
+export * from "./receivables-understanding";

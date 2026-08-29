@@ -19,3 +19,4 @@ export * from "./manifest";
 export * from "./semantic-audit";
 export * from "./claim-registry";
 export * from "./red-flag-truth";
+export * from "./product-workflow";

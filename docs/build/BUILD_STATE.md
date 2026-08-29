@@ -1,8 +1,43 @@
 # Build State
 
-Atualizado em: 2026-08-28
+Atualizado em: 2026-08-29
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Fluxo canônico e início da construção profunda, 29/08/2026
+
+A sequência integral do produto foi congelada em `docs/product/PRODUCT_WORKFLOW.md`. Intake,
+entendimento, findings, esclarecimentos, estruturação, plano de produção, materiais, aprovação da
+companhia, matching e introdução qualificada são estados distintos. Quatro gates explícitos
+controlam a passagem: base suficiente para entender, estruturar, produzir e acessar o mercado.
+
+A auditoria de profundidade mediu 270 entradas no House Playbook e 224 procedimentos compilados.
+Todos os 224 permanecem `candidate`; nenhum atingiu `production`. Há kernels reais de ingestão,
+conciliação, dívida, recebíveis, governança de claims e fronteiras de introdução, mas da leitura à
+distribuição eles ainda não formam uma capacidade institucional conectada e comprovada. Contagem
+de IDs, truth sets genéricos e testes de presença não podem mais ser tratados como prova de
+execução. O diagnóstico e o plano vertical estão em
+`docs/build/DEEP_BUILD_AUDIT_AND_PLAN_2026-08-29.md`.
+
+O primeiro contrato executável das etapas 3 e 4 foi adicionado a `case-understanding`. Ele define
+os estados e transições permitidos, sete classes de afirmação, snapshot versionado e
+fingerprintado, findings priorizados, lote de no máximo cinco esclarecimentos, gates baseados em
+requisitos explícitos e invalidação incremental de dependências. O contrato de promoção do
+`credit-playbook` também passou a exigir executor, saída, persistência, estados do produto, testes,
+gold cases, adversariais, E2E e avaliação de custo antes de aceitar maturidade `production`.
+
+A vertical de recebíveis agora possui um adapter explícito para esse contrato. O relatório
+governado é projetado em claims de classificação, dez métricas centrais da carteira, dezoito fatos
+contratuais, defeitos medidos e perguntas não respondidas. Um gravame anterior comprovado continua
+`confirmed`, mas aparece como finding crítico; conflito permanece `divergent`; ausência permanece
+`absent`. O adapter não projeta shortlist, identidade de financiador, materiais ou recomendação de
+estrutura e mantém essas ações bloqueadas.
+
+Os testes focados fecharam com 51 testes em `case-understanding`, 30 em `case-engine` e 162 em
+`credit-playbook`, além dos respectivos typechecks. Isso é a fundação da construção profunda, não
+a conclusão das etapas 3 a 11. A próxima entrega é persistir esse estado do caso e expor findings
+e esclarecimentos no produto sem executar materiais ou matching antes dos respectivos gates.
+O `pnpm check` integral também passou em Node 24.19.0 nos 41 pacotes após a integração.
 
 ## Vertical de recebíveis, trilho real de produção da Fase 7, 28/08/2026
 

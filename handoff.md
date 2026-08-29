@@ -1,6 +1,6 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 28 August 2026. Receivables Phase 6 is live on `main`. Phase 7 is
+> Current as of 29 August 2026. Receivables Phase 6 is live on `main`. Phase 7 is
 > a candidate branch that connects actual uploads to the full governed vertical; it is not live
 > until database CI, staging and the controlled production replay below are complete.
 >
@@ -8,6 +8,51 @@
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Founder decision: canonical product workflow, 29 August 2026
+
+The product journey is now frozen in
+[`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). It separates the
+client journey from the House Playbook and from system architecture, and defines four explicit
+gates: enough to understand, enough to structure, enough to produce materials and enough to access
+the market. Understanding, findings, clarification, structure confirmation, case-specific
+production planning, real material production, company review, matching and qualified introduction
+are distinct states and cannot be collapsed into one model run.
+
+The evidence-based implementation audit is
+[`docs/build/PRODUCT_WORKFLOW_GAP_AUDIT_2026-08-29.md`](docs/build/PRODUCT_WORKFLOW_GAP_AUDIT_2026-08-29.md).
+It records which stages are live, partial or still missing as a connected product. Full paid
+production runs are suspended until the state contract and confirmed-basis loop are integrated;
+testing remains allowed by bounded block with an explicit expected artifact and cost ceiling.
+
+### Engineering update: deep-build audit and stages 3 to 4 foundation, 29 August 2026
+
+The warning that the journey after intake remained mostly doctrine was measured against the code.
+The source contains 270 playbook entries and 224 compiled procedures. All 224 remain `candidate`;
+none is `production`. There are valuable execution kernels, but procedure counts and generic truth
+coverage were overstating connected product depth. The complete measured audit and vertical build
+order are in
+[`docs/build/DEEP_BUILD_AUDIT_AND_PLAN_2026-08-29.md`](docs/build/DEEP_BUILD_AUDIT_AND_PLAN_2026-08-29.md).
+
+`@offroad/case-understanding` now contains the first executable canonical contract for stages 3
+and 4: allowed state transitions, seven assertion classes, versioned snapshots, explicit gates,
+prioritized findings, clarification batches capped at five and dependency-aware incremental
+invalidation. `@offroad/credit-playbook` will no longer accept a procedure as `production` without
+implementation and evaluation evidence. Focused Node 24 checks are green with 51 tests in
+`case-understanding` and 162 in `credit-playbook`.
+
+The governed receivables report is also projected into this canonical understanding contract. The
+adapter creates claims for classification, ten core portfolio metrics, the eighteen contractual
+facts, measured defects and unanswered questions. A confirmed adverse fact remains confirmed and
+is surfaced as a material finding; conflicts and absences remain explicit. Provider identity,
+shortlists, structure recommendations and material production are deliberately outside this
+projection. The `case-engine` suite now has 30 passing tests.
+The full Node 24 `pnpm check` is green across all 41 packages after this integration.
+
+Do not interpret this foundation as completion of stages 3 to 11. The next slice must persist the
+receivables understanding snapshot and connect it to the client findings loop.
+Only after that slice is proven should the same rail advance through structure alternatives,
+case-specific production planning, real materials, company approval and mandate matching.
 
 ### Engineering update: receivables production rail Phase 7, 28 August 2026
 

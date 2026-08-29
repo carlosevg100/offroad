@@ -78,6 +78,27 @@ const runtimeSchema = z.object({
   allowedTools: z.array(z.string().trim().min(1)).default([]),
 }).strict();
 
+const implementationEvidenceSchema = z.object({
+  executor: z.object({
+    module: z.string().trim().min(1),
+    exportName: z.string().regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/),
+  }).strict(),
+  resultContract: z.string().trim().min(1),
+  connectedProductStates: z.array(z.string().regex(/^[a-z][a-z0-9_]*$/)).min(1),
+  persistence: z.object({
+    mode: z.enum(["persisted", "derived_on_demand"]),
+    target: z.string().trim().min(1),
+  }).strict(),
+  evaluation: z.object({
+    unitTestFiles: z.array(z.string().trim().min(1)).min(1),
+    goldCaseIds: z.array(z.string().trim().min(1)).min(1),
+    adversarialCaseIds: z.array(z.string().trim().min(1)).min(1),
+    e2eScenarioIds: z.array(z.string().trim().min(1)).min(1),
+    costEvalIds: z.array(z.string().trim().min(1)).min(1),
+  }).strict(),
+}).strict();
+export type ImplementationEvidence = z.infer<typeof implementationEvidenceSchema>;
+
 export const canonicalProcedureSchema = z.object({
   id: z.string().regex(/^[a-z][a-z0-9-]{2,79}$/),
   version: z.string().regex(/^\d{4}\.\d{2}\.\d{2}-v\d+$/),
@@ -120,6 +141,11 @@ export const canonicalProcedureSchema = z.object({
     modelPurpose: [],
     allowedTools: [],
   }),
+  /**
+   * Evidence that the procedure is connected to executable code and the product rail.
+   * Candidates may omit it while being built. Production procedures may not.
+   */
+  implementation: implementationEvidenceSchema.optional(),
 }).strict().superRefine((procedure, context) => {
   duplicateIssues(procedure.procedure.map((step) => step.id), ["procedure"], context);
   duplicateIssues(procedure.output.fields.map((field) => field.id), ["output", "fields"], context);
@@ -155,6 +181,9 @@ export const canonicalProcedureSchema = z.object({
   if (procedure.examples.positive.length === 0 || procedure.examples.negative.length === 0) {
     context.addIssue({code: "custom", path: ["examples"], message: "production procedures require positive and negative examples"});
   }
+  if (!procedure.implementation) {
+    context.addIssue({code: "custom", path: ["implementation"], message: "production procedures require executable implementation evidence"});
+  }
 });
 export type CanonicalProcedure = z.infer<typeof canonicalProcedureSchema>;
 
@@ -173,6 +202,7 @@ export type CompiledProcedureSkill = {
   knowledge: CanonicalProcedure["knowledge"];
   templates: string[];
   dependencies: string[];
+  implementation: CanonicalProcedure["implementation"];
 };
 
 /** Compile a reviewed procedure into the only form the runtime is allowed to execute. */
@@ -194,6 +224,7 @@ export function compileProcedure(raw: CanonicalProcedure): CompiledProcedureSkil
     knowledge: procedure.knowledge,
     templates: [...procedure.templates],
     dependencies: [...procedure.dependencies],
+    implementation: procedure.implementation,
   };
 }
 
