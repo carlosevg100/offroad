@@ -1,10 +1,12 @@
 import {buildLanguageConductTruthSet, buildMaterialTruthSet, compileMaterials, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
 import {
   runCase,
+  runSubgraph,
   type CaseRunPolicy,
   type CaseRunReport,
   type RunCaseInput,
   type StageContext,
+  type SubtaskDefinition,
 } from "@offroad/case-runner";
 import {
   assessReadiness,
@@ -105,7 +107,7 @@ import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@off
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.26-v12";
+export const caseEngineVersion = "2026.08.29-v13";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -691,10 +693,22 @@ export async function executeCaseEngine(
           structurePolicies: input.structurePolicies,
           pricing: input.pricing,
         }),
-        execute: (context) => ({
-          output: structureCase(input, outputOf<ReconciliationOutput>(context, "reconciliation").reconciliation, outputOf<MetricsOutput>(context, "metrics")),
-          trace: {toolsUsed: ["financial_core", "deal_structure", "instrument_catalogue", "market_reference"], sourceIds: caseSourceIds(input)},
-        }),
+        execute: async (context) => {
+          const structure = await runStructureSubgraph(
+            input,
+            outputOf<ReconciliationOutput>(context, "reconciliation").reconciliation,
+            outputOf<MetricsOutput>(context, "metrics"),
+          );
+          return {
+            output: structure.output,
+            usage: structure.usage,
+            trace: {
+              toolsUsed: ["financial_core", "deal_structure", "instrument_catalogue", "market_reference"],
+              sourceIds: caseSourceIds(input),
+              subtasks: structure.taskRuns,
+            },
+          };
+        },
       },
       red_flags:{
         outputSchema:redFlagsOutputSchema,
@@ -800,91 +814,23 @@ export async function executeCaseEngine(
       materials: {
         outputSchema: materialsOutputSchema,
         selectInput: () => ({claimDecisions: input.claimDecisions, materialRelease: input.materialRelease}),
-        execute: (context) => {
+        execute: async (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
           const structure = outputOf<StructureOutput>(context, "structure");
           const redFlags=outputOf<RedFlagsOutput>(context,"red_flags").redFlagTruth;
           const claims = outputOf<ClaimsOutput>(context, "claims");
           const extracted = outputOf<ExtractionOutput>(context, "extraction");
-          let materials: Material[] = [];
-          let materialsBlockedBy: string[] = [];
-          let audit: MaterialsOutput["audit"] = "not_run";
-          let claimRegistry: ClaimRegistry | null = null;
-          const approvedJudgmentIds = claims.proposedBrief
-            ? currentApprovedJudgments(claims.proposedBrief, input.claimDecisions ?? [])
-            : [];
-          if (claims.brief) {
-            const evidence = deskEvidence(metrics.desk, metrics.trajectory);
-            const compiled = compileMaterials({
-              brief: claims.brief,
-              facts: reconciliation.facts,
-              calculations: [...reconciliation.calculations, ...evidence.calculations],
-              exceptions: reconciliation.exceptions,
-              readiness: metrics.readiness,
-              desk: metrics.desk,
-              trajectory: metrics.trajectory,
-              ...(structure.termSheet ? {termSheet: structure.termSheet} : {}),
-              ...(structure.rating ? {rating: structure.rating} : {}),
-              stress: structure.stress,
-              instruments: structure.instruments,
-              ...(structure.collateral ? {collateral: structure.collateral} : {}),
-              ...(structure.price ? {price: structure.price} : {}),
-              ...(structure.verdict ? {verdict: structure.verdict} : {}),
-              approvedJudgmentIds,
-            });
-            if (compiled.ok) {
-              materials = compiled.materials;
-              audit = "pass";
-            } else {
-              materialsBlockedBy = compiled.detail;
-              audit = "blocked";
-            }
-          } else {
-            materialsBlockedBy = ["brief_unavailable", ...claims.briefBlockedBy];
-          }
-          let dataRoom = planDataRoom({
-            materials,
-            materialsBlockedBy,
-            documents: extracted.roomDocuments,
-            exceptions: reconciliation.exceptions,
-            readiness: metrics.readiness,
-          });
-          materials = [...materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
-          if (claims.proposedBrief && claims.numericAudit && claims.semanticAudit) {
-            claimRegistry = buildClaimRegistry({
-              brief: claims.proposedBrief,
-              numericAudit: claims.numericAudit,
-              semanticAudit: claims.semanticAudit,
-              decisions: input.claimDecisions ?? [],
-              artifacts: materials.map((material) => ({
-                artifactId: material.kind,
-                claimIds: material.blocks.flatMap((block) => block.type === "paragraph" && block.claimId ? [block.claimId] : []),
-                supportIds: material.dependsOn,
-              })),
-            });
-            if (!claimRegistry.publication.allowed) {
-              materials = [];
-              materialsBlockedBy = [...new Set([...materialsBlockedBy, ...claimRegistry.publication.blockers])];
-              audit = "blocked";
-              dataRoom = planDataRoom({
-                materials: [],
-                materialsBlockedBy,
-                documents: extracted.roomDocuments,
-                exceptions: reconciliation.exceptions,
-                readiness: metrics.readiness,
-              });
-            }
-          }
-          const materialTruth=buildMaterialTruthSet({
-            materials,
-            dataRoom,
-            modelAvailable:reconciliation.facts.length>0,
-            claimAuditApproved:claimRegistry?.publication.allowed===true,
-            governanceBlockers:redFlags.mandate.externalOutputsAllowed?[]:redFlags.blockers,
-            ...(input.materialRelease?{release:input.materialRelease}:{}),
-          });
-          return {output: {materials, materialsBlockedBy, materialTruth, dataRoom, audit, claimRegistry} satisfies MaterialsOutput,trace:{toolsUsed:["case_materials","data_room","claim_registry"],sourceIds:caseSourceIds(input)}};
+          const prepared = await runMaterialsSubgraph({input, reconciliation, metrics, structure, redFlags, claims, extracted});
+          return {
+            output: prepared.output,
+            usage: prepared.usage,
+            trace: {
+              toolsUsed: ["case_materials", "data_room", "claim_registry"],
+              sourceIds: caseSourceIds(input),
+              subtasks: prepared.taskRuns,
+            },
+          };
         },
       },
       language_conduct:{
@@ -1023,164 +969,512 @@ export async function executeCaseEngine(
   };
 }
 
-function structureCase(
-  input: CaseEngineInput,
+type StructureSubtaskId =
+  | "need_capacity"
+  | "issuer_profile"
+  | "credit_scenarios"
+  | "instrument_screen"
+  | "collateral_design"
+  | "operation_verdict"
+  | "operation_truth"
+  | "indicative_terms"
+  | "structure_truth"
+  | "pricing_truth"
+  | "assemble";
+
+type StructureSubgraphInput = {
+  caseInput: CaseEngineInput;
+  reconciliation: ReconciliationReport;
+  metrics: MetricsOutput;
+};
+
+const structureCapacitySchema = z.object({requested: z.string().optional(), capacity: z.unknown().nullable()});
+const issuerProfileSchema = z.object({
+  legalForm: z.enum(["sa", "ltda", "other"]),
+  latestYear: z.string().optional(),
+  priorYear: z.string().optional(),
+  evidenceRank: z.string().optional(),
+  topShare: z.string().optional(),
+});
+const creditScenariosSchema = z.object({rating: z.unknown().nullable(), stress: z.array(z.unknown())});
+const instrumentScreenSchema = z.object({instruments: z.array(z.unknown())});
+const collateralDesignSchema = z.object({collateral: z.unknown().nullable()});
+const operationVerdictSchema = z.object({verdict: z.unknown().nullable()});
+const operationTruthSubtaskSchema = z.object({operationTruth: z.unknown()});
+const indicativeTermsSchema = z.object({termSheet: z.unknown().nullable()});
+const structureTruthSubtaskSchema = z.object({structureTruth: z.unknown()});
+const pricingTruthSubtaskSchema = z.object({pricingTruth: z.unknown(), price: z.unknown().nullable()});
+
+async function runStructureSubgraph(
+  caseInput: CaseEngineInput,
   reconciliation: ReconciliationReport,
   metrics: MetricsOutput,
-): StructureOutput {
+) {
+  const graphInput: StructureSubgraphInput = {caseInput, reconciliation, metrics};
+  const sourceIds = caseSourceIds(caseInput);
   const valueOf = (fieldPath: string) => reconciliation.facts.find((fact) => fact.key.fieldPath === fieldPath)?.value;
   const calculationOf = (id: string) => reconciliation.calculations.find((calculation) => calculation.id === id)?.value;
-  const requested = input.dealBrief.requestedAmount ?? number(valueOf("transaction.requested_amount"));
-  let capacity: CapacityAssessment | null = null;
-  let termSheet: IndicativeTermSheet | null = null;
-  if (requested) {
-    const latestArr = reconciliation.facts
-      .filter((fact) => /^(historical|interim)_financials\.\d{4}(_\d{2})?\.arr(_\d+m|_ytd|_ltm)?$/.test(fact.key.fieldPath))
-      .sort((a, b) => b.key.fieldPath.localeCompare(a.key.fieldPath))[0]?.value;
-    capacity = assessCapacity({
-      archetypeId: input.archetypeId,
-      requested,
-      ...(number(latestArr) ? {arr: latestArr!} : {}),
-      ...(number(valueOf("company.last_equity_round.amount")) ? {lastEquityRound: valueOf("company.last_equity_round.amount")!} : {}),
-      ...(number(calculationOf("adjusted_ebitda")) ? {cfads: calculationOf("adjusted_ebitda")!, adjustedEbitda: calculationOf("adjusted_ebitda")!} : {}),
-      ...(number(calculationOf("net_debt")) ? {existingNetDebt: calculationOf("net_debt")!} : {}),
-      ...(metrics.receivables ? {collateralCapacity: metrics.receivables.structure.supportedFacility}
-        : number(calculationOf("collateral_capacity_total")) ? {collateralCapacity: calculationOf("collateral_capacity_total")!} : {}),
-      annualDebtServiceFactor: (1 / (archetype(input.archetypeId).structure.tenorMonths.typical[1] / 12) + 0.12).toFixed(4),
-    });
-    termSheet = buildTermSheet({
-      archetypeId: input.archetypeId,
-      capacity,
-      ...(input.dealBrief.requestedTermMonths !== undefined ? {requestedTermMonths: input.dealBrief.requestedTermMonths} : {}),
-      ...(input.dealBrief.requestedGraceMonths !== undefined ? {requestedGraceMonths: input.dealBrief.requestedGraceMonths} : {}),
-      ...(input.dealBrief.expectedRate ? {expectedRate: input.dealBrief.expectedRate} : {}),
-      blockers: metrics.readiness.blockers.map((blocker) => blocker.labels[input.locale]),
-    });
-  }
+  const task = (
+    id: StructureSubtaskId,
+    dependencies: StructureSubtaskId[],
+    outputSchema: z.ZodType,
+    allowedTools: string[],
+    execute: SubtaskDefinition<StructureSubtaskId, StructureSubgraphInput>["execute"],
+  ): SubtaskDefinition<StructureSubtaskId, StructureSubgraphInput> => ({
+    spec: {id, version: "1", dependencies, executionClass: "deterministic", allowedTools},
+    outputSchema,
+    selectInput: () => ({
+      archetypeId: caseInput.archetypeId,
+      referenceDate: caseInput.referenceDate,
+      dealBrief: caseInput.dealBrief,
+      factsFingerprint: fingerprintJson(reconciliation.facts),
+      calculationsFingerprint: fingerprintJson(reconciliation.calculations),
+      metricsFingerprint: fingerprintJson({desk: metrics.desk, trajectory: metrics.trajectory, receivables: metrics.receivables}),
+    }),
+    execute,
+  });
 
-  const legalName = valueOf("company.legal_name") ?? "";
-  const legalForm: LegalForm = /\bS\.?A\.?\b|sociedade an[oô]nima/i.test(legalName)
-    ? "sa"
-    : /ltda|limitada/i.test(legalName)
-      ? "ltda"
-      : "other";
-  const latestYear = reconciliation.facts
-    .map((fact) => fact.key.fieldPath.match(/^historical_financials\.(\d{4})\./)?.[1])
-    .filter((year): year is string => Boolean(year))
-    .sort()
-    .at(-1);
-  const priorYear = latestYear ? String(Number(latestYear) - 1) : undefined;
-  const materialFacts = reconciliation.facts.filter((fact) => fact.accepted.evidenceRank <= 7);
-  const evidenceRank = materialFacts.length
-    ? (materialFacts.reduce((sum, fact) => sum + fact.accepted.evidenceRank, 0) / materialFacts.length).toFixed(2)
-    : undefined;
-  const topShare = valueOf("customers.top_customers.1.share_pct");
-  const rating = metrics.desk
-    ? rateCredit({
-        desk: metrics.desk,
-        trajectory: metrics.trajectory,
-        ...(latestYear && valueOf(`historical_financials.${latestYear}.financial_expenses`) ? {financialExpenses: valueOf(`historical_financials.${latestYear}.financial_expenses`)!} : {}),
-        ...(priorYear && valueOf(`historical_financials.${priorYear}.ebitda`) ? {priorEbitda: valueOf(`historical_financials.${priorYear}.ebitda`)!} : {}),
-        ...(topShare ? {topCustomerShare: topShare} : {}),
-        ...(evidenceRank ? {evidenceRank} : {}),
-      })
-    : null;
-  const stress = metrics.desk?.profile === "cash_generative"
-    ? stressTable({
-        desk: metrics.desk,
-        ...(latestYear && valueOf(`historical_financials.${latestYear}.revenue`) ? {revenue: valueOf(`historical_financials.${latestYear}.revenue`)!} : {}),
-        ...(topShare ? {topCustomerShare: topShare} : {}),
-      })
-    : [];
-  const instruments = requested
-    ? instrumentVerdicts({
-        legalForm,
-        archetypeId: input.archetypeId,
-        amount: requested,
-        ...(metrics.desk?.profile === "cash_burning" || valueOf("company.last_equity_round.amount") ? {ventureBacked: true} : {}),
-        ...(input.archetypeId === "equipment_finance" ? {equipment: true} : {}),
-        ...(metrics.desk?.encumbrance.free ? {receivablesCoverage: (Number(metrics.desk.encumbrance.free) / Number(requested)).toFixed(2)} : {}),
-      })
-    : [];
-  const collateralAssets = collateralAssetsOf(reconciliation, metrics.desk);
-  const collateral = requested && collateralAssets.length > 0 ? designCollateralPackage({assets: collateralAssets, amount: requested}) : null;
-  const preferredInstrument = instruments.find((entry) => entry.eligible)?.instrument.id as PricedInstrument | undefined;
-  const deskVerdict = metrics.desk && requested
-    ? judgeOperation({
-        desk: metrics.desk,
-        trajectory: metrics.trajectory,
-        operation: {
-          amount: requested,
-          termMonths: input.dealBrief.requestedTermMonths ?? Number(valueOf("transaction.desired_term_months") ?? 60),
-          graceMonths: input.dealBrief.requestedGraceMonths ?? Number(valueOf("transaction.desired_grace_months") ?? 12),
-          instrument: valueOf("transaction.preferred_structure") ?? "dívida privada",
-          ...(valueOf("transaction.refinancing") ? {refinancing: valueOf("transaction.refinancing")!} : {}),
-          ...(valueOf("transaction.purpose") ? {purpose: valueOf("transaction.purpose")!} : {}),
+  const tasks: SubtaskDefinition<StructureSubtaskId, StructureSubgraphInput>[] = [
+    task("need_capacity", [], structureCapacitySchema, ["financial_core"], () => {
+      const requested = caseInput.dealBrief.requestedAmount ?? number(valueOf("transaction.requested_amount"));
+      if (!requested) return {output: {capacity: null}, toolsUsed: ["financial_core"], sourceIds};
+      const latestArr = reconciliation.facts
+        .filter((fact) => /^(historical|interim)_financials\.\d{4}(_\d{2})?\.arr(_\d+m|_ytd|_ltm)?$/.test(fact.key.fieldPath))
+        .sort((a, b) => b.key.fieldPath.localeCompare(a.key.fieldPath))[0]?.value;
+      const capacity = assessCapacity({
+        archetypeId: caseInput.archetypeId,
+        requested,
+        ...(number(latestArr) ? {arr: latestArr!} : {}),
+        ...(number(valueOf("company.last_equity_round.amount")) ? {lastEquityRound: valueOf("company.last_equity_round.amount")!} : {}),
+        ...(number(calculationOf("adjusted_ebitda")) ? {cfads: calculationOf("adjusted_ebitda")!, adjustedEbitda: calculationOf("adjusted_ebitda")!} : {}),
+        ...(number(calculationOf("net_debt")) ? {existingNetDebt: calculationOf("net_debt")!} : {}),
+        ...(metrics.receivables ? {collateralCapacity: metrics.receivables.structure.supportedFacility}
+          : number(calculationOf("collateral_capacity_total")) ? {collateralCapacity: calculationOf("collateral_capacity_total")!} : {}),
+        annualDebtServiceFactor: (1 / (archetype(caseInput.archetypeId).structure.tenorMonths.typical[1] / 12) + 0.12).toFixed(4),
+      });
+      return {output: {requested, capacity}, toolsUsed: ["financial_core"], sourceIds};
+    }),
+    task("issuer_profile", [], issuerProfileSchema, ["instrument_catalogue"], () => {
+      const legalName = valueOf("company.legal_name") ?? "";
+      const legalForm: LegalForm = /\bS\.?A\.?\b|sociedade an[oô]nima/i.test(legalName)
+        ? "sa"
+        : /ltda|limitada/i.test(legalName)
+          ? "ltda"
+          : "other";
+      const latestYear = reconciliation.facts
+        .map((fact) => fact.key.fieldPath.match(/^historical_financials\.(\d{4})\./)?.[1])
+        .filter((year): year is string => Boolean(year))
+        .sort()
+        .at(-1);
+      const priorYear = latestYear ? String(Number(latestYear) - 1) : undefined;
+      const materialFacts = reconciliation.facts.filter((fact) => fact.accepted.evidenceRank <= 7);
+      const evidenceRank = materialFacts.length
+        ? (materialFacts.reduce((sum, fact) => sum + fact.accepted.evidenceRank, 0) / materialFacts.length).toFixed(2)
+        : undefined;
+      const topShare = valueOf("customers.top_customers.1.share_pct");
+      return {
+        output: {
+          legalForm,
+          ...(latestYear ? {latestYear} : {}),
+          ...(priorYear ? {priorYear} : {}),
+          ...(evidenceRank ? {evidenceRank} : {}),
+          ...(topShare ? {topShare} : {}),
         },
-      })
-    : null;
-  const verdict = deskVerdict && requested
-    ? applyCapacityCondition(deskVerdict, requested, capacity)
-    : deskVerdict;
-  const operationTruth = buildOperationTruthSet({
-    facts: reconciliation.facts,
-    financialTruth: reconciliation.financialTruth,
-    debtTruth: reconciliation.debtTruth,
-    capacity,
-    ...(requested ? {requestedAmount: requested} : {}),
-    ...(input.dealBrief.requestedTermMonths !== undefined ? {requestedTermMonths: input.dealBrief.requestedTermMonths} : {}),
-    referenceDate: input.referenceDate,
-    ...(input.operationPolicies ? {policies: input.operationPolicies} : {}),
+        toolsUsed: ["instrument_catalogue"],
+        sourceIds,
+      };
+    }),
+    task("credit_scenarios", ["issuer_profile"], creditScenariosSchema, ["financial_core"], ({outputs}) => {
+      const issuer = subtaskOutput<z.infer<typeof issuerProfileSchema>>(outputs, "issuer_profile");
+      const rating = metrics.desk
+        ? rateCredit({
+            desk: metrics.desk,
+            trajectory: metrics.trajectory,
+            ...(issuer.latestYear && valueOf(`historical_financials.${issuer.latestYear}.financial_expenses`) ? {financialExpenses: valueOf(`historical_financials.${issuer.latestYear}.financial_expenses`)!} : {}),
+            ...(issuer.priorYear && valueOf(`historical_financials.${issuer.priorYear}.ebitda`) ? {priorEbitda: valueOf(`historical_financials.${issuer.priorYear}.ebitda`)!} : {}),
+            ...(issuer.topShare ? {topCustomerShare: issuer.topShare} : {}),
+            ...(issuer.evidenceRank ? {evidenceRank: issuer.evidenceRank} : {}),
+          })
+        : null;
+      const stress = metrics.desk?.profile === "cash_generative"
+        ? stressTable({
+            desk: metrics.desk,
+            ...(issuer.latestYear && valueOf(`historical_financials.${issuer.latestYear}.revenue`) ? {revenue: valueOf(`historical_financials.${issuer.latestYear}.revenue`)!} : {}),
+            ...(issuer.topShare ? {topCustomerShare: issuer.topShare} : {}),
+          })
+        : [];
+      return {output: {rating, stress}, toolsUsed: ["financial_core"], sourceIds};
+    }),
+    task("instrument_screen", ["need_capacity", "issuer_profile"], instrumentScreenSchema, ["instrument_catalogue"], ({outputs}) => {
+      const {requested} = subtaskOutput<z.infer<typeof structureCapacitySchema>>(outputs, "need_capacity");
+      const {legalForm} = subtaskOutput<z.infer<typeof issuerProfileSchema>>(outputs, "issuer_profile");
+      const instruments = requested
+        ? instrumentVerdicts({
+            legalForm,
+            archetypeId: caseInput.archetypeId,
+            amount: requested,
+            ...(metrics.desk?.profile === "cash_burning" || valueOf("company.last_equity_round.amount") ? {ventureBacked: true} : {}),
+            ...(caseInput.archetypeId === "equipment_finance" ? {equipment: true} : {}),
+            ...(metrics.desk?.encumbrance.free ? {receivablesCoverage: (Number(metrics.desk.encumbrance.free) / Number(requested)).toFixed(2)} : {}),
+          })
+        : [];
+      return {output: {instruments}, toolsUsed: ["instrument_catalogue"], sourceIds};
+    }),
+    task("collateral_design", ["need_capacity"], collateralDesignSchema, ["deal_structure"], ({outputs}) => {
+      const {requested} = subtaskOutput<z.infer<typeof structureCapacitySchema>>(outputs, "need_capacity");
+      const assets = collateralAssetsOf(reconciliation, metrics.desk);
+      const collateral = requested && assets.length > 0 ? designCollateralPackage({assets, amount: requested}) : null;
+      return {output: {collateral}, toolsUsed: ["deal_structure"], sourceIds};
+    }),
+    task("operation_verdict", ["need_capacity"], operationVerdictSchema, ["financial_core"], ({outputs}) => {
+      const {requested, capacity} = subtaskOutput<z.infer<typeof structureCapacitySchema>>(outputs, "need_capacity") as {requested?: string; capacity: CapacityAssessment | null};
+      const deskVerdict = metrics.desk && requested
+        ? judgeOperation({
+            desk: metrics.desk,
+            trajectory: metrics.trajectory,
+            operation: {
+              amount: requested,
+              termMonths: caseInput.dealBrief.requestedTermMonths ?? Number(valueOf("transaction.desired_term_months") ?? 60),
+              graceMonths: caseInput.dealBrief.requestedGraceMonths ?? Number(valueOf("transaction.desired_grace_months") ?? 12),
+              instrument: valueOf("transaction.preferred_structure") ?? "dívida privada",
+              ...(valueOf("transaction.refinancing") ? {refinancing: valueOf("transaction.refinancing")!} : {}),
+              ...(valueOf("transaction.purpose") ? {purpose: valueOf("transaction.purpose")!} : {}),
+            },
+          })
+        : null;
+      const verdict = deskVerdict && requested ? applyCapacityCondition(deskVerdict, requested, capacity) : deskVerdict;
+      return {output: {verdict}, toolsUsed: ["financial_core"], sourceIds};
+    }),
+    task("operation_truth", ["need_capacity"], operationTruthSubtaskSchema, ["deal_structure"], ({outputs}) => {
+      const {requested, capacity} = subtaskOutput<z.infer<typeof structureCapacitySchema>>(outputs, "need_capacity") as {requested?: string; capacity: CapacityAssessment | null};
+      const operationTruth = buildOperationTruthSet({
+        facts: reconciliation.facts,
+        financialTruth: reconciliation.financialTruth,
+        debtTruth: reconciliation.debtTruth,
+        capacity,
+        ...(requested ? {requestedAmount: requested} : {}),
+        ...(caseInput.dealBrief.requestedTermMonths !== undefined ? {requestedTermMonths: caseInput.dealBrief.requestedTermMonths} : {}),
+        referenceDate: caseInput.referenceDate,
+        ...(caseInput.operationPolicies ? {policies: caseInput.operationPolicies} : {}),
+      });
+      return {output: {operationTruth}, toolsUsed: ["deal_structure"], sourceIds};
+    }),
+    task("indicative_terms", ["need_capacity"], indicativeTermsSchema, ["deal_structure"], ({outputs}) => {
+      const {capacity} = subtaskOutput<z.infer<typeof structureCapacitySchema>>(outputs, "need_capacity") as {capacity: CapacityAssessment | null};
+      const termSheet = capacity
+        ? buildTermSheet({
+            archetypeId: caseInput.archetypeId,
+            capacity,
+            ...(caseInput.dealBrief.requestedTermMonths !== undefined ? {requestedTermMonths: caseInput.dealBrief.requestedTermMonths} : {}),
+            ...(caseInput.dealBrief.requestedGraceMonths !== undefined ? {requestedGraceMonths: caseInput.dealBrief.requestedGraceMonths} : {}),
+            ...(caseInput.dealBrief.expectedRate ? {expectedRate: caseInput.dealBrief.expectedRate} : {}),
+            blockers: metrics.readiness.blockers.map((blocker) => blocker.labels[caseInput.locale]),
+          })
+        : null;
+      return {output: {termSheet}, toolsUsed: ["deal_structure"], sourceIds};
+    }),
+    task("structure_truth", ["need_capacity", "operation_truth", "indicative_terms", "instrument_screen", "collateral_design"], structureTruthSubtaskSchema, ["deal_structure"], ({outputs}) => {
+      const {capacity} = subtaskOutput<z.infer<typeof structureCapacitySchema>>(outputs, "need_capacity") as {capacity: CapacityAssessment | null};
+      const {operationTruth} = subtaskOutput<{operationTruth: OperationTruthSet}>(outputs, "operation_truth");
+      const {termSheet} = subtaskOutput<{termSheet: IndicativeTermSheet | null}>(outputs, "indicative_terms");
+      const {instruments} = subtaskOutput<{instruments: InstrumentVerdict[]}>(outputs, "instrument_screen");
+      const {collateral} = subtaskOutput<{collateral: CollateralPackage | null}>(outputs, "collateral_design");
+      const structureTruth = buildStructureTruthSet({
+        archetypeId: caseInput.archetypeId,
+        facts: reconciliation.facts,
+        financialTruth: reconciliation.financialTruth,
+        debtTruth: reconciliation.debtTruth,
+        operationTruth,
+        capacity,
+        termSheet,
+        collateral,
+        instruments,
+        referenceDate: caseInput.referenceDate,
+        ...(caseInput.structurePolicies ? {policies: caseInput.structurePolicies} : {}),
+      });
+      return {output: {structureTruth}, toolsUsed: ["deal_structure"], sourceIds};
+    }),
+    task("pricing_truth", ["structure_truth", "credit_scenarios", "instrument_screen"], pricingTruthSubtaskSchema, ["market_reference"], ({outputs}) => {
+      const {structureTruth} = subtaskOutput<{structureTruth: StructureTruthSet}>(outputs, "structure_truth");
+      const {rating} = subtaskOutput<{rating: InternalRating | null}>(outputs, "credit_scenarios");
+      const {instruments} = subtaskOutput<{instruments: InstrumentVerdict[]}>(outputs, "instrument_screen");
+      const preferredInstrument = instruments.find((entry) => entry.eligible)?.instrument.id as PricedInstrument | undefined;
+      const selectedCollateralClasses = structureTruth.security.package?.lines
+        .filter((line) => line.selected)
+        .map((line) => line.asset.type)
+        .sort() ?? [];
+      const pricingSecurityClass = selectedCollateralClasses.length > 0
+        ? `secured:${[...new Set(selectedCollateralClasses)].join("+")}`
+        : "unsecured";
+      const pricingTarget = caseInput.pricing && rating && preferredInstrument && caseInput.indexLevels?.cdi && structureTruth.proposal.amount && structureTruth.proposal.termMonths && structureTruth.proposal.amortizationFormat
+        ? {
+            instrument: preferredInstrument,
+            rating: rating.band,
+            cdi: caseInput.indexLevels.cdi,
+            tenorMonths: structureTruth.proposal.termMonths,
+            securityClass: pricingSecurityClass,
+            amortizationClass: structureTruth.proposal.amortizationFormat,
+            sectorGroup: caseInput.pricing.sectorGroup,
+            amount: structureTruth.proposal.amount,
+            indexer: caseInput.pricing.indexer,
+            ...(caseInput.pricing.indexerRationale ? {indexerRationale: caseInput.pricing.indexerRationale} : {}),
+            ...(caseInput.pricing.targetBuyer ? {targetBuyer: caseInput.pricing.targetBuyer} : {}),
+            ...(caseInput.pricing.expectedSpreadBps !== undefined ? {expectedSpreadBps: caseInput.pricing.expectedSpreadBps} : {}),
+            ...(caseInput.pricing.currentAllIn ? {currentAllIn: caseInput.pricing.currentAllIn} : {}),
+          }
+        : null;
+      const pricingTruth = buildPricingTruthSet({
+        target: pricingTarget,
+        ...(caseInput.pricing ? {
+          policy: caseInput.pricing.policy,
+          observations: caseInput.pricing.observations,
+          ...(caseInput.pricing.adjustments ? {adjustments: caseInput.pricing.adjustments} : {}),
+          ...(caseInput.pricing.costs ? {costs: caseInput.pricing.costs} : {}),
+          ...(caseInput.pricing.weightedAverageLifeYears ? {weightedAverageLifeYears: caseInput.pricing.weightedAverageLifeYears} : {}),
+        } : {}),
+      });
+      return {output: {pricingTruth, price: pricingTruth.indicativePrice}, toolsUsed: ["market_reference"], sourceIds};
+    }),
+    task("assemble", ["need_capacity", "credit_scenarios", "instrument_screen", "collateral_design", "operation_verdict", "operation_truth", "indicative_terms", "structure_truth", "pricing_truth"], structureOutputSchema, ["deal_structure"], ({outputs}) => {
+      const {capacity} = subtaskOutput<{capacity: CapacityAssessment | null}>(outputs, "need_capacity");
+      const {rating, stress} = subtaskOutput<{rating: InternalRating | null; stress: StressScenario[]}>(outputs, "credit_scenarios");
+      const {instruments} = subtaskOutput<{instruments: InstrumentVerdict[]}>(outputs, "instrument_screen");
+      const {collateral} = subtaskOutput<{collateral: CollateralPackage | null}>(outputs, "collateral_design");
+      const {verdict} = subtaskOutput<{verdict: OperationVerdict | null}>(outputs, "operation_verdict");
+      const {operationTruth} = subtaskOutput<{operationTruth: OperationTruthSet}>(outputs, "operation_truth");
+      const {termSheet} = subtaskOutput<{termSheet: IndicativeTermSheet | null}>(outputs, "indicative_terms");
+      const {structureTruth} = subtaskOutput<{structureTruth: StructureTruthSet}>(outputs, "structure_truth");
+      const {pricingTruth, price} = subtaskOutput<{pricingTruth: PricingTruthSet; price: IndicativePrice | null}>(outputs, "pricing_truth");
+      const output: StructureOutput = {capacity, operationTruth, structureTruth, pricingTruth, termSheet, rating, stress, instruments, collateral, price, verdict};
+      return {output, toolsUsed: ["deal_structure"], sourceIds};
+    }),
+  ];
+
+  const result = await runSubgraph({
+    graphId: "deal_structuring",
+    caseId: caseInput.caseId,
+    input: graphInput,
+    tasks,
+    versions: {caseEngine: caseEngineVersion, ...(caseInput.runtimeVersions ?? {})},
   });
-  const structureTruth = buildStructureTruthSet({
-    archetypeId: input.archetypeId,
-    facts: reconciliation.facts,
-    financialTruth: reconciliation.financialTruth,
-    debtTruth: reconciliation.debtTruth,
-    operationTruth,
-    capacity,
-    termSheet,
-    collateral,
-    instruments,
-    referenceDate: input.referenceDate,
-    ...(input.structurePolicies ? {policies: input.structurePolicies} : {}),
+  return {
+    output: result.outputs.assemble as StructureOutput,
+    taskRuns: result.taskRuns,
+    usage: result.usage,
+  };
+}
+
+type MaterialsSubtaskId =
+  | "material_inputs"
+  | "compile_documents"
+  | "plan_room"
+  | "claim_registry"
+  | "publication_gate"
+  | "material_truth"
+  | "assemble";
+
+type MaterialsSubgraphInput = {
+  input: CaseEngineInput;
+  reconciliation: ReconciliationReport;
+  metrics: MetricsOutput;
+  structure: StructureOutput;
+  redFlags: RedFlagTruthSet;
+  claims: ClaimsOutput;
+  extracted: ExtractionOutput;
+};
+
+const materialInputsSchema = z.object({
+  approvedJudgmentIds: z.array(z.string()),
+  canCompile: z.boolean(),
+  initialBlockers: z.array(z.string()),
+});
+const compiledDocumentsSchema = z.object({
+  materials: z.array(z.unknown()),
+  materialsBlockedBy: z.array(z.string()),
+  audit: z.enum(["not_run", "pass", "blocked"]),
+});
+const plannedRoomSchema = z.object({materials: z.array(z.unknown()), dataRoom: z.unknown()});
+const claimRegistrySubtaskSchema = z.object({claimRegistry: z.unknown().nullable()});
+const publicationGateSchema = z.object({
+  materials: z.array(z.unknown()),
+  materialsBlockedBy: z.array(z.string()),
+  audit: z.enum(["not_run", "pass", "blocked"]),
+  dataRoom: z.unknown(),
+  claimRegistry: z.unknown().nullable(),
+});
+const materialTruthSubtaskSchema = z.object({materialTruth: z.unknown()});
+
+async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
+  const {input, reconciliation, metrics, structure, redFlags, claims, extracted} = graphInput;
+  const sourceIds = caseSourceIds(input);
+  const task = (
+    id: MaterialsSubtaskId,
+    dependencies: MaterialsSubtaskId[],
+    outputSchema: z.ZodType,
+    allowedTools: string[],
+    execute: SubtaskDefinition<MaterialsSubtaskId, MaterialsSubgraphInput>["execute"],
+  ): SubtaskDefinition<MaterialsSubtaskId, MaterialsSubgraphInput> => ({
+    spec: {id, version: "1", dependencies, executionClass: "deterministic", allowedTools},
+    outputSchema,
+    selectInput: () => ({
+      claimDecisions: input.claimDecisions ?? [],
+      materialRelease: input.materialRelease ?? null,
+      claimsFingerprint: fingerprintJson(claims),
+      structureFingerprint: fingerprintJson(structure),
+      reconciliationFingerprint: fingerprintJson(reconciliation),
+      roomDocumentsFingerprint: fingerprintJson(extracted.roomDocuments),
+    }),
+    execute,
   });
-  const selectedCollateralClasses = structureTruth.security.package?.lines
-    .filter((line) => line.selected)
-    .map((line) => line.asset.type)
-    .sort() ?? [];
-  const pricingSecurityClass = selectedCollateralClasses.length > 0
-    ? `secured:${[...new Set(selectedCollateralClasses)].join("+")}`
-    : "unsecured";
-  const pricingTarget = input.pricing && rating && preferredInstrument && input.indexLevels?.cdi && structureTruth.proposal.amount && structureTruth.proposal.termMonths && structureTruth.proposal.amortizationFormat
-    ? {
-        instrument: preferredInstrument,
-        rating: rating.band,
-        cdi: input.indexLevels.cdi,
-        tenorMonths: structureTruth.proposal.termMonths,
-        securityClass: pricingSecurityClass,
-        amortizationClass: structureTruth.proposal.amortizationFormat,
-        sectorGroup: input.pricing.sectorGroup,
-        amount: structureTruth.proposal.amount,
-        indexer: input.pricing.indexer,
-        ...(input.pricing.indexerRationale ? {indexerRationale: input.pricing.indexerRationale} : {}),
-        ...(input.pricing.targetBuyer ? {targetBuyer: input.pricing.targetBuyer} : {}),
-        ...(input.pricing.expectedSpreadBps !== undefined ? {expectedSpreadBps: input.pricing.expectedSpreadBps} : {}),
-        ...(input.pricing.currentAllIn ? {currentAllIn: input.pricing.currentAllIn} : {}),
+
+  const tasks: SubtaskDefinition<MaterialsSubtaskId, MaterialsSubgraphInput>[] = [
+    task("material_inputs", [], materialInputsSchema, ["claim_registry"], () => {
+      const approvedJudgmentIds = claims.proposedBrief
+        ? currentApprovedJudgments(claims.proposedBrief, input.claimDecisions ?? [])
+        : [];
+      return {
+        output: {
+          approvedJudgmentIds,
+          canCompile: Boolean(claims.brief),
+          initialBlockers: claims.brief ? [] : ["brief_unavailable", ...claims.briefBlockedBy],
+        },
+        toolsUsed: ["claim_registry"],
+        sourceIds,
+      };
+    }),
+    task("compile_documents", ["material_inputs"], compiledDocumentsSchema, ["case_materials"], ({outputs}) => {
+      const materialInputs = subtaskOutput<z.infer<typeof materialInputsSchema>>(outputs, "material_inputs");
+      if (!materialInputs.canCompile || !claims.brief) {
+        return {
+          output: {materials: [], materialsBlockedBy: materialInputs.initialBlockers, audit: "not_run"},
+          toolsUsed: ["case_materials"],
+          sourceIds,
+        };
       }
-    : null;
-  const pricingTruth = buildPricingTruthSet({
-    target: pricingTarget,
-    ...(input.pricing ? {
-      policy: input.pricing.policy,
-      observations: input.pricing.observations,
-      ...(input.pricing.adjustments ? {adjustments: input.pricing.adjustments} : {}),
-      ...(input.pricing.costs ? {costs: input.pricing.costs} : {}),
-      ...(input.pricing.weightedAverageLifeYears ? {weightedAverageLifeYears: input.pricing.weightedAverageLifeYears} : {}),
-    } : {}),
+      const evidence = deskEvidence(metrics.desk, metrics.trajectory);
+      const compiled = compileMaterials({
+        brief: claims.brief,
+        facts: reconciliation.facts,
+        calculations: [...reconciliation.calculations, ...evidence.calculations],
+        exceptions: reconciliation.exceptions,
+        readiness: metrics.readiness,
+        desk: metrics.desk,
+        trajectory: metrics.trajectory,
+        ...(structure.termSheet ? {termSheet: structure.termSheet} : {}),
+        ...(structure.rating ? {rating: structure.rating} : {}),
+        stress: structure.stress,
+        instruments: structure.instruments,
+        ...(structure.collateral ? {collateral: structure.collateral} : {}),
+        ...(structure.price ? {price: structure.price} : {}),
+        ...(structure.verdict ? {verdict: structure.verdict} : {}),
+        approvedJudgmentIds: materialInputs.approvedJudgmentIds,
+      });
+      return compiled.ok
+        ? {output: {materials: compiled.materials, materialsBlockedBy: [], audit: "pass"}, toolsUsed: ["case_materials"], sourceIds}
+        : {output: {materials: [], materialsBlockedBy: compiled.detail, audit: "blocked"}, toolsUsed: ["case_materials"], sourceIds};
+    }),
+    task("plan_room", ["compile_documents"], plannedRoomSchema, ["data_room"], ({outputs}) => {
+      const compiled = subtaskOutput<{materials: Material[]; materialsBlockedBy: string[]}>(outputs, "compile_documents");
+      const dataRoom = planDataRoom({
+        materials: compiled.materials,
+        materialsBlockedBy: compiled.materialsBlockedBy,
+        documents: extracted.roomDocuments,
+        exceptions: reconciliation.exceptions,
+        readiness: metrics.readiness,
+      });
+      const materials = [...compiled.materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
+      return {output: {materials, dataRoom}, toolsUsed: ["data_room"], sourceIds};
+    }),
+    task("claim_registry", ["plan_room"], claimRegistrySubtaskSchema, ["claim_registry"], ({outputs}) => {
+      const {materials} = subtaskOutput<{materials: Material[]}>(outputs, "plan_room");
+      const claimRegistry = claims.proposedBrief && claims.numericAudit && claims.semanticAudit
+        ? buildClaimRegistry({
+            brief: claims.proposedBrief,
+            numericAudit: claims.numericAudit,
+            semanticAudit: claims.semanticAudit,
+            decisions: input.claimDecisions ?? [],
+            artifacts: materials.map((material) => ({
+              artifactId: material.kind,
+              claimIds: material.blocks.flatMap((block) => block.type === "paragraph" && block.claimId ? [block.claimId] : []),
+              supportIds: material.dependsOn,
+            })),
+          })
+        : null;
+      return {output: {claimRegistry}, toolsUsed: ["claim_registry"], sourceIds};
+    }),
+    task("publication_gate", ["compile_documents", "plan_room", "claim_registry"], publicationGateSchema, ["case_materials", "data_room", "claim_registry"], ({outputs}) => {
+      const compiled = subtaskOutput<{materialsBlockedBy: string[]; audit: MaterialsOutput["audit"]}>(outputs, "compile_documents");
+      const planned = subtaskOutput<{materials: Material[]; dataRoom: DataRoomPlan}>(outputs, "plan_room");
+      const {claimRegistry} = subtaskOutput<{claimRegistry: ClaimRegistry | null}>(outputs, "claim_registry");
+      if (claimRegistry && !claimRegistry.publication.allowed) {
+        const materialsBlockedBy = [...new Set([...compiled.materialsBlockedBy, ...claimRegistry.publication.blockers])];
+        const dataRoom = planDataRoom({
+          materials: [],
+          materialsBlockedBy,
+          documents: extracted.roomDocuments,
+          exceptions: reconciliation.exceptions,
+          readiness: metrics.readiness,
+        });
+        return {
+          output: {materials: [], materialsBlockedBy, audit: "blocked", dataRoom, claimRegistry},
+          toolsUsed: ["case_materials", "data_room", "claim_registry"],
+          sourceIds,
+        };
+      }
+      return {
+        output: {
+          materials: planned.materials,
+          materialsBlockedBy: compiled.materialsBlockedBy,
+          audit: compiled.audit,
+          dataRoom: planned.dataRoom,
+          claimRegistry,
+        },
+        toolsUsed: ["case_materials", "data_room", "claim_registry"],
+        sourceIds,
+      };
+    }),
+    task("material_truth", ["publication_gate"], materialTruthSubtaskSchema, ["case_materials"], ({outputs}) => {
+      const gated = subtaskOutput<{
+        materials: Material[];
+        dataRoom: DataRoomPlan;
+        claimRegistry: ClaimRegistry | null;
+      }>(outputs, "publication_gate");
+      const materialTruth = buildMaterialTruthSet({
+        materials: gated.materials,
+        dataRoom: gated.dataRoom,
+        modelAvailable: reconciliation.facts.length > 0,
+        claimAuditApproved: gated.claimRegistry?.publication.allowed === true,
+        governanceBlockers: redFlags.mandate.externalOutputsAllowed ? [] : redFlags.blockers,
+        ...(input.materialRelease ? {release: input.materialRelease} : {}),
+      });
+      return {output: {materialTruth}, toolsUsed: ["case_materials"], sourceIds};
+    }),
+    task("assemble", ["publication_gate", "material_truth"], materialsOutputSchema, ["case_materials"], ({outputs}) => {
+      const gated = subtaskOutput<Omit<MaterialsOutput, "materialTruth">>(outputs, "publication_gate");
+      const {materialTruth} = subtaskOutput<{materialTruth: MaterialTruthSet}>(outputs, "material_truth");
+      const output: MaterialsOutput = {...gated, materialTruth};
+      return {output, toolsUsed: ["case_materials"], sourceIds};
+    }),
+  ];
+
+  const result = await runSubgraph({
+    graphId: "materials_preparation",
+    caseId: input.caseId,
+    input: graphInput,
+    tasks,
+    versions: {caseEngine: caseEngineVersion, ...(input.runtimeVersions ?? {})},
   });
-  const price = pricingTruth.indicativePrice;
-  return {capacity, operationTruth, structureTruth, pricingTruth, termSheet, rating, stress, instruments, collateral, price, verdict};
+  return {
+    output: result.outputs.assemble as MaterialsOutput,
+    taskRuns: result.taskRuns,
+    usage: result.usage,
+  };
+}
+
+function subtaskOutput<T>(outputs: Readonly<Partial<Record<string, unknown>>>, taskId: string): T {
+  const output = outputs[taskId];
+  if (output === undefined) throw Object.assign(new Error(`missing subtask output ${taskId}`), {code: "missing_subtask_output"});
+  return output as T;
 }
 
 function applyCapacityCondition(

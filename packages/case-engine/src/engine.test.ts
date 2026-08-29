@@ -115,6 +115,30 @@ describe("the governed case engine", () => {
     expect(result.report.taskRuns.find((task) => task.taskId === "reconciliation")?.sourceIds).toEqual([
       "d1", "d2", "d3", "d4", "d5", "d6", "source-1",
     ]);
+    const structureTasks = result.report.taskRuns.find((task) => task.taskId === "structure")?.subtasks ?? [];
+    expect(structureTasks.map((task) => task.taskId)).toEqual([
+      "need_capacity",
+      "issuer_profile",
+      "credit_scenarios",
+      "instrument_screen",
+      "collateral_design",
+      "operation_verdict",
+      "operation_truth",
+      "indicative_terms",
+      "structure_truth",
+      "pricing_truth",
+      "assemble",
+    ]);
+    expect(structureTasks.every((task) => task.graphId === "deal_structuring" && task.status === "succeeded")).toBe(true);
+    expect(structureTasks.find((task) => task.taskId === "structure_truth")?.dependencies).toEqual([
+      "need_capacity", "operation_truth", "indicative_terms", "instrument_screen", "collateral_design",
+    ]);
+    const materialTasks = result.report.taskRuns.find((task) => task.taskId === "materials")?.subtasks ?? [];
+    expect(materialTasks.map((task) => task.taskId)).toEqual([
+      "material_inputs", "compile_documents", "plan_room", "claim_registry", "publication_gate", "material_truth", "assemble",
+    ]);
+    expect(materialTasks.every((task) => task.graphId === "materials_preparation" && task.status === "succeeded")).toBe(true);
+    expect([...structureTasks, ...materialTasks].every((task) => task.usage.modelCalls === 0)).toBe(true);
 
     result.state.pricingTruth.sample.eligible.push({id: "private-observation", sourceId: "manager-name"} as never);
     result.state.pricingTruth.sample.rejected.push({id: "private-rejection", reasons: ["different_sector"]});
