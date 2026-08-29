@@ -28,11 +28,19 @@ Supabase; o Security Advisor reportou zero lints e a FK de `recorded_by` foi cob
 Performance Advisor identificá-la. O smoke tenant-scoped em transação passou, inclusive a correção
 de uma recusa com o mesmo timestamp: sem supersessão explícita o sinal positivo é bloqueado; com
 supersessão, os dois eventos permanecem auditáveis. Restam somente avisos de índice ainda não usado,
-esperados numa tabela nova e vazia. A capacidade continua candidate até o banco ser reconstruído em
-CI e o teste tenant completo passar ali.
+esperados numa tabela nova e vazia. A capacidade permanece candidate por disciplina de rollout;
+o banco reconstruído, o teste tenant completo e os demais gates obrigatórios foram aprovados no
+PR #313 antes da promoção do schema.
 
 O gate integral local passou em Node 24.19.0 nos 42 pacotes: lint, typecheck, todos os testes e
 build. O pacote `market-feedback` fechou seis testes e `case-understanding`, 52.
+
+Após os três gates do PR passarem, as migrations foram promovidas ao Supabase de produção como
+`20260829141835`, `20260829141838` e `20260829141841`. Os tipos foram regenerados diretamente dessa
+fonte. A verificação estrutural confirmou RLS e FORCE RLS, SELECT tenant-scoped, ausência de grants
+diretos de INSERT, UPDATE e DELETE, RPC pública estreita e projeção privada. O ledger entrou vazio.
+O Security Advisor de produção reportou zero lints; o Performance Advisor reportou apenas os três
+índices novos ainda sem uso, comportamento esperado antes do primeiro feedback real.
 
 ## Fluxo canônico e início da construção profunda, 29/08/2026
 

@@ -30,6 +30,10 @@ import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 type Journey = "company" | "originator" | "capital_provider";
 type AnswerMap = Record<string, Json | undefined>;
 
+// PostgREST accepts SQL NULL for nullable function parameters, but generated function argument
+// types do not encode PostgreSQL parameter nullability. Keep that boundary explicit and local.
+const rpcNull = null as never;
+
 function value(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
 }
@@ -217,11 +221,11 @@ export async function saveGuidedCompanyProfile(formData: FormData) {
   const {error} = await runtime.supabase.rpc("save_guided_company_profile", {
     p_session_id: runtime.sessionId,
     p_name: parsed.data.name,
-    p_legal_name: parsed.data.legalName || null,
-    p_website: parsed.data.website || null,
-    p_description: parsed.data.description || null,
-    p_identifier_hash: identifierHash ?? null,
-    p_identifier_last4: parsed.data.identifier.slice(-4) || null,
+    p_legal_name: parsed.data.legalName || rpcNull,
+    p_website: parsed.data.website || rpcNull,
+    p_description: parsed.data.description || rpcNull,
+    p_identifier_hash: identifierHash ?? rpcNull,
+    p_identifier_last4: parsed.data.identifier.slice(-4) || rpcNull,
   });
   if (error) {
     reportServerFailure({step: "intake.save_guided_company", error});
