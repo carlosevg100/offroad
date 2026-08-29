@@ -1,6 +1,104 @@
 import {fingerprintJson} from "@offroad/case-understanding";
 import {z} from "zod";
 
+export const workspaceRequestIntentSchema = z.enum([
+  "explain",
+  "inspect",
+  "simulate",
+  "propose_change",
+  "approve",
+  "compile",
+  "authorize_external",
+  "clarify",
+]);
+export type WorkspaceRequestIntent = z.infer<typeof workspaceRequestIntentSchema>;
+
+export const workspaceRequestScopeSchema = z.enum(["knowledge", "case", "market"]);
+export type WorkspaceRequestScope = z.infer<typeof workspaceRequestScopeSchema>;
+
+export const workspaceRequestEffectSchema = z.enum(["none", "proposal", "commit", "external"]);
+export type WorkspaceRequestEffect = z.infer<typeof workspaceRequestEffectSchema>;
+
+export const workspaceRequestSurfaceSchema = z.enum([
+  "knowledge",
+  "operation_brief",
+  "case_workspace",
+  "materials",
+  "market",
+]);
+export type WorkspaceRequestSurface = z.infer<typeof workspaceRequestSurfaceSchema>;
+
+export const workspaceRequestRouteSchema = z.object({
+  intent: workspaceRequestIntentSchema,
+  scope: workspaceRequestScopeSchema,
+  effect: workspaceRequestEffectSchema,
+  confidence: z.enum(["rule", "ambiguous"]),
+  requiresExplicitConfirmation: z.boolean(),
+  allowedOnCurrentSurface: z.boolean(),
+  reasonCode: z.string().regex(/^[a-z0-9_]+$/),
+});
+export type WorkspaceRequestRoute = z.infer<typeof workspaceRequestRouteSchema>;
+
+const patterns = {
+  authorizeExternal: /\b(enviar|envie|mandar|mande|apresentar|apresente|introduzir|introduza|contatar|contate|abordar|aborde|send|introduce|contact|approach)\b/i,
+  compile: /\b(gerar|gere|produzir|produza|montar|monte|compilar|compile|generate|prepare|preparar)\b.*\b(teaser|memo|memorando|term\s*sheet|modelo|model|material|pacote|package|data\s*room)\b/i,
+  simulate: /\b(e\s+se|simular|simule|simula[cç][aã]o|cen[aá]rio|what\s+if|simulate|scenario)\b/i,
+  approve: /\b(aprovo|aprovado|confirmo|confirmado|pode\s+seguir|de\s+acordo|aceito|approve|approved|confirm|confirmed|go\s+ahead)\b/i,
+  proposeChange: /(?:\b(?:alterar|altere|mudar|mude|trocar|troque|atualizar|atualize|corrigir|corrija|aumentar|aumente|reduzir|reduza|change|update|replace|correct|increase|decrease|set)\b|agora\s+(?:e|é)(?:\s|$)|passou\s+para(?:\s|$))/i,
+  explain: /\b(como\s+funciona|o\s+que\s+[eé]|qual\s+(?:a\s+)?diferen[cç]a|explique|por\s+que|how\s+does|what\s+is|difference|explain|why)\b/i,
+  inspect: /\b(mostre|mostrar|consultar|consulte|status|situa[cç][aã]o|quais|qual\s+[eé]|onde|show|inspect|status|which|where)\b/i,
+  marketScope: /\b(fundo|fidc|financeira|factor(?:ing|y)?|lender|financiador|investidor|mandato|mercado|shortlist|provider|fund|investor)\b/i,
+  caseScope: /\b(companhia|empresa|opera[cç][aã]o|capta[cç][aã]o|caso|estrutura|prazo|valor|garantia|company|transaction|deal|case|structure|term|amount|collateral)\b/i,
+} as const;
+
+/**
+ * A deterministic first line of defence between conversation and canonical state. It does not
+ * pretend to understand every sentence. Ambiguity routes to clarification, and no route mutates
+ * the case or performs an external action by itself.
+ */
+export function routeWorkspaceRequest(input: {
+  message: string;
+  surface: WorkspaceRequestSurface;
+}): WorkspaceRequestRoute {
+  const message = input.message.normalize("NFKC").trim();
+  const scope: WorkspaceRequestScope = input.surface === "knowledge"
+    ? "knowledge"
+    : input.surface === "market" || patterns.marketScope.test(message)
+      ? "market"
+      : "case";
+
+  const route = (
+    intent: WorkspaceRequestIntent,
+    effect: WorkspaceRequestEffect,
+    reasonCode: string,
+    allowedOnCurrentSurface: boolean,
+    requiresExplicitConfirmation = effect === "commit" || effect === "external",
+    confidence: WorkspaceRequestRoute["confidence"] = "rule",
+  ): WorkspaceRequestRoute => workspaceRequestRouteSchema.parse({
+    intent,
+    scope,
+    effect,
+    confidence,
+    requiresExplicitConfirmation,
+    allowedOnCurrentSurface,
+    reasonCode,
+  });
+
+  if (!message) return route("clarify", "none", "empty_request", true, false, "ambiguous");
+  if (patterns.authorizeExternal.test(message)) {
+    return route("authorize_external", "external", "external_action_language", input.surface === "market");
+  }
+  if (patterns.compile.test(message)) {
+    return route("compile", "proposal", "artifact_language", input.surface === "materials" || input.surface === "case_workspace");
+  }
+  if (patterns.simulate.test(message)) return route("simulate", "none", "hypothetical_language", scope !== "knowledge", false);
+  if (patterns.approve.test(message)) return route("approve", "commit", "approval_language", input.surface !== "knowledge");
+  if (patterns.proposeChange.test(message)) return route("propose_change", "proposal", "change_language", input.surface !== "knowledge", false);
+  if (patterns.explain.test(message)) return route("explain", "none", "explanation_language", true, false);
+  if (patterns.inspect.test(message)) return route("inspect", "none", "inspection_language", true, false);
+  return route("clarify", "none", "no_unambiguous_rule", true, false, "ambiguous");
+}
+
 export const agentStates = ["analyzing", "asking", "proposing", "assembling", "idle"] as const;
 export const agentStateSchema = z.enum(agentStates);
 

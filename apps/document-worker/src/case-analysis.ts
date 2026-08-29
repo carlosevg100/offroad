@@ -26,7 +26,7 @@ import {
   type RedFlagPolicy,
   type RedFlagReview,
 } from "@offroad/case-understanding";
-import {caseRunReportSchema, type CaseStageEvent} from "@offroad/case-runner";
+import {caseRunReportSchema, taskCacheFromReport, type CaseStageEvent} from "@offroad/case-runner";
 import {archetypeIdSchema} from "@offroad/credit-playbook";
 import {documentKindSchema} from "@offroad/credit-ontology";
 import {
@@ -341,6 +341,7 @@ const rawCaseInputSchema = z.object({
   red_flag_context:redFlagContextSchema.nullable().default(null),
   conduct_context:conductContextSchema.nullable().default(null),
   deal_workflow: dealWorkflowStateSchema.default(initialDealWorkflowState),
+  prior_case_report: caseRunReportSchema.nullish(),
   _execution: z.object({
     id: z.uuid(),
     mode: executionModeSchema,
@@ -473,6 +474,13 @@ export async function processCaseAnalysisJob(
       roomDocuments,
       dealBrief: dealBrief(raw.session),
       resolvedMandates,
+      taskCache: taskCacheFromReport(raw.prior_case_report ?? undefined),
+      runtimeVersions: {
+        pipeline: raw._execution.pipeline_version,
+        modelPolicy: raw._execution.model_policy_version,
+        briefPrompt: fingerprintJson(BRIEF_SYSTEM),
+        semanticAuditPrompt: fingerprintJson(SEMANTIC_AUDIT_SYSTEM),
+      },
       onStage: (event) => persistCaseStage(dependencies.queue, job, event),
       claimDecisions: raw.claim_decisions as ClaimDecision[],
       ...(raw.receivables_case ? {receivablesCase: raw.receivables_case} : {}),

@@ -343,12 +343,14 @@ describe("worker case analysis", () => {
       {stage: "retrieval", status: "started"},
       {stage: "retrieval", status: "succeeded"},
     ]);
-    expect(stages.filter((event) => event.stage.startsWith("case:"))).toEqual(
-      caseStageIds.flatMap((stage) => [
+    const caseEvents = stages.filter((event) => event.stage.startsWith("case:"));
+    expect(caseEvents).toHaveLength(caseStageIds.length * 2);
+    for (const stage of caseStageIds) {
+      expect(caseEvents.filter((event) => event.stage === `case:${stage}`)).toEqual([
         {stage: `case:${stage}`, status: "started"},
         {stage: `case:${stage}`, status: "succeeded"},
-      ]),
-    );
+      ]);
+    }
     expect(stages.slice(-3)).toEqual([
       {stage: "mandate_retrieval", status: "started"},
       {stage: "mandate_retrieval", status: "succeeded"},

@@ -2140,3 +2140,36 @@ Próxima sequência obrigatória: CI integral, squash merge, migration em produ�
 worker, novo run da mesma sessão controlada e verificação por SQL de 17 jobs documentais, análise de
 caso, `run=succeeded`, `session=review_ready` e chunks não vazios para o CSV. Só depois avaliar a
 qualidade econômica e a interface de revisão.
+
+## 34. Runtime incremental e separação dos três grafos, 29/08/2026
+
+O desenho aprovado deixou de existir apenas no paper. `packages/work-plan/src/task-registry.ts`
+registra as 80 TaskSpecs alvo, separadas em Knowledge Graph, Case Graph e Market Graph, com
+dependências, classe de execução, efeito e maturidade explícitos. O valor inicial `specified` é uma
+proteção contra falsa prontidão: promoção continua individual e exige executor, persistência,
+interface, gold case, adversarial, E2E e custo medido.
+
+O trilho que já possui executores reais, o Case Graph atual, roda em
+`packages/case-runner/src/runner.ts` como DAG de 11 nós. Extração, conciliação e métricas liberam
+ramificações independentes; falhas e bloqueios propagam somente para descendentes. Trabalho
+determinístico é paralelo. Trabalho com modelo é serializado contra a visão atualizada do orçamento.
+Cada TaskRun carrega fingerprints de dependência, input e output, ferramentas permitidas e usadas,
+fontes, tentativas, motivo de término, custo, duração e cache hit.
+
+O cache é por nó e por caso. Sua chave inclui TaskSpec, versões do case engine e pipeline, política
+de modelos, prompts, input direto e outputs predecessores. O worker reidrata somente outputs
+anteriores cujo fingerprint foi conferido novamente. O relatório anterior é anexado depois que o
+input oficial é congelado, portanto nunca vira parte recursiva do caso. A migration
+`20260829183106_task_dag_prior_report.sql` fornece a leitura capability-bound e o teste RLS cobre o
+segundo run. Staging aceitou a migration; grants, wrapper e índice foram conferidos e o Security
+Advisor ficou com zero findings. O job de banco em CI ainda precisa comprovar a suíte integral antes
+de merge. Produção permanece intacta.
+
+O Request Router em `@offroad/agent-contracts` classifica intenção, grafo e efeito antes do modelo.
+Simulação é read-only, mudança vira proposta, aprovação exige comando governado e contato externo
+só pode existir no Market Graph. Isso não torna os 80 executáveis. Hoje, apenas os 11 nós do Case
+Graph existente têm runtime conectado. Knowledge e Market têm componentes reutilizáveis, mas seus
+orquestradores completos continuam por implementar e não devem ser apresentados como prontos.
+
+Gate local: `fnm exec --using=24 pnpm check` passou nos 42 pacotes, incluindo 140 testes web, 61 do
+worker e 38 evals. Nenhuma chamada a Anthropic, OpenAI ou outro provedor pago foi feita.

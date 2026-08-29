@@ -22,6 +22,7 @@ function report(overrides: Partial<CaseRunReport> = {}, mutate?: (stages: CaseSt
     completedAt: "2026-08-24T12:01:00.000Z",
     inputFingerprint: "1".repeat(64),
     stages,
+    taskRuns: [],
     usage: {costUsd: 1, modelCalls: 9},
     versions: {runner: "v1"},
     reportFingerprint: "2".repeat(64),

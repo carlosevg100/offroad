@@ -1,5 +1,7 @@
 import {z} from "zod";
 
+export * from "./task-registry";
+
 export const workPlanTaskIds = [
   "secure_documents",
   "read_and_classify",
