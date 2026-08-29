@@ -8,9 +8,9 @@ import {createExtractor} from "./extract";
 import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClassifier} from "@offroad/document-classification";
+import type {PublicSearchProvider} from "@offroad/public-research";
 import {createStorageUrlGuard} from "./storage-url";
 import {processCaseAnalysisJob} from "./case-analysis";
-import {createOpenAIWebSearchProvider, createPerplexitySearchProvider} from "@offroad/public-research";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 
 /**
@@ -75,21 +75,27 @@ async function main(): Promise<void> {
   // The gateway keeps a running total and refuses calls past its ceiling, so a single instance
   // shared across the loop would spend the whole allowance on the first few documents and then
   // refuse every document after them: a spend problem turned into an outage. A fresh instance
-  // per job makes the ceiling mean "this document", which is the only unit where a number like
-  // five dollars is meaningful.
+  // per job makes the ceiling mean "this document" or "this case analysis". The database then
+  // allocates those job ceilings so their possible sum cannot cross the case-wide limit.
   const adapters = {
     ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
     ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
   };
-  const researchProviders = [
-    ...(config.PERPLEXITY_API_KEY ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})] : []),
-    ...(config.OPENAI_API_KEY ? [createOpenAIWebSearchProvider({apiKey: config.OPENAI_API_KEY})] : []),
-  ];
-  const newGateway = () => {
+  // Fail closed until external search reports usage into the same run-level ledger as model
+  // calls. Both the former OpenAI fallback and Perplexity search lived outside the gateway,
+  // so a run could respect its declared model ceiling while still spending on web research.
+  // Case analysis remains fully functional over submitted evidence and the approved playbook;
+  // the public-research stage records a transparent `provider_unavailable` abstention.
+  const researchProviders: PublicSearchProvider[] = [];
+  const newGateway = (job: ClaimedJob) => {
     const calls: GatewayCallLog[] = [];
+    const requestedBudget = "model_budget" in job.payload ? job.payload.model_budget : undefined;
     const gateway = createModelGateway({
       adapters,
-      budget: {maxCostUsd: config.MODEL_MAX_COST_USD_PER_JOB, maxCalls: config.MODEL_MAX_CALLS_PER_JOB},
+      budget: {
+        maxCostUsd: Math.min(config.MODEL_MAX_COST_USD_PER_JOB, requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB),
+        maxCalls: Math.min(config.MODEL_MAX_CALLS_PER_JOB, requestedBudget?.max_calls ?? config.MODEL_MAX_CALLS_PER_JOB),
+      },
       onCall: (call) => {
         calls.push(call);
         log("model.call", {...call});
@@ -178,7 +184,7 @@ async function main(): Promise<void> {
       log("job.heartbeat_failed", {job: job?.job_id, message: error.message}),
     );
 
-    const gatewayRun = newGateway();
+    const gatewayRun = newGateway(job);
     current = (job.kind === "case_analysis"
       ? processCaseAnalysisJob(job, {
           queue,

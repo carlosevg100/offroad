@@ -406,6 +406,7 @@ describe("what a document cost travels with its outcome", () => {
       outputFingerprint: "3".repeat(64),
       usage: {inputTokens: 10, outputTokens: 2, cachedInputTokens: 0},
       costUsd: 0.01,
+      costStatus: "measured" as const,
       latencyMs: 12,
       stopReason: "end" as const,
       usedFallback: false,

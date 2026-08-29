@@ -5,6 +5,9 @@ import {
   pipelineEnabledFor,
   readRunResult,
   signPipelineDocuments,
+  startProcessingRun,
+  DEFAULT_RUN_BUDGET,
+  PIPELINE_VERSION,
   PIPELINE_LINK_TTL_SECONDS,
 } from "./pipeline-run";
 
@@ -136,6 +139,62 @@ describe("begin_processing_run result", () => {
     expect(readRunResult({job_ids: [1, "job-1", null]})).toEqual({processingRunId: "", runNo: 0, jobIds: ["job-1"]});
     expect(readRunResult(null)).toEqual({processingRunId: "", runNo: 0, jobIds: []});
     expect(readRunResult("unexpected")).toEqual({processingRunId: "", runNo: 0, jobIds: []});
+  });
+});
+
+function runDouble(input: {documents: Array<{id: string; object_path: string; processing_status: string}>; pipelineVersion: string | null}) {
+  const {supabase: storage, calls: storageCalls} = storageDouble();
+  const rpcCalls: Array<{name: string; args: Record<string, unknown>}> = [];
+  const queryFor = (table: string) => {
+    const result = table === "source_documents"
+      ? {data: input.documents, error: null}
+      : {data: {pipeline_version: input.pipelineVersion}, error: null};
+    const chain: Record<string, unknown> = {};
+    chain.select = () => chain;
+    chain.eq = () => chain;
+    chain.order = async () => result;
+    chain.maybeSingle = async () => result;
+    return chain;
+  };
+  const supabase = {
+    ...storage,
+    from: queryFor,
+    async rpc(name: string, args: Record<string, unknown>) {
+      rpcCalls.push({name, args});
+      return {data: {processing_run_id: "run-1", run_no: 7, job_ids: ["job-1"]}, error: null};
+    },
+  };
+  return {supabase, rpcCalls, storageCalls};
+}
+
+describe("incremental processing", () => {
+  it("does not sign or repay ready immutable documents under the same pipeline contract", async () => {
+    const runtime = runDouble({
+      documents: [{id: DOCUMENT, object_path: `${ORG}/${SESSION}/ready.pdf`, processing_status: "ready"}],
+      pipelineVersion: PIPELINE_VERSION,
+    });
+    const result = await startProcessingRun({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- focused Supabase double
+      supabase: runtime.supabase as any,
+      organizationId: ORG,
+      sessionId: SESSION,
+      trigger: "reprocess",
+    });
+    expect(result.ok).toBe(true);
+    expect(runtime.storageCalls).toHaveLength(0);
+    expect(runtime.rpcCalls[0]?.args).toMatchObject({p_documents: [], p_budget: DEFAULT_RUN_BUDGET});
+  });
+
+  it("signs only failed or new documents, unless the pipeline contract changed", async () => {
+    const ready = {id: DOCUMENT, object_path: `${ORG}/${SESSION}/ready.pdf`, processing_status: "ready"};
+    const failed = {id: "50000000-0000-4000-8000-000000000004", object_path: `${ORG}/${SESSION}/failed.pdf`, processing_status: "failed"};
+    const incremental = runDouble({documents: [ready, failed], pipelineVersion: PIPELINE_VERSION});
+    await startProcessingRun({supabase: incremental.supabase as never, organizationId: ORG, sessionId: SESSION, trigger: "reprocess"});
+    expect(incremental.storageCalls.filter((call) => call.kind === "download").map((call) => call.path)).toEqual([failed.object_path]);
+
+    const rebuild = runDouble({documents: [ready, failed], pipelineVersion: "older-contract"});
+    await startProcessingRun({supabase: rebuild.supabase as never, organizationId: ORG, sessionId: SESSION, trigger: "reprocess"});
+    expect(rebuild.storageCalls.filter((call) => call.kind === "download")).toHaveLength(2);
   });
 });
 

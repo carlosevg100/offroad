@@ -26,6 +26,19 @@ export type TableRowPass = {
   evidenceText: string;
 };
 
+/**
+ * One bounded model pass for one table.
+ *
+ * `rows` keeps the deterministic global instance assigned by `tableRowPasses`. The model is
+ * allowed to read the table once; candidate indices are rebound from the cited row anchor in
+ * code, so adding 500 rows changes input size, not the number of paid calls.
+ */
+export type TableBatchPass = {
+  tableId: string;
+  rows: Array<{instance: number; rowAnchorId: string; evidenceText: string}>;
+  evidenceText: string;
+};
+
 const isRowId = (id: string): boolean => /\.r\d+$/.test(id);
 const headerish = (text: string): boolean => /[a-zA-Zà-úÀ-Ú]/.test(text) && !/\d{3}[.,]\d{3}/.test(text);
 /** Total and subtotal rows summarise other rows; an instrument named "Total" is a defect. */
@@ -109,4 +122,24 @@ export function tableRowPasses(index: LayerIndex, options: {minRows?: number; ma
     });
   }
   return passes;
+}
+
+/** Groups eligible rows into one pass per table, preserving deterministic row instances. */
+export function tableBatchPasses(index: LayerIndex, options: {minRows?: number; maxRows?: number; fields?: readonly FieldDefinition[]} = {}): TableBatchPass[] {
+  const rows = tableRowPasses(index, options);
+  const grouped = new Map<string, TableRowPass[]>();
+  for (const row of rows) {
+    if (!grouped.has(row.tableId)) grouped.set(row.tableId, []);
+    grouped.get(row.tableId)!.push(row);
+  }
+
+  return [...grouped].map(([tableId, tableRows]) => {
+    const header = tableRows[0]?.evidenceText.split("\n").find((line) => line.startsWith("colunas: "));
+    const evidenceRows = tableRows.map((row) => row.evidenceText.split("\n").find((line) => line.startsWith(`[${row.rowAnchorId}]`)) ?? `[${row.rowAnchorId}]`);
+    return {
+      tableId,
+      rows: tableRows.map((row) => ({instance: row.instance, rowAnchorId: row.rowAnchorId, evidenceText: row.evidenceText})),
+      evidenceText: [...(header ? [header] : []), ...evidenceRows].join("\n"),
+    };
+  });
 }

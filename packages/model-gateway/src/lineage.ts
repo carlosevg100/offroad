@@ -28,6 +28,9 @@ export const gatewayCallLogSchema = z.object({
     reasoningTokens: z.number().int().nonnegative().optional(),
   }),
   costUsd: z.number().nonnegative(),
+  // Old persisted invocations predate explicit cost quality. Treat them as measured rather
+  // than making an otherwise valid historical execution unreadable after this rollout.
+  costStatus: z.enum(["measured", "unknown", "cassette"]).default("measured"),
   latencyMs: z.number().nonnegative(),
   stopReason: z.enum(["end", "max_tokens", "refusal", "other"]),
   usedFallback: z.boolean(),

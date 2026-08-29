@@ -61,7 +61,10 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
     shadow: openai("gpt-5.6-terra", "medium"),
     fallback: openai("gpt-5.6-terra", "medium"),
     escalation: [anthropic("claude-sonnet-5", "medium"), anthropic("claude-opus-5", "high"), openai("gpt-5.6-sol", "high")],
-    maxOutputTokens: 16_000,
+    // Extraction is evidence enumeration, not long-form writing. The previous 16k ceiling
+    // doubled both worst-case exposure and the preflight reservation without improving the
+    // measured documents; bounded chunks and table passes fit inside 8k.
+    maxOutputTokens: 8_000,
     timeoutMs: 240_000,
   },
   extract_complex: {

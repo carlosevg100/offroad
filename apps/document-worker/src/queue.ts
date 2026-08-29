@@ -23,6 +23,10 @@ export const jobPayloadSchema = z.object({
   layer_object_path: z.string().min(1).optional(),
   layer_upload_url: z.url().optional(),
   locale: z.string().optional(),
+  model_budget: z.object({
+    max_cost_usd: z.number().positive(),
+    max_calls: z.number().int().positive(),
+  }).optional(),
 });
 export type JobPayload = z.infer<typeof jobPayloadSchema>;
 
@@ -47,6 +51,10 @@ export const caseAnalysisJobSchema = claimedJobBase.extend({
     execution_id: z.uuid().optional(),
     execution_mode: z.enum(["primary", "shadow", "replay"]).default("primary"),
     baseline_execution_id: z.uuid().optional(),
+    model_budget: z.object({
+      max_cost_usd: z.number().positive(),
+      max_calls: z.number().int().positive(),
+    }).optional(),
   }),
 });
 export const agentOperationBriefJobSchema = claimedJobBase.extend({
