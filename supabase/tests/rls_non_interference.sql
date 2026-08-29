@@ -3835,10 +3835,68 @@ select set_config(
   true
 );
 do $$
+declare
+  feedback_id uuid;
+  decline_id uuid;
+  correction_id uuid;
+  feedback_at timestamptz := clock_timestamp();
 begin
   if (select count(*) from public.qualified_introductions) <> 1 then
     raise exception 'tenant A cannot read its own qualified-introduction record';
   end if;
+  feedback_id := public.record_qualified_introduction_feedback(
+    '83000000-0000-4000-8000-000000000001',
+    'introduction_accepted', now(), 'lender', 'confirmed'
+  );
+  if feedback_id is null
+    or (select count(*) from public.qualified_introduction_feedback_events) <> 1 then
+    raise exception 'tenant A did not persist qualified-introduction feedback';
+  end if;
+  decline_id := public.record_qualified_introduction_feedback(
+    '83000000-0000-4000-8000-000000000001',
+    'case_declined', feedback_at, 'lender', 'confirmed', 'ticket_outside_mandate'
+  );
+  begin
+    perform public.record_qualified_introduction_feedback(
+      '83000000-0000-4000-8000-000000000001',
+      'process_advanced', feedback_at, 'lender', 'confirmed'
+    );
+    raise exception 'qualified-introduction feedback bypassed same-time decline supersession';
+  exception when invalid_parameter_value then null;
+  end;
+  correction_id := public.record_qualified_introduction_feedback(
+    '83000000-0000-4000-8000-000000000001',
+    'process_advanced', feedback_at, 'lender', 'confirmed',
+    null, 'The lender corrected the mandate classification.', null, null, null, decline_id
+  );
+  if decline_id is null or correction_id is null
+    or (select count(*) from public.qualified_introduction_feedback_events) <> 3 then
+    raise exception 'qualified-introduction feedback did not preserve explicit same-time correction';
+  end if;
+  begin
+    insert into public.qualified_introduction_feedback_events (
+      organization_id, intake_session_id, qualified_introduction_id, case_fingerprint,
+      event_type, source_kind, verification_state, occurred_at, recorded_by
+    ) values (
+      '20000000-0000-4000-8000-000000000001',
+      '40000000-0000-4000-8000-000000000001',
+      '83000000-0000-4000-8000-000000000001', repeat('b', 64),
+      'process_advanced', 'lender', 'reported', now(),
+      '10000000-0000-4000-8000-000000000001'
+    );
+    raise exception 'qualified-introduction feedback accepted a direct insert';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    update public.qualified_introduction_feedback_events set note = 'tampered';
+    raise exception 'qualified-introduction feedback accepted an update';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    delete from public.qualified_introduction_feedback_events;
+    raise exception 'qualified-introduction feedback accepted a delete';
+  exception when insufficient_privilege then null;
+  end;
   begin
     update public.qualified_introductions set rationale = 'tampered';
     raise exception 'qualified-introduction ledger accepted an update';
@@ -3861,9 +3919,18 @@ do $$
 begin
   if (select count(*) from public.qualified_introduction_plans) <> 0
     or (select count(*) from public.qualified_introduction_recipients) <> 0
-    or (select count(*) from public.qualified_introductions) <> 0 then
+    or (select count(*) from public.qualified_introductions) <> 0
+    or (select count(*) from public.qualified_introduction_feedback_events) <> 0 then
     raise exception 'tenant B can read tenant A qualified-introduction data';
   end if;
+  begin
+    perform public.record_qualified_introduction_feedback(
+      '83000000-0000-4000-8000-000000000001',
+      'case_declined', now(), 'lender', 'reported', 'ticket_outside_mandate'
+    );
+    raise exception 'tenant B appended feedback to tenant A qualified introduction';
+  exception when insufficient_privilege then null;
+  end;
 end;
 $$;
 

@@ -35,6 +35,10 @@ export type IntakeOutcome<T = null> = {ok: true; value: T} | {ok: false; error: 
 const ok = <T,>(value: T): IntakeOutcome<T> => ({ok: true, value});
 const fail = <T = null,>(error: IntakeErrorCode): IntakeOutcome<T> => ({ok: false, error});
 
+// PostgREST accepts SQL NULL for nullable function parameters, but generated function argument
+// types do not encode PostgreSQL parameter nullability. Keep that boundary explicit and local.
+const rpcNull = null as never;
+
 /** Maps a Postgres error raised by the intake RPCs to a user-facing error code. */
 export function intakeErrorFrom(error: PostgrestError | null | undefined, fallback: IntakeErrorCode = "save"): IntakeErrorCode {
   const message = error?.message ?? "";
@@ -203,16 +207,16 @@ export async function setIntakeArchetype(
     p_frame_event_id: randomUUID(),
     p_route_event_id: randomUUID(),
     p_scope_event_id: randomUUID(),
-    p_authorization_event_id: advisorCase ? randomUUID() : null,
+    p_authorization_event_id: advisorCase ? randomUUID() : rpcNull,
     p_early_triage_event_id: randomUUID(),
     p_group_scope_event_id: randomUUID(),
     p_archetype: archetype,
     p_confidence: "medium",
     p_rationale: "Declared by the authorized organization member responsible for this guided intake.",
     p_retest_triggers: ["classified documents", "capital need detail"],
-    p_client_legal_name: advisorCase ? clientLegalName : null,
-    p_authority_kind: advisorCase ? authorityKind : null,
-    p_authority_reference: advisorCase && authorityReference ? authorityReference : null,
+    p_client_legal_name: advisorCase ? clientLegalName : undefined,
+    p_authority_kind: advisorCase ? authorityKind ?? undefined : undefined,
+    p_authority_reference: advisorCase && authorityReference ? authorityReference : undefined,
   });
   if (error) {
     logIntakeFailure("set_archetype", error);
@@ -247,10 +251,10 @@ export async function resolveAnalysisScopeSuggestion(
     p_organization_id: runtime.organizationId,
     p_session_id: runtime.sessionId,
     p_suggestion_event_id: randomUUID(),
-    p_scope_event_id: decision === "confirm" ? randomUUID() : null,
+    p_scope_event_id: decision === "confirm" ? randomUUID() : rpcNull,
     p_suggestion_id: suggestionId,
     p_decision: decision,
-    p_role: decision === "confirm" ? role : null,
+    p_role: decision === "confirm" ? role ?? rpcNull : rpcNull,
     p_reason: reason,
   });
   if (error) {

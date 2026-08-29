@@ -20,8 +20,83 @@ export const productWorkflowStateSchema = z.enum([
   "recipient_authorization_required",
   "ready_for_qualified_introduction",
   "introduced",
+  "feedback_capture_in_progress",
 ]);
 export type ProductWorkflowState = z.infer<typeof productWorkflowStateSchema>;
+
+/**
+ * The seven product phases are the stable, executive topology of Offroad. Detailed workflow
+ * states may evolve inside a phase, but no interface or runtime may silently add underwriting,
+ * lender diligence, negotiation, documentation, funding or closing as an Offroad phase.
+ */
+export const productPhaseSchema = z.enum([
+  "understand",
+  "diagnose",
+  "structure",
+  "prepare",
+  "match",
+  "introduce",
+  "capture_feedback",
+]);
+export type ProductPhase = z.infer<typeof productPhaseSchema>;
+
+export const productPhaseOrder = productPhaseSchema.options;
+
+const phaseByState: Readonly<Record<ProductWorkflowState, ProductPhase>> = {
+  private_workspace_ready: "understand",
+  guided_intake_in_progress: "understand",
+  initial_information_received: "understand",
+  understanding_in_progress: "understand",
+  clarification_required: "diagnose",
+  structuring_ready: "diagnose",
+  structuring_in_progress: "structure",
+  structure_confirmation_required: "structure",
+  material_inputs_required: "prepare",
+  production_plan_ready: "prepare",
+  materials_in_progress: "prepare",
+  company_review_required: "prepare",
+  package_approved: "prepare",
+  matching_in_progress: "match",
+  recipient_authorization_required: "match",
+  ready_for_qualified_introduction: "introduce",
+  introduced: "introduce",
+  feedback_capture_in_progress: "capture_feedback",
+};
+
+export function productPhaseForState(state: ProductWorkflowState): ProductPhase {
+  return phaseByState[state];
+}
+
+export const offroadProductBoundary = {
+  version: "2026.08.29-v1",
+  valueProposition: {
+    pt: "Estruturação financeira e acesso qualificado ao mercado de crédito privado.",
+    en: "Financial structuring and qualified access to the private credit market.",
+  },
+  deliverable: {
+    pt: "Caso compreendido, estrutura recomendada, materiais preparados, mercado selecionado e introdução qualificada realizada.",
+    en: "Case understood, recommended structure, materials prepared, market selected and qualified introduction completed.",
+  },
+  offroadPerforms: [
+    "case_understanding",
+    "diagnostic_credit_analysis",
+    "indicative_structure_recommendation",
+    "institutional_material_preparation",
+    "explainable_lender_matching",
+    "authorized_qualified_introduction",
+    "market_feedback_capture",
+  ],
+  lenderPerforms: [
+    "underwriting",
+    "lender_diligence",
+    "credit_approval",
+    "final_proposal",
+    "final_negotiation",
+    "definitive_documentation",
+    "funding",
+    "monitoring",
+  ],
+} as const;
 
 export const productGateSchema = z.enum([
   "enough_to_understand",
@@ -48,7 +123,8 @@ const transitions: Readonly<Record<ProductWorkflowState, readonly ProductWorkflo
   matching_in_progress: ["structuring_ready", "recipient_authorization_required"],
   recipient_authorization_required: ["matching_in_progress", "ready_for_qualified_introduction"],
   ready_for_qualified_introduction: ["matching_in_progress", "introduced"],
-  introduced: ["matching_in_progress"],
+  introduced: ["matching_in_progress", "feedback_capture_in_progress"],
+  feedback_capture_in_progress: ["matching_in_progress"],
 };
 
 export function allowedProductTransitions(state: ProductWorkflowState): readonly ProductWorkflowState[] {

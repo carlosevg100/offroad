@@ -1,5 +1,31 @@
 # Acceptance Evidence
 
+## Fronteira executiva e feedback pós-introdução, 29/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Sete fases | teste de `product-workflow` | ordem exata de `Understand` a `Capture Feedback`; cada estado detalhado pertence a uma única fase |
+| Fronteira de responsabilidade | contrato e teste | análise diagnóstica, estrutura indicativa, materiais, matching e introdução pertencem à Offroad; underwriting, proposta final, funding e monitoring pertencem ao financiador |
+| Ledger de feedback | schema e contrato TypeScript | seis sinais permitidos, fonte e verificação obrigatórias, recusa com motivo e solicitação adicional com contagem |
+| Correção auditável | gold de supersessão | sinal positivo depois de recusa é recusado sem supersessão explícita; evento original permanece preservado |
+| Lender graph | projeção por fundo e mandato | comportamento observado permanece separado da política declarada e conserva fingerprint do mandato |
+| Métricas | gold de outcomes e marcos | duração, precisão, aceitação, avanço, retrabalho, proposta e funding usam denominadores e valores exatos |
+| Uma fonte de progresso | projeção de milestones | marcos vêm somente de eventos `succeeded` de `processing_runs.stages`; não existe ledger paralelo |
+| Isolamento | extensão de `rls_non_interference.sql` | tenant lê o próprio feedback, não insere diretamente, não altera ou apaga e não acessa outro tenant |
+| Staging | Supabase branch `staging`, ref `lxmpsxwlpmfisbauakaz` | migrations `20260829135415`, `20260829135516` e `20260829140352` aplicadas; RLS e FORCE RLS ativos; somente SELECT para authenticated; RPC e projeção privada presentes |
+| Smoke tenant-scoped | transação com rollback em staging | introdução autorizada, recusa e correção no mesmo timestamp; bypass sem supersessão bloqueado, correção explícita preservada e UPDATE direto negado |
+| Advisors | Security e Performance Advisors | zero security lints; FK de `recorded_by` coberta; apenas unused-index notices esperados numa tabela nova e vazia |
+| Gate local focado | Node 24.19.0 | `market-feedback`: 6 testes; `case-understanding`: 52 testes; typechecks verdes |
+| Gate integral local | `pnpm check`, Node 24.19.0 | lint, typecheck, testes e build verdes nos 42 pacotes |
+| CI do PR #313 | jobs obrigatórios | database 1m43s, E2E 3m23s, quality 5m35s e Vercel verdes |
+| Produção, schema | Supabase `ifnogpksgdadruooqydi` | migrations `20260829141835`, `20260829141838` e `20260829141841`; ledger vazio, RLS e FORCE RLS ativos, sem INSERT/UPDATE/DELETE direto, RPC e rollup presentes |
+| Produção, advisors | Security e Performance Advisors | zero security lints; somente três unused-index notices esperados antes do primeiro feedback real |
+| Promoção final | squash merge e deploy Vercel | requerida antes de declarar esta capacidade disponível no produto |
+
+Esta entrega implementa a fronteira e a captura de outcomes. Ela não afirma que estruturação,
+materiais ou matching já atingiram padrão institucional de ponta a ponta; essas capacidades
+continuam sujeitas aos gates verticais do build profundo.
+
 ## Fluxo canônico e fundação da construção profunda, 29/08/2026
 
 | Evidência | Verificação | Resultado |

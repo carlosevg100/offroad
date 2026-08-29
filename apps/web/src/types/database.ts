@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -4384,6 +4384,91 @@ export type Database = {
           },
         ]
       }
+      qualified_introduction_feedback_events: {
+        Row: {
+          amount: number | null
+          case_fingerprint: string
+          created_at: string
+          currency: string | null
+          event_type: string
+          id: string
+          intake_session_id: string
+          note: string | null
+          occurred_at: string
+          organization_id: string
+          qualified_introduction_id: string
+          reason_code: string | null
+          recorded_by: string
+          requested_information_count: number | null
+          source_kind: string
+          supersedes_event_id: string | null
+          updated_at: string
+          verification_state: string
+        }
+        Insert: {
+          amount?: number | null
+          case_fingerprint: string
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          id?: string
+          intake_session_id: string
+          note?: string | null
+          occurred_at: string
+          organization_id: string
+          qualified_introduction_id: string
+          reason_code?: string | null
+          recorded_by: string
+          requested_information_count?: number | null
+          source_kind: string
+          supersedes_event_id?: string | null
+          updated_at?: string
+          verification_state: string
+        }
+        Update: {
+          amount?: number | null
+          case_fingerprint?: string
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          id?: string
+          intake_session_id?: string
+          note?: string | null
+          occurred_at?: string
+          organization_id?: string
+          qualified_introduction_id?: string
+          reason_code?: string | null
+          recorded_by?: string
+          requested_information_count?: number | null
+          source_kind?: string
+          supersedes_event_id?: string | null
+          updated_at?: string
+          verification_state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_introduction_feedba_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_feedba_organization_id_qualified_in_fkey"
+            columns: ["organization_id", "qualified_introduction_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introductions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_feedba_organization_id_supersedes_e_fkey"
+            columns: ["organization_id", "supersedes_event_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introduction_feedback_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       qualified_introduction_plans: {
         Row: {
           authorized_at: string | null
@@ -5096,10 +5181,6 @@ export type Database = {
         }
         Returns: string
       }
-      get_onboarding_bootstrap: {
-        Args: { p_locale: string }
-        Returns: Json
-      }
       apply_agent_operation_brief_proposal: {
         Args: {
           p_event_id: string
@@ -5217,6 +5298,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
       initialize_professional_onboarding: {
         Args: {
           p_full_name: string
@@ -5360,6 +5442,22 @@ export type Database = {
         }
         Returns: string
       }
+      record_qualified_introduction_feedback: {
+        Args: {
+          p_amount?: number
+          p_currency?: string
+          p_event_type: string
+          p_introduction_id: string
+          p_note?: string
+          p_occurred_at: string
+          p_reason_code?: string
+          p_requested_information_count?: number
+          p_source_kind: string
+          p_supersedes_event_id?: string
+          p_verification_state: string
+        }
+        Returns: string
+      }
       register_intake_document_command: {
         Args: {
           p_bucket_id: string
@@ -5389,8 +5487,8 @@ export type Database = {
           p_decision: string
           p_organization_id: string
           p_reason: string
-          p_role: string | null
-          p_scope_event_id: string | null
+          p_role: string
+          p_scope_event_id: string
           p_session_id: string
           p_suggestion_event_id: string
           p_suggestion_id: string
@@ -5450,13 +5548,13 @@ export type Database = {
       }
       save_guided_company_profile: {
         Args: {
-          p_description: string | null
-          p_identifier_hash: string | null
-          p_identifier_last4: string | null
-          p_legal_name: string | null
+          p_description: string
+          p_identifier_hash: string
+          p_identifier_last4: string
+          p_legal_name: string
           p_name: string
           p_session_id: string
-          p_website: string | null
+          p_website: string
         }
         Returns: undefined
       }
@@ -5504,10 +5602,10 @@ export type Database = {
       set_intake_operation_context_command: {
         Args: {
           p_archetype: string
-          p_authority_kind?: string | null
-          p_authority_reference?: string | null
-          p_authorization_event_id: string | null
-          p_client_legal_name?: string | null
+          p_authority_kind?: string
+          p_authority_reference?: string
+          p_authorization_event_id: string
+          p_client_legal_name?: string
           p_confidence: string
           p_early_triage_event_id: string
           p_frame_event_id: string
@@ -5609,19 +5707,19 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
-      worker_load_receivables_evidence: {
-        Args: { p_capability_token: string; p_job_id: string }
-        Returns: Json
-      }
-      worker_load_receivables_provider_context: {
-        Args: { p_capability_token: string; p_job_id: string }
-        Returns: Json
-      }
       worker_load_claim_decisions: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
       worker_load_intake_events: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_receivables_evidence: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_receivables_provider_context: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
@@ -5651,20 +5749,6 @@ export type Database = {
           p_job_id: string
           p_proposal?: Json
           p_response: Json
-        }
-        Returns: Json
-      }
-      worker_record_receivables_evidence: {
-        Args: {
-          p_capability_token: string
-          p_content_kind: string
-          p_content_sha256: string
-          p_job_id: string
-          p_payload_base64: string
-          p_payload_sha256: string
-          p_schema_version: string
-          p_source_sha256: string
-          p_uncompressed_bytes: number
         }
         Returns: Json
       }
@@ -5726,6 +5810,20 @@ export type Database = {
           p_result: Json
         }
         Returns: string
+      }
+      worker_record_receivables_evidence: {
+        Args: {
+          p_capability_token: string
+          p_content_kind: string
+          p_content_sha256: string
+          p_job_id: string
+          p_payload_base64: string
+          p_payload_sha256: string
+          p_schema_version: string
+          p_source_sha256: string
+          p_uncompressed_bytes: number
+        }
+        Returns: Json
       }
       worker_record_retrieval_chunks: {
         Args: { p_capability_token: string; p_chunks: Json; p_job_id: string }

@@ -25,6 +25,19 @@ It records which stages are live, partial or still missing as a connected produc
 production runs are suspended until the state contract and confirmed-basis loop are integrated;
 testing remains allowed by bounded block with an explicit expected artifact and cost ceiling.
 
+The executive topology is now exactly seven phases: `Understand`, `Diagnose`, `Structure`,
+`Prepare`, `Match`, `Introduce` and `Capture Feedback`. Offroad's controllable final deliverable is
+a case understood, an indicative structure recommended, institutional materials prepared, the
+eligible market selected and a qualified introduction completed. Lender underwriting, diligence,
+credit approval, final proposal, definitive documentation, funding and monitoring are never
+Offroad workflow stages.
+
+Post-introduction observations live in an append-only, tenant-scoped feedback ledger. Acceptance,
+decline with reason, additional-information request, process advancement, proposal and funding are
+captured only as market signals. They improve a behavioural lender-graph projection without
+rewriting declared mandates. `processing_runs.stages` remains the sole execution event log for
+pre-introduction timing metrics. See ADR 0015 and `@offroad/market-feedback`.
+
 ### Engineering update: deep-build audit and stages 3 to 4 foundation, 29 August 2026
 
 The warning that the journey after intake remained mostly doctrine was measured against the code.

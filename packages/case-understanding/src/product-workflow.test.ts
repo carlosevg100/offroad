@@ -7,6 +7,9 @@ import {
   buildUnderstandingSnapshot,
   diffUnderstandingSnapshots,
   findingsFromUnderstanding,
+  offroadProductBoundary,
+  productPhaseForState,
+  productPhaseOrder,
   understandingClaimSchema,
   type UnderstandingClaim,
 } from "./product-workflow";
@@ -49,9 +52,30 @@ describe("canonical product workflow", () => {
     expect(() => assertProductStateTransition("understanding_in_progress", "clarification_required")).not.toThrow();
     expect(() => assertProductStateTransition("clarification_required", "structuring_ready")).not.toThrow();
     expect(() => assertProductStateTransition("package_approved", "matching_in_progress")).not.toThrow();
+    expect(() => assertProductStateTransition("introduced", "feedback_capture_in_progress")).not.toThrow();
+    expect(() => assertProductStateTransition("feedback_capture_in_progress", "matching_in_progress")).not.toThrow();
     expect(() => assertProductStateTransition("guided_intake_in_progress", "materials_in_progress")).toThrow(
       "invalid product workflow transition",
     );
+  });
+
+  it("exposes the seven stable product phases without lender execution inside Offroad", () => {
+    expect(productPhaseOrder).toEqual([
+      "understand",
+      "diagnose",
+      "structure",
+      "prepare",
+      "match",
+      "introduce",
+      "capture_feedback",
+    ]);
+    expect(productPhaseForState("clarification_required")).toBe("diagnose");
+    expect(productPhaseForState("company_review_required")).toBe("prepare");
+    expect(productPhaseForState("feedback_capture_in_progress")).toBe("capture_feedback");
+    expect(offroadProductBoundary.offroadPerforms).not.toContain("underwriting");
+    expect(offroadProductBoundary.offroadPerforms).not.toContain("funding");
+    expect(offroadProductBoundary.lenderPerforms).toContain("underwriting");
+    expect(offroadProductBoundary.lenderPerforms).toContain("funding");
   });
 });
 

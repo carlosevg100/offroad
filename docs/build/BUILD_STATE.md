@@ -4,6 +4,44 @@ Atualizado em: 2026-08-29
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Fronteira executiva e feedback pós-introdução, 29/08/2026
+
+O fluxo canônico agora possui uma topologia executiva imutável de sete fases: `Understand`,
+`Diagnose`, `Structure`, `Prepare`, `Match`, `Introduce` e `Capture Feedback`. Os estados
+detalhados continuam preservados dentro dessas fases. Underwriting, diligência do financiador,
+proposta final, negociação definitiva, documentação, desembolso e monitoramento permanecem fora
+do trabalho executado pela Offroad.
+
+`@offroad/case-understanding` contém o contrato tipado da fronteira, o mapeamento de cada estado
+para uma das sete fases e a transição explícita para captura de feedback. O novo pacote
+`@offroad/market-feedback` transforma sinais append-only em outcomes por introdução, projeções
+comportamentais do lender graph e métricas com numeradores e denominadores explícitos. Marcos de
+diagnóstico, estrutura e materiais são projetados do event log existente em
+`processing_runs.stages`; nenhum segundo workflow foi criado para analytics.
+
+A migration `qualified_introduction_feedback` adiciona um ledger tenant-scoped de sinais
+pós-introdução, uma RPC estreita e uma projeção privada por financiador e fingerprint de mandato.
+O ledger não altera mandatos declarados, exige motivo para recusa, contagem para solicitações
+adicionais e supersessão explícita para correções. RLS, FORCE RLS, grants mínimos, auditoria e
+testes de não interferência foram adicionados. As três migrations passaram no branch `staging` do
+Supabase; o Security Advisor reportou zero lints e a FK de `recorded_by` foi coberta após o
+Performance Advisor identificá-la. O smoke tenant-scoped em transação passou, inclusive a correção
+de uma recusa com o mesmo timestamp: sem supersessão explícita o sinal positivo é bloqueado; com
+supersessão, os dois eventos permanecem auditáveis. Restam somente avisos de índice ainda não usado,
+esperados numa tabela nova e vazia. A capacidade permanece candidate por disciplina de rollout;
+o banco reconstruído, o teste tenant completo e os demais gates obrigatórios foram aprovados no
+PR #313 antes da promoção do schema.
+
+O gate integral local passou em Node 24.19.0 nos 42 pacotes: lint, typecheck, todos os testes e
+build. O pacote `market-feedback` fechou seis testes e `case-understanding`, 52.
+
+Após os três gates do PR passarem, as migrations foram promovidas ao Supabase de produção como
+`20260829141835`, `20260829141838` e `20260829141841`. Os tipos foram regenerados diretamente dessa
+fonte. A verificação estrutural confirmou RLS e FORCE RLS, SELECT tenant-scoped, ausência de grants
+diretos de INSERT, UPDATE e DELETE, RPC pública estreita e projeção privada. O ledger entrou vazio.
+O Security Advisor de produção reportou zero lints; o Performance Advisor reportou apenas os três
+índices novos ainda sem uso, comportamento esperado antes do primeiro feedback real.
+
 ## Fluxo canônico e início da construção profunda, 29/08/2026
 
 A sequência integral do produto foi congelada em `docs/product/PRODUCT_WORKFLOW.md`. Intake,

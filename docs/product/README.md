@@ -18,6 +18,7 @@ SHA-256: `6d6bc61aeaa1dc6bd42dd45b7289238925ed4087edaa5d115016871134d876de`
 The DCM boundary and operating model are defined in:
 
 - [`../adr/0012-dcm-advisory-boundary-and-client-journey.md`](../adr/0012-dcm-advisory-boundary-and-client-journey.md)
+- [`../adr/0015-seven-phase-product-boundary-and-market-feedback.md`](../adr/0015-seven-phase-product-boundary-and-market-feedback.md)
 - [`../build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`](../build/OFFROAD_DCM_OPERATING_CONSTITUTION.md)
 
 The House Playbook and canonical procedures define how individual activities are
