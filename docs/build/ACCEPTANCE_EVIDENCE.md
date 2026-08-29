@@ -16,11 +16,15 @@
 | Advisors | Supabase staging | zero security lints; somente avisos de índices novos ainda sem uso |
 | Testes focados | domain-contracts e document-worker | 5 testes de contrato e 59 testes do worker verdes |
 | Gate integral local | `pnpm check` | 42 de 42 pacotes verdes em lint, typecheck, testes e build |
+| CI do PR #314 | jobs obrigatórios | database 1m43s, E2E 3m28s, quality 6m09s e Vercel verdes |
+| CI pós-merge | `main` | banco e RLS, E2E e quality novamente verdes; worker promovido e estável no ECS |
+| Produção, schema | Supabase `ifnogpksgdadruooqydi` | migrations `20260829154103`, `20260829154114` e `20260829154126`; ledger vazio, RLS e FORCE RLS ativos, sem acesso anônimo ou escrita direta do tenant |
+| Produção, advisors | Security e Performance Advisors | zero security lints; somente índices novos ainda sem uso e avisos preexistentes |
 
-O teste SQL legado completo ainda encontra uma falha anterior e não relacionada no requisito de
-auditoria de substituição do governed retrieval. Os testes novos e isolados de Deal State passaram.
-Docker não estava disponível para reconstrução local do banco. Por isso CI de banco e promoção
-controlada continuam obrigatórios antes de produção.
+A execução manual em staging havia encontrado uma inconsistência num cenário legado de governed
+retrieval. A reconstrução limpa do CI aplicou todo o histórico e aprovou a suíte integral de RLS
+tanto no PR quanto depois do merge. Docker continuou indisponível nesta máquina, mas deixou de ser
+um bloqueio porque os dois ambientes efêmeros independentes do CI passaram antes da promoção.
 
 ## Fronteira executiva e feedback pós-introdução, 29/08/2026
 
