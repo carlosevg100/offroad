@@ -1,5 +1,29 @@
 # Acceptance Evidence
 
+## Fluxo canônico e fundação da construção profunda, 29/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Sequência única | `docs/product/PRODUCT_WORKFLOW.md` | estados 0 a 11, quatro gates e fronteiras de responsabilidade definidos sem colapsar entendimento, estruturação, materiais e matching |
+| Medição do playbook | inventário da fonte e dos registries | 270 entradas, 224 procedimentos compilados, 224 `candidate` e zero `production` |
+| Auditoria de profundidade | inspeção de executores e truth sets | registries não são executados como unidades; cobertura nominal e qualidade institucional foram separadas |
+| Transições | testes de `product-workflow` | saltos indevidos entre estados são recusados |
+| Afirmações | validação das sete classes | confirmado exige evidência; calculado exige cálculo; divergente exige fontes conflitantes, impacto e próxima ação |
+| Snapshot | fingerprint e versão | mesma base produz fingerprint determinístico; alteração de claim produz nova versão |
+| Esclarecimentos | prioridade e limite | bloqueios da operação antecedem os demais e o lote atual nunca excede cinco itens |
+| Atualização incremental | grafo de dependências | apenas a afirmação alterada e seus dependentes transitivos ficam inválidos |
+| Gate analítico | requisitos explícitos | cobertura e findings abertos são avaliados por contrato, não por um percentual cosmético |
+| Adapter de recebíveis | gold do `case-engine` | relatório governado produz snapshot com classificação, métricas, fatos, defeitos e perguntas; gravame comprovado é finding crítico confirmado |
+| Fronteira da projeção | inspeção e teste | nenhum claim de financiador ou shortlist; estrutura, materiais, matching e introdução permanecem bloqueados |
+| Promoção de procedimento | teste do `credit-playbook` | maturidade `production` é recusada sem executor, saída, persistência, conexão com produto, golds, adversariais, E2E e avaliação de custo |
+| Testes focados | Node 24.19.0 | `case-understanding`: 51; `case-engine`: 30; `credit-playbook`: 162 testes verdes, além dos typechecks |
+| Gate integral | `pnpm check`, Node 24.19.0 | lint, typecheck, testes e build verdes nos 41 pacotes após a projeção de recebíveis |
+
+Esta evidência aceita somente a fundação dos estados 3 e 4. Ela não acredita entendimento
+setorial completo, alternativas de estrutura, materiais institucionais, matching ou distribuição.
+Cada capacidade será promovida separadamente após atravessar a fatia vertical, a persistência, a
+interface e os casos gold e adversariais definidos no plano de construção profunda.
+
 ## Vertical de recebíveis, trilho real de produção da Fase 7, 28/08/2026
 
 | Evidência | Verificação | Resultado |
