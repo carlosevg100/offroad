@@ -10,41 +10,74 @@
 
 ## 1. Objetivo do produto
 
-A Offroad ajuda empresas e assessores a transformar uma necessidade real de
-capital em uma operação de crédito privado compreendida, fundamentada,
-estruturada, documentada e direcionada aos financiadores com mandato aderente.
+A Offroad transforma uma necessidade de capital ainda desorganizada em um caso
+estruturado, financiável e direcionado aos financiadores aderentes.
 
 A plataforma deve reproduzir, com rastreabilidade e escala, o trabalho de uma
 mesa institucional de DCM:
 
-1. entender a companhia, a operação e seu contexto;
-2. organizar e conciliar as informações recebidas;
-3. identificar lacunas, divergências e decisões ainda abertas;
-4. propor alternativas de estrutura;
-5. produzir materiais dedicados à operação;
-6. obter a aprovação da companhia;
-7. identificar os financiadores aderentes; e
-8. realizar uma introdução qualificada e autorizada.
+O entregável final da Offroad é:
+
+> Caso compreendido, estrutura recomendada, materiais preparados, mercado
+> selecionado e introdução qualificada realizada.
 
 A Offroad não compromete capital, não emite parecer de crédito, não substitui a
 diligência do financiador e não promete aprovação, funding ou fechamento. O
-endpoint do produto é a introdução qualificada.
+endpoint operacional do produto é a introdução qualificada. Os sinais posteriores
+são capturados somente como inteligência de mercado e não ampliam a
+responsabilidade operacional da Offroad.
 
-## 2. Princípios que governam a jornada
+## 2. Fronteira e sete fases do produto
 
-### 2.1 Uma base confirmada antes de produzir
+As sete fases executivas são estáveis. Os estados detalhados da seção 6 existem
+dentro delas e não podem acrescentar underwriting, diligência do financiador,
+negociação final, documentação definitiva, desembolso ou closing ao escopo da
+Offroad.
+
+| Fase | Resultado controlável pela Offroad |
+|---|---|
+| **Understand** | companhia, necessidade de capital, operação pretendida, documentos e contexto compreendidos |
+| **Diagnose** | base conciliada, lacunas e divergências materiais identificadas, análise diagnóstica fundamentada |
+| **Structure** | alternativas comparadas e estrutura-alvo indicativa confirmada pela companhia |
+| **Prepare** | materiais institucionais dedicados, coerentes, rastreáveis e aprovados |
+| **Match** | mercado elegível e shortlist explicada a partir de mandatos vigentes |
+| **Introduce** | destinatários e versões autorizados, com introdução qualificada registrada |
+| **Capture Feedback** | sinais posteriores registrados para melhorar o lender graph e os próximos direcionamentos |
+
+### 2.1 O que a Offroad faz
+
+- análise de crédito para diagnosticar, estruturar e antecipar a leitura do mercado;
+- estrutura-alvo e term sheet indicativos, nunca proposta final do financiador;
+- preparação da companhia, do modelo analítico e do pacote informacional;
+- matching explicável, seleção do mercado e introdução qualificada autorizada; e
+- captura de sinais posteriores como inteligência de mercado.
+
+### 2.2 O que permanece com o financiador
+
+- underwriting e diligência própria;
+- decisão de crédito e aprovação interna;
+- proposta final e negociação dos termos definitivos;
+- documentação, condições precedentes e desembolso; e
+- monitoramento posterior da operação.
+
+Funding pode compor o success fee e as métricas de outcome econômico, mas não é
+uma etapa executada ou controlada pela Offroad.
+
+## 3. Princípios que governam a jornada
+
+### 3.1 Uma base confirmada antes de produzir
 
 Extração não é entendimento. Entendimento não é estruturação. Estruturação não é
 produção. Nenhum material institucional deve ser produzido como versão final
 antes que a base factual e a estrutura tenham sido confirmadas no nível adequado.
 
-### 2.2 Informação suficiente, não perfeição documental
+### 3.2 Informação suficiente, não perfeição documental
 
 O sistema avança quando há informação suficiente para a decisão seguinte. Ele
 não transforma o intake em uma lista infinita de pedidos. Lacunas são priorizadas
 pelo impacto que causam na operação.
 
-### 2.3 Cada solicitação precisa se justificar
+### 3.3 Cada solicitação precisa se justificar
 
 Toda solicitação ao usuário deve informar:
 
@@ -56,25 +89,25 @@ Toda solicitação ao usuário deve informar:
 - se o trabalho pode continuar sem ela; e
 - qual é a consequência de não recebê-la.
 
-### 2.4 Atualização incremental
+### 3.4 Atualização incremental
 
 Uma nova resposta ou documento atualiza apenas os fatos, cálculos, conclusões e
 artefatos que dependem dele. O sistema não repete a análise completa nem refaz
 materiais sem necessidade.
 
-### 2.5 O cliente controla as decisões externas
+### 3.5 O cliente controla as decisões externas
 
 Nenhum material, identidade, destinatário ou contato é liberado sem autorização
 específica. A autorização de trabalho no ambiente privado não equivale a
 autorização de distribuição.
 
-### 2.6 Evidência antes de afirmação
+### 3.6 Evidência antes de afirmação
 
 Fatos materiais mantêm fonte, localização, período, classe de informação,
 confiança e estado de revisão. O sistema mostra quando não consegue provar uma
 afirmação.
 
-## 3. Os quatro gates
+## 4. Os quatro gates
 
 Os gates são decisões explícitas. Percentuais de progresso não os substituem.
 
@@ -88,7 +121,7 @@ Os gates são decisões explícitas. Percentuais de progresso não os substituem
 Quando um gate não é atendido, o produto deve mostrar o bloqueio, sua razão e a
 próxima melhor ação. Nunca deve avançar silenciosamente.
 
-## 4. Fluxo completo
+## 5. Fluxo completo
 
 ### Etapa 0: ambiente privado e autoridade
 
@@ -148,7 +181,7 @@ As informações são apresentadas em três horizontes:
 
 - identificar o arquétipo inicial da operação;
 - compilar a lista adequada do playbook;
-- explicar cada pedido com o contrato de solicitação da seção 2.3; e
+- explicar cada pedido com o contrato de solicitação da seção 3.3; e
 - registrar o que foi respondido, adiado, substituído ou declarado indisponível.
 
 **Saída visível**
@@ -470,7 +503,34 @@ Offroad pode organizar a comunicação e apoiar esclarecimentos, mas não execut
 underwriting, aprovação de crédito, negociação em nome das partes, documentação
 definitiva, desembolso ou closing.
 
-## 5. Estados canônicos
+### Pós-introdução: captura de feedback
+
+**Objetivo**
+
+Registrar o que ocorreu depois da introdução sem transformar a Offroad em
+responsável pelo processo do financiador.
+
+**Sinais permitidos**
+
+- introdução aceita;
+- caso recusado, com motivo;
+- pedido de diligência ou de informação adicional;
+- processo avançou;
+- proposta emitida;
+- operação desembolsada.
+
+Os sinais são append-only, identificam fonte e estado de verificação e permitem
+correção somente por supersessão explícita. Comportamento observado permanece
+separado do mandato declarado: ele informa o lender graph, mas nunca reescreve
+silenciosamente a política de um financiador.
+
+**Limite explícito**
+
+Capturar um pedido de diligência, uma proposta ou um desembolso não significa que
+a Offroad executou essas atividades. A fase termina no registro do sinal e na
+atualização das projeções de mercado.
+
+## 6. Estados canônicos
 
 Os nomes abaixo são a topologia do produto. A interface pode agrupá-los para
 facilitar a navegação, mas não pode eliminar decisões ou alterar sua ordem.
@@ -493,6 +553,7 @@ matching_in_progress
 recipient_authorization_required
 ready_for_qualified_introduction
 introduced
+feedback_capture_in_progress
 ```
 
 Retornos permitidos são explícitos:
@@ -502,23 +563,50 @@ Retornos permitidos são explícitos:
 - mudança de estrutura reabre o plano de produção;
 - mudança factual reabre apenas os materiais dependentes;
 - mudança de versão ou destinatário exige nova autorização específica.
+- feedback pode reabrir matching para uma nova onda, mas não reabre nem executa o
+  processo interno do financiador.
 
-## 6. Agrupamento visual permitido
+## 7. Agrupamento visual permitido
 
 Para reduzir complexidade visual, a interface pode apresentar os seguintes
 marcos, sem modificar os estados internos:
 
-1. **Começar:** ambiente privado e intake;
-2. **Organizar:** recebimento e processamento;
-3. **Entender:** análise, findings e esclarecimentos;
-4. **Estruturar:** alternativas e confirmação;
-5. **Preparar:** plano, materiais e revisão;
-6. **Direcionar:** matching e autorização; e
-7. **Introduzir:** contato qualificado.
+1. **Understand:** ambiente privado, intake, recebimento e entendimento profundo;
+2. **Diagnose:** conciliação, análise diagnóstica, findings e esclarecimentos;
+3. **Structure:** alternativas, estrutura-alvo e confirmação;
+4. **Prepare:** plano, materiais, QA e aprovação;
+5. **Match:** screening, shortlist e autorização de destinatários;
+6. **Introduce:** contato qualificado e rastreado; e
+7. **Capture Feedback:** registro posterior de sinais, sem execução do processo do financiador.
 
 O rótulo visual nunca deve sugerir que uma etapa incompleta foi concluída.
 
-## 7. Regras de custo e execução
+## 8. Métricas canônicas
+
+As métricas medem resultados controláveis e outcomes observados. Toda taxa deve
+mostrar numerador, denominador, período, cobertura e estado da fonte.
+
+| Métrica | Definição |
+|---|---|
+| Tempo até diagnóstico | primeira conclusão persistida de `case:gaps` menos início do caso |
+| Tempo até estrutura recomendada | primeira conclusão persistida de `case:structure` menos início do caso |
+| Tempo até material pronto | primeira conclusão persistida de `case:language_conduct` menos início do caso |
+| Precisão do matching | introduções com sinal positivo dividido apenas pelos casos com outcome conhecido, positivo ou recusado |
+| Introduções aceitas | introduções com sinal positivo dividido por todas as introduções realizadas |
+| Avanço para análise do financiador | introduções que geraram diligência, avanço, proposta ou desembolso dividido por todas as introduções |
+| Retrabalho informacional | itens adicionais pedidos após a introdução, total e por introdução |
+| Propostas por introdução | introduções com proposta emitida dividido por todas as introduções |
+| Desembolso por mandato | quantidade e valor observado, por fingerprint do mandato e moeda, como outcome econômico compartilhado |
+
+Ausência de feedback não é recusa nem sucesso. Matching precision exclui outcomes
+desconhecidos; as demais taxas que usam todas as introduções preservam esse
+denominador explicitamente.
+
+Os marcos de tempo são projeções de `processing_runs.stages`, que continua sendo
+o event log canônico. Não existe um segundo estado de workflow apenas para
+analytics.
+
+## 9. Regras de custo e execução
 
 - Upload não dispara automaticamente a produção completa do caso.
 - Extração e classificação por documento são reaproveitáveis e identificadas por
@@ -531,7 +619,7 @@ O rótulo visual nunca deve sugerir que uma etapa incompleta foi concluída.
 - Nenhum teste pago em produção deve ocorrer sem hipótese, orçamento, critério de
   sucesso e registro do artefato esperado.
 
-## 8. Cenário de aceitação ponta a ponta
+## 10. Cenário de aceitação ponta a ponta
 
 O fluxo só pode ser declarado pronto para teste oficial quando um usuário novo
 conseguir:
@@ -547,7 +635,9 @@ conseguir:
 9. receber modelo, teaser, memo, term sheet e índice de data room reais;
 10. comentar e aprovar o pacote;
 11. revisar uma shortlist explicada e autorizar destinatários; e
-12. registrar uma introdução qualificada com a versão correta.
+12. registrar uma introdução qualificada com a versão correta; e
+13. capturar feedback posterior sem criar tarefas de underwriting, diligência,
+    negociação, documentação ou funding para a Offroad.
 
 Se qualquer item depender de operação manual oculta, fixture, stub ou dado
 inventado, o item deve ser declarado parcial, não concluído.

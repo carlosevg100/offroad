@@ -4384,6 +4384,91 @@ export type Database = {
           },
         ]
       }
+      qualified_introduction_feedback_events: {
+        Row: {
+          amount: number | null
+          case_fingerprint: string
+          created_at: string
+          currency: string | null
+          event_type: string
+          id: string
+          intake_session_id: string
+          note: string | null
+          occurred_at: string
+          organization_id: string
+          qualified_introduction_id: string
+          reason_code: string | null
+          recorded_by: string
+          requested_information_count: number | null
+          source_kind: string
+          supersedes_event_id: string | null
+          updated_at: string
+          verification_state: string
+        }
+        Insert: {
+          amount?: number | null
+          case_fingerprint: string
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          id?: string
+          intake_session_id: string
+          note?: string | null
+          occurred_at: string
+          organization_id: string
+          qualified_introduction_id: string
+          reason_code?: string | null
+          recorded_by: string
+          requested_information_count?: number | null
+          source_kind: string
+          supersedes_event_id?: string | null
+          updated_at?: string
+          verification_state: string
+        }
+        Update: {
+          amount?: number | null
+          case_fingerprint?: string
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          id?: string
+          intake_session_id?: string
+          note?: string | null
+          occurred_at?: string
+          organization_id?: string
+          qualified_introduction_id?: string
+          reason_code?: string | null
+          recorded_by?: string
+          requested_information_count?: number | null
+          source_kind?: string
+          supersedes_event_id?: string | null
+          updated_at?: string
+          verification_state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_introduction_feedba_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_feedba_organization_id_qualified_in_fkey"
+            columns: ["organization_id", "qualified_introduction_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introductions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_feedba_organization_id_supersedes_e_fkey"
+            columns: ["organization_id", "supersedes_event_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introduction_feedback_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       qualified_introduction_plans: {
         Row: {
           authorized_at: string | null
@@ -5357,6 +5442,22 @@ export type Database = {
           p_organization_id: string
           p_package_fingerprint: string
           p_recipient_id: string
+        }
+        Returns: string
+      }
+      record_qualified_introduction_feedback: {
+        Args: {
+          p_amount?: number
+          p_currency?: string
+          p_event_type: string
+          p_introduction_id: string
+          p_note?: string
+          p_occurred_at: string
+          p_reason_code?: string
+          p_requested_information_count?: number
+          p_source_kind: string
+          p_supersedes_event_id?: string
+          p_verification_state: string
         }
         Returns: string
       }
