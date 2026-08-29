@@ -2173,3 +2173,24 @@ orquestradores completos continuam por implementar e não devem ser apresentados
 
 Gate local: `fnm exec --using=24 pnpm check` passou nos 42 pacotes, incluindo 140 testes web, 61 do
 worker e 38 evals. Nenhuma chamada a Anthropic, OpenAI ou outro provedor pago foi feita.
+
+## 35. Sub-DAGs de estruturação e materiais, 29/08/2026
+
+ADR 0016 define que Deal Structuring e Materials Preparation são sub-DAGs do Case Graph. O DAG é
+responsável por ordem, dependências, contratos, gates e orçamento; modelo só entra numa tarefa
+estreita quando houver ganho comprovado. O executor genérico está em
+`packages/case-runner/src/subgraph.ts` e propaga traces para o TaskRun do nó pai.
+
+`case:structure` deixou de esconder toda a atividade em `structureCase`. Agora executa 11 subtasks:
+capacidade, perfil do emissor, cenários, instrumentos, garantias, diagnóstico, verdade operacional,
+termos indicativos, verdade estrutural, pricing e assemble. `case:materials` executa sete:
+inputs, compilação, data room, claim registry, publication gate, material truth e assemble.
+
+Esses sub-DAGs representam apenas capacidades existentes. Não promover `S01-S12` ou `A01-A11`
+por associação. Permanecem lacunas reais: gerar e comparar alternativas completas, fechar sources
+and uses e custo total, confirmar a estrutura com a companhia, compilar modelo financeiro
+editável, renderizar todos os arquivos finais e executar QA visual. A promoção continua por tarefa,
+com procedimento, schema, gold case, adversarial, persistência, interface e custo medido.
+
+Gate local: `fnm exec --using=24 pnpm check` passou nos 42 pacotes. O executor tem 12 testes,
+`case-engine` tem 30, e nenhuma chamada a Anthropic, OpenAI ou outro provedor pago foi feita.

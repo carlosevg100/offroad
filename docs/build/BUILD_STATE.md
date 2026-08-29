@@ -1464,3 +1464,23 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   Security Advisor ficou com zero findings. A prova funcional integral ainda depende do job
   `database`; produção não foi alterada nesta mudança.
 - `pnpm check` completo com Node 24.19.0 passou nos 42 pacotes. Nenhuma API paga foi chamada.
+
+## Deal Structuring e Materials Preparation como sub-DAGs, 29/08/2026
+
+- ADR 0016 fixa a fronteira: o DAG governa dependências, contratos, invalidação, custo e gates;
+  inteligência de modelo pode existir somente dentro de tarefas estreitas. Matemática, filtros e
+  consistency gates permanecem determinísticos.
+- `@offroad/case-runner` v5 contém um executor de subgrafo acíclico. Ramos determinísticos prontos
+  executam em paralelo e trabalho com modelo permanece serializado. Cada subtask registra versão,
+  dependências e fingerprints, ferramentas, fontes, duração, custo, status e código de falha.
+- O antigo monólito `structureCase` foi aberto em 11 tarefas reais: capacidade, perfil do emissor,
+  cenários, screening de instrumentos, garantias, diagnóstico da operação, verdade operacional,
+  termos indicativos, verdade estrutural, pricing e assemble.
+- A preparação de materiais foi aberta em sete tarefas: inputs, compilação, organização da sala,
+  claim registry, gate de publicação, verdade dos materiais e assemble.
+- As 23 TaskSpecs alvo `S01-S12` e `A01-A11` continuam `specified`. O sub-DAG torna o trabalho
+  atual auditável, mas não inventa alternativas comparáveis, modelo financeiro final, renderização
+  ou inspeção visual que ainda não existem em padrão institucional.
+- O refactor preserva os outputs econômicos e usa zero chamadas de modelo. `pnpm check` passou nos
+  42 pacotes: lint, typecheck, todos os testes e build. `case-runner` ficou com 12 testes e
+  `case-engine` com 30; nenhuma API paga foi chamada.

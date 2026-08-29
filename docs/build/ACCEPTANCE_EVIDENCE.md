@@ -606,6 +606,7 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | TaskRun Trace e cache incremental | testes de `case-runner`, `case-engine`, `document-worker` e `queue.test.ts` | ferramentas e fontes rastreadas; cache isolado por caso, versões e prompts; alteração de valor preserva upstream e invalida estrutura e descendentes; prior report nunca entra no input congelado | 2026-08-29 |
 | Cache capability-bound em staging | migration `20260829183106_task_dag_prior_report.sql`, SQL de inspeção e Security Advisor | função privada, wrapper e índice existem; `anon` sem execute; `authenticated` com execute capability-bound; zero security findings; produção intacta | 2026-08-29 |
 | Quality gate local do runtime incremental | `fnm exec --using=24 pnpm check` | lint, typecheck, todos os testes e build aprovados nos 42 pacotes; web com 140 testes, worker com 61 e evals com 38 | 2026-08-29 |
+| Sub-DAGs de estruturação e materiais | `case-runner/src/subgraph.test.ts` + `case-engine/src/engine.test.ts` + `pnpm check` | executor rejeita ciclo e ferramenta fora do contrato, serializa modelos e paraleliza ramos determinísticos; estruturação registra 11 subtasks e materiais registra sete; lint, typecheck, testes e build verdes nos 42 pacotes, sem chamada paga | 2026-08-29 |
 
 ## Regras
 

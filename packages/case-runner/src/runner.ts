@@ -86,6 +86,44 @@ export const stageUsageSchema = z.object({
 });
 export type StageUsage = z.infer<typeof stageUsageSchema>;
 
+export const subtaskStatusSchema = z.enum(["succeeded", "failed", "skipped"]);
+export const subtaskRunTraceSchema = z.object({
+  graphId: z.string().min(1),
+  taskId: z.string().min(1),
+  specVersion: z.string().min(1),
+  executionClass: taskExecutionClassSchema,
+  status: subtaskStatusSchema,
+  dependencies: z.array(z.string().min(1)),
+  dependencyFingerprints: z.record(z.string(), z.string().regex(/^[a-f0-9]{64}$/)),
+  inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  outputFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  allowedTools: z.array(z.string().min(1)),
+  toolsUsed: z.array(z.string().min(1)),
+  sourceIds: z.array(z.string().min(1)),
+  discardedSourceIds: z.array(z.string().min(1)),
+  usage: stageUsageSchema,
+  durationMs: z.number().int().nonnegative(),
+  startedAt: z.iso.datetime(),
+  completedAt: z.iso.datetime(),
+  code: z.string().min(1).optional(),
+}).superRefine((trace, context) => {
+  const allowed = new Set(trace.allowedTools);
+  const ungoverned = trace.toolsUsed.filter((tool) => !allowed.has(tool));
+  if (ungoverned.length > 0) {
+    context.addIssue({code: "custom", path: ["toolsUsed"], message: `tools outside subtask spec: ${ungoverned.join(",")}`});
+  }
+  if (trace.executionClass === "deterministic" && trace.usage.modelCalls > 0) {
+    context.addIssue({code: "custom", path: ["usage", "modelCalls"], message: "a deterministic subtask cannot consume model calls"});
+  }
+  if (trace.status === "succeeded" && !trace.outputFingerprint) {
+    context.addIssue({code: "custom", path: ["outputFingerprint"], message: "a succeeded subtask requires an output fingerprint"});
+  }
+  if (trace.status === "failed" && !trace.code) {
+    context.addIssue({code: "custom", path: ["code"], message: "a failed subtask requires a stable code"});
+  }
+});
+export type SubtaskRunTrace = z.infer<typeof subtaskRunTraceSchema>;
+
 export const taskRunTraceSchema = z.object({
   taskId: caseStageIdSchema,
   specVersion: z.string().min(1),
@@ -115,6 +153,7 @@ export const taskRunTraceSchema = z.object({
   durationMs: z.number().int().nonnegative(),
   startedAt: z.iso.datetime(),
   completedAt: z.iso.datetime(),
+  subtasks: z.array(subtaskRunTraceSchema).default([]),
 }).superRefine((trace, context) => {
   const allowed = new Set(trace.allowedTools);
   const ungoverned = trace.toolsUsed.filter((tool) => !allowed.has(tool));
@@ -200,6 +239,7 @@ export type StageExecution = {
     sourceIds?: string[];
     discardedSourceIds?: string[];
     attemptCount?: number;
+    subtasks?: SubtaskRunTrace[];
   };
 };
 
@@ -496,6 +536,10 @@ async function executeGraphTask(input: {
       });
     }
   } catch (error) {
+    if (error && typeof error === "object" && "subtasks" in error) {
+      const parsedSubtasks = z.array(subtaskRunTraceSchema).safeParse(error.subtasks);
+      if (parsedSubtasks.success) executionTrace = {...executionTrace, subtasks: parsedSubtasks.data};
+    }
     const blocked = error instanceof CaseStageBlocked;
     terminationReason = blocked ? "blocked" : "failed";
     record = {
@@ -514,6 +558,7 @@ async function executeGraphTask(input: {
     toolsUsed: executionTrace?.toolsUsed,
     sourceIds: executionTrace?.sourceIds,
     discardedSourceIds: executionTrace?.discardedSourceIds,
+    subtasks: executionTrace?.subtasks,
     startedAt,
     completedAt: input.now().toISOString(),
   })};
@@ -531,6 +576,7 @@ function traceFor(
     toolsUsed?: string[] | undefined;
     sourceIds?: string[] | undefined;
     discardedSourceIds?: string[] | undefined;
+    subtasks?: SubtaskRunTrace[] | undefined;
     startedAt: string;
     completedAt: string;
   },
@@ -550,6 +596,7 @@ function traceFor(
     toolsUsed: detail.toolsUsed ?? [],
     sourceIds: detail.sourceIds ?? [],
     discardedSourceIds: detail.discardedSourceIds ?? [],
+    subtasks: detail.subtasks ?? [],
     attemptCount: detail.attemptCount,
     terminationReason: detail.terminationReason,
     cacheHit: detail.cacheHit,
