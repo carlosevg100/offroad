@@ -537,13 +537,14 @@
         "pending": "Registrando aceite",
         "acceptedTitle": "Termos de confidencialidade aceitos.",
         "acceptedBody": " Sua captação continua privada e nenhuma informação será compartilhada sem sua autorização.",
-        "returnCta": "Voltar à captação"
+        "returnCta": "Continuar"
       },
       "project": {
         "kicker": "SUA CAPTAÇÃO",
         "title": "Como quer chamar esta captação?",
         "intro": "Escolha um nome curto para encontrar e acompanhar este trabalho na plataforma. Pode ser um codinome conhecido apenas pela sua equipe.",
         "back": "Voltar à confidencialidade",
+        "backToProject": "Voltar à captação",
         "backToWorkspace": "Voltar ao ambiente de trabalho",
         "name": "Nome da captação",
         "namePlaceholder": "Ex.: Projeto Atlas",

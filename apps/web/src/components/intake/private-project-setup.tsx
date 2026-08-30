@@ -175,7 +175,7 @@ export async function PrivateProjectForm({
 
   return (
     <section className="private-project-gate private-project-gate--project">
-      <Link className="intake-guide__back" href={backHref}>{t(editingExistingProject ? "project.back" : "project.backToWorkspace")}</Link>
+      <Link className="intake-guide__back" href={backHref}>{t(editingExistingProject ? "project.backToProject" : "project.back")}</Link>
       <header className="private-project-gate__header">
         <span className="section-kicker">{t("project.kicker")}</span>
         <h2>{t("project.title")}</h2>
