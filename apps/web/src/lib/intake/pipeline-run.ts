@@ -135,35 +135,35 @@ export async function signPipelineDocuments(input: {
   newAttemptId?: () => string;
 }): Promise<Outcome<SignedDocumentEntry[]>> {
   const newAttemptId = input.newAttemptId ?? (() => crypto.randomUUID());
-  const entries: SignedDocumentEntry[] = [];
-
-  for (const document of input.documents) {
+  const entries = await Promise.all(input.documents.map(async (document): Promise<SignedDocumentEntry | null> => {
+    const attemptId = newAttemptId();
     const download = await input.supabase.storage
       .from("opportunity-documents")
       .createSignedUrl(document.object_path, PIPELINE_LINK_TTL_SECONDS);
-    if (download.error || !download.data?.signedUrl) return {ok: false, error: "processing"};
+    if (download.error || !download.data?.signedUrl) return null;
 
     const objectPath = layerObjectPath({
       organizationId: input.organizationId,
       sessionId: input.sessionId,
       sourceDocumentId: document.id,
-      attemptId: newAttemptId(),
+      attemptId,
     });
     // A worker retry must be able to store the same deterministic layer again after a later
     // stage failed. Without an upsert-scoped token, Storage rejects the second PUT before the
     // worker can reach the failed stage, turning a recoverable database timeout into poison.
     const upload = await input.supabase.storage.from("document-layers").createSignedUploadUrl(objectPath, {upsert: true});
-    if (upload.error || !upload.data?.signedUrl) return {ok: false, error: "processing"};
+    if (upload.error || !upload.data?.signedUrl) return null;
 
-    entries.push({
+    return {
       source_document_id: document.id,
       download_url: download.data.signedUrl,
       layer_object_path: objectPath,
       layer_upload_url: upload.data.signedUrl,
-    });
-  }
+    };
+  }));
 
-  return {ok: true, value: entries};
+  if (entries.some((entry) => entry === null)) return {ok: false, error: "processing"};
+  return {ok: true, value: entries as SignedDocumentEntry[]};
 }
 
 /**

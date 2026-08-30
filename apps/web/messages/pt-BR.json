@@ -287,6 +287,7 @@
     "email": "E-mail",
     "password": "Senha",
     "signIn": "Entrar",
+    "signingIn": "Entrando...",
     "signUp": "Criar conta",
     "forgotPassword": "Esqueci minha senha",
     "noAccount": "Ainda não tem uma conta?",
@@ -811,6 +812,9 @@
     "marketReady": "Prontas para mercado",
     "openExceptions": "Exceções abertas",
     "pipeline": "Carteira de oportunidades",
+    "projectInPreparation": "Em preparação",
+    "untitledProject": "Projeto sem nome",
+    "notInformed": "Ainda não informado",
     "providerPortfolio": "Portfólio institucional",
     "registeredFunds": "Fundos cadastrados",
     "activeMandates": "Mandatos ativos",
@@ -1216,8 +1220,10 @@
       "retry": "Tentar processar novamente",
       "failedTitle": "O processamento não foi concluído",
       "failedBody": "Seus documentos continuam salvos e nenhuma informação foi inferida. Tente processar novamente ou adicione outros materiais.",
-      "processingTitle": "Processamento em andamento",
-      "processingBody": "Se esta tela não mudar em alguns instantes, tente processar novamente."
+      "processingTitle": "Arquivos recebidos",
+      "processingBody": "A Offroad está lendo e organizando os materiais em segundo plano. Você pode sair desta página ou iniciar outro projeto; esta análise continuará normalmente.",
+      "processingOverview": "Ir para meus projetos",
+      "processingNewProject": "Criar outro projeto"
     },
     "guided": {
       "progressLabel": "Etapas da preparação da operação",

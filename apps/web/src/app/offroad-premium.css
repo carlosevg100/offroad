@@ -541,6 +541,17 @@
   border-top: 1px solid #d7dbdd;
 }
 
+.intake-processing-status {
+  display: grid;
+  gap: 12px;
+  border-left: 3px solid #789645;
+  background: #f7f9f5;
+}
+
+.intake-processing-status p {margin: 0;}
+.intake-processing-status strong {display: inline-flex; align-items: center; gap: 6px; color: #1b2225;}
+.intake-processing-status > div {display: flex; flex-wrap: wrap; gap: 18px;}
+
 .intake-review {
   display: grid;
   gap: 20px;

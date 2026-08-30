@@ -152,6 +152,13 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   if (!supabase) redirect(`/${locale}/login?error=provider`);
   const {data: bootstrapData, error: bootstrapError} = await supabase.rpc("get_onboarding_bootstrap", {p_locale: locale});
   if (bootstrapError || !bootstrapData) {
+    if (bootstrapError?.code === "P0002") {
+      const {data: workspaceData} = await supabase.rpc("get_workspace_bootstrap");
+      const workspace = workspaceData && typeof workspaceData === "object" && !Array.isArray(workspaceData)
+        ? workspaceData as Record<string, unknown>
+        : null;
+      if (workspace?.workspace_ready === true) redirect(`/${locale}/app`);
+    }
     redirect(bootstrapError?.code === "42501" ? `/${locale}/login` : `/${locale}/signup?error=session`);
   }
   const bootstrap = bootstrapData as unknown as OnboardingBootstrap;
@@ -169,6 +176,15 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const intakeSessionId = text(answers.intake_session_id);
   const storedProjectName = text(answers.project_name);
   const guidedCompanyAnswers = answerObject(answers, "company_profile");
+  if (
+    journey !== "capital_provider"
+    && bootstrap.terms_accepted
+    && intakeSessionId
+    && state.setup !== "terms"
+    && state.setup !== "project"
+  ) {
+    redirect(`/${locale}/app/new?mode=documents&session=${intakeSessionId}`);
+  }
   const intakeReview = journey !== "capital_provider" && intakeSessionId
     ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId})
     : null;

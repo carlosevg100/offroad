@@ -1,4 +1,4 @@
-import {ArrowLeft, ArrowRight} from "lucide-react";
+import {ArrowLeft} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
@@ -7,6 +7,7 @@ import {AuthShell} from "@/components/auth-shell";
 import type {AppLocale} from "@/i18n/routing";
 
 import {signInWithPassword} from "./actions";
+import {LoginSubmit} from "./login-submit";
 
 export const metadata: Metadata = {title: "Institutional Access", robots: {index: false, follow: false}};
 
@@ -56,9 +57,7 @@ export default async function LoginPage({params, searchParams}: Props) {
             <Link href={`/${locale}/forgot-password`}>{t("forgotPassword")}</Link>
           </div>
 
-          <button className="button auth-form__primary" type="submit">
-            {t("signIn")} <ArrowRight aria-hidden="true" size={15} />
-          </button>
+          <LoginSubmit idle={t("signIn")} pending={t("signingIn")} />
           <div className="auth-form__switch">
             <span>{t("noAccount")}</span>
             <Link className="text-link" href={`/${locale}/signup`}>{t("signUp")}</Link>

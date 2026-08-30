@@ -83,6 +83,16 @@ export async function loadIntakeSession(runtime: IntakeRuntime) {
   return data;
 }
 
+/** Lightweight project read used while the user is collecting documents or a worker is running. */
+export async function loadIntakeCollection(runtime: IntakeRuntime): Promise<{session: IntakeSession | null; documents: IntakeDocument[]}> {
+  const {supabase, organizationId, sessionId} = runtime;
+  const [sessionResult, documentsResult] = await Promise.all([
+    supabase.from("document_intake_sessions").select("*").eq("organization_id", organizationId).eq("id", sessionId).maybeSingle(),
+    supabase.from("source_documents").select("id, original_name, byte_size, object_path").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("created_at"),
+  ]);
+  return {session: sessionResult.data, documents: documentsResult.data ?? []};
+}
+
 /** Session, documents (with 15-minute evidence links), candidates and issues for the review UI. */
 export async function loadIntakeReview(runtime: IntakeRuntime): Promise<{session: IntakeSession | null; documents: IntakeDocument[]; candidates: IntakeCandidate[]; issues: IntakeIssue[]}> {
   const {supabase, organizationId, sessionId} = runtime;
@@ -424,23 +434,15 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
   const {data: documents} = await supabase.from("source_documents").select("id, original_name, sha256").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("created_at");
   if (!documents?.length) return fail("documents");
 
-  // Content verification: recompute SHA-256 from the stored objects so the extractor and the
-  // audit trail rely on server-verified hashes, never on the browser's claim. The pipeline
-  // needs this too — the worker's gate refuses any file whose bytes do not match what the app
-  // recorded, and that comparison is only meaningful against a server-computed hash.
-  const verification = await verifyIntakeDocuments(runtime);
-  if (!verification.ok) {
-    logIntakeFailure("verify_documents", null);
-    await markSessionFailed(runtime, "verification_failed");
-    return fail("processing");
-  }
-
   const [{data: organization}, {data: rollout}] = await Promise.all([
     supabase.from("organizations").select("pipeline_enabled").eq("id", organizationId).maybeSingle(),
     supabase.from("organization_rollout_policies").select("state").eq("organization_id", organizationId).maybeSingle(),
   ]);
 
   if (pipelineEnabledFor({...organization, rollout_state: rollout?.state})) {
+    // The worker's E0 gate downloads the bytes, checks size and SHA-256 and scans the file
+    // before parsing. Repeating that download here made the user wait for work the worker is
+    // explicitly designed to own, so production processing now returns as soon as jobs exist.
     const run = await startProcessingRun({supabase, organizationId, sessionId, trigger: "upload"});
     if (!run.ok) {
       logIntakeFailure("begin_processing_run", null);
@@ -450,6 +452,14 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     // The session stays `processing`; the worker's last job is what moves it on. Returning
     // here is the point — the fixture path must not also write a generation of candidates.
     return ok(null);
+  }
+
+  // The local fixture has no worker gate, so it keeps the server-side verification path.
+  const verification = await verifyIntakeDocuments(runtime);
+  if (!verification.ok) {
+    logIntakeFailure("verify_documents", null);
+    await markSessionFailed(runtime, "verification_failed");
+    return fail("processing");
   }
 
   // The fixture path owns one disposable generation and therefore clears the prior result.

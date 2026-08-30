@@ -1,10 +1,13 @@
 "use server";
 
+import {createHash} from "node:crypto";
+
 import {redirect} from "next/navigation";
 import {z} from "zod";
 
 import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {createClient} from "@/lib/supabase/server";
 import {
   acceptHighConfidenceCandidates,
   confirmIntakeCase,
@@ -32,7 +35,19 @@ function localeFrom(formData: FormData): AppLocale {
   return routing.locales.includes(raw as AppLocale) ? raw as AppLocale : routing.defaultLocale;
 }
 
-type GuidedStep = "operation" | "request" | "documents";
+type GuidedStep = "company" | "operation" | "request" | "documents";
+
+// PostgREST accepts SQL NULL for nullable function parameters, while generated
+// function argument types do not encode PostgreSQL nullability.
+const rpcNull = null as never;
+
+const guidedCompanySchema = z.object({
+  name: z.string().trim().min(2).max(160),
+  legalName: z.string().trim().max(200),
+  website: z.union([z.literal(""), z.string().url().max(500)]),
+  description: z.string().trim().max(5000),
+  identifier: z.string().trim().max(40),
+});
 
 function intakeUrl(locale: string, sessionId: string, error?: IntakeErrorCode, step: GuidedStep = "documents") {
   return `/${locale}/app/new?mode=documents&session=${sessionId}&step=${step}${error ? `&error=${error}` : ""}`;
@@ -61,19 +76,64 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
     representationDeclared: value(formData, "representation_declared"),
   });
   if (!parsed.success) redirect(`/${locale}/app/new?error=validation`);
-  const {supabase, organization, userId} = await requireWorkspace(locale);
-  if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
-  const outcome = await startIntakeSession({
-    supabase,
-    organizationId: organization.id,
-    userId,
-    locale,
-    journey: organization.organization_type === "originator" ? "originator" : "company",
-    projectName: parsed.data.projectName,
-    identityPolicy: parsed.data.identityPolicy,
+  const supabase = await createClient();
+  if (!supabase) redirect(`/${locale}/login?error=provider`);
+  const {data, error} = await supabase.rpc("start_workspace_project", {
+    p_locale: locale,
+    p_project_name: parsed.data.projectName,
+    p_identity_policy: parsed.data.identityPolicy,
+    p_representation_declared: true,
   });
-  if (!outcome.ok) redirect(`/${locale}/app/new?error=${outcome.error}`);
-  redirect(intakeUrl(locale, outcome.value, undefined, "operation"));
+  let sessionId = data;
+  if (error && (error.code === "PGRST202" || error.code === "42883")) {
+    const {organization, userId} = await requireWorkspace(locale);
+    const fallback = await startIntakeSession({
+      supabase,
+      organizationId: organization.id,
+      userId,
+      locale,
+      journey: organization.organization_type === "originator" ? "originator" : "company",
+      projectName: parsed.data.projectName,
+      identityPolicy: parsed.data.identityPolicy,
+    });
+    if (!fallback.ok) redirect(`/${locale}/app/new?error=${fallback.error}`);
+    sessionId = fallback.value;
+  } else if (error) {
+    const errorCode = error.message.includes("project_name_already_in_use") ? "duplicate" : error.code === "P0002" ? "session" : "save";
+    redirect(`/${locale}/app/new?error=${errorCode}`);
+  }
+  if (!sessionId) {
+    redirect(`/${locale}/app/new?error=save`);
+  }
+  redirect(intakeUrl(locale, sessionId, undefined, "operation"));
+}
+
+export async function saveWorkspaceGuidedCompanyProfile(formData: FormData) {
+  const locale = localeFrom(formData);
+  const sessionId = value(formData, "session_id");
+  const runtime = await workspaceRuntime(locale, sessionId);
+  const parsed = guidedCompanySchema.safeParse({
+    name: value(formData, "company_name"),
+    legalName: value(formData, "legal_name"),
+    website: value(formData, "website"),
+    description: value(formData, "description"),
+    identifier: value(formData, "legal_identifier").replace(/[^0-9A-Za-z]/g, ""),
+  });
+  if (!parsed.success) redirect(intakeUrl(locale, sessionId, "validation", "company"));
+
+  const identifierHash = parsed.data.identifier
+    ? `\\x${createHash("sha256").update(parsed.data.identifier).digest("hex")}`
+    : undefined;
+  const {error} = await runtime.supabase.rpc("save_guided_company_profile", {
+    p_session_id: runtime.sessionId,
+    p_name: parsed.data.name,
+    p_legal_name: parsed.data.legalName || rpcNull,
+    p_website: parsed.data.website || rpcNull,
+    p_description: parsed.data.description || rpcNull,
+    p_identifier_hash: identifierHash ?? rpcNull,
+    p_identifier_last4: parsed.data.identifier.slice(-4) || rpcNull,
+  });
+  redirect(intakeUrl(locale, sessionId, error ? "save" : undefined, error ? "company" : "operation"));
 }
 
 export async function setWorkspaceIntakeOperation(formData: FormData) {

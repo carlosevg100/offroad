@@ -1,4 +1,4 @@
-import {AlertTriangle, ArrowLeft, ArrowRight, LoaderCircle, ShieldCheck} from "lucide-react";
+import {AlertTriangle, ArrowLeft, ArrowRight, ShieldCheck} from "lucide-react";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
@@ -16,6 +16,7 @@ import {IntakeInformation} from "./intake-information";
 import {IntakeGovernance} from "./intake-governance";
 import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
 import {IntakeCompanyProfile} from "./intake-company-profile";
+import {IntakeProcessingStatus} from "./intake-processing-status";
 
 type GuidedStage = "company" | "operation" | "request" | "documents";
 
@@ -71,7 +72,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
   const failed = session.status === "failed";
   const processing = session.status === "processing";
   const answeredBrief = briefCompleteness(dealBrief ?? {}).answered;
-  const currentStage: GuidedStage = surface === "onboarding" && (stage === "company" || !companyProfileComplete)
+  const currentStage: GuidedStage = stage === "company" || !companyProfileComplete
     ? "company"
     : !checklist?.archetypeId
     ? "operation"
@@ -80,7 +81,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
       : stage ?? (answeredBrief === 0 ? "request" : "documents");
   const milestoneNumber = currentStage === "company" ? 1 : currentStage === "documents" ? 3 : 2;
   const introKey = surface === "workspace"
-    ? currentStage === "operation" ? "workspaceOperation" : currentStage === "request" ? "workspaceRequest" : "workspaceDocuments"
+    ? currentStage === "company" ? "company" : currentStage === "operation" ? "workspaceOperation" : currentStage === "request" ? "workspaceRequest" : "workspaceDocuments"
     : currentStage;
   const resolvedBackHref = backHref ?? (stageBaseHref && currentStage !== "operation"
     ? currentStage === "company"
@@ -111,24 +112,14 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         state={failed ? "failed" : processing ? "processing" : "open"}
         surface={surface}
       />
-      {surface === "onboarding" ? (
-        <nav aria-label={t("guided.progressLabel")} className="intake-milestones">
-          {[1, 2, 3, 4, 5, 6, 7].map((number) => (
-            <span className={number === milestoneNumber ? "is-current" : number < milestoneNumber ? "is-complete" : "is-locked"} key={number}>
-              <i>{number < milestoneNumber ? "✓" : String(number).padStart(2, "0")}</i>
-              <b>{t(`guided.milestones.${number}`)}</b>
-            </span>
-          ))}
-        </nav>
-      ) : (
-        <nav aria-label={t("guided.progressLabel")} className="intake-guide__progress">
-          {[1, 2, 3].map((number) => (
-            <span className={number === milestoneNumber ? "is-current" : number < milestoneNumber ? "is-complete" : ""} key={number}>
-              <i>{number < milestoneNumber ? "✓" : number}</i>{t(`guided.step${number}`)}
-            </span>
-          ))}
-        </nav>
-      )}
+      <nav aria-label={t("guided.progressLabel")} className="intake-milestones">
+        {[1, 2, 3, 4, 5, 6, 7].map((number) => (
+          <span className={number === milestoneNumber ? "is-current" : number < milestoneNumber ? "is-complete" : "is-locked"} key={number}>
+            <i>{number < milestoneNumber ? "✓" : String(number).padStart(2, "0")}</i>
+            <b>{t(`guided.milestones.${number}`)}</b>
+          </span>
+        ))}
+      </nav>
 
       {resolvedBackHref ? (
         <div className="intake-guide__navigation">
@@ -150,19 +141,23 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         </div>
       ) : null}
       {processing ? (
-        <div className="form-notice" role="status">
-          <strong><LoaderCircle aria-hidden="true" className="spin" size={14} /> {t("collect.processingTitle")}</strong> {t("collect.processingBody")}
-        </div>
+        <IntakeProcessingStatus
+          body={t("collect.processingBody")}
+          locale={locale}
+          newProjectLabel={t("collect.processingNewProject")}
+          overviewLabel={t("collect.processingOverview")}
+          title={t("collect.processingTitle")}
+        />
       ) : null}
 
-      {currentStage !== "company" ? <IntakeGovernance
+      {!processing && currentStage !== "company" ? <IntakeGovernance
         locale={locale}
         resolveScopeSuggestion={resolveScopeSuggestionAction}
         revokeAuthorization={revokeAuthorizationAction}
         session={session}
       /> : null}
 
-      {currentStage === "company" && companyProfileAction ? (
+      {!processing && currentStage === "company" && companyProfileAction ? (
         <IntakeCompanyProfile
           action={companyProfileAction}
           documents={documents}
@@ -175,7 +170,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {currentStage === "operation" && setOperationAction ? (
+      {!processing && currentStage === "operation" && setOperationAction ? (
         <IntakeOperation
           locale={locale}
           selected={(checklist?.archetypeId ?? null) as ArchetypeId | null}
@@ -189,11 +184,11 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {currentStage === "request" && dealBriefAction && checklist?.archetypeId ? (
+      {!processing && currentStage === "request" && dealBriefAction && checklist?.archetypeId ? (
         <IntakeDealBrief action={dealBriefAction} brief={dealBrief ?? {}} locale={locale} sessionId={session.id} />
       ) : null}
 
-      {currentStage === "documents" ? (
+      {!processing && currentStage === "documents" ? (
         <div className="intake-guide__documents">
           <IntakeChecklist
             checklist={checklist ?? null}
@@ -228,7 +223,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         </div>
       ) : null}
 
-      {currentStage === "documents" && checklist && answerAction ? (
+      {!processing && currentStage === "documents" && checklist && answerAction ? (
         <IntakeInformation
           action={answerAction}
           items={checklist.activeBatch.filter((item) => item.source === "information")}
@@ -237,15 +232,15 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {currentStage === "documents" ? <div className="intake-collect__process">
+      {!processing && currentStage === "documents" ? <div className="intake-collect__process">
         <div><ShieldCheck size={15} /><span>{t("collect.notice")}</span></div>
-        <form action={processAction}>
+        {!processing ? <form action={processAction}>
           <input name="locale" type="hidden" value={locale} />
           <input name="session_id" type="hidden" value={session.id} />
           <button className="button" disabled={!documents.length} type="submit">
-            {failed || processing ? t("collect.retry") : t("collect.analyze")}<ArrowRight size={15} />
+            {failed ? t("collect.retry") : t("collect.analyze")}<ArrowRight size={15} />
           </button>
-        </form>
+        </form> : null}
       </div> : null}
 
     </section>
