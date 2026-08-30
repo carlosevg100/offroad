@@ -537,13 +537,14 @@
         "pending": "Recording acceptance",
         "acceptedTitle": "Confidentiality terms accepted.",
         "acceptedBody": " Your financing remains private and no information will be shared without your authorization.",
-        "returnCta": "Return to the financing"
+        "returnCta": "Continue"
       },
       "project": {
         "kicker": "YOUR FINANCING",
         "title": "What would you like to call this financing?",
         "intro": "Choose a short name to find and follow this work in the platform. It may be a codename known only to your team.",
         "back": "Back to confidentiality",
+        "backToProject": "Back to the financing",
         "backToWorkspace": "Back to workspace",
         "name": "Financing name",
         "namePlaceholder": "E.g. Project Atlas",
