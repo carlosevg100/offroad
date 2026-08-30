@@ -1399,6 +1399,7 @@ export type Database = {
           capital_objective: string | null
           capital_urgency: string | null
           collateral_kinds: string[] | null
+          company_profile_confirmed_at: string | null
           confirmed_at: string | null
           created_at: string
           current_run_id: string | null
@@ -1441,6 +1442,7 @@ export type Database = {
           capital_objective?: string | null
           capital_urgency?: string | null
           collateral_kinds?: string[] | null
+          company_profile_confirmed_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           current_run_id?: string | null
@@ -1483,6 +1485,7 @@ export type Database = {
           capital_objective?: string | null
           capital_urgency?: string | null
           collateral_kinds?: string[] | null
+          company_profile_confirmed_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           current_run_id?: string | null
@@ -5603,6 +5606,10 @@ export type Database = {
       }
       get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
       get_workspace_bootstrap: { Args: never; Returns: Json }
+      get_workspace_project_setup: {
+        Args: { p_locale: string }
+        Returns: Json
+      }
       initialize_professional_onboarding: {
         Args: {
           p_full_name: string
@@ -5627,6 +5634,14 @@ export type Database = {
           p_locale: string
           p_project_name: string
           p_representation_declared: boolean
+        }
+        Returns: string
+      }
+      update_workspace_project: {
+        Args: {
+          p_identity_policy: string
+          p_project_name: string
+          p_session_id: string
         }
         Returns: string
       }
@@ -5881,6 +5896,18 @@ export type Database = {
         Returns: string
       }
       save_guided_company_profile: {
+        Args: {
+          p_description: string
+          p_identifier_hash: string
+          p_identifier_last4: string
+          p_legal_name: string
+          p_name: string
+          p_session_id: string
+          p_website: string
+        }
+        Returns: undefined
+      }
+      save_project_company_profile: {
         Args: {
           p_description: string
           p_identifier_hash: string

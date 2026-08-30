@@ -66,6 +66,10 @@ async function workspaceRuntime(locale: AppLocale, sessionId: string): Promise<I
 
 export async function startWorkspaceDocumentIntake(formData: FormData) {
   const locale = localeFrom(formData);
+  const existingSessionId = value(formData, "session_id");
+  const projectSetupUrl = existingSessionId
+    ? `/${locale}/app/new?mode=documents&session=${existingSessionId}&setup=project`
+    : `/${locale}/app/new?setup=project`;
   const parsed = z.object({
     projectName: z.string().trim().min(2).max(80),
     identityPolicy: z.enum(["identified_restricted", "blind_initial"]),
@@ -75,17 +79,23 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
     identityPolicy: value(formData, "identity_policy"),
     representationDeclared: value(formData, "representation_declared"),
   });
-  if (!parsed.success) redirect(`/${locale}/app/new?error=validation`);
+  if (!parsed.success) redirect(`${projectSetupUrl}&error=validation`);
   const supabase = await createClient();
   if (!supabase) redirect(`/${locale}/login?error=provider`);
-  const {data, error} = await supabase.rpc("start_workspace_project", {
-    p_locale: locale,
-    p_project_name: parsed.data.projectName,
-    p_identity_policy: parsed.data.identityPolicy,
-    p_representation_declared: true,
-  });
+  const {data, error} = existingSessionId
+    ? await supabase.rpc("update_workspace_project", {
+        p_session_id: existingSessionId,
+        p_project_name: parsed.data.projectName,
+        p_identity_policy: parsed.data.identityPolicy,
+      })
+    : await supabase.rpc("start_workspace_project", {
+        p_locale: locale,
+        p_project_name: parsed.data.projectName,
+        p_identity_policy: parsed.data.identityPolicy,
+        p_representation_declared: true,
+      });
   let sessionId = data;
-  if (error && (error.code === "PGRST202" || error.code === "42883")) {
+  if (!existingSessionId && error && (error.code === "PGRST202" || error.code === "42883")) {
     const {organization, userId} = await requireWorkspace(locale);
     const fallback = await startIntakeSession({
       supabase,
@@ -96,16 +106,44 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
       projectName: parsed.data.projectName,
       identityPolicy: parsed.data.identityPolicy,
     });
-    if (!fallback.ok) redirect(`/${locale}/app/new?error=${fallback.error}`);
+    if (!fallback.ok) redirect(`${projectSetupUrl}&error=${fallback.error}`);
     sessionId = fallback.value;
   } else if (error) {
     const errorCode = error.message.includes("project_name_already_in_use") ? "duplicate" : error.code === "P0002" ? "session" : "save";
-    redirect(`/${locale}/app/new?error=${errorCode}`);
+    redirect(`${projectSetupUrl}&error=${errorCode}`);
   }
   if (!sessionId) {
-    redirect(`/${locale}/app/new?error=save`);
+    redirect(`${projectSetupUrl}&error=save`);
   }
-  redirect(intakeUrl(locale, sessionId, undefined, "operation"));
+  redirect(intakeUrl(locale, sessionId, undefined, "company"));
+}
+
+export async function acceptWorkspacePrivateTerms(formData: FormData) {
+  const locale = localeFrom(formData);
+  const parsed = z.object({
+    signatoryName: z.string().trim().min(2).max(160),
+    signatoryTitle: z.string().trim().min(2).max(160),
+    termsAgreed: z.literal("confirmed"),
+    informationRightsDeclared: z.literal("confirmed"),
+  }).safeParse({
+    signatoryName: value(formData, "signatory_name"),
+    signatoryTitle: value(formData, "signatory_title"),
+    termsAgreed: value(formData, "terms_agreed"),
+    informationRightsDeclared: value(formData, "information_rights_declared"),
+  });
+  if (!parsed.success) redirect(`/${locale}/app/new?setup=terms&error=validation`);
+
+  const supabase = await createClient();
+  if (!supabase) redirect(`/${locale}/login?error=provider`);
+  const {error} = await supabase.rpc("accept_private_workspace_terms", {
+    p_locale: locale,
+    p_signatory_name: parsed.data.signatoryName,
+    p_signatory_title: parsed.data.signatoryTitle,
+    p_terms_agreed: true,
+    p_information_rights_declared: true,
+  });
+  if (error) redirect(`/${locale}/app/new?setup=terms&error=save`);
+  redirect(`/${locale}/app/new?setup=project`);
 }
 
 export async function saveWorkspaceGuidedCompanyProfile(formData: FormData) {
@@ -124,7 +162,7 @@ export async function saveWorkspaceGuidedCompanyProfile(formData: FormData) {
   const identifierHash = parsed.data.identifier
     ? `\\x${createHash("sha256").update(parsed.data.identifier).digest("hex")}`
     : undefined;
-  const {error} = await runtime.supabase.rpc("save_guided_company_profile", {
+  const {error} = await runtime.supabase.rpc("save_project_company_profile", {
     p_session_id: runtime.sessionId,
     p_name: parsed.data.name,
     p_legal_name: parsed.data.legalName || rpcNull,

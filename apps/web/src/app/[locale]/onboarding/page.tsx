@@ -261,7 +261,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       ? "verified"
       : "private";
   const intakeBrief = intakeSession ? dealBriefOf(intakeSession) : {};
-  const companyProfileComplete = Object.keys(guidedCompanyAnswers).length > 0;
+  const companyProfileComplete = Boolean(intakeReview?.session?.company_profile_confirmed_at);
   const guidedMilestones = ["company", "operation", "information", "understanding", "clarifications", "package", "investors"] as const;
   const guidedMilestoneIndex = requestedIntakeStage === "company" || !companyProfileComplete
     ? 0

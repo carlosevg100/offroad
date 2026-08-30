@@ -24,6 +24,7 @@ type Props = {
     jobTitle: string;
   };
   project?: {
+    id?: string;
     name: string;
     identityPolicy: string;
   };
@@ -164,7 +165,7 @@ export async function PrivateProjectForm({
   editingExistingProject?: boolean;
   journey: "company" | "originator";
   locale: string;
-  project?: {name: string; identityPolicy: string};
+  project?: {id?: string; name: string; identityPolicy: string};
   representationAlreadyDeclared?: boolean;
 }) {
   const t = await getTranslations({locale, namespace: "Onboarding.privateProject"});
@@ -183,6 +184,7 @@ export async function PrivateProjectForm({
 
       <form action={action} className="private-project-gate__form">
         <input name="locale" type="hidden" value={locale} />
+        {project?.id ? <input name="session_id" type="hidden" value={project.id} /> : null}
         <label className="field private-project-gate__project-name">
           <span>{t("project.name")}</span>
           <input autoComplete="off" defaultValue={project?.name} maxLength={80} minLength={2} name="project_name" placeholder={t("project.namePlaceholder")} required />
