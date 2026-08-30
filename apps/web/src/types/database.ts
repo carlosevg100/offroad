@@ -1394,6 +1394,8 @@ export type Database = {
           analysis_scope: Json | null
           analysis_scope_suggestions: Json | null
           archetype: string | null
+          archived_at: string | null
+          archived_by: string | null
           capital_consequence: string | null
           capital_currency: string | null
           capital_objective: string | null
@@ -1437,6 +1439,8 @@ export type Database = {
           analysis_scope?: Json | null
           analysis_scope_suggestions?: Json | null
           archetype?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           capital_consequence?: string | null
           capital_currency?: string | null
           capital_objective?: string | null
@@ -1480,6 +1484,8 @@ export type Database = {
           analysis_scope?: Json | null
           analysis_scope_suggestions?: Json | null
           archetype?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           capital_consequence?: string | null
           capital_currency?: string | null
           capital_objective?: string | null
@@ -5608,6 +5614,14 @@ export type Database = {
       get_workspace_bootstrap: { Args: never; Returns: Json }
       get_workspace_project_setup: {
         Args: { p_locale: string }
+        Returns: Json
+      }
+      manage_workspace_project: {
+        Args: {
+          p_action: string
+          p_project_name?: string
+          p_session_id: string
+        }
         Returns: Json
       }
       initialize_professional_onboarding: {

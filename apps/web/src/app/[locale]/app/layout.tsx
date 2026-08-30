@@ -1,9 +1,10 @@
-import {Bell, Building2, ChevronDown, ChevronRight, CircleGauge, FileLock2, FolderOpen, Landmark, LogOut, Plus, Route, Search, Settings2, ShieldCheck} from "lucide-react";
+import {Building2, CircleGauge, FileLock2, Landmark, LogOut} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
 import {BrandMark} from "@/components/brand-mark";
+import {WorkspaceProjectNavigation, type WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
 import type {AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
@@ -17,41 +18,72 @@ type Props = {children: React.ReactNode; params: Promise<{locale: string}>};
 export default async function ApplicationLayout({children, params}: Props) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "App"});
-  const {organization, membership, email} = await requireWorkspace(locale);
+  const {organization, membership, email, supabase} = await requireWorkspace(locale);
   const canOriginate = organization.organization_type !== "capital_provider";
+  const {data: navigationSessions} = canOriginate
+    ? await supabase.from("document_intake_sessions")
+        .select("id, project_name, status, opportunity_id, updated_at, archived_at")
+        .eq("organization_id", organization.id)
+        .is("archived_at", null)
+        .neq("status", "cancelled")
+        .order("updated_at", {ascending: false})
+        .limit(100)
+    : {data: []};
+  const projects: WorkspaceNavigationProject[] = (navigationSessions ?? []).map((session) => ({
+    href: session.status === "confirmed" && session.opportunity_id
+      ? `/${locale}/app/opportunities/${session.opportunity_id}`
+      : `/${locale}/app/new?mode=documents&session=${session.id}`,
+    id: session.id,
+    name: session.project_name || t("untitledProject"),
+    opportunityId: session.opportunity_id,
+    status: session.status,
+  }));
 
   return (
     <div className="application-shell">
       <aside className="app-sidebar">
         <div className="app-sidebar__brand"><BrandMark inverted locale={locale as AppLocale} /></div>
-        {/* Workspace switching and command search are not implemented yet: shown as design intent, disabled honestly. */}
-        <button aria-disabled="true" className="app-workspace-id" disabled title={t("comingSoon")} type="button">
+        <div className="app-workspace-id">
           <span className="app-workspace-id__icon">{canOriginate ? <Building2 aria-hidden="true" size={15} /> : <Landmark aria-hidden="true" size={15} />}</span>
           <span><small>{t("workspace")}</small><strong>{organization.name}</strong><em>{membership.role}</em></span>
-          <ChevronDown aria-hidden="true" size={14} />
-        </button>
-        <button aria-disabled="true" className="app-search" disabled title={t("comingSoon")} type="button"><Search aria-hidden="true" size={14} /><span>{t("search")}</span><kbd>⌘ K</kbd></button>
+        </div>
         <nav aria-label={t("workspace")} className="app-nav">
           <div className="app-nav__group">
             <p>{t("workspaceNav")}</p>
             <Link href={`/${locale}/app`}><CircleGauge aria-hidden="true" size={16} /><span>{t("overview")}</span></Link>
-            <Link href={`/${locale}/app#activity`}><Bell aria-hidden="true" size={16} /><span>{t("notifications")}</span><small>0</small></Link>
           </div>
-          <div className="app-nav__group app-nav__projects">
-            <p>{t("projects")}</p>
-            {canOriginate ? (
-              <div className="app-project-tree">
-                <div><ChevronDown aria-hidden="true" size={13} /><FolderOpen aria-hidden="true" size={15} /><strong>{t("opportunityWorkspace")}</strong></div>
-                <Link href={`/${locale}/app/new`}><ChevronRight aria-hidden="true" size={12} /><Plus aria-hidden="true" size={14} /><span>{organization.organization_type === "company" ? t("newCapitalNeed") : t("newOpportunity")}</span></Link>
-              </div>
-            ) : <Link href={`/${locale}/app#funds`}><Landmark aria-hidden="true" size={16} /><span>{t("fundsAndMandates")}</span></Link>}
-          </div>
-          <div className="app-nav__group">
-            <p>{t("resources")}</p>
-            <Link href={`/${locale}/demo`}><Route aria-hidden="true" size={16} /><span>{t("demo")}</span></Link>
-            <Link href={`/${locale}/#seguranca`}><ShieldCheck aria-hidden="true" size={16} /><span>{t("security")}</span></Link>
-            <Link href={`/${locale}/app#settings`}><Settings2 aria-hidden="true" size={16} /><span>{t("settings")}</span></Link>
-          </div>
+          {canOriginate ? <WorkspaceProjectNavigation
+            copy={{
+              actions: t("projectActions"),
+              archive: t("deleteProject"),
+              archiveConfirm: t("deleteProjectConfirm"),
+              empty: t("noProjects"),
+              errors: {
+                denied: t("projectErrors.denied"),
+                duplicate: t("projectErrors.duplicate"),
+                invalid: t("projectErrors.invalid"),
+                not_found: t("projectErrors.notFound"),
+                save: t("projectErrors.save"),
+              },
+              newProject: organization.organization_type === "company" ? t("newCapitalNeed") : t("newOpportunity"),
+              noResults: t("noProjectResults"),
+              open: t("openProject"),
+              projects: t("projects"),
+              rename: t("renameProject"),
+              save: t("saveProjectName"),
+              search: t("searchProjects"),
+              status: {
+                cancelled: t("projectStatus.cancelled"),
+                collecting: t("projectStatus.collecting"),
+                confirmed: t("projectStatus.confirmed"),
+                failed: t("projectStatus.failed"),
+                processing: t("projectStatus.processing"),
+                review_ready: t("projectStatus.reviewReady"),
+              },
+            }}
+            locale={locale}
+            projects={projects}
+          /> : <div className="app-nav__group"><p>{t("projects")}</p><Link href={`/${locale}/app#funds`}><Landmark aria-hidden="true" size={16} /><span>{t("fundsAndMandates")}</span></Link></div>}
         </nav>
         <div className="app-sidebar__footer">
           <div><FileLock2 aria-hidden="true" size={15} /><span>{email}</span></div>

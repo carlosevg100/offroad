@@ -13,6 +13,7 @@ import {waitForOneTimeCode} from "./support/mail";
  */
 const runId = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
 const initialProjectName = `Projeto Horizonte ${runId}`;
+const secondaryProjectName = `Projeto Desconhecido ${runId}`;
 const account = {
   email: `e2e-${runId}@example.com`,
   password: `Offroad-E2E-${runId}!`,
@@ -200,7 +201,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".private-project-gate__accepted")).toContainText("Termos de confidencialidade aceitos");
     await page.locator(".private-project-gate__submit a").click();
     await expect(page.locator(".private-project-gate--project")).toBeVisible();
-    await page.locator('input[name="project_name"]').fill(`Projeto Desconhecido ${runId}`);
+    await page.locator('.private-project-gate__form input[name="project_name"]').fill(secondaryProjectName);
     await expect(page.locator('input[name="representation_declared"]')).toHaveAttribute("type", "hidden");
     await page.locator('.private-project-gate__form button[type="submit"]').click();
     await expect(page).toHaveURL(/mode=documents&session=.*step=company/);
@@ -240,6 +241,27 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-field")).toHaveCount(0);
   });
 
+  test("lists, opens, renames and removes projects from the workspace navigator", async () => {
+    await page.goto("/pt-BR/app");
+    const projectList = page.locator(".workspace-project-list");
+    await expect(projectList).toContainText(initialProjectName);
+    await expect(projectList).toContainText(secondaryProjectName);
+
+    const secondaryProject = page.locator(".workspace-project").filter({hasText: secondaryProjectName});
+    await secondaryProject.locator(".workspace-project-actions > summary").click();
+    const renamedProjectName = `Projeto Renomeado ${runId}`;
+    await secondaryProject.locator('input[name="project_name"]').fill(renamedProjectName);
+    await secondaryProject.locator('form button[type="submit"]').first().click();
+    await expect(projectList).toContainText(renamedProjectName);
+
+    const renamedProject = page.locator(".workspace-project").filter({hasText: renamedProjectName});
+    await renamedProject.locator(".workspace-project-actions > summary").click();
+    page.once("dialog", (dialog) => dialog.accept());
+    await renamedProject.locator(".workspace-project-actions__archive").click();
+    await expect(page.locator(".workspace-project").filter({hasText: renamedProjectName})).toHaveCount(0);
+    await expect(projectList).toContainText(initialProjectName);
+  });
+
   test("signs out and logs back in with the password", async () => {
     await page.goto("/pt-BR/app");
     await page.locator(".app-sidebar__footer form button[type=submit]").click();
@@ -250,6 +272,6 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator('input[name="password"]').fill(account.password);
     await page.locator("form button.auth-form__primary").click();
     await expect(page).toHaveURL(/\/pt-BR\/app/);
-    await expect(page.locator(".opportunity-table [role=listitem]")).toHaveCount(2);
+    await expect(page.locator(".opportunity-table [role=listitem]")).toHaveCount(1);
   });
 });

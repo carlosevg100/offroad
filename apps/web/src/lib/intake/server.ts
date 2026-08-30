@@ -79,7 +79,7 @@ async function refreshIntakeRequests(runtime: Pick<IntakeRuntime, "supabase" | "
 }
 
 export async function loadIntakeSession(runtime: IntakeRuntime) {
-  const {data} = await runtime.supabase.from("document_intake_sessions").select("*").eq("organization_id", runtime.organizationId).eq("id", runtime.sessionId).maybeSingle();
+  const {data} = await runtime.supabase.from("document_intake_sessions").select("*").eq("organization_id", runtime.organizationId).eq("id", runtime.sessionId).is("archived_at", null).maybeSingle();
   return data;
 }
 
@@ -87,7 +87,7 @@ export async function loadIntakeSession(runtime: IntakeRuntime) {
 export async function loadIntakeCollection(runtime: IntakeRuntime): Promise<{session: IntakeSession | null; documents: IntakeDocument[]}> {
   const {supabase, organizationId, sessionId} = runtime;
   const [sessionResult, documentsResult] = await Promise.all([
-    supabase.from("document_intake_sessions").select("*").eq("organization_id", organizationId).eq("id", sessionId).maybeSingle(),
+    supabase.from("document_intake_sessions").select("*").eq("organization_id", organizationId).eq("id", sessionId).is("archived_at", null).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, object_path").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("created_at"),
   ]);
   return {session: sessionResult.data, documents: documentsResult.data ?? []};
@@ -102,7 +102,7 @@ export async function loadIntakeReview(runtime: IntakeRuntime): Promise<{session
   // once per generation: the marker on the summary says whether this run was already checked.
   await ensureReconciled(runtime);
   const [sessionResult, documentsResult, candidatesResult, issuesResult] = await Promise.all([
-    supabase.from("document_intake_sessions").select("*").eq("organization_id", organizationId).eq("id", sessionId).maybeSingle(),
+    supabase.from("document_intake_sessions").select("*").eq("organization_id", organizationId).eq("id", sessionId).is("archived_at", null).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, object_path").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("created_at"),
     supabase.from("intake_field_candidates").select("*").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("field_group").order("field_path").order("evidence_rank"),
     supabase.from("intake_issues").select("*").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("priority").order("created_at"),
@@ -136,6 +136,7 @@ async function ensureReconciled(runtime: IntakeRuntime): Promise<void> {
     .select("status, current_run_id, result_summary")
     .eq("organization_id", organizationId)
     .eq("id", sessionId)
+    .is("archived_at", null)
     .maybeSingle();
 
   if (!session || session.status !== "review_ready" || !session.current_run_id) return;

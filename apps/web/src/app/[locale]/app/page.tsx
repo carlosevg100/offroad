@@ -54,13 +54,14 @@ export default async function ApplicationHome({params, searchParams}: Props) {
 
   const [{data: opportunities}, {data: intakeSessions}, {count: companiesCount}, {count: documentCount}, {count: pendingAuthority}] = await Promise.all([
     supabase.from("opportunities").select("id, title, stage, requested_amount, currency, readiness_status, updated_at").eq("organization_id", organization.id).order("updated_at", {ascending: false}).limit(20),
-    supabase.from("document_intake_sessions").select("id, project_name, status, requested_amount, capital_currency, updated_at, opportunity_id").eq("organization_id", organization.id).order("updated_at", {ascending: false}).limit(20),
+    supabase.from("document_intake_sessions").select("id, project_name, status, requested_amount, capital_currency, updated_at, opportunity_id, archived_at").eq("organization_id", organization.id).order("updated_at", {ascending: false}).limit(100),
     supabase.from("companies").select("id", {count: "exact", head: true}).eq("organization_id", organization.id),
     supabase.from("source_documents").select("id", {count: "exact", head: true}).eq("organization_id", organization.id),
     supabase.from("authority_evidence").select("id", {count: "exact", head: true}).eq("organization_id", organization.id).eq("status", "pending"),
   ]);
-  const active = opportunities?.filter((item) => item.stage !== "closed") ?? [];
-  const activeIntakes = intakeSessions?.filter((item) => !["cancelled", "confirmed"].includes(item.status)) ?? [];
+  const archivedOpportunityIds = new Set((intakeSessions ?? []).flatMap((item) => item.archived_at && item.opportunity_id ? [item.opportunity_id] : []));
+  const active = opportunities?.filter((item) => item.stage !== "closed" && !archivedOpportunityIds.has(item.id)) ?? [];
+  const activeIntakes = intakeSessions?.filter((item) => !item.archived_at && !["cancelled", "confirmed"].includes(item.status)) ?? [];
   const ready = active.filter((item) => item.readiness_status === "ready").length;
   const isOriginator = organization.organization_type === "originator";
 
