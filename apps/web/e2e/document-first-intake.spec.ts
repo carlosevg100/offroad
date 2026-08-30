@@ -196,12 +196,16 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("an unknown document set yields the honest empty state in the workspace flow", async () => {
     await page.goto("/pt-BR/app/new");
+    await expect(page.locator(".private-project-gate--terms")).toBeVisible();
+    await expect(page.locator(".private-project-gate__accepted")).toContainText("Termos de confidencialidade aceitos");
+    await page.locator(".private-project-gate__submit a").click();
     await expect(page.locator(".private-project-gate--project")).toBeVisible();
     await page.locator('input[name="project_name"]').fill(`Projeto Desconhecido ${runId}`);
-    await page.locator('input[name="representation_declared"]').check();
+    await expect(page.locator('input[name="representation_declared"]')).toHaveAttribute("type", "hidden");
     await page.locator('.private-project-gate__form button[type="submit"]').click();
-    await expect(page).toHaveURL(/mode=documents&session=/);
+    await expect(page).toHaveURL(/mode=documents&session=.*step=company/);
     await expect(page.locator(".intake-collect")).toBeVisible();
+    await completeCompanyMilestone(page);
 
     await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
     await page.locator("#brief-amount").fill("1 milhão");

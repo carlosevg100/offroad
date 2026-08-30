@@ -66,8 +66,9 @@ projeto é único entre sessões não canceladas da organização.
 ## Superfícies ativas
 
 - `/[locale]/onboarding`: primeiro acesso, aceite, primeira captação e intake guiado.
-- `/[locale]/app/new`: captações adicionais, começando pela identificação da captação e depois pelo
-  intake guiado.
+- `/[locale]/app/new`: captações adicionais, começando pela revisão explícita da confidencialidade
+  vigente, seguida da identificação da captação e do intake guiado. Um aceite vigente não é
+  duplicado; a tela reafirma o controle do cliente antes de cada novo projeto.
 - `/[locale]/app/opportunities/[id]`: caso criado e acompanhamento.
 
 Não há uma rota manual alternativa. `/app/new?mode=manual` apenas volta ao início canônico.
@@ -81,7 +82,7 @@ Não há uma rota manual alternativa. `/app/new?mode=manual` apenas volta ao in�
 5. Voltar da companhia abre a edição da captação sem cancelar nada.
 6. Refresh retoma exatamente o marco persistido.
 7. URL forjada não pula pré-condição.
-8. Nova captação exige nome antes de criar sessão.
+8. Nova captação revê a confidencialidade vigente e exige nome antes de criar sessão.
 9. Financiador nunca vê o intake de empresa.
 10. PT-BR e EN-US têm a mesma topologia e significado.
 

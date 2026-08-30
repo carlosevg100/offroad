@@ -218,7 +218,7 @@ export async function saveGuidedCompanyProfile(formData: FormData) {
   const identifierHash = parsed.data.identifier
     ? `\\x${createHash("sha256").update(parsed.data.identifier).digest("hex")}`
     : undefined;
-  const {error} = await runtime.supabase.rpc("save_guided_company_profile", {
+  const {error} = await runtime.supabase.rpc("save_project_company_profile", {
     p_session_id: runtime.sessionId,
     p_name: parsed.data.name,
     p_legal_name: parsed.data.legalName || rpcNull,
