@@ -82,6 +82,7 @@ const materialTier: Record<MaterialKind, DataRoomTier> = {
   credit_profile: "nda",
   package: "nda",
   term_sheet: "nda",
+  financial_model: "nda",
   diligence_qa: "nda",
   credit_memo: "nda",
   data_room_index: "internal",
@@ -93,12 +94,13 @@ const materialName: Record<MaterialKind, {pt: string; en: string}> = {
   package: {pt: "Material completo", en: "Full package"},
   credit_memo: {pt: "Memorando de Crédito", en: "Credit Memorandum"},
   term_sheet: {pt: "Term Sheet indicativo", en: "Indicative Term Sheet"},
+  financial_model: {pt: "Modelo financeiro indicativo", en: "Indicative financial model"},
   diligence_qa: {pt: "Q&A de diligência", en: "Diligence Q&A"},
   data_room_index: {pt: "Índice da sala", en: "Room index"},
 };
 
 /** The materials an investor room is expected to carry, in reading order. */
-const expectedMaterials: readonly MaterialKind[] = ["teaser", "credit_memo", "term_sheet", "diligence_qa", "package"];
+const expectedMaterials: readonly MaterialKind[] = ["teaser", "credit_memo", "financial_model", "term_sheet", "diligence_qa", "package"];
 
 const folderNames: Record<DocumentFolder, {pt: string; en: string}> = {
   financial: {pt: "Demonstrações e contábil", en: "Financial statements and accounting"},

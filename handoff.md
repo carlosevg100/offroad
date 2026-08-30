@@ -9,6 +9,25 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: exact recipient and material authorization, 29 August 2026
+
+The Match phase now preserves the product boundary in code. An approved match screen creates a
+private shortlist, not permission to contact the market. Every selected provider becomes a target
+with source identity, mandate fingerprint and rationale. A service-only resolution step must bind
+that target to a current named contact, revalidate the mandate and assign the exact material
+manifest. A separate service-only technical review attests the package fingerprint.
+
+The company authorization snapshot then freezes provider, contact, mandate, material list,
+identity policy and match-screen fingerprint. Any drift fails closed. Customers may authorize an
+exact ready plan, but cannot create contacts, self-attest technical review or record an
+introduction. `record_qualified_introduction_release` records append-only evidence only after an
+external delivery occurred; it does not send, negotiate, diligence, underwrite or close.
+
+The schema is on Supabase staging only. Security Advisor has zero findings, new foreign keys are
+indexed and the full 42-task local gate is green. Production was not changed. No distribution
+policy was invented: mandate age, first-wave size, anchor count and methodology still require an
+institutional decision before a positive end-to-end release test can run.
+
 ### Engineering update: versioned Deal State and executable gates, 29 August 2026
 
 The canonical workflow is now enforced by persisted state rather than documentation alone.
@@ -2160,7 +2179,7 @@ O cache é por nó e por caso. Sua chave inclui TaskSpec, versões do case engin
 de modelos, prompts, input direto e outputs predecessores. O worker reidrata somente outputs
 anteriores cujo fingerprint foi conferido novamente. O relatório anterior é anexado depois que o
 input oficial é congelado, portanto nunca vira parte recursiva do caso. A migration
-`20260829183106_task_dag_prior_report.sql` fornece a leitura capability-bound e o teste RLS cobre o
+`20260829184738_task_dag_prior_report.sql` fornece a leitura capability-bound e o teste RLS cobre o
 segundo run. Staging aceitou a migration; grants, wrapper e índice foram conferidos e o Security
 Advisor ficou com zero findings. O job de banco em CI ainda precisa comprovar a suíte integral antes
 de merge. Produção permanece intacta.

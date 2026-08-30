@@ -15,6 +15,7 @@ export type TaskKind =
   | "extract_complex"
   | "map_accounts"
   | "explain_exception"
+  | "structure_design"
   | "case_brief"
   | "agent_operation_brief"
   | "write_output"

@@ -58,7 +58,23 @@ function assertMaterialContract(state: CaseEngineState, expected: GoldMaterial) 
 describe("Rede Horizonte full-case anchor", () => {
   it("crosses all eight domain layers without losing the answer key or overstating readiness", async () => {
     const gold = loadRedeHorizonteGold();
-    const result = await executeCaseEngine(redeHorizonteCaseInput(gold));
+    const baseInput = redeHorizonteCaseInput(gold);
+    const initial = await executeCaseEngine(baseInput);
+    const proposal = structureProposalFrom(initial.state);
+    const proposed = await executeCaseEngine({...baseInput, structureProposal: proposal});
+    const proposalFingerprint = proposed.state.structureAlternatives.proposalFingerprint;
+    expect(proposalFingerprint).toBeTruthy();
+    const result = await executeCaseEngine({
+      ...baseInput,
+      structureProposal: proposal,
+      structureConfirmation: {
+        decision: "confirm",
+        selectedAlternativeId: proposal.alternatives[0]!.id,
+        proposalFingerprint: proposalFingerprint!,
+        actorId: "rede-horizonte-authorized-user",
+        decidedAt: "2026-07-31T12:00:00.000Z",
+      },
+    });
     const {state} = result;
 
     expect(result.report.status).toBe("succeeded");
@@ -71,7 +87,11 @@ describe("Rede Horizonte full-case anchor", () => {
       expect(insideTolerance(actual!, expected), `${expected.id}: expected ${expected.value}, got ${actual}`).toBe(true);
     }
 
-    expect(state.brief).not.toBeNull();
+    expect(state.brief, JSON.stringify({
+      briefBlockedBy: state.briefBlockedBy,
+      alternatives: state.structureAlternatives,
+      decision: state.structureDecision,
+    }, null, 2)).not.toBeNull();
     const claims = new Map(state.brief!.sections.flatMap((section) => section.claims).map((claim) => [claim.id, claim]));
     for (const expected of gold.claims) {
       const claim = claims.get(expected.id);
@@ -111,3 +131,63 @@ describe("Rede Horizonte full-case anchor", () => {
     expect(state.outcome.reasons).toEqual(expect.arrayContaining(gold.outcome!.reasonsInclude));
   });
 });
+
+function structureProposalFrom(state: CaseEngineState) {
+  const suggested = state.structureTruth.proposal;
+  if (!suggested.instrument || !suggested.amount || !suggested.termMonths || suggested.graceMonths === null || !suggested.amortizationFormat) {
+    throw new Error("Rede Horizonte anchor did not produce a deterministic structure base");
+  }
+  const sources = state.operationTruth.sourcesAndUses.lines
+    .filter((line) => line.side === "source")
+    .map((line) => ({
+      id: `source-${line.id}`,
+      label: line.item,
+      amount: line.amount,
+      origin: "reconciled_fact" as const,
+      basisIds: ["OP-04"],
+      condition: line.condition === "available" ? "available" as const : "conditional" as const,
+    }));
+  const uses = state.operationTruth.sourcesAndUses.lines
+    .filter((line) => line.side === "use")
+    .map((line) => ({
+      id: `use-${line.id}`,
+      label: line.item,
+      amount: line.amount,
+      origin: "reconciled_fact" as const,
+      basisIds: ["OP-04"],
+      condition: line.condition === "available" ? "available" as const : "conditional" as const,
+    }));
+  return {
+    alternatives: [{
+      id: "rede-horizonte-target",
+      label: "Estrutura-alvo indicativa",
+      instrument: suggested.instrument,
+      route: suggested.instrument,
+      amount: suggested.amount,
+      currency: "BRL",
+      termMonths: suggested.termMonths,
+      graceMonths: suggested.graceMonths,
+      amortization: suggested.amortizationFormat,
+      indexer: "CDI",
+      targetBuyer: "private_credit_market",
+      rationale: "Estrutura indicativa baseada na necessidade conciliada, na capacidade calculada e nas rotas elegíveis.",
+      pros: ["Compatível com a capacidade indicativa documentada"],
+      cons: ["Preço e termos finais dependem das propostas dos financiadores"],
+      assumptions: ["As fontes e os usos conciliados permanecem válidos"],
+      sources,
+      uses,
+      security: [],
+      covenants: [],
+      conditionsPrecedent: [],
+      implementationDays: null,
+      basisIds: ["ES-45"],
+    }],
+    recommendation: {
+      alternativeId: "rede-horizonte-target",
+      rationale: "A alternativa respeita o menor limite determinístico atualmente comprovado.",
+      basisIds: ["ES-41", "ES-45"],
+      proposedBy: "rede-horizonte-gold-desk",
+      proposedAt: "2026-07-31T10:00:00.000Z",
+    },
+  };
+}

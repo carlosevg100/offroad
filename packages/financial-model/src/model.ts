@@ -75,6 +75,9 @@ export type ModelInput = {
   requestedAmount?: string;
   requestedTermMonths?: number;
   requestedGraceMonths?: number;
+  amortizationFormat?: "sac" | "price" | "bullet";
+  /** Deterministic annual rate used for sensitivity. A range should be reduced upstream by an explicit rule. */
+  annualInterestRate?: string;
   /** Filenames by document id, for the Sources sheet. */
   filenames?: Map<string, string>;
   lang: "pt" | "en";
@@ -210,7 +213,7 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
     "gap0",
     "revenue_growth", "ebitda_margin", "da_pct", "maintenance_capex_pct", "wc_pct", "tax_rate",
     "gap1",
-    "facility", "tenor", "grace", "interest_rate",
+    "facility", "tenor", "grace", "amortization_format", "interest_rate",
     "gap2",
     "existing_debt", "existing_amortisation_years", "cash",
     "gap3",
@@ -272,14 +275,27 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
   assumptions.fill("tenor", driver(L("Prazo (meses)", "Tenor (months)"), input(tenorMonths, "integer"), inputData.requestedTermMonths ? fromDocument : L("prazo típico do arquétipo", "archetype's typical tenor")));
   assumptions.fill("grace", driver(L("Carência de principal (meses)", "Principal grace (months)"), input(graceMonths, "integer"), inputData.requestedGraceMonths ? fromDocument : L("carência típica do arquétipo", "archetype's typical grace")));
 
-  // Offroad does not price transactions (deal-structure/termsheet.ts emits no pricing). This
-  // rate exists so coverage can be computed at all, and is labelled so nobody reads it as one.
+  const amortizationFormat = inputData.amortizationFormat ?? "sac";
+  const amortizationLabel = amortizationFormat === "bullet" ? "Bullet" : amortizationFormat === "price" ? "Price" : "SAC";
+  assumptions.fill(
+    "amortization_format",
+    driver(
+      L("Amortização da nova dívida", "New facility amortisation"),
+      {role: "historical", value: amortizationLabel, format: "text"},
+      inputData.amortizationFormat ? L("estrutura confirmada", "confirmed structure") : L("padrão do modelo", "model default"),
+    ),
+  );
+
+  const governedRate = Number(inputData.annualInterestRate);
+  const rateAvailable = inputData.annualInterestRate !== undefined && Number.isFinite(governedRate) && governedRate > 0;
   assumptions.fill(
     "interest_rate",
     driver(
       L("Custo da dívida para sensibilidade (% a.a.)", "Cost of debt for sensitivity (% p.a.)"),
-      input(0.14, "percent"),
-      L("placeholder de sensibilidade: não é precificação", "sensitivity placeholder: not a price"),
+      input(rateAvailable ? governedRate : 0.14, "percent"),
+      rateAvailable
+        ? L("ponto médio da faixa indicativa governada", "midpoint of the governed indicative range")
+        : L("placeholder de sensibilidade: não é precificação", "sensitivity placeholder: not a price"),
     ),
   );
   assumptions.fill("existing_debt", driver(L("Dívida bruta existente", "Existing gross debt"), grossDebt ? historical(grossDebt.value, "money") : input(0, "money"), grossDebt ? fromDocument : fromDesk));
@@ -313,9 +329,13 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
   desk.push(lang === "pt"
     ? "Dívida existente amortizando linearmente em 3 anos."
     : "Existing debt amortising straight-line over 3 years.");
-  desk.push(lang === "pt"
-    ? "Custo da dívida de 14% a.a., usado apenas para calcular cobertura. A Offroad não precifica a operação. Ajuste esta célula ao custo que o mercado indicar."
-    : "14% p.a. cost of debt, used only to compute coverage. Offroad does not price the transaction. Set this cell to the market's indication.");
+  desk.push(rateAvailable
+    ? (lang === "pt"
+        ? `Custo da dívida de ${(governedRate * 100).toLocaleString("pt-BR", {maximumFractionDigits: 2})}% a.a., ponto médio da faixa indicativa governada e editável para sensibilidade.`
+        : `${(governedRate * 100).toLocaleString("en-US", {maximumFractionDigits: 2})}% p.a. cost of debt, the midpoint of the governed indicative range and editable for sensitivity.`)
+    : (lang === "pt"
+        ? "Custo da dívida de 14% a.a., usado apenas para calcular cobertura. A Offroad não precifica a operação. Ajuste esta célula ao custo que o mercado indicar."
+        : "14% p.a. cost of debt, used only to compute coverage. Offroad does not price the transaction. Set this cell to the market's indication."));
 
   // ---- 2. Debt schedule ------------------------------------------------------------------------
   const debtName = lang === "pt" ? "Dívida" : "Debt";
@@ -345,9 +365,13 @@ export function buildFinancialModel(inputData: ModelInput): FinancialModel {
   debt.fill("facility_open", [label(lang === "pt" ? "Dívida pleiteada: saldo inicial" : "Facility: opening"), blank(),
     ...across((column) => (column === firstProjection ? formula(A("facility"), "money") : formula(D("facility_close", column - 1), "money")))]);
   debt.fill("facility_amort", [label(lang === "pt" ? "Dívida pleiteada: amortização" : "Facility: amortisation"), blank(),
-    // Principal starts after grace, then straight-line (SAC) over the remaining years.
+    // The chosen formula is fixed by the confirmed structure, never guessed by the workbook.
     ...across((column) => formula(
-      `-IF(${column - firstProjection + 1}<=${A("grace")}/12,0,MIN(${D("facility_open", column)},${A("facility")}/MAX(1,ROUNDUP((${A("tenor")}-${A("grace")})/12,0))))`,
+      amortizationFormat === "bullet"
+        ? `-IF(${column - firstProjection + 1}*12<${A("tenor")},0,${D("facility_open", column)})`
+        : amortizationFormat === "price"
+          ? `-IF(${column - firstProjection + 1}<=${A("grace")}/12,0,IF(${column - firstProjection + 1}*12>=${A("tenor")},${D("facility_open", column)},MIN(${D("facility_open", column)},MAX(0,-PMT(${A("interest_rate")},MAX(1,ROUNDUP((${A("tenor")}-${A("grace")})/12,0)),${A("facility")} )-${D("facility_open", column)}*${A("interest_rate")}))))`
+        : `-IF(${column - firstProjection + 1}<=${A("grace")}/12,0,MIN(${D("facility_open", column)},${A("facility")}/MAX(1,ROUNDUP((${A("tenor")}-${A("grace")})/12,0))))`,
       "money",
     ))]);
   debt.fill("facility_interest", [label(lang === "pt" ? "Dívida pleiteada: juros" : "Facility: interest"), blank(),

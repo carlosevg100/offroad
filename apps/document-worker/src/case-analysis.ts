@@ -8,6 +8,9 @@ import {
   publicCaseRunReport,
   publicCaseState,
   runReceivablesCasePipeline,
+  structureAlternativesInputSchema,
+  structureConfirmationInputSchema,
+  type StructureDesignerContext,
   type ReceivablesCasePipelineReport,
   type EconomicInputSnapshot,
 } from "@offroad/case-engine";
@@ -79,6 +82,8 @@ import {
   receivablesEvidenceEnvelopeSchema,
   receivablesFiscalArchiveEvidenceSchema,
 } from "./receivables-evidence";
+import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-design";
+import {buildGovernedMatchScreen} from "./match-screen";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const retrievalContextSchema = z.object({
@@ -330,6 +335,14 @@ const rawCaseInputSchema = z.object({
     valid_from: z.string(),
     constraints: recordSchema,
   })),
+  match_provider_context: z.array(z.object({
+    provider_id: z.string(),
+    provider_kind: z.string(),
+    provider_source: z.enum(["directory", "registered"]),
+    fund_directory_id: z.uuid().nullable(),
+    provider_organization_id: z.uuid().nullable(),
+    provider_fund_id: z.uuid().nullable(),
+  })).default([]),
   model_lineage: z.array(z.unknown()),
   expected_model_calls: z.coerce.number().int().nonnegative(),
   claim_decisions: z.array(claimDecisionSchema).default([]),
@@ -341,6 +354,13 @@ const rawCaseInputSchema = z.object({
   red_flag_context:redFlagContextSchema.nullable().default(null),
   conduct_context:conductContextSchema.nullable().default(null),
   deal_workflow: dealWorkflowStateSchema.default(initialDealWorkflowState),
+  deal_state_context: z.record(z.string(), z.object({
+    status: z.string().min(1),
+    inputFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+    fingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+    payload: recordSchema,
+    dependencies: z.array(recordSchema),
+  })).default({}),
   prior_case_report: caseRunReportSchema.nullish(),
   _execution: z.object({
     id: z.uuid(),
@@ -368,6 +388,7 @@ export type CaseAnalysisOutcome = {
 };
 
 export type CaseAnalysisExecutionPlan = {
+  designStructure: boolean;
   produceMaterials: boolean;
   screenMandates: boolean;
   introduce: boolean;
@@ -389,6 +410,9 @@ export function caseAnalysisExecutionPlan(workflow: DealWorkflowState): CaseAnal
     && workflow.gates.packageApproved
     && hasFingerprint("package_review");
   return {
+    designStructure: dealWorkflowAllows(workflow, "structure")
+      && workflow.gates.understandingConfirmed
+      && hasFingerprint("understanding_snapshot"),
     produceMaterials,
     screenMandates,
     introduce: screenMandates
@@ -396,6 +420,86 @@ export function caseAnalysisExecutionPlan(workflow: DealWorkflowState): CaseAnal
       && workflow.gates.releaseAuthorized
       && hasFingerprint("release_authorization"),
   };
+}
+
+type DealStateContext = z.infer<typeof rawCaseInputSchema>["deal_state_context"];
+
+function structureProposalFrom(context: DealStateContext) {
+  if (context.structure_decision?.status === "changes_requested") return null;
+  const option = context.structure_option;
+  if (!option || (option.status !== "draft" && option.status !== "pending_confirmation")) return null;
+  const parsed = structureAlternativesInputSchema.safeParse(option.payload.proposal ?? option.payload);
+  return parsed.success ? parsed.data : null;
+}
+
+function structureRequestedChangesFrom(context: DealStateContext): string[] {
+  const decision = context.structure_decision;
+  if (decision?.status !== "changes_requested") return [];
+  const payload = decision.payload.confirmation ?? decision.payload;
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return [];
+  const requested = (payload as Record<string, unknown>).requestedChanges;
+  if (!Array.isArray(requested)) return [];
+  return requested
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .map((value) => value.trim())
+    .slice(0, 20);
+}
+
+function structureConfirmationFrom(context: DealStateContext) {
+  const decision = context.structure_decision;
+  if (!decision || (decision.status !== "confirmed" && decision.status !== "approved")) return null;
+  const parsed = structureConfirmationInputSchema.safeParse(decision.payload.confirmation ?? decision.payload);
+  if (!parsed.success) return null;
+  return {
+    decision: parsed.data.decision,
+    selectedAlternativeId: parsed.data.selectedAlternativeId,
+    proposalFingerprint: parsed.data.proposalFingerprint,
+    actorId: parsed.data.actorId,
+    decidedAt: parsed.data.decidedAt,
+    ...(parsed.data.rationale ? {rationale: parsed.data.rationale} : {}),
+    ...(parsed.data.requestedChanges?.length ? {requestedChanges: parsed.data.requestedChanges} : {}),
+  };
+}
+
+function structureProposalForPersistence(state: ReturnType<typeof publicCaseState>) {
+  const proposal = state.structureAlternatives;
+  if (!proposal.proposalFingerprint || proposal.alternatives.length === 0) return null;
+  const recommendation = proposal.recommendation ? {
+    alternativeId: proposal.recommendation.alternativeId,
+    rationale: proposal.recommendation.rationale,
+    basisIds: proposal.recommendation.basisIds,
+    proposedBy: proposal.recommendation.proposedBy,
+    proposedAt: proposal.recommendation.proposedAt,
+  } : null;
+  const candidate = {
+    alternatives: proposal.alternatives.map((alternative) => ({
+      id: alternative.id,
+      label: alternative.label,
+      instrument: alternative.instrument,
+      route: alternative.route,
+      amount: alternative.amount,
+      currency: alternative.currency,
+      termMonths: alternative.termMonths,
+      graceMonths: alternative.graceMonths,
+      amortization: alternative.amortization,
+      indexer: alternative.indexer,
+      targetBuyer: alternative.targetBuyer,
+      rationale: alternative.rationale,
+      pros: alternative.pros,
+      cons: alternative.cons,
+      assumptions: alternative.assumptions,
+      sources: alternative.sources,
+      uses: alternative.uses,
+      security: alternative.security,
+      covenants: alternative.covenants,
+      conditionsPrecedent: alternative.conditionsPrecedent,
+      implementationDays: alternative.implementationDays,
+      basisIds: alternative.basisIds,
+    })),
+    recommendation,
+  };
+  const parsed = structureAlternativesInputSchema.safeParse(candidate);
+  return parsed.success ? parsed.data : null;
 }
 
 export async function processCaseAnalysisJob(
@@ -463,6 +567,9 @@ export async function processCaseAnalysisJob(
 
     const spentBefore = dependencies.gateway.spent();
     let writerProvider: "anthropic" | "openai" | null = null;
+    const persistedStructureProposal = structureProposalFrom(raw.deal_state_context);
+    const persistedStructureConfirmation = structureConfirmationFrom(raw.deal_state_context);
+    const requestedStructureChanges = structureRequestedChangesFrom(raw.deal_state_context);
     const result = await executeCaseEngine({
       runId: job.processing_run_id,
       caseId: job.intake_session_id,
@@ -494,6 +601,34 @@ export async function processCaseAnalysisJob(
         },
       } : {}),
       externalReleaseApproved: false,
+      ...(persistedStructureProposal ? {structureProposal: persistedStructureProposal} : {}),
+      ...(persistedStructureConfirmation ? {structureConfirmation: persistedStructureConfirmation} : {}),
+      ...(!persistedStructureProposal && executionPlan.designStructure ? {designStructure: async (context: StructureDesignerContext) => {
+        const callStart = dependencies.lineage().length;
+        const before = dependencies.gateway.spent();
+        const generated = await dependencies.gateway.complete({
+          task: "structure_design",
+          system: STRUCTURE_DESIGN_SYSTEM,
+          input: [{type: "text", text: buildStructureDesignInput({
+            context,
+            asOf: referenceDate(dependencies.now),
+            playbookLines,
+            requestedChanges: requestedStructureChanges,
+          })}],
+          schema: structureAlternativesInputSchema,
+          schemaName: "structure_alternatives",
+          maxOutputTokens: 8_000,
+          useShadow,
+          metadata: {caseId: job.intake_session_id, caseFingerprint: context.caseFingerprint},
+        });
+        const after = dependencies.gateway.spent();
+        return {
+          proposal: generated.output,
+          blockedBy: [],
+          usage: {costUsd: after.costUsd - before.costUsd, modelCalls: after.calls - before.calls},
+          modelInvocations: dependencies.lineage().slice(callStart),
+        };
+      }} : {}),
       ...(executionPlan.screenMandates&&raw.market_distribution_context?{marketGovernance:{
         mandateMaxAgeMonths:raw.market_distribution_context.status==="active"?raw.market_distribution_context.mandateMaxAgeMonths:null,
         waveLimit:raw.market_distribution_context.status==="active"?raw.market_distribution_context.waveLimit:null,
@@ -674,6 +809,8 @@ export async function processCaseAnalysisJob(
           publicResearch,
           receivablesVertical,
           executionPlan,
+          matching: result.state.matching,
+          materialTruthFingerprint: result.state.materialTruth.fingerprint,
         })
       : [];
     const snapshotWithDealState = {...snapshot, dealStateObjectIds};
@@ -783,45 +920,61 @@ async function persistDealStateObjects(input: {
   publicResearch: unknown;
   receivablesVertical: PublicReceivablesVertical | null;
   executionPlan: CaseAnalysisExecutionPlan;
+  matching: import("@offroad/case-engine").CaseEngineState["matching"];
+  materialTruthFingerprint: string;
 }): Promise<string[]> {
   const ids: string[] = [];
-  ids.push(await input.queue.recordDealStateObject(input.job, {
-    objectType: "understanding_snapshot",
-    status: "pending_confirmation",
-    inputFingerprint: input.inputFingerprint,
-    payload: {
-      schemaVersion: "2026.08.29-v1",
-      caseId: input.job.intake_session_id,
-      locale: input.raw.session.locale ?? "pt-BR",
-      readiness: input.publicState.readiness,
-      reconciliation: input.publicState.reconciliation,
-      operationTruth: input.publicState.operationTruth,
-      externalResearch: input.publicResearch,
-      receivablesVertical: input.receivablesVertical,
-    },
-  }));
-  ids.push(await input.queue.recordDealStateObject(input.job, {
-    objectType: "finding_register",
-    status: "draft",
-    inputFingerprint: input.inputFingerprint,
-    payload: {
-      schemaVersion: "2026.08.29-v1",
-      readiness: input.publicState.readiness,
-      reconciliation: input.publicState.reconciliation,
-      redFlagTruth: input.publicState.redFlagTruth,
-      receivablesVertical: input.receivablesVertical,
-    },
-  }));
+  // A confirmed upstream object is immutable input to the next DAG node. Recreating it on an
+  // incremental run would supersede the exact fingerprint the user approved and silently break
+  // every downstream dependency. Initial diagnosis is the only run allowed to publish these two
+  // objects; later runs consume them.
+  if (!input.raw.deal_workflow.gates.understandingConfirmed) {
+    ids.push(await input.queue.recordDealStateObject(input.job, {
+      objectType: "understanding_snapshot",
+      status: "pending_confirmation",
+      inputFingerprint: input.inputFingerprint,
+      payload: {
+        schemaVersion: "2026.08.29-v1",
+        caseId: input.job.intake_session_id,
+        locale: input.raw.session.locale ?? "pt-BR",
+        readiness: input.publicState.readiness,
+        reconciliation: input.publicState.reconciliation,
+        operationTruth: input.publicState.operationTruth,
+        externalResearch: input.publicResearch,
+        receivablesVertical: input.receivablesVertical,
+      },
+    }));
+    ids.push(await input.queue.recordDealStateObject(input.job, {
+      objectType: "finding_register",
+      status: "draft",
+      inputFingerprint: input.inputFingerprint,
+      payload: {
+        schemaVersion: "2026.08.29-v1",
+        readiness: input.publicState.readiness,
+        reconciliation: input.publicState.reconciliation,
+        redFlagTruth: input.publicState.redFlagTruth,
+        receivablesVertical: input.receivablesVertical,
+      },
+    }));
+  }
 
   const understandingFingerprint = input.raw.deal_workflow.objectFingerprints.understanding_snapshot;
-  if (input.raw.deal_workflow.gates.understandingConfirmed && understandingFingerprint) {
+  const structureProposal = structureProposalForPersistence(input.publicState);
+  if (
+    input.raw.deal_workflow.gates.understandingConfirmed
+    && !input.raw.deal_workflow.gates.structureConfirmed
+    && understandingFingerprint
+    && structureProposal
+  ) {
     ids.push(await input.queue.recordDealStateObject(input.job, {
       objectType: "structure_option",
-      status: "draft",
+      status: input.publicState.structureAlternatives.status === "pending_confirmation" ? "pending_confirmation" : "draft",
       inputFingerprint: input.inputFingerprint,
       dependencies: [{objectType: "understanding_snapshot", objectFingerprint: understandingFingerprint}],
       payload: {
-        schemaVersion: "2026.08.29-v1",
+        schemaVersion: "2026.08.29-v2",
+        proposal: structureProposal,
+        compiled: input.publicState.structureAlternatives,
         capacity: input.publicState.capacity,
         operationTruth: input.publicState.operationTruth,
         structureTruth: input.publicState.structureTruth,
@@ -831,7 +984,11 @@ async function persistDealStateObjects(input: {
   }
 
   const structureFingerprint = input.raw.deal_workflow.objectFingerprints.structure_decision;
-  if (input.raw.deal_workflow.gates.structureConfirmed && structureFingerprint) {
+  if (
+    input.raw.deal_workflow.gates.structureConfirmed
+    && !input.raw.deal_workflow.gates.productionPlanApproved
+    && structureFingerprint
+  ) {
     ids.push(await input.queue.recordDealStateObject(input.job, {
       objectType: "production_plan",
       status: "pending_confirmation",
@@ -846,7 +1003,11 @@ async function persistDealStateObjects(input: {
   }
 
   const productionFingerprint = input.raw.deal_workflow.objectFingerprints.production_plan;
-  if (input.executionPlan.produceMaterials && productionFingerprint) {
+  if (
+    input.executionPlan.produceMaterials
+    && productionFingerprint
+    && !input.raw.deal_workflow.objectFingerprints.material_artifact
+  ) {
     ids.push(await input.queue.recordDealStateObject(input.job, {
       objectType: "material_artifact",
       status: "pending_confirmation",
@@ -855,6 +1016,7 @@ async function persistDealStateObjects(input: {
       payload: {
         schemaVersion: "2026.08.29-v1",
         materials: input.publicState.materials,
+        financialModel: input.publicState.financialModel,
         materialTruth: input.publicState.materialTruth,
         dataRoom: input.publicState.dataRoom,
       },
@@ -862,16 +1024,38 @@ async function persistDealStateObjects(input: {
   }
 
   const packageFingerprint = input.raw.deal_workflow.objectFingerprints.package_review;
-  if (input.executionPlan.screenMandates && packageFingerprint) {
+  if (
+    input.executionPlan.screenMandates
+    && packageFingerprint
+    && !input.raw.deal_workflow.objectFingerprints.match_screen
+  ) {
+    const materialFingerprint = input.raw.deal_workflow.objectFingerprints.material_artifact;
+    if (!materialFingerprint) throw new Error("material_artifact_fingerprint_required_for_match_screen");
+    const providerContext = Object.fromEntries(
+      input.raw.match_provider_context.map((provider) => [provider.provider_id, {
+        providerKind: provider.provider_kind,
+        providerSource: provider.provider_source,
+        fundDirectoryId: provider.fund_directory_id,
+        providerOrganizationId: provider.provider_organization_id,
+        providerFundId: provider.provider_fund_id,
+      }]),
+    );
+    const matchScreen = buildGovernedMatchScreen({
+      matching: input.matching,
+      packageReviewFingerprint: packageFingerprint,
+      materialArtifactFingerprint: materialFingerprint,
+      materialTruthFingerprint: input.materialTruthFingerprint,
+      providerContext,
+    });
     ids.push(await input.queue.recordDealStateObject(input.job, {
       objectType: "match_screen",
-      status: "draft",
+      status: "pending_confirmation",
       inputFingerprint: input.inputFingerprint,
-      dependencies: [{objectType: "package_review", objectFingerprint: packageFingerprint}],
-      payload: {
-        schemaVersion: "2026.08.29-v1",
-        matching: input.publicState.matching,
-      },
+      dependencies: [
+        {objectType: "package_review", objectFingerprint: packageFingerprint},
+        {objectType: "material_artifact", objectFingerprint: materialFingerprint},
+      ],
+      payload: matchScreen,
     }));
   }
 

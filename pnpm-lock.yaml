@@ -129,6 +129,9 @@ importers:
       '@offroad/deal-structure':
         specifier: workspace:*
         version: link:../../packages/deal-structure
+      '@offroad/domain-contracts':
+        specifier: workspace:*
+        version: link:../../packages/domain-contracts
       '@offroad/extraction-learning':
         specifier: workspace:*
         version: link:../../packages/extraction-learning
@@ -269,6 +272,9 @@ importers:
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../financial-core
+      '@offroad/financial-model':
+        specifier: workspace:*
+        version: link:../financial-model
       '@offroad/fund-mandate':
         specifier: workspace:*
         version: link:../fund-mandate

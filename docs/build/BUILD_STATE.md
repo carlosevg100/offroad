@@ -4,6 +4,36 @@ Atualizado em: 2026-08-29
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Match privado, destinatário exato e autorização específica, 29/08/2026
+
+O matching aprovado passou a ser apenas uma shortlist privada. Ele não autoriza contato e não
+vira distribuição por inferência. Cada nome selecionado produz um target persistido com identidade
+de origem, fingerprint do mandato e racional. A preparação da introdução exige, separadamente,
+contato nominal vigente, revalidação do mandato, lista exata de materiais e revisão técnica do
+mesmo fingerprint que a companhia verá.
+
+O cliente autoriza instituição por instituição, contato por contato e material por material. O
+snapshot de autorização preserva esses elementos e a política de identidade do caso. Alteração no
+material, mandato, contato ou match screen invalida a passagem. Resolução de contatos e atestado
+técnico são funções privadas executáveis apenas pelo serviço; o cliente pode autorizar o plano
+pronto, mas não fabricar contato ou autoatestar a revisão.
+
+O registro final é deliberadamente passivo: `record_qualified_introduction_release` não envia
+e-mail, não abre diligência e não conduz processo. Ele grava evidência append-only somente depois
+que o pacote autorizado foi efetivamente entregue ao contato nomeado, com canal e referência
+externa. A reexecução exata é idempotente e uma segunda referência para o mesmo destinatário falha
+fechado.
+
+As migrations `20260829223811`, `20260829224111`, `20260829225056` e `20260829225306` estão apenas
+no Supabase staging. A inspeção confirmou que `authenticated` não resolve contatos, não atesta
+revisão técnica e não registra release; o serviço pode executar as três funções. O Security Advisor
+está com zero lints e os novos foreign keys têm índices de cobertura. O gate local passou nos 42
+pacotes. Produção permanece inalterada.
+
+A política institucional de distribuição ainda não foi ativada. Antes do teste integral, é preciso
+aprovar prazo máximo de revalidação de mandato, limite da primeira onda, quantidade mínima de
+âncoras e fonte metodológica. Até isso ocorrer, autorização e release falham fechados.
+
 ## Deal State persistente, gates executáveis e contenção de custo, 29/08/2026
 
 O worker deixou de tratar análise, materiais, matching e introdução como uma única execução.
@@ -1458,7 +1488,7 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
   política de modelos e prompts. Mudança no pedido invalida somente a estrutura e seus
   descendentes no teste; extração e análise não afetadas são reutilizadas.
 - O relatório anterior é carregado pelo worker somente depois do congelamento do input. A
-  migration `20260829183106_task_dag_prior_report.sql` cria a leitura capability-bound do último
+  migration `20260829184738_task_dag_prior_report.sql` cria a leitura capability-bound do último
   run primário bem-sucedido sem expor o relatório ao navegador. Staging aceitou a migration;
   função privada, wrapper público, grants e índice foram verificados, `anon` não executa e o
   Security Advisor ficou com zero findings. A prova funcional integral ainda depende do job

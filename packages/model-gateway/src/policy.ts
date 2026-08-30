@@ -77,6 +77,7 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   },
   map_accounts: {primary: anthropic("claude-sonnet-5", "medium"), fallback: anthropic("claude-opus-5", "medium"), escalation: [anthropic("claude-sonnet-5", "medium"), anthropic("claude-opus-5", "high")], maxOutputTokens: 16_000, timeoutMs: 240_000},
   explain_exception: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 4_000, timeoutMs: 180_000},
+  structure_design: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 8_000, timeoutMs: 300_000},
   case_brief: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 32_000, timeoutMs: 600_000},
   agent_operation_brief: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-sol", "medium"), fallback: openai("gpt-5.6-sol", "medium"), maxOutputTokens: 6_000, timeoutMs: 180_000},
   write_output: {primary: anthropic("claude-opus-5", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 32_000, timeoutMs: 600_000},

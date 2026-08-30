@@ -17,3 +17,4 @@ export * from "./diligence";
 export * from "./conduct";
 export * from "./conduct-truth";
 export * from "./truth";
+export * from "./financial-model";
