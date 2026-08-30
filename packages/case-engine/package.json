@@ -27,6 +27,7 @@
     "@offroad/deal-structure": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
     "@offroad/financial-core": "workspace:*",
+    "@offroad/financial-model": "workspace:*",
     "@offroad/market-reference": "workspace:*",
     "@offroad/matching-core": "workspace:*",
     "@offroad/model-gateway": "workspace:*",

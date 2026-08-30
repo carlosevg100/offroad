@@ -1,4 +1,5 @@
-import {buildLanguageConductTruthSet, buildMaterialTruthSet, compileMaterials, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
+import {createHash} from "node:crypto";
+import {buildLanguageConductTruthSet, buildMaterialTruthSet, compileMaterials, financialModelMaterial, type FinancialModelArtifactEvidence, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
 import {
   runCase,
   runSubgraph,
@@ -65,10 +66,15 @@ import {
 import {dataRoomIndex, planDataRoom, type DataRoomDocument, type DataRoomPlan} from "@offroad/data-room";
 import {
   assessCapacity,
+  buildStructureDecision,
   buildOperationTruthSet,
+  compileStructureAlternatives,
+  fingerprintStructureAlternative,
+  fingerprintStructureVerificationContext,
   buildStructureTruthSet,
   buildTermSheet,
   designCollateralPackage,
+  type AlternativePricingInput,
   type CapacityAssessment,
   type CollateralAsset,
   type CollateralPackage,
@@ -76,6 +82,12 @@ import {
   type OperationPolicies,
   type OperationTruthSet,
   type StructurePolicies,
+  type StructureAlternatives,
+  type StructureAlternativesInput,
+  type StructureAlternativeVerification,
+  type StructureAlternativeDraft,
+  type StructureConfirmationInput,
+  type StructureDecision,
   type StructureTruthSet,
 } from "@offroad/deal-structure";
 import {
@@ -103,11 +115,12 @@ import {
   type PricingPolicy,
   type PricingTruthSet,
 } from "@offroad/market-reference";
-import {reconcileCase, type FactCandidate, type ReconciliationReport} from "@offroad/reconciliation";
+import {buildFinancialModel, financialModelVersion, toXlsxBuffer} from "@offroad/financial-model";
+import {reconcileCase, type FactCandidate, type ReconciledFact, type ReconciliationReport} from "@offroad/reconciliation";
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.29-v13";
+export const caseEngineVersion = "2026.08.29-v15";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -131,6 +144,60 @@ export type BriefVerifierResult = {
   audit: SemanticAudit;
   usage?: {costUsd: number; modelCalls: number};
   modelInvocations?: unknown[];
+};
+
+export type StructureDesignerContext = {
+  version: "2026.08.29-v1";
+  caseFingerprint: string;
+  archetypeId: ArchetypeId;
+  locale: "pt" | "en";
+  request: OperationTruthSet["request"];
+  calculatedNeed: OperationTruthSet["calculatedNeed"];
+  sourcesAndUses: OperationTruthSet["sourcesAndUses"];
+  effects: OperationTruthSet["effects"];
+  capacityEnvelope: StructureTruthSet["capacityEnvelope"];
+  baseStructure: StructureTruthSet["proposal"];
+  finalSizing: StructureTruthSet["finalSizing"];
+  security: StructureTruthSet["security"];
+  dayOne: StructureTruthSet["dayOne"];
+  eligibleInstruments: Array<{
+    id: string;
+    route: string;
+    taxonomy: InstrumentVerdict["route"];
+    minimumAmount: string;
+    tenorMonths: {min: number; max: number};
+    buyers: readonly string[];
+    requirements: readonly {pt: string; en: string}[];
+  }>;
+  pricing: Pick<PricingTruthSet, "decision" | "policyVersion" | "indicativePrice" | "allIn" | "missingInputs">;
+  blockers: string[];
+  missingInputs: string[];
+  allowedBasisIds: string[];
+  budget: {maxCostUsd: 0.75; maxModelCalls: 1};
+};
+
+export type StructureDesignerResult = {
+  proposal: StructureAlternativesInput | null;
+  blockedBy: string[];
+  usage?: {costUsd: number; modelCalls: number};
+  modelInvocations?: unknown[];
+};
+
+export type FinancialModelArtifact = FinancialModelArtifactEvidence & {
+  version: string;
+  selectedAlternativeId: string;
+  proposalFingerprint: string;
+  inputs: {
+    amount: string;
+    termMonths: number;
+    graceMonths: number;
+    amortization: "sac" | "price" | "bullet";
+    annualInterestRate: string | null;
+  };
+  periods: string[];
+  sheetNames: {pt: string[]; en: string[]};
+  deskAssumptions: string[];
+  supportIds: string[];
 };
 
 export type CaseEngineInput = {
@@ -171,6 +238,10 @@ export type CaseEngineInput = {
   indexLevels?: {cdi: string; tlp: string; ipca: string; tr: string};
   operationPolicies?: OperationPolicies;
   structurePolicies?: StructurePolicies;
+  structureProposal?: StructureAlternativesInput | null;
+  structureConfirmation?: StructureConfirmationInput | null;
+  structureAlternativePricing?: Record<string, AlternativePricingInput>;
+  designStructure?: (input: StructureDesignerContext) => Promise<StructureDesignerResult>;
   pricing?: {
     policy: PricingPolicy;
     observations: PricingObservation[];
@@ -205,6 +276,8 @@ export type CaseEngineState = {
   capacity: CapacityAssessment | null;
   operationTruth: OperationTruthSet;
   structureTruth: StructureTruthSet;
+  structureAlternatives: StructureAlternatives;
+  structureDecision: StructureDecision;
   pricingTruth: PricingTruthSet;
   materialTruth: MaterialTruthSet;
   languageConductTruth: LanguageConductTruthSet;
@@ -225,6 +298,7 @@ export type CaseEngineState = {
   briefBlockedBy: string[];
   claimRegistry: ClaimRegistry | null;
   materials: Material[];
+  financialModel: FinancialModelArtifact | null;
   materialsBlockedBy: string[];
   dataRoom: DataRoomPlan;
   matching: {
@@ -235,6 +309,7 @@ export type CaseEngineState = {
   };
   outcome: CaseOutcome;
   modelInvocations: unknown[];
+  structureModelInvocations: unknown[];
 };
 
 export type CaseEngineResult = {state: CaseEngineState; report: CaseRunReport};
@@ -292,7 +367,7 @@ export type PublicLanguageConductTruthSet=Pick<LanguageConductTruthSet,
   "version"|"status"|"internalMaterialsAllowed"|"externalReleaseAllowed"|"qualifiedIntroductionAllowed"|"blockerCodes"|"reviewCodes"
 >&{policyStatus:LanguageConductTruthSet["policy"]["status"]};
 
-export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"|"materialTruth"|"redFlagTruth"|"languageConductTruth"> & {
+export type PublicCaseEngineState = Omit<CaseEngineState, "matching" | "pricingTruth"|"materialTruth"|"redFlagTruth"|"languageConductTruth"|"modelInvocations"|"structureModelInvocations"> & {
   matching: PublicMatchingSummary;
   pricingTruth: PublicPricingTruthSet;
   materialTruth:PublicMaterialTruthSet;
@@ -328,8 +403,9 @@ export function summarizeMatching(matching: CaseEngineState["matching"]): Public
 
 export function publicCaseState(state: CaseEngineState): PublicCaseEngineState {
   const openFlags=state.redFlagTruth.findings.filter((finding)=>finding.status==="candidate"||finding.status==="confirmed").length;
+  const {modelInvocations: _modelInvocations, structureModelInvocations: _structureModelInvocations, ...publicState} = state;
   return {
-    ...state,
+    ...publicState,
     matching: summarizeMatching(state.matching),
     pricingTruth: {
       ...state.pricingTruth,
@@ -384,6 +460,14 @@ export function publicCaseRunReport(report: CaseRunReport): CaseRunReport {
   const output = matching.output as CaseEngineState["matching"];
   const summary = summarizeMatching(output);
   const stages = report.stages.map((stage) => {
+    if(stage.stage==="structure"&&stage.status==="succeeded"&&stage.output){
+      const {structureModelInvocations: _invocations,...output}=stage.output as StructureOutput;
+      return {...stage,output,outputFingerprint:fingerprintJson(output)};
+    }
+    if(stage.stage==="claims"&&stage.status==="succeeded"&&stage.output){
+      const {modelInvocations: _invocations,...output}=stage.output as ClaimsOutput;
+      return {...stage,output,outputFingerprint:fingerprintJson(output)};
+    }
     if(stage.stage==="matching")return {...stage,output:summary,outputFingerprint:fingerprintJson(summary)};
     if(stage.stage==="language_conduct"&&stage.status==="succeeded"&&stage.output){
       const truth=(stage.output as LanguageConductOutput).languageConductTruth;
@@ -444,6 +528,8 @@ const structureOutputSchema = z.object({
   capacity: z.unknown().nullable(),
   operationTruth: z.unknown(),
   structureTruth: z.unknown(),
+  structureAlternatives: z.unknown(),
+  structureDecision: z.unknown(),
   pricingTruth: z.unknown(),
   termSheet: z.unknown().nullable(),
   rating: z.unknown().nullable(),
@@ -452,6 +538,7 @@ const structureOutputSchema = z.object({
   collateral: z.unknown().nullable(),
   price: z.unknown().nullable(),
   verdict: z.unknown().nullable(),
+  structureModelInvocations: z.array(z.unknown()),
 });
 const redFlagsOutputSchema=z.object({redFlagTruth:z.unknown()});
 const claimsOutputSchema = z.object({
@@ -465,6 +552,7 @@ const claimsOutputSchema = z.object({
 });
 const materialsOutputSchema = z.object({
   materials: z.array(z.unknown()),
+  financialModel: z.unknown().nullable(),
   materialsBlockedBy: z.array(z.string()),
   materialTruth:z.unknown(),
   dataRoom: z.object({
@@ -500,8 +588,8 @@ type MetricsOutput = {
 type GapsOutput = {materialGapCount: number; blockers: string[]};
 type StructureOutput = Pick<
   CaseEngineState,
-  "capacity" | "operationTruth" | "structureTruth" | "pricingTruth" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
->;
+  "capacity" | "operationTruth" | "structureTruth" | "structureAlternatives" | "structureDecision" | "pricingTruth" | "termSheet" | "rating" | "stress" | "instruments" | "collateral" | "price" | "verdict"
+> & {structureModelInvocations: unknown[]};
 type RedFlagsOutput={redFlagTruth:RedFlagTruthSet};
 type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInvocations"> & {
   proposedBrief: CaseBrief | null;
@@ -509,7 +597,7 @@ type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInv
   semanticAudit: NormalizedSemanticAudit | null;
   usage: {costUsd: number; modelCalls: number};
 };
-type MaterialsOutput = Pick<CaseEngineState, "materials" | "materialsBlockedBy" | "materialTruth" | "dataRoom" | "claimRegistry"> & {
+type MaterialsOutput = Pick<CaseEngineState, "materials" | "financialModel" | "materialsBlockedBy" | "materialTruth" | "dataRoom" | "claimRegistry"> & {
   audit: "not_run" | "pass" | "blocked";
 };
 type LanguageConductOutput={languageConductTruth:LanguageConductTruthSet};
@@ -523,6 +611,70 @@ const outputOf = <T>(context: StageContext, stage: keyof StageContext["outputs"]
 };
 
 const number = (value: string | undefined) => (value && Number.isFinite(Number(value)) ? value : undefined);
+
+function factsForStructureAlternative(
+  facts: readonly ReconciledFact[],
+  alternative: StructureAlternativeDraft,
+): ReconciledFact[] {
+  const replaced = [
+    "transaction.requested_amount",
+    "transaction.desired_term_months",
+    "transaction.desired_grace_months",
+    "transaction.sources_and_uses.",
+    "structure.selected_instrument",
+    "structure.target_buyer",
+    "structure.term_months",
+    "structure.grace_months",
+    "structure.amortization_format",
+  ];
+  const retained = facts.filter((fact) => !replaced.some((path) => path.endsWith(".")
+    ? fact.key.fieldPath.startsWith(path)
+    : fact.key.fieldPath === path));
+  const proposed = (
+    fieldPath: string,
+    normalizedValue: string,
+    valueType: FactCandidate["valueType"],
+    basisIds: readonly string[],
+  ): ReconciledFact => {
+    const accepted: FactCandidate = {
+      fieldPath,
+      normalizedValue,
+      valueType,
+      sourceDocument: `offroad:structure-proposal:${alternative.id}`,
+      evidenceRank: 7,
+      informationClass: "offroad_proposal",
+      confidence: 1,
+      anchorVerified: true,
+      anchor: {alternativeId: alternative.id, basisIds: [...basisIds]},
+    };
+    return {key: {fieldPath}, value: normalizedValue, valueType, accepted, conflicts: [], disputed: false};
+  };
+  const proposalFacts: ReconciledFact[] = [
+    proposed("transaction.requested_amount", alternative.amount, "number", alternative.basisIds),
+    proposed("transaction.desired_term_months", String(alternative.termMonths), "number", alternative.basisIds),
+    proposed("transaction.desired_grace_months", String(alternative.graceMonths), "number", alternative.basisIds),
+    proposed("structure.selected_instrument", alternative.instrument, "text", alternative.basisIds),
+    proposed("structure.term_months", String(alternative.termMonths), "number", alternative.basisIds),
+    proposed("structure.grace_months", String(alternative.graceMonths), "number", alternative.basisIds),
+    proposed("structure.amortization_format", alternative.amortization, "text", alternative.basisIds),
+    ...(alternative.targetBuyer ? [proposed("structure.target_buyer", alternative.targetBuyer, "text", alternative.basisIds)] : []),
+  ];
+  let index = 1;
+  for (const [side, lines] of [["sources", alternative.sources], ["uses", alternative.uses]] as const) {
+    for (const line of lines) {
+      const prefix = `transaction.sources_and_uses.${index}`;
+      proposalFacts.push(
+        proposed(`${prefix}.side`, side, "text", line.basisIds),
+        proposed(`${prefix}.item`, line.label, "text", line.basisIds),
+        proposed(`${prefix}.amount`, line.amount, "number", line.basisIds),
+        proposed(`${prefix}.currency`, alternative.currency, "text", line.basisIds),
+        proposed(`${prefix}.condition`, line.condition === "available" ? "available" : "conditional", "text", line.basisIds),
+      );
+      index += 1;
+    }
+  }
+  return [...retained, ...proposalFacts];
+}
 
 export function expectedMaterialFields(archetypeId: ArchetypeId): MaterialFieldRequirement[] {
   return materialFieldRequirements(archetypeId);
@@ -552,7 +704,7 @@ function currentApprovedJudgments(brief: CaseBrief, decisions: readonly ClaimDec
 
 export async function executeCaseEngine(
   input: CaseEngineInput,
-  policy: CaseRunPolicy = {maxCostUsd: 3, maxModelCalls: 4, stages: {claims: {costUsd: 3, modelCalls: 4}}},
+  policy: CaseRunPolicy = {maxCostUsd: 3, maxModelCalls: 4, stages: {structure: {costUsd: 0.75, modelCalls: 1}, claims: {costUsd: 2.25, modelCalls: 3}}},
 ): Promise<CaseEngineResult> {
   const report = await runCase({
     runId: input.runId,
@@ -691,6 +843,9 @@ export async function executeCaseEngine(
           indexLevels: input.indexLevels,
           operationPolicies: input.operationPolicies,
           structurePolicies: input.structurePolicies,
+          structureProposal: input.structureProposal,
+          structureConfirmation: input.structureConfirmation,
+          structureAlternativePricing: input.structureAlternativePricing,
           pricing: input.pricing,
         }),
         execute: async (context) => {
@@ -703,7 +858,7 @@ export async function executeCaseEngine(
             output: structure.output,
             usage: structure.usage,
             trace: {
-              toolsUsed: ["financial_core", "deal_structure", "instrument_catalogue", "market_reference"],
+              toolsUsed: ["financial_core", "deal_structure", "instrument_catalogue", "market_reference", ...(structure.usage.modelCalls > 0 ? ["structure_designer"] : [])],
               sourceIds: caseSourceIds(input),
               subtasks: structure.taskRuns,
             },
@@ -736,6 +891,19 @@ export async function executeCaseEngine(
         execute: async (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
+          const structure = outputOf<StructureOutput>(context, "structure");
+          if (!structure.structureDecision.materialsPreparationAllowed) {
+            const output: ClaimsOutput = {
+              brief: null,
+              proposedBrief: null,
+              briefBlockedBy: uniqueStrings(structure.structureDecision.blockers),
+              numericAudit: null,
+              semanticAudit: null,
+              modelInvocations: [],
+              usage: {costUsd: 0, modelCalls: 0},
+            };
+            return {output, usage: output.usage, trace: {toolsUsed: [], sourceIds: caseSourceIds(input)}};
+          }
           if (!input.writeBrief) {
             const output: ClaimsOutput = {
               brief: null,
@@ -956,9 +1124,10 @@ export async function executeCaseEngine(
       redFlagTruth:redFlags,
       brief: claims.brief,
       briefBlockedBy: claims.briefBlockedBy,
-      modelInvocations: claims.modelInvocations,
+      modelInvocations: [...structure.structureModelInvocations, ...claims.modelInvocations],
       claimRegistry: materials.claimRegistry,
       materials: materials.materials,
+      financialModel: materials.financialModel,
       materialsBlockedBy: materials.materialsBlockedBy,
       materialTruth:materials.materialTruth,
       languageConductTruth:languageConduct,
@@ -980,6 +1149,9 @@ type StructureSubtaskId =
   | "indicative_terms"
   | "structure_truth"
   | "pricing_truth"
+  | "structure_design"
+  | "structure_alternatives"
+  | "structure_decision"
   | "assemble";
 
 type StructureSubgraphInput = {
@@ -1004,6 +1176,47 @@ const operationTruthSubtaskSchema = z.object({operationTruth: z.unknown()});
 const indicativeTermsSchema = z.object({termSheet: z.unknown().nullable()});
 const structureTruthSubtaskSchema = z.object({structureTruth: z.unknown()});
 const pricingTruthSubtaskSchema = z.object({pricingTruth: z.unknown(), price: z.unknown().nullable()});
+export const structureBasisLineSchema = z.object({
+  id: z.string().min(1), label: z.string().min(1), amount: z.string().min(1),
+  origin: z.enum(["reconciled_fact", "calculation", "company_input", "proposal"]),
+  basisIds: z.array(z.string().min(1)).min(1),
+  condition: z.enum(["available", "conditional", "proposed"]),
+}).strict();
+export const structureAlternativeDraftSchema = z.object({
+  id: z.string().min(1), label: z.string().min(1), instrument: z.string().min(1), route: z.string().min(1),
+  amount: z.string().min(1), currency: z.string().min(1), termMonths: z.number().int().positive(), graceMonths: z.number().int().nonnegative(),
+  amortization: z.enum(["sac", "price", "bullet", "balloon"]), indexer: z.string().min(1), targetBuyer: z.string().min(1).nullable(),
+  rationale: z.string().min(1), pros: z.array(z.string().min(1)).max(6), cons: z.array(z.string().min(1)).max(6), assumptions: z.array(z.string().min(1)).max(10),
+  sources: z.array(structureBasisLineSchema).min(1).max(20), uses: z.array(structureBasisLineSchema).min(1).max(20),
+  security: z.array(z.object({description: z.string().min(1), basisIds: z.array(z.string().min(1)).min(1)}).strict()).max(12),
+  covenants: z.array(z.object({description: z.string().min(1), basisIds: z.array(z.string().min(1)).min(1)}).strict()).max(12),
+  conditionsPrecedent: z.array(z.object({description: z.string().min(1), owner: z.string().min(1).nullable(), basisIds: z.array(z.string().min(1)).min(1)}).strict()).max(20),
+  implementationDays: z.object({min: z.number().int().nonnegative(), max: z.number().int().nonnegative(), basisIds: z.array(z.string().min(1)).min(1)}).strict().nullable(),
+  basisIds: z.array(z.string().min(1)).min(1),
+}).strict();
+export const structureAlternativesInputSchema = z.object({
+  alternatives: z.array(structureAlternativeDraftSchema).min(1).max(3),
+  recommendation: z.object({
+    alternativeId: z.string().min(1), rationale: z.string().min(1), basisIds: z.array(z.string().min(1)).min(1),
+    proposedBy: z.string().min(1), proposedAt: z.iso.datetime(),
+  }).strict().nullable(),
+}).strict();
+export const structureConfirmationInputSchema = z.object({
+  decision: z.enum(["confirm", "request_changes", "decline"]),
+  selectedAlternativeId: z.string().min(1),
+  proposalFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  actorId: z.string().min(1),
+  decidedAt: z.iso.datetime(),
+  rationale: z.string().min(1).optional(),
+  requestedChanges: z.array(z.string().min(1)).max(20).optional(),
+}).strict();
+const structureDesignSubtaskSchema = z.object({
+  proposal: structureAlternativesInputSchema.nullable(),
+  blockedBy: z.array(z.string()),
+  modelInvocations: z.array(z.unknown()),
+});
+const structureAlternativesSubtaskSchema = z.object({structureAlternatives: z.unknown()});
+const structureDecisionSubtaskSchema = z.object({structureDecision: z.unknown()});
 
 async function runStructureSubgraph(
   caseInput: CaseEngineInput,
@@ -1020,8 +1233,9 @@ async function runStructureSubgraph(
     outputSchema: z.ZodType,
     allowedTools: string[],
     execute: SubtaskDefinition<StructureSubtaskId, StructureSubgraphInput>["execute"],
+    executionClass: "deterministic" | "model" = "deterministic",
   ): SubtaskDefinition<StructureSubtaskId, StructureSubgraphInput> => ({
-    spec: {id, version: "1", dependencies, executionClass: "deterministic", allowedTools},
+    spec: {id, version: "1", dependencies, executionClass, allowedTools},
     outputSchema,
     selectInput: () => ({
       archetypeId: caseInput.archetypeId,
@@ -1033,6 +1247,13 @@ async function runStructureSubgraph(
     }),
     execute,
   });
+  const basisIdsFor = (operationTruth: OperationTruthSet, structureTruth: StructureTruthSet) => uniqueStrings([
+    ...reconciliation.facts.map((fact) => fact.key.fieldPath),
+    ...reconciliation.calculations.map((calculation) => calculation.id),
+    ...sourceIds,
+    ...operationTruth.procedureCoverage.map((procedure) => procedure.procedureId),
+    ...structureTruth.procedureCoverage.map((procedure) => procedure.procedureId),
+  ]);
 
   const tasks: SubtaskDefinition<StructureSubtaskId, StructureSubgraphInput>[] = [
     task("need_capacity", [], structureCapacitySchema, ["financial_core"], () => {
@@ -1235,7 +1456,160 @@ async function runStructureSubgraph(
       });
       return {output: {pricingTruth, price: pricingTruth.indicativePrice}, toolsUsed: ["market_reference"], sourceIds};
     }),
-    task("assemble", ["need_capacity", "credit_scenarios", "instrument_screen", "collateral_design", "operation_verdict", "operation_truth", "indicative_terms", "structure_truth", "pricing_truth"], structureOutputSchema, ["deal_structure"], ({outputs}) => {
+    task("structure_design", ["operation_truth", "structure_truth", "pricing_truth", "instrument_screen"], structureDesignSubtaskSchema, ["structure_designer"], async ({outputs}) => {
+      const {operationTruth} = subtaskOutput<{operationTruth: OperationTruthSet}>(outputs, "operation_truth");
+      const {structureTruth} = subtaskOutput<{structureTruth: StructureTruthSet}>(outputs, "structure_truth");
+      const {pricingTruth} = subtaskOutput<{pricingTruth: PricingTruthSet}>(outputs, "pricing_truth");
+      const {instruments} = subtaskOutput<{instruments: InstrumentVerdict[]}>(outputs, "instrument_screen");
+      if (caseInput.structureProposal) {
+        return {output: {proposal: structureAlternativesInputSchema.parse(caseInput.structureProposal), blockedBy: [], modelInvocations: []}, usage: {costUsd: 0, modelCalls: 0}, toolsUsed: [], sourceIds};
+      }
+      const readinessBlockers = uniqueStrings([
+        ...(operationTruth.sourcesAndUses.status !== "pass" ? ["sources_and_uses_not_verified"] : []),
+        ...(structureTruth.status === "blocked" ? ["base_structure_truth_blocked"] : []),
+        ...(instruments.some((instrument) => instrument.eligible) ? [] : ["no_eligible_instrument"]),
+      ]);
+      if (!caseInput.designStructure || readinessBlockers.length > 0) {
+        return {
+          output: {proposal: null, blockedBy: uniqueStrings([...readinessBlockers, ...(!caseInput.designStructure ? ["structure_designer_unavailable"] : [])]), modelInvocations: []},
+          usage: {costUsd: 0, modelCalls: 0},
+          toolsUsed: [],
+          sourceIds,
+        };
+      }
+      const context: StructureDesignerContext = {
+        version: "2026.08.29-v1",
+        caseFingerprint: fingerprintStructureVerificationContext(operationTruth, structureTruth),
+        archetypeId: caseInput.archetypeId,
+        locale: caseInput.locale,
+        request: operationTruth.request,
+        calculatedNeed: operationTruth.calculatedNeed,
+        sourcesAndUses: operationTruth.sourcesAndUses,
+        effects: operationTruth.effects,
+        capacityEnvelope: structureTruth.capacityEnvelope,
+        baseStructure: structureTruth.proposal,
+        finalSizing: structureTruth.finalSizing,
+        security: structureTruth.security,
+        dayOne: structureTruth.dayOne,
+        eligibleInstruments: instruments.filter((instrument) => instrument.eligible).map((instrument) => ({
+          id: instrument.instrument.id,
+          route: instrument.instrument.id,
+          taxonomy: instrument.route,
+          minimumAmount: instrument.instrument.minimumAmount,
+          tenorMonths: instrument.instrument.tenorMonths,
+          buyers: instrument.instrument.buyers,
+          requirements: instrument.instrument.requirements,
+        })),
+        pricing: {
+          decision: pricingTruth.decision,
+          policyVersion: pricingTruth.policyVersion,
+          indicativePrice: pricingTruth.indicativePrice,
+          allIn: pricingTruth.allIn,
+          missingInputs: pricingTruth.missingInputs,
+        },
+        blockers: uniqueStrings([...operationTruth.exceptions.filter((exception) => exception.severity === "critical").map((exception) => exception.id), ...structureTruth.exceptions.filter((exception) => exception.severity === "critical").map((exception) => exception.id)]),
+        missingInputs: uniqueStrings([...operationTruth.missingInputs, ...structureTruth.missingInputs]),
+        allowedBasisIds: basisIdsFor(operationTruth, structureTruth),
+        budget: {maxCostUsd: 0.75, maxModelCalls: 1},
+      };
+      const designed = await caseInput.designStructure(context);
+      const usage = {costUsd: designed.usage?.costUsd ?? 0, modelCalls: designed.usage?.modelCalls ?? 0};
+      if (usage.costUsd > context.budget.maxCostUsd || usage.modelCalls > context.budget.maxModelCalls) {
+        throw Object.assign(new Error("structure designer exceeded its hard budget"), {code: "structure_designer_budget_exceeded"});
+      }
+      const proposal = designed.proposal ? structureAlternativesInputSchema.parse({
+        ...designed.proposal,
+        recommendation: designed.proposal.recommendation ? {
+          ...designed.proposal.recommendation,
+          proposedBy: "offroad_structure_designer",
+          proposedAt: `${caseInput.referenceDate}T00:00:00.000Z`,
+        } : null,
+      }) : null;
+      return {output: {proposal, blockedBy: uniqueStrings(designed.blockedBy), modelInvocations: designed.modelInvocations ?? []}, usage, toolsUsed: ["structure_designer"], sourceIds};
+    }, "model"),
+    task("structure_alternatives", ["need_capacity", "operation_truth", "structure_truth", "pricing_truth", "instrument_screen", "collateral_design", "structure_design"], structureAlternativesSubtaskSchema, ["deal_structure", "market_reference"], ({outputs}) => {
+      const {capacity} = subtaskOutput<z.infer<typeof structureCapacitySchema>>(outputs, "need_capacity") as {capacity: CapacityAssessment | null};
+      const {operationTruth} = subtaskOutput<{operationTruth: OperationTruthSet}>(outputs, "operation_truth");
+      const {structureTruth} = subtaskOutput<{structureTruth: StructureTruthSet}>(outputs, "structure_truth");
+      const {pricingTruth} = subtaskOutput<{pricingTruth: PricingTruthSet}>(outputs, "pricing_truth");
+      const {instruments} = subtaskOutput<{instruments: InstrumentVerdict[]}>(outputs, "instrument_screen");
+      const {proposal} = subtaskOutput<z.infer<typeof structureDesignSubtaskSchema>>(outputs, "structure_design");
+      const pricingByAlternative: Record<string, AlternativePricingInput> = {...(caseInput.structureAlternativePricing ?? {})};
+      const verificationByAlternative: Record<string, StructureAlternativeVerification> = {};
+      const verificationContextFingerprint = fingerprintStructureVerificationContext(operationTruth, structureTruth);
+      const pricedInstrument = instruments.find((entry) => entry.eligible)?.instrument.id;
+      const alternativeCollateralAssets = collateralAssetsOf(reconciliation, metrics.desk);
+      for (const alternative of proposal?.alternatives ?? []) {
+        const alternativeFacts = factsForStructureAlternative(reconciliation.facts, alternative);
+        const alternativeCollateral = alternativeCollateralAssets.length > 0
+          ? designCollateralPackage({assets: alternativeCollateralAssets, amount: alternative.amount})
+          : null;
+        const alternativeOperationTruth = buildOperationTruthSet({
+          facts: alternativeFacts,
+          financialTruth: reconciliation.financialTruth,
+          debtTruth: reconciliation.debtTruth,
+          capacity,
+          requestedAmount: alternative.amount,
+          requestedTermMonths: alternative.termMonths,
+          referenceDate: caseInput.referenceDate,
+          ...(caseInput.operationPolicies ? {policies: caseInput.operationPolicies} : {}),
+        });
+        const alternativeTermSheet = capacity ? buildTermSheet({
+          archetypeId: caseInput.archetypeId,
+          capacity,
+          requestedTermMonths: alternative.termMonths,
+          requestedGraceMonths: alternative.graceMonths,
+          blockers: metrics.readiness.blockers.map((blocker) => blocker.labels[caseInput.locale]),
+        }) : null;
+        const alternativeStructureTruth = buildStructureTruthSet({
+          archetypeId: caseInput.archetypeId,
+          facts: alternativeFacts,
+          financialTruth: reconciliation.financialTruth,
+          debtTruth: reconciliation.debtTruth,
+          operationTruth: alternativeOperationTruth,
+          capacity,
+          termSheet: alternativeTermSheet,
+          collateral: alternativeCollateral,
+          instruments,
+          referenceDate: caseInput.referenceDate,
+          ...(caseInput.structurePolicies ? {policies: caseInput.structurePolicies} : {}),
+        });
+        verificationByAlternative[alternative.id] = {
+          alternativeFingerprint: fingerprintStructureAlternative(alternative),
+          contextFingerprint: verificationContextFingerprint,
+          verifierVersion: `${alternativeOperationTruth.version}+${alternativeStructureTruth.version}`,
+          verifiedAt: `${caseInput.referenceDate}T00:00:00.000Z`,
+          operationTruth: alternativeOperationTruth,
+          structureTruth: alternativeStructureTruth,
+        };
+        if (pricingByAlternative[alternative.id] || alternative.instrument !== pricedInstrument) continue;
+        pricingByAlternative[alternative.id] = {
+          decision: pricingTruth.decision,
+          policyVersion: pricingTruth.policyVersion,
+          spreadBps: pricingTruth.indicativePrice?.bps ?? null,
+          totalRate: pricingTruth.allIn.totalRate,
+          annualizedCostBps: pricingTruth.allIn.annualizedCostBps,
+          componentIds: pricingTruth.allIn.components.map((component) => component.id),
+          missingInputs: [...pricingTruth.missingInputs],
+        };
+      }
+      const structureAlternatives = compileStructureAlternatives({
+        proposal,
+        operationTruth,
+        structureTruth,
+        instruments,
+        verificationByAlternative,
+        pricingByAlternative,
+        allowedBasisIds: basisIdsFor(operationTruth, structureTruth),
+      });
+      return {output: {structureAlternatives}, toolsUsed: ["deal_structure", "market_reference"], sourceIds};
+    }),
+    task("structure_decision", ["structure_alternatives"], structureDecisionSubtaskSchema, ["deal_structure"], ({outputs}) => {
+      const {structureAlternatives} = subtaskOutput<{structureAlternatives: StructureAlternatives}>(outputs, "structure_alternatives");
+      const structureDecision = buildStructureDecision(structureAlternatives, caseInput.structureConfirmation ?? null);
+      return {output: {structureDecision}, toolsUsed: ["deal_structure"], sourceIds};
+    }),
+    task("assemble", ["need_capacity", "credit_scenarios", "instrument_screen", "collateral_design", "operation_verdict", "operation_truth", "indicative_terms", "structure_truth", "pricing_truth", "structure_design", "structure_alternatives", "structure_decision"], structureOutputSchema, ["deal_structure"], ({outputs}) => {
       const {capacity} = subtaskOutput<{capacity: CapacityAssessment | null}>(outputs, "need_capacity");
       const {rating, stress} = subtaskOutput<{rating: InternalRating | null; stress: StressScenario[]}>(outputs, "credit_scenarios");
       const {instruments} = subtaskOutput<{instruments: InstrumentVerdict[]}>(outputs, "instrument_screen");
@@ -1245,7 +1619,10 @@ async function runStructureSubgraph(
       const {termSheet} = subtaskOutput<{termSheet: IndicativeTermSheet | null}>(outputs, "indicative_terms");
       const {structureTruth} = subtaskOutput<{structureTruth: StructureTruthSet}>(outputs, "structure_truth");
       const {pricingTruth, price} = subtaskOutput<{pricingTruth: PricingTruthSet; price: IndicativePrice | null}>(outputs, "pricing_truth");
-      const output: StructureOutput = {capacity, operationTruth, structureTruth, pricingTruth, termSheet, rating, stress, instruments, collateral, price, verdict};
+      const {structureAlternatives} = subtaskOutput<{structureAlternatives: StructureAlternatives}>(outputs, "structure_alternatives");
+      const {structureDecision} = subtaskOutput<{structureDecision: StructureDecision}>(outputs, "structure_decision");
+      const {modelInvocations: structureModelInvocations} = subtaskOutput<z.infer<typeof structureDesignSubtaskSchema>>(outputs, "structure_design");
+      const output: StructureOutput = {capacity, operationTruth, structureTruth, structureAlternatives, structureDecision, pricingTruth, termSheet, rating, stress, instruments, collateral, price, verdict, structureModelInvocations};
       return {output, toolsUsed: ["deal_structure"], sourceIds};
     }),
   ];
@@ -1266,6 +1643,7 @@ async function runStructureSubgraph(
 
 type MaterialsSubtaskId =
   | "material_inputs"
+  | "financial_model"
   | "compile_documents"
   | "plan_room"
   | "claim_registry"
@@ -1285,8 +1663,14 @@ type MaterialsSubgraphInput = {
 
 const materialInputsSchema = z.object({
   approvedJudgmentIds: z.array(z.string()),
-  canCompile: z.boolean(),
+  canCompileDocuments: z.boolean(),
+  canCompileFinancialModel: z.boolean(),
   initialBlockers: z.array(z.string()),
+});
+const financialModelSubtaskSchema = z.object({
+  financialModel: z.unknown().nullable(),
+  material: z.unknown().nullable(),
+  blockers: z.array(z.string()),
 });
 const compiledDocumentsSchema = z.object({
   materials: z.array(z.unknown()),
@@ -1297,6 +1681,7 @@ const plannedRoomSchema = z.object({materials: z.array(z.unknown()), dataRoom: z
 const claimRegistrySubtaskSchema = z.object({claimRegistry: z.unknown().nullable()});
 const publicationGateSchema = z.object({
   materials: z.array(z.unknown()),
+  financialModel: z.unknown().nullable(),
   materialsBlockedBy: z.array(z.string()),
   audit: z.enum(["not_run", "pass", "blocked"]),
   dataRoom: z.unknown(),
@@ -1335,16 +1720,114 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       return {
         output: {
           approvedJudgmentIds,
-          canCompile: Boolean(claims.brief),
+          canCompileDocuments: Boolean(claims.brief),
+          canCompileFinancialModel: structure.structureDecision.status === "confirmed"
+            && structure.structureDecision.materialsPreparationAllowed
+            && Boolean(structure.structureDecision.selectedAlternativeId),
           initialBlockers: claims.brief ? [] : ["brief_unavailable", ...claims.briefBlockedBy],
         },
         toolsUsed: ["claim_registry"],
         sourceIds,
       };
     }),
+    task("financial_model", ["material_inputs"], financialModelSubtaskSchema, ["financial_model"], ({outputs}) => {
+      const materialInputs = subtaskOutput<z.infer<typeof materialInputsSchema>>(outputs, "material_inputs");
+      if (!materialInputs.canCompileFinancialModel || !structure.structureDecision.selectedAlternativeId || !structure.structureAlternatives.proposalFingerprint) {
+        return {
+          output: {financialModel: null, material: null, blockers: ["confirmed_structure_unavailable_for_financial_model"]},
+          toolsUsed: ["financial_model"],
+          sourceIds,
+        };
+      }
+      const selected = structure.structureAlternatives.alternatives.find(
+        (alternative) => alternative.id === structure.structureDecision.selectedAlternativeId,
+      );
+      if (!selected || !selected.confirmationEligible) {
+        return {
+          output: {financialModel: null, material: null, blockers: ["selected_structure_not_model_eligible"]},
+          toolsUsed: ["financial_model"],
+          sourceIds,
+        };
+      }
+      if (selected.amortization !== "sac" && selected.amortization !== "price" && selected.amortization !== "bullet") {
+        return {
+          output: {financialModel: null, material: null, blockers: [`financial_model_amortization_not_supported:${selected.amortization}`]},
+          toolsUsed: ["financial_model"],
+          sourceIds,
+        };
+      }
+      const amortization: "sac" | "price" | "bullet" = selected.amortization;
+      const evidence = deskEvidence(metrics.desk, metrics.trajectory);
+      const filenames = new Map(extracted.roomDocuments.map((document) => [document.id, document.originalName]));
+      const rate = selected.totalCost.totalRate;
+      const annualInterestRate = rate ? midpointDecimal(rate.min, rate.max) : null;
+      const modelInput = {
+        archetypeId: input.archetypeId,
+        facts: reconciliation.facts,
+        calculations: [...reconciliation.calculations, ...evidence.calculations],
+        requestedAmount: selected.amount,
+        requestedTermMonths: selected.termMonths,
+        requestedGraceMonths: selected.graceMonths,
+        amortizationFormat: amortization,
+        ...(annualInterestRate ? {annualInterestRate} : {}),
+        filenames,
+      } as const;
+      const modelPt = buildFinancialModel({...modelInput, lang: "pt"});
+      const modelEn = buildFinancialModel({...modelInput, lang: "en"});
+      const bytesPt = toXlsxBuffer(modelPt, "pt");
+      const bytesEn = toXlsxBuffer(modelEn, "en");
+      if (bytesPt.byteLength < 4_000 || bytesEn.byteLength < 4_000 || bytesPt[0] !== 0x50 || bytesPt[1] !== 0x4b || bytesEn[0] !== 0x50 || bytesEn[1] !== 0x4b) {
+        throw Object.assign(new Error("compiled financial model is not a valid XLSX payload"), {code: "financial_model_binary_invalid"});
+      }
+      const supportIds = uniqueStrings([
+        ...selected.basisIds,
+        ...selected.sources.flatMap((line) => line.basisIds),
+        ...selected.uses.flatMap((line) => line.basisIds),
+        ...selected.security.flatMap((line) => line.basisIds),
+        ...selected.covenants.flatMap((line) => line.basisIds),
+        ...reconciliation.calculations.map((calculation) => calculation.id),
+      ]);
+      const payload = {
+        version: financialModelVersion,
+        selectedAlternativeId: selected.id,
+        proposalFingerprint: structure.structureAlternatives.proposalFingerprint,
+        inputs: {
+          amount: selected.amount,
+          termMonths: selected.termMonths,
+          graceMonths: selected.graceMonths,
+          amortization,
+          annualInterestRate,
+        },
+        periods: [...modelPt.periods],
+        sheetNames: {
+          pt: modelPt.sheets.map((sheet) => sheet.name.pt),
+          en: modelEn.sheets.map((sheet) => sheet.name.en),
+        },
+        deskAssumptions: [...modelPt.deskAssumptions],
+        supportIds,
+        workbooks: {
+          pt: {sha256: sha256Bytes(bytesPt), byteSize: bytesPt.byteLength},
+          en: {sha256: sha256Bytes(bytesEn), byteSize: bytesEn.byteLength},
+        },
+      };
+      const fingerprint = fingerprintJson(payload);
+      const financialModel: FinancialModelArtifact = {...payload, fingerprint};
+      const material = financialModelMaterial({
+        artifactFingerprint: fingerprint,
+        periods: financialModel.periods,
+        sheetNames: financialModel.sheetNames,
+        deskAssumptions: financialModel.deskAssumptions,
+        selectedAlternativeId: selected.id,
+        amount: selected.amount,
+        termMonths: selected.termMonths,
+        graceMonths: selected.graceMonths,
+        supportIds,
+      });
+      return {output: {financialModel, material, blockers: []}, toolsUsed: ["financial_model"], sourceIds};
+    }),
     task("compile_documents", ["material_inputs"], compiledDocumentsSchema, ["case_materials"], ({outputs}) => {
       const materialInputs = subtaskOutput<z.infer<typeof materialInputsSchema>>(outputs, "material_inputs");
-      if (!materialInputs.canCompile || !claims.brief) {
+      if (!materialInputs.canCompileDocuments || !claims.brief) {
         return {
           output: {materials: [], materialsBlockedBy: materialInputs.initialBlockers, audit: "not_run"},
           toolsUsed: ["case_materials"],
@@ -1373,16 +1856,19 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
         ? {output: {materials: compiled.materials, materialsBlockedBy: [], audit: "pass"}, toolsUsed: ["case_materials"], sourceIds}
         : {output: {materials: [], materialsBlockedBy: compiled.detail, audit: "blocked"}, toolsUsed: ["case_materials"], sourceIds};
     }),
-    task("plan_room", ["compile_documents"], plannedRoomSchema, ["data_room"], ({outputs}) => {
+    task("plan_room", ["compile_documents", "financial_model"], plannedRoomSchema, ["data_room"], ({outputs}) => {
       const compiled = subtaskOutput<{materials: Material[]; materialsBlockedBy: string[]}>(outputs, "compile_documents");
+      const model = subtaskOutput<{financialModel: FinancialModelArtifact | null; material: Material | null; blockers: string[]}>(outputs, "financial_model");
+      const packageMaterials = [...compiled.materials, ...(model.material ? [model.material] : [])];
+      const materialsBlockedBy = uniqueStrings([...compiled.materialsBlockedBy, ...model.blockers]);
       const dataRoom = planDataRoom({
-        materials: compiled.materials,
-        materialsBlockedBy: compiled.materialsBlockedBy,
+        materials: packageMaterials,
+        materialsBlockedBy,
         documents: extracted.roomDocuments,
         exceptions: reconciliation.exceptions,
         readiness: metrics.readiness,
       });
-      const materials = [...compiled.materials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
+      const materials = [...packageMaterials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
       return {output: {materials, dataRoom}, toolsUsed: ["data_room"], sourceIds};
     }),
     task("claim_registry", ["plan_room"], claimRegistrySubtaskSchema, ["claim_registry"], ({outputs}) => {
@@ -1402,12 +1888,13 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
         : null;
       return {output: {claimRegistry}, toolsUsed: ["claim_registry"], sourceIds};
     }),
-    task("publication_gate", ["compile_documents", "plan_room", "claim_registry"], publicationGateSchema, ["case_materials", "data_room", "claim_registry"], ({outputs}) => {
+    task("publication_gate", ["compile_documents", "financial_model", "plan_room", "claim_registry"], publicationGateSchema, ["case_materials", "data_room", "claim_registry"], ({outputs}) => {
       const compiled = subtaskOutput<{materialsBlockedBy: string[]; audit: MaterialsOutput["audit"]}>(outputs, "compile_documents");
+      const model = subtaskOutput<{financialModel: FinancialModelArtifact | null; blockers: string[]}>(outputs, "financial_model");
       const planned = subtaskOutput<{materials: Material[]; dataRoom: DataRoomPlan}>(outputs, "plan_room");
       const {claimRegistry} = subtaskOutput<{claimRegistry: ClaimRegistry | null}>(outputs, "claim_registry");
       if (claimRegistry && !claimRegistry.publication.allowed) {
-        const materialsBlockedBy = [...new Set([...compiled.materialsBlockedBy, ...claimRegistry.publication.blockers])];
+        const materialsBlockedBy = uniqueStrings([...compiled.materialsBlockedBy, ...model.blockers, ...claimRegistry.publication.blockers]);
         const dataRoom = planDataRoom({
           materials: [],
           materialsBlockedBy,
@@ -1416,7 +1903,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
           readiness: metrics.readiness,
         });
         return {
-          output: {materials: [], materialsBlockedBy, audit: "blocked", dataRoom, claimRegistry},
+          output: {materials: [], financialModel: model.financialModel, materialsBlockedBy, audit: "blocked", dataRoom, claimRegistry},
           toolsUsed: ["case_materials", "data_room", "claim_registry"],
           sourceIds,
         };
@@ -1424,7 +1911,8 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       return {
         output: {
           materials: planned.materials,
-          materialsBlockedBy: compiled.materialsBlockedBy,
+          financialModel: model.financialModel,
+          materialsBlockedBy: uniqueStrings([...compiled.materialsBlockedBy, ...model.blockers]),
           audit: compiled.audit,
           dataRoom: planned.dataRoom,
           claimRegistry,
@@ -1436,13 +1924,14 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
     task("material_truth", ["publication_gate"], materialTruthSubtaskSchema, ["case_materials"], ({outputs}) => {
       const gated = subtaskOutput<{
         materials: Material[];
+        financialModel: FinancialModelArtifact | null;
         dataRoom: DataRoomPlan;
         claimRegistry: ClaimRegistry | null;
       }>(outputs, "publication_gate");
       const materialTruth = buildMaterialTruthSet({
         materials: gated.materials,
         dataRoom: gated.dataRoom,
-        modelAvailable: reconciliation.facts.length > 0,
+        financialModel: gated.financialModel,
         claimAuditApproved: gated.claimRegistry?.publication.allowed === true,
         governanceBlockers: redFlags.mandate.externalOutputsAllowed ? [] : redFlags.blockers,
         ...(input.materialRelease ? {release: input.materialRelease} : {}),
@@ -1475,6 +1964,21 @@ function subtaskOutput<T>(outputs: Readonly<Partial<Record<string, unknown>>>, t
   const output = outputs[taskId];
   if (output === undefined) throw Object.assign(new Error(`missing subtask output ${taskId}`), {code: "missing_subtask_output"});
   return output as T;
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+  return [...new Set(values.filter(Boolean))].sort();
+}
+
+function midpointDecimal(minimum: string, maximum: string): string | null {
+  const min = Number(minimum);
+  const max = Number(maximum);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+  return String((min + max) / 2);
+}
+
+function sha256Bytes(bytes: Uint8Array): string {
+  return createHash("sha256").update(bytes).digest("hex");
 }
 
 function applyCapacityCondition(

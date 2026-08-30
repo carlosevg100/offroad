@@ -94,6 +94,8 @@ export const dealStateObjectStatusSchema = z.enum([
   "pending_confirmation",
   "confirmed",
   "approved",
+  "changes_requested",
+  "declined",
   "stale",
   "superseded",
 ]);
@@ -119,11 +121,105 @@ export const dealStateObjectSchema = z.object({
   supersededAt: z.iso.datetime({offset: true}).nullable(),
 });
 
+export const capitalProviderKindSchema = z.enum([
+  "fidc",
+  "credit_fund",
+  "securitizadora",
+  "bank",
+  "family_office",
+  "multi_strategy",
+  "factoring",
+  "development_agency",
+  "finance_company",
+  "alternative_lender",
+  "other",
+  "unknown",
+]);
+
+export const matchCriterionSchema = z.object({
+  id: z.string().min(1).max(80),
+  label: z.object({pt: z.string().min(1), en: z.string().min(1)}),
+  outcome: z.enum(["fits", "conflicts", "unknown", "not_assessed"]),
+  hard: z.boolean(),
+  mandate: z.string().nullable(),
+  transaction: z.string().nullable(),
+  explanation: z.object({pt: z.string().min(1), en: z.string().min(1)}),
+  resolvedBy: z.string().nullable(),
+  divergent: z.boolean(),
+});
+
+export const matchCandidateSchema = z.object({
+  providerId: z.string().min(1),
+  providerName: z.string().min(1),
+  providerKind: capitalProviderKindSchema,
+  providerSource: z.enum(["directory", "registered"]),
+  fundDirectoryId: uuidSchema.nullable(),
+  providerOrganizationId: uuidSchema.nullable(),
+  providerFundId: uuidSchema.nullable(),
+  verdict: z.enum(["fits", "possible", "excluded"]),
+  eligibleForShortlist: z.boolean(),
+  mandateFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  sourceClasses: z.array(z.enum([
+    "direct_confirmation", "public_rule", "governed_observation", "unconfirmed",
+  ])),
+  rationale: z.string().min(1),
+  criteria: z.array(matchCriterionSchema),
+  confirmations: z.array(z.string()),
+  governanceBlockers: z.array(z.string()),
+  staleMonths: z.number().nonnegative().nullable(),
+  divergences: z.array(z.string()),
+  order: z.number().int().positive(),
+}).superRefine((candidate, context) => {
+  const validDirectory = candidate.providerSource === "directory"
+    && candidate.fundDirectoryId === candidate.providerId
+    && candidate.providerOrganizationId === null
+    && candidate.providerFundId === null;
+  const validRegistered = candidate.providerSource === "registered"
+    && candidate.fundDirectoryId === null
+    && candidate.providerOrganizationId !== null
+    && candidate.providerFundId === candidate.providerId;
+  if (!validDirectory && !validRegistered) {
+    context.addIssue({
+      code: "custom",
+      message: "provider reference does not match provider source",
+    });
+  }
+});
+
+export const matchScreenSchema = z.object({
+  schemaVersion: z.literal("2026.08.29-v3"),
+  status: z.enum([
+    "ready_for_review", "needs_mandate_refresh", "no_eligible_mandates", "not_screened",
+  ]),
+  packageReviewFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  materialArtifactFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  materialTruthFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  matchingFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  candidates: z.array(matchCandidateSchema),
+  summary: z.object({
+    screened: z.number().int().nonnegative(),
+    eligible: z.number().int().nonnegative(),
+    possible: z.number().int().nonnegative(),
+    excluded: z.number().int().nonnegative(),
+    blockedByGovernance: z.number().int().nonnegative(),
+  }),
+  structuralExclusions: z.array(z.string()),
+  noContactAuthorized: z.literal(true),
+  approval: z.object({
+    selectedProviderIds: z.array(z.string().min(1)).min(1),
+    actorId: uuidSchema,
+    approvedAt: z.iso.datetime({offset: true}),
+    scope: z.literal("match_shortlist_only"),
+  }).optional(),
+});
+
 export const dealWorkflowGatesSchema = z.object({
   understandingConfirmed: z.boolean(),
+  structureOptionCurrent: z.boolean().default(false),
   structureConfirmed: z.boolean(),
   productionPlanApproved: z.boolean(),
   packageApproved: z.boolean(),
+  matchApproved: z.boolean().default(false),
   releaseAuthorized: z.boolean(),
 });
 
@@ -140,9 +236,11 @@ export const initialDealWorkflowState: DealWorkflowState = {
   stage: "diagnose",
   gates: {
     understandingConfirmed: false,
+    structureOptionCurrent: false,
     structureConfirmed: false,
     productionPlanApproved: false,
     packageApproved: false,
+    matchApproved: false,
     releaseAuthorized: false,
   },
   objectFingerprints: {},
@@ -151,29 +249,68 @@ export const initialDealWorkflowState: DealWorkflowState = {
 const acceptedStatuses = new Set<DealStateObjectStatus>(["confirmed", "approved"]);
 
 export function deriveDealWorkflowState(objects: readonly DealStateObject[]): DealWorkflowState {
-  const active = new Map<DealStateObjectType, DealStateObject>();
+  const latest = new Map<DealStateObjectType, DealStateObject>();
   for (const object of objects) {
-    if (object.status === "stale" || object.status === "superseded") continue;
-    const current = active.get(object.objectType);
-    if (!current || object.objectVersion > current.objectVersion) active.set(object.objectType, object);
+    const current = latest.get(object.objectType);
+    if (!current || object.objectVersion > current.objectVersion) latest.set(object.objectType, object);
   }
+
+  const active = new Map(
+    [...latest].filter(([, object]) => object.status !== "stale" && object.status !== "superseded"),
+  );
 
   const accepted = (type: DealStateObjectType) => {
     const object = active.get(type);
     return object !== undefined && acceptedStatuses.has(object.status);
   };
   const approved = (type: DealStateObjectType) => active.get(type)?.status === "approved";
+  const dependsOn = (type: DealStateObjectType, upstreamType: DealStateObjectType) => {
+    const object = active.get(type);
+    const upstream = active.get(upstreamType);
+    return object !== undefined
+      && upstream !== undefined
+      && object.dependencies.some((dependency) => (
+        dependency.objectType === upstreamType
+        && dependency.objectFingerprint === upstream.objectFingerprint
+      ));
+  };
+  const understandingConfirmed = accepted("understanding_snapshot");
+  const structureOptionCurrent = understandingConfirmed
+    && active.get("structure_option")?.status === "pending_confirmation"
+    && dependsOn("structure_option", "understanding_snapshot");
+  const structureConfirmed = structureOptionCurrent
+    && accepted("structure_decision")
+    && dependsOn("structure_decision", "structure_option");
+  const productionPlanApproved = structureConfirmed
+    && approved("production_plan")
+    && dependsOn("production_plan", "structure_decision");
+  const materialArtifactCurrent = productionPlanApproved
+    && active.get("material_artifact")?.status === "pending_confirmation"
+    && dependsOn("material_artifact", "production_plan");
+  const packageApproved = materialArtifactCurrent
+    && approved("package_review")
+    && dependsOn("package_review", "production_plan")
+    && dependsOn("package_review", "material_artifact");
+  const matchApproved = packageApproved
+    && approved("match_screen")
+    && dependsOn("match_screen", "package_review")
+    && dependsOn("match_screen", "material_artifact");
+  const releaseAuthorized = matchApproved
+    && approved("release_authorization")
+    && dependsOn("release_authorization", "match_screen");
   const gates: DealWorkflowGates = {
-    understandingConfirmed: accepted("understanding_snapshot"),
-    structureConfirmed: accepted("structure_decision"),
-    productionPlanApproved: approved("production_plan"),
-    packageApproved: approved("package_review"),
-    releaseAuthorized: approved("release_authorization"),
+    understandingConfirmed,
+    structureOptionCurrent,
+    structureConfirmed,
+    productionPlanApproved,
+    packageApproved,
+    matchApproved,
+    releaseAuthorized,
   };
 
   let stage: DealWorkflowStage = "diagnose";
   if (gates.understandingConfirmed) stage = "structure";
-  if (gates.understandingConfirmed && gates.structureConfirmed && gates.productionPlanApproved) stage = "prepare";
+  if (gates.structureConfirmed) stage = "prepare";
   if (stage === "prepare" && gates.packageApproved) stage = "match";
   if (stage === "match" && gates.releaseAuthorized) stage = "introduce";
 
@@ -210,3 +347,7 @@ export type DealStateObjectStatus = z.infer<typeof dealStateObjectStatusSchema>;
 export type DealStateObject = z.infer<typeof dealStateObjectSchema>;
 export type DealWorkflowGates = z.infer<typeof dealWorkflowGatesSchema>;
 export type DealWorkflowState = z.infer<typeof dealWorkflowStateSchema>;
+export type CapitalProviderKind = z.infer<typeof capitalProviderKindSchema>;
+export type MatchCriterion = z.infer<typeof matchCriterionSchema>;
+export type MatchCandidate = z.infer<typeof matchCandidateSchema>;
+export type MatchScreen = z.infer<typeof matchScreenSchema>;

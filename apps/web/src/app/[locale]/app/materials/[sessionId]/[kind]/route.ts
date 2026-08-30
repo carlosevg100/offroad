@@ -2,6 +2,7 @@ import {renderMaterialHtml} from "@offroad/case-render";
 import type {MaterialKind} from "@offroad/case-materials";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {governedMaterial, loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 
 /**
@@ -29,20 +30,12 @@ export async function GET(request: Request, {params}: Params) {
   const {supabase, organization} = await requireWorkspace(locale);
   const lang = locale === "en-US" ? "en" : "pt";
 
-  const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
-  const material = state.materials.find((entry) => entry.kind === kind);
+  const governed = await loadGovernedMaterialPackage(supabase, organization.id, sessionId);
+  if (!governed) return new Response(lang === "pt" ? "O pacote aprovado ainda não está disponível." : "The approved package is not available yet.", {status: 409});
+  const material = governedMaterial(governed, kind as MaterialKind);
+  if (!material) return new Response(lang === "pt" ? "Este material não faz parte do plano aprovado." : "This material is not part of the approved plan.", {status: 409});
 
-  if (!material) {
-    // The reason is already computed upstream; repeating it here beats a bare 404, because
-    // "the audit refused this brief" and "this case has no facts yet" need different actions.
-    const reason = state.materialsBlockedBy.join("; ") || state.briefBlockedBy.join("; ");
-    return new Response(
-      lang === "pt"
-        ? `Este material ainda não pode ser emitido.${reason ? ` Motivo: ${reason}` : ""}`
-        : `This material cannot be issued yet.${reason ? ` Reason: ${reason}` : ""}`,
-      {status: 409, headers: {"content-type": "text/plain; charset=utf-8"}},
-    );
-  }
+  const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
 
   // Resolve every citation to the field and the file it came from — an appendix of opaque ids
   // would carry the form of traceability without the substance.

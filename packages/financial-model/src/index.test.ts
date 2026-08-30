@@ -89,6 +89,37 @@ describe("the model computes what a credit desk would check", () => {
     expect(closing[4]).toBeCloseTo(0, 0);
   });
 
+  it("honours a confirmed bullet instead of silently compiling SAC", () => {
+    const bullet = build({requestedTermMonths: 36, requestedGraceMonths: 0, amortizationFormat: "bullet"});
+    const bulletGrid = gridOf(bullet, "pt");
+    const amortisation = rowValues(bullet, bulletGrid, "pt", "debt", "facility_amort");
+    expect(amortisation[0]).toBeCloseTo(0, 6);
+    expect(amortisation[1]).toBeCloseTo(0, 6);
+    expect(amortisation[2]).toBeCloseTo(-45_000_000, 0);
+    for (const value of amortisation.slice(3)) expect(value).toBeCloseTo(0, 6);
+  });
+
+  it("honours a confirmed Price schedule with level annual debt service after grace", () => {
+    const price = build({requestedTermMonths: 60, requestedGraceMonths: 12, amortizationFormat: "price", annualInterestRate: "0.14"});
+    const priceGrid = gridOf(price, "pt");
+    const amortisation = rowValues(price, priceGrid, "pt", "debt", "facility_amort");
+    const interest = rowValues(price, priceGrid, "pt", "debt", "facility_interest");
+    const closing = rowValues(price, priceGrid, "pt", "debt", "facility_close");
+    expect(amortisation[0]).toBeCloseTo(0, 6);
+    const service = amortisation.map((principal, index) => principal + interest[index]!);
+    expect(service[1]).toBeCloseTo(service[2]!, 0);
+    expect(service[2]).toBeCloseTo(service[3]!, 0);
+    expect(closing[4]).toBeCloseTo(0, 0);
+  });
+
+  it("uses the governed indicative rate when one is supplied", () => {
+    const priced = build({annualInterestRate: "0.155"});
+    const assumptions = priced.sheets.find((sheet) => sheet.key === "assumptions")!;
+    const rate = assumptions.rows.find((row) => row.key === "interest_rate")!;
+    expect(rate.cells[1]?.value).toBe(0.155);
+    expect(rate.cells[2]?.value).toContain("faixa indicativa governada");
+  });
+
   it("treats debt service as a cash outflow, consistently across sheets", () => {
     const service = of("debt", "debt_service");
     const mirrored = of("projection", "debt_service");
@@ -157,7 +188,7 @@ describe("the model is honest about what it did not receive", () => {
   it("names every assumption the desk supplied", () => {
     const model = build();
     expect(model.deskAssumptions.join(" ")).toContain("Crescimento de receita de 6%");
-    expect(model.deskAssumptions.join(" ")).toContain("não precifica");
+    expect(model.deskAssumptions.join(" ")).toContain("A Offroad não precifica");
   });
 
   it("flags a margin it had to invent", () => {

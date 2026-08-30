@@ -50,6 +50,7 @@ const copy = {
     package: {pt: "Material completo", en: "Full package"},
     credit_memo: {pt: "Memorando de Crédito", en: "Credit Memorandum"},
     term_sheet: {pt: "Term Sheet indicativo", en: "Indicative Term Sheet"},
+    financial_model: {pt: "Modelo financeiro indicativo", en: "Indicative financial model"},
     diligence_qa: {pt: "Q&A de diligência", en: "Diligence Q&A"},
     data_room_index: {pt: "Sala de dados de saída", en: "Outbound data room"},
   } satisfies Record<MaterialKind, {pt: string; en: string}>,

@@ -41,19 +41,90 @@ const invocation: GatewayCallLog = {
   schemaName: "case_brief",
 };
 
+function structureProposalFromRequest(request: {
+  input?: Array<{type: string; text?: string}>;
+}) {
+  const text = request.input?.find((item) => item.type === "text")?.text ?? "";
+  const payload = JSON.parse(text.slice(text.lastIndexOf("\n\n") + 2)) as {
+    asOf: string;
+    deterministicBaseStructure: {
+      amount: string | null;
+      termMonths: number | null;
+      graceMonths: number | null;
+      amortizationFormat: string | null;
+    };
+    eligibleInstruments: Array<{id: string; route: string; buyers: string[]}>;
+    allowedBasisIds: string[];
+  };
+  const instrument = payload.eligibleInstruments[0]!;
+  const amount = payload.deterministicBaseStructure.amount ?? "40000000";
+  const basisId = payload.allowedBasisIds.includes("transaction.requested_amount")
+    ? "transaction.requested_amount"
+    : payload.allowedBasisIds[0]!;
+  return {
+    alternatives: [{
+      id: `${instrument.id}-base`,
+      label: "Estrutura indicativa base",
+      instrument: instrument.id,
+      route: instrument.route,
+      amount,
+      currency: "BRL",
+      termMonths: payload.deterministicBaseStructure.termMonths ?? 48,
+      graceMonths: payload.deterministicBaseStructure.graceMonths ?? 6,
+      amortization: payload.deterministicBaseStructure.amortizationFormat ?? "sac",
+      indexer: "CDI",
+      targetBuyer: instrument.buyers[0] ?? null,
+      rationale: "A estrutura respeita a capacidade calculada e o uso declarado dos recursos.",
+      pros: ["Compatível com o envelope de capacidade calculado."],
+      cons: ["Condições finais dependem da análise do financiador."],
+      assumptions: ["Estrutura indicativa sujeita à confirmação das informações."],
+      sources: [{
+        id: "new-debt",
+        label: "Nova dívida",
+        amount,
+        origin: "proposal",
+        basisIds: [basisId],
+        condition: "proposed",
+      }],
+      uses: [{
+        id: "declared-use",
+        label: "Uso declarado dos recursos",
+        amount,
+        origin: "company_input",
+        basisIds: [basisId],
+        condition: "available",
+      }],
+      security: [],
+      covenants: [],
+      conditionsPrecedent: [],
+      implementationDays: null,
+      basisIds: [basisId],
+    }],
+    recommendation: {
+      alternativeId: `${instrument.id}-base`,
+      rationale: "É a rota elegível que melhor preserva a finalidade declarada e a capacidade calculada.",
+      basisIds: [basisId],
+      proposedBy: "offroad_structure_designer",
+      proposedAt: payload.asOf,
+    },
+  };
+}
+
 describe("worker case analysis", () => {
   it("defaults to a zero-model diagnostic plan before governed confirmations", () => {
     expect(caseAnalysisExecutionPlan({
       stage: "diagnose",
       gates: {
         understandingConfirmed: false,
+        structureOptionCurrent: false,
         structureConfirmed: false,
         productionPlanApproved: false,
         packageApproved: false,
+        matchApproved: false,
         releaseAuthorized: false,
       },
       objectFingerprints: {},
-    })).toEqual({produceMaterials: false, screenMandates: false, introduce: false});
+    })).toEqual({designStructure: false, produceMaterials: false, screenMandates: false, introduce: false});
   });
 
   it("does not unlock matching merely because materials are allowed", () => {
@@ -61,9 +132,11 @@ describe("worker case analysis", () => {
       stage: "prepare",
       gates: {
         understandingConfirmed: true,
+        structureOptionCurrent: true,
         structureConfirmed: true,
         productionPlanApproved: true,
         packageApproved: false,
+        matchApproved: false,
         releaseAuthorized: false,
       },
       objectFingerprints: {
@@ -71,7 +144,7 @@ describe("worker case analysis", () => {
         structure_decision: "2".repeat(64),
         production_plan: "3".repeat(64),
       },
-    })).toEqual({produceMaterials: true, screenMandates: false, introduce: false});
+    })).toEqual({designStructure: true, produceMaterials: true, screenMandates: false, introduce: false});
   });
 
   it("persists a borrower-safe snapshot and keeps fund identity in the private job result", async () => {
@@ -107,7 +180,7 @@ describe("worker case analysis", () => {
         archetype: "growth_expansion",
         locale: "pt-BR",
         extraction_version: "fixture-v1",
-        requested_amount: 40_000_000,
+        requested_amount: 10_000_000,
         requested_term_months: 48,
         sector: "Varejo",
         geography: "SP",
@@ -119,12 +192,22 @@ describe("worker case analysis", () => {
       run: {id: job.processing_run_id, pipeline_version: "fixture", status: "running", versions: {}, model_calls: 0},
       candidates: [
         fact("company.legal_name", "Empresa Teste Ltda", "text"),
-        fact("transaction.requested_amount", 40_000_000),
+        fact("transaction.requested_amount", 10_000_000),
         fact("debt.total_gross", 60_000_000),
         fact("historical_financials.2025.cash", 10_000_000),
         fact("historical_financials.2025.ebitda", 25_000_000),
         fact("leverage.post_transaction_net_debt_ebitda", 2.8),
         fact("projections.minimum_dscr", 1.45),
+        fact("transaction.sources_and_uses.1.side", "sources", "text"),
+        fact("transaction.sources_and_uses.1.item", "Nova dívida", "text"),
+        fact("transaction.sources_and_uses.1.amount", 10_000_000),
+        fact("transaction.sources_and_uses.1.currency", "BRL", "text"),
+        fact("transaction.sources_and_uses.1.condition", "available", "text"),
+        fact("transaction.sources_and_uses.2.side", "uses", "text"),
+        fact("transaction.sources_and_uses.2.item", "Expansão", "text"),
+        fact("transaction.sources_and_uses.2.amount", 10_000_000),
+        fact("transaction.sources_and_uses.2.currency", "BRL", "text"),
+        fact("transaction.sources_and_uses.2.condition", "available", "text"),
       ],
       sources: [{id: "source-1", document_version: 1, sha256: "d".repeat(64)}],
       documents: [
@@ -148,6 +231,14 @@ describe("worker case analysis", () => {
         ],
       }],
       registered_mandates: [],
+      match_provider_context: [{
+        provider_id: "f1111111-1111-4111-8111-111111111111",
+        provider_kind: "credit_fund",
+        provider_source: "directory",
+        fund_directory_id: "f1111111-1111-4111-8111-111111111111",
+        provider_organization_id: null,
+        provider_fund_id: null,
+      }],
       model_lineage: [],
       expected_model_calls: 0,
       receivables_evidence: [{
@@ -205,9 +296,11 @@ describe("worker case analysis", () => {
         stage: "introduce",
         gates: {
           understandingConfirmed: true,
+          structureOptionCurrent: true,
           structureConfirmed: true,
           productionPlanApproved: true,
           packageApproved: true,
+          matchApproved: true,
           releaseAuthorized: true,
         },
         objectFingerprints: {
@@ -216,8 +309,10 @@ describe("worker case analysis", () => {
           production_plan: "3".repeat(64),
           package_review: "4".repeat(64),
           release_authorization: "5".repeat(64),
+          material_artifact: "6".repeat(64),
         },
       },
+      deal_state_context: {} as Record<string, unknown>,
       _execution: {
         id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         mode: "primary",
@@ -278,9 +373,32 @@ describe("worker case analysis", () => {
       fail: async (_job, error) => { throw new Error(`the case should not fail: ${JSON.stringify(error)}`); },
     };
     let spent = {costUsd: 0, calls: 0};
+    const dealStateRecords: Array<{objectType: string; status: string; inputFingerprint: string; payload: unknown; dependencies?: unknown[]}> = [];
+    queue.recordDealStateObject = async (_job, input) => {
+      dealStateWrites.push({objectType: input.objectType, status: input.status});
+      dealStateRecords.push(input);
+      return "f1000000-0000-4000-8000-000000000001";
+    };
     const gateway = {
-      complete: async (request: {task: string; model?: {provider?: string}}) => {
+      complete: async (request: {task: string; model?: {provider?: string}; input?: Array<{type: string; text?: string}>}) => {
         modelCalls.push({task: request.task, ...(request.model?.provider ? {provider: request.model.provider} : {})});
+        if (request.task === "structure_design") {
+          spent = {costUsd: 0.1, calls: 1};
+          const output = structureProposalFromRequest(request);
+          return {
+            output,
+            provider: "anthropic",
+            model: "claude-opus-5",
+            effort: "high",
+            usage: invocation.usage,
+            costUsd: 0.1,
+            latencyMs: 10,
+            stopReason: "end",
+            usedFallback: false,
+            fromCassette: false,
+            attempts: [],
+          };
+        }
         if (request.task === "audit_evidence") {
           spent = {costUsd: 0.15, calls: 2};
           return {
@@ -314,6 +432,72 @@ describe("worker case analysis", () => {
       },
       spent: () => spent,
     } as unknown as ModelGateway;
+
+    const proposalOutcome = await processCaseAnalysisJob(job, {
+      queue: {
+        ...queue,
+        loadCaseInput: async () => ({
+          ...raw,
+          deal_workflow: {
+            stage: "structure",
+            gates: {
+              understandingConfirmed: true,
+              structureOptionCurrent: false,
+              structureConfirmed: false,
+              productionPlanApproved: false,
+              packageApproved: false,
+              matchApproved: false,
+              releaseAuthorized: false,
+            },
+            objectFingerprints: {understanding_snapshot: "1".repeat(64)},
+          },
+        }),
+      },
+      gateway,
+      lineage: () => spent.calls ? [invocation] : [],
+      researchProviders: [],
+      now: () => new Date("2026-08-24T13:00:00.000Z"),
+    });
+    expect(proposalOutcome.status).toBe("succeeded");
+    const persistedStructureOption = dealStateRecords.find((record) => record.objectType === "structure_option");
+    expect(persistedStructureOption).toBeTruthy();
+    const structurePayload = persistedStructureOption!.payload as {
+      proposal: unknown;
+      compiled: {proposalFingerprint: string};
+    };
+    expect(structurePayload.compiled.proposalFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    raw.deal_state_context = {
+      structure_option: {
+        status: "pending_confirmation",
+        inputFingerprint: persistedStructureOption!.inputFingerprint,
+        fingerprint: "6".repeat(64),
+        payload: persistedStructureOption!.payload,
+        dependencies: persistedStructureOption!.dependencies ?? [],
+      },
+      structure_decision: {
+        status: "confirmed",
+        inputFingerprint: "7".repeat(64),
+        fingerprint: "2".repeat(64),
+        payload: {
+          confirmation: {
+            decision: "confirm",
+            selectedAlternativeId: (structurePayload.proposal as {alternatives: Array<{id: string}>}).alternatives[0]!.id,
+            proposalFingerprint: structurePayload.compiled.proposalFingerprint,
+            actorId: "company-user-1",
+            decidedAt: "2026-08-24T13:05:00.000Z",
+          },
+        },
+        dependencies: [{objectType: "structure_option", objectFingerprint: "6".repeat(64)}],
+      },
+    };
+    modelCalls.length = 0;
+    retrievalRequests.length = 0;
+    dealStateWrites.length = 0;
+    dealStateRecords.length = 0;
+    stages.length = 0;
+    recordedState = null;
+    completed = null;
+    spent = {costUsd: 0, calls: 0};
 
     const outcome = await processCaseAnalysisJob(job, {
       queue,
@@ -375,7 +559,7 @@ describe("worker case analysis", () => {
     expect((publicResearchRecord as unknown as {result: {sources: unknown[]}}).result.sources).toHaveLength(5);
     expect(persisted.externalResearch).toMatchObject({status: "succeeded", sourceCount: 5});
     expect(persisted.dealWorkflow).toMatchObject({stage: "introduce"});
-    expect(persisted.executionPlan).toEqual({produceMaterials: true, screenMandates: true, introduce: true});
+    expect(persisted.executionPlan).toEqual({designStructure: true, produceMaterials: true, screenMandates: true, introduce: true});
     expect(privateResult.retrieval_lineage).toMatchObject({
       primary: {resultIds: ["71100000-0000-4000-8000-000000000003"]},
     });
@@ -455,13 +639,24 @@ describe("worker case analysis", () => {
     expect(persistedRedFlags).not.toHaveProperty("findings");
     expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
     expect(dealStateWrites).toEqual([
-      {objectType: "understanding_snapshot", status: "pending_confirmation"},
-      {objectType: "finding_register", status: "draft"},
-      {objectType: "structure_option", status: "draft"},
-      {objectType: "production_plan", status: "pending_confirmation"},
-      {objectType: "material_artifact", status: "pending_confirmation"},
-      {objectType: "match_screen", status: "draft"},
+      {objectType: "match_screen", status: "pending_confirmation"},
     ]);
+    const persistedMatchScreen = dealStateRecords.find((record) => record.objectType === "match_screen");
+    expect(persistedMatchScreen).toMatchObject({
+      status: "pending_confirmation",
+      dependencies: [
+        {objectType: "package_review", objectFingerprint: "4".repeat(64)},
+        {objectType: "material_artifact", objectFingerprint: "6".repeat(64)},
+      ],
+      payload: {
+        schemaVersion: "2026.08.29-v3",
+        noContactAuthorized: true,
+        candidates: [expect.objectContaining({
+          providerName: "Fundo Confidencial",
+          providerKind: "credit_fund",
+        })],
+      },
+    });
 
     modelCalls.length = 0;
     retrievalRequests.length = 0;
@@ -477,9 +672,11 @@ describe("worker case analysis", () => {
           stage: "diagnose",
           gates: {
             understandingConfirmed: false,
+            structureOptionCurrent: false,
             structureConfirmed: false,
             productionPlanApproved: false,
             packageApproved: false,
+            matchApproved: false,
             releaseAuthorized: false,
           },
           objectFingerprints: {},

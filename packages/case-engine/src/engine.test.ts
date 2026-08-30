@@ -4,7 +4,7 @@ import {describe, expect, it} from "vitest";
 import {claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
 import {diversifiedReceivablesCase, receivablesParametricScenarios} from "@offroad/receivables-analysis";
 
-import {executeCaseEngine, publicCaseState} from "./engine";
+import {executeCaseEngine, publicCaseState, type CaseEngineInput} from "./engine";
 
 const candidate = (
   fieldPath: string,
@@ -49,6 +49,81 @@ const documents = [
   {id: "d5", kind: "capital_request_letter" as const},
   {id: "d6", kind: "business_plan" as const},
 ];
+
+const structureProposal: NonNullable<CaseEngineInput["structureProposal"]> = {
+  alternatives: [{
+    id: "target-structure",
+    label: "Estrutura-alvo",
+    instrument: "ccb",
+    route: "private_credit",
+    amount: "10000000",
+    currency: "BRL",
+    termMonths: 48,
+    graceMonths: 6,
+    amortization: "sac",
+    indexer: "CDI",
+    targetBuyer: "private_credit_funds",
+    rationale: "The structure follows the documented use and repayment capacity.",
+    pros: ["Simple execution route"],
+    cons: ["Pricing remains subject to market confirmation"],
+    assumptions: ["The stated use remains unchanged"],
+    sources: [{id: "new-debt", label: "New debt", amount: "10000000", origin: "proposal", basisIds: ["ES-45"], condition: "proposed"}],
+    uses: [{id: "declared-use", label: "Declared use", amount: "10000000", origin: "company_input", basisIds: ["transaction.purpose"], condition: "available"}],
+    security: [{description: "To be confirmed from available collateral", basisIds: ["ES-20"]}],
+    covenants: [{description: "Minimum debt-service coverage", basisIds: ["ES-24"]}],
+    conditionsPrecedent: [{description: "Corporate approvals", owner: "company", basisIds: ["ES-42"]}],
+    implementationDays: {min: 20, max: 40, basisIds: ["ES-44"]},
+    basisIds: ["ES-45"],
+  }],
+  recommendation: {
+    alternativeId: "target-structure",
+    rationale: "This is the simplest currently supportable route for the case.",
+    basisIds: ["ES-41", "ES-45"],
+    proposedBy: "test-structure-desk",
+    proposedAt: "2026-08-24T12:00:00.000Z",
+  },
+};
+const requiredStructureCandidates = [
+  candidate("transaction.requested_amount", "10000000"),
+  candidate("transaction.sources_and_uses.1.side", "sources", "text"),
+  candidate("transaction.sources_and_uses.1.item", "New debt", "text"),
+  candidate("transaction.sources_and_uses.1.amount", "10000000"),
+  candidate("transaction.sources_and_uses.2.side", "uses", "text"),
+  candidate("transaction.sources_and_uses.2.item", "Declared use", "text"),
+  candidate("transaction.sources_and_uses.2.amount", "10000000"),
+];
+
+async function executeWithConfirmedStructure(input: Omit<CaseEngineInput, "structureProposal" | "structureConfirmation">) {
+  const requiredCandidates = requiredStructureCandidates.filter((item) => !input.candidates.some((existing) => existing.fieldPath === item.fieldPath));
+  const governedInput = {
+    ...input,
+    candidates: [...input.candidates, ...requiredCandidates],
+    dealBrief: {...input.dealBrief, requestedAmount: "10000000", requestedTermMonths: 48, requestedGraceMonths: 6, instruments: ["ccb" as const]},
+    operationPolicies: {...input.operationPolicies, version: input.operationPolicies?.version ?? "test-operation-v1", residualTolerance: "0"},
+    structurePolicies: {
+      ...input.structurePolicies,
+      version: input.structurePolicies?.version ?? "test-structure-v1",
+      annualSizingRate: "0.18",
+      rateConvention: "effective_annual" as const,
+      amortizationFormat: "sac" as const,
+      graceInterest: "paid" as const,
+    },
+  };
+  const pending = await executeCaseEngine({...governedInput, structureProposal});
+  const proposalFingerprint = pending.state.structureAlternatives.proposalFingerprint;
+  if (!proposalFingerprint) throw new Error("test structure proposal did not compile");
+  return executeCaseEngine({
+    ...governedInput,
+    structureProposal,
+    structureConfirmation: {
+      decision: "confirm",
+      selectedAlternativeId: "target-structure",
+      proposalFingerprint,
+      actorId: "company-user-1",
+      decidedAt: "2026-08-24T12:10:00.000Z",
+    },
+  });
+}
 
 describe("the governed case engine", () => {
   it("runs all eleven layers through real domain engines and keeps an unavailable writer as a domain state", async () => {
@@ -97,7 +172,7 @@ describe("the governed case engine", () => {
     expect(result.report.stages.every((stage) => stage.status === "succeeded")).toBe(true);
     expect(result.state.reconciliation.calculations.map((calculation) => calculation.id)).toContain("net_debt");
     expect(result.state.brief).toBeNull();
-    expect(result.state.briefBlockedBy).toContain("brief_writer_unavailable");
+    expect(result.state.briefBlockedBy).toContain("structure_proposal_not_confirmation_ready");
     expect(result.state.materialsBlockedBy).toContain("brief_unavailable");
     expect(result.state.matching.screened).toBe(true);
     expect(result.state.matching.fits[0]).toMatchObject({fundId: "fund-1", verdict: "possible"});
@@ -127,6 +202,9 @@ describe("the governed case engine", () => {
       "indicative_terms",
       "structure_truth",
       "pricing_truth",
+      "structure_design",
+      "structure_alternatives",
+      "structure_decision",
       "assemble",
     ]);
     expect(structureTasks.every((task) => task.graphId === "deal_structuring" && task.status === "succeeded")).toBe(true);
@@ -135,7 +213,7 @@ describe("the governed case engine", () => {
     ]);
     const materialTasks = result.report.taskRuns.find((task) => task.taskId === "materials")?.subtasks ?? [];
     expect(materialTasks.map((task) => task.taskId)).toEqual([
-      "material_inputs", "compile_documents", "plan_room", "claim_registry", "publication_gate", "material_truth", "assemble",
+      "material_inputs", "financial_model", "compile_documents", "plan_room", "claim_registry", "publication_gate", "material_truth", "assemble",
     ]);
     expect(materialTasks.every((task) => task.graphId === "materials_preparation" && task.status === "succeeded")).toBe(true);
     expect([...structureTasks, ...materialTasks].every((task) => task.usage.modelCalls === 0)).toBe(true);
@@ -151,8 +229,42 @@ describe("the governed case engine", () => {
     expect(publicState.matching.marketTruth.shortlist).toMatchObject({eligible:1,requiringConfirmation:1});
   });
 
-  it("records model usage once and makes a produced brief pass the independent claim audit", async () => {
+  it("gives a structure designer only governed compact context and validates its proposal deterministically", async () => {
+    let designerCalls = 0;
     const result = await executeCaseEngine({
+      runId: "run-structure-designer",
+      caseId: "case-structure-designer",
+      archetypeId: "other",
+      locale: "pt",
+      referenceDate: "2026-08-24",
+      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text"), ...requiredStructureCandidates],
+      documents,
+      roomDocuments: [],
+      dealBrief: {requestedAmount: "10000000", requestedTermMonths: 48, requestedGraceMonths: 6, instruments: ["ccb"]},
+      resolvedMandates: [],
+      externalReleaseApproved: false,
+      operationPolicies: {version: "test-operation-v1", residualTolerance: "0"},
+      structurePolicies: {version: "test-structure-v1", annualSizingRate: "0.18", rateConvention: "effective_annual", amortizationFormat: "sac", graceInterest: "paid"},
+      designStructure: async (context) => {
+        designerCalls += 1;
+        expect(context).not.toHaveProperty("documents");
+        expect(context.budget).toEqual({maxCostUsd: 0.75, maxModelCalls: 1});
+        expect(context.allowedBasisIds).toContain("ES-45");
+        return {proposal: structureProposal, blockedBy: [], usage: {costUsd: 0.2, modelCalls: 1}, modelInvocations: [{provider: "test", model: "structure-fixture"}]};
+      },
+    });
+    expect(designerCalls).toBe(1);
+    expect(result.state.structureAlternatives.status).toBe("pending_confirmation");
+    expect(result.state.structureAlternatives.recommendation).toMatchObject({proposedBy: "offroad_structure_designer"});
+    expect(result.state.structureDecision.materialsPreparationAllowed).toBe(false);
+    expect(result.state.structureModelInvocations).toHaveLength(1);
+    expect(result.report.stages.find((stage) => stage.stage === "structure")?.usage).toEqual({costUsd: 0.2, modelCalls: 1});
+  });
+
+  it("records model usage once and makes a produced brief pass the independent claim audit", async () => {
+    let writerCalls = 0;
+    let verifierCalls = 0;
+    const result = await executeWithConfirmedStructure({
       runId: "run-2",
       caseId: "case-2",
       archetypeId: "other",
@@ -164,17 +276,23 @@ describe("the governed case engine", () => {
       dealBrief: {},
       resolvedMandates: [],
       externalReleaseApproved: false,
-      writeBrief: async () => ({
-        brief: {sections: [], executiveSummary: "Resumo institucional sem afirmações numéricas."},
-        blockedBy: [],
-        usage: {costUsd: 0.21, modelCalls: 1},
-        modelInvocations: [{provider: "test", model: "fixture"}],
-      }),
-      verifyBrief: async ({brief}) => ({
-        audit: supportedSemanticAudit(brief),
-        usage: {costUsd: 0.05, modelCalls: 1},
-        modelInvocations: [{provider: "independent-test", model: "verifier"}],
-      }),
+      writeBrief: async () => {
+        writerCalls += 1;
+        return {
+          brief: {sections: [], executiveSummary: "Resumo institucional sem afirmações numéricas."},
+          blockedBy: [],
+          usage: {costUsd: 0.21, modelCalls: 1},
+          modelInvocations: [{provider: "test", model: "fixture"}],
+        };
+      },
+      verifyBrief: async ({brief}) => {
+        verifierCalls += 1;
+        return {
+          audit: supportedSemanticAudit(brief),
+          usage: {costUsd: 0.05, modelCalls: 1},
+          modelInvocations: [{provider: "independent-test", model: "verifier"}],
+        };
+      },
     });
 
     expect(result.report.stages.find((stage) => stage.stage === "claims")?.usage).toEqual({costUsd: 0.26, modelCalls: 2});
@@ -182,6 +300,7 @@ describe("the governed case engine", () => {
     expect(result.state.brief?.executiveSummary).toContain("Resumo institucional");
     expect(result.state.modelInvocations).toHaveLength(2);
     expect(result.state.claimRegistry?.publication.allowed).toBe(true);
+    expect({writerCalls, verifierCalls}).toEqual({writerCalls: 1, verifierCalls: 1});
   });
 
   it("executes the receivables vertical inside metrics and carries a refusal into the case blockers", async () => {
@@ -238,7 +357,7 @@ describe("the governed case engine", () => {
       sections: [{id: "strengths" as const, heading: "Pontos fortes", claims: [judgment]}],
       executiveSummary: "Resumo para revisão interna.",
     };
-    const run = (claimDecisions?: ClaimDecision[]) => executeCaseEngine({
+    const run = (claimDecisions?: ClaimDecision[]) => executeWithConfirmedStructure({
       runId: "run-approval",
       caseId: "case-approval",
       archetypeId: "other",
@@ -259,6 +378,12 @@ describe("the governed case engine", () => {
     expect(pending.state.brief).toEqual(caseBrief);
     expect(pending.state.claimRegistry?.claims[0]?.status).toBe("pending_approval");
     expect(pending.state.materials).toEqual([]);
+    expect(pending.state.financialModel).toMatchObject({
+      selectedAlternativeId: "target-structure",
+      inputs: {amount: "10000000", termMonths: 48, graceMonths: 6, amortization: "sac"},
+    });
+    expect(pending.state.financialModel?.workbooks.pt.byteSize).toBeGreaterThan(4_000);
+    expect(pending.state.financialModel?.workbooks.en.sha256).toMatch(/^[a-f0-9]{64}$/);
     expect(pending.state.dataRoom.releasable).toBe(false);
     expect(pending.state.materialTruth.procedureCoverage).toHaveLength(32);
     expect(pending.state.materialTruth.releaseDecision).toBe("internal_only");
@@ -273,6 +398,10 @@ describe("the governed case engine", () => {
     }]);
     expect(approved.state.claimRegistry?.publication.allowed).toBe(true);
     expect(approved.state.materials.length).toBeGreaterThan(0);
+    expect(approved.state.materials.map((material) => material.kind)).toContain("financial_model");
+    expect(approved.state.materialTruth.procedureCoverage.find((procedure) => procedure.procedureId === "MA-27")).toMatchObject({
+      status: "completed",
+    });
     expect(approved.state.materialTruth.procedureCoverage.map((entry)=>entry.procedureId)).toEqual(
       Array.from({length:32},(_,index)=>`MA-${String(index+1).padStart(2,"0")}`),
     );

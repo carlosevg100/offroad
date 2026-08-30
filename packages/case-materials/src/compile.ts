@@ -37,7 +37,7 @@ import {auditCompiledMaterial} from "./conduct";
  * same decimal strings, never translated or re-rounded per locale.
  */
 
-export type MaterialKind = "teaser" | "credit_profile" | "package" | "credit_memo" | "term_sheet" | "diligence_qa" | "data_room_index";
+export type MaterialKind = "teaser" | "credit_profile" | "package" | "credit_memo" | "term_sheet" | "financial_model" | "diligence_qa" | "data_room_index";
 
 type MaterialClaimMetadata = {
   claimId?: string;
@@ -72,6 +72,8 @@ export type Material = {
   conductAudit?: ConductAudit;
   /** Canonical section ids actually compiled, in document order. */
   sections?: string[];
+  /** Fingerprint of a binary or otherwise separately compiled artifact represented by this entry. */
+  artifactFingerprint?: string;
 };
 
 export type CompileInput = {

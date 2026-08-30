@@ -21,6 +21,7 @@
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/data-room": "workspace:*",
     "@offroad/deal-structure": "workspace:*",
+    "@offroad/domain-contracts": "workspace:*",
     "@offroad/extraction-learning": "workspace:*",
     "@offroad/financial-core": "workspace:*",
     "@offroad/financial-model": "workspace:*",

@@ -88,8 +88,8 @@ function coverSheet(model: FinancialModel, lang: "pt" | "en"): XLSX.WorkSheet {
     [],
     [
       lang === "pt"
-        ? "Documento indicativo. Não constitui proposta firme, compromisso de crédito, aprovação ou garantia de captação. A Offroad não precifica a operação: o custo da dívida nas Premissas é um placeholder para sensibilidade, não uma indicação de taxa."
-        : "Indicative document. Not a firm offer, credit commitment, approval, or guarantee of funding. Offroad does not price the transaction: the cost of debt on the Assumptions sheet is a sensitivity placeholder, not a rate indication.",
+        ? "Documento indicativo. Não constitui proposta firme, compromisso de crédito, aprovação ou garantia de captação. O custo da dívida nas Premissas é uma entrada editável de sensibilidade. Quando existe referência de mercado governada, o ponto médio da faixa é identificado, sem representar taxa disponível ou proposta de financiador."
+        : "Indicative document. Not a firm offer, credit commitment, approval, or guarantee of funding. The cost of debt on the Assumptions sheet is an editable sensitivity input. When a governed market reference exists, the midpoint is identified without representing an available rate or lender offer.",
     ],
   ];
 

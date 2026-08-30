@@ -5,7 +5,7 @@
  * that the work actually ran. No stage can silently disappear and no later stage can run after
  * an invalid or over-budget predecessor.
  */
-export const caseRunnerVersion = "2026.08.29-v5";
+export const caseRunnerVersion = "2026.08.29-v8";
 
 export * from "./runner";
 export * from "./subgraph";

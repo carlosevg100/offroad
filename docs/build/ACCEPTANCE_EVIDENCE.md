@@ -1,5 +1,27 @@
 # Acceptance Evidence
 
+## Destinatário e autorização exatos, 29/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Shortlist não distribui | schema e UI | aprovação do match cria targets privados; nenhum recipient ou contato externo é criado pelo cliente |
+| Procedência do financiador | targets e recipients | diretório de mercado e provedor cadastrado preservam IDs e relações distintas sem identidade sintética |
+| Contato nominal | RPC privada de resolução | exige contato ativo da instituição exata, e-mail válido, data, nota, revisor e mandato sem drift |
+| Material por destinatário | manifest persistido | cada recipient carrega lista não vazia de materiais vinculada ao fingerprint do pacote |
+| Revisão técnica independente | ACL e catálogo de funções | função pública removida; apenas `service_role` atesta o fingerprint exato |
+| Autorização da companhia | `authorize_qualified_introduction_plan` | owner/admin com representação verificada autoriza snapshot com instituição, contato, mandato e materiais exatos |
+| Release passivo | `record_qualified_introduction_release` | serviço apenas registra entrega já realizada; canal e referência externa são obrigatórios; cliente não executa |
+| Drift fechado | trigger de release | mudança em contato, material, identidade, mandato, caso ou autorização bloqueia o registro |
+| Idempotência | comando de release | mesma referência devolve o mesmo ID; referência diferente para recipient já registrado é recusada |
+| Performance | Supabase Performance Advisor | zero foreign keys sem índice nas novas relações de targets |
+| Segurança | Supabase Security Advisor | zero lints depois das quatro migrations |
+| Gate local | `pnpm check` | 42 de 42 tarefas verdes; mensagens, lint, typecheck, testes e build aprovados |
+| Ambiente | Supabase staging `lxmpsxwlpmfisbauakaz` | schema aplicado; zero planos, targets resolvidos, recipients e introduções; produção não alterada |
+
+O teste positivo integral continua deliberadamente bloqueado porque não existe política ativa de
+distribuição no staging. Não foi criado default artificial para fazer o fluxo passar. A política
+deve nascer de decisão institucional explícita.
+
 ## Deal State, gates e contenção de custo, 29/08/2026
 
 | Evidência | Verificação | Resultado |
@@ -604,7 +626,7 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Registry da arquitetura-alvo | `task-registry.test.ts` | exatamente 80 IDs únicos e acíclicos; Knowledge, Case e Market separados; somente introdução autorizada possui efeito externo; underwriting e desembolso são sinais capturados | 2026-08-29 |
 | Case Graph v4 | `case-runner/src/index.test.ts` | 11 nós reais executados por dependência; ramificações independentes iniciam em paralelo; falha bloqueia apenas descendentes; tarefas com modelo são serializadas contra orçamento | 2026-08-29 |
 | TaskRun Trace e cache incremental | testes de `case-runner`, `case-engine`, `document-worker` e `queue.test.ts` | ferramentas e fontes rastreadas; cache isolado por caso, versões e prompts; alteração de valor preserva upstream e invalida estrutura e descendentes; prior report nunca entra no input congelado | 2026-08-29 |
-| Cache capability-bound em staging | migration `20260829183106_task_dag_prior_report.sql`, SQL de inspeção e Security Advisor | função privada, wrapper e índice existem; `anon` sem execute; `authenticated` com execute capability-bound; zero security findings; produção intacta | 2026-08-29 |
+| Cache capability-bound em staging | migration `20260829184738_task_dag_prior_report.sql`, SQL de inspeção e Security Advisor | função privada, wrapper e índice existem; `anon` sem execute; `authenticated` com execute capability-bound; zero security findings; produção intacta | 2026-08-29 |
 | Quality gate local do runtime incremental | `fnm exec --using=24 pnpm check` | lint, typecheck, todos os testes e build aprovados nos 42 pacotes; web com 140 testes, worker com 61 e evals com 38 | 2026-08-29 |
 | Sub-DAGs de estruturação e materiais | `case-runner/src/subgraph.test.ts` + `case-engine/src/engine.test.ts` + `pnpm check` | executor rejeita ciclo e ferramenta fora do contrato, serializa modelos e paraleliza ramos determinísticos; estruturação registra 11 subtasks e materiais registra sete; lint, typecheck, testes e build verdes nos 42 pacotes, sem chamada paga | 2026-08-29 |
 

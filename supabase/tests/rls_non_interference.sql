@@ -1197,7 +1197,8 @@ begin
     or jsonb_array_length(case_input->'receivables_evidence') <> 1
     or jsonb_array_length(case_input->'receivables_provider_context'->'programs') <> 1
     or jsonb_array_length(case_input->'receivables_provider_context'->'observations') <> 2
-    or case_input->'receivables_evidence'->0->>'source_sha256' <> repeat('d', 64) then
+    or case_input->'receivables_evidence'->0->>'source_sha256' <> repeat('d', 64)
+    or case_input->'deal_state_context' <> '{}'::jsonb then
     raise exception 'case capability did not load its scoped evidence';
   end if;
   begin
@@ -3778,27 +3779,66 @@ insert into public.market_distribution_policies (
   'RLS fixture for the governed qualified-introduction boundary.',
   '10000000-0000-4000-8000-000000000001', now()
 );
+insert into public.deal_state_objects (
+  organization_id, intake_session_id, object_type, object_version, status,
+  input_fingerprint, object_fingerprint, payload, dependencies, created_by, created_by_kind
+) values (
+  '20000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  'match_screen', 1, 'approved', repeat('b', 64), repeat('d', 64),
+  '{"schemaVersion":"2026.08.29-v3","approval":{"scope":"match_shortlist_only","selectedProviderIds":["70000000-0000-4000-8000-000000000701"]}}'::jsonb,
+  '[]'::jsonb, '10000000-0000-4000-8000-000000000001', 'user'
+);
 insert into public.qualified_introduction_plans (
   id, organization_id, intake_session_id, case_fingerprint, material_fingerprint,
-  wave_limit, created_by
+  match_screen_fingerprint, wave_limit, created_by
 ) values (
   '81000000-0000-4000-8000-000000000001',
   '20000000-0000-4000-8000-000000000001',
   '40000000-0000-4000-8000-000000000001',
-  repeat('b', 64), repeat('a', 64), 3,
+  repeat('b', 64), repeat('a', 64), repeat('d', 64), 3,
+  '10000000-0000-4000-8000-000000000001'
+);
+insert into public.qualified_introduction_targets (
+  id, organization_id, intake_session_id, plan_id, match_screen_fingerprint,
+  provider_id, provider_source, provider_kind, provider_name, fund_directory_id,
+  mandate_fingerprint, rationale, position, contact_status,
+  resolved_contact_source, resolved_contact_id, resolved_contact_name,
+  resolved_contact_job_title, resolved_contact_email, resolved_at, resolution_note,
+  mandate_revalidated_at, mandate_revalidated_by, mandate_revalidation_note, created_by
+) values (
+  '81500000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  '81000000-0000-4000-8000-000000000001', repeat('d', 64),
+  '70000000-0000-4000-8000-000000000701', 'directory', 'credit_fund',
+  'RLS Governed Retrieval Fund', '70000000-0000-4000-8000-000000000701',
+  repeat('c', 64), 'The current governed mandate accepts the transaction profile and ticket.',
+  1, 'resolved', 'directory_market', '82500000-0000-4000-8000-000000000001',
+  'Credit Team', 'Private Credit', 'credit@example.test', now(),
+  'Current contact and mandate checked for the exact case.', now(),
+  '10000000-0000-4000-8000-000000000001',
+  'Current contact and mandate checked for the exact case.',
   '10000000-0000-4000-8000-000000000001'
 );
 insert into public.qualified_introduction_recipients (
-  id, organization_id, intake_session_id, plan_id, fund_directory_id,
-  recipient_name, contact_id, contact_name, mandate_fingerprint, rationale,
+  id, organization_id, intake_session_id, plan_id, target_id,
+  provider_source, provider_id, fund_directory_id, recipient_name,
+  contact_source, contact_uuid, contact_id, contact_name, contact_email, contact_job_title,
+  mandate_fingerprint, rationale,
   material_manifest, position, is_anchor
 ) values (
   '82000000-0000-4000-8000-000000000001',
   '20000000-0000-4000-8000-000000000001',
   '40000000-0000-4000-8000-000000000001',
   '81000000-0000-4000-8000-000000000001',
+  '81500000-0000-4000-8000-000000000001',
+  'directory', '70000000-0000-4000-8000-000000000701',
   '70000000-0000-4000-8000-000000000701',
-  'RLS Governed Retrieval Fund', 'credit-team', 'Credit Team', repeat('c', 64),
+  'RLS Governed Retrieval Fund', 'directory_market',
+  '82500000-0000-4000-8000-000000000001',
+  '82500000-0000-4000-8000-000000000001', 'Credit Team', 'credit@example.test',
+  'Private Credit', repeat('c', 64),
   'The current governed mandate accepts the transaction profile and ticket.',
   '["teaser","credit_memo","term_sheet"]'::jsonb, 1, true
 );
@@ -3815,9 +3855,6 @@ begin
     or (select count(*) from public.qualified_introduction_recipients) <> 1 then
     raise exception 'tenant A cannot read its own qualified-introduction plan';
   end if;
-  perform public.attest_qualified_introduction_plan_technical_review(
-    '81000000-0000-4000-8000-000000000001', repeat('a', 64)
-  );
   begin
     perform public.authorize_qualified_introduction_plan(
       '81000000-0000-4000-8000-000000000001', repeat('a', 64)
@@ -3829,6 +3866,10 @@ end;
 $$;
 
 set local role postgres;
+select private.attest_qualified_introduction_plan_technical_review(
+  '81000000-0000-4000-8000-000000000001', repeat('a', 64),
+  '10000000-0000-4000-8000-000000000001'
+);
 update public.document_intake_sessions
 set representation_kind = 'company', representation_status = 'verified',
     representation_verified_by = '10000000-0000-4000-8000-000000000001',
@@ -3862,8 +3903,10 @@ $$;
 
 set local role postgres;
 insert into public.qualified_introductions (
-  id, organization_id, intake_session_id, plan_id, recipient_id, fund_directory_id,
-  contact_id, case_fingerprint, material_fingerprint, mandate_fingerprint, rationale,
+  id, organization_id, intake_session_id, plan_id, recipient_id,
+  provider_source, provider_id, fund_directory_id, contact_source, contact_uuid,
+  contact_id, contact_name, contact_email, contact_job_title,
+  case_fingerprint, material_fingerprint, mandate_fingerprint, rationale,
   material_manifest, authorization_snapshot, introduced_by
 ) values (
   '83000000-0000-4000-8000-000000000001',
@@ -3871,11 +3914,19 @@ insert into public.qualified_introductions (
   '40000000-0000-4000-8000-000000000001',
   '81000000-0000-4000-8000-000000000001',
   '82000000-0000-4000-8000-000000000001',
+  'directory', '70000000-0000-4000-8000-000000000701',
   '70000000-0000-4000-8000-000000000701',
-  'credit-team', repeat('b', 64), repeat('a', 64), repeat('c', 64),
+  'directory_market', '82500000-0000-4000-8000-000000000001',
+  '82500000-0000-4000-8000-000000000001', 'Credit Team', 'credit@example.test',
+  'Private Credit', repeat('b', 64), repeat('a', 64), repeat('c', 64),
   'Qualified introduction of the exact authorized package to the named contact.',
   '["teaser","credit_memo","term_sheet"]'::jsonb,
-  '{"scope":["qualified_introduction"],"identityPolicy":"identified_restricted"}'::jsonb,
+  jsonb_build_object(
+    'scope', jsonb_build_array('qualified_introduction'),
+    'identityPolicy', 'identified_restricted',
+    'planId', '81000000-0000-4000-8000-000000000001',
+    'materialFingerprint', repeat('a', 64)
+  ),
   '10000000-0000-4000-8000-000000000001'
 );
 
@@ -4499,10 +4550,25 @@ declare
   session_id constant uuid := '97000000-0000-4000-8000-000000000001';
   understanding_id uuid;
   understanding_retry_id uuid;
+  structure_option_id uuid;
   structure_id uuid;
   production_id uuid;
+  material_id uuid;
+  package_id uuid;
+  match_id uuid;
+  run_id constant uuid := '60000000-0000-4000-8000-000000000970';
+  claim jsonb;
+  job_id uuid;
+  capability text;
+  case_input jsonb;
   understanding_fingerprint text;
+  structure_option_fingerprint text;
   structure_fingerprint text;
+  production_fingerprint text;
+  material_fingerprint text;
+  package_fingerprint text;
+  match_fingerprint text;
+  match_plan jsonb;
   accepted boolean;
 begin
   understanding_id := public.record_deal_state_object(
@@ -4519,24 +4585,75 @@ begin
   select object_fingerprint into understanding_fingerprint
   from public.deal_state_objects where id = understanding_id;
 
+  set local role postgres;
+  insert into public.processing_runs (
+    id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
+  ) values (
+    run_id, org_a, session_id, 1, 'manual', 'running', 'deal-state-context-test',
+    '10000000-0000-4000-8000-000000000001'
+  );
+  insert into public.processing_jobs (
+    organization_id, processing_run_id, intake_session_id, kind, status, available_at
+  ) values (
+    org_a, run_id, session_id, 'case_analysis', 'queued', '2000-01-01T00:00:00Z'
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  claim := public.worker_claim_job(repeat('w', 64), 600);
+  if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
+    raise exception 'worker did not claim the deal-state context fixture';
+  end if;
+  job_id := (claim->>'job_id')::uuid;
+  capability := claim->>'capability_token';
+  structure_option_id := public.worker_record_deal_state_object(
+    job_id, capability, 'structure_option', 'pending_confirmation', repeat('2', 64),
+    jsonb_build_object(
+      'compiled', jsonb_build_object('proposalFingerprint', repeat('9', 64)),
+      'proposal', jsonb_build_object('alternatives', jsonb_build_array(jsonb_build_object('id', 'senior-secured')))
+    ),
+    jsonb_build_array(jsonb_build_object(
+      'objectType', 'understanding_snapshot', 'objectFingerprint', understanding_fingerprint
+    ))
+  );
+  set local role postgres;
+  select object_fingerprint into structure_option_fingerprint
+  from public.deal_state_objects where id = structure_option_id;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
   accepted := true;
   begin
     perform public.record_deal_state_object(
-      org_a, session_id, 'structure_decision', 'confirmed', repeat('2', 64),
-      '{"decision":"target structure"}'::jsonb,
+      org_a, session_id, 'structure_decision', 'confirmed', repeat('3', 64),
+      jsonb_build_object('confirmation', jsonb_build_object(
+        'decision', 'confirm', 'selectedAlternativeId', 'senior-secured',
+        'proposalFingerprint', repeat('9', 64)
+      )),
       jsonb_build_array(jsonb_build_object(
-        'objectType', 'understanding_snapshot', 'objectFingerprint', repeat('f', 64)
+        'objectType', 'structure_option', 'objectFingerprint', repeat('f', 64)
       ))
     );
   exception when object_not_in_prerequisite_state then accepted := false;
   end;
-  if accepted then raise exception 'a structure decision accepted a stale understanding fingerprint'; end if;
+  if accepted then raise exception 'a structure decision accepted a stale proposal fingerprint'; end if;
 
   structure_id := public.record_deal_state_object(
-    org_a, session_id, 'structure_decision', 'confirmed', repeat('2', 64),
-    '{"decision":"target structure"}'::jsonb,
+    org_a, session_id, 'structure_decision', 'confirmed', repeat('3', 64),
+    jsonb_build_object('confirmation', jsonb_build_object(
+      'decision', 'confirm', 'selectedAlternativeId', 'senior-secured',
+      'proposalFingerprint', repeat('9', 64)
+    )),
     jsonb_build_array(jsonb_build_object(
-      'objectType', 'understanding_snapshot', 'objectFingerprint', understanding_fingerprint
+      'objectType', 'structure_option', 'objectFingerprint', structure_option_fingerprint
     ))
   );
   select object_fingerprint into structure_fingerprint
@@ -4549,8 +4666,146 @@ begin
       'objectType', 'structure_decision', 'objectFingerprint', structure_fingerprint
     ))
   );
-  if production_id is null or (select count(*) from public.deal_state_objects) <> 3 then
+  if production_id is null or (select count(*) from public.deal_state_objects where intake_session_id = session_id) <> 4 then
     raise exception 'the governed deal-state chain was not persisted';
+  end if;
+  select object_fingerprint into production_fingerprint
+  from public.deal_state_objects where id = production_id;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  material_id := public.worker_record_deal_state_object(
+    job_id, capability, 'material_artifact', 'pending_confirmation', repeat('4', 64),
+    '{"materials":[],"financialModel":null,"materialTruth":{},"dataRoom":{}}'::jsonb,
+    jsonb_build_array(jsonb_build_object(
+      'objectType', 'production_plan', 'objectFingerprint', production_fingerprint
+    ))
+  );
+  set local role postgres;
+  select object_fingerprint into material_fingerprint
+  from public.deal_state_objects where id = material_id;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  accepted := true;
+  begin
+    perform public.record_deal_state_object(
+      org_a, session_id, 'package_review', 'approved', repeat('5', 64),
+      '{"approval":{"scope":"internal_material_package"}}'::jsonb,
+      jsonb_build_array(jsonb_build_object(
+        'objectType', 'production_plan', 'objectFingerprint', production_fingerprint
+      ))
+    );
+  exception when object_not_in_prerequisite_state then accepted := false;
+  end;
+  if accepted then raise exception 'package review accepted no exact material dependency'; end if;
+
+  package_id := public.record_deal_state_object(
+    org_a, session_id, 'package_review', 'approved', repeat('5', 64),
+    jsonb_build_object('approval', jsonb_build_object(
+      'scope', 'internal_material_package', 'artifactFingerprint', material_fingerprint
+    )),
+    jsonb_build_array(
+      jsonb_build_object('objectType', 'production_plan', 'objectFingerprint', production_fingerprint),
+      jsonb_build_object('objectType', 'material_artifact', 'objectFingerprint', material_fingerprint)
+    )
+  );
+  if package_id is null or (select count(*) from public.deal_state_objects where intake_session_id = session_id) <> 6 then
+    raise exception 'the exact package-review chain was not persisted';
+  end if;
+  select object_fingerprint into package_fingerprint
+  from public.deal_state_objects where id = package_id;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  match_id := public.worker_record_deal_state_object(
+    job_id, capability, 'match_screen', 'pending_confirmation', repeat('6', 64),
+    jsonb_build_object(
+      'schemaVersion', '2026.08.29-v3',
+      'packageReviewFingerprint', package_fingerprint,
+      'materialArtifactFingerprint', material_fingerprint,
+      'materialTruthFingerprint', repeat('7', 64),
+      'matchingFingerprint', repeat('8', 64),
+      'candidates', jsonb_build_array(
+        jsonb_build_object(
+          'providerId', '70000000-0000-4000-8000-000000000701',
+          'providerName', 'RLS Governed Retrieval Fund',
+          'providerKind', 'credit_fund',
+          'providerSource', 'directory',
+          'fundDirectoryId', '70000000-0000-4000-8000-000000000701',
+          'providerOrganizationId', null,
+          'providerFundId', null,
+          'mandateFingerprint', repeat('a', 64),
+          'rationale', 'The exact current mandate fits the governed transaction.',
+          'eligibleForShortlist', true
+        ),
+        jsonb_build_object(
+          'providerId', '70000000-0000-4000-8000-000000000702',
+          'providerName', 'Blocked Provider',
+          'providerKind', 'bank',
+          'providerSource', 'directory',
+          'fundDirectoryId', '70000000-0000-4000-8000-000000000702',
+          'providerOrganizationId', null,
+          'providerFundId', null,
+          'mandateFingerprint', repeat('b', 64),
+          'rationale', 'The current mandate has an unresolved governance blocker.',
+          'eligibleForShortlist', false
+        )
+      ),
+      'summary', jsonb_build_object('screened', 2, 'eligible', 1, 'possible', 1, 'excluded', 0, 'blockedByGovernance', 1),
+      'structuralExclusions', '[]'::jsonb,
+      'noContactAuthorized', true
+    ),
+    jsonb_build_array(
+      jsonb_build_object('objectType', 'package_review', 'objectFingerprint', package_fingerprint),
+      jsonb_build_object('objectType', 'material_artifact', 'objectFingerprint', material_fingerprint)
+    )
+  );
+  set local role postgres;
+  select object_fingerprint into match_fingerprint
+  from public.deal_state_objects where id = match_id;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  accepted := true;
+  begin
+    perform public.approve_match_shortlist(
+      org_a, session_id, match_fingerprint, array['70000000-0000-4000-8000-000000000702']
+    );
+  exception when object_not_in_prerequisite_state then accepted := false;
+  end;
+  if accepted then raise exception 'a governance-blocked provider entered the approved shortlist'; end if;
+
+  match_plan := public.approve_match_shortlist_and_prepare_plan(
+    org_a, session_id, match_fingerprint, array['70000000-0000-4000-8000-000000000701']
+  );
+  match_id := (match_plan ->> 'match_screen_id')::uuid;
+  select object_fingerprint into match_fingerprint
+  from public.deal_state_objects where id = match_id;
+  if (match_plan ->> 'plan_id') is null
+    or (select count(*) from public.qualified_introduction_targets
+        where intake_session_id = session_id) <> 1
+    or (select provider_source from public.qualified_introduction_targets
+        where intake_session_id = session_id) <> 'directory'
+    or (select contact_status from public.qualified_introduction_targets
+        where intake_session_id = session_id) <> 'unresolved' then
+    raise exception 'the approved shortlist did not compile into one private unresolved target plan';
   end if;
 
   accepted := true;
@@ -4574,6 +4829,60 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'tenant directly rewrote a governed deal-state object'; end if;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  case_input := public.worker_load_case_input(job_id, capability);
+  if case_input #>> '{deal_state_context,understanding_snapshot,status}' <> 'confirmed'
+    or case_input #>> '{deal_state_context,understanding_snapshot,payload,summary}' <> 'confirmed understanding'
+    or case_input #>> '{deal_state_context,structure_decision,payload,confirmation,decision}' <> 'confirm'
+    or case_input #>> '{deal_state_context,structure_option,payload,compiled,proposalFingerprint}' <> repeat('9', 64)
+    or case_input #>> '{deal_state_context,production_plan,status}' <> 'approved'
+    or (case_input #>> '{deal_workflow,gates,understandingConfirmed}')::boolean is not true
+    or (case_input #>> '{deal_workflow,gates,structureOptionCurrent}')::boolean is not true
+    or (case_input #>> '{deal_workflow,gates,structureConfirmed}')::boolean is not true
+    or (case_input #>> '{deal_workflow,gates,productionPlanApproved}')::boolean is not true
+    or (case_input #>> '{deal_workflow,gates,packageApproved}')::boolean is not true
+    or (case_input #>> '{deal_workflow,gates,matchApproved}')::boolean is not true
+    or (case_input #>> '{deal_workflow,gates,releaseAuthorized}')::boolean is true
+    or case_input #>> '{deal_workflow,stage}' <> 'match' then
+    raise exception 'case input did not preserve the governed deal-state payloads and gates: %', case_input;
+  end if;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  perform public.record_deal_state_object(
+    org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('8', 64),
+    '{"summary":"changed understanding"}'::jsonb, '[]'::jsonb
+  );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  case_input := public.worker_load_case_input(job_id, capability);
+  if (case_input #>> '{deal_workflow,gates,structureOptionCurrent}')::boolean is true
+    or (case_input #>> '{deal_workflow,gates,structureConfirmed}')::boolean is true
+    or (case_input #>> '{deal_workflow,gates,productionPlanApproved}')::boolean is true
+    or case_input #>> '{deal_workflow,stage}' <> 'structure' then
+    raise exception 'an upstream change kept a stale structure chain active: %', case_input;
+  end if;
+  begin
+    perform public.worker_load_case_input(job_id, repeat('z', 64));
+    raise exception 'deal-state context accepted a forged capability';
+  exception
+    when insufficient_privilege then null;
+  end;
 end;
 $$;
 
@@ -4587,6 +4896,10 @@ begin
   if (select count(*) from public.deal_state_objects
       where intake_session_id = '97000000-0000-4000-8000-000000000001') <> 0 then
     raise exception 'tenant B read tenant A deal-state objects';
+  end if;
+  if (select count(*) from public.qualified_introduction_targets
+      where intake_session_id = '97000000-0000-4000-8000-000000000001') <> 0 then
+    raise exception 'tenant B read tenant A qualified-introduction targets';
   end if;
 end;
 $$;

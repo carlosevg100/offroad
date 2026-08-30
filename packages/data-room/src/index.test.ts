@@ -15,7 +15,7 @@ const unclassified: DataRoomDocument = {id: "d3", kind: null, originalName: "fot
 
 describe("planDataRoom", () => {
   it("places the teaser before the NDA and the credit memorandum and term sheet after it", () => {
-    const plan = planDataRoom({materials: ["teaser", "credit_profile", "term_sheet", "diligence_qa", "package", "credit_memo"].map((k) => material(k as Material["kind"])), materialsBlockedBy: [], documents: [verified], exceptions: [], readiness: readiness()});
+    const plan = planDataRoom({materials: ["teaser", "credit_profile", "term_sheet", "financial_model", "diligence_qa", "package", "credit_memo"].map((k) => material(k as Material["kind"])), materialsBlockedBy: [], documents: [verified], exceptions: [], readiness: readiness()});
     const byId = new Map(plan.entries.map((entry) => [entry.id, entry]));
     expect(byId.get("material:teaser")?.tier).toBe("pre_nda");
     expect(byId.get("material:term_sheet")?.tier).toBe("nda");
@@ -24,7 +24,7 @@ describe("planDataRoom", () => {
     expect(byId.get("document:d1")?.status).toBe("ready");
     expect(byId.get("document:d1")?.folderId).toBe("02_financial");
     expect(plan.releasable).toBe(true);
-    expect(plan.counts).toEqual({ready: 6, held: 0, requested: 0});
+    expect(plan.counts).toEqual({ready: 7, held: 0, requested: 0});
   });
 
   it("holds every external entry behind a blocking exception, including the credit memorandum", () => {

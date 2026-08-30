@@ -4540,6 +4540,7 @@ export type Database = {
       }
       qualified_introduction_plans: {
         Row: {
+          authorization_snapshot: Json | null
           authorized_at: string | null
           authorized_by: string | null
           case_fingerprint: string
@@ -4549,6 +4550,7 @@ export type Database = {
           identity_policy: string
           intake_session_id: string
           material_fingerprint: string
+          match_screen_fingerprint: string | null
           organization_id: string
           revoked_at: string | null
           revoked_by: string | null
@@ -4560,6 +4562,7 @@ export type Database = {
           wave_limit: number
         }
         Insert: {
+          authorization_snapshot?: Json | null
           authorized_at?: string | null
           authorized_by?: string | null
           case_fingerprint: string
@@ -4569,6 +4572,7 @@ export type Database = {
           identity_policy?: string
           intake_session_id: string
           material_fingerprint: string
+          match_screen_fingerprint?: string | null
           organization_id: string
           revoked_at?: string | null
           revoked_by?: string | null
@@ -4580,6 +4584,7 @@ export type Database = {
           wave_limit: number
         }
         Update: {
+          authorization_snapshot?: Json | null
           authorized_at?: string | null
           authorized_by?: string | null
           case_fingerprint?: string
@@ -4589,6 +4594,7 @@ export type Database = {
           identity_policy?: string
           intake_session_id?: string
           material_fingerprint?: string
+          match_screen_fingerprint?: string | null
           organization_id?: string
           revoked_at?: string | null
           revoked_by?: string | null
@@ -4609,12 +4615,141 @@ export type Database = {
           },
         ]
       }
+      qualified_introduction_targets: {
+        Row: {
+          contact_status: string
+          created_at: string
+          created_by: string
+          fund_directory_id: string | null
+          id: string
+          intake_session_id: string
+          mandate_fingerprint: string
+          mandate_revalidated_at: string | null
+          mandate_revalidated_by: string | null
+          mandate_revalidation_note: string | null
+          match_screen_fingerprint: string
+          organization_id: string
+          plan_id: string
+          position: number
+          provider_fund_id: string | null
+          provider_id: string
+          provider_kind: string
+          provider_name: string
+          provider_organization_id: string | null
+          provider_source: string
+          rationale: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_contact_email: string | null
+          resolved_contact_id: string | null
+          resolved_contact_job_title: string | null
+          resolved_contact_name: string | null
+          resolved_contact_source: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_status?: string
+          created_at?: string
+          created_by: string
+          fund_directory_id?: string | null
+          id?: string
+          intake_session_id: string
+          mandate_fingerprint: string
+          mandate_revalidated_at?: string | null
+          mandate_revalidated_by?: string | null
+          mandate_revalidation_note?: string | null
+          match_screen_fingerprint: string
+          organization_id: string
+          plan_id: string
+          position: number
+          provider_fund_id?: string | null
+          provider_id: string
+          provider_kind: string
+          provider_name: string
+          provider_organization_id?: string | null
+          provider_source: string
+          rationale: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_contact_email?: string | null
+          resolved_contact_id?: string | null
+          resolved_contact_job_title?: string | null
+          resolved_contact_name?: string | null
+          resolved_contact_source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_status?: string
+          created_at?: string
+          created_by?: string
+          fund_directory_id?: string | null
+          id?: string
+          intake_session_id?: string
+          mandate_fingerprint?: string
+          mandate_revalidated_at?: string | null
+          mandate_revalidated_by?: string | null
+          mandate_revalidation_note?: string | null
+          match_screen_fingerprint?: string
+          organization_id?: string
+          plan_id?: string
+          position?: number
+          provider_fund_id?: string | null
+          provider_id?: string
+          provider_kind?: string
+          provider_name?: string
+          provider_organization_id?: string | null
+          provider_source?: string
+          rationale?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_contact_email?: string | null
+          resolved_contact_id?: string | null
+          resolved_contact_job_title?: string | null
+          resolved_contact_name?: string | null
+          resolved_contact_source?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_introduction_targets_fund_directory_id_fkey"
+            columns: ["fund_directory_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_targets_organization_id_intake_sess_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_targets_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introduction_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_targets_provider_organization_id_pro_fkey"
+            columns: ["provider_organization_id", "provider_fund_id"]
+            isOneToOne: false
+            referencedRelation: "funds"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       qualified_introduction_recipients: {
         Row: {
+          contact_email: string | null
           contact_id: string
+          contact_job_title: string | null
           contact_name: string
+          contact_source: string
+          contact_uuid: string | null
           created_at: string
-          fund_directory_id: string
+          fund_directory_id: string | null
           id: string
           intake_session_id: string
           is_anchor: boolean
@@ -4623,14 +4758,23 @@ export type Database = {
           organization_id: string
           plan_id: string
           position: number
+          provider_fund_id: string | null
+          provider_id: string
+          provider_organization_id: string | null
+          provider_source: string
           rationale: string
           recipient_name: string
+          target_id: string | null
         }
         Insert: {
+          contact_email?: string | null
           contact_id: string
+          contact_job_title?: string | null
           contact_name: string
+          contact_source?: string
+          contact_uuid?: string | null
           created_at?: string
-          fund_directory_id: string
+          fund_directory_id?: string | null
           id?: string
           intake_session_id: string
           is_anchor?: boolean
@@ -4639,14 +4783,23 @@ export type Database = {
           organization_id: string
           plan_id: string
           position: number
+          provider_fund_id?: string | null
+          provider_id: string
+          provider_organization_id?: string | null
+          provider_source?: string
           rationale: string
           recipient_name: string
+          target_id?: string | null
         }
         Update: {
+          contact_email?: string | null
           contact_id?: string
+          contact_job_title?: string | null
           contact_name?: string
+          contact_source?: string
+          contact_uuid?: string | null
           created_at?: string
-          fund_directory_id?: string
+          fund_directory_id?: string | null
           id?: string
           intake_session_id?: string
           is_anchor?: boolean
@@ -4655,8 +4808,13 @@ export type Database = {
           organization_id?: string
           plan_id?: string
           position?: number
+          provider_fund_id?: string | null
+          provider_id?: string
+          provider_organization_id?: string | null
+          provider_source?: string
           rationale?: string
           recipient_name?: string
+          target_id?: string | null
         }
         Relationships: [
           {
@@ -4680,14 +4838,35 @@ export type Database = {
             referencedRelation: "qualified_introduction_plans"
             referencedColumns: ["organization_id", "id"]
           },
+          {
+            foreignKeyName: "qualified_introduction_recipients_registered_fund_fk"
+            columns: ["provider_organization_id", "provider_fund_id"]
+            isOneToOne: false
+            referencedRelation: "funds"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introduction_recipients_target_fk"
+            columns: ["organization_id", "target_id"]
+            isOneToOne: true
+            referencedRelation: "qualified_introduction_targets"
+            referencedColumns: ["organization_id", "id"]
+          },
         ]
       }
       qualified_introductions: {
         Row: {
           authorization_snapshot: Json
           case_fingerprint: string
+          contact_email: string | null
           contact_id: string
-          fund_directory_id: string
+          contact_job_title: string | null
+          contact_name: string | null
+          contact_source: string
+          contact_uuid: string | null
+          delivery_channel: string | null
+          delivery_reference: string | null
+          fund_directory_id: string | null
           id: string
           intake_session_id: string
           introduced_at: string
@@ -4697,14 +4876,25 @@ export type Database = {
           material_manifest: Json
           organization_id: string
           plan_id: string
+          provider_fund_id: string | null
+          provider_id: string
+          provider_organization_id: string | null
+          provider_source: string
           rationale: string
           recipient_id: string
         }
         Insert: {
           authorization_snapshot: Json
           case_fingerprint: string
+          contact_email?: string | null
           contact_id: string
-          fund_directory_id: string
+          contact_job_title?: string | null
+          contact_name?: string | null
+          contact_source?: string
+          contact_uuid?: string | null
+          delivery_channel?: string | null
+          delivery_reference?: string | null
+          fund_directory_id?: string | null
           id?: string
           intake_session_id: string
           introduced_at?: string
@@ -4714,14 +4904,25 @@ export type Database = {
           material_manifest: Json
           organization_id: string
           plan_id: string
+          provider_fund_id?: string | null
+          provider_id: string
+          provider_organization_id?: string | null
+          provider_source?: string
           rationale: string
           recipient_id: string
         }
         Update: {
           authorization_snapshot?: Json
           case_fingerprint?: string
+          contact_email?: string | null
           contact_id?: string
-          fund_directory_id?: string
+          contact_job_title?: string | null
+          contact_name?: string | null
+          contact_source?: string
+          contact_uuid?: string | null
+          delivery_channel?: string | null
+          delivery_reference?: string | null
+          fund_directory_id?: string | null
           id?: string
           intake_session_id?: string
           introduced_at?: string
@@ -4731,6 +4932,10 @@ export type Database = {
           material_manifest?: Json
           organization_id?: string
           plan_id?: string
+          provider_fund_id?: string | null
+          provider_id?: string
+          provider_organization_id?: string | null
+          provider_source?: string
           rationale?: string
           recipient_id?: string
         }
@@ -4761,6 +4966,13 @@ export type Database = {
             columns: ["organization_id", "recipient_id"]
             isOneToOne: true
             referencedRelation: "qualified_introduction_recipients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_introductions_registered_fund_fk"
+            columns: ["provider_organization_id", "provider_fund_id"]
+            isOneToOne: false
+            referencedRelation: "funds"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -5266,13 +5478,27 @@ export type Database = {
         }
         Returns: Json
       }
-      attest_qualified_introduction_plan_technical_review: {
-        Args: { p_material_fingerprint: string; p_plan_id: string }
-        Returns: string
-      }
       authorize_qualified_introduction_plan: {
         Args: { p_material_fingerprint: string; p_plan_id: string }
         Returns: string
+      }
+      approve_match_shortlist: {
+        Args: {
+          p_match_screen_fingerprint: string
+          p_organization_id: string
+          p_selected_provider_ids: string[]
+          p_session_id: string
+        }
+        Returns: string
+      }
+      approve_match_shortlist_and_prepare_plan: {
+        Args: {
+          p_match_screen_fingerprint: string
+          p_organization_id: string
+          p_selected_provider_ids: string[]
+          p_session_id: string
+        }
+        Returns: Json
       }
       begin_intake_processing: {
         Args: { p_organization_id: string; p_session_id: string }
@@ -5286,6 +5512,14 @@ export type Database = {
           p_pipeline_version: string
           p_session_id: string
           p_trigger: string
+        }
+        Returns: Json
+      }
+      enqueue_deal_state_analysis: {
+        Args: {
+          p_organization_id: string
+          p_session_id: string
+          p_trigger_source: string
         }
         Returns: Json
       }

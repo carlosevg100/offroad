@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {materialTemplate, materialTemplateRegistryHash} from "@offroad/credit-playbook";
 import type {Material, MaterialBlock, MaterialKind} from "./compile";
 
-export const materialTruthVersion = "2026.08.26-v1";
+export const materialTruthVersion = "2026.08.29-v2";
 type Status = "completed" | "partial" | "blocked" | "not_computable" | "not_applicable";
 
 export type MaterialReleaseEvidence = {
@@ -13,6 +13,14 @@ export type MaterialReleaseEvidence = {
 };
 
 export type MaterialExternalReleaseEvidence = Pick<MaterialReleaseEvidence, "technicalReview" | "companyAuthorization">;
+
+export type FinancialModelArtifactEvidence = {
+  fingerprint: string;
+  workbooks: {
+    pt: {sha256: string; byteSize: number};
+    en: {sha256: string; byteSize: number};
+  };
+};
 
 export type MaterialProcedureResult = {
   procedureId: `MA-${string}`;
@@ -104,7 +112,7 @@ function bilingual(block: MaterialBlock): boolean {
   return pairs.every((pair)=>pair.pt.trim().length>0&&pair.en.trim().length>0);
 }
 
-export function buildMaterialTruthSet(input:{materials:readonly Material[];dataRoom:MaterialRoomPlan;modelAvailable:boolean;claimAuditApproved?:boolean;release?:MaterialExternalReleaseEvidence;governanceBlockers?:readonly string[]}):MaterialTruthSet {
+export function buildMaterialTruthSet(input:{materials:readonly Material[];dataRoom:MaterialRoomPlan;financialModel:FinancialModelArtifactEvidence|null;claimAuditApproved?:boolean;release?:MaterialExternalReleaseEvidence;governanceBlockers?:readonly string[]}):MaterialTruthSet {
   const externalRelease=input.release??emptyExternalRelease();
   const packageFingerprint=materialPackageFingerprint(input);
   const exceptions:MaterialTruthSet["exceptions"]=[];
@@ -145,11 +153,20 @@ export function buildMaterialTruthSet(input:{materials:readonly Material[];dataR
   const byKind=new Map(artifacts.map((artifact)=>[artifact.kind,artifact]));
   const exists=(kind:MaterialKind)=>byKind.has(kind);
   const clean=(kind:MaterialKind)=>{const artifact=byKind.get(kind);return Boolean(artifact&&artifact.templateCurrent&&artifact.templateSectionsComplete&&artifact.conductStatus==="pass"&&!artifact.unsupportedMaterialClaims.length&&artifact.hasDisclaimer&&artifact.bilingualComplete);};
+  const financialModelMaterial=input.materials.find((material)=>material.kind==="financial_model");
+  const financialModelAvailable=Boolean(
+    input.financialModel
+      && input.financialModel.workbooks.pt.byteSize>0
+      && input.financialModel.workbooks.en.byteSize>0
+      && financialModelMaterial?.artifactFingerprint===input.financialModel.fingerprint,
+  );
+  if(input.financialModel&&!financialModelMaterial)exceptions.push({id:"financial-model-entry-missing",severity:"critical",message:"The compiled financial model is not represented in the governed material package.",affectedProcedures:["MA-27","MA-28","MA-31","MA-32"]});
+  if(financialModelMaterial&&financialModelMaterial.artifactFingerprint!==input.financialModel?.fingerprint)exceptions.push({id:"financial-model-fingerprint-mismatch",severity:"critical",message:"The financial model entry does not match the compiled workbook artifact.",affectedProcedures:["MA-27","MA-28","MA-31","MA-32"]});
   if(!exists("teaser"))missing.add("material.teaser");
   if(!exists("credit_memo"))missing.add("material.credit_memo");
   if(!exists("term_sheet"))missing.add("material.term_sheet");
   if(!exists("diligence_qa"))missing.add("material.diligence_qa");
-  if(!input.modelAvailable)missing.add("material.financial_model");
+  if(!financialModelAvailable)missing.add("material.financial_model");
 
   const status=(ok:boolean,available:boolean=true):Status=>ok?"completed":available?"blocked":"not_computable";
   const result=(procedureId:`MA-${string}`,s:Status,value:Record<string,unknown>|null,procedureMissing:string[]=[],evidenceCount=0):MaterialProcedureResult=>({procedureId,status:s,result:value,outputCount:value?Object.keys(value).length:0,evidenceCount,missingInputs:procedureMissing,exceptionIds:exceptions.filter((exception)=>exception.affectedProcedures.includes(procedureId)).map((exception)=>exception.id)});
@@ -176,7 +193,7 @@ export function buildMaterialTruthSet(input:{materials:readonly Material[];dataR
     result("MA-24",exists("data_room_index")?"completed":"not_computable",{entries:input.dataRoom.entries.length,folders:input.dataRoom.folders.length},exists("data_room_index")?[]:["data room index"],input.dataRoom.entries.length),
     result("MA-25",input.dataRoom.entries.every((entry)=>Boolean(entry.tier))?"completed":"blocked",{tiers:[...new Set(input.dataRoom.entries.map((entry)=>entry.tier))]},[],input.dataRoom.entries.length),
     result("MA-26",hygieneIssues.length?"partial":"completed",{issues:hygieneIssues},hygieneIssues, input.dataRoom.entries.length),
-    result("MA-27",input.modelAvailable?"completed":"not_computable",input.modelAvailable?{modelAvailable:true}:null,input.modelAvailable?[]:["deliverable financial model"],0),
+    result("MA-27",financialModelAvailable?"completed":"not_computable",financialModelAvailable?{fingerprint:input.financialModel!.fingerprint,workbooks:input.financialModel!.workbooks}:null,financialModelAvailable?[]:["deliverable financial model"],financialModelAvailable?1:0),
     result("MA-28",conflicts.length?"blocked":release.crossValidation.approved?"completed":"partial",{conflicts,fingerprint:release.crossValidation.fingerprint},release.crossValidation.approved?[]:["cross-validation approval"],values.size),
     result("MA-29",artifacts.every((artifact)=>artifact.bilingualComplete)?"completed":"blocked",{artifacts:artifacts.length},[],artifacts.length),
     result("MA-30",artifacts.filter((artifact)=>artifact.kind!=="data_room_index").every((artifact)=>artifact.hasDisclaimer)?"completed":"blocked",{covered:artifacts.filter((artifact)=>artifact.hasDisclaimer).map((artifact)=>artifact.kind)},[],artifacts.length),

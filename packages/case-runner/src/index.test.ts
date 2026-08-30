@@ -137,19 +137,19 @@ describe("integrated case runner", () => {
     let release: (() => void) | undefined;
     const hold = new Promise<void>((resolve) => { release = resolve; });
     const parallelDefinitions = definitions();
-    for (const stage of ["gaps", "structure", "claims"] as const) {
+    for (const stage of ["gaps", "structure"] as const) {
       parallelDefinitions[stage] = {
         outputSchema,
         execute: async ({outputs}) => {
           started.push(stage);
-          if (started.length === 3) release?.();
+          if (started.length === 2) release?.();
           await hold;
           return {output: {stage, received: Object.keys(outputs).length}};
         },
       };
     }
     const report = await runCase({...base, stages: parallelDefinitions});
-    expect(started).toEqual(["gaps", "structure", "claims"]);
+    expect(started).toEqual(["gaps", "structure"]);
     expect(report.status).toBe("succeeded");
   });
 

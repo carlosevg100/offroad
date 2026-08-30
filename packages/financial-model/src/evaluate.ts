@@ -12,7 +12,7 @@ import {columnLetter} from "./model";
  * outflow, and that leverage falls as the loan pays down.
  *
  * It supports exactly the subset the model uses — arithmetic, comparisons, IF, MIN, MAX,
- * ROUNDUP, string literals, and cross-sheet references. Anything outside that throws rather
+ * ROUNDUP, PMT, string literals, and cross-sheet references. Anything outside that throws rather
  * than guessing, because an engine that silently returns 0 for a construct it does not
  * understand would make the tests pass for the wrong reason.
  */
@@ -180,6 +180,17 @@ export function evaluate(grid: Grid, key: string, seen = new Set<string>()): str
         case "ROUNDUP": {
           const factor = 10 ** Number(args[1] ?? 0);
           return Math.ceil(Number(args[0]) * factor) / factor;
+        }
+        case "PMT": {
+          const rate = Number(args[0] ?? 0);
+          const periods = Number(args[1] ?? 0);
+          const presentValue = Number(args[2] ?? 0);
+          const futureValue = Number(args[3] ?? 0);
+          const paymentAtStart = Number(args[4] ?? 0);
+          if (periods <= 0) throw new Error(`PMT periods must be positive in: ${raw}`);
+          if (rate === 0) return -(presentValue + futureValue) / periods;
+          const factor = (1 + rate) ** periods;
+          return -(rate * (presentValue * factor + futureValue)) / ((1 + rate * paymentAtStart) * (factor - 1));
         }
         default:
           throw new Error(`unsupported function ${token.text} in: ${raw}`);

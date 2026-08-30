@@ -16,7 +16,7 @@ import type {CollateralPackage} from "./collateral";
 import type {OperationTruthSet} from "./operation";
 import type {IndicativeTermSheet} from "./termsheet";
 
-export const structureTruthVersion = "2026.08.25-v1";
+export const structureTruthVersion = "2026.08.29-v2";
 type Status = "completed" | "partial" | "blocked" | "not_computable" | "not_applicable";
 type EvidenceLink = {fieldPath: string; sourceDocument: string; anchor?: unknown};
 
@@ -53,6 +53,7 @@ export type StructureTruthSet = {
   policyVersion: string;
   status: "complete" | "partial" | "blocked";
   proposal: {
+    instrument: string | null;
     amount: string | null;
     termMonths: number | null;
     graceMonths: number | null;
@@ -234,9 +235,13 @@ export function buildStructureTruthSet(input: {
     return {asset:line.asset.description,type:line.asset.type,procedureId:procedureId[line.asset.type]??"ES-20",status:required.length===0?"partial" as const:confirmed.length===required.length?"completed" as const:"partial" as const,missingInputs:required.filter((item)=>!confirmed.includes(item))};
   });
   const collateralCoverage=input.collateral?.coverageAchieved??null;
-  const collateralSufficient=input.collateral?.sufficient??null;
-  if(collateralSufficient===false)exceptions.push({id:"collateral-shortfall",severity:"critical",message:"Post-haircut collateral coverage is below the required package.",affectedProcedures:["ES-03","ES-20","ES-40","ES-42"]});
-  if(collateralCoverage&&policy.minimumCollateralCoverage&&new Decimal(collateralCoverage).lt(policy.minimumCollateralCoverage))exceptions.push({id:"collateral-policy-shortfall",severity:"critical",message:"Post-haircut collateral coverage is below the governed minimum.",affectedProcedures:["ES-03","ES-20","ES-40","ES-42"]});
+  const governedCollateralCoverage = policy.collateralPolicyVersion && policy.minimumCollateralCoverage
+    ? policy.minimumCollateralCoverage
+    : null;
+  const collateralSufficient = collateralCoverage && governedCollateralCoverage
+    ? new Decimal(collateralCoverage).gte(governedCollateralCoverage)
+    : null;
+  if(collateralSufficient===false)exceptions.push({id:"collateral-policy-shortfall",severity:"critical",message:"Post-haircut collateral coverage is below the governed minimum.",affectedProcedures:["ES-03","ES-20","ES-40","ES-42"]});
 
   const covenantConflict=input.operationTruth.proForma?.dayOneCovenantConflict===null||input.operationTruth.proForma?.dayOneCovenantConflict===undefined?null:!input.operationTruth.proForma.dayOneCovenantConflict;
   const negativePledge=value("structure.day_one.negative_pledge_compliant")!==undefined?bool(value("structure.day_one.negative_pledge_compliant")):null;
@@ -291,7 +296,7 @@ export function buildStructureTruthSet(input: {
     result("ES-17",blocked("ES-17",policy.reserveMonths||value("structure.reserve.months")?value("structure.reserve.replenishment")?"completed":"partial":"not_applicable"),policy.reserveMonths||value("structure.reserve.months")?{months:value("structure.reserve.months")??policy.reserveMonths,funding:value("structure.reserve.funding")??null,replenishment:value("structure.reserve.replenishment")??null,lockup:value("structure.reserve.lockup")??null}:null,policy.reserveMonths||value("structure.reserve.months")?value("structure.reserve.replenishment")?[]:["reserve funding, replenishment and lock-up"]:[],owned("ES-17"),evidencePrefix("structure.reserve.")),
     result("ES-18",blocked("ES-18",evidencePrefix("structure.bank_guarantee.")?"partial":"not_applicable"),evidencePrefix("structure.bank_guarantee.")?genericClause("structure.bank_guarantee."):null,evidencePrefix("structure.bank_guarantee.")?["rating, tenor match, renewal and exclusions"]:[],owned("ES-18"),evidencePrefix("structure.bank_guarantee.")),
     result("ES-19",blocked("ES-19",mechanics("ES-19").length?"partial":"not_applicable"),mechanics("ES-19").length?{assets:mechanics("ES-19")}:null,mechanics("ES-19").flatMap((row)=>row.missingInputs),owned("ES-19"),0),
-    result("ES-20",blocked("ES-20",input.collateral?policy.collateralPolicyVersion?input.collateral.sufficient?"completed":"blocked":"partial":"not_computable"),input.collateral?{package:input.collateral,policyVersion:policy.collateralPolicyVersion??null}:null,input.collateral?policy.collateralPolicyVersion?[]:["approved collateral policy version"]:["collateral inventory"],owned("ES-20"),0),
+    result("ES-20",blocked("ES-20",input.collateral?governedCollateralCoverage?collateralSufficient?"completed":"blocked":"partial":"not_computable"),input.collateral?{package:input.collateral,policyVersion:policy.collateralPolicyVersion??null,minimumCoverage:governedCollateralCoverage}:null,input.collateral?governedCollateralCoverage?[]:["approved collateral policy version and minimum coverage"]:["collateral inventory"],owned("ES-20"),0),
     result("ES-21",blocked("ES-21",evidencePrefix("structure.dedicated_flow.")?"partial":"not_applicable"),evidencePrefix("structure.dedicated_flow.")?genericClause("structure.dedicated_flow."):null,evidencePrefix("structure.dedicated_flow.")?["complete account waterfall and incremental cost"]:[],owned("ES-21"),evidencePrefix("structure.dedicated_flow.")),
     result("ES-22",blocked("ES-22",evidencePrefix("structure.shared_security.")?"partial":"not_applicable"),evidencePrefix("structure.shared_security.")?genericClause("structure.shared_security."):null,evidencePrefix("structure.shared_security.")?["documented release or intercreditor path"]:[],owned("ES-22"),evidencePrefix("structure.shared_security.")),
     result("ES-23",blocked("ES-23",structuredCovenants.some((covenant)=>/alav|leverage|d[ií]vida/i.test(covenant.name??""))?"partial":"not_computable"),structuredCovenants.some((covenant)=>/alav|leverage|d[ií]vida/i.test(covenant.name??""))?{covenants:structuredCovenants.filter((covenant)=>/alav|leverage|d[ií]vida/i.test(covenant.name??"")),definition:"debt truth bridge and adjusted EBITDA policy"}:null,["annual step-down and downside test"],owned("ES-23"),evidencePrefix("structure.covenants.")),
@@ -312,7 +317,7 @@ export function buildStructureTruthSet(input: {
   const critical=exceptions.some((exception)=>exception.severity==="critical");
   return {
     version:structureTruthVersion,policyVersion:policy.version,status:critical?"blocked":results.every((entry)=>entry.status==="completed"||entry.status==="not_applicable")?"complete":"partial",
-    proposal:{amount:proposed,termMonths,graceMonths,amortizationFormat:format,bindingConstraint,minimumDownsideDscr:minimumDscr,collateralCoverage,dayOneCompatible:dayOnePasses},
+    proposal:{instrument:selectedInstrument??candidateInstrument?.id??null,amount:proposed,termMonths,graceMonths,amortizationFormat:format,bindingConstraint,minimumDownsideDscr:minimumDscr,collateralCoverage,dayOneCompatible:dayOnePasses},
     capacityEnvelope:{ceilings:capacityCeilings,amount:envelopeAmount,bindingConstraint},repayment:{origin:formatOrigin,schedule,coverage},security:{package:input.collateral,mechanics:securityMechanics},
     dayOne:{covenants:covenantConflict,negativePledge,corporateAuthority,maturityWall:maturityWallPass,passes:dayOnePasses},finalSizing,exceptions,missingInputs:[...missing].sort(),procedureCoverage:results,
   };
