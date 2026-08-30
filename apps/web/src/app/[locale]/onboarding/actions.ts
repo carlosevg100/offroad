@@ -148,18 +148,18 @@ export async function startDocumentIntake(formData: FormData) {
 
   const supabase = await createClient();
   if (!supabase) redirect(onboardingUrl(locale, "provider"));
-  const {error} = await supabase.rpc("start_onboarding_intake", {
+  const {data: sessionId, error} = await supabase.rpc("start_onboarding_project", {
     p_locale: locale,
     p_project_name: parsed.data.projectName,
     p_identity_policy: parsed.data.identityPolicy,
     p_representation_declared: true,
   });
   if (error) {
-    reportServerFailure({step: "intake.start_onboarding", error});
+    reportServerFailure({step: "intake.start_onboarding_project", error});
     const errorCode = error.message.includes("project_name_already_in_use") ? "duplicate" : error.code === "P0002" ? "step" : "session";
     redirect(`/${locale}/onboarding?setup=project&error=${errorCode}`);
   }
-  redirect(`/${locale}/onboarding?stage=company`);
+  redirect(`/${locale}/app/new?mode=documents&session=${sessionId}&step=company`);
 }
 
 export async function acceptPrivateWorkspaceTerms(formData: FormData) {

@@ -5602,12 +5602,31 @@ export type Database = {
         Returns: undefined
       }
       get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
+      get_workspace_bootstrap: { Args: never; Returns: Json }
       initialize_professional_onboarding: {
         Args: {
           p_full_name: string
           p_job_title?: string
           p_journey: string
           p_locale?: string
+        }
+        Returns: string
+      }
+      start_onboarding_project: {
+        Args: {
+          p_identity_policy: string
+          p_locale: string
+          p_project_name: string
+          p_representation_declared: boolean
+        }
+        Returns: string
+      }
+      start_workspace_project: {
+        Args: {
+          p_identity_policy: string
+          p_locale: string
+          p_project_name: string
+          p_representation_declared: boolean
         }
         Returns: string
       }
