@@ -201,7 +201,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".private-project-gate__accepted")).toContainText("Termos de confidencialidade aceitos");
     await page.locator(".private-project-gate__submit a").click();
     await expect(page.locator(".private-project-gate--project")).toBeVisible();
-    await page.locator('input[name="project_name"]').fill(secondaryProjectName);
+    await page.locator('.private-project-gate__form input[name="project_name"]').fill(secondaryProjectName);
     await expect(page.locator('input[name="representation_declared"]')).toHaveAttribute("type", "hidden");
     await page.locator('.private-project-gate__form button[type="submit"]').click();
     await expect(page).toHaveURL(/mode=documents&session=.*step=company/);
