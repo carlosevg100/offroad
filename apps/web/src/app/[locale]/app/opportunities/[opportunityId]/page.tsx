@@ -38,9 +38,10 @@ export default async function OpportunityPage({params, searchParams}: Props) {
       .maybeSingle(),
     supabase
       .from("document_intake_sessions")
-      .select("id, project_name, status, opportunity_id")
+      .select("id, project_name, status, opportunity_id, archived_at")
       .eq("organization_id", organization.id)
       .eq("opportunity_id", opportunityId)
+      .is("archived_at", null)
       .maybeSingle(),
   ]);
   if (!opportunity || !session) notFound();
