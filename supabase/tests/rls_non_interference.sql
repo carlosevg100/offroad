@@ -4620,6 +4620,7 @@ begin
       'objectType', 'understanding_snapshot', 'objectFingerprint', understanding_fingerprint
     ))
   );
+  set local role postgres;
   select object_fingerprint into structure_option_fingerprint
   from public.deal_state_objects where id = structure_option_id;
 
@@ -4684,6 +4685,7 @@ begin
       'objectType', 'production_plan', 'objectFingerprint', production_fingerprint
     ))
   );
+  set local role postgres;
   select object_fingerprint into material_fingerprint
   from public.deal_state_objects where id = material_id;
 
@@ -4771,6 +4773,7 @@ begin
       jsonb_build_object('objectType', 'material_artifact', 'objectFingerprint', material_fingerprint)
     )
   );
+  set local role postgres;
   select object_fingerprint into match_fingerprint
   from public.deal_state_objects where id = match_id;
 
