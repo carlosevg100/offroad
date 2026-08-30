@@ -73,6 +73,7 @@ export default async function OpportunityPage({params, searchParams}: Props) {
   const amount = format.number(opportunity.requested_amount, {
     style: "currency", currency: opportunity.currency, maximumFractionDigits: 0,
   });
+  const projectTitle = session.project_name || opportunity.title;
   const notice = query.notice && t.has(`notices.${query.notice}`) ? t(`notices.${query.notice}`) : null;
 
   return (
@@ -80,7 +81,7 @@ export default async function OpportunityPage({params, searchParams}: Props) {
       <DealStateRefresh active={workbench.isProcessing} />
       <header className="deal-workspace__topbar">
         <Link aria-label={t("back")} href={`/${locale}/app`}><ArrowLeft aria-hidden="true" size={15} /></Link>
-        <div><span>{t("workspace")}</span><h1>{session.project_name || opportunity.title}</h1></div>
+        <div><span>{t("workspace")}</span><h1 title={projectTitle}>{projectTitle}</h1></div>
         <dl><div><dt>{t("objective")}</dt><dd>{opportunity.purpose}</dd></div><div><dt>{t("amount")}</dt><dd>{amount}</dd></div><div><dt>{t("documents")}</dt><dd>{documentCount ?? 0}</dd></div></dl>
       </header>
 

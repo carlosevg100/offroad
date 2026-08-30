@@ -12,6 +12,8 @@ import {waitForOneTimeCode} from "./support/mail";
  * Every step is one test in a serial group so a failure names the exact step.
  */
 const runId = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
+const initialProjectName = `Projeto Horizonte ${runId}`;
+const updatedProjectName = `Projeto Horizonte Atualizado ${runId}`;
 const account = {
   email: `e2e-${runId}@example.com`,
   password: `Offroad-E2E-${runId}!`,
@@ -110,7 +112,7 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("starts with documents, uploads the data room and processes it", async () => {
     await page.goto("/pt-BR/onboarding");
-    await startPrivateProject(page, `Projeto Horizonte ${runId}`, true);
+    await startPrivateProject(page, initialProjectName, true);
     await expect(page.locator(".workspace-welcome h1")).toHaveText("Vamos começar o processo para estruturar sua captação.");
     await expect(page.locator(".workspace-welcome")).toContainText("Leva cerca de dez minutos. O resto é com a gente.");
     await expect(page.locator(".intake-guide__back")).toHaveText("Voltar à etapa anterior");
@@ -121,8 +123,8 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator(".intake-guide__back").click();
     await expect(page).toHaveURL(/setup=project/);
     await expect(page.locator(".private-project-gate--project")).toBeVisible();
-    await expect(page.locator('input[name="project_name"]')).toHaveValue(`Projeto Horizonte ${runId}`);
-    await page.locator('input[name="project_name"]').fill(`Projeto Horizonte Atualizado ${runId}`);
+    await expect(page.locator('input[name="project_name"]')).toHaveValue(initialProjectName);
+    await page.locator('input[name="project_name"]').fill(updatedProjectName);
     await page.locator('.private-project-gate__form button[type="submit"]').click();
     await expect(page).toHaveURL(/stage=company/);
     await completeCompanyMilestone(page);
@@ -143,7 +145,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-company")).toBeVisible();
     await page.locator(".intake-guide__back").click();
     await expect(page.locator(".private-project-gate--project")).toBeVisible();
-    await expect(page.locator('input[name="project_name"]')).toHaveValue(`Projeto Horizonte Atualizado ${runId}`);
+    await expect(page.locator('input[name="project_name"]')).toHaveValue(updatedProjectName);
     await page.locator('.private-project-gate__form button[type="submit"]').click();
     await expect(page.locator(".intake-company")).toBeVisible();
     await page.goto("/pt-BR/onboarding?stage=operation");
@@ -200,7 +202,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expectNoErrorNotice(page);
   });
 
-  test("submits onboarding and sees the case in the workspace with its evidence", async () => {
+  test("submits onboarding and opens the governed workspace with its source context", async () => {
     await page.goto("/pt-BR/onboarding");
     await expect(page.locator(".onboarding-review")).toBeVisible();
     await page.locator(".onboarding-actions button.button:not(.button--ghost)").click();
@@ -210,11 +212,9 @@ test.describe("Document-first intake (company journey)", () => {
 
     await page.locator(".opportunity-table [role=listitem]").first().click();
     await expect(page).toHaveURL(/\/pt-BR\/app\/opportunities\//);
-    const metrics = page.locator(".workbench-metrics article");
-    await expect(page.locator(".credit-room__header h1")).toContainText(/Rede Horizonte Supermercados/);
-    // documents = 8, evidence facts = accepted primaries
-    await expect(metrics.nth(0).locator("strong")).toHaveText(String(dataRoomExpectations.documents));
-    await expect(metrics.nth(1).locator("strong")).toHaveText(String(dataRoomExpectations.acceptedAfterBulkAccept));
+    await expect(page.locator(".deal-workspace__topbar h1")).toHaveText(updatedProjectName);
+    await expect(page.locator(".deal-workspace__topbar dl dd").nth(2)).toHaveText(String(dataRoomExpectations.documents));
+    await expect(page.locator(".deal-control-panel")).toContainText("Análises vinculadas às informações de origem.");
   });
 
   test("an unknown document set yields the honest empty state in the workspace flow", async () => {

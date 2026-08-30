@@ -6666,10 +6666,13 @@ button.app-workspace-id strong {
 }
 
 .deal-workspace__topbar h1 {
+  overflow: hidden;
   margin: 3px 0 0;
   font-size: 20px;
   font-weight: 610;
   letter-spacing: -.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .deal-workspace__topbar dl {
