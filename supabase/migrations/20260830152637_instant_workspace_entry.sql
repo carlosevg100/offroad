@@ -232,7 +232,7 @@ begin
       'organization_type', organization_record.organization_type,
       'verification_status', organization_record.verification_status
     ),
-    'onboarding', case when progress_record.id is null then null else jsonb_build_object(
+    'onboarding', case when progress_record.user_id is null then null else jsonb_build_object(
       'journey', progress_record.journey,
       'current_step', progress_record.current_step,
       'answers', progress_record.answers,
