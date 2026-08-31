@@ -56,6 +56,8 @@ type Props = {
   preliminaryAction?: (formData: FormData) => Promise<void>;
   /** Current screen in the guided workspace flow. Onboarding derives it from saved answers. */
   stage?: GuidedStage;
+  /** Shows only the operation-type chooser when returning from the operation brief. */
+  operationTypeOnly?: boolean;
   /** The onboarding journey starts with the company, before asking what it wants to finance. */
   companyProfile?: CompanyProfile;
   companyProfileComplete?: boolean;
@@ -73,7 +75,7 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, preliminaryState, preliminaryAction, stage, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, preliminaryState, preliminaryAction, stage, operationTypeOnly = false, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -180,10 +182,10 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {!processing && currentStage === "operation" && setOperationAction && !checklist?.archetypeId ? (
+      {!processing && currentStage === "operation" && setOperationAction && (operationTypeOnly || !checklist?.archetypeId) ? (
         <IntakeOperation
           locale={locale}
-          selected={null}
+          selected={operationTypeOnly && checklist?.archetypeId ? checklist.archetypeId as ArchetypeId : null}
           action={setOperationAction}
           sessionId={session.id}
           journey={session.journey === "originator" ? "originator" : "company"}
@@ -194,7 +196,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {!processing && currentStage === "operation" && dealBriefAction && checklist?.archetypeId ? (
+      {!processing && !operationTypeOnly && currentStage === "operation" && dealBriefAction && checklist?.archetypeId ? (
         <div className="intake-operation-context">
           {preliminaryState?.current?.row.status === "changes_requested" && preliminaryState.current.row.correction ? (
             <aside className="intake-operation-context__correction" role="status">

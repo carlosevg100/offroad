@@ -38,7 +38,7 @@ import {
 
 type Props = {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{error?: string; mode?: string; session?: string; setup?: string; stage?: string; step?: string}>;
+  searchParams: Promise<{edit?: string; error?: string; mode?: string; session?: string; setup?: string; stage?: string; step?: string}>;
 };
 
 type WorkspaceProjectSetup = {
@@ -126,6 +126,9 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
     && guidedOrder.indexOf(guidedStep) <= guidedOrder.indexOf(availableGuidedStep)
     ? guidedStep
     : availableGuidedStep;
+  const editingOperationType = effectiveGuidedStep === "operation"
+    && state.edit === "type"
+    && Boolean(tailoredChecklist?.archetypeId);
   const editingProject = mode === "documents" && state.setup === "project" && Boolean(review?.session);
   const {data: projectSetupData} = mode === "choice"
     ? await supabase.rpc("get_workspace_project_setup", {p_locale: locale})
@@ -215,7 +218,9 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             {...(effectiveGuidedStep ? {stage: effectiveGuidedStep} : {})}
             backHref={effectiveGuidedStep === "company"
               ? `/${locale}/app/new?mode=documents&session=${review.session.id}&setup=project`
-              : `/${locale}/app/new?mode=documents&session=${review.session.id}&step=${effectiveGuidedStep === "documents" ? "preliminary" : effectiveGuidedStep === "preliminary" ? "operation" : "company"}`}
+              : effectiveGuidedStep === "operation" && !editingOperationType && tailoredChecklist?.archetypeId
+                ? `/${locale}/app/new?mode=documents&session=${review.session.id}&step=operation&edit=type`
+                : `/${locale}/app/new?mode=documents&session=${review.session.id}&step=${effectiveGuidedStep === "documents" ? "preliminary" : effectiveGuidedStep === "preliminary" ? "operation" : "company"}`}
             checklist={tailoredChecklist}
             documents={review.documents}
             companyProfile={{
@@ -230,6 +235,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             locale={locale}
             organizationId={organization.id}
             processAction={processWorkspaceDocumentIntake}
+            operationTypeOnly={editingOperationType}
             preliminaryAction={decideWorkspacePreliminaryUnderstanding}
             preliminaryState={preliminary ?? {
               current: null,
