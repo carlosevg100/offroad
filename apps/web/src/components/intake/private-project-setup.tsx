@@ -149,7 +149,7 @@ export async function PrivateProjectSetup({
     journey={journey}
     locale={locale}
     project={project}
-    representationAlreadyDeclared={termsAccepted}
+    representationAlreadyDeclared={termsAccepted || termsAcceptanceRecorded}
   />;
 }
 
