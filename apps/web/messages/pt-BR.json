@@ -1341,6 +1341,7 @@
       "invalidFile": "Um ou mais arquivos têm formato não suportado ou excedem 50 MB.",
       "uploadError": "Falha no envio de um dos documentos. Tente novamente.",
       "registerError": "O arquivo chegou, mas não pôde ser registrado com segurança.",
+      "duplicateNotice": "Um ou mais arquivos já haviam sido recebidos e não foram duplicados.",
       "uploading": "Enviando com segurança",
       "dropTitle": "Arraste seus documentos para começar",
       "dropBody": "Ou selecione arquivos do seu computador. Você pode enviar tudo de uma vez.",

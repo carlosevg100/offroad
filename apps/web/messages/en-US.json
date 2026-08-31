@@ -1341,6 +1341,7 @@
       "invalidFile": "One or more files use an unsupported format or exceed 50 MB.",
       "uploadError": "A document could not be uploaded. Please try again.",
       "registerError": "The file arrived but could not be registered securely.",
+      "duplicateNotice": "One or more files had already been received and were not duplicated.",
       "uploading": "Uploading securely",
       "dropTitle": "Drop your documents to get started",
       "dropBody": "Or select files from your computer. You can upload everything at once.",

@@ -5,7 +5,7 @@ import {useRouter} from "next/navigation";
 import {useRef, useState} from "react";
 
 import type {IntakeDocumentSummary} from "@/lib/intake/types";
-import {DOCUMENT_ACCEPT, uploadDocuments} from "@/lib/intake/upload-client";
+import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
 export type DocumentIntakeUploaderCopy = {
@@ -13,6 +13,7 @@ export type DocumentIntakeUploaderCopy = {
   invalidFile: string;
   uploadError: string;
   registerError: string;
+  duplicateNotice: string;
   uploading: string;
   dropTitle: string;
   dropBody: string;
@@ -45,6 +46,7 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, local
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function upload(files: FileList | null) {
@@ -56,11 +58,17 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, local
     }
     setUploading(true);
     setError("");
+    setNotice("");
     const result = await uploadDocuments({supabase, files: Array.from(files), organizationId, userId, scope: {kind: "session", sessionId}});
-    setDocuments((current) => [...current, ...result.uploaded]);
+    setDocuments((current) => {
+      const byId = new Map(current.map((document) => [document.id, document]));
+      for (const document of result.uploaded) byId.set(document.id, document);
+      return [...byId.values()];
+    });
     if (result.failure === "invalid") setError(copy.invalidFile);
     else if (result.failure === "upload") setError(copy.uploadError);
     else if (result.failure === "register") setError(copy.registerError);
+    else if (result.duplicateCount > 0) setNotice(copy.duplicateNotice);
     setUploading(false);
     router.refresh();
   }
@@ -91,6 +99,7 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, local
       </div>
 
       {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
+      {notice ? <p className="form-notice form-notice--success" role="status">{notice}</p> : null}
 
       {documents.length ? (
         <div className="intake-upload__files">
@@ -99,7 +108,7 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, local
             <div key={document.id}>
               <FileCheck2 aria-hidden="true" size={16} />
               <span>{document.original_name}</span>
-              <small>{document.byte_size ? `${(document.byte_size / 1_000_000).toFixed(1)} MB` : ""}</small>
+              <small>{document.byte_size ? formatDocumentSize(document.byte_size) : ""}</small>
               {removeAction ? (
                 <form action={removeAction} className="intake-upload__remove">
                   <input name="locale" type="hidden" value={locale} />
