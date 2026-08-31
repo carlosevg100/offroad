@@ -24,6 +24,7 @@ import {
   type IntakeRuntime,
 } from "@/lib/intake/server";
 import {dealBriefFormSchema, saveDealBrief, toDealBrief} from "@/lib/intake/deal-brief";
+import {normalizeCompanyWebsite} from "@/lib/intake/company-profile";
 import type {IntakeErrorCode} from "@/lib/intake/types";
 
 function value(formData: FormData, name: string) {
@@ -160,7 +161,7 @@ export async function saveWorkspaceGuidedCompanyProfile(formData: FormData) {
   const parsed = guidedCompanySchema.safeParse({
     name: value(formData, "company_name"),
     legalName: value(formData, "legal_name"),
-    website: value(formData, "website"),
+    website: normalizeCompanyWebsite(value(formData, "website")),
     description: value(formData, "description"),
     identifier: value(formData, "legal_identifier").replace(/[^0-9A-Za-z]/g, ""),
   });

@@ -33,7 +33,9 @@ async function completeCompanyMilestone(page: Page) {
   await page.locator('input[name="company_name"]').fill("Rede Horizonte Supermercados");
   await page.locator('input[name="legal_name"]').fill("Rede Horizonte Supermercados S.A.");
   await page.locator('input[name="legal_identifier"]').fill("12.345.678/0001-95");
-  await page.locator('input[name="website"]').fill("https://redehorizonte.example.com");
+  // A user should not need to know that native URL fields require a protocol.
+  // The server stores the canonical HTTPS form and the journey advances normally.
+  await page.locator('input[name="website"]').fill("redehorizonte.example.com");
   await page.locator('textarea[name="description"]').fill("Rede regional de supermercados com operação no Sudeste e plano de expansão de lojas.");
   await page.locator('.intake-company__actions button[type="submit"]').click();
   await expect(page.locator(".intake-operation__options")).toBeVisible();

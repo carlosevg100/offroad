@@ -49,7 +49,7 @@ export async function IntakeCompanyProfile({action, documents, journey, locale, 
             <input inputMode="numeric" maxLength={40} name="legal_identifier" placeholder={t(profile?.identifierLast4 ? "identifierReplacementPlaceholder" : "identifierPlaceholder")} />
             {profile?.identifierLast4 ? <small>{t("identifierSaved", {last4: profile.identifierLast4})}</small> : null}
           </label>
-          <label><span>{t("website")}</span><input defaultValue={profile?.website ?? ""} maxLength={500} name="website" type="url" /></label>
+          <label><span>{t("website")}</span><input autoCapitalize="none" autoCorrect="off" defaultValue={profile?.website ?? ""} inputMode="url" maxLength={500} name="website" type="text" /></label>
         </div>
 
         <div className="intake-company__context">
