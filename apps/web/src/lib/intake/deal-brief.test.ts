@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {briefCompleteness, dealBriefFormSchema, dealBriefOf, parseAmount, toDealBrief} from "./deal-brief";
+import {briefCompleteness, canStartPreliminaryUnderstanding, dealBriefFormSchema, dealBriefOf, parseAmount, toDealBrief} from "./deal-brief";
 
 describe("parseAmount", () => {
   it("reads the ways a Brazilian actually types a number", () => {
@@ -160,5 +160,16 @@ describe("briefCompleteness", () => {
     const partial = briefCompleteness({requestedAmount: "1", instruments: []});
     expect(partial.answered).toBe(1);
     expect(partial.missing).toContain("instruments");
+  });
+});
+
+describe("canStartPreliminaryUnderstanding", () => {
+  it("accepts written context or uploaded material as equivalent ways to begin", () => {
+    expect(canStartPreliminaryUnderstanding({objective: "Expandir a fábrica."}, 0)).toBe(true);
+    expect(canStartPreliminaryUnderstanding({}, 2)).toBe(true);
+  });
+
+  it("refuses an empty submission so the system does not spend money analyzing nothing", () => {
+    expect(canStartPreliminaryUnderstanding({}, 0)).toBe(false);
   });
 });

@@ -196,15 +196,15 @@ export async function startProcessingRun(input: {
   ]);
   if (documentsError) return {ok: false, error: "processing"};
   if (sessionError || !session) return {ok: false, error: "session"};
-  if (!documents?.length) return {ok: false, error: "documents"};
+  const sourceDocuments = documents ?? [];
 
   // Reuse is only legal under the same pipeline contract. A ready immutable document with the
   // same version already has a verified layer and candidates; paying a provider to read it
   // again would change neither evidence nor answer. A pipeline-version change is an explicit
   // full rebuild and signs every document.
   const documentsToProcess = session.pipeline_version === PIPELINE_VERSION
-    ? documents.filter((document) => document.processing_status !== "ready")
-    : documents;
+    ? sourceDocuments.filter((document) => document.processing_status !== "ready")
+    : sourceDocuments;
 
   const signed = await signPipelineDocuments({
     supabase: input.supabase,

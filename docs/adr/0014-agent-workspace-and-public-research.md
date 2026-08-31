@@ -47,9 +47,12 @@ sistema imprevisível e sem trilha de auditoria.
    MCP é usado somente para fonte oficial ou interna com contrato e escopo explícitos.
 10. Achados públicos entram na análise como `external_context`. Divergências com dados enviados
     geram pergunta ou flag; nunca reescrevem silenciosamente a evidência da companhia.
-11. As etapas iniciais da experiência seguem sete marcos: empresa, operação, base inicial,
-    entendimento preliminar, esclarecimentos, pacote institucional e direcionamento ao mercado. A
-    interface revela somente a próxima ação útil e permite voltar a qualquer etapa já iniciada.
+11. A entrada segue uma ordem única: empresa; operação e documentos preliminares; pesquisa pública
+    e entendimento preliminar; confirmação corrigível; solicitação de informações sob medida;
+    análise e esclarecimentos; case e confirmação; estrutura; plano de produção; materiais e
+    mercado. A lista detalhada não aparece
+    antes da confirmação da leitura preliminar, e a interface permite voltar a qualquer etapa já
+    iniciada.
 12. Introdução a investidores exige autorização específica e permanece separada de preparação,
     screening e matching. A Offroad não representa decisão de crédito, diligência final ou
     comprometimento de capital.
@@ -94,13 +97,18 @@ contrato estreito, preview, confirmação, aplicação canônica e teste de não
 
 ## Primeira vertical da jornada guiada, 26/08/2026
 
-Os sete marcos são uma projeção de estados reais, não sete páginas cenográficas. Empresa, operação
-e informações são os três marcos de entrada. Entendimento, esclarecimentos, pacote e investidores
-só avançam quando a sessão, o processamento, a revisão, os artefatos e a autorização compatíveis
-existirem. A interface pode mostrar os próximos marcos bloqueados, mas não pode marcá-los como
-concluídos por estimativa.
+Os sete marcos são uma projeção de estados reais, não sete páginas cenográficas. Empresa e operação
+com documentos preliminares formam a entrada. A primeira execução combina somente essa evidência
+com pesquisa pública governada e produz uma leitura corrigível. Um job e uma capability próprios
+impedem essa execução de acessar pricing, lender graph, retrieval do playbook completo, Deal State,
+estruturação ou materiais. A confirmação P0 libera somente a lista de informações sob medida.
+Análise, esclarecimentos, confirmação do case, estrutura, plano de produção, materiais e mercado
+avançam apenas quando os objetos e autorizações compatíveis existirem. A interface pode mostrar
+marcos futuros bloqueados, mas nunca
+marcá-los como concluídos por estimativa.
 
 O início da jornada e o salvamento do marco da empresa são comandos transacionais. Identificação,
 contexto livre e material institucional são formas complementares de fornecer o mesmo contexto; o
-cliente não escolhe entre um fluxo de documentos e outro manual. O progresso começa em zero,
-permite retorno aos marcos iniciados e preserva histórico ao recomeçar uma tentativa.
+cliente não escolhe entre um fluxo de documentos e outro manual. Correções e novas versões
+invalidam a leitura exata a que se referem. O progresso começa em zero, permite retorno aos marcos
+iniciados e preserva histórico ao recomeçar uma tentativa.

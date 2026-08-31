@@ -3,7 +3,7 @@ import {z} from "zod";
 const locale = z.enum(["pt-BR", "en-US"]);
 const intakeJourney = z.enum(["company", "originator"]);
 const intakeSurface = z.enum(["onboarding", "workspace"]);
-const intakeStage = z.enum(["start", "company", "operation", "request", "documents", "review"]);
+const intakeStage = z.enum(["start", "company", "operation", "preliminary", "documents", "review"]);
 const intakeState = z.enum(["open", "processing", "failed", "review_ready"]);
 const evidenceBand = z.enum(["none", "single", "two_to_five", "six_plus"]);
 const requestBand = z.enum(["none", "one_to_two", "three_to_five"]);

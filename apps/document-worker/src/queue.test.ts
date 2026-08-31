@@ -12,7 +12,7 @@ const job: CaseAnalysisJob = {
   organization_id: "20000000-0000-4000-8000-000000000001",
   intake_session_id: "30000000-0000-4000-8000-000000000001",
   processing_run_id: "40000000-0000-4000-8000-000000000001",
-  payload: {execution_mode: "primary"},
+  payload: {execution_mode: "primary", analysis_scope: "full_case"},
 };
 
 describe("case input loading", () => {

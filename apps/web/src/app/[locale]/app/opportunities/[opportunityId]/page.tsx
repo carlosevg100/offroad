@@ -8,9 +8,11 @@ import {notFound} from "next/navigation";
 import {approveMatchShortlist, approveMaterialPackage, approveProductionPlan, authorizeIntroductionPlan, confirmUnderstanding, decideStructure} from "./actions";
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {DealStateSubmit} from "@/components/deal-state/deal-state-submit";
+import {IntakeCase} from "@/components/intake/intake-case";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadDealStateWorkbench, localizedText, type CompiledStructure, type DealStateRow, type DealStateWorkbench, type StructureAlternative} from "@/lib/deal-state/workbench";
 import {loadGovernedMaterialPackage, type GovernedMaterialPackage} from "@/lib/deal-state/materials";
+import {resolveCaseState, type CaseState} from "@/lib/intake/case-pipeline";
 import type {Database} from "@/types/database";
 
 type Props = {
@@ -46,9 +48,10 @@ export default async function OpportunityPage({params, searchParams}: Props) {
   ]);
   if (!opportunity || !session) notFound();
 
-  const [workbench, governedMaterials, {count: documentCount}, {data: plans}, {data: targets}, {data: recipients}] = await Promise.all([
+  const [workbench, governedMaterials, diagnosticCase, {count: documentCount}, {data: plans}, {data: targets}, {data: recipients}] = await Promise.all([
     loadDealStateWorkbench(supabase, organization.id, session.id),
     loadGovernedMaterialPackage(supabase, organization.id, session.id),
+    resolveCaseState({supabase, organizationId: organization.id, sessionId: session.id, locale: locale === "en-US" ? "en" : "pt"}),
     supabase.from("source_documents").select("id", {count: "exact", head: true})
       .eq("organization_id", organization.id).eq("opportunity_id", opportunityId),
     supabase.from("qualified_introduction_plans")
@@ -87,9 +90,9 @@ export default async function OpportunityPage({params, searchParams}: Props) {
       </header>
 
       <nav aria-label={t("progressLabel")} className="deal-stage-rail">
-        {["understand", "structure", "prepare", "match", "introduce"].map((stage, index) => {
-          const current = currentStage(workbench, governedMaterials);
-          const currentIndex = ["understand", "structure", "prepare", "match", "introduce"].indexOf(current);
+        {["understand", "diagnose", "structure", "prepare", "match", "introduce", "captureFeedback"].map((stage, index, stages) => {
+          const current = currentStage(workbench, governedMaterials, introductionPlan);
+          const currentIndex = stages.indexOf(current);
           return <div className={index < currentIndex ? "is-complete" : index === currentIndex ? "is-current" : ""} key={stage}><span>{String(index + 1).padStart(2, "0")}</span><strong>{t(`stages.${stage}`)}</strong></div>;
         })}
       </nav>
@@ -98,7 +101,7 @@ export default async function OpportunityPage({params, searchParams}: Props) {
 
       <div className="deal-workspace__layout">
         <section className="deal-decision-canvas">
-          {renderDecisionStage({locale, opportunityId, sessionId: session.id, workbench, governedMaterials, introductionPlan, introductionTargets, introductionRecipients, t, format})}
+          {renderDecisionStage({locale, opportunityId, sessionId: session.id, diagnosticCase, workbench, governedMaterials, introductionPlan, introductionTargets, introductionRecipients, t, format})}
         </section>
         <aside className="deal-control-panel">
           <span className="section-kicker">{t("controlKicker")}</span>
@@ -115,7 +118,9 @@ export default async function OpportunityPage({params, searchParams}: Props) {
   );
 }
 
-function currentStage(workbench: DealStateWorkbench, governedMaterials: GovernedMaterialPackage | null) {
+function currentStage(workbench: DealStateWorkbench, governedMaterials: GovernedMaterialPackage | null, introductionPlan: IntroductionPlan | null) {
+  if (introductionPlan?.status === "introduced") return "captureFeedback";
+  if (introductionPlan?.status === "authorized") return "introduce";
   if (workbench.packageReview?.status === "approved") return "match";
   if (
     governedMaterials
@@ -125,15 +130,16 @@ function currentStage(workbench: DealStateWorkbench, governedMaterials: Governed
     || workbench.structureDecision?.status === "approved"
   ) return "prepare";
   if (workbench.structure) return "structure";
-  return "understand";
+  return "diagnose";
 }
 
 function renderDecisionStage({
-  locale, opportunityId, sessionId, workbench, governedMaterials, introductionPlan, introductionTargets, introductionRecipients, t, format,
+  locale, opportunityId, sessionId, diagnosticCase, workbench, governedMaterials, introductionPlan, introductionTargets, introductionRecipients, t, format,
 }: {
   locale: string;
   opportunityId: string;
   sessionId: string;
+  diagnosticCase: CaseState;
   workbench: DealStateWorkbench;
   governedMaterials: GovernedMaterialPackage | null;
   introductionPlan: IntroductionPlan | null;
@@ -161,6 +167,11 @@ function renderDecisionStage({
           ))}
         </div>
         {understanding.value.readiness.blockers.length ? <section className="deal-open-points"><h3>{t("understanding.blockers")}</h3><ul>{understanding.value.readiness.blockers.map((blocker) => <li key={blocker.id}><AlertTriangle aria-hidden="true" size={14} />{localizedText(blocker.labels, locale)}</li>)}</ul></section> : null}
+        <div className="deal-case-dossier__toolbar">
+          <div><strong>{t("understanding.dossierTitle")}</strong><p>{t("understanding.dossierBody")}</p></div>
+          <a className="button button--ghost" href={`/${locale}/app/case/${sessionId}`} rel="noreferrer" target="_blank"><FileText aria-hidden="true" size={13} />{t("understanding.openDossier")}</a>
+        </div>
+        <IntakeCase caseState={diagnosticCase} locale={locale} sessionId={sessionId} view="diagnosis" />
         <form action={confirmUnderstanding} className="deal-primary-action">
           <input name="locale" type="hidden" value={locale} />
           <input name="opportunity_id" type="hidden" value={opportunityId} />
@@ -198,7 +209,7 @@ function renderDecisionStage({
     && decision?.status !== "confirmed"
     && decision?.status !== "approved"
   ) {
-    return <StructureReview format={format} locale={locale} opportunityId={opportunityId} structure={structure.value} t={t} />;
+    return <StructureReview caseState={diagnosticCase} format={format} locale={locale} opportunityId={opportunityId} sessionId={sessionId} structure={structure.value} t={t} />;
   }
 
   if (decision?.status === "declined") {
@@ -403,11 +414,13 @@ function ProcessingState({t}: {t: Awaited<ReturnType<typeof getTranslations>>}) 
 }
 
 function StructureReview({
-  structure, locale, opportunityId, t, format,
+  caseState, structure, locale, opportunityId, sessionId, t, format,
 }: {
+  caseState: CaseState;
   structure: CompiledStructure;
   locale: string;
   opportunityId: string;
+  sessionId: string;
   t: Awaited<ReturnType<typeof getTranslations>>;
   format: Awaited<ReturnType<typeof getFormatter>>;
 }) {
@@ -416,6 +429,11 @@ function StructureReview({
   return (
     <article className="deal-review structure-review">
       <header><span>{t("structure.kicker")}</span><h2>{t("structure.title")}</h2><p>{t("structure.body")}</p></header>
+      <div className="deal-case-dossier__toolbar">
+        <div><strong>{t("understanding.dossierTitle")}</strong><p>{t("understanding.dossierBody")}</p></div>
+        <a className="button button--ghost" href={`/${locale}/app/case/${sessionId}`} rel="noreferrer" target="_blank"><FileText aria-hidden="true" size={13} />{t("understanding.openDossier")}</a>
+      </div>
+      <IntakeCase caseState={caseState} locale={locale} sessionId={sessionId} view="diagnosis" />
       {structure.recommendation ? <section className="structure-recommendation"><span>{t("structure.recommended")}</span><strong>{structure.alternatives.find((alternative) => alternative.id === recommendedId)?.label ?? t("structure.direction")}</strong><p>{structure.recommendation.rationale}</p></section> : null}
       <form action={decideStructure}>
         <input name="locale" type="hidden" value={locale} />
@@ -452,8 +470,20 @@ function AlternativeCard({
       <header><div><span>{alternative.instrument}</span><h3>{alternative.label}</h3></div>{recommended ? <small>{t("structure.recommendedBadge")}</small> : null}</header>
       <p>{alternative.rationale}</p>
       <dl><div><dt>{t("structure.amount")}</dt><dd>{amount}</dd></div><div><dt>{t("structure.term")}</dt><dd>{t("structure.months", {count: alternative.termMonths})}</dd></div><div><dt>{t("structure.grace")}</dt><dd>{t("structure.months", {count: alternative.graceMonths})}</dd></div><div><dt>{t("structure.amortization")}</dt><dd>{t.has(`structure.amortizationTypes.${alternative.amortization}`) ? t(`structure.amortizationTypes.${alternative.amortization}`) : alternative.amortization}</dd></div><div><dt>{t("structure.price")}</dt><dd>{alternative.totalCost.totalRate ? `${alternative.totalCost.totalRate.min} a ${alternative.totalCost.totalRate.max}` : t("structure.pricePending")}</dd></div><div><dt>{t("structure.execution")}</dt><dd>{alternative.implementationDays ? t("structure.days", {min: alternative.implementationDays.min, max: alternative.implementationDays.max}) : t("structure.notEstimated")}</dd></div></dl>
+      <dl className="structure-alternative__economics">
+        <div><dt>{t("structure.indexer")}</dt><dd>{alternative.indexer}</dd></div>
+        <div><dt>{t("structure.totalSources")}</dt><dd>{format.number(Number(alternative.sourcesAndUses.totalSources), {style: "currency", currency: alternative.currency, maximumFractionDigits: 0})}</dd></div>
+        <div><dt>{t("structure.totalUses")}</dt><dd>{format.number(Number(alternative.sourcesAndUses.totalUses), {style: "currency", currency: alternative.currency, maximumFractionDigits: 0})}</dd></div>
+        <div><dt>{t("structure.sourcesUsesStatus")}</dt><dd>{t(`structure.sourcesUses.${alternative.sourcesAndUses.status}`)}</dd></div>
+      </dl>
       <div className="structure-alternative__details"><section><strong>{t("structure.advantages")}</strong><ul>{alternative.pros.map((item) => <li key={item}>{item}</li>)}</ul></section><section><strong>{t("structure.attention")}</strong><ul>{alternative.cons.map((item) => <li key={item}>{item}</li>)}</ul></section></div>
-      {alternative.security.length ? <p className="structure-security"><strong>{t("structure.security")}</strong> {alternative.security.map((item) => item.description).join("; ")}</p> : null}
+      <div className="structure-alternative__terms">
+        {alternative.security.length ? <section><strong>{t("structure.security")}</strong><ul>{alternative.security.map((item) => <li key={item.description}>{item.description}</li>)}</ul></section> : null}
+        {alternative.covenants.length ? <section><strong>{t("structure.covenants")}</strong><ul>{alternative.covenants.map((item) => <li key={item.description}>{item.description}</li>)}</ul></section> : null}
+        {alternative.conditionsPrecedent.length ? <section><strong>{t("structure.conditionsPrecedent")}</strong><ul>{alternative.conditionsPrecedent.map((item) => <li key={item.description}>{item.description}</li>)}</ul></section> : null}
+        {alternative.assumptions.length ? <section><strong>{t("structure.assumptions")}</strong><ul>{alternative.assumptions.map((item) => <li key={item}>{item}</li>)}</ul></section> : null}
+      </div>
+      {alternative.missingInputs.length || alternative.blockers.length ? <section className="structure-alternative__open"><strong>{t("structure.openDependencies")}</strong><ul>{[...alternative.blockers, ...alternative.missingInputs].map((item) => <li key={item}>{item}</li>)}</ul></section> : null}
       {!alternative.confirmationEligible ? <p className="structure-blocked"><AlertTriangle aria-hidden="true" size={13} />{t("structure.notConfirmable")}</p> : null}
     </label>
   );

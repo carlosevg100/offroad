@@ -1,11 +1,11 @@
-import {AlertTriangle, ArrowLeft, ArrowRight, ShieldCheck} from "lucide-react";
+import {AlertTriangle, ArrowLeft, ShieldCheck} from "lucide-react";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
 import type {IntakeDocumentSummary, IntakeSession} from "@/lib/intake/types";
 
 import type {IntakeChecklist as Checklist} from "@/lib/intake/checklist";
-import {briefCompleteness, type DealBrief} from "@/lib/intake/deal-brief";
+import {canStartPreliminaryUnderstanding, type DealBrief} from "@/lib/intake/deal-brief";
 import type {ArchetypeId} from "@offroad/credit-playbook";
 
 import {DocumentIntakeUploader} from "./document-intake-uploader";
@@ -18,8 +18,10 @@ import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
 import {IntakeCompanyProfile} from "./intake-company-profile";
 import {IntakeProcessingStatus} from "./intake-processing-status";
 import {IntakeActionSubmit} from "./intake-action-submit";
+import {IntakePreliminaryUnderstanding} from "./intake-preliminary-understanding";
+import type {PreliminaryUnderstandingState} from "@/lib/intake/preliminary-understanding";
 
-type GuidedStage = "company" | "operation" | "request" | "documents";
+type GuidedStage = "company" | "operation" | "preliminary" | "documents";
 
 type CompanyProfile = {
   name?: string;
@@ -49,6 +51,9 @@ type Props = {
   /** The six facts that decide who could buy the paper, and the action that saves them. */
   dealBrief?: DealBrief;
   dealBriefAction?: (formData: FormData) => Promise<void>;
+  /** Corrigible read produced after the company, operation and preliminary documents. */
+  preliminaryState?: PreliminaryUnderstandingState;
+  preliminaryAction?: (formData: FormData) => Promise<void>;
   /** Current screen in the guided workspace flow. Onboarding derives it from saved answers. */
   stage?: GuidedStage;
   /** The onboarding journey starts with the company, before asking what it wants to finance. */
@@ -57,7 +62,7 @@ type Props = {
   companyProfileAction?: (formData: FormData) => Promise<void>;
   /** Route used by the compact back action in the guided workspace flow. */
   backHref?: string;
-  /** Base route used to navigate between the three guided stages without mutating saved answers. */
+  /** Base route used to navigate between the four guided intake stages without mutating saved answers. */
   stageBaseHref?: string;
   resolveScopeSuggestionAction?: (formData: FormData) => Promise<void>;
   revokeAuthorizationAction?: (formData: FormData) => Promise<void>;
@@ -68,26 +73,29 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, stage, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
+export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, preliminaryState, preliminaryAction, stage, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
-  const answeredBrief = briefCompleteness(dealBrief ?? {}).answered;
+  const operationInputReady = canStartPreliminaryUnderstanding(dealBrief ?? {}, documents.length);
   const currentStage: GuidedStage = stage === "company" || !companyProfileComplete
     ? "company"
     : !checklist?.archetypeId
-    ? "operation"
-    : stage === "documents" && answeredBrief === 0
-      ? "request"
-      : stage ?? (answeredBrief === 0 ? "request" : "documents");
-  const milestoneNumber = currentStage === "company" ? 1 : currentStage === "documents" ? 3 : 2;
+      ? "operation"
+      : !operationInputReady
+        ? "operation"
+        : stage ?? (preliminaryState?.current?.row.status === "confirmed" ? "documents" : "preliminary");
+  const milestoneNumber = currentStage === "company" ? 1 : currentStage === "operation" ? 2 : currentStage === "preliminary" ? 3 : 4;
   const introKey = surface === "workspace"
-    ? currentStage === "company" ? "company" : currentStage === "operation" ? "workspaceOperation" : currentStage === "request" ? "workspaceRequest" : "workspaceDocuments"
+    ? currentStage === "company" ? "company" : currentStage === "operation" ? "workspaceOperation" : currentStage === "preliminary" ? "workspacePreliminary" : "workspaceDocuments"
     : currentStage;
+  const stageHref = (target: GuidedStage) => stageBaseHref
+    ? `${stageBaseHref}${stageBaseHref.includes("?") ? "&" : "?"}stage=${target}`
+    : undefined;
   const resolvedBackHref = backHref ?? (stageBaseHref && currentStage !== "operation"
     ? currentStage === "company"
       ? surface === "onboarding" ? `${stageBaseHref}?setup=project` : undefined
-      : `${stageBaseHref}?stage=${currentStage === "documents" ? "request" : currentStage === "request" ? "operation" : "company"}`
+      : stageHref(currentStage === "documents" ? "preliminary" : currentStage === "preliminary" ? "operation" : "company")
     : stageBaseHref && surface === "onboarding" && currentStage === "operation"
       ? `${stageBaseHref}?stage=company`
     : undefined);
@@ -141,7 +149,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
           <strong><AlertTriangle aria-hidden="true" size={14} /> {t("collect.failedTitle")}</strong> {t("collect.failedBody")}
         </div>
       ) : null}
-      {processing ? (
+      {processing && currentStage !== "preliminary" ? (
         <IntakeProcessingStatus
           body={t("collect.processingBody")}
           locale={locale}
@@ -151,7 +159,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {!processing && currentStage !== "company" ? <IntakeGovernance
+      {!processing && currentStage === "documents" ? <IntakeGovernance
         locale={locale}
         resolveScopeSuggestion={resolveScopeSuggestionAction}
         revokeAuthorization={revokeAuthorizationAction}
@@ -172,10 +180,10 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {!processing && currentStage === "operation" && setOperationAction ? (
+      {!processing && currentStage === "operation" && setOperationAction && !checklist?.archetypeId ? (
         <IntakeOperation
           locale={locale}
-          selected={(checklist?.archetypeId ?? null) as ArchetypeId | null}
+          selected={null}
           action={setOperationAction}
           sessionId={session.id}
           journey={session.journey === "originator" ? "originator" : "company"}
@@ -186,8 +194,35 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         />
       ) : null}
 
-      {!processing && currentStage === "request" && dealBriefAction && checklist?.archetypeId ? (
+      {!processing && currentStage === "operation" && dealBriefAction && checklist?.archetypeId ? (
         <div className="intake-operation-context">
+          {preliminaryState?.current?.row.status === "changes_requested" && preliminaryState.current.row.correction ? (
+            <aside className="intake-operation-context__correction" role="status">
+              <strong>{t("guided.correctionTitle")}</strong>
+              <p>{preliminaryState.current.row.correction}</p>
+              <small>{t("guided.correctionBody")}</small>
+            </aside>
+          ) : null}
+          {setOperationAction ? (
+            <details className="intake-operation-context__type">
+              <summary>
+                <span>{t("operation.selected")}</span>
+                <strong>{t(`operation.${checklist.archetypeId}`)}</strong>
+                <em>{t("operation.change")}</em>
+              </summary>
+              <IntakeOperation
+                locale={locale}
+                selected={checklist.archetypeId as ArchetypeId}
+                action={setOperationAction}
+                sessionId={session.id}
+                journey={session.journey === "originator" ? "originator" : "company"}
+                initialClientName={borrowerRecord && typeof borrowerRecord.legalName === "string" ? borrowerRecord.legalName : undefined}
+                initialAuthorityKind={authorization && typeof authorization.authorityKind === "string" ? authorization.authorityKind : undefined}
+                initialAuthorityReference={authorization && typeof authorization.declarationReference === "string" ? authorization.declarationReference : undefined}
+                authorityAlreadyDeclared={authorization?.status === "declared"}
+              />
+            </details>
+          ) : null}
           <IntakeDealBrief action={dealBriefAction} brief={dealBrief ?? {}} locale={locale} sessionId={session.id} />
           <section className="intake-operation-materials">
             <header>
@@ -223,6 +258,18 @@ export async function IntakeCollect({locale, session, documents, organizationId,
             <IntakeActionSubmit form="intake-operation-brief" idle={t("brief.save")} pending={t("brief.savePending")} />
           </div>
         </div>
+      ) : null}
+
+      {currentStage === "preliminary" && preliminaryAction && preliminaryState ? (
+        <IntakePreliminaryUnderstanding
+          action={preliminaryAction}
+          continueHref={stageHref("documents")}
+          editHref={stageHref("operation")}
+          locale={locale}
+          retryAction={processAction}
+          sessionId={session.id}
+          state={preliminaryState}
+        />
       ) : null}
 
       {!processing && currentStage === "documents" ? (
@@ -275,9 +322,10 @@ export async function IntakeCollect({locale, session, documents, organizationId,
         {!processing ? <form action={processAction}>
           <input name="locale" type="hidden" value={locale} />
           <input name="session_id" type="hidden" value={session.id} />
-          <button className="button" disabled={!documents.length} type="submit">
-            {failed ? t("collect.retry") : t("collect.analyze")}<ArrowRight size={15} />
-          </button>
+          <IntakeActionSubmit
+            idle={failed ? t("collect.retry") : t("collect.analyze")}
+            pending={t("collect.analyzePending")}
+          />
         </form> : null}
       </div> : null}
 

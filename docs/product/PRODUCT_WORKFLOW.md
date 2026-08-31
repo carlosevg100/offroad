@@ -107,15 +107,19 @@ Fatos materiais mantêm fonte, localização, período, classe de informação,
 confiança e estado de revisão. O sistema mostra quando não consegue provar uma
 afirmação.
 
-## 4. Os quatro gates
+## 4. O gate de orientação e os quatro gates de execução
 
-Os gates são decisões explícitas. Percentuais de progresso não os substituem.
+Os gates são decisões explícitas. Percentuais de progresso não os substituem. O
+primeiro gate é deliberadamente estreito: confirma apenas que a Offroad entendeu
+quem é a companhia e o que ela pretende realizar. Ele não é diagnóstico, crédito,
+estruturação ou aprovação de qualquer operação.
 
 | Gate | Pergunta que precisa ser respondida | O que autoriza |
 |---|---|---|
-| G1 | Há informação suficiente para entender a companhia, a necessidade e a operação pretendida? | Consolidar o entendimento preliminar e abrir os esclarecimentos materiais |
-| G2 | Há informação suficiente para propor alternativas de estrutura defensáveis? | Preparar e discutir alternativas com a companhia |
-| G3 | A estrutura foi confirmada e há informação suficiente para produzir cada material previsto? | Produzir o pacote institucional aprovado |
+| P0 | A leitura preliminar representa corretamente a companhia, seu contexto e o objetivo da operação? | Compilar e apresentar a solicitação de informações específica do caso |
+| G1 | A base foi recebida, conciliada e compreendida em profundidade suficiente para compilar o case? | Compilar o case diagnóstico completo para discussão com a companhia |
+| G2 | O case representa corretamente a companhia, a necessidade de capital, os números, as premissas e os pontos materiais conhecidos? | Comparar alternativas e propor uma estrutura-alvo indicativa |
+| G3 | A estrutura-alvo e o plano de produção foram confirmados, com as dependências de cada artefato atendidas? | Produzir o pacote institucional dedicado |
 | G4 | Os materiais, a versão, a identidade e os destinatários foram aprovados? | Realizar introduções qualificadas e rastreadas |
 
 Quando um gate não é atendido, o produto deve mostrar o bloqueio, sua razão e a
@@ -156,109 +160,173 @@ Projeto criado, privado e identificado.
 
 O usuário pode iniciar o intake. Nenhuma distribuição foi autorizada.
 
-### Etapa 1: intake guiado
+### Etapa 1: companhia
 
 **Objetivo**
 
-Entender, em linguagem simples, quem é a companhia, o que pretende realizar, por
-que precisa de capital e quais informações já existem.
+Entender, em linguagem simples, quem é a companhia antes de perguntar sobre a
+operação.
 
 **Experiência do usuário**
 
-O produto conduz uma conversa progressiva, sem exigir conhecimento de produtos
-financeiros. Primeiro pergunta o essencial. Depois adapta as perguntas e a lista
-de informações ao objetivo informado.
-
-As informações são apresentadas em três horizontes:
-
-1. **Essencial para começar:** permite entender a companhia e o pedido.
-2. **Importante para estruturar:** permite calcular, comparar e defender as
-   alternativas.
-3. **Ideal para o mercado:** reduz perguntas futuras e melhora a qualidade dos
-   materiais e da análise do financiador.
+- informar nome, razão social, site, setor e descrição livre do negócio;
+- enviar, se já existir, uma apresentação institucional ou ficha cadastral; e
+- avançar sem precisar conhecer produtos financeiros ou organizar os documentos.
 
 **Trabalho do sistema**
 
-- identificar o arquétipo inicial da operação;
-- compilar a lista adequada do playbook;
-- explicar cada pedido com o contrato de solicitação da seção 3.3; e
-- registrar o que foi respondido, adiado, substituído ou declarado indisponível.
+- preservar os arquivos iniciais e sua procedência;
+- registrar separadamente o que foi declarado pelo usuário; e
+- não pesquisar, diagnosticar ou solicitar a base completa antes da operação.
 
 **Saída visível**
 
-Objetivo preliminar, contexto inicial e plano de informações personalizado.
+Perfil inicial da companhia e inventário dos documentos institucionais enviados.
 
 **Regra de saída**
 
-O sistema sabe o suficiente para receber e classificar a primeira base de
-informações. Isso não significa que G1 foi atendido.
+Há identidade mínima da companhia para contextualizar a operação. Nenhum gate
+analítico foi atendido.
 
-### Etapa 2: recebimento e organização da base
+### Etapa 2: operação e documentos preliminares
 
 **Objetivo**
 
-Receber o que já existe sem impor trabalho prévio de organização ao usuário.
+Entender o que a companhia pretende realizar, por que precisa do recurso e o
+volume que imagina, recebendo também o que já existir sobre a companhia e o
+projeto sem impor organização prévia.
 
 **Experiência do usuário**
 
-- drag and drop de PDF, planilha, documento, imagem ou arquivo compactado;
-- orientação contextual sobre o que cada arquivo pode ajudar a responder;
-- indicação de cobertura, sem linguagem punitiva; e
-- liberdade para complementar aos poucos.
+- descrever o objetivo e a destinação dos recursos com suas palavras, **ou** fazer
+  drag and drop dos materiais que já explicam a operação;
+- informar montante, moeda, urgência e prazo apenas quando souber e isso ainda não
+  estiver nos arquivos;
+- explicar por que o projeto importa quando essa informação não estiver nos
+  materiais; e
+- enviar orçamento, business plan, cronograma, contrato, apresentação ou qualquer
+  material preliminar no formato em que estiver, sem repetir seu conteúdo no formulário.
 
 **Trabalho do sistema**
 
-- preservar cada original e seu hash;
-- classificar tipo, entidade, período e finalidade;
-- extrair conteúdo e tabelas com procedência;
-- organizar uma visão lógica do data room sem alterar os originais;
-- detectar duplicidades e versões; e
-- atualizar apenas as dependências afetadas.
+- identificar o arquétipo inicial sem obrigar o usuário a escolher um
+  instrumento;
+- preservar cada original, hash, versão e vínculo com o projeto;
+- classificar e extrair apenas o necessário para a leitura preliminar; e
+- separar declaração do usuário, fato documental e ponto ainda não comprovado;
+- tratar texto e documento como entradas substitutas nesta etapa: se objetivo,
+  montante, moeda, prazo, setor ou geografia estiverem ancorados nos arquivos, a
+  leitura preliminar os apresenta sem exigir redigitação.
 
 **Saída visível**
 
-Inventário dos materiais recebidos, cobertura inicial e estado de processamento.
+Declaração e/ou documentos preliminares, com base mínima para a primeira leitura
+da Offroad.
 
 **Regra de saída**
 
-Os materiais relevantes foram processados ou têm falha explícita e acionável.
+Depois da companhia e do arquétipo inicial, ao menos uma informação escrita ou um
+documento é suficiente para iniciar a leitura. Ausências não bloqueiam esta etapa:
+voltam como pontos abertos no entendimento preliminar. A lista documental completa
+ainda não é exibida.
 
-### Etapa 3: entendimento profundo
+### Etapa 3: entendimento preliminar e confirmação
 
 **Objetivo**
 
-Formar uma visão integrada da companhia e da operação antes de propor qualquer
-estrutura.
+Demonstrar que a Offroad absorveu o que foi enviado e pesquisou o contexto
+público relevante antes de pedir a base detalhada.
 
 **Trabalho do sistema**
 
-- compreender modelo de negócio, setor, posicionamento e diferenciais;
-- mapear entidades, acionistas, partes relacionadas e governança;
-- reconstruir históricos financeiros, capital de giro, geração de caixa e
-  endividamento;
-- entender o projeto, sources and uses, cronograma e impacto esperado;
-- avaliar projeções, premissas e sensibilidades;
-- pesquisar fontes públicas permitidas sobre companhia, setor e mercado;
-- separar fatos privados, fatos públicos, cálculos e hipóteses; e
-- preparar um modelo analítico preliminar interno.
+- ler e classificar os documentos preliminares;
+- extrair fatos com âncora verificável;
+- executar pesquisa pública governada sobre identidade, setor, posicionamento,
+  fatos recentes e contexto regulatório aplicável;
+- manter fontes públicas separadas dos fatos da companhia;
+- produzir, em uma chamada estreita, uma síntese corrigível da companhia, do
+  setor e do objetivo pretendido; e
+- indicar dúvidas de escopo sem avaliar capacidade de pagamento ou recomendar
+  instrumento, preço, prazo, garantia, covenant ou financiador.
 
-Esta etapa não produz teaser, credit memo, term sheet ou modelo financeiro final.
+Esta execução é um DAG estreito e isolado. Ela não carrega lender graph, pricing,
+playbook completo, estruturação, materiais ou distribuição e não dispara o DAG
+de análise profunda.
 
 **Saída visível**
 
-Uma síntese preliminar do que a Offroad entendeu, organizada por companhia,
-operação, números, dívida, projeto e contexto de mercado.
+Uma leitura curta e editável: quem é a companhia, como se posiciona, o que quer
+realizar, com qual objetivo e quais pontos ainda precisam de confirmação, sempre
+com fontes públicas visíveis quando utilizadas.
 
 **Regra de saída**
 
-O sistema consegue avaliar G1 e explicar o que ainda impede seu atendimento.
+O usuário confirma ou corrige a leitura. Apenas a confirmação do fingerprint
+exato atende P0 e libera a etapa 4. Uma correção invalida a versão anterior e
+retorna aos dados da companhia/operação.
 
-### Etapa 4: cross-check e findings
+### Etapa 4: solicitação sob medida e cobertura
 
 **Objetivo**
 
-Transformar o entendimento preliminar em uma base factual que o usuário possa
-confirmar, corrigir ou complementar.
+Pedir somente as informações necessárias para analisar e estruturar aquela
+companhia, aquele objetivo e aquele arquétipo de operação.
+
+As solicitações são apresentadas em três horizontes:
+
+1. **Essencial para analisar:** permite testar capacidade, dimensão e impeditivos.
+2. **Importante para estruturar:** permite calcular e comparar alternativas.
+3. **Ideal para o mercado:** reduz retrabalho e antecipa a leitura do financiador.
+
+Cada item mostra o que é necessário, por que importa, qual decisão depende dele,
+formatos aceitos, substitutos possíveis e consequência da ausência. O usuário
+pode enviar arquivo, responder em texto, adiar ou declarar indisponibilidade.
+
+**Trabalho do sistema**
+
+- compilar a lista a partir do playbook, arquétipo, entidades, evidência já
+  recebida e entendimento confirmado;
+- reaproveitar tudo que os documentos preliminares já atenderam;
+- mostrar cobertura por requisito, não apenas quantidade de arquivos;
+- verificar formato, legibilidade, entidade, período e aderência de cada arquivo;
+- apontar explicitamente o que foi atendido, parcialmente atendido, divergente,
+  ausente ou não aplicável; e
+- manter lote ativo curto, sem esconder o backlog justificado.
+
+**Saída visível**
+
+Lista documental personalizada, cobertura por requisito e próxima melhor ação.
+
+**Regra de saída**
+
+A base mínima para análise profunda foi recebida, ou as ausências e limitações
+foram registradas de forma explícita.
+
+### Etapa 5: análise profunda, conciliação e findings
+
+**Objetivo**
+
+Transformar documentos e respostas em uma visão técnica e integrada da companhia
+e da operação, antes de propor qualquer estrutura.
+
+**Trabalho do sistema**
+
+- compreender modelo de negócio, setor, posicionamento, clientes, fornecedores,
+  governança, grupo econômico e partes relacionadas;
+- fazer spreading dos históricos e reconstruir demonstrações, capital de giro,
+  geração de caixa, endividamento e serviço da dívida;
+- conciliar documentos, períodos, entidades, saldos e definições;
+- avaliar qualidade dos números, ajustes de EBITDA, conversão de caixa, dívida
+  financeira e exposições escondidas;
+- entender sources and uses, cronograma, necessidade calculada e business plan;
+- testar capacidade histórica e projetada, cenários e sensibilidades;
+- aplicar a vertical relevante: por exemplo, em recebíveis, elegibilidade,
+  concentração, aging, diluição, inadimplência, prazo, performance dos sacados,
+  overcollateral, conta vinculada e mecânica de cessão;
+- avaliar volume, prazo, amortização, garantia, covenants e compatibilidade da
+  operação pretendida sem confundir diagnóstico com underwriting; e
+- registrar cada afirmação material como confirmada, declarada, calculada,
+  hipótese, divergente, ausente ou não aplicável.
 
 Cada afirmação deve ser classificada como:
 
@@ -289,7 +357,7 @@ Registro de findings, evidências, impactos e perguntas pendentes.
 
 G1 atendido, ou um lote priorizado de esclarecimentos aberto.
 
-### Etapa 5: loop de esclarecimentos
+### Etapa 6: loop de esclarecimentos
 
 **Objetivo**
 
@@ -313,17 +381,71 @@ Resolver apenas as lacunas que mudam uma decisão, sem burocratizar a interaçã
 **Trabalho do sistema**
 
 Cada resposta atualiza apenas os facts, findings, cálculos, gates e dependências
-afetados. O ciclo volta às etapas 2, 3 ou 4 conforme necessário.
+afetados. O ciclo volta às etapas 4 ou 5 conforme necessário. Se a resposta
+corrigir a identidade da companhia ou o objetivo da operação, P0 também é
+invalidado e o fluxo retorna à etapa 3.
 
 **Regra de saída**
 
-G2 atendido. O critério é suficiência para estruturar, não documentação perfeita.
+G1 atendido e base suficiente para avaliar G2. O critério é suficiência para a
+próxima decisão, não documentação perfeita.
 
-### Etapa 6: alternativas de estrutura e confirmação
+### Etapa 7: case completo e confirmação
 
 **Objetivo**
 
-Propor alternativas viáveis e comparáveis para a necessidade de capital.
+Apresentar um case técnico completo e discutível antes de propor a estrutura.
+
+**Case visível antes da produção**
+
+O produto compila o mesmo Deal State em uma leitura contínua, inicialmente em
+Markdown/HTML editável, incluindo no mínimo:
+
+- companhia, modelo de negócio, setor, posicionamento e fatos recentes;
+- contexto atual e razão econômica da necessidade de capital;
+- históricos financeiros reconciliados, qualidade dos números e ajustes;
+- dívida atual, capital de giro, geração de caixa e capacidade de pagamento;
+- projeto, sources and uses e necessidade calculada;
+- business plan, premissas, cenários e impacto projetado da nova dívida;
+- garantias ou ativos elegíveis, mecânica e cobertura, quando aplicável;
+- riscos, mitigantes, divergências, hipóteses e pontos ainda abertos; e
+- trilha de evidência para cada afirmação material.
+
+Esse case é o objeto de trabalho da discussão. Ele não é teaser nem credit memo
+final, não contém texto genérico reaproveitado de outra companhia e não presume
+que uma estrutura já foi aceita.
+
+**Experiência do usuário**
+
+Ler o case, questionar fatos, premissas, cálculos e interpretações, responder ao
+que ainda estiver aberto e confirmar que o retrato representa corretamente a
+companhia e a necessidade de capital.
+
+Uma solicitação de ajuste é registrada como orientação da companhia e produz
+uma nova versão do case. Ela indica o que deve ser revisto, mas não substitui
+evidência documental, não resolve divergência sozinha e não sobrescreve cálculo
+conciliado sem suporte.
+
+**Saída visível**
+
+Case diagnóstico completo, versionado e confirmado pelo fingerprint exato.
+
+**Retorno obrigatório**
+
+Uma correção material invalida somente os facts, cálculos, findings e seções
+dependentes e retorna às etapas 5 ou 6. Nenhuma estrutura, material ou shortlist
+é produzido a partir de um case ainda não confirmado.
+
+**Regra de saída**
+
+G2 atendido. Somente então o DAG de estruturação pode iniciar.
+
+### Etapa 8: alternativas de estrutura e confirmação
+
+**Objetivo**
+
+Comparar alternativas viáveis e chegar, com a companhia, a uma estrutura-alvo
+indicativa defensável e adequada ao case confirmado.
 
 Cada alternativa deve tratar, quando aplicável:
 
@@ -339,6 +461,13 @@ Cada alternativa deve tratar, quando aplicável:
 - tipos de financiador aderentes; e
 - informações adicionais necessárias.
 
+A recomendação deve comparar explicitamente as alternativas e apresentar uma
+estrutura-alvo equivalente a um term sheet indicativo na interface: devedor,
+instrumento, finalidade, montante, moeda, prazo, carência, amortização, indexador,
+pricing ou banda quando suportada, garantias e sua mecânica, covenants e
+definições, condições precedentes, eventos relevantes e riscos. Ainda não é o
+documento Word final nem uma proposta do financiador.
+
 **Trabalho de mercado nesta etapa**
 
 O sistema pode realizar um screening anônimo e preliminar de mandatos para testar
@@ -347,23 +476,25 @@ companhia.
 
 **Experiência do usuário**
 
-Comparar as alternativas, compreender trade-offs, pedir ajustes e confirmar a
-direção escolhida.
+Comparar as alternativas, compreender trade-offs, questionar premissas e
+cálculos, pedir ajustes e confirmar a direção escolhida.
 
 **Saída visível**
 
-Alternativas fundamentadas e uma base de estrutura aprovada para produção.
+Alternativas fundamentadas e estrutura-alvo aprovada para o planejamento da
+produção.
 
 **Retorno obrigatório**
 
 Se uma alternativa depender de informações ainda não disponíveis, o produto
-retorna à etapa 5 com solicitações específicas.
+retorna à etapa 6 com solicitações específicas. A correção do case invalida a
+estrutura que dele dependia.
 
 **Regra de saída**
 
-Estrutura confirmada e G3 atendido.
+Estrutura confirmada pelo fingerprint exato. Isso ainda não produz material.
 
-### Etapa 7: plano de produção específico do caso
+### Etapa 9: plano de produção específico do caso
 
 **Objetivo**
 
@@ -386,10 +517,10 @@ Plano de trabalho versionado e dedicado ao caso.
 
 **Regra de saída**
 
-O plano é compatível com a estrutura confirmada e não contém dependência
-material oculta.
+O plano é compatível com a estrutura confirmada, não contém dependência material
+oculta e é aprovado explicitamente. Com essa aprovação, G3 é atendido.
 
-### Etapa 8: produção institucional
+### Etapa 10: produção institucional
 
 **Objetivo**
 
@@ -397,11 +528,12 @@ Produzir entregáveis reais, dedicados e coerentes entre si.
 
 O pacote pode incluir:
 
-- modelo financeiro auditável, com históricos, projeções, dívida, operação e
-  sensibilidades;
+- modelo financeiro editável em Excel, com históricos, projeções, dívida,
+  operação, sources and uses, cenários e sensibilidades;
 - teaser dedicado à companhia e à operação;
 - credit memo com tese, análise, estrutura, riscos e mitigantes;
-- term sheet indicativo com definições consistentes; e
+- term sheet indicativo editável em Word, no padrão institucional aplicável ao
+  instrumento e com definições consistentes; e
 - data room organizado, com índice, versões e lacunas explícitas.
 
 **Requisitos mínimos**
@@ -420,7 +552,7 @@ Primeiras versões completas dos artefatos previstos no plano de produção.
 
 Todos os artefatos previstos estão prontos para QA e revisão da companhia.
 
-### Etapa 9: QA e aprovação da companhia
+### Etapa 11: QA e aprovação da companhia
 
 **Objetivo**
 
@@ -447,7 +579,7 @@ Pacote aprovado, versionado e congelado para matching.
 
 O pacote foi aprovado explicitamente. Isso ainda não autoriza contato.
 
-### Etapa 10: matching em duas fases
+### Etapa 12: matching em duas fases
 
 **Fase A: screening preliminar anônimo**
 
@@ -478,7 +610,7 @@ Revisar a shortlist e aprovar individualmente os destinatários e os materiais.
 
 G4 atendido.
 
-### Etapa 11: introdução qualificada
+### Etapa 13: introdução qualificada
 
 **Objetivo**
 
@@ -537,10 +669,16 @@ facilitar a navegação, mas não pode eliminar decisões ou alterar sua ordem.
 
 ```text
 private_workspace_ready
-guided_intake_in_progress
-initial_information_received
-understanding_in_progress
+company_profile_in_progress
+operation_declaration_in_progress
+preliminary_documents_received
+preliminary_understanding_in_progress
+preliminary_confirmation_required
+tailored_information_requested
+information_collection_in_progress
+deep_analysis_in_progress
 clarification_required
+case_review_required
 structuring_ready
 structuring_in_progress
 structure_confirmation_required
@@ -558,7 +696,10 @@ feedback_capture_in_progress
 
 Retornos permitidos são explícitos:
 
-- novo documento retorna às dependências afetadas das etapas 2 a 5;
+- mudança na companhia, no objetivo ou nos documentos preliminares antes de P0
+  invalida a leitura preliminar e produz uma nova versão;
+- novo documento solicitado depois de P0 retorna apenas às dependências afetadas
+  das etapas 4 a 6;
 - nova informação material pode reabrir a estruturação;
 - mudança de estrutura reabre o plano de produção;
 - mudança factual reabre apenas os materiais dependentes;
@@ -571,7 +712,8 @@ Retornos permitidos são explícitos:
 Para reduzir complexidade visual, a interface pode apresentar os seguintes
 marcos, sem modificar os estados internos:
 
-1. **Understand:** ambiente privado, intake, recebimento e entendimento profundo;
+1. **Understand:** ambiente privado, companhia, operação, documentos preliminares,
+   pesquisa pública, confirmação P0 e solicitação sob medida;
 2. **Diagnose:** conciliação, análise diagnóstica, findings e esclarecimentos;
 3. **Structure:** alternativas, estrutura-alvo e confirmação;
 4. **Prepare:** plano, materiais, QA e aprovação;
@@ -625,18 +767,25 @@ O fluxo só pode ser declarado pronto para teste oficial quando um usuário novo
 conseguir:
 
 1. criar um projeto privado e registrar o aceite;
-2. explicar a companhia e a necessidade;
-3. receber uma lista de informações adaptada;
-4. enviar documentos em etapas;
-5. ver o entendimento e os findings com procedência;
-6. resolver esclarecimentos sem recomeçar o caso;
-7. comparar e aprovar uma alternativa de estrutura;
-8. aprovar um plano de produção específico;
-9. receber modelo, teaser, memo, term sheet e índice de data room reais;
-10. comentar e aprovar o pacote;
-11. revisar uma shortlist explicada e autorizar destinatários; e
-12. registrar uma introdução qualificada com a versão correta; e
-13. capturar feedback posterior sem criar tarefas de underwriting, diligência,
+2. explicar a companhia;
+3. explicar a operação e enviar os documentos preliminares que já possui;
+4. ver a pesquisa pública e a leitura preliminar, corrigindo-a ou confirmando-a;
+5. somente então receber uma lista de informações adaptada, com o motivo de cada
+   item;
+6. enviar documentos em etapas e ver cobertura por requisito;
+7. ver análise profunda, conciliações, cálculos, divergências e findings com
+   procedência;
+8. resolver esclarecimentos sem recomeçar o caso;
+9. ler e discutir o case técnico completo, o business plan analítico e as
+   alternativas de estrutura;
+10. aprovar o case e uma estrutura-alvo indicativa;
+11. aprovar um plano de produção específico;
+12. receber modelo Excel, teaser, memo, term sheet Word e índice de data room
+   reais e dedicados;
+13. comentar e aprovar o pacote;
+14. revisar uma shortlist explicada e autorizar destinatários; e
+15. registrar uma introdução qualificada com a versão correta; e
+16. capturar feedback posterior sem criar tarefas de underwriting, diligência,
     negociação, documentação ou funding para a Offroad.
 
 Se qualquer item depender de operação manual oculta, fixture, stub ou dado

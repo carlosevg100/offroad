@@ -465,6 +465,21 @@ describe("the case brief", () => {
     expect(payload).toContain("68000000");
   });
 
+  it("keeps a company case-review instruction visible but outside the evidence set", () => {
+    const payload = buildBriefInput({
+      archetypeId: "growth_expansion",
+      facts,
+      calculations,
+      exceptions: [],
+      gaps: [],
+      locale: "pt",
+      reviewInstructions: ["O cronograma correto está no contrato mais recente."],
+    });
+    expect(payload).toContain("contexto a testar, não evidência");
+    expect(payload).toContain("O cronograma correto está no contrato mais recente.");
+    expect(payload.indexOf("contexto a testar, não evidência")).toBeLessThan(payload.indexOf("Fatos conciliados"));
+  });
+
   it("forbids computing, in the instructions the model actually receives", () => {
     expect(BRIEF_SYSTEM).toContain("You never produce a number");
     expect(BRIEF_SYSTEM).toContain("qualified introduction");

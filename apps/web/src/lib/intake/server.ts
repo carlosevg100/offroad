@@ -233,7 +233,6 @@ export async function setIntakeArchetype(
     logIntakeFailure("set_archetype", error);
     return fail(intakeErrorFrom(error, "save"));
   }
-  await refreshIntakeRequests(runtime);
   return ok(null);
 }
 
@@ -433,7 +432,6 @@ async function markSessionFailed(runtime: IntakeRuntime, reason: string) {
 export async function processIntakeSession(runtime: IntakeRuntime): Promise<IntakeOutcome> {
   const {supabase, organizationId, sessionId} = runtime;
   const {data: documents} = await supabase.from("source_documents").select("id, original_name, sha256").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("created_at");
-  if (!documents?.length) return fail("documents");
 
   const [{data: organization}, {data: rollout}] = await Promise.all([
     supabase.from("organizations").select("pipeline_enabled").eq("id", organizationId).maybeSingle(),
@@ -454,6 +452,11 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     // here is the point — the fixture path must not also write a generation of candidates.
     return ok(null);
   }
+
+  // Production can produce the preliminary company/operation understanding from the user's
+  // declaration plus public research even when no file exists yet. The local deterministic
+  // fixture has no such worker and therefore still requires at least one known document.
+  if (!documents?.length) return fail("documents");
 
   // The local fixture has no worker gate, so it keeps the server-side verification path.
   const verification = await verifyIntakeDocuments(runtime);

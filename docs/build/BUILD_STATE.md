@@ -1,8 +1,52 @@
 # Build State
 
-Atualizado em: 2026-08-29
+Atualizado em: 2026-08-31
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Entendimento preliminar isolado e ordem canônica da entrada, 31/08/2026
+
+A entrada foi corrigida para uma única sequência: companhia; operação e documentos preliminares;
+pesquisa pública e entendimento preliminar; confirmação P0; solicitação sob medida; análise
+profunda e esclarecimentos; case e sua confirmação; estrutura; plano de produção; materiais e
+mercado. O antigo salto direto da
+operação para uma tela genérica de informações deixou de ser a sequência válida no workspace.
+
+Na etapa da operação, texto e documentos agora são portas equivalentes. Um usuário pode deixar
+todos os campos manuais vazios quando já enviou material: o gate considera os arquivos, o worker
+extrai objetivo, montante, moeda, prazo, setor e geografia quando houver evidência ancorada, e o
+que continuar sem suporte aparece como ponto aberto para confirmação. Uma submissão sem texto e
+sem documento permanece bloqueada para não gastar processamento analisando um caso vazio.
+
+`preliminary_understandings` preserva versões, fingerprint do input, fingerprint do objeto,
+decisão, correção, autor e horário. A leitura usa um job `preliminary_analysis` e uma capability
+própria. Ela pode carregar somente declaração da companhia/operação, documentos preliminares e
+extrações ancoradas. As RPCs de case completo exigem `case_analysis` e rejeitam essa capability,
+impedindo acesso a pricing, lender graph, Deal State, estrutura, materiais ou distribuição. Cinco
+pesquisas públicas independentes podem rodar em paralelo e são mantidas como contexto externo com
+URL; uma única chamada estreita compila a leitura corrigível.
+
+A confirmação P0 não confirma o case e não cria oportunidade. Ela apenas compila a lista
+documental sob medida e devolve a sessão à coleta. Um run posterior, depois dos documentos
+solicitados, pode abrir o DAG de análise completa. Alteração na companhia, objetivo ou documentos
+preliminares antes da confirmação supersede a leitura antiga; uploads posteriores pertencem ao
+loop de análise profunda e não reescrevem P0.
+
+O case diagnóstico agora é compilado antes da estrutura e recebe um aceite próprio. Esse aceite
+é uma countersignature do snapshot publicado pelo worker, no mesmo commit transacional que cria a
+oportunidade; o tenant não pode inventar ou modificar o payload aprovado. Somente depois desse
+gate o DAG de estruturação roda. A confirmação da estrutura ainda não produz artefatos: teaser,
+modelo financeiro, term sheet e índice de data room exigem também um plano de produção aprovado.
+
+Typechecks, lint e builds de web e worker passaram; as suítes completas desses dois pacotes
+passaram com 155 testes web e 65 testes do worker, incluindo o caminho sem texto e com extração
+documental de objetivo e montante. O gate integral sem cache aprovou 168/168 tarefas em 42
+pacotes. Nenhuma API paga foi chamada.
+
+A migration foi aplicada no branch Supabase de staging e o teste adversarial integral de RLS foi
+aprovado. O advisor de segurança retornou zero alertas; os dois avisos de foreign key sem índice
+foram corrigidos e revalidados. Produção não foi alterada. A entrega continua candidate até PR,
+preview e smoke tests verdes.
 
 ## Match privado, destinatário exato e autorização específica, 29/08/2026
 

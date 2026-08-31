@@ -54,4 +54,34 @@ describe("governed public research", () => {
     });
     expect(result).toMatchObject({status: "abstained", sources: [], failures: [{provider: "official", code: "official_unavailable"}]});
   });
+
+  it("searches independent topics in parallel while preserving plan order", async () => {
+    const plan = buildPublicResearchPlan({legalName: "Empresa Exemplo"});
+    let inFlight = 0;
+    let peak = 0;
+    const result = await runPublicResearch({
+      plan,
+      providers: [{
+        id: "official",
+        search: async (query) => {
+          inFlight += 1;
+          peak = Math.max(peak, inFlight);
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          inFlight -= 1;
+          return [{
+            provider: "official",
+            topic: query.topic,
+            title: query.topic,
+            url: `https://example.com/${query.topic}`,
+            snippet: "Fonte pública.",
+            publishedAt: null,
+            retrievedAt: "2026-08-31T12:00:00.000Z",
+            contentHash: "a".repeat(64),
+          }];
+        },
+      }],
+    });
+    expect(peak).toBe(plan.length);
+    expect(result.sources.map((source) => source.topic)).toEqual(plan.map((query) => query.topic));
+  });
 });

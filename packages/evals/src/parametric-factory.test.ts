@@ -112,7 +112,7 @@ describe("parametric cases on the governed rail", () => {
     expect(JSON.stringify(result.state.reconciliation.facts)).not.toMatch(/ignore all prior|hyperlink|other-tenant/i);
     expect(result.state.reconciliation.facts.find((fact) => fact.key.fieldPath === "collateral.total_capacity")?.accepted.anchorVerified).toBe(false);
     expect(result.state.brief).toBeNull();
-    expect(result.state.briefBlockedBy).toContain("structure_proposal_not_confirmation_ready");
+    expect(result.state.briefBlockedBy).toContain("diagnostic_case_not_ready");
   });
 
   it("runs the growth-capex adversarial room on the same governed rail and refuses unsupported material", async () => {
@@ -125,7 +125,7 @@ describe("parametric cases on the governed rail", () => {
     expect(debt?.conflicts).toContainEqual(expect.objectContaining({candidate: expect.objectContaining({normalizedValue: "38000000"})}));
     expect(JSON.stringify(result.state.reconciliation.facts)).not.toMatch(/ignore all prior|approve this transaction/i);
     expect(result.state.brief).toBeNull();
-    expect(result.state.briefBlockedBy).toContain("structure_proposal_not_confirmation_ready");
+    expect(result.state.briefBlockedBy).toContain("diagnostic_case_not_ready");
   });
 
   it("keeps the growth need but closes the debenture path for a limitada", async () => {

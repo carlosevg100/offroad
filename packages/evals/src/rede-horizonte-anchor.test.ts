@@ -66,6 +66,10 @@ describe("Rede Horizonte full-case anchor", () => {
     expect(proposalFingerprint).toBeTruthy();
     const result = await executeCaseEngine({
       ...baseInput,
+      // This anchor intentionally verifies the production compiler. In the product,
+      // the worker only supplies this flag after the exact case, structure and
+      // production plan snapshots have all been approved.
+      materialsPreparationApproved: true,
       structureProposal: proposal,
       structureConfirmation: {
         decision: "confirm",

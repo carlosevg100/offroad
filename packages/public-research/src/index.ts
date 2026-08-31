@@ -79,25 +79,27 @@ export async function runPublicResearch(input: {
 }): Promise<ResearchRun> {
   const plan = z.array(researchQuerySchema).min(1).max(12).parse(input.plan);
   const maxSources = Math.min(10, Math.max(1, input.maxSourcesPerQuery ?? 5));
-  const sources: ResearchSource[] = [];
-  const failures: ResearchRun["failures"] = [];
-  for (const query of plan) {
+  // The topics are independent. Run them concurrently so the first reading waits for the
+  // slowest bounded search, not the sum of five network round trips. Provider fallback remains
+  // sequential inside each topic and Promise.all preserves the plan's deterministic order.
+  const queryResults = await Promise.all(plan.map(async (query) => {
     assertPublicQuerySafe(query.query);
-    let completed = false;
+    const failures: ResearchRun["failures"] = [];
     for (const provider of input.providers) {
       try {
         const returned = z.array(researchSourceSchema).parse(await provider.search(query));
-        sources.push(...returned.slice(0, maxSources));
-        completed = true;
-        break;
+        return {sources: returned.slice(0, maxSources), failures};
       } catch (error) {
         failures.push({queryId: query.id, provider: provider.id, code: stableErrorCode(error)});
       }
     }
-    if (!completed && input.providers.length === 0) {
+    if (input.providers.length === 0) {
       failures.push({queryId: query.id, provider: "none", code: "provider_unavailable"});
     }
-  }
+    return {sources: [] as ResearchSource[], failures};
+  }));
+  const sources = queryResults.flatMap((result) => result.sources);
+  const failures = queryResults.flatMap((result) => result.failures);
   const unique = [...new Map(sources.map((source) => [`${source.topic}:${canonicalUrl(source.url)}`, source])).values()];
   return {
     status: unique.length === 0 ? "abstained" : failures.length > 0 ? "partial" : "succeeded",
