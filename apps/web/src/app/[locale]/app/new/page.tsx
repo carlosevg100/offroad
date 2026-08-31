@@ -128,7 +128,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             }}
             returnHref={`/${locale}/app/new?setup=project`}
             startAction={startWorkspaceDocumentIntake}
-            termsAccepted={termsAccepted}
+            termsAccepted={state.setup === "terms" && termsAccepted}
             termsHref={`/${locale}/app/new?setup=terms`}
           />
         </section>

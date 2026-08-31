@@ -9561,7 +9561,7 @@ button[disabled].workspace-search,
 }
 
 .private-project-gate__legal-header p {
-  max-width: 46ch;
+  max-width: none;
   color: #151a20;
   font-size: 14px;
   line-height: 1.6;
