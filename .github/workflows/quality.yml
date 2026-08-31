@@ -92,6 +92,9 @@ jobs:
       - name: Tenant non-interference (RLS) test
         run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/rls_non_interference.sql
 
+      - name: Project-scoped company test
+        run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/project_company_scope.sql
+
       - name: Schema lint (public, private)
         run: supabase db lint --local --schema public,private --level warning --fail-on error
 

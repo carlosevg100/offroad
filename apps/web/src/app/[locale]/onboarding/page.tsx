@@ -94,9 +94,12 @@ type OnboardingBootstrap = {
 };
 const intakeErrorCodes: readonly string[] = ["documents", "processing", "confirmation", "validation", "session", "save", "step", "duplicate", "remove"];
 
-function answerObject(answers: AnswerMap, key: string): AnswerMap {
-  const value = answers[key];
+function jsonObject(value: unknown): AnswerMap {
   return value && typeof value === "object" && !Array.isArray(value) ? value as AnswerMap : {};
+}
+
+function answerObject(answers: AnswerMap, key: string): AnswerMap {
+  return jsonObject(answers[key]);
 }
 
 function text(answer: Json | undefined) {
@@ -175,7 +178,6 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const contactAnswers = answerObject(answers, "contact");
   const intakeSessionId = text(answers.intake_session_id);
   const storedProjectName = text(answers.project_name);
-  const guidedCompanyAnswers = answerObject(answers, "company_profile");
   if (
     journey !== "capital_provider"
     && bootstrap.terms_accepted
@@ -188,6 +190,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const intakeReview = journey !== "capital_provider" && intakeSessionId
     ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId})
     : null;
+  const guidedCompanyAnswers = jsonObject(intakeReview?.session?.company_profile);
   const requestedIntakeStage = state.stage === "company" || state.stage === "operation" || state.stage === "request" || state.stage === "documents"
     ? state.stage
     : undefined;
@@ -509,10 +512,10 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                 })}
                 className="onboarding-stage__form"
                 companyProfile={{
-                  name: text(guidedCompanyAnswers.name) || (organization.name.includes("em cadastro") ? "" : organization.name),
-                  legalName: text(guidedCompanyAnswers.legal_name) || organization.legal_name || "",
-                  website: text(guidedCompanyAnswers.website) || organization.website || "",
-                  description: text(guidedCompanyAnswers.description) || organization.description || "",
+                  name: text(guidedCompanyAnswers.name),
+                  legalName: text(guidedCompanyAnswers.legal_name),
+                  website: text(guidedCompanyAnswers.website),
+                  description: text(guidedCompanyAnswers.description),
                   identifierLast4: text(guidedCompanyAnswers.identifier_last4),
                 }}
                 companyProfileAction={saveGuidedCompanyProfile}

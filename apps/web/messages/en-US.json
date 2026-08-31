@@ -1220,9 +1220,14 @@
       "welcomeActionTime": "Takes about 10 minutes"
     },
     "company": {
+      "projectScopeCompany": "Confirm the company for this financing. A new project will not reuse these details without your confirmation.",
+      "projectScopeAdvisor": "Enter the advised company for this financing. Every new project starts without another client's details.",
       "name": "Company name",
       "legalName": "Legal name",
       "identifier": "Legal identifier",
+      "identifierPlaceholder": "Enter the legal identifier",
+      "identifierReplacementPlaceholder": "Enter another identifier to replace it",
+      "identifierSaved": "Identifier saved for this project: ending in {last4}. Leave blank to keep it.",
       "website": "Company website",
       "contextKicker": "ABOUT THE COMPANY",
       "contextTitle": "Describe the company in your own words",

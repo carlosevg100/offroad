@@ -1400,7 +1400,9 @@ export type Database = {
           capital_currency: string | null
           capital_objective: string | null
           capital_urgency: string | null
+          client_company_id: string | null
           collateral_kinds: string[] | null
+          company_profile: Json
           company_profile_confirmed_at: string | null
           confirmed_at: string | null
           created_at: string
@@ -1445,7 +1447,9 @@ export type Database = {
           capital_currency?: string | null
           capital_objective?: string | null
           capital_urgency?: string | null
+          client_company_id?: string | null
           collateral_kinds?: string[] | null
+          company_profile?: Json
           company_profile_confirmed_at?: string | null
           confirmed_at?: string | null
           created_at?: string
@@ -1490,7 +1494,9 @@ export type Database = {
           capital_currency?: string | null
           capital_objective?: string | null
           capital_urgency?: string | null
+          client_company_id?: string | null
           collateral_kinds?: string[] | null
+          company_profile?: Json
           company_profile_confirmed_at?: string | null
           confirmed_at?: string | null
           created_at?: string
@@ -1525,6 +1531,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "document_intake_sessions_organization_client_company_fkey"
+            columns: ["organization_id", "client_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "document_intake_sessions_current_run_fkey"
             columns: ["organization_id", "current_run_id"]
