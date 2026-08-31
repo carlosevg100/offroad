@@ -1220,9 +1220,14 @@
       "welcomeActionTime": "Leva cerca de 10 minutos"
     },
     "company": {
+      "projectScopeCompany": "Confirme a companhia desta captação. Um novo projeto não reaproveita estes dados sem sua confirmação.",
+      "projectScopeAdvisor": "Informe a empresa assessorada nesta captação. Cada novo projeto começa sem os dados de outro cliente.",
       "name": "Nome da empresa",
       "legalName": "Razão social",
       "identifier": "CNPJ",
+      "identifierPlaceholder": "Digite o CNPJ",
+      "identifierReplacementPlaceholder": "Digite outro CNPJ para substituir",
+      "identifierSaved": "CNPJ salvo neste projeto: final {last4}. Deixe em branco para manter.",
       "website": "Site da empresa",
       "contextKicker": "SOBRE A COMPANHIA",
       "contextTitle": "Conte sobre a empresa com suas palavras",

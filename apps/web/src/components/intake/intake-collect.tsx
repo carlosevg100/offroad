@@ -163,6 +163,7 @@ export async function IntakeCollect({locale, session, documents, organizationId,
           documents={documents}
           locale={locale}
           organizationId={organizationId}
+          journey={session.journey === "originator" ? "originator" : "company"}
           profile={companyProfile}
           removeAction={removeAction}
           sessionId={session.id}

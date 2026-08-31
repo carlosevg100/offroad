@@ -9023,6 +9023,7 @@ button[disabled].workspace-search,
 
 .intake-company {display: grid; gap: 22px;}
 .intake-company__form {display: grid; gap: 24px;}
+.intake-company__scope {margin: 0; padding: 10px 12px; border-left: 2px solid #7d9455; background: #f5f7f1; color: #566066; font-size: 11px; line-height: 1.5;}
 .intake-company__identity {display: grid; align-items: start; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px;}
 .intake-company__identity label,
 .intake-company__context {display: grid; gap: 7px;}
@@ -9036,6 +9037,7 @@ button[disabled].workspace-search,
 .intake-company__context textarea:focus {border-color: #718842; box-shadow: 0 0 0 3px rgb(113 136 66 / 10%);}
 .intake-company__identity small,
 .intake-company__context small {min-height: 14px; color: #858b8e; font-size: 9px; line-height: 1.45;}
+.intake-company__identity label small {display: block; margin-top: 5px;}
 .intake-company__context {padding-top: 4px;}
 .intake-company__context .section-kicker {margin-bottom: 2px; color: #748348;}
 .intake-company__or {display: flex; align-items: center; gap: 14px; color: #858b8d; font-size: 10px;}

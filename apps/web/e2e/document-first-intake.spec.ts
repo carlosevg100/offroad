@@ -32,6 +32,7 @@ async function completeCompanyMilestone(page: Page) {
   await expect(page.locator(".intake-collect")).toContainText("ETAPA 1 DE 7");
   await page.locator('input[name="company_name"]').fill("Rede Horizonte Supermercados");
   await page.locator('input[name="legal_name"]').fill("Rede Horizonte Supermercados S.A.");
+  await page.locator('input[name="legal_identifier"]').fill("12.345.678/0001-95");
   await page.locator('input[name="website"]').fill("https://redehorizonte.example.com");
   await page.locator('textarea[name="description"]').fill("Rede regional de supermercados com operação no Sudeste e plano de expansão de lojas.");
   await page.locator('.intake-company__actions button[type="submit"]').click();
@@ -210,6 +211,11 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator('.private-project-gate__form button[type="submit"]').click();
     await expect(page).toHaveURL(/mode=documents&session=.*step=company/);
     await expect(page.locator(".intake-collect")).toBeVisible();
+    await expect(page.locator('input[name="company_name"]')).toHaveValue("");
+    await expect(page.locator('input[name="legal_name"]')).toHaveValue("");
+    await expect(page.locator('input[name="website"]')).toHaveValue("");
+    await expect(page.locator('textarea[name="description"]')).toHaveValue("");
+    await expect(page.locator('input[name="legal_identifier"]')).toHaveAttribute("placeholder", "Digite o CNPJ");
     await completeCompanyMilestone(page);
 
     await page.locator('.intake-operation__options button[value="growth_expansion"]').click();

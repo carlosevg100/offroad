@@ -18,6 +18,7 @@ type Props = {
   documents: IntakeDocumentSummary[];
   locale: string;
   organizationId: string;
+  journey: "company" | "originator";
   profile?: CompanyProfile;
   removeAction?: (formData: FormData) => Promise<void>;
   sessionId: string;
@@ -26,7 +27,7 @@ type Props = {
 
 /** First milestone of the guided journey. Identification stays compact; company context is a
  * conversation or an existing institutional material, never a long questionnaire. */
-export async function IntakeCompanyProfile({action, documents, locale, organizationId, profile, removeAction, sessionId, userId}: Props) {
+export async function IntakeCompanyProfile({action, documents, journey, locale, organizationId, profile, removeAction, sessionId, userId}: Props) {
   const [t, tUploader] = await Promise.all([
     getTranslations({locale, namespace: "Intake.company"}),
     getTranslations({locale, namespace: "Intake.uploader"}),
@@ -38,10 +39,16 @@ export async function IntakeCompanyProfile({action, documents, locale, organizat
         <input name="locale" type="hidden" value={locale} />
         <input name="session_id" type="hidden" value={sessionId} />
 
+        <p className="intake-company__scope">{t(journey === "originator" ? "projectScopeAdvisor" : "projectScopeCompany")}</p>
+
         <div className="intake-company__identity">
           <label><span>{t("name")}</span><input autoComplete="organization" defaultValue={profile?.name ?? ""} maxLength={160} minLength={2} name="company_name" required /></label>
           <label><span>{t("legalName")}</span><input defaultValue={profile?.legalName ?? ""} maxLength={200} name="legal_name" /></label>
-          <label><span>{t("identifier")}</span><input inputMode="numeric" maxLength={40} name="legal_identifier" placeholder={profile?.identifierLast4 ? `•••• ${profile.identifierLast4}` : ""} /></label>
+          <label>
+            <span>{t("identifier")}</span>
+            <input inputMode="numeric" maxLength={40} name="legal_identifier" placeholder={t(profile?.identifierLast4 ? "identifierReplacementPlaceholder" : "identifierPlaceholder")} />
+            {profile?.identifierLast4 ? <small>{t("identifierSaved", {last4: profile.identifierLast4})}</small> : null}
+          </label>
           <label><span>{t("website")}</span><input defaultValue={profile?.website ?? ""} maxLength={500} name="website" type="url" /></label>
         </div>
 

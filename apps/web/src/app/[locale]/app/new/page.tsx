@@ -73,7 +73,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
     getTranslations({locale, namespace: "App"}),
     getTranslations({locale, namespace: "Intake"}),
   ]);
-  const {supabase, organization, onboarding, userId} = await requireWorkspace(locale);
+  const {supabase, organization, userId} = await requireWorkspace(locale);
   if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
 
   const notice = state.error ? tIntake(`errors.${intakeErrorCodes.includes(state.error) ? state.error as IntakeErrorCode : "save"}`) : null;
@@ -81,13 +81,12 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
   const mode = state.mode === "documents" ? "documents" : "choice";
   const sessionId = typeof state.session === "string" ? state.session : "";
   const guidedStep = state.step === "company" || state.step === "operation" || state.step === "request" || state.step === "documents" ? state.step : undefined;
-  const onboardingAnswers = objectValue(onboarding.answers);
-  const companyProfile = objectValue(onboardingAnswers.company_profile);
   const runtime = {supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId};
   const collection = mode === "documents" && sessionId ? await loadIntakeCollection(runtime) : null;
   const review = collection?.session?.status === "review_ready"
     ? await loadIntakeReview(runtime)
     : collection ? {...collection, candidates: [], issues: []} : null;
+  const companyProfile = objectValue(review?.session?.company_profile);
   if (review?.session?.status === "confirmed" && review.session.opportunity_id) redirect(`/${locale}/app/opportunities/${review.session.opportunity_id}`);
   const companyProfileComplete = Boolean(review?.session?.company_profile_confirmed_at);
   const effectiveGuidedStep = review?.session
@@ -192,10 +191,10 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             })}
             documents={review.documents}
             companyProfile={{
-              name: stringValue(companyProfile.name) || (organization.name.includes("em cadastro") ? "" : organization.name),
-              legalName: stringValue(companyProfile.legal_name) || organization.legal_name || "",
-              website: stringValue(companyProfile.website) || organization.website || "",
-              description: stringValue(companyProfile.description) || organization.description || "",
+              name: stringValue(companyProfile.name),
+              legalName: stringValue(companyProfile.legal_name),
+              website: stringValue(companyProfile.website),
+              description: stringValue(companyProfile.description),
               identifierLast4: stringValue(companyProfile.identifier_last4),
             }}
             companyProfileAction={saveWorkspaceGuidedCompanyProfile}
