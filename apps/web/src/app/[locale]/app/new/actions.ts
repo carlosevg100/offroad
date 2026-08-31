@@ -133,6 +133,13 @@ export async function acceptWorkspacePrivateTerms(formData: FormData) {
   });
   if (!parsed.success) redirect(`/${locale}/app/new?setup=terms&error=validation`);
 
+  // A later financing asks for a fresh, explicit acknowledgement in the UI,
+  // while the canonical legal acceptance remains organization-scoped and immutable.
+  // The project setup page rechecks that canonical record before it is rendered.
+  if (value(formData, "terms_acceptance_recorded") === "confirmed") {
+    redirect(`/${locale}/app/new?setup=project`);
+  }
+
   const supabase = await createClient();
   if (!supabase) redirect(`/${locale}/login?error=provider`);
   const {error} = await supabase.rpc("accept_private_workspace_terms", {

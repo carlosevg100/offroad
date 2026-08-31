@@ -198,8 +198,12 @@ test.describe("Document-first intake (company journey)", () => {
   test("an unknown document set yields the honest empty state in the workspace flow", async () => {
     await page.goto("/pt-BR/app/new");
     await expect(page.locator(".private-project-gate--terms")).toBeVisible();
-    await expect(page.locator(".private-project-gate__accepted")).toContainText("Termos de confidencialidade aceitos");
-    await page.locator(".private-project-gate__submit a").click();
+    await expect(page.locator(".private-project-gate__accepted")).toHaveCount(0);
+    await expect(page.locator('input[name="terms_agreed"]')).not.toBeChecked();
+    await expect(page.locator('input[name="information_rights_declared"]')).not.toBeChecked();
+    await page.locator('input[name="terms_agreed"]').check();
+    await page.locator('input[name="information_rights_declared"]').check();
+    await page.locator('.private-project-gate__form button[type="submit"]').click();
     await expect(page.locator(".private-project-gate--project")).toBeVisible();
     await page.locator('.private-project-gate__form input[name="project_name"]').fill(secondaryProjectName);
     await expect(page.locator('input[name="representation_declared"]')).toHaveAttribute("type", "hidden");
