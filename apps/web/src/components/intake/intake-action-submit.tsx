@@ -21,7 +21,12 @@ export function IntakeActionSubmit({idle, pending, className = "button", form}: 
   function showExternalPending() {
     if (!form) return;
     const target = document.getElementById(form);
-    if (target instanceof HTMLFormElement && target.checkValidity()) setExternalPending(true);
+    // Let the native submit/default action start before disabling an external
+    // submit button. Disabling it during the click event cancels submission in
+    // Chromium when the button is connected through the `form` attribute.
+    if (target instanceof HTMLFormElement && target.checkValidity()) {
+      window.setTimeout(() => setExternalPending(true), 0);
+    }
   }
 
   return (
