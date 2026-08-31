@@ -2914,6 +2914,8 @@ declare
   capital_event constant uuid := '73000000-0000-4000-8000-000000000004';
   document_id constant uuid := '73000000-0000-4000-8000-000000000005';
   receipt_event constant uuid := '73000000-0000-4000-8000-000000000006';
+  duplicate_document constant uuid := '73000000-0000-4000-8000-000000000017';
+  duplicate_receipt_event constant uuid := '73000000-0000-4000-8000-000000000018';
   removal_event constant uuid := '73000000-0000-4000-8000-000000000007';
   answer_event constant uuid := '73000000-0000-4000-8000-000000000008';
   clear_event constant uuid := '73000000-0000-4000-8000-000000000009';
@@ -3080,6 +3082,19 @@ begin
         and event.payload #>> '{document,originalName}' = 'financials.pdf'
     ) then
     raise exception 'document registration did not atomically persist receipt and row';
+  end if;
+
+  outcome := public.register_intake_document_command(
+    org_a, session_id, duplicate_receipt_event, duplicate_document, 'opportunity-documents',
+    org_a::text || '/' || session_id::text || '/same-financials-again.pdf',
+    'same-financials-again.pdf', 'application/pdf', 2048, repeat('f', 64)
+  );
+  if outcome ->> 'duplicate' <> 'true'
+    or outcome ->> 'id' <> document_id::text
+    or exists (select 1 from public.source_documents where id = duplicate_document)
+    or exists (select 1 from public.intake_domain_events where event_id = duplicate_receipt_event)
+  then
+    raise exception 'same-scope document duplicate was not handled idempotently';
   end if;
 
   accepted := true;

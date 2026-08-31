@@ -1,7 +1,7 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {sha256HexOf} from "./server";
-import {DOCUMENT_ACCEPT, DOCUMENT_ALLOWED_EXTENSIONS, DOCUMENT_MAX_BYTES, isAcceptedDocument, safeObjectName} from "./upload-client";
+import {DOCUMENT_ACCEPT, DOCUMENT_ALLOWED_EXTENSIONS, DOCUMENT_MAX_BYTES, formatDocumentSize, isAcceptedDocument, safeObjectName, uploadDocuments} from "./upload-client";
 
 describe("document upload rules", () => {
   it("accepts the supported formats within the size limit and rejects the rest", () => {
@@ -24,6 +24,12 @@ describe("document upload rules", () => {
 
   it("hashes bytes with SHA-256 (RFC test vector)", () => {
     expect(sha256HexOf(new TextEncoder().encode("abc"))).toBe("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+  });
+
+  it("shows small documents in KB instead of a misleading 0.0 MB", () => {
+    expect(formatDocumentSize(9_145)).toBe("9 KB");
+    expect(formatDocumentSize(232_097)).toBe("232 KB");
+    expect(formatDocumentSize(1_250_000)).toBe("1.3 MB");
   });
 });
 
@@ -58,5 +64,58 @@ describe("the door accepts everything the engine can read", () => {
   it("keeps the size and batch limits", () => {
     expect(isAcceptedDocument({name: "grande.xlsx", size: DOCUMENT_MAX_BYTES + 1})).toBe(false);
     expect(isAcceptedDocument({name: "vazio.xlsx", size: 0})).toBe(false);
+  });
+});
+
+describe("idempotent document registration", () => {
+  function clientReturning(data: unknown) {
+    const removed: string[][] = [];
+    return {
+      removed,
+      client: {
+        storage: {
+          from: () => ({
+            upload: vi.fn().mockResolvedValue({error: null}),
+            remove: vi.fn().mockImplementation(async (paths: string[]) => {
+              removed.push(paths);
+              return {error: null};
+            }),
+          }),
+        },
+        rpc: vi.fn().mockResolvedValue({data, error: null}),
+      },
+    };
+  }
+
+  it("treats a same-scope content duplicate as a non-error and removes only the temporary object", async () => {
+    const stub = clientReturning({id: "existing", original_name: "balanco.pdf", byte_size: 9_145, duplicate: true});
+    const result = await uploadDocuments({
+      supabase: stub.client as never,
+      files: [new File(["same bytes"], "balanco-copia.pdf", {type: "application/pdf"})],
+      organizationId: "org",
+      userId: "user",
+      scope: {kind: "session", sessionId: "session"},
+    });
+
+    expect(result).toMatchObject({uploaded: [], duplicateCount: 1, failure: null});
+    expect(stub.removed).toHaveLength(1);
+  });
+
+  it("accepts bigint fields serialized as strings by the API", async () => {
+    const stub = clientReturning({id: "new", original_name: "balanco.pdf", byte_size: "9145", duplicate: false});
+    const result = await uploadDocuments({
+      supabase: stub.client as never,
+      files: [new File(["new bytes"], "balanco.pdf", {type: "application/pdf"})],
+      organizationId: "org",
+      userId: "user",
+      scope: {kind: "session", sessionId: "session"},
+    });
+
+    expect(result).toMatchObject({
+      uploaded: [{id: "new", original_name: "balanco.pdf", byte_size: 9_145}],
+      duplicateCount: 0,
+      failure: null,
+    });
+    expect(stub.removed).toHaveLength(0);
   });
 });

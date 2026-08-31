@@ -4,7 +4,7 @@ import {Check, FileCheck2, FileSpreadsheet, FileText, FileUp, LoaderCircle} from
 import {useRef, useState} from "react";
 
 import type {IntakeDocumentSummary} from "@/lib/intake/types";
-import {DOCUMENT_ACCEPT, uploadDocuments} from "@/lib/intake/upload-client";
+import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
 type DocumentItem = IntakeDocumentSummary;
@@ -50,7 +50,11 @@ export function OnboardingDocumentUploader({organizationId, opportunityId, userI
     // Same path as the document-first uploader: SHA-256 in the browser (re-verified server-side later),
     // private bucket under {organization}/{opportunity}/…, RLS-protected registration.
     const result = await uploadDocuments({supabase, files: Array.from(files), organizationId, userId, scope: {kind: "opportunity", opportunityId}});
-    setDocuments((current) => [...current, ...result.uploaded]);
+    setDocuments((current) => {
+      const byId = new Map(current.map((document) => [document.id, document]));
+      for (const document of result.uploaded) byId.set(document.id, document);
+      return [...byId.values()];
+    });
     if (result.failure) setError(copy.error);
     setUploading(false);
   }
@@ -98,7 +102,7 @@ export function OnboardingDocumentUploader({organizationId, opportunityId, userI
       {documents.length ? (
         <div className="document-list">
           {documents.map((document) => (
-            <div key={document.id}><FileCheck2 aria-hidden="true" size={16} /><span>{document.original_name}</span><small>{copy.received} · {document.byte_size ? `${(document.byte_size / 1_000_000).toFixed(1)} MB` : ""}</small></div>
+            <div key={document.id}><FileCheck2 aria-hidden="true" size={16} /><span>{document.original_name}</span><small>{copy.received} · {document.byte_size ? formatDocumentSize(document.byte_size) : ""}</small></div>
           ))}
         </div>
       ) : null}

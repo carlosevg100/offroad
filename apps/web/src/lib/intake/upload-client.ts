@@ -40,9 +40,31 @@ export type UploadFailure = "invalid" | "upload" | "register";
 
 export type UploadResult = {
   uploaded: IntakeDocumentSummary[];
+  /** Files already present in the same scope. They are not re-registered or shown as errors. */
+  duplicateCount: number;
   /** First failure code, if any (the UI shows one message; every valid file is still attempted). */
   failure: UploadFailure | null;
 };
+
+type RegistrationPayload = {
+  id: string;
+  original_name: string;
+  byte_size: number;
+  duplicate: boolean;
+};
+
+function registrationPayload(value: unknown): RegistrationPayload | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const candidate = value as Record<string, unknown>;
+  const byteSize = typeof candidate.byte_size === "number" ? candidate.byte_size : Number(candidate.byte_size);
+  if (typeof candidate.id !== "string" || typeof candidate.original_name !== "string" || !Number.isFinite(byteSize)) return null;
+  return {id: candidate.id, original_name: candidate.original_name, byte_size: byteSize, duplicate: candidate.duplicate === true};
+}
+
+export function formatDocumentSize(bytes: number) {
+  if (bytes < 1_000_000) return `${Math.max(1, Math.round(bytes / 1_000))} KB`;
+  return `${(bytes / 1_000_000).toFixed(1)} MB`;
+}
 
 /** ASCII-safe object name: strips diacritics, replaces anything else with "-", keeps the last 140 chars (extension included). */
 export function safeObjectName(name: string) {
@@ -75,6 +97,7 @@ export async function uploadDocuments(input: {
   const {supabase, organizationId, userId, scope} = input;
   const scopeId = scope.kind === "session" ? scope.sessionId : scope.opportunityId;
   const uploaded: IntakeDocumentSummary[] = [];
+  let duplicateCount = 0;
   let failure: UploadFailure | null = null;
 
   for (const file of input.files.slice(0, DOCUMENT_MAX_FILES_PER_BATCH)) {
@@ -120,23 +143,31 @@ export async function uploadDocuments(input: {
           created_by: userId,
         }).select("id, original_name, byte_size").single();
 
-    const data = registration.data;
+    const data = registrationPayload(registration.data);
     const insertError = registration.error;
     if (insertError || !data) {
       await supabase.storage.from("opportunity-documents").remove([objectPath]);
+      if (insertError?.code === "23505") {
+        const existing = await supabase.from("source_documents")
+          .select("id")
+          .eq("organization_id", organizationId)
+          .eq(scope.kind === "session" ? "intake_session_id" : "opportunity_id", scopeId)
+          .eq("sha256", fileHash)
+          .maybeSingle();
+        if (existing.data?.id) {
+          duplicateCount += 1;
+          continue;
+        }
+      }
       failure ??= "register";
       continue;
     }
-    if (
-      typeof data === "object" && !Array.isArray(data) &&
-      typeof data.id === "string" && typeof data.original_name === "string" &&
-      typeof data.byte_size === "number"
-    ) {
-      uploaded.push({id: data.id, original_name: data.original_name, byte_size: data.byte_size});
-    } else {
+    if (data.duplicate) {
       await supabase.storage.from("opportunity-documents").remove([objectPath]);
-      failure ??= "register";
+      duplicateCount += 1;
+      continue;
     }
+    uploaded.push({id: data.id, original_name: data.original_name, byte_size: data.byte_size});
   }
-  return {uploaded, failure};
+  return {uploaded, duplicateCount, failure};
 }
