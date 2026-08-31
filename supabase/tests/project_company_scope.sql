@@ -30,13 +30,6 @@ values (
   'owner', 'active', now()
 );
 
-set local role authenticated;
-select set_config(
-  'request.jwt.claims',
-  '{"sub":"10000000-0000-4000-8000-000000000105","role":"authenticated","aal":"aal1"}',
-  true
-);
-
 insert into public.document_intake_sessions (
   id, organization_id, started_by, journey, locale, project_name
 ) values
@@ -52,6 +45,13 @@ insert into public.document_intake_sessions (
     '10000000-0000-4000-8000-000000000105',
     'originator', 'pt-BR', 'Projeto Cliente B'
   );
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000105","role":"authenticated","aal":"aal1"}',
+  true
+);
 
 select public.save_project_company_profile(
   '40000000-0000-4000-8000-000000000105',
