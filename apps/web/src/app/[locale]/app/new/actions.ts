@@ -306,10 +306,10 @@ export async function saveWorkspaceDealBrief(formData: FormData) {
     collateral_kinds: formData.getAll("collateral_kinds").map(String),
     expected_rate: value(formData, "expected_rate"),
   });
-  if (!parsed.success) redirect(intakeUrl(locale, sessionId, "validation"));
+  if (!parsed.success) redirect(intakeUrl(locale, sessionId, "validation", "request"));
 
   const brief = toDealBrief(parsed.data);
-  if (!brief) redirect(intakeUrl(locale, sessionId, "validation"));
+  if (!brief) redirect(intakeUrl(locale, sessionId, "validation", "request"));
 
   const saved = await saveDealBrief({
     supabase: runtime.supabase,

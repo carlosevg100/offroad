@@ -2,7 +2,7 @@ import {getTranslations} from "next-intl/server";
 
 import type {CollateralKind, Instrument} from "@offroad/fund-mandate";
 
-import {briefCompleteness, type DealBrief} from "@/lib/intake/deal-brief";
+import type {DealBrief} from "@/lib/intake/deal-brief";
 
 type Props = {
   locale: string;
@@ -64,18 +64,10 @@ const COLLATERAL: readonly CollateralKind[] = [
 
 export async function IntakeDealBrief({locale, sessionId, brief, action}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.brief"});
-  const {answered, total} = briefCompleteness(brief);
 
   return (
     <section className="intake-brief">
-      <div className="intake-brief__head">
-        <span className="section-kicker">{t("kicker")}</span>
-        <h3>{t("title")}</h3>
-        <p className="intake-brief__body">{t("body")}</p>
-        <span className="intake-brief__progress">{t("answered", {answered, total})}</span>
-      </div>
-
-      <form action={action} className="intake-brief__form">
+      <form action={action} className="intake-brief__form" id="intake-operation-brief">
         <input type="hidden" name="session_id" value={sessionId} />
         <input type="hidden" name="locale" value={locale} />
 
@@ -137,6 +129,25 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
           </select>
         </div>
 
+        <div className="intake-brief__row intake-brief__row--wide">
+          <label htmlFor="brief-consequence">
+            {t("consequenceLabel")}
+            <span className="intake-brief__hint">{t("consequenceHint")}</span>
+          </label>
+          <textarea
+            defaultValue={brief.consequenceIfNotExecuted ?? ""}
+            id="brief-consequence"
+            maxLength={4000}
+            name="consequence"
+            placeholder={t("consequencePlaceholder")}
+            rows={3}
+          />
+        </div>
+
+        <details className="intake-brief__advanced">
+          <summary>{t("advancedTitle")}</summary>
+          <p>{t("advancedBody")}</p>
+
         <div className="intake-brief__pair">
           <div className="intake-brief__row">
             <label htmlFor="brief-term">
@@ -173,21 +184,6 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
           </div>
         </div>
 
-        <div className="intake-brief__row">
-          <label htmlFor="brief-consequence">
-            {t("consequenceLabel")}
-            <span className="intake-brief__hint">{t("consequenceHint")}</span>
-          </label>
-          <textarea
-            defaultValue={brief.consequenceIfNotExecuted ?? ""}
-            id="brief-consequence"
-            maxLength={4000}
-            name="consequence"
-            placeholder={t("consequencePlaceholder")}
-            rows={3}
-          />
-        </div>
-
         <div className="intake-brief__pair">
           <div className="intake-brief__row">
             <label htmlFor="brief-sector">
@@ -213,10 +209,6 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
             />
           </div>
         </div>
-
-        <details className="intake-brief__advanced">
-          <summary>{t("advancedTitle")}</summary>
-          <p>{t("advancedBody")}</p>
 
           <div className="intake-brief__row">
             <label htmlFor="brief-rate">
@@ -275,9 +267,6 @@ export async function IntakeDealBrief({locale, sessionId, brief, action}: Props)
           </fieldset>
         </details>
 
-        <button className="button" type="submit">
-          {t("save")}
-        </button>
       </form>
     </section>
   );
