@@ -31,6 +31,7 @@ type Props = {
   acceptAction: (formData: FormData) => Promise<void>;
   startAction: (formData: FormData) => Promise<void>;
   termsAccepted?: boolean;
+  termsAcceptanceRecorded?: boolean;
   termsHref: string;
   returnHref: string;
 };
@@ -63,6 +64,7 @@ export async function PrivateProjectSetup({
   acceptAction,
   startAction,
   termsAccepted = false,
+  termsAcceptanceRecorded = false,
   termsHref,
   returnHref,
 }: Props) {
@@ -106,6 +108,7 @@ export async function PrivateProjectSetup({
           </div>
         ) : <form action={acceptAction} className="private-project-gate__form">
           <input name="locale" type="hidden" value={locale} />
+          {termsAcceptanceRecorded ? <input name="terms_acceptance_recorded" type="hidden" value="confirmed" /> : null}
           <details className="private-project-gate__full-terms">
             <summary>{t("terms.fullTerms")}</summary>
             <p>{fullTermsText}</p>
