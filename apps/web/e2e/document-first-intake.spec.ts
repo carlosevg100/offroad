@@ -132,8 +132,8 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-guide__restart")).toHaveCount(0);
     await completeCompanyMilestone(page);
 
-    // The operation decides the checklist; the brief decides who could buy the paper. Neither
-    // needs a document, and both come before the upload in the conversation a desk actually has.
+    // The operation type frames the first reading. The brief and any material the user already
+    // has are then read together before the system asks for a tailored evidence package.
     await expect(page.locator(".intake-brief")).toHaveCount(0);
     await chooseOperation(page);
     await expectNoErrorNotice(page);
@@ -155,14 +155,22 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("#brief-rate").fill("CDI + 4");
     await page.locator("#collateral-recebiveis").check();
     await page.locator("#collateral-imovel").check();
+    await page.locator(".intake-operation-materials .intake-upload input[type=file]").setInputFiles(dataRoomFiles);
+    await expect(page.locator(".intake-operation-materials .intake-upload__files header span")).toHaveText(
+      String(dataRoomExpectations.documents),
+      {timeout: 120_000},
+    );
     await page.locator(".intake-operation-context__actions button[type=submit]").click();
 
     await expectNoErrorNotice(page);
+    await expect(page.locator(".preliminary-understanding")).toBeVisible({timeout: 120_000});
+    await expect(page.locator(".preliminary-understanding__grid")).toContainText("Rede Horizonte Supermercados");
+    await expect(page.locator(".preliminary-understanding__grid")).toContainText("Crescimento / Expansão");
+    await page.locator(".preliminary-understanding__decision form button[type=submit]").click();
+
     await expect(page.locator(".intake-request-list")).toBeVisible();
     await expect(page.locator(".intake-upload")).toBeVisible();
     await expect(page.locator(".workspace-inspector")).toHaveCount(0);
-
-    await page.locator(".intake-upload input[type=file]").setInputFiles(dataRoomFiles);
     await expect(page.locator(".intake-upload__files header span")).toHaveText(String(dataRoomExpectations.documents), {timeout: 120_000});
     await expectNoErrorNotice(page);
 
