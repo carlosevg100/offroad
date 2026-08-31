@@ -17,6 +17,7 @@ import {IntakeGovernance} from "./intake-governance";
 import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
 import {IntakeCompanyProfile} from "./intake-company-profile";
 import {IntakeProcessingStatus} from "./intake-processing-status";
+import {IntakeActionSubmit} from "./intake-action-submit";
 
 type GuidedStage = "company" | "operation" | "request" | "documents";
 
@@ -186,7 +187,41 @@ export async function IntakeCollect({locale, session, documents, organizationId,
       ) : null}
 
       {!processing && currentStage === "request" && dealBriefAction && checklist?.archetypeId ? (
-        <IntakeDealBrief action={dealBriefAction} brief={dealBrief ?? {}} locale={locale} sessionId={session.id} />
+        <div className="intake-operation-context">
+          <IntakeDealBrief action={dealBriefAction} brief={dealBrief ?? {}} locale={locale} sessionId={session.id} />
+          <section className="intake-operation-materials">
+            <header>
+              <span className="section-kicker">{t("brief.uploadKicker")}</span>
+              <h3>{t("brief.uploadTitle")}</h3>
+              <p>{t("brief.uploadBody")}</p>
+            </header>
+            <DocumentIntakeUploader
+              copy={{
+                startError: t("uploader.startError"),
+                invalidFile: t("uploader.invalidFile"),
+                uploadError: t("uploader.uploadError"),
+                registerError: t("uploader.registerError"),
+                uploading: t("uploader.uploading"),
+                dropTitle: t("brief.uploadDropTitle"),
+                dropBody: t("brief.uploadDropBody"),
+                select: t("brief.uploadSelect"),
+                formats: t("uploader.formats"),
+                received: t("uploader.received"),
+                remove: t("uploader.remove"),
+              }}
+              initialDocuments={documents}
+              locale={locale}
+              organizationId={organizationId}
+              removeAction={removeAction}
+              sessionId={session.id}
+              userId={userId}
+            />
+          </section>
+          <div className="intake-operation-context__actions">
+            <p>{t("brief.continueNote")}</p>
+            <IntakeActionSubmit form="intake-operation-brief" idle={t("brief.save")} pending={t("brief.savePending")} />
+          </div>
+        </div>
       ) : null}
 
       {!processing && currentStage === "documents" ? (

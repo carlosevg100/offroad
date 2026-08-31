@@ -4,6 +4,7 @@ import {getTranslations} from "next-intl/server";
 import type {ArchetypeId} from "@offroad/credit-playbook";
 import type {IntakeChecklist as Checklist} from "@/lib/intake/checklist";
 import {IntakeBatchTelemetry} from "./intake-batch-telemetry";
+import {IntakeActionSubmit} from "./intake-action-submit";
 
 type OperationProps = {
   locale: string;
@@ -51,12 +52,6 @@ export async function IntakeOperation({
 
   return (
     <section className="intake-operation">
-      <div className="intake-operation__intro">
-        <span className="section-kicker">{t("kicker")}</span>
-        <h3>{t("title")}</h3>
-        <p>{t("body")}</p>
-      </div>
-
       <form action={action} className="intake-operation__options">
         <input type="hidden" name="session_id" value={sessionId} />
         <input type="hidden" name="locale" value={locale} />
@@ -95,18 +90,19 @@ export async function IntakeOperation({
         ) : null}
         <div className="intake-operation__choice-label">{t("objectiveLegend")}</div>
         {OPERATIONS.map((id) => (
-          <button
+          <label
             key={id}
-            type="submit"
-            name="archetype"
-            value={id}
-            className={`intake-operation__option${selected === id ? " intake-operation__option--selected" : ""}`}
-            aria-pressed={selected === id}
+            className="intake-operation__option"
           >
+            <input defaultChecked={selected === id} name="archetype" required type="radio" value={id} />
             <span><strong>{t(id)}</strong><small>{t(`${id}Body`)}</small></span>
-            {selected === id ? <Check aria-hidden="true" size={16} /> : <CircleDashed aria-hidden="true" size={16} />}
-          </button>
+            <i aria-hidden="true" className="intake-operation__indicator"><CircleDashed size={16} /><Check size={16} /></i>
+          </label>
         ))}
+        <div className="intake-operation__actions">
+          <p>{t("continueNote")}</p>
+          <IntakeActionSubmit idle={t("continue")} pending={t("continuePending")} />
+        </div>
       </form>
     </section>
   );

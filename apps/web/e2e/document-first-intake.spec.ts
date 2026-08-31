@@ -42,6 +42,14 @@ async function completeCompanyMilestone(page: Page) {
   await expect(page.locator(".intake-collect")).toContainText("ETAPA 2 DE 7");
 }
 
+async function chooseOperation(page: Page, archetype = "growth_expansion") {
+  const option = page.locator(`input[name="archetype"][value="${archetype}"]`);
+  await option.check();
+  await expect(option).toBeChecked();
+  await page.locator(".intake-operation__actions button[type=submit]").click();
+  await expect(page.locator(".intake-brief")).toBeVisible();
+}
+
 async function startPrivateProject(page: Page, projectName: string, acceptTerms = false) {
   await page.locator(".intake-welcome__action a").click();
 
@@ -127,28 +135,27 @@ test.describe("Document-first intake (company journey)", () => {
     // The operation decides the checklist; the brief decides who could buy the paper. Neither
     // needs a document, and both come before the upload in the conversation a desk actually has.
     await expect(page.locator(".intake-brief")).toHaveCount(0);
-    await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
-    await expect(page.locator(".intake-brief")).toBeVisible();
+    await chooseOperation(page);
     await expectNoErrorNotice(page);
 
     // The project flow remains navigable without changing lifecycle state.
     await page.locator(".intake-guide__back").click();
     await expect(page).toHaveURL(/step=operation/);
     await expect(page.locator(".intake-operation__options")).toBeVisible();
-    await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
-    await expect(page.locator(".intake-brief")).toBeVisible();
+    await chooseOperation(page);
 
     // Typed the way a person types, not the way a parser prefers.
+    await page.locator("#brief-objective").fill("Abrir três lojas e ampliar a capacidade logística da rede.");
     await page.locator("#brief-amount").fill("45 milhões");
+    await page.locator(".intake-brief__advanced > summary").click();
     await page.locator("#brief-term").fill("60");
     await page.locator("#brief-grace").fill("12");
     await page.locator("#brief-sector").fill("varejo alimentar");
     await page.locator("#brief-geography").fill("sp");
-    await page.locator(".intake-brief__advanced > summary").click();
     await page.locator("#brief-rate").fill("CDI + 4");
     await page.locator("#collateral-recebiveis").check();
     await page.locator("#collateral-imovel").check();
-    await page.locator(".intake-brief__form button[type=submit]").click();
+    await page.locator(".intake-operation-context__actions button[type=submit]").click();
 
     await expectNoErrorNotice(page);
     await expect(page.locator(".intake-request-list")).toBeVisible();
@@ -220,11 +227,13 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator('input[name="legal_identifier"]')).toHaveAttribute("placeholder", "Digite o CNPJ");
     await completeCompanyMilestone(page);
 
-    await page.locator('.intake-operation__options button[value="growth_expansion"]').click();
+    await chooseOperation(page);
+    await page.locator("#brief-objective").fill("Financiar a abertura de uma nova unidade.");
     await page.locator("#brief-amount").fill("1 milhão");
+    await page.locator(".intake-brief__advanced > summary").click();
     await page.locator("#brief-sector").fill("varejo alimentar");
     await page.locator("#brief-geography").fill("SP");
-    await page.locator(".intake-brief__form button[type=submit]").click();
+    await page.locator(".intake-operation-context__actions button[type=submit]").click();
     await expect(page.locator(".intake-upload")).toBeVisible();
 
     await page.locator(".intake-upload input[type=file]").setInputFiles({
