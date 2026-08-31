@@ -8,7 +8,8 @@ import {getTranslations} from "next-intl/server";
 import type {AppLocale} from "@/i18n/routing";
 import type {Database, Json} from "@/types/database";
 
-import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilation, type DerivedCase, type IntakeIssuePayload} from "./case";
+import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilation, type DerivedCase, type IntakeCandidatePayload, type IntakeIssuePayload} from "./case";
+import {preliminaryUnderstandingSchema, type PreliminaryUnderstanding} from "./preliminary-understanding";
 import {parseList, parseLocalizedNumber} from "./format";
 import {pipelineEnabledFor, startProcessingRun} from "./pipeline-run";
 import {reconcileIntakeSession} from "./reconcile";
@@ -486,7 +487,188 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     await markSessionFailed(runtime, "persistence_failed");
     return fail(intakeErrorFrom(complete.error, "processing"));
   }
+
+  // CI and unpromoted local workspaces deliberately use the content-hash fixture instead of a
+  // worker. That fallback still has to publish the same immutable preliminary-understanding
+  // contract as production; otherwise the UI reaches the confirmation gate with nothing to
+  // confirm. The database command is restricted to pipeline-disabled organizations and records
+  // a synthetic run, so the fallback remains explicit in lineage rather than masquerading as a
+  // model result.
+  const {data: session, error: sessionError} = await supabase
+    .from("document_intake_sessions")
+    .select("archetype, locale, company_profile, capital_objective, capital_currency, capital_urgency, capital_consequence, requested_amount, requested_term_months, sector, geography")
+    .eq("organization_id", organizationId)
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (sessionError || !session) {
+    await markSessionFailed(runtime, "fallback_preliminary_input_failed");
+    return fail("processing");
+  }
+  const preliminary = buildFallbackPreliminaryUnderstanding({
+    caseId: sessionId,
+    session,
+    candidates,
+    documentCount: documents.length,
+  });
+  const inputFingerprint = sha256HexOf(new TextEncoder().encode(JSON.stringify({
+    session,
+    documents: verifiedDocuments.map(({id, original_name, sha256}) => ({id, original_name, sha256})),
+    candidates,
+  })));
+  const {error: preliminaryError} = await supabase.rpc("record_fallback_preliminary_understanding", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_input_fingerprint: inputFingerprint,
+    p_payload: preliminary as unknown as Json,
+  });
+  if (preliminaryError) {
+    logIntakeFailure("record_fallback_preliminary", preliminaryError);
+    await markSessionFailed(runtime, "fallback_preliminary_persistence_failed");
+    return fail("processing");
+  }
   return ok(null);
+}
+
+type FallbackPreliminarySession = Pick<
+  Database["public"]["Tables"]["document_intake_sessions"]["Row"],
+  | "archetype"
+  | "locale"
+  | "company_profile"
+  | "capital_objective"
+  | "capital_currency"
+  | "capital_urgency"
+  | "capital_consequence"
+  | "requested_amount"
+  | "requested_term_months"
+  | "sector"
+  | "geography"
+>;
+
+/**
+ * Deterministic orientation used only by the verified fixture path.
+ *
+ * It intentionally says less than the model-backed worker: facts come from the saved declaration
+ * or extracted candidates, public research is marked as abstained, and every missing material
+ * point stays open. The returned object is validated against the production schema before it can
+ * reach persistence.
+ */
+export function buildFallbackPreliminaryUnderstanding(input: {
+  caseId: string;
+  session: FallbackPreliminarySession;
+  candidates: readonly IntakeCandidatePayload[];
+  documentCount: number;
+}): PreliminaryUnderstanding {
+  const profile = input.session.company_profile && typeof input.session.company_profile === "object" && !Array.isArray(input.session.company_profile)
+    ? input.session.company_profile as Record<string, Json | undefined>
+    : {};
+  const candidateValue = (...paths: string[]) => {
+    for (const path of paths) {
+      const value = input.candidates.find((candidate) => candidate.field_path === path)?.normalized_value;
+      if (typeof value === "string" && value.trim()) return value.trim();
+      if (typeof value === "number" && Number.isFinite(value)) return String(value);
+    }
+    return null;
+  };
+  const profileValue = (...keys: string[]) => {
+    for (const key of keys) {
+      const value = profile[key];
+      if (typeof value === "string" && value.trim()) return value.trim();
+    }
+    return null;
+  };
+  const isEnglish = input.session.locale === "en-US";
+  const companyName = profileValue("name", "legal_name")
+    ?? candidateValue("company.display_name", "company.name", "company.legal_name")
+    ?? (isEnglish ? "Company not yet identified" : "Companhia ainda não identificada");
+  const legalName = profileValue("legal_name") ?? candidateValue("company.legal_name");
+  const website = profileValue("website") ?? candidateValue("company.website");
+  const sector = input.session.sector?.trim() || candidateValue("company.sector");
+  const geography = input.session.geography?.trim()
+    || candidateValue("company.state", "company.geography");
+  const objective = input.session.capital_objective?.trim()
+    || candidateValue("transaction.purpose");
+  const requestedAmount = input.session.requested_amount === null
+    ? candidateValue("transaction.requested_amount")
+    : String(input.session.requested_amount);
+  const archetypeId = input.session.archetype ?? "other";
+  const archetypeLabels: Record<string, {pt: string; en: string}> = {
+    growth_expansion: {pt: "crescimento ou expansão", en: "growth or expansion"},
+    working_capital: {pt: "capital de giro", en: "working capital"},
+    refinance: {pt: "refinanciamento", en: "refinancing"},
+    acquisition: {pt: "aquisição", en: "acquisition"},
+    equipment_finance: {pt: "financiamento de equipamentos", en: "equipment finance"},
+    venture_debt: {pt: "venture debt", en: "venture debt"},
+    other: {pt: "necessidade de capital ainda a enquadrar", en: "capital need still to be framed"},
+  };
+  const archetypeLabel = archetypeLabels[archetypeId]?.[isEnglish ? "en" : "pt"]
+    ?? archetypeLabels.other![isEnglish ? "en" : "pt"];
+  const openPoints = [
+    ...(!objective ? [isEnglish ? "Confirm the objective and use of proceeds." : "Confirmar o objetivo e a destinação dos recursos."] : []),
+    ...(!requestedAmount ? [isEnglish ? "Confirm the indicative amount." : "Confirmar o montante indicativo."] : []),
+    ...(!sector ? [isEnglish ? "Confirm the operating sector." : "Confirmar o setor de atuação."] : []),
+    ...(!geography ? [isEnglish ? "Confirm the main operating geography." : "Confirmar a principal geografia de atuação."] : []),
+  ];
+  const operationSummary = objective
+    ? (isEnglish
+      ? `${companyName} is seeking capital for ${objective}. The purpose and indicative terms still require confirmation before the tailored information request.`
+      : `${companyName} busca recursos para ${objective}. A finalidade e os termos indicativos ainda precisam ser confirmados antes da solicitação personalizada de informações.`)
+    : (isEnglish
+      ? `The documents frame the request as ${archetypeLabel}, but its objective still requires confirmation.`
+      : `Os documentos enquadram o pedido como ${archetypeLabel}, mas o objetivo ainda precisa ser confirmado.`);
+  const companySummary = isEnglish
+    ? `The preliminary documents identify ${companyName}${legalName && legalName !== companyName ? ` (${legalName})` : ""}. This description is limited to the supplied declaration and extracted files.`
+    : `Os documentos preliminares identificam ${companyName}${legalName && legalName !== companyName ? ` (${legalName})` : ""}. Esta leitura está limitada ao relato enviado e aos arquivos extraídos.`;
+  const payload = {
+    schemaVersion: "2026.08.31-v1" as const,
+    caseId: input.caseId,
+    locale: isEnglish ? "en-US" as const : "pt-BR" as const,
+    summary: isEnglish
+      ? `${companySummary} ${operationSummary}`
+      : `${companySummary} ${operationSummary}`,
+    company: {
+      name: companyName,
+      legalName,
+      description: profileValue("description"),
+      website,
+      sector,
+      geography,
+      companySummary,
+      sectorSummary: sector
+        ? (isEnglish ? `The declared or documented sector is ${sector}.` : `O setor declarado ou documentado é ${sector}.`)
+        : null,
+      positioningSummary: null,
+    },
+    operation: {
+      archetypeId,
+      archetypeLabel,
+      objective,
+      requestedAmount,
+      currency: input.session.capital_currency || "BRL",
+      urgency: input.session.capital_urgency,
+      requestedTermMonths: input.session.requested_term_months,
+      consequenceIfNotExecuted: input.session.capital_consequence,
+      operationSummary,
+    },
+    basis: {
+      preliminaryDocumentCount: input.documentCount,
+      userDeclared: true,
+      publicResearch: {
+        status: "abstained" as const,
+        sourceCount: 0,
+        topicCounts: {},
+        researchRunId: null,
+        sources: [],
+      },
+    },
+    preliminaryAssessment: {
+      openPoints,
+      researchSignals: [],
+      boundary: isEnglish
+        ? "This is a preliminary understanding of the company and capital need. It is not yet a financial diagnosis, structuring recommendation or credit opinion."
+        : "Este é um entendimento preliminar da companhia e da necessidade de capital. Ainda não é diagnóstico financeiro, recomendação de estrutura ou parecer de crédito.",
+    },
+  };
+  return preliminaryUnderstandingSchema.parse(payload);
 }
 
 export function sha256HexOf(bytes: Uint8Array) {

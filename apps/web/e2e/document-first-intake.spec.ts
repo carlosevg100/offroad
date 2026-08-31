@@ -242,6 +242,9 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("#brief-sector").fill("varejo alimentar");
     await page.locator("#brief-geography").fill("SP");
     await page.locator(".intake-operation-context__actions button[type=submit]").click();
+    await expect(page.locator(".preliminary-understanding")).toBeVisible({timeout: 120_000});
+    await expect(page.locator(".preliminary-understanding__grid")).toContainText("Financiar a abertura de uma nova unidade.");
+    await page.locator(".preliminary-understanding__decision form button[type=submit]").click();
     await expect(page.locator(".intake-upload")).toBeVisible();
 
     await page.locator(".intake-upload input[type=file]").setInputFiles({

@@ -844,3 +844,156 @@ grant execute on function private.worker_load_preliminary_input(uuid, text)
   to authenticated;
 grant execute on function public.worker_load_preliminary_input(uuid, text)
   to authenticated;
+
+-- The local/CI content-hash extractor has no long-running worker, but it must still cross the
+-- same preliminary-understanding gate as production. This command records that deterministic
+-- read with explicit fixture lineage. It is unavailable once an organization is promoted to the
+-- real pipeline, validates the complete public object contract, and derives the object hash
+-- inside Postgres so a caller cannot choose the identity of what the user later confirms.
+create or replace function private.record_fallback_preliminary_understanding(
+  p_organization_id uuid,
+  p_session_id uuid,
+  p_input_fingerprint text,
+  p_payload jsonb
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  actor_id uuid := (select auth.uid());
+  session_row public.document_intake_sessions;
+  run_id uuid;
+  next_run_no integer;
+  next_version integer;
+  object_id uuid;
+  object_fingerprint text;
+begin
+  if actor_id is null
+    or not (select private.can_access_intake_session(p_organization_id, p_session_id)) then
+    raise exception 'preliminary_understanding_access_denied' using errcode = '42501';
+  end if;
+  if coalesce((select organization.pipeline_enabled
+    from public.organizations organization
+    where organization.id = p_organization_id), false)
+    and coalesce((select policy.state
+      from public.organization_rollout_policies policy
+      where policy.organization_id = p_organization_id), 'active') in ('shadow', 'canary', 'active') then
+    raise exception 'fallback_preliminary_pipeline_enabled' using errcode = '55000';
+  end if;
+  if p_input_fingerprint !~ '^[a-f0-9]{64}$'
+    or coalesce(jsonb_typeof(p_payload), 'null') <> 'object'
+    or p_payload ->> 'schemaVersion' <> '2026.08.31-v1'
+    or p_payload ->> 'caseId' <> p_session_id::text
+    or p_payload ->> 'locale' not in ('pt-BR', 'en-US')
+    or coalesce(jsonb_typeof(p_payload -> 'company'), 'null') <> 'object'
+    or coalesce(jsonb_typeof(p_payload -> 'operation'), 'null') <> 'object'
+    or coalesce(jsonb_typeof(p_payload -> 'basis'), 'null') <> 'object'
+    or coalesce(jsonb_typeof(p_payload -> 'preliminaryAssessment'), 'null') <> 'object'
+    or coalesce(p_payload #>> '{basis,publicResearch,status}', '') <> 'abstained'
+    or coalesce((p_payload #>> '{basis,publicResearch,sourceCount}')::integer, -1) <> 0 then
+    raise exception 'invalid_fallback_preliminary_understanding' using errcode = '22023';
+  end if;
+
+  select session.* into session_row
+  from public.document_intake_sessions session
+  where session.organization_id = p_organization_id
+    and session.id = p_session_id
+  for update;
+  if not found then raise exception 'intake_session_not_found' using errcode = 'P0002'; end if;
+  if session_row.status <> 'review_ready' then
+    raise exception 'fallback_preliminary_session_not_ready' using errcode = '55000';
+  end if;
+
+  select understanding.id into object_id
+  from public.preliminary_understandings understanding
+  where understanding.organization_id = p_organization_id
+    and understanding.intake_session_id = p_session_id
+    and understanding.status in ('pending_confirmation', 'confirmed')
+  order by understanding.object_version desc
+  limit 1;
+  if object_id is not null then return object_id; end if;
+
+  select coalesce(max(run.run_no), 0) + 1 into next_run_no
+  from public.processing_runs run
+  where run.organization_id = p_organization_id
+    and run.intake_session_id = p_session_id;
+
+  insert into public.processing_runs (
+    organization_id, intake_session_id, run_no, trigger, status, pipeline_version,
+    stages, budget, usage, versions, started_at, completed_at, created_by
+  ) values (
+    p_organization_id, p_session_id, next_run_no, 'manual', 'succeeded',
+    'fixture-preliminary-2026.08.31',
+    jsonb_build_array(
+      jsonb_build_object('stage', 'preliminary_understanding', 'status', 'started'),
+      jsonb_build_object('stage', 'preliminary_understanding', 'status', 'succeeded')
+    ),
+    jsonb_build_object('max_cost_usd', 0, 'max_calls', 0),
+    jsonb_build_object('cost_usd', 0, 'calls', 0),
+    jsonb_build_object('source', 'verified_content_hash_fixture'),
+    now(), now(), actor_id
+  ) returning id into run_id;
+
+  select coalesce(max(understanding.object_version), 0) + 1 into next_version
+  from public.preliminary_understandings understanding
+  where understanding.organization_id = p_organization_id
+    and understanding.intake_session_id = p_session_id;
+
+  object_fingerprint := encode(extensions.digest(convert_to(jsonb_build_object(
+    'organizationId', p_organization_id,
+    'intakeSessionId', p_session_id,
+    'objectVersion', next_version,
+    'inputFingerprint', p_input_fingerprint,
+    'payload', p_payload
+  )::text, 'utf8'), 'sha256'), 'hex');
+
+  update public.preliminary_understandings understanding
+  set status = 'superseded'
+  where understanding.organization_id = p_organization_id
+    and understanding.intake_session_id = p_session_id
+    and understanding.status in ('pending_confirmation', 'changes_requested');
+
+  insert into public.preliminary_understandings (
+    organization_id, intake_session_id, processing_run_id, object_version, status,
+    input_fingerprint, object_fingerprint, payload
+  ) values (
+    p_organization_id, p_session_id, run_id, next_version, 'pending_confirmation',
+    p_input_fingerprint, object_fingerprint, p_payload
+  ) returning id into object_id;
+
+  update public.document_intake_sessions session
+  set current_run_id = run_id,
+      pipeline_version = 'fixture-preliminary-2026.08.31'
+  where session.organization_id = p_organization_id
+    and session.id = p_session_id;
+
+  return object_id;
+end;
+$$;
+
+create or replace function public.record_fallback_preliminary_understanding(
+  p_organization_id uuid,
+  p_session_id uuid,
+  p_input_fingerprint text,
+  p_payload jsonb
+)
+returns uuid
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.record_fallback_preliminary_understanding(
+    p_organization_id, p_session_id, p_input_fingerprint, p_payload
+  );
+$$;
+
+revoke all on function private.record_fallback_preliminary_understanding(uuid, uuid, text, jsonb)
+  from public, anon, authenticated;
+revoke all on function public.record_fallback_preliminary_understanding(uuid, uuid, text, jsonb)
+  from public, anon;
+grant execute on function private.record_fallback_preliminary_understanding(uuid, uuid, text, jsonb)
+  to authenticated;
+grant execute on function public.record_fallback_preliminary_understanding(uuid, uuid, text, jsonb)
+  to authenticated;

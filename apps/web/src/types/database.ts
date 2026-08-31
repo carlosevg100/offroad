@@ -5844,6 +5844,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_fallback_preliminary_understanding: {
+        Args: {
+          p_input_fingerprint: string
+          p_organization_id: string
+          p_payload: Json
+          p_session_id: string
+        }
+        Returns: string
+      }
       record_intake_analysis: {
         Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
         Returns: undefined
