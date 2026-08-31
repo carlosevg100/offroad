@@ -44,7 +44,7 @@ async function completeCompanyMilestone(page: Page) {
 
 async function chooseOperation(page: Page, archetype = "growth_expansion") {
   const option = page.locator(`input[name="archetype"][value="${archetype}"]`);
-  await option.check();
+  await page.locator(`.intake-operation__option:has(input[value="${archetype}"])`).click();
   await expect(option).toBeChecked();
   await page.locator(".intake-operation__actions button[type=submit]").click();
   await expect(page.locator(".intake-brief")).toBeVisible();
