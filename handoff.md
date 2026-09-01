@@ -2268,13 +2268,21 @@ sobre o fingerprint exato, marca a versão anterior como substituída, invalida 
 `M07` e enfileira uma nova síntese dependente dos artefatos preservados de `M06`, `C02` e `K04`.
 Replay da mesma decisão retorna o mesmo job. A reserva de Perplexity é zero nessa revisão.
 
-Banco validado somente no branch Supabase `staging`: `origination_thesis_vertical_passed`,
-`project_company_scope_passed` e Security Advisor sem findings. O teste de worker cobre a execução
-normal, falha fechada por dependência adulterada e revisão M07-only sem busca. `pnpm test` e
-`pnpm build` passaram nos 42 pacotes; web tem 160 testes, worker 69 e o build Next.js gera 30
-páginas. Nenhuma API paga foi chamada nesta validação.
+O banco foi promovido primeiro em `staging` e depois em produção pelas migrations
+`20260901035241` a `20260901035319`. Tabelas, RPCs e `FORCE ROW LEVEL SECURITY` foram verificados
+em produção. `origination_thesis_vertical_passed`, `project_company_scope_passed` e Security
+Advisor passaram; a migration `20260901035442` eliminou os cinco foreign keys sem índice e a
+categoria `unindexed_foreign_keys` também ficou zerada nos dois ambientes. O teste de worker cobre
+a execução normal, falha fechada por dependência adulterada e revisão M07-only sem busca.
 
-Não declarar a plataforma inteira pronta. Esta etapa fecha a tese pública de originação; os
-outros cinco jobs continuam sujeitos a executor, interface, gold case, adversarial e evidência de
-aceite próprios. Depois de PR, CI, deploy e smoke test da vertical pública, o próximo incremento
+A PR #336 foi incorporada no commit `f51fbf0351e7e88289f26a63b721e580f9016902`. O Quality
+`33467602650`, incluindo banco e E2E, passou; o deploy do worker `33467602677` estabilizou no ECS;
+e o Vercel publicou `5bBMwnK1VJe2NiwTKVc4YrinQ8NU`. O gate local passou nos 42 pacotes, com 160
+testes web, 69 do worker e build Next.js de 30 páginas. O ledger de briefs de produção permanece
+vazio e nenhuma API paga foi chamada nesta validação.
+
+Não declarar a plataforma inteira pronta. A tese pública de originação está tecnicamente pronta
+para o primeiro teste humano/gold case em produção, mas esse teste ainda precisa comprovar a
+qualidade financeira e editorial do work product. Os outros cinco jobs continuam sujeitos a
+executor, interface, gold case, adversarial e evidência de aceite próprios. O incremento seguinte
 deve promover `company_debt_view` reaproveitando o mesmo projeto, plano e runtime.
