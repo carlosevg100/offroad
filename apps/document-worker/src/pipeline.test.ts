@@ -56,6 +56,8 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
       writeStage: async (_job, stage, status) => {
         calls.stages.push({stage, status});
       },
+      startCapitalTask: async () => "11111111-1111-4111-8111-111111111111",
+      finishCapitalTask: async (_job, input) => input.taskRunId,
       recordDocument: async (_job, input) => {
         calls.documents.push(input);
       },

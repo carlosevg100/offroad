@@ -538,6 +538,153 @@ begin
 end;
 $$;
 
+-- A persisted plan is still only intent. The worker may execute only the tasks named in its
+-- short-lived capability payload, in dependency order, and cannot claim success without a
+-- referenced output plus a passing grader.
+reset role;
+
+insert into private.worker_tokens (label, token_sha256)
+values ('capital-task-runtime-test', extensions.digest(repeat('q', 64), 'sha256'))
+on conflict (token_sha256) do update set status = 'active', revoked_at = null;
+
+do $$
+declare
+  target_session_id uuid;
+  target_project_id uuid;
+  target_plan_id uuid;
+  run_id uuid;
+begin
+  select session.id, session.capital_project_id
+  into target_session_id, target_project_id
+  from public.document_intake_sessions session
+  where session.project_name = 'Tese com plano persistido';
+  select plan.id into target_plan_id
+  from public.capital_project_plans plan
+  where plan.capital_project_id = target_project_id and plan.status = 'active';
+
+  update public.processing_jobs set status = 'cancelled' where status = 'queued';
+  insert into public.processing_runs (
+    organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
+  ) values (
+    '20000000-0000-4000-8000-000000000105', target_session_id,
+    coalesce((select max(run_no) + 1 from public.processing_runs where intake_session_id = target_session_id), 1),
+    'manual', 'queued', 'capital-task-runtime-test-v1',
+    '10000000-0000-4000-8000-000000000105'
+  ) returning id into run_id;
+  insert into public.processing_jobs (
+    organization_id, processing_run_id, intake_session_id, kind, payload, max_attempts
+  ) values (
+    '20000000-0000-4000-8000-000000000105', run_id, target_session_id,
+    'preliminary_analysis', jsonb_build_object(
+      'locale', 'pt-BR',
+      'execution_mode', 'primary',
+      'analysis_scope', 'preliminary_understanding',
+      'capital_project_plan_id', target_plan_id,
+      'capital_task_ids', jsonb_build_array('M01', 'M02', 'M04'),
+      'trigger_event', jsonb_build_object('kind', 'project_started', 'id', gen_random_uuid())
+    ), 2
+  );
+end;
+$$;
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000105","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  claim jsonb;
+  job_id uuid;
+  capability text;
+  m01_run uuid;
+  m02_run uuid;
+  m04_run uuid;
+  rejected boolean;
+begin
+  claim := public.worker_claim_job(repeat('q', 64), 600);
+  if claim ->> 'kind' <> 'preliminary_analysis' then
+    raise exception 'capital TaskRun test did not claim its scoped processing job: %', claim;
+  end if;
+  job_id := (claim ->> 'job_id')::uuid;
+  capability := claim ->> 'capability_token';
+
+  m01_run := public.worker_start_capital_project_task(
+    job_id, capability, 'M01', 'resolve-company', '2026.09.01-v1', repeat('a', 64),
+    '{"reads":["company.name","company.website"]}'::jsonb
+  );
+  if public.worker_start_capital_project_task(
+    job_id, capability, 'M01', 'resolve-company', '2026.09.01-v1', repeat('a', 64),
+    '{"reads":["company.name","company.website"]}'::jsonb
+  ) <> m01_run then
+    raise exception 'capital TaskRun start was not idempotent';
+  end if;
+
+  rejected := false;
+  begin
+    perform public.worker_start_capital_project_task(
+      job_id, capability, 'M03', 'register-constraints', '2026.09.01-v1', repeat('c', 64), '{}'::jsonb
+    );
+  exception when insufficient_privilege then rejected := true;
+  end;
+  if not rejected then raise exception 'job capability executed a task outside capital_task_ids'; end if;
+
+  rejected := false;
+  begin
+    perform public.worker_start_capital_project_task(
+      job_id, capability, 'M04', 'infer-archetypes', '2026.09.01-v1', repeat('d', 64), '{}'::jsonb
+    );
+  exception when object_not_in_prerequisite_state then rejected := true;
+  end;
+  if not rejected then raise exception 'capital TaskRun ignored incomplete dependencies'; end if;
+
+  rejected := false;
+  begin
+    perform public.worker_finish_capital_project_task(
+      job_id, capability, m01_run, 'succeeded',
+      '{"type":"company_resolution","id":"company-resolution-1"}'::jsonb,
+      repeat('1', 64), '[]'::jsonb, '{}'::jsonb, null
+    );
+  exception when invalid_parameter_value then rejected := true;
+  end;
+  if not rejected then raise exception 'capital TaskRun accepted ungraded success'; end if;
+
+  perform public.worker_finish_capital_project_task(
+    job_id, capability, m01_run, 'succeeded',
+    '{"type":"company_resolution","id":"company-resolution-1"}'::jsonb,
+    repeat('1', 64), '[{"grader":"schema","passed":true}]'::jsonb,
+    '{"durationMs":12}'::jsonb, null
+  );
+  m02_run := public.worker_start_capital_project_task(
+    job_id, capability, 'M02', 'normalize-objective', '2026.09.01-v1', repeat('b', 64), '{}'::jsonb
+  );
+  perform public.worker_finish_capital_project_task(
+    job_id, capability, m02_run, 'succeeded',
+    '{"type":"normalized_objective","id":"normalized-objective-1"}'::jsonb,
+    repeat('2', 64), '[{"grader":"schema","passed":true}]'::jsonb, '{}'::jsonb, null
+  );
+  m04_run := public.worker_start_capital_project_task(
+    job_id, capability, 'M04', 'infer-archetypes', '2026.09.01-v1', repeat('d', 64), '{}'::jsonb
+  );
+  perform public.worker_finish_capital_project_task(
+    job_id, capability, m04_run, 'succeeded',
+    '{"type":"archetype_candidates","id":"archetype-candidates-1"}'::jsonb,
+    repeat('4', 64), '[{"grader":"schema","passed":true}]'::jsonb, '{}'::jsonb, null
+  );
+
+  if (select count(*) from public.capital_project_task_runs where status = 'succeeded') <> 3 then
+    raise exception 'capital TaskRun lifecycle did not persist the three proven executions';
+  end if;
+  begin
+    update public.capital_project_task_runs set status = 'cancelled' where id = m01_run;
+    raise exception 'tenant mutated a TaskRun directly';
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
 rollback;
 
 select 'project_company_scope_passed' as result;
