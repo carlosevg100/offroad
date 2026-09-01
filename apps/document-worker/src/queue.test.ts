@@ -46,3 +46,61 @@ describe("case input loading", () => {
     ]);
   });
 });
+
+describe("capital TaskRun lifecycle", () => {
+  it("passes the claimed capability, versioned executor and proof-bearing result", async () => {
+    const taskRunId = "50000000-0000-4000-8000-000000000001";
+    const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+      if (name === "worker_start_capital_project_task") {
+        expect(args).toMatchObject({
+          p_job_id: job.job_id,
+          p_capability_token: job.capability_token,
+          p_task_id: "M01",
+          p_executor_key: "resolve-company",
+          p_executor_version: "2026.09.01-v1",
+          p_input_fingerprint: "a".repeat(64),
+          p_context_manifest: {company: ["name", "website"]},
+        });
+        return {data: taskRunId, error: null};
+      }
+      if (name === "worker_finish_capital_project_task") {
+        expect(args).toMatchObject({
+          p_job_id: job.job_id,
+          p_capability_token: job.capability_token,
+          p_task_run_id: taskRunId,
+          p_status: "succeeded",
+          p_output_reference: {type: "company_resolution", id: "company-resolution-1"},
+          p_output_fingerprint: "b".repeat(64),
+          p_quality_results: [{grader: "schema", passed: true}],
+          p_usage: {durationMs: 12},
+          p_error: null,
+        });
+        return {data: taskRunId, error: null};
+      }
+      throw new Error(`unexpected RPC ${name}`);
+    });
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    const started = await queue.startCapitalTask(job, {
+      taskId: "M01",
+      executorKey: "resolve-company",
+      executorVersion: "2026.09.01-v1",
+      inputFingerprint: "a".repeat(64),
+      contextManifest: {company: ["name", "website"]},
+    });
+    const finished = await queue.finishCapitalTask(job, {
+      taskRunId: started,
+      status: "succeeded",
+      outputReference: {type: "company_resolution", id: "company-resolution-1"},
+      outputFingerprint: "b".repeat(64),
+      qualityResults: [{grader: "schema", passed: true}],
+      usage: {durationMs: 12},
+    });
+
+    expect(finished).toBe(taskRunId);
+    expect(rpc.mock.calls.map(([name]) => name)).toEqual([
+      "worker_start_capital_project_task",
+      "worker_finish_capital_project_task",
+    ]);
+  });
+});

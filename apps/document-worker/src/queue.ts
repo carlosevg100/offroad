@@ -86,11 +86,28 @@ const noJobSchema = z.object({
 });
 
 export type StageStatus = "started" | "succeeded" | "failed" | "skipped";
+export type CapitalTaskFinishStatus = "waiting_user" | "blocked" | "succeeded" | "failed" | "cancelled";
 
 export type QueueClient = {
   claim(): Promise<ClaimedJob | null>;
   heartbeat(job: ClaimedJob): Promise<void>;
   writeStage(job: ClaimedJob, stage: string, status: StageStatus, detail?: unknown, usage?: Record<string, number>): Promise<void>;
+  startCapitalTask(job: ClaimedJob, input: {
+    taskId: string;
+    executorKey: string;
+    executorVersion: string;
+    inputFingerprint: string;
+    contextManifest?: unknown;
+  }): Promise<string>;
+  finishCapitalTask(job: ClaimedJob, input: {
+    taskRunId: string;
+    status: CapitalTaskFinishStatus;
+    outputReference?: unknown;
+    outputFingerprint?: string;
+    qualityResults?: unknown[];
+    usage?: Record<string, unknown>;
+    error?: unknown;
+  }): Promise<string>;
   recordDocument(job: ClaimedJob, input: {scanResult?: unknown; profile?: unknown; layer?: unknown}): Promise<void>;
   recordCandidates(job: ClaimedJob, candidates: unknown[]): Promise<{written: number; replaced: number}>;
   recordRetrievalChunks(job: DocumentJob, chunks: unknown[]): Promise<{written: number; sourceDocumentId: string}>;
@@ -187,6 +204,34 @@ export function createQueueClient(
         p_detail: detail ?? {},
         p_usage: usage ?? {},
       });
+    },
+
+    async startCapitalTask(job, input) {
+      const data = await call("worker_start_capital_project_task", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_task_id: input.taskId,
+        p_executor_key: input.executorKey,
+        p_executor_version: input.executorVersion,
+        p_input_fingerprint: input.inputFingerprint,
+        p_context_manifest: input.contextManifest ?? {},
+      });
+      return z.uuid().parse(data);
+    },
+
+    async finishCapitalTask(job, input) {
+      const data = await call("worker_finish_capital_project_task", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_task_run_id: input.taskRunId,
+        p_status: input.status,
+        p_output_reference: input.outputReference ?? null,
+        p_output_fingerprint: input.outputFingerprint ?? null,
+        p_quality_results: input.qualityResults ?? [],
+        p_usage: input.usage ?? {},
+        p_error: input.error ?? null,
+      });
+      return z.uuid().parse(data);
     },
 
     async recordDocument(job, input) {

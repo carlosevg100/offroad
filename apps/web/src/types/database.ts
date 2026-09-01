@@ -753,12 +753,16 @@ export type Database = {
           context_manifest: Json | null
           created_at: string
           error: Json | null
+          executor_key: string | null
+          executor_version: string | null
           id: string
           input_fingerprint: string | null
           organization_id: string
+          output_fingerprint: string | null
           output_reference: Json | null
           plan_id: string
           plan_task_id: string
+          processing_job_id: string | null
           quality_results: Json
           started_at: string | null
           status: string
@@ -772,12 +776,16 @@ export type Database = {
           context_manifest?: Json | null
           created_at?: string
           error?: Json | null
+          executor_key?: string | null
+          executor_version?: string | null
           id?: string
           input_fingerprint?: string | null
           organization_id: string
+          output_fingerprint?: string | null
           output_reference?: Json | null
           plan_id: string
           plan_task_id: string
+          processing_job_id?: string | null
           quality_results?: Json
           started_at?: string | null
           status: string
@@ -791,12 +799,16 @@ export type Database = {
           context_manifest?: Json | null
           created_at?: string
           error?: Json | null
+          executor_key?: string | null
+          executor_version?: string | null
           id?: string
           input_fingerprint?: string | null
           organization_id?: string
+          output_fingerprint?: string | null
           output_reference?: Json | null
           plan_id?: string
           plan_task_id?: string
+          processing_job_id?: string | null
           quality_results?: Json
           started_at?: string | null
           status?: string
@@ -823,6 +835,13 @@ export type Database = {
             columns: ["organization_id", "plan_id"]
             isOneToOne: false
             referencedRelation: "capital_project_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_task_runs_processing_job_fkey"
+            columns: ["organization_id", "processing_job_id"]
+            isOneToOne: false
+            referencedRelation: "processing_jobs"
             referencedColumns: ["organization_id", "id"]
           },
           {
@@ -6623,6 +6642,20 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_finish_capital_project_task: {
+        Args: {
+          p_capability_token: string
+          p_error?: Json
+          p_job_id: string
+          p_output_fingerprint?: string
+          p_output_reference?: Json
+          p_quality_results?: Json
+          p_status: string
+          p_task_run_id: string
+          p_usage?: Json
+        }
+        Returns: string
+      }
       worker_freeze_case_input: {
         Args: {
           p_capability_token: string
@@ -6789,6 +6822,18 @@ export type Database = {
       worker_record_retrieval_chunks: {
         Args: { p_capability_token: string; p_chunks: Json; p_job_id: string }
         Returns: Json
+      }
+      worker_start_capital_project_task: {
+        Args: {
+          p_capability_token: string
+          p_context_manifest?: Json
+          p_executor_key: string
+          p_executor_version: string
+          p_input_fingerprint: string
+          p_job_id: string
+          p_task_id: string
+        }
+        Returns: string
       }
       worker_write_stage_result: {
         Args: {
