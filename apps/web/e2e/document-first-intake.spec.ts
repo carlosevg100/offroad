@@ -337,7 +337,9 @@ test.describe("Document-first intake (company journey)", () => {
 
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
     await expect(page.locator(".advisor-project__conversation")).toBeVisible();
-    await page.locator(".advisor-context-section__open").click();
+    const specializedWork = page.locator(".advisor-context-section__open");
+    await expect(specializedWork).toBeVisible();
+    await specializedWork.click();
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+\?view=work$/);
     await expect(page.locator(".origination-project__header")).toContainText("Companhia Pública Exemplo");
     await expect(page.locator(".origination-project__access")).toContainText("Somente fontes públicas");
