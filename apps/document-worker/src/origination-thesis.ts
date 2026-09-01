@@ -2,7 +2,7 @@ import {z} from "zod";
 
 import {fingerprintJson} from "@offroad/case-understanding";
 import {originationMeetingBriefSchema as meetingBriefSchema, originationThesisBriefSchema} from "@offroad/domain-contracts";
-import type {GatewayCallLog, ModelGateway} from "@offroad/model-gateway";
+import {providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {
   buildOriginationResearchPlan,
   runPublicResearch,
@@ -235,6 +235,7 @@ export async function processOriginationThesisJob(
         input: [{type: "text", text: JSON.stringify(modelInput)}],
         schema: meetingBriefSchema,
         schemaName: "origination_meeting_brief_v1",
+        dataHandling: {classification: "confidential", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
         maxOutputTokens: 6_000,
         metadata: {
           jobId: job.job_id,

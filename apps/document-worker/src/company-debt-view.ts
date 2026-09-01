@@ -6,7 +6,7 @@ import {
   companyDebtDiagnosticSchema,
   companyDebtViewBriefSchema,
 } from "@offroad/domain-contracts";
-import type {GatewayCallLog, ModelGateway} from "@offroad/model-gateway";
+import {providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {
   buildCompanyDebtResearchPlan,
   runPublicResearch,
@@ -230,6 +230,7 @@ export async function processCompanyDebtViewJob(
         task: "company_debt_view", system: COMPANY_DEBT_SYSTEM,
         input: [{type: "text", text: JSON.stringify(modelInput)}],
         schema: companyDebtDiagnosticSchema, schemaName: "company_debt_diagnostic_v1",
+        dataHandling: {classification: "confidential", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
         maxOutputTokens: 8_000,
         metadata: {
           jobId: job.job_id, projectId: context.project.id,

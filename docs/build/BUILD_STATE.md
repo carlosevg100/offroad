@@ -4,6 +4,37 @@ Atualizado em: 2026-09-01
 Baseline: `main` após PR #344, commit `21c7549`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Control plane do pre-mortem, 01/09/2026
+
+O candidato transforma os principais modos de morte do produto em contratos fail-closed. A nova
+camada não calcula um score: fonte insuficiente, cálculo crítico não determinístico, artefato stale,
+boundary de segurança não verificada ou autoridade ausente continuam bloqueando mesmo se todo o
+resto estiver verde.
+
+`@offroad/release-governance` passa a acreditar capacidades por escopo e etapa (`Represent`,
+`Analyze`, `Recommend`, `Structure`, `External release`) e a separar uso preliminar, decisão
+interna, material externo e ação externa. Produção exige procedimento, implementação, owner,
+gold/adversarial, zero crítico e vinte casos reais distintos. O rollout `active` mantém duas ondas
+disjuntas de dez casos e agora também exige aceite do control plane.
+
+O mesmo pacote ganhou invalidação transitiva de evidência até cálculos, claims, materiais,
+aprovações e lender matching; e um ledger tipado de intervenção humana capaz de expor correção
+manual recorrente e minutos não capturados. Os contratos são puros; persistência no banco ainda é
+uma etapa separada e não foi simulada.
+
+`@offroad/model-gateway` agora recebe classe e finalidade em todas as chamadas reais de
+classificação, extração, conversa, análise, estrutura, redação e auditoria. Existe policy
+fail-closed por provider, inclusive fallback, exigindo assurance vigente, finalidade/classe
+permitidas, treinamento proibido e `no_store` para dado não público. O worker aceita os registros
+por ambiente, mas enforcement permanece desligado até DPA/ZDR/base legal reais serem cadastrados;
+nenhuma promessa contratual de vendor foi inventada.
+
+A matriz completa está em `docs/build/PRE_MORTEM_CONTROL_MATRIX.md`. Este slice não adiciona SSO,
+SCIM, DLP, pentest, disaster recovery ou acreditação automática dos knowledge packs. Nenhuma API
+paga foi chamada e produção não foi alterada. O gate integral `pnpm check` em Node 24 aprovou os
+42 pacotes: web com 162 testes, worker com 85, model gateway com 22, release governance com 11 e
+build Next.js com 32 páginas.
+
 ## Fundação Brasil–Estados Unidos e idioma contínuo, 01/09/2026
 
 O candidato passa a separar idioma de trabalho, idioma das fontes e jurisdição econômica. O mesmo

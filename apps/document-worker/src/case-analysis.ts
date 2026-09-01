@@ -59,7 +59,7 @@ import {
   type Sourced,
 } from "@offroad/fund-mandate";
 import {sha256} from "@offroad/governed-retrieval";
-import {gatewayCallLogSchema, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
+import {gatewayCallLogSchema, providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {
   buildPublicResearchPlan,
   runPublicResearch,
@@ -625,6 +625,7 @@ async function processPreliminaryUnderstanding(
     input: [{type: "text", text: JSON.stringify(preliminaryInput)}],
     schema: preliminaryNarrativeSchema,
     schemaName: "preliminary_understanding_v1",
+    dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
     maxOutputTokens: 3_500,
     metadata: {
       jobId: job.job_id,
@@ -806,6 +807,7 @@ export async function processCaseAnalysisJob(
           })}],
           schema: structureAlternativesInputSchema,
           schemaName: "structure_alternatives",
+          dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
           maxOutputTokens: 8_000,
           useShadow,
           metadata: {caseId: job.intake_session_id, caseFingerprint: context.caseFingerprint},
@@ -893,6 +895,7 @@ export async function processCaseAnalysisJob(
           }],
           schema: caseBriefSchema,
           schemaName: "case_brief",
+          dataHandling: {classification: "restricted", purpose: "artifact_generation", requiredPolicyVersion: providerDataPolicyVersion},
           useShadow,
         });
         writerProvider = generated.provider;
@@ -913,6 +916,7 @@ export async function processCaseAnalysisJob(
           input: [{type: "text", text: buildSemanticAuditInput({brief, facts, calculations})}],
           schema: semanticAuditSchema,
           schemaName: "semantic_claim_audit",
+          dataHandling: {classification: "restricted", purpose: "evaluation", requiredPolicyVersion: providerDataPolicyVersion},
           // The evidence review must not be performed by the provider that wrote the case.
           model: writerProvider === "openai"
             ? {provider: "anthropic", model: "claude-opus-5", effort: "high"}

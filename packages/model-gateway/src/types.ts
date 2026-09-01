@@ -1,4 +1,5 @@
 import type {z} from "zod";
+import type {DataHandlingContext} from "./data-policy";
 
 export type Provider = "anthropic" | "openai";
 
@@ -56,6 +57,8 @@ export type GatewayRequest<TSchema extends z.ZodType> = {
    * about, and reasoning tokens bill at the output rate. Omitted means the provider default.
    */
   thinking?: "off";
+  /** Required when provider data-policy enforcement is enabled. Never inferred from content. */
+  dataHandling?: DataHandlingContext;
 };
 
 export type Usage = {
@@ -110,7 +113,7 @@ export type GatewayResult<T> = {
   /** True when the response came from a recorded cassette (tests/CI). */
   fromCassette: boolean;
   requestId?: string;
-  attempts: Array<{provider: Provider; model: string; outcome: "ok" | "refusal" | "error" | "invalid_output"; message?: string}>;
+  attempts: Array<{provider: Provider; model: string; outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected"; message?: string}>;
 };
 
 export type GatewayCallLog = {
@@ -119,26 +122,28 @@ export type GatewayCallLog = {
   provider: Provider;
   model: string;
   effort: Effort;
-  outcome: "ok" | "refusal" | "error" | "invalid_output";
+  outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected";
   promptFingerprint: string;
   inputFingerprint: string;
   outputFingerprint: string;
   usage: Usage;
   costUsd: number;
   /** `unknown` means the provider call failed before usage was returned; it is never "free". */
-  costStatus: "measured" | "unknown" | "cassette";
+  costStatus: "measured" | "unknown" | "cassette" | "not_called";
   latencyMs: number;
   stopReason: StopReason;
   usedFallback: boolean;
   fromCassette: boolean;
   schemaName: string;
+  dataClassification?: DataHandlingContext["classification"];
+  providerPolicyVersion?: string;
   metadata?: Record<string, string>;
 };
 
 export class ModelGatewayError extends Error {
   constructor(
     message: string,
-    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "cassette_missing" | "timeout",
+    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "cassette_missing" | "timeout" | "data_policy_violation",
     readonly details?: unknown,
   ) {
     super(message);

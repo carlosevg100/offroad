@@ -10,7 +10,7 @@ import {
   type WorkspaceJobActivation,
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
-import type {ModelGateway} from "@offroad/model-gateway";
+import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
 import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {z} from "zod";
 
@@ -182,6 +182,7 @@ export async function processAgentOperationBriefJob(
           }],
           schema: agentOperationBriefResponseSchema,
           schemaName: "agent_operation_brief_response_v2",
+          dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
           maxOutputTokens: 2_000,
           metadata: {
             jobId: job.job_id,

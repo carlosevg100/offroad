@@ -1,5 +1,24 @@
 # Acceptance Evidence
 
+## Control plane do pre-mortem, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Acreditação estreita | testes de `@offroad/release-governance` | produção recusada sem procedimento, adversarial ou vinte casos reais distintos |
+| Gate sem média | operating controls | mandato, claims, cálculo, cobertura, julgamento, artefatos, mercado, segurança, freshness e autoridade geram blockers tipados |
+| Competência ≠ autoridade | teste de ação externa | capacidade em produção não libera destinatário sem autorização exata e fingerprint da lista |
+| Invalidação transitiva | teste de dependency graph | nova ITR invalida dívida líquida, capacidade, claim de estrutura, term sheet, aceite e lender match |
+| Falsa automação visível | teste de human intervention | minutos não capturados, causa recorrente e mudança canônica sem revisão bloqueiam a tese de automação |
+| Policy por provider | testes de `@offroad/model-gateway` | primário incompatível não recebe dado; fallback só roda com assurance válido; ausência ou expiração falham antes da chamada |
+| Dados classificados | typecheck do worker/classificação/extração | todas as chamadas reais declaram finalidade e classe; documentos e estado de case são `restricted` |
+| Promoção endurecida | teste de rollout | `active` exige 2×10 casos reais disjuntos, aprovação externa e aprovação dos controles operacionais |
+| Gate integral | `pnpm check`, Node 24 | 42 pacotes verdes; web 162, worker 85, gateway 22, release governance 11; Next.js compilou 32 páginas |
+| Custo | execução desta validação | zero chamada de modelo, busca ou API paga |
+
+O teste prova os contratos e suas transições. Ainda não prova a persistência desses novos snapshots,
+um DPA/ZDR vigente, SSO/SCIM/DLP/DR, nem a qualidade institucional de qualquer knowledge pack ou
+vertical. Esses pontos permanecem explicitamente pendentes na matriz do pre-mortem.
+
 ## Brasil–Estados Unidos e idioma contínuo, 01/09/2026
 
 | Evidência | Verificação | Resultado |

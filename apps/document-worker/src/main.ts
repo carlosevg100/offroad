@@ -112,6 +112,13 @@ async function main(): Promise<void> {
       : 0;
     const gateway = createModelGateway({
       adapters,
+      providerDataPolicy: {
+        enforce: config.ENFORCE_PROVIDER_DATA_POLICY,
+        assurances: {
+          ...(config.ANTHROPIC_DATA_ASSURANCE_JSON ? {anthropic: config.ANTHROPIC_DATA_ASSURANCE_JSON} : {}),
+          ...(config.OPENAI_DATA_ASSURANCE_JSON ? {openai: config.OPENAI_DATA_ASSURANCE_JSON} : {}),
+        },
+      },
       budget: {
         maxCostUsd: configuredMax - researchReserveUsd,
         maxCalls: Math.min(config.MODEL_MAX_CALLS_PER_JOB, requestedBudget?.max_calls ?? config.MODEL_MAX_CALLS_PER_JOB),

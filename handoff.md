@@ -10,6 +10,35 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: executable pre-mortem control plane, 1 September 2026
+
+The current candidate turns the product pre-mortem into deterministic release controls. A narrow
+capability can be `unsupported`, `specified`, `implemented`, `tested` or `production` for exactly
+one scope and one of `Represent`, `Analyze`, `Recommend`, `Structure` or `External release`.
+Production requires canonical procedure, implementation fingerprint, accountable owner, gold and
+adversarial evidence, no critical finding and twenty distinct real cases. The rollout state
+machine retains its two disjoint ten-case waves and now also requires operating-control approval.
+
+Case use is independently gated as preliminary, internal decision, external material or external
+action. Material claims must be source/entity/period/currentness complete; critical calculations
+must be deterministic and reconciled; judgment must compare alternatives and downside; external
+artifacts must be current, cross-consistent and approved; and an external action also needs current
+market fit plus exact recipient authority. There is no weighted quality score.
+
+New evidence can now invalidate every transitive dependent through facts, calculations, claims,
+artifacts, approvals and lender matches. Human intervention is typed and measured, exposing
+uncaptured minutes, recurring product failures and unreviewed manual canonical changes instead of
+hiding them behind the UI.
+
+Every real worker model call now declares data classification and purpose. The model gateway can
+enforce versioned provider-assurance records separately for each primary or fallback route before
+content leaves the perimeter. The path is deliberately disabled until actual Offroad DPA/ZDR and
+legal-basis records are provided; this candidate does not invent vendor assurances. It also does
+not implement persistence for the new control snapshots, SSO/SCIM/DLP, external pentesting or DR.
+No production environment or paid provider was touched.
+The complete Node 24 gate passed across all 42 packages: web 162 tests, worker 85, model gateway
+22, release governance 11, and a 32-page Next.js production build.
+
 ### Engineering update: Brazil–US foundation and continuous language, 1 September 2026
 
 The current candidate separates working language, source language and economic jurisdiction.
