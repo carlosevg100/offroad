@@ -158,6 +158,12 @@ language plpgsql
 set search_path = ''
 as $$
 begin
+  -- A project deletion owns the lifecycle of its tenant-scoped evidence. PostgreSQL executes
+  -- the FK cascade inside a nested trigger; permit only that privacy/deletion path. A direct
+  -- ledger DELETE or any UPDATE remains forbidden, including to service_role.
+  if tg_op = 'DELETE' and pg_trigger_depth() > 1 then
+    return old;
+  end if;
   raise exception 'operating_control_ledger_is_append_only' using errcode = '42501';
 end;
 $$;
