@@ -202,7 +202,7 @@ set search_path = ''
 as $$
 declare
   evidence_fingerprint text;
-  decision_fingerprint text;
+  v_decision_fingerprint text;
   accreditation_id uuid;
   real_case_count integer;
   distinct_real_case_count integer;
@@ -266,7 +266,7 @@ begin
   evidence_fingerprint := encode(
     extensions.digest(convert_to(p_evidence::text, 'utf8'), 'sha256'), 'hex'
   );
-  decision_fingerprint := encode(extensions.digest(convert_to(jsonb_build_object(
+  v_decision_fingerprint := encode(extensions.digest(convert_to(jsonb_build_object(
     'scopeId', trim(p_scope_id), 'stage', p_stage,
     'claimedMaturity', p_claimed_maturity, 'effectiveMaturity', p_effective_maturity,
     'accredited', p_accredited, 'evidenceFingerprint', evidence_fingerprint,
@@ -276,7 +276,7 @@ begin
 
   select row.id into accreditation_id
   from private.platform_capability_accreditations row
-  where row.decision_fingerprint = decision_fingerprint;
+  where row.decision_fingerprint = v_decision_fingerprint;
   if accreditation_id is not null then return accreditation_id; end if;
 
   insert into private.platform_capability_accreditations (
@@ -286,7 +286,7 @@ begin
   ) values (
     trim(p_scope_id), p_stage, p_claimed_maturity, p_effective_maturity, p_accredited,
     p_evidence, coalesce(p_blockers, '{}'::text[]), evidence_fingerprint,
-    decision_fingerprint, p_evaluated_at, p_valid_through, p_recorded_by
+    v_decision_fingerprint, p_evaluated_at, p_valid_through, p_recorded_by
   ) returning id into accreditation_id;
   return accreditation_id;
 exception
