@@ -165,4 +165,92 @@ describe("agent operation brief worker", () => {
     expect(recordedResponse).toMatchObject({state: "idle"});
     expect(completed?.request_route).toMatchObject({intent: "authorize_external", effect: "external"});
   });
+
+  it("sends only scoped project memory and real work state in one bounded model call", async () => {
+    let calls = 0;
+    let modelInput = "";
+    let metadata: Record<string, string> | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "O que já sabemos e qual é o próximo passo?",
+        brief: {currency: "BRL", useOfProceeds: "working_capital"},
+        snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-01T12:00:00.000Z",
+        manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          name: "Projeto Cedro",
+          entryJob: "company_debt_view",
+          accessBasis: "private_authorized",
+          phase: "understand",
+          status: "active",
+        },
+        company_profile: {companyName: "Cedro", sector: "Distribuição"},
+        documents: [{
+          id: "11111111-1111-4111-8111-111111111111",
+          name: "balancete.pdf",
+          kind: "trial_balance",
+          status: "ready",
+        }],
+        tasks: [{taskId: "M01", label: "Resolver companhia e grupo", ordinal: 0, status: "succeeded"}],
+        artifacts: [{
+          id: "22222222-2222-4222-8222-222222222222",
+          type: "preliminary_understanding",
+          version: 1,
+          status: "draft",
+        }],
+        recent_messages: [{
+          id: "33333333-3333-4333-8333-333333333333",
+          role: "assistant" as const,
+          content: "Estou organizando o entendimento inicial.",
+          created_at: "2026-09-01T11:59:00.000Z",
+        }],
+      }),
+      recordAgentResponse: async () => ({}),
+      complete: async () => {},
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async (request: {
+        input: Array<{type: string; text?: string}>;
+        maxOutputTokens: number;
+        metadata: Record<string, string>;
+      }) => {
+        calls += 1;
+        modelInput = request.input[0]?.text ?? "";
+        metadata = request.metadata;
+        expect(request.maxOutputTokens).toBe(2_000);
+        return {
+          output: {
+            state: "idle",
+            reply: "Já identificamos a companhia e recebemos o balancete; o próximo passo é concluir a leitura antes de afirmar capacidade financeira.",
+          },
+          usage: {inputTokens: 180, outputTokens: 45, cachedInputTokens: 0},
+        };
+      },
+      spent: () => ({costUsd: 0.08, calls}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const parsedInput = JSON.parse(modelInput) as Record<string, unknown>;
+
+    expect(result.status).toBe("succeeded");
+    expect(calls).toBe(1);
+    expect(parsedInput).toMatchObject({
+      project: {name: "Projeto Cedro", entryJob: "company_debt_view"},
+      companyProfile: {companyName: "Cedro"},
+      documentInventory: [{name: "balancete.pdf", kind: "trial_balance", status: "ready"}],
+      workPlan: [{taskId: "M01", status: "succeeded"}],
+      artifacts: [{type: "preliminary_understanding", version: 1, status: "draft"}],
+      latestUserMessage: "O que já sabemos e qual é o próximo passo?",
+    });
+    expect(metadata).toMatchObject({projectEntryJob: "company_debt_view", documentCount: "1", artifactCount: "1"});
+    expect(modelInput).not.toContain("object_path");
+    expect(modelInput).not.toContain("full_document_text");
+  });
 });

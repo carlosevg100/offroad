@@ -135,38 +135,37 @@ próxima melhor ação. Nunca deve avançar silenciosamente.
 
 ## 5. Fluxo completo
 
-### Etapa 0: ambiente privado e autoridade
+### Etapa 0: confidencialidade da conta e criação do projeto
 
 **Objetivo**
 
-Criar um ambiente privado, identificar quem está conduzindo o trabalho, nomear o
-projeto e registrar os compromissos de confidencialidade e uso das informações.
+Garantir que a organização aceitou o termo ativo de confidencialidade e criar um projeto
+persistente a partir de texto, URL, documentos ou uma combinação desses inputs.
 
 **Experiência do usuário**
 
-- ler um resumo claro de confidencialidade e controle;
-- acessar o termo completo, se desejar;
-- informar sua relação com a companhia;
-- declarar que tem autorização para iniciar o trabalho;
-- dar um nome ao projeto; e
-- definir, sem autorizar qualquer contato, se a identidade poderá aparecer nos
-  materiais futuros.
+- no primeiro acesso ou após mudança material do termo, ler o resumo, acessar o termo completo e
+  registrar o aceite da organização;
+- descrever livremente o trabalho e, se quiser, anexar documentos na mesma mensagem;
+- ver o projeto criado imediatamente na barra lateral; e
+- continuar a conversa, renomear o projeto ou complementar os inputs sem reiniciar.
 
 **Trabalho do sistema**
 
-- registrar versão do termo, aceite, identidade, data e contexto;
-- manter o projeto privado;
-- criar a trilha de auditoria; e
-- marcar a comprovação de poderes como requisito anterior a qualquer acesso ao
-  mercado, sem bloquear o trabalho preparatório.
+- verificar o aceite organizacional vigente sem pedir novo clickwrap por projeto;
+- criar atomicamente projeto, escopo documental, conversa, primeira mensagem e plano inicial;
+- manter documentos privados isolados por organização e projeto;
+- não criar declaração de representação durante preparação; e
+- reservar comprovação de poderes e autorização específica para o gate de `Introduce`.
 
 **Saída visível**
 
-Projeto criado, privado e identificado.
+Projeto criado e visível, com conversa, plano e escopo de memória próprios.
 
 **Regra de saída**
 
-O usuário pode iniciar o intake. Nenhuma distribuição foi autorizada.
+O usuário pode iniciar ou continuar o trabalho. Nenhuma representação ou distribuição foi
+autorizada.
 
 ### Etapa 1: companhia
 

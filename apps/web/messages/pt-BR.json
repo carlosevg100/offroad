@@ -810,6 +810,47 @@
       "denied": "Você não tem permissão para excluir este projeto.",
       "save": "Não foi possível concluir a alteração."
     },
+    "advisor": {
+      "kicker": "OFFROAD ADVISOR",
+      "title": "Como a Offroad pode ajudar hoje?",
+      "body": "Descreva o trabalho com suas palavras ou anexe o que já tiver. A companhia, as evidências, as decisões e os materiais permanecerão no mesmo projeto.",
+      "prompt": "Descreva a companhia, a necessidade ou a operação que deseja analisar.",
+      "starterLabel": "Pontos de partida",
+      "starters": {
+        "companyDebt": {"label": "Entender uma companhia", "placeholder": "Ex.: analise a companhia na ótica de dívida e mostre os riscos, a capacidade financeira e o que ainda precisa ser comprovado."},
+        "origination": {"label": "Preparar uma reunião", "placeholder": "Ex.: tenho uma reunião com esta companhia e quero chegar com uma leitura própria e alternativas de financiamento para explorar."},
+        "capitalPlanning": {"label": "Planejar uma necessidade", "placeholder": "Ex.: preciso financiar crescimento, capital de giro, uma aquisição ou refinanciar vencimentos. Ajude a comparar as alternativas."},
+        "documents": {"label": "Estruturar pelos documentos", "placeholder": "Anexe a pasta que recebeu e conte o contexto que já conhece. A Offroad identifica a companhia, reconstrói o caso e mostra o que falta."},
+        "review": {"label": "Revisar uma operação", "placeholder": "Ex.: recebi uma proposta ou term sheet e quero testar a estrutura, os termos, os riscos e as alternativas."}
+      },
+      "attach": "Anexar documentos",
+      "remove": "Remover documento",
+      "send": "Iniciar projeto",
+      "privacy": "Ambiente privado. Nada é compartilhado sem sua autorização.",
+      "status": {"creating": "Criando o projeto...", "uploading": "Recebendo os documentos...", "starting": "Iniciando a leitura..."},
+      "errors": {"invalid": "Descreva o que deseja fazer ou anexe um documento.", "denied": "Confirme os termos de confidencialidade para trabalhar com documentos privados.", "duplicate": "Já existe um projeto com esse nome.", "notFound": "O projeto não está disponível.", "save": "Não foi possível iniciar o projeto.", "processing": "Os documentos foram recebidos, mas a leitura precisa ser iniciada novamente.", "upload": "Um ou mais documentos não puderam ser recebidos com segurança."}
+    },
+    "advisorProject": {
+      "advisor": "Agente Offroad",
+      "context": "Contexto do projeto",
+      "conversation": "Projeto",
+      "documents": "Documentos",
+      "noDocuments": "Nenhum documento anexado ainda.",
+      "plan": "Plano de trabalho",
+      "artifacts": "Materiais e análises",
+      "noArtifacts": "Os resultados aparecerão aqui à medida que forem concluídos.",
+      "openWork": "Abrir trabalho",
+      "existingProject": "O trabalho já realizado neste projeto está preservado. Abra a análise no painel ao lado ou continue a conversa para acrescentar contexto, pedir uma revisão ou avançar o próximo passo.",
+      "placeholder": "Continue o trabalho, responda uma pergunta ou peça uma alteração...",
+      "attach": "Anexar documentos",
+      "send": "Enviar",
+      "close": "Fechar",
+      "private": "Projeto privado",
+      "public": "Somente informações públicas",
+      "working": "Trabalhando agora",
+      "ready": "Pronto para continuar",
+      "errors": {"invalid": "Revise a mensagem.", "denied": "Esta ação não está autorizada neste projeto.", "duplicate": "Esta mensagem ou documento já foi registrado.", "notFound": "O projeto não está mais disponível.", "save": "Não foi possível registrar a mensagem.", "processing": "A leitura não pôde ser iniciada.", "upload": "Um ou mais documentos não puderam ser recebidos com segurança."}
+    },
     "companyDebt": {
       "back": "Voltar ao workspace",
       "kicker": "Companhia na ótica de dívida",

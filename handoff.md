@@ -1,6 +1,6 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 31 August 2026. Receivables Phase 6 is live on `main`. Phase 7 is
+> Current as of 1 September 2026. Receivables Phase 6 is live on `main`. Phase 7 is
 > a candidate branch that connects actual uploads to the full governed vertical; it is not live
 > until database CI, staging and the controlled production replay below are complete.
 >
@@ -8,6 +8,45 @@
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Engineering update: persistent conversational project workspace, 1 September 2026
+
+The approved product surface is one persistent project conversation, not a collection of setup
+forms. The authenticated home presents five prompt starters around one composer with text and
+document upload. Starting from any of them creates the same canonical stack: a capital project,
+one evidence session, one immutable task plan and one conversation. The left rail reopens project
+history; the centre preserves the conversation; the work panel exposes real tasks, documents and
+artifacts. A project is expected to evolve from question to analysis, structure, materials and
+market work without restarting.
+
+The first transactional contract is implemented on the candidate branch and on Supabase staging:
+`start_advisor_project_v1` creates the stack idempotently; `submit_advisor_turn_v1` persists a
+turn and queues one bounded worker response; and `queue_advisor_initial_turn_v1` starts the first
+persisted request after any attachments are registered. Creation is intentionally free of model
+calls so the click-to-project transition does not wait for analysis. Each conversation job is
+limited to one call and US$ 0.25, receives only the current project's scoped memory and cannot
+mutate evidence or authorize an external action. Attaching documents promotes a public project
+to private preparation under the current organization-level confidentiality acceptance, but does
+not claim representation.
+
+Confidentiality and market authority are now explicitly separate. The organization accepts the
+private-work terms once and again only after a material version change. Authority to represent a
+company is not required to prepare private work and is never inferred from an upload. It is
+collected only for an exact `Introduce` release, bound to the project, the approved material
+version, identity policy and named recipients.
+
+Existing public-analysis projects now reopen on the conversation by default and expose their
+specialized work product from the project's work panel instead of replacing the project surface.
+The new-composer semantic router is not yet connected to those executors, so the old setup routes
+remain directly addressable during this candidate transition.
+
+The staging SQL test proves atomic creation, idempotent queue replay and cross-tenant isolation.
+Its first replay exposed and then verified the fix for a timestamp tie when resolving the initial
+request. Security Advisor has zero findings; the Performance Advisor added no feature warning and
+shows only historical unused-index information. The complete 42-package `pnpm check` passes,
+including 160 web tests, 74 worker tests and the production build. Production is unchanged and no paid API ran. Do not present this
+candidate as the complete AI-native advisor yet: the existing specialized executors still need to
+be activated by the conversation router, and every downstream vertical keeps its own quality gate.
 
 ### Engineering update: isolated preliminary understanding and canonical entry order, 31 August 2026
 
@@ -410,8 +449,9 @@ identification instead of falling into a legacy page.
 Legacy company and advisor step arrays, manual intake, destructive restart navigation and the old
 three-step workspace entry were removed from the active surfaces. Capital-provider registration
 remains separate and is now the only consumer of its legacy institutional step engine. Every later
-financing in the workspace starts with the same project-name, identity-policy and representation
-contract as the first one.
+financing now starts inside the same conversational workspace. The organization-level
+confidentiality acceptance is reused while current; project identity can be renamed; representation
+is intentionally absent until an exact introduction release is requested.
 
 `start_onboarding_intake` now creates or configures the same active private session. Editing a name
 or identity policy does not create a duplicate, cancel a case or discard documents. The behavior

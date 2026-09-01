@@ -4,6 +4,48 @@ Atualizado em: 2026-09-01
 Baseline: `main` após PR #336, commit `f51fbf0351e7e88289f26a63b721e580f9016902`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Workspace conversacional persistente, candidate em staging, 01/09/2026
+
+A entrada autenticada foi redesenhada como um único workspace de projeto: histórico e projetos
+na navegação lateral, conversa persistente no centro e plano, documentos e artefatos no painel de
+trabalho. As cinco sugestões iniciais são atalhos de intenção dentro do mesmo composer; não criam
+funis ou estados paralelos. Texto e arquivos podem iniciar o mesmo projeto, e o shell é criado
+antes de qualquer chamada de modelo para que a navegação não espere análise paga.
+
+O estado continua canônico: `capital_projects` é a raiz, `document_intake_sessions` delimita
+documentos e evidências, `agent_conversations`/`agent_messages` preservam o histórico e
+`capital_project_plans` congela o DAG aplicável. O comando transacional
+`start_advisor_project_v1` cria esses quatro elementos de forma idempotente; o comando
+`submit_advisor_turn_v1` persiste a mensagem e enfileira uma única resposta assíncrona, com teto
+de uma chamada e US$ 0,25, sem autorizar mercado ou reescrever evidência. O worker recebe somente
+o recorte do projeto: brief, perfil, inventário documental, estados do plano, artefatos e doze
+mensagens recentes; nomes de arquivos não são tratados como prova. Projetos públicos podem receber documentos e passar a trabalho privado, mas essa
+promoção mantém `representation_status = not_claimed`.
+
+A fronteira legal foi corrigida no contrato: os termos de confidencialidade são aceitos uma vez
+por organização e legitimam somente o trabalho privado. Representação não é presumida nem
+registrada durante preparação. A autoridade para apresentar o caso continua sendo um gate
+posterior de `Introduce`, vinculado ao projeto, à versão dos materiais, à política de identidade
+e aos destinatários exatos.
+
+As migrations canônicas `20260901103125_conversational_advisor_workspace.sql`,
+`20260901104739_advisor_turn_queue.sql` e `20260901104905_advisor_initial_turn_identity.sql`
+foram aplicadas somente ao Supabase `staging`. O teste SQL dedicado passou com rollback, incluindo
+criação atômica, replay idempotente, fila do primeiro turno e isolamento entre tenants. O primeiro
+replay detectou e corrigiu um empate de timestamps na identidade da mensagem inicial. Security
+Advisor retornou zero findings; o Performance Advisor não introduziu aviso da feature e mostra
+apenas informações históricas de índices ainda sem uso. O gate integral `pnpm check` passou nos
+42 pacotes; no web, a suíte tem 160 testes, no worker 74, e o build de produção compilou a nova
+superfície. Produção não foi alterada e nenhuma API paga foi chamada.
+
+Esta fatia entrega memória, superfície-base e turnos reais assíncronos, não a integração completa
+dos executores. As
+duas verticais públicas existentes agora reabrem primeiro no projeto conversacional e expõem o
+trabalho já executado a partir do painel do mesmo projeto. O roteamento semântico de um novo prompt
+para esses executores, a atualização de plano, a análise documental profunda, a estruturação, os
+materiais e o matching permanecem sujeitos aos próprios gates antes de o workspace ser declarado
+completo.
+
 ## Workspace AI-native e primeira vertical pública de originação, 01/09/2026
 
 A home autenticada passou a oferecer seis formas de começar sobre uma única memória de projeto.

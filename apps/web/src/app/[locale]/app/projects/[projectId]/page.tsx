@@ -6,6 +6,7 @@ import {getTranslations} from "next-intl/server";
 import {notFound} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
+import {AdvisorProject, type AdvisorProjectCopy} from "@/components/advisor/advisor-project";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
 import {OriginationDecision} from "./origination-decision";
@@ -14,10 +15,11 @@ import {CompanyDebtProject} from "./company-debt-project";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "Projeto", robots: {index: false, follow: false}};
 
-type Props = {params: Promise<{locale: string; projectId: string}>};
+type Props = {params: Promise<{locale: string; projectId: string}>; searchParams: Promise<{view?: string}>};
 
-export default async function CapitalProjectPage({params}: Props) {
+export default async function CapitalProjectPage({params, searchParams}: Props) {
   const {locale, projectId} = await params;
+  const {view} = await searchParams;
   const t = await getTranslations({locale, namespace: "App.origination"});
   const {supabase, organization} = await requireWorkspace(locale);
   const {data: project} = await supabase.from("capital_projects")
@@ -26,6 +28,10 @@ export default async function CapitalProjectPage({params}: Props) {
     .eq("id", projectId)
     .maybeSingle();
   if (!project) notFound();
+  const specialized = ["company_debt_view", "origination_thesis"].includes(project.entry_job);
+  if (view !== "work" || !specialized) {
+    return <ConversationalCapitalProject locale={locale} project={project} />;
+  }
   if (project.entry_job === "company_debt_view") {
     return <CompanyDebtProject locale={locale} projectId={projectId} />;
   }
@@ -162,6 +168,69 @@ export default async function CapitalProjectPage({params}: Props) {
       </div>
     </main>
   );
+}
+
+async function ConversationalCapitalProject({
+  locale,
+  project,
+}: {
+  locale: string;
+  project: {
+    access_basis: string;
+    entry_job: string;
+    id: string;
+    project_name: string;
+    status: string;
+  };
+}) {
+  const t = await getTranslations({locale, namespace: "App.advisorProject"});
+  const {supabase, organization} = await requireWorkspace(locale);
+  const {data: session} = await supabase.from("document_intake_sessions")
+    .select("id, status")
+    .eq("organization_id", organization.id)
+    .eq("capital_project_id", project.id)
+    .order("created_at", {ascending: true})
+    .limit(1)
+    .maybeSingle();
+  if (!session) notFound();
+
+  const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}] = await Promise.all([
+    supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
+    supabase.from("source_documents").select("id, original_name, byte_size, processing_status").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
+    supabase.from("capital_project_plans").select("id").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
+    supabase.from("capital_project_artifacts").select("id, artifact_type, status").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
+  ]);
+  const [{data: messages}, {data: tasks}, {data: runs}] = await Promise.all([
+    conversation
+      ? supabase.from("agent_messages").select("id, role, content, status, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
+      : Promise.resolve({data: []}),
+    plan
+      ? supabase.from("capital_project_plan_tasks").select("id, task_id, label, ordinal").eq("organization_id", organization.id).eq("plan_id", plan.id).order("ordinal")
+      : Promise.resolve({data: []}),
+    plan
+      ? supabase.from("capital_project_task_runs").select("plan_task_id, attempt_no, status").eq("organization_id", organization.id).eq("plan_id", plan.id).order("attempt_no", {ascending: false})
+      : Promise.resolve({data: []}),
+  ]);
+  const latestRunByTask = new Map<string, {status: string}>();
+  for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
+
+  const copy: AdvisorProjectCopy = {
+    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), artifacts: t("artifacts"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
+    errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
+  };
+  return <AdvisorProject
+    accessBasis={project.access_basis}
+    artifacts={(artifacts ?? []).map((artifact) => ({id: artifact.id, type: artifact.artifact_type, status: artifact.status}))}
+    copy={copy}
+    documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
+    locale={locale === "en-US" ? "en-US" : "pt-BR"}
+    messages={(messages?.length ? messages : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", created_at: new Date().toISOString()}]).map((message) => ({id: message.id, role: message.role, content: message.content, status: message.status, createdAt: message.created_at}))}
+    projectId={project.id}
+    projectName={project.project_name}
+    sessionStatus={session.status}
+    tasks={(tasks ?? []).map((task) => ({id: task.id, label: task.label, status: latestRunByTask.get(task.id)?.status ?? "waiting"}))}
+    workHref={["company_debt_view", "origination_thesis"].includes(project.entry_job) && ((runs?.length ?? 0) > 0 || (artifacts?.length ?? 0) > 0) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
+  />;
 }
 
 function SourceLinks({label, urls}: {label: string; urls: string[]}) {

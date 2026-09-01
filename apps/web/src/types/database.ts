@@ -6302,6 +6302,19 @@ export type Database = {
         }
         Returns: string
       }
+      append_advisor_message_v1: {
+        Args: {
+          p_content: string
+          p_locale: string
+          p_message_id: string
+          p_project_id: string
+        }
+        Returns: Json
+      }
+      queue_advisor_initial_turn_v1: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
       decide_capital_project_artifact: {
         Args: {
           p_artifact_fingerprint: string
@@ -6324,6 +6337,18 @@ export type Database = {
           p_artifact_fingerprint: string
           p_artifact_id: string
           p_note: string
+        }
+        Returns: Json
+      }
+      start_advisor_project_v1: {
+        Args: {
+          p_access_basis: string
+          p_entry_job: string
+          p_locale: string
+          p_plan: Json
+          p_project_name: string
+          p_prompt: string
+          p_request_id: string
         }
         Returns: Json
       }
@@ -6859,6 +6884,15 @@ export type Database = {
           p_message_id: string
           p_organization_id: string
           p_session_id: string
+        }
+        Returns: Json
+      }
+      submit_advisor_turn_v1: {
+        Args: {
+          p_content: string
+          p_locale: string
+          p_message_id: string
+          p_project_id: string
         }
         Returns: Json
       }
