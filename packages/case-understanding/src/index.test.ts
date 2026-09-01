@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
-import {assessReadiness} from "./readiness";
+import {assessReadiness, diagnosticConfirmationReady, type ReadinessReport} from "./readiness";
 import {auditClaims, financialNumbersIn, normalizeNumber} from "./audit";
 import {auditBrief, buildBriefInput, BRIEF_SYSTEM} from "./brief";
 import {deriveCaseOutcome} from "./outcome";
@@ -168,6 +168,21 @@ describe("readiness is five components, not one number", () => {
     {id: "d5", kind: "capital_request_letter" as const},
     {id: "d6", kind: "business_plan" as const},
   ];
+
+  it("separates diagnostic confirmation from investor circulation readiness", () => {
+    const diagnosticComplete: ReadinessReport = {
+      state: "in_progress",
+      score: 0.8,
+      components: [],
+      blockers: [],
+    };
+    expect(diagnosticConfirmationReady(diagnosticComplete)).toBe(true);
+    expect(diagnosticConfirmationReady({
+      ...diagnosticComplete,
+      state: "blocked",
+      blockers: [{id: "minimum_documents", labels: {pt: "Falta o mínimo", en: "Minimum missing"}}],
+    })).toBe(false);
+  });
 
   it("explains every component in numbers the reader can check", () => {
     const report = assessReadiness({
@@ -463,6 +478,21 @@ describe("the case brief", () => {
     const payload = buildBriefInput({archetypeId: "growth_expansion", facts: [disputed], calculations: [], exceptions: [], gaps: [], locale: "pt"});
     expect(payload).toContain("DISPUTADO");
     expect(payload).toContain("68000000");
+  });
+
+  it("keeps a company case-review instruction visible but outside the evidence set", () => {
+    const payload = buildBriefInput({
+      archetypeId: "growth_expansion",
+      facts,
+      calculations,
+      exceptions: [],
+      gaps: [],
+      locale: "pt",
+      reviewInstructions: ["O cronograma correto está no contrato mais recente."],
+    });
+    expect(payload).toContain("contexto a testar, não evidência");
+    expect(payload).toContain("O cronograma correto está no contrato mais recente.");
+    expect(payload.indexOf("contexto a testar, não evidência")).toBeLessThan(payload.indexOf("Fatos conciliados"));
   });
 
   it("forbids computing, in the instructions the model actually receives", () => {

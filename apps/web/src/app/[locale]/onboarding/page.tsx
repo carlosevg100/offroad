@@ -29,7 +29,7 @@ import {BrandMark} from "@/components/brand-mark";
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
-import {briefCompleteness, dealBriefOf} from "@/lib/intake/deal-brief";
+import {briefCompleteness, canStartPreliminaryUnderstanding, dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {PrivateProjectSetup} from "@/components/intake/private-project-setup";
@@ -58,6 +58,7 @@ import {
   resolveOnboardingScopeSuggestion,
   revokeOnboardingAdvisorAuthorization,
   reviewIntakeCandidate,
+  reviseDiagnosticCase,
   saveContactStep,
   saveGuidedCompanyProfile,
   saveFundStep,
@@ -191,7 +192,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
     ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId})
     : null;
   const guidedCompanyAnswers = jsonObject(intakeReview?.session?.company_profile);
-  const requestedIntakeStage = state.stage === "company" || state.stage === "operation" || state.stage === "request" || state.stage === "documents"
+  const requestedIntakeStage = state.stage === "company" || state.stage === "operation" || state.stage === "preliminary" || state.stage === "documents"
     ? state.stage
     : undefined;
   const isDocumentFirst = journey !== "capital_provider"
@@ -265,17 +266,16 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       : "private";
   const intakeBrief = intakeSession ? dealBriefOf(intakeSession) : {};
   const companyProfileComplete = Boolean(intakeReview?.session?.company_profile_confirmed_at);
-  const guidedMilestones = ["company", "operation", "information", "understanding", "clarifications", "package", "investors"] as const;
+  const guidedMilestones = ["company", "operation", "preliminary", "information", "analysis", "case", "structure"] as const;
   const guidedMilestoneIndex = requestedIntakeStage === "company" || !companyProfileComplete
     ? 0
     : requestedIntakeStage === "operation"
-      || requestedIntakeStage === "request"
       || !intakeSession?.archetype
-      || briefCompleteness(intakeBrief).answered === 0
+      || !canStartPreliminaryUnderstanding(intakeBrief, intakeReview?.documents.length ?? 0)
       ? 1
-      : requestedIntakeStage === "documents" || intakeSession.status === "collecting"
+      : requestedIntakeStage === "preliminary" || intakeSession.status === "processing"
         ? 2
-        : intakeSession.status === "processing"
+        : requestedIntakeStage === "documents" || intakeSession.status === "collecting"
           ? 3
           : intakeSession.status === "review_ready"
             ? 4
@@ -493,7 +493,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                   sessionId: intakeReview.session.id,
                   locale: locale === "en-US" ? "en" : "pt",
                 })}
-                actions={{accept: acceptHighConfidenceCandidates, confirm: confirmDocumentIntake, process: processDocumentIntake, resolve: resolveIntakeIssue, review: reviewIntakeCandidate, resolveScopeSuggestion: resolveOnboardingScopeSuggestion, revokeAuthorization: revokeOnboardingAdvisorAuthorization}}
+                actions={{accept: acceptHighConfidenceCandidates, confirm: confirmDocumentIntake, process: processDocumentIntake, revise: reviseDiagnosticCase, resolve: resolveIntakeIssue, review: reviewIntakeCandidate, resolveScopeSuggestion: resolveOnboardingScopeSuggestion, revokeAuthorization: revokeOnboardingAdvisorAuthorization}}
                 candidates={intakeReview.candidates}
                 documents={intakeReview.documents}
                 issues={intakeReview.issues}
@@ -606,7 +606,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                   </>
                 ) : (
                   <>
-                    <article><span>02</span><div><strong>{text(fundingAnswers.purpose_summary)}</strong><p>{text(fundingAnswers.currency)} {text(fundingAnswers.requested_amount)}</p></div><EditSectionLink href={`/${locale}/onboarding?stage=request`} label={t("workspace.edit")} locale={locale} /></article>
+                    <article><span>02</span><div><strong>{text(fundingAnswers.purpose_summary)}</strong><p>{text(fundingAnswers.currency)} {text(fundingAnswers.requested_amount)}</p></div><EditSectionLink href={`/${locale}/app/new?mode=documents&session=${intakeSessionId}&step=operation`} label={t("workspace.edit")} locale={locale} /></article>
                     <article><span>03</span><div><strong>{t("documentsReady", {count: Number(answers.documents_uploaded ?? 0)})}</strong><p>{t("documentsReviewBody")}</p></div><EditSectionLink add href={`/${locale}/onboarding?stage=documents`} label={t("workspace.addDocuments")} locale={locale} /></article>
                   </>
                 )}

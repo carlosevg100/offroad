@@ -1,5 +1,6 @@
 import {resolveMandate, type Mandate, type Sourced} from "@offroad/fund-mandate";
 import type {FactCandidate} from "@offroad/reconciliation";
+import {taskCacheFromReport} from "@offroad/case-runner";
 import {describe, expect, it} from "vitest";
 import {claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
 import {diversifiedReceivablesCase, receivablesParametricScenarios} from "@offroad/receivables-analysis";
@@ -93,7 +94,10 @@ const requiredStructureCandidates = [
   candidate("transaction.sources_and_uses.2.amount", "10000000"),
 ];
 
-async function executeWithConfirmedStructure(input: Omit<CaseEngineInput, "structureProposal" | "structureConfirmation">) {
+async function executeWithConfirmedStructure(
+  input: Omit<CaseEngineInput, "structureProposal" | "structureConfirmation">,
+  productionPlanApproved = true,
+) {
   const requiredCandidates = requiredStructureCandidates.filter((item) => !input.candidates.some((existing) => existing.fieldPath === item.fieldPath));
   const governedInput = {
     ...input,
@@ -108,12 +112,20 @@ async function executeWithConfirmedStructure(input: Omit<CaseEngineInput, "struc
       amortizationFormat: "sac" as const,
       graceInterest: "paid" as const,
     },
+    informationAnswers: {
+      info_why_now: "A operação financia uma necessidade com prazo econômico definido.",
+      info_business_model: "A companhia vende produtos e serviços a uma base recorrente de clientes.",
+      info_customer_concentration: "A base de clientes é acompanhada por participação e prazo contratual.",
+      ...input.informationAnswers,
+    },
   };
   const pending = await executeCaseEngine({...governedInput, structureProposal});
   const proposalFingerprint = pending.state.structureAlternatives.proposalFingerprint;
   if (!proposalFingerprint) throw new Error("test structure proposal did not compile");
   return executeCaseEngine({
     ...governedInput,
+    taskCache: taskCacheFromReport(pending.report),
+    materialsPreparationApproved: productionPlanApproved,
     structureProposal,
     structureConfirmation: {
       decision: "confirm",
@@ -172,7 +184,7 @@ describe("the governed case engine", () => {
     expect(result.report.stages.every((stage) => stage.status === "succeeded")).toBe(true);
     expect(result.state.reconciliation.calculations.map((calculation) => calculation.id)).toContain("net_debt");
     expect(result.state.brief).toBeNull();
-    expect(result.state.briefBlockedBy).toContain("structure_proposal_not_confirmation_ready");
+    expect(result.state.briefBlockedBy).toContain("diagnostic_case_not_ready");
     expect(result.state.materialsBlockedBy).toContain("brief_unavailable");
     expect(result.state.matching.screened).toBe(true);
     expect(result.state.matching.fits[0]).toMatchObject({fundId: "fund-1", verdict: "possible"});
@@ -261,7 +273,7 @@ describe("the governed case engine", () => {
     expect(result.report.stages.find((stage) => stage.stage === "structure")?.usage).toEqual({costUsd: 0.2, modelCalls: 1});
   });
 
-  it("records model usage once and makes a produced brief pass the independent claim audit", async () => {
+  it("writes and verifies the diagnostic case once, then reuses it after structure confirmation", async () => {
     let writerCalls = 0;
     let verifierCalls = 0;
     const result = await executeWithConfirmedStructure({
@@ -295,12 +307,40 @@ describe("the governed case engine", () => {
       },
     });
 
-    expect(result.report.stages.find((stage) => stage.stage === "claims")?.usage).toEqual({costUsd: 0.26, modelCalls: 2});
-    expect(result.report.usage).toEqual({costUsd: 0.26, modelCalls: 2});
+    expect(result.report.stages.find((stage) => stage.stage === "claims")?.usage).toEqual({costUsd: 0, modelCalls: 0});
+    expect(result.report.taskRuns.find((task) => task.taskId === "claims")?.cacheHit).toBe(true);
+    expect(result.report.usage).toEqual({costUsd: 0, modelCalls: 0});
     expect(result.state.brief?.executiveSummary).toContain("Resumo institucional");
     expect(result.state.modelInvocations).toHaveLength(2);
     expect(result.state.claimRegistry?.publication.allowed).toBe(true);
     expect({writerCalls, verifierCalls}).toEqual({writerCalls: 1, verifierCalls: 1});
+  });
+
+  it("cannot compile any material after structure confirmation until the production plan is approved", async () => {
+    const result = await executeWithConfirmedStructure({
+      runId: "run-production-gate",
+      caseId: "case-production-gate",
+      archetypeId: "other",
+      locale: "pt",
+      referenceDate: "2026-08-24",
+      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text")],
+      documents,
+      roomDocuments: [],
+      dealBrief: {},
+      resolvedMandates: [],
+      externalReleaseApproved: false,
+      writeBrief: async () => ({
+        brief: {sections: [], executiveSummary: "Case diagnóstico aprovado e rastreável."},
+        blockedBy: [],
+      }),
+      verifyBrief: async ({brief}) => ({audit: supportedSemanticAudit(brief)}),
+    }, false);
+
+    expect(result.state.brief?.executiveSummary).toContain("Case diagnóstico");
+    expect(result.state.structureDecision.materialsPreparationAllowed).toBe(true);
+    expect(result.state.materials).toEqual([]);
+    expect(result.state.financialModel).toBeNull();
+    expect(result.state.materialsBlockedBy).toContain("production_plan_not_approved");
   });
 
   it("executes the receivables vertical inside metrics and carries a refusal into the case blockers", async () => {

@@ -364,12 +364,12 @@ begin
     raise exception 'issue candidate keys were not resolved to ids';
   end if;
 
-  -- Confirmation before any review must fail closed (nothing accepted yet).
+  -- Confirmation before the preliminary-understanding and diagnostic gates must fail closed.
   begin
     perform public.confirm_document_intake(org, session_id, 'pt-BR');
     raise exception 'confirm_document_intake accepted an unreviewed session';
   exception
-    when sqlstate '22023' then null;
+    when sqlstate '55000' then null;
   end;
 
   -- Review: accept the three primaries; edit the amount to a new value.
@@ -419,7 +419,81 @@ begin
     when insufficient_privilege then null;
   end;
 
-  -- Atomic confirmation.
+end;
+$$;
+
+-- Simulate the immutable outputs that only the preliminary and case workers can publish. The
+-- rows are seeded as the migration owner because authenticated tenants have no write policy for
+-- either table; the confirmation command below still runs as the tenant.
+reset role;
+
+-- The legacy completion command used above predates durable processing runs. The new preliminary
+-- object must always point to the exact run that produced it, so give this legacy fixture an
+-- explicit synthetic lineage row instead of weakening the production foreign key.
+insert into public.processing_runs (
+  id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
+) values (
+  '60000000-0000-4000-8000-000000000901',
+  '20000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  1, 'manual', 'succeeded', 'rls-legacy-lineage-v1',
+  '10000000-0000-4000-8000-000000000001'
+);
+
+update public.document_intake_sessions
+set current_run_id = '60000000-0000-4000-8000-000000000901'
+where id = '40000000-0000-4000-8000-000000000001';
+
+insert into public.preliminary_understandings (
+  organization_id, intake_session_id, processing_run_id, object_version, status,
+  input_fingerprint, object_fingerprint, payload, decided_by, decided_at
+)
+select
+  session.organization_id, session.id, session.current_run_id, 1, 'confirmed',
+  repeat('b', 64), repeat('c', 64),
+  jsonb_build_object('schemaVersion', '2026.08.31-v1', 'caseId', session.id),
+  '10000000-0000-4000-8000-000000000001', now()
+from public.document_intake_sessions session
+where session.id = '40000000-0000-4000-8000-000000000001';
+
+insert into public.deal_state_objects (
+  organization_id, intake_session_id, object_type, object_version, status,
+  input_fingerprint, object_fingerprint, payload, dependencies, created_by_kind
+) values (
+  '20000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  'understanding_snapshot', 1, 'pending_confirmation',
+  repeat('d', 64), repeat('e', 64),
+  '{"readiness":{"state":"ready","blockers":[]}}'::jsonb, '[]'::jsonb, 'worker'
+);
+
+update public.document_intake_sessions
+set result_summary = result_summary || jsonb_build_object(
+  'case_state', jsonb_build_object(
+    'readiness', jsonb_build_object('state', 'ready', 'blockers', '[]'::jsonb)
+  ),
+  'case_manifest', jsonb_build_object('input_fingerprint', repeat('d', 64))
+)
+where id = '40000000-0000-4000-8000-000000000001';
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  org constant uuid := '20000000-0000-4000-8000-000000000001';
+  session_id constant uuid := '40000000-0000-4000-8000-000000000001';
+  result jsonb;
+  first_opportunity uuid;
+  second_opportunity uuid;
+  n integer;
+  title_length integer;
+begin
+  -- Atomic confirmation after both governed gates.
   result := public.confirm_document_intake(org, session_id, 'pt-BR');
   first_opportunity := (result ->> 'opportunity_id')::uuid;
   if first_opportunity is null or (result ->> 'already_confirmed')::boolean then
@@ -436,6 +510,18 @@ begin
   end if;
   if (select status from public.document_intake_sessions where id = session_id) <> 'confirmed' then
     raise exception 'session was not confirmed';
+  end if;
+  select count(*) into n
+  from public.deal_state_objects state_object
+  where state_object.organization_id = org
+    and state_object.intake_session_id = session_id
+    and state_object.object_type = 'understanding_snapshot'
+    and state_object.status = 'confirmed'
+    and state_object.created_by_kind = 'user'
+    and state_object.payload #>> '{confirmation,actorId}' = '10000000-0000-4000-8000-000000000001'
+    and state_object.payload #>> '{confirmation,scope}' = 'approved_diagnostic_case_for_structuring';
+  if n <> 1 then
+    raise exception 'confirmation did not atomically countersign the governed diagnostic snapshot';
   end if;
 
   begin
@@ -845,6 +931,11 @@ declare
   case_capability text;
   result jsonb;
   case_input jsonb;
+  preliminary_input jsonb;
+  preliminary_payload jsonb;
+  preliminary_id uuid;
+  preliminary_fingerprint text := repeat('9', 64);
+  second_run jsonb;
   manifest jsonb;
   manifest_id uuid;
   retrieval jsonb;
@@ -1185,8 +1276,118 @@ begin
   end;
 
   case_claim := public.worker_claim_job(repeat('w', 64), 600);
-  if case_claim->>'kind' <> 'case_analysis' then
-    raise exception 'the worker did not claim the governed case-analysis job';
+  if case_claim->>'kind' <> 'preliminary_analysis'
+    or case_claim->'payload'->>'analysis_scope' <> 'preliminary_understanding' then
+    raise exception 'the first run did not claim the isolated preliminary-analysis job: %', case_claim;
+  end if;
+  case_job_id := (case_claim->>'job_id')::uuid;
+  case_capability := case_claim->>'capability_token';
+
+  preliminary_input := public.worker_load_preliminary_input(case_job_id, case_capability);
+  if preliminary_input->'session'->>'id' <> '40000000-0000-4000-8000-000000000003'
+    or jsonb_array_length(preliminary_input->'documents') <> 1
+    or preliminary_input ? 'directory_mandates'
+    or preliminary_input ? 'pricing_context'
+    or preliminary_input ? 'deal_state_context' then
+    raise exception 'preliminary capability loaded data outside company, operation and early evidence';
+  end if;
+
+  begin
+    perform public.worker_load_case_input(case_job_id, case_capability);
+    raise exception 'preliminary capability opened full case input';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.worker_load_retrieval_context(
+      case_job_id, case_capability, 'mandato OR estrutura', '{}'::uuid[], null, 20
+    );
+    raise exception 'preliminary capability opened governed full-case retrieval';
+  exception when insufficient_privilege then null;
+  end;
+
+  preliminary_payload := jsonb_build_object(
+    'schemaVersion', '2026.08.31-v1',
+    'caseId', '40000000-0000-4000-8000-000000000003',
+    'locale', 'pt-BR',
+    'summary', 'A companhia apresentou uma necessidade de capital ainda sujeita à confirmação.',
+    'company', jsonb_build_object(
+      'name', 'Tenant A Company', 'legalName', 'Tenant A Company', 'description', null,
+      'website', null, 'sector', 'Teste', 'geography', 'Brasil',
+      'companySummary', 'Companhia de teste cuja identidade veio do documento inicial.',
+      'sectorSummary', null, 'positioningSummary', null
+    ),
+    'operation', jsonb_build_object(
+      'archetypeId', 'working_capital', 'archetypeLabel', 'Capital de giro',
+      'objective', 'Financiar o ciclo operacional', 'requestedAmount', null,
+      'currency', 'BRL', 'urgency', null, 'requestedTermMonths', null,
+      'consequenceIfNotExecuted', null,
+      'operationSummary', 'A necessidade declarada é financiar o ciclo operacional.'
+    ),
+    'basis', jsonb_build_object(
+      'preliminaryDocumentCount', 1, 'userDeclared', true,
+      'publicResearch', jsonb_build_object(
+        'status', 'skipped', 'sourceCount', 0, 'topicCounts', '{}'::jsonb,
+        'researchRunId', null, 'sources', '[]'::jsonb
+      )
+    ),
+    'preliminaryAssessment', jsonb_build_object(
+      'openPoints', jsonb_build_array('Confirmar o uso detalhado dos recursos.'),
+      'researchSignals', '[]'::jsonb,
+      'boundary', 'Leitura preliminar; não é diagnóstico financeiro ou recomendação.'
+    )
+  );
+  preliminary_id := public.worker_record_preliminary_understanding(
+    case_job_id, case_capability, preliminary_fingerprint, preliminary_payload
+  );
+  if preliminary_id is null then
+    raise exception 'worker did not persist the preliminary understanding';
+  end if;
+  perform public.worker_write_stage_result(
+    case_job_id, case_capability, 'preliminary_understanding', 'succeeded', '{}'::jsonb, '{}'::jsonb
+  );
+  result := public.worker_complete_job(
+    case_job_id, case_capability, '{"spend":{"costUsd":0,"calls":1},"model_lineage":[]}'::jsonb
+  );
+  if (select status from public.document_intake_sessions
+      where id = '40000000-0000-4000-8000-000000000003') <> 'review_ready' then
+    raise exception 'preliminary analysis did not stop for explicit confirmation';
+  end if;
+
+  -- Confirming P0 is a borrower decision and opens only a second, full-case run. The test
+  -- changes JWT identity, not SQL privileges, then restores the worker identity.
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  perform public.decide_preliminary_understanding(
+    '20000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000003',
+    (select object_fingerprint from public.preliminary_understandings where id = preliminary_id),
+    'confirmed', null
+  );
+  second_run := public.begin_processing_run(
+    '20000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000003',
+    'manual',
+    '[]'::jsonb,
+    'pipeline-test-v1',
+    '{"max_cost_usd":15}'::jsonb
+  );
+  if (second_run->>'job_count')::integer <> 1
+    or (second_run->>'reused_document_count')::integer <> 1 then
+    raise exception 'post-P0 run did not reuse the preliminary document and queue one full case job';
+  end if;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
+  case_claim := public.worker_claim_job(repeat('w', 64), 600);
+  if case_claim->>'kind' <> 'case_analysis'
+    or case_claim->'payload'->>'analysis_scope' <> 'full_case' then
+    raise exception 'the post-P0 run did not claim the governed full case-analysis job';
   end if;
   case_job_id := (case_claim->>'job_id')::uuid;
   case_capability := case_claim->>'capability_token';
@@ -1336,14 +1537,14 @@ begin
     raise exception 'worker did not preserve an unparseable proposal as JSON null';
   end if;
 
-  if (select status from public.processing_runs where intake_session_id = session_id) <> 'succeeded' then
-    raise exception 'the run did not reach succeeded after its jobs finished';
+  if (select status from public.processing_runs where intake_session_id = session_id order by run_no desc limit 1) <> 'succeeded' then
+    raise exception 'the latest run did not reach succeeded after its jobs finished';
   end if;
-  if (select jsonb_array_length(stages) from public.processing_runs where intake_session_id = session_id) <> 2 then
-    raise exception 'the stage timeline was not recorded on the run';
+  if (select jsonb_array_length(stages) from public.processing_runs where intake_session_id = session_id order by run_no desc limit 1) <> 1 then
+    raise exception 'the full-case stage timeline was not recorded on the second run';
   end if;
-  if (select usage->>'input_tokens' from public.processing_runs where intake_session_id = session_id) <> '120' then
-    raise exception 'usage was not accumulated on the run';
+  if (select coalesce(sum((usage->>'input_tokens')::integer), 0) from public.processing_runs where intake_session_id = session_id) <> 120 then
+    raise exception 'usage was not accumulated across the preliminary and full runs';
   end if;
   if (select processing_status from public.source_documents where id = document_id) <> 'ready' then
     raise exception 'the document was not marked ready';
@@ -1373,6 +1574,11 @@ do $$
 declare
   accepted boolean;
 begin
+  if (select count(*) from public.preliminary_understandings
+      where intake_session_id = '40000000-0000-4000-8000-000000000003'
+        and status = 'confirmed') <> 1 then
+    raise exception 'tenant A could not read its exact confirmed preliminary understanding';
+  end if;
   if (select count(*) from public.case_retrieval_chunks
       where source_document_id = '50000000-0000-4000-8000-000000000003') <> 520 then
     raise exception 'tenant A could not read its complete governed case index';
@@ -1419,8 +1625,109 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'tenant deleted a retrieval chunk'; end if;
+
+  accepted := true;
+  begin
+    update public.preliminary_understandings set status = 'superseded'
+    where intake_session_id = '40000000-0000-4000-8000-000000000003';
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant rewrote its preliminary understanding directly'; end if;
 end;
 $$;
+
+set local role postgres;
+
+-- A borrower can start the preliminary read with a written capital need alone. The deterministic
+-- fallback records an explicit public-research abstention and never forces a meaningless upload.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  declared_session constant uuid := '98000000-0000-4000-8000-000000000001';
+  empty_session constant uuid := '98000000-0000-4000-8000-000000000002';
+  preliminary_id uuid;
+  accepted boolean;
+  payload jsonb;
+  pipeline_was_enabled boolean;
+begin
+  select pipeline_enabled into pipeline_was_enabled
+  from public.organizations
+  where id = org_a;
+  update public.organizations set pipeline_enabled = false where id = org_a;
+
+  insert into public.document_intake_sessions (
+    id, organization_id, started_by, journey, locale, capital_objective
+  ) values
+    (
+      declared_session, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR',
+      'Financiar o ciclo operacional sem definir previamente o instrumento.'
+    ),
+    (
+      empty_session, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR', null
+    );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
+  payload := jsonb_build_object(
+    'schemaVersion', '2026.08.31-v1',
+    'caseId', declared_session::text,
+    'locale', 'pt-BR',
+    'summary', 'A companhia declarou uma necessidade de capital sujeita à confirmação.',
+    'company', jsonb_build_object('name', 'Tenant A Company'),
+    'operation', jsonb_build_object(
+      'objective', 'Financiar o ciclo operacional sem definir previamente o instrumento.'
+    ),
+    'basis', jsonb_build_object(
+      'preliminaryDocumentCount', 0,
+      'userDeclared', true,
+      'publicResearch', jsonb_build_object(
+        'status', 'abstained', 'sourceCount', 0, 'sources', '[]'::jsonb
+      )
+    ),
+    'preliminaryAssessment', jsonb_build_object(
+      'openPoints', jsonb_build_array('Confirmar a necessidade declarada.'),
+      'boundary', 'Leitura preliminar; não é diagnóstico financeiro ou recomendação.'
+    )
+  );
+
+  preliminary_id := public.record_fallback_preliminary_understanding(
+    org_a, declared_session, repeat('a', 64), payload
+  );
+  if preliminary_id is null
+    or (select status from public.document_intake_sessions where id = declared_session) <> 'review_ready'
+    or (select result_summary ->> 'preliminary_input'
+        from public.document_intake_sessions where id = declared_session) <> 'declared_context_only'
+    or (select count(*) from public.preliminary_understandings
+        where intake_session_id = declared_session and status = 'pending_confirmation') <> 1 then
+    raise exception 'written-only input did not publish the governed preliminary understanding';
+  end if;
+
+  accepted := true;
+  begin
+    perform public.record_fallback_preliminary_understanding(
+      org_a,
+      empty_session,
+      repeat('b', 64),
+      jsonb_set(payload, '{caseId}', to_jsonb(empty_session::text))
+    );
+  exception when object_not_in_prerequisite_state then
+    accepted := false;
+  end;
+  if accepted then
+    raise exception 'empty written input bypassed the preliminary-input gate';
+  end if;
+
+  set local role postgres;
+  update public.organizations set pipeline_enabled = pipeline_was_enabled where id = org_a;
+end;
+$$;
+
+set local role authenticated;
 
 select set_config(
   'request.jwt.claims',
@@ -1432,6 +1739,9 @@ do $$
 begin
   if (select count(*) from public.case_retrieval_chunks) <> 0 then
     raise exception 'tenant B read tenant A retrieval chunks';
+  end if;
+  if (select count(*) from public.preliminary_understandings) <> 0 then
+    raise exception 'tenant B read tenant A preliminary understanding';
   end if;
 end;
 $$;
@@ -1465,7 +1775,7 @@ begin
     )),
     'pipeline-test-v1'
   );
-  if (result->>'run_no')::integer <> 2 then
+  if (result->>'run_no')::integer <> 3 then
     raise exception 'the reprocessing run did not increment run_no';
   end if;
 end;
@@ -3770,14 +4080,14 @@ begin
   run_id := (result->>'processing_run_id')::uuid;
   set local role postgres;
   if (select count(*) from public.processing_jobs where processing_run_id = run_id and kind = 'document_pipeline') <> 0
-    or (select count(*) from public.processing_jobs where processing_run_id = run_id and kind = 'case_analysis') <> 1 then
-    raise exception 'unchanged retry did not reuse document work and queue only case analysis';
+    or (select count(*) from public.processing_jobs where processing_run_id = run_id and kind = 'preliminary_analysis') <> 1 then
+    raise exception 'unchanged retry did not reuse document work and queue only the preliminary read';
   end if;
   if (select (versions->>'reused_document_count')::integer from public.processing_runs where id = run_id) <> 1 then
     raise exception 'unchanged retry did not record reuse provenance';
   end if;
-  if (select (payload->'model_budget'->>'max_cost_usd')::numeric from public.processing_jobs where processing_run_id = run_id and kind = 'case_analysis') <> 1 then
-    raise exception 'case analysis did not receive its hard model budget';
+  if (select (payload->'model_budget'->>'max_cost_usd')::numeric from public.processing_jobs where processing_run_id = run_id and kind = 'preliminary_analysis') <> 0.60 then
+    raise exception 'preliminary understanding did not receive its hard model budget';
   end if;
 end;
 $$;
@@ -4552,6 +4862,14 @@ insert into public.document_intake_sessions (
   'company', 'pt-BR', 'collecting'
 );
 
+select private.append_deal_state_object(
+  '20000000-0000-4000-8000-000000000001',
+  '97000000-0000-4000-8000-000000000001',
+  'understanding_snapshot', 'pending_confirmation', repeat('1', 64),
+  '{"summary":"confirmed understanding","readiness":{"state":"ready","blockers":[]}}'::jsonb,
+  '[]'::jsonb, null, 'worker'
+);
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -4586,13 +4904,27 @@ declare
   match_plan jsonb;
   accepted boolean;
 begin
+  -- Even an authenticated case owner cannot invent or alter the diagnostic case being approved.
+  accepted := true;
+  begin
+    perform public.record_deal_state_object(
+      org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('0', 64),
+      '{"summary":"invented by tenant","readiness":{"state":"ready","blockers":[]},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001"}}'::jsonb,
+      '[]'::jsonb
+    );
+  exception when object_not_in_prerequisite_state then accepted := false;
+  end;
+  if accepted then raise exception 'a tenant authored a diagnostic understanding without a matching worker snapshot'; end if;
+
   understanding_id := public.record_deal_state_object(
     org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('1', 64),
-    '{"summary":"confirmed understanding"}'::jsonb, '[]'::jsonb
+    '{"summary":"confirmed understanding","readiness":{"state":"ready","blockers":[]},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T12:00:00Z"}}'::jsonb,
+    '[]'::jsonb
   );
   understanding_retry_id := public.record_deal_state_object(
     org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('1', 64),
-    '{"summary":"confirmed understanding"}'::jsonb, '[]'::jsonb
+    '{"summary":"confirmed understanding","readiness":{"state":"ready","blockers":[]},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T12:00:00Z"}}'::jsonb,
+    '[]'::jsonb
   );
   if understanding_retry_id is distinct from understanding_id then
     raise exception 'an exact deal-state retry created another version';
@@ -4681,7 +5013,7 @@ begin
       'objectType', 'structure_decision', 'objectFingerprint', structure_fingerprint
     ))
   );
-  if production_id is null or (select count(*) from public.deal_state_objects where intake_session_id = session_id) <> 4 then
+  if production_id is null or (select count(*) from public.deal_state_objects where intake_session_id = session_id) <> 5 then
     raise exception 'the governed deal-state chain was not persisted';
   end if;
   select object_fingerprint into production_fingerprint
@@ -4733,7 +5065,7 @@ begin
       jsonb_build_object('objectType', 'material_artifact', 'objectFingerprint', material_fingerprint)
     )
   );
-  if package_id is null or (select count(*) from public.deal_state_objects where intake_session_id = session_id) <> 6 then
+  if package_id is null or (select count(*) from public.deal_state_objects where intake_session_id = session_id) <> 7 then
     raise exception 'the exact package-review chain was not persisted';
   end if;
   select object_fingerprint into package_fingerprint
@@ -4868,6 +5200,13 @@ begin
     raise exception 'case input did not preserve the governed deal-state payloads and gates: %', case_input;
   end if;
 
+  set local role postgres;
+  perform private.append_deal_state_object(
+    org_a, session_id, 'understanding_snapshot', 'pending_confirmation', repeat('8', 64),
+    '{"summary":"changed understanding","readiness":{"state":"ready","blockers":[]}}'::jsonb,
+    '[]'::jsonb, null, 'worker'
+  );
+
   set local role authenticated;
   perform set_config(
     'request.jwt.claims',
@@ -4876,7 +5215,8 @@ begin
   );
   perform public.record_deal_state_object(
     org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('8', 64),
-    '{"summary":"changed understanding"}'::jsonb, '[]'::jsonb
+    '{"summary":"changed understanding","readiness":{"state":"ready","blockers":[]},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T13:00:00Z"}}'::jsonb,
+    '[]'::jsonb
   );
 
   set local role authenticated;

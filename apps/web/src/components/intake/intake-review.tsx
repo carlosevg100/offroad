@@ -1,13 +1,19 @@
 import {AlertTriangle, ArrowRight, Check, ChevronDown, FileText, History} from "lucide-react";
 import {getTranslations} from "next-intl/server";
+import {diagnosticConfirmationReady} from "@offroad/case-understanding";
 
 import {anchorText, displayCandidateValue, editableCandidateValue, intakeGroups} from "@/lib/intake/format";
 import type {CaseState} from "@/lib/intake/case-pipeline";
+import type {IntakeChecklist as Checklist} from "@/lib/intake/checklist";
 import type {IntakeCandidate, IntakeDocument, IntakeIssue, IntakeReviewActionSet, IntakeSession} from "@/lib/intake/types";
 
 import {IntakeCase} from "./intake-case";
+import {IntakeChecklist} from "./intake-checklist";
+import {DocumentIntakeUploader} from "./document-intake-uploader";
 import {IntakeGovernance} from "./intake-governance";
 import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
+import {IntakeActionSubmit} from "./intake-action-submit";
+import {IntakeInformation} from "./intake-information";
 
 type Props = {
   locale: string;
@@ -18,6 +24,11 @@ type Props = {
   actions: IntakeReviewActionSet;
   /** The desk's read of the case: readiness, capacity, structure, brief. Null before processing. */
   caseState?: CaseState | null;
+  checklist?: Checklist | null;
+  answerAction?: (formData: FormData) => Promise<void>;
+  organizationId?: string;
+  userId?: string;
+  removeAction?: (formData: FormData) => Promise<void>;
   surface: "onboarding" | "workspace";
 };
 
@@ -55,10 +66,29 @@ function issueEvidence(raw: unknown): IssueEvidence[] {
   });
 }
 
-export async function IntakeReview({locale, session, documents, candidates, issues, actions, caseState, surface}: Props) {
-  const t = await getTranslations({locale, namespace: "Intake.review"});
+/**
+ * Keeps the evidence review from counting the governed request list twice.
+ *
+ * Reconciliation persists both genuine exceptions and missing requirements in `intake_issues`
+ * so every derived finding has durable lineage. They already have their canonical surfaces on
+ * this page: exceptions inside `IntakeCase` and missing requirements inside the request ladder.
+ * Rendering the same rows again under evidence review duplicated both findings and counts. A
+ * pipeline-authored issue has no rule id and remains visible here; every rule-derived row stays
+ * in its analysis or request surface instead.
+ */
+export function isReviewAttentionItem(
+  issue: Pick<IntakeIssue, "status" | "rule_id" | "exception_type">,
+) {
+  return issue.status === "open" && !issue.rule_id;
+}
+
+export async function IntakeReview({locale, session, documents, candidates, issues, actions, caseState, checklist, answerAction, organizationId, userId, removeAction, surface}: Props) {
+  const [t, tIntake] = await Promise.all([
+    getTranslations({locale, namespace: "Intake.review"}),
+    getTranslations({locale, namespace: "Intake"}),
+  ]);
   const documentById = new Map(documents.map((document) => [document.id, document]));
-  const openIssues = issues.filter((issue) => issue.status === "open");
+  const openIssues = issues.filter(isReviewAttentionItem);
   const conflictCandidateIds = new Set(openIssues.flatMap((issue) => issue.candidate_ids));
   const reviewed = candidates.filter((candidate) => ["accepted", "edited", "rejected", "not_applicable"].includes(candidate.review_state)).length;
   const accepted = candidates.filter((candidate) => ["accepted", "edited"].includes(candidate.review_state) && candidate.is_primary).length;
@@ -73,6 +103,7 @@ export async function IntakeReview({locale, session, documents, candidates, issu
     if (isConflict) return t("state.conflict");
     return `${Math.round(Number(candidate.confidence) * 100)}%`;
   };
+  const diagnosticCanBeConfirmed = caseState ? diagnosticConfirmationReady(caseState.readiness) : false;
 
   return (
     <div className="intake-review">
@@ -93,7 +124,72 @@ export async function IntakeReview({locale, session, documents, candidates, issu
         </div>
       </header>
 
-      {caseState !== undefined ? <IntakeCase caseState={caseState} locale={locale} sessionId={session.id} /> : null}
+      {caseState !== undefined ? <IntakeCase caseState={caseState} locale={locale} sessionId={session.id} view="diagnosis" /> : null}
+
+      {diagnosticCanBeConfirmed ? (
+        <section className="intake-case-review-actions">
+          <header>
+            <div><span className="section-kicker">{t("caseReviewKicker")}</span><h3>{t("caseReviewTitle")}</h3><p>{t("caseReviewBody")}</p></div>
+            <a className="button button--ghost" href={`/${locale}/app/case/${session.id}`} rel="noreferrer" target="_blank"><FileText aria-hidden="true" size={14} />{t("openCaseFile")}</a>
+          </header>
+          <details>
+            <summary>{t("reviseCase")}</summary>
+            <form action={actions.revise}>
+              <input name="locale" type="hidden" value={locale} />
+              <input name="session_id" type="hidden" value={session.id} />
+              <label htmlFor="case-review-feedback">{t("revisionLabel")}</label>
+              <textarea id="case-review-feedback" maxLength={4000} minLength={3} name="case_feedback" placeholder={t("revisionPlaceholder")} required rows={5} />
+              <p>{t("revisionBoundary")}</p>
+              <IntakeActionSubmit idle={t("revisionSubmit")} pending={t("revisionPending")} />
+            </form>
+          </details>
+        </section>
+      ) : null}
+
+      {checklist !== undefined && organizationId && userId && removeAction ? (
+        <section className="intake-review__next-batch">
+          <header><span className="section-kicker">{t("nextBatchKicker")}</span><h3>{t("nextBatchTitle")}</h3><p>{t("nextBatchBody")}</p></header>
+          <div className="intake-guide__documents">
+            <IntakeChecklist checklist={checklist ?? null} locale={locale} respond={answerAction} sessionId={session.id} />
+            <DocumentIntakeUploader
+              copy={{
+                startError: tIntake("uploader.startError"),
+                invalidFile: tIntake("uploader.invalidFile"),
+                uploadError: tIntake("uploader.uploadError"),
+                registerError: tIntake("uploader.registerError"),
+                duplicateNotice: tIntake("uploader.duplicateNotice"),
+                uploading: tIntake("uploader.uploading"),
+                dropTitle: t("nextBatchUploadTitle"),
+                dropBody: t("nextBatchUploadBody"),
+                select: tIntake("uploader.select"),
+                formats: tIntake("uploader.formats"),
+                received: tIntake("uploader.received"),
+                remove: tIntake("uploader.remove"),
+              }}
+              initialDocuments={documents}
+              locale={locale}
+              organizationId={organizationId}
+              removeAction={removeAction}
+              sessionId={session.id}
+              userId={userId}
+            />
+          </div>
+          {answerAction && checklist ? (
+            <IntakeInformation
+              action={answerAction}
+              items={checklist.activeBatch.filter((item) => item.source === "information")}
+              locale={locale}
+              sessionId={session.id}
+            />
+          ) : null}
+          <form action={actions.process} className="intake-review__reanalyze">
+            <input name="locale" type="hidden" value={locale} />
+            <input name="session_id" type="hidden" value={session.id} />
+            <div><strong>{t("reanalyzeTitle")}</strong><p>{t("reanalyzeBody")}</p></div>
+            <IntakeActionSubmit idle={t("reanalyze")} pending={t("reanalyzePending")} />
+          </form>
+        </section>
+      ) : null}
 
       <IntakeGovernance
         locale={locale}
@@ -102,6 +198,8 @@ export async function IntakeReview({locale, session, documents, candidates, issu
         session={session}
       />
 
+      <details className="intake-review__evidence" open={openIssues.length > 0}>
+        <summary><span>{t("evidenceKicker")}</span><strong>{t("evidenceTitle")}</strong><small>{t("reviewedCounter", {reviewed, total: candidates.length})}</small></summary>
       <div className="intake-review__toolbar">
         <div><History size={14} /><span>{t("reviewedCounter", {reviewed, total: candidates.length})}</span></div>
         <form action={actions.accept}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--small" type="submit"><Check size={13} />{t("acceptHighConfidence")}</button></form>
@@ -183,11 +281,17 @@ export async function IntakeReview({locale, session, documents, candidates, issu
           );
         })}
       </div>
+      </details>
 
       {!candidates.length ? (
         <section className="intake-review__empty">
           <FileText aria-hidden="true" size={22} />
           <div><strong>{t("emptyTitle")}</strong><p>{t("emptyBody")}</p></div>
+        </section>
+      ) : !diagnosticCanBeConfirmed ? (
+        <section className="intake-review__not-ready" role="status">
+          <AlertTriangle aria-hidden="true" size={18} />
+          <div><strong>{t("notReadyTitle")}</strong><p>{t("notReadyBody")}</p></div>
         </section>
       ) : (
         <section className="intake-confirm">

@@ -1,6 +1,6 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 29 August 2026. Receivables Phase 6 is live on `main`. Phase 7 is
+> Current as of 31 August 2026. Receivables Phase 6 is live on `main`. Phase 7 is
 > a candidate branch that connects actual uploads to the full governed vertical; it is not live
 > until database CI, staging and the controlled production replay below are complete.
 >
@@ -8,6 +8,42 @@
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Engineering update: isolated preliminary understanding and canonical entry order, 31 August 2026
+
+The borrower journey now has one entry order: company; transaction plus preliminary documents;
+public research and preliminary understanding; explicit P0 confirmation; tailored information
+request; deep analysis and clarifications; diagnostic case and exact confirmation; structure;
+approved production plan; materials and market. The first
+understanding no longer uses the full `case_analysis` capability. Its `preliminary_analysis` job
+can load only the company/transaction declaration, preliminary document inventory and anchored
+extractions. Full-case RPCs reject that capability by job kind.
+
+The transaction step accepts **written context or uploaded material**. It must never require the
+customer to retype an operation already described in a deck, business plan, contract or request:
+one of those inputs is sufficient to start. Anchored document facts populate the preliminary
+purpose, amount, currency, tenor, sector and geography; unsupported items return as open points.
+Text plus documents are reconciled, while an entirely empty submission remains blocked to avoid
+an unnecessary paid run.
+
+The preliminary object is versioned, fingerprinted and corrigible. Confirming it unlocks only the
+playbook-compiled information list and returns the session to collection; it does not confirm the
+diagnostic understanding, create a structure, produce materials or query the lender graph. Five
+public research topics run concurrently when Perplexity Search is configured, remain separately
+cited external context and feed one bounded writer call. No paid call was made in this delivery.
+
+The deep-analysis run now compiles the company-specific diagnostic case before structure. The
+company countersigns the exact worker snapshot atomically with opportunity creation; tenant input
+cannot author or alter that diagnostic payload. Only then is structuring enqueued. Structure
+confirmation still cannot compile teaser, model, term sheet or data-room artifacts: an approved
+production plan is a separate executable gate.
+
+Worker, web and public-research focused tests and typechecks pass. The uncached repository gate
+passed 168/168 tasks across 42 packages. The SQL migration was applied to the Supabase staging
+branch and the full tenant/capability interference test passed; forced RLS and function privileges
+were inspected directly, the security advisor returned zero findings and the foreign-key index
+findings were corrected. Production was not changed. The branch still requires PR preview and
+smoke tests and must not be described as production-ready.
 
 ### Engineering update: exact recipient and material authorization, 29 August 2026
 
@@ -57,9 +93,10 @@ one at a time.
 
 The product journey is now frozen in
 [`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). It separates the
-client journey from the House Playbook and from system architecture, and defines four explicit
-gates: enough to understand, enough to structure, enough to produce materials and enough to access
-the market. Understanding, findings, clarification, structure confirmation, case-specific
+client journey from the House Playbook and from system architecture, and defines a corrigible P0
+orientation gate plus four execution gates: enough to understand deeply, enough to structure,
+enough to produce materials and enough to access the market. Preliminary understanding, tailored
+information collection, diagnostic understanding, findings, clarification, structure confirmation, case-specific
 production planning, real material production, company review, matching and qualified introduction
 are distinct states and cannot be collapsed into one model run.
 

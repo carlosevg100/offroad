@@ -1,5 +1,33 @@
 # Acceptance Evidence
 
+## Entendimento preliminar e gate P0, 31/08/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Ordem única | workflow, ações e roteamento | companhia → operação + documentos preliminares → entendimento → confirmação → lista sob medida |
+| Entrada sem redigitação | gate web, ações e teste do worker | texto ou documento destravam a leitura; material ancorado preenche objetivo e montante; ausência vira ponto aberto |
+| Capacidade isolada | tipo de job e contratos da fila | `preliminary_analysis` é distinto de `case_analysis`; payload exige `analysis_scope=preliminary_understanding` |
+| Menor privilégio | migration e teste RLS estendido | capability preliminar carrega apenas sessão, candidatos e documentos; full case e retrieval devem falhar fechado |
+| Pesquisa pública | `@offroad/public-research` | cinco tópicos independentes em paralelo; fallback por tópico; ordem determinística; nenhuma informação financeira privada aceita na query |
+| Compilação estreita | teste do worker | exatamente uma tarefa de modelo; nenhum Deal State, estrutura, material, mandato ou controlled execution |
+| Decisão auditável | schema e RPC | fingerprint exato, versão, confirmação ou correção, ator e horário; escrita direta do tenant negada |
+| Próximo passo correto | ação web | confirmação compila a lista do playbook e retorna à coleta; correção volta à companhia/operação |
+| Case antes da estrutura | engine, UI e Deal State | análise profunda compila o dossier rastreável; somente o aceite do fingerprint exato enfileira estruturação |
+| Discussão do case | UI, evento e prompt | usuário abre o Markdown antes do aceite, registra o que está errado e dispara nova versão; comentário orienta a revisão, mas não substitui evidência nem sobrescreve cálculo conciliado |
+| Aceite atômico | RPC e RLS | countersignature do snapshot do worker e criação da oportunidade ocorrem na mesma transação; tenant não autoria o case |
+| Materiais depois do plano | engine e teste | estrutura confirmada sem plano de produção continua com teaser, modelo, term sheet e data room bloqueados |
+| UI | PT-BR e EN-US | companhia, operação, contexto setorial, fontes, pontos abertos e confirmação/correção em tela própria |
+| Testes locais | runtime disponível nesta máquina | worker 65/65, pesquisa pública 5/5, web 155/155, case understanding 53/53, case engine 32/32, case runner 12/12 e evals 38/38; lint e typechecks verdes |
+| Build local | Next.js e worker | build do worker aprovado no gate integral; build de produção do web aprovado separadamente, com 28 páginas estáticas e a nova rota dinâmica do case |
+| Gate integral local | 42 pacotes | lint 42/42, typecheck 42/42, testes 42/42 e build 42/42 verdes; Next.js compilou a rota Markdown e o worker foi empacotado |
+| Custo | execução local | zero chamadas pagas; teto projetado da primeira leitura: uma chamada de modelo e até cinco buscas |
+| Banco e RLS | branch Supabase de staging | migration aplicada; teste adversarial integral `rls_non_interference.sql` aprovado; RLS habilitado e forçado; zero alertas no advisor de segurança; FKs cobertas por índices |
+| Gate integral sem cache | Node 24, 42 pacotes | 168/168 tarefas aprovadas em 1m04s, incluindo lint, typecheck, test e build; nenhum resultado foi reutilizado do cache |
+| Rollout | git/staging/produção | banco validado somente no branch de staging; produção não foi alterada e a capacidade permanece candidate até PR, preview e smoke tests verdes |
+
+Esta evidência prova o isolamento e a ordem do primeiro entendimento no código. Ainda não prova a
+qualidade institucional da análise profunda, do case, da estrutura ou dos materiais finais.
+
 ## Destinatário e autorização exatos, 29/08/2026
 
 | Evidência | Verificação | Resultado |

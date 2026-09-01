@@ -215,6 +215,9 @@ export type CaseEngineInput = {
   taskCache?: RunCaseInput["taskCache"];
   runtimeVersions?: Record<string, string>;
   externalReleaseApproved: boolean;
+  /** Explicit production gate. A confirmed structure alone does not authorize compiling teaser,
+   * model, term sheet or data-room artifacts; the company must also approve the production plan. */
+  materialsPreparationApproved?: boolean;
   materialRelease?: MaterialExternalReleaseEvidence;
   marketGovernance?: {
     mandateMaxAgeMonths: number | null;
@@ -891,12 +894,18 @@ export async function executeCaseEngine(
         execute: async (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
-          const structure = outputOf<StructureOutput>(context, "structure");
-          if (!structure.structureDecision.materialsPreparationAllowed) {
+          // The narrative case belongs to diagnosis: the company must be able to review it
+          // before choosing a structure. It may explicitly carry non-blocking gaps and is not
+          // equivalent to an investor-ready package. Minimum-document and critical-reconciliation
+          // blockers still prevent generation; circulation and materials remain separately gated.
+          if (metrics.readiness.state !== "ready") {
             const output: ClaimsOutput = {
               brief: null,
               proposedBrief: null,
-              briefBlockedBy: uniqueStrings(structure.structureDecision.blockers),
+              briefBlockedBy: uniqueStrings([
+                "diagnostic_case_not_ready",
+                ...metrics.readiness.blockers.map((blocker) => blocker.id),
+              ]),
               numericAudit: null,
               semanticAudit: null,
               modelInvocations: [],
@@ -981,7 +990,11 @@ export async function executeCaseEngine(
       },
       materials: {
         outputSchema: materialsOutputSchema,
-        selectInput: () => ({claimDecisions: input.claimDecisions, materialRelease: input.materialRelease}),
+        selectInput: () => ({
+          claimDecisions: input.claimDecisions,
+          materialRelease: input.materialRelease,
+          materialsPreparationApproved: input.materialsPreparationApproved === true,
+        }),
         execute: async (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
           const metrics = outputOf<MetricsOutput>(context, "metrics");
@@ -1704,6 +1717,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
     selectInput: () => ({
       claimDecisions: input.claimDecisions ?? [],
       materialRelease: input.materialRelease ?? null,
+      materialsPreparationApproved: input.materialsPreparationApproved === true,
       claimsFingerprint: fingerprintJson(claims),
       structureFingerprint: fingerprintJson(structure),
       reconciliationFingerprint: fingerprintJson(reconciliation),
@@ -1720,11 +1734,19 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       return {
         output: {
           approvedJudgmentIds,
-          canCompileDocuments: Boolean(claims.brief),
-          canCompileFinancialModel: structure.structureDecision.status === "confirmed"
+          canCompileDocuments: input.materialsPreparationApproved === true
+            && structure.structureDecision.status === "confirmed"
+            && structure.structureDecision.materialsPreparationAllowed
+            && Boolean(claims.brief),
+          canCompileFinancialModel: input.materialsPreparationApproved === true
+            && structure.structureDecision.status === "confirmed"
             && structure.structureDecision.materialsPreparationAllowed
             && Boolean(structure.structureDecision.selectedAlternativeId),
-          initialBlockers: claims.brief ? [] : ["brief_unavailable", ...claims.briefBlockedBy],
+          initialBlockers: uniqueStrings([
+            ...(input.materialsPreparationApproved ? [] : ["production_plan_not_approved"]),
+            ...(structure.structureDecision.status === "confirmed" ? [] : ["confirmed_structure_unavailable"]),
+            ...(claims.brief ? [] : ["brief_unavailable", ...claims.briefBlockedBy]),
+          ]),
         },
         toolsUsed: ["claim_registry"],
         sourceIds,
@@ -1893,6 +1915,25 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       const model = subtaskOutput<{financialModel: FinancialModelArtifact | null; blockers: string[]}>(outputs, "financial_model");
       const planned = subtaskOutput<{materials: Material[]; dataRoom: DataRoomPlan}>(outputs, "plan_room");
       const {claimRegistry} = subtaskOutput<{claimRegistry: ClaimRegistry | null}>(outputs, "claim_registry");
+      if (!input.materialsPreparationApproved) {
+        const materialsBlockedBy = uniqueStrings([
+          "production_plan_not_approved",
+          ...compiled.materialsBlockedBy,
+          ...model.blockers,
+        ]);
+        const dataRoom = planDataRoom({
+          materials: [],
+          materialsBlockedBy,
+          documents: extracted.roomDocuments,
+          exceptions: reconciliation.exceptions,
+          readiness: metrics.readiness,
+        });
+        return {
+          output: {materials: [], financialModel: null, materialsBlockedBy, audit: "not_run", dataRoom, claimRegistry},
+          toolsUsed: ["case_materials", "data_room", "claim_registry"],
+          sourceIds,
+        };
+      }
       if (claimRegistry && !claimRegistry.publication.allowed) {
         const materialsBlockedBy = uniqueStrings([...compiled.materialsBlockedBy, ...model.blockers, ...claimRegistry.publication.blockers]);
         const dataRoom = planDataRoom({

@@ -18,7 +18,7 @@ const job: CaseAnalysisJob = {
   organization_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
   intake_session_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
   processing_run_id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-  payload: {locale: "pt-BR", execution_mode: "primary"},
+  payload: {locale: "pt-BR", execution_mode: "primary", analysis_scope: "full_case"},
 };
 
 const invocation: GatewayCallLog = {
@@ -111,6 +111,199 @@ function structureProposalFromRequest(request: {
 }
 
 describe("worker case analysis", () => {
+  it("runs the first understanding as one bounded read without loading or executing the full case DAG", async () => {
+    const preliminaryJob: CaseAnalysisJob = {
+      ...job,
+      kind: "preliminary_analysis",
+      payload: {
+        locale: "pt-BR",
+        execution_mode: "primary",
+        analysis_scope: "preliminary_understanding",
+        model_budget: {max_cost_usd: 0.6, max_calls: 1},
+      },
+    };
+    const calls: string[] = [];
+    const stages: Array<{stage: string; status: string}> = [];
+    let recorded: {inputFingerprint: string; payload: unknown} | null = null;
+    let completed: Record<string, unknown> | null = null;
+    const queue: QueueClient = {
+      claim: async () => null,
+      heartbeat: async () => {},
+      writeStage: async (_job, stage, status) => { stages.push({stage, status}); },
+      recordDocument: async () => {},
+      recordCandidates: async () => ({written: 0, replaced: 0}),
+      recordRetrievalChunks: async () => ({written: 0, sourceDocumentId: "source-1"}),
+      recordReceivablesEvidence: async () => ({written: false, replayed: false, source_document_id: "11111111-1111-4111-8111-111111111111", content_sha256: "1".repeat(64)}),
+      loadIntakeEvents: async () => [],
+      recordIntakeRequestLadders: async () => {},
+      recordAnalysisScopeSuggestions: async () => ({}),
+      documentAdvisorAuthorization: async () => ({}),
+      loadPreliminaryInput: async () => ({
+        session: {
+          id: job.intake_session_id,
+          locale: "pt-BR",
+          archetype: "working_capital",
+          company_profile: {
+            name: "Companhia Exemplo",
+            legal_name: "Companhia Exemplo Ltda.",
+            website: "https://companhia.example",
+            description: "Distribuidora B2B com carteira de recebíveis.",
+          },
+          capital_objective: null,
+          requested_amount: null,
+          capital_currency: "BRL",
+          sector: "Distribuição",
+          geography: "SP",
+        },
+        candidates: [
+          {
+            id: "candidate-1",
+            field_path: "company.legal_name",
+            label: "Razão social",
+            raw_value: "Companhia Exemplo Ltda.",
+            normalized_value: "Companhia Exemplo Ltda.",
+            value_type: "text",
+            source_document_id: "source-1",
+            evidence_rank: 1,
+            information_class: "historical",
+            confidence: 0.99,
+            anchor_verified: true,
+            source_anchor: {page: 1},
+          },
+          {
+            id: "candidate-2",
+            field_path: "transaction.purpose",
+            label: "Finalidade",
+            raw_value: "Financiar o crescimento do capital de giro.",
+            normalized_value: "Financiar o crescimento do capital de giro.",
+            value_type: "text",
+            source_document_id: "source-1",
+            evidence_rank: 1,
+            information_class: "company_document",
+            confidence: 0.98,
+            anchor_verified: true,
+            source_anchor: {page: 2},
+          },
+          {
+            id: "candidate-3",
+            field_path: "transaction.requested_amount",
+            label: "Montante",
+            raw_value: "R$ 20 milhões",
+            normalized_value: "20000000",
+            value_type: "number",
+            source_document_id: "source-1",
+            evidence_rank: 1,
+            information_class: "company_document",
+            confidence: 0.98,
+            anchor_verified: true,
+            source_anchor: {page: 2},
+          },
+        ],
+        documents: [{
+          id: "source-1",
+          original_name: "apresentacao.pdf",
+          document_version: 1,
+          sha256: "a".repeat(64),
+          sha256_verified_at: "2026-08-31T12:00:00.000Z",
+          byte_size: 1_000,
+          document_kind: "institutional_presentation",
+        }],
+      }),
+      loadCaseInput: async () => { throw new Error("the preliminary job must not load full case input"); },
+      loadRetrievalContext: async () => { throw new Error("the preliminary job must not retrieve playbook or mandates"); },
+      recordPublicResearch: async () => "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      recordPreliminaryUnderstanding: async (_job, input) => {
+        recorded = input;
+        return "ffffffff-ffff-4fff-8fff-ffffffffffff";
+      },
+      recordDealStateObject: async () => { throw new Error("the preliminary job must not mutate Deal State"); },
+      recordCaseSnapshot: async () => { throw new Error("the preliminary job must not persist a case snapshot"); },
+      recordControlledExecution: async () => { throw new Error("the preliminary job must not create a controlled execution"); },
+      loadAgentContext: async () => ({}),
+      recordAgentResponse: async () => ({}),
+      recordAgentFailure: async () => {},
+      complete: async (_job, result) => { completed = result as Record<string, unknown>; },
+      fail: async (_job, error) => { throw new Error(`the preliminary job should not fail: ${JSON.stringify(error)}`); },
+    };
+    let spent = {costUsd: 0, calls: 0};
+    const gateway = {
+      complete: async (request: {task: string}) => {
+        calls.push(request.task);
+        spent = {costUsd: 0.08, calls: 1};
+        return {
+          output: {
+            understandingSummary: "A companhia atua em distribuição B2B e busca capital para sustentar o crescimento do ciclo operacional.",
+            companySummary: "A companhia se apresenta como distribuidora B2B com carteira própria de recebíveis.",
+            sectorSummary: "A distribuição B2B depende de gestão de estoque, prazo a clientes e disponibilidade de capital de giro.",
+            positioningSummary: "As fontes consultadas confirmam a presença digital informada, mas não permitem concluir posição competitiva.",
+            sector: "Distribuição B2B",
+            geography: "SP",
+            operationSummary: "A necessidade declarada é levantar BRL 20 milhões para financiar capital de giro associado ao crescimento.",
+            researchSignals: [{claim: "O domínio informado é consistente com a identidade pesquisada.", sourceUrls: ["https://example.com/identity"]}],
+            openPoints: [{question: "Qual é o uso detalhado dos recursos?", whyItMatters: "Define a lista de informações necessária.", category: "operation"}],
+          },
+          provider: "anthropic",
+          model: "claude-sonnet-5",
+          effort: "medium",
+          usage: {inputTokens: 200, outputTokens: 100, cachedInputTokens: 0},
+          costUsd: 0.08,
+          latencyMs: 10,
+          stopReason: "end",
+          usedFallback: false,
+          fromCassette: false,
+          attempts: [],
+        };
+      },
+      spent: () => spent,
+    } as unknown as ModelGateway;
+
+    const outcome = await processCaseAnalysisJob(preliminaryJob, {
+      queue,
+      gateway,
+      lineage: () => [],
+      researchProviders: [{
+        id: "perplexity",
+        search: async (query) => [{
+          provider: "perplexity",
+          topic: query.topic,
+          title: `Fonte ${query.topic}`,
+          url: `https://example.com/${query.topic}`,
+          snippet: "Contexto público verificado.",
+          publishedAt: null,
+          retrievedAt: "2026-08-31T12:00:00.000Z",
+          contentHash: "b".repeat(64),
+        }],
+      }],
+      now: () => new Date("2026-08-31T12:00:00.000Z"),
+    });
+
+    expect(outcome).toEqual({status: "succeeded"});
+    expect(calls).toEqual(["preliminary_understanding"]);
+    expect(stages).toEqual([
+      {stage: "preliminary_understanding", status: "started"},
+      {stage: "public_research", status: "started"},
+      {stage: "public_research", status: "succeeded"},
+      {stage: "preliminary_understanding", status: "succeeded"},
+    ]);
+    expect(recorded).not.toBeNull();
+    const preliminary = (recorded as unknown as {payload: {
+      operation: {objective: string | null; requestedAmount: string | null};
+      preliminaryAssessment: {boundary: string; openPoints: string[]};
+    }}).payload;
+    expect(preliminary.operation).toMatchObject({
+      objective: "Financiar o crescimento do capital de giro.",
+      requestedAmount: "20000000",
+    });
+    expect(preliminary.preliminaryAssessment.openPoints).not.toContain("Confirmar o objetivo e a destinação dos recursos.");
+    expect(preliminary.preliminaryAssessment.openPoints).not.toContain("Confirmar o montante indicativo.");
+    expect(preliminary.preliminaryAssessment.boundary).toContain("Ainda não é diagnóstico financeiro");
+    expect(completed).toMatchObject({
+      preliminary_understanding_id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+      analysis_scope: "preliminary_understanding",
+      spend: {calls: 1},
+    });
+  });
+
   it("defaults to a zero-model diagnostic plan before governed confirmations", () => {
     expect(caseAnalysisExecutionPlan({
       stage: "diagnose",
@@ -194,10 +387,14 @@ describe("worker case analysis", () => {
         fact("company.legal_name", "Empresa Teste Ltda", "text"),
         fact("transaction.requested_amount", 10_000_000),
         fact("debt.total_gross", 60_000_000),
+        fact("debt.instruments.1.principal", 60_000_000),
         fact("historical_financials.2025.cash", 10_000_000),
         fact("historical_financials.2025.ebitda", 25_000_000),
         fact("leverage.post_transaction_net_debt_ebitda", 2.8),
         fact("projections.minimum_dscr", 1.45),
+        fact("project.total_cost", 10_000_000),
+        fact("project.investments.1.amount", 10_000_000),
+        fact("collateral.total_capacity", 12_000_000),
         fact("transaction.sources_and_uses.1.side", "sources", "text"),
         fact("transaction.sources_and_uses.1.item", "Nova dívida", "text"),
         fact("transaction.sources_and_uses.1.amount", 10_000_000),
@@ -209,12 +406,40 @@ describe("worker case analysis", () => {
         fact("transaction.sources_and_uses.2.currency", "BRL", "text"),
         fact("transaction.sources_and_uses.2.condition", "available", "text"),
       ],
-      sources: [{id: "source-1", document_version: 1, sha256: "d".repeat(64)}],
+      sources: [
+        {id: "source-1", document_version: 1, sha256: "d".repeat(64)},
+        {id: "source-2", document_version: 1, sha256: "e".repeat(64)},
+        {id: "source-3", document_version: 1, sha256: "f".repeat(64)},
+        {id: "source-4", document_version: 1, sha256: "a".repeat(64)},
+        {id: "source-5", document_version: 1, sha256: "b".repeat(64)},
+        {id: "source-6", document_version: 1, sha256: "c".repeat(64)},
+      ],
       documents: [
         {id: "source-1", original_name: "financials.pdf", document_version: 1, sha256: "d".repeat(64), sha256_verified_at: "2026-08-24T12:00:00.000Z", byte_size: 100, document_kind: "audited_financial_statements"},
+        {id: "source-2", original_name: "trial-balance.xlsx", document_version: 1, sha256: "e".repeat(64), sha256_verified_at: "2026-08-24T12:00:00.000Z", byte_size: 100, document_kind: "trial_balance"},
+        {id: "source-3", original_name: "debt-schedule.xlsx", document_version: 1, sha256: "f".repeat(64), sha256_verified_at: "2026-08-24T12:00:00.000Z", byte_size: 100, document_kind: "debt_schedule"},
+        {id: "source-4", original_name: "company-registration.pdf", document_version: 1, sha256: "a".repeat(64), sha256_verified_at: "2026-08-24T12:00:00.000Z", byte_size: 100, document_kind: "company_registration"},
+        {id: "source-5", original_name: "capital-request.pdf", document_version: 1, sha256: "b".repeat(64), sha256_verified_at: "2026-08-24T12:00:00.000Z", byte_size: 100, document_kind: "capital_request_letter"},
+        {id: "source-6", original_name: "business-plan.xlsx", document_version: 1, sha256: "c".repeat(64), sha256_verified_at: "2026-08-24T12:00:00.000Z", byte_size: 100, document_kind: "business_plan"},
       ],
-      layers: [{source_document_id: "source-1", document_version: 1, sha256: "d".repeat(64), parser_versions: {}, processing_run_id: job.processing_run_id, status: "ready"}],
-      answers: [],
+      layers: [
+        ["source-1", "d"], ["source-2", "e"], ["source-3", "f"],
+        ["source-4", "a"], ["source-5", "b"], ["source-6", "c"],
+      ].map(([source_document_id, hash]) => ({
+        source_document_id,
+        document_version: 1,
+        sha256: String(hash).repeat(64),
+        parser_versions: {},
+        processing_run_id: job.processing_run_id,
+        status: "ready",
+      })),
+      answers: [
+        {id: "answer-1", requirement_id: "info_why_now", response: "provided", answer: "O cronograma do projeto exige contratação neste semestre.", note: null},
+        {id: "answer-2", requirement_id: "info_business_model", response: "provided", answer: "A companhia vende produtos a uma base recorrente de clientes.", note: null},
+        {id: "answer-3", requirement_id: "info_customer_concentration", response: "provided", answer: "Os cinco maiores clientes e suas participações estão identificados.", note: null},
+        {id: "answer-4", requirement_id: "info_ramp_history", response: "provided", answer: "As duas últimas unidades atingiram maturidade dentro do cronograma informado.", note: null},
+        {id: "answer-5", requirement_id: "info_capex_actual", response: "provided", answer: "O custo real da última unidade foi reconciliado com o orçamento.", note: null},
+      ],
       directory_mandates: [{
         fund_id: "f1111111-1111-4111-8111-111111111111",
         fund_name: "Fundo Confidencial",
@@ -338,6 +563,7 @@ describe("worker case analysis", () => {
       recordIntakeRequestLadders: async () => {},
       recordAnalysisScopeSuggestions: async () => ({}),
       documentAdvisorAuthorization: async () => ({}),
+      loadPreliminaryInput: async () => raw,
       loadCaseInput: async () => raw,
       loadRetrievalContext: async (_job, input) => {
         retrievalRequests.push(input);
@@ -357,6 +583,7 @@ describe("worker case analysis", () => {
         publicResearchRecord = {plan, result};
         return "ffffffff-ffff-4fff-8fff-ffffffffffff";
       },
+      recordPreliminaryUnderstanding: async () => "f2000000-0000-4000-8000-000000000001",
       recordDealStateObject: async (_job, input) => {
         dealStateWrites.push({objectType: input.objectType, status: input.status});
         return "f1000000-0000-4000-8000-000000000001";
@@ -632,8 +859,8 @@ describe("worker case analysis", () => {
       externalOutputsAllowed:boolean;
     };
     expect(persistedRedFlags).toMatchObject({
-      status:"decision_required",
-      counts:{open:1,treated:0,notComputable:16},
+      status:"attention_required",
+      counts:{open:0,treated:0,notComputable:16},
       externalOutputsAllowed:false,
     });
     expect(persistedRedFlags).not.toHaveProperty("findings");
@@ -688,14 +915,29 @@ describe("worker case analysis", () => {
       now: () => new Date("2026-08-24T13:00:00.000Z"),
     });
     expect(diagnosticOutcome).toEqual({status: "succeeded", manifestId: "manifest-1"});
-    expect(modelCalls).toEqual([]);
-    expect(spent).toEqual({costUsd: 0, calls: 0});
+    expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
+    expect(spent).toEqual({costUsd: 0.15, calls: 2});
     expect(retrievalRequests).toHaveLength(1);
     expect(stages.some((event) => event.stage === "mandate_retrieval")).toBe(false);
     expect(dealStateWrites).toEqual([
       {objectType: "understanding_snapshot", status: "pending_confirmation"},
       {objectType: "finding_register", status: "draft"},
     ]);
+    const diagnosticUnderstanding = dealStateRecords.find((record) => record.objectType === "understanding_snapshot")?.payload as Record<string, unknown>;
+    expect(diagnosticUnderstanding).toMatchObject({
+      schemaVersion: "2026.08.31-v2",
+      caseId: job.intake_session_id,
+    });
+    for (const required of ["readiness", "reconciliation", "operationTruth", "capacity", "trajectory", "desk", "clientQuestions", "brief", "briefBlockedBy", "redFlagTruth"]) {
+      expect(diagnosticUnderstanding).toHaveProperty(required);
+    }
+    expect(diagnosticUnderstanding.brief).toMatchObject({
+      executiveSummary: "Resumo institucional sem afirmações materiais.",
+    });
+    expect(diagnosticUnderstanding).not.toHaveProperty("structureTruth");
+    expect(diagnosticUnderstanding).not.toHaveProperty("pricingTruth");
+    expect(diagnosticUnderstanding).not.toHaveProperty("materials");
+    expect(diagnosticUnderstanding).not.toHaveProperty("matching");
     expect(recordedState).toMatchObject({
       dealWorkflow: {stage: "diagnose"},
       executionPlan: {produceMaterials: false, screenMandates: false, introduce: false},

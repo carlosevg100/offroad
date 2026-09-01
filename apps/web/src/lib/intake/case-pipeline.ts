@@ -5,8 +5,14 @@ import {
   publicCaseState,
   type PublicCaseEngineState,
 } from "@offroad/case-engine";
-import {fingerprintJson} from "@offroad/case-understanding";
-import type {ArchetypeId, ClassifiedDocument} from "@offroad/credit-playbook";
+import {buildCaseArtifactManifest, fingerprintJson} from "@offroad/case-understanding";
+import {
+  requirementResponseSchema,
+  type ArchetypeId,
+  type ClassifiedDocument,
+  type InformationAnswers,
+  type RequirementResponses,
+} from "@offroad/credit-playbook";
 import type {DataRoomDocument} from "@offroad/data-room";
 import {gatewayCallLogSchema, type GatewayCallLog} from "@offroad/model-gateway";
 import type {FactCandidate} from "@offroad/reconciliation";
@@ -21,7 +27,10 @@ import type {Database, Json} from "@/types/database";
 export type CaseState = Omit<PublicCaseEngineState, "modelInvocations"> & {
   modelInvocations: GatewayCallLog[];
   caseRunReport: Awaited<ReturnType<typeof executeCaseEngine>>["report"];
+  fingerprint?: string;
   economicFingerprint?: string;
+  locale?: "pt" | "en";
+  manifestFingerprint?: string;
   receivablesVertical?: {
     version: "2026.08.28-v1";
     status: "needs_requested_amount" | "analyzed";
@@ -162,6 +171,36 @@ async function loadRoomDocuments(
   }));
 }
 
+async function loadInformationState(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+  sessionId: string,
+): Promise<{informationAnswers: InformationAnswers; requirementResponses: RequirementResponses}> {
+  const {data, error} = await supabase
+    .from("intake_information_answers")
+    .select("requirement_id, answer, response, note")
+    .eq("organization_id", organizationId)
+    .eq("intake_session_id", sessionId);
+  if (error) throw error;
+
+  const informationAnswers: Record<string, string | undefined> = {};
+  const requirementResponses: Record<
+    string,
+    {response: "provided" | "partial" | "not_applicable" | "after_nda" | "unavailable"; note?: string}
+  > = {};
+  for (const row of data ?? []) {
+    if (row.answer?.trim()) informationAnswers[row.requirement_id] = row.answer.trim();
+    const response = requirementResponseSchema.safeParse(row.response);
+    if (response.success) {
+      requirementResponses[row.requirement_id] = {
+        response: response.data,
+        ...(row.note?.trim() ? {note: row.note.trim()} : {}),
+      };
+    }
+  }
+  return {informationAnswers, requirementResponses};
+}
+
 export async function buildCaseState(input: {
   supabase: SupabaseClient<Database>;
   organizationId: string;
@@ -181,10 +220,11 @@ export async function buildCaseState(input: {
 
   const archetypeId = ((session?.archetype as ArchetypeId | null) ?? "other") satisfies ArchetypeId;
   const dealBrief = session ? dealBriefOf(session) : {};
-  const [documents, candidates, roomDocuments] = await Promise.all([
+  const [documents, candidates, roomDocuments, informationState] = await Promise.all([
     loadClassified(supabase, organizationId, sessionId),
     loadCandidates(supabase, organizationId, sessionId),
     loadRoomDocuments(supabase, organizationId, sessionId),
+    loadInformationState(supabase, organizationId, sessionId),
   ]);
   const runId = session?.current_run_id ?? `case-state:${crypto.randomUUID()}`;
 
@@ -198,6 +238,8 @@ export async function buildCaseState(input: {
     documents,
     roomDocuments,
     dealBrief,
+    informationAnswers: informationState.informationAnswers,
+    requirementResponses: informationState.requirementResponses,
     // Web sessions cannot inspect every provider mandate. The workload adapter supplies these.
     resolvedMandates: [],
     externalReleaseApproved: false,
@@ -209,6 +251,102 @@ export async function buildCaseState(input: {
     modelInvocations: parsedInvocations.data,
     caseRunReport: publicCaseRunReport(result.report),
   };
+}
+
+/**
+ * Publishes the zero-cost local/CI analysis with the same immutable boundary as the worker.
+ *
+ * The deterministic fixture is allowed only while the organization's real pipeline is disabled;
+ * the database repeats that check. Keeping this compiler here makes the fallback an explicit
+ * implementation of the production contract, rather than a UI-only preview that the
+ * confirmation command can never find.
+ */
+export async function materializeFallbackCaseState(input: {
+  supabase: SupabaseClient<Database>;
+  organizationId: string;
+  sessionId: string;
+  locale: "pt" | "en";
+}): Promise<CaseState> {
+  const {supabase, organizationId, sessionId, locale} = input;
+  const economicSnapshot = await loadEconomicInputSnapshot(supabase, organizationId, sessionId);
+  const extractionVersion = typeof economicSnapshot.session.extraction_version === "string"
+    ? economicSnapshot.session.extraction_version
+    : "verified-content-hash-fixture-v1";
+  const versions = pipelineVersions({snapshot: economicSnapshot, extractionVersion});
+  const inputFingerprint = fingerprintJson({economics: economicSnapshot, versions, caseEngine: caseEngineVersion});
+  const runId = typeof economicSnapshot.run?.id === "string"
+    ? economicSnapshot.run.id
+    : typeof economicSnapshot.session.current_run_id === "string"
+      ? economicSnapshot.session.current_run_id
+      : null;
+  if (!runId) throw new Error("fallback analysis run missing");
+
+  const built = await buildCaseState({supabase, organizationId, sessionId, locale});
+  const snapshot: CaseState = {
+    ...built,
+    fingerprint: inputFingerprint,
+    economicFingerprint: inputFingerprint,
+    locale,
+  };
+  const sources = economicSnapshot.sources.map((source) => ({
+    documentId: String(source.id ?? ""),
+    versionId: String(source.document_version ?? "1"),
+    sha256: typeof source.sha256 === "string" ? source.sha256 : null,
+  }));
+  const manifest = buildCaseArtifactManifest({
+    caseId: sessionId,
+    runId,
+    createdAt: new Date().toISOString(),
+    locale: locale === "pt" ? "pt-BR" : "en-US",
+    inputFingerprint,
+    capture: {
+      sources: sources.length > 0 && sources.every((source) => source.sha256 !== null) ? "complete" : "partial",
+      models: "not_applicable",
+    },
+    versions,
+    models: [],
+    sources,
+    outputs: [{
+      artifactId: `${sessionId}:case_state`,
+      kind: "case_state",
+      sha256: fingerprintJson(snapshot),
+    }],
+  });
+  const stateWithManifest: CaseState = {...snapshot, manifestFingerprint: manifest.manifestFingerprint};
+  const externalResearch = {
+    status: "abstained",
+    sourceCount: 0,
+    topicCounts: {},
+    researchRunId: null,
+    sources: [],
+    reason: "verified_content_hash_fixture",
+  };
+  const understandingPayload = {
+    schemaVersion: "2026.08.31-v2",
+    caseId: sessionId,
+    locale: locale === "pt" ? "pt-BR" : "en-US",
+    readiness: stateWithManifest.readiness,
+    reconciliation: stateWithManifest.reconciliation,
+    operationTruth: stateWithManifest.operationTruth,
+    capacity: stateWithManifest.capacity,
+    trajectory: stateWithManifest.trajectory,
+    desk: stateWithManifest.desk,
+    clientQuestions: stateWithManifest.clientQuestions,
+    brief: stateWithManifest.brief,
+    briefBlockedBy: stateWithManifest.briefBlockedBy,
+    redFlagTruth: stateWithManifest.redFlagTruth,
+    externalResearch,
+    receivablesVertical: stateWithManifest.receivablesVertical ?? null,
+  };
+  const {error} = await supabase.rpc("record_fallback_case_snapshot", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+    p_manifest: manifest as unknown as Json,
+    p_case_state: stateWithManifest as unknown as Json,
+    p_understanding_payload: understandingPayload as unknown as Json,
+  });
+  if (error) throw error;
+  return stateWithManifest;
 }
 
 /** Persists what the case screen and later exports read, so a re-render costs nothing. */
@@ -342,5 +480,6 @@ export async function resolveCaseState(input: {
     return snapshot;
   }
 
-  return buildCaseState({supabase, organizationId, sessionId, locale});
+  const built = await buildCaseState({supabase, organizationId, sessionId, locale});
+  return {...built, fingerprint, economicFingerprint: fingerprint, locale};
 }

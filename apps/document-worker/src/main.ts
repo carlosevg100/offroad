@@ -8,7 +8,7 @@ import {createExtractor} from "./extract";
 import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClassifier} from "@offroad/document-classification";
-import type {PublicSearchProvider} from "@offroad/public-research";
+import {createPerplexitySearchProvider, type PublicSearchProvider} from "@offroad/public-research";
 import {createStorageUrlGuard} from "./storage-url";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
@@ -81,19 +81,28 @@ async function main(): Promise<void> {
     ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
     ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
   };
-  // Fail closed until external search reports usage into the same run-level ledger as model
-  // calls. Both the former OpenAI fallback and Perplexity search lived outside the gateway,
-  // so a run could respect its declared model ceiling while still spending on web research.
-  // Case analysis remains fully functional over submitted evidence and the approved playbook;
-  // the public-research stage records a transparent `provider_unavailable` abstention.
-  const researchProviders: PublicSearchProvider[] = [];
+  // Perplexity Search is raw retrieval, not an LLM writer. The API currently charges USD 5 per
+  // 1,000 successful requests. A plan has five bounded queries, so we reserve and report USD
+  // 0.025 before the case gateway receives the remainder of its budget. No fallback can silently
+  // escape that ledger: when Perplexity is absent, research abstains transparently.
+  const PERPLEXITY_CASE_RESERVE_USD = 0.025;
+  const researchProviders: PublicSearchProvider[] = config.PERPLEXITY_API_KEY
+    ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})]
+    : [];
   const newGateway = (job: ClaimedJob) => {
     const calls: GatewayCallLog[] = [];
     const requestedBudget = "model_budget" in job.payload ? job.payload.model_budget : undefined;
+    const configuredMax = Math.min(
+      config.MODEL_MAX_COST_USD_PER_JOB,
+      requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB,
+    );
+    const researchReserveUsd = (job.kind === "case_analysis" || job.kind === "preliminary_analysis") && researchProviders.length > 0
+      ? Math.min(PERPLEXITY_CASE_RESERVE_USD, Math.max(0, configuredMax - 0.01))
+      : 0;
     const gateway = createModelGateway({
       adapters,
       budget: {
-        maxCostUsd: Math.min(config.MODEL_MAX_COST_USD_PER_JOB, requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB),
+        maxCostUsd: configuredMax - researchReserveUsd,
         maxCalls: Math.min(config.MODEL_MAX_CALLS_PER_JOB, requestedBudget?.max_calls ?? config.MODEL_MAX_CALLS_PER_JOB),
       },
       onCall: (call) => {
@@ -101,7 +110,7 @@ async function main(): Promise<void> {
         log("model.call", {...call});
       },
     });
-    return {gateway, calls};
+    return {gateway, calls, researchReserveUsd};
   };
 
   // The payload's URLs are input, `SUPABASE_URL` is configuration, and the two are not
@@ -185,12 +194,12 @@ async function main(): Promise<void> {
     );
 
     const gatewayRun = newGateway(job);
-    current = (job.kind === "case_analysis"
+    current = (job.kind === "case_analysis" || job.kind === "preliminary_analysis"
       ? processCaseAnalysisJob(job, {
           queue,
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
-          researchProviders,
+          researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
           log,
         })
       : job.kind === "agent_operation_brief"

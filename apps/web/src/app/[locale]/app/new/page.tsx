@@ -7,9 +7,10 @@ import {redirect} from "next/navigation";
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
-import {briefCompleteness, dealBriefOf} from "@/lib/intake/deal-brief";
+import {canStartPreliminaryUnderstanding, dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {PrivateProjectSetup} from "@/components/intake/private-project-setup";
+import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import type {AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadIntakeCollection, loadIntakeReview} from "@/lib/intake/server";
@@ -20,6 +21,7 @@ import {
   acceptWorkspaceIntakeCandidates,
   acceptWorkspacePrivateTerms,
   confirmWorkspaceDocumentIntake,
+  decideWorkspacePreliminaryUnderstanding,
   processWorkspaceDocumentIntake,
   saveWorkspaceIntakeAnswer,
   saveWorkspaceDealBrief,
@@ -29,13 +31,14 @@ import {
   resolveWorkspaceScopeSuggestion,
   revokeWorkspaceAdvisorAuthorization,
   reviewWorkspaceIntakeCandidate,
+  reviseWorkspaceDiagnosticCase,
   saveWorkspaceGuidedCompanyProfile,
   startWorkspaceDocumentIntake,
 } from "./actions";
 
 type Props = {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{error?: string; mode?: string; session?: string; setup?: string; step?: string}>;
+  searchParams: Promise<{edit?: string; error?: string; mode?: string; session?: string; setup?: string; stage?: string; step?: string}>;
 };
 
 type WorkspaceProjectSetup = {
@@ -80,24 +83,52 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
   if (state.mode === "manual") redirect(`/${locale}/app/new`);
   const mode = state.mode === "documents" ? "documents" : "choice";
   const sessionId = typeof state.session === "string" ? state.session : "";
-  const guidedStep = state.step === "company" || state.step === "operation" || state.step === "request" || state.step === "documents" ? state.step : undefined;
+  const requestedStep = state.step ?? state.stage;
+  const guidedStep = requestedStep === "company" || requestedStep === "operation" || requestedStep === "preliminary" || requestedStep === "documents"
+    ? requestedStep
+    : requestedStep === "request" ? "operation" : undefined;
   const runtime = {supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId};
   const collection = mode === "documents" && sessionId ? await loadIntakeCollection(runtime) : null;
-  const review = collection?.session?.status === "review_ready"
+  const preliminary = collection?.session
+    ? await loadPreliminaryUnderstanding(supabase, organization.id, collection.session.id)
+    : null;
+  const preliminaryConfirmed = preliminary?.current?.row.status === "confirmed";
+  const deepReviewReady = Boolean(
+    collection?.session?.status === "review_ready"
+    && preliminaryConfirmed
+    && preliminary?.current?.row.processing_run_id !== collection.session.current_run_id,
+  );
+  // The first run is only the corrigible company/operation read. Do not run reconciliation or
+  // load the deep review surface until a later, post-request evidence run has completed.
+  const review = deepReviewReady
     ? await loadIntakeReview(runtime)
     : collection ? {...collection, candidates: [], issues: []} : null;
   const companyProfile = objectValue(review?.session?.company_profile);
   if (review?.session?.status === "confirmed" && review.session.opportunity_id) redirect(`/${locale}/app/opportunities/${review.session.opportunity_id}`);
   const companyProfileComplete = Boolean(review?.session?.company_profile_confirmed_at);
-  const effectiveGuidedStep = review?.session
-    ? guidedStep ?? (!companyProfileComplete
+  const tailoredChecklist = review?.session ? await loadIntakeChecklist({
+    supabase,
+    organizationId: organization.id,
+    sessionId: review.session.id,
+    locale: locale === "en-US" ? "en" : "pt",
+  }) : null;
+  const availableGuidedStep = review?.session
+    ? !companyProfileComplete
       ? "company"
-      : !review.session.archetype
+      : !review.session.archetype || !canStartPreliminaryUnderstanding(dealBriefOf(review.session), review.documents.length)
         ? "operation"
-        : briefCompleteness(dealBriefOf(review.session)).answered === 0
-          ? "request"
-          : "documents")
-    : guidedStep;
+        : !preliminaryConfirmed
+          ? "preliminary"
+          : "documents"
+    : "company";
+  const guidedOrder = ["company", "operation", "preliminary", "documents"] as const;
+  const effectiveGuidedStep = review?.session && guidedStep
+    && guidedOrder.indexOf(guidedStep) <= guidedOrder.indexOf(availableGuidedStep)
+    ? guidedStep
+    : availableGuidedStep;
+  const editingOperationType = effectiveGuidedStep === "operation"
+    && state.edit === "type"
+    && Boolean(tailoredChecklist?.archetypeId);
   const editingProject = mode === "documents" && state.setup === "project" && Boolean(review?.session);
   const {data: projectSetupData} = mode === "choice"
     ? await supabase.rpc("get_workspace_project_setup", {p_locale: locale})
@@ -161,34 +192,36 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             <p className="form-notice form-notice--error">{tIntake("errors.sessionNotFound")}</p>
             <Link className="button button--ghost" href={`/${locale}/app/new`}>{tIntake("errors.back")}</Link>
           </section>
-        ) : review.session.status === "review_ready" ? (
+        ) : deepReviewReady ? (
           <IntakeReview
+            answerAction={saveWorkspaceIntakeAnswer}
             caseState={await resolveCaseState({
               supabase,
               organizationId: organization.id,
               sessionId: review.session.id,
               locale: locale === "en-US" ? "en" : "pt",
             })}
-            actions={{accept: acceptWorkspaceIntakeCandidates, confirm: confirmWorkspaceDocumentIntake, process: processWorkspaceDocumentIntake, resolve: resolveWorkspaceIntakeIssue, review: reviewWorkspaceIntakeCandidate, resolveScopeSuggestion: resolveWorkspaceScopeSuggestion, revokeAuthorization: revokeWorkspaceAdvisorAuthorization}}
+            actions={{accept: acceptWorkspaceIntakeCandidates, confirm: confirmWorkspaceDocumentIntake, process: processWorkspaceDocumentIntake, revise: reviseWorkspaceDiagnosticCase, resolve: resolveWorkspaceIntakeIssue, review: reviewWorkspaceIntakeCandidate, resolveScopeSuggestion: resolveWorkspaceScopeSuggestion, revokeAuthorization: revokeWorkspaceAdvisorAuthorization}}
             candidates={review.candidates}
+            checklist={tailoredChecklist}
             documents={review.documents}
             issues={review.issues}
             locale={locale}
+            organizationId={organization.id}
+            removeAction={removeWorkspaceIntakeDocument}
             session={review.session}
             surface="workspace"
+            userId={userId}
           />
         ) : (
           <IntakeCollect
             {...(effectiveGuidedStep ? {stage: effectiveGuidedStep} : {})}
             backHref={effectiveGuidedStep === "company"
               ? `/${locale}/app/new?mode=documents&session=${review.session.id}&setup=project`
-              : `/${locale}/app/new?mode=documents&session=${review.session.id}&step=${effectiveGuidedStep === "documents" ? "request" : effectiveGuidedStep === "request" ? "operation" : "company"}`}
-            checklist={await loadIntakeChecklist({
-              supabase,
-              organizationId: organization.id,
-              sessionId: review.session.id,
-              locale: locale === "en-US" ? "en" : "pt",
-            })}
+              : effectiveGuidedStep === "operation" && !editingOperationType && tailoredChecklist?.archetypeId
+                ? `/${locale}/app/new?mode=documents&session=${review.session.id}&step=operation&edit=type`
+                : `/${locale}/app/new?mode=documents&session=${review.session.id}&step=${effectiveGuidedStep === "documents" ? "preliminary" : effectiveGuidedStep === "preliminary" ? "operation" : "company"}`}
+            checklist={tailoredChecklist}
             documents={review.documents}
             companyProfile={{
               name: stringValue(companyProfile.name),
@@ -202,6 +235,19 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             locale={locale}
             organizationId={organization.id}
             processAction={processWorkspaceDocumentIntake}
+            operationTypeOnly={editingOperationType}
+            preliminaryAction={decideWorkspacePreliminaryUnderstanding}
+            preliminaryState={preliminary ?? {
+              current: null,
+              isProcessing: review.session.status === "processing",
+              tasks: [
+                {id: "receive", status: review.session.status === "processing" ? "running" : "pending"},
+                {id: "read", status: "pending"},
+                {id: "organize", status: "pending"},
+                {id: "research", status: "pending"},
+                {id: "compile", status: "pending"},
+              ],
+            }}
             removeAction={removeWorkspaceIntakeDocument}
             session={review.session}
             answerAction={saveWorkspaceIntakeAnswer}
@@ -210,6 +256,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             setOperationAction={setWorkspaceIntakeOperation}
             resolveScopeSuggestionAction={resolveWorkspaceScopeSuggestion}
             revokeAuthorizationAction={revokeWorkspaceAdvisorAuthorization}
+            stageBaseHref={`/${locale}/app/new?mode=documents&session=${review.session.id}`}
             surface="workspace"
             userId={userId}
           />

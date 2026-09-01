@@ -17,6 +17,7 @@ export type TaskKind =
   | "explain_exception"
   | "structure_design"
   | "case_brief"
+  | "preliminary_understanding"
   | "agent_operation_brief"
   | "write_output"
   | "audit_evidence"

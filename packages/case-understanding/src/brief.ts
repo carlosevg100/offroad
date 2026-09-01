@@ -103,7 +103,10 @@ Rules:
    reading uses them.
 8. **Playbook guidance is not case evidence.** Approved playbook passages may determine which
    questions to ask and how to organize the analysis. They cannot prove a fact about this company,
-   support a figure, resolve a conflict, fill a gap, or appear as a support id.`;
+   support a figure, resolve a conflict, fill a gap, or appear as a support id.
+9. **Case-review instructions are not case evidence.** A company comment may identify a framing
+   problem or tell you where to look. Test it against the reconciled facts; never let it overwrite
+   a source, close an exception or support a number by itself.`;
 
 const money = (value: string) => {
   const parsed = Number(value);
@@ -128,6 +131,8 @@ export function buildBriefInput(input: {
   deskLines?: readonly string[];
   /** Approved, cited house guidance. It shapes analysis but is never economic evidence. */
   playbookLines?: readonly string[];
+  /** Company instructions from the prior case review. They guide revision but prove nothing. */
+  reviewInstructions?: readonly string[];
 }): string {
   const definition = archetype(input.archetypeId);
 
@@ -159,6 +164,13 @@ export function buildBriefInput(input: {
           "",
           "## House playbook aprovado (orientação analítica, não evidência do caso)",
           ...input.playbookLines,
+        ]
+      : []),
+    ...(input.reviewInstructions?.length
+      ? [
+          "",
+          "## Orientações da companhia para revisar esta versão (contexto a testar, não evidência)",
+          ...input.reviewInstructions.map((instruction) => `- ${instruction}`),
         ]
       : []),
     "",

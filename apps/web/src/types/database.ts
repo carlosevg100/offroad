@@ -3927,6 +3927,79 @@ export type Database = {
         }
         Relationships: []
       }
+      preliminary_understandings: {
+        Row: {
+          correction: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          input_fingerprint: string
+          intake_session_id: string
+          object_fingerprint: string
+          object_version: number
+          organization_id: string
+          payload: Json
+          processing_run_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          correction?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          input_fingerprint: string
+          intake_session_id: string
+          object_fingerprint: string
+          object_version: number
+          organization_id: string
+          payload: Json
+          processing_run_id: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          correction?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          input_fingerprint?: string
+          intake_session_id?: string
+          object_fingerprint?: string
+          object_version?: number
+          organization_id?: string
+          payload?: Json
+          processing_run_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preliminary_understandings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preliminary_understandings_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "preliminary_understandings_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: false
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       processing_jobs: {
         Row: {
           attempts: number
@@ -5623,6 +5696,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      decide_preliminary_understanding: {
+        Args: {
+          p_correction?: string
+          p_decision: string
+          p_object_fingerprint: string
+          p_organization_id: string
+          p_session_id: string
+        }
+        Returns: string
+      }
       get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
       get_workspace_bootstrap: { Args: never; Returns: Json }
       get_workspace_project_setup: {
@@ -5760,6 +5843,29 @@ export type Database = {
           p_sha256: string
         }
         Returns: undefined
+      }
+      record_fallback_preliminary_understanding: {
+        Args: {
+          p_input_fingerprint: string
+          p_organization_id: string
+          p_payload: Json
+          p_session_id: string
+        }
+        Returns: string
+      }
+      record_fallback_document_profiles: {
+        Args: { p_organization_id: string; p_session_id: string }
+        Returns: number
+      }
+      record_fallback_case_snapshot: {
+        Args: {
+          p_case_state: Json
+          p_manifest: Json
+          p_organization_id: string
+          p_session_id: string
+          p_understanding_payload: Json
+        }
+        Returns: string
       }
       record_intake_analysis: {
         Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
@@ -6163,6 +6269,15 @@ export type Database = {
           p_case_state: Json
           p_job_id: string
           p_manifest: Json
+        }
+        Returns: string
+      }
+      worker_record_preliminary_understanding: {
+        Args: {
+          p_capability_token: string
+          p_input_fingerprint: string
+          p_job_id: string
+          p_payload: Json
         }
         Returns: string
       }

@@ -44,18 +44,24 @@ export const documentJobSchema = claimedJobBase.extend({
   kind: z.literal("document_pipeline"),
   payload: jobPayloadSchema,
 });
-export const caseAnalysisJobSchema = claimedJobBase.extend({
-  kind: z.literal("case_analysis"),
-  payload: z.object({
+const analysisJobPayloadSchema = z.object({
     locale: z.enum(["pt-BR", "en-US"]).optional(),
     execution_id: z.uuid().optional(),
     execution_mode: z.enum(["primary", "shadow", "replay"]).default("primary"),
+    analysis_scope: z.enum(["preliminary_understanding", "full_case"]).default("full_case"),
     baseline_execution_id: z.uuid().optional(),
     model_budget: z.object({
       max_cost_usd: z.number().positive(),
       max_calls: z.number().int().positive(),
     }).optional(),
-  }),
+  });
+export const caseAnalysisJobSchema = claimedJobBase.extend({
+  kind: z.literal("case_analysis"),
+  payload: analysisJobPayloadSchema.extend({analysis_scope: z.literal("full_case")}),
+});
+export const preliminaryAnalysisJobSchema = claimedJobBase.extend({
+  kind: z.literal("preliminary_analysis"),
+  payload: analysisJobPayloadSchema.extend({analysis_scope: z.literal("preliminary_understanding")}),
 });
 export const agentOperationBriefJobSchema = claimedJobBase.extend({
   kind: z.literal("agent_operation_brief"),
@@ -65,11 +71,13 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
   }),
 });
 export const claimedJobSchema = z.discriminatedUnion("kind", [
-  documentJobSchema, caseAnalysisJobSchema, agentOperationBriefJobSchema,
+  documentJobSchema, preliminaryAnalysisJobSchema, caseAnalysisJobSchema, agentOperationBriefJobSchema,
 ]);
 export type ClaimedJob = z.infer<typeof claimedJobSchema>;
 export type DocumentJob = z.infer<typeof documentJobSchema>;
-export type CaseAnalysisJob = z.infer<typeof caseAnalysisJobSchema>;
+export type FullCaseAnalysisJob = z.infer<typeof caseAnalysisJobSchema>;
+export type PreliminaryAnalysisJob = z.infer<typeof preliminaryAnalysisJobSchema>;
+export type CaseAnalysisJob = FullCaseAnalysisJob | PreliminaryAnalysisJob;
 export type AgentOperationBriefJob = z.infer<typeof agentOperationBriefJobSchema>;
 
 const noJobSchema = z.object({
@@ -99,23 +107,28 @@ export type QueueClient = {
   recordIntakeRequestLadders(job: DocumentJob, events: unknown[]): Promise<void>;
   recordAnalysisScopeSuggestions(job: DocumentJob, eventId: string, suggestions: unknown[]): Promise<unknown>;
   documentAdvisorAuthorization(job: DocumentJob, eventId: string): Promise<unknown>;
-  loadCaseInput(job: CaseAnalysisJob): Promise<unknown>;
-  loadRetrievalContext(job: CaseAnalysisJob, input: {
+  loadPreliminaryInput(job: PreliminaryAnalysisJob): Promise<unknown>;
+  loadCaseInput(job: FullCaseAnalysisJob): Promise<unknown>;
+  loadRetrievalContext(job: FullCaseAnalysisJob, input: {
     query: string;
     allowedFundIds?: string[];
     precedentPurpose?: string;
     limit?: number;
   }): Promise<unknown>;
   recordPublicResearch(job: CaseAnalysisJob, plan: unknown, result: unknown): Promise<string>;
-  recordDealStateObject(job: CaseAnalysisJob, input: {
+  recordPreliminaryUnderstanding(job: PreliminaryAnalysisJob, input: {
+    inputFingerprint: string;
+    payload: unknown;
+  }): Promise<string>;
+  recordDealStateObject(job: FullCaseAnalysisJob, input: {
     objectType: string;
     status: string;
     inputFingerprint: string;
     payload: unknown;
     dependencies?: unknown[];
   }): Promise<string>;
-  recordCaseSnapshot(job: CaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
-  recordControlledExecution(job: CaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
+  recordCaseSnapshot(job: FullCaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
+  recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
   recordAgentResponse(job: AgentOperationBriefJob, assistantMessageId: string, response: unknown, proposal?: unknown): Promise<unknown>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
@@ -263,6 +276,13 @@ export function createQueueClient(
       });
     },
 
+    async loadPreliminaryInput(job) {
+      return call("worker_load_preliminary_input", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+      });
+    },
+
     async loadCaseInput(job) {
       const args = {
         p_job_id: job.job_id,
@@ -300,6 +320,16 @@ export function createQueueClient(
         p_capability_token: job.capability_token,
         p_plan: plan,
         p_result: result,
+      });
+      return z.uuid().parse(data);
+    },
+
+    async recordPreliminaryUnderstanding(job, input) {
+      const data = await call("worker_record_preliminary_understanding", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_input_fingerprint: input.inputFingerprint,
+        p_payload: input.payload,
       });
       return z.uuid().parse(data);
     },

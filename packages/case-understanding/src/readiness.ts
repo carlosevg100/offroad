@@ -70,6 +70,18 @@ export type ReadinessInput = {
   additionalAvailableFieldPaths?: readonly string[];
 };
 
+/**
+ * Whether the company can confirm the diagnostic and let structuring begin.
+ *
+ * This is intentionally narrower than investor readiness. Missing ideal, diligence or closing
+ * evidence keeps the circulation score below `ready`, but must not trap the company in intake.
+ * The blockers already encode the two conditions that do stop a diagnostic: an incomplete
+ * minimum package or a critical reconciliation exception.
+ */
+export function diagnosticConfirmationReady<T extends {readonly blockers: readonly unknown[]}>(report: T): boolean {
+  return report.blockers.length === 0;
+}
+
 const WEIGHTS: Record<ReadinessComponentId, number> = {
   data_sufficiency: 0.3,
   reconciliation: 0.25,

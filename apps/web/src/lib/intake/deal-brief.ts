@@ -5,9 +5,6 @@ import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
 
 import type {Database} from "@/types/database";
-import {reportServerFailure} from "@/lib/observability/report";
-
-import {prepareIntakeRequestLadders} from "./replay";
 
 /**
  * The capital-need facts that shape preparation and market fit.
@@ -210,6 +207,18 @@ export function briefCompleteness(brief: DealBrief): {answered: number; total: n
   return {answered: BRIEF_FIELDS.length - missing.length, total: BRIEF_FIELDS.length, missing};
 }
 
+/**
+ * The preliminary read may start from a written explanation, uploaded material, or both.
+ *
+ * Requiring a typed answer after the company has uploaded an existing deck, business plan or
+ * financing request defeats the documents-first promise and encourages duplicate data entry.
+ * Documents do not make missing facts true: the preliminary read extracts what they support and
+ * returns everything else as an explicit open point for the company to confirm.
+ */
+export function canStartPreliminaryUnderstanding(brief: DealBrief, documentCount: number): boolean {
+  return briefCompleteness(brief).answered > 0 || documentCount > 0;
+}
+
 export async function saveDealBrief(input: {
   supabase: SupabaseClient<Database>;
   organizationId: string;
@@ -243,17 +252,5 @@ export async function saveDealBrief(input: {
     p_expected_rate: input.brief.expectedRate,
   });
 
-  if (error) return {ok: false};
-  try {
-    await prepareIntakeRequestLadders(input);
-  } catch (ladderError) {
-    // The capital need is already committed. Do not tell the user that save failed because a
-    // derived request projection could not refresh; report it and allow the next command or
-    // worker pass to retry safely.
-    reportServerFailure({
-      step: "intake.prepare_request_ladders",
-      error: {message: ladderError instanceof Error ? ladderError.message : "request ladder refresh failed"},
-    });
-  }
-  return {ok: true};
+  return error ? {ok: false} : {ok: true};
 }

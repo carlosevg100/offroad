@@ -20,7 +20,7 @@ import {
   reviewIntakeCandidate as reviewCandidate,
   type IntakeRuntime,
 } from "@/lib/intake/server";
-import {dealBriefFormSchema, saveDealBrief, toDealBrief} from "@/lib/intake/deal-brief";
+import {canStartPreliminaryUnderstanding, dealBriefFormSchema, saveDealBrief, toDealBrief} from "@/lib/intake/deal-brief";
 import {normalizeCompanyWebsite} from "@/lib/intake/company-profile";
 import type {IntakeErrorCode} from "@/lib/intake/types";
 import {createClient} from "@/lib/supabase/server";
@@ -245,7 +245,9 @@ export async function setIntakeOperation(formData: FormData) {
     authorityReference: value(formData, "authority_reference"),
     authorityConfirmed: value(formData, "authority_confirmed") === "confirmed",
   });
-  redirect(outcome.ok ? `/${locale}/onboarding?stage=request` : onboardingUrl(locale, outcome.error));
+  redirect(outcome.ok
+    ? `/${locale}/app/new?mode=documents&session=${runtime.sessionId}&step=operation`
+    : onboardingUrl(locale, outcome.error));
 }
 
 /**
@@ -278,13 +280,27 @@ export async function saveDealBriefAction(formData: FormData) {
   const brief = toDealBrief(parsed.data);
   if (!brief) redirect(onboardingUrl(locale, "validation"));
 
+  const {count: documentCount, error: documentCountError} = await runtime.supabase
+    .from("source_documents")
+    .select("id", {count: "exact", head: true})
+    .eq("organization_id", runtime.organizationId)
+    .eq("intake_session_id", runtime.sessionId);
+  if (documentCountError) redirect(onboardingUrl(locale, "save"));
+  if (!canStartPreliminaryUnderstanding(brief, documentCount ?? 0)) {
+    redirect(onboardingUrl(locale, "validation"));
+  }
+
   const saved = await saveDealBrief({
     supabase: runtime.supabase,
     organizationId: runtime.organizationId,
     sessionId: runtime.sessionId,
     brief,
   });
-  redirect(saved.ok ? `/${locale}/onboarding?stage=documents` : onboardingUrl(locale, "save"));
+  if (!saved.ok) redirect(onboardingUrl(locale, "save"));
+  const processing = await processIntakeSession(runtime);
+  redirect(processing.ok
+    ? `/${locale}/app/new?mode=documents&session=${runtime.sessionId}&step=preliminary`
+    : `/${locale}/app/new?mode=documents&session=${runtime.sessionId}&step=operation&error=${processing.error}`);
 }
 
 export async function submitAgentMessageAction(formData: FormData) {
@@ -389,6 +405,27 @@ export async function processDocumentIntake(formData: FormData) {
   const {runtime} = await onboardingIntakeRuntime(locale, formData);
   const outcome = await processIntakeSession(runtime);
   redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
+}
+
+export async function reviseDiagnosticCase(formData: FormData) {
+  const locale = localeFrom(formData);
+  const {runtime} = await onboardingIntakeRuntime(locale, formData);
+  const parsed = z.string().trim().min(3).max(4000).safeParse(value(formData, "case_feedback"));
+  if (!parsed.success) redirect(onboardingUrl(locale, "validation"));
+  const {error} = await runtime.supabase.rpc("record_intake_information_command", {
+    p_organization_id: runtime.organizationId,
+    p_session_id: runtime.sessionId,
+    p_event_id: randomUUID(),
+    p_requirement_id: "case_review_feedback",
+    p_answer: parsed.data,
+    p_response: "provided",
+    p_note: locale === "pt-BR"
+      ? "Orientação da companhia para revisar o case diagnóstico."
+      : "Company instruction for revising the diagnostic case.",
+  });
+  if (error) redirect(onboardingUrl(locale, "save"));
+  const processing = await processIntakeSession(runtime);
+  redirect(onboardingUrl(locale, processing.ok ? undefined : processing.error));
 }
 
 export async function acceptHighConfidenceCandidates(formData: FormData) {

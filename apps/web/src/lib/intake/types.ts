@@ -20,6 +20,7 @@ export type IntakeReviewActionSet = {
   accept: (formData: FormData) => Promise<void>;
   confirm: (formData: FormData) => Promise<void>;
   process: (formData: FormData) => Promise<void>;
+  revise: (formData: FormData) => Promise<void>;
   resolve: (formData: FormData) => Promise<void>;
   review: (formData: FormData) => Promise<void>;
   resolveScopeSuggestion?: (formData: FormData) => Promise<void>;

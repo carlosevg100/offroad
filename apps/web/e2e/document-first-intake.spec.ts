@@ -132,8 +132,8 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-guide__restart")).toHaveCount(0);
     await completeCompanyMilestone(page);
 
-    // The operation decides the checklist; the brief decides who could buy the paper. Neither
-    // needs a document, and both come before the upload in the conversation a desk actually has.
+    // The operation type frames the first reading. The brief and any material the user already
+    // has are then read together before the system asks for a tailored evidence package.
     await expect(page.locator(".intake-brief")).toHaveCount(0);
     await chooseOperation(page);
     await expectNoErrorNotice(page);
@@ -155,14 +155,22 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("#brief-rate").fill("CDI + 4");
     await page.locator("#collateral-recebiveis").check();
     await page.locator("#collateral-imovel").check();
+    await page.locator(".intake-operation-materials .intake-upload input[type=file]").setInputFiles(dataRoomFiles);
+    await expect(page.locator(".intake-operation-materials .intake-upload__files header span")).toHaveText(
+      String(dataRoomExpectations.documents),
+      {timeout: 120_000},
+    );
     await page.locator(".intake-operation-context__actions button[type=submit]").click();
 
     await expectNoErrorNotice(page);
+    await expect(page.locator(".preliminary-understanding")).toBeVisible({timeout: 120_000});
+    await expect(page.locator(".preliminary-understanding__grid")).toContainText("Rede Horizonte Supermercados");
+    await expect(page.locator(".preliminary-understanding__grid")).toContainText("Crescimento / Expansão");
+    await page.locator(".preliminary-understanding__decision form button[type=submit]").click();
+
     await expect(page.locator(".intake-request-list")).toBeVisible();
     await expect(page.locator(".intake-upload")).toBeVisible();
     await expect(page.locator(".workspace-inspector")).toHaveCount(0);
-
-    await page.locator(".intake-upload input[type=file]").setInputFiles(dataRoomFiles);
     await expect(page.locator(".intake-upload__files header span")).toHaveText(String(dataRoomExpectations.documents), {timeout: 120_000});
     await expectNoErrorNotice(page);
 
@@ -183,8 +191,32 @@ test.describe("Document-first intake (company journey)", () => {
   test("accepts high-confidence suggestions and confirms the case", async () => {
     await page.goto(`${primaryProjectUrl}&step=documents`);
     await expect(page.locator(".intake-review")).toBeVisible();
+
+    // Reading the files does not invent the five qualitative facts that decide whether an
+    // expansion case is defensible. The request ladder must ask them, persist each answer, and
+    // feed the answers back into the same case engine before a diagnostic can be confirmed.
+    const qualitativeAnswers: Record<string, string> = {
+      info_why_now: "Os três pontos já estão contratados e as obras precisam começar em março; sem a operação, a companhia perde os pontos e os depósitos.",
+      info_business_model: "Rede de supermercados de vizinhança no interior de São Paulo, com receita de venda no varejo e margem sustentada por escala de compras e marca própria.",
+      info_customer_concentration: "Venda pulverizada ao consumidor final; nenhum cliente representa mais de 1% da receita e não há contratos comerciais concentrados.",
+      info_ramp_history: "As duas últimas lojas atingiram R$ 800 mil de receita mensal no mês 12 e estabilizaram perto de R$ 1,1 milhão entre os meses 18 e 20.",
+      info_capex_actual: "A última unidade custou R$ 14,6 milhões contra orçamento de R$ 12,0 milhões; o desvio veio de obra civil e equipamentos de refrigeração.",
+    };
+    for (const [requirementId, answer] of Object.entries(qualitativeAnswers)) {
+      const form = page.locator(`.intake-information__form:has(input[name="requirement_id"][value="${requirementId}"])`);
+      await expect(form).toBeVisible();
+      await form.locator("textarea[name=answer]").fill(answer);
+      await form.locator("button[type=submit]").click();
+      await expect(form).toHaveCount(0);
+    }
+
+    await page.locator(".intake-review__reanalyze button[type=submit]").click();
+    await expect(page.locator(".intake-review")).toBeVisible({timeout: 120_000});
+    await expect(page.locator(".intake-case-review-actions")).toBeVisible();
     await page.locator(".intake-review__toolbar form").first().locator("button[type=submit]").click();
-    await expect(page.locator(".intake-confirm p")).toContainText(String(dataRoomExpectations.acceptedAfterBulkAccept));
+    // Confirmation copy is about the decision, not an internal field count. Prove the bulk action
+    // itself on the evidence register instead of leaking that implementation detail into the UI.
+    await expect(page.locator(".intake-field.is-confirmed")).toHaveCount(dataRoomExpectations.acceptedAfterBulkAccept);
 
     await page.locator('.intake-confirm input[name="confirmation"]').check();
     await page.locator(".intake-confirm button[type=submit]").click();
@@ -234,6 +266,9 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("#brief-sector").fill("varejo alimentar");
     await page.locator("#brief-geography").fill("SP");
     await page.locator(".intake-operation-context__actions button[type=submit]").click();
+    await expect(page.locator(".preliminary-understanding")).toBeVisible({timeout: 120_000});
+    await expect(page.locator(".preliminary-understanding__grid")).toContainText("Financiar a abertura de uma nova unidade.");
+    await page.locator(".preliminary-understanding__decision form button[type=submit]").click();
     await expect(page.locator(".intake-upload")).toBeVisible();
 
     await page.locator(".intake-upload input[type=file]").setInputFiles({

@@ -12,6 +12,8 @@ type Props = {
   caseState: CaseState | null;
   /** Needed to address the material routes; absent on screens that only preview a case. */
   sessionId?: string;
+  /** Diagnosis stops before structuring, production and market access. */
+  view?: "diagnosis" | "full";
 };
 
 const asLocale = (locale: string) => (locale === "en-US" ? "en" : "pt") as "pt" | "en";
@@ -67,7 +69,7 @@ const percentageRange = (value: {min: string; max: string} | null, locale: strin
  * wall says which input it lacked. A screen that silently omits what it could not compute
  * teaches the reader to assume the blanks are zeroes.
  */
-export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
+export async function IntakeCase({locale, caseState: state, sessionId, view = "full"}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.case"});
   const lang = asLocale(locale);
   const structureConstraint = (value: string | null) => {
@@ -96,7 +98,7 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
     readiness.state === "blocked" ? t("readinessBlocked") : readiness.state === "ready" ? t("readinessReady") : t("readinessInProgress");
 
   return (
-    <section className="intake-case">
+    <section className={`intake-case intake-case--${view}`}>
       <span className="section-kicker">{t("kicker")}</span>
 
       {receivables ? (
@@ -358,6 +360,7 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         </div>
       </section>
 
+      {view === "full" ? <>
       <section className="case-structure-truth">
         <header className="case-truth__head">
           <div>
@@ -476,6 +479,7 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
           <p className="case-terms__disclaimer">{termSheet.disclaimer[lang]}</p>
         </div>
       ) : null}
+      </> : null}
 
       {/* Computed figures, each traceable to the fields behind it. */}
       {state.reconciliation.calculations.length > 0 ? (
@@ -549,9 +553,10 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
         </div>
       ) : null}
 
-      {/* The model stands apart from the materials on purpose: it is arithmetic over reconciled
-          facts, so it can be issued even in a case whose written brief the audit refused. A
-          company blocked from circulating a memo can still hand an investor the numbers. */}
+      {/* Production artifacts appear only after the diagnostic case and target structure have
+          been approved. The diagnosis view must never make a draft model, material or market
+          screen look like a deliverable that already exists. */}
+      {view === "full" ? <>
       <div className="case-model">
         <h3>{t("modelTitle")}</h3>
         <p className="case-model__what">{t("modelWhat")}</p>
@@ -638,6 +643,7 @@ export async function IntakeCase({locale, caseState: state, sessionId}: Props) {
           <span>{t("truthOpenItems")}: <strong>{state.matching.marketTruth.missingInputs.length+state.matching.marketTruth.exceptions.length}</strong></span>
         </div>
       </section>
+      </> : null}
     </section>
   );
 }
