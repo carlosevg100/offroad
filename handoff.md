@@ -10,6 +10,36 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: governed DAG results return to the project conversation, 1 September 2026
+
+The two released public DAGs now finish where their work started: inside the same persistent
+project conversation. A successful `company_debt_view` or `origination_thesis` run publishes one
+durable assistant message with a direct `Abrir trabalho` / `Open work` action to the exact governed
+artifact in that project. The work panel remains the artifact surface; the chat message is its
+idempotent completion pointer, not a second copy of the work product.
+
+Completion is one capability-bound, tenant-scoped database transaction. It accepts only a
+chat-activated `capital_project_analysis` for one of the two released scopes and verifies the
+source user message, activation response, project, frozen plan, job, artifact type, artifact
+status, artifact fingerprint and job result before publishing. Replays cannot duplicate the
+message or substitute another artifact. If the user has sent a newer turn while the DAG is
+running, completion publishes the finished work but does not falsely return the conversation to
+idle over that pending turn.
+
+PR #344 passed Quality run `33509551794`: clean database reconstruction and schema lint, the full
+tenant/capability SQL test, Playwright E2E and the complete lint/typecheck/test/build gate. Staging
+received migration `20260901124057`; three follow-up validation migrations
+(`20260901124417`, `20260901124544`, `20260901124624`) hardened the same function against stale
+conversation state, incoherent results and SQL null semantics before the final source migration
+was rebuilt cleanly in CI. Production received the consolidated migration `20260901125416`. The
+full adversarial transaction passed there with rollback, `authenticated` can execute the public
+wrapper, `anon` cannot, no fixture row remained and Security Advisor returned zero findings. No
+paid model or research API ran.
+
+This release proves the successful completion path for exactly `company_debt_view` and
+`origination_thesis`; it does not promote another DAG. A durable in-chat failure message and retry
+guidance are still a separate slice and must not be represented as implemented.
+
 ### Engineering update: governed semantic DAG activation, 1 September 2026
 
 The conversation now has a separate, deterministic execution router in addition to the existing
