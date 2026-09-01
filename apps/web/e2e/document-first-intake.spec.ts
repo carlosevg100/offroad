@@ -329,12 +329,13 @@ test.describe("Document-first intake (company journey)", () => {
 
     await expect(page.locator(".origination-setup__header h1")).toHaveText("Entenda o balanço antes de escolher a operação.");
     await expect(page.locator('input[type="file"]')).toHaveCount(0);
-    await expect(page.locator('textarea[name="focus"]')).not.toHaveAttribute("required", "");
-    await expect(page.locator('textarea[name="known_context"]')).not.toHaveAttribute("required", "");
-    await page.locator('input[name="project_name"]').fill(companyDebtProjectName);
-    await page.locator('input[name="company_name"]').fill("Companhia Pública Exemplo");
-    await page.locator('input[name="company_website"]').fill("companhia-publica.example.com");
-    await page.locator('.origination-form__action button[type="submit"]').click();
+    const form = page.locator("form.origination-form");
+    await expect(form.locator('textarea[name="focus"]')).not.toHaveAttribute("required", "");
+    await expect(form.locator('textarea[name="known_context"]')).not.toHaveAttribute("required", "");
+    await form.locator('input[name="project_name"]').fill(companyDebtProjectName);
+    await form.locator('input[name="company_name"]').fill("Companhia Pública Exemplo");
+    await form.locator('input[name="company_website"]').fill("companhia-publica.example.com");
+    await form.locator('button[type="submit"]').click();
 
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
     await expect(page.locator(".origination-project__header")).toContainText("Companhia Pública Exemplo");
