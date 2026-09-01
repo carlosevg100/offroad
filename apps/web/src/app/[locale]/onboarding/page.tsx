@@ -20,7 +20,7 @@ import {
   Search,
 } from "lucide-react";
 import {projectWorkPlan, type WorkPlanStatus} from "@offroad/work-plan";
-import {capitalProjectJobSchema} from "@offroad/case-understanding";
+import {capitalProjectJobSchema} from "@offroad/work-plan";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 import Link from "next/link";

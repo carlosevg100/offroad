@@ -4,7 +4,7 @@ import {createHash, randomUUID} from "node:crypto";
 
 import {redirect} from "next/navigation";
 import {z} from "zod";
-import {capitalProjectJobSchema} from "@offroad/case-understanding";
+import {capitalProjectJobSchema} from "@offroad/work-plan";
 
 import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";

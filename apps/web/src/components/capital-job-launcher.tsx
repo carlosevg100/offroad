@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import {capitalProjectJobs, type CapitalProjectJob} from "@offroad/case-understanding";
+import {capitalProjectJobs, type CapitalProjectJob} from "@offroad/work-plan";
 
 const jobIcons = {
   company_debt_view: Building2,
