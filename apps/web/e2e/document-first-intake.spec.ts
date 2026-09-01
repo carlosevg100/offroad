@@ -52,9 +52,10 @@ async function chooseOperation(page: Page, archetype = "growth_expansion") {
 }
 
 async function startPrivateProject(page: Page, projectName: string, acceptTerms = false) {
-  // The legacy document-first vertical remains directly addressable while the conversational
-  // shell is connected to its executor. The authenticated home itself is now one composer.
-  await page.goto("/pt-BR/app/new?job=capital_planning");
+  // The first private project still belongs to account onboarding: confidentiality is accepted
+  // once before the account enters the conversational workspace. The legacy document workflow is
+  // reached only after that one-time gate and remains directly addressable for executor coverage.
+  await page.goto("/pt-BR/onboarding?setup=terms&job=capital_planning");
 
   if (acceptTerms) {
     await expect(page.locator(".private-project-gate--terms h2")).toHaveText("Antes de começar, protegemos suas informações.");
