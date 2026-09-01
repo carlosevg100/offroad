@@ -229,14 +229,14 @@ begin
     or exists (select 1 from unnest(task_ids) id where not (id = any(allowed_task_ids))) then
     raise exception 'invalid_capital_project_plan_tasks' using errcode = '22023';
   end if;
-  if target_ids is distinct from case project_row.entry_job
+  if target_ids is distinct from (case project_row.entry_job
       when 'company_debt_view' then array['C11']
       when 'origination_thesis' then array['M07','C02','K04']
       when 'capital_planning' then array['S11']
       when 'structure_from_documents' then array['S11']
       when 'review_existing_operation' then array['S10','S12']
       when 'prepare_materials_and_process' then array['A11','K09']
-    end then
+    end) then
     raise exception 'capital_project_plan_targets_invalid' using errcode = '22023';
   end if;
   expected_access_policy := case
