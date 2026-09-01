@@ -55,6 +55,7 @@ export async function IntakeInformation({locale, sessionId, items, action}: Prop
               <input type="hidden" name="session_id" value={sessionId} />
               <input type="hidden" name="locale" value={locale} />
               <input type="hidden" name="requirement_id" value={item.id} />
+              <input type="hidden" name="response" value="provided" />
               <label className="sr-only" htmlFor={`answer-${item.id}`}>
                 {item.question ?? item.label}
               </label>
