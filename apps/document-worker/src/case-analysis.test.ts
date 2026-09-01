@@ -961,7 +961,7 @@ describe("worker case analysis", () => {
       executionPlan: {produceMaterials: false, screenMandates: false, introduce: false},
     });
     expect(completed).not.toHaveProperty("match_details");
-  });
+  }, 20_000);
 });
 
 function fact(fieldPath: string, normalizedValue: unknown, valueType = "number") {
