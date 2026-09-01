@@ -1,5 +1,26 @@
 # Acceptance Evidence
 
+## Brasil–Estados Unidos e idioma contínuo, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Uma verdade, dois idiomas | teste do switcher + rota autenticada | PT-BR/EN-US preservam projeto e query; o próximo turno carrega a locale atual sem criar outro caso |
+| Plano localizado | `@offroad/work-plan` | todos os 80 TaskSpecs têm projeção EN-US; IDs, dependências e TaskRuns permanecem canônicos |
+| Contexto do modelo | teste do worker | projeto iniciado em português recebe turno EN-US, histórico PT preservado e plano projetado em inglês |
+| Jurisdição independente | `@offroad/credit-ontology` | BR, US e cross-border combinam moeda e framework contábil sem depender da língua da conversa |
+| Evidência original | teste de schema | tradução referencia o fingerprint da fonte e não substitui o texto original |
+| Material localizado | teste de schema | projeção em outro idioma conserva fingerprints canônico e econômico e expõe estado da tradução |
+| Ponte conceitual | teste adversarial | conceito sem equivalente direto recusa alvo literal; CCB não pode ser promovida silenciosamente a “Note” |
+| Knowledge governado | teste de schema | fonte, data, versão, status, jurisdição, confidencialidade e escopo são obrigatórios; conteúdo privado global é recusado |
+| Packs mínimos | contrato | núcleo universal, Brasil, Estados Unidos e ponte BR–US são bilíngues; packs jurisdicionais exigem fontes datadas |
+| Gate integral | `pnpm check`, Node 24 | 42 pacotes verdes; web 162, worker 82, ontology 29 e work-plan 29 testes; Next.js compilou 32 páginas |
+| Custo | execução desta validação | zero chamada de modelo, pesquisa ou API paga |
+
+O gate valida a fundação e a troca contínua da superfície conversacional. Não comprova o conteúdo
+financeiro completo dos packs BR/US, equivalências revisadas uma a uma ou todos os materiais finais
+em padrão institucional bilíngue. Esses itens continuam sujeitos a corpus, gold cases, revisão e
+promoção individual.
+
 ## Missão universal, inferência de entrada e memória autorizada, 01/09/2026
 
 | Evidência | Verificação | Resultado |

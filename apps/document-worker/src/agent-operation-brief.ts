@@ -11,6 +11,7 @@ import {
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
+import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {z} from "zod";
 
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
@@ -168,7 +169,10 @@ export async function processAgentOperationBriefJob(
               companyProfile: context.company_profile,
               relatedProjectMemory: context.related_project_memory,
               documentInventory: context.documents,
-              workPlan: context.tasks,
+              workPlan: context.tasks.map((task) => ({
+                ...task,
+                label: localizedOffroadTaskLabel(task.taskId, task.label, context.locale),
+              })),
               artifacts: context.artifacts,
               requestRoute: route,
               executionRoute,

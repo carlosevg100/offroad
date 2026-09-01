@@ -4,6 +4,36 @@ Atualizado em: 2026-09-01
 Baseline: `main` após PR #344, commit `21c7549`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Fundação Brasil–Estados Unidos e idioma contínuo, 01/09/2026
+
+O candidato passa a separar idioma de trabalho, idioma das fontes e jurisdição econômica. O mesmo
+projeto pode alternar PT-BR e EN-US pela navegação autenticada, preservando `projectId`, query e
+histórico. A locale do turno atual governa a próxima resposta do worker. O painel traduz os 80
+rótulos canônicos do plano sem duplicar IDs, TaskRuns ou o DAG congelado.
+
+`@offroad/credit-ontology` ganhou contratos para perfil BR, US ou cross-border, moeda, framework
+contábil, política de idioma, evidência original e tradução atribuída. A projeção de material em
+outro idioma referencia o mesmo fingerprint de conteúdo e o mesmo fingerprint econômico. Uma
+tradução nunca substitui a evidência nem dispara novamente análise, conciliação ou cálculo.
+
+A arquitetura de knowledge agora exige núcleo universal, pack Brasil, pack Estados Unidos e ponte
+BR–US, além dos packs setoriais, de instrumento e de mercado. Registros carregam fonte, publisher,
+jurisdição, idioma, data de vigência/captura, `as_of_date`, versão, status, fingerprint,
+confidencialidade, escopo de reutilização e classe de atualização. A ponte explicita equivalência
+exata, funcional, parcial ou inexistente; CCB não pode ser traduzida silenciosamente como “note”.
+
+As TaskSpecs continuam exatamente 80. M01 resolve jurisdição e regime de evidência; M05 define
+idioma e audiência; C02 carrega conhecimento aplicável; S03 aplica filtros jurisdicionais; A09
+gera variantes por audiência e idioma. O registry e o compilador subiram para `2026.09.01-v3`;
+planos já congelados permanecem imutáveis.
+
+Esta fatia implementa contrato, projeção de interface/conversa e guardrails. Ela não afirma que os
+quatro knowledge packs estejam preenchidos ou acreditados, nem que todos os materiais finais já
+possuam compilador bilíngue institucional. Popular, revisar, versionar e promover esse corpus e os
+compiladores continua sendo um programa de conteúdo e evals próprio. `pnpm check` com Node 24
+passou nos 42 pacotes; web tem 162 testes, worker 82, ontology e work-plan 29 cada, e o Next.js
+compilou 32 páginas. Nenhuma API paga foi chamada.
+
 ## Missão universal de dívida, entrada inferida e memória anterior ao questionário, 01/09/2026
 
 O candidato atual remove a ancoragem implícita num instrumento. A nova ontologia representa a

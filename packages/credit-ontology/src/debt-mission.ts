@@ -1,4 +1,5 @@
 import {z} from "zod";
+import {advisorLanguagePolicySchema, debtJurisdictionProfileSchema} from "./jurisdiction-language";
 
 /**
  * The universal debt-advisory frame.
@@ -10,7 +11,7 @@ import {z} from "zod";
  * different repayment sources without being forced into a receivables, bank or capital-markets
  * product funnel.
  */
-export const debtMissionVersion = "2026.09.01-v1";
+export const debtMissionVersion = "2026.09.01-v2";
 
 export const capitalNeedKindSchema = z.enum([
   "refinancing_liability_management",
@@ -106,8 +107,10 @@ export const debtMarketExecutionSchema = z.object({
 });
 
 export const debtMissionFrameSchema = z.object({
-  schemaVersion: z.literal("debt-mission-frame.v1"),
+  schemaVersion: z.literal("debt-mission-frame.v2"),
   evidenceRegime: debtEvidenceRegimeSchema,
+  jurisdiction: debtJurisdictionProfileSchema,
+  language: advisorLanguagePolicySchema,
   context: debtMissionContextSchema,
   needs: z.array(debtMissionNeedSchema).min(1).max(12),
   repaymentSources: z.array(debtRepaymentSourceSchema).min(1).max(12),

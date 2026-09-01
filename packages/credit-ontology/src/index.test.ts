@@ -18,15 +18,36 @@ import {
   resolveFieldPath,
   transactionRouteSchema,
   debtMissionFrameSchema,
+  debtKnowledgeRecordSchema,
+  jurisdictionConceptBridgeSchema,
+  localizedArtifactProjectionSchema,
+  localizedEvidenceTextSchema,
+  requiredDebtKnowledgePacks,
   suggestedDocumentName,
   validateChartOfAccounts,
 } from "./index";
 
-describe("universal debt mission frame v1", () => {
+describe("universal debt mission frame v2", () => {
   it("combines mixed capital needs without anchoring the project to one instrument", () => {
     const mission = debtMissionFrameSchema.parse({
-      schemaVersion: "debt-mission-frame.v1",
+      schemaVersion: "debt-mission-frame.v2",
       evidenceRegime: "hybrid",
+      jurisdiction: {
+        primary: "BR",
+        relevant: ["BR", "US"],
+        crossBorder: true,
+        reportingFrameworks: ["br_gaap_cpc_ifrs", "us_gaap"],
+        currencies: ["BRL", "USD"],
+      },
+      language: {
+        workingLocale: "pt-BR",
+        sourceLanguages: ["pt-BR", "en-US"],
+        outputMode: "bilingual",
+        allowLanguageSwitch: true,
+        preserveOriginalEvidence: true,
+        instantWorkingTranslation: true,
+        reviewedExternalMaterials: true,
+      },
       context: {
         purpose: "Avaliar refinanciamento e financiar a expansão de novas unidades.",
         audience: "CFO e tesouraria",
@@ -49,7 +70,23 @@ describe("universal debt mission frame v1", () => {
 
   it("treats public, private and hybrid as evidence regimes rather than product routes", () => {
     const base = {
-      schemaVersion: "debt-mission-frame.v1" as const,
+      schemaVersion: "debt-mission-frame.v2" as const,
+      jurisdiction: {
+        primary: "BR" as const,
+        relevant: ["BR" as const],
+        crossBorder: false,
+        reportingFrameworks: ["br_gaap_cpc_ifrs" as const],
+        currencies: ["BRL" as const],
+      },
+      language: {
+        workingLocale: "pt-BR" as const,
+        sourceLanguages: ["pt-BR" as const],
+        outputMode: "pt-BR" as const,
+        allowLanguageSwitch: true as const,
+        preserveOriginalEvidence: true as const,
+        instantWorkingTranslation: true as const,
+        reviewedExternalMaterials: true as const,
+      },
       context: {purpose: "Preparar alternativas estratégicas de dívida."},
       needs: [{kind: "refinancing_liability_management" as const, description: "Avaliar o perfil da dívida.", priority: "primary" as const}],
       repaymentSources: ["unknown" as const],
@@ -60,6 +97,112 @@ describe("universal debt mission frame v1", () => {
     expect(debtMissionFrameSchema.parse({...base, evidenceRegime: "public_only"}).evidenceRegime).toBe("public_only");
     expect(debtMissionFrameSchema.parse({...base, evidenceRegime: "authorized_private"}).evidenceRegime).toBe("authorized_private");
     expect(debtMissionFrameSchema.parse({...base, evidenceRegime: "hybrid"}).evidenceRegime).toBe("hybrid");
+  });
+});
+
+describe("Brazil/US language and knowledge contracts", () => {
+  it("keeps original evidence immutable while translations point to its fingerprint", () => {
+    const sourceFingerprint = "a".repeat(64);
+    const evidence = localizedEvidenceTextSchema.parse({
+      sourceText: "A companhia possui dívida indexada ao CDI.",
+      sourceLanguage: "pt-BR",
+      sourceRef: "document:debt-schedule:page-4",
+      sourceFingerprint,
+      translations: [{
+        locale: "en-US",
+        text: "The company has debt indexed to CDI.",
+        status: "machine_draft",
+        modelOrReviewer: "translation-router-v1",
+        sourceFingerprint,
+      }],
+    });
+
+    expect(evidence.sourceText).toContain("CDI");
+    expect(evidence.translations[0]?.sourceFingerprint).toBe(sourceFingerprint);
+    expect(() => localizedEvidenceTextSchema.parse({
+      ...evidence,
+      translations: [{...evidence.translations[0], sourceFingerprint: "f".repeat(64)}],
+    })).toThrow();
+  });
+
+  it("refuses to disguise a legal concept with no direct US equivalent as a literal translation", () => {
+    const bridge = jurisdictionConceptBridgeSchema.parse({
+      canonicalConceptId: "br.instrument.ccb",
+      fromJurisdiction: "BR",
+      fromTerm: "Cédula de Crédito Bancário",
+      toJurisdiction: "US",
+      toTerm: null,
+      relationship: "no_direct_equivalent",
+      caveats: ["Explain economic function and legal differences instead of replacing the term."],
+      asOfDate: "2026-09-01",
+      sourceRefs: ["knowledge:br.instrument.ccb", "knowledge:us.debt.instruments"],
+    });
+
+    expect(bridge.toTerm).toBeNull();
+    expect(() => jurisdictionConceptBridgeSchema.parse({...bridge, toTerm: "Note"})).toThrow();
+  });
+
+  it("requires a bilingual universal core, BR pack, US pack and dated bridge", () => {
+    expect(requiredDebtKnowledgePacks.map((pack) => pack.id)).toEqual([
+      "debt.universal.core",
+      "debt.br.jurisdiction",
+      "debt.us.jurisdiction",
+      "debt.br-us.bridge",
+    ]);
+    for (const pack of requiredDebtKnowledgePacks) {
+      expect(pack.supportedLocales).toEqual(["pt-BR", "en-US"]);
+    }
+    expect(requiredDebtKnowledgePacks.find((pack) => pack.layer === "br_us_bridge")?.requiresDatedSources).toBe(true);
+  });
+
+  it("allows reusable public knowledge but refuses private knowledge outside its authorization scope", () => {
+    const publicRecord = debtKnowledgeRecordSchema.parse({
+      id: "br.regulation.cvm-160",
+      canonicalConceptId: "br.regulation.public-offering",
+      layer: "br_debt",
+      jurisdictions: ["BR"],
+      language: "pt-BR",
+      title: "Regime brasileiro de ofertas públicas",
+      content: "Registro canônico com fonte e data de vigência.",
+      source: {
+        ref: "https://www.gov.br/cvm/",
+        publisher: "Comissão de Valores Mobiliários",
+        type: "law_or_regulation",
+        retrievedAt: "2026-09-01T12:00:00.000Z",
+      },
+      asOfDate: "2026-09-01",
+      freshness: "regulatory",
+      version: "2026-09-01",
+      status: "approved",
+      access: "public",
+      reuseScope: "global",
+      sourceFingerprint: "b".repeat(64),
+      reviewedAt: "2026-09-01T13:00:00.000Z",
+    });
+
+    expect(publicRecord.reuseScope).toBe("global");
+    expect(() => debtKnowledgeRecordSchema.parse({
+      ...publicRecord,
+      id: "project.private.note",
+      access: "project_private",
+      reuseScope: "global",
+    })).toThrow();
+  });
+
+  it("recompiles another language from the same economic state instead of creating a second case", () => {
+    const projection = localizedArtifactProjectionSchema.parse({
+      artifactId: "11111111-1111-4111-8111-111111111111",
+      canonicalContentFingerprint: "c".repeat(64),
+      economicStateFingerprint: "d".repeat(64),
+      sourceLocale: "pt-BR",
+      outputLocale: "en-US",
+      translationStatus: "machine_draft",
+      generatedAt: "2026-09-01T14:00:00.000Z",
+    });
+
+    expect(projection.outputLocale).toBe("en-US");
+    expect(projection.economicStateFingerprint).toBe("d".repeat(64));
+    expect(() => localizedArtifactProjectionSchema.parse({...projection, translationStatus: "not_required"})).toThrow();
   });
 });
 

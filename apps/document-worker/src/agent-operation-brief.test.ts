@@ -76,6 +76,68 @@ describe("agent operation brief worker", () => {
     expect(completed).toMatchObject({activated_job: "company_debt_view", spend: {costUsd: 0, calls: 0}});
   });
 
+  it("uses the latest turn locale without forking a project that started in Portuguese", async () => {
+    let modelInput = "";
+    let recordedResponse: Record<string, unknown> | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "en-US",
+        message: "Please continue in English and tell me the next step.",
+        brief: {currency: "BRL"},
+        snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-01T12:00:00.000Z",
+        manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          name: "Projeto Cedro",
+          entryJob: "capital_planning",
+          accessBasis: "authorized_private",
+          phase: "understand",
+          status: "active",
+        },
+        company_profile: {companyName: "Cedro"},
+        documents: [],
+        tasks: [{taskId: "M01", label: "Resolver companhia, grupo, jurisdição e regime de evidência", ordinal: 0, status: "succeeded"}],
+        artifacts: [],
+        recent_messages: [{
+          id: "33333333-3333-4333-8333-333333333333",
+          role: "assistant" as const,
+          content: "Estou organizando o entendimento inicial.",
+          created_at: "2026-09-01T11:59:00.000Z",
+        }],
+      }),
+      recordAgentResponse: async (_job: unknown, _messageId: string, response: unknown) => {
+        recordedResponse = response as Record<string, unknown>;
+        return {};
+      },
+      complete: async () => {},
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async (request: {input: Array<{type: string; text?: string}>}) => {
+        modelInput = request.input[0]?.text ?? "";
+        return {
+          output: {state: "idle", reply: "We are preserving the same project. The next step is to complete the current understanding."},
+          usage: {inputTokens: 100, outputTokens: 30, cachedInputTokens: 0},
+        };
+      },
+      spent: () => ({costUsd: 0.05, calls: 1}),
+    } as unknown as ModelGateway;
+
+    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(JSON.parse(modelInput)).toMatchObject({
+      locale: "en-US",
+      project: {name: "Projeto Cedro"},
+      recentConversation: [{content: "Estou organizando o entendimento inicial."}],
+      workPlan: [{taskId: "M01", label: "Resolve company, group, jurisdiction and evidence regime"}],
+    });
+    expect(recordedResponse?.reply).toContain("same project");
+  });
+
   it("uses the existing bounded turn to normalize an explicit company and then activates the exact selected DAG", async () => {
     let recordedActivation: Record<string, unknown> | undefined;
     let modelInput = "";

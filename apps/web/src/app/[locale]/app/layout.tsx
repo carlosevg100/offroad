@@ -6,6 +6,7 @@ import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
 import {BrandMark} from "@/components/brand-mark";
 import {WorkspaceProjectNavigation, type WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
+import {WorkspaceLanguageSwitcher} from "@/components/workspace-language-switcher";
 import type {AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
@@ -106,6 +107,7 @@ export default async function ApplicationLayout({children, params}: Props) {
           /> : <div className="app-nav__group"><p>{t("projects")}</p><Link href={`/${locale}/app#funds`}><Landmark aria-hidden="true" size={16} /><span>{t("fundsAndMandates")}</span></Link></div>}
         </nav>
         <div className="app-sidebar__footer">
+          <WorkspaceLanguageSwitcher locale={locale === "en-US" ? "en-US" : "pt-BR"} />
           <div><FileLock2 aria-hidden="true" size={15} /><span>{email}</span></div>
           <form action={signOut}>
             <input name="locale" type="hidden" value={locale} />

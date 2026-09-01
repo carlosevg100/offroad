@@ -10,6 +10,39 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: Brazil–US foundation and continuous language, 1 September 2026
+
+The current candidate separates working language, source language and economic jurisdiction.
+Authenticated users can switch PT-BR and EN-US inside the same project; the route keeps the exact
+project and query, the latest turn locale controls the next advisor response, and all 80 plan
+labels have an English projection without forking TaskSpec ids or TaskRuns. Prior messages remain
+in their original language.
+
+The credit ontology now models BR, US and cross-border jurisdiction profiles, accounting
+frameworks, currencies, original evidence plus attributed translations, and localized artifact
+projections tied to one canonical content fingerprint and one economic-state fingerprint. A
+language change is presentation invalidation only; it is not authority to rerun analysis or
+replace evidence. External material translation remains subject to editorial review.
+
+Knowledge is contracted as universal debt core, Brazil, United States and BR–US bridge, extended
+by sector, instrument and current-market packs. Every record carries source, publisher,
+jurisdiction, language, effective/retrieval and as-of dates, version, status, fingerprint, access
+and reuse scope, and freshness class. Public and approved house material may be reused; private
+organization/project material cannot cross its authorized boundary. Concept bridges expose exact,
+functional, partial or no-direct-equivalent relationships instead of silently translating legal
+terms such as CCB into a US “note”.
+
+The 80-node registry remains fixed in size but now resolves jurisdiction and evidence regime at
+M01, deliverable language and audience at M05, applicable knowledge at C02, jurisdictional filters
+at S03 and audience/language material variants at A09. New plans use registry/compiler
+`2026.09.01-v3`; historical snapshots remain immutable.
+
+This slice is a foundation, not a claim that the full BR/US corpus or every bilingual institutional
+material compiler is production-approved. Those packs still require authored content, dated
+sources, gold cases, adversarial mappings and individual promotion. Validation used no paid model
+or research call. The complete Node 24 gate passed across all 42 packages: web 162 tests, worker
+82, ontology and work-plan 29 each, and a 32-page Next.js production build.
+
 ### Engineering update: universal debt mission and memory-first origination, 1 September 2026
 
 The current local candidate removes instrument-first behavior from the conversational entry. A

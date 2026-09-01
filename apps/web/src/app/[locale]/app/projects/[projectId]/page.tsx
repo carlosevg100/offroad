@@ -1,4 +1,5 @@
 import {originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
+import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -247,7 +248,11 @@ async function ConversationalCapitalProject({
     projectId={project.id}
     projectName={project.project_name}
     sessionStatus={session.status}
-    tasks={(tasks ?? []).map((task) => ({id: task.id, label: task.label, status: latestRunByTask.get(task.id)?.status ?? "waiting"}))}
+    tasks={(tasks ?? []).map((task) => ({
+      id: task.id,
+      label: localizedOffroadTaskLabel(task.task_id, task.label, locale === "en-US" ? "en-US" : "pt-BR"),
+      status: latestRunByTask.get(task.id)?.status ?? "waiting",
+    }))}
     workHref={["company_debt_view", "origination_thesis"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
   />;
 }

@@ -1956,6 +1956,32 @@ summary:focus-visible {
   gap: 8px;
 }
 
+.app-sidebar__footer > .workspace-language-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 7px;
+  gap: 3px;
+}
+
+.workspace-language-switcher a {
+  display: grid;
+  min-height: 30px;
+  border-radius: 5px;
+  place-items: center;
+  color: rgb(255 255 255 / 48%);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.workspace-language-switcher a[aria-current="page"] {
+  background: rgb(255 255 255 / 9%);
+  color: var(--paper);
+}
+
 .app-sidebar__footer > div {
   display: flex;
   min-width: 0;

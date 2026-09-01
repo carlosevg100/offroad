@@ -1,6 +1,6 @@
 # Offroad Capital: Constituição de Produto e Operação
 
-Versão: 2.1 · 1 de setembro de 2026
+Versão: 2.2 · 1 de setembro de 2026
 
 Status: camada 0, fonte canônica de definição, fronteiras e comportamento do produto
 
@@ -167,6 +167,50 @@ O mesmo modelo opera sob três regimes de evidência:
 Memória pública reutilizável contém matéria-prima e claims com fonte e validade, nunca a conversa
 ou a inteligência privada de outro usuário. Memória de projetos anteriores só reaparece para
 usuários autorizados na mesma organização, com projeto, data, versão e origem visíveis.
+
+### 5.2 Brasil, Estados Unidos e linguagem contínua
+
+Idioma de trabalho e jurisdição econômica são dimensões independentes. Um projeto brasileiro pode
+ser conduzido e entregue em inglês; um caso americano pode ser discutido em português; uma
+estrutura cross-border pode ter os dois idiomas e as duas jurisdições. Mudar o idioma nunca cria
+outro projeto, outro Deal State, outro cálculo ou outra evidência.
+
+O usuário pode alternar PT-BR e EN-US a qualquer momento. A interface, a próxima resposta, o plano
+de trabalho e os materiais solicitados são projetados no idioma atual. Mensagens e documentos já
+existentes permanecem no idioma em que foram produzidos. A fonte original nunca é sobrescrita:
+tradução de trabalho é derivada, declara fingerprint da fonte e começa como `machine_draft`.
+Material destinado a terceiro exige tradução revisada conforme o gate editorial aplicável.
+
+O conhecimento possui camadas combináveis e versionadas:
+
+1. **núcleo universal de dívida:** análise financeira, capacidade, estrutura de capital, risco,
+   cálculo, evidência e conceitos econômicos canônicos;
+2. **Brasil:** instrumentos, provedores, garantias, documentação, contabilidade, regulação e
+   prática de mercado brasileiras;
+3. **Estados Unidos:** instrumentos, providers, security mechanics, documentação, US GAAP,
+   regulação e prática de mercado americanas;
+4. **ponte Brasil–Estados Unidos:** diferenças de moeda, contabilidade, garantias, instrumentos,
+   documentação, mercado e execução cross-border;
+5. **depth packs:** setor, necessidade, instrumento e estrutura aplicáveis ao caso;
+6. **mercado vigente:** transações, preços, termos e mandatos com data de observação e validade.
+
+Cada registro de conhecimento declara conceito canônico, jurisdição, idioma, fonte, publisher,
+tipo de fonte, data de publicação ou vigência quando houver, data de captura, `as_of_date`, versão,
+status, fingerprint, confidencialidade, escopo de reutilização e classe de atualização. Conteúdo
+público e conhecimento aprovado da casa podem ser reutilizados; material privado de organização
+ou projeto nunca atravessa seu escopo autorizado.
+
+Tradução linguística não constitui equivalência jurídica, contábil ou econômica. Toda ponte entre
+conceitos BR e US declara relação `exact`, `functional`, `partial` ou `no_direct_equivalent`, além
+de ressalvas e fontes. Uma Cédula de Crédito Bancário, por exemplo, não pode virar silenciosamente
+“note”. Quando não houver equivalente direto, o termo original e sua função econômica são
+explicados.
+
+O DAG resolve jurisdição e regime de evidência ao identificar a companhia, define idioma e
+audiência antes de compilar entregáveis, carrega o knowledge pack aplicável antes de pesquisar
+setor e regulação, aplica filtros jurisdicionais ao universo de instrumentos e compila variantes
+de materiais a partir do mesmo snapshot econômico. Trocar o idioma invalida somente projeções
+linguísticas dependentes, nunca extração, conciliação, cálculos ou decisões já confirmadas.
 
 ## 6. Princípios inegociáveis
 
