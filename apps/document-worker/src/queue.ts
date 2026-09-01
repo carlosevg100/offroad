@@ -181,7 +181,13 @@ export type QueueClient = {
   recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
   loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
-  recordAgentResponse(job: AgentOperationBriefJob, assistantMessageId: string, response: unknown, proposal?: unknown): Promise<unknown>;
+  recordAgentResponse(
+    job: AgentOperationBriefJob,
+    assistantMessageId: string,
+    response: unknown,
+    proposal?: unknown,
+    activation?: unknown,
+  ): Promise<unknown>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
   fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
@@ -488,13 +494,14 @@ export function createQueueClient(
       });
     },
 
-    async recordAgentResponse(job, assistantMessageId, response, proposal) {
-      return call("worker_record_agent_response", {
+    async recordAgentResponse(job, assistantMessageId, response, proposal, activation) {
+      return call("worker_record_agent_response_and_activate_v1", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_assistant_message_id: assistantMessageId,
         p_response: response,
         p_proposal: proposal ?? null,
+        p_activation: activation ?? null,
       });
     },
 

@@ -1,8 +1,34 @@
 # Build State
 
 Atualizado em: 2026-09-01
-Baseline: `main` após PR #338, commit `6d20642e6427b3715629da59f6fdb73a81639d2b`
+Baseline: `main` após PR #340, commit `720ed031f5403c176bc4e8f4943ab306897df39e`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Roteamento semântico e ativação governada de DAG, 01/09/2026
+
+O workspace passa a separar duas decisões. O roteador de pedido continua classificando intenção,
+escopo e efeito; o novo roteador de execução decide, sem chamada de modelo, se o turno pode entrar
+num executor já liberado, se falta um contexto obrigatório ou se deve permanecer apenas na
+conversa. Produção de material, aprovação, simulação e ação externa nunca são reinterpretadas
+como autorização para iniciar pesquisa. Projeto privado ou com documentos também não entra nos
+executores públicos.
+
+As primeiras ativações são `company_debt_view` e `origination_thesis`. Com identidade já presente
+na memória do projeto, o roteamento e o handoff ao DAG usam zero chamadas de modelo. Quando o nome
+aparece apenas na linguagem livre, a chamada conversacional já existente pode normalizar somente
+o nome e o contexto declarados; ela não escolhe o executor. O worker exige suporte literal do nome
+no histórico do usuário e recusa nomes genéricos. Website não apoiado é descartado.
+
+A persistência é atômica por
+`worker_record_agent_response_and_activate_v1`: mensagem, perfil da companhia, brief versionado,
+run e job especializado são gravados juntos. A função valida capability, organização, projeto,
+plano ativo, base pública, ausência de documentos, escopo exato e idempotência. Os tetos existentes
+permanecem US$ 0,75/duas chamadas para originação e US$ 0,95/duas chamadas para company debt view.
+Nenhum aceite de representação, aprovação de material ou autoridade de introdução é criado.
+
+Esta capacidade está em branch candidata. Contratos e worker passaram nos testes focados; a nova
+migration e `advisor_semantic_dag_activation.sql` aguardam reconstrução limpa do banco em CI. Os
+demais jobs seguem `conversation_only` até que seus executores alcancem o próprio gate.
 
 ## Workspace conversacional persistente, promoção controlada, 01/09/2026
 
@@ -37,16 +63,15 @@ replay detectou e corrigiu um empate de timestamps na identidade da mensagem ini
 Advisor retornou zero findings em staging e produção; o Performance Advisor não introduziu aviso
 da feature e mostra apenas informações históricas de índices ainda sem uso. O workflow Quality
 `33501504771` aprovou banco, E2E e o gate integral dos 42 pacotes; no web, a suíte tem 160 testes,
-no worker 74, e o build de produção compilou a nova superfície. O schema de produção está pronto;
-a aplicação permanece no preview da PR #339 até o merge controlado. Nenhuma API paga foi chamada.
+no worker 74, e o build de produção compilou a nova superfície. O schema e a aplicação foram
+promovidos por PR #339; o ajuste focado da suíte do worker entrou por PR #340. O run final
+`33503989459`, o deploy do worker e o Vercel de produção passaram. Nenhuma API paga foi chamada.
 
-Esta fatia entrega memória, superfície-base e turnos reais assíncronos, não a integração completa
-dos executores. As
-duas verticais públicas existentes agora reabrem primeiro no projeto conversacional e expõem o
-trabalho já executado a partir do painel do mesmo projeto. O roteamento semântico de um novo prompt
-para esses executores, a atualização de plano, a análise documental profunda, a estruturação, os
-materiais e o matching permanecem sujeitos aos próprios gates antes de o workspace ser declarado
-completo.
+Esta fatia entregou memória, superfície-base e turnos reais assíncronos. As duas verticais públicas
+existentes reabrem primeiro no projeto conversacional e expõem o trabalho já executado a partir do
+painel do mesmo projeto. A branch candidata acima conecta novos prompts a esses dois executores; a
+atualização de plano, análise documental profunda, estruturação, materiais e matching continuam
+sujeitos aos próprios gates antes de o workspace ser declarado completo.
 
 ## Workspace AI-native e primeira vertical pública de originação, 01/09/2026
 

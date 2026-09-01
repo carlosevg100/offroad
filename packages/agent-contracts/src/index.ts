@@ -39,6 +39,101 @@ export const workspaceRequestRouteSchema = z.object({
 });
 export type WorkspaceRequestRoute = z.infer<typeof workspaceRequestRouteSchema>;
 
+export const executableWorkspaceJobSchema = z.enum(["company_debt_view", "origination_thesis"]);
+export type ExecutableWorkspaceJob = z.infer<typeof executableWorkspaceJobSchema>;
+
+export const workspaceExecutionRouteSchema = z.object({
+  action: z.enum(["queue_specialized_job", "collect_required_context", "conversation_only"]),
+  analysisScope: executableWorkspaceJobSchema.nullable(),
+  requirements: z.array(z.enum(["company_identity", "assignment_context"])).max(2),
+  reasonCode: z.string().regex(/^[a-z0-9_]+$/),
+  modelRoutingCalls: z.literal(0),
+});
+export type WorkspaceExecutionRoute = z.infer<typeof workspaceExecutionRouteSchema>;
+
+/**
+ * Decides whether a conversational turn may enter an already released TaskSpec executor.
+ * This router is deliberately deterministic and costs zero model calls. The model may help
+ * normalize user-stated context later, but it cannot select a different executor, broaden the
+ * evidence basis or bypass a missing prerequisite.
+ */
+export function routeWorkspaceExecution(input: {
+  entryJob?: string | null;
+  accessBasis?: string | null;
+  companyName?: string | null;
+  documentCount: number;
+  artifactTypes: string[];
+  requestText: string;
+  requestIntent?: WorkspaceRequestIntent;
+  requestEffect?: WorkspaceRequestEffect;
+}): WorkspaceExecutionRoute {
+  const analysisScope = executableWorkspaceJobSchema.safeParse(input.entryJob);
+  if (!analysisScope.success) {
+    return workspaceExecutionRouteSchema.parse({
+      action: "conversation_only",
+      analysisScope: null,
+      requirements: [],
+      reasonCode: "executor_not_released",
+      modelRoutingCalls: 0,
+    });
+  }
+
+  if (input.requestEffect && input.requestEffect !== "none") {
+    return workspaceExecutionRouteSchema.parse({
+      action: "conversation_only",
+      analysisScope: analysisScope.data,
+      requirements: [],
+      reasonCode: "governed_action_requires_exact_surface",
+      modelRoutingCalls: 0,
+    });
+  }
+  if (input.requestIntent === "simulate") {
+    return workspaceExecutionRouteSchema.parse({
+      action: "conversation_only",
+      analysisScope: analysisScope.data,
+      requirements: [],
+      reasonCode: "hypothetical_requires_case_context",
+      modelRoutingCalls: 0,
+    });
+  }
+
+  if (input.accessBasis !== "public_information" || input.documentCount > 0) {
+    return workspaceExecutionRouteSchema.parse({
+      action: "conversation_only",
+      analysisScope: analysisScope.data,
+      requirements: [],
+      reasonCode: "private_case_requires_case_graph",
+      modelRoutingCalls: 0,
+    });
+  }
+
+  const finalArtifact = analysisScope.data === "company_debt_view"
+    ? "company_debt_diagnostic"
+    : "meeting_brief";
+  if (input.artifactTypes.includes(finalArtifact)) {
+    return workspaceExecutionRouteSchema.parse({
+      action: "conversation_only",
+      analysisScope: analysisScope.data,
+      requirements: [],
+      reasonCode: "specialized_work_product_exists",
+      modelRoutingCalls: 0,
+    });
+  }
+
+  const requirements: WorkspaceExecutionRoute["requirements"] = [];
+  if (!input.companyName?.trim()) requirements.push("company_identity");
+  if (analysisScope.data === "origination_thesis" && input.requestText.trim().length < 10) {
+    requirements.push("assignment_context");
+  }
+  return workspaceExecutionRouteSchema.parse({
+    action: requirements.length > 0 ? "collect_required_context" : "queue_specialized_job",
+    analysisScope: analysisScope.data,
+    requirements,
+    reasonCode: requirements.length > 0 ? "specialized_context_incomplete" : "specialized_executor_ready",
+    modelRoutingCalls: 0,
+  });
+}
+
 const patterns = {
   authorizeExternal: /\b(enviar|envie|mandar|mande|apresentar|apresente|introduzir|introduza|contatar|contate|abordar|aborde|send|introduce|contact|approach)\b/i,
   compile: /\b(gerar|gere|produzir|produza|montar|monte|compilar|compile|generate|prepare|preparar)\b.*\b(teaser|memo|memorando|term\s*sheet|modelo|model|material|pacote|package|data\s*room)\b/i,
@@ -210,6 +305,36 @@ export type AgentClarification = z.infer<typeof agentClarificationSchema>;
 export const agentMessageRoleSchema = z.enum(["user", "assistant"]);
 export const agentMessageStatusSchema = z.enum(["queued", "processing", "completed", "failed"]);
 
+const workspaceActivationCompanySchema = z.object({
+  name: z.string().trim().min(2).max(160),
+  website: z.url().max(500).refine((value) => value.startsWith("https://"), {
+    message: "website must use https",
+  }).optional(),
+});
+
+/** A model may normalize only the context needed by the deterministic executor selected above. */
+export const workspaceJobActivationSchema = z.discriminatedUnion("job", [
+  z.object({
+    job: z.literal("company_debt_view"),
+    company: workspaceActivationCompanySchema,
+    brief: z.object({
+      focus: z.string().trim().max(3_000).optional(),
+      knownContext: z.string().trim().max(5_000).optional(),
+    }),
+  }),
+  z.object({
+    job: z.literal("origination_thesis"),
+    company: workspaceActivationCompanySchema,
+    brief: z.object({
+      meetingContext: z.string().trim().min(10).max(5_000),
+      thesisToTest: z.string().trim().max(3_000).optional(),
+      audience: z.string().trim().max(240).optional(),
+      meetingDate: z.iso.date().optional(),
+    }),
+  }),
+]);
+export type WorkspaceJobActivation = z.infer<typeof workspaceJobActivationSchema>;
+
 /**
  * The first executable Agent vertical is intentionally narrow. It may explain the current
  * operation brief, ask one useful question or propose direct-field edits. It cannot mutate the
@@ -235,6 +360,7 @@ export const agentOperationBriefResponseSchema = z.object({
       "materials", "language_conduct", "matching", "outcome",
     ])).max(10),
   }).optional(),
+  activation: workspaceJobActivationSchema.optional(),
 }).superRefine((response, context) => {
   if (response.state === "asking" && !response.clarification) {
     context.addIssue({code: "custom", path: ["clarification"], message: "asking requires one clarification"});
@@ -250,6 +376,12 @@ export const agentOperationBriefResponseSchema = z.object({
   }
   if (response.clarification && response.proposal) {
     context.addIssue({code: "custom", message: "one response cannot ask and propose at the same time"});
+  }
+  if (response.activation && response.state !== "idle") {
+    context.addIssue({code: "custom", path: ["activation"], message: "activation must be an idle handoff"});
+  }
+  if (response.activation && (response.clarification || response.proposal)) {
+    context.addIssue({code: "custom", path: ["activation"], message: "activation cannot carry a clarification or proposal"});
   }
 });
 export type AgentOperationBriefResponse = z.infer<typeof agentOperationBriefResponseSchema>;

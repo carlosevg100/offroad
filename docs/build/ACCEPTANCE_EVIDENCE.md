@@ -1,5 +1,24 @@
 # Acceptance Evidence
 
+## Roteamento semântico e ativação governada de DAG, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Roteamento sem custo | `@offroad/agent-contracts` | decisão de execução declara `modelRoutingCalls=0` e cobre executor, contexto ausente, caso privado, artefato já existente e comando governado |
+| Executor exato | teste do worker | `company_debt_view` com companhia já persistida ativa o DAG selecionado sem chamar modelo |
+| Linguagem livre | teste do worker | a chamada conversacional já orçada normaliza “CVC” e ativa somente `origination_thesis`; não existe segunda chamada de roteamento |
+| Base de evidência | contrato e migration | nome precisa estar no perfil ou nas mensagens do usuário; nome genérico é recusado; documento privado nunca entra no executor público |
+| Atomicidade | `worker_record_agent_response_and_activate_v1` | resposta, perfil, brief e job especializado compartilham uma transação; falha não deixa mensagem afirmando execução inexistente |
+| Idempotência | teste SQL novo | replay preserva um brief e um job, reanexa os metadados e mantém estado coerente |
+| Menor privilégio | função capability-bound | organização, sessão, projeto e plano vêm do job; token incorreto falha fechado; nenhuma autoridade externa é ampliada |
+| Orçamento | payload e run persistidos | originação: até 2 chamadas/US$ 0,75; company debt view: até 2 chamadas/US$ 0,95; reservas de busca preservadas |
+| Testes locais | Vitest/TypeScript | agent contracts 16/16; worker 76/76; typecheck do worker verde; zero API paga |
+| Banco | ambiente local desta máquina | Docker indisponível; migration e teste adversarial aguardam reconstrução limpa no Database CI antes de qualquer promoção |
+
+Esta evidência prova o roteamento e o handoff governado somente para duas verticais públicas já
+implementadas. Não promove análise privada completa, estruturação, materiais, matching ou
+introdução.
+
 ## Workspace conversacional persistente, 01/09/2026
 
 | Evidência | Verificação | Resultado |
@@ -22,7 +41,7 @@
 | Advisors de produção | Supabase Security/Performance Advisor | zero security findings; somente informações históricas de índices ainda sem uso |
 | Gate integral | Quality `33501504771`, Node 24, 42 pacotes | banco, 9 jornadas E2E e `pnpm check` verdes; web com 160 testes, worker com 74 e build de produção compilado |
 | Custo | execução desta validação | zero chamadas de modelo e zero pesquisa externa paga |
-| Rollout | PR #339 | schema promovido antes da aplicação; preview Vercel publicado; merge condicionado aos gates verdes |
+| Rollout | PR #339 + PR #340 | schema e aplicação promovidos; Quality final `33503989459`, worker estável e Vercel de produção verdes |
 
 A evidência comprova o contrato de memória, a entrada e a fronteira legal. Ainda não comprova a
 qualidade das respostas conversacionais nem a integração de todas as verticais ao roteador do chat.
