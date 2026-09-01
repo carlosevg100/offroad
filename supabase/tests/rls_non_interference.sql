@@ -4773,7 +4773,7 @@ select private.append_deal_state_object(
   '20000000-0000-4000-8000-000000000001',
   '97000000-0000-4000-8000-000000000001',
   'understanding_snapshot', 'pending_confirmation', repeat('1', 64),
-  '{"summary":"confirmed understanding","readiness":{"state":"ready"}}'::jsonb,
+  '{"summary":"confirmed understanding","readiness":{"state":"ready","blockers":[]}}'::jsonb,
   '[]'::jsonb, null, 'worker'
 );
 
@@ -4816,7 +4816,7 @@ begin
   begin
     perform public.record_deal_state_object(
       org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('0', 64),
-      '{"summary":"invented by tenant","readiness":{"state":"ready"},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001"}}'::jsonb,
+      '{"summary":"invented by tenant","readiness":{"state":"ready","blockers":[]},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001"}}'::jsonb,
       '[]'::jsonb
     );
   exception when object_not_in_prerequisite_state then accepted := false;
@@ -4825,12 +4825,12 @@ begin
 
   understanding_id := public.record_deal_state_object(
     org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('1', 64),
-    '{"summary":"confirmed understanding","readiness":{"state":"ready"},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T12:00:00Z"}}'::jsonb,
+    '{"summary":"confirmed understanding","readiness":{"state":"ready","blockers":[]},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T12:00:00Z"}}'::jsonb,
     '[]'::jsonb
   );
   understanding_retry_id := public.record_deal_state_object(
     org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('1', 64),
-    '{"summary":"confirmed understanding","readiness":{"state":"ready"},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T12:00:00Z"}}'::jsonb,
+    '{"summary":"confirmed understanding","readiness":{"state":"ready","blockers":[]},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T12:00:00Z"}}'::jsonb,
     '[]'::jsonb
   );
   if understanding_retry_id is distinct from understanding_id then
@@ -5110,7 +5110,7 @@ begin
   set local role postgres;
   perform private.append_deal_state_object(
     org_a, session_id, 'understanding_snapshot', 'pending_confirmation', repeat('8', 64),
-    '{"summary":"changed understanding","readiness":{"state":"ready"}}'::jsonb,
+    '{"summary":"changed understanding","readiness":{"state":"ready","blockers":[]}}'::jsonb,
     '[]'::jsonb, null, 'worker'
   );
 
@@ -5122,7 +5122,7 @@ begin
   );
   perform public.record_deal_state_object(
     org_a, session_id, 'understanding_snapshot', 'confirmed', repeat('8', 64),
-    '{"summary":"changed understanding","readiness":{"state":"ready"},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T13:00:00Z"}}'::jsonb,
+    '{"summary":"changed understanding","readiness":{"state":"ready","blockers":[]},"confirmation":{"actorId":"10000000-0000-4000-8000-000000000001","confirmedAt":"2026-08-31T13:00:00Z"}}'::jsonb,
     '[]'::jsonb
   );
 
