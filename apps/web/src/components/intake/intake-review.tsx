@@ -64,13 +64,29 @@ function issueEvidence(raw: unknown): IssueEvidence[] {
   });
 }
 
+/**
+ * Keeps the evidence review from counting the governed request list twice.
+ *
+ * Reconciliation persists both genuine exceptions and missing requirements in `intake_issues`
+ * so every gap has durable lineage. Missing requirements produced by a rule also belong to the
+ * request ladder rendered immediately above this review, however. Showing them again as
+ * "pontos de atenção" turns eight actual review items into dozens of apparent red flags. A
+ * pipeline-authored missing issue has no rule id and remains visible; only rule-derived request
+ * gaps are routed to the checklist.
+ */
+export function isReviewAttentionItem(
+  issue: Pick<IntakeIssue, "status" | "rule_id" | "exception_type">,
+) {
+  return issue.status === "open" && !(issue.rule_id && issue.exception_type === "missing");
+}
+
 export async function IntakeReview({locale, session, documents, candidates, issues, actions, caseState, checklist, answerAction, organizationId, userId, removeAction, surface}: Props) {
   const [t, tIntake] = await Promise.all([
     getTranslations({locale, namespace: "Intake.review"}),
     getTranslations({locale, namespace: "Intake"}),
   ]);
   const documentById = new Map(documents.map((document) => [document.id, document]));
-  const openIssues = issues.filter((issue) => issue.status === "open");
+  const openIssues = issues.filter(isReviewAttentionItem);
   const conflictCandidateIds = new Set(openIssues.flatMap((issue) => issue.candidate_ids));
   const reviewed = candidates.filter((candidate) => ["accepted", "edited", "rejected", "not_applicable"].includes(candidate.review_state)).length;
   const accepted = candidates.filter((candidate) => ["accepted", "edited"].includes(candidate.review_state) && candidate.is_primary).length;
