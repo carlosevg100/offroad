@@ -184,7 +184,7 @@ declare
   existing_artifact public.capital_project_artifacts;
   next_version integer;
   computed_fingerprint text;
-  dependency record;
+  dependency_record record;
   current_artifact public.capital_project_artifacts;
   missing_task_dependencies text[];
 begin
@@ -212,11 +212,11 @@ begin
 
   if exists (
     select 1
-    from jsonb_array_elements(p_dependencies) dependency(value)
-    where jsonb_typeof(dependency.value) <> 'object'
-      or coalesce(dependency.value ->> 'artifactId', '') !~
+    from jsonb_array_elements(p_dependencies) dependency_item(value)
+    where jsonb_typeof(dependency_item.value) <> 'object'
+      or coalesce(dependency_item.value ->> 'artifactId', '') !~
         '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
-      or coalesce(dependency.value ->> 'artifactFingerprint', '') !~ '^[0-9a-f]{64}$'
+      or coalesce(dependency_item.value ->> 'artifactFingerprint', '') !~ '^[0-9a-f]{64}$'
   ) then
     raise exception 'capital_project_artifact_dependencies_invalid' using errcode = '22023';
   end if;
@@ -233,7 +233,7 @@ begin
     raise exception 'capital_task_run_not_available' using errcode = 'P0002';
   end if;
 
-  for dependency in
+  for dependency_record in
     select value from jsonb_array_elements(p_dependencies)
   loop
     if not exists (
@@ -241,8 +241,8 @@ begin
       from public.capital_project_artifacts artifact
       where artifact.organization_id = run_row.organization_id
         and artifact.capital_project_id = run_row.capital_project_id
-        and artifact.id = (dependency.value ->> 'artifactId')::uuid
-        and artifact.artifact_fingerprint = dependency.value ->> 'artifactFingerprint'
+        and artifact.id = (dependency_record.value ->> 'artifactId')::uuid
+        and artifact.artifact_fingerprint = dependency_record.value ->> 'artifactFingerprint'
         and artifact.status not in ('stale', 'superseded')
     ) then
       raise exception 'capital_project_artifact_dependency_not_current' using errcode = '55000';
