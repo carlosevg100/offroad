@@ -162,7 +162,7 @@ declare
   plan_id uuid;
   existing_plan_id uuid;
   next_version integer;
-  plan_fingerprint text;
+  computed_plan_fingerprint text;
   task_record jsonb;
   dependency_id text;
   dependency_batch integer;
@@ -305,12 +305,15 @@ begin
     end loop;
   end loop;
 
-  plan_fingerprint := encode(extensions.digest(convert_to(p_snapshot::text, 'utf8'), 'sha256'), 'hex');
+  computed_plan_fingerprint := encode(
+    extensions.digest(convert_to(p_snapshot::text, 'utf8'), 'sha256'),
+    'hex'
+  );
   select plan.id into existing_plan_id
   from public.capital_project_plans plan
   where plan.organization_id = project_row.organization_id
     and plan.capital_project_id = project_row.id
-    and plan.plan_fingerprint = plan_fingerprint;
+    and plan.plan_fingerprint = computed_plan_fingerprint;
   if existing_plan_id is not null then return existing_plan_id; end if;
 
   update public.capital_project_plans plan
@@ -331,7 +334,7 @@ begin
   ) values (
     project_row.organization_id, project_row.id, next_version, project_row.entry_job,
     p_snapshot ->> 'schemaVersion', p_snapshot ->> 'compilerVersion',
-    p_snapshot ->> 'registryVersion', plan_fingerprint, 'active',
+    p_snapshot ->> 'registryVersion', computed_plan_fingerprint, 'active',
     p_snapshot #>> '{job,confirmationGate}', p_snapshot #>> '{job,firstWorkProduct}',
     array(select value from jsonb_array_elements_text(p_snapshot #> '{job,targetTaskIds}')),
     p_snapshot #> '{job,inputPolicy}', p_snapshot -> 'parallelBatches', cardinality(task_ids),
