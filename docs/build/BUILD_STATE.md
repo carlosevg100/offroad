@@ -1,7 +1,7 @@
 # Build State
 
 Atualizado em: 2026-09-01
-Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
+Baseline: `main` após PR #336, commit `f51fbf0351e7e88289f26a63b721e580f9016902`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
 ## Workspace AI-native e primeira vertical pública de originação, 01/09/2026
@@ -23,14 +23,27 @@ correção é incremental: registra a decisão sobre o fingerprint exato, invali
 reaproveita `M06`, `C02` e `K04`, não repete pesquisa e permite apenas uma nova síntese com custo de
 busca zero.
 
-O schema e os comandos foram exercitados no branch Supabase `staging`. Os testes
-`origination_thesis_vertical.sql` e `project_company_scope.sql` passaram com rollback, incluindo
-isolamento, capability incorreta, ciclo completo dos nove artefatos, revisão M07-only e replay
-idempotente. O Security Advisor retornou zero findings. Produção não foi alterada manualmente.
+O schema foi promovido primeiro em `staging` e depois em produção pelas oito migrations canônicas
+`20260901035241` a `20260901035319`. Tabelas, RPCs e `FORCE ROW LEVEL SECURITY` foram verificados
+no projeto de produção. Os testes `origination_thesis_vertical.sql` e
+`project_company_scope.sql` passaram com rollback, incluindo isolamento, capability incorreta,
+ciclo completo dos nove artefatos, revisão M07-only e replay idempotente. A migration
+`20260901035442_capital_project_fk_index_hardening.sql` eliminou os cinco foreign keys sem índice
+introduzidos pelo runtime. Security Advisor e a categoria `unindexed_foreign_keys` do Performance
+Advisor retornam zero findings tanto em staging quanto em produção. O ledger de briefs de
+produção continua vazio; nenhuma execução de modelo foi disparada durante a promoção.
 
-Esta entrega promove apenas a vertical pública de tese de originação. As outras cinco entradas
-continuam declaradas ou roteadas para capacidades existentes e não devem ser apresentadas como
-completas até seus executores, interfaces e gold cases passarem pelos próprios gates.
+A PR #336 foi incorporada a `main`. O workflow Quality `33467602650` passou em banco, E2E e no
+gate completo de lint, tipos, testes e build; o deploy do worker `33467602677` estabilizou no ECS;
+e o Vercel publicou o deployment `5bBMwnK1VJe2NiwTKVc4YrinQ8NU`. Nenhuma API paga foi chamada
+nessa validação. A primeira execução humana em produção permanece um teste explícito do produto,
+com o orçamento limitado já descrito, e não uma etapa automática de deploy.
+
+Esta entrega promove apenas a vertical pública de tese de originação. Ela está tecnicamente pronta
+para o primeiro teste humano/gold case em produção, mas ainda não tem qualidade institucional
+comprovada por esse teste. As outras cinco entradas continuam declaradas ou roteadas para
+capacidades existentes e não devem ser apresentadas como completas até seus executores,
+interfaces e gold cases passarem pelos próprios gates.
 
 ## Entendimento preliminar isolado e ordem canônica da entrada, 31/08/2026
 
