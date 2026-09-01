@@ -32,10 +32,12 @@ o plano congelado de um projeto já existente e os executores privados de análi
 materiais e matching continuam sendo fatias separadas.
 
 O gate integral local em Node 24 aprovou lint, typecheck, testes e build nos 42 pacotes; o Next.js
-compilou 32 páginas e o worker foi empacotado. Os testes focados cobrem o caso Camil, contexto em
-turnos sucessivos, memória anterior à pergunta, regimes de evidência e usos mistos. Zero chamada
-de modelo, busca ou API paga foi realizada. O teste transacional da migration continua pendente
-porque o Docker local não está disponível.
+compilou 32 páginas e o worker foi empacotado. O Quality run `33518894896` repetiu esse gate em
+runner limpo e também reconstruiu o Supabase do zero: migration, suíte integral de não
+interferência, verticais públicas, ativação semântica, schema lint e E2E/Playwright passaram. O
+preview Vercel foi publicado. Os testes focados cobrem o caso Camil, contexto em turnos
+sucessivos, memória anterior à pergunta, regimes de evidência e usos mistos. Zero chamada de
+modelo, busca ou API paga foi realizada.
 
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
 

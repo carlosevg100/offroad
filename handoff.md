@@ -33,12 +33,14 @@ questions. The work panel renders the pending context question and rationale fro
 assistant response.
 
 The complete local gate passes on Node 24 across all 42 packages: lint, typecheck, tests and build;
-Next.js compiled 32 pages and the worker bundle completed with no paid calls. This slice has not
-been deployed or applied to a remote database, and the migration has not had a transactional
-replay because local Docker is unavailable. Public refresh does not yet run concurrently while
-the context gate is waiting, existing projects cannot yet recompile their frozen plan after a
-material intent change, and private analysis/structuring/materials/matching executors remain
-unreleased. Those boundaries must stay visible in product copy and release claims.
+Next.js compiled 32 pages and the worker bundle completed with no paid calls. Quality run
+`33518894896` repeated the full gate in a clean runner, rebuilt Supabase from every migration,
+passed tenant non-interference, public vertical, semantic activation and schema lint checks, and
+passed the Playwright journey against the rebuilt stack. Vercel published the preview. This slice
+has not been deployed or applied to a remote database. Public refresh does not yet run
+concurrently while the context gate is waiting, existing projects cannot yet recompile their
+frozen plan after a material intent change, and private analysis/structuring/materials/matching
+executors remain unreleased. Those boundaries must stay visible in product copy and release claims.
 
 ### Engineering update: governed DAG results return to the project conversation, 1 September 2026
 

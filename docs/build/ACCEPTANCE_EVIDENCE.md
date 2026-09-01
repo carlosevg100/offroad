@@ -14,12 +14,15 @@
 | Estado visível | projeto web | painel mostra a pergunta de contexto, por que ela importa e “aguardando resposta” a partir da mensagem persistida |
 | i18n e tipagem | TypeScript | web, worker, ontology, work-plan e agent-contracts aprovados em Node 24; catálogos PT-BR/EN-US atualizados |
 | Gate integral local | `pnpm check`, Node 24 | lint, typecheck, testes e build aprovados nos 42 pacotes; Next.js compilou 32 páginas e o worker foi empacotado |
+| Banco reconstruído | Quality `33518894896` | todas as migrations aplicadas; não interferência, verticais públicas, ativação semântica e lint dos schemas `public/private` aprovados |
+| Jornada real | Quality `33518894896` | build web contra Supabase local e Playwright E2E aprovados; preview Vercel publicado |
+| Gate integral no CI | Quality `33518894896` | lint, typecheck, testes e build aprovados novamente em runner limpo nos 42 pacotes |
 | Custo da validação | execução local | zero chamadas de modelo, busca ou API paga |
 
 Esta evidência valida a fundação e o primeiro caminho de originação. Não prova pesquisa pública
 em paralelo, análise privada, estruturação, materiais, matching ou troca de plano de um projeto
-existente. A migration ainda não foi aplicada fora do ambiente local nem passou pelo replay
-transacional, porque o Docker local não está disponível.
+existente. A migration passou pelo replay efêmero do CI, mas ainda não foi aplicada a staging ou
+produção.
 
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
 
