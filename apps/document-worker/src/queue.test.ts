@@ -1,6 +1,6 @@
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {describe, expect, it, vi} from "vitest";
-import {createQueueClient, type CaseAnalysisJob} from "./queue";
+import {createQueueClient, type CapitalProjectAnalysisJob, type CaseAnalysisJob} from "./queue";
 
 const job: CaseAnalysisJob = {
   claimed: true,
@@ -139,5 +139,49 @@ describe("capital TaskRun lifecycle", () => {
       "worker_record_capital_project_artifact",
       "worker_finish_capital_project_task",
     ]);
+  });
+});
+
+describe("advisor specialized completion", () => {
+  it("passes the exact capability, artifact and durable message to the atomic RPC", async () => {
+    const capitalJob: CapitalProjectAnalysisJob = {
+      ...job,
+      kind: "capital_project_analysis",
+      payload: {
+        analysis_scope: "origination_thesis",
+        locale: "pt-BR",
+        capital_project_id: "50000000-0000-4000-8000-000000000001",
+        capital_project_plan_id: "60000000-0000-4000-8000-000000000001",
+        capital_project_brief_id: "70000000-0000-4000-8000-000000000001",
+        capital_task_ids: ["M07"],
+        capital_artifact_required: true,
+        trigger_event: {
+          type: "advisor_semantic_route",
+          sourceMessageId: "80000000-0000-4000-8000-000000000001",
+          assistantMessageId: "90000000-0000-4000-8000-000000000001",
+        },
+        model_budget: {max_cost_usd: 0.75, max_calls: 2},
+      },
+    };
+    const rpc = vi.fn(async () => ({data: {job_id: capitalJob.job_id}, error: null}));
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await queue.completeAdvisorSpecializedJob(capitalJob, {
+      completionMessageId: "a0000000-0000-4000-8000-000000000001",
+      artifactId: "b0000000-0000-4000-8000-000000000001",
+      artifactFingerprint: "f".repeat(64),
+      content: "O trabalho está pronto para revisão.",
+      result: {capital_project_id: capitalJob.payload.capital_project_id},
+    });
+
+    expect(rpc).toHaveBeenCalledWith("worker_complete_advisor_specialized_job_v1", {
+      p_job_id: capitalJob.job_id,
+      p_capability_token: capitalJob.capability_token,
+      p_completion_message_id: "a0000000-0000-4000-8000-000000000001",
+      p_artifact_id: "b0000000-0000-4000-8000-000000000001",
+      p_artifact_fingerprint: "f".repeat(64),
+      p_content: "O trabalho está pronto para revisão.",
+      p_result: {capital_project_id: capitalJob.payload.capital_project_id},
+    });
   });
 });

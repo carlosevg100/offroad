@@ -20,6 +20,7 @@ export type AdvisorProjectMessage = {
   content: string;
   status: string;
   createdAt: string;
+  artifactHref?: string;
 };
 export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string};
 export type AdvisorProjectTask = {id: string; label: string; status: string};
@@ -132,7 +133,11 @@ export function AdvisorProject(props: Props) {
           {allMessages.map((message) => (
             <article className={`advisor-thread__message is-${message.role}`} key={message.id}>
               {message.role === "assistant" ? <span className="advisor-thread__avatar"><Bot aria-hidden="true" size={15} /></span> : null}
-              <div>{message.role === "assistant" ? <small>{props.copy.advisor}</small> : null}<p>{message.content}</p></div>
+              <div>
+                {message.role === "assistant" ? <small>{props.copy.advisor}</small> : null}
+                <p>{message.content}</p>
+                {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
+              </div>
             </article>
           ))}
         </div>

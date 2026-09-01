@@ -262,6 +262,22 @@
 .advisor-thread__message p {color: #384149; font-size: 14px; line-height: 1.7; margin: 0; white-space: pre-wrap;}
 .advisor-thread__message small {color: #718050; display: block; font-size: 9px; font-weight: 650; letter-spacing: .1em; margin: 0 0 6px; text-transform: uppercase;}
 .advisor-thread__avatar {align-items: center; background: #20262b; border-radius: 8px; color: #fff; display: flex; flex: 0 0 30px; height: 30px; justify-content: center;}
+.advisor-thread__artifact-link {
+  align-items: center;
+  border: 1px solid #d6ddd0;
+  border-radius: 7px;
+  color: #4f6334;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 650;
+  gap: 7px;
+  margin-top: 12px;
+  min-height: 34px;
+  padding: 8px 11px;
+  text-decoration: none;
+}
+.advisor-thread__artifact-link:hover,
+.advisor-thread__artifact-link:focus-visible {background: #f2f5ef; border-color: #9eac8b; outline: none;}
 
 .advisor-project__composer-wrap {
   bottom: 0;

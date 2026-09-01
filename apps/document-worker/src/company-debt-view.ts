@@ -15,6 +15,7 @@ import {
   type ResearchSource,
 } from "@offroad/public-research";
 
+import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 const recordSchema = z.record(z.string(), z.unknown());
@@ -283,7 +284,7 @@ export async function processCompanyDebtViewJob(
         revision: Boolean(context.revision),
       }, usage as Record<string, number>);
       const spend = dependencies.gateway.spent();
-      await dependencies.queue.complete(job, {
+      await completeAdvisorSpecializedWork({queue: dependencies.queue, job, artifact: finalArtifact, result: {
         capital_project_id: context.project.id,
         company_debt_diagnostic_artifact_id: finalArtifact.id,
         artifact_fingerprint: finalArtifact.artifactFingerprint,
@@ -299,7 +300,7 @@ export async function processCompanyDebtViewJob(
           budgetExposureUsd: spend.budgetExposureUsd + research.costExposureUsd,
           externalSearchCostExposureUsd: research.costExposureUsd,
         },
-      });
+      }});
       log("company_debt_view.succeeded", {
         job: job.job_id, tasks: context.revision ? 1 : artifacts.size,
         sources: research.sources.length, revision: Boolean(context.revision),

@@ -11,6 +11,7 @@ import {
   type ResearchSource,
 } from "@offroad/public-research";
 
+import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 const recordSchema = z.record(z.string(), z.unknown());
@@ -286,7 +287,7 @@ export async function processOriginationThesisJob(
         revision: Boolean(context.revision),
       }, usage);
       const spend = dependencies.gateway.spent();
-      await dependencies.queue.complete(job, {
+      await completeAdvisorSpecializedWork({queue: dependencies.queue, job, artifact: finalArtifact, result: {
         capital_project_id: context.project.id,
         meeting_brief_artifact_id: finalArtifact.id,
         artifact_fingerprint: finalArtifact.artifactFingerprint,
@@ -302,7 +303,7 @@ export async function processOriginationThesisJob(
           budgetExposureUsd: spend.budgetExposureUsd + research.costExposureUsd,
           externalSearchCostExposureUsd: research.costExposureUsd,
         },
-      });
+      }});
       log("origination_thesis.succeeded", {
         job: job.job_id,
         tasks: context.revision ? 1 : artifacts.size,

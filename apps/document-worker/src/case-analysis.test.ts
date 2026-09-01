@@ -231,6 +231,7 @@ describe("worker case analysis", () => {
       loadCapitalProjectContext: async () => ({}),
       recordAgentResponse: async () => ({}),
       recordAgentFailure: async () => {},
+      completeAdvisorSpecializedJob: async () => {},
       complete: async (_job, result) => { completed = result as Record<string, unknown>; },
       fail: async (_job, error) => { throw new Error(`the preliminary job should not fail: ${JSON.stringify(error)}`); },
     };
@@ -614,6 +615,7 @@ describe("worker case analysis", () => {
       loadCapitalProjectContext: async () => ({}),
       recordAgentResponse: async () => ({}),
       recordAgentFailure: async () => {},
+      completeAdvisorSpecializedJob: async () => {},
       complete: async (_job, result) => { completed = result as Record<string, unknown>; },
       fail: async (_job, error) => { throw new Error(`the case should not fail: ${JSON.stringify(error)}`); },
     };

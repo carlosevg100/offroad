@@ -202,7 +202,7 @@ async function ConversationalCapitalProject({
   ]);
   const [{data: messages}, {data: tasks}, {data: runs}] = await Promise.all([
     conversation
-      ? supabase.from("agent_messages").select("id, role, content, status, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
+      ? supabase.from("agent_messages").select("id, role, content, status, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
       : Promise.resolve({data: []}),
     plan
       ? supabase.from("capital_project_plan_tasks").select("id, task_id, label, ordinal").eq("organization_id", organization.id).eq("plan_id", plan.id).order("ordinal")
@@ -218,19 +218,46 @@ async function ConversationalCapitalProject({
     advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), artifacts: t("artifacts"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
   };
+  const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
+  const advisorMessages = messages?.length
+    ? messages.map((message) => {
+        const artifactId = specializedCompletionArtifactId(message.metadata);
+        return {
+          id: message.id,
+          role: message.role,
+          content: message.content,
+          status: message.status,
+          createdAt: message.created_at,
+          artifactHref: artifactId && artifactIds.has(artifactId)
+            ? `/${locale}/app/projects/${project.id}?view=work`
+            : undefined,
+        };
+      })
+    : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", createdAt: new Date().toISOString()}];
+
   return <AdvisorProject
     accessBasis={project.access_basis}
     artifacts={(artifacts ?? []).map((artifact) => ({id: artifact.id, type: artifact.artifact_type, status: artifact.status}))}
     copy={copy}
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
-    messages={(messages?.length ? messages : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", created_at: new Date().toISOString()}]).map((message) => ({id: message.id, role: message.role, content: message.content, status: message.status, createdAt: message.created_at}))}
+    messages={advisorMessages}
     projectId={project.id}
     projectName={project.project_name}
     sessionStatus={session.status}
     tasks={(tasks ?? []).map((task) => ({id: task.id, label: task.label, status: latestRunByTask.get(task.id)?.status ?? "waiting"}))}
     workHref={["company_debt_view", "origination_thesis"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
   />;
+}
+
+function specializedCompletionArtifactId(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return null;
+  const value = metadata as Record<string, unknown>;
+  if (value.kind !== "advisor_specialized_completion") return null;
+  const artifact = value.artifact;
+  if (!artifact || typeof artifact !== "object" || Array.isArray(artifact)) return null;
+  const id = (artifact as Record<string, unknown>).id;
+  return typeof id === "string" ? id : null;
 }
 
 function SourceLinks({label, urls}: {label: string; urls: string[]}) {
