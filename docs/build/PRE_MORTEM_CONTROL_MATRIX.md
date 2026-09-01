@@ -18,7 +18,7 @@ pode ser apresentado como proteção existente. Nenhum item desta matriz autoriz
 | teaser, modelo e term sheet divergentes | explosiva | artefatos íntegros, atuais, consistentes e aprovados | operating controls + manifests existentes | Implementado | conectar o gate aos compiladores finais de cada material |
 | matching bonito, mas inexequível | explosiva/lenta | mandato atual e fit explicável antes de ação externa | operating controls + Market Graph | Implementado | base real de mandatos, owners e política de refresh |
 | contato ou envio sem poder | explosiva | autoridade exata para versão e destinatários | operating controls + autorização de Introduce existente | Implementado | nenhuma; permanece bloqueado até autorização do case |
-| evidência nova não atualiza downstream | explosiva | invalidação transitiva de source a approval/match | triggers de source, input e Deal State + ledger imutável | Implementado no candidato | validar reconstrução limpa e monitorar latência de invalidação |
+| evidência nova não atualiza downstream | explosiva | invalidação transitiva de source a approval/match | triggers de source, input e Deal State + ledger imutável | Implementado no candidato | reconstrução limpa verde; monitorar latência de invalidação |
 | vazamento entre clientes | explosiva | RLS/FORCE RLS, retrieval capability-bound, logs sem conteúdo | testes SQL existentes + governed retrieval | Implementado no runtime atual | revisão externa, DLP e teste contínuo em produção |
 | provider/fallback recebe dado fora do contrato | explosiva | classe/finalidade por chamada e assurance vigente por candidato | model gateway data policy | Disponível para ativação | DPA/ZDR/base legal e JSON de assurance de cada provider |
 | conhecimento ou depth pack apodrece | explosiva/lenta | owner, validade, procedimento, gold/adversarial e acreditação por escopo | registry privado append-only com validade | Implementado no candidato | calendário de refresh e corpus revisado |
@@ -45,8 +45,8 @@ pode ser apresentado como proteção existente. Nenhum item desta matriz autoriz
   worker permanece desligado até esse dado existir.
 - Não há SSO corporativo, MFA obrigatório, SCIM, DLP completo, pentest externo ou exercício de
   disaster recovery comprovado por esta entrega.
-- A persistência existe apenas neste candidato; não foi aplicada a staging ou produção e ainda
-  precisa passar a reconstrução limpa do banco em CI.
+- A persistência existe apenas neste candidato e passou reconstrução limpa e adversariais em CI;
+  não foi aplicada a staging ou produção.
 - Os knowledge packs BR/US, todos os instrumentos, todos os setores e os compiladores de material
   não estão automaticamente acreditados. Cada combinação precisa de procedimento, evidência,
   evals e promoção próprios.

@@ -23,8 +23,9 @@ evento de invalidação persistente. Aprovação de pacote externo e introduçã
 snapshot atual, acreditação de produção e fingerprints exatos de caso, material, match, plano e
 autorização; qualquer evento posterior fecha o gate.
 
-Esta é uma mudança candidata. Não houve migration remota, deploy, ativação de provider ou chamada
-paga. A prova final depende do job de banco reconstruído do zero e do gate integral do PR.
+Esta é uma mudança candidata. O [Quality run 33529805136](https://github.com/carlosevg100/offroad/actions/runs/33529805136)
+reconstruiu o banco do zero e passou RLS, adversariais, verticais, DAG, lint, gate integral e E2E.
+Não houve migration remota, deploy, ativação de provider ou chamada paga.
 
 ## Control plane do pre-mortem, 01/09/2026
 

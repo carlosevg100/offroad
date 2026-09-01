@@ -11,7 +11,8 @@
 | Material e Introduce | triggers de release | bindings exatos, acreditação vigente e ausência de invalidação posterior são obrigatórios |
 | Imutabilidade e RLS | `operating_controls.sql` | casos de update/delete, capability forjada, escrita direta e leitura cross-tenant adicionados ao CI |
 | Teste de unidade | worker/release governance | compilação conservadora, policy ausente e budget ausente cobertos sem rede paga |
-| Banco reconstruído | Quality do PR #345 | pendente nesta revisão; não declarar aprovado antes do job verde |
+| Banco reconstruído | [Quality run 33529805136](https://github.com/carlosevg100/offroad/actions/runs/33529805136) | verde: migrations do zero, RLS, adversariais, verticais, DAG e schema lint |
+| Jornada integrada | [Quality run 33529805136](https://github.com/carlosevg100/offroad/actions/runs/33529805136) | E2E local com Supabase e Playwright verde |
 | Produção | Supabase/Vercel/worker | não alterada |
 
 O código implementa a contenção; ele ainda não prova qualidade institucional de uma vertical.
