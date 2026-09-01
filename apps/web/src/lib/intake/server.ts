@@ -18,6 +18,7 @@ import {prepareIntakeRequestLadders} from "./replay";
 import {archetype, requirementResponseSchema} from "@offroad/credit-playbook";
 import {intakeDecisions, type IntakeCandidate, type IntakeDecision, type IntakeDocument, type IntakeErrorCode, type IntakeIssue, type IntakeSession} from "./types";
 import {reportServerFailure} from "@/lib/observability/report";
+import {materializeFallbackCaseState} from "./case-pipeline";
 
 /**
  * Everything the intake operations need, resolved by the caller (onboarding or workspace).
@@ -488,19 +489,44 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     return fail(intakeErrorFrom(complete.error, "processing"));
   }
 
+  // The fixture recognizes bytes, but document sufficiency is driven by the classifier's
+  // durable profiles and domain events. Record those same outputs before compiling the request
+  // ladder; otherwise eight valid files look like eight unread attachments and the system asks
+  // the company for documents it already supplied.
+  const {error: profilesError} = await supabase.rpc("record_fallback_document_profiles", {
+    p_organization_id: organizationId,
+    p_session_id: sessionId,
+  });
+  if (profilesError) {
+    logIntakeFailure("record_fallback_profiles", profilesError);
+    await markSessionFailed(runtime, "fallback_profile_persistence_failed");
+    return fail("processing");
+  }
+  await refreshIntakeRequests(runtime);
+
   // CI and unpromoted local workspaces deliberately use the content-hash fixture instead of a
   // worker. That fallback still has to publish the same immutable preliminary-understanding
   // contract as production; otherwise the UI reaches the confirmation gate with nothing to
   // confirm. The database command is restricted to pipeline-disabled organizations and records
   // a synthetic run, so the fallback remains explicit in lineage rather than masquerading as a
   // model result.
-  const {data: session, error: sessionError} = await supabase
-    .from("document_intake_sessions")
-    .select("archetype, locale, company_profile, capital_objective, capital_currency, capital_urgency, capital_consequence, requested_amount, requested_term_months, sector, geography")
-    .eq("organization_id", organizationId)
-    .eq("id", sessionId)
-    .maybeSingle();
-  if (sessionError || !session) {
+  const [{data: session, error: sessionError}, {data: confirmedPreliminary, error: preliminaryStateError}] = await Promise.all([
+    supabase
+      .from("document_intake_sessions")
+      .select("archetype, locale, company_profile, capital_objective, capital_currency, capital_urgency, capital_consequence, requested_amount, requested_term_months, sector, geography")
+      .eq("organization_id", organizationId)
+      .eq("id", sessionId)
+      .maybeSingle(),
+    supabase
+      .from("preliminary_understandings")
+      .select("id")
+      .eq("organization_id", organizationId)
+      .eq("intake_session_id", sessionId)
+      .eq("status", "confirmed")
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  if (sessionError || preliminaryStateError || !session) {
     await markSessionFailed(runtime, "fallback_preliminary_input_failed");
     return fail("processing");
   }
@@ -525,6 +551,23 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     logIntakeFailure("record_fallback_preliminary", preliminaryError);
     await markSessionFailed(runtime, "fallback_preliminary_persistence_failed");
     return fail("processing");
+  }
+
+  if (confirmedPreliminary) {
+    try {
+      await materializeFallbackCaseState({
+        supabase,
+        organizationId,
+        sessionId,
+        locale: session.locale === "en-US" ? "en" : "pt",
+      });
+    } catch (error) {
+      logIntakeFailure("record_fallback_case_snapshot", {
+        message: error instanceof Error ? error.message : "fallback case snapshot failed",
+      });
+      await markSessionFailed(runtime, "fallback_case_snapshot_failed");
+      return fail("processing");
+    }
   }
   return ok(null);
 }

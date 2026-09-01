@@ -5853,6 +5853,20 @@ export type Database = {
         }
         Returns: string
       }
+      record_fallback_document_profiles: {
+        Args: { p_organization_id: string; p_session_id: string }
+        Returns: number
+      }
+      record_fallback_case_snapshot: {
+        Args: {
+          p_case_state: Json
+          p_manifest: Json
+          p_organization_id: string
+          p_session_id: string
+          p_understanding_payload: Json
+        }
+        Returns: string
+      }
       record_intake_analysis: {
         Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
         Returns: undefined

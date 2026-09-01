@@ -12,6 +12,7 @@ import {DocumentIntakeUploader} from "./document-intake-uploader";
 import {IntakeGovernance} from "./intake-governance";
 import {IntakeJourneyTelemetry} from "./intake-journey-telemetry";
 import {IntakeActionSubmit} from "./intake-action-submit";
+import {IntakeInformation} from "./intake-information";
 
 type Props = {
   locale: string;
@@ -171,6 +172,14 @@ export async function IntakeReview({locale, session, documents, candidates, issu
               userId={userId}
             />
           </div>
+          {answerAction && checklist ? (
+            <IntakeInformation
+              action={answerAction}
+              items={checklist.activeBatch.filter((item) => item.source === "information")}
+              locale={locale}
+              sessionId={session.id}
+            />
+          ) : null}
           <form action={actions.process} className="intake-review__reanalyze">
             <input name="locale" type="hidden" value={locale} />
             <input name="session_id" type="hidden" value={session.id} />
