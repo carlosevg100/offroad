@@ -1,6 +1,11 @@
 "use server";
 
-import {capitalProjectJob, capitalProjectJobSchema, type CapitalProjectJob} from "@offroad/work-plan";
+import {
+  capitalProjectJob,
+  capitalProjectJobSchema,
+  inferCapitalProjectJob,
+  type CapitalProjectJob,
+} from "@offroad/work-plan";
 import {z} from "zod";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -11,7 +16,7 @@ const localeSchema = z.enum(["pt-BR", "en-US"]);
 const startSchema = z.object({
   locale: localeSchema,
   prompt: z.string().trim().min(2).max(8000),
-  entryJob: capitalProjectJobSchema.exclude(["prepare_materials_and_process"]),
+  entryJobHint: capitalProjectJobSchema.exclude(["prepare_materials_and_process"]).nullable().optional(),
   hasAttachments: z.boolean(),
   requestId: z.string().uuid(),
 });
@@ -57,7 +62,12 @@ function projectTitle(prompt: string, job: CapitalProjectJob, locale: "pt-BR" | 
 export async function startAdvisorProject(input: unknown): Promise<StartAdvisorProjectResult> {
   const parsed = startSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
-  const {locale, prompt, entryJob, hasAttachments, requestId} = parsed.data;
+  const {locale, prompt, entryJobHint, hasAttachments, requestId} = parsed.data;
+  const entryJob = inferCapitalProjectJob({
+    message: prompt,
+    hasAttachments,
+    explicitHint: entryJobHint,
+  }).job;
   const {supabase} = await requireWorkspace(locale);
   const baseName = projectTitle(prompt, entryJob, locale);
   const args = {

@@ -838,6 +838,8 @@
       "noDocuments": "Nenhum documento anexado ainda.",
       "plan": "Plano de trabalho",
       "artifacts": "Materiais e análises",
+      "contextQuestion": "Confirmar o contexto do trabalho",
+      "awaitingAnswer": "Aguardando sua resposta",
       "noArtifacts": "Os resultados aparecerão aqui à medida que forem concluídos.",
       "openWork": "Abrir trabalho",
       "existingProject": "O trabalho já realizado neste projeto está preservado. Abra a análise no painel ao lado ou continue a conversa para acrescentar contexto, pedir uma revisão ou avançar o próximo passo.",

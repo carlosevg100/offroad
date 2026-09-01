@@ -1,5 +1,26 @@
 # Acceptance Evidence
 
+## Missão universal, inferência de entrada e memória autorizada, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Produto não ancorado em instrumento | `@offroad/credit-ontology` | missão aceita necessidades combinadas, múltiplas famílias de capital, fontes de pagamento, reforços e três regimes de evidência |
+| Entrada sem default silencioso | home + `@offroad/work-plan` | nenhum atalho nasce selecionado; texto e anexos determinam o job e o atalho é apenas desempate |
+| Caso Camil | teste determinístico | reunião + pitch + companhia é `origination_thesis`; não vira `capital_planning` nem autorização de distribuição |
+| Linguagem externa protegida | `@offroad/agent-contracts` | “apresentar um pitch sobre” não autoriza contato; somente verbo externo com destinatário de mercado produz efeito governado |
+| Contexto material | teste do roteador | originação aguarda audiência, resultado pretendido e relacionamento/exposição; respostas em turnos sucessivos liberam a execução |
+| Memória antes da pergunta | teste do worker | projeto anterior da companhia entra no prompt antes do pacote de contexto e o worker não ativa o DAG enquanto faltam campos materiais |
+| Menor privilégio | migration + teste RLS | memória usa a organização do capability, exclui o projeto atual e exige a companhia do pedido; a definição é protegida por regressão SQL |
+| Estado visível | projeto web | painel mostra a pergunta de contexto, por que ela importa e “aguardando resposta” a partir da mensagem persistida |
+| i18n e tipagem | TypeScript | web, worker, ontology, work-plan e agent-contracts aprovados em Node 24; catálogos PT-BR/EN-US atualizados |
+| Gate integral local | `pnpm check`, Node 24 | lint, typecheck, testes e build aprovados nos 42 pacotes; Next.js compilou 32 páginas e o worker foi empacotado |
+| Custo da validação | execução local | zero chamadas de modelo, busca ou API paga |
+
+Esta evidência valida a fundação e o primeiro caminho de originação. Não prova pesquisa pública
+em paralelo, análise privada, estruturação, materiais, matching ou troca de plano de um projeto
+existente. A migration ainda não foi aplicada fora do ambiente local nem passou pelo replay
+transacional, porque o Docker local não está disponível.
+
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
 
 | Evidência | Verificação | Resultado |

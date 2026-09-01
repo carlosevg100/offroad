@@ -1,8 +1,41 @@
 # Build State
 
 Atualizado em: 2026-09-01
-Baseline: `main` após PR #342, commit `b3daf6dc7b4fdbdeb62cb4ba4f21390d5068bc2d`
+Baseline: `main` após PR #344, commit `21c7549`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Missão universal de dívida, entrada inferida e memória anterior ao questionário, 01/09/2026
+
+O candidato atual remove a ancoragem implícita num instrumento. A nova ontologia representa a
+missão por necessidade de capital, fonte de pagamento, família de capital, alocação de risco e
+executabilidade de mercado, sob evidência pública, privada autorizada ou híbrida. Recebíveis
+passam a ser uma alternativa entre várias, não o produto-base. Usos mistos e tranches distintas
+são válidos desde a fundação.
+
+A home deixou de gravar `capital_planning` apenas porque nenhum atalho foi escolhido. Um roteador
+determinístico infere o job do pedido e dos anexos; o atalho funciona somente como desempate. O
+pedido “tenho uma reunião com a Camil e quero apresentar um pitch de alternativas de dívida” é
+classificado como tese de originação, não como ordem de contato externo. Antes de ativar o DAG, o
+contrato exige audiência, objetivo da reunião e relacionamento ou exposição atual, reunidos num
+único pacote curto de contexto.
+
+O worker recebe agora até oito projetos anteriores relevantes da mesma organização quando a
+companhia citada coincide. Essa memória é capability-bound, exclui o projeto corrente e não
+pesquisa outros tenants. O agente deve mencionar projeto, recência e work product anterior antes
+de perguntar se o usuário deseja atualizar ou começar algo novo. O painel de trabalho exibe a
+questão pendente e seu motivo enquanto aguarda a resposta.
+
+Este slice ainda é candidato local. Ele não foi aplicado a staging ou produção e não executa uma
+pesquisa pública em background enquanto faltam audiência e relacionamento; portanto a interface
+é obrigada a dizer apenas o que está realmente em execução. Mudança de intenção que exija trocar
+o plano congelado de um projeto já existente e os executores privados de análise, estrutura,
+materiais e matching continuam sendo fatias separadas.
+
+O gate integral local em Node 24 aprovou lint, typecheck, testes e build nos 42 pacotes; o Next.js
+compilou 32 páginas e o worker foi empacotado. Os testes focados cobrem o caso Camil, contexto em
+turnos sucessivos, memória anterior à pergunta, regimes de evidência e usos mistos. Zero chamada
+de modelo, busca ou API paga foi realizada. O teste transacional da migration continua pendente
+porque o Docker local não está disponível.
 
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
 

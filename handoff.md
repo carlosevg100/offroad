@@ -10,6 +10,36 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: universal debt mission and memory-first origination, 1 September 2026
+
+The current local candidate removes instrument-first behavior from the conversational entry. A
+new shared ontology represents five independent axes: capital need, repayment source/capacity,
+capital family/provider, risk allocation and market executability. Public-only, authorized-private
+and hybrid evidence are first-class regimes. Receivables is one possible asset and funding family,
+not the foundation of the product.
+
+The home no longer persists `capital_planning` when the user did not choose a starter. A
+deterministic inference layer reads the actual request and attachments, treating a starter only as
+a tie-breaker. The exact “Camil meeting / pitch / debt alternatives” request now resolves to
+`origination_thesis`; “present a pitch about” is explicitly not an instruction to contact an
+investor. Before activating origination, the execution contract collects meeting audience,
+desired outcome and current relationship/exposure as one concise context packet.
+
+The advisor worker can receive relevant prior projects for the named company from the same
+organization. The capability supplies the organization boundary, the current project is excluded
+and no other tenant is searchable. Prior project name, recency, active brief and artifact types
+reach the model so it can offer “update the previous work or start a new angle?” before asking
+questions. The work panel renders the pending context question and rationale from the persisted
+assistant response.
+
+The complete local gate passes on Node 24 across all 42 packages: lint, typecheck, tests and build;
+Next.js compiled 32 pages and the worker bundle completed with no paid calls. This slice has not
+been deployed or applied to a remote database, and the migration has not had a transactional
+replay because local Docker is unavailable. Public refresh does not yet run concurrently while
+the context gate is waiting, existing projects cannot yet recompile their frozen plan after a
+material intent change, and private analysis/structuring/materials/matching executors remain
+unreleased. Those boundaries must stay visible in product copy and release claims.
+
 ### Engineering update: governed DAG results return to the project conversation, 1 September 2026
 
 The two released public DAGs now finish where their work started: inside the same persistent

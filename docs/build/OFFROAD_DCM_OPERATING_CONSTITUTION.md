@@ -1,6 +1,6 @@
 # Offroad Capital: Constituição de Produto e Operação
 
-Versão: 2.0 · 31 de agosto de 2026
+Versão: 2.1 · 1 de setembro de 2026
 
 Status: camada 0, fonte canônica de definição, fronteiras e comportamento do produto
 
@@ -128,6 +128,45 @@ permissões, não agentes autônomos conversando entre si.
 Pesquisa pública, dados privados do projeto, conhecimento da casa e inteligência de mercado
 permanecem em grafos e políticas distintos. Pesquisa externa nunca altera Company Truth sem
 evidência, reconciliação e promoção explícita.
+
+### 5.1 Missão universal de dívida
+
+A fundação não é organizada por recebíveis, FIDC ou qualquer outro instrumento. Cada trabalho
+combina cinco eixos independentes antes de recomendar uma alternativa:
+
+1. **necessidade de capital:** refinanciamento e liability management; liquidez e giro; capex e
+   expansão; aquisição; project finance; ativos e equipamentos; recebíveis, estoques e contratos;
+   bridge e take-out; eventos de acionista; comércio exterior e cadeia de fornecedores; capital
+   flexível; special situations; ou combinação desses usos;
+2. **capacidade e fonte de pagamento:** fluxo operacional, recebíveis, ativo, contrato, projeto,
+   refinanciamento, venda, sponsor support ou combinação explícita;
+3. **família de capital e provedores:** bancário bilateral, club ou sindicado, mercado de capitais,
+   securitização, fundos e crédito privado, direitos creditórios, asset-backed, project ou
+   acquisition finance, comércio exterior e agro, mezzanine ou capital híbrido e situações
+   especiais;
+4. **alocação de risco e reforços:** prazo, amortização, covenants, garantias, subordinação, reserva,
+   cash trap, condições precedentes, intercreditor e riscos retidos por cada parte;
+5. **executabilidade de mercado:** elegibilidade, ticket, mandato, timing, pricing, precedentes,
+   documentação, aprovações e probabilidade explicável de execução.
+
+Necessidade e instrumento são relações muitos-para-muitos. Uma expansão pode combinar linha
+bancária, financiamento de equipamento e recebíveis; uma operação de recebíveis pode financiar
+giro, capex ou aquisição. O sistema representa tranches, usos mistos, condições precedentes e
+fontes de pagamento diferentes. Nenhuma sugestão da interface pode ancorar silenciosamente o
+trabalho numa única família.
+
+O mesmo modelo opera sob três regimes de evidência:
+
+- **público:** resolve entidade, pesquisa fontes públicas vigentes, cita procedência e distingue
+  fato, inferência e desconhecido;
+- **privado autorizado:** lê primeiro o que foi enviado, compara com o mínimo material para a
+  decisão e pergunta somente o que continua faltando;
+- **híbrido:** reaproveita a base pública vigente e a reconcilia com documentos privados, sem
+  misturar procedência ou permitir que informação privada de outro projeto atravesse o escopo.
+
+Memória pública reutilizável contém matéria-prima e claims com fonte e validade, nunca a conversa
+ou a inteligência privada de outro usuário. Memória de projetos anteriores só reaparece para
+usuários autorizados na mesma organização, com projeto, data, versão e origem visíveis.
 
 ## 6. Princípios inegociáveis
 

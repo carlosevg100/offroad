@@ -17,9 +17,51 @@ import {
   reconciliationRules,
   resolveFieldPath,
   transactionRouteSchema,
+  debtMissionFrameSchema,
   suggestedDocumentName,
   validateChartOfAccounts,
 } from "./index";
+
+describe("universal debt mission frame v1", () => {
+  it("combines mixed capital needs without anchoring the project to one instrument", () => {
+    const mission = debtMissionFrameSchema.parse({
+      schemaVersion: "debt-mission-frame.v1",
+      evidenceRegime: "hybrid",
+      context: {
+        purpose: "Avaliar refinanciamento e financiar a expansão de novas unidades.",
+        audience: "CFO e tesouraria",
+        desiredOutcome: "Comparar alternativas executáveis antes de preparar o pitch.",
+      },
+      needs: [
+        {kind: "refinancing_liability_management", description: "Alongar vencimentos de 2027.", priority: "primary"},
+        {kind: "capex_expansion_ramp_up", description: "Financiar novas unidades.", priority: "secondary"},
+      ],
+      repaymentSources: ["corporate_operating_cash_flow", "receivables_collection"],
+      capitalFamilies: ["bilateral_bank", "capital_markets", "private_credit_funds", "receivables_finance"],
+      riskAllocation: {recourse: "mixed"},
+      marketExecution: {},
+    });
+
+    expect(mission.needs).toHaveLength(2);
+    expect(mission.capitalFamilies).toContain("capital_markets");
+    expect(mission.capitalFamilies).toContain("receivables_finance");
+  });
+
+  it("treats public, private and hybrid as evidence regimes rather than product routes", () => {
+    const base = {
+      schemaVersion: "debt-mission-frame.v1" as const,
+      context: {purpose: "Preparar alternativas estratégicas de dívida."},
+      needs: [{kind: "refinancing_liability_management" as const, description: "Avaliar o perfil da dívida.", priority: "primary" as const}],
+      repaymentSources: ["unknown" as const],
+      riskAllocation: {recourse: "unknown" as const},
+      marketExecution: {},
+    };
+
+    expect(debtMissionFrameSchema.parse({...base, evidenceRegime: "public_only"}).evidenceRegime).toBe("public_only");
+    expect(debtMissionFrameSchema.parse({...base, evidenceRegime: "authorized_private"}).evidenceRegime).toBe("authorized_private");
+    expect(debtMissionFrameSchema.parse({...base, evidenceRegime: "hybrid"}).evidenceRegime).toBe("hybrid");
+  });
+});
 
 describe("origination taxonomy v2", () => {
   it("keeps the need, obligation, structure, vehicle and provider independent", () => {

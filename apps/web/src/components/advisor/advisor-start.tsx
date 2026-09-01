@@ -61,13 +61,13 @@ type Props = {
 export function AdvisorStart({copy, locale, organizationId, userId}: Props) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
-  const [entryJob, setEntryJob] = useState<(typeof starterJobs)[number]>("capital_planning");
+  const [entryJobHint, setEntryJobHint] = useState<(typeof starterJobs)[number] | null>(null);
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "creating" | "uploading" | "starting">("idle");
   const [error, setError] = useState("");
   const pending = status !== "idle";
-  const placeholder = copy.starters[entryJob].placeholder || copy.prompt;
+  const placeholder = entryJobHint ? copy.starters[entryJobHint].placeholder : copy.prompt;
   const statusLabel = status === "creating" ? copy.status.creating : status === "uploading" ? copy.status.uploading : copy.status.starting;
   const distinctFiles = useMemo(() => {
     const byKey = new Map<string, File>();
@@ -78,18 +78,20 @@ export function AdvisorStart({copy, locale, organizationId, userId}: Props) {
   function addFiles(selected: FileList | null) {
     if (!selected?.length) return;
     setFiles((current) => [...current, ...Array.from(selected)]);
-    if (entryJob === "capital_planning" && !prompt.trim()) setEntryJob("structure_from_documents");
   }
 
   async function submit() {
-    const normalizedPrompt = prompt.trim() || (distinctFiles.length > 0 ? copy.starters[entryJob].label : "");
+    const normalizedPrompt = prompt.trim()
+      || (distinctFiles.length > 0
+        ? entryJobHint ? copy.starters[entryJobHint].label : copy.starters.structure_from_documents.label
+        : "");
     if (!normalizedPrompt || pending) return;
     setError("");
     setStatus("creating");
     const result = await startAdvisorProject({
       locale,
       prompt: normalizedPrompt,
-      entryJob,
+      entryJobHint,
       hasAttachments: distinctFiles.length > 0,
       requestId: crypto.randomUUID(),
     });
@@ -138,13 +140,13 @@ export function AdvisorStart({copy, locale, organizationId, userId}: Props) {
         <div aria-label={copy.starterLabel} className="advisor-starters" role="list">
           {starterJobs.map((job) => {
             const Icon = icons[job];
-            const selected = entryJob === job;
+            const selected = entryJobHint === job;
             return (
               <button
                 aria-pressed={selected}
                 className={selected ? "is-selected" : undefined}
                 key={job}
-                onClick={() => setEntryJob(job)}
+                onClick={() => setEntryJobHint((current) => current === job ? null : job)}
                 type="button"
               >
                 <Icon aria-hidden="true" size={15} />

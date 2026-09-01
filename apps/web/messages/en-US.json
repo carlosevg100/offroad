@@ -838,6 +838,8 @@
       "noDocuments": "No documents attached yet.",
       "plan": "Work plan",
       "artifacts": "Materials and analyses",
+      "contextQuestion": "Confirm the assignment context",
+      "awaitingAnswer": "Waiting for your answer",
       "noArtifacts": "Results will appear here as they are completed.",
       "openWork": "Open work",
       "existingProject": "The work already completed in this project is preserved. Open the analysis in the side panel or continue the conversation to add context, request a revision, or advance the next step.",

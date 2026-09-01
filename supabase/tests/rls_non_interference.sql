@@ -4701,6 +4701,29 @@ begin
 end;
 $$;
 
+-- Related project memory is deliberately resolved inside the capability-scoped worker context.
+-- Keep the tenant predicate and current-project exclusion explicit so a later refactor cannot
+-- turn authorized workspace memory into a cross-organization discovery surface.
+do $$
+declare
+  definition text;
+begin
+  select pg_get_functiondef(
+    'private.worker_load_agent_context(uuid,text)'::regprocedure
+  ) into definition;
+
+  if position('prior.organization_id = job_row.organization_id' in definition) = 0 then
+    raise exception 'related project memory lost its capability-bound organization predicate';
+  end if;
+  if position('prior.id is distinct from project_row.id' in definition) = 0 then
+    raise exception 'related project memory no longer excludes the current project';
+  end if;
+  if position('position(lower(identity.company_name) in lower(message_row.content))' in definition) = 0 then
+    raise exception 'related project memory is no longer scoped to the company named in the request';
+  end if;
+end;
+$$;
+
 set local role postgres;
 
 -- Agent Offroad vertical: a tenant message becomes a capability-bound job and a preview. The

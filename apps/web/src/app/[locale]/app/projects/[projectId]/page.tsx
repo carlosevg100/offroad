@@ -215,7 +215,7 @@ async function ConversationalCapitalProject({
   for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
   const copy: AdvisorProjectCopy = {
-    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), artifacts: t("artifacts"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
+    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
   };
   const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
@@ -234,6 +234,7 @@ async function ConversationalCapitalProject({
         };
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", createdAt: new Date().toISOString()}];
+  const pendingContext = pendingAdvisorContext(messages ?? []);
 
   return <AdvisorProject
     accessBasis={project.access_basis}
@@ -242,12 +243,26 @@ async function ConversationalCapitalProject({
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
+    pendingContext={pendingContext ?? undefined}
     projectId={project.id}
     projectName={project.project_name}
     sessionStatus={session.status}
     tasks={(tasks ?? []).map((task) => ({id: task.id, label: task.label, status: latestRunByTask.get(task.id)?.status ?? "waiting"}))}
     workHref={["company_debt_view", "origination_thesis"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
   />;
+}
+
+function pendingAdvisorContext(messages: Array<{role: string; metadata: unknown; created_at: string}>): {question: string; whyItMatters: string} | null {
+  const latestAssistantIndex = messages.findLastIndex((message) => message.role === "assistant");
+  if (latestAssistantIndex < 0 || messages.slice(latestAssistantIndex + 1).some((message) => message.role === "user")) return null;
+  const latestAssistant = messages[latestAssistantIndex];
+  if (!latestAssistant?.metadata || typeof latestAssistant.metadata !== "object" || Array.isArray(latestAssistant.metadata)) return null;
+  const metadata = latestAssistant.metadata as Record<string, unknown>;
+  if (metadata.state !== "asking" || !metadata.clarification || typeof metadata.clarification !== "object" || Array.isArray(metadata.clarification)) return null;
+  const clarification = metadata.clarification as Record<string, unknown>;
+  return typeof clarification.question === "string" && typeof clarification.whyItMatters === "string"
+    ? {question: clarification.question, whyItMatters: clarification.whyItMatters}
+    : null;
 }
 
 function specializedCompletionArtifactId(metadata: unknown): string | null {
