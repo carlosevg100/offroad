@@ -426,11 +426,11 @@ begin
 
   if (select access_basis from public.capital_projects where id = project_id) <> 'authorized_private'
     or (select privacy_status from public.document_intake_sessions where id = session_id) <> 'private'
-    or (select representation_kind from public.document_intake_sessions where id = session_id) <> 'advisor'
-    or (select representation_status from public.document_intake_sessions where id = session_id) <> 'declared'
+    or (select representation_kind from public.document_intake_sessions where id = session_id) is not null
+    or (select representation_status from public.document_intake_sessions where id = session_id) <> 'not_claimed'
     or (select count(*) from public.project_representation_evidence
-        where intake_session_id = session_id and status = 'declared') <> 1 then
-    raise exception 'private authorization did not promote the project atomically';
+        where intake_session_id = session_id) <> 0 then
+    raise exception 'private preparation incorrectly implied company representation';
   end if;
 
   perform public.register_intake_document_command(
