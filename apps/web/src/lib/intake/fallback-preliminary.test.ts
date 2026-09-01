@@ -55,7 +55,7 @@ describe("deterministic preliminary understanding", () => {
     expect(result.company.name).toBe("Rede Horizonte Supermercados");
     expect(result.company.legalName).toBe("Rede Horizonte Alimentos S.A.");
     expect(result.operation.objective).toBe("Expansão regional");
-    expect(result.operation.archetypeLabel).toBe("crescimento ou expansão");
+    expect(result.operation.archetypeLabel).toBe("Crescimento / Expansão");
     expect(result.basis.publicResearch.status).toBe("abstained");
     expect(result.preliminaryAssessment.openPoints).toContain("Confirmar o setor de atuação.");
   });

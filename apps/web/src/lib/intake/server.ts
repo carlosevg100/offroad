@@ -590,18 +590,8 @@ export function buildFallbackPreliminaryUnderstanding(input: {
   const requestedAmount = input.session.requested_amount === null
     ? candidateValue("transaction.requested_amount")
     : String(input.session.requested_amount);
-  const archetypeId = input.session.archetype ?? "other";
-  const archetypeLabels: Record<string, {pt: string; en: string}> = {
-    growth_expansion: {pt: "crescimento ou expansão", en: "growth or expansion"},
-    working_capital: {pt: "capital de giro", en: "working capital"},
-    refinance: {pt: "refinanciamento", en: "refinancing"},
-    acquisition: {pt: "aquisição", en: "acquisition"},
-    equipment_finance: {pt: "financiamento de equipamentos", en: "equipment finance"},
-    venture_debt: {pt: "venture debt", en: "venture debt"},
-    other: {pt: "necessidade de capital ainda a enquadrar", en: "capital need still to be framed"},
-  };
-  const archetypeLabel = archetypeLabels[archetypeId]?.[isEnglish ? "en" : "pt"]
-    ?? archetypeLabels.other![isEnglish ? "en" : "pt"];
+  const archetypeId = parseArchetype(input.session.archetype) ?? "other";
+  const archetypeLabel = archetype(archetypeId).labels[isEnglish ? "en" : "pt"];
   const openPoints = [
     ...(!objective ? [isEnglish ? "Confirm the objective and use of proceeds." : "Confirmar o objetivo e a destinação dos recursos."] : []),
     ...(!requestedAmount ? [isEnglish ? "Confirm the indicative amount." : "Confirmar o montante indicativo."] : []),
@@ -613,8 +603,8 @@ export function buildFallbackPreliminaryUnderstanding(input: {
       ? `${companyName} is seeking capital for ${objective}. The purpose and indicative terms still require confirmation before the tailored information request.`
       : `${companyName} busca recursos para ${objective}. A finalidade e os termos indicativos ainda precisam ser confirmados antes da solicitação personalizada de informações.`)
     : (isEnglish
-      ? `The documents frame the request as ${archetypeLabel}, but its objective still requires confirmation.`
-      : `Os documentos enquadram o pedido como ${archetypeLabel}, mas o objetivo ainda precisa ser confirmado.`);
+      ? `The documents frame the request as ${archetypeLabel.toLocaleLowerCase("en")}, but its objective still requires confirmation.`
+      : `Os documentos enquadram o pedido como ${archetypeLabel.toLocaleLowerCase("pt-BR")}, mas o objetivo ainda precisa ser confirmado.`);
   const companySummary = isEnglish
     ? `The preliminary documents identify ${companyName}${legalName && legalName !== companyName ? ` (${legalName})` : ""}. This description is limited to the supplied declaration and extracted files.`
     : `Os documentos preliminares identificam ${companyName}${legalName && legalName !== companyName ? ` (${legalName})` : ""}. Esta leitura está limitada ao relato enviado e aos arquivos extraídos.`;
