@@ -55,7 +55,7 @@ export default async function ApplicationHome({params, searchParams}: Props) {
 
   const [{data: opportunities}, {data: intakeSessions}, {count: companiesCount}, {count: documentCount}, {count: pendingAuthority}] = await Promise.all([
     supabase.from("opportunities").select("id, title, stage, requested_amount, currency, readiness_status, updated_at").eq("organization_id", organization.id).order("updated_at", {ascending: false}).limit(20),
-    supabase.from("document_intake_sessions").select("id, project_name, status, requested_amount, capital_currency, updated_at, opportunity_id, archived_at").eq("organization_id", organization.id).order("updated_at", {ascending: false}).limit(100),
+    supabase.from("document_intake_sessions").select("id, capital_project_id, project_name, status, requested_amount, capital_currency, updated_at, opportunity_id, archived_at").eq("organization_id", organization.id).order("updated_at", {ascending: false}).limit(100),
     supabase.from("companies").select("id", {count: "exact", head: true}).eq("organization_id", organization.id),
     supabase.from("source_documents").select("id", {count: "exact", head: true}).eq("organization_id", organization.id),
     supabase.from("authority_evidence").select("id", {count: "exact", head: true}).eq("organization_id", organization.id).eq("status", "pending"),
@@ -63,6 +63,11 @@ export default async function ApplicationHome({params, searchParams}: Props) {
   const archivedOpportunityIds = new Set((intakeSessions ?? []).flatMap((item) => item.archived_at && item.opportunity_id ? [item.opportunity_id] : []));
   const active = opportunities?.filter((item) => item.stage !== "closed" && !archivedOpportunityIds.has(item.id)) ?? [];
   const activeIntakes = intakeSessions?.filter((item) => !item.archived_at && !["cancelled", "confirmed"].includes(item.status)) ?? [];
+  const capitalProjectIds = activeIntakes.flatMap((item) => item.capital_project_id ? [item.capital_project_id] : []);
+  const {data: capitalProjects} = capitalProjectIds.length > 0
+    ? await supabase.from("capital_projects").select("id, entry_job").eq("organization_id", organization.id).in("id", capitalProjectIds)
+    : {data: []};
+  const capitalProjectById = new Map((capitalProjects ?? []).map((project) => [project.id, project]));
   const ready = active.filter((item) => item.readiness_status === "ready").length;
   const isOriginator = organization.organization_type === "originator";
   const workspaceCopy = locale === "en-US"
@@ -88,8 +93,10 @@ export default async function ApplicationHome({params, searchParams}: Props) {
       {state.welcome === "1" ? <p className="form-notice form-notice--success app-welcome-notice" role="status">{t("welcomeComplete")}</p> : null}
       <CapitalJobLauncher
         existingProjectHref={active.length + activeIntakes.length > 0 ? "#projects" : undefined}
+        jobHrefs={{origination_thesis: `/${locale}/app/new/origination`}}
         locale={locale}
         newProjectBaseHref={`/${locale}/app/new`}
+        releasedJobs={["origination_thesis", "capital_planning"]}
       />
       <section aria-label={t("pipeline")} className="app-stat-grid">
         <article><DatabaseZap aria-hidden="true" size={18} /><span>{t("activeOpportunities")}</span><strong>{active.length + activeIntakes.length}</strong></article>
@@ -104,7 +111,7 @@ export default async function ApplicationHome({params, searchParams}: Props) {
         ) : (
           <div className="opportunity-table" role="list">
             {activeIntakes.map((session) => (
-              <Link href={`/${locale}/app/new?mode=documents&session=${session.id}`} key={session.id} role="listitem">
+              <Link href={session.capital_project_id && capitalProjectById.get(session.capital_project_id)?.entry_job === "origination_thesis" ? `/${locale}/app/projects/${session.capital_project_id}` : `/${locale}/app/new?mode=documents&session=${session.id}`} key={session.id} role="listitem">
                 <div><span>{t("projectInPreparation")}</span><strong>{session.project_name || t("untitledProject")}</strong></div>
                 <div><span>{t("amount")}</span><strong>{session.requested_amount && session.capital_currency ? format.number(session.requested_amount, {style: "currency", currency: session.capital_currency, maximumFractionDigits: 0}) : t("notInformed")}</strong></div>
                 <div><span>{t("updated")}</span><strong>{format.relativeTime(new Date(session.updated_at))}</strong></div>

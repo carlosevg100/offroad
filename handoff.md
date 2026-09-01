@@ -2250,3 +2250,31 @@ com procedimento, schema, gold case, adversarial, persistência, interface e cus
 
 Gate local: `fnm exec --using=24 pnpm check` passou nos 42 pacotes. O executor tem 12 testes,
 `case-engine` tem 30, e nenhuma chamada a Anthropic, OpenAI ou outro provedor pago foi feita.
+
+## 36. Workspace AI-native e primeira vertical pública, 01/09/2026
+
+A entrada autenticada agora apresenta seis jobs sobre uma única memória persistente. O copy
+aprovado é “Comece de onde você está” e “Como a Offroad pode ajudar agora?”. Não restaurar “O que
+você quer resolver?”. As seis entradas são planos compilados, não personas ou funis separados.
+
+`origination_thesis` é a primeira vertical nova com trilho completo. O setup recebe companhia e
+contexto público da reunião, cria um projeto imediatamente e enfileira um DAG congelado de nove
+TaskSpecs. Sete pesquisas públicas limitadas alimentam uma única síntese estruturada. O work
+product visível contém leitura executiva, sinais de dívida, hipóteses de financiamento,
+pré-requisitos, fatores que enfraquecem cada hipótese, perguntas, desconhecidos e fontes.
+
+Uma solicitação de correção não inicia outra pesquisa nem repete o DAG. O comando atômico decide
+sobre o fingerprint exato, marca a versão anterior como substituída, invalida apenas a execução de
+`M07` e enfileira uma nova síntese dependente dos artefatos preservados de `M06`, `C02` e `K04`.
+Replay da mesma decisão retorna o mesmo job. A reserva de Perplexity é zero nessa revisão.
+
+Banco validado somente no branch Supabase `staging`: `origination_thesis_vertical_passed`,
+`project_company_scope_passed` e Security Advisor sem findings. O teste de worker cobre a execução
+normal, falha fechada por dependência adulterada e revisão M07-only sem busca. `pnpm test` e
+`pnpm build` passaram nos 42 pacotes; web tem 160 testes, worker 69 e o build Next.js gera 30
+páginas. Nenhuma API paga foi chamada nesta validação.
+
+Não declarar a plataforma inteira pronta. Esta etapa fecha a tese pública de originação; os
+outros cinco jobs continuam sujeitos a executor, interface, gold case, adversarial e evidência de
+aceite próprios. Depois de PR, CI, deploy e smoke test da vertical pública, o próximo incremento
+deve promover `company_debt_view` reaproveitando o mesmo projeto, plano e runtime.

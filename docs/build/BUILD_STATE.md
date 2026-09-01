@@ -1,8 +1,36 @@
 # Build State
 
-Atualizado em: 2026-08-31
+Atualizado em: 2026-09-01
 Baseline: `main` após PRs #41, #44, #46, #47, #48, #49 (18/08/2026)
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Workspace AI-native e primeira vertical pública de originação, 01/09/2026
+
+A home autenticada passou a oferecer seis formas de começar sobre uma única memória de projeto.
+A interface usa “Comece de onde você está” e “Como a Offroad pode ajudar agora?”, sem exigir que
+o usuário formule tecnicamente um problema. As entradas são jobs com políticas de input, acesso,
+primeiro work product e gate próprios; não são personas nem funis independentes.
+
+A primeira vertical executável é `origination_thesis`. Ela cria projeto, brief e plano imutável;
+abre o projeto imediatamente; executa nove TaskSpecs com dependências explícitas; realiza sete
+buscas públicas limitadas; e usa uma única síntese estruturada para produzir um meeting brief com
+sinais, hipóteses, condições, perguntas, desconhecidos e URLs verificadas. A navegação reabre o
+projeto persistente, e o painel mostra TaskRuns reais em vez de progresso simulado.
+
+O modelo recebe somente contexto público mínimo. O teto inicial é duas chamadas e US$ 0,75,
+incluindo reserva máxima de US$ 0,035 para busca; a execução normal usa uma chamada de síntese. A
+correção é incremental: registra a decisão sobre o fingerprint exato, invalida somente `M07`,
+reaproveita `M06`, `C02` e `K04`, não repete pesquisa e permite apenas uma nova síntese com custo de
+busca zero.
+
+O schema e os comandos foram exercitados no branch Supabase `staging`. Os testes
+`origination_thesis_vertical.sql` e `project_company_scope.sql` passaram com rollback, incluindo
+isolamento, capability incorreta, ciclo completo dos nove artefatos, revisão M07-only e replay
+idempotente. O Security Advisor retornou zero findings. Produção não foi alterada manualmente.
+
+Esta entrega promove apenas a vertical pública de tese de originação. As outras cinco entradas
+continuam declaradas ou roteadas para capacidades existentes e não devem ser apresentadas como
+completas até seus executores, interfaces e gold cases passarem pelos próprios gates.
 
 ## Entendimento preliminar isolado e ordem canônica da entrada, 31/08/2026
 

@@ -70,8 +70,30 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
     locale: z.enum(["pt-BR", "en-US"]),
   }),
 });
+export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
+  kind: z.literal("capital_project_analysis"),
+  payload: z.object({
+    analysis_scope: z.literal("origination_thesis"),
+    locale: z.enum(["pt-BR", "en-US"]),
+    capital_project_id: z.uuid(),
+    capital_project_plan_id: z.uuid(),
+    capital_project_brief_id: z.uuid(),
+    capital_task_ids: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)).min(1).max(80),
+    capital_artifact_required: z.literal(true),
+    revision_of_artifact_id: z.uuid().optional(),
+    correction_decision_id: z.uuid().optional(),
+    trigger_event: z.record(z.string(), z.unknown()).default({}),
+    model_budget: z.object({
+      max_cost_usd: z.number().positive(),
+      max_calls: z.number().int().positive(),
+    }),
+  }).refine((payload) => Boolean(payload.revision_of_artifact_id) === Boolean(payload.correction_decision_id), {
+    message: "revision artifact and decision must be supplied together",
+  }),
+});
 export const claimedJobSchema = z.discriminatedUnion("kind", [
-  documentJobSchema, preliminaryAnalysisJobSchema, caseAnalysisJobSchema, agentOperationBriefJobSchema,
+  documentJobSchema, preliminaryAnalysisJobSchema, caseAnalysisJobSchema,
+  agentOperationBriefJobSchema, capitalProjectAnalysisJobSchema,
 ]);
 export type ClaimedJob = z.infer<typeof claimedJobSchema>;
 export type DocumentJob = z.infer<typeof documentJobSchema>;
@@ -79,6 +101,7 @@ export type FullCaseAnalysisJob = z.infer<typeof caseAnalysisJobSchema>;
 export type PreliminaryAnalysisJob = z.infer<typeof preliminaryAnalysisJobSchema>;
 export type CaseAnalysisJob = FullCaseAnalysisJob | PreliminaryAnalysisJob;
 export type AgentOperationBriefJob = z.infer<typeof agentOperationBriefJobSchema>;
+export type CapitalProjectAnalysisJob = z.infer<typeof capitalProjectAnalysisJobSchema>;
 
 const noJobSchema = z.object({
   claimed: z.literal(false),
@@ -142,7 +165,7 @@ export type QueueClient = {
     precedentPurpose?: string;
     limit?: number;
   }): Promise<unknown>;
-  recordPublicResearch(job: CaseAnalysisJob, plan: unknown, result: unknown): Promise<string>;
+  recordPublicResearch(job: CaseAnalysisJob | CapitalProjectAnalysisJob, plan: unknown, result: unknown): Promise<string>;
   recordPreliminaryUnderstanding(job: PreliminaryAnalysisJob, input: {
     inputFingerprint: string;
     payload: unknown;
@@ -157,6 +180,7 @@ export type QueueClient = {
   recordCaseSnapshot(job: FullCaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
   recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
+  loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
   recordAgentResponse(job: AgentOperationBriefJob, assistantMessageId: string, response: unknown, proposal?: unknown): Promise<unknown>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
@@ -452,6 +476,13 @@ export function createQueueClient(
 
     async loadAgentContext(job) {
       return call("worker_load_agent_context", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+      });
+    },
+
+    async loadCapitalProjectContext(job) {
+      return call("worker_load_capital_project_context", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });

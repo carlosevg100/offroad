@@ -1,0 +1,164 @@
+import {originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
+import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
+import type {Metadata} from "next";
+import Link from "next/link";
+import {getTranslations} from "next-intl/server";
+import {notFound} from "next/navigation";
+
+import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
+import {requireWorkspace} from "@/lib/auth/workspace";
+
+import {OriginationDecision} from "./origination-decision";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = {title: "Projeto", robots: {index: false, follow: false}};
+
+type Props = {params: Promise<{locale: string; projectId: string}>};
+
+export default async function CapitalProjectPage({params}: Props) {
+  const {locale, projectId} = await params;
+  const t = await getTranslations({locale, namespace: "App.origination"});
+  const {supabase, organization} = await requireWorkspace(locale);
+  const {data: project} = await supabase.from("capital_projects")
+    .select("id, project_name, entry_job, access_basis, current_phase, status, updated_at")
+    .eq("organization_id", organization.id)
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!project || project.entry_job !== "origination_thesis") notFound();
+
+  const [{data: session}, {data: plan}, {data: artifacts}, {data: decisions}] = await Promise.all([
+    supabase.from("document_intake_sessions")
+      .select("id, company_profile, status, updated_at")
+      .eq("organization_id", organization.id)
+      .eq("capital_project_id", project.id)
+      .maybeSingle(),
+    supabase.from("capital_project_plans")
+      .select("id, plan_fingerprint, task_count")
+      .eq("organization_id", organization.id)
+      .eq("capital_project_id", project.id)
+      .eq("status", "active")
+      .maybeSingle(),
+    supabase.from("capital_project_artifacts")
+      .select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at")
+      .eq("organization_id", organization.id)
+      .eq("capital_project_id", project.id)
+      .order("created_at", {ascending: false}),
+    supabase.from("capital_project_artifact_decisions")
+      .select("artifact_id, decision, note, decided_at")
+      .eq("organization_id", organization.id)
+      .eq("capital_project_id", project.id)
+      .order("decided_at", {ascending: false}),
+  ]);
+  if (!session || !plan) notFound();
+
+  const [{data: tasks}, {data: runs}] = await Promise.all([
+    supabase.from("capital_project_plan_tasks")
+      .select("id, task_id, label, ordinal, dependencies")
+      .eq("organization_id", organization.id)
+      .eq("plan_id", plan.id)
+      .order("ordinal"),
+    supabase.from("capital_project_task_runs")
+      .select("id, plan_task_id, attempt_no, status, started_at, completed_at, error")
+      .eq("organization_id", organization.id)
+      .eq("plan_id", plan.id)
+      .order("attempt_no", {ascending: false}),
+  ]);
+  const latestRunByTask = new Map<string, NonNullable<typeof runs>[number]>();
+  for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
+  const meetingArtifact = artifacts?.find((artifact) => artifact.artifact_type === "meeting_brief" && artifact.status !== "superseded");
+  const parsedBrief = meetingArtifact ? originationMeetingBriefArtifactSchema.safeParse(meetingArtifact.content) : null;
+  const decision = meetingArtifact ? decisions?.find((item) => item.artifact_id === meetingArtifact.id) : null;
+  const active = session.status === "processing" || (runs ?? []).some((run) => run.status === "running") || (!meetingArtifact && session.status !== "failed");
+  const companyProfile = session.company_profile && typeof session.company_profile === "object" && !Array.isArray(session.company_profile)
+    ? session.company_profile
+    : {};
+  const companyName = typeof companyProfile.name === "string" ? companyProfile.name : t("project.unknownCompany");
+  const completedTasks = (tasks ?? []).filter((task) => latestRunByTask.get(task.id)?.status === "succeeded").length;
+
+  return (
+    <main className="app-canvas origination-project">
+      <DealStateRefresh active={active} />
+      <Link className="text-link origination-back" href={`/${locale}/app`}><ArrowLeft aria-hidden="true" size={14} />{t("back")}</Link>
+      <header className="origination-project__header">
+        <div>
+          <p className="section-kicker">{t("project.kicker")}</p>
+          <h1>{project.project_name}</h1>
+          <p>{t("project.subtitle", {company: companyName})}</p>
+        </div>
+        <div className="origination-project__access"><Globe2 aria-hidden="true" size={15} /><span><strong>{t("project.publicOnly")}</strong>{t("project.publicOnlyBody")}</span></div>
+      </header>
+
+      <div className="origination-project__layout">
+        <section className="origination-project__work">
+          {!meetingArtifact ? (
+            <div className="origination-working">
+              <SearchCheck aria-hidden="true" size={23} />
+              <p className="section-kicker">{t("project.workingKicker")}</p>
+              <h2>{session.status === "failed" ? t("project.failedTitle") : t("project.workingTitle")}</h2>
+              <p>{session.status === "failed" ? t("project.failedBody") : t("project.workingBody")}</p>
+              <div><span style={{width: `${Math.round((completedTasks / Math.max(tasks?.length ?? 1, 1)) * 100)}%`}} /></div>
+              <small>{t("project.taskProgress", {complete: completedTasks, total: tasks?.length ?? plan.task_count})}</small>
+            </div>
+          ) : parsedBrief?.success ? (
+            <article className="origination-brief">
+              <header>
+                <div><p className="section-kicker">{t("brief.kicker")}</p><h2>{t("brief.title")}</h2><p>{t("brief.asOf", {date: parsedBrief.data.asOfDate})}</p></div>
+                <span className={`origination-status origination-status--${meetingArtifact.status}`}><Check aria-hidden="true" size={12} />{t(`artifactStatus.${meetingArtifact.status}`)}</span>
+              </header>
+
+              <section className="origination-brief__executive"><span>{t("brief.executiveRead")}</span><p>{parsedBrief.data.executiveRead}</p></section>
+              <section className="origination-brief__snapshot"><span>{t("brief.companySnapshot")}</span><p>{parsedBrief.data.companySnapshot}</p></section>
+
+              <section className="origination-brief__section">
+                <header><Lightbulb aria-hidden="true" size={16} /><div><span>{t("brief.signals")}</span><p>{t("brief.signalsBody")}</p></div></header>
+                <div className="origination-brief__cards">
+                  {parsedBrief.data.debtLensSignals.map((signal, index) => <article key={`${signal.finding}-${index}`}><small>{t(`confidence.${signal.confidence}`)}</small><strong>{signal.finding}</strong><p>{signal.relevance}</p><SourceLinks label={t("brief.sources")} urls={signal.sourceUrls} /></article>)}
+                </div>
+              </section>
+
+              <section className="origination-brief__section">
+                <header><SearchCheck aria-hidden="true" size={16} /><div><span>{t("brief.angles")}</span><p>{t("brief.anglesBody")}</p></div></header>
+                <div className="origination-angles">
+                  {parsedBrief.data.financingAngles.map((angle, index) => <article key={`${angle.title}-${index}`}><span>{angle.route}</span><h3>{angle.title}</h3><p>{angle.rationale}</p><div><section><strong>{t("brief.prerequisites")}</strong><ul>{angle.prerequisites.map((item) => <li key={item}>{item}</li>)}</ul></section><section><strong>{t("brief.disconfirmers")}</strong><ul>{angle.disconfirmers.map((item) => <li key={item}>{item}</li>)}</ul></section></div><SourceLinks label={t("brief.sources")} urls={angle.sourceUrls} /></article>)}
+                </div>
+              </section>
+
+              <section className="origination-brief__section">
+                <header><Circle aria-hidden="true" size={16} /><div><span>{t("brief.questions")}</span><p>{t("brief.questionsBody")}</p></div></header>
+                <ol className="origination-questions">{parsedBrief.data.meetingQuestions.map((question, index) => <li key={`${question.question}-${index}`}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{question.question}</strong><p><em>{t("brief.why")}</em>{question.whyItMatters}</p><p><em>{t("brief.changes")}</em>{question.answerChanges}</p></div></li>)}</ol>
+              </section>
+
+              <div className="origination-brief__closing">
+                <section><span>{t("brief.opening")}</span><p>{parsedBrief.data.suggestedOpening}</p></section>
+                <section><span>{t("brief.unknowns")}</span><ul>{parsedBrief.data.unknowns.map((unknown) => <li key={unknown}>{unknown}</li>)}</ul></section>
+              </div>
+
+              <section className="origination-sources"><span>{t("brief.sourceList")}</span><ul>{parsedBrief.data.sources.map((source) => <li key={`${source.topic}-${source.url}`}><small>{t(`sourceTopics.${source.topic}`)}</small><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={11} /></a></li>)}</ul></section>
+              <p className="origination-brief__boundary"><AlertCircle aria-hidden="true" size={14} />{parsedBrief.data.scopeBoundary}</p>
+
+              {meetingArtifact.status === "pending_confirmation" ? <OriginationDecision artifactId={meetingArtifact.id} copy={{
+                confirm: t("decision.confirm"), confirmed: t("decision.confirmed"), errorInvalid: t("decision.errors.invalid"), errorSave: t("decision.errors.save"), errorStale: t("decision.errors.stale"), note: t("decision.note"), notePlaceholder: t("decision.notePlaceholder"), requestChanges: t("decision.requestChanges"), requested: t("decision.requested"), title: t("decision.title"),
+              }} fingerprint={meetingArtifact.artifact_fingerprint} locale={locale} projectId={project.id} /> : decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{decision.decision === "confirm" ? t("decision.confirmed") : t("decision.requested")}</p> : null}
+            </article>
+          ) : (
+            <div className="origination-working"><AlertCircle aria-hidden="true" size={23} /><h2>{t("project.invalidArtifactTitle")}</h2><p>{t("project.invalidArtifactBody")}</p></div>
+          )}
+        </section>
+
+        <aside className="origination-task-panel">
+          <header><span>{t("tasks.kicker")}</span><strong>{t("tasks.title")}</strong><small>{t("project.taskProgress", {complete: completedTasks, total: tasks?.length ?? plan.task_count})}</small></header>
+          <ol>{(tasks ?? []).map((task) => {
+            const run = latestRunByTask.get(task.id);
+            const status = run?.status ?? "waiting";
+            return <li className={`is-${status}`} key={task.id}>{status === "succeeded" ? <Check aria-hidden="true" size={12} /> : status === "running" ? <Clock3 aria-hidden="true" className="spin-slow" size={12} /> : status === "failed" ? <AlertCircle aria-hidden="true" size={12} /> : <Circle aria-hidden="true" size={12} />}<span><strong>{t(`taskLabels.${task.task_id}`)}</strong><small>{t(`taskStatus.${status}`)}</small></span></li>;
+          })}</ol>
+          <footer>{t("tasks.footer")}</footer>
+        </aside>
+      </div>
+    </main>
+  );
+}
+
+function SourceLinks({label, urls}: {label: string; urls: string[]}) {
+  return <div className="origination-source-links"><span>{label}</span>{urls.map((url) => <a href={url} key={url} rel="noreferrer" target="_blank">{new URL(url).hostname}<ExternalLink aria-hidden="true" size={10} /></a>)}</div>;
+}

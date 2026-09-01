@@ -731,6 +731,66 @@ export type Database = {
           },
         ]
       }
+      capital_project_briefs: {
+        Row: {
+          brief_kind: string
+          brief_version: number
+          capital_project_id: string
+          content: Json
+          content_fingerprint: string
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          request_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          brief_kind: string
+          brief_version: number
+          capital_project_id: string
+          content: Json
+          content_fingerprint: string
+          created_at?: string
+          created_by: string
+          id?: string
+          organization_id: string
+          request_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          brief_kind?: string
+          brief_version?: number
+          capital_project_id?: string
+          content?: Json
+          content_fingerprint?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          request_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_briefs_organization_id_capital_project_id_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_briefs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       capital_project_plans: {
         Row: {
           capital_project_id: string
@@ -6251,6 +6311,14 @@ export type Database = {
         }
         Returns: string
       }
+      request_origination_thesis_revision_v1: {
+        Args: {
+          p_artifact_fingerprint: string
+          p_artifact_id: string
+          p_note: string
+        }
+        Returns: Json
+      }
       start_public_capital_project: {
         Args: {
           p_company_name: string
@@ -6271,6 +6339,18 @@ export type Database = {
           p_project_name: string
         }
         Returns: string
+      }
+      start_public_origination_thesis_v1: {
+        Args: {
+          p_brief: Json
+          p_company_name: string
+          p_company_website: string
+          p_locale: string
+          p_plan: Json
+          p_project_name: string
+          p_request_id: string
+        }
+        Returns: Json
       }
       start_public_onboarding_capital_project: {
         Args: {
@@ -6828,6 +6908,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_agent_context: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_capital_project_context: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }

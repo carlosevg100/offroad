@@ -12,6 +12,7 @@ import {createPerplexitySearchProvider, type PublicSearchProvider} from "@offroa
 import {createStorageUrlGuard} from "./storage-url";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
+import {processOriginationThesisJob} from "./origination-thesis";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -82,10 +83,11 @@ async function main(): Promise<void> {
     ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
   };
   // Perplexity Search is raw retrieval, not an LLM writer. The API currently charges USD 5 per
-  // 1,000 successful requests. A plan has five bounded queries, so we reserve and report USD
-  // 0.025 before the case gateway receives the remainder of its budget. No fallback can silently
-  // escape that ledger: when Perplexity is absent, research abstains transparently.
+  // 1,000 successful requests. Preliminary/case analysis has five bounded queries; the
+  // origination vertical has seven. Reserve the exact maximum before the model gateway receives
+  // the remainder, so search and synthesis cannot silently escape the same per-job ledger.
   const PERPLEXITY_CASE_RESERVE_USD = 0.025;
+  const PERPLEXITY_ORIGINATION_RESERVE_USD = 0.035;
   const researchProviders: PublicSearchProvider[] = config.PERPLEXITY_API_KEY
     ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})]
     : [];
@@ -96,8 +98,13 @@ async function main(): Promise<void> {
       config.MODEL_MAX_COST_USD_PER_JOB,
       requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB,
     );
-    const researchReserveUsd = (job.kind === "case_analysis" || job.kind === "preliminary_analysis") && researchProviders.length > 0
-      ? Math.min(PERPLEXITY_CASE_RESERVE_USD, Math.max(0, configuredMax - 0.01))
+    const requestedResearchReserve = job.kind === "capital_project_analysis" && !job.payload.revision_of_artifact_id
+      ? PERPLEXITY_ORIGINATION_RESERVE_USD
+      : job.kind === "case_analysis" || job.kind === "preliminary_analysis"
+        ? PERPLEXITY_CASE_RESERVE_USD
+        : 0;
+    const researchReserveUsd = researchProviders.length > 0
+      ? Math.min(requestedResearchReserve, Math.max(0, configuredMax - 0.01))
       : 0;
     const gateway = createModelGateway({
       adapters,
@@ -202,6 +209,14 @@ async function main(): Promise<void> {
           researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
           log,
         })
+      : job.kind === "capital_project_analysis"
+        ? processOriginationThesisJob(job, {
+            queue,
+            gateway: gatewayRun.gateway,
+            lineage: () => gatewayRun.calls.map((call) => ({...call})),
+            researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
+            log,
+          })
       : job.kind === "agent_operation_brief"
         ? processAgentOperationBriefJob(job, {queue, gateway: gatewayRun.gateway, log})
       : processDocumentJob(job, dependenciesFor(gatewayRun)))

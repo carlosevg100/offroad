@@ -48,7 +48,10 @@ export const offroadTaskRegistry = [
   task("M04", "Inferir arquétipos candidatos", "case", ["M01", "M02"], "judgment"),
   task("M05", "Definir entregáveis", "case", ["M02", "M03"], "deterministic"),
   task("M06", "Compilar plano de tarefas", "case", ["M04", "M05"], "deterministic", "commit"),
-  task("M07", "Emitir entendimento corrigível", "case", ["M06"], "compilation"),
+  // The corrigible meeting brief is a compilation of the scoped execution plan plus the
+  // public sector/regulatory and comparable-transaction research. Keeping those research
+  // nodes as sibling targets allowed M07 to complete without consuming either output.
+  task("M07", "Emitir entendimento corrigível", "case", ["M06", "C02", "K04"], "compilation"),
 
   task("D01", "Ingerir e versionar arquivos", "case", ["M06"], "deterministic", "commit"),
   task("D02", "Classificar documento", "case", ["D01"], "extraction"),

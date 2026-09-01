@@ -810,6 +810,131 @@
       "denied": "Você não tem permissão para excluir este projeto.",
       "save": "Não foi possível concluir a alteração."
     },
+    "origination": {
+      "back": "Voltar ao workspace",
+      "kicker": "Preparação para uma conversa de dívida",
+      "title": "Chegue à reunião com uma leitura própria.",
+      "body": "Informe a companhia e o contexto da conversa. A Offroad pesquisa fontes públicas, lê a situação na ótica de dívida e prepara hipóteses e perguntas específicas, sem presumir uma operação.",
+      "projectSection": {
+        "title": "Identifique este trabalho",
+        "body": "O projeto preserva pesquisa, decisões e versões para você retomar sem perder contexto."
+      },
+      "briefSection": {
+        "title": "Dê contexto à reunião",
+        "body": "Explique o que motivou a conversa e o que você precisa descobrir. Não é preciso chegar com uma estrutura pronta."
+      },
+      "fields": {
+        "projectName": "Nome do projeto",
+        "projectNamePlaceholder": "Ex.: Projeto Horizonte",
+        "companyName": "Companhia",
+        "companyNamePlaceholder": "Nome da companhia a pesquisar",
+        "website": "Site da companhia",
+        "websitePlaceholder": "https://empresa.com.br",
+        "meetingContext": "Qual é o contexto da conversa?",
+        "meetingContextPlaceholder": "Ex.: teremos uma primeira reunião com o CFO. Queremos entender o perfil da dívida atual, os próximos vencimentos e onde pode haver uma oportunidade de financiamento.",
+        "meetingContextHelp": "Inclua somente o que pode ser tratado neste ambiente de pesquisa pública.",
+        "audience": "Com quem será a conversa?",
+        "audiencePlaceholder": "Ex.: CFO e diretor de tesouraria",
+        "meetingDate": "Data da reunião",
+        "thesis": "Existe uma hipótese que você quer testar?",
+        "thesisPlaceholder": "Ex.: verificar se há espaço para alongar o perfil da dívida sem aumentar garantias.",
+        "thesisHelp": "Opcional. A Offroad também pode construir as hipóteses a partir da pesquisa."
+      },
+      "boundary": {
+        "title": "Pesquisa pública, sem contato com o mercado.",
+        "body": "Não inclua documentos ou informações confidenciais aqui. Nenhuma representação, oferta ou abordagem a financiadores será realizada."
+      },
+      "actionNote": "A pesquisa começa em segundo plano e o projeto abre imediatamente.",
+      "submit": "Preparar leitura",
+      "submitting": "Criando o projeto...",
+      "aside": {
+        "kicker": "O que será feito",
+        "title": "Uma pauta de originação específica para a companhia.",
+        "steps": {
+          "research": {"title": "Pesquisar", "body": "Identidade, divulgações financeiras, notícias, setor, regulação e transações comparáveis."},
+          "read": {"title": "Interpretar", "body": "Sinais relevantes na ótica de dívida, sempre separados entre fato, hipótese e ponto ainda desconhecido."},
+          "prepare": {"title": "Preparar", "body": "Ângulos de financiamento, condições que precisam ser confirmadas e perguntas que mudam a recomendação."}
+        },
+        "footer": "A pesquisa utiliza apenas fontes públicas e mantém os links utilizados."
+      },
+      "errors": {
+        "duplicate": "Já existe um projeto ativo com esse nome.",
+        "save": "Não foi possível criar o projeto. Revise os campos ou tente novamente."
+      },
+      "project": {
+        "kicker": "Tese de originação",
+        "unknownCompany": "companhia ainda não identificada",
+        "subtitle": "Leitura pública e pauta de reunião para {company}.",
+        "publicOnly": "Somente fontes públicas",
+        "publicOnlyBody": "Nenhum documento privado foi utilizado.",
+        "workingKicker": "Pesquisa em andamento",
+        "workingTitle": "A Offroad está construindo a leitura.",
+        "workingBody": "As tarefas abaixo rodam com dependências explícitas. A síntese só começa depois da pesquisa da companhia, do setor e das transações comparáveis.",
+        "failedTitle": "A pesquisa precisa de atenção.",
+        "failedBody": "Uma das tarefas não foi concluída. O histórico foi preservado para diagnóstico e retomada segura.",
+        "taskProgress": "{complete} de {total} tarefas concluídas",
+        "invalidArtifactTitle": "O brief não passou na validação.",
+        "invalidArtifactBody": "O resultado foi preservado, mas não será exibido como material utilizável até cumprir o contrato de qualidade."
+      },
+      "brief": {
+        "kicker": "Work product para revisão",
+        "title": "Brief de reunião",
+        "asOf": "Fontes consultadas até {date}",
+        "executiveRead": "Leitura executiva",
+        "companySnapshot": "Companhia em uma página",
+        "signals": "Sinais relevantes na ótica de dívida",
+        "signalsBody": "O que as fontes públicas sustentam e por que isso importa para a conversa.",
+        "sources": "Fontes",
+        "angles": "Ângulos de financiamento para explorar",
+        "anglesBody": "Hipóteses de trabalho, não ofertas nem recomendações definitivas.",
+        "prerequisites": "O que precisa ser verdadeiro",
+        "disconfirmers": "O que enfraquece a hipótese",
+        "questions": "Perguntas para a reunião",
+        "questionsBody": "Cada pergunta explicita por que importa e o que a resposta pode mudar.",
+        "why": "Por que importa: ",
+        "changes": "O que muda: ",
+        "opening": "Abertura sugerida",
+        "unknowns": "O que ainda não sabemos",
+        "sourceList": "Fontes consultadas"
+      },
+      "artifactStatus": {
+        "pending_confirmation": "Aguardando sua revisão",
+        "confirmed": "Confirmado",
+        "superseded": "Substituído",
+        "draft": "Rascunho",
+        "approved": "Aprovado",
+        "stale": "Desatualizado"
+      },
+      "confidence": {"high": "Alta confiança", "medium": "Confiança média", "low": "Baixa confiança"},
+      "sourceTopics": {"identity": "Companhia", "news": "Notícias", "sector": "Setor", "regulation": "Regulação", "market": "Mercado de dívida"},
+      "decision": {
+        "title": "Sua decisão sobre esta versão",
+        "confirm": "Confirmar esta leitura",
+        "confirmed": "Leitura confirmada",
+        "requestChanges": "Indicar correções",
+        "requested": "Correção registrada; nova versão em preparação",
+        "note": "O que precisa mudar?",
+        "notePlaceholder": "Aponte o fato incorreto, a fonte que deve prevalecer ou a hipótese que não reflete a conversa.",
+        "errors": {"invalid": "Descreva a correção antes de registrar.", "save": "Não foi possível registrar sua decisão.", "stale": "Esta versão foi atualizada. Recarregue a página antes de decidir."}
+      },
+      "tasks": {
+        "kicker": "Plano de trabalho",
+        "title": "Como esta leitura foi construída",
+        "footer": "Cada resultado permanece ligado às tarefas, versões e fontes que o produziram."
+      },
+      "taskLabels": {
+        "M01": "Resolver a identidade da companhia",
+        "M02": "Definir o mandato da reunião",
+        "M03": "Registrar limites e premissas",
+        "M04": "Definir as lentes de pesquisa",
+        "M05": "Especificar o brief",
+        "M06": "Compilar o plano de execução",
+        "C02": "Pesquisar companhia, setor e regulação",
+        "K04": "Pesquisar transações comparáveis",
+        "M07": "Sintetizar o brief de reunião"
+      },
+      "taskStatus": {"waiting": "Aguardando dependências", "queued": "Na fila", "running": "Em execução", "succeeded": "Concluída", "failed": "Requer atenção", "blocked": "Bloqueada", "cancelled": "Cancelada"}
+    },
     "notifications": "Notificações",
     "resources": "Recursos",
     "settings": "Configurações",

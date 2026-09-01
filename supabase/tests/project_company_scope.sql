@@ -500,7 +500,7 @@ begin
     ('M04','Inferir arquétipos candidatos','case',array['M01','M02'],'judgment','propose_state',3,1),
     ('M05','Definir entregáveis','case',array['M02','M03'],'deterministic','propose_state',4,2),
     ('M06','Compilar plano de tarefas','case',array['M04','M05'],'deterministic','commit',5,3),
-    ('M07','Emitir entendimento corrigível','case',array['M06'],'compilation','propose_state',6,4),
+    ('M07','Emitir entendimento corrigível','case',array['M06','C02','K04'],'compilation','propose_state',6,4),
     ('C02','Pesquisar setor e regulação','knowledge',array['M01','M04'],'research','none',7,2),
     ('K04','Pesquisar transações comparáveis','market',array['M01','M04'],'research','commit',8,2)
   ) spec(id,label,graph,dependencies,execution_class,effect,ordinal,batch);

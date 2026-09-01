@@ -71,6 +71,8 @@ export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
       pt: "Chegar com leitura própria, perguntas e estruturas específicas para aquela companhia.",
       en: "Arrive with an independent view, questions and company-specific structures.",
     },
+    // C02 and K04 remain explicit public-research outcomes as well as M07 dependencies. This
+    // keeps their artifacts inspectable on their own while M07 cannot complete without them.
     targetTaskIds: ["M07", "C02", "K04"],
     firstWorkProduct: "meeting_brief",
     confirmationGate: "preliminary_understanding",
@@ -159,8 +161,8 @@ export type CompiledCapitalJobPlan = {
 };
 
 export const capitalProjectPlanSchemaVersion = "capital-project-plan.v1";
-export const capitalProjectPlanCompilerVersion = "2026.09.01-v1";
-export const offroadTaskRegistryVersion = "2026.09.01-v1";
+export const capitalProjectPlanCompilerVersion = "2026.09.01-v2";
+export const offroadTaskRegistryVersion = "2026.09.01-v2";
 
 export type CapitalProjectPlanSnapshot = {
   schemaVersion: typeof capitalProjectPlanSchemaVersion;

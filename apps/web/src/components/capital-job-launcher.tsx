@@ -21,12 +21,14 @@ const jobIcons = {
 
 type Props = {
   existingProjectHref?: string;
+  jobHrefs?: Partial<Record<CapitalProjectJob, string>>;
   locale: string;
   newProjectBaseHref: string;
+  releasedJobs?: readonly CapitalProjectJob[];
 };
 
 /** Six ways into one project truth. The cards choose the first task subgraph, never a new silo. */
-export function CapitalJobLauncher({existingProjectHref, locale, newProjectBaseHref}: Props) {
+export function CapitalJobLauncher({existingProjectHref, jobHrefs = {}, locale, newProjectBaseHref, releasedJobs = ["capital_planning"]}: Props) {
   const language = locale === "en-US" ? "en" : "pt";
   const copy = language === "pt"
     ? {
@@ -55,13 +57,12 @@ export function CapitalJobLauncher({existingProjectHref, locale, newProjectBaseH
         {capitalProjectJobs.map((job, index) => {
           const Icon = jobIcons[job.id];
           const needsProject = job.requiresExistingProject;
-          // Capital planning is the only entry with a proven product rail today. Keeping the
-          // remaining jobs visible but inert prevents a new label from silently entering the
-          // old generic intake while their task-specific runtimes are still being implemented.
-          const isReleased = job.id === "capital_planning";
+          // A visible job enters production only through an explicit released list. This keeps
+          // unreleased labels from silently falling back to the legacy generic intake.
+          const isReleased = releasedJobs.includes(job.id);
           const separator = newProjectBaseHref.includes("?") ? "&" : "?";
           const href = isReleased
-            ? needsProject ? existingProjectHref : `${newProjectBaseHref}${separator}job=${job.id}`
+            ? jobHrefs[job.id] ?? (needsProject ? existingProjectHref : `${newProjectBaseHref}${separator}job=${job.id}`)
             : undefined;
           const contents = (
             <>

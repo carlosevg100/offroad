@@ -14,6 +14,7 @@ import {
 export type WorkspaceNavigationProject = {
   href: string;
   id: string;
+  projectId?: string;
   name: string;
   opportunityId: string | null;
   status: string;
@@ -119,6 +120,7 @@ export function WorkspaceProjectNavigation({copy, locale, projects}: Props) {
       <div className="workspace-project-list" role="list">
         {visibleProjects.map((project) => {
           const active = activeSessionId === project.id
+            || Boolean(project.projectId && pathname.includes(`/projects/${project.projectId}`))
             || Boolean(project.opportunityId && pathname.includes(`/opportunities/${project.opportunityId}`));
           return (
             <div className={active ? "workspace-project is-active" : "workspace-project"} key={project.id} role="listitem">
