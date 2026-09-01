@@ -94,16 +94,11 @@ select set_config(
 
 do $$
 declare
-  source_request_id constant uuid := '30000000-0000-4000-8000-000000000231';
   assistant_id constant uuid := '40000000-0000-4000-8000-000000000231';
   claim jsonb;
   context jsonb;
   recorded jsonb;
   replayed jsonb;
-  project_id uuid;
-  session_id uuid;
-  capital_job public.processing_jobs;
-  capital_run public.processing_runs;
   rejected boolean := false;
   identity_rejected boolean := false;
 begin
@@ -114,9 +109,6 @@ begin
   context := public.worker_load_agent_context(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token'
   );
-  project_id := (context #>> '{project,id}')::uuid;
-  session_id := (context ->> 'session_id')::uuid;
-
   begin
     perform public.worker_record_agent_response_and_activate_v1(
       (claim ->> 'job_id')::uuid,
@@ -163,25 +155,8 @@ begin
     )
   );
 
-  select job.* into strict capital_job
-  from public.processing_jobs job
-  where job.organization_id = (claim ->> 'organization_id')::uuid
-    and job.kind = 'capital_project_analysis'
-    and job.payload ->> 'capital_project_id' = project_id::text;
-  select run.* into strict capital_run
-  from public.processing_runs run where run.id = capital_job.processing_run_id;
-
   if recorded #>> '{activation,analysis_scope}' <> 'origination_thesis'
-    or recorded #>> '{activation,job_id}' <> capital_job.id::text
-    or capital_job.payload #>> '{trigger_event,type}' <> 'advisor_semantic_route'
-    or capital_job.payload #>> '{model_budget,max_cost_usd}' <> '0.75'
-    or capital_job.payload #>> '{model_budget,max_calls}' <> '2'
-    or capital_run.budget ->> 'externalSearchMaxUsd' <> '0.04'
-    or (select company_profile ->> 'name' from public.document_intake_sessions where id = session_id) <> 'Companhia Farol'
-    or (select current_run_id from public.document_intake_sessions where id = session_id) <> capital_run.id
-    or (select state from public.agent_conversations where intake_session_id = session_id) <> 'analyzing'
-    or (select metadata #>> '{activation,analysisScope}' from public.agent_messages where id = assistant_id) <> 'origination_thesis'
-    or (select count(*) from public.capital_project_briefs brief where brief.capital_project_id = project_id and brief.request_id = source_request_id) <> 1 then
+    or coalesce(recorded #>> '{activation,job_id}', '') = '' then
     raise exception 'semantic activation did not persist one coherent execution: %', recorded;
   end if;
 
@@ -200,9 +175,7 @@ begin
     )
   );
   if replayed #>> '{activation,replayed}' <> 'true'
-    or replayed #>> '{activation,job_id}' <> capital_job.id::text
-    or (select count(*) from public.processing_jobs job where job.kind = 'capital_project_analysis' and job.payload ->> 'capital_project_id' = project_id::text) <> 1
-    or (select state from public.agent_conversations where intake_session_id = session_id) <> 'analyzing' then
+    or replayed #>> '{activation,job_id}' <> recorded #>> '{activation,job_id}' then
     raise exception 'semantic activation replay duplicated execution: %', replayed;
   end if;
 
@@ -214,6 +187,49 @@ begin
   exception when insufficient_privilege then rejected := true;
   end;
   if not rejected then raise exception 'semantic activation accepted a guessed capability'; end if;
+end;
+$$;
+
+-- Internal persistence is asserted as the database owner, not by weakening tenant grants merely
+-- for a test. The authenticated section above proves the only callable worker surface.
+reset role;
+
+do $$
+declare
+  source_request_id constant uuid := '30000000-0000-4000-8000-000000000231';
+  assistant_id constant uuid := '40000000-0000-4000-8000-000000000231';
+  project_id uuid;
+  session_id uuid;
+  capital_job public.processing_jobs;
+  capital_run public.processing_runs;
+begin
+  select brief.capital_project_id into strict project_id
+  from public.capital_project_briefs brief
+  where brief.request_id = source_request_id;
+  select session.id into strict session_id
+  from public.document_intake_sessions session
+  where session.capital_project_id = project_id;
+  select job.* into strict capital_job
+  from public.processing_jobs job
+  where job.kind = 'capital_project_analysis'
+    and job.payload ->> 'capital_project_id' = project_id::text;
+  select run.* into strict capital_run
+  from public.processing_runs run
+  where run.id = capital_job.processing_run_id;
+
+  if capital_job.payload #>> '{trigger_event,type}' <> 'advisor_semantic_route'
+    or capital_job.payload #>> '{model_budget,max_cost_usd}' <> '0.75'
+    or capital_job.payload #>> '{model_budget,max_calls}' <> '2'
+    or capital_run.budget ->> 'externalSearchMaxUsd' <> '0.04'
+    or (select company_profile ->> 'name' from public.document_intake_sessions where id = session_id) <> 'Companhia Farol'
+    or (select current_run_id from public.document_intake_sessions where id = session_id) <> capital_run.id
+    or (select state from public.agent_conversations where intake_session_id = session_id) <> 'analyzing'
+    or (select metadata #>> '{activation,analysisScope}' from public.agent_messages where id = assistant_id) <> 'origination_thesis'
+    or (select count(*) from public.agent_messages where id = assistant_id) <> 1
+    or (select count(*) from public.capital_project_briefs brief where brief.capital_project_id = project_id and brief.request_id = source_request_id) <> 1
+    or (select count(*) from public.processing_jobs job where job.kind = 'capital_project_analysis' and job.payload ->> 'capital_project_id' = project_id::text) <> 1 then
+    raise exception 'semantic activation did not persist one coherent idempotent execution';
+  end if;
 end;
 $$;
 
