@@ -57,6 +57,12 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
         calls.stages.push({stage, status});
       },
       startCapitalTask: async () => "11111111-1111-4111-8111-111111111111",
+      recordCapitalProjectArtifact: async () => ({
+        id: "22222222-2222-4222-8222-222222222222",
+        artifactFingerprint: "a".repeat(64),
+        artifactVersion: 1,
+        replayed: false,
+      }),
       finishCapitalTask: async (_job, input) => input.taskRunId,
       recordDocument: async (_job, input) => {
         calls.documents.push(input);

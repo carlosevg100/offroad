@@ -50,6 +50,7 @@ describe("case input loading", () => {
 describe("capital TaskRun lifecycle", () => {
   it("passes the claimed capability, versioned executor and proof-bearing result", async () => {
     const taskRunId = "50000000-0000-4000-8000-000000000001";
+    const artifactId = "60000000-0000-4000-8000-000000000001";
     const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
       if (name === "worker_start_capital_project_task") {
         expect(args).toMatchObject({
@@ -69,13 +70,33 @@ describe("capital TaskRun lifecycle", () => {
           p_capability_token: job.capability_token,
           p_task_run_id: taskRunId,
           p_status: "succeeded",
-          p_output_reference: {type: "company_resolution", id: "company-resolution-1"},
+          p_output_reference: {type: "capital_project_artifact", id: artifactId},
           p_output_fingerprint: "b".repeat(64),
           p_quality_results: [{grader: "schema", passed: true}],
           p_usage: {durationMs: 12},
           p_error: null,
         });
         return {data: taskRunId, error: null};
+      }
+      if (name === "worker_record_capital_project_artifact") {
+        expect(args).toMatchObject({
+          p_job_id: job.job_id,
+          p_capability_token: job.capability_token,
+          p_task_run_id: taskRunId,
+          p_artifact_type: "company_resolution",
+          p_schema_version: "company-resolution.v1",
+          p_status: "draft",
+          p_input_fingerprint: "a".repeat(64),
+          p_content: {companyName: "Example"},
+          p_evidence_refs: [{sourceType: "public_url", sourceId: "https://example.com"}],
+          p_dependencies: [],
+        });
+        return {data: {
+          id: artifactId,
+          artifact_fingerprint: "b".repeat(64),
+          artifact_version: 1,
+          replayed: false,
+        }, error: null};
       }
       throw new Error(`unexpected RPC ${name}`);
     });
@@ -88,18 +109,34 @@ describe("capital TaskRun lifecycle", () => {
       inputFingerprint: "a".repeat(64),
       contextManifest: {company: ["name", "website"]},
     });
+    const artifact = await queue.recordCapitalProjectArtifact(job, {
+      taskRunId: started,
+      artifactType: "company_resolution",
+      schemaVersion: "company-resolution.v1",
+      status: "draft",
+      inputFingerprint: "a".repeat(64),
+      content: {companyName: "Example"},
+      evidenceRefs: [{sourceType: "public_url", sourceId: "https://example.com"}],
+    });
     const finished = await queue.finishCapitalTask(job, {
       taskRunId: started,
       status: "succeeded",
-      outputReference: {type: "company_resolution", id: "company-resolution-1"},
-      outputFingerprint: "b".repeat(64),
+      outputReference: {type: "capital_project_artifact", id: artifact.id},
+      outputFingerprint: artifact.artifactFingerprint,
       qualityResults: [{grader: "schema", passed: true}],
       usage: {durationMs: 12},
     });
 
     expect(finished).toBe(taskRunId);
+    expect(artifact).toEqual({
+      id: artifactId,
+      artifactFingerprint: "b".repeat(64),
+      artifactVersion: 1,
+      replayed: false,
+    });
     expect(rpc.mock.calls.map(([name]) => name)).toEqual([
       "worker_start_capital_project_task",
+      "worker_record_capital_project_artifact",
       "worker_finish_capital_project_task",
     ]);
   });
