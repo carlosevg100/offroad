@@ -6319,6 +6319,14 @@ export type Database = {
         }
         Returns: Json
       }
+      request_company_debt_view_revision_v1: {
+        Args: {
+          p_artifact_fingerprint: string
+          p_artifact_id: string
+          p_note: string
+        }
+        Returns: Json
+      }
       start_public_capital_project: {
         Args: {
           p_company_name: string
@@ -6341,6 +6349,18 @@ export type Database = {
         Returns: string
       }
       start_public_origination_thesis_v1: {
+        Args: {
+          p_brief: Json
+          p_company_name: string
+          p_company_website: string
+          p_locale: string
+          p_plan: Json
+          p_project_name: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      start_public_company_debt_view_v1: {
         Args: {
           p_brief: Json
           p_company_name: string

@@ -9,6 +9,7 @@ import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
 import {OriginationDecision} from "./origination-decision";
+import {CompanyDebtProject} from "./company-debt-project";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "Projeto", robots: {index: false, follow: false}};
@@ -24,7 +25,11 @@ export default async function CapitalProjectPage({params}: Props) {
     .eq("organization_id", organization.id)
     .eq("id", projectId)
     .maybeSingle();
-  if (!project || project.entry_job !== "origination_thesis") notFound();
+  if (!project) notFound();
+  if (project.entry_job === "company_debt_view") {
+    return <CompanyDebtProject locale={locale} projectId={projectId} />;
+  }
+  if (project.entry_job !== "origination_thesis") notFound();
 
   const [{data: session}, {data: plan}, {data: artifacts}, {data: decisions}] = await Promise.all([
     supabase.from("document_intake_sessions")

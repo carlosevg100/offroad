@@ -61,6 +61,97 @@ export const originationMeetingBriefArtifactSchema = originationMeetingBriefSche
   }),
 });
 
+/** Public-only context for a company debt-lens diagnostic. A focus is useful but optional: the
+ * system must be able to start from the company alone without forcing the user to invent a
+ * transaction or repeat information available in public sources. */
+export const companyDebtViewBriefSchema = z.object({
+  focus: z.string().trim().max(3_000).optional(),
+  knownContext: z.string().trim().max(5_000).optional(),
+});
+
+const publicSignalSchema = z.object({
+  label: z.string().min(5).max(180),
+  observation: z.string().min(20).max(900),
+  implication: z.string().min(20).max(900),
+  sourceUrls: z.array(z.url()).min(1).max(4),
+  confidence: z.enum(["high", "medium", "low"]),
+  claimClass: z.enum(["fact", "reference", "hypothesis"]),
+});
+
+/** One bounded synthesis of the public evidence. It deliberately cannot claim a supported debt
+ * capacity: that state requires reconciled financial inputs and deterministic calculations. */
+export const companyDebtDiagnosticSchema = z.object({
+  executiveRead: z.string().min(60).max(2_400),
+  companySnapshot: z.string().min(40).max(1_800),
+  evidenceCoverage: z.object({
+    publicDataQuality: z.enum(["limited", "partial", "strong"]),
+    whatCanBeAssessed: z.array(z.string().min(8).max(500)).max(10),
+    criticalMissingInputs: z.array(z.string().min(8).max(500)).min(1).max(12),
+  }),
+  businessRiskProfile: z.object({
+    businessModel: z.string().min(30).max(1_500),
+    cashFlowDrivers: z.array(z.string().min(8).max(600)).max(10),
+    sensitivities: z.array(z.string().min(8).max(600)).max(10),
+    sourceUrls: z.array(z.url()).max(6),
+  }),
+  financialSignals: z.array(publicSignalSchema).max(12),
+  debtAndLiquiditySignals: z.array(publicSignalSchema).max(12),
+  workingCapitalSignals: z.array(publicSignalSchema).max(10),
+  risks: z.array(z.object({
+    risk: z.string().min(10).max(700),
+    evidence: z.string().min(10).max(900),
+    debtRelevance: z.string().min(20).max(900),
+    mitigantsToTest: z.array(z.string().min(5).max(500)).min(1).max(8),
+    sourceUrls: z.array(z.url()).min(1).max(4),
+    confidence: z.enum(["high", "medium", "low"]),
+  })).max(10),
+  capacityAssessment: z.object({
+    status: z.enum(["not_computable", "directional_only"]),
+    conclusion: z.string().min(30).max(1_200),
+    bindingUnknowns: z.array(z.string().min(8).max(600)).min(1).max(10),
+    requiredInputs: z.array(z.string().min(8).max(600)).min(1).max(12),
+  }),
+  diagnosticHypotheses: z.array(z.object({
+    title: z.string().min(5).max(180),
+    thesis: z.string().min(30).max(1_000),
+    support: z.array(z.string().min(8).max(600)).min(1).max(8),
+    disconfirmers: z.array(z.string().min(8).max(600)).min(1).max(8),
+    sourceUrls: z.array(z.url()).min(1).max(4),
+  })).max(6),
+  informationRequests: z.array(z.object({
+    request: z.string().min(8).max(500),
+    whyItMatters: z.string().min(15).max(700),
+    decisionImpact: z.string().min(15).max(700),
+    acceptableEvidence: z.array(z.string().min(3).max(300)).min(1).max(5),
+  })).min(1).max(5),
+  questions: z.array(z.object({
+    question: z.string().min(10).max(500),
+    whyItMatters: z.string().min(10).max(700),
+    answerChanges: z.string().min(10).max(700),
+  })).min(3).max(12),
+  unknowns: z.array(z.string().min(8).max(600)).min(1).max(14),
+});
+
+export const companyDebtDiagnosticArtifactSchema = companyDebtDiagnosticSchema.extend({
+  schemaVersion: z.literal("company-debt-diagnostic.v1"),
+  asOfDate: z.iso.date(),
+  company: z.object({name: z.string().min(2), website: z.url().nullable()}),
+  sources: z.array(z.object({
+    title: z.string().min(1),
+    url: z.url(),
+    topic: z.enum(["identity", "news", "sector", "regulation", "market"]),
+    publishedAt: z.string().nullable(),
+    provider: z.enum(["perplexity", "openai", "official", "mcp"]),
+  })),
+  researchStatus: z.enum(["succeeded", "partial", "abstained"]),
+  scopeBoundary: z.string().min(20),
+  provenance: z.object({
+    provider: z.enum(["anthropic", "openai", "deterministic"]),
+    model: z.string().min(1),
+    executorVersion: z.string().min(3),
+  }),
+});
+
 export const taskEnvelopeSchema = z.object({
   taskId: uuidSchema,
   organizationId: uuidSchema,
@@ -397,6 +488,9 @@ export type TaskEnvelope = z.infer<typeof taskEnvelopeSchema>;
 export type OriginationThesisBrief = z.infer<typeof originationThesisBriefSchema>;
 export type OriginationMeetingBrief = z.infer<typeof originationMeetingBriefSchema>;
 export type OriginationMeetingBriefArtifact = z.infer<typeof originationMeetingBriefArtifactSchema>;
+export type CompanyDebtViewBrief = z.infer<typeof companyDebtViewBriefSchema>;
+export type CompanyDebtDiagnostic = z.infer<typeof companyDebtDiagnosticSchema>;
+export type CompanyDebtDiagnosticArtifact = z.infer<typeof companyDebtDiagnosticArtifactSchema>;
 export type Claim = z.infer<typeof claimSchema>;
 export type ScenarioTerms = z.infer<typeof scenarioTermsSchema>;
 export type OpportunityProjection = z.infer<typeof opportunityProjectionSchema>;

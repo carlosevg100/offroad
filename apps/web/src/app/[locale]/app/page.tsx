@@ -93,10 +93,13 @@ export default async function ApplicationHome({params, searchParams}: Props) {
       {state.welcome === "1" ? <p className="form-notice form-notice--success app-welcome-notice" role="status">{t("welcomeComplete")}</p> : null}
       <CapitalJobLauncher
         existingProjectHref={active.length + activeIntakes.length > 0 ? "#projects" : undefined}
-        jobHrefs={{origination_thesis: `/${locale}/app/new/origination`}}
+        jobHrefs={{
+          company_debt_view: `/${locale}/app/new/company-debt`,
+          origination_thesis: `/${locale}/app/new/origination`,
+        }}
         locale={locale}
         newProjectBaseHref={`/${locale}/app/new`}
-        releasedJobs={["origination_thesis", "capital_planning"]}
+        releasedJobs={["company_debt_view", "origination_thesis", "capital_planning"]}
       />
       <section aria-label={t("pipeline")} className="app-stat-grid">
         <article><DatabaseZap aria-hidden="true" size={18} /><span>{t("activeOpportunities")}</span><strong>{active.length + activeIntakes.length}</strong></article>
@@ -111,7 +114,7 @@ export default async function ApplicationHome({params, searchParams}: Props) {
         ) : (
           <div className="opportunity-table" role="list">
             {activeIntakes.map((session) => (
-              <Link href={session.capital_project_id && capitalProjectById.get(session.capital_project_id)?.entry_job === "origination_thesis" ? `/${locale}/app/projects/${session.capital_project_id}` : `/${locale}/app/new?mode=documents&session=${session.id}`} key={session.id} role="listitem">
+              <Link href={session.capital_project_id && ["origination_thesis", "company_debt_view"].includes(capitalProjectById.get(session.capital_project_id)?.entry_job ?? "") ? `/${locale}/app/projects/${session.capital_project_id}` : `/${locale}/app/new?mode=documents&session=${session.id}`} key={session.id} role="listitem">
                 <div><span>{t("projectInPreparation")}</span><strong>{session.project_name || t("untitledProject")}</strong></div>
                 <div><span>{t("amount")}</span><strong>{session.requested_amount && session.capital_currency ? format.number(session.requested_amount, {style: "currency", currency: session.capital_currency, maximumFractionDigits: 0}) : t("notInformed")}</strong></div>
                 <div><span>{t("updated")}</span><strong>{format.relativeTime(new Date(session.updated_at))}</strong></div>

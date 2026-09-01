@@ -53,11 +53,19 @@ describe("capital job compiler", () => {
   });
 
   it("keeps different starts materially different while converging on shared TaskSpecs", () => {
+    const companyDebt = compileCapitalProjectJob("company_debt_view");
     const thesis = compileCapitalProjectJob("origination_thesis");
     const planning = compileCapitalProjectJob("capital_planning");
     const documents = compileCapitalProjectJob("structure_from_documents");
     const production = compileCapitalProjectJob("prepare_materials_and_process");
 
+    expect(companyDebt.tasks.map((task) => task.id)).toEqual([
+      "M01", "M02", "M03", "M04", "M05", "M06",
+      "D01", "D02", "D03", "D04", "D05", "D06", "D07",
+      "C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10", "C11",
+    ]);
+    expect(companyDebt.tasks.find((task) => task.id === "C11")?.dependencies).toEqual(["C09", "C10"]);
+    expect(companyDebt.tasks.some((task) => task.id.startsWith("S"))).toBe(false);
     expect(thesis.tasks.map((task) => task.id)).toEqual(expect.arrayContaining(["M07", "C02", "K04"]));
     expect(thesis.job.targetTaskIds).toEqual(["M07", "C02", "K04"]);
     expect(thesis.tasks.find((task) => task.id === "M07")?.dependencies).toEqual(["M06", "C02", "K04"]);

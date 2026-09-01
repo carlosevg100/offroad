@@ -41,7 +41,7 @@ export default async function ApplicationLayout({children, params}: Props) {
   const projects: WorkspaceNavigationProject[] = (navigationSessions ?? []).map((session) => {
     const capitalProject = session.capital_project_id ? capitalProjectById.get(session.capital_project_id) : null;
     return {
-    href: capitalProject?.entry_job === "origination_thesis" && session.capital_project_id
+    href: ["origination_thesis", "company_debt_view"].includes(capitalProject?.entry_job ?? "") && session.capital_project_id
       ? `/${locale}/app/projects/${session.capital_project_id}`
       : session.status === "confirmed" && session.opportunity_id
         ? `/${locale}/app/opportunities/${session.opportunity_id}`

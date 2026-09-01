@@ -95,6 +95,12 @@ jobs:
       - name: Project-scoped company test
         run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/project_company_scope.sql
 
+      - name: Public origination vertical test
+        run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/origination_thesis_vertical.sql
+
+      - name: Public company debt view vertical test
+        run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/company_debt_view_vertical.sql
+
       - name: Schema lint (public, private)
         run: supabase db lint --local --schema public,private --level warning --fail-on error
 

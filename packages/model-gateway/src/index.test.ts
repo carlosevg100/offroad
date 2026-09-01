@@ -104,6 +104,18 @@ describe("policy", () => {
     }
   });
 
+  it("keeps the public company debt diagnostic on the bounded synthesis route", () => {
+    const policy = defaultTaskPolicies.company_debt_view;
+    expect(policy).toEqual({
+      primary: {provider: "anthropic", model: "claude-sonnet-5", effort: "medium"},
+      shadow: {provider: "openai", model: "gpt-5.6-terra", effort: "medium"},
+      fallback: {provider: "openai", model: "gpt-5.6-terra", effort: "medium"},
+      maxOutputTokens: 8_000,
+      timeoutMs: 240_000,
+    });
+    expect(resolveModel("company_debt_view", defaultTaskPolicies, {}).primary).toEqual(policy.primary);
+  });
+
   it("escalates only along the declared ladder, cheap to strong, and stops at the top", () => {
     const start = defaultTaskPolicies.extract_fields.primary;
     const second = nextEscalation("extract_fields", start);

@@ -81,6 +81,7 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   case_brief: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 32_000, timeoutMs: 600_000},
   preliminary_understanding: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 3_500, timeoutMs: 180_000},
   origination_thesis: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 6_000, timeoutMs: 180_000},
+  company_debt_view: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 8_000, timeoutMs: 240_000},
   agent_operation_brief: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-sol", "medium"), fallback: openai("gpt-5.6-sol", "medium"), maxOutputTokens: 6_000, timeoutMs: 180_000},
   write_output: {primary: anthropic("claude-opus-5", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 32_000, timeoutMs: 600_000},
   audit_evidence: {primary: openai("gpt-5.6-sol", "high"), fallback: anthropic("claude-opus-5", "high"), maxOutputTokens: 16_000, timeoutMs: 300_000},
