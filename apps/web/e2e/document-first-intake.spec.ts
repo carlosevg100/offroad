@@ -52,9 +52,10 @@ async function chooseOperation(page: Page, archetype = "growth_expansion") {
 }
 
 async function startPrivateProject(page: Page, projectName: string, acceptTerms = false) {
-  // The universal workspace starts from a concrete job, not from the retired generic CTA.
-  // Capital planning preserves the borrower journey exercised by this scenario.
-  await page.locator('a.capital-job-card[href*="job=capital_planning"]').click();
+  // The first private project still belongs to account onboarding: confidentiality is accepted
+  // once before the account enters the conversational workspace. The legacy document workflow is
+  // reached only after that one-time gate and remains directly addressable for executor coverage.
+  await page.goto("/pt-BR/onboarding?setup=terms&job=capital_planning");
 
   if (acceptTerms) {
     await expect(page.locator(".private-project-gate--terms h2")).toHaveText("Antes de começar, protegemos suas informações.");
@@ -231,8 +232,8 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("opens the governed workspace with its source context", async () => {
     await page.goto("/pt-BR/app");
-    await expect(page.locator(".opportunity-table [role=listitem]")).toHaveCount(1);
-    await expect(page.locator(".opportunity-table")).toContainText(/Rede Horizonte Supermercados/);
+    await expect(page.locator(".advisor-start")).toBeVisible();
+    await expect(page.locator(".workspace-project-list")).toContainText(initialProjectName);
 
     await page.goto(confirmedOpportunityUrl);
     await expect(page.locator(".deal-workspace__topbar h1")).toHaveText(initialProjectName);
@@ -322,10 +323,7 @@ test.describe("Document-first intake (company journey)", () => {
   });
 
   test("starts a public debt-lens analysis from the company alone", async () => {
-    await page.goto("/pt-BR/app");
-    const entry = page.locator('a.capital-job-card[href="/pt-BR/app/new/company-debt"]');
-    await expect(entry).toContainText("Entender a companhia na ótica de dívida");
-    await entry.click();
+    await page.goto("/pt-BR/app/new/company-debt");
 
     await expect(page.locator(".origination-setup__header h1")).toHaveText("Entenda o balanço antes de escolher a operação.");
     await expect(page.locator('input[type="file"]')).toHaveCount(0);
@@ -338,6 +336,11 @@ test.describe("Document-first intake (company journey)", () => {
     await form.locator('button[type="submit"]').click();
 
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+    await expect(page.locator(".advisor-project__conversation")).toBeVisible();
+    const specializedWork = page.locator(".advisor-context-section__open");
+    await expect(specializedWork).toBeVisible();
+    await specializedWork.click();
+    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+\?view=work$/);
     await expect(page.locator(".origination-project__header")).toContainText("Companhia Pública Exemplo");
     await expect(page.locator(".origination-project__access")).toContainText("Somente fontes públicas");
     await expect(page.locator(".origination-task-panel li")).toHaveCount(24);
@@ -352,6 +355,27 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".workspace-project").filter({hasText: companyDebtProjectName})).toHaveCount(0);
   });
 
+  test("creates and reopens one conversational project from the workspace composer", async () => {
+    await page.goto("/pt-BR/app");
+    await expect(page.locator(".advisor-start h1")).toHaveText("Como a Offroad pode ajudar hoje?");
+    await page.locator(".advisor-starters button").filter({hasText: "Planejar uma necessidade"}).click();
+    const request = `Conversa ${runId}: planejar R$ 20 milhões`;
+    await page.locator(".advisor-composer--start textarea").fill(request);
+    await page.locator(".advisor-composer--start .advisor-composer__send").click();
+
+    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+    await expect(page.locator(".advisor-project__conversation")).toBeVisible();
+    await expect(page.locator(".advisor-thread")).toContainText(request);
+    await expect(page.locator(".advisor-project__context")).toContainText("Plano de trabalho");
+
+    const projectUrl = page.url();
+    await page.goto("/pt-BR/app");
+    const project = page.locator(".workspace-project").filter({hasText: request});
+    await expect(project).toBeVisible();
+    await project.locator("a").first().click();
+    await expect(page).toHaveURL(projectUrl);
+  });
+
   test("signs out and logs back in with the password", async () => {
     await page.goto("/pt-BR/app");
     await page.locator(".app-sidebar__footer form button[type=submit]").click();
@@ -362,6 +386,7 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator('input[name="password"]').fill(account.password);
     await page.locator("form button.auth-form__primary").click();
     await expect(page).toHaveURL(/\/pt-BR\/app/);
-    await expect(page.locator(".opportunity-table [role=listitem]")).toHaveCount(1);
+    await expect(page.locator(".advisor-start")).toBeVisible();
+    await expect(page.locator(".workspace-project-list")).toContainText(initialProjectName);
   });
 });

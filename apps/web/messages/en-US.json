@@ -810,6 +810,47 @@
       "denied": "You do not have permission to delete this project.",
       "save": "The change could not be completed."
     },
+    "advisor": {
+      "kicker": "OFFROAD ADVISOR",
+      "title": "How can Offroad help today?",
+      "body": "Describe the assignment in your own words or attach what you already have. The company, evidence, decisions and materials will stay in the same project.",
+      "prompt": "Describe the company, capital need or transaction you want to examine.",
+      "starterLabel": "Starting points",
+      "starters": {
+        "companyDebt": {"label": "Understand a company", "placeholder": "Example: analyze the company through a debt lens and show the risks, financial capacity and what still needs to be proven."},
+        "origination": {"label": "Prepare a meeting", "placeholder": "Example: I have a meeting with this company and want an independent view and financing alternatives to explore."},
+        "capitalPlanning": {"label": "Plan a capital need", "placeholder": "Example: I need to finance growth, working capital, an acquisition or refinance maturities. Help me compare the alternatives."},
+        "documents": {"label": "Structure from documents", "placeholder": "Attach the folder you received and add any context you know. Offroad identifies the company, reconstructs the case and shows what is missing."},
+        "review": {"label": "Review a transaction", "placeholder": "Example: I received a proposal or term sheet and want to test the structure, terms, risks and alternatives."}
+      },
+      "attach": "Attach documents",
+      "remove": "Remove document",
+      "send": "Start project",
+      "privacy": "Private workspace. Nothing is shared without your authorization.",
+      "status": {"creating": "Creating the project...", "uploading": "Receiving the documents...", "starting": "Starting the review..."},
+      "errors": {"invalid": "Describe what you want to do or attach a document.", "denied": "Accept the confidentiality terms to work with private documents.", "duplicate": "A project with this name already exists.", "notFound": "The project is not available.", "save": "Could not start the project.", "processing": "The documents were received, but the review needs to be started again.", "upload": "One or more documents could not be received securely."}
+    },
+    "advisorProject": {
+      "advisor": "Offroad Agent",
+      "context": "Project context",
+      "conversation": "Project",
+      "documents": "Documents",
+      "noDocuments": "No documents attached yet.",
+      "plan": "Work plan",
+      "artifacts": "Materials and analyses",
+      "noArtifacts": "Results will appear here as they are completed.",
+      "openWork": "Open work",
+      "existingProject": "The work already completed in this project is preserved. Open the analysis in the side panel or continue the conversation to add context, request a revision, or advance the next step.",
+      "placeholder": "Continue the work, answer a question or request a change...",
+      "attach": "Attach documents",
+      "send": "Send",
+      "close": "Close",
+      "private": "Private project",
+      "public": "Public information only",
+      "working": "Working now",
+      "ready": "Ready to continue",
+      "errors": {"invalid": "Review the message.", "denied": "This action is not authorized for this project.", "duplicate": "This message or document has already been recorded.", "notFound": "The project is no longer available.", "save": "Could not record the message.", "processing": "The review could not be started.", "upload": "One or more documents could not be received securely."}
+    },
     "companyDebt": {
       "back": "Back to workspace",
       "kicker": "Company through a debt lens",

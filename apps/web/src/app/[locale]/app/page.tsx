@@ -1,8 +1,8 @@
-import {ArrowRight, Building2, CheckCircle2, CircleAlert, DatabaseZap, FileCheck2, Landmark, Plus, Target} from "lucide-react";
+import {Building2, CheckCircle2, CircleAlert, Landmark, Target} from "lucide-react";
 import Link from "next/link";
-import {getFormatter, getTranslations} from "next-intl/server";
+import {getTranslations} from "next-intl/server";
 
-import {CapitalJobLauncher} from "@/components/capital-job-launcher";
+import {AdvisorStart, type AdvisorStartCopy} from "@/components/advisor/advisor-start";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
 type Props = {params: Promise<{locale: string}>; searchParams: Promise<{welcome?: string}>};
@@ -11,8 +11,7 @@ export default async function ApplicationHome({params, searchParams}: Props) {
   const {locale} = await params;
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "App"});
-  const format = await getFormatter({locale});
-  const {supabase, organization} = await requireWorkspace(locale);
+  const {supabase, organization, userId} = await requireWorkspace(locale);
 
   if (organization.organization_type === "capital_provider") {
     const [{data: funds}, {data: mandates}, {data: contacts}, {data: requests}] = await Promise.all([
@@ -53,80 +52,28 @@ export default async function ApplicationHome({params, searchParams}: Props) {
     );
   }
 
-  const [{data: opportunities}, {data: intakeSessions}, {count: companiesCount}, {count: documentCount}, {count: pendingAuthority}] = await Promise.all([
-    supabase.from("opportunities").select("id, title, stage, requested_amount, currency, readiness_status, updated_at").eq("organization_id", organization.id).order("updated_at", {ascending: false}).limit(20),
-    supabase.from("document_intake_sessions").select("id, capital_project_id, project_name, status, requested_amount, capital_currency, updated_at, opportunity_id, archived_at").eq("organization_id", organization.id).order("updated_at", {ascending: false}).limit(100),
-    supabase.from("companies").select("id", {count: "exact", head: true}).eq("organization_id", organization.id),
-    supabase.from("source_documents").select("id", {count: "exact", head: true}).eq("organization_id", organization.id),
-    supabase.from("authority_evidence").select("id", {count: "exact", head: true}).eq("organization_id", organization.id).eq("status", "pending"),
-  ]);
-  const archivedOpportunityIds = new Set((intakeSessions ?? []).flatMap((item) => item.archived_at && item.opportunity_id ? [item.opportunity_id] : []));
-  const active = opportunities?.filter((item) => item.stage !== "closed" && !archivedOpportunityIds.has(item.id)) ?? [];
-  const activeIntakes = intakeSessions?.filter((item) => !item.archived_at && !["cancelled", "confirmed"].includes(item.status)) ?? [];
-  const capitalProjectIds = activeIntakes.flatMap((item) => item.capital_project_id ? [item.capital_project_id] : []);
-  const {data: capitalProjects} = capitalProjectIds.length > 0
-    ? await supabase.from("capital_projects").select("id, entry_job").eq("organization_id", organization.id).in("id", capitalProjectIds)
-    : {data: []};
-  const capitalProjectById = new Map((capitalProjects ?? []).map((project) => [project.id, project]));
-  const ready = active.filter((item) => item.readiness_status === "ready").length;
-  const isOriginator = organization.organization_type === "originator";
-  const workspaceCopy = locale === "en-US"
-    ? {
-        kicker: "Offroad advisor",
-        title: "One workspace for debt decisions.",
-        body: "Start with a question, a folder of documents or an existing transaction. Offroad preserves the context and advances the work toward a qualified market introduction.",
-        action: "Start new work",
-      }
-    : {
-        kicker: "Offroad advisor",
-        title: "Um workspace para decisões de dívida.",
-        body: "Comece com uma pergunta, uma pasta de documentos ou uma operação já desenhada. A Offroad preserva o contexto e conduz o trabalho até a introdução qualificada ao mercado.",
-        action: "Iniciar novo trabalho",
-      };
+  const copy: AdvisorStartCopy = {
+    kicker: t("advisor.kicker"),
+    title: t("advisor.title"),
+    body: t("advisor.body"),
+    prompt: t("advisor.prompt"),
+    starterLabel: t("advisor.starterLabel"),
+    starters: {
+      company_debt_view: {label: t("advisor.starters.companyDebt.label"), placeholder: t("advisor.starters.companyDebt.placeholder")},
+      origination_thesis: {label: t("advisor.starters.origination.label"), placeholder: t("advisor.starters.origination.placeholder")},
+      capital_planning: {label: t("advisor.starters.capitalPlanning.label"), placeholder: t("advisor.starters.capitalPlanning.placeholder")},
+      structure_from_documents: {label: t("advisor.starters.documents.label"), placeholder: t("advisor.starters.documents.placeholder")},
+      review_existing_operation: {label: t("advisor.starters.review.label"), placeholder: t("advisor.starters.review.placeholder")},
+    },
+    attach: t("advisor.attach"),
+    remove: t("advisor.remove"),
+    send: t("advisor.send"),
+    privacy: t("advisor.privacy"),
+    status: {creating: t("advisor.status.creating"), uploading: t("advisor.status.uploading"), starting: t("advisor.status.starting")},
+    errors: {
+      invalid: t("advisor.errors.invalid"), denied: t("advisor.errors.denied"), duplicate: t("advisor.errors.duplicate"), not_found: t("advisor.errors.notFound"), save: t("advisor.errors.save"), processing: t("advisor.errors.processing"), upload: t("advisor.errors.upload"),
+    },
+  };
 
-  return (
-    <main className="app-canvas">
-      <header className="app-page-header">
-        <div><p className="section-kicker">{workspaceCopy.kicker}</p><h1>{workspaceCopy.title}</h1><p>{workspaceCopy.body}</p></div>
-        <Link className="button" href="#capital-jobs"><Plus aria-hidden="true" size={16} />{workspaceCopy.action}</Link>
-      </header>
-      {state.welcome === "1" ? <p className="form-notice form-notice--success app-welcome-notice" role="status">{t("welcomeComplete")}</p> : null}
-      <CapitalJobLauncher
-        existingProjectHref={active.length + activeIntakes.length > 0 ? "#projects" : undefined}
-        jobHrefs={{
-          company_debt_view: `/${locale}/app/new/company-debt`,
-          origination_thesis: `/${locale}/app/new/origination`,
-        }}
-        locale={locale}
-        newProjectBaseHref={`/${locale}/app/new`}
-        releasedJobs={["company_debt_view", "origination_thesis", "capital_planning"]}
-      />
-      <section aria-label={t("pipeline")} className="app-stat-grid">
-        <article><DatabaseZap aria-hidden="true" size={18} /><span>{t("activeOpportunities")}</span><strong>{active.length + activeIntakes.length}</strong></article>
-        <article><Building2 aria-hidden="true" size={18} /><span>{isOriginator ? t("advisedCompanies") : t("registeredCompany")}</span><strong>{companiesCount ?? 0}</strong></article>
-        <article><FileCheck2 aria-hidden="true" size={18} /><span>{t("documents")}</span><strong>{documentCount ?? 0}</strong></article>
-        <article>{isOriginator ? <CircleAlert aria-hidden="true" size={18} /> : <ArrowRight aria-hidden="true" size={18} />}<span>{isOriginator ? t("pendingAuthorities") : t("marketReady")}</span><strong>{isOriginator ? pendingAuthority ?? 0 : ready}</strong></article>
-      </section>
-      <section className="pipeline-section" id="projects">
-        <div className="pipeline-section__header"><h2>{t("pipeline")}</h2><span>{organization.name}</span></div>
-        {active.length === 0 && activeIntakes.length === 0 ? (
-          <div className="empty-state"><span className="empty-state__number">01</span><div><h3>{t("emptyTitle")}</h3><p>{t("emptyBody")}</p></div><Link className="text-link" href={`/${locale}/app/new`}>{t("create")} <ArrowRight aria-hidden="true" size={14} /></Link></div>
-        ) : (
-          <div className="opportunity-table" role="list">
-            {activeIntakes.map((session) => (
-              <Link href={session.capital_project_id && ["origination_thesis", "company_debt_view"].includes(capitalProjectById.get(session.capital_project_id)?.entry_job ?? "") ? `/${locale}/app/projects/${session.capital_project_id}` : `/${locale}/app/new?mode=documents&session=${session.id}`} key={session.id} role="listitem">
-                <div><span>{t("projectInPreparation")}</span><strong>{session.project_name || t("untitledProject")}</strong></div>
-                <div><span>{t("amount")}</span><strong>{session.requested_amount && session.capital_currency ? format.number(session.requested_amount, {style: "currency", currency: session.capital_currency, maximumFractionDigits: 0}) : t("notInformed")}</strong></div>
-                <div><span>{t("updated")}</span><strong>{format.relativeTime(new Date(session.updated_at))}</strong></div>
-                <ArrowRight aria-hidden="true" size={16} />
-              </Link>
-            ))}
-            {active.map((opportunity) => (
-              <Link href={`/${locale}/app/opportunities/${opportunity.id}`} key={opportunity.id} role="listitem"><div><span>{opportunity.stage}</span><strong>{opportunity.title}</strong></div><div><span>{t("amount")}</span><strong>{format.number(opportunity.requested_amount, {style: "currency", currency: opportunity.currency, maximumFractionDigits: 0})}</strong></div><div><span>{t("updated")}</span><strong>{format.relativeTime(new Date(opportunity.updated_at))}</strong></div><ArrowRight aria-hidden="true" size={16} /></Link>
-            ))}
-          </div>
-        )}
-      </section>
-    </main>
-  );
+  return <AdvisorStart copy={copy} locale={locale === "en-US" ? "en-US" : "pt-BR"} organizationId={organization.id} userId={userId} />;
 }

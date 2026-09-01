@@ -34,9 +34,10 @@ final.
 
 ## 2. As seis formas de começar
 
-A home não obriga o usuário a formular tecnicamente um problema antes de entrar. Ela o convida
-com **“Comece de onde você está”** e pergunta **“Como a Offroad pode ajudar agora?”**, oferecendo
-estes trabalhos:
+A home não obriga o usuário a formular tecnicamente um problema antes de entrar. Ela abre um
+composer com **“Como a Offroad pode ajudar hoje?”**. Texto livre, URL e documentos podem ser
+enviados juntos. As sugestões ao redor do composer ajudam a escolher um ponto de partida, sem
+transformar a entrada em formulário ou funil:
 
 1. **Entender a companhia na ótica de dívida:** reconstruir situação financeira, riscos e
    capacidade antes de escolher uma operação.
@@ -48,8 +49,8 @@ estes trabalhos:
    alternativas e preparar uma recomendação.
 5. **Revisar uma operação existente:** reconstruir, testar e melhorar proposta, term sheet ou
    desenho inicial.
-6. **Preparar materiais e conduzir o processo:** compilar peças, mapear financiadores e continuar
-   a execução.
+6. **Preparar materiais e conduzir o processo:** dentro de um projeto existente, compilar peças,
+   mapear financiadores e continuar a execução.
 
 Essas entradas não são personas, produtos ou funis distintos. Elas compilam planos iniciais
 diferentes sobre os mesmos objetos e podem convergir, mudar de direção e continuar sem reiniciar
@@ -88,6 +89,15 @@ O produto não é um chat com anexos. O chat é a superfície de comando de um w
 - conversa e inspector ligados ao objeto aberto, com evidências, claims, mudanças e aprovações;
 - plano de trabalho e agent runs visíveis, com escopo, progresso, conflitos e output;
 - checkpoints, versões e diff para revisar, aceitar ou reverter mudanças.
+
+A organização visual é estável: companhias, projetos e histórico na barra lateral; conversa e
+composer no centro; plano, tarefas, evidências e artefatos no painel de trabalho. Sugestões de
+intenção selecionam ferramentas internas, não navegam para produtos separados.
+
+O aceite de confidencialidade ocorre uma vez por organização e versão material. Preparar um caso
+privado exige direito de usar as informações, mas não comprova representação perante terceiros.
+Essa autoridade só é coletada em `Introduce`, vinculada à versão dos materiais e aos destinatários
+exatos.
 
 Toda resposta importante termina em um objeto ou próximo passo observável: fato, cálculo, questão,
 cenário, alternativa, artefato, aprovação ou ação. O usuário não procura entregas no histórico do

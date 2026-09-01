@@ -16,11 +16,38 @@ const contextSchema = z.object({
   session_id: z.uuid(),
   message_id: z.uuid(),
   locale: z.enum(["pt-BR", "en-US"]),
-  message: z.string().min(1).max(4_000),
+  message: z.string().min(1).max(8_000),
   brief: z.record(z.string(), z.unknown()),
   snapshot_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   projection_updated_at: z.string(),
   manifest_id: z.uuid().nullable(),
+  project: z.object({
+    id: z.uuid(),
+    name: z.string(),
+    entryJob: z.string(),
+    accessBasis: z.string(),
+    phase: z.string(),
+    status: z.string(),
+  }).nullable().optional(),
+  company_profile: z.record(z.string(), z.unknown()).default({}),
+  documents: z.array(z.object({
+    id: z.uuid(),
+    name: z.string(),
+    kind: z.string().nullable(),
+    status: z.string(),
+  })).max(250).default([]),
+  tasks: z.array(z.object({
+    taskId: z.string(),
+    label: z.string(),
+    ordinal: z.number(),
+    status: z.string(),
+  })).max(80).default([]),
+  artifacts: z.array(z.object({
+    id: z.uuid(),
+    type: z.string(),
+    version: z.number(),
+    status: z.string(),
+  })).max(80).default([]),
   recent_messages: z.array(z.object({
     id: z.uuid(),
     role: z.enum(["user", "assistant"]),
@@ -35,13 +62,15 @@ export type AgentOperationBriefDependencies = {
   log: (event: string, detail?: Record<string, unknown>) => void;
 };
 
-const SYSTEM = `You are the Offroad Agent inside a private-credit origination workspace.
+const SYSTEM = `You are the Offroad Agent inside one persistent private-debt advisory project.
 
-Your current authority is narrow: understand the user's latest message in the context of the
-declared operation brief. You may do exactly one of three things:
+The conversation may begin with a question, a company, public research, private documents, a
+capital need or an existing transaction. Preserve that context and help the user advance one
+useful step at a time. You may do exactly one of three things in this turn:
 1. Ask one useful clarification when the intended change is ambiguous.
 2. Propose direct edits to the operation brief when the user clearly supplied the new facts.
-3. Answer without a change when the message is informational or outside this command.
+3. Answer without a change when the message is informational, when work is still running, or
+   when the next action belongs to a later governed gate.
 
 Rules:
 - Never claim to approve credit, complete underwriting, commit capital or guarantee funding.
@@ -50,6 +79,14 @@ Rules:
 - The latest user message is a declaration, not reconciled evidence.
 - Do not expose chain of thought. Give a concise conclusion and the reason the user needs.
 - Do not generate a broad checklist. Ask only the next question that materially improves the case.
+- Do not claim that a document was read, a search ran, a calculation was completed or an artifact
+  exists unless the supplied project context explicitly shows that state.
+- Treat document names as inventory, not proof of their contents.
+- Distinguish a user declaration from documented, reconciled or calculated evidence.
+- If company or assignment scope is still unclear, reflect the current understanding and ask the
+  single missing question needed to identify it. Do not force a form or internal vocabulary.
+- Existing plan tasks and artifacts are real state. Explain what is running, complete or blocked
+  without inventing progress.
 - Keep the response in the locale supplied in the input.
 - A proposal is only a preview. The product applies it only after explicit user acceptance.
 - Only use the patch paths allowed by the response schema.`;
@@ -62,7 +99,7 @@ export async function processAgentOperationBriefJob(
   try {
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));
-    const route = routeWorkspaceRequest({message: context.message, surface: "operation_brief"});
+    const route = routeWorkspaceRequest({message: context.message, surface: "case_workspace"});
     const completion = await gateway.complete({
       task: "agent_operation_brief",
       system: SYSTEM,
@@ -71,6 +108,11 @@ export async function processAgentOperationBriefJob(
         text: JSON.stringify({
           locale: context.locale,
           currentBrief: context.brief,
+          project: context.project ?? null,
+          companyProfile: context.company_profile,
+          documentInventory: context.documents,
+          workPlan: context.tasks,
+          artifacts: context.artifacts,
           requestRoute: route,
           recentConversation: context.recent_messages.map(({role, content}) => ({role, content})),
           latestUserMessage: context.message,
@@ -78,7 +120,7 @@ export async function processAgentOperationBriefJob(
       }],
       schema: agentOperationBriefResponseSchema,
       schemaName: "agent_operation_brief_response_v1",
-      maxOutputTokens: 6_000,
+      maxOutputTokens: 2_000,
       metadata: {
         jobId: job.job_id,
         messageId: context.message_id,
@@ -86,8 +128,11 @@ export async function processAgentOperationBriefJob(
         requestIntent: route.intent,
         requestScope: route.scope,
         requestEffect: route.effect,
+        projectEntryJob: context.project?.entryJob ?? "legacy_session",
+        documentCount: String(context.documents.length),
+        artifactCount: String(context.artifacts.length),
       },
-      cacheKey: "agent-operation-brief-v1",
+      cacheKey: "advisor-conversation-2026.09.01-v1",
     });
 
     const response = enforceDirectNumericalSupport(

@@ -40,6 +40,7 @@ type Copy = {
 type Props = {
   copy: Copy;
   locale: string;
+  newProjectHref?: string;
   projects: WorkspaceNavigationProject[];
 };
 
@@ -92,7 +93,7 @@ function ProjectActions({copy, locale, project}: {copy: Copy; locale: string; pr
   );
 }
 
-export function WorkspaceProjectNavigation({copy, locale, projects}: Props) {
+export function WorkspaceProjectNavigation({copy, locale, newProjectHref = `/${locale}/app`, projects}: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
@@ -106,7 +107,7 @@ export function WorkspaceProjectNavigation({copy, locale, projects}: Props) {
     <div className="workspace-project-navigation">
       <div className="workspace-project-navigation__header">
         <p>{copy.projects}</p>
-        <Link aria-label={copy.newProject} href={`/${locale}/app/new`} title={copy.newProject}><Plus aria-hidden="true" size={15} /></Link>
+        <Link aria-label={copy.newProject} href={newProjectHref} title={copy.newProject}><Plus aria-hidden="true" size={15} /></Link>
       </div>
 
       {projects.length > 0 ? (
@@ -136,7 +137,7 @@ export function WorkspaceProjectNavigation({copy, locale, projects}: Props) {
         {projects.length > 0 && visibleProjects.length === 0 ? <div className="workspace-project-list__empty"><Search aria-hidden="true" size={15} /><span>{copy.noResults}</span></div> : null}
       </div>
 
-      <Link className="workspace-project-navigation__new" href={`/${locale}/app/new`}><Plus aria-hidden="true" size={14} /><span>{copy.newProject}</span></Link>
+      <Link className="workspace-project-navigation__new" href={newProjectHref}><Plus aria-hidden="true" size={14} /><span>{copy.newProject}</span></Link>
     </div>
   );
 }

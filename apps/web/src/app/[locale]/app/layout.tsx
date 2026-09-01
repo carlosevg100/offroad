@@ -41,7 +41,7 @@ export default async function ApplicationLayout({children, params}: Props) {
   const projects: WorkspaceNavigationProject[] = (navigationSessions ?? []).map((session) => {
     const capitalProject = session.capital_project_id ? capitalProjectById.get(session.capital_project_id) : null;
     return {
-    href: ["origination_thesis", "company_debt_view"].includes(capitalProject?.entry_job ?? "") && session.capital_project_id
+    href: session.capital_project_id
       ? `/${locale}/app/projects/${session.capital_project_id}`
       : session.status === "confirmed" && session.opportunity_id
         ? `/${locale}/app/opportunities/${session.opportunity_id}`
@@ -101,6 +101,7 @@ export default async function ApplicationLayout({children, params}: Props) {
               },
             }}
             locale={locale}
+            newProjectHref={`/${locale}/app`}
             projects={projects}
           /> : <div className="app-nav__group"><p>{t("projects")}</p><Link href={`/${locale}/app#funds`}><Landmark aria-hidden="true" size={16} /><span>{t("fundsAndMandates")}</span></Link></div>}
         </nav>

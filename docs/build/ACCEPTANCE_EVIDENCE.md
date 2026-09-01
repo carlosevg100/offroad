@@ -1,5 +1,33 @@
 # Acceptance Evidence
 
+## Workspace conversacional persistente, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Uma raiz de projeto | schema e RPC | projeto, sessão de evidência, plano imutável e conversa são criados numa única transação |
+| Entrada única | home autenticada | sugestões apenas preenchem o composer; texto e anexos iniciam o mesmo projeto |
+| Reabertura das verticais | rota de projeto | análises públicas existentes abrem no projeto conversacional e o work product continua acessível pelo painel |
+| Latência percebida | ação e cliente | projeto é persistido antes de análise; loading aparece no clique; nenhuma chamada de modelo bloqueia a navegação |
+| Memória | tabelas existentes | transcript, documentos, plano e artefatos permanecem vinculados ao mesmo `capital_project_id` |
+| Turno real | RPC + worker | mensagem é persistida e enfileirada; uma única chamada limitada produz resposta sem bloquear a navegação |
+| Contexto mínimo | teste do worker | somente memória do projeto, inventário documental, plano, artefatos e últimas 12 mensagens; sem conteúdo integral do documento |
+| Idempotência | teste SQL em staging | replay do primeiro pedido e da fila não duplica projeto, sessão, conversa ou trabalho |
+| Isolamento | teste SQL em staging | outro tenant não lê projeto nem mensagens e não consegue continuar o projeto |
+| Confidencialidade | RPC privada | trabalho privado exige aceite organizacional vigente dos termos |
+| Sem representação implícita | schema, RPC e teste | upload/promoção privada mantêm `representation_status = not_claimed`; nenhuma evidência de representação é criada |
+| Introdução separada | ADR e contrato existente | representação permanece no release exato de projeto, material, identidade e destinatários |
+| Banco | Supabase staging `lxmpsxwlpmfisbauakaz` | migrations `20260901103125`, `20260901104739` e `20260901104905`; teste dedicado aprovado com rollback |
+| Advisors | Supabase staging | zero security findings; nenhum aviso de performance introduzido pela feature, apenas informações históricas de índices sem uso |
+| Banco de produção | Supabase `ifnogpksgdadruooqydi` | migrations canônicas `20260901112115`, `20260901112122` e `20260901112129`; wrappers presentes, execução anônima negada e schema compatível com a aplicação anterior |
+| Advisors de produção | Supabase Security/Performance Advisor | zero security findings; somente informações históricas de índices ainda sem uso |
+| Gate integral | Quality `33501504771`, Node 24, 42 pacotes | banco, 9 jornadas E2E e `pnpm check` verdes; web com 160 testes, worker com 74 e build de produção compilado |
+| Custo | execução desta validação | zero chamadas de modelo e zero pesquisa externa paga |
+| Rollout | PR #339 | schema promovido antes da aplicação; preview Vercel publicado; merge condicionado aos gates verdes |
+
+A evidência comprova o contrato de memória, a entrada e a fronteira legal. Ainda não comprova a
+qualidade das respostas conversacionais nem a integração de todas as verticais ao roteador do chat.
+Esses itens continuam bloqueando a declaração de advisor completo, não a promoção desta fundação.
+
 ## Entendimento preliminar e gate P0, 31/08/2026
 
 | Evidência | Verificação | Resultado |
