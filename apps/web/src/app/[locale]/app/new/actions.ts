@@ -22,7 +22,6 @@ import {
   removeIntakeDocument,
   resolveIntakeIssue,
   reviewIntakeCandidate,
-  startIntakeSession,
   type IntakeRuntime,
 } from "@/lib/intake/server";
 import {canStartPreliminaryUnderstanding, dealBriefFormSchema, saveDealBrief, toDealBrief} from "@/lib/intake/deal-brief";
@@ -30,6 +29,7 @@ import {normalizeCompanyWebsite} from "@/lib/intake/company-profile";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import type {IntakeErrorCode} from "@/lib/intake/types";
 import type {Json} from "@/types/database";
+import {compiledCapitalProjectPlan} from "@/lib/capital-project/plan";
 
 function value(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -94,28 +94,16 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
         p_project_name: parsed.data.projectName,
         p_identity_policy: parsed.data.identityPolicy,
       })
-    : await supabase.rpc("start_workspace_capital_project", {
+    : await supabase.rpc("start_workspace_capital_project_v2", {
         p_locale: locale,
         p_project_name: parsed.data.projectName,
         p_identity_policy: parsed.data.identityPolicy,
         p_representation_declared: true,
         p_entry_job: entryJob,
+        p_plan: compiledCapitalProjectPlan(entryJob),
       });
-  let sessionId = data;
-  if (!existingSessionId && error && (error.code === "PGRST202" || error.code === "42883")) {
-    const {organization, userId} = await requireWorkspace(locale);
-    const fallback = await startIntakeSession({
-      supabase,
-      organizationId: organization.id,
-      userId,
-      locale,
-      journey: organization.organization_type === "originator" ? "originator" : "company",
-      projectName: parsed.data.projectName,
-      identityPolicy: parsed.data.identityPolicy,
-    });
-    if (!fallback.ok) redirect(`${projectSetupUrl}&error=${fallback.error}`);
-    sessionId = fallback.value;
-  } else if (error) {
+  const sessionId = data;
+  if (error) {
     const errorCode = error.message.includes("project_name_already_in_use") ? "duplicate" : error.code === "P0002" ? "session" : "save";
     redirect(`${projectSetupUrl}&error=${errorCode}`);
   }
