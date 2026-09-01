@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## Persistência fail-closed do control plane, 01/09/2026
+
+| Evidência | Verificação | Resultado atual |
+|---|---|---|
+| Snapshot real por execução | worker + RPC capability-bound | input congelado, relatório e manifesto precisam coincidir; compilador usa Claim Registry, reconciliação, cobertura, decisão, artefatos, mercado, segurança e custo; ausência vira blocker |
+| Decisão independente | função privada SQL | banco reavalia os controles; worker não escreve `allowed` diretamente |
+| Credenciamento restrito | registry privado append-only | produção com menos de 20 casos distintos é recusada; tenant não lê nem escreve |
+| Invalidação persistente | triggers + ledger público tenant-scoped | source, input, Deal State e mudança humana canônica invalidam decisões posteriores |
+| Material e Introduce | triggers de release | bindings exatos, acreditação vigente e ausência de invalidação posterior são obrigatórios |
+| Imutabilidade e RLS | `operating_controls.sql` | casos de update/delete, capability forjada, escrita direta e leitura cross-tenant adicionados ao CI |
+| Teste de unidade | worker/release governance | compilação conservadora, policy ausente e budget ausente cobertos sem rede paga |
+| Banco reconstruído | Quality do PR #345 | pendente nesta revisão; não declarar aprovado antes do job verde |
+| Produção | Supabase/Vercel/worker | não alterada |
+
+O código implementa a contenção; ele ainda não prova qualidade institucional de uma vertical.
+Nenhuma capacidade externa recebe maturidade `production` por esta migration.
+
 ## Control plane do pre-mortem, 01/09/2026
 
 | Evidência | Verificação | Resultado |
@@ -15,8 +32,8 @@
 | Gate integral | `pnpm check`, Node 24 | 42 pacotes verdes; web 162, worker 85, gateway 22, release governance 11; Next.js compilou 32 páginas |
 | Custo | execução desta validação | zero chamada de modelo, busca ou API paga |
 
-O teste prova os contratos e suas transições. Ainda não prova a persistência desses novos snapshots,
-um DPA/ZDR vigente, SSO/SCIM/DLP/DR, nem a qualidade institucional de qualquer knowledge pack ou
+O teste prova os contratos e suas transições. A seção acima cobre a persistência candidata, mas
+ainda não prova um DPA/ZDR vigente, SSO/SCIM/DLP/DR, nem a qualidade institucional de qualquer knowledge pack ou
 vertical. Esses pontos permanecem explicitamente pendentes na matriz do pre-mortem.
 
 ## Brasil–Estados Unidos e idioma contínuo, 01/09/2026

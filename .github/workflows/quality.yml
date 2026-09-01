@@ -92,6 +92,9 @@ jobs:
       - name: Tenant non-interference (RLS) test
         run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/rls_non_interference.sql
 
+      - name: Fail-closed operating controls test
+        run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/operating_controls.sql
+
       - name: Project-scoped company test
         run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/project_company_scope.sql
 

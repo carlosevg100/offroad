@@ -94,6 +94,10 @@ import {
 } from "./receivables-evidence";
 import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-design";
 import {buildGovernedMatchScreen} from "./match-screen";
+import {
+  buildCaseOperatingControlSnapshot,
+  caseAnalysisCapabilityScope,
+} from "./operating-control-snapshot";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const retrievalContextSchema = z.object({
@@ -393,6 +397,10 @@ export type CaseAnalysisDependencies = {
   gateway: ModelGateway;
   lineage: () => GatewayCallLog[];
   researchProviders?: PublicSearchProvider[];
+  securityEvidence?: {
+    providerPolicyEnforced: boolean;
+    externalToolsAllowlisted: boolean;
+  };
   now?: () => Date;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -1061,6 +1069,34 @@ export async function processCaseAnalysisJob(
     const manifestId = raw._execution.mode === "primary"
       ? await dependencies.queue.recordCaseSnapshot(job, manifest, stateWithManifest)
       : undefined;
+    const operatingControl = raw._execution.mode === "primary"
+      ? await dependencies.queue.recordOperatingControlSnapshot(job, {
+          scopeId: caseAnalysisCapabilityScope,
+          requestedUse: "internal_decision",
+          inputFingerprint,
+          binding: {
+            caseFingerprint: fingerprintJson({
+              operationTruth: result.state.operationTruth,
+              structureTruth: result.state.structureTruth,
+              pricingTruth: result.state.pricingTruth,
+            }),
+            materialFingerprint: result.state.materialTruth.fingerprint,
+            manifestFingerprint: manifest.manifestFingerprint,
+            controlledExecutionFingerprint: result.report.reportFingerprint,
+          },
+          snapshot: buildCaseOperatingControlSnapshot({
+            state: result.state,
+            session: raw.session,
+            snapshotAt: (dependencies.now?.() ?? new Date()).toISOString(),
+            costUsd: dependencies.gateway.spent().costUsd + publicResearchCostExposureUsd,
+            maxCostUsd: job.payload.model_budget?.max_cost_usd ?? null,
+            security: dependencies.securityEvidence ?? {
+              providerPolicyEnforced: false,
+              externalToolsAllowlisted: false,
+            },
+          }),
+        })
+      : undefined;
     await dependencies.queue.writeStage(job, "case_analysis", "succeeded", {
       reportFingerprint: result.report.reportFingerprint,
       manifestFingerprint: manifest.manifestFingerprint,
@@ -1074,9 +1110,12 @@ export async function processCaseAnalysisJob(
       dealWorkflowStage: raw.deal_workflow.stage,
       materialsAllowed: executionPlan.produceMaterials,
       matchingAllowed: executionPlan.screenMandates,
+      operatingControlAllowed: operatingControl?.allowed ?? false,
+      operatingControlBlockers: operatingControl?.blockers ?? ["not_evaluated_for_non_primary_execution"],
     });
     await dependencies.queue.complete(job, {
       ...(manifestId ? {manifest_id: manifestId} : {}),
+      ...(operatingControl ? {operating_control: operatingControl} : {}),
       report: result.report,
       ...(executionPlan.screenMandates ? {match_details: result.state.matching} : {}),
       ...(receivables?.privateReport ? {receivables_analysis: receivables.privateReport} : {}),

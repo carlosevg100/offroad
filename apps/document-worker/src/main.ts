@@ -218,6 +218,10 @@ async function main(): Promise<void> {
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
           researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
+          securityEvidence: {
+            providerPolicyEnforced: config.ENFORCE_PROVIDER_DATA_POLICY,
+            externalToolsAllowlisted: true,
+          },
           log,
         })
       : job.kind === "capital_project_analysis"

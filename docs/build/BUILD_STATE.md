@@ -4,6 +4,28 @@ Atualizado em: 2026-09-01
 Baseline: `main` após PR #344, commit `21c7549`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Persistência fail-closed do control plane, 01/09/2026
+
+O candidato passa a persistir o que antes existia apenas como contrato puro. Um job de análise
+grava, com sua capability temporária, o snapshot que aquela execução efetivamente provou. O
+banco exige o input congelado e os fingerprints do relatório e manifesto persistidos, recalcula a
+decisão, guarda blockers e warnings, e não aceita que o worker declare o próprio credenciamento.
+A ausência de policy real do provider, orçamento, fonte, matemática conciliada ou decisão
+confirmada continua visível e bloqueada.
+
+O registry privado de capacidades é append-only e exige escopo e etapa estreitos. `production`
+requer procedimento, owner, implementação, gold/adversarial, zero crítico e vinte IDs distintos
+vindos do ledger de execuções controladas. Nenhum escopo foi artificialmente credenciado por esta
+entrega.
+
+Alterações em documento, input econômico, Deal State ou intervenção humana canônica geram um
+evento de invalidação persistente. Aprovação de pacote externo e introdução qualificada exigem
+snapshot atual, acreditação de produção e fingerprints exatos de caso, material, match, plano e
+autorização; qualquer evento posterior fecha o gate.
+
+Esta é uma mudança candidata. Não houve migration remota, deploy, ativação de provider ou chamada
+paga. A prova final depende do job de banco reconstruído do zero e do gate integral do PR.
+
 ## Control plane do pre-mortem, 01/09/2026
 
 O candidato transforma os principais modos de morte do produto em contratos fail-closed. A nova
@@ -19,8 +41,8 @@ disjuntas de dez casos e agora também exige aceite do control plane.
 
 O mesmo pacote ganhou invalidação transitiva de evidência até cálculos, claims, materiais,
 aprovações e lender matching; e um ledger tipado de intervenção humana capaz de expor correção
-manual recorrente e minutos não capturados. Os contratos são puros; persistência no banco ainda é
-uma etapa separada e não foi simulada.
+manual recorrente e minutos não capturados. Os contratos puros agora possuem a implementação
+persistente candidata descrita acima; ela ainda não está ativa em ambiente remoto.
 
 `@offroad/model-gateway` agora recebe classe e finalidade em todas as chamadas reais de
 classificação, extração, conversa, análise, estrutura, redação e auditoria. Existe policy

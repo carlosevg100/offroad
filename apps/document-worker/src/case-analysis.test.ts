@@ -226,6 +226,7 @@ describe("worker case analysis", () => {
       },
       recordDealStateObject: async () => { throw new Error("the preliminary job must not mutate Deal State"); },
       recordCaseSnapshot: async () => { throw new Error("the preliminary job must not persist a case snapshot"); },
+      recordOperatingControlSnapshot: async () => { throw new Error("the preliminary job must not persist operating controls"); },
       recordControlledExecution: async () => { throw new Error("the preliminary job must not create a controlled execution"); },
       loadAgentContext: async () => ({}),
       loadCapitalProjectContext: async () => ({}),
@@ -610,6 +611,14 @@ describe("worker case analysis", () => {
         recordedState = state as Record<string, unknown>;
         return "manifest-1";
       },
+      recordOperatingControlSnapshot: async () => ({
+        id: "f3000000-0000-4000-8000-000000000001",
+        allowed: false,
+        blockers: ["capability_not_accredited_for_recommend"],
+        warnings: [],
+        decisionFingerprint: "f".repeat(64),
+        replayed: false,
+      }),
       recordControlledExecution: async () => "execution-1",
       loadAgentContext: async () => ({}),
       loadCapitalProjectContext: async () => ({}),
