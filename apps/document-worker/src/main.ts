@@ -13,6 +13,7 @@ import {createStorageUrlGuard} from "./storage-url";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
+import {processCompanyDebtViewJob} from "./company-debt-view";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -88,6 +89,7 @@ async function main(): Promise<void> {
   // the remainder, so search and synthesis cannot silently escape the same per-job ledger.
   const PERPLEXITY_CASE_RESERVE_USD = 0.025;
   const PERPLEXITY_ORIGINATION_RESERVE_USD = 0.035;
+  const PERPLEXITY_COMPANY_DEBT_RESERVE_USD = 0.04;
   const researchProviders: PublicSearchProvider[] = config.PERPLEXITY_API_KEY
     ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})]
     : [];
@@ -99,7 +101,9 @@ async function main(): Promise<void> {
       requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB,
     );
     const requestedResearchReserve = job.kind === "capital_project_analysis" && !job.payload.revision_of_artifact_id
-      ? PERPLEXITY_ORIGINATION_RESERVE_USD
+      ? job.payload.analysis_scope === "company_debt_view"
+        ? PERPLEXITY_COMPANY_DEBT_RESERVE_USD
+        : PERPLEXITY_ORIGINATION_RESERVE_USD
       : job.kind === "case_analysis" || job.kind === "preliminary_analysis"
         ? PERPLEXITY_CASE_RESERVE_USD
         : 0;
@@ -210,13 +214,21 @@ async function main(): Promise<void> {
           log,
         })
       : job.kind === "capital_project_analysis"
-        ? processOriginationThesisJob(job, {
-            queue,
-            gateway: gatewayRun.gateway,
-            lineage: () => gatewayRun.calls.map((call) => ({...call})),
-            researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
-            log,
-          })
+        ? job.payload.analysis_scope === "company_debt_view"
+          ? processCompanyDebtViewJob(job, {
+              queue,
+              gateway: gatewayRun.gateway,
+              lineage: () => gatewayRun.calls.map((call) => ({...call})),
+              researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
+              log,
+            })
+          : processOriginationThesisJob(job, {
+              queue,
+              gateway: gatewayRun.gateway,
+              lineage: () => gatewayRun.calls.map((call) => ({...call})),
+              researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
+              log,
+            })
       : job.kind === "agent_operation_brief"
         ? processAgentOperationBriefJob(job, {queue, gateway: gatewayRun.gateway, log})
       : processDocumentJob(job, dependenciesFor(gatewayRun)))

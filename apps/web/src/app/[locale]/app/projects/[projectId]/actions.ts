@@ -43,18 +43,32 @@ export async function decideOriginationArtifact(
   }
 
   const {supabase, organization} = await requireWorkspace(locale);
-  const {data: artifact} = await supabase.from("capital_project_artifacts")
-    .select("id, artifact_fingerprint, status")
-    .eq("organization_id", organization.id)
-    .eq("capital_project_id", parsed.data.projectId)
-    .eq("id", parsed.data.artifactId)
-    .maybeSingle();
+  const [{data: artifact}, {data: project}] = await Promise.all([
+    supabase.from("capital_project_artifacts")
+      .select("id, artifact_fingerprint, status")
+      .eq("organization_id", organization.id)
+      .eq("capital_project_id", parsed.data.projectId)
+      .eq("id", parsed.data.artifactId)
+      .maybeSingle(),
+    supabase.from("capital_projects")
+      .select("entry_job")
+      .eq("organization_id", organization.id)
+      .eq("id", parsed.data.projectId)
+      .maybeSingle(),
+  ]);
   if (!artifact || artifact.status !== "pending_confirmation" || artifact.artifact_fingerprint !== parsed.data.fingerprint) {
     return {ok: false, code: "stale"};
   }
 
+  const revision = project?.entry_job === "company_debt_view"
+    ? "request_company_debt_view_revision_v1" as const
+    : project?.entry_job === "origination_thesis"
+      ? "request_origination_thesis_revision_v1" as const
+      : null;
+  if (!revision) return {ok: false, code: "stale"};
+
   const {error} = parsed.data.decision === "request_changes"
-    ? await supabase.rpc("request_origination_thesis_revision_v1", {
+    ? await supabase.rpc(revision, {
         p_artifact_id: parsed.data.artifactId,
         p_artifact_fingerprint: parsed.data.fingerprint,
         p_note: parsed.data.note,

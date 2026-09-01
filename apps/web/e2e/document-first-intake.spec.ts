@@ -14,6 +14,7 @@ import {waitForOneTimeCode} from "./support/mail";
 const runId = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
 const initialProjectName = `Projeto Horizonte ${runId}`;
 const secondaryProjectName = `Projeto Desconhecido ${runId}`;
+const companyDebtProjectName = `Projeto Dívida ${runId}`;
 const account = {
   email: `e2e-${runId}@example.com`,
   password: `Offroad-E2E-${runId}!`,
@@ -318,6 +319,36 @@ test.describe("Document-first intake (company journey)", () => {
     await renamedProject.locator(".workspace-project-actions__archive").click();
     await expect(page.locator(".workspace-project").filter({hasText: renamedProjectName})).toHaveCount(0);
     await expect(projectList).toContainText(initialProjectName);
+  });
+
+  test("starts a public debt-lens analysis from the company alone", async () => {
+    await page.goto("/pt-BR/app");
+    const entry = page.locator('a.capital-job-card[href="/pt-BR/app/new/company-debt"]');
+    await expect(entry).toContainText("Entender a companhia na ótica de dívida");
+    await entry.click();
+
+    await expect(page.locator(".origination-setup__header h1")).toHaveText("Entenda o balanço antes de escolher a operação.");
+    await expect(page.locator('input[type="file"]')).toHaveCount(0);
+    await expect(page.locator('textarea[name="focus"]')).not.toHaveAttribute("required", "");
+    await expect(page.locator('textarea[name="known_context"]')).not.toHaveAttribute("required", "");
+    await page.locator('input[name="project_name"]').fill(companyDebtProjectName);
+    await page.locator('input[name="company_name"]').fill("Companhia Pública Exemplo");
+    await page.locator('input[name="company_website"]').fill("companhia-publica.example.com");
+    await page.locator('.origination-form__action button[type="submit"]').click();
+
+    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+    await expect(page.locator(".origination-project__header")).toContainText("Companhia Pública Exemplo");
+    await expect(page.locator(".origination-project__access")).toContainText("Somente fontes públicas");
+    await expect(page.locator(".origination-task-panel li")).toHaveCount(24);
+    await expect(page.locator(".origination-working")).toContainText("A Offroad está reconstruindo a leitura da companhia.");
+
+    await page.goto("/pt-BR/app");
+    const createdProject = page.locator(".workspace-project").filter({hasText: companyDebtProjectName});
+    await expect(createdProject).toBeVisible();
+    await createdProject.locator(".workspace-project-actions > summary").click();
+    page.once("dialog", (dialog) => dialog.accept());
+    await createdProject.locator(".workspace-project-actions__archive").click();
+    await expect(page.locator(".workspace-project").filter({hasText: companyDebtProjectName})).toHaveCount(0);
   });
 
   test("signs out and logs back in with the password", async () => {

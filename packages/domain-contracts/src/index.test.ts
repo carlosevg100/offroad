@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {
+  companyDebtDiagnosticSchema,
   dealWorkflowAllows,
   deriveDealWorkflowState,
   initialDealWorkflowState,
@@ -29,6 +30,22 @@ describe("domain contracts", () => {
       unknowns: ["Open item"],
       suggestedOpening: "x".repeat(40),
     }).success).toBe(false);
+  });
+
+  it("keeps a public debt diagnostic from claiming calculated capacity", () => {
+    const base = {
+      executiveRead: "x".repeat(80), companySnapshot: "x".repeat(60),
+      evidenceCoverage: {publicDataQuality: "limited", whatCanBeAssessed: [], criticalMissingInputs: ["Complete financial statements"]},
+      businessRiskProfile: {businessModel: "x".repeat(40), cashFlowDrivers: ["Revenue recurrence"], sensitivities: ["Demand volatility"], sourceUrls: ["https://example.com"]},
+      financialSignals: [], debtAndLiquiditySignals: [], workingCapitalSignals: [], risks: [],
+      capacityAssessment: {status: "not_computable", conclusion: "x".repeat(40), bindingUnknowns: ["Debt schedule unavailable"], requiredInputs: ["Audited financial statements"]},
+      diagnosticHypotheses: [],
+      informationRequests: [{request: "Debt schedule", whyItMatters: "x".repeat(20), decisionImpact: "x".repeat(20), acceptableEvidence: ["Spreadsheet"]}],
+      questions: Array.from({length: 3}, (_, index) => ({question: `Question ${index} ${"x".repeat(10)}`, whyItMatters: "x".repeat(20), answerChanges: "x".repeat(20)})),
+      unknowns: ["Current debt maturity profile"],
+    };
+    expect(companyDebtDiagnosticSchema.safeParse(base).success).toBe(true);
+    expect(companyDebtDiagnosticSchema.safeParse({...base, capacityAssessment: {...base.capacityAssessment, status: "supported"}}).success).toBe(false);
   });
 
   it("keeps an unconfirmed case in diagnosis and blocks paid downstream work", () => {

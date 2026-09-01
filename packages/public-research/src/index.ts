@@ -106,6 +106,29 @@ export function buildOriginationResearchPlan(raw: PublicResearchSubject): Resear
   });
 }
 
+/** Public research for a debt-lens diagnostic. The plan looks for official financial, liquidity
+ * and debt disclosure but never interpolates the user's private context into an external query. */
+export function buildCompanyDebtResearchPlan(raw: PublicResearchSubject): ResearchQuery[] {
+  const subject = publicResearchSubjectSchema.parse(raw);
+  const officialDomain = subject.website ? domainOf(subject.website) : null;
+  const geography = subject.geography ? ` ${subject.geography}` : "";
+  const sector = subject.sector ? ` ${subject.sector}` : "";
+  const candidates: Array<Omit<ResearchQuery, "id">> = [
+    {topic: "identity", query: `${subject.legalName}${geography} site oficial operações segmentos clientes`, domainAllowlist: officialDomain ? [officialDomain] : []},
+    {topic: "identity", query: `${subject.legalName}${geography} resultados financeiros demonstrações relatório anual investidores`, domainAllowlist: officialDomain ? [officialDomain] : []},
+    {topic: "identity", query: `${subject.legalName}${geography} endividamento liquidez vencimentos garantias covenants`, domainAllowlist: officialDomain ? [officialDomain] : []},
+    {topic: "news", query: `${subject.legalName}${geography} notícias fatos relevantes últimos 18 meses`, domainAllowlist: []},
+    {topic: "sector", query: `${subject.legalName}${sector}${geography} setor drivers margens capital de giro riscos`, domainAllowlist: []},
+    {topic: "regulation", query: `${subject.sector ?? subject.legalName}${geography} regulação riscos setoriais crédito`, domainAllowlist: []},
+    {topic: "market", query: `${subject.legalName}${geography} rating dívida debênture empréstimo financiamento`, domainAllowlist: []},
+    {topic: "market", query: `${subject.sector ?? subject.legalName}${geography} comparáveis dívida crédito privado mercado de capitais`, domainAllowlist: []},
+  ];
+  return candidates.map((candidate) => {
+    assertPublicQuerySafe(candidate.query);
+    return researchQuerySchema.parse({...candidate, id: sha256(`${candidate.topic}:${candidate.query}`)});
+  });
+}
+
 export async function runPublicResearch(input: {
   plan: ResearchQuery[];
   providers: PublicSearchProvider[];

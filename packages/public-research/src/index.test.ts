@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {
   assertPublicQuerySafe,
+  buildCompanyDebtResearchPlan,
   buildOriginationResearchPlan,
   buildPublicResearchPlan,
   createPerplexitySearchProvider,
@@ -8,6 +9,14 @@ import {
 } from "./index";
 
 describe("governed public research", () => {
+  it("builds a debt-lens plan with official financial and liquidity searches", () => {
+    const plan = buildCompanyDebtResearchPlan({legalName: "Companhia Exemplo S.A.", website: "https://example.com"});
+    expect(plan).toHaveLength(8);
+    expect(plan.filter((query) => query.domainAllowlist.includes("example.com"))).toHaveLength(3);
+    expect(plan.some((query) => query.query.includes("liquidez"))).toBe(true);
+    expect(plan.every((query) => query.query.length <= 400)).toBe(true);
+  });
+
   it("builds a bounded origination plan without interpolating meeting context", () => {
     const plan = buildOriginationResearchPlan({
       legalName: "Companhia Exemplo S.A.",
