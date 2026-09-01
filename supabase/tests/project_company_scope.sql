@@ -342,6 +342,111 @@ begin
 end;
 $$;
 
+-- An originator may form a thesis from public information without pretending to represent the
+-- company. Private uploads remain blocked until the project crosses the explicit legal gate.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000105","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  target_org constant uuid := '20000000-0000-4000-8000-000000000105';
+  actor_id constant uuid := '10000000-0000-4000-8000-000000000105';
+  session_id uuid;
+  project_id uuid;
+  accepted boolean;
+begin
+  session_id := public.start_public_capital_project(
+    'pt-BR', 'Tese Pública Cliente C', 'origination_thesis',
+    'Cliente C S.A.', 'https://cliente-c.example'
+  );
+  select capital_project_id into project_id
+  from public.document_intake_sessions
+  where id = session_id;
+
+  if project_id is null
+    or (select access_basis from public.capital_projects where id = project_id) <> 'public_information'
+    or (select privacy_status from public.document_intake_sessions where id = session_id) <> 'public_information'
+    or (select representation_status from public.document_intake_sessions where id = session_id) <> 'not_claimed'
+    or (select representation_kind from public.document_intake_sessions where id = session_id) is not null
+    or (select count(*) from public.project_representation_evidence
+        where intake_session_id = session_id) <> 0 then
+    raise exception 'public thesis implied private access or company representation';
+  end if;
+
+  accepted := true;
+  begin
+    perform public.register_intake_document_command(
+      target_org, session_id,
+      '51000000-0000-4000-8000-000000000109',
+      '50000000-0000-4000-8000-000000000109',
+      'opportunity-documents',
+      target_org::text || '/' || session_id::text || '/private.pdf',
+      'private.pdf', 'application/pdf', 128, repeat('f', 64)
+    );
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'public project accepted a browser-supplied private document'; end if;
+
+  accepted := true;
+  begin
+    perform public.authorize_capital_project_private_work(project_id, true);
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'public project bypassed the current legal acceptance'; end if;
+
+  set local role postgres;
+  insert into public.organization_legal_acceptances (
+    organization_id, legal_document_id, document_key, document_version, document_hash,
+    accepted_by, signatory_name, signatory_title, authority_declared,
+    information_rights_declared, terms_agreed, acceptance_statement,
+    information_rights_statement, acceptance_method, locale
+  )
+  select
+    target_org, document.id, document.document_key, document.version, document.document_hash,
+    actor_id, 'Advisor Test', 'Assessor', true, true, true,
+    document.acceptance_statement, document.information_rights_statement, 'clickwrap', 'pt-BR'
+  from public.platform_legal_documents document
+  where document.document_key = 'private_workspace_terms'
+    and document.locale = 'pt-BR'
+    and document.status = 'active'
+  order by document.effective_at desc
+  limit 1;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000105","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  perform public.authorize_capital_project_private_work(project_id, true);
+
+  if (select access_basis from public.capital_projects where id = project_id) <> 'authorized_private'
+    or (select privacy_status from public.document_intake_sessions where id = session_id) <> 'private'
+    or (select representation_kind from public.document_intake_sessions where id = session_id) <> 'advisor'
+    or (select representation_status from public.document_intake_sessions where id = session_id) <> 'declared'
+    or (select count(*) from public.project_representation_evidence
+        where intake_session_id = session_id and status = 'declared') <> 1 then
+    raise exception 'private authorization did not promote the project atomically';
+  end if;
+
+  perform public.register_intake_document_command(
+    target_org, session_id,
+    '51000000-0000-4000-8000-000000000110',
+    '50000000-0000-4000-8000-000000000110',
+    'opportunity-documents',
+    target_org::text || '/' || session_id::text || '/authorized.pdf',
+    'authorized.pdf', 'application/pdf', 128, repeat('0', 64)
+  );
+  if (select count(*) from public.source_documents where intake_session_id = session_id) <> 1 then
+    raise exception 'authorized private project could not retain its document';
+  end if;
+end;
+$$;
+
 rollback;
 
 select 'project_company_scope_passed' as result;

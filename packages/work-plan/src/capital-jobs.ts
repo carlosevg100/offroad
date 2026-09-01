@@ -37,6 +37,7 @@ export type CapitalProjectJobDefinition = {
   firstWorkProduct: string;
   confirmationGate: "preliminary_understanding" | "diagnostic" | "structure" | "production_plan";
   inputPolicy: CapitalJobInputPolicy;
+  accessPolicy: "public_or_private" | "private_required" | "existing_project";
   requiresExistingProject: boolean;
 };
 
@@ -60,6 +61,7 @@ export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
       company: "required", documents: "optional", capitalIntent: "optional",
       existingTransaction: "not_applicable", publicResearch: "required",
     },
+    accessPolicy: "public_or_private",
     requiresExistingProject: false,
   },
   {
@@ -76,6 +78,7 @@ export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
       company: "required", documents: "optional", capitalIntent: "optional",
       existingTransaction: "not_applicable", publicResearch: "required",
     },
+    accessPolicy: "public_or_private",
     requiresExistingProject: false,
   },
   {
@@ -92,6 +95,7 @@ export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
       company: "required", documents: "optional", capitalIntent: "required",
       existingTransaction: "not_applicable", publicResearch: "allowed",
     },
+    accessPolicy: "public_or_private",
     requiresExistingProject: false,
   },
   {
@@ -108,6 +112,7 @@ export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
       company: "inferable", documents: "required", capitalIntent: "inferable",
       existingTransaction: "optional", publicResearch: "required",
     },
+    accessPolicy: "private_required",
     requiresExistingProject: false,
   },
   {
@@ -124,6 +129,7 @@ export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
       company: "inferable", documents: "required", capitalIntent: "optional",
       existingTransaction: "required", publicResearch: "allowed",
     },
+    accessPolicy: "private_required",
     requiresExistingProject: false,
   },
   {
@@ -140,6 +146,7 @@ export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
       company: "existing_project", documents: "existing_project", capitalIntent: "existing_project",
       existingTransaction: "existing_project", publicResearch: "allowed",
     },
+    accessPolicy: "existing_project",
     requiresExistingProject: true,
   },
 ] as const;

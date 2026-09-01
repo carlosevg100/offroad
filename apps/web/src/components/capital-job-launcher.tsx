@@ -34,14 +34,14 @@ export function CapitalJobLauncher({existingProjectHref, locale, newProjectBaseH
         title: "Como a Offroad pode ajudar agora?",
         body: "Escolha o ponto de partida. Informações, decisões e materiais permanecem no mesmo projeto conforme o trabalho evolui.",
         existing: "Escolha um projeto abaixo para continuar.",
-        unavailable: "Disponível depois que houver um projeto estruturado.",
+        unavailable: "Este fluxo ainda não está disponível.",
       }
     : {
         kicker: "Start where you are",
         title: "How can Offroad help now?",
         body: "Choose a starting point. Information, decisions and materials remain in the same project as the work evolves.",
         existing: "Choose a project below to continue.",
-        unavailable: "Available once a structured project exists.",
+        unavailable: "This workflow is not available yet.",
       };
 
   return (
@@ -55,15 +55,21 @@ export function CapitalJobLauncher({existingProjectHref, locale, newProjectBaseH
         {capitalProjectJobs.map((job, index) => {
           const Icon = jobIcons[job.id];
           const needsProject = job.requiresExistingProject;
+          // Capital planning is the only entry with a proven product rail today. Keeping the
+          // remaining jobs visible but inert prevents a new label from silently entering the
+          // old generic intake while their task-specific runtimes are still being implemented.
+          const isReleased = job.id === "capital_planning";
           const separator = newProjectBaseHref.includes("?") ? "&" : "?";
-          const href = needsProject ? existingProjectHref : `${newProjectBaseHref}${separator}job=${job.id}`;
+          const href = isReleased
+            ? needsProject ? existingProjectHref : `${newProjectBaseHref}${separator}job=${job.id}`
+            : undefined;
           const contents = (
             <>
               <span className="capital-job-card__number">{String(index + 1).padStart(2, "0")}</span>
               <span className="capital-job-card__icon"><Icon aria-hidden="true" size={18} /></span>
               <strong>{job.title[language]}</strong>
               <p id={`capital-job-${job.id}-body`}>{job.description[language]}</p>
-              {needsProject ? <small>{existingProjectHref ? copy.existing : copy.unavailable}</small> : null}
+              {!isReleased || needsProject ? <small>{isReleased && existingProjectHref ? copy.existing : copy.unavailable}</small> : null}
             </>
           );
           return href ? (

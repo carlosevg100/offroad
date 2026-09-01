@@ -518,6 +518,7 @@ export type Database = {
       }
       capital_projects: {
         Row: {
+          access_basis: string
           archived_at: string | null
           archived_by: string | null
           company_id: string | null
@@ -527,11 +528,14 @@ export type Database = {
           entry_job: string
           id: string
           organization_id: string
+          private_access_granted_at: string | null
+          private_access_granted_by: string | null
           project_name: string
           status: string
           updated_at: string
         }
         Insert: {
+          access_basis?: string
           archived_at?: string | null
           archived_by?: string | null
           company_id?: string | null
@@ -541,11 +545,14 @@ export type Database = {
           entry_job?: string
           id?: string
           organization_id: string
+          private_access_granted_at?: string | null
+          private_access_granted_by?: string | null
           project_name: string
           status?: string
           updated_at?: string
         }
         Update: {
+          access_basis?: string
           archived_at?: string | null
           archived_by?: string | null
           company_id?: string | null
@@ -555,6 +562,8 @@ export type Database = {
           entry_job?: string
           id?: string
           organization_id?: string
+          private_access_granted_at?: string | null
+          private_access_granted_by?: string | null
           project_name?: string
           status?: string
           updated_at?: string
@@ -5809,6 +5818,33 @@ export type Database = {
           p_job_title?: string
           p_journey: string
           p_locale?: string
+        }
+        Returns: string
+      }
+      authorize_capital_project_private_work: {
+        Args: {
+          p_information_rights_declared: boolean
+          p_project_id: string
+        }
+        Returns: string
+      }
+      start_public_capital_project: {
+        Args: {
+          p_company_name: string
+          p_company_website: string
+          p_entry_job: string
+          p_locale: string
+          p_project_name: string
+        }
+        Returns: string
+      }
+      start_public_onboarding_capital_project: {
+        Args: {
+          p_company_name: string
+          p_company_website: string
+          p_entry_job: string
+          p_locale: string
+          p_project_name: string
         }
         Returns: string
       }
