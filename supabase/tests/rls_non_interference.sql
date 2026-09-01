@@ -1648,7 +1648,13 @@ declare
   preliminary_id uuid;
   accepted boolean;
   payload jsonb;
+  pipeline_was_enabled boolean;
 begin
+  select pipeline_enabled into pipeline_was_enabled
+  from public.organizations
+  where id = org_a;
+  update public.organizations set pipeline_enabled = false where id = org_a;
+
   insert into public.document_intake_sessions (
     id, organization_id, started_by, journey, locale, capital_objective
   ) values
@@ -1715,6 +1721,9 @@ begin
   if accepted then
     raise exception 'empty written input bypassed the preliminary-input gate';
   end if;
+
+  set local role postgres;
+  update public.organizations set pipeline_enabled = pipeline_was_enabled where id = org_a;
 end;
 $$;
 
