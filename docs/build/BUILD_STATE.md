@@ -1,7 +1,7 @@
 # Build State
 
 Atualizado em: 2026-09-01
-Baseline: `main` após PR #340, commit `720ed031f5403c176bc4e8f4943ab306897df39e`
+Baseline: `main` após PR #342, commit `b3daf6dc7b4fdbdeb62cb4ba4f21390d5068bc2d`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
@@ -26,9 +26,15 @@ plano ativo, base pública, ausência de documentos, escopo exato e idempotênci
 permanecem US$ 0,75/duas chamadas para originação e US$ 0,95/duas chamadas para company debt view.
 Nenhum aceite de representação, aprovação de material ou autoridade de introdução é criado.
 
-Esta capacidade está em branch candidata. Contratos e worker passaram nos testes focados; a nova
-migration e `advisor_semantic_dag_activation.sql` aguardam reconstrução limpa do banco em CI. Os
-demais jobs seguem `conversation_only` até que seus executores alcancem o próprio gate.
+Esta capacidade está em produção por PR #341; PR #342 incorporou o teste SQL ao workflow de banco.
+O PR gate `33506053970` e o gate com o teste obrigatório `33506895933` passaram reconstrução limpa,
+RLS, E2E, lint, tipos, testes e build. O staging foi reconciliado com a vertical pública ausente e
+recebeu as migrations remotas `20260901121555` e `20260901121603`; o teste transacional passou com
+rollback. Produção recebeu `20260901122420`, passou o mesmo teste e mantém o wrapper apenas para
+`authenticated`, com implementação privada fechada. Security Advisor retorna zero findings nos
+dois ambientes. O worker `33506612853` estabilizou no ECS e o Vercel publicou produção. Zero API
+paga foi chamada. Os demais jobs seguem `conversation_only` até que seus executores alcancem o
+próprio gate.
 
 ## Workspace conversacional persistente, promoção controlada, 01/09/2026
 
@@ -69,7 +75,7 @@ promovidos por PR #339; o ajuste focado da suíte do worker entrou por PR #340. 
 
 Esta fatia entregou memória, superfície-base e turnos reais assíncronos. As duas verticais públicas
 existentes reabrem primeiro no projeto conversacional e expõem o trabalho já executado a partir do
-painel do mesmo projeto. A branch candidata acima conecta novos prompts a esses dois executores; a
+painel do mesmo projeto. A liberação acima conecta novos prompts a esses dois executores; a
 atualização de plano, análise documental profunda, estruturação, materiais e matching continuam
 sujeitos aos próprios gates antes de o workspace ser declarado completo.
 

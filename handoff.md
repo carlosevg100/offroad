@@ -1,8 +1,9 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 1 September 2026. Receivables Phase 6 is live on `main`. Phase 7 is
-> a candidate branch that connects actual uploads to the full governed vertical; it is not live
-> until database CI, staging and the controlled production replay below are complete.
+> Current as of 1 September 2026. Receivables Phase 6 and the conversational handoff to the two
+> released public DAGs are live on `main`. Receivables Phase 7 remains a separate candidate that
+> connects actual uploads to the full governed vertical; it is not live until its own controlled
+> replay is complete.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
@@ -32,11 +33,17 @@ calls and US$ 0.75 for origination, two calls and US$ 0.95 for the public compan
 including the existing search reserves. It grants no representation, material approval or market
 authority.
 
-This is a candidate change on `feat/governed-workspace-dag-router`. TypeScript contract and worker
-tests are green, including the zero-call path and the one-call identity-normalization path. The
-new migration and adversarial SQL test still require database CI before staging or production.
-The other four capital jobs remain honest conversation/plan surfaces until their own executors,
-artifacts and gold cases are promoted.
+PR #341 promoted the router and atomic activation to `main`; PR #342 made its adversarial SQL test
+mandatory in every database CI run. Quality run `33506053970` passed the PR gate, including the
+clean database reconstruction, and run `33506895933` passed again with the new test explicitly in
+the workflow. Staging received the missing `company_debt_view` predecessor and the activation as
+remote migrations `20260901121555` and `20260901121603`; the transaction test passed there with
+rollback and Security Advisor returned zero findings. Production received migration
+`20260901122420`; the same rollback test passed, the wrapper is executable by `authenticated` but
+not `anon`, the private activation is not executable by `authenticated`, and no test row remained.
+Security Advisor is clean. Worker rollout `33506612853` stabilised on ECS and Vercel published the
+production commit. No paid model or research API ran. The other four capital jobs remain honest
+conversation/plan surfaces until their own executors, artifacts and gold cases are promoted.
 
 ### Engineering update: persistent conversational project workspace, 1 September 2026
 
@@ -68,8 +75,8 @@ version, identity policy and named recipients.
 Existing public-analysis projects now reopen on the conversation by default and expose their
 specialized work product from the project's work panel instead of replacing the project surface.
 The original workspace release did not connect the new-composer semantic router to those
-executors. The candidate described above closes that gap for the two released public verticals;
-the old setup routes remain directly addressable only as temporary compatibility paths.
+executors. The production release described above closes that gap for the two released public
+verticals; the old setup routes remain directly addressable only as temporary compatibility paths.
 
 The staging SQL test proves atomic creation, idempotent queue replay and cross-tenant isolation.
 Its first replay exposed and then verified the fix for a timestamp tie when resolving the initial
