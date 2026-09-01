@@ -42,7 +42,7 @@ export async function IntakeCompanyProfile({action, documents, journey, locale, 
         <p className="intake-company__scope">{t(journey === "originator" ? "projectScopeAdvisor" : "projectScopeCompany")}</p>
 
         <div className="intake-company__identity">
-          <label><span>{t("name")}</span><input autoComplete="organization" defaultValue={profile?.name ?? ""} maxLength={160} minLength={2} name="company_name" required /></label>
+          <label><span>{t("name")}</span><input autoComplete="organization" defaultValue={profile?.name ?? ""} maxLength={160} minLength={2} name="company_name" /></label>
           <label><span>{t("legalName")}</span><input defaultValue={profile?.legalName ?? ""} maxLength={200} name="legal_name" /></label>
           <label>
             <span>{t("identifier")}</span>

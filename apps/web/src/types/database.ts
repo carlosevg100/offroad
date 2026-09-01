@@ -516,6 +516,66 @@ export type Database = {
           },
         ]
       }
+      capital_projects: {
+        Row: {
+          archived_at: string | null
+          archived_by: string | null
+          company_id: string | null
+          created_at: string
+          created_by: string
+          current_phase: string
+          entry_job: string
+          id: string
+          organization_id: string
+          project_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
+          company_id?: string | null
+          created_at?: string
+          created_by: string
+          current_phase?: string
+          entry_job?: string
+          id?: string
+          organization_id: string
+          project_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          archived_by?: string | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string
+          current_phase?: string
+          entry_job?: string
+          id?: string
+          organization_id?: string
+          project_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_projects_organization_id_company_id_fkey"
+            columns: ["organization_id", "company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       capital_requests: {
         Row: {
           collateral_summary: string | null
@@ -1399,9 +1459,11 @@ export type Database = {
           capital_consequence: string | null
           capital_currency: string | null
           capital_objective: string | null
+          capital_project_id: string | null
           capital_urgency: string | null
           client_company_id: string | null
           collateral_kinds: string[] | null
+          company_context_received_at: string | null
           company_profile: Json
           company_profile_confirmed_at: string | null
           confirmed_at: string | null
@@ -1446,9 +1508,11 @@ export type Database = {
           capital_consequence?: string | null
           capital_currency?: string | null
           capital_objective?: string | null
+          capital_project_id?: string | null
           capital_urgency?: string | null
           client_company_id?: string | null
           collateral_kinds?: string[] | null
+          company_context_received_at?: string | null
           company_profile?: Json
           company_profile_confirmed_at?: string | null
           confirmed_at?: string | null
@@ -1493,9 +1557,11 @@ export type Database = {
           capital_consequence?: string | null
           capital_currency?: string | null
           capital_objective?: string | null
+          capital_project_id?: string | null
           capital_urgency?: string | null
           client_company_id?: string | null
           collateral_kinds?: string[] | null
+          company_context_received_at?: string | null
           company_profile?: Json
           company_profile_confirmed_at?: string | null
           confirmed_at?: string | null
@@ -1531,6 +1597,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "document_intake_sessions_organization_capital_project_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "document_intake_sessions_organization_client_company_fkey"
             columns: ["organization_id", "client_company_id"]
@@ -3177,6 +3250,7 @@ export type Database = {
       }
       opportunities: {
         Row: {
+          capital_project_id: string | null
           capital_request_id: string
           company_id: string
           created_at: string
@@ -3194,6 +3268,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          capital_project_id?: string | null
           capital_request_id: string
           company_id: string
           created_at?: string
@@ -3211,6 +3286,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          capital_project_id?: string | null
           capital_request_id?: string
           company_id?: string
           created_at?: string
@@ -3228,6 +3304,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "opportunities_organization_capital_project_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "opportunities_organization_id_capital_request_id_fkey"
             columns: ["organization_id", "capital_request_id"]
@@ -5738,12 +5821,39 @@ export type Database = {
         }
         Returns: string
       }
+      start_onboarding_capital_project: {
+        Args: {
+          p_entry_job: string
+          p_identity_policy: string
+          p_locale: string
+          p_project_name: string
+          p_representation_declared: boolean
+        }
+        Returns: string
+      }
       start_workspace_project: {
         Args: {
           p_identity_policy: string
           p_locale: string
           p_project_name: string
           p_representation_declared: boolean
+        }
+        Returns: string
+      }
+      start_workspace_capital_project: {
+        Args: {
+          p_entry_job: string
+          p_identity_policy: string
+          p_locale: string
+          p_project_name: string
+          p_representation_declared: boolean
+        }
+        Returns: string
+      }
+      set_workspace_project_job: {
+        Args: {
+          p_entry_job: string
+          p_session_id: string
         }
         Returns: string
       }
@@ -6026,6 +6136,13 @@ export type Database = {
           p_name: string
           p_session_id: string
           p_website: string
+        }
+        Returns: undefined
+      }
+      save_project_company_context: {
+        Args: {
+          p_profile: Json
+          p_session_id: string
         }
         Returns: undefined
       }

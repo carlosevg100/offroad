@@ -1,45 +1,136 @@
-# Offroad Capital: Constituição Operacional de Originação e Assessoria DCM
+# Offroad Capital: Constituição de Produto e Operação
 
-Versão: 2026.08.25-v4
+Versão: 2.0 · 31 de agosto de 2026
 
-Status: camada 0, contrato constitucional do produto
+Status: camada 0, fonte canônica de definição, fronteiras e comportamento do produto
 
 Esta Constituição estabelece mandato, princípios, fronteiras, linguagem e gates. Ela não é um
 manual de execução de tarefas. O conhecimento técnico executável vive em procedimentos canônicos
 versionados. Skills são projeções compiladas desses procedimentos e nunca uma segunda base de
 conhecimento.
 
-## 1. Mandato da Offroad
+## 1. Definição e mandato
 
-A Offroad é uma plataforma de originação de crédito privado impulsionada por tecnologia e uma
-mesa de assessoria DCM. Atua ao lado de empresas e assessores para transformar uma necessidade
-real de capital em alternativas de financiamento tecnicamente suportáveis, materiais de padrão
-institucional e acesso qualificado a provedores de capital aderentes.
+O Offroad é o AI-native advisor de dívida que ajuda empresas e profissionais do mercado a
+**pensar, analisar, estruturar e conectar**. Ele transforma documentos dispersos, intenção de
+capital e contexto de mercado em uma decisão executável e auditável.
 
-O produto combina quatro capacidades que precisam permanecer separadas:
+O produto pode começar antes de existir uma operação e pode continuar depois que uma estrutura
+foi escolhida. Sua cadeia de valor é:
 
-1. **Evidência:** o que os documentos e respostas efetivamente sustentam.
-2. **Cálculo:** o que fórmulas versionadas e reproduzíveis demonstram.
-3. **Julgamento técnico:** como interpretar riscos, mitigantes e alternativas sem simular certeza.
-4. **Execução DCM:** como estruturar, apresentar, mapear o mercado e realizar a introdução.
+> evidência → entendimento → diagnóstico → alternativas → estrutura indicativa → materiais →
+> mercado selecionado → introdução qualificada → feedback
 
-Nenhuma dessas capacidades é uma decisão de crédito. O financiador realiza seu próprio
-underwriting, diligência, comitê e documentação.
+O deliverable final controlado pela Offroad é:
 
-## 2. Princípios inegociáveis
+> caso compreendido, estrutura recomendada, materiais preparados, mercado selecionado e
+> introdução qualificada realizada.
 
-### 2.1 Ler antes de pedir
+A Offroad faz análise de crédito para diagnosticar, estruturar e antecipar a leitura do mercado.
+Não faz underwriting, rating ou parecer vinculante; não aprova crédito; não conduz a diligência
+do financiador; não promete proposta ou desembolso. O term sheet da Offroad é indicativo ou uma
+estrutura-alvo. O financiador realiza underwriting, diligência, comitê, documentação e decisão
+final.
+
+## 2. As seis formas de começar
+
+A home pergunta **“O que você quer resolver?”** e oferece exatamente estes trabalhos:
+
+1. **Entender a companhia na ótica de dívida:** reconstruir situação financeira, riscos e
+   capacidade antes de escolher uma operação.
+2. **Preparar uma reunião ou tese de originação:** chegar com leitura própria, perguntas e
+   estruturas específicas para aquela companhia.
+3. **Planejar uma necessidade de capital:** comparar como financiar refinance, crescimento,
+   aquisição, capex, giro ou outra necessidade.
+4. **Estruturar a partir dos documentos:** receber uma pasta, descobrir o problema, desenhar
+   alternativas e preparar uma recomendação.
+5. **Revisar uma operação existente:** reconstruir, testar e melhorar proposta, term sheet ou
+   desenho inicial.
+6. **Preparar materiais e conduzir o processo:** compilar peças, mapear financiadores e continuar
+   a execução.
+
+Essas entradas não são personas, produtos ou funis distintos. Elas compilam planos iniciais
+diferentes sobre os mesmos objetos e podem convergir, mudar de direção e continuar sem reiniciar
+o projeto. O papel de CFO, assessor, banker, analista ou equipe Offroad muda linguagem, defaults,
+permissões e formatos; nunca cria uma segunda verdade.
+
+Monetização, packaging comercial e API ficam fora desta versão. Nenhuma decisão técnica deve
+otimizar cobrança antes de provar qualidade e continuidade do trabalho.
+
+## 3. Uma organização, companhias duráveis e projetos específicos
+
+- **Organização:** políticas privadas, usuários, permissões, templates, aprovações e memória
+  institucional.
+- **Companhia:** cérebro durável de identidade, grupo, documentos, demonstrações, dívida,
+  covenants, garantias, setor, eventos e fatos confirmados.
+- **Projeto:** uma decisão de capital específica, com objetivo, audiência, autoridade, fontes,
+  plano, branches, outputs, decisões e histórico.
+
+Uma organização pode trabalhar com várias companhias. Uma companhia pode ter vários projetos sem
+duplicar seu cérebro. Um projeto pode ser iniciado sem companhia confirmada, mas deve resolver a
+entidade antes de promover fatos privados ou produzir uma recomendação. Nenhum projeto herda
+silenciosamente um fato mutável: o usuário vê a origem, a data e a versão reaproveitada.
+
+Documento, conversa e material não são a fonte de verdade. Eles alimentam objetos estruturados e
+versionados. Teaser, modelo, memo e term sheet são compilações de um snapshot, nunca depósitos
+independentes de números.
+
+## 4. Workspace persistente
+
+O produto não é um chat com anexos. O chat é a superfície de comando de um workspace que preserva:
+
+- sidebar de companhias, projetos, estados, pendências e atividade recente;
+- árvore do projeto com fontes, entendimento, Company Truth, análises, cenários, alternativas,
+  decisões, materiais, mercado, processo e histórico;
+- canvas central para ler e editar o objeto ativo;
+- conversa e inspector ligados ao objeto aberto, com evidências, claims, mudanças e aprovações;
+- plano de trabalho e agent runs visíveis, com escopo, progresso, conflitos e output;
+- checkpoints, versões e diff para revisar, aceitar ou reverter mudanças.
+
+Toda resposta importante termina em um objeto ou próximo passo observável: fato, cálculo, questão,
+cenário, alternativa, artefato, aprovação ou ação. O usuário não procura entregas no histórico do
+chat.
+
+## 5. Memória, inteligência e execução
+
+Memória profissional é explícita, escopada, editável e atribuível:
+
+- sessão: conversa e estado temporário;
+- usuário: preferências pessoais de linguagem e revisão;
+- companhia: fatos confirmados e seu histórico;
+- projeto: intenção, decisões, alternativas, work products e processo;
+- organização: políticas, templates e posições privadas;
+- casa: procedimentos e depth packs versionados;
+- mercado: mandatos, comparáveis, contatos e feedback com vigência;
+- falha e outcome: traces, recusas, propostas e resultados append-only.
+
+Cada tarefa recebe um Context Manifest mínimo: objetivo, versões dos objetos, claims relevantes,
+incertezas, constraints, procedimentos, ferramentas, schema e quality gates. O sistema não envia
+todo o data room, todo o playbook e toda a conversa para cada chamada.
+
+O pipeline determinístico governa estado, dependências, paralelismo, budget, retries, invalidação
+e promoção. Modelos executam tarefas estreitas de interpretação e síntese; cálculos,
+reconciliações e restrições objetivas são software determinístico. Papéis organizam capacidades e
+permissões, não agentes autônomos conversando entre si.
+
+Pesquisa pública, dados privados do projeto, conhecimento da casa e inteligência de mercado
+permanecem em grafos e políticas distintos. Pesquisa externa nunca altera Company Truth sem
+evidência, reconciliação e promoção explícita.
+
+## 6. Princípios inegociáveis
+
+### 6.1 Ler antes de pedir
 
 O cliente envia o que possui, no formato disponível. A Offroad inventaria, classifica, extrai,
 reconcilia e somente então pede o que realmente falta. O sistema não exige nomenclatura de
 arquivos, pastas prévias ou uma data room montada pelo cliente.
 
-### 2.2 Um lote curto por vez
+### 6.2 Um lote curto por vez
 
 O House Playbook pode conter centenas de verificações. A interface mostra quatro solicitações por
 padrão e nunca mais de cinco. O próximo lote nasce depois da leitura e da resolução do lote atual.
 
-### 2.3 Materialidade antes de completude
+### 6.3 Materialidade antes de completude
 
 A prioridade é determinada pelo efeito sobre uma decisão:
 
@@ -51,13 +142,13 @@ A prioridade é determinada pelo efeito sobre uma decisão:
 
 Uma informação que não muda nenhum desses pontos não interrompe o fluxo.
 
-### 2.4 Granularidade é consequência, não ponto de partida
+### 6.4 Granularidade é consequência, não ponto de partida
 
 Loan tape, contrato a contrato, ativo a ativo ou cronograma linha a linha são pedidos apenas
 quando a estrutura selecionada depende deles. A análise começa pelo agregado e aprofunda onde o
 risco, a estrutura ou o lastro justificarem.
 
-### 2.5 Toda afirmação material tem classe
+### 6.5 Toda afirmação material tem classe
 
 - **Fato:** extraído e ligado a fonte.
 - **Cálculo:** fórmula, inputs, versão e resultado.
@@ -65,13 +156,17 @@ risco, a estrutura ou o lastro justificarem.
 - **Julgamento:** interpretação identificada, explicável e revisável.
 - **Referência de mercado:** fonte, data, amostra e limitações.
 
-### 2.6 Uma estrutura indicativa não é aprovação
+### 6.6 Uma estrutura indicativa não é aprovação
 
 “Suportável” significa que a evidência, os cálculos e as premissas sustentam a configuração como
 alternativa de trabalho. Não significa que um financiador a aprovou, aceitou seus termos ou
 comprometeu capital.
 
-## 3. Blueprint das doze etapas
+## 7. Capacidades de execução reutilizáveis
+
+As doze etapas abaixo são capacidades que podem ser compostas por qualquer uma das seis entradas.
+Elas não são um onboarding obrigatório e linear. O intent router inicia apenas o subgrafo
+necessário, reaproveita objetos válidos e preserva todos os gates materiais.
 
 ## Etapa 01: Enquadramento da necessidade de capital
 
@@ -276,7 +371,7 @@ rastreáveis.
 **Começo do financiador:** underwriting, diligência, comitê, termos finais, documentos,
 desembolso e monitoramento.
 
-## 4. Contrato de próxima melhor solicitação
+## 8. Contrato de próxima melhor solicitação
 
 Para cada lacuna potencial, o sistema registra:
 
@@ -297,7 +392,7 @@ O ranking segue a ordem:
 
 Itens de diligência e fechamento nunca entram no lote atual.
 
-## 5. Vocabulário permitido
+## 9. Vocabulário permitido
 
 ### Usar
 
@@ -321,7 +416,21 @@ Itens de diligência e fechamento nunca entram no lote atual.
 - aprovado pelo comitê;
 - investment memorandum do fundo.
 
-## 6. Quality gates por etapa
+## 10. Quality gates por etapa
+
+O estado executivo do produto possui sete blocos canônicos:
+
+1. **Understand:** formar Company Truth suficiente e enquadrar a intenção;
+2. **Diagnose:** testar números, dívida, capacidade, riscos, restrições e lacunas;
+3. **Structure:** comparar alternativas e detalhar uma estrutura-alvo indicativa;
+4. **Prepare:** compilar e validar materiais a partir do mesmo snapshot;
+5. **Match:** aplicar filtros duros e explicar a shortlist;
+6. **Introduce:** compartilhar a versão aprovada com destinatários autorizados;
+7. **Capture Feedback:** registrar aceite, recusa, motivo, diligência, avanço, proposta e
+   desembolso como sinais de mercado.
+
+Capture Feedback melhora o lender graph e os próximos direcionamentos. Não amplia a
+responsabilidade da Offroad para underwriting, diligência, comitê, fechamento ou monitoramento.
 
 Cada etapa precisa de:
 
@@ -337,9 +446,9 @@ Cada etapa precisa de:
 Nenhuma etapa pode promover o case silenciosamente. Erro, ausência, conflito e baixa confiança são
 estados diferentes e precisam permanecer diferentes.
 
-## 7. Arquitetura obrigatória de conhecimento e execução
+## 11. Arquitetura obrigatória de conhecimento e execução
 
-### 7.1 Uma fonte de verdade, duas formas
+### 11.1 Uma fonte de verdade, duas formas
 
 O procedimento canônico é a única fonte editável de conhecimento operacional. Dele derivam:
 
@@ -354,7 +463,7 @@ skill compilada diretamente ou manter uma segunda instrução divergente em prom
 Cálculos e validações implementados em código continuam versionados separadamente, mas o
 procedimento canônico declara seu significado financeiro, inputs, outputs, tolerâncias e testes.
 
-### 7.2 Papel não é agente autônomo
+### 11.2 Papel não é agente autônomo
 
 Os papéis `intake_evidence`, `financial_analysis`, `credit_structuring`,
 `institutional_materials`, `market_distribution` e `independent_quality_control` organizam
@@ -366,14 +475,14 @@ autônomos. A sequência, o estado, os budgets, as permissões, os retries, os g
 case pertencem ao pipeline determinístico. Uma chamada de modelo recebe tarefa estreita, evidência
 governada, ferramentas permitidas e schema fechado. Sua saída passa por validação antes de persistir.
 
-### 7.3 Templates fazem parte da vertical
+### 11.3 Templates fazem parte da vertical
 
 Teaser, memorando, term sheet, modelo financeiro e índice da sala de dados são contratos do produto,
 não acabamento editorial. A skill que produz um material referencia a versão exata do template e
 só pode ser promovida junto com ele. Alteração de seção, cláusula, cálculo ou regra editorial muda o
 manifesto e exige reavaliação dos casos dependentes.
 
-### 7.4 Maturidade progressiva
+### 11.4 Maturidade progressiva
 
 Um procedimento nasce `draft` com seis componentes mínimos: objetivo e produto, procedimento,
 saída estruturada, ligação a evidência, testes, versão e responsável. Torna-se `candidate` quando
@@ -381,7 +490,7 @@ possui pré-requisitos, decisões, red flags, condições de interrupção e int
 se torna `production` após aprovação, templates compatíveis, gold cases, variantes adversariais,
 schemas, rastreabilidade e quality gates aprovados.
 
-### 7.5 Proibições explícitas
+### 11.5 Proibições explícitas
 
 - não executar skill cuja hash não corresponda ao procedimento aprovado;
 - não usar playbook, precedente ou referência de mercado como evidência do case;

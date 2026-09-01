@@ -42,6 +42,104 @@ export type ProductPhase = z.infer<typeof productPhaseSchema>;
 
 export const productPhaseOrder = productPhaseSchema.options;
 
+/**
+ * The six jobs are entry points into one persistent capital-decision workspace. They are not
+ * personas and they never own separate copies of company or project truth.
+ */
+export const capitalProjectJobSchema = z.enum([
+  "company_debt_view",
+  "origination_thesis",
+  "capital_planning",
+  "structure_from_documents",
+  "review_existing_operation",
+  "prepare_materials_and_process",
+]);
+export type CapitalProjectJob = z.infer<typeof capitalProjectJobSchema>;
+
+type CapitalProjectJobDefinition = {
+  id: CapitalProjectJob;
+  title: {pt: string; en: string};
+  description: {pt: string; en: string};
+  initialCapabilities: readonly string[];
+  firstWorkProduct: string;
+  requiresExistingProject: boolean;
+};
+
+export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
+  {
+    id: "company_debt_view",
+    title: {pt: "Entender a companhia na ótica de dívida", en: "Understand the company through a debt lens"},
+    description: {
+      pt: "Reconstruir situação financeira, riscos e capacidade antes de escolher uma operação.",
+      en: "Reconstruct financial position, risks and capacity before choosing a transaction.",
+    },
+    initialCapabilities: ["resolve_company", "collect_or_reuse_sources", "understand_company", "build_company_truth", "diagnose_debt_capacity"],
+    firstWorkProduct: "company_debt_diagnostic",
+    requiresExistingProject: false,
+  },
+  {
+    id: "origination_thesis",
+    title: {pt: "Preparar uma reunião ou tese de originação", en: "Prepare a meeting or origination thesis"},
+    description: {
+      pt: "Chegar com leitura própria, perguntas e estruturas específicas para aquela companhia.",
+      en: "Arrive with an independent view, questions and company-specific structures.",
+    },
+    initialCapabilities: ["resolve_company", "public_research", "build_company_truth", "diagnose_debt_angles", "prepare_meeting_brief"],
+    firstWorkProduct: "meeting_brief",
+    requiresExistingProject: false,
+  },
+  {
+    id: "capital_planning",
+    title: {pt: "Planejar uma necessidade de capital", en: "Plan a capital need"},
+    description: {
+      pt: "Comparar como financiar refinance, crescimento, aquisição, capex, giro ou outra necessidade.",
+      en: "Compare how to finance refinancing, growth, acquisition, capex, working capital or another need.",
+    },
+    initialCapabilities: ["resolve_company", "understand_capital_intent", "build_company_truth", "diagnose_capacity", "compare_alternatives"],
+    firstWorkProduct: "alternative_map",
+    requiresExistingProject: false,
+  },
+  {
+    id: "structure_from_documents",
+    title: {pt: "Estruturar a partir dos documentos", en: "Structure from documents"},
+    description: {
+      pt: "Receber uma pasta, descobrir o problema, desenhar alternativas e preparar uma recomendação.",
+      en: "Receive a folder, identify the problem, design alternatives and prepare a recommendation.",
+    },
+    initialCapabilities: ["ingest_documents", "resolve_company", "build_company_truth", "diagnose_capital_need", "compare_alternatives"],
+    firstWorkProduct: "diagnostic_recommendation",
+    requiresExistingProject: false,
+  },
+  {
+    id: "review_existing_operation",
+    title: {pt: "Revisar uma operação existente", en: "Review an existing transaction"},
+    description: {
+      pt: "Reconstruir, testar e melhorar proposta, term sheet ou desenho inicial.",
+      en: "Reconstruct, test and improve a proposal, term sheet or initial design.",
+    },
+    initialCapabilities: ["ingest_operation", "reconstruct_structure", "build_minimum_company_truth", "test_structure", "compare_branch"],
+    firstWorkProduct: "operation_review",
+    requiresExistingProject: false,
+  },
+  {
+    id: "prepare_materials_and_process",
+    title: {pt: "Preparar materiais e conduzir o processo", en: "Prepare materials and run the process"},
+    description: {
+      pt: "Compilar peças, mapear financiadores e continuar a execução.",
+      en: "Compile materials, map lenders and continue execution.",
+    },
+    initialCapabilities: ["resolve_existing_project", "validate_structure_state", "compile_production_plan", "prepare_artifacts", "match_market"],
+    firstWorkProduct: "production_plan",
+    requiresExistingProject: true,
+  },
+] as const;
+
+export function capitalProjectJob(job: CapitalProjectJob): CapitalProjectJobDefinition {
+  const definition = capitalProjectJobs.find((entry) => entry.id === job);
+  if (!definition) throw new Error(`unknown capital project job: ${job}`);
+  return definition;
+}
+
 const phaseByState: Readonly<Record<ProductWorkflowState, ProductPhase>> = {
   private_workspace_ready: "understand",
   guided_intake_in_progress: "understand",
@@ -68,7 +166,7 @@ export function productPhaseForState(state: ProductWorkflowState): ProductPhase 
 }
 
 export const offroadProductBoundary = {
-  version: "2026.08.29-v1",
+  version: "2026.08.31-v2",
   valueProposition: {
     pt: "Estruturação financeira e acesso qualificado ao mercado de crédito privado.",
     en: "Financial structuring and qualified access to the private credit market.",

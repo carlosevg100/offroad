@@ -4,6 +4,7 @@ import {createHash, randomUUID} from "node:crypto";
 
 import {redirect} from "next/navigation";
 import {z} from "zod";
+import {capitalProjectJobSchema} from "@offroad/case-understanding";
 
 import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -27,6 +28,7 @@ import {canStartPreliminaryUnderstanding, dealBriefFormSchema, saveDealBrief, to
 import {normalizeCompanyWebsite} from "@/lib/intake/company-profile";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import type {IntakeErrorCode} from "@/lib/intake/types";
+import type {Json} from "@/types/database";
 
 function value(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -41,10 +43,8 @@ type GuidedStep = "company" | "operation" | "preliminary" | "documents";
 
 // PostgREST accepts SQL NULL for nullable function parameters, while generated
 // function argument types do not encode PostgreSQL nullability.
-const rpcNull = null as never;
-
 const guidedCompanySchema = z.object({
-  name: z.string().trim().min(2).max(160),
+  name: z.union([z.literal(""), z.string().trim().min(2).max(160)]),
   legalName: z.string().trim().max(200),
   website: z.union([z.literal(""), z.string().url().max(500)]),
   description: z.string().trim().max(5000),
@@ -68,10 +68,13 @@ async function workspaceRuntime(locale: AppLocale, sessionId: string): Promise<I
 
 export async function startWorkspaceDocumentIntake(formData: FormData) {
   const locale = localeFrom(formData);
+  const parsedEntryJob = capitalProjectJobSchema.safeParse(value(formData, "entry_job"));
+  const entryJob = parsedEntryJob.success ? parsedEntryJob.data : "capital_planning";
+  const entryJobQuery = `job=${entryJob}`;
   const existingSessionId = value(formData, "session_id");
   const projectSetupUrl = existingSessionId
     ? `/${locale}/app/new?mode=documents&session=${existingSessionId}&setup=project`
-    : `/${locale}/app/new?setup=project`;
+    : `/${locale}/app/new?${entryJobQuery}&setup=project`;
   const parsed = z.object({
     projectName: z.string().trim().min(2).max(80),
     identityPolicy: z.enum(["identified_restricted", "blind_initial"]),
@@ -90,11 +93,12 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
         p_project_name: parsed.data.projectName,
         p_identity_policy: parsed.data.identityPolicy,
       })
-    : await supabase.rpc("start_workspace_project", {
+    : await supabase.rpc("start_workspace_capital_project", {
         p_locale: locale,
         p_project_name: parsed.data.projectName,
         p_identity_policy: parsed.data.identityPolicy,
         p_representation_declared: true,
+        p_entry_job: entryJob,
       });
   let sessionId = data;
   if (!existingSessionId && error && (error.code === "PGRST202" || error.code === "42883")) {
@@ -122,6 +126,9 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
 
 export async function acceptWorkspacePrivateTerms(formData: FormData) {
   const locale = localeFrom(formData);
+  const parsedEntryJob = capitalProjectJobSchema.safeParse(value(formData, "entry_job"));
+  const entryJob = parsedEntryJob.success ? parsedEntryJob.data : "capital_planning";
+  const projectSetupUrl = `/${locale}/app/new?job=${entryJob}&setup=project`;
   const parsed = z.object({
     signatoryName: z.string().trim().min(2).max(160),
     signatoryTitle: z.string().trim().min(2).max(160),
@@ -133,13 +140,13 @@ export async function acceptWorkspacePrivateTerms(formData: FormData) {
     termsAgreed: value(formData, "terms_agreed"),
     informationRightsDeclared: value(formData, "information_rights_declared"),
   });
-  if (!parsed.success) redirect(`/${locale}/app/new?setup=terms&error=validation`);
+  if (!parsed.success) redirect(`/${locale}/app/new?job=${entryJob}&setup=terms&error=validation`);
 
   // A later financing asks for a fresh, explicit acknowledgement in the UI,
   // while the canonical legal acceptance remains organization-scoped and immutable.
   // The project setup page rechecks that canonical record before it is rendered.
   if (value(formData, "terms_acceptance_recorded") === "confirmed") {
-    redirect(`/${locale}/app/new?setup=project`);
+    redirect(projectSetupUrl);
   }
 
   const supabase = await createClient();
@@ -151,8 +158,8 @@ export async function acceptWorkspacePrivateTerms(formData: FormData) {
     p_terms_agreed: true,
     p_information_rights_declared: true,
   });
-  if (error) redirect(`/${locale}/app/new?setup=terms&error=save`);
-  redirect(`/${locale}/app/new?setup=project`);
+  if (error) redirect(`/${locale}/app/new?job=${entryJob}&setup=terms&error=save`);
+  redirect(projectSetupUrl);
 }
 
 export async function saveWorkspaceGuidedCompanyProfile(formData: FormData) {
@@ -168,17 +175,22 @@ export async function saveWorkspaceGuidedCompanyProfile(formData: FormData) {
   });
   if (!parsed.success) redirect(intakeUrl(locale, sessionId, "validation", "company"));
 
-  const identifierHash = parsed.data.identifier
-    ? `\\x${createHash("sha256").update(parsed.data.identifier).digest("hex")}`
-    : undefined;
-  const {error} = await runtime.supabase.rpc("save_project_company_profile", {
+  const identifierHashHex = parsed.data.identifier
+    ? createHash("sha256").update(parsed.data.identifier).digest("hex")
+    : null;
+  const profile = {
+    ...(parsed.data.name ? {name: parsed.data.name} : {}),
+    ...(parsed.data.legalName ? {legal_name: parsed.data.legalName} : {}),
+    ...(parsed.data.website ? {website: parsed.data.website} : {}),
+    ...(parsed.data.description ? {description: parsed.data.description} : {}),
+    ...(identifierHashHex ? {
+      identifier_hash_hex: identifierHashHex,
+      identifier_last4: parsed.data.identifier.slice(-4).toUpperCase(),
+    } : {}),
+  } satisfies Record<string, Json>;
+  const {error} = await runtime.supabase.rpc("save_project_company_context", {
     p_session_id: runtime.sessionId,
-    p_name: parsed.data.name,
-    p_legal_name: parsed.data.legalName || rpcNull,
-    p_website: parsed.data.website || rpcNull,
-    p_description: parsed.data.description || rpcNull,
-    p_identifier_hash: identifierHash ?? rpcNull,
-    p_identifier_last4: parsed.data.identifier.slice(-4) || rpcNull,
+    p_profile: profile,
   });
   redirect(intakeUrl(locale, sessionId, error ? "save" : undefined, error ? "company" : "operation"));
 }

@@ -1115,10 +1115,15 @@ function buildPreliminaryUnderstanding(input: {
   const companyProfile = recordOrNull(input.session.company_profile);
   const companyName = stringFrom(companyProfile, "name")
     ?? stringFrom(companyProfile, "legal_name")
+    ?? publicCandidate(input.candidates, "company.display_name")
+    ?? publicCandidate(input.candidates, "company.name")
+    ?? publicCandidate(input.candidates, "company.legal_name")
     ?? (input.locale === "pt" ? "Companhia ainda não identificada" : "Company not yet identified");
-  const legalName = stringFrom(companyProfile, "legal_name");
+  const legalName = stringFrom(companyProfile, "legal_name")
+    ?? publicCandidate(input.candidates, "company.legal_name");
   const description = stringFrom(companyProfile, "description");
-  const website = stringFrom(companyProfile, "website");
+  const website = stringFrom(companyProfile, "website")
+    ?? publicCandidate(input.candidates, "company.website");
   const declaredObjective = typeof input.session.capital_objective === "string"
     ? input.session.capital_objective.trim()
     : "";
