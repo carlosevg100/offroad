@@ -214,7 +214,9 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-review")).toBeVisible({timeout: 120_000});
     await expect(page.locator(".intake-case-review-actions")).toBeVisible();
     await page.locator(".intake-review__toolbar form").first().locator("button[type=submit]").click();
-    await expect(page.locator(".intake-confirm p")).toContainText(String(dataRoomExpectations.acceptedAfterBulkAccept));
+    // Confirmation copy is about the decision, not an internal field count. Prove the bulk action
+    // itself on the evidence register instead of leaking that implementation detail into the UI.
+    await expect(page.locator(".intake-field.is-confirmed")).toHaveCount(dataRoomExpectations.acceptedAfterBulkAccept);
 
     await page.locator('.intake-confirm input[name="confirmation"]').check();
     await page.locator(".intake-confirm button[type=submit]").click();
