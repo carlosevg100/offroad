@@ -5,6 +5,9 @@ import {
   assessUnderstandingGate,
   buildClarificationBatch,
   buildUnderstandingSnapshot,
+  capitalProjectJob,
+  capitalProjectJobs,
+  capitalProjectJobSchema,
   diffUnderstandingSnapshots,
   findingsFromUnderstanding,
   offroadProductBoundary,
@@ -48,6 +51,19 @@ function snapshot(claims: UnderstandingClaim[], sequence = 1, supersedesFingerpr
 }
 
 describe("canonical product workflow", () => {
+  it("exposes exactly six jobs that compile into the same project state", () => {
+    expect(capitalProjectJobs.map((job) => job.id)).toEqual(capitalProjectJobSchema.options);
+    expect(new Set(capitalProjectJobs.flatMap((job) => job.initialCapabilities)).size).toBeGreaterThan(6);
+    expect(capitalProjectJob("structure_from_documents")).toMatchObject({
+      firstWorkProduct: "diagnostic_recommendation",
+      requiresExistingProject: false,
+    });
+    expect(capitalProjectJob("prepare_materials_and_process")).toMatchObject({
+      firstWorkProduct: "production_plan",
+      requiresExistingProject: true,
+    });
+  });
+
   it("allows explicit progress and returns but rejects skipped decisions", () => {
     expect(() => assertProductStateTransition("understanding_in_progress", "clarification_required")).not.toThrow();
     expect(() => assertProductStateTransition("clarification_required", "structuring_ready")).not.toThrow();

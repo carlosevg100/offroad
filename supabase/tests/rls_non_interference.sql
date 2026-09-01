@@ -161,6 +161,25 @@ begin
     'company',
     'pt-BR'
   );
+
+  if (select count(*) from public.capital_projects) <> 1
+    or (select entry_job from public.capital_projects limit 1) <> 'capital_planning' then
+    raise exception 'legacy intake insertion did not receive one default durable project root';
+  end if;
+
+  begin
+    insert into public.capital_projects (
+      organization_id, project_name, entry_job, created_by
+    ) values (
+      '20000000-0000-4000-8000-000000000001',
+      'Forged direct project',
+      'capital_planning',
+      '10000000-0000-4000-8000-000000000001'
+    );
+    raise exception 'tenant directly inserted a durable project';
+  exception
+    when insufficient_privilege then null;
+  end;
 end;
 $$;
 
@@ -192,6 +211,18 @@ begin
   returning id into returned_session;
   if returned_session is distinct from '40000000-0000-4000-8000-000000000002' then
     raise exception 'insert returning did not expose the new intake session to its tenant';
+  end if;
+  perform public.set_workspace_project_job(
+    returned_session,
+    'structure_from_documents'
+  );
+  if (select project.entry_job
+      from public.capital_projects project
+      join public.document_intake_sessions session
+        on session.organization_id = project.organization_id
+        and session.capital_project_id = project.id
+      where session.id = returned_session) <> 'structure_from_documents' then
+    raise exception 'authorized job selection did not bind to the durable project root';
   end if;
   perform public.register_intake_document_command(
     org, '40000000-0000-4000-8000-000000000002',
@@ -1736,12 +1767,26 @@ select set_config(
 );
 
 do $$
+declare
+  accepted boolean := true;
 begin
   if (select count(*) from public.case_retrieval_chunks) <> 0 then
     raise exception 'tenant B read tenant A retrieval chunks';
   end if;
   if (select count(*) from public.preliminary_understandings) <> 0 then
     raise exception 'tenant B read tenant A preliminary understanding';
+  end if;
+
+  begin
+    perform public.save_project_company_context(
+      '40000000-0000-4000-8000-000000000003',
+      '{"name":"forged cross-tenant company"}'::jsonb
+    );
+  exception
+    when sqlstate 'P0002' then accepted := false;
+  end;
+  if accepted then
+    raise exception 'tenant B changed tenant A draft company context';
   end if;
 end;
 $$;
@@ -5248,6 +5293,10 @@ select set_config(
 );
 do $$
 begin
+  if (select count(*) from public.capital_projects
+      where organization_id = '20000000-0000-4000-8000-000000000001') <> 0 then
+    raise exception 'tenant B read tenant A durable project roots';
+  end if;
   if (select count(*) from public.deal_state_objects
       where intake_session_id = '97000000-0000-4000-8000-000000000001') <> 0 then
     raise exception 'tenant B read tenant A deal-state objects';

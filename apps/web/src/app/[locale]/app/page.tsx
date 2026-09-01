@@ -2,6 +2,7 @@ import {ArrowRight, Building2, CheckCircle2, CircleAlert, DatabaseZap, FileCheck
 import Link from "next/link";
 import {getFormatter, getTranslations} from "next-intl/server";
 
+import {CapitalJobLauncher} from "@/components/capital-job-launcher";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
 type Props = {params: Promise<{locale: string}>; searchParams: Promise<{welcome?: string}>};
@@ -64,21 +65,39 @@ export default async function ApplicationHome({params, searchParams}: Props) {
   const activeIntakes = intakeSessions?.filter((item) => !item.archived_at && !["cancelled", "confirmed"].includes(item.status)) ?? [];
   const ready = active.filter((item) => item.readiness_status === "ready").length;
   const isOriginator = organization.organization_type === "originator";
+  const workspaceCopy = locale === "en-US"
+    ? {
+        kicker: "Offroad advisor",
+        title: "One workspace for debt decisions.",
+        body: "Start with a question, a folder of documents or an existing transaction. Offroad preserves the context and advances the work toward a qualified market introduction.",
+        action: "Start new work",
+      }
+    : {
+        kicker: "Offroad advisor",
+        title: "Um workspace para decisões de dívida.",
+        body: "Comece com uma pergunta, uma pasta de documentos ou uma operação já desenhada. A Offroad preserva o contexto e conduz o trabalho até a introdução qualificada ao mercado.",
+        action: "Iniciar novo trabalho",
+      };
 
   return (
     <main className="app-canvas">
       <header className="app-page-header">
-        <div><p className="section-kicker">{isOriginator ? t("originatorEyebrow") : t("companyEyebrow")}</p><h1>{isOriginator ? t("originatorWelcome") : t("companyWelcome")}</h1><p>{isOriginator ? t("originatorWelcomeBody") : t("companyWelcomeBody")}</p></div>
-        <Link className="button" href={`/${locale}/app/new`}><Plus aria-hidden="true" size={16} />{isOriginator ? t("newOpportunity") : t("newCapitalNeed")}</Link>
+        <div><p className="section-kicker">{workspaceCopy.kicker}</p><h1>{workspaceCopy.title}</h1><p>{workspaceCopy.body}</p></div>
+        <Link className="button" href="#capital-jobs"><Plus aria-hidden="true" size={16} />{workspaceCopy.action}</Link>
       </header>
       {state.welcome === "1" ? <p className="form-notice form-notice--success app-welcome-notice" role="status">{t("welcomeComplete")}</p> : null}
+      <CapitalJobLauncher
+        existingProjectHref={active.length + activeIntakes.length > 0 ? "#projects" : undefined}
+        locale={locale}
+        newProjectBaseHref={`/${locale}/app/new`}
+      />
       <section aria-label={t("pipeline")} className="app-stat-grid">
         <article><DatabaseZap aria-hidden="true" size={18} /><span>{t("activeOpportunities")}</span><strong>{active.length + activeIntakes.length}</strong></article>
         <article><Building2 aria-hidden="true" size={18} /><span>{isOriginator ? t("advisedCompanies") : t("registeredCompany")}</span><strong>{companiesCount ?? 0}</strong></article>
         <article><FileCheck2 aria-hidden="true" size={18} /><span>{t("documents")}</span><strong>{documentCount ?? 0}</strong></article>
         <article>{isOriginator ? <CircleAlert aria-hidden="true" size={18} /> : <ArrowRight aria-hidden="true" size={18} />}<span>{isOriginator ? t("pendingAuthorities") : t("marketReady")}</span><strong>{isOriginator ? pendingAuthority ?? 0 : ready}</strong></article>
       </section>
-      <section className="pipeline-section">
+      <section className="pipeline-section" id="projects">
         <div className="pipeline-section__header"><h2>{t("pipeline")}</h2><span>{organization.name}</span></div>
         {active.length === 0 && activeIntakes.length === 0 ? (
           <div className="empty-state"><span className="empty-state__number">01</span><div><h3>{t("emptyTitle")}</h3><p>{t("emptyBody")}</p></div><Link className="text-link" href={`/${locale}/app/new`}>{t("create")} <ArrowRight aria-hidden="true" size={14} /></Link></div>

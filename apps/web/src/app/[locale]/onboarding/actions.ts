@@ -4,6 +4,7 @@ import {createHash, randomUUID} from "node:crypto";
 
 import {redirect} from "next/navigation";
 import {z} from "zod";
+import {capitalProjectJobSchema} from "@offroad/case-understanding";
 
 import {routing, type AppLocale} from "@/i18n/routing";
 import {
@@ -33,8 +34,6 @@ type AnswerMap = Record<string, Json | undefined>;
 
 // PostgREST accepts SQL NULL for nullable function parameters, but generated function argument
 // types do not encode PostgreSQL parameter nullability. Keep that boundary explicit and local.
-const rpcNull = null as never;
-
 function value(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
 }
@@ -136,6 +135,8 @@ async function onboardingIntakeRuntime(locale: AppLocale, formData: FormData): P
 
 export async function startDocumentIntake(formData: FormData) {
   const locale = localeFrom(formData);
+  const parsedEntryJob = capitalProjectJobSchema.safeParse(value(formData, "entry_job"));
+  const entryJob = parsedEntryJob.success ? parsedEntryJob.data : "capital_planning";
   const parsed = z.object({
     projectName: z.string().trim().min(2).max(80),
     identityPolicy: z.enum(["identified_restricted", "blind_initial"]),
@@ -145,26 +146,29 @@ export async function startDocumentIntake(formData: FormData) {
     identityPolicy: value(formData, "identity_policy"),
     representationDeclared: value(formData, "representation_declared"),
   });
-  if (!parsed.success) redirect(`/${locale}/onboarding?setup=project&error=validation`);
+  if (!parsed.success) redirect(`/${locale}/onboarding?job=${entryJob}&setup=project&error=validation`);
 
   const supabase = await createClient();
   if (!supabase) redirect(onboardingUrl(locale, "provider"));
-  const {data: sessionId, error} = await supabase.rpc("start_onboarding_project", {
+  const {data: sessionId, error} = await supabase.rpc("start_onboarding_capital_project", {
     p_locale: locale,
     p_project_name: parsed.data.projectName,
     p_identity_policy: parsed.data.identityPolicy,
     p_representation_declared: true,
+    p_entry_job: entryJob,
   });
   if (error) {
     reportServerFailure({step: "intake.start_onboarding_project", error});
     const errorCode = error.message.includes("project_name_already_in_use") ? "duplicate" : error.code === "P0002" ? "step" : "session";
-    redirect(`/${locale}/onboarding?setup=project&error=${errorCode}`);
+    redirect(`/${locale}/onboarding?job=${entryJob}&setup=project&error=${errorCode}`);
   }
   redirect(`/${locale}/app/new?mode=documents&session=${sessionId}&step=company`);
 }
 
 export async function acceptPrivateWorkspaceTerms(formData: FormData) {
   const locale = localeFrom(formData);
+  const parsedEntryJob = capitalProjectJobSchema.safeParse(value(formData, "entry_job"));
+  const entryJob = parsedEntryJob.success ? parsedEntryJob.data : "capital_planning";
   const parsed = z.object({
     signatoryName: z.string().trim().min(2).max(160),
     signatoryTitle: z.string().trim().min(2).max(160),
@@ -176,7 +180,7 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
     termsAgreed: value(formData, "terms_agreed"),
     informationRightsDeclared: value(formData, "information_rights_declared"),
   });
-  if (!parsed.success) redirect(`/${locale}/onboarding?setup=terms&error=validation`);
+  if (!parsed.success) redirect(`/${locale}/onboarding?job=${entryJob}&setup=terms&error=validation`);
 
   const supabase = await createClient();
   if (!supabase) redirect(onboardingUrl(locale, "provider"));
@@ -189,13 +193,13 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
   });
   if (error) {
     reportServerFailure({step: "intake.accept_private_workspace_terms", error});
-    redirect(`/${locale}/onboarding?setup=terms&error=save`);
+    redirect(`/${locale}/onboarding?job=${entryJob}&setup=terms&error=save`);
   }
-  redirect(`/${locale}/onboarding?setup=project`);
+  redirect(`/${locale}/onboarding?job=${entryJob}&setup=project`);
 }
 
 const guidedCompanySchema = z.object({
-  name: z.string().trim().min(2).max(160),
+  name: z.union([z.literal(""), z.string().trim().min(2).max(160)]),
   legalName: z.string().trim().max(200),
   website: z.union([z.literal(""), z.string().url().max(500)]),
   description: z.string().trim().max(5000),
@@ -216,17 +220,22 @@ export async function saveGuidedCompanyProfile(formData: FormData) {
   });
   if (!parsed.success) redirect(`/${locale}/onboarding?stage=company&error=validation`);
 
-  const identifierHash = parsed.data.identifier
-    ? `\\x${createHash("sha256").update(parsed.data.identifier).digest("hex")}`
-    : undefined;
-  const {error} = await runtime.supabase.rpc("save_project_company_profile", {
+  const identifierHashHex = parsed.data.identifier
+    ? createHash("sha256").update(parsed.data.identifier).digest("hex")
+    : null;
+  const profile = {
+    ...(parsed.data.name ? {name: parsed.data.name} : {}),
+    ...(parsed.data.legalName ? {legal_name: parsed.data.legalName} : {}),
+    ...(parsed.data.website ? {website: parsed.data.website} : {}),
+    ...(parsed.data.description ? {description: parsed.data.description} : {}),
+    ...(identifierHashHex ? {
+      identifier_hash_hex: identifierHashHex,
+      identifier_last4: parsed.data.identifier.slice(-4).toUpperCase(),
+    } : {}),
+  } satisfies Record<string, Json>;
+  const {error} = await runtime.supabase.rpc("save_project_company_context", {
     p_session_id: runtime.sessionId,
-    p_name: parsed.data.name,
-    p_legal_name: parsed.data.legalName || rpcNull,
-    p_website: parsed.data.website || rpcNull,
-    p_description: parsed.data.description || rpcNull,
-    p_identifier_hash: identifierHash ?? rpcNull,
-    p_identifier_last4: parsed.data.identifier.slice(-4) || rpcNull,
+    p_profile: profile,
   });
   if (error) {
     reportServerFailure({step: "intake.save_guided_company", error});

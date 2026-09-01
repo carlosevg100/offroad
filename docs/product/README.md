@@ -1,11 +1,17 @@
 # Product sources of truth
 
-The canonical product journey is:
+The product definition, six jobs, boundaries and operating invariants live in:
+
+- [`../build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`](../build/OFFROAD_DCM_OPERATING_CONSTITUTION.md)
+
+The current company-led transaction workflow lives in:
 
 - [`PRODUCT_WORKFLOW.md`](PRODUCT_WORKFLOW.md)
 
 It defines the approved sequence, states, gates, loops, user decisions and visible
-outputs. Implementation, ADRs and playbooks cannot silently alter that topology.
+outputs for that route. The six entry jobs may begin with different task subgraphs,
+but must converge on the same company/project objects and preserve every applicable
+gate. Implementation, ADRs and playbooks cannot silently alter either contract.
 
 The broader business and positioning blueprint is:
 
@@ -28,8 +34,9 @@ separate from the journey itself.
 When sources need to be reconciled, use this precedence:
 
 1. explicit founder decisions;
-2. `PRODUCT_WORKFLOW.md` for journey and state order;
-3. accepted ADRs for architecture and boundaries;
-4. canonical House Playbook procedures for task execution;
-5. the product blueprint PDF for broader product context; and
-6. older handoff and build notes.
+2. the Constitution for product definition, entry jobs, boundaries and shared state;
+3. `PRODUCT_WORKFLOW.md` for the current company-led transaction route;
+4. accepted ADRs for architecture and boundaries;
+5. canonical House Playbook procedures for task execution;
+6. the product blueprint PDF for broader product context; and
+7. older handoff and build notes.

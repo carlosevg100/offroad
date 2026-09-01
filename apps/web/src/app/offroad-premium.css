@@ -9261,6 +9261,38 @@ button[disabled].workspace-search,
 .preliminary-understanding__correction label {color: #5f686d; font-size: 10px; font-weight: 650;}
 .preliminary-understanding__correction textarea {box-sizing: border-box; width: 100%; min-height: 108px; padding: 12px; border: 1px solid #cfd4d5; border-radius: 3px; background: #fbfbfa; color: #1c2327; font: inherit; font-size: 12px; line-height: 1.55; resize: vertical;}
 .preliminary-understanding__correction .button {width: fit-content; margin-top: 3px;}
+
+/* One project truth, six valid starting jobs. */
+.capital-job-launcher {margin: 4px 0 30px; padding: 30px; border: 1px solid var(--line); background: #fff;}
+.capital-job-launcher > header {display: grid; max-width: 840px; gap: 8px; margin-bottom: 24px;}
+.capital-job-launcher > header h2 {margin: 0; color: var(--ink); font-size: clamp(28px, 3.2vw, 42px); line-height: 1.04; letter-spacing: -.04em;}
+.capital-job-launcher > header p {max-width: 760px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65;}
+.capital-job-launcher__grid {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line);}
+.capital-job-card {display: grid; min-width: 0; min-height: 210px; grid-template-columns: 1fr auto; align-content: start; gap: 12px 18px; padding: 22px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #fbfbfa; color: inherit; text-decoration: none; transition: background 140ms ease, box-shadow 140ms ease, transform 140ms ease;}
+.capital-job-card:hover {position: relative; z-index: 1; background: #fff; box-shadow: 0 14px 32px rgba(25, 32, 37, .08); transform: translateY(-2px);}
+.capital-job-card:focus-visible {position: relative; z-index: 2; outline: 2px solid var(--accent); outline-offset: -2px;}
+.capital-job-card__number {color: var(--accent); font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em;}
+.capital-job-card__icon {display: inline-grid; width: 34px; height: 34px; place-items: center; border: 1px solid #d8ddda; color: #61754a; background: #f5f7f2;}
+.capital-job-card strong {grid-column: 1 / -1; max-width: 280px; color: var(--ink); font-size: 16px; line-height: 1.28; letter-spacing: -.015em;}
+.capital-job-card p {grid-column: 1 / -1; margin: 0; color: #657078; font-size: 11px; line-height: 1.58;}
+.capital-job-card small {grid-column: 1 / -1; align-self: end; padding-top: 4px; color: #71844e; font-size: 9px; font-weight: 650; line-height: 1.4;}
+.capital-job-card.is-unavailable {background: #f6f6f4;}
+.capital-job-card.is-unavailable small {color: #858b8f;}
+.workspace-route-loading {position: relative; overflow: hidden;}
+.workspace-route-loading__bar {position: absolute; top: 0; right: 0; left: 0; height: 2px; overflow: hidden; background: #e5e8e2;}
+.workspace-route-loading__bar::after {position: absolute; width: 36%; height: 100%; background: var(--accent); content: ""; animation: workspace-route-progress 900ms ease-in-out infinite;}
+.workspace-route-loading header {display: grid; max-width: 760px; gap: 12px; padding-top: 24px;}
+.workspace-route-loading header span,
+.workspace-route-loading header strong,
+.workspace-route-loading header p,
+.workspace-route-loading section i {display: block; background: linear-gradient(90deg, #eef0ed 20%, #f7f8f6 45%, #eef0ed 70%); background-size: 220% 100%; animation: workspace-route-shimmer 1.2s linear infinite;}
+.workspace-route-loading header span {width: 110px; height: 9px;}
+.workspace-route-loading header strong {width: min(620px, 78vw); height: 48px;}
+.workspace-route-loading header p {width: min(720px, 84vw); height: 14px;}
+.workspace-route-loading section {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-top: 44px; background: var(--line);}
+.workspace-route-loading section i {height: 210px;}
+@keyframes workspace-route-progress {from {transform: translateX(-110%);} to {transform: translateX(390%);}}
+@keyframes workspace-route-shimmer {from {background-position: 200% 0;} to {background-position: -20% 0;}}
 .intake-operation-context__correction {display: grid; gap: 7px; padding: 17px 19px; border-left: 3px solid #789645; background: #f4f7f0;}
 .intake-operation-context__correction strong {font-size: 12px;}
 .intake-operation-context__correction p {margin: 0; color: #344039; font-size: 13px; line-height: 1.55;}
@@ -9389,6 +9421,7 @@ button[disabled].workspace-search,
 .intake-governance__authorization.is-revoked > div span {border-color: #d2b9b5; color: #7c4942;}
 
 @media (max-width: 900px) {
+  .capital-job-launcher__grid {grid-template-columns: repeat(2, minmax(0, 1fr));}
   .private-project-gate__promise {grid-template-columns: 1fr;}
   .intake-start__journey {grid-template-columns: 1fr;}
   .intake-welcome__explanation {grid-template-columns: 1fr;}
@@ -9410,6 +9443,14 @@ button[disabled].workspace-search,
   .preliminary-understanding__decision {align-items: flex-start; flex-direction: column;}
   .preliminary-understanding__confirmed-actions {width: 100%; flex-wrap: wrap;}
   .intake-governance {grid-template-columns: 1fr;}
+}
+
+@media (max-width: 620px) {
+  .capital-job-launcher {padding: 22px 18px;}
+  .capital-job-launcher__grid {grid-template-columns: 1fr;}
+  .capital-job-card {min-height: 178px;}
+  .workspace-route-loading section {grid-template-columns: 1fr;}
+  .workspace-route-loading section i {height: 130px;}
 }
 
 @media (max-width: 640px) {

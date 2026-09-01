@@ -17,6 +17,7 @@ export type WorkspaceNavigationProject = {
   name: string;
   opportunityId: string | null;
   status: string;
+  jobLabel?: string;
 };
 
 type Copy = {
@@ -97,7 +98,7 @@ export function WorkspaceProjectNavigation({copy, locale, projects}: Props) {
   const activeSessionId = searchParams.get("session");
   const normalizedQuery = query.trim().toLocaleLowerCase(locale);
   const visibleProjects = useMemo(() => normalizedQuery
-    ? projects.filter((project) => project.name.toLocaleLowerCase(locale).includes(normalizedQuery))
+    ? projects.filter((project) => `${project.name} ${project.jobLabel ?? ""}`.toLocaleLowerCase(locale).includes(normalizedQuery))
     : projects, [locale, normalizedQuery, projects]);
 
   return (
@@ -123,7 +124,7 @@ export function WorkspaceProjectNavigation({copy, locale, projects}: Props) {
             <div className={active ? "workspace-project is-active" : "workspace-project"} key={project.id} role="listitem">
               <Link aria-current={active ? "page" : undefined} href={project.href} title={project.name}>
                 <span className={`workspace-project__state workspace-project__state--${project.status}`} />
-                <span><strong>{project.name}</strong><small>{copy.status[project.status] ?? copy.status.collecting}</small></span>
+                <span><strong>{project.name}</strong><small>{project.jobLabel ?? (copy.status[project.status] ?? copy.status.collecting)}</small></span>
               </Link>
               <ProjectActions copy={copy} locale={locale} project={project} />
             </div>

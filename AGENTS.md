@@ -4,9 +4,11 @@ These rules apply to every agent working in this repository (Claude Code, Codex,
 human). They exist so that two agents can work in parallel without duplicating flows,
 weakening security, or drifting from the product. Read them fully before your first change.
 
-The canonical product journey lives in
-[`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). Read it before
-changing onboarding, pipeline order, user-visible progress, materials, matching or
+The canonical product definition and six entry jobs live in
+[`docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`](docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md).
+The current company-led transaction route lives in
+[`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). Read both before
+changing home, onboarding, pipeline order, user-visible progress, materials, matching or
 introduction. Full orientation lives in [`handoff.md`](handoff.md). Roadmap gates live in
 [`docs/build/MASTER_PLAN.md`](docs/build/MASTER_PLAN.md). Architecture decisions live in
 [`docs/adr/`](docs/adr/). The versioned product spec is
@@ -47,10 +49,12 @@ production borrower data into staging.
     procedures under `packages/credit-playbook`; runtime skills are compiled artifacts. Roles are
     namespaces, never autonomous agents. Order, state, budgets and gates belong to the deterministic
     pipeline. See ADR 0013 and `OFFROAD_DCM_OPERATING_CONSTITUTION.md`.
-12. **One canonical journey.** Product stages, gates and permitted returns come from
-    `docs/product/PRODUCT_WORKFLOW.md`. Visual grouping may simplify navigation but must not skip,
-    merge or reorder the underlying decisions. Expensive production begins only after the structure
-    and required inputs have been confirmed.
+12. **One canonical state, six valid entries.** The six jobs in the Constitution compile different
+    initial task subgraphs over the same organization, company and project objects. The current
+    company-led route, its stages, gates and permitted returns come from
+    `docs/product/PRODUCT_WORKFLOW.md`. No entry may create a parallel truth, skip an applicable
+    gate or force the user to restart. Expensive production begins only after the structure and
+    required inputs have been confirmed.
 
 Never weaken an RLS policy, a grant, or a check constraint to make a UI flow work. Fix the
 transaction, the bootstrap, or the query scope, and add a regression test.
