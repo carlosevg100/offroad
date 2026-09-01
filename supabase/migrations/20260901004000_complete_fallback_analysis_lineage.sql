@@ -255,6 +255,7 @@ begin
     or p_understanding_payload -> 'brief' is distinct from p_case_state -> 'brief'
     or p_understanding_payload -> 'briefBlockedBy' is distinct from p_case_state -> 'briefBlockedBy'
     or p_understanding_payload -> 'redFlagTruth' is distinct from p_case_state -> 'redFlagTruth'
+    or coalesce(jsonb_typeof(p_case_state #> '{readiness,blockers}'), 'null') <> 'array'
     or p_understanding_payload #>> '{externalResearch,status}' <> 'abstained'
     or coalesce((p_understanding_payload #>> '{externalResearch,sourceCount}')::integer, -1) <> 0 then
     raise exception 'invalid_fallback_case_snapshot' using errcode = '22023';
@@ -297,7 +298,7 @@ begin
     and session.id = p_session_id;
 
   understanding_status := case
-    when p_case_state #>> '{readiness,state}' = 'ready' then 'pending_confirmation'
+    when jsonb_array_length(p_case_state #> '{readiness,blockers}') = 0 then 'pending_confirmation'
     else 'draft'
   end;
   perform private.append_deal_state_object(

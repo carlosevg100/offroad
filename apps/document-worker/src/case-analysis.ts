@@ -23,6 +23,7 @@ import {
   buildSemanticAuditInput,
   caseBriefSchema,
   deskEvidence,
+  diagnosticConfirmationReady,
   fingerprintJson,
   semanticAuditSchema,
   type ClaimDecision,
@@ -1229,7 +1230,7 @@ async function persistDealStateObjects(input: {
   if (!input.raw.deal_workflow.gates.understandingConfirmed) {
     ids.push(await input.queue.recordDealStateObject(input.job, {
       objectType: "understanding_snapshot",
-      status: input.publicState.readiness.state === "ready" ? "pending_confirmation" : "draft",
+      status: diagnosticConfirmationReady(input.publicState.readiness) ? "pending_confirmation" : "draft",
       inputFingerprint: input.inputFingerprint,
       payload: {
         schemaVersion: "2026.08.31-v2",

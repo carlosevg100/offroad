@@ -1,5 +1,6 @@
 import {AlertTriangle, ArrowRight, Check, ChevronDown, FileText, History} from "lucide-react";
 import {getTranslations} from "next-intl/server";
+import {diagnosticConfirmationReady} from "@offroad/case-understanding";
 
 import {anchorText, displayCandidateValue, editableCandidateValue, intakeGroups} from "@/lib/intake/format";
 import type {CaseState} from "@/lib/intake/case-pipeline";
@@ -102,6 +103,7 @@ export async function IntakeReview({locale, session, documents, candidates, issu
     if (isConflict) return t("state.conflict");
     return `${Math.round(Number(candidate.confidence) * 100)}%`;
   };
+  const diagnosticCanBeConfirmed = caseState ? diagnosticConfirmationReady(caseState.readiness) : false;
 
   return (
     <div className="intake-review">
@@ -124,7 +126,7 @@ export async function IntakeReview({locale, session, documents, candidates, issu
 
       {caseState !== undefined ? <IntakeCase caseState={caseState} locale={locale} sessionId={session.id} view="diagnosis" /> : null}
 
-      {caseState?.readiness.state === "ready" ? (
+      {diagnosticCanBeConfirmed ? (
         <section className="intake-case-review-actions">
           <header>
             <div><span className="section-kicker">{t("caseReviewKicker")}</span><h3>{t("caseReviewTitle")}</h3><p>{t("caseReviewBody")}</p></div>
@@ -286,7 +288,7 @@ export async function IntakeReview({locale, session, documents, candidates, issu
           <FileText aria-hidden="true" size={22} />
           <div><strong>{t("emptyTitle")}</strong><p>{t("emptyBody")}</p></div>
         </section>
-      ) : caseState?.readiness.state !== "ready" ? (
+      ) : !diagnosticCanBeConfirmed ? (
         <section className="intake-review__not-ready" role="status">
           <AlertTriangle aria-hidden="true" size={18} />
           <div><strong>{t("notReadyTitle")}</strong><p>{t("notReadyBody")}</p></div>

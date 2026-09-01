@@ -411,7 +411,8 @@ begin
     raise exception 'preliminary_understanding_not_confirmed' using errcode = '55000';
   end if;
 
-  if coalesce(session_row.result_summary #>> '{case_state,readiness,state}', '') <> 'ready' then
+  if coalesce(jsonb_typeof(session_row.result_summary #> '{case_state,readiness,blockers}'), 'null') <> 'array'
+    or jsonb_array_length(session_row.result_summary #> '{case_state,readiness,blockers}') > 0 then
     raise exception 'diagnostic_case_not_ready' using errcode = '55000';
   end if;
   case_input_fingerprint := session_row.result_summary #>> '{case_manifest,input_fingerprint}';
@@ -423,7 +424,8 @@ begin
       and understanding.status = 'pending_confirmation'
       and understanding.created_by_kind = 'worker'
       and understanding.input_fingerprint = case_input_fingerprint
-      and understanding.payload #>> '{readiness,state}' = 'ready'
+      and jsonb_typeof(understanding.payload #> '{readiness,blockers}') = 'array'
+      and jsonb_array_length(understanding.payload #> '{readiness,blockers}') = 0
     order by understanding.object_version desc
     limit 1
     for update;
@@ -483,7 +485,7 @@ comment on table public.preliminary_understandings is
 
 -- A user does not author a diagnostic understanding. The only permitted confirmation is an
 -- exact countersignature of the current worker-produced snapshot: same governed input, same
--- payload, readiness already `ready`, with only the auditable confirmation envelope added.
+-- payload, with no diagnostic blocker open, and only the auditable confirmation envelope added.
 -- Replacing the public wrapper is also important: the original wrapper called `append` directly
 -- and therefore bypassed later validation added to `private.record_deal_state_object`.
 create or replace function private.record_deal_state_object(
@@ -547,7 +549,8 @@ begin
 
     if not found
       or pending_worker.input_fingerprint <> p_input_fingerprint
-      or pending_worker.payload #>> '{readiness,state}' <> 'ready'
+      or coalesce(jsonb_typeof(pending_worker.payload #> '{readiness,blockers}'), 'null') <> 'array'
+      or jsonb_array_length(pending_worker.payload #> '{readiness,blockers}') > 0
       or p_dependencies <> '[]'::jsonb
       or (p_payload - 'confirmation') <> pending_worker.payload
       or p_payload #>> '{confirmation,actorId}' <> actor_id::text then
