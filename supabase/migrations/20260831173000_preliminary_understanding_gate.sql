@@ -913,7 +913,6 @@ begin
     and understanding.status in ('pending_confirmation', 'confirmed')
   order by understanding.object_version desc
   limit 1;
-  if object_id is not null then return object_id; end if;
 
   select coalesce(max(run.run_no), 0) + 1 into next_run_no
   from public.processing_runs run
@@ -925,16 +924,46 @@ begin
     stages, budget, usage, versions, started_at, completed_at, created_by
   ) values (
     p_organization_id, p_session_id, next_run_no, 'manual', 'succeeded',
-    'fixture-preliminary-2026.08.31',
+    case when object_id is null
+      then 'fixture-preliminary-2026.08.31'
+      else 'fixture-analysis-2026.09.01'
+    end,
     jsonb_build_array(
-      jsonb_build_object('stage', 'preliminary_understanding', 'status', 'started'),
-      jsonb_build_object('stage', 'preliminary_understanding', 'status', 'succeeded')
+      jsonb_build_object(
+        'stage',
+        case when object_id is null then 'preliminary_understanding' else 'case_analysis' end,
+        'status', 'started'
+      ),
+      jsonb_build_object(
+        'stage',
+        case when object_id is null then 'preliminary_understanding' else 'case_analysis' end,
+        'status', 'succeeded'
+      )
     ),
     jsonb_build_object('max_cost_usd', 0, 'max_calls', 0),
     jsonb_build_object('cost_usd', 0, 'calls', 0),
-    jsonb_build_object('source', 'verified_content_hash_fixture'),
+    jsonb_build_object(
+      'source', 'verified_content_hash_fixture',
+      'phase', case when object_id is null then 'preliminary' else 'analysis' end
+    ),
     now(), now(), actor_id
   ) returning id into run_id;
+
+  -- The deterministic extractor is invoked twice by the canonical journey: once to publish the
+  -- corrigible preliminary read, then again after that exact read is confirmed to build the
+  -- evidence review. Both are real zero-cost runs and therefore need distinct lineage. Returning
+  -- the already-confirmed preliminary object without advancing current_run_id made the UI believe
+  -- that the second run had never happened and parked the journey on the information-request page.
+  update public.document_intake_sessions session
+  set current_run_id = run_id,
+      pipeline_version = case when object_id is null
+        then 'fixture-preliminary-2026.08.31'
+        else 'fixture-analysis-2026.09.01'
+      end
+  where session.organization_id = p_organization_id
+    and session.id = p_session_id;
+
+  if object_id is not null then return object_id; end if;
 
   select coalesce(max(understanding.object_version), 0) + 1 into next_version
   from public.preliminary_understandings understanding
@@ -962,12 +991,6 @@ begin
     p_organization_id, p_session_id, run_id, next_version, 'pending_confirmation',
     p_input_fingerprint, object_fingerprint, p_payload
   ) returning id into object_id;
-
-  update public.document_intake_sessions session
-  set current_run_id = run_id,
-      pipeline_version = 'fixture-preliminary-2026.08.31'
-  where session.organization_id = p_organization_id
-    and session.id = p_session_id;
 
   return object_id;
 end;
