@@ -2,7 +2,7 @@ import {Building2, CircleGauge, FileLock2, Landmark, LogOut} from "lucide-react"
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
-import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/case-understanding";
+import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
 import {BrandMark} from "@/components/brand-mark";
 import {WorkspaceProjectNavigation, type WorkspaceNavigationProject} from "@/components/workspace-project-navigation";

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import {IntakeActionSubmit} from "@/components/intake/intake-action-submit";
 import type {Json} from "@/types/database";
-import type {CapitalProjectJob} from "@offroad/case-understanding";
+import type {CapitalProjectJob} from "@offroad/work-plan";
 
 type LegalSection = {heading: string; body: string};
 

@@ -1,6 +1,7 @@
 import {z} from "zod";
 
 export * from "./task-registry";
+export * from "./capital-jobs";
 
 export const workPlanTaskIds = [
   "secure_documents",

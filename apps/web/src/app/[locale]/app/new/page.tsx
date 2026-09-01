@@ -3,7 +3,7 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 import {redirect} from "next/navigation";
-import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/case-understanding";
+import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
