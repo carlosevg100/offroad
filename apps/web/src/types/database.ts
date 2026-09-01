@@ -585,6 +585,152 @@ export type Database = {
           },
         ]
       }
+      capital_project_artifacts: {
+        Row: {
+          artifact_fingerprint: string
+          artifact_type: string
+          artifact_version: number
+          capital_project_id: string
+          content: Json
+          created_at: string
+          created_by: string | null
+          created_by_kind: string
+          dependencies: Json
+          evidence_refs: Json
+          id: string
+          input_fingerprint: string
+          organization_id: string
+          plan_id: string
+          processing_job_id: string
+          schema_version: string
+          status: string
+          superseded_at: string | null
+          task_run_id: string
+        }
+        Insert: {
+          artifact_fingerprint: string
+          artifact_type: string
+          artifact_version: number
+          capital_project_id: string
+          content: Json
+          created_at?: string
+          created_by?: string | null
+          created_by_kind: string
+          dependencies?: Json
+          evidence_refs?: Json
+          id?: string
+          input_fingerprint: string
+          organization_id: string
+          plan_id: string
+          processing_job_id: string
+          schema_version: string
+          status: string
+          superseded_at?: string | null
+          task_run_id: string
+        }
+        Update: {
+          artifact_fingerprint?: string
+          artifact_type?: string
+          artifact_version?: number
+          capital_project_id?: string
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          created_by_kind?: string
+          dependencies?: Json
+          evidence_refs?: Json
+          id?: string
+          input_fingerprint?: string
+          organization_id?: string
+          plan_id?: string
+          processing_job_id?: string
+          schema_version?: string
+          status?: string
+          superseded_at?: string | null
+          task_run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_artifacts_organization_id_capital_project_id_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_artifacts_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_artifacts_organization_id_processing_job_id_fkey"
+            columns: ["organization_id", "processing_job_id"]
+            isOneToOne: false
+            referencedRelation: "processing_jobs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_artifacts_organization_id_task_run_id_fkey"
+            columns: ["organization_id", "task_run_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_task_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      capital_project_artifact_decisions: {
+        Row: {
+          artifact_fingerprint: string
+          artifact_id: string
+          capital_project_id: string
+          decided_at: string
+          decided_by: string
+          decision: string
+          id: string
+          note: string | null
+          organization_id: string
+        }
+        Insert: {
+          artifact_fingerprint: string
+          artifact_id: string
+          capital_project_id: string
+          decided_at?: string
+          decided_by: string
+          decision: string
+          id?: string
+          note?: string | null
+          organization_id: string
+        }
+        Update: {
+          artifact_fingerprint?: string
+          artifact_id?: string
+          capital_project_id?: string
+          decided_at?: string
+          decided_by?: string
+          decision?: string
+          id?: string
+          note?: string | null
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_artifact_decisions_organization_id_artifact_id_fkey"
+            columns: ["organization_id", "artifact_id"]
+            isOneToOne: true
+            referencedRelation: "capital_project_artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_artifact_decisions_organization_id_capital_project_id_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       capital_project_plans: {
         Row: {
           capital_project_id: string
@@ -6096,6 +6242,15 @@ export type Database = {
         }
         Returns: string
       }
+      decide_capital_project_artifact: {
+        Args: {
+          p_artifact_fingerprint: string
+          p_artifact_id: string
+          p_decision: string
+          p_note?: string
+        }
+        Returns: string
+      }
       start_public_capital_project: {
         Args: {
           p_company_name: string
@@ -6731,6 +6886,21 @@ export type Database = {
           p_event_id: string
           p_job_id: string
           p_suggestions: Json
+        }
+        Returns: Json
+      }
+      worker_record_capital_project_artifact: {
+        Args: {
+          p_artifact_type: string
+          p_capability_token: string
+          p_content: Json
+          p_dependencies?: Json
+          p_evidence_refs?: Json
+          p_input_fingerprint: string
+          p_job_id: string
+          p_schema_version: string
+          p_status: string
+          p_task_run_id: string
         }
         Returns: Json
       }

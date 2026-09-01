@@ -579,6 +579,7 @@ begin
       'locale', 'pt-BR',
       'execution_mode', 'primary',
       'analysis_scope', 'preliminary_understanding',
+      'capital_artifact_required', true,
       'capital_project_plan_id', target_plan_id,
       'capital_task_ids', jsonb_build_array('M01', 'M02', 'M04'),
       'trigger_event', jsonb_build_object('kind', 'project_started', 'id', gen_random_uuid())
@@ -602,6 +603,10 @@ declare
   m01_run uuid;
   m02_run uuid;
   m04_run uuid;
+  m01_artifact jsonb;
+  m02_artifact jsonb;
+  m04_artifact jsonb;
+  decision_id uuid;
   rejected boolean;
 begin
   claim := public.worker_claim_job(repeat('q', 64), 600);
@@ -651,28 +656,71 @@ begin
   end;
   if not rejected then raise exception 'capital TaskRun accepted ungraded success'; end if;
 
+  m01_artifact := public.worker_record_capital_project_artifact(
+    job_id, capability, m01_run, 'company_resolution', 'company-resolution.v1',
+    'draft', repeat('a', 64),
+    '{"companyName":"Cliente Planejado S.A.","website":"https://cliente-planejado.example"}'::jsonb,
+    '[{"sourceType":"public_url","sourceId":"https://cliente-planejado.example"}]'::jsonb,
+    '[]'::jsonb
+  );
   perform public.worker_finish_capital_project_task(
     job_id, capability, m01_run, 'succeeded',
-    '{"type":"company_resolution","id":"company-resolution-1"}'::jsonb,
-    repeat('1', 64), '[{"grader":"schema","passed":true}]'::jsonb,
+    jsonb_build_object('type', 'capital_project_artifact', 'id', m01_artifact ->> 'id'),
+    m01_artifact ->> 'artifact_fingerprint', '[{"grader":"schema","passed":true}]'::jsonb,
     '{"durationMs":12}'::jsonb, null
   );
   m02_run := public.worker_start_capital_project_task(
     job_id, capability, 'M02', 'normalize-objective', '2026.09.01-v1', repeat('b', 64), '{}'::jsonb
   );
+  m02_artifact := public.worker_record_capital_project_artifact(
+    job_id, capability, m02_run, 'normalized_mandate', 'normalized-mandate.v1',
+    'draft', repeat('b', 64), '{"objective":"Preparar tese de originação"}'::jsonb,
+    '[]'::jsonb, '[]'::jsonb
+  );
   perform public.worker_finish_capital_project_task(
     job_id, capability, m02_run, 'succeeded',
-    '{"type":"normalized_objective","id":"normalized-objective-1"}'::jsonb,
-    repeat('2', 64), '[{"grader":"schema","passed":true}]'::jsonb, '{}'::jsonb, null
+    jsonb_build_object('type', 'capital_project_artifact', 'id', m02_artifact ->> 'id'),
+    m02_artifact ->> 'artifact_fingerprint', '[{"grader":"schema","passed":true}]'::jsonb,
+    '{}'::jsonb, null
   );
   m04_run := public.worker_start_capital_project_task(
     job_id, capability, 'M04', 'infer-archetypes', '2026.09.01-v1', repeat('d', 64), '{}'::jsonb
   );
+  rejected := false;
+  begin
+    perform public.worker_record_capital_project_artifact(
+      job_id, capability, m04_run, 'archetype_hypotheses', 'archetype-hypotheses.v1',
+      'pending_confirmation', repeat('d', 64), '{"candidates":["refinance"]}'::jsonb,
+      '[]'::jsonb, '[]'::jsonb
+    );
+  exception when object_not_in_prerequisite_state then rejected := true;
+  end;
+  if not rejected then raise exception 'capital artifact omitted exact TaskSpec dependencies'; end if;
+
+  m04_artifact := public.worker_record_capital_project_artifact(
+    job_id, capability, m04_run, 'archetype_hypotheses', 'archetype-hypotheses.v1',
+    'pending_confirmation', repeat('d', 64), '{"candidates":["refinance"]}'::jsonb,
+    '[]'::jsonb,
+    jsonb_build_array(
+      jsonb_build_object('artifactId', m01_artifact ->> 'id', 'artifactFingerprint', m01_artifact ->> 'artifact_fingerprint'),
+      jsonb_build_object('artifactId', m02_artifact ->> 'id', 'artifactFingerprint', m02_artifact ->> 'artifact_fingerprint')
+    )
+  );
   perform public.worker_finish_capital_project_task(
     job_id, capability, m04_run, 'succeeded',
-    '{"type":"archetype_candidates","id":"archetype-candidates-1"}'::jsonb,
-    repeat('4', 64), '[{"grader":"schema","passed":true}]'::jsonb, '{}'::jsonb, null
+    jsonb_build_object('type', 'capital_project_artifact', 'id', m04_artifact ->> 'id'),
+    m04_artifact ->> 'artifact_fingerprint', '[{"grader":"schema","passed":true}]'::jsonb,
+    '{}'::jsonb, null
   );
+
+  decision_id := public.decide_capital_project_artifact(
+    (m04_artifact ->> 'id')::uuid, m04_artifact ->> 'artifact_fingerprint', 'confirm', null
+  );
+  if decision_id is null
+    or (select status from public.capital_project_artifacts
+        where id = (m04_artifact ->> 'id')::uuid) <> 'confirmed' then
+    raise exception 'capital artifact confirmation was not bound to its exact fingerprint';
+  end if;
 
   if (select count(*) from public.capital_project_task_runs where status = 'succeeded') <> 3 then
     raise exception 'capital TaskRun lifecycle did not persist the three proven executions';
@@ -680,6 +728,13 @@ begin
   begin
     update public.capital_project_task_runs set status = 'cancelled' where id = m01_run;
     raise exception 'tenant mutated a TaskRun directly';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    update public.capital_project_artifacts
+    set content = '{"tampered":true}'::jsonb
+    where id = (m01_artifact ->> 'id')::uuid;
+    raise exception 'tenant mutated a capital project artifact directly';
   exception when insufficient_privilege then null;
   end;
 end;

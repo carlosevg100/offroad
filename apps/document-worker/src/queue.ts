@@ -99,6 +99,16 @@ export type QueueClient = {
     inputFingerprint: string;
     contextManifest?: unknown;
   }): Promise<string>;
+  recordCapitalProjectArtifact(job: ClaimedJob, input: {
+    taskRunId: string;
+    artifactType: string;
+    schemaVersion: string;
+    status: "draft" | "pending_confirmation";
+    inputFingerprint: string;
+    content: unknown;
+    evidenceRefs?: unknown[];
+    dependencies?: unknown[];
+  }): Promise<{id: string; artifactFingerprint: string; artifactVersion: number; replayed: boolean}>;
   finishCapitalTask(job: ClaimedJob, input: {
     taskRunId: string;
     status: CapitalTaskFinishStatus;
@@ -217,6 +227,33 @@ export function createQueueClient(
         p_context_manifest: input.contextManifest ?? {},
       });
       return z.uuid().parse(data);
+    },
+
+    async recordCapitalProjectArtifact(job, input) {
+      const data = await call("worker_record_capital_project_artifact", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_task_run_id: input.taskRunId,
+        p_artifact_type: input.artifactType,
+        p_schema_version: input.schemaVersion,
+        p_status: input.status,
+        p_input_fingerprint: input.inputFingerprint,
+        p_content: input.content,
+        p_evidence_refs: input.evidenceRefs ?? [],
+        p_dependencies: input.dependencies ?? [],
+      });
+      const parsed = z.object({
+        id: z.uuid(),
+        artifact_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        artifact_version: z.number().int().positive(),
+        replayed: z.boolean(),
+      }).parse(data);
+      return {
+        id: parsed.id,
+        artifactFingerprint: parsed.artifact_fingerprint,
+        artifactVersion: parsed.artifact_version,
+        replayed: parsed.replayed,
+      };
     },
 
     async finishCapitalTask(job, input) {
