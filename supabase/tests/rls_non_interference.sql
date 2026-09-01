@@ -464,12 +464,14 @@ insert into public.deal_state_objects (
   '40000000-0000-4000-8000-000000000001',
   'understanding_snapshot', 1, 'pending_confirmation',
   repeat('d', 64), repeat('e', 64),
-  '{"readiness":{"state":"ready"}}'::jsonb, '[]'::jsonb, 'worker'
+  '{"readiness":{"state":"ready","blockers":[]}}'::jsonb, '[]'::jsonb, 'worker'
 );
 
 update public.document_intake_sessions
 set result_summary = result_summary || jsonb_build_object(
-  'case_state', jsonb_build_object('readiness', jsonb_build_object('state', 'ready')),
+  'case_state', jsonb_build_object(
+    'readiness', jsonb_build_object('state', 'ready', 'blockers', '[]'::jsonb)
+  ),
   'case_manifest', jsonb_build_object('input_fingerprint', repeat('d', 64))
 )
 where id = '40000000-0000-4000-8000-000000000001';
