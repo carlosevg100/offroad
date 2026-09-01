@@ -78,7 +78,7 @@ export type ReadinessInput = {
  * The blockers already encode the two conditions that do stop a diagnostic: an incomplete
  * minimum package or a critical reconciliation exception.
  */
-export function diagnosticConfirmationReady(report: ReadinessReport): boolean {
+export function diagnosticConfirmationReady(report: {readonly blockers: readonly unknown[]}): boolean {
   return report.blockers.length === 0;
 }
 

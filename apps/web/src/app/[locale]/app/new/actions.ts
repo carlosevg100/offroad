@@ -4,6 +4,7 @@ import {createHash, randomUUID} from "node:crypto";
 
 import {redirect} from "next/navigation";
 import {z} from "zod";
+import {diagnosticConfirmationReady} from "@offroad/case-understanding";
 
 import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -335,7 +336,9 @@ export async function confirmWorkspaceDocumentIntake(formData: FormData) {
   const readiness = caseState.readiness && typeof caseState.readiness === "object" && !Array.isArray(caseState.readiness)
     ? caseState.readiness as Record<string, unknown>
     : {};
-  if (!preliminary || readiness.state !== "ready") {
+  const diagnosticCanBeConfirmed = Array.isArray(readiness.blockers)
+    && diagnosticConfirmationReady({blockers: readiness.blockers});
+  if (!preliminary || !diagnosticCanBeConfirmed) {
     redirect(intakeUrl(locale, sessionId, "confirmation", "documents"));
   }
   const outcome = await confirmIntakeCase(runtime);
