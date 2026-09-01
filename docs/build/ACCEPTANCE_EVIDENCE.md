@@ -12,8 +12,12 @@
 | Idempotência | teste SQL novo | replay preserva um brief e um job, reanexa os metadados e mantém estado coerente |
 | Menor privilégio | função capability-bound | organização, sessão, projeto e plano vêm do job; token incorreto falha fechado; nenhuma autoridade externa é ampliada |
 | Orçamento | payload e run persistidos | originação: até 2 chamadas/US$ 0,75; company debt view: até 2 chamadas/US$ 0,95; reservas de busca preservadas |
-| Testes locais | Vitest/TypeScript | agent contracts 16/16; worker 76/76; typecheck do worker verde; zero API paga |
-| Banco | ambiente local desta máquina | Docker indisponível; migration e teste adversarial aguardam reconstrução limpa no Database CI antes de qualquer promoção |
+| Testes locais | Vitest/TypeScript | agent contracts 17/17; worker 76/76; typecheck do worker verde; zero API paga |
+| Banco reconstruído | Quality `33506053970` e `33506895933` | todas as migrations aplicadas do zero; teste de ativação obrigatório cobre atomicidade, replay, identidade inventada e capability incorreta |
+| Staging | Supabase `lxmpsxwlpmfisbauakaz` | predecessor `company_debt_view` reconciliado em `20260901121555`; ativação em `20260901121603`; teste remoto aprovado com rollback |
+| Produção | Supabase `ifnogpksgdadruooqydi` | migration `20260901122420`; teste remoto aprovado; wrapper para `authenticated`, negado a `anon`; função privada negada ao tenant; zero dado de teste residual |
+| Advisors | staging e produção | zero security findings; performance somente com informações históricas de índices sem uso e configuração de Auth, sem warning/error novo |
+| Rollout | PR #341 + PR #342 | worker `33506612853` estável no ECS; Vercel de produção verde; teste SQL agora obrigatório no CI |
 
 Esta evidência prova o roteamento e o handoff governado somente para duas verticais públicas já
 implementadas. Não promove análise privada completa, estruturação, materiais, matching ou
