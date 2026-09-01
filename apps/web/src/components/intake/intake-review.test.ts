@@ -7,9 +7,9 @@ describe("review attention routing", () => {
     expect(isReviewAttentionItem({status: "open", rule_id: "requirement.financials", exception_type: "missing"})).toBe(false);
   });
 
-  it("keeps pipeline-authored missing evidence and reconciliation exceptions in the review", () => {
+  it("keeps pipeline-authored evidence issues and routes reconciliation exceptions to the case analysis", () => {
     expect(isReviewAttentionItem({status: "open", rule_id: null, exception_type: "missing"})).toBe(true);
-    expect(isReviewAttentionItem({status: "open", rule_id: "reconcile.debt", exception_type: "source_conflict"})).toBe(true);
+    expect(isReviewAttentionItem({status: "open", rule_id: "reconcile.debt", exception_type: "source_conflict"})).toBe(false);
   });
 
   it("never renders resolved items as open attention points", () => {

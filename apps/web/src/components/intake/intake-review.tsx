@@ -68,16 +68,16 @@ function issueEvidence(raw: unknown): IssueEvidence[] {
  * Keeps the evidence review from counting the governed request list twice.
  *
  * Reconciliation persists both genuine exceptions and missing requirements in `intake_issues`
- * so every gap has durable lineage. Missing requirements produced by a rule also belong to the
- * request ladder rendered immediately above this review, however. Showing them again as
- * "pontos de atenção" turns eight actual review items into dozens of apparent red flags. A
- * pipeline-authored missing issue has no rule id and remains visible; only rule-derived request
- * gaps are routed to the checklist.
+ * so every derived finding has durable lineage. They already have their canonical surfaces on
+ * this page: exceptions inside `IntakeCase` and missing requirements inside the request ladder.
+ * Rendering the same rows again under evidence review duplicated both findings and counts. A
+ * pipeline-authored issue has no rule id and remains visible here; every rule-derived row stays
+ * in its analysis or request surface instead.
  */
 export function isReviewAttentionItem(
   issue: Pick<IntakeIssue, "status" | "rule_id" | "exception_type">,
 ) {
-  return issue.status === "open" && !(issue.rule_id && issue.exception_type === "missing");
+  return issue.status === "open" && !issue.rule_id;
 }
 
 export async function IntakeReview({locale, session, documents, candidates, issues, actions, caseState, checklist, answerAction, organizationId, userId, removeAction, surface}: Props) {
