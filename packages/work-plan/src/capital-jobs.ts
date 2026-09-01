@@ -158,6 +158,26 @@ export type CompiledCapitalJobPlan = {
   executionClassCounts: Readonly<Record<OffroadExecutionClass, number>>;
 };
 
+export const capitalProjectPlanSchemaVersion = "capital-project-plan.v1";
+export const capitalProjectPlanCompilerVersion = "2026.09.01-v1";
+export const offroadTaskRegistryVersion = "2026.09.01-v1";
+
+export type CapitalProjectPlanSnapshot = {
+  schemaVersion: typeof capitalProjectPlanSchemaVersion;
+  compilerVersion: typeof capitalProjectPlanCompilerVersion;
+  registryVersion: typeof offroadTaskRegistryVersion;
+  job: {
+    id: CapitalProjectJob;
+    targetTaskIds: readonly string[];
+    firstWorkProduct: string;
+    confirmationGate: CapitalProjectJobDefinition["confirmationGate"];
+    accessPolicy: CapitalProjectJobDefinition["accessPolicy"];
+    inputPolicy: CapitalJobInputPolicy;
+  };
+  taskSpecs: readonly (OffroadTaskSpec & {ordinal: number; batch: number})[];
+  parallelBatches: readonly (readonly string[])[];
+};
+
 const taskById = new Map(offroadTaskRegistry.map((task) => [task.id, task]));
 
 export function capitalProjectJob(job: CapitalProjectJob): CapitalProjectJobDefinition {
@@ -188,6 +208,39 @@ export function compileCapitalProjectJob(jobId: CapitalProjectJob): CompiledCapi
     ]),
   ) as Record<OffroadExecutionClass, number>;
   return {job, tasks, parallelBatches, executionClassCounts};
+}
+
+/**
+ * Immutable, serializable plan contract stored with a project. Runtime code must execute this
+ * snapshot (after validating its registry/compiler versions), never silently recompile history
+ * from whatever registry happens to be deployed later.
+ */
+export function capitalProjectPlanSnapshot(jobId: CapitalProjectJob): CapitalProjectPlanSnapshot {
+  const compiled = compileCapitalProjectJob(jobId);
+  const batchByTask = new Map<string, number>();
+  compiled.parallelBatches.forEach((batch, batchIndex) => {
+    for (const taskId of batch) batchByTask.set(taskId, batchIndex);
+  });
+  return {
+    schemaVersion: capitalProjectPlanSchemaVersion,
+    compilerVersion: capitalProjectPlanCompilerVersion,
+    registryVersion: offroadTaskRegistryVersion,
+    job: {
+      id: compiled.job.id,
+      targetTaskIds: [...compiled.job.targetTaskIds],
+      firstWorkProduct: compiled.job.firstWorkProduct,
+      confirmationGate: compiled.job.confirmationGate,
+      accessPolicy: compiled.job.accessPolicy,
+      inputPolicy: {...compiled.job.inputPolicy},
+    },
+    taskSpecs: compiled.tasks.map((task, ordinal) => ({
+      ...task,
+      dependencies: [...task.dependencies],
+      ordinal,
+      batch: batchByTask.get(task.id) ?? 0,
+    })),
+    parallelBatches: compiled.parallelBatches.map((batch) => [...batch]),
+  };
 }
 
 const offroadExecutionClasses: readonly OffroadExecutionClass[] = [

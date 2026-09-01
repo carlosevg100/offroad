@@ -447,6 +447,97 @@ begin
 end;
 $$;
 
+-- A selected job is compiled into an immutable, dependency-closed plan in the same transaction
+-- that creates the project. The UI cannot invent progress and a malformed target cannot leave an
+-- orphan project behind.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000105","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  plan_snapshot jsonb;
+  invalid_snapshot jsonb;
+  session_id uuid;
+  project_id uuid;
+  rejected boolean := false;
+begin
+  select jsonb_build_object(
+    'schemaVersion', 'capital-project-plan.v1',
+    'compilerVersion', '2026.09.01-v1',
+    'registryVersion', '2026.09.01-v1',
+    'job', jsonb_build_object(
+      'id', 'origination_thesis',
+      'targetTaskIds', jsonb_build_array('M07', 'C02', 'K04'),
+      'firstWorkProduct', 'meeting_brief',
+      'confirmationGate', 'preliminary_understanding',
+      'accessPolicy', 'public_or_private',
+      'inputPolicy', jsonb_build_object(
+        'company', 'required', 'documents', 'optional', 'capitalIntent', 'optional',
+        'existingTransaction', 'not_applicable', 'publicResearch', 'required'
+      )
+    ),
+    'taskSpecs', jsonb_agg(jsonb_build_object(
+      'id', spec.id, 'label', spec.label, 'graph', spec.graph,
+      'dependencies', to_jsonb(spec.dependencies), 'executionClass', spec.execution_class,
+      'effect', spec.effect, 'maturity', 'specified', 'ordinal', spec.ordinal, 'batch', spec.batch
+    ) order by spec.ordinal),
+    'parallelBatches', jsonb_build_array(
+      jsonb_build_array('M01', 'M02'),
+      jsonb_build_array('M03', 'M04'),
+      jsonb_build_array('M05', 'C02', 'K04'),
+      jsonb_build_array('M06'),
+      jsonb_build_array('M07')
+    )
+  ) into plan_snapshot
+  from (values
+    ('M01','Resolver companhia e grupo','case',array[]::text[],'extraction','propose_state',0,0),
+    ('M02','Normalizar objetivo','case',array[]::text[],'extraction','propose_state',1,0),
+    ('M03','Registrar restrições','case',array['M02'],'extraction','propose_state',2,1),
+    ('M04','Inferir arquétipos candidatos','case',array['M01','M02'],'judgment','propose_state',3,1),
+    ('M05','Definir entregáveis','case',array['M02','M03'],'deterministic','propose_state',4,2),
+    ('M06','Compilar plano de tarefas','case',array['M04','M05'],'deterministic','commit',5,3),
+    ('M07','Emitir entendimento corrigível','case',array['M06'],'compilation','propose_state',6,4),
+    ('C02','Pesquisar setor e regulação','knowledge',array['M01','M04'],'research','none',7,2),
+    ('K04','Pesquisar transações comparáveis','market',array['M01','M04'],'research','commit',8,2)
+  ) spec(id,label,graph,dependencies,execution_class,effect,ordinal,batch);
+
+  session_id := public.start_public_capital_project_v2(
+    'pt-BR', 'Tese com plano persistido', 'origination_thesis',
+    'Cliente Planejado S.A.', 'https://cliente-planejado.example', plan_snapshot
+  );
+  select capital_project_id into project_id
+  from public.document_intake_sessions where id = session_id;
+
+  if (select count(*) from public.capital_project_plans
+      where capital_project_id = project_id and status = 'active') <> 1
+    or (select task_count from public.capital_project_plans
+        where capital_project_id = project_id and status = 'active') <> 9
+    or (select count(*) from public.capital_project_plan_tasks task
+        join public.capital_project_plans plan on plan.organization_id = task.organization_id and plan.id = task.plan_id
+        where plan.capital_project_id = project_id) <> 9
+    or (select count(*) from public.capital_project_task_runs where capital_project_id = project_id) <> 0 then
+    raise exception 'capital project plan was not persisted as an immutable pending graph';
+  end if;
+
+  invalid_snapshot := jsonb_set(plan_snapshot, '{job,targetTaskIds}', jsonb_build_array('S11'));
+  begin
+    perform public.start_public_capital_project_v2(
+      'pt-BR', 'Plano inválido não persiste', 'origination_thesis',
+      'Cliente Inválido S.A.', 'https://cliente-invalido.example', invalid_snapshot
+    );
+  exception when invalid_parameter_value then rejected := true;
+  end;
+  if not rejected
+    or exists (select 1 from public.capital_projects where project_name = 'Plano inválido não persiste') then
+    raise exception 'invalid plan was not rejected atomically';
+  end if;
+end;
+$$;
+
 rollback;
 
 select 'project_company_scope_passed' as result;

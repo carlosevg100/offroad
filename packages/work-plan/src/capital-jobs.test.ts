@@ -4,7 +4,11 @@ import {
   capitalProjectJob,
   capitalProjectJobs,
   capitalProjectJobSchema,
+  capitalProjectPlanCompilerVersion,
+  capitalProjectPlanSchemaVersion,
+  capitalProjectPlanSnapshot,
   compileCapitalProjectJob,
+  offroadTaskRegistryVersion,
 } from "./capital-jobs";
 
 describe("capital job compiler", () => {
@@ -66,5 +70,25 @@ describe("capital job compiler", () => {
     const plan = compileCapitalProjectJob("prepare_materials_and_process");
     expect(plan.parallelBatches.some((batch) => batch.length > 1)).toBe(true);
     expect(plan.executionClassCounts.action).toBe(0);
+  });
+
+  it.each(capitalProjectJobSchema.options)("emits a complete immutable snapshot for %s", (jobId) => {
+    const snapshot = capitalProjectPlanSnapshot(jobId);
+    const taskIds = snapshot.taskSpecs.map((task) => task.id);
+
+    expect(snapshot).toMatchObject({
+      schemaVersion: capitalProjectPlanSchemaVersion,
+      compilerVersion: capitalProjectPlanCompilerVersion,
+      registryVersion: offroadTaskRegistryVersion,
+      job: {id: jobId},
+    });
+    expect(taskIds).toHaveLength(new Set(taskIds).size);
+    expect(snapshot.taskSpecs.map((task) => task.ordinal)).toEqual(
+      snapshot.taskSpecs.map((_, index) => index),
+    );
+    for (const task of snapshot.taskSpecs) {
+      expect(snapshot.parallelBatches[task.batch]).toContain(task.id);
+    }
+    expect(snapshot.parallelBatches.flat()).toEqual(expect.arrayContaining(taskIds));
   });
 });

@@ -28,6 +28,7 @@ import {createClient} from "@/lib/supabase/server";
 import type {Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
+import {compiledCapitalProjectPlan} from "@/lib/capital-project/plan";
 
 type Journey = "company" | "originator" | "capital_provider";
 type AnswerMap = Record<string, Json | undefined>;
@@ -150,12 +151,13 @@ export async function startDocumentIntake(formData: FormData) {
 
   const supabase = await createClient();
   if (!supabase) redirect(onboardingUrl(locale, "provider"));
-  const {data: sessionId, error} = await supabase.rpc("start_onboarding_capital_project", {
+  const {data: sessionId, error} = await supabase.rpc("start_onboarding_capital_project_v2", {
     p_locale: locale,
     p_project_name: parsed.data.projectName,
     p_identity_policy: parsed.data.identityPolicy,
     p_representation_declared: true,
     p_entry_job: entryJob,
+    p_plan: compiledCapitalProjectPlan(entryJob),
   });
   if (error) {
     reportServerFailure({step: "intake.start_onboarding_project", error});
