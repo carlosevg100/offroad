@@ -1636,6 +1636,88 @@ begin
 end;
 $$;
 
+set local role postgres;
+
+-- A borrower can start the preliminary read with a written capital need alone. The deterministic
+-- fallback records an explicit public-research abstention and never forces a meaningless upload.
+do $$
+declare
+  org_a constant uuid := '20000000-0000-4000-8000-000000000001';
+  declared_session constant uuid := '98000000-0000-4000-8000-000000000001';
+  empty_session constant uuid := '98000000-0000-4000-8000-000000000002';
+  preliminary_id uuid;
+  accepted boolean;
+  payload jsonb;
+begin
+  insert into public.document_intake_sessions (
+    id, organization_id, started_by, journey, locale, capital_objective
+  ) values
+    (
+      declared_session, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR',
+      'Financiar o ciclo operacional sem definir previamente o instrumento.'
+    ),
+    (
+      empty_session, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR', null
+    );
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+
+  payload := jsonb_build_object(
+    'schemaVersion', '2026.08.31-v1',
+    'caseId', declared_session::text,
+    'locale', 'pt-BR',
+    'summary', 'A companhia declarou uma necessidade de capital sujeita à confirmação.',
+    'company', jsonb_build_object('name', 'Tenant A Company'),
+    'operation', jsonb_build_object(
+      'objective', 'Financiar o ciclo operacional sem definir previamente o instrumento.'
+    ),
+    'basis', jsonb_build_object(
+      'preliminaryDocumentCount', 0,
+      'userDeclared', true,
+      'publicResearch', jsonb_build_object(
+        'status', 'abstained', 'sourceCount', 0, 'sources', '[]'::jsonb
+      )
+    ),
+    'preliminaryAssessment', jsonb_build_object(
+      'openPoints', jsonb_build_array('Confirmar a necessidade declarada.'),
+      'boundary', 'Leitura preliminar; não é diagnóstico financeiro ou recomendação.'
+    )
+  );
+
+  preliminary_id := public.record_fallback_preliminary_understanding(
+    org_a, declared_session, repeat('a', 64), payload
+  );
+  if preliminary_id is null
+    or (select status from public.document_intake_sessions where id = declared_session) <> 'review_ready'
+    or (select result_summary ->> 'preliminary_input'
+        from public.document_intake_sessions where id = declared_session) <> 'declared_context_only'
+    or (select count(*) from public.preliminary_understandings
+        where intake_session_id = declared_session and status = 'pending_confirmation') <> 1 then
+    raise exception 'written-only input did not publish the governed preliminary understanding';
+  end if;
+
+  accepted := true;
+  begin
+    perform public.record_fallback_preliminary_understanding(
+      org_a,
+      empty_session,
+      repeat('b', 64),
+      jsonb_set(payload, '{caseId}', to_jsonb(empty_session::text))
+    );
+  exception when object_not_in_prerequisite_state then
+    accepted := false;
+  end;
+  if accepted then
+    raise exception 'empty written input bypassed the preliminary-input gate';
+  end if;
+end;
+$$;
+
 select set_config(
   'request.jwt.claims',
   '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',

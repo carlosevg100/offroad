@@ -455,10 +455,19 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     return ok(null);
   }
 
-  // Production can produce the preliminary company/operation understanding from the user's
-  // declaration plus public research even when no file exists yet. The local deterministic
-  // fixture has no such worker and therefore still requires at least one known document.
-  if (!documents?.length) return fail("documents");
+  // A written capital need and uploaded files are equivalent ways to start the first read. The
+  // deterministic environment cannot research the web, but it can still publish an explicitly
+  // abstained preliminary understanding from the declaration instead of contradicting the UI and
+  // forcing a meaningless attachment.
+  if (!documents?.length) {
+    const publication = await publishFallbackPreliminaryUnderstanding({
+      runtime,
+      candidates: [],
+      documents: [],
+    });
+    if (!publication.ok) return publication;
+    return ok(null);
+  }
 
   // The local fixture has no worker gate, so it keeps the server-side verification path.
   const verification = await verifyIntakeDocuments(runtime);
@@ -510,6 +519,45 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
   // confirm. The database command is restricted to pipeline-disabled organizations and records
   // a synthetic run, so the fallback remains explicit in lineage rather than masquerading as a
   // model result.
+  const publication = await publishFallbackPreliminaryUnderstanding({
+    runtime,
+    candidates,
+    documents: verifiedDocuments,
+  });
+  if (!publication.ok) return publication;
+
+  if (publication.value.confirmedPreliminary) {
+    try {
+      await materializeFallbackCaseState({
+        supabase,
+        organizationId,
+        sessionId,
+        locale: publication.value.session.locale === "en-US" ? "en" : "pt",
+      });
+    } catch (error) {
+      logIntakeFailure("record_fallback_case_snapshot", {
+        message: error instanceof Error ? error.message : "fallback case snapshot failed",
+      });
+      await markSessionFailed(runtime, "fallback_case_snapshot_failed");
+      return fail("processing");
+    }
+  }
+  return ok(null);
+}
+
+type FallbackPreliminaryDocument = {
+  id: string;
+  original_name: string;
+  sha256: string | null;
+};
+
+/** Publish the same immutable first-read contract whether its input is text, files or both. */
+async function publishFallbackPreliminaryUnderstanding(input: {
+  runtime: IntakeRuntime;
+  candidates: readonly IntakeCandidatePayload[];
+  documents: readonly FallbackPreliminaryDocument[];
+}): Promise<IntakeOutcome<{session: FallbackPreliminarySession; confirmedPreliminary: boolean}>> {
+  const {supabase, organizationId, sessionId} = input.runtime;
   const [{data: session, error: sessionError}, {data: confirmedPreliminary, error: preliminaryStateError}] = await Promise.all([
     supabase
       .from("document_intake_sessions")
@@ -527,19 +575,19 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
       .maybeSingle(),
   ]);
   if (sessionError || preliminaryStateError || !session) {
-    await markSessionFailed(runtime, "fallback_preliminary_input_failed");
+    await markSessionFailed(input.runtime, "fallback_preliminary_input_failed");
     return fail("processing");
   }
   const preliminary = buildFallbackPreliminaryUnderstanding({
     caseId: sessionId,
     session,
-    candidates,
-    documentCount: documents.length,
+    candidates: [...input.candidates],
+    documentCount: input.documents.length,
   });
   const inputFingerprint = sha256HexOf(new TextEncoder().encode(JSON.stringify({
     session,
-    documents: verifiedDocuments.map(({id, original_name, sha256}) => ({id, original_name, sha256})),
-    candidates,
+    documents: input.documents.map(({id, original_name, sha256}) => ({id, original_name, sha256})),
+    candidates: input.candidates,
   })));
   const {error: preliminaryError} = await supabase.rpc("record_fallback_preliminary_understanding", {
     p_organization_id: organizationId,
@@ -549,27 +597,10 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
   });
   if (preliminaryError) {
     logIntakeFailure("record_fallback_preliminary", preliminaryError);
-    await markSessionFailed(runtime, "fallback_preliminary_persistence_failed");
+    await markSessionFailed(input.runtime, "fallback_preliminary_persistence_failed");
     return fail("processing");
   }
-
-  if (confirmedPreliminary) {
-    try {
-      await materializeFallbackCaseState({
-        supabase,
-        organizationId,
-        sessionId,
-        locale: session.locale === "en-US" ? "en" : "pt",
-      });
-    } catch (error) {
-      logIntakeFailure("record_fallback_case_snapshot", {
-        message: error instanceof Error ? error.message : "fallback case snapshot failed",
-      });
-      await markSessionFailed(runtime, "fallback_case_snapshot_failed");
-      return fail("processing");
-    }
-  }
-  return ok(null);
+  return ok({session, confirmedPreliminary: Boolean(confirmedPreliminary)});
 }
 
 type FallbackPreliminarySession = Pick<

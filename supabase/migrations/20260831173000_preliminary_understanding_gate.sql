@@ -906,7 +906,27 @@ begin
   for update;
   if not found then raise exception 'intake_session_not_found' using errcode = 'P0002'; end if;
   if session_row.status <> 'review_ready' then
-    raise exception 'fallback_preliminary_session_not_ready' using errcode = '55000';
+    -- A written objective is a legitimate preliminary input. In the deterministic environment
+    -- there is no public-research worker, so publish the explicitly abstained first read without
+    -- making the user attach a dummy file. Deep analysis still requires the later evidence loop.
+    if session_row.status = 'collecting'
+      and char_length(trim(coalesce(session_row.capital_objective, ''))) >= 3
+      and not exists (
+        select 1 from public.source_documents document
+        where document.organization_id = p_organization_id
+          and document.intake_session_id = p_session_id
+      ) then
+      update public.document_intake_sessions session
+      set status = 'review_ready',
+          result_summary = coalesce(session.result_summary, '{}'::jsonb) || jsonb_build_object(
+            'preliminary_input', 'declared_context_only'
+          ),
+          updated_at = now()
+      where session.organization_id = p_organization_id
+        and session.id = p_session_id;
+    else
+      raise exception 'fallback_preliminary_session_not_ready' using errcode = '55000';
+    end if;
   end if;
 
   select understanding.id into object_id
