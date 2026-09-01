@@ -11,14 +11,23 @@ describe("capital job compiler", () => {
   it("defines exactly the six approved jobs", () => {
     expect(capitalProjectJobs.map((job) => job.id)).toEqual(capitalProjectJobSchema.options);
     expect(capitalProjectJob("structure_from_documents")).toMatchObject({
+      accessPolicy: "private_required",
       firstWorkProduct: "diagnostic_recommendation",
       requiresExistingProject: false,
       inputPolicy: {documents: "required", company: "inferable"},
     });
     expect(capitalProjectJob("prepare_materials_and_process")).toMatchObject({
+      accessPolicy: "existing_project",
       firstWorkProduct: "production_plan",
       requiresExistingProject: true,
     });
+  });
+
+  it("allows public starts only where a thesis can be formed without private information", () => {
+    expect(capitalProjectJob("company_debt_view").accessPolicy).toBe("public_or_private");
+    expect(capitalProjectJob("origination_thesis").accessPolicy).toBe("public_or_private");
+    expect(capitalProjectJob("capital_planning").accessPolicy).toBe("public_or_private");
+    expect(capitalProjectJob("review_existing_operation").accessPolicy).toBe("private_required");
   });
 
   it.each(capitalProjectJobSchema.options)("compiles %s into a dependency-closed acyclic DAG", (jobId) => {
