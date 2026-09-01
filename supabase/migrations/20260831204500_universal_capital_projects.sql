@@ -145,7 +145,7 @@ begin
     end;
     base_project_name := coalesce(
       nullif(trim(session_row.project_name), ''),
-      'Projeto ' || substring(session_row.id::text from 1 for 8)
+      'Projeto ' || session_row.id::text
     );
     backfill_project_name := case
       when project_status <> 'archived' and exists (
@@ -154,7 +154,7 @@ begin
         where project.organization_id = session_row.organization_id
           and project.status <> 'archived'
           and lower(project.project_name) = lower(base_project_name)
-      ) then left(base_project_name, 69) || ' · ' || substring(session_row.id::text from 1 for 8)
+      ) then left(base_project_name, 35) || ' · ' || session_row.id::text
       else base_project_name
     end;
 
@@ -236,7 +236,7 @@ begin
       new.organization_id,
       coalesce(
         nullif(trim(new.project_name), ''),
-        'Projeto ' || substring(new.id::text from 1 for 8)
+        'Projeto ' || new.id::text
       ),
       'capital_planning',
       'active',
