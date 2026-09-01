@@ -9,6 +9,35 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: governed semantic DAG activation, 1 September 2026
+
+The conversation now has a separate, deterministic execution router in addition to the existing
+request/authority router. It spends zero model calls and may return only three outcomes: activate
+one released executor, collect the exact missing context or remain conversational. It cannot
+select a different job, reinterpret a private-document project as public research, repeat an
+existing final artifact or turn material/approval/distribution language into permission.
+
+The first connected executors are exactly the two already production-implemented public
+verticals: `company_debt_view` and `origination_thesis`. If the company is already in project
+memory, the handoff costs zero model calls. If the user named it only in free text, the existing
+bounded conversation call may normalize that user-stated identity; no additional routing call is
+introduced. Company name support is checked against the project transcript, and an unsupported
+or generic identity fails back to one clarification.
+
+`worker_record_agent_response_and_activate_v1` records the assistant reply, company context,
+versioned brief and `capital_project_analysis` job in one database transaction. The activation is
+capability-bound, tenant-scoped, idempotent and accepts only `public_information` projects with no
+uploaded documents. It preserves the frozen plan and the existing per-vertical ceilings: two
+calls and US$ 0.75 for origination, two calls and US$ 0.95 for the public company debt view,
+including the existing search reserves. It grants no representation, material approval or market
+authority.
+
+This is a candidate change on `feat/governed-workspace-dag-router`. TypeScript contract and worker
+tests are green, including the zero-call path and the one-call identity-normalization path. The
+new migration and adversarial SQL test still require database CI before staging or production.
+The other four capital jobs remain honest conversation/plan surfaces until their own executors,
+artifacts and gold cases are promoted.
+
 ### Engineering update: persistent conversational project workspace, 1 September 2026
 
 The approved product surface is one persistent project conversation, not a collection of setup
@@ -38,8 +67,9 @@ version, identity policy and named recipients.
 
 Existing public-analysis projects now reopen on the conversation by default and expose their
 specialized work product from the project's work panel instead of replacing the project surface.
-The new-composer semantic router is not yet connected to those executors, so the old setup routes
-remain directly addressable during this candidate transition.
+The original workspace release did not connect the new-composer semantic router to those
+executors. The candidate described above closes that gap for the two released public verticals;
+the old setup routes remain directly addressable only as temporary compatibility paths.
 
 The staging SQL test proves atomic creation, idempotent queue replay and cross-tenant isolation.
 Its first replay exposed and then verified the fix for a timestamp tie when resolving the initial
@@ -47,10 +77,11 @@ request. Security Advisor has zero findings; the Performance Advisor added no fe
 shows only historical unused-index information. Quality run `33501504771` passed database replay,
 nine browser journeys and the complete 42-package gate, including 160 web tests, 74 worker tests
 and the production build. The three additive migrations were then promoted to production as
-`20260901112115`, `20260901112122` and `20260901112129`; the application remains in PR #339 preview
-until the controlled merge. No paid API ran. Do not present this
-candidate as the complete AI-native advisor yet: the existing specialized executors still need to
-be activated by the conversation router, and every downstream vertical keeps its own quality gate.
+`20260901112115`, `20260901112122` and `20260901112129`; PR #339 and the focused worker-test fix in
+PR #340 are on `main`, with final Quality run `33503989459`, stable worker deployment and Vercel
+production success. No paid API ran. Do not present the product as the complete AI-native advisor
+yet: only the two public executors are connected by the candidate above, and every private or
+downstream vertical keeps its own quality gate.
 
 ### Engineering update: isolated preliminary understanding and canonical entry order, 31 August 2026
 

@@ -115,6 +115,18 @@ Fatos materiais mantêm fonte, localização, período, classe de informação,
 confiança e estado de revisão. O sistema mostra quando não consegue provar uma
 afirmação.
 
+### 3.7 Conversa é a superfície; o DAG governa a execução
+
+O usuário trabalha numa conversa persistente, mas a conversa não substitui o workflow. Uma camada
+determinística classifica o pedido, o efeito pretendido e o executor elegível antes de qualquer
+execução. Ela pode iniciar somente um subgrafo já liberado para aquele projeto, solicitar o único
+contexto obrigatório ausente ou manter a interação na conversa. Essa decisão não usa modelo.
+
+Uma chamada de modelo pode normalizar um nome ou resumir contexto que o próprio usuário declarou,
+mas não escolhe outro executor, muda a base pública para privada, autoriza produção, aprova objeto
+ou libera contato externo. Mensagem, memória, brief e job devem ser persistidos atomicamente; o
+produto não pode afirmar que iniciou uma tarefa sem que o job exista.
+
 ## 4. O gate de orientação e os quatro gates de execução
 
 Os gates são decisões explícitas. Percentuais de progresso não os substituem. O

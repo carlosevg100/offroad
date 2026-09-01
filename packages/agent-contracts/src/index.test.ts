@@ -1,5 +1,10 @@
 import {describe, expect, it} from "vitest";
-import {agentOperationBriefResponseSchema, createAgentChangeProposal, proposalIsCurrent} from "./index";
+import {
+  agentOperationBriefResponseSchema,
+  createAgentChangeProposal,
+  proposalIsCurrent,
+  workspaceJobActivationSchema,
+} from "./index";
 
 const base = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -82,6 +87,34 @@ describe("agent change contracts", () => {
         patches: [{operation: "set", path: "/requestedAmount", value: 50_000_000}],
         recompute: ["metrics"],
       },
+    }).success).toBe(false);
+  });
+
+  it("allows one governed executor activation without mixing it with a case mutation", () => {
+    expect(agentOperationBriefResponseSchema.safeParse({
+      state: "idle",
+      reply: "Identifiquei a companhia e vou iniciar a leitura pública na ótica de dívida.",
+      activation: {
+        job: "company_debt_view",
+        company: {name: "Camil", website: "https://ri.camil.com.br"},
+        brief: {focus: "Entender o perfil de dívida e preparar alternativas para a reunião."},
+      },
+    }).success).toBe(true);
+
+    expect(agentOperationBriefResponseSchema.safeParse({
+      state: "proposing",
+      reply: "Tentativa inválida.",
+      activation: {
+        job: "company_debt_view",
+        company: {name: "Camil"},
+        brief: {},
+      },
+    }).success).toBe(false);
+
+    expect(workspaceJobActivationSchema.safeParse({
+      job: "company_debt_view",
+      company: {name: "Camil", website: "http://ri.camil.com.br"},
+      brief: {},
     }).success).toBe(false);
   });
 });

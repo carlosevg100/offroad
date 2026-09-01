@@ -18,6 +18,133 @@ const job: AgentOperationBriefJob = {
 };
 
 describe("agent operation brief worker", () => {
+  it("activates a released public DAG in the same project with zero routing model calls", async () => {
+    let modelCalls = 0;
+    let recordedActivation: Record<string, unknown> | undefined;
+    let completed: Record<string, unknown> | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "Quero entender os riscos e a capacidade de dívida antes de escolher uma operação.",
+        brief: {},
+        snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-01T12:00:00.000Z",
+        manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          name: "Camil · dívida",
+          entryJob: "company_debt_view",
+          accessBasis: "public_information",
+          phase: "understand",
+          status: "active",
+        },
+        company_profile: {name: "Camil", website: "https://ri.camil.com.br"},
+        documents: [],
+        tasks: [],
+        artifacts: [],
+        recent_messages: [],
+      }),
+      recordAgentResponse: async (
+        _job: unknown,
+        _messageId: string,
+        _response: unknown,
+        _proposal: unknown,
+        activation: unknown,
+      ) => {
+        recordedActivation = activation as Record<string, unknown>;
+        return {};
+      },
+      complete: async (_job: unknown, result: unknown) => { completed = result as Record<string, unknown>; },
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => {
+        modelCalls += 1;
+        throw new Error("the deterministic route must not call a model");
+      },
+      spent: () => ({costUsd: 0, calls: modelCalls}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(result.status).toBe("succeeded");
+    expect(modelCalls).toBe(0);
+    expect(recordedActivation).toMatchObject({job: "company_debt_view", company: {name: "Camil"}});
+    expect(completed).toMatchObject({activated_job: "company_debt_view", spend: {costUsd: 0, calls: 0}});
+  });
+
+  it("uses the existing bounded turn to normalize an explicit company and then activates the exact selected DAG", async () => {
+    let recordedActivation: Record<string, unknown> | undefined;
+    let modelInput = "";
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "Tenho uma reunião com a CVC amanhã e quero preparar uma tese de originação de dívida.",
+        brief: {},
+        snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-01T12:00:00.000Z",
+        manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          name: "Reunião CVC",
+          entryJob: "origination_thesis",
+          accessBasis: "public_information",
+          phase: "understand",
+          status: "active",
+        },
+        company_profile: {},
+        documents: [],
+        tasks: [],
+        artifacts: [],
+        recent_messages: [],
+      }),
+      recordAgentResponse: async (
+        _job: unknown,
+        _messageId: string,
+        _response: unknown,
+        _proposal: unknown,
+        activation: unknown,
+      ) => {
+        recordedActivation = activation as Record<string, unknown>;
+        return {};
+      },
+      complete: async () => {},
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async (request: {input: Array<{type: string; text?: string}>}) => {
+        modelInput = request.input[0]?.text ?? "";
+        return {
+          output: {
+            state: "idle",
+            reply: "Entendi a reunião e vou iniciar a tese pública para a CVC.",
+            activation: {
+              job: "origination_thesis",
+              company: {name: "CVC"},
+              brief: {meetingContext: "Reunião amanhã para discutir alternativas de dívida."},
+            },
+          },
+          usage: {inputTokens: 120, outputTokens: 45, cachedInputTokens: 0},
+        };
+      },
+      spent: () => ({costUsd: 0.04, calls: 1}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(result.status).toBe("succeeded");
+    expect(JSON.parse(modelInput)).toMatchObject({
+      executionRoute: {action: "collect_required_context", analysisScope: "origination_thesis", modelRoutingCalls: 0},
+    });
+    expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "CVC"}});
+  });
+
   it("turns a direct user declaration into a preview, never a silent mutation", async () => {
     let recordedProposal: Record<string, unknown> | undefined;
     let completed: Record<string, unknown> | undefined;

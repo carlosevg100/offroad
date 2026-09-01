@@ -7018,6 +7018,17 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_agent_response_and_activate_v1: {
+        Args: {
+          p_activation?: Json
+          p_assistant_message_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_proposal?: Json
+          p_response: Json
+        }
+        Returns: Json
+      }
       worker_record_analysis_scope_suggestions: {
         Args: {
           p_capability_token: string
