@@ -229,7 +229,7 @@ async function ConversationalCapitalProject({
     projectName={project.project_name}
     sessionStatus={session.status}
     tasks={(tasks ?? []).map((task) => ({id: task.id, label: task.label, status: latestRunByTask.get(task.id)?.status ?? "waiting"}))}
-    workHref={["company_debt_view", "origination_thesis"].includes(project.entry_job) && ((runs?.length ?? 0) > 0 || (artifacts?.length ?? 0) > 0) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
+    workHref={["company_debt_view", "origination_thesis"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
   />;
 }
 
