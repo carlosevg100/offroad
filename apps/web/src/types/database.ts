@@ -6913,6 +6913,18 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string; p_result?: Json }
         Returns: Json
       }
+      worker_complete_advisor_specialized_job_v1: {
+        Args: {
+          p_artifact_fingerprint: string
+          p_artifact_id: string
+          p_capability_token: string
+          p_completion_message_id: string
+          p_content: string
+          p_job_id: string
+          p_result?: Json
+        }
+        Returns: Json
+      }
       worker_document_advisor_authorization: {
         Args: {
           p_capability_token: string

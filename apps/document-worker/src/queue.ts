@@ -189,6 +189,13 @@ export type QueueClient = {
     activation?: unknown,
   ): Promise<unknown>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
+  completeAdvisorSpecializedJob(job: CapitalProjectAnalysisJob, input: {
+    completionMessageId: string;
+    artifactId: string;
+    artifactFingerprint: string;
+    content: string;
+    result: unknown;
+  }): Promise<void>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
   fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
 };
@@ -510,6 +517,18 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_error_code: errorCode,
+      });
+    },
+
+    async completeAdvisorSpecializedJob(job, input) {
+      await call("worker_complete_advisor_specialized_job_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_completion_message_id: input.completionMessageId,
+        p_artifact_id: input.artifactId,
+        p_artifact_fingerprint: input.artifactFingerprint,
+        p_content: input.content,
+        p_result: input.result ?? {},
       });
     },
 

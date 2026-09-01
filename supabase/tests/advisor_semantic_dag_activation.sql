@@ -187,6 +187,14 @@ begin
   exception when insufficient_privilege then rejected := true;
   end;
   if not rejected then raise exception 'semantic activation accepted a guessed capability'; end if;
+
+  -- The conversational job has finished its atomic response-and-activation work. Completing it
+  -- cannot move the session away from the newer specialized run that activation just installed.
+  perform public.worker_complete_job(
+    (claim ->> 'job_id')::uuid,
+    claim ->> 'capability_token',
+    jsonb_build_object('activation', recorded -> 'activation')
+  );
 end;
 $$;
 
@@ -229,6 +237,200 @@ begin
     or (select count(*) from public.capital_project_briefs brief where brief.capital_project_id = project_id and brief.request_id = source_request_id) <> 1
     or (select count(*) from public.processing_jobs job where job.kind = 'capital_project_analysis' and job.payload ->> 'capital_project_id' = project_id::text) <> 1 then
     raise exception 'semantic activation did not persist one coherent idempotent execution';
+  end if;
+end;
+$$;
+
+-- Claim the newly activated DAG as the worker. Its short-lived capability is carried only in a
+-- transaction-local setting so the database-owner fixture can attach one exact final artifact.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000231","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  claim jsonb;
+begin
+  claim := public.worker_claim_job(repeat('s', 64), 600);
+  if claim ->> 'kind' <> 'capital_project_analysis'
+    or claim #>> '{payload,trigger_event,type}' <> 'advisor_semantic_route' then
+    raise exception 'semantic completion did not claim the activated DAG: %', claim;
+  end if;
+  perform set_config('offroad_test.capital_job_id', claim ->> 'job_id', true);
+  perform set_config('offroad_test.capability', claim ->> 'capability_token', true);
+end;
+$$;
+
+reset role;
+
+do $$
+declare
+  capital_job public.processing_jobs;
+  plan_task public.capital_project_plan_tasks;
+  task_run_id constant uuid := '50000000-0000-4000-8000-000000000231';
+  artifact_id constant uuid := '60000000-0000-4000-8000-000000000231';
+  artifact_fingerprint constant text := repeat('a', 64);
+begin
+  select job.* into strict capital_job
+  from public.processing_jobs job
+  where job.id = current_setting('offroad_test.capital_job_id')::uuid;
+  select task.* into strict plan_task
+  from public.capital_project_plan_tasks task
+  where task.organization_id = capital_job.organization_id
+    and task.plan_id::text = capital_job.payload ->> 'capital_project_plan_id'
+    and task.task_id = 'M07';
+
+  insert into public.capital_project_task_runs (
+    id, organization_id, capital_project_id, plan_id, plan_task_id,
+    processing_job_id, attempt_no, status, trigger_event, context_manifest,
+    input_fingerprint, executor_key, executor_version, started_at
+  ) values (
+    task_run_id, capital_job.organization_id,
+    (capital_job.payload ->> 'capital_project_id')::uuid,
+    (capital_job.payload ->> 'capital_project_plan_id')::uuid,
+    plan_task.id, capital_job.id, 1, 'running', capital_job.payload -> 'trigger_event',
+    '{}'::jsonb, repeat('1', 64), 'origination-thesis', '2026.09.01-v1', now()
+  );
+
+  insert into public.capital_project_artifacts (
+    id, organization_id, capital_project_id, plan_id, task_run_id, artifact_type,
+    schema_version, artifact_version, status, input_fingerprint,
+    artifact_fingerprint, content, evidence_refs, dependencies,
+    processing_job_id, created_by_kind
+  ) values (
+    artifact_id, capital_job.organization_id,
+    (capital_job.payload ->> 'capital_project_id')::uuid,
+    (capital_job.payload ->> 'capital_project_plan_id')::uuid,
+    task_run_id, 'meeting_brief', 'origination-meeting-brief.v1', 1,
+    'pending_confirmation', repeat('1', 64), artifact_fingerprint,
+    jsonb_build_object('schemaVersion', 'origination-meeting-brief.v1'),
+    '[]'::jsonb, '[]'::jsonb, capital_job.id, 'worker'
+  );
+
+  update public.capital_project_task_runs run
+  set status = 'succeeded',
+      output_reference = jsonb_build_object('type', 'capital_project_artifact', 'id', artifact_id),
+      output_fingerprint = artifact_fingerprint,
+      quality_results = jsonb_build_array(jsonb_build_object('grader', 'schema', 'passed', true)),
+      completed_at = now()
+  where run.id = task_run_id;
+end;
+$$;
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000231","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  completion jsonb;
+  wrong_artifact_rejected boolean := false;
+  mismatched_result_rejected boolean := false;
+  project_id uuid;
+begin
+  select artifact.capital_project_id into strict project_id
+  from public.capital_project_artifacts artifact
+  where artifact.id = '60000000-0000-4000-8000-000000000231';
+  begin
+    perform public.worker_complete_advisor_specialized_job_v1(
+      current_setting('offroad_test.capital_job_id')::uuid,
+      current_setting('offroad_test.capability'),
+      '70000000-0000-4000-8000-000000000231',
+      '60000000-0000-4000-8000-000000000999', repeat('a', 64),
+      'Material incorreto.', '{}'::jsonb
+    );
+  exception when no_data_found then wrong_artifact_rejected := true;
+  end;
+  if not wrong_artifact_rejected then
+    raise exception 'semantic completion accepted an artifact outside the exact job';
+  end if;
+
+  begin
+    perform public.worker_complete_advisor_specialized_job_v1(
+      current_setting('offroad_test.capital_job_id')::uuid,
+      current_setting('offroad_test.capability'),
+      '70000000-0000-4000-8000-000000000231',
+      '60000000-0000-4000-8000-000000000231', repeat('a', 64),
+      'Resultado inconsistente.', jsonb_build_object('capital_project_id', project_id)
+    );
+  exception when invalid_parameter_value then mismatched_result_rejected := true;
+  end;
+  if not mismatched_result_rejected then
+    raise exception 'semantic completion accepted a job result that disagrees with the artifact';
+  end if;
+
+  -- A user may keep talking while the longer specialized DAG runs. Its completion must publish
+  -- the result without falsely marking a newer queued turn as idle.
+  perform public.submit_advisor_turn_v1(
+    project_id,
+    '71000000-0000-4000-8000-000000000231',
+    'pt-BR',
+    'Enquanto isso, registre também a prioridade de capital de giro.'
+  );
+
+  completion := public.worker_complete_advisor_specialized_job_v1(
+    current_setting('offroad_test.capital_job_id')::uuid,
+    current_setting('offroad_test.capability'),
+    '70000000-0000-4000-8000-000000000231',
+    '60000000-0000-4000-8000-000000000231', repeat('a', 64),
+    'Concluí a leitura pública. O material está pronto para sua revisão.',
+    jsonb_build_object(
+      'capital_project_id', project_id,
+      'meeting_brief_artifact_id', '60000000-0000-4000-8000-000000000231',
+      'artifact_fingerprint', repeat('a', 64)
+    )
+  );
+  if completion ->> 'completion_message_id' <> '70000000-0000-4000-8000-000000000231'
+    or completion ->> 'artifact_id' <> '60000000-0000-4000-8000-000000000231'
+    or completion ->> 'analysis_scope' <> 'origination_thesis' then
+    raise exception 'semantic completion returned an incoherent result: %', completion;
+  end if;
+end;
+$$;
+
+reset role;
+
+do $$
+declare
+  capital_job public.processing_jobs;
+  completion_message public.agent_messages;
+begin
+  select job.* into strict capital_job
+  from public.processing_jobs job
+  where job.id = current_setting('offroad_test.capital_job_id')::uuid;
+  select message.* into strict completion_message
+  from public.agent_messages message
+  where message.id = '70000000-0000-4000-8000-000000000231';
+
+  if capital_job.status <> 'succeeded'
+    or capital_job.capability_sha256 is not null
+    or completion_message.role <> 'assistant'
+    or completion_message.status <> 'completed'
+    or completion_message.metadata ->> 'kind' <> 'advisor_specialized_completion'
+    or completion_message.metadata ->> 'completionForJobId' <> capital_job.id::text
+    or completion_message.metadata #>> '{artifact,id}' <> '60000000-0000-4000-8000-000000000231'
+    or completion_message.metadata #>> '{artifact,type}' <> 'meeting_brief'
+    or (select state from public.agent_conversations where id = completion_message.conversation_id) <> 'analyzing'
+    or (select count(*) from public.agent_messages message where message.id = '71000000-0000-4000-8000-000000000231' and message.status = 'queued') <> 1
+    or (select status from public.document_intake_sessions where id = capital_job.intake_session_id) <> 'review_ready'
+    or (select count(*) from public.agent_messages message where message.metadata ->> 'completionForJobId' = capital_job.id::text) <> 1
+    or not has_function_privilege(
+      'authenticated',
+      'public.worker_complete_advisor_specialized_job_v1(uuid,text,uuid,uuid,text,text,jsonb)',
+      'execute'
+    )
+    or has_function_privilege(
+      'anon',
+      'public.worker_complete_advisor_specialized_job_v1(uuid,text,uuid,uuid,text,text,jsonb)',
+      'execute'
+    ) then
+    raise exception 'semantic completion did not atomically publish one governed chat result';
   end if;
 end;
 $$;
