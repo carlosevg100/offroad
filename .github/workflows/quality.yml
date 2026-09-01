@@ -101,6 +101,9 @@ jobs:
       - name: Public company debt view vertical test
         run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/company_debt_view_vertical.sql
 
+      - name: Advisor semantic DAG activation test
+        run: psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f supabase/tests/advisor_semantic_dag_activation.sql
+
       - name: Schema lint (public, private)
         run: supabase db lint --local --schema public,private --level warning --fail-on error
 
