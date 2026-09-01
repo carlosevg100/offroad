@@ -189,9 +189,9 @@ declare
   session_row public.document_intake_sessions;
   run_row public.processing_runs;
   manifest_id uuid;
-  input_fingerprint text := p_manifest ->> 'inputFingerprint';
-  manifest_fingerprint text := p_manifest ->> 'manifestFingerprint';
-  schema_version text := p_manifest ->> 'schemaVersion';
+  v_input_fingerprint text := p_manifest ->> 'inputFingerprint';
+  v_manifest_fingerprint text := p_manifest ->> 'manifestFingerprint';
+  v_schema_version text := p_manifest ->> 'schemaVersion';
   understanding_status text;
 begin
   if actor_id is null
@@ -236,9 +236,9 @@ begin
   if coalesce(jsonb_typeof(p_manifest), 'null') <> 'object'
     or coalesce(jsonb_typeof(p_case_state), 'null') <> 'object'
     or coalesce(jsonb_typeof(p_understanding_payload), 'null') <> 'object'
-    or input_fingerprint !~ '^[0-9a-f]{64}$'
-    or manifest_fingerprint !~ '^[0-9a-f]{64}$'
-    or coalesce(schema_version, '') = ''
+    or v_input_fingerprint !~ '^[0-9a-f]{64}$'
+    or v_manifest_fingerprint !~ '^[0-9a-f]{64}$'
+    or coalesce(v_schema_version, '') = ''
     or p_manifest ->> 'caseId' <> p_session_id::text
     or p_manifest ->> 'runId' <> run_row.id::text
     or p_manifest ->> 'locale' <> session_row.locale
@@ -264,8 +264,8 @@ begin
     organization_id, intake_session_id, processing_run_id, schema_version, locale,
     input_fingerprint, manifest_fingerprint, manifest, created_by
   ) values (
-    p_organization_id, p_session_id, run_row.id, schema_version, session_row.locale,
-    input_fingerprint, manifest_fingerprint, p_manifest, actor_id
+    p_organization_id, p_session_id, run_row.id, v_schema_version, session_row.locale,
+    v_input_fingerprint, v_manifest_fingerprint, p_manifest, actor_id
   )
   on conflict (organization_id, manifest_fingerprint) do nothing
   returning id into manifest_id;
@@ -274,7 +274,7 @@ begin
     select stored.id into manifest_id
     from public.case_artifact_manifests stored
     where stored.organization_id = p_organization_id
-      and stored.manifest_fingerprint = manifest_fingerprint
+      and stored.manifest_fingerprint = v_manifest_fingerprint
       and stored.intake_session_id = p_session_id
       and stored.processing_run_id = run_row.id
       and stored.manifest = p_manifest;
@@ -288,9 +288,9 @@ begin
     'case_state', p_case_state,
     'case_manifest', jsonb_build_object(
       'id', manifest_id,
-      'fingerprint', manifest_fingerprint,
-      'input_fingerprint', input_fingerprint,
-      'schema_version', schema_version
+      'fingerprint', v_manifest_fingerprint,
+      'input_fingerprint', v_input_fingerprint,
+      'schema_version', v_schema_version
     )
   )
   where session.organization_id = p_organization_id
@@ -302,10 +302,10 @@ begin
   end;
   perform private.append_deal_state_object(
     p_organization_id, p_session_id, 'understanding_snapshot', understanding_status,
-    input_fingerprint, p_understanding_payload, '[]'::jsonb, null, 'worker'
+    v_input_fingerprint, p_understanding_payload, '[]'::jsonb, null, 'worker'
   );
   perform private.append_deal_state_object(
-    p_organization_id, p_session_id, 'finding_register', 'draft', input_fingerprint,
+    p_organization_id, p_session_id, 'finding_register', 'draft', v_input_fingerprint,
     jsonb_build_object(
       'schemaVersion', '2026.08.29-v1',
       'readiness', p_case_state -> 'readiness',
