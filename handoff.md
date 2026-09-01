@@ -19,7 +19,8 @@ history; the centre preserves the conversation; the work panel exposes real task
 artifacts. A project is expected to evolve from question to analysis, structure, materials and
 market work without restarting.
 
-The first transactional contract is implemented on the candidate branch and on Supabase staging:
+The first transactional contract is implemented on the candidate branch, Supabase staging and the
+production schema:
 `start_advisor_project_v1` creates the stack idempotently; `submit_advisor_turn_v1` persists a
 turn and queues one bounded worker response; and `queue_advisor_initial_turn_v1` starts the first
 persisted request after any attachments are registered. Creation is intentionally free of model
@@ -43,8 +44,11 @@ remain directly addressable during this candidate transition.
 The staging SQL test proves atomic creation, idempotent queue replay and cross-tenant isolation.
 Its first replay exposed and then verified the fix for a timestamp tie when resolving the initial
 request. Security Advisor has zero findings; the Performance Advisor added no feature warning and
-shows only historical unused-index information. The complete 42-package `pnpm check` passes,
-including 160 web tests, 74 worker tests and the production build. Production is unchanged and no paid API ran. Do not present this
+shows only historical unused-index information. Quality run `33501504771` passed database replay,
+nine browser journeys and the complete 42-package gate, including 160 web tests, 74 worker tests
+and the production build. The three additive migrations were then promoted to production as
+`20260901112115`, `20260901112122` and `20260901112129`; the application remains in PR #339 preview
+until the controlled merge. No paid API ran. Do not present this
 candidate as the complete AI-native advisor yet: the existing specialized executors still need to
 be activated by the conversation router, and every downstream vertical keeps its own quality gate.
 

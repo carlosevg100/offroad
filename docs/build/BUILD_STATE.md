@@ -1,10 +1,10 @@
 # Build State
 
 Atualizado em: 2026-09-01
-Baseline: `main` após PR #336, commit `f51fbf0351e7e88289f26a63b721e580f9016902`
+Baseline: `main` após PR #338, commit `6d20642e6427b3715629da59f6fdb73a81639d2b`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
-## Workspace conversacional persistente, candidate em staging, 01/09/2026
+## Workspace conversacional persistente, promoção controlada, 01/09/2026
 
 A entrada autenticada foi redesenhada como um único workspace de projeto: histórico e projetos
 na navegação lateral, conversa persistente no centro e plano, documentos e artefatos no painel de
@@ -28,15 +28,17 @@ registrada durante preparação. A autoridade para apresentar o caso continua se
 posterior de `Introduce`, vinculado ao projeto, à versão dos materiais, à política de identidade
 e aos destinatários exatos.
 
-As migrations canônicas `20260901103125_conversational_advisor_workspace.sql`,
-`20260901104739_advisor_turn_queue.sql` e `20260901104905_advisor_initial_turn_identity.sql`
-foram aplicadas somente ao Supabase `staging`. O teste SQL dedicado passou com rollback, incluindo
+As migrations canônicas `20260901112115_conversational_advisor_workspace.sql`,
+`20260901112122_advisor_turn_queue.sql` e `20260901112129_advisor_initial_turn_identity.sql`
+foram validadas primeiro no Supabase `staging` e, após os gates obrigatórios, promovidas ao banco
+de produção. O teste SQL dedicado passou com rollback, incluindo
 criação atômica, replay idempotente, fila do primeiro turno e isolamento entre tenants. O primeiro
 replay detectou e corrigiu um empate de timestamps na identidade da mensagem inicial. Security
-Advisor retornou zero findings; o Performance Advisor não introduziu aviso da feature e mostra
-apenas informações históricas de índices ainda sem uso. O gate integral `pnpm check` passou nos
-42 pacotes; no web, a suíte tem 160 testes, no worker 74, e o build de produção compilou a nova
-superfície. Produção não foi alterada e nenhuma API paga foi chamada.
+Advisor retornou zero findings em staging e produção; o Performance Advisor não introduziu aviso
+da feature e mostra apenas informações históricas de índices ainda sem uso. O workflow Quality
+`33501504771` aprovou banco, E2E e o gate integral dos 42 pacotes; no web, a suíte tem 160 testes,
+no worker 74, e o build de produção compilou a nova superfície. O schema de produção está pronto;
+a aplicação permanece no preview da PR #339 até o merge controlado. Nenhuma API paga foi chamada.
 
 Esta fatia entrega memória, superfície-base e turnos reais assíncronos, não a integração completa
 dos executores. As

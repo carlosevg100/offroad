@@ -18,13 +18,15 @@
 | Introdução separada | ADR e contrato existente | representação permanece no release exato de projeto, material, identidade e destinatários |
 | Banco | Supabase staging `lxmpsxwlpmfisbauakaz` | migrations `20260901103125`, `20260901104739` e `20260901104905`; teste dedicado aprovado com rollback |
 | Advisors | Supabase staging | zero security findings; nenhum aviso de performance introduzido pela feature, apenas informações históricas de índices sem uso |
-| Gate integral | Node 24, 42 pacotes | `pnpm check` verde; web com 160 testes, worker com 74 e build de produção compilado |
+| Banco de produção | Supabase `ifnogpksgdadruooqydi` | migrations canônicas `20260901112115`, `20260901112122` e `20260901112129`; wrappers presentes, execução anônima negada e schema compatível com a aplicação anterior |
+| Advisors de produção | Supabase Security/Performance Advisor | zero security findings; somente informações históricas de índices ainda sem uso |
+| Gate integral | Quality `33501504771`, Node 24, 42 pacotes | banco, 9 jornadas E2E e `pnpm check` verdes; web com 160 testes, worker com 74 e build de produção compilado |
 | Custo | execução desta validação | zero chamadas de modelo e zero pesquisa externa paga |
-| Rollout | staging/produção | staging validado; produção não alterada |
+| Rollout | PR #339 | schema promovido antes da aplicação; preview Vercel publicado; merge condicionado aos gates verdes |
 
 A evidência comprova o contrato de memória, a entrada e a fronteira legal. Ainda não comprova a
 qualidade das respostas conversacionais nem a integração de todas as verticais ao roteador do chat.
-Esses itens continuam bloqueando a promoção a produção.
+Esses itens continuam bloqueando a declaração de advisor completo, não a promoção desta fundação.
 
 ## Entendimento preliminar e gate P0, 31/08/2026
 
