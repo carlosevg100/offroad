@@ -154,6 +154,7 @@ $$;
 -- A document-only project keeps company identity as draft context until the user confirms the
 -- preliminary understanding. It must not inherit either company above or create a canonical
 -- company merely because a file was uploaded.
+set local role postgres;
 insert into public.document_intake_sessions (
   id, organization_id, started_by, journey, locale, project_name
 ) values (
@@ -161,6 +162,13 @@ insert into public.document_intake_sessions (
   '20000000-0000-4000-8000-000000000105',
   '10000000-0000-4000-8000-000000000105',
   'originator', 'pt-BR', 'Projeto Cliente Documento'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000105","role":"authenticated","aal":"aal1"}',
+  true
 );
 
 select public.register_intake_document_command(
@@ -191,6 +199,7 @@ $$;
 
 -- A later project can reference the same legal entity without inheriting another project's
 -- draft. The stable identifier is held only as draft until the second confirmation.
+set local role postgres;
 insert into public.document_intake_sessions (
   id, organization_id, started_by, journey, locale, project_name
 ) values (
@@ -198,6 +207,13 @@ insert into public.document_intake_sessions (
   '20000000-0000-4000-8000-000000000105',
   '10000000-0000-4000-8000-000000000105',
   'originator', 'pt-BR', 'Projeto Cliente A Refinance'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000105","role":"authenticated","aal":"aal1"}',
+  true
 );
 select public.save_project_company_context(
   '40000000-0000-4000-8000-000000000108',
