@@ -51,7 +51,9 @@ async function chooseOperation(page: Page, archetype = "growth_expansion") {
 }
 
 async function startPrivateProject(page: Page, projectName: string, acceptTerms = false) {
-  await page.locator(".intake-welcome__action a").click();
+  // The universal workspace starts from a concrete job, not from the retired generic CTA.
+  // Capital planning preserves the borrower journey exercised by this scenario.
+  await page.locator('a.capital-job-card[href*="job=capital_planning"]').click();
 
   if (acceptTerms) {
     await expect(page.locator(".private-project-gate--terms h2")).toHaveText("Antes de começar, protegemos suas informações.");

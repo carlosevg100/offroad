@@ -13,6 +13,7 @@ type Props = {
   journey: "company" | "originator";
   actions: IntakeStartActionSet;
   startHref?: string;
+  hideAction?: boolean;
 };
 
 /**
@@ -22,7 +23,7 @@ type Props = {
  * to make before it has even described the transaction. The guided journey asks the purpose
  * first, builds the request list from it, and lets files and direct answers coexist later.
  */
-export async function IntakeStartChoice({locale, context, journey, actions, startHref}: Props) {
+export async function IntakeStartChoice({locale, context, journey, actions, startHref, hideAction = false}: Props) {
   const t = await getTranslations({locale, namespace: "Intake.start"});
   const isCase = context === "workspace";
 
@@ -70,7 +71,7 @@ export async function IntakeStartChoice({locale, context, journey, actions, star
           </section>
         </div>
 
-        <div className="intake-welcome__action">
+        {!hideAction ? <div className="intake-welcome__action">
           {startHref ? <Link className="button" href={startHref}>{t("guidedCta")}<ArrowRight aria-hidden="true" size={15} /></Link> : (
             <form action={actions.start}>
               <input name="locale" type="hidden" value={locale} />
@@ -78,7 +79,7 @@ export async function IntakeStartChoice({locale, context, journey, actions, star
             </form>
           )}
           <span>{t("welcomeActionTime")}</span>
-        </div>
+        </div> : null}
 
         <div className="intake-start__security"><ShieldCheck size={15} /><span>{t("security")}</span></div>
       </section>

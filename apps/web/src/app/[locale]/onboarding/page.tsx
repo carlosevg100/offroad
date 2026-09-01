@@ -20,12 +20,14 @@ import {
   Search,
 } from "lucide-react";
 import {projectWorkPlan, type WorkPlanStatus} from "@offroad/work-plan";
+import {capitalProjectJobSchema} from "@offroad/work-plan";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 import Link from "next/link";
 import {redirect} from "next/navigation";
 
 import {BrandMark} from "@/components/brand-mark";
+import {CapitalJobLauncher} from "@/components/capital-job-launcher";
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
@@ -72,7 +74,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 export const metadata: Metadata = {title: "Institutional Profile", robots: {index: false, follow: false}};
 
-type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; section?: string; stage?: string; setup?: string}>};
+type Props = {params: Promise<{locale: string}>; searchParams: Promise<{error?: string; job?: string; section?: string; stage?: string; setup?: string}>};
 type AnswerMap = Record<string, Json | undefined>;
 type Journey = "company" | "originator" | "capital_provider";
 type OrganizationRow = Database["public"]["Tables"]["organizations"]["Row"];
@@ -170,6 +172,8 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   if (progress.completed_at) redirect(`/${locale}/app`);
 
   const journey = progress.journey as Journey;
+  const parsedEntryJob = capitalProjectJobSchema.safeParse(state.job);
+  const entryJob = parsedEntryJob.success ? parsedEntryJob.data : "capital_planning";
   const persistedStep = progress.current_step;
   const answers = (progress.answers ?? {}) as AnswerMap;
   const organizationAnswers = answerObject(answers, "organization");
@@ -265,7 +269,10 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       ? "verified"
       : "private";
   const intakeBrief = intakeSession ? dealBriefOf(intakeSession) : {};
-  const companyProfileComplete = Boolean(intakeReview?.session?.company_profile_confirmed_at);
+  const companyProfileComplete = Boolean(
+    intakeReview?.session?.company_profile_confirmed_at
+    || intakeReview?.session?.company_context_received_at,
+  );
   const guidedMilestones = ["company", "operation", "preliminary", "information", "analysis", "case", "structure"] as const;
   const guidedMilestoneIndex = requestedIntakeStage === "company" || !companyProfileComplete
     ? 0
@@ -442,7 +449,16 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           </header> : null}
           {errorMessage ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
-          {onboardingView === "welcome" ? <IntakeStartChoice actions={{start: startDocumentIntake}} context="onboarding" journey={journey as "company" | "originator"} locale={locale} startHref={`/${locale}/onboarding?setup=terms`} /> : null}
+          {onboardingView === "welcome" ? (
+            journey === "capital_provider" ? (
+              <IntakeStartChoice actions={{start: startDocumentIntake}} context="onboarding" journey="company" locale={locale} startHref={`/${locale}/onboarding?setup=terms`} />
+            ) : (
+              <>
+                <IntakeStartChoice actions={{start: startDocumentIntake}} context="onboarding" hideAction journey={journey} locale={locale} />
+                <CapitalJobLauncher locale={locale} newProjectBaseHref={`/${locale}/onboarding?setup=terms`} />
+              </>
+            )
+          ) : null}
 
           {isPrivateTermsStep || isProjectSetupStep ? (
             <PrivateProjectSetup
@@ -451,15 +467,16 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               legalDocument={activeLegalDocument}
               locale={locale}
               mode={isPrivateTermsStep ? "terms" : "project"}
+              entryJob={entryJob}
               profile={{fullName: profile?.full_name ?? "", jobTitle: profile?.job_title ?? ""}}
               project={{
                 name: intakeReview?.session?.project_name ?? storedProjectName,
                 identityPolicy: intakeReview?.session?.identity_policy ?? text(answers.identity_policy) ?? "identified_restricted",
               }}
-              returnHref={onboardingView === "confidentiality_review" ? `/${locale}/onboarding?setup=project` : `/${locale}/onboarding`}
+              returnHref={onboardingView === "confidentiality_review" ? `/${locale}/onboarding?job=${entryJob}&setup=project` : `/${locale}/onboarding`}
               startAction={startDocumentIntake}
               termsAccepted={termsAcceptance}
-              termsHref={`/${locale}/onboarding?setup=terms`}
+              termsHref={`/${locale}/onboarding?job=${entryJob}&setup=terms`}
             />
           ) : null}
 

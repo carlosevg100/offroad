@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import {IntakeActionSubmit} from "@/components/intake/intake-action-submit";
 import type {Json} from "@/types/database";
+import type {CapitalProjectJob} from "@offroad/work-plan";
 
 type LegalSection = {heading: string; body: string};
 
@@ -34,6 +35,7 @@ type Props = {
   termsAcceptanceRecorded?: boolean;
   termsHref: string;
   returnHref: string;
+  entryJob?: CapitalProjectJob;
 };
 
 function legalSections(value: Json | undefined): LegalSection[] {
@@ -67,6 +69,7 @@ export async function PrivateProjectSetup({
   termsAcceptanceRecorded = false,
   termsHref,
   returnHref,
+  entryJob,
 }: Props) {
   const t = await getTranslations({locale, namespace: "Onboarding.privateProject"});
 
@@ -108,6 +111,7 @@ export async function PrivateProjectSetup({
           </div>
         ) : <form action={acceptAction} className="private-project-gate__form">
           <input name="locale" type="hidden" value={locale} />
+          {entryJob ? <input name="entry_job" type="hidden" value={entryJob} /> : null}
           {termsAcceptanceRecorded ? <input name="terms_acceptance_recorded" type="hidden" value="confirmed" /> : null}
           <details className="private-project-gate__full-terms">
             <summary>{t("terms.fullTerms")}</summary>
@@ -149,6 +153,7 @@ export async function PrivateProjectSetup({
     journey={journey}
     locale={locale}
     project={project}
+    entryJob={entryJob}
     representationAlreadyDeclared={termsAccepted || termsAcceptanceRecorded}
   />;
 }
@@ -161,6 +166,7 @@ export async function PrivateProjectForm({
   journey,
   locale,
   project,
+  entryJob,
   representationAlreadyDeclared = false,
 }: {
   action: (formData: FormData) => Promise<void>;
@@ -169,6 +175,7 @@ export async function PrivateProjectForm({
   journey: "company" | "originator";
   locale: string;
   project?: {id?: string; name: string; identityPolicy: string};
+  entryJob?: CapitalProjectJob;
   representationAlreadyDeclared?: boolean;
 }) {
   const t = await getTranslations({locale, namespace: "Onboarding.privateProject"});
@@ -187,6 +194,7 @@ export async function PrivateProjectForm({
 
       <form action={action} className="private-project-gate__form">
         <input name="locale" type="hidden" value={locale} />
+        {entryJob ? <input name="entry_job" type="hidden" value={entryJob} /> : null}
         {project?.id ? <input name="session_id" type="hidden" value={project.id} /> : null}
         <label className="field private-project-gate__project-name">
           <span>{t("project.name")}</span>

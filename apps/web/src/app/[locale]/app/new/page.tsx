@@ -3,6 +3,7 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 import {redirect} from "next/navigation";
+import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
@@ -38,7 +39,7 @@ import {
 
 type Props = {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{edit?: string; error?: string; mode?: string; session?: string; setup?: string; stage?: string; step?: string}>;
+  searchParams: Promise<{edit?: string; error?: string; job?: string; mode?: string; session?: string; setup?: string; stage?: string; step?: string}>;
 };
 
 type WorkspaceProjectSetup = {
@@ -82,6 +83,12 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
   const notice = state.error ? tIntake(`errors.${intakeErrorCodes.includes(state.error) ? state.error as IntakeErrorCode : "save"}`) : null;
   if (state.mode === "manual") redirect(`/${locale}/app/new`);
   const mode = state.mode === "documents" ? "documents" : "choice";
+  const parsedEntryJob = capitalProjectJobSchema.safeParse(state.job);
+  const entryJob = parsedEntryJob.success ? parsedEntryJob.data : "capital_planning";
+  if (mode === "choice" && state.job && capitalProjectJob(entryJob).requiresExistingProject) {
+    redirect(`/${locale}/app#projects`);
+  }
+  const entryJobQuery = `job=${entryJob}`;
   const sessionId = typeof state.session === "string" ? state.session : "";
   const requestedStep = state.step ?? state.stage;
   const guidedStep = requestedStep === "company" || requestedStep === "operation" || requestedStep === "preliminary" || requestedStep === "documents"
@@ -105,7 +112,11 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
     : collection ? {...collection, candidates: [], issues: []} : null;
   const companyProfile = objectValue(review?.session?.company_profile);
   if (review?.session?.status === "confirmed" && review.session.opportunity_id) redirect(`/${locale}/app/opportunities/${review.session.opportunity_id}`);
-  const companyProfileComplete = Boolean(review?.session?.company_profile_confirmed_at);
+  // Draft prose and uploaded material are equivalent context. The canonical company is linked
+  // only after the user confirms the preliminary understanding.
+  const companyProfileComplete = Boolean(
+    review?.session?.company_profile_confirmed_at || review?.session?.company_context_received_at,
+  );
   const tailoredChecklist = review?.session ? await loadIntakeChecklist({
     supabase,
     organizationId: organization.id,
@@ -152,15 +163,16 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
             legalDocument={projectSetup?.legal_document ?? null}
             locale={locale}
             mode={setupMode}
+            entryJob={entryJob}
             profile={{
               fullName: projectSetup?.profile?.full_name ?? "",
               jobTitle: projectSetup?.profile?.job_title ?? "",
             }}
-            returnHref={`/${locale}/app/new?setup=project`}
+            returnHref={`/${locale}/app/new?${entryJobQuery}&setup=project`}
             startAction={startWorkspaceDocumentIntake}
             termsAccepted={state.setup === "terms" && termsAccepted}
             termsAcceptanceRecorded={termsAccepted}
-            termsHref={`/${locale}/app/new?setup=terms`}
+            termsHref={`/${locale}/app/new?${entryJobQuery}&setup=terms`}
           />
         </section>
       ) : null}

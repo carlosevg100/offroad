@@ -2,6 +2,7 @@ import {Building2, CircleGauge, FileLock2, Landmark, LogOut} from "lucide-react"
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
+import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
 import {BrandMark} from "@/components/brand-mark";
 import {WorkspaceProjectNavigation, type WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
@@ -22,13 +23,21 @@ export default async function ApplicationLayout({children, params}: Props) {
   const canOriginate = organization.organization_type !== "capital_provider";
   const {data: navigationSessions} = canOriginate
     ? await supabase.from("document_intake_sessions")
-        .select("id, project_name, status, opportunity_id, updated_at, archived_at")
+        .select("id, capital_project_id, project_name, status, opportunity_id, updated_at, archived_at")
         .eq("organization_id", organization.id)
         .is("archived_at", null)
         .neq("status", "cancelled")
         .order("updated_at", {ascending: false})
         .limit(100)
     : {data: []};
+  const capitalProjectIds = (navigationSessions ?? []).flatMap((session) => session.capital_project_id ? [session.capital_project_id] : []);
+  const {data: capitalProjects} = capitalProjectIds.length > 0
+    ? await supabase.from("capital_projects")
+        .select("id, entry_job, current_phase")
+        .eq("organization_id", organization.id)
+        .in("id", capitalProjectIds)
+    : {data: []};
+  const capitalProjectById = new Map((capitalProjects ?? []).map((project) => [project.id, project]));
   const projects: WorkspaceNavigationProject[] = (navigationSessions ?? []).map((session) => ({
     href: session.status === "confirmed" && session.opportunity_id
       ? `/${locale}/app/opportunities/${session.opportunity_id}`
@@ -37,6 +46,12 @@ export default async function ApplicationLayout({children, params}: Props) {
     name: session.project_name || t("untitledProject"),
     opportunityId: session.opportunity_id,
     status: session.status,
+    jobLabel: (() => {
+      const project = session.capital_project_id ? capitalProjectById.get(session.capital_project_id) : null;
+      const parsed = capitalProjectJobSchema.safeParse(project?.entry_job);
+      if (!parsed.success) return undefined;
+      return capitalProjectJob(parsed.data).title[locale === "en-US" ? "en" : "pt"];
+    })(),
   }));
 
   return (
