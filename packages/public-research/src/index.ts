@@ -72,6 +72,40 @@ export function buildPublicResearchPlan(raw: PublicResearchSubject): ResearchQue
   });
 }
 
+/**
+ * Public research for a meeting/origination thesis. It is deliberately broader than the first
+ * onboarding read: company identity and recent events are joined by official financial/debt
+ * disclosure and observed debt transactions. The meeting brief is never interpolated here, so
+ * a user cannot leak non-public context into an external search request.
+ */
+export function buildOriginationResearchPlan(raw: PublicResearchSubject): ResearchQuery[] {
+  const subject = publicResearchSubjectSchema.parse(raw);
+  const officialDomain = subject.website ? domainOf(subject.website) : null;
+  const geography = subject.geography ? ` ${subject.geography}` : "";
+  const sector = subject.sector ? ` ${subject.sector}` : "";
+  const candidates: Array<Omit<ResearchQuery, "id">> = [
+    {
+      topic: "identity",
+      query: `${subject.legalName}${geography} site oficial empresa produtos operações`,
+      domainAllowlist: officialDomain ? [officialDomain] : [],
+    },
+    {
+      topic: "identity",
+      query: `${subject.legalName}${geography} resultados financeiros endividamento relatório anual investidores`,
+      domainAllowlist: officialDomain ? [officialDomain] : [],
+    },
+    {topic: "news", query: `${subject.legalName}${geography} notícias fatos relevantes últimos 18 meses`, domainAllowlist: []},
+    {topic: "sector", query: `${subject.legalName}${sector}${geography} setor concorrência drivers riscos`, domainAllowlist: []},
+    {topic: "regulation", query: `${subject.sector ?? subject.legalName}${geography} regulação riscos setoriais`, domainAllowlist: []},
+    {topic: "market", query: `${subject.legalName}${geography} dívida empréstimo debênture financiamento mercado de capitais`, domainAllowlist: []},
+    {topic: "market", query: `${subject.sector ?? subject.legalName}${geography} transações comparáveis dívida debênture crédito privado`, domainAllowlist: []},
+  ];
+  return candidates.map((candidate) => {
+    assertPublicQuerySafe(candidate.query);
+    return researchQuerySchema.parse({...candidate, id: sha256(`${candidate.topic}:${candidate.query}`)});
+  });
+}
+
 export async function runPublicResearch(input: {
   plan: ResearchQuery[];
   providers: PublicSearchProvider[];

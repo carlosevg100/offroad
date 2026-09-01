@@ -5,6 +5,62 @@ export const currencySchema = z.string().regex(/^[A-Z]{3}$/);
 export const decimalStringSchema = z.string().regex(/^-?\d+(?:\.\d+)?$/);
 export const uuidSchema = z.uuid();
 
+/** Public-only context supplied for an origination meeting thesis. The contract intentionally
+ * excludes uploaded documents, confidential values and lender instructions. */
+export const originationThesisBriefSchema = z.object({
+  meetingContext: z.string().trim().min(10).max(5_000),
+  thesisToTest: z.string().trim().max(3_000).optional(),
+  audience: z.string().trim().max(240).optional(),
+  meetingDate: z.iso.date().optional(),
+});
+
+/** One governed synthesis shape shared by the worker and the product renderer. */
+export const originationMeetingBriefSchema = z.object({
+  executiveRead: z.string().min(60).max(2_400),
+  companySnapshot: z.string().min(40).max(1_800),
+  debtLensSignals: z.array(z.object({
+    finding: z.string().min(20).max(900),
+    relevance: z.string().min(20).max(900),
+    sourceUrls: z.array(z.url()).min(1).max(4),
+    confidence: z.enum(["high", "medium", "low"]),
+  })).max(10),
+  financingAngles: z.array(z.object({
+    title: z.string().min(5).max(180),
+    route: z.string().min(3).max(180),
+    rationale: z.string().min(30).max(1_200),
+    sourceUrls: z.array(z.url()).min(1).max(4),
+    prerequisites: z.array(z.string().min(5).max(500)).min(1).max(8),
+    disconfirmers: z.array(z.string().min(5).max(500)).min(1).max(8),
+  })).max(6),
+  meetingQuestions: z.array(z.object({
+    question: z.string().min(10).max(500),
+    whyItMatters: z.string().min(10).max(700),
+    answerChanges: z.string().min(10).max(700),
+  })).min(3).max(14),
+  unknowns: z.array(z.string().min(8).max(600)).min(1).max(14),
+  suggestedOpening: z.string().min(30).max(1_200),
+});
+
+export const originationMeetingBriefArtifactSchema = originationMeetingBriefSchema.extend({
+  schemaVersion: z.literal("origination-meeting-brief.v1"),
+  asOfDate: z.iso.date(),
+  company: z.object({name: z.string().min(2), website: z.url().nullable()}),
+  sources: z.array(z.object({
+    title: z.string().min(1),
+    url: z.url(),
+    topic: z.enum(["identity", "news", "sector", "regulation", "market"]),
+    publishedAt: z.string().nullable(),
+    provider: z.enum(["perplexity", "openai", "official", "mcp"]),
+  })),
+  researchStatus: z.enum(["succeeded", "partial", "abstained"]),
+  scopeBoundary: z.string().min(20),
+  provenance: z.object({
+    provider: z.enum(["anthropic", "openai"]),
+    model: z.string().min(1),
+    executorVersion: z.string().min(3),
+  }),
+});
+
 export const taskEnvelopeSchema = z.object({
   taskId: uuidSchema,
   organizationId: uuidSchema,
@@ -338,6 +394,9 @@ export function dealWorkflowAllows(state: DealWorkflowState, stage: DealWorkflow
 }
 
 export type TaskEnvelope = z.infer<typeof taskEnvelopeSchema>;
+export type OriginationThesisBrief = z.infer<typeof originationThesisBriefSchema>;
+export type OriginationMeetingBrief = z.infer<typeof originationMeetingBriefSchema>;
+export type OriginationMeetingBriefArtifact = z.infer<typeof originationMeetingBriefArtifactSchema>;
 export type Claim = z.infer<typeof claimSchema>;
 export type ScenarioTerms = z.infer<typeof scenarioTermsSchema>;
 export type OpportunityProjection = z.infer<typeof opportunityProjectionSchema>;

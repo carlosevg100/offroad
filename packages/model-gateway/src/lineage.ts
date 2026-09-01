@@ -12,6 +12,7 @@ export const gatewayCallLogSchema = z.object({
     "structure_design",
     "case_brief",
     "preliminary_understanding",
+    "origination_thesis",
     "agent_operation_brief",
     "write_output",
     "audit_evidence",

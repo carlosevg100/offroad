@@ -664,6 +664,22 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 - Registrar comando, resultado, versão e data.
 - Falha nunca é reclassificada como aceite parcial silencioso.
 
+## Workspace AI-native e tese pública de originação, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Seis entradas, uma memória | `@offroad/work-plan` e launcher autenticado | seis jobs tipados com input, acesso, primeiro work product e gate; planos fecham dependências a partir do registry canônico |
+| Primeira vertical executável | web, worker e migration `20260901060000` | `origination_thesis` cria projeto persistente, brief versionado, plano imutável, nove TaskRuns e meeting brief corrigível |
+| Pesquisa pública limitada | `@offroad/public-research` | sete queries independentes, limite de fontes, URL HTTPS, ledger persistente e custo máximo explícito de US$ 0,035 |
+| Síntese estreita | model gateway e teste do worker | Sonnet 5 medium; GPT-5.6 Terra medium como fallback; uma chamada, schema fechado, citações limitadas às URLs persistidas e abstenção quando não há suporte |
+| Correção incremental | teste do worker e SQL de staging | somente M07 executa novamente; M06, C02 e K04 são reutilizados; nenhuma nova busca; uma chamada; decisão e nova versão ligadas ao artifact fingerprint |
+| Banco governado | `origination_thesis_vertical.sql` | start idempotente, capability-bound context, nove artefatos, revisão M07-only, replay idempotente e token incorreto recusado; transação revertida |
+| Isolamento companhia/projeto | `project_company_scope.sql` | projetos de um assessor preservam companhias distintas e não herdam silenciosamente identidade ou dados de outro projeto |
+| Segurança | Supabase Security Advisor no branch `staging` | zero lints após as funções de start, revisão e contexto do worker |
+| Testes e build | `pnpm test && pnpm build` | 42 pacotes verdes; web 160 testes; worker 69 testes; Next.js compilou 30 páginas e as rotas dinâmicas de setup e projeto |
+| Rede paga | execução desta validação | nenhuma chamada paga; pesquisa e síntese foram testadas com providers controlados |
+| Fronteira de prontidão | código, staging e documentação | somente a tese pública de originação está implementada neste incremento; produção e as outras cinco verticais ainda dependem de PR, CI, deploy e gates próprios |
+
 ## P1: Fase F0 (18/08/2026)
 
 | Evidência | Comando/artefato | Resultado | Data |

@@ -1,12 +1,27 @@
 import {describe, expect, it} from "vitest";
 import {
   assertPublicQuerySafe,
+  buildOriginationResearchPlan,
   buildPublicResearchPlan,
   createPerplexitySearchProvider,
   runPublicResearch,
 } from "./index";
 
 describe("governed public research", () => {
+  it("builds a bounded origination plan without interpolating meeting context", () => {
+    const plan = buildOriginationResearchPlan({
+      legalName: "Companhia Exemplo S.A.",
+      website: "https://example.com",
+      sector: "logística",
+      geography: "Brasil",
+    });
+
+    expect(plan).toHaveLength(7);
+    expect(plan.filter((query) => query.topic === "market")).toHaveLength(2);
+    expect(plan.some((query) => query.query.includes("endividamento"))).toBe(true);
+    expect(plan.every((query) => query.query.length <= 400)).toBe(true);
+  });
+
   it("builds a bounded plan from public identity fields only", () => {
     const plan = buildPublicResearchPlan({
       legalName: "Rede Horizonte S.A.",

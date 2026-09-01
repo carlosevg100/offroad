@@ -10,8 +10,16 @@
 
 ## 1. Objetivo do produto
 
-A Offroad transforma uma necessidade de capital ainda desorganizada em um caso
-estruturado, financiável e direcionado aos financiadores aderentes.
+A Offroad é uma plataforma especialista em alternativas de financiamento em dívida para
+companhias e profissionais do mercado. Ela transforma documentos dispersos, intenção de capital
+e contexto de mercado em planejamento, alternativas de dívida, estrutura, materiais e acesso
+qualificado aos financiadores aderentes.
+
+O produto pode começar antes de existir uma operação, com uma leitura de companhia ou tese de
+originação, ou depois, com uma necessidade, estrutura ou pacote já existente. As seis formas de
+começar definidas na Constituição compilam subgrafos diferentes sobre a mesma memória persistente.
+O fluxo abaixo detalha a jornada completa de preparação e acesso ao mercado quando o trabalho
+converge para uma captação.
 
 A plataforma deve reproduzir, com rastreabilidade e escala, o trabalho de uma
 mesa institucional de DCM:

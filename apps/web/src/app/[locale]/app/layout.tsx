@@ -38,21 +38,25 @@ export default async function ApplicationLayout({children, params}: Props) {
         .in("id", capitalProjectIds)
     : {data: []};
   const capitalProjectById = new Map((capitalProjects ?? []).map((project) => [project.id, project]));
-  const projects: WorkspaceNavigationProject[] = (navigationSessions ?? []).map((session) => ({
-    href: session.status === "confirmed" && session.opportunity_id
-      ? `/${locale}/app/opportunities/${session.opportunity_id}`
-      : `/${locale}/app/new?mode=documents&session=${session.id}`,
+  const projects: WorkspaceNavigationProject[] = (navigationSessions ?? []).map((session) => {
+    const capitalProject = session.capital_project_id ? capitalProjectById.get(session.capital_project_id) : null;
+    return {
+    href: capitalProject?.entry_job === "origination_thesis" && session.capital_project_id
+      ? `/${locale}/app/projects/${session.capital_project_id}`
+      : session.status === "confirmed" && session.opportunity_id
+        ? `/${locale}/app/opportunities/${session.opportunity_id}`
+        : `/${locale}/app/new?mode=documents&session=${session.id}`,
     id: session.id,
     name: session.project_name || t("untitledProject"),
     opportunityId: session.opportunity_id,
+    projectId: session.capital_project_id ?? undefined,
     status: session.status,
     jobLabel: (() => {
-      const project = session.capital_project_id ? capitalProjectById.get(session.capital_project_id) : null;
-      const parsed = capitalProjectJobSchema.safeParse(project?.entry_job);
+      const parsed = capitalProjectJobSchema.safeParse(capitalProject?.entry_job);
       if (!parsed.success) return undefined;
       return capitalProjectJob(parsed.data).title[locale === "en-US" ? "en" : "pt"];
     })(),
-  }));
+  }});
 
   return (
     <div className="application-shell">

@@ -4,6 +4,7 @@ import {
   dealWorkflowAllows,
   deriveDealWorkflowState,
   initialDealWorkflowState,
+  originationMeetingBriefSchema,
   scenarioTermsSchema,
   taskEnvelopeSchema,
   type DealStateObject,
@@ -16,6 +17,18 @@ describe("domain contracts", () => {
 
   it("rejects floating or malformed economic inputs", () => {
     expect(() => scenarioTermsSchema.parse({amount: 10.5})).toThrow();
+  });
+
+  it("requires public citations and decision-changing questions in an origination brief", () => {
+    expect(originationMeetingBriefSchema.safeParse({
+      executiveRead: "x".repeat(80),
+      companySnapshot: "x".repeat(60),
+      debtLensSignals: [{finding: "x".repeat(30), relevance: "x".repeat(30), sourceUrls: [], confidence: "medium"}],
+      financingAngles: [],
+      meetingQuestions: [],
+      unknowns: ["Open item"],
+      suggestedOpening: "x".repeat(40),
+    }).success).toBe(false);
   });
 
   it("keeps an unconfirmed case in diagnosis and blocks paid downstream work", () => {

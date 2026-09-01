@@ -59,6 +59,8 @@ describe("capital job compiler", () => {
     const production = compileCapitalProjectJob("prepare_materials_and_process");
 
     expect(thesis.tasks.map((task) => task.id)).toEqual(expect.arrayContaining(["M07", "C02", "K04"]));
+    expect(thesis.job.targetTaskIds).toEqual(["M07", "C02", "K04"]);
+    expect(thesis.tasks.find((task) => task.id === "M07")?.dependencies).toEqual(["M06", "C02", "K04"]);
     expect(thesis.tasks.some((task) => task.id === "S11")).toBe(false);
     expect(planning.tasks.some((task) => task.id === "S11")).toBe(true);
     expect(documents.job.inputPolicy.capitalIntent).toBe("inferable");

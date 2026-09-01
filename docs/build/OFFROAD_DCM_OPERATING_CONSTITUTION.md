@@ -34,7 +34,9 @@ final.
 
 ## 2. As seis formas de começar
 
-A home pergunta **“O que você quer resolver?”** e oferece exatamente estes trabalhos:
+A home não obriga o usuário a formular tecnicamente um problema antes de entrar. Ela o convida
+com **“Comece de onde você está”** e pergunta **“Como a Offroad pode ajudar agora?”**, oferecendo
+estes trabalhos:
 
 1. **Entender a companhia na ótica de dívida:** reconstruir situação financeira, riscos e
    capacidade antes de escolher uma operação.
