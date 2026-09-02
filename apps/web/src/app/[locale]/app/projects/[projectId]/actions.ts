@@ -11,6 +11,7 @@ import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import {processIntakeSession} from "@/lib/intake/server";
 import {latestActiveDealState, parseCompiledStructure} from "@/lib/deal-state/workbench";
 import {governedMaterialPackageFromRows} from "@/lib/deal-state/materials";
+import {marketFeedbackInputSchema} from "@/lib/market-feedback/input";
 import type {Json} from "@/types/database";
 
 export type OriginationDecisionState = {
@@ -49,6 +50,11 @@ export type AdvisorProposalDecisionState = {
   ok: boolean;
   decision?: "accept" | "reject";
   code?: "invalid" | "stale" | "save" | "processing";
+};
+
+export type MarketFeedbackState = {
+  ok: boolean;
+  code?: "invalid" | "stale" | "save";
 };
 
 function value(formData: FormData, name: string): string {
@@ -696,5 +702,67 @@ export async function authorizePrivateProjectIntroduction(
   revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
   revalidatePath(`/${locale}/app`, "layout");
   if (error) return {ok: false, code: error.code === "42501" ? "forbidden" : "save"};
+  return {ok: true};
+}
+
+/** Records an observed post-introduction signal. It never represents lender work as an Offroad
+ * task and cannot exist before an exact, authorized introduction has actually been recorded. */
+export async function recordPrivateProjectMarketFeedback(
+  _previous: MarketFeedbackState,
+  formData: FormData,
+): Promise<MarketFeedbackState> {
+  void _previous;
+  const rawLocale = value(formData, "locale");
+  const locale: AppLocale = routing.locales.includes(rawLocale as AppLocale)
+    ? rawLocale as AppLocale
+    : routing.defaultLocale;
+  const amountInput = value(formData, "amount");
+  const occurredAtInput = value(formData, "occurred_at");
+  const parsed = marketFeedbackInputSchema.safeParse({
+    projectId: value(formData, "project_id"),
+    sessionId: value(formData, "session_id"),
+    introductionId: value(formData, "introduction_id"),
+    eventType: value(formData, "event_type"),
+    sourceKind: value(formData, "source_kind"),
+    verificationState: value(formData, "verification_state"),
+    reasonCode: value(formData, "reason_code") || undefined,
+    note: value(formData, "note") || undefined,
+    requestedInformationCount: value(formData, "requested_information_count") || undefined,
+    amount: amountInput || undefined,
+    currency: amountInput ? value(formData, "currency") : undefined,
+    occurredAt: occurredAtInput || undefined,
+  });
+  if (!parsed.success) return {ok: false, code: "invalid"};
+
+  const runtime = await privateProjectRuntime(locale, parsed.data.projectId, parsed.data.sessionId);
+  if (!runtime) return {ok: false, code: "stale"};
+  const {data: introduction} = await runtime.supabase.from("qualified_introductions")
+    .select("id, introduced_at")
+    .eq("organization_id", runtime.organization.id)
+    .eq("intake_session_id", runtime.session.id)
+    .eq("id", parsed.data.introductionId)
+    .maybeSingle();
+  if (!introduction) return {ok: false, code: "stale"};
+  const occurredDate = parsed.data.occurredAt ? new Date(parsed.data.occurredAt) : new Date();
+  if (!Number.isFinite(occurredDate.valueOf())) return {ok: false, code: "invalid"};
+  const occurredAt = occurredDate.toISOString();
+  if (occurredDate < new Date(introduction.introduced_at) || occurredDate > new Date(Date.now() + 5 * 60_000)) {
+    return {ok: false, code: "invalid"};
+  }
+
+  const {error} = await runtime.supabase.rpc("record_qualified_introduction_feedback", {
+    p_introduction_id: introduction.id,
+    p_event_type: parsed.data.eventType,
+    p_occurred_at: occurredAt,
+    p_source_kind: parsed.data.sourceKind,
+    p_verification_state: parsed.data.verificationState,
+    ...(parsed.data.reasonCode ? {p_reason_code: parsed.data.reasonCode} : {}),
+    ...(parsed.data.note ? {p_note: parsed.data.note} : {}),
+    ...(parsed.data.requestedInformationCount ? {p_requested_information_count: parsed.data.requestedInformationCount} : {}),
+    ...(parsed.data.amount !== undefined ? {p_amount: parsed.data.amount, p_currency: parsed.data.currency} : {}),
+  });
+  if (error) return {ok: false, code: error.code === "22023" ? "invalid" : "save"};
+  revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
+  revalidatePath(`/${locale}/app`, "layout");
   return {ok: true};
 }

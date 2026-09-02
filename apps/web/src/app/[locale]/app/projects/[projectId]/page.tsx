@@ -249,6 +249,16 @@ async function ConversationalCapitalProject({
   const introductionPlan = introductionPlans?.[0] ?? null;
   const planTargets = introductionPlan ? (introductionTargets ?? []).filter((target) => target.plan_id === introductionPlan.id) : [];
   const planRecipients = introductionPlan ? (introductionRecipients ?? []).filter((recipient) => recipient.plan_id === introductionPlan.id) : [];
+  const [{data: qualifiedIntroductions}, {data: feedbackEvents}] = introductionPlan?.status === "authorized"
+    ? await Promise.all([
+        supabase.from("qualified_introductions")
+          .select("id, organization_id, intake_session_id, plan_id, recipient_id, provider_source, provider_id, fund_directory_id, provider_organization_id, provider_fund_id, contact_source, contact_uuid, contact_id, contact_name, contact_email, contact_job_title, case_fingerprint, material_fingerprint, mandate_fingerprint, rationale, material_manifest, authorization_snapshot, delivery_channel, delivery_reference, introduced_at, introduced_by")
+          .eq("organization_id", organization.id).eq("intake_session_id", session.id).eq("plan_id", introductionPlan.id).order("introduced_at"),
+        supabase.from("qualified_introduction_feedback_events")
+          .select("id, organization_id, intake_session_id, qualified_introduction_id, case_fingerprint, event_type, source_kind, verification_state, reason_code, note, requested_information_count, amount, currency, supersedes_event_id, occurred_at, recorded_by, created_at, updated_at")
+          .eq("organization_id", organization.id).eq("intake_session_id", session.id).order("occurred_at"),
+      ])
+    : [{data: []}, {data: []}];
   const [{data: messages}, {data: proposals}, {data: tasks}, {data: runs}] = await Promise.all([
     conversation
       ? supabase.from("agent_messages").select("id, role, content, status, proposal_id, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
@@ -347,9 +357,11 @@ async function ConversationalCapitalProject({
       sessionId={session.id}
       structureConfirmed={privateWorkbench.structureDecision?.status === "confirmed" || privateWorkbench.structureDecision?.status === "approved"}
     /> : null}{privateWorkbench ? <PrivateMarketWork
+      feedbackEvents={feedbackEvents ?? []}
       introductionPlan={introductionPlan}
       introductionRecipients={planRecipients}
       introductionTargets={planTargets}
+      introductions={qualifiedIntroductions ?? []}
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       matchScreen={privateWorkbench.matchScreen}
