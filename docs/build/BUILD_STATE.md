@@ -1843,3 +1843,21 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - Testes locais do worker, contratos, gateway, pesquisa pública, lint e tipagem passaram sem API
   paga. A migration foi escrita, mas Docker não está disponível neste host; banco reconstruído,
   teste SQL integral, Security Advisor, gold case e inspeção visual ainda bloqueiam promoção.
+
+## Advisor universal e fluxo privado, produção técnica, 02/09/2026
+
+O estado `candidate` acima foi superado pela PR #346. A fundação universal e o fluxo privado
+agora compartilham uma única memória de projeto, um runtime governado e a mesma sequência de
+decisão: entendimento preliminar, confirmação, pedido de evidência, conciliação, diagnóstico,
+alternativas indicativas, aprovação da estrutura, plano de produção, materiais, matching,
+shortlist e autorização exata de introdução.
+
+As seis migrations pendentes foram aplicadas no Supabase de produção depois de o CI reconstruir
+todo o histórico e aprovar RLS, controles fail-closed e E2E. Vercel e o worker ECS concluíram o
+rollout do commit `3725a542`. Os novos ledgers e o cache público estavam vazios após a promoção;
+nenhum caso artificial nem chamada paga foi usado para fabricar evidência de prontidão.
+
+O produto está tecnicamente disponível para teste humano controlado. Isso não equivale a padrão
+institucional comprovado para cada output: qualidade financeira, editorial, matching real e custo
+devem ser promovidos individualmente por gold case. Nenhuma introdução é automática e
+underwriting, diligência, decisão de crédito e fechamento continuam fora da execução Offroad.

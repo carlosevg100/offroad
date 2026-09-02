@@ -898,3 +898,16 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Pedido inicial não vira data room | `pnpm --filter @offroad/credit-playbook test` | O dia zero já pedia 10–11 itens por operação (6 documentos + 5 perguntas), dentro dos 15–20 que o guia de IRL recomenda, o problema era moldura, não volume. Teste agora **impede** que `now` passe de 20 itens (e exige ao menos 6); toda operação precisa carregar tier de diligência e de fechamento; item de fechamento nunca entra em `missing` nem nas contagens | 2026-08-20 |
 | "Não se aplica" exige razão em três camadas | `pnpm check` + migration `20260820145017` | Tipo (`resolvedBy` só resolve com nota), server action (recusa `validation`) e check constraint no banco. Linha sem resposta e sem nota é recusada pela constraint `intake_information_answers_carries_something`; resposta contra um `notice` é recusada pela action | 2026-08-20 |
 | Job `database` falha por colisão de porta, não por código | log do run 32383127190 (PR #93) | as 27 migrations aplicaram; a falha foi `failed to bind host port 0.0.0.0:54324 ... address already in use` no `supabase_inbucket`. Re-execução do job passou. Flake de runner registrado para correção separada | 2026-08-20 |
+
+## Advisor universal e fluxo privado governado, promoção de 02/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+|---|---|---|---|
+| Arquitetura consolidada | PR #346, commit `3725a542` | fundação universal BR/US, memória por projeto, pesquisa governada, controles operacionais e fluxo privado completo promovidos como uma única arquitetura; PR #345 encerrada como substituída | 2026-09-02 |
+| Gate integral antes do merge | Quality run `33587650680` | database/RLS em 1m47s, E2E em 3m54s, lint/typecheck/test/build em 6m52s e Vercel preview aprovados | 2026-09-02 |
+| Gate integral em `main` | Quality run `33588131071` | migrations do zero, não interferência, controles fail-closed, três verticais públicas, DAG semântico, E2E Playwright e build de produção aprovados | 2026-09-02 |
+| Banco de produção | Supabase `ifnogpksgdadruooqydi` | seis migrations aplicadas em ordem: memória relacionada, controles/invalidação, cache público, capital planning, contexto privado preliminar e decisão preliminar; todos os novos ledgers e o cache permaneceram vazios | 2026-09-02 |
+| Segurança pós-migration | Supabase Advisors + inspeção de privilégios | `anon` sem acesso; tabelas públicas de controle com RLS e FORCE RLS; escrita direta negada a `authenticated`; cache privado sem grants. Dois INFO `rls_enabled_no_policy` permanecem deliberadamente nas tabelas privadas fail-closed | 2026-09-02 |
+| Deploy web | Vercel deployment `9iHU9GnUgyF91jmeDTHMMZJtWnf4` | deployment de `main` concluído com status success | 2026-09-02 |
+| Deploy worker | workflow `33588131083` | imagem construída, task definition registrada e rollout ECS estabilizado em 5m01s | 2026-09-02 |
+| Fronteira externa | contratos, RPCs e interface | nenhuma distribuição automática; introdução exige representação verificada, material exato, destinatários exatos e autorização específica; nenhum provedor pago foi chamado na promoção | 2026-09-02 |
