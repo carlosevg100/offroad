@@ -6,6 +6,7 @@ import {
   deriveDealWorkflowState,
   initialDealWorkflowState,
   originationMeetingBriefSchema,
+  originationSeniorReadoutSchema,
   scenarioTermsSchema,
   taskEnvelopeSchema,
   type DealStateObject,
@@ -30,6 +31,15 @@ describe("domain contracts", () => {
       unknowns: ["Open item"],
       suggestedOpening: "x".repeat(40),
     }).success).toBe(false);
+  });
+
+  it("requires an integrated company, debt-stack and strategic-alternatives readout", () => {
+    const shallow = {
+      executiveRead: "x".repeat(100),
+      companyAnalysis: {businessOverview: "x".repeat(50)},
+      strategicAlternatives: [],
+    };
+    expect(originationSeniorReadoutSchema.safeParse(shallow).success).toBe(false);
   });
 
   it("keeps a public debt diagnostic from claiming calculated capacity", () => {

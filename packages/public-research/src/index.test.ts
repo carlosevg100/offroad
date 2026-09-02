@@ -28,8 +28,8 @@ describe("governed public research", () => {
       geography: "Brasil",
     });
 
-    expect(plan).toHaveLength(7);
-    expect(plan.filter((query) => query.topic === "market")).toHaveLength(2);
+    expect(plan).toHaveLength(12);
+    expect(plan.filter((query) => query.topic === "market")).toHaveLength(3);
     expect(plan.some((query) => query.query.includes("endividamento"))).toBe(true);
     expect(plan.every((query) => query.query.length <= 400)).toBe(true);
     expect(plan.every((query) => query.id === createHash("sha256")

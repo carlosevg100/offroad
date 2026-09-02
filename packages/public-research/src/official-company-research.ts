@@ -370,7 +370,9 @@ function formatCvmValue(row: CvmStatementRow): string {
 
 function formatCvmNumericValue(value: number, row: CvmStatementRow): string {
   if (normalizeLabel(row.MOEDA ?? "") === "REAL" && normalizeLabel(row.ESCALA_MOEDA ?? "") === "MIL") {
-    return `BRL ${new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 0, maximumFractionDigits: 3}).format(value / 1_000)} milhões`;
+    const isBillions = Math.abs(value) >= 1_000_000;
+    const normalized = value / (isBillions ? 1_000_000 : 1_000);
+    return `R$ ${new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 0, maximumFractionDigits: 3}).format(normalized)} ${isBillions ? "bi" : "mi"}`;
   }
   const normalized = new Intl.NumberFormat("en-US", {useGrouping: false, maximumFractionDigits: 10}).format(value);
   return `${row.MOEDA ?? "currency not disclosed"} ${normalized} ${row.ESCALA_MOEDA ?? "scale not disclosed"}`;

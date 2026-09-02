@@ -30,6 +30,13 @@ export const researchSourceSchema = z.object({
   publishedAt: z.string().nullable().default(null),
   retrievedAt: z.iso.datetime(),
   contentHash: z.string().regex(/^[a-f0-9]{64}$/),
+  contentAcquisition: z.object({
+    acquiredBy: z.enum(["direct_https", "firecrawl"]),
+    finalUrl: z.url(),
+    retrievedAt: z.iso.datetime(),
+    byteSize: z.number().int().nonnegative(),
+    contentHash: z.string().regex(/^[a-f0-9]{64}$/),
+  }).optional(),
 });
 export type ResearchSource = z.infer<typeof researchSourceSchema>;
 

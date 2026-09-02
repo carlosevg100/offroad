@@ -10,6 +10,7 @@ import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClassifier} from "@offroad/document-classification";
 import {
   createCvmOpenDataEntityResolver,
+  createFirecrawlPublicContentAcquirer,
   createOfficialCompanyResearchProvider,
   createOpenAIWebSearchProvider,
   createPerplexitySearchProvider,
@@ -116,6 +117,9 @@ async function main(): Promise<void> {
     resolvers: officialEntityResolvers,
     userAgent: config.OFFROAD_RESEARCH_USER_AGENT,
   });
+  const firecrawlContentAcquirer = config.ENABLE_FIRECRAWL && config.FIRECRAWL_API_KEY
+    ? createFirecrawlPublicContentAcquirer({apiKey: config.FIRECRAWL_API_KEY})
+    : undefined;
   const newGateway = (job: ClaimedJob) => {
     const calls: GatewayCallLog[] = [];
     const requestedBudget = "model_budget" in job.payload ? job.payload.model_budget : undefined;
@@ -128,7 +132,7 @@ async function main(): Promise<void> {
       0,
     );
     const researchQueryCount = job.kind === "capital_project_analysis" && !job.payload.revision_of_artifact_id
-      ? job.payload.analysis_scope === "origination_thesis" ? 7 : 8
+      ? job.payload.analysis_scope === "origination_thesis" ? 12 : 8
       : job.kind === "case_analysis" || job.kind === "preliminary_analysis" ? 5 : 0;
     const requestedResearchReserve = researchQueryCount * maximumDiscoveryCostPerQuery;
     const researchReserveUsd = researchProviders.length > 0
@@ -266,6 +270,7 @@ async function main(): Promise<void> {
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
               researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
               officialResearchProviderFactory,
+              ...(firecrawlContentAcquirer ? {contentAcquirer: firecrawlContentAcquirer} : {}),
               log,
             })
             : processCapitalPlanningJob(job, {

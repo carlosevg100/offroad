@@ -30,7 +30,7 @@ export type AdvisorProjectMessage = {
 };
 export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string};
 export type AdvisorProjectTask = {id: string; label: string; status: string};
-export type AdvisorProjectArtifact = {id: string; type: string; status: string};
+export type AdvisorProjectArtifact = {id: string; label: string; status: string};
 
 export type AdvisorProjectCopy = {
   advisor: string;
@@ -195,7 +195,7 @@ export function AdvisorProject(props: Props) {
           <p>{props.pendingContext.question}</p>
           <small>{props.pendingContext.whyItMatters}</small>
         </section> : null}
-        <section className="advisor-context-section">
+        <section className="advisor-context-section advisor-context-section--activity">
           <div><strong>{props.copy.plan}</strong><small>{completed}/{props.tasks.length}</small></div>
           <ol>{props.tasks.map((task) => <li className={`is-${task.status}`} key={task.id}>{task.status === "succeeded" ? <Check aria-hidden="true" size={12} /> : ["running", "queued"].includes(task.status) ? <LoaderCircle aria-hidden="true" className={task.status === "running" ? "spin" : undefined} size={12} /> : <Circle aria-hidden="true" size={12} />}<span>{task.label}</span></li>)}</ol>
         </section>
@@ -206,7 +206,7 @@ export function AdvisorProject(props: Props) {
         <section className="advisor-context-section">
           <div><strong>{props.copy.artifacts}</strong><small>{props.artifacts.length}</small></div>
           {props.workHref ? <Link className="advisor-context-section__open" href={props.workHref}>{props.copy.openWork}</Link> : null}
-          {props.artifacts.length ? <ul>{props.artifacts.map((artifact) => <li key={artifact.id}><FileText aria-hidden="true" size={13} /><span><strong>{artifact.type.replaceAll("_", " ")}</strong><small>{artifact.status}</small></span></li>)}</ul> : <p>{props.copy.noArtifacts}</p>}
+          {props.artifacts.length ? <ul>{props.artifacts.map((artifact) => <li key={artifact.id}><FileText aria-hidden="true" size={13} /><span><strong>{artifact.label}</strong></span></li>)}</ul> : <p>{props.copy.noArtifacts}</p>}
         </section>
       </aside>
     </main>

@@ -147,6 +147,7 @@ describe("origination thesis vertical", () => {
       }],
     };
     const sourceUrl = "https://public.example/allowed";
+    let acquiredPages = 0;
     const gateway: ModelGateway = {
       complete: (async (request) => {
         const textInput = request.input.find((part) => part.type === "text");
@@ -154,6 +155,7 @@ describe("origination thesis vertical", () => {
         const modelInput = JSON.parse(textInput.text) as {allowedMaterialNumericTokens?: string[]};
         expect(modelInput.allowedMaterialNumericTokens).toContain("r$1,0");
         expect(modelInput.allowedMaterialNumericTokens).not.toContain("24meses");
+        expect(JSON.stringify(modelInput)).toContain("CONTEUDO_APROFUNDADO");
         return {
         output: {
           executiveRead: "A companhia apresenta uma emissão pública de R$1,0 e sinais que merecem uma conversa dirigida sobre flexibilidade financeira e prioridades de capital.",
@@ -212,6 +214,17 @@ describe("origination thesis vertical", () => {
       gateway,
       lineage: () => [],
       researchProviders: [researchProvider],
+      contentAcquirer: async ({url}) => {
+        acquiredPages += 1;
+        return {
+          lineage: {
+            sourceUrl: url, finalUrl: url, publisherSourceId: null, publisherAuthorityTier: null,
+            acquiredBy: "firecrawl", retrievedAt: "2026-09-01T12:00:00.000Z",
+            contentType: "text/markdown", byteSize: 200, contentHash: "f".repeat(64),
+          },
+          content: `CONTEUDO_APROFUNDADO ${"sobre companhia, dívida e desempenho. ".repeat(4)}`,
+        };
+      },
       now: () => new Date("2026-09-01T12:00:00.000Z"),
     });
 
@@ -222,6 +235,7 @@ describe("origination thesis vertical", () => {
     expect(meetingBrief).toMatchObject({artifactType: "meeting_brief", status: "pending_confirmation"});
     expect(meetingBrief?.dependencies).toHaveLength(3);
     expect(completed).toHaveLength(1);
+    expect(acquiredPages).toBe(1);
   });
 
   it("fails closed when the persisted final TaskSpec does not consume the research outputs", async () => {

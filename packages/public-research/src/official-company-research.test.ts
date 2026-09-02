@@ -16,6 +16,7 @@ describe("official company research", () => {
       "24228;2025-12-31;1;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.01.04;Empréstimos e Financiamentos;1000;S",
       "24228;2025-12-31;2;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.01.04;Empréstimos e Financiamentos;1200;S",
       "24228;2025-12-31;2;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;PENÚLTIMO;2024-12-31;2.01.04;Empréstimos e Financiamentos;7777;S",
+      "24228;2025-12-31;2;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;1.01.01;Caixa e equivalentes;1430714;S",
       "24228;2025-12-31;2;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.03;Patrimônio Líquido;5000;S",
       '24228;2025-12-31;2;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.02.01;Dívida com " proteção;300;S',
       "99999;2025-12-31;2;OUTRA S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.01.04;Empréstimos e Financiamentos;999999;S",
@@ -47,14 +48,15 @@ describe("official company research", () => {
     expect(provider.continueAfterSuccess).toBe(true);
     expect(sources).toHaveLength(2);
     const statements = sources.find((source) => source.title.includes("DFP"));
-    expect(statements?.snippet).toContain("short_term_debt=BRL 1,2 milhões");
-    expect(statements?.snippet).toContain("long_term_debt=BRL 0,3 milhões");
-    expect(statements?.snippet).toContain("gross_debt=BRL 1,5 milhões");
-    expect(statements?.snippet).toContain("value=BRL 1,2 milhões");
-    expect(statements?.snippet).toContain("value=BRL 5 milhões");
+    expect(statements?.snippet).toContain("short_term_debt=R$ 1,2 mi");
+    expect(statements?.snippet).toContain("long_term_debt=R$ 0,3 mi");
+    expect(statements?.snippet).toContain("gross_debt=R$ 1,5 mi");
+    expect(statements?.snippet).toContain("value=R$ 1,2 mi");
+    expect(statements?.snippet).toContain("value=R$ 5 mi");
+    expect(statements?.snippet).toContain("cash=R$ 1,431 bi");
     expect(statements?.snippet).toContain('" prote');
-    expect(statements?.snippet).toContain("value=BRL 0,3 milhões");
-    expect(statements?.snippet).not.toContain("value=BRL 1 milhões");
+    expect(statements?.snippet).toContain("value=R$ 0,3 mi");
+    expect(statements?.snippet).not.toContain("value=R$ 1 mi");
     expect(statements?.snippet).not.toContain("7777");
     expect(statements?.snippet).not.toContain("999999");
   });
