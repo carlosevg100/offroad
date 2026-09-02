@@ -357,4 +357,93 @@ describe("origination thesis vertical", () => {
       spend: {externalSearchCostExposureUsd: 0},
     });
   });
+
+  it("resumes a failed first run from proven artifacts and retries only M07 without another search", async () => {
+    const sourceUrl = "https://public.example/resumed";
+    const source = {
+      provider: "openai" as const,
+      topic: "sector" as const,
+      title: "Fonte pública preservada",
+      url: sourceUrl,
+      snippet: "Sinal público preservado da primeira tentativa.",
+      publishedAt: null,
+      retrievedAt: "2026-09-01T12:00:00.000Z",
+      contentHash: "d".repeat(64),
+    };
+    const completedArtifacts = taskDefinitions
+      .filter((task) => task.id !== "M07")
+      .map((task, ordinal) => ({
+        task_id: task.id,
+        id: `10000000-0000-4000-8000-${String(ordinal + 1).padStart(12, "0")}`,
+        artifact_fingerprint: String(ordinal + 1).repeat(64).slice(0, 64),
+        content: task.id === "C02"
+          ? {status: "partial", researchRunId: ids.research, sources: [source], failures: [{queryId: "q", provider: "official", code: "archive_unavailable"}]}
+          : task.id === "K04"
+            ? {status: "partial", researchRunId: ids.research, sources: [], failures: []}
+            : {taskId: task.id},
+        evidence_refs: [],
+      }));
+    const startedTasks: string[] = [];
+    let publicResearchCalls = 0;
+    let completedJobs = 0;
+    const queue = {
+      loadCapitalProjectContext: async () => ({
+        project: {id: ids.project, organization_id: ids.organization, project_name: "Projeto Aurora", entry_job: "origination_thesis", access_basis: "public_information", current_phase: "understand"},
+        session: {id: ids.session, locale: "pt-BR", company_profile: {name: "Aurora Logística"}, privacy_status: "public_information", representation_status: "not_claimed"},
+        brief: {id: ids.brief, kind: "origination_thesis", version: 1, content: {meetingContext: "Reunião pública sobre alternativas de dívida."}, content_fingerprint: "b".repeat(64)},
+        plan: {id: ids.plan, version: 1, fingerprint: "a".repeat(64), compiler_version: "2026.09.01-v2", registry_version: "2026.09.01-v2"},
+        tasks: taskDefinitions.map((task, ordinal) => ({id: task.id, ordinal, batch: ordinal, dependencies: [...task.dependencies], execution_class: "deterministic", effect: "propose_state"})),
+        completed_artifacts: completedArtifacts,
+      }),
+      startCapitalTask: async (_job: CapitalProjectAnalysisJob, input: {taskId: string}) => {
+        startedTasks.push(input.taskId);
+        return "20000000-0000-4000-8000-000000000001";
+      },
+      recordCapitalProjectArtifact: async () => ({
+        id: "30000000-0000-4000-8000-000000000001",
+        artifactFingerprint: "e".repeat(64), artifactVersion: 1, replayed: false,
+      }),
+      finishCapitalTask: async () => {},
+      recordPublicResearch: async () => {
+        publicResearchCalls += 1;
+        throw new Error("a resumed M07 must not repeat public research");
+      },
+      writeStage: async () => {},
+      complete: async () => { completedJobs += 1; },
+      fail: async () => { throw new Error("resumed job should not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => ({
+        output: {
+          executiveRead: "A leitura pública orienta uma conversa sobre flexibilidade financeira sem presumir intenção de captação.",
+          companySnapshot: "As fontes públicas permitem preparar perguntas, mas não substituem dados privados da companhia.",
+          debtLensSignals: [{finding: "Existe informação pública útil para a conversa.", relevance: "O sinal orienta a agenda.", sourceUrls: [sourceUrl], confidence: "medium" as const}],
+          financingAngles: [{title: "Flexibilidade financeira", route: "Hipótese a investigar", rationale: "A reunião deve testar a prioridade da companhia.", sourceUrls: [sourceUrl], prerequisites: ["Confirmar dívida e liquidez."], disconfirmers: ["Ausência de necessidade de capital."]}],
+          meetingQuestions: [
+            {question: "Qual é a prioridade de capital?", whyItMatters: "Define o problema.", answerChanges: "Muda as rotas."},
+            {question: "Como está o perfil de dívida?", whyItMatters: "Define pressões.", answerChanges: "Muda prazo e instrumento."},
+            {question: "Quais restrições devem ser preservadas?", whyItMatters: "Evita alternativas incompatíveis.", answerChanges: "Muda garantias e covenants."},
+          ],
+          unknowns: ["Dívida, liquidez e intenção permanecem não confirmadas."],
+          suggestedOpening: "Preparamos uma leitura pública para testar prioridades de dívida.",
+        },
+        provider: "anthropic" as const, model: "claude-sonnet-5", effort: "medium" as const,
+        usage: {inputTokens: 600, outputTokens: 500, cachedInputTokens: 0}, costUsd: 0.01,
+        latencyMs: 500, stopReason: "end" as const, usedFallback: false, fromCassette: false,
+        attempts: [{provider: "anthropic" as const, model: "claude-sonnet-5", outcome: "ok" as const}],
+      }),
+      spent: () => ({costUsd: 0.01, calls: 1, unknownCostCalls: 0, budgetExposureUsd: 0.02}),
+    } as unknown as ModelGateway;
+
+    const result = await processOriginationThesisJob(job, {
+      queue, gateway, lineage: () => [],
+      researchProviders: [{id: "openai", search: async () => { throw new Error("must not search"); }}],
+      now: () => new Date("2026-09-01T14:00:00.000Z"),
+    });
+
+    expect(result.status).toBe("succeeded");
+    expect(startedTasks).toEqual(["M07"]);
+    expect(publicResearchCalls).toBe(0);
+    expect(completedJobs).toBe(1);
+  });
 });

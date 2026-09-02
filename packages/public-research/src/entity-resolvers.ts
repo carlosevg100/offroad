@@ -74,6 +74,10 @@ export function createCvmOpenDataEntityResolver(input: {
       delimiter: ";",
       skip_empty_lines: true,
       relax_column_count: true,
+      // The CVM registry occasionally contains a literal quote inside an unquoted field. It is
+      // still a valid semicolon-delimited row for our purposes; rejecting the entire registry
+      // would disable all zero-cost official research for every Brazilian issuer.
+      relax_quotes: true,
       trim: true,
     }) as CvmRow[];
   })();
