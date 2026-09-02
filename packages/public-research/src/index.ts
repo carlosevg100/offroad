@@ -64,19 +64,32 @@ export function buildOriginationResearchPlan(raw: PublicResearchSubject): Resear
   const candidates: Array<Omit<ResearchQuery, "id">> = [
     {
       topic: "identity",
-      query: `${subject.legalName}${geography} site oficial empresa produtos operações`,
+      query: `${subject.legalName}${geography} site oficial companhia segmentos produtos clientes modelo de negócio`,
       domainAllowlist: officialDomain ? [officialDomain] : [],
     },
     {
       topic: "identity",
-      query: `${subject.legalName}${geography} resultados financeiros endividamento relatório anual investidores`,
+      query: `${subject.legalName}${geography} relações com investidores release de resultados apresentação webcast teleconferência`,
       domainAllowlist: officialDomain ? [officialDomain] : [],
     },
-    {topic: "news", query: `${subject.legalName}${geography} notícias fatos relevantes últimos 18 meses`, domainAllowlist: []},
-    {topic: "sector", query: `${subject.legalName}${sector}${geography} setor concorrência drivers riscos`, domainAllowlist: []},
-    {topic: "regulation", query: `${subject.sector ?? subject.legalName}${geography} regulação riscos setoriais`, domainAllowlist: []},
-    {topic: "market", query: `${subject.legalName}${geography} dívida empréstimo debênture financiamento mercado de capitais`, domainAllowlist: []},
-    {topic: "market", query: `${subject.sector ?? subject.legalName}${geography} transações comparáveis dívida debênture crédito privado`, domainAllowlist: []},
+    {
+      topic: "identity",
+      query: `${subject.legalName}${geography} demonstrações financeiras notas explicativas endividamento empréstimos financiamentos vencimentos`,
+      domainAllowlist: officialDomain ? [officialDomain] : [],
+    },
+    {
+      topic: "identity",
+      query: `${subject.legalName}${geography} fluxo de caixa capital de giro estoques contas a receber capex guidance`,
+      domainAllowlist: officialDomain ? [officialDomain] : [],
+    },
+    {topic: "news", query: `${subject.legalName}${geography} notícias fatos relevantes aquisições investimentos dividendos últimos 18 meses`, domainAllowlist: []},
+    {topic: "news", query: `${subject.legalName}${geography} administração entrevista estratégia expansão desinvestimento últimos 18 meses`, domainAllowlist: []},
+    {topic: "sector", query: `${subject.legalName}${sector}${geography} setor concorrentes participação de mercado drivers de receita margens sazonalidade`, domainAllowlist: []},
+    {topic: "sector", query: `${subject.sector ?? subject.legalName}${geography} perspectivas setoriais preços demanda custos câmbio juros capital de giro`, domainAllowlist: []},
+    {topic: "regulation", query: `${subject.sector ?? subject.legalName}${geography} regulação riscos setoriais tributação crédito`, domainAllowlist: []},
+    {topic: "market", query: `${subject.legalName}${geography} dívida debênture nota comercial empréstimo rating custo garantia covenant vencimento`, domainAllowlist: []},
+    {topic: "market", query: `${subject.legalName}${geography} emissões captações refinanciamento pré-pagamento estrutura de capital`, domainAllowlist: []},
+    {topic: "market", query: `${subject.sector ?? subject.legalName}${geography} transações comparáveis dívida debênture crédito privado prazo spread garantia`, domainAllowlist: []},
   ];
   return candidates.map((candidate) => {
     assertPublicQuerySafe(candidate.query);

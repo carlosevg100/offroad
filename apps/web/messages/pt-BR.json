@@ -851,6 +851,12 @@
       "public": "Somente informações públicas",
       "working": "Trabalhando agora",
       "ready": "Pronto para continuar",
+      "activities": {
+        "context": "Entendendo o pedido e recuperando o histórico",
+        "research": "Lendo divulgações, resultados, notícias e contexto setorial",
+        "market": "Pesquisando dívida, transações e referências de mercado",
+        "readout": "Construindo a leitura e as alternativas para a conversa"
+      },
       "proposal": {
         "preview": "PRÉVIA DA ALTERAÇÃO",
         "impact": "Impacto no caso",

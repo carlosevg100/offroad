@@ -61,6 +61,95 @@ export const originationMeetingBriefArtifactSchema = originationMeetingBriefSche
   }),
 });
 
+/** Senior-banker work product used by the conversational origination workflow. Unlike the legacy
+ * meeting brief, this contract forces the synthesis to explain the operating business, financial
+ * trajectory, capital structure and strategic financing choices before proposing a meeting plan. */
+export const originationSeniorReadoutSchema = z.object({
+  executiveRead: z.string().min(60).max(3_600),
+  companyAnalysis: z.object({
+    businessOverview: z.string().min(40).max(1_800),
+    businessModel: z.string().min(40).max(1_800),
+    revenueAndCustomers: z.string().min(30).max(1_500),
+    costAndMarginDrivers: z.string().min(30).max(1_500),
+    sectorPosition: z.string().min(30).max(1_500),
+    seasonality: z.string().min(20).max(1_000),
+    recentDevelopments: z.array(z.string().min(12).max(700)).max(8),
+    sourceUrls: z.array(z.url()).min(1).max(8),
+  }),
+  performanceAnalysis: z.object({
+    operatingPerformance: z.string().min(40).max(1_800),
+    cashFlowAndWorkingCapital: z.string().min(40).max(1_800),
+    outlookAndPlans: z.string().min(30).max(1_500),
+    sourceUrls: z.array(z.url()).min(1).max(8),
+  }),
+  capitalStructure: z.object({
+    overview: z.string().min(40).max(1_800),
+    liquidity: z.string().min(30).max(1_500),
+    debtStack: z.array(z.object({
+      instrument: z.string().min(3).max(200),
+      amount: z.string().min(1).max(120).nullable(),
+      maturity: z.string().min(1).max(240).nullable(),
+      cost: z.string().min(1).max(160).nullable(),
+      indexer: z.string().min(1).max(120).nullable(),
+      currency: z.string().min(1).max(80).nullable(),
+      amortization: z.string().min(1).max(240).nullable(),
+      guarantees: z.string().min(1).max(300).nullable(),
+      covenants: z.string().min(1).max(300).nullable(),
+      prepayment: z.string().min(1).max(240).nullable(),
+      sourceUrls: z.array(z.url()).min(1).max(4),
+    })).max(16),
+    keyUnknowns: z.array(z.string().min(10).max(600)).min(1).max(12),
+    sourceUrls: z.array(z.url()).min(1).max(8),
+  }),
+  strategicAgenda: z.object({
+    priorities: z.array(z.string().min(12).max(700)).max(10),
+    implicationsForDebt: z.string().min(30).max(1_500),
+    sourceUrls: z.array(z.url()).min(1).max(8),
+  }),
+  strategicAlternatives: z.array(z.object({
+    rank: z.number().int().min(1).max(8),
+    title: z.string().min(5).max(180),
+    objective: z.string().min(20).max(700),
+    structure: z.string().min(20).max(1_000),
+    rationale: z.string().min(40).max(1_500),
+    balanceSheetImpact: z.string().min(20).max(900),
+    advantages: z.array(z.string().min(8).max(500)).min(1).max(6),
+    risks: z.array(z.string().min(8).max(500)).min(1).max(6),
+    conditions: z.array(z.string().min(8).max(500)).min(1).max(8),
+    disconfirmers: z.array(z.string().min(8).max(500)).min(1).max(6),
+    sourceUrls: z.array(z.url()).min(1).max(6),
+  })).min(1).max(6),
+  meetingStrategy: z.object({
+    narrative: z.string().min(40).max(1_500),
+    recommendedAgenda: z.array(z.string().min(10).max(500)).min(2).max(8),
+    decisionQuestions: z.array(z.object({
+      question: z.string().min(10).max(500),
+      whyItMatters: z.string().min(10).max(700),
+      answerChanges: z.string().min(10).max(700),
+    })).min(3).max(10),
+  }),
+  unknowns: z.array(z.string().min(8).max(600)).min(1).max(16),
+});
+
+export const originationSeniorReadoutArtifactSchema = originationSeniorReadoutSchema.extend({
+  schemaVersion: z.literal("origination-senior-readout.v2"),
+  asOfDate: z.iso.date(),
+  company: z.object({name: z.string().min(2), website: z.url().nullable()}),
+  sources: originationMeetingBriefArtifactSchema.shape.sources,
+  researchStatus: z.enum(["succeeded", "partial", "abstained"]),
+  scopeBoundary: z.string().min(20),
+  provenance: z.object({
+    provider: z.enum(["anthropic", "openai"]),
+    model: z.string().min(1),
+    executorVersion: z.string().min(3),
+  }),
+});
+
+export const originationConversationArtifactSchema = z.union([
+  originationSeniorReadoutArtifactSchema,
+  originationMeetingBriefArtifactSchema,
+]);
+
 /** Public-only context for a company debt-lens diagnostic. A focus is useful but optional: the
  * system must be able to start from the company alone without forcing the user to invent a
  * transaction or repeat information available in public sources. */
@@ -596,6 +685,9 @@ export type TaskEnvelope = z.infer<typeof taskEnvelopeSchema>;
 export type OriginationThesisBrief = z.infer<typeof originationThesisBriefSchema>;
 export type OriginationMeetingBrief = z.infer<typeof originationMeetingBriefSchema>;
 export type OriginationMeetingBriefArtifact = z.infer<typeof originationMeetingBriefArtifactSchema>;
+export type OriginationSeniorReadout = z.infer<typeof originationSeniorReadoutSchema>;
+export type OriginationSeniorReadoutArtifact = z.infer<typeof originationSeniorReadoutArtifactSchema>;
+export type OriginationConversationArtifact = z.infer<typeof originationConversationArtifactSchema>;
 export type CompanyDebtViewBrief = z.infer<typeof companyDebtViewBriefSchema>;
 export type CompanyDebtDiagnostic = z.infer<typeof companyDebtDiagnosticSchema>;
 export type CompanyDebtDiagnosticArtifact = z.infer<typeof companyDebtDiagnosticArtifactSchema>;

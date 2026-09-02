@@ -1,4 +1,4 @@
-import {originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
+import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
 import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
@@ -9,6 +9,7 @@ import {notFound} from "next/navigation";
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {AdvisorProject, type AdvisorProjectCopy} from "@/components/advisor/advisor-project";
 import type {AdvisorChangeProposal} from "@/components/advisor/advisor-change-proposal";
+import {OriginationConversationWork} from "@/components/advisor/origination-conversation-work";
 import {PrivateCaseWork} from "@/components/advisor/private-case-work";
 import {PrivateDiagnosticWork} from "@/components/advisor/private-diagnostic-work";
 import {PrivateMarketWork} from "@/components/advisor/private-market-work";
@@ -19,6 +20,7 @@ import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
 import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
+import {advisorActivities} from "@/lib/advisor/activity";
 
 import {OriginationDecision} from "./origination-decision";
 import {CompanyDebtProject} from "./company-debt-project";
@@ -41,7 +43,7 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
     .maybeSingle();
   if (!project) notFound();
   const specialized = ["company_debt_view", "origination_thesis", "capital_planning"].includes(project.entry_job);
-  if (view !== "work" || !specialized) {
+  if (view !== "work" || !specialized || project.entry_job === "origination_thesis") {
     return <ConversationalCapitalProject locale={locale} project={project} />;
   }
   if (project.entry_job === "company_debt_view") {
@@ -209,11 +211,12 @@ async function ConversationalCapitalProject({
     .maybeSingle();
   if (!session) notFound();
 
-  const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}] = await Promise.all([
+  const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}] = await Promise.all([
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, processing_status").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
     supabase.from("capital_project_plans").select("id").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
-    supabase.from("capital_project_artifacts").select("id, artifact_type, status").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
+    supabase.from("capital_project_artifacts").select("id, artifact_type, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
+    supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
   ]);
   const privateCase = ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
   const preliminary = privateCase
@@ -290,6 +293,15 @@ async function ConversationalCapitalProject({
     },
   };
   const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
+  const originationArtifact = project.entry_job === "origination_thesis"
+    ? (artifacts ?? []).find((artifact) => artifact.artifact_type === "meeting_brief" && artifact.status !== "superseded")
+    : undefined;
+  const parsedOrigination = originationArtifact
+    ? originationConversationArtifactSchema.safeParse(originationArtifact.content)
+    : null;
+  const originationDecision = originationArtifact
+    ? artifactDecisions?.find((item) => item.artifact_id === originationArtifact.id)
+    : null;
   const advisorMessages = messages?.length
     ? messages.map((message) => {
         const artifactId = specializedCompletionArtifactId(message.metadata);
@@ -299,7 +311,7 @@ async function ConversationalCapitalProject({
           content: message.content,
           status: message.status,
           createdAt: message.created_at,
-          artifactHref: artifactId && artifactIds.has(artifactId)
+          artifactHref: project.entry_job !== "origination_thesis" && artifactId && artifactIds.has(artifactId)
             ? `/${locale}/app/projects/${project.id}?view=work`
             : undefined,
           proposalId: message.proposal_id,
@@ -310,7 +322,11 @@ async function ConversationalCapitalProject({
 
   return <AdvisorProject
     accessBasis={project.access_basis}
-    artifacts={(artifacts ?? []).map((artifact) => ({id: artifact.id, type: artifact.artifact_type, status: artifact.status}))}
+    artifacts={(artifacts ?? []).filter((artifact) => customerArtifactLabel(artifact.artifact_type, locale) !== null).map((artifact) => ({
+      id: artifact.id,
+      label: customerArtifactLabel(artifact.artifact_type, locale)!,
+      status: artifact.status,
+    }))}
     copy={copy}
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
@@ -321,13 +337,27 @@ async function ConversationalCapitalProject({
     projectName={project.project_name}
     sessionId={session.id}
     sessionStatus={session.status}
-    tasks={(tasks ?? []).map((task) => ({
+    tasks={advisorActivities(project.entry_job, (tasks ?? []).map((task) => ({
       id: task.id,
+      taskId: task.task_id,
       label: localizedOffroadTaskLabel(task.task_id, task.label, locale === "en-US" ? "en-US" : "pt-BR"),
-      status: latestRunByTask.get(task.id)?.status ?? "waiting",
-    }))}
-    workHref={["company_debt_view", "origination_thesis", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={preliminary ? <div className="advisor-private-stack"><PrivateCaseWork
+      status: (latestRunByTask.get(task.id)?.status ?? "waiting") as "waiting" | "queued" | "running" | "succeeded" | "failed" | "blocked" | "cancelled",
+    })), {
+      context: t("activities.context"),
+      research: t("activities.research"),
+      market: t("activities.market"),
+      readout: t("activities.readout"),
+    })}
+    workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
+    workProduct={<>{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
+      artifact={parsedOrigination.data}
+      artifactId={originationArtifact.id}
+      decision={originationDecision}
+      fingerprint={originationArtifact.artifact_fingerprint}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"}
+      projectId={project.id}
+      status={originationArtifact.status}
+    /> : null}{preliminary ? <div className="advisor-private-stack"><PrivateCaseWork
       checklist={checklist}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       preliminary={preliminary}
@@ -369,8 +399,19 @@ async function ConversationalCapitalProject({
       projectId={project.id}
       representationStatus={session.representation_status}
       sessionId={session.id}
-    /> : null}</div> : undefined}
+    /> : null}</div> : null}</>}
   />;
+}
+
+function customerArtifactLabel(type: string, locale: string): string | null {
+  const labels: Record<string, [string, string]> = {
+    meeting_brief: ["Leitura para a reunião", "Meeting readout"],
+    company_debt_diagnostic: ["Análise da companhia", "Company analysis"],
+    capital_planning_map: ["Alternativas de financiamento", "Financing alternatives"],
+    material_package: ["Materiais preparados", "Prepared materials"],
+  };
+  const label = labels[type];
+  return label ? label[locale === "en-US" ? 1 : 0] : null;
 }
 
 function pendingAdvisorContext(messages: Array<{role: string; metadata: unknown; created_at: string}>): {question: string; whyItMatters: string} | null {

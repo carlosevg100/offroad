@@ -851,6 +851,12 @@
       "public": "Public information only",
       "working": "Working now",
       "ready": "Ready to continue",
+      "activities": {
+        "context": "Understanding the request and retrieving project history",
+        "research": "Reading disclosures, results, news and sector context",
+        "market": "Researching debt, transactions and market references",
+        "readout": "Building the readout and alternatives for the conversation"
+      },
       "proposal": {
         "preview": "CHANGE PREVIEW",
         "impact": "Impact on the case",
