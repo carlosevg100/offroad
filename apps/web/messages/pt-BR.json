@@ -851,6 +851,20 @@
       "public": "Somente informações públicas",
       "working": "Trabalhando agora",
       "ready": "Pronto para continuar",
+      "proposal": {
+        "preview": "PRÉVIA DA ALTERAÇÃO",
+        "impact": "Impacto no caso",
+        "accept": "Aceitar e aplicar",
+        "reject": "Descartar",
+        "applying": "Aplicando...",
+        "rejecting": "Descartando...",
+        "applied": "Alteração aplicada e análise atualizada",
+        "rejected": "Proposta descartada",
+        "stale": "Esta prévia ficou desatualizada",
+        "monthValue": "{value} meses",
+        "errors": {"invalid": "Esta decisão não é válida.", "stale": "O caso mudou desde esta prévia. Peça uma nova proposta.", "save": "Não foi possível registrar a decisão.", "processing": "A alteração foi aplicada, mas a análise precisa ser iniciada novamente."},
+        "fields": {"objective": "Objetivo", "requestedAmount": "Valor pretendido", "currency": "Moeda", "urgency": "Prazo para captação", "requestedTermMonths": "Prazo da operação", "requestedGraceMonths": "Carência", "consequenceIfNotExecuted": "Impacto de não executar", "sector": "Setor", "geography": "Geografia", "instruments": "Instrumentos considerados", "collateralKinds": "Garantias disponíveis", "expectedRate": "Expectativa de custo"}
+      },
       "errors": {"invalid": "Revise a mensagem.", "denied": "Esta ação não está autorizada neste projeto.", "duplicate": "Esta mensagem ou documento já foi registrado.", "notFound": "O projeto não está mais disponível.", "save": "Não foi possível registrar a mensagem.", "processing": "A leitura não pôde ser iniciada.", "upload": "Um ou mais documentos não puderam ser recebidos com segurança."}
     },
     "privateCase": {

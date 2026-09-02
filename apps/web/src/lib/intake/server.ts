@@ -558,12 +558,22 @@ async function publishFallbackPreliminaryUnderstanding(input: {
   documents: readonly FallbackPreliminaryDocument[];
 }): Promise<IntakeOutcome<{session: FallbackPreliminarySession; confirmedPreliminary: boolean}>> {
   const {supabase, organizationId, sessionId} = input.runtime;
-  const [{data: session, error: sessionError}, {data: confirmedPreliminary, error: preliminaryStateError}] = await Promise.all([
+  const [{data: session, error: sessionError}, {data: initialMessage, error: initialMessageError}, {data: confirmedPreliminary, error: preliminaryStateError}] = await Promise.all([
     supabase
       .from("document_intake_sessions")
       .select("archetype, locale, company_profile, capital_objective, capital_currency, capital_urgency, capital_consequence, requested_amount, requested_term_months, sector, geography")
       .eq("organization_id", organizationId)
       .eq("id", sessionId)
+      .maybeSingle(),
+    supabase
+      .from("agent_messages")
+      .select("content")
+      .eq("organization_id", organizationId)
+      .eq("intake_session_id", sessionId)
+      .eq("role", "user")
+      .eq("metadata->>kind", "request")
+      .order("created_at", {ascending: true})
+      .limit(1)
       .maybeSingle(),
     supabase
       .from("preliminary_understandings")
@@ -574,18 +584,20 @@ async function publishFallbackPreliminaryUnderstanding(input: {
       .limit(1)
       .maybeSingle(),
   ]);
-  if (sessionError || preliminaryStateError || !session) {
+  if (sessionError || initialMessageError || preliminaryStateError || !session) {
     await markSessionFailed(input.runtime, "fallback_preliminary_input_failed");
     return fail("processing");
   }
   const preliminary = buildFallbackPreliminaryUnderstanding({
     caseId: sessionId,
     session,
+    initialRequest: initialMessage?.content ?? null,
     candidates: [...input.candidates],
     documentCount: input.documents.length,
   });
   const inputFingerprint = sha256HexOf(new TextEncoder().encode(JSON.stringify({
     session,
+    initialRequest: initialMessage?.content ?? null,
     documents: input.documents.map(({id, original_name, sha256}) => ({id, original_name, sha256})),
     candidates: input.candidates,
   })));
@@ -629,6 +641,7 @@ type FallbackPreliminarySession = Pick<
 export function buildFallbackPreliminaryUnderstanding(input: {
   caseId: string;
   session: FallbackPreliminarySession;
+  initialRequest?: string | null;
   candidates: readonly IntakeCandidatePayload[];
   documentCount: number;
 }): PreliminaryUnderstanding {
@@ -660,6 +673,7 @@ export function buildFallbackPreliminaryUnderstanding(input: {
   const geography = input.session.geography?.trim()
     || candidateValue("company.state", "company.geography");
   const objective = input.session.capital_objective?.trim()
+    || input.initialRequest?.trim()
     || candidateValue("transaction.purpose");
   const requestedAmount = input.session.requested_amount === null
     ? candidateValue("transaction.requested_amount")

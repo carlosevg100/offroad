@@ -376,6 +376,28 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page).toHaveURL(projectUrl);
   });
 
+  test("honors an explicitly selected private-document workflow", async () => {
+    await page.goto("/pt-BR/app");
+    await page.locator(".advisor-starters button").filter({hasText: "Estruturar pelos documentos"}).click();
+    const request = `Caso privado ${runId}: compreender, conciliar e diagnosticar antes de estruturar`;
+    const projectTitle = request.slice(0, 80);
+    await page.locator(".advisor-composer--start textarea").fill(request);
+    await page.locator(".advisor-composer--start .advisor-composer__send").click();
+
+    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+    await expect(page.locator(".advisor-project__composer-wrap footer span")).toHaveText("Projeto privado");
+    await expect(page.locator(".advisor-private-work__understanding")).toBeVisible({timeout: 120_000});
+    await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
+
+    await page.goto("/pt-BR/app");
+    const project = page.locator(".workspace-project").filter({hasText: projectTitle});
+    await expect(project).toBeVisible();
+    await project.locator(".workspace-project-actions > summary").click();
+    page.once("dialog", (dialog) => dialog.accept());
+    await project.locator(".workspace-project-actions__archive").click();
+    await expect(page.locator(".workspace-project").filter({hasText: projectTitle})).toHaveCount(0);
+  });
+
   test("signs out and logs back in with the password", async () => {
     await page.goto("/pt-BR/app");
     await page.locator(".app-sidebar__footer form button[type=submit]").click();

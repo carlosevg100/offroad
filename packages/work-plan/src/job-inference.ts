@@ -15,8 +15,9 @@ const patterns = {
 } as const;
 
 /**
- * Infers only the initial TaskSpec subgraph. Starter chips are hints, never a mandatory funnel.
- * The same durable project may later change direction without changing its company or evidence.
+ * Selects only the initial TaskSpec subgraph. A clicked starter is an explicit initial assignment;
+ * without one, the message and attachments supply the route. The same durable project may later
+ * change direction without changing its company, evidence or history.
  */
 export function inferCapitalProjectJob(input: {
   message: string;
@@ -24,6 +25,14 @@ export function inferCapitalProjectJob(input: {
   explicitHint?: CapitalProjectJobHint | null;
 }): CapitalProjectJobInference {
   const message = input.message.normalize("NFKC").replace(/\s+/g, " ").trim();
+
+  // A selected starter is an explicit instruction from the user, not another weak keyword.
+  // The free-text classifier remains useful when no starter was selected, but it must not send a
+  // request such as "structure these documents and diagnose the company" into the public-only
+  // company view merely because the word "diagnose" appears in the prompt.
+  if (input.explicitHint) {
+    return {job: input.explicitHint, reason: "explicit_hint"};
+  }
 
   if (patterns.existingTransaction.test(message)) {
     return {job: "review_existing_operation", reason: "existing_transaction"};
@@ -39,9 +48,6 @@ export function inferCapitalProjectJob(input: {
   }
   if (input.hasAttachments && message.length < 40) {
     return {job: "structure_from_documents", reason: "documents_only"};
-  }
-  if (input.explicitHint) {
-    return {job: input.explicitHint, reason: "explicit_hint"};
   }
   if (input.hasAttachments) {
     return {job: "structure_from_documents", reason: "documents_only"};

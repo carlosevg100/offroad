@@ -102,9 +102,14 @@ export default async function LocaleLayout({children, params}: Props) {
     notFound();
   }
 
-  // Only the error copy crosses to the client (error boundaries cannot use server translations).
+  // Keep the client bundle narrow, but include every namespace consumed by client
+  // components. Omitting one makes next-intl render the key itself in production.
   const messages = await getMessages({locale});
-  const clientMessages = {Errors: messages.Errors};
+  const clientMessages = {
+    App: {privateCase: messages.App.privateCase},
+    Errors: messages.Errors,
+    Navigation: messages.Navigation,
+  };
 
   const organizationId = `${brand.url}/#organization`;
   const websiteId = `${brand.url}/#website`;
