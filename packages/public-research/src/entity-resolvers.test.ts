@@ -20,6 +20,24 @@ describe("official entity resolution", () => {
     expect(JSON.stringify(result)).not.toContain("example.com");
   });
 
+  it("keeps resolving issuers when another CVM registry row contains a literal opening quote", async () => {
+    const csv = [
+      "CNPJ_CIA;DENOM_SOCIAL;DENOM_COMERC;CD_CVM;SETOR_ATIV;SIT;SIT_EMISSOR",
+      '00.000.000/0001-00;COMPANHIA COM " DESCRICAO;OUTRA;99999;Outros;ATIVO;NORMAL',
+      "64.904.295/0001-03;CAMIL ALIMENTOS S.A.;CAMIL;24228;Alimentos;ATIVO;NORMAL",
+    ].join("\n");
+    const resolver = createCvmOpenDataEntityResolver({
+      fetch: async () => new Response(new TextEncoder().encode(csv), {status: 200}),
+    });
+    const result = await resolveOfficialEntity({
+      jurisdiction: "BR", subject: {legalName: "Camil Alimentos"}, resolvers: [resolver],
+    });
+    expect(result).toMatchObject({
+      status: "resolved",
+      selected: {officialIdentifier: "24228", legalName: "CAMIL ALIMENTOS S.A."},
+    });
+  });
+
   it("resolves a US registrant and preserves the zero-padded CIK", async () => {
     const resolver = createSecEdgarEntityResolver({
       userAgent: "Offroad Capital research@offroad.capital",

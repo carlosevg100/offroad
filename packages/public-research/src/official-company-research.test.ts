@@ -16,6 +16,7 @@ describe("official company research", () => {
       "24228;2025-12-31;1;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.01.04;Empréstimos e Financiamentos;1000;S",
       "24228;2025-12-31;2;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.01.04;Empréstimos e Financiamentos;1200;S",
       "24228;2025-12-31;2;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.03;Patrimônio Líquido;5000;S",
+      '24228;2025-12-31;2;CAMIL ALIMENTOS S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.02.01;Dívida com " proteção;300;S',
       "99999;2025-12-31;2;OUTRA S.A.;DF Consolidado;REAL;MIL;ULTIMO;2025-12-31;2.01.04;Empréstimos e Financiamentos;999999;S",
     ].join("\n"));
     const zipBytes = await zip.generateAsync({type: "uint8array"});
@@ -47,6 +48,8 @@ describe("official company research", () => {
     const statements = sources.find((source) => source.title.includes("DFP"));
     expect(statements?.snippet).toContain("value=1200");
     expect(statements?.snippet).toContain("value=5000");
+    expect(statements?.snippet).toContain('" prote');
+    expect(statements?.snippet).toContain("value=300");
     expect(statements?.snippet).not.toContain("value=1000");
     expect(statements?.snippet).not.toContain("999999");
   });

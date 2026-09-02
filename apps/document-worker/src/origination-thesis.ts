@@ -69,6 +69,13 @@ const contextSchema = z.object({
     content: recordSchema,
     evidence_refs: z.array(recordSchema),
   })).default([]),
+  completed_artifacts: z.array(z.object({
+    task_id: z.string().regex(/^[A-Z][0-9]{2}$/),
+    id: z.uuid(),
+    artifact_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    content: recordSchema,
+    evidence_refs: z.array(recordSchema),
+  })).default([]),
 });
 
 const ORIGINATION_THESIS_SYSTEM = `You prepare a public-information origination meeting brief
@@ -124,6 +131,15 @@ export async function processOriginationThesisJob(
     assertExactTaskPlan(job, context);
     const taskById = new Map(context.tasks.map((task) => [task.id, task]));
     const artifacts = new Map<string, ArtifactRef>();
+    if (!context.revision) {
+      for (const completed of context.completed_artifacts) {
+        artifacts.set(completed.task_id, {
+          taskId: completed.task_id,
+          id: completed.id,
+          artifactFingerprint: completed.artifact_fingerprint,
+        });
+      }
+    }
     const companyName = stringValue(context.session.company_profile.name);
     const website = optionalString(context.session.company_profile.website);
     if (!companyName) throw codedError("public_company_identity_missing");
@@ -134,6 +150,8 @@ export async function processOriginationThesisJob(
       status?: "draft" | "pending_confirmation";
       build: () => Promise<{content: Record<string, unknown>; evidenceRefs?: Record<string, unknown>[]; quality?: QualityResult[]; usage?: Record<string, unknown>}>;
     }): Promise<ArtifactRef> => {
+      const completed = artifacts.get(input.taskId);
+      if (completed) return completed;
       const task = taskById.get(input.taskId);
       if (!task) throw codedError(`task_${input.taskId.toLowerCase()}_missing`);
       const dependencyRefs = task.dependencies.map((dependencyId) => {
@@ -173,10 +191,11 @@ export async function processOriginationThesisJob(
           } : {}),
         },
       });
+      let evaluatedQuality: QualityResult[] = [];
       try {
         const built = await input.build();
-        const quality = built.quality ?? [{id: "structured_output", passed: true, detail: "Artifact contract produced deterministically."}];
-        if (quality.some((result) => !result.passed)) throw codedError(`quality_gate_${input.taskId.toLowerCase()}_failed`);
+        evaluatedQuality = built.quality ?? [{id: "structured_output", passed: true, detail: "Artifact contract produced deterministically."}];
+        if (evaluatedQuality.some((result) => !result.passed)) throw codedError(`quality_gate_${input.taskId.toLowerCase()}_failed`);
         const artifact = await dependencies.queue.recordCapitalProjectArtifact(job, {
           taskRunId,
           artifactType: input.artifactType,
@@ -195,7 +214,7 @@ export async function processOriginationThesisJob(
           status: "succeeded",
           outputReference: {type: "capital_project_artifact", id: artifact.id},
           outputFingerprint: artifact.artifactFingerprint,
-          qualityResults: quality,
+          qualityResults: evaluatedQuality,
           usage: built.usage ?? {},
         });
         const ref = {taskId: input.taskId, id: artifact.id, artifactFingerprint: artifact.artifactFingerprint};
@@ -205,7 +224,9 @@ export async function processOriginationThesisJob(
         await dependencies.queue.finishCapitalTask(job, {
           taskRunId,
           status: "failed",
-          qualityResults: [],
+          // A failed gate is useful institutional evidence. Persist the individual grader
+          // results so a retry can fix the precise defect instead of hiding it behind M07.
+          qualityResults: evaluatedQuality,
           error: {code: errorCode(error)},
         }).catch(() => undefined);
         throw error;
@@ -393,15 +414,20 @@ export async function processOriginationThesisJob(
       }),
     ]);
 
-    const researchPromise = collectOriginationResearch({
-      job,
-      context,
-      companyName,
-      ...(website ? {website} : {}),
-      queue: dependencies.queue,
-      discoveryProviders: dependencies.researchProviders,
-      officialProviderFactory: dependencies.officialResearchProviderFactory,
-    });
+    const reusableResearch = context.completed_artifacts.filter((artifact) =>
+      artifact.task_id === "C02" || artifact.task_id === "K04",
+    );
+    const researchPromise = reusableResearch.length === 2
+      ? Promise.resolve(researchFromDependencyArtifacts(reusableResearch))
+      : collectOriginationResearch({
+          job,
+          context,
+          companyName,
+          ...(website ? {website} : {}),
+          queue: dependencies.queue,
+          discoveryProviders: dependencies.researchProviders,
+          officialProviderFactory: dependencies.officialResearchProviderFactory,
+        });
 
     const researchArtifactsPromise = Promise.all([
       persistTask({
@@ -509,7 +535,13 @@ function assertExactTaskPlan(job: CapitalProjectAnalysisJob, context: Context): 
 }
 
 function researchFromDependencyArtifacts(
-  dependencies: Context["dependency_artifacts"],
+  dependencies: Array<{
+    task_id: string;
+    id: string;
+    artifact_fingerprint: string;
+    content: Record<string, unknown>;
+    evidence_refs: Record<string, unknown>[];
+  }>,
 ): ResearchSummary {
   const artifactSchema = z.object({
     status: z.enum(["succeeded", "partial", "abstained"]),

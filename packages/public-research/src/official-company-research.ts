@@ -284,6 +284,10 @@ async function extractCvmStatementRows(bytes: Uint8Array, cvmCode: string): Prom
       delimiter: ";",
       skip_empty_lines: true,
       relax_column_count: true,
+      // Some CVM statement archives contain literal quotes in otherwise unquoted descriptions.
+      // Preserve the row instead of turning one malformed description into a provider-wide
+      // failure shared by every research topic in the run.
+      relax_quotes: true,
       trim: true,
     }) as CvmStatementRow[];
     const matching = rows.filter((row) =>

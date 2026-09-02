@@ -545,7 +545,7 @@ export function createQueueClient(
     },
 
     async loadCapitalProjectContext(job) {
-      return call("worker_load_capital_project_context_v2", {
+      return call("worker_load_capital_project_context_v3", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
