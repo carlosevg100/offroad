@@ -398,7 +398,7 @@ export function createQueueClient(
     },
 
     async loadPreliminaryInput(job) {
-      return call("worker_load_preliminary_input", {
+      return call("worker_load_preliminary_input_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });

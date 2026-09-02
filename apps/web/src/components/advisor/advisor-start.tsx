@@ -119,8 +119,10 @@ export function AdvisorStart({copy, locale, organizationId, userId}: Props) {
         setStatus("idle");
         return;
       }
-      setStatus("starting");
-      await beginAdvisorProjectProcessing({locale, projectId: result.projectId});
+      if (!["structure_from_documents", "review_existing_operation"].includes(entryJob)) {
+        setStatus("starting");
+        await beginAdvisorProjectProcessing({locale, projectId: result.projectId});
+      }
     }
 
     router.push(`/${locale}/app/projects/${result.projectId}`);

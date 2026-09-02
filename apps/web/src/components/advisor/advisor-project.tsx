@@ -3,7 +3,7 @@
 import {ArrowUp, Bot, Check, Circle, FileText, LoaderCircle, Paperclip, X} from "lucide-react";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
-import {useRef, useState} from "react";
+import {useRef, useState, type ReactNode} from "react";
 
 import {
   appendAdvisorMessage,
@@ -59,6 +59,7 @@ type Props = {
   sessionStatus: string;
   tasks: AdvisorProjectTask[];
   workHref?: string;
+  workProduct?: ReactNode;
 };
 
 export function AdvisorProject(props: Props) {
@@ -140,6 +141,7 @@ export function AdvisorProject(props: Props) {
               </div>
             </article>
           ))}
+          {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
         </div>
 
         <div className="advisor-project__composer-wrap">

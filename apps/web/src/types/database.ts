@@ -6272,6 +6272,15 @@ export type Database = {
         }
         Returns: string
       }
+      decide_advisor_preliminary_v1: {
+        Args: {
+          p_correction?: string
+          p_decision: string
+          p_object_fingerprint: string
+          p_project_id: string
+        }
+        Returns: string
+      }
       get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
       get_workspace_bootstrap: { Args: never; Returns: Json }
       get_workspace_project_setup: {
@@ -7010,6 +7019,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_claim_decisions: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_preliminary_input_v2: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }

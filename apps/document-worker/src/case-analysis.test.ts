@@ -4,7 +4,7 @@ import {parseDocument} from "@offroad/document-parsers";
 import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
-import {caseAnalysisExecutionPlan, processCaseAnalysisJob} from "./case-analysis";
+import {caseAnalysisExecutionPlan, processCaseAnalysisJob, researchSubjectFromDeclaration} from "./case-analysis";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
 import {documentEvidence, encodeReceivablesEvidence} from "./receivables-evidence";
 
@@ -243,6 +243,11 @@ describe("worker case analysis", () => {
         return {
           output: {
             understandingSummary: "A companhia atua em distribuição B2B e busca capital para sustentar o crescimento do ciclo operacional.",
+            companyName: "Cedro Distribuição",
+            legalName: "Cedro Distribuição e Logística Ltda.",
+            website: null,
+            archetypeId: "working_capital",
+            capitalObjective: "Sustentar o crescimento do ciclo operacional.",
             companySummary: "A companhia se apresenta como distribuidora B2B com carteira própria de recebíveis.",
             sectorSummary: "A distribuição B2B depende de gestão de estoque, prazo a clientes e disponibilidade de capital de giro.",
             positioningSummary: "As fontes consultadas confirmam a presença digital informada, mas não permitem concluir posição competitiva.",
@@ -312,6 +317,17 @@ describe("worker case analysis", () => {
       analysis_scope: "preliminary_understanding",
       spend: {calls: 1},
     });
+  });
+
+  it("starts bounded public research from an explicitly named company in the opening request", () => {
+    expect(researchSubjectFromDeclaration("Tenho uma reunião com a Camil amanhã e quero discutir alternativas de dívida.")).toEqual({
+      legalName: "Camil",
+    });
+    expect(researchSubjectFromDeclaration("Please analyze https://www.example-capital.com before the meeting.")).toEqual({
+      legalName: "example capital",
+      website: "https://www.example-capital.com",
+    });
+    expect(researchSubjectFromDeclaration("Quero analisar uma companhia do varejo.")).toBeNull();
   });
 
   it("defaults to a zero-model diagnostic plan before governed confirmations", () => {
