@@ -155,7 +155,13 @@ export async function runPublicResearch(input: {
           (maxCostExposureUsdByProvider[provider.id] ?? 0) + (
             provider.maxCostUsdPerCall ?? (provider.id === "perplexity" ? 0.005 : provider.id === "openai" ? 0.02 : 0)
           );
-        const returned = z.array(researchSourceSchema).parse(await provider.search(query));
+        const returned = z.array(researchSourceSchema).parse(await provider.search(query)).map((item) => ({
+          ...item,
+          // `topic` is the research lens under which evidence was collected, not an immutable
+          // property of the URL. Official financial facts can validly answer a market/debt query;
+          // normalize them to that query so persisted cache entries remain internally coherent.
+          topic: query.topic,
+        }));
         if (returned.length === 0) continue;
         collected.push(...returned);
         if (!provider.continueAfterSuccess) {
