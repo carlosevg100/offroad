@@ -2,7 +2,7 @@ import {z} from "zod";
 import {researchQuerySchema, researchSourceSchema, type ResearchQuery, type ResearchSource} from "./contracts";
 
 export const publicResearchCacheRecordSchema = z.object({
-  schemaVersion: z.literal("public-research-cache.v1"),
+  schemaVersion: z.literal("public-research-cache.v2"),
   queryId: z.string().regex(/^[a-f0-9]{64}$/),
   query: researchQuerySchema,
   sources: z.array(researchSourceSchema).max(10),
@@ -26,7 +26,7 @@ export function createPublicResearchCacheRecord(input: {
   const storedAt = new Date(input.storedAt);
   const validUntil = new Date(storedAt.getTime() + Math.max(1, Math.min(24 * 90, input.ttlHours)) * 3_600_000);
   return publicResearchCacheRecordSchema.parse({
-    schemaVersion: "public-research-cache.v1",
+    schemaVersion: "public-research-cache.v2",
     queryId: input.query.id,
     query: input.query,
     sources: input.sources,

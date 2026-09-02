@@ -26,7 +26,7 @@ export const originationMeetingBriefSchema = z.object({
   })).max(10),
   financingAngles: z.array(z.object({
     title: z.string().min(5).max(180),
-    route: z.string().min(3).max(180),
+    route: z.string().min(3).max(360),
     rationale: z.string().min(30).max(1_200),
     sourceUrls: z.array(z.url()).min(1).max(4),
     prerequisites: z.array(z.string().min(5).max(500)).min(1).max(8),
