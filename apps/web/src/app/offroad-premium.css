@@ -8909,7 +8909,11 @@ summary:focus-visible {
   text-transform: uppercase;
 }
 
-.app-nav .workspace-project-navigation__header a {
+.app-nav .workspace-project-navigation__header a,
+.workspace-project-navigation__header button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
   display: grid;
   width: 26px;
   min-height: 26px;
@@ -8917,6 +8921,45 @@ summary:focus-visible {
   place-items: center;
   color: #aab0b7;
 }
+
+.workspace-project-create {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 24px 24px;
+  gap: 4px;
+  align-items: center;
+  margin: 0 5px;
+  padding: 5px 6px;
+  border: 1px solid #394149;
+  border-radius: 6px;
+  color: #929aa1;
+  background: #171b20;
+}
+
+.workspace-project-create input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #f0f2ef;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+}
+
+.workspace-project-create button {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  place-items: center;
+  color: #b8beb9;
+  background: transparent;
+  cursor: pointer;
+}
+
+.workspace-project-create button:hover {background: #292f35; color: #fff;}
+.workspace-project-create > p {grid-column: 1 / -1; margin: 2px 0 0; color: #e0a499; font-size: 8px;}
 
 .workspace-project-search {
   display: grid;
@@ -8952,6 +8995,49 @@ summary:focus-visible {
   align-content: start;
   gap: 2px;
 }
+
+.workspace-project-group {
+  min-width: 0;
+  border-radius: 7px;
+}
+
+.workspace-project-group > summary {
+  display: grid;
+  min-height: 38px;
+  padding: 0 2px 0 7px;
+  align-items: center;
+  color: #c7cbc8;
+  cursor: pointer;
+  grid-template-columns: 13px 17px minmax(0, 1fr) auto 28px;
+  gap: 4px;
+  list-style: none;
+}
+
+.workspace-project-group > summary::-webkit-details-marker {display: none;}
+.workspace-project-group > summary:hover,
+.workspace-project-group.is-active > summary {background: #191e23; color: #f0f2ef;}
+.workspace-project-group > summary strong {overflow: hidden; font-size: 10px; font-weight: 620; text-overflow: ellipsis; white-space: nowrap;}
+.workspace-project-group > summary > span {color: #666e75; font-size: 8px;}
+.workspace-project-group__chevron {transition: transform 120ms ease;}
+.workspace-project-group:not([open]) .workspace-project-group__chevron {transform: rotate(-90deg);}
+
+.workspace-project-group__children {
+  display: grid;
+  margin: 0 0 3px 14px;
+  padding-left: 7px;
+  border-left: 1px solid rgb(255 255 255 / 8%);
+  gap: 1px;
+}
+
+.workspace-project-group__empty {padding: 7px 7px 3px; color: #656d74; font-size: 8px;}
+.app-nav .workspace-project-group__new {
+  min-height: 28px;
+  padding: 0 7px;
+  color: #788188;
+  font-size: 9px;
+  gap: 6px;
+}
+.app-nav .workspace-project-group__new:hover {color: #d5d9d5; background: #1d2126;}
 
 .workspace-project {
   position: relative;
@@ -9008,9 +9094,7 @@ summary:focus-visible {
 .workspace-project__state--confirmed {border-color: #9ebd6b; background: #9ebd6b;}
 .workspace-project__state--failed {border-color: #d78372; background: #d78372;}
 
-.workspace-project-actions {position: relative; z-index: 2;}
-.workspace-project-actions[open] {z-index: 8;}
-.workspace-project-actions > summary {
+.workspace-project-actions__trigger {
   display: grid;
   width: 26px;
   height: 28px;
@@ -9018,11 +9102,11 @@ summary:focus-visible {
   place-items: center;
   color: #747b83;
   cursor: pointer;
-  list-style: none;
+  border: 0;
+  background: transparent;
 }
-.workspace-project-actions > summary::-webkit-details-marker {display: none;}
-.workspace-project-actions > summary:hover,
-.workspace-project-actions[open] > summary {color: #f1f2ef; background: #2a2f35;}
+.workspace-project-actions__trigger:hover,
+.workspace-project-actions__trigger[aria-expanded="true"] {color: #f1f2ef; background: #2a2f35;}
 
 .workspace-project-actions__menu {
   position: absolute;
@@ -9038,7 +9122,27 @@ summary:focus-visible {
   gap: 6px;
 }
 
-.app-nav .workspace-project-actions__menu > a {
+.workspace-project-actions__menu--floating {
+  position: fixed;
+  top: auto;
+  right: auto;
+  z-index: 1000;
+}
+
+.workspace-project-actions__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.workspace-project-actions__menu > a {
+  align-items: center;
+  display: flex;
+  text-decoration: none;
   min-height: 32px;
   padding: 0 8px;
   color: #d7dad7;
@@ -9049,7 +9153,8 @@ summary:focus-visible {
 .workspace-project-actions__menu label {display: grid; gap: 5px;}
 .workspace-project-actions__menu label > span {display: flex; align-items: center; gap: 6px; color: #949ba2; font-size: 9px;}
 .workspace-project-actions__menu input[type="text"],
-.workspace-project-actions__menu input[name="project_name"] {
+.workspace-project-actions__menu input[name="project_name"],
+.workspace-project-actions__menu input[name="group_name"] {
   width: 100%;
   min-height: 32px;
   padding: 0 8px;
@@ -9078,6 +9183,9 @@ summary:focus-visible {
   font-weight: 650;
   cursor: pointer;
 }
+.workspace-project-actions__menu .workspace-project-actions__plain {justify-content: flex-start; color: #d7dad7; background: transparent;}
+.workspace-project-actions__row {display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 5px;}
+.workspace-project-actions__menu .workspace-project-actions__row .is-quiet {padding: 0; color: #a1a8ad; background: #252a30;}
 .workspace-project-actions__menu button:disabled {opacity: 0.55; cursor: wait;}
 .workspace-project-actions__menu .workspace-project-actions__archive {justify-content: flex-start; color: #e0a499; background: transparent;}
 .workspace-project-actions__menu > p {display: flex; margin: 0; color: #e0a499; gap: 5px; font-size: 8px; line-height: 1.4;}
@@ -9093,11 +9201,31 @@ summary:focus-visible {
 }
 
 .app-nav .workspace-project-navigation__new {
+  width: calc(100% - 8px);
   min-height: 34px;
   margin: 2px 4px 0;
   border: 1px dashed rgb(255 255 255 / 12%);
   color: #a8afb5;
   gap: 7px;
+  justify-content: flex-start;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 9px;
+}
+
+.advisor-start__project-context {
+  display: inline-flex;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  border: 1px solid #d7ddcf;
+  border-radius: 999px;
+  color: #52663b;
+  background: #f3f6ef;
+  font-size: 10px;
+  font-weight: 650;
 }
 
 .app-sidebar__footer {

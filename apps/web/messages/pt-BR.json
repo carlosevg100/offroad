@@ -786,6 +786,13 @@
     "search": "Buscar ou ir para",
     "workspaceNav": "Workspace",
     "projects": "Projetos",
+    "createProject": "Novo projeto",
+    "projectNamePlaceholder": "Nome do projeto",
+    "newConversation": "Nova conversa",
+    "noConversations": "Nenhuma conversa neste projeto",
+    "deleteProjectGroup": "Excluir projeto",
+    "deleteProjectGroupConfirm": "Excluir o projeto \"{project}\" da área de trabalho? Suas conversas, documentos e histórico serão preservados.",
+    "close": "Fechar",
     "searchProjects": "Buscar projetos",
     "noProjects": "Nenhum projeto criado",
     "noProjectResults": "Nenhum projeto encontrado",
@@ -793,8 +800,8 @@
     "openProject": "Abrir projeto",
     "renameProject": "Renomear",
     "saveProjectName": "Salvar nome",
-    "deleteProject": "Excluir",
-    "deleteProjectConfirm": "Excluir \"{project}\" do ambiente? Os documentos e o histórico permanecerão preservados.",
+    "deleteProject": "Remover conversa",
+    "deleteProjectConfirm": "Remover a conversa \"{project}\" deste projeto? Os documentos e o histórico permanecerão preservados.",
     "projectStatus": {
       "collecting": "Em preparação",
       "processing": "Em análise",
@@ -811,6 +818,7 @@
       "save": "Não foi possível concluir a alteração."
     },
     "advisor": {
+      "groupContext": "Nova conversa em {project}",
       "kicker": "OFFROAD ADVISOR",
       "title": "Como a Offroad pode ajudar hoje?",
       "body": "Descreva o trabalho com suas palavras ou anexe o que já tiver. A companhia, as evidências, as decisões e os materiais permanecerão no mesmo projeto.",

@@ -533,6 +533,7 @@ export type Database = {
           project_name: string
           status: string
           updated_at: string
+          workspace_group_id: string | null
         }
         Insert: {
           access_basis?: string
@@ -550,6 +551,7 @@ export type Database = {
           project_name: string
           status?: string
           updated_at?: string
+          workspace_group_id?: string | null
         }
         Update: {
           access_basis?: string
@@ -567,6 +569,7 @@ export type Database = {
           project_name?: string
           status?: string
           updated_at?: string
+          workspace_group_id?: string | null
         }
         Relationships: [
           {
@@ -582,6 +585,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_projects_organization_workspace_group_fkey"
+            columns: ["organization_id", "workspace_group_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_project_groups"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -6191,6 +6201,47 @@ export type Database = {
           },
         ]
       }
+      workspace_project_groups: {
+        Row: {
+          archived_at: string | null
+          archived_by: string | null
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          archived_by?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_project_groups_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_runs: {
         Row: {
           completed_at: string | null
@@ -6441,6 +6492,14 @@ export type Database = {
         }
         Returns: Json
       }
+      create_workspace_project_group: {
+        Args: {p_name: string}
+        Returns: string
+      }
+      manage_workspace_project_group: {
+        Args: {p_action: string; p_group_id: string; p_name?: string}
+        Returns: Json
+      }
       initialize_professional_onboarding: {
         Args: {
           p_full_name: string
@@ -6507,6 +6566,19 @@ export type Database = {
         Args: {
           p_access_basis: string
           p_entry_job: string
+          p_locale: string
+          p_plan: Json
+          p_project_name: string
+          p_prompt: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      start_advisor_project_in_group_v1: {
+        Args: {
+          p_access_basis: string
+          p_entry_job: string
+          p_group_id?: string
           p_locale: string
           p_plan: Json
           p_project_name: string

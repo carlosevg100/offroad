@@ -11,6 +11,7 @@ import {createClient} from "@/lib/supabase/server";
 export type WorkspaceProjectActionState = {
   ok: boolean;
   code?: "duplicate" | "invalid" | "not_found" | "denied" | "save";
+  id?: string;
 };
 
 const initialProjectActionState: WorkspaceProjectActionState = {ok: false};
@@ -77,6 +78,71 @@ export async function archiveWorkspaceProject(
     p_action: "archive",
     p_project_name: undefined,
     p_session_id: parsed.data,
+  });
+  if (error) return {ok: false, code: projectActionCode(error)};
+
+  revalidatePath(`/${locale}/app`, "layout");
+  return {ok: true};
+}
+
+export async function createWorkspaceProjectGroup(
+  _previousState: WorkspaceProjectActionState = initialProjectActionState,
+  formData: FormData,
+): Promise<WorkspaceProjectActionState> {
+  void _previousState;
+  const locale = localeFrom(formData);
+  const parsed = z.string().trim().min(2).max(80).safeParse(String(formData.get("group_name") ?? ""));
+  if (!parsed.success) return {ok: false, code: "invalid"};
+
+  const {supabase} = await requireWorkspace(locale);
+  const {data, error} = await supabase.rpc("create_workspace_project_group", {p_name: parsed.data});
+  if (error || typeof data !== "string") return {ok: false, code: projectActionCode(error)};
+
+  revalidatePath(`/${locale}/app`, "layout");
+  return {ok: true, id: data};
+}
+
+export async function renameWorkspaceProjectGroup(
+  _previousState: WorkspaceProjectActionState = initialProjectActionState,
+  formData: FormData,
+): Promise<WorkspaceProjectActionState> {
+  void _previousState;
+  const locale = localeFrom(formData);
+  const parsed = z.object({
+    groupId: z.string().uuid(),
+    name: z.string().trim().min(2).max(80),
+  }).safeParse({
+    groupId: String(formData.get("group_id") ?? ""),
+    name: String(formData.get("group_name") ?? ""),
+  });
+  if (!parsed.success) return {ok: false, code: "invalid"};
+
+  const {supabase} = await requireWorkspace(locale);
+  const {error} = await supabase.rpc("manage_workspace_project_group", {
+    p_action: "rename",
+    p_group_id: parsed.data.groupId,
+    p_name: parsed.data.name,
+  });
+  if (error) return {ok: false, code: projectActionCode(error)};
+
+  revalidatePath(`/${locale}/app`, "layout");
+  return {ok: true};
+}
+
+export async function archiveWorkspaceProjectGroup(
+  _previousState: WorkspaceProjectActionState = initialProjectActionState,
+  formData: FormData,
+): Promise<WorkspaceProjectActionState> {
+  void _previousState;
+  const locale = localeFrom(formData);
+  const parsed = z.string().uuid().safeParse(String(formData.get("group_id") ?? ""));
+  if (!parsed.success) return {ok: false, code: "invalid"};
+
+  const {supabase} = await requireWorkspace(locale);
+  const {error} = await supabase.rpc("manage_workspace_project_group", {
+    p_action: "archive",
+    p_group_id: parsed.data,
+    p_name: undefined,
   });
   if (error) return {ok: false, code: projectActionCode(error)};
 

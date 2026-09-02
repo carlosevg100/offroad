@@ -5,7 +5,7 @@ import {getTranslations} from "next-intl/server";
 import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
 import {BrandMark} from "@/components/brand-mark";
-import {WorkspaceProjectNavigation, type WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
+import {WorkspaceProjectNavigation, type WorkspaceNavigationGroup, type WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
 import {WorkspaceLanguageSwitcher} from "@/components/workspace-language-switcher";
 import type {AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -32,16 +32,28 @@ export default async function ApplicationLayout({children, params}: Props) {
         .limit(100)
     : {data: []};
   const capitalProjectIds = (navigationSessions ?? []).flatMap((session) => session.capital_project_id ? [session.capital_project_id] : []);
-  const {data: capitalProjects} = capitalProjectIds.length > 0
-    ? await supabase.from("capital_projects")
-        .select("id, entry_job, current_phase")
-        .eq("organization_id", organization.id)
-        .in("id", capitalProjectIds)
-    : {data: []};
+  const [{data: capitalProjects}, {data: workspaceGroups}] = await Promise.all([
+    capitalProjectIds.length > 0
+      ? supabase.from("capital_projects")
+          .select("id, entry_job, current_phase, workspace_group_id")
+          .eq("organization_id", organization.id)
+          .in("id", capitalProjectIds)
+      : Promise.resolve({data: []}),
+    canOriginate
+      ? supabase.from("workspace_project_groups")
+          .select("id, name, updated_at")
+          .eq("organization_id", organization.id)
+          .is("archived_at", null)
+          .order("updated_at", {ascending: false})
+          .limit(100)
+      : Promise.resolve({data: []}),
+  ]);
   const capitalProjectById = new Map((capitalProjects ?? []).map((project) => [project.id, project]));
+  const groups: WorkspaceNavigationGroup[] = (workspaceGroups ?? []).map((group) => ({id: group.id, name: group.name}));
   const projects: WorkspaceNavigationProject[] = (navigationSessions ?? []).map((session) => {
     const capitalProject = session.capital_project_id ? capitalProjectById.get(session.capital_project_id) : null;
     return {
+    groupId: capitalProject?.workspace_group_id ?? session.capital_project_id ?? session.id,
     href: session.capital_project_id
       ? `/${locale}/app/projects/${session.capital_project_id}`
       : session.status === "confirmed" && session.opportunity_id
@@ -77,7 +89,11 @@ export default async function ApplicationLayout({children, params}: Props) {
               actions: t("projectActions"),
               archive: t("deleteProject"),
               archiveConfirm: t("deleteProjectConfirm"),
+              close: t("close"),
+              createGroup: t("createProject"),
+              createGroupPlaceholder: t("projectNamePlaceholder"),
               empty: t("noProjects"),
+              emptyGroup: t("noConversations"),
               errors: {
                 denied: t("projectErrors.denied"),
                 duplicate: t("projectErrors.duplicate"),
@@ -85,7 +101,10 @@ export default async function ApplicationLayout({children, params}: Props) {
                 not_found: t("projectErrors.notFound"),
                 save: t("projectErrors.save"),
               },
-              newProject: organization.organization_type === "company" ? t("newCapitalNeed") : t("newOpportunity"),
+              groupActions: t("projectActions"),
+              groupArchive: t("deleteProjectGroup"),
+              groupArchiveConfirm: t("deleteProjectGroupConfirm"),
+              newConversation: t("newConversation"),
               noResults: t("noProjectResults"),
               open: t("openProject"),
               projects: t("projects"),
@@ -101,8 +120,8 @@ export default async function ApplicationLayout({children, params}: Props) {
                 review_ready: t("projectStatus.reviewReady"),
               },
             }}
+            groups={groups}
             locale={locale}
-            newProjectHref={`/${locale}/app`}
             projects={projects}
           /> : <div className="app-nav__group"><p>{t("projects")}</p><Link href={`/${locale}/app#funds`}><Landmark aria-hidden="true" size={16} /><span>{t("fundsAndMandates")}</span></Link></div>}
         </nav>

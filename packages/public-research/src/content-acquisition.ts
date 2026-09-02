@@ -94,6 +94,7 @@ export function createFirecrawlPublicContentAcquirer(input: {
   resolveHost?: ResolveHost;
   now?: () => Date;
   timeoutMs?: number;
+  zeroDataRetention?: boolean;
 }) {
   const apiKey = z.string().trim().min(8).parse(input.apiKey);
   const request = input.fetch ?? fetch;
@@ -108,7 +109,8 @@ export function createFirecrawlPublicContentAcquirer(input: {
       body: JSON.stringify({
         url: sourceUrl, formats: ["markdown"], onlyMainContent: false,
         removeBase64Images: true, blockAds: true, timeout: timeoutMs,
-        storeInCache: false, zeroDataRetention: true,
+        storeInCache: false,
+        ...(input.zeroDataRetention ? {zeroDataRetention: true} : {}),
       }),
       signal: AbortSignal.timeout(timeoutMs + 2_000),
     });
