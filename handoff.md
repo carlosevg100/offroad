@@ -2536,3 +2536,32 @@ Próxima sequência: conectar `structure_from_documents` ao Case Graph privado e
 gate entendimento → lacunas/contradições → recomendação, e só então promover compiladores de
 teaser, modelo financeiro e term sheet. Matching e introdução continuam separados e exigem lender
 graph real, autorização específica e evidência própria.
+
+## 38. Advisor universal e decisão privada completa em produção, 02/09/2026
+
+A PR #346 substituiu e incorporou a fundação da PR #345. Não há mais duas arquiteturas a serem
+mantidas. O mesmo workspace conversacional atende pesquisa pública e trabalho privado, preservando
+memória por projeto, idioma PT-BR/EN-US, procedência, cache público sem contexto privado e
+invalidação incremental.
+
+O fluxo privado agora fecha os gates antes ausentes: primeira leitura confirmável, solicitação
+documental específica, diagnóstico reconciliado, alternativas indicativas, escolha da estrutura,
+plano de produção, revisão de teaser/modelo/term sheet indicativo/índice da sala, matching
+explicável, shortlist e plano exato de introdução. Nenhum desses passos autoriza underwriting,
+contato ou distribuição implícita.
+
+Evidência operacional:
+
+- merge em `main`: `3725a542`, PR #346;
+- Quality pré-merge `33587650680` e pós-merge `33588131071`: database, RLS, E2E, lint, tipos,
+  testes e build verdes;
+- Vercel production `9iHU9GnUgyF91jmeDTHMMZJtWnf4`: success;
+- worker ECS `33588131083`: rollout estável;
+- seis migrations novas aplicadas ao Supabase `ifnogpksgdadruooqydi` e verificadas;
+- novos ledgers e cache com zero linhas após a promoção;
+- nenhuma API paga chamada durante implementação ou validação.
+
+O próximo passo correto é um gold case humano, começando sem distribuição. O teste deve medir a
+qualidade do entendimento, das perguntas, do diagnóstico, da estrutura, dos materiais e do
+matching. Somente outputs aceitos podem avançar de tecnicamente disponíveis para padrão
+institucional comprovado.
