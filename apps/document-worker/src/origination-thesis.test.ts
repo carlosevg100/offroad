@@ -150,7 +150,7 @@ describe("origination thesis vertical", () => {
     const gateway: ModelGateway = {
       complete: (async () => ({
         output: {
-          executiveRead: "A companhia apresenta sinais públicos que merecem uma conversa dirigida sobre flexibilidade financeira e prioridades de capital.",
+          executiveRead: "A companhia apresenta uma emissão pública de R$1,0 e sinais que merecem uma conversa dirigida sobre flexibilidade financeira e prioridades de capital.",
           companySnapshot: "A leitura pública identifica a atividade operacional, mas ainda não confirma números privados, perímetro ou intenção de financiamento.",
           debtLensSignals: [{
             finding: "A companhia divulga informações operacionais relevantes para preparar a reunião.",
@@ -195,7 +195,7 @@ describe("origination thesis vertical", () => {
       topic: query.topic,
       title: `Fonte ${query.topic}`,
       url: sourceUrl,
-      snippet: "Informação pública recuperada para a lente de dívida.",
+      snippet: "Informação pública recuperada para a lente de dívida, incluindo uma emissão de R$ 1,0.",
       publishedAt: null,
       retrievedAt: "2026-09-01T12:00:00.000Z",
       contentHash: query.id,

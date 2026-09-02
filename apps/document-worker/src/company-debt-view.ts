@@ -16,6 +16,7 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
+import {materialNumericTokens} from "./material-numeric-tokens";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
@@ -587,11 +588,6 @@ function sourceEvidence(researchRunId: string, sources: ResearchSource[]): Recor
     {sourceType: "public_research_run", sourceId: researchRunId},
     ...sources.map((source) => ({sourceType: "public_research_url", sourceId: source.url, contentHash: source.contentHash, retrievedAt: source.retrievedAt})),
   ];
-}
-
-function materialNumericTokens(value: string): string[] {
-  const matches = value.match(/(?:R\$|US\$|BRL|USD)\s*\d+(?:[.,]\d+)?|\b\d+(?:[.,]\d+)?\s*(?:%|x|milh(?:ões|oes)|bilh(?:ões|oes)|months?|meses|anos)\b/gi) ?? [];
-  return [...new Set(matches.map((match) => match.toLocaleLowerCase("pt-BR").replace(/\s+/g, " ")))];
 }
 
 function stringValue(value: unknown): string { return typeof value === "string" ? value.trim() : ""; }
