@@ -120,6 +120,9 @@ export function OriginationConversationWork(props: Props) {
 function SeniorReadout(props: Props & {artifact: OriginationSeniorReadoutArtifact}) {
   const t = copy[props.locale];
   const {artifact} = props;
+  const debtLabels = props.locale === "pt-BR"
+    ? ["Montante", "Vencimento", "Custo", "Indexador", "Moeda", "Amortização", "Garantias", "Covenants", "Pré-pagamento"]
+    : ["Amount", "Maturity", "Cost", "Indexer", "Currency", "Amortization", "Collateral", "Covenants", "Prepayment"];
   const analyses = props.locale === "pt-BR" ? [
     ["Como a companhia ganha dinheiro", artifact.companyAnalysis.businessModel],
     ["Receita e clientes", artifact.companyAnalysis.revenueAndCustomers],
@@ -149,13 +152,13 @@ function SeniorReadout(props: Props & {artifact: OriginationSeniorReadoutArtifac
       <h3>{props.locale === "pt-BR" ? "Mapa da dívida" : "Debt stack"}</h3>
       <div>{artifact.capitalStructure.debtStack.map((debt, index) => <article key={`${debt.instrument}-${index}`}>
         <strong>{debt.instrument}</strong>
-        <dl>{[["Montante", debt.amount], ["Vencimento", debt.maturity], ["Custo", debt.cost], ["Indexador", debt.indexer], ["Moeda", debt.currency], ["Amortização", debt.amortization], ["Garantias", debt.guarantees], ["Covenants", debt.covenants], ["Pré-pagamento", debt.prepayment]].filter((entry) => entry[1]).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+        <dl>{[[debtLabels[0], debt.amount], [debtLabels[1], debt.maturity], [debtLabels[2], debt.cost], [debtLabels[3], debt.indexer], [debtLabels[4], debt.currency], [debtLabels[5], debt.amortization], [debtLabels[6], debt.guarantees], [debtLabels[7], debt.covenants], [debtLabels[8], debt.prepayment]].filter((entry) => entry[1]).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
         <CitationLinks sources={artifact.sources} urls={debt.sourceUrls} />
       </article>)}</div>
     </section> : null}
     <section className="advisor-banker-readout__alternatives">
       <h3>{t.alternatives}</h3>
-      {artifact.strategicAlternatives.sort((a, b) => a.rank - b.rank).map((alternative) => <article key={`${alternative.rank}-${alternative.title}`}>
+      {[...artifact.strategicAlternatives].sort((a, b) => a.rank - b.rank).map((alternative) => <article key={`${alternative.rank}-${alternative.title}`}>
         <div className="advisor-banker-readout__rank">{String(alternative.rank).padStart(2, "0")}</div>
         <div><span>{alternative.objective}</span><h4>{alternative.title}</h4><p>{alternative.rationale}</p><p><strong>{props.locale === "pt-BR" ? "Estrutura: " : "Structure: "}</strong>{alternative.structure}</p><p><strong>{props.locale === "pt-BR" ? "Efeito no balanço: " : "Balance-sheet effect: "}</strong>{alternative.balanceSheetImpact}</p>
           <div className="advisor-banker-readout__conditions"><section><strong>{props.locale === "pt-BR" ? "Por que pode funcionar" : "Why it may work"}</strong><ul>{alternative.advantages.map((item) => <li key={item}>{item}</li>)}</ul></section><section><strong>{t.needs}</strong><ul>{alternative.conditions.map((item) => <li key={item}>{item}</li>)}</ul></section></div>
