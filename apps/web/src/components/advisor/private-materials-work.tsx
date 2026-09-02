@@ -13,6 +13,8 @@ import {
 import type {GovernedMaterialPackage} from "@/lib/deal-state/materials";
 import type {DealStateWorkbench} from "@/lib/deal-state/workbench";
 
+import {privateMaterialArtifacts} from "./private-material-artifacts";
+
 type Props = {
   governed: GovernedMaterialPackage | null;
   isProcessing: boolean;
@@ -27,7 +29,7 @@ type Props = {
 const initialState: PrivateGovernedDecisionState = {ok: false};
 
 export function PrivateMaterialsWork(props: Props) {
-  if (!props.structureConfirmed || props.packageReview?.status === "approved") return null;
+  if (!props.structureConfirmed) return null;
   if (props.governed) return <PackageReview {...props} governed={props.governed} />;
   if (props.productionPlan?.row.status === "pending_confirmation") return <ProductionPlan {...props} plan={props.productionPlan} />;
   if (props.isProcessing || props.productionPlan?.row.status === "approved") return <MaterialsProcessing />;
@@ -57,30 +59,26 @@ function ProductionPlan({locale, plan, projectId, sessionId}: Props & {plan: Non
   );
 }
 
-function PackageReview({governed, locale, projectId, sessionId}: Props & {governed: GovernedMaterialPackage}) {
+function PackageReview({governed, locale, packageReview, projectId, sessionId}: Props & {governed: GovernedMaterialPackage}) {
   const t = useTranslations("App.privateCase");
   const [state, action] = useActionState(approvePrivateProjectMaterialPackage, initialState);
-  const artifacts = [
-    {id: "teaser", available: governed.materials.some((item) => item.kind === "teaser"), href: `/${locale}/app/materials/${sessionId}/teaser`},
-    {id: "financial_model", available: Boolean(governed.financialModel), href: `/${locale}/app/model/${sessionId}`},
-    {id: "indicative_term_sheet", available: governed.materials.some((item) => item.kind === "term_sheet"), href: `/${locale}/app/materials/${sessionId}/term_sheet`},
-    {id: "data_room_index", available: governed.materials.some((item) => item.kind === "data_room_index"), href: `/${locale}/app/materials/${sessionId}/data_room_index`},
-  ] as const;
+  const artifacts = privateMaterialArtifacts(governed, locale, sessionId);
   const complete = artifacts.every((artifact) => artifact.available);
+  const approved = packageReview?.status === "approved";
   return (
     <section className="advisor-private-materials">
-      <header><span>{t("materialsKicker")}</span><h2>{t("materialsTitle")}</h2><p>{t("materialsBody")}</p></header>
+      <header><span>{approved ? t("materialsApprovedKicker") : t("materialsKicker")}</span><h2>{approved ? t("materialsApprovedTitle") : t("materialsTitle")}</h2><p>{approved ? t("materialsApprovedBody") : t("materialsBody")}</p></header>
       <div className="advisor-private-materials__files">
-        {artifacts.map((artifact, index) => <section className={artifact.available ? "is-ready" : "is-blocked"} key={artifact.id}><span>{artifact.available ? <Check aria-hidden="true" size={13} /> : String(index + 1).padStart(2, "0")}</span><div><strong>{t(`artifacts.${artifact.id}.title`)}</strong><p>{artifact.available ? t("materialsReady") : t("materialsPending")}</p></div>{artifact.available ? <a href={artifact.href} rel="noreferrer" target="_blank"><Download aria-hidden="true" size={13} />{t("materialsOpen")}</a> : <small>{t("materialsBlocked")}</small>}</section>)}
+        {artifacts.map((artifact, index) => <section className={artifact.available ? "is-ready" : "is-blocked"} key={artifact.id}><span>{artifact.available ? <Check aria-hidden="true" size={13} /> : String(index + 1).padStart(2, "0")}</span><div><strong>{t(`artifacts.${artifact.id}.title`)}</strong><p>{artifact.available ? t("materialsReady") : t("materialsPending")}</p></div>{artifact.available ? <div className="advisor-private-materials__file-actions">{artifact.actions.map((item) => <a href={item.href} key={item.kind} rel="noreferrer" target="_blank"><Download aria-hidden="true" size={13} />{t(`materialActions.${item.kind}`)}</a>)}</div> : <small>{t("materialsBlocked")}</small>}</section>)}
       </div>
-      {complete ? <form action={action} className="advisor-private-materials__decision">
+      {complete && !approved ? <form action={action} className="advisor-private-materials__decision">
         <input name="locale" type="hidden" value={locale} />
         <input name="project_id" type="hidden" value={projectId} />
         <input name="session_id" type="hidden" value={sessionId} />
         <input name="artifact_fingerprint" type="hidden" value={governed.artifactFingerprint} />
         <div><ShieldCheck aria-hidden="true" size={16} /><span><strong>{t("materialsApprovalTitle")}</strong><p>{t("materialsApprovalBody")}</p></span></div>
         <SubmitButton idle={t("materialsApprove")} pending={t("materialsApproving")} />
-      </form> : <p className="advisor-private-materials__incomplete">{t("materialsIncomplete")}</p>}
+      </form> : !complete ? <p className="advisor-private-materials__incomplete">{t("materialsIncomplete")}</p> : null}
       <p className="advisor-private-materials__boundary"><ShieldCheck aria-hidden="true" size={13} />{t("materialsBoundary")}</p>
       {!state.ok && state.code ? <p className="form-notice form-notice--error" role="alert">{t(`governedErrors.${state.code}`)}</p> : null}
     </section>
