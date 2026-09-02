@@ -15,5 +15,6 @@ export function summarizeModelAttempts(calls: GatewayCallLog[]) {
     usedFallback: call.usedFallback,
     stopReason: call.stopReason,
     ...(call.providerError ? {providerError: call.providerError} : {}),
+    ...(call.validationIssues ? {validationIssues: call.validationIssues} : {}),
   }));
 }
