@@ -33,8 +33,8 @@
       "secrets": [
         {"name": "ANTHROPIC_API_KEY", "valueFrom": "offroad/anthropic-api-key"},
         {"name": "OPENAI_API_KEY", "valueFrom": "offroad/openai-api-key"},
-        {"name": "PERPLEXITY_API_KEY", "valueFrom": "offroad/perplexity-api-key", "jsonKey": "api_key"},
-        {"name": "FIRECRAWL_API_KEY", "valueFrom": "offroad/firecrawl-api-key", "jsonKey": "api_key"},
+        {"name": "PERPLEXITY_API_KEY", "valueFrom": "offroad/perplexity-api-key"},
+        {"name": "FIRECRAWL_API_KEY", "valueFrom": "offroad/firecrawl-api-key"},
         {"name": "SUPABASE_PUBLISHABLE_KEY", "valueFrom": "offroad/supabase-publishable-key"},
         {"name": "WORKER_ACCOUNT_EMAIL", "valueFrom": "offroad/worker-account-email"},
         {"name": "WORKER_ACCOUNT_PASSWORD", "valueFrom": "offroad/worker-account-password"},
