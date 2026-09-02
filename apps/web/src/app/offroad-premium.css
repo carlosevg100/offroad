@@ -866,6 +866,40 @@
 .advisor-private-introduction__authorized {align-items: flex-start; color: #69747a; display: flex; font-size: 9px; gap: 7px; line-height: 1.45; margin: 15px 0 0; padding-bottom: 18px;}
 .advisor-private-introduction__authorized {color: #5f773e;}
 
+.advisor-private-feedback {border-top: 1px solid #dfe3dd; margin-top: 24px; padding: 23px 26px 0;}
+.advisor-private-feedback > header > span {color: #71884f; font-size: 8px; font-weight: 700; letter-spacing: .12em;}
+.advisor-private-feedback h3 {font-family: var(--font-newsreader), Georgia, serif; font-size: 24px; font-weight: 450; margin: 6px 0 0;}
+.advisor-private-feedback > header p {color: #69747a; font-size: 10px; line-height: 1.5; margin: 7px 0 0;}
+.advisor-private-feedback--waiting {align-items: flex-start; display: flex; gap: 9px; padding-bottom: 22px;}
+.advisor-private-feedback--waiting > svg {color: #718a4d; flex: 0 0 auto;}
+.advisor-private-feedback--waiting strong {font-size: 11px;}
+.advisor-private-feedback--waiting p {color: #707a80; font-size: 9px; line-height: 1.45; margin: 4px 0 0;}
+.advisor-private-feedback__introductions {display: grid; gap: 10px; margin-top: 17px;}
+.advisor-private-feedback__introductions > section {border: 1px solid #dfe3dd; padding: 14px;}
+.advisor-private-feedback__introductions > section > header {align-items: flex-start; display: flex; justify-content: space-between;}
+.advisor-private-feedback__introductions > section > header strong {font-size: 11px;}
+.advisor-private-feedback__introductions > section > header p,
+.advisor-private-feedback__introductions > section > header small {color: #737d83; font-size: 8px; margin: 3px 0 0;}
+.advisor-private-feedback__introductions ol {display: grid; list-style: none; margin: 12px 0 0; padding: 0;}
+.advisor-private-feedback__introductions li {border-top: 1px solid #e5e7e3; display: grid; gap: 4px; grid-template-columns: minmax(0, 1fr) auto; padding: 9px 0;}
+.advisor-private-feedback__introductions li span {font-size: 9px; font-weight: 650;}
+.advisor-private-feedback__introductions li small {color: #7b858a; font-size: 8px;}
+.advisor-private-feedback__introductions li p {color: #667178; font-size: 8px; grid-column: 1 / -1; line-height: 1.45; margin: 0;}
+.advisor-private-feedback__empty {color: #7b858a; font-size: 9px; margin: 12px 0;}
+.advisor-private-feedback__form-wrap {border-top: 1px solid #e4e7e2; margin-top: 10px; padding-top: 10px;}
+.advisor-private-feedback__form-wrap summary {color: #526633; cursor: pointer; font-size: 9px; font-weight: 650;}
+.advisor-private-feedback__form-wrap form {display: grid; gap: 10px; margin-top: 12px;}
+.advisor-private-feedback__form-wrap label {display: grid; gap: 5px;}
+.advisor-private-feedback__form-wrap label > span {color: #59636a; font-size: 8px; font-weight: 650;}
+.advisor-private-feedback__form-wrap input,
+.advisor-private-feedback__form-wrap select,
+.advisor-private-feedback__form-wrap textarea {background: #fff; border: 1px solid #d9ded8; border-radius: 4px; color: #1d2429; font: inherit; font-size: 10px; min-height: 35px; padding: 8px 9px;}
+.advisor-private-feedback__form-wrap textarea {line-height: 1.45; resize: vertical;}
+.advisor-private-feedback__form-wrap .button {justify-self: flex-start;}
+.advisor-private-feedback__row {display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr));}
+.advisor-private-feedback__boundary {align-items: flex-start; color: #6d777d; display: flex; font-size: 8px; gap: 6px; line-height: 1.45; margin: 15px 0 0; padding-bottom: 18px;}
+.advisor-private-feedback__boundary svg {color: #71884f; flex: 0 0 auto;}
+
 .advisor-project__composer-wrap {
   bottom: 0;
   left: 0;
@@ -998,6 +1032,8 @@
   .advisor-private-introduction__targets > section {grid-template-columns: 22px minmax(0, 1fr);}
   .advisor-private-introduction__targets b {grid-column: 2;}
   .advisor-private-introduction__recipients > section {grid-template-columns: 1fr;}
+  .advisor-private-feedback {padding-left: 20px; padding-right: 20px;}
+  .advisor-private-feedback__row {grid-template-columns: 1fr;}
 }
 
 /* Document-first intake */
