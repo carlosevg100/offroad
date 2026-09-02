@@ -95,7 +95,7 @@ begin
   claim := public.worker_claim_job(repeat('w', 64), 600);
   query_id := encode(extensions.digest(convert_to('identity:' || query_text, 'utf8'), 'sha256'), 'hex');
   entries := jsonb_build_array(jsonb_build_object(
-    'schemaVersion', 'public-research-cache.v1', 'queryId', query_id,
+    'schemaVersion', 'public-research-cache.v2', 'queryId', query_id,
     'query', jsonb_build_object(
       'id', query_id, 'topic', 'identity', 'query', query_text, 'domainAllowlist', '[]'::jsonb
     ),
