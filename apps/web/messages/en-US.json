@@ -786,6 +786,13 @@
     "search": "Search or go to",
     "workspaceNav": "Workspace",
     "projects": "Projects",
+    "createProject": "New project",
+    "projectNamePlaceholder": "Project name",
+    "newConversation": "New conversation",
+    "noConversations": "No conversations in this project",
+    "deleteProjectGroup": "Delete project",
+    "deleteProjectGroupConfirm": "Delete project \"{project}\" from the workspace? Its conversations, documents and history will remain preserved.",
+    "close": "Close",
     "searchProjects": "Search projects",
     "noProjects": "No projects yet",
     "noProjectResults": "No projects found",
@@ -793,8 +800,8 @@
     "openProject": "Open project",
     "renameProject": "Rename",
     "saveProjectName": "Save name",
-    "deleteProject": "Delete",
-    "deleteProjectConfirm": "Delete \"{project}\" from the workspace? Documents and history will remain preserved.",
+    "deleteProject": "Remove conversation",
+    "deleteProjectConfirm": "Remove conversation \"{project}\" from this project? Documents and history will remain preserved.",
     "projectStatus": {
       "collecting": "In preparation",
       "processing": "Under analysis",
@@ -811,6 +818,7 @@
       "save": "The change could not be completed."
     },
     "advisor": {
+      "groupContext": "New conversation in {project}",
       "kicker": "OFFROAD ADVISOR",
       "title": "How can Offroad help today?",
       "body": "Describe the assignment in your own words or attach what you already have. The company, evidence, decisions and materials will stay in the same project.",

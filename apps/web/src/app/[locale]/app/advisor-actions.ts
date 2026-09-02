@@ -20,6 +20,7 @@ const startSchema = z.object({
   entryJobHint: capitalProjectJobSchema.exclude(["prepare_materials_and_process"]).nullable().optional(),
   hasAttachments: z.boolean(),
   requestId: z.string().uuid(),
+  groupId: z.string().uuid().nullable().optional(),
 });
 const continueSchema = z.object({
   locale: localeSchema,
@@ -63,7 +64,7 @@ function projectTitle(prompt: string, job: CapitalProjectJob, locale: "pt-BR" | 
 export async function startAdvisorProject(input: unknown): Promise<StartAdvisorProjectResult> {
   const parsed = startSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
-  const {locale, prompt, entryJobHint, hasAttachments, requestId} = parsed.data;
+  const {locale, prompt, entryJobHint, hasAttachments, requestId, groupId} = parsed.data;
   const entryJob = inferCapitalProjectJob({
     message: prompt,
     hasAttachments,
@@ -82,7 +83,7 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
       : "public_information",
     p_plan: compiledCapitalProjectPlan(entryJob),
   };
-  const result = await supabase.rpc("start_advisor_project_v1", args);
+  const result = await supabase.rpc("start_advisor_project_in_group_v1", {...args, p_group_id: groupId ?? undefined});
   if (result.error) return {ok: false, error: actionError(result.error)};
   const payload = record(result.data);
   const projectId = typeof payload?.capital_project_id === "string" ? payload.capital_project_id : null;

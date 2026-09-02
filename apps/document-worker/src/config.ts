@@ -52,6 +52,7 @@ const schema = z.object({
   FIRECRAWL_API_KEY: z.string().min(20).optional(),
   ENABLE_OPENAI_WEB_SEARCH: z.string().default("false").transform((value) => value === "true"),
   ENABLE_FIRECRAWL: z.string().default("false").transform((value) => value === "true"),
+  FIRECRAWL_ZERO_DATA_RETENTION: z.string().default("false").transform((value) => value === "true"),
   OFFROAD_RESEARCH_USER_AGENT: z.string().min(10).max(300)
     .default("Offroad Capital research@offroad.capital"),
   ENFORCE_PROVIDER_DATA_POLICY: z
@@ -129,6 +130,7 @@ export function describeConfig(config: WorkerConfig): Record<string, string | nu
     openaiWebSearchEnabled: config.ENABLE_OPENAI_WEB_SEARCH,
     firecrawlKey: config.FIRECRAWL_API_KEY ? "present" : "absent",
     firecrawlEnabled: config.ENABLE_FIRECRAWL,
+    firecrawlZeroDataRetention: config.FIRECRAWL_ZERO_DATA_RETENTION,
     providerDataPolicyEnforced: config.ENFORCE_PROVIDER_DATA_POLICY,
     anthropicDataAssurance: config.ANTHROPIC_DATA_ASSURANCE_JSON ? "present" : "absent",
     openaiDataAssurance: config.OPENAI_DATA_ASSURANCE_JSON ? "present" : "absent",

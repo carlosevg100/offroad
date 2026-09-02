@@ -33,6 +33,7 @@ describe("public content acquisition", () => {
   it("uses Firecrawl only as zero-retention acquisition for an already public issuer URL", async () => {
     const acquire = createFirecrawlPublicContentAcquirer({
       apiKey: "fc-test-key",
+      zeroDataRetention: true,
       resolveHost: publicDns,
       now: () => new Date("2026-09-01T12:00:00.000Z"),
       fetch: async (_url, init) => {

@@ -118,7 +118,10 @@ async function main(): Promise<void> {
     userAgent: config.OFFROAD_RESEARCH_USER_AGENT,
   });
   const firecrawlContentAcquirer = config.ENABLE_FIRECRAWL && config.FIRECRAWL_API_KEY
-    ? createFirecrawlPublicContentAcquirer({apiKey: config.FIRECRAWL_API_KEY})
+    ? createFirecrawlPublicContentAcquirer({
+        apiKey: config.FIRECRAWL_API_KEY,
+        zeroDataRetention: config.FIRECRAWL_ZERO_DATA_RETENTION,
+      })
     : undefined;
   const newGateway = (job: ClaimedJob) => {
     const calls: GatewayCallLog[] = [];

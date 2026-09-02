@@ -26,6 +26,8 @@
         {"name": "MODEL_MAX_COST_USD_PER_JOB", "value": "1"},
         {"name": "MODEL_MAX_CALLS_PER_JOB", "value": "8"},
         {"name": "ENABLE_OPENAI_WEB_SEARCH", "value": "true"},
+        {"name": "ENABLE_FIRECRAWL", "value": "false"},
+        {"name": "FIRECRAWL_ZERO_DATA_RETENTION", "value": "false"},
         {"name": "LOG_LEVEL", "value": "info"}
       ],
       "secrets": [

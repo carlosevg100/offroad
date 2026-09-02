@@ -5,13 +5,21 @@ import {getTranslations} from "next-intl/server";
 import {AdvisorStart, type AdvisorStartCopy} from "@/components/advisor/advisor-start";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
-type Props = {params: Promise<{locale: string}>; searchParams: Promise<{welcome?: string}>};
+type Props = {params: Promise<{locale: string}>; searchParams: Promise<{welcome?: string; group?: string}>};
 
 export default async function ApplicationHome({params, searchParams}: Props) {
   const {locale} = await params;
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "App"});
   const {supabase, organization, userId} = await requireWorkspace(locale);
+  const {data: selectedGroup} = state.group
+    ? await supabase.from("workspace_project_groups")
+        .select("id, name")
+        .eq("organization_id", organization.id)
+        .eq("id", state.group)
+        .is("archived_at", null)
+        .maybeSingle()
+    : {data: null};
 
   if (organization.organization_type === "capital_provider") {
     const [{data: funds}, {data: mandates}, {data: contacts}, {data: requests}] = await Promise.all([
@@ -73,7 +81,8 @@ export default async function ApplicationHome({params, searchParams}: Props) {
     errors: {
       invalid: t("advisor.errors.invalid"), denied: t("advisor.errors.denied"), duplicate: t("advisor.errors.duplicate"), not_found: t("advisor.errors.notFound"), save: t("advisor.errors.save"), processing: t("advisor.errors.processing"), upload: t("advisor.errors.upload"),
     },
+    groupContext: t("advisor.groupContext"),
   };
 
-  return <AdvisorStart copy={copy} locale={locale === "en-US" ? "en-US" : "pt-BR"} organizationId={organization.id} userId={userId} />;
+  return <AdvisorStart copy={copy} groupId={selectedGroup?.id} groupName={selectedGroup?.name} locale={locale === "en-US" ? "en-US" : "pt-BR"} organizationId={organization.id} userId={userId} />;
 }

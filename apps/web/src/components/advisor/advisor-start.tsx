@@ -49,6 +49,7 @@ export type AdvisorStartCopy = {
   privacy: string;
   status: {creating: string; uploading: string; starting: string};
   errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; upload: string};
+  groupContext: string;
 };
 
 type Props = {
@@ -56,9 +57,11 @@ type Props = {
   locale: "pt-BR" | "en-US";
   organizationId: string;
   userId: string;
+  groupId?: string;
+  groupName?: string;
 };
 
-export function AdvisorStart({copy, locale, organizationId, userId}: Props) {
+export function AdvisorStart({copy, groupId, groupName, locale, organizationId, userId}: Props) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
   const [entryJobHint, setEntryJobHint] = useState<(typeof starterJobs)[number] | null>(null);
@@ -94,6 +97,7 @@ export function AdvisorStart({copy, locale, organizationId, userId}: Props) {
       entryJobHint,
       hasAttachments: distinctFiles.length > 0,
       requestId: crypto.randomUUID(),
+      groupId: groupId ?? null,
     });
     if (!result.ok) {
       setError(copy.errors[result.error]);
@@ -134,6 +138,7 @@ export function AdvisorStart({copy, locale, organizationId, userId}: Props) {
     <main className="advisor-start">
       <section className="advisor-start__center">
         <header>
+          {groupName ? <span className="advisor-start__project-context">{copy.groupContext.replace("{project}", groupName)}</span> : null}
           <span className="section-kicker">{copy.kicker}</span>
           <h1>{copy.title}</h1>
           <p>{copy.body}</p>

@@ -15,6 +15,8 @@ const runId = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toStr
 const initialProjectName = `Projeto Horizonte ${runId}`;
 const secondaryProjectName = `Projeto Desconhecido ${runId}`;
 const companyDebtProjectName = `Projeto Dívida ${runId}`;
+const workspaceGroupName = `Camil ${runId}`;
+const renamedWorkspaceGroupName = `Camil — Dívida ${runId}`;
 const account = {
   email: `e2e-${runId}@example.com`,
   password: `Offroad-E2E-${runId}!`,
@@ -26,6 +28,13 @@ test.describe.configure({mode: "serial"});
 
 async function expectNoErrorNotice(page: Page) {
   await expect(page.locator(".form-notice--error")).toHaveCount(0);
+}
+
+async function openConversationGroup(page: Page, conversationName: string) {
+  const group = page.locator(".workspace-project-group").filter({hasText: conversationName});
+  await expect(group).toHaveCount(1);
+  if (await group.getAttribute("open") === null) await group.locator("summary").click();
+  return group;
 }
 
 async function completeCompanyMilestone(page: Page) {
@@ -307,17 +316,20 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(projectList).toContainText(initialProjectName);
     await expect(projectList).toContainText(secondaryProjectName);
 
-    const secondaryProject = page.locator(".workspace-project").filter({hasText: secondaryProjectName});
-    await secondaryProject.locator(".workspace-project-actions > summary").click();
+    const secondaryGroup = await openConversationGroup(page, secondaryProjectName);
+    const secondaryProject = secondaryGroup.locator(".workspace-project").filter({hasText: secondaryProjectName});
+    await secondaryProject.locator(".workspace-project-actions__trigger").click();
     const renamedProjectName = `Projeto Renomeado ${runId}`;
-    await secondaryProject.locator('input[name="project_name"]').fill(renamedProjectName);
-    await secondaryProject.locator('form button[type="submit"]').first().click();
+    await page.locator(".workspace-project-actions__plain").click();
+    await page.locator('.workspace-project-actions__menu input[name="project_name"]').fill(renamedProjectName);
+    await page.locator('.workspace-project-actions__menu form:has(input[name="project_name"]) button[type="submit"]').click();
     await expect(projectList).toContainText(renamedProjectName);
 
-    const renamedProject = page.locator(".workspace-project").filter({hasText: renamedProjectName});
-    await renamedProject.locator(".workspace-project-actions > summary").click();
+    const renamedProjectGroup = await openConversationGroup(page, renamedProjectName);
+    const renamedProject = renamedProjectGroup.locator(".workspace-project").filter({hasText: renamedProjectName});
+    await renamedProject.locator(".workspace-project-actions__trigger").click();
     page.once("dialog", (dialog) => dialog.accept());
-    await renamedProject.locator(".workspace-project-actions__archive").click();
+    await page.locator(".workspace-project-actions__archive").click();
     await expect(page.locator(".workspace-project").filter({hasText: renamedProjectName})).toHaveCount(0);
     await expect(projectList).toContainText(initialProjectName);
   });
@@ -347,17 +359,34 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".origination-working")).toContainText("A Offroad está reconstruindo a leitura da companhia.");
 
     await page.goto("/pt-BR/app");
-    const createdProject = page.locator(".workspace-project").filter({hasText: companyDebtProjectName});
+    const companyDebtGroup = await openConversationGroup(page, companyDebtProjectName);
+    const createdProject = companyDebtGroup.locator(".workspace-project").filter({hasText: companyDebtProjectName});
     await expect(createdProject).toBeVisible();
-    await createdProject.locator(".workspace-project-actions > summary").click();
+    await createdProject.locator(".workspace-project-actions__trigger").click();
     page.once("dialog", (dialog) => dialog.accept());
-    await createdProject.locator(".workspace-project-actions__archive").click();
+    await page.locator(".workspace-project-actions__archive").click();
     await expect(page.locator(".workspace-project").filter({hasText: companyDebtProjectName})).toHaveCount(0);
   });
 
   test("creates and reopens one conversational project from the workspace composer", async () => {
     await page.goto("/pt-BR/app");
+    await page.getByRole("button", {name: "Novo projeto"}).first().click();
+    await page.locator('.workspace-project-create input[name="group_name"]').fill(workspaceGroupName);
+    await page.locator('.workspace-project-create button[type="submit"]').click();
+    await expect(page).toHaveURL(/\/pt-BR\/app\?group=[0-9a-f-]+$/);
+
+    let workspaceGroup = page.locator(".workspace-project-group").filter({hasText: workspaceGroupName});
+    await expect(workspaceGroup).toContainText("Nenhuma conversa neste projeto");
+    await workspaceGroup.locator("summary .workspace-project-actions__trigger").click();
+    await page.locator(".workspace-project-actions__plain").click();
+    await page.locator('.workspace-project-actions__menu input[name="group_name"]').fill(renamedWorkspaceGroupName);
+    await page.locator('.workspace-project-actions__menu form:has(input[name="group_name"]) button[type="submit"]').click();
+    await expect(page.locator(".workspace-project-list")).toContainText(renamedWorkspaceGroupName);
+
+    workspaceGroup = page.locator(".workspace-project-group").filter({hasText: renamedWorkspaceGroupName});
+    await workspaceGroup.locator(".workspace-project-group__new").click();
     await expect(page.locator(".advisor-start h1")).toHaveText("Como a Offroad pode ajudar hoje?");
+    await expect(page.locator(".advisor-start__project-context")).toContainText(renamedWorkspaceGroupName);
     await page.locator(".advisor-starters button").filter({hasText: "Planejar uma necessidade"}).click();
     const request = `Conversa ${runId}: planejar R$ 20 milhões`;
     await page.locator(".advisor-composer--start textarea").fill(request);
@@ -370,10 +399,18 @@ test.describe("Document-first intake (company journey)", () => {
 
     const projectUrl = page.url();
     await page.goto("/pt-BR/app");
-    const project = page.locator(".workspace-project").filter({hasText: request});
+    workspaceGroup = await openConversationGroup(page, request);
+    const project = workspaceGroup.locator(".workspace-project").filter({hasText: request});
     await expect(project).toBeVisible();
     await project.locator("a").first().click();
     await expect(page).toHaveURL(projectUrl);
+
+    await page.goto("/pt-BR/app");
+    workspaceGroup = page.locator(".workspace-project-group").filter({hasText: renamedWorkspaceGroupName});
+    await workspaceGroup.locator("summary .workspace-project-actions__trigger").click();
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.locator(".workspace-project-actions__archive").click();
+    await expect(page.locator(".workspace-project-group").filter({hasText: renamedWorkspaceGroupName})).toHaveCount(0);
   });
 
   test("honors an explicitly selected private-document workflow", async () => {
@@ -390,11 +427,12 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
 
     await page.goto("/pt-BR/app");
-    const project = page.locator(".workspace-project").filter({hasText: projectTitle});
+    const privateProjectGroup = await openConversationGroup(page, projectTitle);
+    const project = privateProjectGroup.locator(".workspace-project").filter({hasText: projectTitle});
     await expect(project).toBeVisible();
-    await project.locator(".workspace-project-actions > summary").click();
+    await project.locator(".workspace-project-actions__trigger").click();
     page.once("dialog", (dialog) => dialog.accept());
-    await project.locator(".workspace-project-actions__archive").click();
+    await page.locator(".workspace-project-actions__archive").click();
     await expect(page.locator(".workspace-project").filter({hasText: projectTitle})).toHaveCount(0);
   });
 
