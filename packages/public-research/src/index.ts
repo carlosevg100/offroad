@@ -80,7 +80,10 @@ export function buildOriginationResearchPlan(raw: PublicResearchSubject): Resear
   ];
   return candidates.map((candidate) => {
     assertPublicQuerySafe(candidate.query);
-    return researchQuerySchema.parse({...candidate, id: sha256(`${candidate.topic}:${candidate.query}`)});
+    // The plan version is part of the cache identity. A prior implementation cached discovery
+    // results even when the official CVM provider failed, so changing the acquisition contract
+    // must not silently reuse that incomplete entry until its TTL expires.
+    return researchQuerySchema.parse({...candidate, id: sha256(`origination-public-research.v2:${candidate.topic}:${candidate.query}`)});
   });
 }
 
@@ -168,7 +171,10 @@ export async function runPublicResearch(input: {
     return {sources: collected.slice(0, maxSources), failures, cacheHit: false};
   }));
   const cacheRecords = queryResults.flatMap((result, index) => {
-    if (result.cacheHit || result.sources.length === 0) return [];
+    // A fallback can still produce useful sources after an authoritative provider fails. Return
+    // those sources for the current run, but never promote a partial chain into reusable public
+    // raw material: doing so would erase the failure on every later cache hit.
+    if (result.cacheHit || result.sources.length === 0 || result.failures.length > 0) return [];
     return [createPublicResearchCacheRecord({
       query: plan[index]!,
       sources: result.sources,
