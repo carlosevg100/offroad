@@ -31,11 +31,27 @@ describe("capital project job inference", () => {
     })).toEqual({job: "structure_from_documents", reason: "documents_only"});
   });
 
-  it("uses a clicked starter only as a tie breaker", () => {
+  it("uses a clicked starter as the explicit initial assignment", () => {
     expect(inferCapitalProjectJob({
       message: "Quero começar um novo trabalho.",
       hasAttachments: false,
       explicitHint: "company_debt_view",
     })).toEqual({job: "company_debt_view", reason: "explicit_hint"});
+  });
+
+  it("keeps an explicitly selected private-document workflow even when its prompt mentions diagnosis", () => {
+    expect(inferCapitalProjectJob({
+      message: "Quero estruturar um caso privado completo a partir dos documentos, começando pela compreensão, conciliação e diagnóstico.",
+      hasAttachments: false,
+      explicitHint: "structure_from_documents",
+    })).toEqual({job: "structure_from_documents", reason: "explicit_hint"});
+  });
+
+  it("keeps an explicitly selected review workflow even when the prompt also describes a capital need", () => {
+    expect(inferCapitalProjectJob({
+      message: "Quero revisar esta estrutura de capital de giro e entender se o prazo está adequado.",
+      hasAttachments: true,
+      explicitHint: "review_existing_operation",
+    })).toEqual({job: "review_existing_operation", reason: "explicit_hint"});
   });
 });
