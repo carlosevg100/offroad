@@ -89,4 +89,32 @@ describe("deterministic preliminary understanding", () => {
       "Confirm the main operating geography.",
     ]));
   });
+
+  it("treats the initial project request as declaration context without requiring a duplicate form", () => {
+    const initialRequest = "Quero compreender, conciliar e diagnosticar este caso antes de estruturar a dívida.";
+    const result = buildFallbackPreliminaryUnderstanding({
+      caseId: "20000000-0000-4000-8000-000000000003",
+      session: {
+        archetype: "other",
+        locale: "pt-BR",
+        company_profile: {},
+        capital_objective: null,
+        capital_currency: "BRL",
+        capital_urgency: null,
+        capital_consequence: null,
+        requested_amount: null,
+        requested_term_months: null,
+        sector: null,
+        geography: null,
+      },
+      initialRequest,
+      candidates: [],
+      documentCount: 0,
+    });
+
+    expect(result.operation.objective).toBe(initialRequest);
+    expect(result.basis.preliminaryDocumentCount).toBe(0);
+    expect(result.preliminaryAssessment.openPoints).not.toContain("Confirmar o objetivo e a destinação dos recursos.");
+    expect(result.preliminaryAssessment.boundary).toContain("Ainda não é diagnóstico financeiro");
+  });
 });

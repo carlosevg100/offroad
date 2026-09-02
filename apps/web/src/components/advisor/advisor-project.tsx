@@ -10,6 +10,11 @@ import {
   beginAdvisorProjectProcessing,
   prepareAdvisorDocumentUpload,
 } from "@/app/[locale]/app/advisor-actions";
+import {
+  AdvisorChangeProposalCard,
+  type AdvisorChangeProposal,
+  type AdvisorChangeProposalCopy,
+} from "@/components/advisor/advisor-change-proposal";
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
@@ -21,6 +26,7 @@ export type AdvisorProjectMessage = {
   status: string;
   createdAt: string;
   artifactHref?: string;
+  proposalId?: string | null;
 };
 export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string};
 export type AdvisorProjectTask = {id: string; label: string; status: string};
@@ -47,6 +53,7 @@ export type AdvisorProjectCopy = {
   working: string;
   ready: string;
   errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; upload: string};
+  proposal: AdvisorChangeProposalCopy;
 };
 
 type Props = {
@@ -59,6 +66,8 @@ type Props = {
   projectId: string;
   projectName: string;
   pendingContext?: {question: string; whyItMatters: string};
+  proposals: AdvisorChangeProposal[];
+  sessionId: string;
   sessionStatus: string;
   tasks: AdvisorProjectTask[];
   workHref?: string;
@@ -78,6 +87,7 @@ export function AdvisorProject(props: Props) {
     || props.messages.some((message) => ["queued", "processing"].includes(message.status));
   const completed = props.tasks.filter((task) => task.status === "succeeded").length;
   const allMessages = [...props.messages, ...optimistic];
+  const proposalById = new Map(props.proposals.map((proposal) => [proposal.id, proposal]));
 
   async function send() {
     const message = content.trim();
@@ -134,16 +144,18 @@ export function AdvisorProject(props: Props) {
         </header>
 
         <div aria-live="polite" className="advisor-thread">
-          {allMessages.map((message) => (
-            <article className={`advisor-thread__message is-${message.role}`} key={message.id}>
+          {allMessages.map((message) => {
+            const proposal = message.proposalId ? proposalById.get(message.proposalId) : undefined;
+            return <article className={`advisor-thread__message is-${message.role}`} key={message.id}>
               {message.role === "assistant" ? <span className="advisor-thread__avatar"><Bot aria-hidden="true" size={15} /></span> : null}
               <div>
                 {message.role === "assistant" ? <small>{props.copy.advisor}</small> : null}
                 <p>{message.content}</p>
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
+                {proposal ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
               </div>
             </article>
-          ))}
+          })}
           {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
         </div>
 

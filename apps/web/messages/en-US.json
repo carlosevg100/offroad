@@ -851,6 +851,20 @@
       "public": "Public information only",
       "working": "Working now",
       "ready": "Ready to continue",
+      "proposal": {
+        "preview": "CHANGE PREVIEW",
+        "impact": "Impact on the case",
+        "accept": "Accept and apply",
+        "reject": "Discard",
+        "applying": "Applying...",
+        "rejecting": "Discarding...",
+        "applied": "Change applied and analysis updated",
+        "rejected": "Proposal discarded",
+        "stale": "This preview is no longer current",
+        "monthValue": "{value} months",
+        "errors": {"invalid": "This decision is not valid.", "stale": "The case changed after this preview. Request a new proposal.", "save": "The decision could not be recorded.", "processing": "The change was applied, but the analysis needs to be started again."},
+        "fields": {"objective": "Objective", "requestedAmount": "Requested amount", "currency": "Currency", "urgency": "Funding timeline", "requestedTermMonths": "Facility term", "requestedGraceMonths": "Grace period", "consequenceIfNotExecuted": "Impact of not executing", "sector": "Sector", "geography": "Geography", "instruments": "Instruments considered", "collateralKinds": "Available collateral", "expectedRate": "Pricing expectation"}
+      },
       "errors": {"invalid": "Review the message.", "denied": "This action is not authorized for this project.", "duplicate": "This message or document has already been recorded.", "notFound": "The project is no longer available.", "save": "Could not record the message.", "processing": "The review could not be started.", "upload": "One or more documents could not be received securely."}
     },
     "privateCase": {

@@ -8060,6 +8060,22 @@ summary:focus-visible {
   font-weight: 650;
 }
 
+.advisor-change-proposal {
+  margin-top: 14px;
+  max-width: 640px;
+  padding: 18px;
+}
+
+.advisor-change-proposal > span {font-size: 9px;}
+.advisor-change-proposal h4 {font-size: 15px; margin: 7px 0;}
+.advisor-change-proposal > p,
+.advisor-change-proposal .agent-proposal__impact p {font-size: 12px; line-height: 1.55;}
+.advisor-change-proposal dt,
+.advisor-change-proposal dd,
+.advisor-change-proposal .agent-proposal__impact strong {font-size: 11px;}
+.advisor-change-proposal .agent-proposal__actions button {font-size: 10px; min-height: 38px;}
+.advisor-change-proposal__error {color: #a33d35 !important; font-size: 11px !important; margin-top: 10px !important;}
+
 .agent-composer {
   display: grid;
   padding: 12px;

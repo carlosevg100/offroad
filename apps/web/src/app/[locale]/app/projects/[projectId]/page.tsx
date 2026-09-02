@@ -8,6 +8,7 @@ import {notFound} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {AdvisorProject, type AdvisorProjectCopy} from "@/components/advisor/advisor-project";
+import type {AdvisorChangeProposal} from "@/components/advisor/advisor-change-proposal";
 import {PrivateCaseWork} from "@/components/advisor/private-case-work";
 import {PrivateDiagnosticWork} from "@/components/advisor/private-diagnostic-work";
 import {PrivateMarketWork} from "@/components/advisor/private-market-work";
@@ -248,10 +249,15 @@ async function ConversationalCapitalProject({
   const introductionPlan = introductionPlans?.[0] ?? null;
   const planTargets = introductionPlan ? (introductionTargets ?? []).filter((target) => target.plan_id === introductionPlan.id) : [];
   const planRecipients = introductionPlan ? (introductionRecipients ?? []).filter((recipient) => recipient.plan_id === introductionPlan.id) : [];
-  const [{data: messages}, {data: tasks}, {data: runs}] = await Promise.all([
+  const [{data: messages}, {data: proposals}, {data: tasks}, {data: runs}] = await Promise.all([
     conversation
-      ? supabase.from("agent_messages").select("id, role, content, status, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
+      ? supabase.from("agent_messages").select("id, role, content, status, proposal_id, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
       : Promise.resolve({data: []}),
+    supabase.from("agent_change_proposals")
+      .select("id, status, title, rationale, impact_summary, proposal")
+      .eq("organization_id", organization.id)
+      .eq("intake_session_id", session.id)
+      .order("proposed_at"),
     plan
       ? supabase.from("capital_project_plan_tasks").select("id, task_id, label, ordinal").eq("organization_id", organization.id).eq("plan_id", plan.id).order("ordinal")
       : Promise.resolve({data: []}),
@@ -265,6 +271,13 @@ async function ConversationalCapitalProject({
   const copy: AdvisorProjectCopy = {
     advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
+    proposal: {
+      preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
+      errors: {invalid: t("proposal.errors.invalid"), stale: t("proposal.errors.stale"), save: t("proposal.errors.save"), processing: t("proposal.errors.processing")},
+      fields: {
+        objective: t("proposal.fields.objective"), requestedAmount: t("proposal.fields.requestedAmount"), currency: t("proposal.fields.currency"), urgency: t("proposal.fields.urgency"), requestedTermMonths: t("proposal.fields.requestedTermMonths"), requestedGraceMonths: t("proposal.fields.requestedGraceMonths"), consequenceIfNotExecuted: t("proposal.fields.consequenceIfNotExecuted"), sector: t("proposal.fields.sector"), geography: t("proposal.fields.geography"), instruments: t("proposal.fields.instruments"), collateralKinds: t("proposal.fields.collateralKinds"), expectedRate: t("proposal.fields.expectedRate"),
+      },
+    },
   };
   const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
   const advisorMessages = messages?.length
@@ -279,6 +292,7 @@ async function ConversationalCapitalProject({
           artifactHref: artifactId && artifactIds.has(artifactId)
             ? `/${locale}/app/projects/${project.id}?view=work`
             : undefined,
+          proposalId: message.proposal_id,
         };
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", createdAt: new Date().toISOString()}];
@@ -292,8 +306,10 @@ async function ConversationalCapitalProject({
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
     pendingContext={pendingContext ?? undefined}
+    proposals={(proposals ?? []).map((proposal): AdvisorChangeProposal => ({id: proposal.id, status: proposal.status, title: proposal.title, rationale: proposal.rationale, impactSummary: proposal.impact_summary, proposal: proposal.proposal}))}
     projectId={project.id}
     projectName={project.project_name}
+    sessionId={session.id}
     sessionStatus={session.status}
     tasks={(tasks ?? []).map((task) => ({
       id: task.id,

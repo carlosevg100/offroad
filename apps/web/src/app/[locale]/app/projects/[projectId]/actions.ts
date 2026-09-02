@@ -1,5 +1,6 @@
 "use server";
 
+import {randomUUID} from "node:crypto";
 import {revalidatePath} from "next/cache";
 import {matchScreenSchema} from "@offroad/domain-contracts";
 import {z} from "zod";
@@ -44,6 +45,12 @@ export type PrivateMatchDecisionState = PrivateGovernedDecisionState & {
   selectedCount?: number;
 };
 
+export type AdvisorProposalDecisionState = {
+  ok: boolean;
+  decision?: "accept" | "reject";
+  code?: "invalid" | "stale" | "save" | "processing";
+};
+
 function value(formData: FormData, name: string): string {
   return String(formData.get(name) ?? "").trim();
 }
@@ -69,6 +76,95 @@ async function privateProjectRuntime(locale: AppLocale, projectId: string, sessi
     .eq("intake_session_id", session.id)
     .order("object_version", {ascending: false});
   return {...workspace, session, rows: rows ?? [], latest: latestActiveDealState(rows ?? [])};
+}
+
+/** Applies a conversational edit only after the user reviews its field-level preview. The
+ * database performs the atomic stale-snapshot check; private cases then rebuild only the
+ * invalidated preliminary frontier rather than silently carrying old analysis forward. */
+export async function decideAdvisorProjectProposal(
+  _previous: AdvisorProposalDecisionState,
+  formData: FormData,
+): Promise<AdvisorProposalDecisionState> {
+  void _previous;
+  const rawLocale = value(formData, "locale");
+  const locale: AppLocale = routing.locales.includes(rawLocale as AppLocale)
+    ? rawLocale as AppLocale
+    : routing.defaultLocale;
+  const parsed = z.object({
+    projectId: z.uuid(),
+    sessionId: z.uuid(),
+    proposalId: z.uuid(),
+    decision: z.enum(["accept", "reject"]),
+  }).safeParse({
+    projectId: value(formData, "project_id"),
+    sessionId: value(formData, "session_id"),
+    proposalId: value(formData, "proposal_id"),
+    decision: value(formData, "decision"),
+  });
+  if (!parsed.success) return {ok: false, code: "invalid"};
+
+  const runtime = await privateProjectRuntime(locale, parsed.data.projectId, parsed.data.sessionId);
+  if (!runtime) return {ok: false, code: "stale"};
+  const {data: proposal} = await runtime.supabase.from("agent_change_proposals")
+    .select("id, status")
+    .eq("organization_id", runtime.organization.id)
+    .eq("intake_session_id", runtime.session.id)
+    .eq("id", parsed.data.proposalId)
+    .maybeSingle();
+  if (!proposal || proposal.status !== "proposed") return {ok: false, code: "stale"};
+
+  if (parsed.data.decision === "reject") {
+    const {error} = await runtime.supabase.rpc("decide_agent_change_proposal", {
+      p_organization_id: runtime.organization.id,
+      p_proposal_id: proposal.id,
+      p_decision: "rejected",
+      p_reason: "rejected_by_user",
+    });
+    if (error) return {ok: false, code: error.code === "55000" ? "stale" : "save"};
+    revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
+    return {ok: true, decision: "reject"};
+  }
+
+  const {data, error} = await runtime.supabase.rpc("accept_and_apply_agent_operation_brief_proposal", {
+    p_organization_id: runtime.organization.id,
+    p_proposal_id: proposal.id,
+    p_event_id: randomUUID(),
+  });
+  const result = record(data as Json);
+  if (error || result.status !== "applied") {
+    return {ok: false, code: result.status === "stale" || error?.code === "55000" ? "stale" : "save"};
+  }
+
+  const {data: project} = await runtime.supabase.from("capital_projects")
+    .select("entry_job")
+    .eq("organization_id", runtime.organization.id)
+    .eq("id", parsed.data.projectId)
+    .maybeSingle();
+  const isPrivateCase = project && ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
+  let processingOk = true;
+  if (isPrivateCase) {
+    const processing = await processIntakeSession({
+      supabase: runtime.supabase,
+      organizationId: runtime.organization.id,
+      userId: runtime.userId,
+      locale,
+      sessionId: runtime.session.id,
+    });
+    processingOk = processing.ok;
+  } else {
+    try {
+      await prepareIntakeRequestLadders({
+        supabase: runtime.supabase,
+        organizationId: runtime.organization.id,
+        sessionId: runtime.session.id,
+      });
+    } catch {
+      processingOk = false;
+    }
+  }
+  revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
+  revalidatePath(`/${locale}/app`, "layout");
+  return processingOk ? {ok: true, decision: "accept"} : {ok: false, code: "processing", decision: "accept"};
 }
 
 export async function decideOriginationArtifact(
