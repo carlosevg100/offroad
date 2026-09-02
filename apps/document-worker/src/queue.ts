@@ -166,6 +166,8 @@ export type QueueClient = {
     limit?: number;
   }): Promise<unknown>;
   recordPublicResearch(job: CaseAnalysisJob | CapitalProjectAnalysisJob, plan: unknown, result: unknown): Promise<string>;
+  loadPublicResearchCache?(job: CapitalProjectAnalysisJob, queryIds: string[]): Promise<unknown>;
+  storePublicResearchCache?(job: CapitalProjectAnalysisJob, entries: unknown[]): Promise<unknown>;
   recordPreliminaryUnderstanding(job: PreliminaryAnalysisJob, input: {
     inputFingerprint: string;
     payload: unknown;
@@ -441,6 +443,20 @@ export function createQueueClient(
         p_result: result,
       });
       return z.uuid().parse(data);
+    },
+    async loadPublicResearchCache(job, queryIds) {
+      return call("worker_load_public_research_cache", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_query_ids: queryIds,
+      });
+    },
+    async storePublicResearchCache(job, entries) {
+      return call("worker_store_public_research_cache", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_entries: entries,
+      });
     },
 
     async recordPreliminaryUnderstanding(job, input) {

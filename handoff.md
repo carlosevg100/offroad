@@ -10,6 +10,26 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Candidate update: BR/US debt-intelligence source foundation, 1 September 2026
+
+The isolated `feat/debt-intelligence-foundation` branch adds the first governed source layer
+behind the advisor. It distinguishes source authority from discovery and acquisition, compiles a
+versioned BR/US research strategy for each supported work type, resolves public issuers against
+CVM or SEC without hiding ambiguity, and provides SSRF-bounded direct acquisition plus a disabled
+Firecrawl fallback. Contracted databases are catalogued but stay off without an explicit runtime
+activation.
+
+The two released public DAGs now use a capability-bound global cache for public raw material only.
+The cache has no tenant, project, conversation or document fields, is unavailable to private
+projects and is not exposed through the Data API. Per-query metrics record cache hits, provider
+calls and maximum cost exposure. Private case research still writes only to the tenant research
+ledger and never consumes this cross-project cache.
+
+Focused tests are green (public research 20/20; worker 80/80; worker and web typechecks). No paid
+provider ran. The migration and its adversarial SQL test have not yet run against a reconstructed
+database because Docker is unavailable in this local environment; nothing in this candidate has
+been applied to staging or production. The other four capital jobs remain unreleased executors.
+
 ### Engineering update: governed DAG results return to the project conversation, 1 September 2026
 
 The two released public DAGs now finish where their work started: inside the same persistent

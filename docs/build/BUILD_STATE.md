@@ -1,8 +1,34 @@
 # Build State
 
 Atualizado em: 2026-09-01
-Baseline: `main` após PR #342, commit `b3daf6dc7b4fdbdeb62cb4ba4f21390d5068bc2d`
+Baseline: `main` após PR #344, commit `21c7549`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Fundação de inteligência de dívida BR/US, candidate, 01/09/2026
+
+- O registro de fontes separa autoridade, descoberta e aquisição para Brasil e Estados Unidos.
+  CVM, SEC, B3/ANBIMA públicas e RI vêm antes de buscadores; Perplexity e OpenAI Search descobrem
+  URLs, e Firecrawl é somente fallback de aquisição. PitchBook, 9fin, Octus, Capital IQ, FactSet,
+  LSEG, Economatica e feeds contratados permanecem desativados sem contrato e credencial explícita.
+- Cada `company_debt_view`, `origination_thesis` e pesquisa pública do case compila uma estratégia
+  versionada por jurisdição, capacidade, TTL, fontes disponíveis e regra de conclusão. Inferência
+  de jurisdição por locale fica marcada para confirmação; geografia explícita ou domínio nacional
+  tem precedência.
+- Resolvedores oficiais para o cadastro da CVM e o índice de registrants da SEC preservam
+  identificador oficial, candidatos e ambiguidade. Não selecionam silenciosamente homônimos e não
+  retêm campos de contato do cadastro.
+- Aquisição direta de URL pública exige HTTPS, valida DNS e redirecionamentos contra SSRF, limita
+  tipo, tamanho, tempo e número de redirects e preserva hash e publisher. O adaptador Firecrawl v2
+  pede zero retention e cache desligado; nenhuma chave o ativa por padrão.
+- A cache global aceita exclusivamente material bruto de queries de projetos
+  `public_information`. Ela não possui organização, usuário, projeto, conversa ou documento, não
+  é exposta pela Data API e exige capability viva do worker. Casos privados continuam usando
+  somente o ledger do próprio tenant.
+- Métricas registram hits, chamadas por provider, writes e exposição máxima de custo. Cache hit
+  reduz chamadas e custo estimado em vez de manter a reserva nominal original.
+- Estado: candidate local. Nenhuma migration foi aplicada, nenhum conector pago foi ativado e
+  nenhuma chamada paga foi feita. Os quatro jobs ainda sem executor continuam honestamente fora
+  desta promoção.
 
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
 

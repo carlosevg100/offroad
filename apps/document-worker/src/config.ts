@@ -39,6 +39,11 @@ const schema = z.object({
   ANTHROPIC_API_KEY: z.string().min(20).optional(),
   OPENAI_API_KEY: z.string().min(20).optional(),
   PERPLEXITY_API_KEY: z.string().min(20).optional(),
+  FIRECRAWL_API_KEY: z.string().min(20).optional(),
+  ENABLE_OPENAI_WEB_SEARCH: z.string().default("false").transform((value) => value === "true"),
+  ENABLE_FIRECRAWL: z.string().default("false").transform((value) => value === "true"),
+  OFFROAD_RESEARCH_USER_AGENT: z.string().min(10).max(300)
+    .default("Offroad Capital research@offroad.capital"),
 
   PIPELINE_VERSION: z.string().min(1).default("f2-2026.08.24"),
   LEASE_SECONDS: z.coerce.number().int().min(60).max(3600).default(600),
@@ -63,6 +68,13 @@ const schema = z.object({
   OCR_TIMEOUT_MS: z.coerce.number().int().default(120_000),
 
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+}).superRefine((config, context) => {
+  if (config.ENABLE_OPENAI_WEB_SEARCH && !config.OPENAI_API_KEY) {
+    context.addIssue({code: "custom", path: ["OPENAI_API_KEY"], message: "required when OpenAI web search is enabled"});
+  }
+  if (config.ENABLE_FIRECRAWL && !config.FIRECRAWL_API_KEY) {
+    context.addIssue({code: "custom", path: ["FIRECRAWL_API_KEY"], message: "required when Firecrawl is enabled"});
+  }
 });
 
 export type WorkerConfig = z.infer<typeof schema>;
@@ -90,6 +102,9 @@ export function describeConfig(config: WorkerConfig): Record<string, string | nu
     anthropicKey: config.ANTHROPIC_API_KEY ? "present" : "absent",
     openaiKey: config.OPENAI_API_KEY ? "present" : "absent",
     perplexityKey: config.PERPLEXITY_API_KEY ? "present" : "absent",
+    openaiWebSearchEnabled: config.ENABLE_OPENAI_WEB_SEARCH,
+    firecrawlKey: config.FIRECRAWL_API_KEY ? "present" : "absent",
+    firecrawlEnabled: config.ENABLE_FIRECRAWL,
     ocrLanguages: config.OCR_LANGUAGES,
     maxCostUsdPerJob: config.MODEL_MAX_COST_USD_PER_JOB,
     maxCallsPerJob: config.MODEL_MAX_CALLS_PER_JOB,

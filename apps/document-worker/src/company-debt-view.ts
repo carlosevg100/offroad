@@ -16,6 +16,8 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
+import {compileWorkerDebtResearchStrategy} from "./debt-research-runtime";
+import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 const recordSchema = z.record(z.string(), z.unknown());
@@ -422,20 +424,38 @@ async function collectResearch(input: {
   queue: QueueClient; providers: PublicSearchProvider[];
 }): Promise<ResearchSummary> {
   const plan = buildCompanyDebtResearchPlan({legalName: input.companyName, ...(input.website ? {website: input.website} : {})});
-  await input.queue.writeStage(input.job, "public_research", "started", {queryCount: plan.length});
-  const result = await runPublicResearch({plan, providers: input.providers, maxSourcesPerQuery: 5});
+  const geography = optionalString(input.context.session.company_profile.geography);
+  const runtime = compileWorkerDebtResearchStrategy({
+    work: "company_debt_view", locale: input.context.session.locale,
+    ...(input.website ? {website: input.website} : {}),
+    ...(geography ? {geography} : {}),
+    providers: input.providers, evidenceBasis: "public_information",
+  });
+  await input.queue.writeStage(input.job, "public_research", "started", {
+    queryCount: plan.length, researchStrategyFingerprint: runtime.strategy.fingerprint,
+    jurisdiction: runtime.strategy.jurisdiction,
+    jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
+  });
+  const cache = createWorkerPublicResearchCache(input.queue, input.job);
+  const result = await runPublicResearch({
+    plan, providers: input.providers, maxSourcesPerQuery: 5,
+    ...(cache ? {cache} : {}),
+  });
   const safeSources = result.sources.filter((source) => source.url.startsWith("https://"));
-  const persisted: ResearchRun & {providerChain: string[]} = {
+  const persisted: ResearchRun & {providerChain: string[]; debtResearchStrategy: typeof runtime.strategy} = {
     ...result,
     status: safeSources.length === 0 ? "abstained" : result.status,
     sources: safeSources,
     providerChain: input.providers.map((provider) => provider.id),
+    debtResearchStrategy: runtime.strategy,
   };
   const researchRunId = await input.queue.recordPublicResearch(input.job, plan, persisted);
-  const costExposureUsd = input.providers.some((provider) => provider.id === "perplexity") ? plan.length * 0.005 : 0;
+  const costExposureUsd = Object.values(result.metrics.maxCostExposureUsdByProvider)
+    .reduce((total, value) => total + value, 0);
   await input.queue.writeStage(input.job, "public_research", "succeeded", {
     status: persisted.status, queryCount: plan.length, sourceCount: safeSources.length,
-    researchRunId, costExposureUsd,
+    researchRunId, costExposureUsd, researchMetrics: result.metrics,
+    researchStrategyFingerprint: runtime.strategy.fingerprint,
   }, {external_search_cost_usd: costExposureUsd});
   return {status: persisted.status, researchRunId, costExposureUsd, sources: safeSources, failures: result.failures};
 }

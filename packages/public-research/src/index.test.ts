@@ -4,6 +4,7 @@ import {
   buildCompanyDebtResearchPlan,
   buildOriginationResearchPlan,
   buildPublicResearchPlan,
+  createPublicResearchCacheRecord,
   createPerplexitySearchProvider,
   runPublicResearch,
 } from "./index";
@@ -107,5 +108,48 @@ describe("governed public research", () => {
     });
     expect(peak).toBe(plan.length);
     expect(result.sources.map((source) => source.topic)).toEqual(plan.map((query) => query.topic));
+  });
+
+  it("reuses only fresh public query results and reports the avoided provider call", async () => {
+    const plan = buildPublicResearchPlan({legalName: "Empresa Exemplo"}).slice(0, 2);
+    const cachedSource = {
+      provider: "official" as const,
+      topic: plan[0]!.topic,
+      title: "Fonte oficial em cache",
+      url: "https://example.com/cached",
+      snippet: "Informação pública.",
+      publishedAt: null,
+      retrievedAt: "2026-09-01T10:00:00.000Z",
+      contentHash: "b".repeat(64),
+    };
+    const writes: unknown[] = [];
+    const result = await runPublicResearch({
+      plan,
+      now: () => new Date("2026-09-01T12:00:00.000Z"),
+      cache: {
+        load: async () => [createPublicResearchCacheRecord({
+          query: plan[0]!, sources: [cachedSource],
+          storedAt: new Date("2026-09-01T10:00:00.000Z"), ttlHours: 24,
+        })],
+        store: async (records) => { writes.push(...records); },
+      },
+      providers: [{
+        id: "official",
+        search: async (query) => [{
+          ...cachedSource,
+          topic: query.topic,
+          title: "Nova fonte oficial",
+          url: "https://example.com/new",
+          contentHash: "c".repeat(64),
+        }],
+      }],
+    });
+    expect(result.metrics).toMatchObject({
+      queryCount: 2, cacheHits: 1, providerCalls: 1,
+      providerCallsByProvider: {official: 1}, maxCostExposureUsdByProvider: {official: 0},
+      cacheWrites: 1,
+    });
+    expect(result.sources.map((source) => source.title)).toEqual(["Fonte oficial em cache", "Nova fonte oficial"]);
+    expect(writes).toHaveLength(1);
   });
 });

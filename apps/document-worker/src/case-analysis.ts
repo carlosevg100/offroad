@@ -94,6 +94,7 @@ import {
 } from "./receivables-evidence";
 import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-design";
 import {buildGovernedMatchScreen} from "./match-screen";
+import {compileWorkerDebtResearchStrategy} from "./debt-research-runtime";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const retrievalContextSchema = z.object({
@@ -1758,15 +1759,30 @@ async function collectPublicResearch(input: {
     ...(typeof input.session.sector === "string" && input.session.sector.trim() ? {sector: input.session.sector} : {}),
     ...(typeof input.session.geography === "string" && input.session.geography.trim() ? {geography: input.session.geography} : {}),
   });
-  await input.queue.writeStage(input.job, "public_research", "started");
-  const result = await runPublicResearch({plan, providers: input.providers, maxSourcesPerQuery: 5});
-  const costExposureUsd = input.providers.some((provider) => provider.id === "perplexity")
-    ? plan.length * 0.005
-    : 0;
+  const locale = input.job.payload.locale ?? (input.session.locale === "en-US" ? "en-US" : "pt-BR");
+  const runtime = compileWorkerDebtResearchStrategy({
+    work: input.job.kind === "preliminary_analysis" ? "capital_planning" : "structure_from_documents",
+    locale,
+    ...(website && z.url().safeParse(website).success ? {website} : {}),
+    ...(typeof input.session.geography === "string" && input.session.geography.trim()
+      ? {geography: input.session.geography} : {}),
+    providers: input.providers, evidenceBasis: "mixed",
+  });
+  await input.queue.writeStage(input.job, "public_research", "started", {
+    queryCount: plan.length, researchStrategyFingerprint: runtime.strategy.fingerprint,
+    jurisdiction: runtime.strategy.jurisdiction,
+    jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
+  });
+  const result = await runPublicResearch({
+    plan, providers: input.providers, maxSourcesPerQuery: 5,
+  });
+  const costExposureUsd = Object.values(result.metrics.maxCostExposureUsdByProvider)
+    .reduce((total, value) => total + value, 0);
   const persisted = {
     ...result,
     providerChain: input.providers.map((provider) => provider.id),
-  } satisfies ResearchRun & {providerChain: string[]};
+    debtResearchStrategy: runtime.strategy,
+  } satisfies ResearchRun & {providerChain: string[]; debtResearchStrategy: typeof runtime.strategy};
   const researchRunId = await input.queue.recordPublicResearch(input.job, plan, persisted);
   const topicCounts = result.sources.reduce<Record<string, number>>((counts, source) => {
     counts[source.topic] = (counts[source.topic] ?? 0) + 1;
@@ -1778,6 +1794,8 @@ async function collectPublicResearch(input: {
     topicCounts,
     researchRunId,
     costExposureUsd,
+    researchMetrics: result.metrics,
+    researchStrategyFingerprint: runtime.strategy.fingerprint,
   }, {
     external_search_cost_usd: costExposureUsd,
   });

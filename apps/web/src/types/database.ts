@@ -7082,6 +7082,14 @@ export type Database = {
         }
         Returns: string
       }
+      worker_load_public_research_cache: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_query_ids: string[]
+        }
+        Returns: Json
+      }
       worker_record_preliminary_understanding: {
         Args: {
           p_capability_token: string
@@ -7135,6 +7143,14 @@ export type Database = {
           p_result: Json
         }
         Returns: string
+      }
+      worker_store_public_research_cache: {
+        Args: {
+          p_capability_token: string
+          p_entries: Json
+          p_job_id: string
+        }
+        Returns: Json
       }
       worker_record_receivables_evidence: {
         Args: {

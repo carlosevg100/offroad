@@ -1,5 +1,23 @@
 # Acceptance Evidence
 
+## Fundação de inteligência de dívida BR/US, candidate, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Hierarquia de fontes | `source-registry.test.ts` | CVM/SEC lideram a cadeia; fonte licenciada só entra por ativação explícita e nunca supera regulador |
+| Brasil e EUA | resolvedores oficiais | CD_CVM e CIK zero-padded preservados; candidato próximo fica ambíguo, sem escolha silenciosa |
+| Privacidade | contratos e migration | query externa rejeita email, CNPJ e valor financeiro; cache global não recebe contexto privado nem atende projeto privado |
+| Reuso público | `index.test.ts` | hit fresco evita provider call, mantém ordem, registra uma única atualização e mede chamadas evitadas |
+| Aquisição segura | `content-acquisition.test.ts` | publisher permanece CVM/RI; redirecionamento privado é bloqueado antes do segundo request; Firecrawl usa zero retention |
+| Worker | Vitest/TypeScript | 80/80 testes do worker e typecheck aprovados; cache conectado aos dois DAGs públicos |
+| Public research | Vitest/TypeScript | 20/20 testes e typecheck aprovados |
+| Web types | TypeScript | contrato dos dois RPCs novos compila no web app |
+| SQL adversarial | `public_research_public_cache.sql` | teste escrito para capability, replay, promoção a privado e negação a `anon`; execução aguarda Docker/CI |
+| Custo externo | inspeção | zero chamadas pagas; OpenAI Search e Firecrawl desativados por flag; providers licenciados sem ativação |
+
+Esta evidência não promove a migration nem declara a plataforma completa. Banco reconstruído,
+Security Advisor, E2E e gold cases BR/US continuam obrigatórios antes de produção.
+
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
 
 | Evidência | Verificação | Resultado |

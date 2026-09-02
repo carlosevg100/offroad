@@ -8,7 +8,7 @@ import {createExtractor} from "./extract";
 import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClassifier} from "@offroad/document-classification";
-import {createPerplexitySearchProvider, type PublicSearchProvider} from "@offroad/public-research";
+import {createOpenAIWebSearchProvider, createPerplexitySearchProvider, type PublicSearchProvider} from "@offroad/public-research";
 import {createStorageUrlGuard} from "./storage-url";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
@@ -90,9 +90,14 @@ async function main(): Promise<void> {
   const PERPLEXITY_CASE_RESERVE_USD = 0.025;
   const PERPLEXITY_ORIGINATION_RESERVE_USD = 0.035;
   const PERPLEXITY_COMPANY_DEBT_RESERVE_USD = 0.04;
-  const researchProviders: PublicSearchProvider[] = config.PERPLEXITY_API_KEY
-    ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})]
-    : [];
+  const researchProviders: PublicSearchProvider[] = [
+    ...(config.PERPLEXITY_API_KEY
+      ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})]
+      : []),
+    ...(config.ENABLE_OPENAI_WEB_SEARCH && config.OPENAI_API_KEY
+      ? [createOpenAIWebSearchProvider({apiKey: config.OPENAI_API_KEY})]
+      : []),
+  ];
   const newGateway = (job: ClaimedJob) => {
     const calls: GatewayCallLog[] = [];
     const requestedBudget = "model_budget" in job.payload ? job.payload.model_budget : undefined;

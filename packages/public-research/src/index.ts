@@ -1,50 +1,27 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
+import {
+  publicResearchSubjectSchema,
+  researchQuerySchema,
+  researchSourceSchema,
+  type PublicResearchSubject,
+  type PublicSearchProvider,
+  type ResearchQuery,
+  type ResearchRun,
+  type ResearchSource,
+} from "./contracts";
+import {
+  createPublicResearchCacheRecord,
+  selectFreshPublicResearchCache,
+  type PublicResearchCache,
+  type PublicResearchCacheRecord,
+} from "./cache";
 
-export const researchTopics = ["identity", "news", "sector", "regulation", "market"] as const;
-export const researchTopicSchema = z.enum(researchTopics);
-export type ResearchTopic = z.infer<typeof researchTopicSchema>;
-
-export const publicResearchSubjectSchema = z.object({
-  legalName: z.string().trim().min(2).max(200),
-  website: z.url().optional(),
-  sector: z.string().trim().min(2).max(120).optional(),
-  geography: z.string().trim().min(2).max(80).optional(),
-});
-export type PublicResearchSubject = z.infer<typeof publicResearchSubjectSchema>;
-
-export const researchQuerySchema = z.object({
-  id: z.string().regex(/^[a-f0-9]{64}$/),
-  topic: researchTopicSchema,
-  query: z.string().trim().min(3).max(400),
-  country: z.string().regex(/^[A-Z]{2}$/).optional(),
-  domainAllowlist: z.array(z.string().min(3).max(253)).max(20).default([]),
-});
-export type ResearchQuery = z.infer<typeof researchQuerySchema>;
-
-export const researchSourceSchema = z.object({
-  provider: z.enum(["perplexity", "openai", "official", "mcp"]),
-  topic: researchTopicSchema,
-  title: z.string().trim().min(1).max(500),
-  url: z.url(),
-  snippet: z.string().trim().max(8_000).default(""),
-  publishedAt: z.string().nullable().default(null),
-  retrievedAt: z.iso.datetime(),
-  contentHash: z.string().regex(/^[a-f0-9]{64}$/),
-});
-export type ResearchSource = z.infer<typeof researchSourceSchema>;
-
-export type PublicSearchProvider = {
-  readonly id: ResearchSource["provider"];
-  search(query: ResearchQuery): Promise<ResearchSource[]>;
-};
-
-export type ResearchRun = {
-  status: "succeeded" | "partial" | "abstained";
-  queries: ResearchQuery[];
-  sources: ResearchSource[];
-  failures: Array<{queryId: string; provider: string; code: string}>;
-};
+export * from "./contracts";
+export * from "./cache";
+export * from "./source-registry";
+export * from "./entity-resolvers";
+export * from "./content-acquisition";
 
 /**
  * Builds queries only from a deliberately public subject. Transaction context, financial values,
@@ -133,19 +110,48 @@ export async function runPublicResearch(input: {
   plan: ResearchQuery[];
   providers: PublicSearchProvider[];
   maxSourcesPerQuery?: number;
+  cache?: PublicResearchCache;
+  cacheTtlHours?: number;
+  now?: () => Date;
 }): Promise<ResearchRun> {
   const plan = z.array(researchQuerySchema).min(1).max(12).parse(input.plan);
   const maxSources = Math.min(10, Math.max(1, input.maxSourcesPerQuery ?? 5));
+  const now = input.now ?? (() => new Date());
+  let cacheReadFailed = false;
+  let cacheWriteFailed = false;
+  let cached = new Map<string, PublicResearchCacheRecord>();
+  if (input.cache) {
+    try {
+      cached = selectFreshPublicResearchCache({
+        plan,
+        records: await input.cache.load(plan.map((query) => query.id)),
+        now: now(),
+      });
+    } catch {
+      cacheReadFailed = true;
+    }
+  }
+  let providerCalls = 0;
+  const providerCallsByProvider: Record<string, number> = {};
+  const maxCostExposureUsdByProvider: Record<string, number> = {};
   // The topics are independent. Run them concurrently so the first reading waits for the
   // slowest bounded search, not the sum of five network round trips. Provider fallback remains
   // sequential inside each topic and Promise.all preserves the plan's deterministic order.
   const queryResults = await Promise.all(plan.map(async (query) => {
     assertPublicQuerySafe(query.query);
+    const cacheHit = cached.get(query.id);
+    if (cacheHit) return {sources: cacheHit.sources.slice(0, maxSources), failures: [], cacheHit: true};
     const failures: ResearchRun["failures"] = [];
     for (const provider of input.providers) {
       try {
+        providerCalls += 1;
+        providerCallsByProvider[provider.id] = (providerCallsByProvider[provider.id] ?? 0) + 1;
+        maxCostExposureUsdByProvider[provider.id] =
+          (maxCostExposureUsdByProvider[provider.id] ?? 0) + (
+            provider.maxCostUsdPerCall ?? (provider.id === "perplexity" ? 0.005 : provider.id === "openai" ? 0.02 : 0)
+          );
         const returned = z.array(researchSourceSchema).parse(await provider.search(query));
-        return {sources: returned.slice(0, maxSources), failures};
+        return {sources: returned.slice(0, maxSources), failures, cacheHit: false};
       } catch (error) {
         failures.push({queryId: query.id, provider: provider.id, code: stableErrorCode(error)});
       }
@@ -153,8 +159,24 @@ export async function runPublicResearch(input: {
     if (input.providers.length === 0) {
       failures.push({queryId: query.id, provider: "none", code: "provider_unavailable"});
     }
-    return {sources: [] as ResearchSource[], failures};
+    return {sources: [] as ResearchSource[], failures, cacheHit: false};
   }));
+  const cacheRecords = queryResults.flatMap((result, index) => {
+    if (result.cacheHit || result.sources.length === 0) return [];
+    return [createPublicResearchCacheRecord({
+      query: plan[index]!,
+      sources: result.sources,
+      storedAt: now(),
+      ttlHours: input.cacheTtlHours ?? 24,
+    })];
+  });
+  if (input.cache && cacheRecords.length > 0) {
+    try {
+      await input.cache.store(cacheRecords);
+    } catch {
+      cacheWriteFailed = true;
+    }
+  }
   const sources = queryResults.flatMap((result) => result.sources);
   const failures = queryResults.flatMap((result) => result.failures);
   const unique = [...new Map(sources.map((source) => [`${source.topic}:${canonicalUrl(source.url)}`, source])).values()];
@@ -163,6 +185,16 @@ export async function runPublicResearch(input: {
     queries: plan,
     sources: unique,
     failures,
+    metrics: {
+      queryCount: plan.length,
+      cacheHits: queryResults.filter((result) => result.cacheHit).length,
+      providerCalls,
+      providerCallsByProvider,
+      maxCostExposureUsdByProvider,
+      cacheWrites: cacheWriteFailed ? 0 : cacheRecords.length,
+      cacheReadFailed,
+      cacheWriteFailed,
+    },
   };
 }
 
@@ -175,6 +207,7 @@ export function createPerplexitySearchProvider(input: {
   const now = input.now ?? (() => new Date());
   return {
     id: "perplexity",
+    maxCostUsdPerCall: 0.005,
     async search(query) {
       const response = await request("https://api.perplexity.ai/search", {
         method: "POST",
@@ -213,6 +246,8 @@ export function createOpenAIWebSearchProvider(input: {
   const now = input.now ?? (() => new Date());
   return {
     id: "openai",
+    // Conservative budgeting ceiling; provider billing telemetry remains actual cost.
+    maxCostUsdPerCall: 0.02,
     async search(query) {
       const response = await request("https://api.openai.com/v1/responses", {
         method: "POST",
