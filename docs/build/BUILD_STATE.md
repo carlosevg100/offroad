@@ -1,8 +1,22 @@
 # Build State
 
-Atualizado em: 2026-09-01
-Baseline: `main` após PR #344, commit `21c7549`
+Atualizado em: 2026-09-02
+Baseline: `main` após PR #359, commit `90a7153`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Entrada instantânea no projeto, candidate, 02/09/2026
+
+- A criação do workspace continua sendo uma única transação, mas a fila idempotente do worker
+  passa a ser agendada com `after()` somente depois da resposta ao navegador. Disponibilidade ou
+  latência do worker deixa de bloquear a entrada no projeto.
+- Títulos repetidos deixam de provocar uma primeira transação fracassada e um segundo RPC. O
+  wrapper `security invoker` resolve a colisão no banco e chama o comando privado existente uma
+  única vez; o sufixo curto aparece somente quando o título já está em uso.
+- O teste adversarial cria dois projetos homônimos, confirma duas memórias distintas, preserva o
+  replay por `request_id` e volta a verificar isolamento entre organizações.
+- Staging recebeu `advisor_project_name_collision`; o teste SQL passou com rollback e o Security
+  Advisor retornou zero findings. O gate Node 24 passou lint, typecheck, testes e build nos 42
+  pacotes. Produção ainda não foi alterada por esta fatia.
 
 ## Fundação de inteligência de dívida BR/US, candidate, 01/09/2026
 

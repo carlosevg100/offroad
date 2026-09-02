@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## Entrada instantânea no projeto, candidate, 02/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Caminho crítico | inspeção do server action | criação aguarda somente o RPC transacional do shell; enqueue roda em `after()` |
+| Worker desacoplado | contrato de fila | `queue_advisor_initial_turn_v1` permanece idempotente e não participa da latência de navegação |
+| Título repetido | teste SQL em staging | dois projetos homônimos criados numa chamada cada; segundo recebe sufixo determinístico |
+| Replay | teste SQL em staging | o mesmo `request_id` retorna o projeto original sem duplicar memória ou trabalho |
+| Isolamento | `conversational_advisor_workspace.sql` | outro tenant não lê projeto nem mensagem; transação de teste revertida |
+| Segurança | Supabase Security Advisor | zero findings após a migration |
+| Aplicação | Node 24 | web typecheck e 162/162 testes; build Next.js com 32 páginas |
+| Repositório integral | Node 24 | lint, typecheck, testes e build verdes nos 42 pacotes |
+
+Status: **candidate comprovado em staging**. A promoção exige CI verde, Vercel e medição do clique
+até a rota do projeto em produção. O trabalho analítico posterior continua assíncrono e não faz
+parte do budget de entrada.
+
 ## Planejamento de capital governado, candidate, 02/09/2026
 
 | Evidência | Verificação | Resultado |
