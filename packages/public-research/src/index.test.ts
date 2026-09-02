@@ -156,6 +156,27 @@ describe("governed public research", () => {
     expect(result.sources.map((source) => source.provider)).toEqual(["official", "perplexity"]);
   });
 
+  it("normalizes reusable official evidence to the query lens before caching", async () => {
+    const query = {...buildOriginationResearchPlan({legalName: "Empresa Exemplo"})[5]!, topic: "market" as const};
+    const writes: Array<{sources: Array<{topic: string}>}> = [];
+    const result = await runPublicResearch({
+      plan: [query],
+      cache: {load: async () => [], store: async (records) => { writes.push(...records); }},
+      providers: [{
+        id: "official",
+        search: async () => [{
+          provider: "official", topic: "identity", title: "Demonstrações oficiais",
+          url: "https://dados.cvm.gov.br/financials.zip", snippet: "Dívida oficial.",
+          publishedAt: "2026-05-31", retrievedAt: "2026-09-02T12:00:00.000Z",
+          contentHash: "9".repeat(64),
+        }],
+      }],
+    });
+    expect(result.sources[0]?.topic).toBe("market");
+    expect(writes[0]?.sources[0]?.topic).toBe("market");
+    expect(result.metrics.cacheWrites).toBe(1);
+  });
+
   it("searches independent topics in parallel while preserving plan order", async () => {
     const plan = buildPublicResearchPlan({legalName: "Empresa Exemplo"});
     let inFlight = 0;
