@@ -144,5 +144,24 @@ jobs:
           aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" \
             --task-definition "${{ steps.taskdef.outputs.arn }}" --force-new-deployment >/dev/null
           echo "Waiting for the deployment to stabilise..."
-          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"
+          if ! aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"; then
+            echo "::group::Recent ECS service events"
+            aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
+              --query 'services[0].events[0:15].[createdAt,message]' --output table || true
+            echo "::endgroup::"
+
+            echo "::group::Recent stopped task diagnostics"
+            STOPPED_TASKS=$(aws ecs list-tasks --cluster "$ECS_CLUSTER" \
+              --service-name "$ECS_SERVICE" --desired-status STOPPED \
+              --max-results 20 --query 'taskArns' --output text || true)
+            if [ -n "$STOPPED_TASKS" ] && [ "$STOPPED_TASKS" != "None" ]; then
+              aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks $STOPPED_TASKS \
+                --query 'tasks[].{stoppedAt:stoppedAt,taskDefinition:taskDefinitionArn,stopCode:stopCode,stoppedReason:stoppedReason,containers:containers[].{name:name,reason:reason,exitCode:exitCode,lastStatus:lastStatus}}' \
+                --output json || true
+            else
+              echo "No stopped service tasks were returned."
+            fi
+            echo "::endgroup::"
+            exit 1
+          fi
           echo "Deployment stable."
