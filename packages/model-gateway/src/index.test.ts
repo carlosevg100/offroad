@@ -131,6 +131,18 @@ describe("policy", () => {
     expect(resolveModel("company_debt_view", defaultTaskPolicies, {}).primary).toEqual(policy.primary);
   });
 
+  it("routes the bounded origination brief through the provider with observed schema adherence", () => {
+    const policy = defaultTaskPolicies.origination_thesis;
+    expect(policy).toEqual({
+      primary: {provider: "openai", model: "gpt-5.6-terra", effort: "medium"},
+      shadow: {provider: "anthropic", model: "claude-sonnet-5", effort: "medium"},
+      fallback: {provider: "anthropic", model: "claude-sonnet-5", effort: "medium"},
+      maxOutputTokens: 8_000,
+      timeoutMs: 240_000,
+    });
+    expect(resolveModel("origination_thesis", defaultTaskPolicies, {}).primary).toEqual(policy.primary);
+  });
+
   it("escalates only along the declared ladder, cheap to strong, and stops at the top", () => {
     const start = defaultTaskPolicies.extract_fields.primary;
     const second = nextEscalation("extract_fields", start);
