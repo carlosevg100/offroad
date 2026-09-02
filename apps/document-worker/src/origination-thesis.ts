@@ -12,6 +12,7 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
+import {materialNumericTokens} from "./material-numeric-tokens";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
@@ -721,11 +722,6 @@ function validateMeetingBrief(
     {id: "unsupported_material_numbers", passed: unsupportedNumbers.length === 0, detail: unsupportedNumbers.length === 0 ? "No unsupported material numeric token detected." : `Unsupported tokens: ${unsupportedNumbers.join(", ")}`},
     {id: "scope_boundary", passed: !prohibited, detail: "No approval, funding or lender-commitment claim detected."},
   ];
-}
-
-function materialNumericTokens(value: string): string[] {
-  const matches = value.match(/(?:R\$|US\$|BRL|USD)\s*\d+(?:[.,]\d+)?|\b\d+(?:[.,]\d+)?\s*(?:%|x|milh(?:ões|oes)|bilh(?:ões|oes)|months?|meses|anos)\b/gi) ?? [];
-  return [...new Set(matches.map((match) => match.toLocaleLowerCase("pt-BR").replace(/\s+/g, " ")))];
 }
 
 function stringValue(value: unknown): string {
