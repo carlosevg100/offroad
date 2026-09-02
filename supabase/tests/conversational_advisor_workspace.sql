@@ -27,10 +27,12 @@ select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-0000000
 do $$
 declare
   request_id constant uuid := '30000000-0000-4000-8000-000000000221';
+  duplicate_name_request_id constant uuid := '30000000-0000-4000-8000-000000000223';
   second_message_id constant uuid := '30000000-0000-4000-8000-000000000222';
   plan_snapshot jsonb;
   started jsonb;
   replayed jsonb;
+  duplicate_name_started jsonb;
   appended jsonb;
   queued jsonb;
   project_id uuid;
@@ -101,6 +103,19 @@ begin
     or replayed ->> 'capital_project_id' <> project_id::text
     or (select count(*) from public.capital_projects where id = project_id) <> 1 then
     raise exception 'advisor start was not idempotent: %', replayed;
+  end if;
+
+  duplicate_name_started := public.start_advisor_project_v1(
+    duplicate_name_request_id, 'pt-BR', 'Projeto Conversacional', 'origination_thesis',
+    'Uma nova reunião com a Companhia Farol deve abrir outro projeto.',
+    'public_information', plan_snapshot
+  );
+  if duplicate_name_started ->> 'replayed' <> 'false'
+    or duplicate_name_started ->> 'capital_project_id' = project_id::text
+    or (select count(*) from public.capital_projects
+        where organization_id = '20000000-0000-4000-8000-000000000221'
+          and project_name in ('Projeto Conversacional', 'Projeto Conversacional · 300000')) <> 2 then
+    raise exception 'repeated project name was not resolved atomically: %', duplicate_name_started;
   end if;
 
   appended := public.append_advisor_message_v1(

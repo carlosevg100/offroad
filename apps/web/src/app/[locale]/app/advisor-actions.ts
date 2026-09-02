@@ -6,6 +6,7 @@ import {
   inferCapitalProjectJob,
   type CapitalProjectJob,
 } from "@offroad/work-plan";
+import {after} from "next/server";
 import {z} from "zod";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -81,13 +82,7 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
       : "public_information",
     p_plan: compiledCapitalProjectPlan(entryJob),
   };
-  let result = await supabase.rpc("start_advisor_project_v1", args);
-  if (result.error?.code === "23505") {
-    result = await supabase.rpc("start_advisor_project_v1", {
-      ...args,
-      p_project_name: `${baseName.slice(0, 69).trim()} · ${requestId.slice(0, 6)}`,
-    });
-  }
+  const result = await supabase.rpc("start_advisor_project_v1", args);
   if (result.error) return {ok: false, error: actionError(result.error)};
   const payload = record(result.data);
   const projectId = typeof payload?.capital_project_id === "string" ? payload.capital_project_id : null;
@@ -95,9 +90,11 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
   if (!projectId || !sessionId) return {ok: false, error: "save"};
   const privateCase = ["structure_from_documents", "review_existing_operation"].includes(entryJob);
   if (!hasAttachments && !privateCase) {
-    // Queueing is intentionally separate from shell creation: the project must remain available
-    // even when the worker is paused. The queue command is idempotent and costs nothing itself.
-    await supabase.rpc("queue_advisor_initial_turn_v1", {p_project_id: projectId});
+    // The project shell is the user-facing acknowledgement. Queueing is idempotent and runs
+    // after that response so worker availability never delays navigation into the workspace.
+    after(async () => {
+      await supabase.rpc("queue_advisor_initial_turn_v1", {p_project_id: projectId});
+    });
   }
   return {ok: true, entryJob, projectId, sessionId};
 }

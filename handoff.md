@@ -10,6 +10,20 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Candidate update: instant project shell, 2 September 2026
+
+Project creation no longer waits for the initial worker enqueue. The atomic project/session/plan/
+conversation transaction remains the acknowledgement boundary; Next.js `after()` schedules the
+idempotent queue command after the response. Repeated human-readable titles are resolved within
+the database wrapper, avoiding the prior failed-RPC-plus-retry path while preserving a short
+suffix only when necessary.
+
+The changed SQL ran on staging and the conversational workspace adversarial test passed with
+rollback, including same-title creation, request replay and cross-tenant non-interference. The
+Security Advisor is clean. The complete Node 24 repository gate passed all 42 packages and the
+Next.js build produced 32 pages. This slice is not in production until its PR, deploy and measured
+production smoke test complete; it does not promote private analysis or material compilers.
+
 ### Candidate update: BR/US debt-intelligence source foundation, 1 September 2026
 
 The isolated `feat/debt-intelligence-foundation` branch adds the first governed source layer
