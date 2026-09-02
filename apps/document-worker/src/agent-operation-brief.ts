@@ -140,10 +140,12 @@ export async function processAgentOperationBriefJob(
       .filter((message) => message.role === "user")
       .map((message) => message.content)
       .join("\n");
+    const explicitCompanyName = companyProfileString(context.company_profile, "name", "companyName")
+      ?? explicitCompanyNameFromConversation(context);
     const executionRoute = routeWorkspaceExecution({
       entryJob: context.project?.entryJob ?? null,
       accessBasis: context.project?.accessBasis ?? null,
-      companyName: companyProfileString(context.company_profile, "name", "companyName"),
+      companyName: explicitCompanyName,
       documentCount: context.documents.length,
       artifactTypes: context.artifacts.map((artifact) => artifact.type),
       requestText: context.message,
@@ -281,8 +283,15 @@ function buildDeterministicActivation(
   context: AgentContext,
   route: WorkspaceExecutionRoute,
 ): WorkspaceJobActivation | null {
-  if (route.action !== "queue_specialized_job" || !route.analysisScope) return null;
-  const name = companyProfileString(context.company_profile, "name", "companyName");
+  const mayResearchWhileCollectingMeetingContext = route.action === "collect_required_context"
+    && route.analysisScope === "origination_thesis"
+    && route.requirements.length > 0
+    && route.requirements.every((requirement) => [
+      "meeting_audience", "desired_outcome", "relationship_context",
+    ].includes(requirement));
+  if ((route.action !== "queue_specialized_job" && !mayResearchWhileCollectingMeetingContext) || !route.analysisScope) return null;
+  const name = companyProfileString(context.company_profile, "name", "companyName")
+    ?? explicitCompanyNameFromConversation(context);
   if (!name) return null;
   const websiteCandidate = companyProfileString(context.company_profile, "website");
   const website = websiteCandidate
@@ -310,7 +319,26 @@ function buildDeterministicActivation(
 function activationResponse(
   locale: "pt-BR" | "en-US",
   activation: WorkspaceJobActivation,
+  route?: WorkspaceExecutionRoute,
+  context?: AgentContext,
 ): AgentOperationBriefResponse {
+  const parallelMeetingContext = activation.job === "origination_thesis"
+    && route?.action === "collect_required_context";
+  const prior = context?.related_project_memory[0];
+  if (parallelMeetingContext) {
+    const history = prior
+      ? locale === "pt-BR"
+        ? ` Encontrei também o projeto “${prior.projectName}”, atualizado em ${prior.updatedAt.slice(0, 10)}; diga se esta reunião atualiza aquela tese ou abre uma agenda nova.`
+        : ` I also found the “${prior.projectName}” project, updated on ${prior.updatedAt.slice(0, 10)}; tell me whether this meeting updates that thesis or starts a new agenda.`
+      : "";
+    return {
+      state: "idle",
+      reply: locale === "pt-BR"
+        ? `Entendi o pedido para ${activation.company.name}. Já iniciei em paralelo a pesquisa pública sobre a companhia, o setor, o endividamento e as operações observadas.${history} Para calibrar o pitch, responda em uma única mensagem: (1) com quem será a reunião — por exemplo, CEO, CFO ou tesouraria; (2) o que você quer provocar — mercado de dívida, refinanciamento, alavancagem, expansão ou outra agenda; e (3) qual é hoje o relacionamento ou a exposição da sua instituição com a companhia. Esses pontos definem a profundidade, o ângulo e o que seria realmente novo ou executável para o interlocutor.`
+        : `I understood the assignment for ${activation.company.name}. I have already started the public research on the company, sector, debt profile and observed transactions in parallel.${history} To calibrate the pitch, answer in one message: (1) who will attend — for example the CEO, CFO or treasury; (2) what you want to provoke — debt markets, refinancing, leverage, expansion or another agenda; and (3) your institution's current relationship or exposure to the company. These points determine the depth, angle and what would actually be new or actionable for the audience.`,
+      activation,
+    };
+  }
   return {
     state: "idle",
     reply: locale === "pt-BR"
@@ -330,8 +358,14 @@ function enforceExecutionActivation(
   const mayNormalizeOnlyIdentity = route.action === "collect_required_context"
     && route.requirements.length === 1
     && route.requirements[0] === "company_identity";
+  const mayResearchWhileCollectingMeetingContext = route.action === "collect_required_context"
+    && route.analysisScope === "origination_thesis"
+    && route.requirements.length > 0
+    && route.requirements.every((requirement) => [
+      "meeting_audience", "desired_outcome", "relationship_context",
+    ].includes(requirement));
   if (!route.analysisScope
-    || (route.action !== "queue_specialized_job" && !mayNormalizeOnlyIdentity)
+    || (route.action !== "queue_specialized_job" && !mayNormalizeOnlyIdentity && !mayResearchWhileCollectingMeetingContext)
     || activation.job !== route.analysisScope) {
     return {
       state: "idle",
@@ -377,7 +411,36 @@ function enforceExecutionActivation(
   const safeActivation: WorkspaceJobActivation = websiteSupported
     ? activation
     : {...activation, company: {name: activation.company.name}};
-  return activationResponse(context.locale, safeActivation);
+  return activationResponse(context.locale, safeActivation, route, context);
+}
+
+/**
+ * Reads only an explicit company mention from the user's own conversation. This is not entity
+ * resolution and does not promote the string to Company Truth: the specialized public executor
+ * still resolves the legal entity against official sources and abstains on ambiguity. Keeping
+ * this narrow makes the first useful action deterministic and avoids paying a model merely to
+ * copy “Camil” out of “reunião com a Camil”.
+ */
+function explicitCompanyNameFromConversation(context: AgentContext): string | null {
+  const corpus = [context.message, ...context.recent_messages
+    .filter((message) => message.role === "user")
+    .map((message) => message.content)]
+    .join("\n")
+    .normalize("NFKC");
+  const patterns = [
+    /\b(?:reuni[aã]o|meeting)\b[^?\n]{0,100}?\b(?:com|with)\s+(?:(?:a|o|the)\s+)?(?:ceo|cfo|tesour(?:aria|eiro)|treasur(?:y|er)|diretor(?:a)?|presidente|vp)\s+(?:da|do|de|at)\s+([\p{L}\d][\p{L}\d&.'’()\- ]{1,120}?)(?=\s+(?:amanh[ãa]|tomorrow|e\s+(?:quero|gostaria|preciso)|and\s+(?:i|we))|[.?!\n]|$)/iu,
+    /\b(?:reuni[aã]o|meeting)\b[^?\n]{0,100}?\b(?:com|with)\s+(?:(?:a|o|the)\s+)?([\p{L}\d][\p{L}\d&.'’()\- ]{1,120}?)(?=\s+(?:amanh[ãa]|tomorrow|e\s+(?:quero|gostaria|preciso)|and\s+(?:i|we)|para\s+(?:preparar|discutir|apresentar)|to\s+(?:prepare|discuss|present))|[?!\n]|$)/iu,
+    /\b(?:analisar|analise|estudar|entender|sobre|analyze|analyse|study|understand)\s+(?:(?:a|o|the)\s+)?([\p{L}\d][\p{L}\d&.'’()\- ]{1,120}?)(?=\s+(?:na\s+[oó]tica|sob\s+a|para\s+|com\s+foco|from\s+a|for\s+|with\s+a)|[,.?!\n]|$)/iu,
+    /\b(?:empresa|companhia|company)\s+([\p{L}\d][\p{L}\d&.'’()\- ]{1,120}?)(?=\s+(?:que|e\s+quero|and\s+I|para\s+|to\s+)|[,.?!\n]|$)/iu,
+  ];
+  const generic = new Set(["empresa", "companhia", "company", "cliente", "client"]);
+  for (const pattern of patterns) {
+    const candidate = pattern.exec(corpus)?.[1]?.trim().replace(/[,;:!?]+$/u, "");
+    if (!candidate || candidate.length < 2 || candidate.length > 120) continue;
+    if (generic.has(candidate.toLocaleLowerCase("pt-BR"))) continue;
+    return candidate;
+  }
+  return null;
 }
 
 function enforceRouteAuthority(
