@@ -14,6 +14,7 @@ export const gatewayCallLogSchema = z.object({
     "preliminary_understanding",
     "origination_thesis",
     "company_debt_view",
+    "capital_planning",
     "agent_operation_brief",
     "write_output",
     "audit_evidence",
@@ -22,7 +23,7 @@ export const gatewayCallLogSchema = z.object({
   provider: z.enum(["anthropic", "openai"]),
   model: z.string().min(1),
   effort: z.enum(["low", "medium", "high", "xhigh", "max"]),
-  outcome: z.enum(["ok", "refusal", "error", "invalid_output"]),
+  outcome: z.enum(["ok", "refusal", "error", "invalid_output", "policy_rejected"]),
   promptFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   outputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
@@ -35,11 +36,13 @@ export const gatewayCallLogSchema = z.object({
   costUsd: z.number().nonnegative(),
   // Old persisted invocations predate explicit cost quality. Treat them as measured rather
   // than making an otherwise valid historical execution unreadable after this rollout.
-  costStatus: z.enum(["measured", "unknown", "cassette"]).default("measured"),
+  costStatus: z.enum(["measured", "unknown", "cassette", "not_called"]).default("measured"),
   latencyMs: z.number().nonnegative(),
   stopReason: z.enum(["end", "max_tokens", "refusal", "other"]),
   usedFallback: z.boolean(),
   fromCassette: z.boolean(),
   schemaName: z.string().min(1),
+  dataClassification: z.enum(["public", "internal", "confidential", "restricted"]).optional(),
+  providerPolicyVersion: z.string().min(1).optional(),
   metadata: z.record(z.string(), z.string()).optional(),
 });

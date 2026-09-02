@@ -1,4 +1,5 @@
 import {originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
+import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -7,10 +8,20 @@ import {notFound} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {AdvisorProject, type AdvisorProjectCopy} from "@/components/advisor/advisor-project";
+import {PrivateCaseWork} from "@/components/advisor/private-case-work";
+import {PrivateDiagnosticWork} from "@/components/advisor/private-diagnostic-work";
+import {PrivateMarketWork} from "@/components/advisor/private-market-work";
+import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work";
+import {PrivateStructureWork} from "@/components/advisor/private-structure-work";
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
+import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
+import {loadIntakeChecklist} from "@/lib/intake/checklist";
+import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 
 import {OriginationDecision} from "./origination-decision";
 import {CompanyDebtProject} from "./company-debt-project";
+import {CapitalPlanningProject} from "./capital-planning-project";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "Projeto", robots: {index: false, follow: false}};
@@ -28,12 +39,15 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
     .eq("id", projectId)
     .maybeSingle();
   if (!project) notFound();
-  const specialized = ["company_debt_view", "origination_thesis"].includes(project.entry_job);
+  const specialized = ["company_debt_view", "origination_thesis", "capital_planning"].includes(project.entry_job);
   if (view !== "work" || !specialized) {
     return <ConversationalCapitalProject locale={locale} project={project} />;
   }
   if (project.entry_job === "company_debt_view") {
     return <CompanyDebtProject locale={locale} projectId={projectId} />;
+  }
+  if (project.entry_job === "capital_planning") {
+    return <CapitalPlanningProject locale={locale} projectId={projectId} />;
   }
   if (project.entry_job !== "origination_thesis") notFound();
 
@@ -186,7 +200,7 @@ async function ConversationalCapitalProject({
   const t = await getTranslations({locale, namespace: "App.advisorProject"});
   const {supabase, organization} = await requireWorkspace(locale);
   const {data: session} = await supabase.from("document_intake_sessions")
-    .select("id, status")
+    .select("id, status, representation_status")
     .eq("organization_id", organization.id)
     .eq("capital_project_id", project.id)
     .order("created_at", {ascending: true})
@@ -200,6 +214,40 @@ async function ConversationalCapitalProject({
     supabase.from("capital_project_plans").select("id").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
     supabase.from("capital_project_artifacts").select("id, artifact_type, status").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
   ]);
+  const privateCase = ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
+  const preliminary = privateCase
+    ? await loadPreliminaryUnderstanding(supabase, organization.id, session.id)
+    : null;
+  const checklist = preliminary?.current?.row.status === "confirmed"
+    ? await loadIntakeChecklist({
+        supabase,
+        organizationId: organization.id,
+        sessionId: session.id,
+        locale: locale === "en-US" ? "en" : "pt",
+      })
+    : null;
+  const privateWorkbench = preliminary?.current?.row.status === "confirmed"
+    ? await loadDealStateWorkbench(supabase, organization.id, session.id)
+    : null;
+  const governedMaterials = privateWorkbench?.productionPlan?.row.status === "approved"
+    ? await loadGovernedMaterialPackage(supabase, organization.id, session.id)
+    : null;
+  const [{data: introductionPlans}, {data: introductionTargets}, {data: introductionRecipients}] = privateWorkbench?.matchScreen
+    ? await Promise.all([
+        supabase.from("qualified_introduction_plans")
+          .select("id, organization_id, intake_session_id, case_fingerprint, material_fingerprint, match_screen_fingerprint, wave_limit, identity_policy, status, technical_review_fingerprint, technical_reviewed_by, technical_reviewed_at, authorization_snapshot, authorized_by, authorized_at, revoked_by, revoked_at, created_by, created_at, updated_at")
+          .eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at", {ascending: false}).limit(1),
+        supabase.from("qualified_introduction_targets")
+          .select("id, organization_id, intake_session_id, plan_id, match_screen_fingerprint, provider_id, provider_source, provider_kind, provider_name, fund_directory_id, provider_organization_id, provider_fund_id, mandate_fingerprint, rationale, position, contact_status, resolved_contact_source, resolved_contact_id, resolved_contact_name, resolved_contact_job_title, resolved_contact_email, resolved_at, resolution_note, mandate_revalidated_at, mandate_revalidated_by, mandate_revalidation_note, created_by, created_at, updated_at")
+          .eq("organization_id", organization.id).eq("intake_session_id", session.id).order("position"),
+        supabase.from("qualified_introduction_recipients")
+          .select("id, organization_id, intake_session_id, plan_id, target_id, provider_source, provider_id, fund_directory_id, provider_organization_id, provider_fund_id, recipient_name, contact_source, contact_uuid, contact_id, contact_name, contact_email, contact_job_title, mandate_fingerprint, rationale, material_manifest, position, is_anchor, created_at")
+          .eq("organization_id", organization.id).eq("intake_session_id", session.id).order("position"),
+      ])
+    : [{data: []}, {data: []}, {data: []}];
+  const introductionPlan = introductionPlans?.[0] ?? null;
+  const planTargets = introductionPlan ? (introductionTargets ?? []).filter((target) => target.plan_id === introductionPlan.id) : [];
+  const planRecipients = introductionPlan ? (introductionRecipients ?? []).filter((recipient) => recipient.plan_id === introductionPlan.id) : [];
   const [{data: messages}, {data: tasks}, {data: runs}] = await Promise.all([
     conversation
       ? supabase.from("agent_messages").select("id, role, content, status, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
@@ -215,7 +263,7 @@ async function ConversationalCapitalProject({
   for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
   const copy: AdvisorProjectCopy = {
-    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), artifacts: t("artifacts"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
+    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
   };
   const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
@@ -234,6 +282,7 @@ async function ConversationalCapitalProject({
         };
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", createdAt: new Date().toISOString()}];
+  const pendingContext = pendingAdvisorContext(messages ?? []);
 
   return <AdvisorProject
     accessBasis={project.access_basis}
@@ -242,12 +291,71 @@ async function ConversationalCapitalProject({
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
+    pendingContext={pendingContext ?? undefined}
     projectId={project.id}
     projectName={project.project_name}
     sessionStatus={session.status}
-    tasks={(tasks ?? []).map((task) => ({id: task.id, label: task.label, status: latestRunByTask.get(task.id)?.status ?? "waiting"}))}
-    workHref={["company_debt_view", "origination_thesis"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
+    tasks={(tasks ?? []).map((task) => ({
+      id: task.id,
+      label: localizedOffroadTaskLabel(task.task_id, task.label, locale === "en-US" ? "en-US" : "pt-BR"),
+      status: latestRunByTask.get(task.id)?.status ?? "waiting",
+    }))}
+    workHref={["company_debt_view", "origination_thesis", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
+    workProduct={preliminary ? <div className="advisor-private-stack"><PrivateCaseWork
+      checklist={checklist}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"}
+      preliminary={preliminary}
+      projectId={project.id}
+      sessionId={session.id}
+      shouldStart={session.status === "collecting"}
+    />{privateWorkbench ? <PrivateDiagnosticWork
+      isProcessing={privateWorkbench.isProcessing}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"}
+      projectId={project.id}
+      sessionId={session.id}
+      understanding={privateWorkbench.understanding}
+    /> : null}{privateWorkbench ? <PrivateStructureWork
+      isProcessing={privateWorkbench.isProcessing}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"}
+      projectId={project.id}
+      sessionId={session.id}
+      structure={privateWorkbench.structure}
+      structureDecision={privateWorkbench.structureDecision}
+    /> : null}{privateWorkbench ? <PrivateMaterialsWork
+      governed={governedMaterials}
+      isProcessing={privateWorkbench.isProcessing}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"}
+      packageReview={privateWorkbench.packageReview}
+      productionPlan={privateWorkbench.productionPlan}
+      projectId={project.id}
+      sessionId={session.id}
+      structureConfirmed={privateWorkbench.structureDecision?.status === "confirmed" || privateWorkbench.structureDecision?.status === "approved"}
+    /> : null}{privateWorkbench ? <PrivateMarketWork
+      introductionPlan={introductionPlan}
+      introductionRecipients={planRecipients}
+      introductionTargets={planTargets}
+      isProcessing={privateWorkbench.isProcessing}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"}
+      matchScreen={privateWorkbench.matchScreen}
+      packageApproved={privateWorkbench.packageReview?.status === "approved"}
+      projectId={project.id}
+      representationStatus={session.representation_status}
+      sessionId={session.id}
+    /> : null}</div> : undefined}
   />;
+}
+
+function pendingAdvisorContext(messages: Array<{role: string; metadata: unknown; created_at: string}>): {question: string; whyItMatters: string} | null {
+  const latestAssistantIndex = messages.findLastIndex((message) => message.role === "assistant");
+  if (latestAssistantIndex < 0 || messages.slice(latestAssistantIndex + 1).some((message) => message.role === "user")) return null;
+  const latestAssistant = messages[latestAssistantIndex];
+  if (!latestAssistant?.metadata || typeof latestAssistant.metadata !== "object" || Array.isArray(latestAssistant.metadata)) return null;
+  const metadata = latestAssistant.metadata as Record<string, unknown>;
+  if (metadata.state !== "asking" || !metadata.clarification || typeof metadata.clarification !== "object" || Array.isArray(metadata.clarification)) return null;
+  const clarification = metadata.clarification as Record<string, unknown>;
+  return typeof clarification.question === "string" && typeof clarification.whyItMatters === "string"
+    ? {question: clarification.question, whyItMatters: clarification.whyItMatters}
+    : null;
 }
 
 function specializedCompletionArtifactId(metadata: unknown): string | null {

@@ -5,6 +5,7 @@ import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
 import {estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {stripNulls} from "./adapters/openai";
+import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
 import {
   ModelGatewayError,
   type AdapterRequest,
@@ -33,6 +34,11 @@ export type ModelGatewayConfig = {
    * Only the evals sweep sets it (P1 plan §15.1); the denylist still applies.
    */
   experimentalModels?: readonly string[];
+  /** Off by default until current vendor contracts are entered; when on, every route fails closed. */
+  providerDataPolicy?: {
+    enforce: boolean;
+    assurances: Partial<Record<Provider, ProviderDataAssurance>>;
+  };
   /** Structured, content-free log of every call. */
   onCall?: (log: GatewayCallLog) => void;
   now?: () => number;
@@ -76,8 +82,43 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     const inputFingerprint = fingerprint(input);
     const attempts: GatewayResult<unknown>["attempts"] = [];
     const candidates: ModelRef[] = fallback ? [primary, fallback] : [primary];
+    let policyRejected = 0;
 
     for (const [index, ref] of candidates.entries()) {
+      let providerPolicyVersion: string | undefined;
+      if (config.providerDataPolicy?.enforce) {
+        if (!request.dataHandling) {
+          throw new ModelGatewayError("data handling context is required when provider policy enforcement is enabled", "data_policy_violation", {
+            task: request.task,
+          });
+        }
+        const policyDecision = evaluateProviderDataPolicy({
+          provider: ref.provider,
+          context: request.dataHandling,
+          assurance: config.providerDataPolicy.assurances[ref.provider],
+          now: new Date(now()),
+        });
+        providerPolicyVersion = policyDecision.policyVersion ?? undefined;
+        if (!policyDecision.allowed) {
+          policyRejected += 1;
+          attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: policyDecision.reasons.join(",")});
+          emit(config, {
+            request,
+            ref,
+            costUsd: 0,
+            latencyMs: 0,
+            usedFallback: index > 0,
+            fromCassette: false,
+            outcome: "policy_rejected",
+            promptFingerprint,
+            inputFingerprint,
+            outputFingerprint: fingerprint({outcome: "policy_rejected", reasons: policyDecision.reasons}),
+            notCalled: true,
+            providerPolicyVersion,
+          });
+          continue;
+        }
+      }
       if (config.budget?.maxCalls !== undefined && spent.calls >= config.budget.maxCalls) {
         throw new ModelGatewayError(`call budget exhausted (${spent.calls}/${config.budget.maxCalls})`, "budget_exceeded", {...spent, exposureUsd: budgetExposureUsd});
       }
@@ -148,6 +189,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           promptFingerprint,
           inputFingerprint,
           outputFingerprint: fingerprint({outcome: "error", kind: error instanceof Error ? error.name : "unknown"}),
+          providerPolicyVersion,
         });
         continue;
       }
@@ -162,19 +204,19 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
 
       if (response.stopReason === "refusal") {
         attempts.push({provider: ref.provider, model: ref.model, outcome: "refusal"});
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output)});
+        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
         continue;
       }
 
       const parsed = request.schema.safeParse(stripNulls(response.output));
       if (!parsed.success) {
         attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message: parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ")});
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output)});
+        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
         continue;
       }
 
       attempts.push({provider: ref.provider, model: ref.model, outcome: "ok"});
-      emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data)});
+      emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
       const result: GatewayResult<z.infer<TSchema>> = {
         output: parsed.data as z.infer<TSchema>,
         provider: ref.provider,
@@ -192,6 +234,9 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       return result;
     }
 
+    if (policyRejected === candidates.length) {
+      throw new ModelGatewayError(`no provider satisfies the data policy for task "${request.task}"`, "data_policy_violation", attempts);
+    }
     throw new ModelGatewayError(`all model attempts failed for task "${request.task}"`, "all_attempts_failed", attempts);
   };
 
@@ -216,6 +261,8 @@ function emit(
     promptFingerprint: string;
     inputFingerprint: string;
     outputFingerprint: string;
+    notCalled?: boolean;
+    providerPolicyVersion: string | undefined;
   },
 ): void {
   if (!config.onCall) return;
@@ -232,13 +279,15 @@ function emit(
     outputFingerprint: entry.outputFingerprint,
     usage,
     costUsd: entry.costUsd,
-    costStatus: entry.fromCassette ? "cassette" : entry.response ? "measured" : "unknown",
+    costStatus: entry.notCalled ? "not_called" : entry.fromCassette ? "cassette" : entry.response ? "measured" : "unknown",
     latencyMs: entry.latencyMs,
     stopReason: entry.response?.stopReason ?? "other",
     usedFallback: entry.usedFallback,
     fromCassette: entry.fromCassette,
     schemaName: entry.request.schemaName,
   };
+  if (entry.request.dataHandling) log.dataClassification = entry.request.dataHandling.classification;
+  if (entry.providerPolicyVersion) log.providerPolicyVersion = entry.providerPolicyVersion;
   if (entry.request.metadata) log.metadata = entry.request.metadata;
   config.onCall(log);
 }

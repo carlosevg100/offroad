@@ -80,6 +80,9 @@ importers:
       '@offroad/release-governance':
         specifier: workspace:*
         version: link:../../packages/release-governance
+      '@offroad/work-plan':
+        specifier: workspace:*
+        version: link:../../packages/work-plan
       '@supabase/supabase-js':
         specifier: 2.112.3
         version: 2.112.3(@opentelemetry/api@1.9.1)
@@ -861,6 +864,12 @@ importers:
 
   packages/public-research:
     dependencies:
+      csv-parse:
+        specifier: 7.0.2
+        version: 7.0.2
+      jszip:
+        specifier: 3.10.1
+        version: 3.10.1
       zod:
         specifier: 4.4.3
         version: 4.4.3

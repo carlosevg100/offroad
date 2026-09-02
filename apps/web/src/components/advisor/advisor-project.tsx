@@ -3,7 +3,7 @@
 import {ArrowUp, Bot, Check, Circle, FileText, LoaderCircle, Paperclip, X} from "lucide-react";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
-import {useRef, useState} from "react";
+import {useRef, useState, type ReactNode} from "react";
 
 import {
   appendAdvisorMessage,
@@ -34,6 +34,8 @@ export type AdvisorProjectCopy = {
   noDocuments: string;
   plan: string;
   artifacts: string;
+  contextQuestion: string;
+  awaitingAnswer: string;
   noArtifacts: string;
   openWork: string;
   placeholder: string;
@@ -56,9 +58,11 @@ type Props = {
   messages: AdvisorProjectMessage[];
   projectId: string;
   projectName: string;
+  pendingContext?: {question: string; whyItMatters: string};
   sessionStatus: string;
   tasks: AdvisorProjectTask[];
   workHref?: string;
+  workProduct?: ReactNode;
 };
 
 export function AdvisorProject(props: Props) {
@@ -140,6 +144,7 @@ export function AdvisorProject(props: Props) {
               </div>
             </article>
           ))}
+          {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
         </div>
 
         <div className="advisor-project__composer-wrap">
@@ -173,6 +178,11 @@ export function AdvisorProject(props: Props) {
 
       <aside className="advisor-project__context">
         <header><span className="section-kicker">{props.copy.context}</span></header>
+        {props.pendingContext ? <section className="advisor-context-section advisor-context-section--waiting">
+          <div><strong>{props.copy.contextQuestion}</strong><small>{props.copy.awaitingAnswer}</small></div>
+          <p>{props.pendingContext.question}</p>
+          <small>{props.pendingContext.whyItMatters}</small>
+        </section> : null}
         <section className="advisor-context-section">
           <div><strong>{props.copy.plan}</strong><small>{completed}/{props.tasks.length}</small></div>
           <ol>{props.tasks.map((task) => <li className={`is-${task.status}`} key={task.id}>{task.status === "succeeded" ? <Check aria-hidden="true" size={12} /> : ["running", "queued"].includes(task.status) ? <LoaderCircle aria-hidden="true" className={task.status === "running" ? "spin" : undefined} size={12} /> : <Circle aria-hidden="true" size={12} />}<span>{task.label}</span></li>)}</ol>

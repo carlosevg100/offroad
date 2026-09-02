@@ -161,8 +161,8 @@ export type CompiledCapitalJobPlan = {
 };
 
 export const capitalProjectPlanSchemaVersion = "capital-project-plan.v1";
-export const capitalProjectPlanCompilerVersion = "2026.09.01-v2";
-export const offroadTaskRegistryVersion = "2026.09.01-v2";
+export const capitalProjectPlanCompilerVersion = "2026.09.01-v3";
+export const offroadTaskRegistryVersion = "2026.09.01-v3";
 
 export type CapitalProjectPlanSnapshot = {
   schemaVersion: typeof capitalProjectPlanSchemaVersion;

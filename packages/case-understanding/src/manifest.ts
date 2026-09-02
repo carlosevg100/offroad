@@ -10,7 +10,7 @@ export const modelInvocationManifestSchema = z.object({
   provider: z.string().min(1),
   model: z.string().min(1),
   effort: z.string().min(1).optional(),
-  outcome: z.enum(["ok", "refusal", "error", "invalid_output"]),
+  outcome: z.enum(["ok", "refusal", "error", "invalid_output", "policy_rejected"]),
   costUsd: z.number().nonnegative(),
   usage: z.object({
     inputTokens: z.number().int().nonnegative(),

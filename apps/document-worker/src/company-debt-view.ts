@@ -6,7 +6,7 @@ import {
   companyDebtDiagnosticSchema,
   companyDebtViewBriefSchema,
 } from "@offroad/domain-contracts";
-import type {GatewayCallLog, ModelGateway} from "@offroad/model-gateway";
+import {providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {
   buildCompanyDebtResearchPlan,
   runPublicResearch,
@@ -16,6 +16,8 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
+import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
+import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 const recordSchema = z.record(z.string(), z.unknown());
@@ -112,6 +114,7 @@ export type CompanyDebtViewDependencies = {
   gateway: ModelGateway;
   lineage: () => GatewayCallLog[];
   researchProviders: PublicSearchProvider[];
+  officialResearchProviderFactory?: WorkerOfficialResearchProviderFactory;
   now?: () => Date;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -230,6 +233,7 @@ export async function processCompanyDebtViewJob(
         task: "company_debt_view", system: COMPANY_DEBT_SYSTEM,
         input: [{type: "text", text: JSON.stringify(modelInput)}],
         schema: companyDebtDiagnosticSchema, schemaName: "company_debt_diagnostic_v1",
+        dataHandling: {classification: "confidential", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
         maxOutputTokens: 8_000,
         metadata: {
           jobId: job.job_id, projectId: context.project.id,
@@ -355,7 +359,11 @@ export async function processCompanyDebtViewJob(
       externalSearchQueries: 8, finalGate: "user_confirmation_of_exact_artifact_fingerprint",
     }})});
 
-    const research = await collectResearch({job, context, companyName, ...(website ? {website} : {}), queue: dependencies.queue, providers: dependencies.researchProviders});
+    const research = await collectResearch({
+      job, context, companyName, ...(website ? {website} : {}), queue: dependencies.queue,
+      discoveryProviders: dependencies.researchProviders,
+      officialProviderFactory: dependencies.officialResearchProviderFactory,
+    });
     const synthesis = await synthesize(research);
     const sourceRefs = sourceEvidence(research.researchRunId, research.sources);
 
@@ -419,23 +427,47 @@ function assertExactTaskPlan(job: CapitalProjectAnalysisJob, context: Context): 
 
 async function collectResearch(input: {
   job: CapitalProjectAnalysisJob; context: Context; companyName: string; website?: string;
-  queue: QueueClient; providers: PublicSearchProvider[];
+  queue: QueueClient; discoveryProviders: PublicSearchProvider[];
+  officialProviderFactory?: WorkerOfficialResearchProviderFactory | undefined;
 }): Promise<ResearchSummary> {
-  const plan = buildCompanyDebtResearchPlan({legalName: input.companyName, ...(input.website ? {website: input.website} : {})});
-  await input.queue.writeStage(input.job, "public_research", "started", {queryCount: plan.length});
-  const result = await runPublicResearch({plan, providers: input.providers, maxSourcesPerQuery: 5});
+  const geography = optionalString(input.context.session.company_profile.geography);
+  const subject = {
+    legalName: input.companyName,
+    ...(input.website ? {website: input.website} : {}),
+    ...(geography ? {geography} : {}),
+  };
+  const plan = buildCompanyDebtResearchPlan(subject);
+  const runtime = prepareWorkerDebtResearch({
+    work: "company_debt_view", locale: input.context.session.locale, subject,
+    discoveryProviders: input.discoveryProviders,
+    officialProviderFactory: input.officialProviderFactory,
+    evidenceBasis: "public_information",
+  });
+  await input.queue.writeStage(input.job, "public_research", "started", {
+    queryCount: plan.length, researchStrategyFingerprint: runtime.strategy.fingerprint,
+    jurisdiction: runtime.strategy.jurisdiction,
+    jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
+  });
+  const cache = createWorkerPublicResearchCache(input.queue, input.job);
+  const result = await runPublicResearch({
+    plan, providers: runtime.providers, maxSourcesPerQuery: 5,
+    ...(cache ? {cache} : {}),
+  });
   const safeSources = result.sources.filter((source) => source.url.startsWith("https://"));
-  const persisted: ResearchRun & {providerChain: string[]} = {
+  const persisted: ResearchRun & {providerChain: string[]; debtResearchStrategy: typeof runtime.strategy} = {
     ...result,
     status: safeSources.length === 0 ? "abstained" : result.status,
     sources: safeSources,
-    providerChain: input.providers.map((provider) => provider.id),
+    providerChain: runtime.providers.map((provider) => provider.id),
+    debtResearchStrategy: runtime.strategy,
   };
   const researchRunId = await input.queue.recordPublicResearch(input.job, plan, persisted);
-  const costExposureUsd = input.providers.some((provider) => provider.id === "perplexity") ? plan.length * 0.005 : 0;
+  const costExposureUsd = Object.values(result.metrics.maxCostExposureUsdByProvider)
+    .reduce((total, value) => total + value, 0);
   await input.queue.writeStage(input.job, "public_research", "succeeded", {
     status: persisted.status, queryCount: plan.length, sourceCount: safeSources.length,
-    researchRunId, costExposureUsd,
+    researchRunId, costExposureUsd, researchMetrics: result.metrics,
+    researchStrategyFingerprint: runtime.strategy.fingerprint,
   }, {external_search_cost_usd: costExposureUsd});
   return {status: persisted.status, researchRunId, costExposureUsd, sources: safeSources, failures: result.failures};
 }

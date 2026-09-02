@@ -25,10 +25,14 @@ export function advisorSpecializedCompletion(job: CapitalProjectAnalysisJob, art
   const content = job.payload.locale === "pt-BR"
     ? job.payload.analysis_scope === "origination_thesis"
       ? "Concluí a leitura pública e preparei a tese de originação. Organizei o contexto da companhia, os sinais relevantes para dívida, as hipóteses de financiamento e as perguntas que ainda precisam ser confirmadas. O material está pronto para sua revisão."
-      : "Concluí o diagnóstico preliminar da companhia na ótica de dívida. Separei o que as fontes públicas sustentam, os riscos e sinais observados, o que ainda não pode ser calculado e as informações necessárias para aprofundar. O diagnóstico está pronto para sua revisão."
+      : job.payload.analysis_scope === "company_debt_view"
+        ? "Concluí o diagnóstico preliminar da companhia na ótica de dívida. Separei o que as fontes públicas sustentam, os riscos e sinais observados, o que ainda não pode ser calculado e as informações necessárias para aprofundar. O diagnóstico está pronto para sua revisão."
+        : "Concluí o mapa inicial de alternativas para a necessidade de capital. Comparei rotas possíveis, condições, vantagens, trade-offs e o que ainda precisa ser comprovado antes de recomendar uma estrutura. O mapa está pronto para sua revisão."
     : job.payload.analysis_scope === "origination_thesis"
       ? "I completed the public-information review and prepared the origination thesis. I organized the company context, debt-relevant signals, financing hypotheses, and the questions that still need confirmation. The work product is ready for your review."
-      : "I completed the preliminary company diagnostic through a debt lens. I separated what public sources support, the risks and signals observed, what still cannot be calculated, and the information needed to go deeper. The diagnostic is ready for your review.";
+      : job.payload.analysis_scope === "company_debt_view"
+        ? "I completed the preliminary company diagnostic through a debt lens. I separated what public sources support, the risks and signals observed, what still cannot be calculated, and the information needed to go deeper. The diagnostic is ready for your review."
+        : "I completed the initial alternatives map for the capital need. I compared possible routes, conditions, advantages, trade-offs, and what still must be evidenced before recommending a structure. The map is ready for your review.";
 
   return {
     completionMessageId: deterministicUuid(

@@ -6,7 +6,10 @@
  * required for a rollout transition exists. The database owns identity and approval; this pure
  * package owns the deterministic decision contract shared by the worker, tests and release tools.
  */
-export const releaseGovernanceVersion = "2026.08.24-v1";
+export const releaseGovernanceVersion = "2026.09.01-premortem-v2";
 
 export * from "./comparison";
 export * from "./promotion";
+export * from "./operating-controls";
+export * from "./invalidation";
+export * from "./human-intervention";

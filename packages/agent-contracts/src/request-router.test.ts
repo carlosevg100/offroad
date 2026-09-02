@@ -39,6 +39,28 @@ describe("workspace request router", () => {
     });
   });
 
+  it("does not confuse preparing a pitch with authorizing an external contact", () => {
+    expect(routeWorkspaceRequest({
+      message: "Tenho uma reunião com a Camil amanhã e gostaria de apresentar um pitch sobre alternativas estratégicas de endividamento.",
+      surface: "case_workspace",
+    })).toMatchObject({
+      intent: "clarify",
+      effect: "none",
+      allowedOnCurrentSurface: true,
+    });
+  });
+
+  it("still protects an instruction to present the material to a lender", () => {
+    expect(routeWorkspaceRequest({
+      message: "Apresente o material ao Fundo Alfa.",
+      surface: "case_workspace",
+    })).toMatchObject({
+      intent: "authorize_external",
+      effect: "external",
+      allowedOnCurrentSurface: false,
+    });
+  });
+
   it("routes general instrument questions to knowledge without state effects", () => {
     expect(routeWorkspaceRequest({message: "Qual a diferença entre CCB e debênture?", surface: "knowledge"})).toMatchObject({
       intent: "explain",
@@ -85,8 +107,39 @@ describe("workspace execution router", () => {
     })).toMatchObject({
       action: "collect_required_context",
       analysisScope: "origination_thesis",
-      requirements: ["company_identity"],
+      requirements: ["company_identity", "meeting_audience", "desired_outcome", "relationship_context"],
       modelRoutingCalls: 0,
+    });
+  });
+
+  it("collects only missing high-value meeting context before expensive origination work", () => {
+    expect(routeWorkspaceExecution({
+      entryJob: "origination_thesis",
+      accessBasis: "public_information",
+      companyName: "Camil",
+      documentCount: 0,
+      artifactTypes: [],
+      requestText: "Tenho uma reunião com a Camil amanhã e quero preparar um pitch com alternativas estratégicas de endividamento.",
+    })).toMatchObject({
+      action: "collect_required_context",
+      requirements: ["meeting_audience", "desired_outcome", "relationship_context"],
+      reasonCode: "specialized_context_incomplete",
+    });
+  });
+
+  it("queues origination after audience, desired outcome and relationship are present across the conversation", () => {
+    expect(routeWorkspaceExecution({
+      entryJob: "origination_thesis",
+      accessBasis: "public_information",
+      companyName: "Camil",
+      documentCount: 0,
+      artifactTypes: [],
+      conversationText: "Quero explorar o refinanciamento dos vencimentos de 2027 e comparar o efeito na alavancagem.",
+      requestText: "A reunião será com o CFO e a tesouraria. Ainda não temos relacionamento nem exposição de crédito.",
+    })).toMatchObject({
+      action: "queue_specialized_job",
+      requirements: [],
+      reasonCode: "specialized_executor_ready",
     });
   });
 
@@ -116,6 +169,22 @@ describe("workspace execution router", () => {
     })).toMatchObject({
       action: "conversation_only",
       reasonCode: "specialized_work_product_exists",
+    });
+  });
+
+  it("routes a public capital need to the released planning DAG without a model call", () => {
+    expect(routeWorkspaceExecution({
+      entryJob: "capital_planning",
+      accessBasis: "public_information",
+      companyName: "Camil",
+      documentCount: 0,
+      artifactTypes: [],
+      requestText: "Quero comparar alternativas para financiar crescimento e alongar a dívida.",
+    })).toMatchObject({
+      action: "queue_specialized_job",
+      analysisScope: "capital_planning",
+      requirements: [],
+      modelRoutingCalls: 0,
     });
   });
 

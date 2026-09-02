@@ -10,7 +10,8 @@ import {
   type WorkspaceJobActivation,
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
-import type {ModelGateway} from "@offroad/model-gateway";
+import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
+import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {z} from "zod";
 
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
@@ -33,6 +34,20 @@ const contextSchema = z.object({
     status: z.string(),
   }).nullable().optional(),
   company_profile: z.record(z.string(), z.unknown()).default({}),
+  related_project_memory: z.array(z.object({
+    projectId: z.uuid(),
+    projectName: z.string().max(80),
+    companyName: z.string().max(200),
+    entryJob: z.string(),
+    currentPhase: z.string(),
+    status: z.string(),
+    updatedAt: z.string(),
+    brief: z.object({
+      kind: z.string(),
+      content: z.record(z.string(), z.unknown()),
+    }).nullable(),
+    artifactTypes: z.array(z.string()).max(40),
+  })).max(8).default([]),
   documents: z.array(z.object({
     id: z.uuid(),
     name: z.string(),
@@ -70,7 +85,8 @@ const SYSTEM = `You are the Offroad Agent inside one persistent private-debt adv
 The conversation may begin with a question, a company, public research, private documents, a
 capital need or an existing transaction. Preserve that context and help the user advance one
 useful step at a time. You may do exactly one of four things in this turn:
-1. Ask one useful clarification when the intended change is ambiguous.
+1. Ask one compact clarification packet, with at most three related high-value points, when the
+   mission context is incomplete.
 2. Propose direct edits to the operation brief when the user clearly supplied the new facts.
 3. Answer without a change when the message is informational, when work is still running, or
    when the next action belongs to a later governed gate.
@@ -82,7 +98,9 @@ Rules:
 - A numerical patch is permitted only when that number appears in the latest user message.
 - The latest user message is a declaration, not reconciled evidence.
 - Do not expose chain of thought. Give a concise conclusion and the reason the user needs.
-- Do not generate a broad checklist. Ask only the next question that materially improves the case.
+- Do not generate a broad checklist. For a meeting assignment, audience, desired outcome and
+  current relationship/exposure form one compact context packet; explain briefly why each missing
+  point changes the analysis.
 - Do not claim that a document was read, a search ran, a calculation was completed or an artifact
   exists unless the supplied project context explicitly shows that state.
 - Treat document names as inventory, not proof of their contents.
@@ -91,11 +109,18 @@ Rules:
   single missing question needed to identify it. Do not force a form or internal vocabulary.
 - Existing plan tasks and artifacts are real state. Explain what is running, complete or blocked
   without inventing progress.
+- relatedProjectMemory contains only same-organization work whose company name appears in the
+  request. Use it before asking a question. When relevant history exists, mention the prior project,
+  its recency and work product, then ask whether this assignment updates that thesis or starts a new
+  one. Never imply that another client or organization supplied the history.
+- Never say that public research is already running unless a supplied task is actually queued or
+  running. It is acceptable to say what will begin as soon as the missing mission context is confirmed.
 - executionRoute is a deterministic zero-model-call decision. Never select a different executor.
-- When executionRoute names company_debt_view or origination_thesis, an activation is allowed only
+- When executionRoute names company_debt_view, origination_thesis or capital_planning, an activation is allowed only
   for public-information work with no uploaded documents. If the company is explicit in the user
   conversation, return the exact company name and only user-stated assignment context in activation.
-  If it is not explicit, ask only for the company name. Never infer a private company identity.
+  If it is not explicit, ask for the company name alongside any other missing mission context.
+  Never infer a private company identity.
 - An activation queues a governed TaskSpec executor in the same project. It does not approve
   credit, choose a financing structure, contact a lender or grant external authority.
 - Keep the response in the locale supplied in the input.
@@ -111,6 +136,10 @@ export async function processAgentOperationBriefJob(
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));
     const route = routeWorkspaceRequest({message: context.message, surface: "case_workspace"});
+    const conversationText = context.recent_messages
+      .filter((message) => message.role === "user")
+      .map((message) => message.content)
+      .join("\n");
     const executionRoute = routeWorkspaceExecution({
       entryJob: context.project?.entryJob ?? null,
       accessBasis: context.project?.accessBasis ?? null,
@@ -118,6 +147,7 @@ export async function processAgentOperationBriefJob(
       documentCount: context.documents.length,
       artifactTypes: context.artifacts.map((artifact) => artifact.type),
       requestText: context.message,
+      conversationText,
       requestIntent: route.intent,
       requestEffect: route.effect,
     });
@@ -137,8 +167,12 @@ export async function processAgentOperationBriefJob(
               currentBrief: context.brief,
               project: context.project ?? null,
               companyProfile: context.company_profile,
+              relatedProjectMemory: context.related_project_memory,
               documentInventory: context.documents,
-              workPlan: context.tasks,
+              workPlan: context.tasks.map((task) => ({
+                ...task,
+                label: localizedOffroadTaskLabel(task.taskId, task.label, context.locale),
+              })),
               artifacts: context.artifacts,
               requestRoute: route,
               executionRoute,
@@ -148,6 +182,7 @@ export async function processAgentOperationBriefJob(
           }],
           schema: agentOperationBriefResponseSchema,
           schemaName: "agent_operation_brief_response_v2",
+          dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
           maxOutputTokens: 2_000,
           metadata: {
             jobId: job.job_id,
@@ -258,6 +293,13 @@ function buildDeterministicActivation(
   if (route.analysisScope === "company_debt_view") {
     return {job: "company_debt_view", company: {name, ...(website ? {website} : {})}, brief: {focus: context.message}};
   }
+  if (route.analysisScope === "capital_planning") {
+    return {
+      job: "capital_planning",
+      company: {name, ...(website ? {website} : {})},
+      brief: {capitalIntent: context.message},
+    };
+  }
   return {
     job: "origination_thesis",
     company: {name, ...(website ? {website} : {})},
@@ -285,7 +327,12 @@ function enforceExecutionActivation(
 ): AgentOperationBriefResponse {
   const activation = response.activation;
   if (!activation) return response;
-  if (!route.analysisScope || route.action === "conversation_only" || activation.job !== route.analysisScope) {
+  const mayNormalizeOnlyIdentity = route.action === "collect_required_context"
+    && route.requirements.length === 1
+    && route.requirements[0] === "company_identity";
+  if (!route.analysisScope
+    || (route.action !== "queue_specialized_job" && !mayNormalizeOnlyIdentity)
+    || activation.job !== route.analysisScope) {
     return {
       state: "idle",
       reply: context.locale === "pt-BR"

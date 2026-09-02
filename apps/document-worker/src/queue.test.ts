@@ -47,6 +47,43 @@ describe("case input loading", () => {
   });
 });
 
+describe("operating-control persistence", () => {
+  it("binds the control snapshot to the exact claimed capability and input fingerprint", async () => {
+    const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+      expect(name).toBe("worker_record_operating_control_snapshot_v1");
+      expect(args).toEqual({
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_scope_id: "case-analysis:2026.09.01-v1",
+        p_requested_use: "internal_decision",
+        p_input_fingerprint: "a".repeat(64),
+        p_binding: {caseFingerprint: "b".repeat(64)},
+        p_snapshot: {snapshotAt: "2026-09-01T15:00:00.000Z"},
+      });
+      return {data: {
+        id: "50000000-0000-4000-8000-000000000001",
+        allowed: false,
+        blockers: ["capability_not_accredited_for_recommend"],
+        warnings: [],
+        decisionFingerprint: "c".repeat(64),
+        replayed: false,
+      }, error: null};
+    });
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    const result = await queue.recordOperatingControlSnapshot(job as Extract<CaseAnalysisJob, {kind: "case_analysis"}>, {
+      scopeId: "case-analysis:2026.09.01-v1",
+      requestedUse: "internal_decision",
+      inputFingerprint: "a".repeat(64),
+      binding: {caseFingerprint: "b".repeat(64)},
+      snapshot: {snapshotAt: "2026-09-01T15:00:00.000Z"},
+    });
+
+    expect(result.allowed).toBe(false);
+    expect(result.blockers).toEqual(["capability_not_accredited_for_recommend"]);
+  });
+});
+
 describe("capital TaskRun lifecycle", () => {
   it("passes the claimed capability, versioned executor and proof-bearing result", async () => {
     const taskRunId = "50000000-0000-4000-8000-000000000001";
@@ -174,7 +211,7 @@ describe("advisor specialized completion", () => {
       result: {capital_project_id: capitalJob.payload.capital_project_id},
     });
 
-    expect(rpc).toHaveBeenCalledWith("worker_complete_advisor_specialized_job_v1", {
+    expect(rpc).toHaveBeenCalledWith("worker_complete_advisor_specialized_job_v2", {
       p_job_id: capitalJob.job_id,
       p_capability_token: capitalJob.capability_token,
       p_completion_message_id: "a0000000-0000-4000-8000-000000000001",

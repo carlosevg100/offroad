@@ -73,7 +73,7 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
 export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
   kind: z.literal("capital_project_analysis"),
   payload: z.object({
-    analysis_scope: z.enum(["origination_thesis", "company_debt_view"]),
+    analysis_scope: z.enum(["origination_thesis", "company_debt_view", "capital_planning"]),
     locale: z.enum(["pt-BR", "en-US"]),
     capital_project_id: z.uuid(),
     capital_project_plan_id: z.uuid(),
@@ -166,6 +166,8 @@ export type QueueClient = {
     limit?: number;
   }): Promise<unknown>;
   recordPublicResearch(job: CaseAnalysisJob | CapitalProjectAnalysisJob, plan: unknown, result: unknown): Promise<string>;
+  loadPublicResearchCache?(job: CapitalProjectAnalysisJob, queryIds: string[]): Promise<unknown>;
+  storePublicResearchCache?(job: CapitalProjectAnalysisJob, entries: unknown[]): Promise<unknown>;
   recordPreliminaryUnderstanding(job: PreliminaryAnalysisJob, input: {
     inputFingerprint: string;
     payload: unknown;
@@ -178,6 +180,20 @@ export type QueueClient = {
     dependencies?: unknown[];
   }): Promise<string>;
   recordCaseSnapshot(job: FullCaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
+  recordOperatingControlSnapshot(job: FullCaseAnalysisJob, input: {
+    scopeId: string;
+    requestedUse: "internal_decision";
+    inputFingerprint: string;
+    binding: unknown;
+    snapshot: unknown;
+  }): Promise<{
+    id: string;
+    allowed: boolean;
+    blockers: string[];
+    warnings: string[];
+    decisionFingerprint: string;
+    replayed: boolean;
+  }>;
   recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
   loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
@@ -396,7 +412,7 @@ export function createQueueClient(
     },
 
     async loadPreliminaryInput(job) {
-      return call("worker_load_preliminary_input", {
+      return call("worker_load_preliminary_input_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
@@ -442,6 +458,20 @@ export function createQueueClient(
       });
       return z.uuid().parse(data);
     },
+    async loadPublicResearchCache(job, queryIds) {
+      return call("worker_load_public_research_cache", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_query_ids: queryIds,
+      });
+    },
+    async storePublicResearchCache(job, entries) {
+      return call("worker_store_public_research_cache", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_entries: entries,
+      });
+    },
 
     async recordPreliminaryUnderstanding(job, input) {
       const data = await call("worker_record_preliminary_understanding", {
@@ -476,6 +506,26 @@ export function createQueueClient(
       return String(data);
     },
 
+    async recordOperatingControlSnapshot(job, input) {
+      const data = await call("worker_record_operating_control_snapshot_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_scope_id: input.scopeId,
+        p_requested_use: input.requestedUse,
+        p_input_fingerprint: input.inputFingerprint,
+        p_binding: input.binding,
+        p_snapshot: input.snapshot,
+      });
+      return z.object({
+        id: z.uuid(),
+        allowed: z.boolean(),
+        blockers: z.array(z.string()),
+        warnings: z.array(z.string()),
+        decisionFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        replayed: z.boolean(),
+      }).parse(data);
+    },
+
     async recordControlledExecution(job, report, manifest, comparison) {
       const data = await call("worker_record_controlled_execution", {
         p_job_id: job.job_id,
@@ -495,14 +545,14 @@ export function createQueueClient(
     },
 
     async loadCapitalProjectContext(job) {
-      return call("worker_load_capital_project_context", {
+      return call("worker_load_capital_project_context_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
     },
 
     async recordAgentResponse(job, assistantMessageId, response, proposal, activation) {
-      return call("worker_record_agent_response_and_activate_v1", {
+      return call("worker_record_agent_response_and_activate_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_assistant_message_id: assistantMessageId,
@@ -521,7 +571,7 @@ export function createQueueClient(
     },
 
     async completeAdvisorSpecializedJob(job, input) {
-      await call("worker_complete_advisor_specialized_job_v1", {
+      await call("worker_complete_advisor_specialized_job_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_completion_message_id: input.completionMessageId,

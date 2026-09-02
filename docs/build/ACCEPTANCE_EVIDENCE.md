@@ -1,5 +1,125 @@
 # Acceptance Evidence
 
+## Planejamento de capital governado, candidate, 02/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Cobertura do plano | compiler + worker | 35 TaskSpecs exatas de `M01` a `S11`; dependências persistidas e final exige `S10` + `C11` |
+| Instrumentos amplos | contrato e prompt | 11 famílias de dívida; mínimo de duas alternativas; recebíveis nunca é default obrigatório |
+| Limite público | schema + quality gate | sem campo para sizing ou termos; detector recusa montante, percentual e spread propostos |
+| Evidência | pesquisa oficial + allowlist | afirmação pública só mantém URL persistida; CVM/SEC vêm antes de discovery; ambiguidade abstém |
+| Company Truth | 34 artefatos intermediários | spreading, dívida econômica, capacidade, pricing, garantias e sources & uses declaram `not_computable_public_only` sem base conciliada |
+| Síntese | model gateway | uma chamada `capital_planning`; Sonnet 5 medium, fallback/shadow Terra medium; máximo 8k de saída |
+| Custo de pesquisa | runtime | reserva dinâmica por provider e query; revisão de `S11` reserva US$ 0 externo e reaproveita pesquisa |
+| Correção incremental | RPC + worker | decisão pelo fingerprint exato; `S11` invalidada; `C11`/`S10` reutilizadas; replay idempotente |
+| Interface | Next server component | mapa, evidência, alternativas, comparação, recomendação, faltantes, fontes, tarefas e decisão no mesmo projeto |
+| Runtime local | Vitest/TypeScript/ESLint | worker 83/83; public research 24/24; contratos/gateway verdes; web e worker tipados; web lint verde |
+| Chamadas pagas | inspeção | zero chamadas pagas durante implementação e testes |
+| Banco | migration `20260902033000` | escrita e ligada às RPCs v2; execução local bloqueada porque Docker não está disponível neste host |
+
+Status: **candidate**. Não promover até reconstruir o banco, executar o teste SQL adversarial,
+validar RLS/Advisors, inspecionar a tela e aprovar um gold case BR e um US. Este incremento não
+prova estruturação privada, materiais institucionais, matching real ou introdução.
+
+## Fundação de inteligência de dívida BR/US, candidate, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Hierarquia de fontes | `source-registry.test.ts` | CVM/SEC lideram a cadeia; fonte licenciada só entra por ativação explícita e nunca supera regulador |
+| Brasil e EUA | resolvedores oficiais | CD_CVM e CIK zero-padded preservados; candidato próximo fica ambíguo, sem escolha silenciosa |
+| Privacidade | contratos e migration | query externa rejeita email, CNPJ e valor financeiro; cache global não recebe contexto privado nem atende projeto privado |
+| Reuso público | `index.test.ts` | hit fresco evita provider call, mantém ordem, registra uma única atualização e mede chamadas evitadas |
+| Aquisição segura | `content-acquisition.test.ts` | publisher permanece CVM/RI; redirecionamento privado é bloqueado antes do segundo request; Firecrawl usa zero retention |
+| Worker | Vitest/TypeScript | 80/80 testes do worker e typecheck aprovados; cache conectado aos dois DAGs públicos |
+| Public research | Vitest/TypeScript | 20/20 testes e typecheck aprovados |
+| Web types | TypeScript | contrato dos dois RPCs novos compila no web app |
+| SQL adversarial | `public_research_public_cache.sql` | teste escrito para capability, replay, promoção a privado e negação a `anon`; execução aguarda Docker/CI |
+| Custo externo | inspeção | zero chamadas pagas; OpenAI Search e Firecrawl desativados por flag; providers licenciados sem ativação |
+
+Esta evidência não promove a migration nem declara a plataforma completa. Banco reconstruído,
+Security Advisor, E2E e gold cases BR/US continuam obrigatórios antes de produção.
+## Persistência fail-closed do control plane, 01/09/2026
+
+| Evidência | Verificação | Resultado atual |
+|---|---|---|
+| Snapshot real por execução | worker + RPC capability-bound | input congelado, relatório e manifesto precisam coincidir; compilador usa Claim Registry, reconciliação, cobertura, decisão, artefatos, mercado, segurança e custo; ausência vira blocker |
+| Decisão independente | função privada SQL | banco reavalia os controles; worker não escreve `allowed` diretamente |
+| Credenciamento restrito | registry privado append-only | produção com menos de 20 casos distintos é recusada; tenant não lê nem escreve |
+| Invalidação persistente | triggers + ledger público tenant-scoped | source, input, Deal State e mudança humana canônica invalidam decisões posteriores |
+| Material e Introduce | triggers de release | bindings exatos, acreditação vigente e ausência de invalidação posterior são obrigatórios |
+| Imutabilidade e RLS | `operating_controls.sql` | casos de update/delete, capability forjada, escrita direta e leitura cross-tenant adicionados ao CI |
+| Teste de unidade | worker/release governance | compilação conservadora, policy ausente e budget ausente cobertos sem rede paga |
+| Banco reconstruído | [Quality run 33529805136](https://github.com/carlosevg100/offroad/actions/runs/33529805136) | verde: migrations do zero, RLS, adversariais, verticais, DAG e schema lint |
+| Jornada integrada | [Quality run 33529805136](https://github.com/carlosevg100/offroad/actions/runs/33529805136) | E2E local com Supabase e Playwright verde |
+| Produção | Supabase/Vercel/worker | não alterada |
+
+O código implementa a contenção; ele ainda não prova qualidade institucional de uma vertical.
+Nenhuma capacidade externa recebe maturidade `production` por esta migration.
+
+## Control plane do pre-mortem, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Acreditação estreita | testes de `@offroad/release-governance` | produção recusada sem procedimento, adversarial ou vinte casos reais distintos |
+| Gate sem média | operating controls | mandato, claims, cálculo, cobertura, julgamento, artefatos, mercado, segurança, freshness e autoridade geram blockers tipados |
+| Competência ≠ autoridade | teste de ação externa | capacidade em produção não libera destinatário sem autorização exata e fingerprint da lista |
+| Invalidação transitiva | teste de dependency graph | nova ITR invalida dívida líquida, capacidade, claim de estrutura, term sheet, aceite e lender match |
+| Falsa automação visível | teste de human intervention | minutos não capturados, causa recorrente e mudança canônica sem revisão bloqueiam a tese de automação |
+| Policy por provider | testes de `@offroad/model-gateway` | primário incompatível não recebe dado; fallback só roda com assurance válido; ausência ou expiração falham antes da chamada |
+| Dados classificados | typecheck do worker/classificação/extração | todas as chamadas reais declaram finalidade e classe; documentos e estado de case são `restricted` |
+| Promoção endurecida | teste de rollout | `active` exige 2×10 casos reais disjuntos, aprovação externa e aprovação dos controles operacionais |
+| Gate integral | `pnpm check`, Node 24 | 42 pacotes verdes; web 162, worker 85, gateway 22, release governance 11; Next.js compilou 32 páginas |
+| Custo | execução desta validação | zero chamada de modelo, busca ou API paga |
+
+O teste prova os contratos e suas transições. A seção acima cobre a persistência candidata, mas
+ainda não prova um DPA/ZDR vigente, SSO/SCIM/DLP/DR, nem a qualidade institucional de qualquer knowledge pack ou
+vertical. Esses pontos permanecem explicitamente pendentes na matriz do pre-mortem.
+
+## Brasil–Estados Unidos e idioma contínuo, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Uma verdade, dois idiomas | teste do switcher + rota autenticada | PT-BR/EN-US preservam projeto e query; o próximo turno carrega a locale atual sem criar outro caso |
+| Plano localizado | `@offroad/work-plan` | todos os 80 TaskSpecs têm projeção EN-US; IDs, dependências e TaskRuns permanecem canônicos |
+| Contexto do modelo | teste do worker | projeto iniciado em português recebe turno EN-US, histórico PT preservado e plano projetado em inglês |
+| Jurisdição independente | `@offroad/credit-ontology` | BR, US e cross-border combinam moeda e framework contábil sem depender da língua da conversa |
+| Evidência original | teste de schema | tradução referencia o fingerprint da fonte e não substitui o texto original |
+| Material localizado | teste de schema | projeção em outro idioma conserva fingerprints canônico e econômico e expõe estado da tradução |
+| Ponte conceitual | teste adversarial | conceito sem equivalente direto recusa alvo literal; CCB não pode ser promovida silenciosamente a “Note” |
+| Knowledge governado | teste de schema | fonte, data, versão, status, jurisdição, confidencialidade e escopo são obrigatórios; conteúdo privado global é recusado |
+| Packs mínimos | contrato | núcleo universal, Brasil, Estados Unidos e ponte BR–US são bilíngues; packs jurisdicionais exigem fontes datadas |
+| Gate integral | `pnpm check`, Node 24 | 42 pacotes verdes; web 162, worker 82, ontology 29 e work-plan 29 testes; Next.js compilou 32 páginas |
+| Custo | execução desta validação | zero chamada de modelo, pesquisa ou API paga |
+
+O gate valida a fundação e a troca contínua da superfície conversacional. Não comprova o conteúdo
+financeiro completo dos packs BR/US, equivalências revisadas uma a uma ou todos os materiais finais
+em padrão institucional bilíngue. Esses itens continuam sujeitos a corpus, gold cases, revisão e
+promoção individual.
+
+## Missão universal, inferência de entrada e memória autorizada, 01/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Produto não ancorado em instrumento | `@offroad/credit-ontology` | missão aceita necessidades combinadas, múltiplas famílias de capital, fontes de pagamento, reforços e três regimes de evidência |
+| Entrada sem default silencioso | home + `@offroad/work-plan` | nenhum atalho nasce selecionado; texto e anexos determinam o job e o atalho é apenas desempate |
+| Caso Camil | teste determinístico | reunião + pitch + companhia é `origination_thesis`; não vira `capital_planning` nem autorização de distribuição |
+| Linguagem externa protegida | `@offroad/agent-contracts` | “apresentar um pitch sobre” não autoriza contato; somente verbo externo com destinatário de mercado produz efeito governado |
+| Contexto material | teste do roteador | originação aguarda audiência, resultado pretendido e relacionamento/exposição; respostas em turnos sucessivos liberam a execução |
+| Memória antes da pergunta | teste do worker | projeto anterior da companhia entra no prompt antes do pacote de contexto e o worker não ativa o DAG enquanto faltam campos materiais |
+| Menor privilégio | migration + teste RLS | memória usa a organização do capability, exclui o projeto atual e exige a companhia do pedido; a definição é protegida por regressão SQL |
+| Estado visível | projeto web | painel mostra a pergunta de contexto, por que ela importa e “aguardando resposta” a partir da mensagem persistida |
+| i18n e tipagem | TypeScript | web, worker, ontology, work-plan e agent-contracts aprovados em Node 24; catálogos PT-BR/EN-US atualizados |
+| Gate integral local | `pnpm check`, Node 24 | lint, typecheck, testes e build aprovados nos 42 pacotes; Next.js compilou 32 páginas e o worker foi empacotado |
+| Banco reconstruído | Quality `33518894896` | todas as migrations aplicadas; não interferência, verticais públicas, ativação semântica e lint dos schemas `public/private` aprovados |
+| Jornada real | Quality `33518894896` | build web contra Supabase local e Playwright E2E aprovados; preview Vercel publicado |
+| Gate integral no CI | Quality `33518894896` | lint, typecheck, testes e build aprovados novamente em runner limpo nos 42 pacotes |
+| Custo da validação | execução local | zero chamadas de modelo, busca ou API paga |
+
+Esta evidência valida a fundação e o primeiro caminho de originação. Não prova pesquisa pública
+em paralelo, análise privada, estruturação, materiais, matching ou troca de plano de um projeto
+existente. A migration passou pelo replay efêmero do CI, mas ainda não foi aplicada a staging ou
+produção.
+
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
 
 | Evidência | Verificação | Resultado |

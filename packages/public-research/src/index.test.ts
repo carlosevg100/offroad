@@ -4,6 +4,7 @@ import {
   buildCompanyDebtResearchPlan,
   buildOriginationResearchPlan,
   buildPublicResearchPlan,
+  createPublicResearchCacheRecord,
   createPerplexitySearchProvider,
   runPublicResearch,
 } from "./index";
@@ -79,6 +80,50 @@ describe("governed public research", () => {
     expect(result).toMatchObject({status: "abstained", sources: [], failures: [{provider: "official", code: "official_unavailable"}]});
   });
 
+  it("keeps official evidence and continues to one complementary discovery provider", async () => {
+    const plan = buildPublicResearchPlan({legalName: "Empresa Exemplo"}).slice(0, 1);
+    const calls: string[] = [];
+    const result = await runPublicResearch({
+      plan,
+      providers: [
+        {
+          id: "official",
+          continueAfterSuccess: true,
+          search: async (query) => {
+            calls.push("official");
+            return [{
+              provider: "official", topic: query.topic, title: "Registro oficial",
+              url: "https://dados.cvm.gov.br/official", snippet: "Registro público.",
+              publishedAt: null, retrievedAt: "2026-09-01T12:00:00.000Z",
+              contentHash: "d".repeat(64),
+            }];
+          },
+        },
+        {
+          id: "perplexity",
+          search: async (query) => {
+            calls.push("perplexity");
+            return [{
+              provider: "perplexity", topic: query.topic, title: "Contexto complementar",
+              url: "https://example.com/context", snippet: "Contexto público.",
+              publishedAt: null, retrievedAt: "2026-09-01T12:00:00.000Z",
+              contentHash: "e".repeat(64),
+            }];
+          },
+        },
+        {
+          id: "openai",
+          search: async () => {
+            calls.push("openai");
+            return [];
+          },
+        },
+      ],
+    });
+    expect(calls).toEqual(["official", "perplexity"]);
+    expect(result.sources.map((source) => source.provider)).toEqual(["official", "perplexity"]);
+  });
+
   it("searches independent topics in parallel while preserving plan order", async () => {
     const plan = buildPublicResearchPlan({legalName: "Empresa Exemplo"});
     let inFlight = 0;
@@ -107,5 +152,48 @@ describe("governed public research", () => {
     });
     expect(peak).toBe(plan.length);
     expect(result.sources.map((source) => source.topic)).toEqual(plan.map((query) => query.topic));
+  });
+
+  it("reuses only fresh public query results and reports the avoided provider call", async () => {
+    const plan = buildPublicResearchPlan({legalName: "Empresa Exemplo"}).slice(0, 2);
+    const cachedSource = {
+      provider: "official" as const,
+      topic: plan[0]!.topic,
+      title: "Fonte oficial em cache",
+      url: "https://example.com/cached",
+      snippet: "Informação pública.",
+      publishedAt: null,
+      retrievedAt: "2026-09-01T10:00:00.000Z",
+      contentHash: "b".repeat(64),
+    };
+    const writes: unknown[] = [];
+    const result = await runPublicResearch({
+      plan,
+      now: () => new Date("2026-09-01T12:00:00.000Z"),
+      cache: {
+        load: async () => [createPublicResearchCacheRecord({
+          query: plan[0]!, sources: [cachedSource],
+          storedAt: new Date("2026-09-01T10:00:00.000Z"), ttlHours: 24,
+        })],
+        store: async (records) => { writes.push(...records); },
+      },
+      providers: [{
+        id: "official",
+        search: async (query) => [{
+          ...cachedSource,
+          topic: query.topic,
+          title: "Nova fonte oficial",
+          url: "https://example.com/new",
+          contentHash: "c".repeat(64),
+        }],
+      }],
+    });
+    expect(result.metrics).toMatchObject({
+      queryCount: 2, cacheHits: 1, providerCalls: 1,
+      providerCallsByProvider: {official: 1}, maxCostExposureUsdByProvider: {official: 0},
+      cacheWrites: 1,
+    });
+    expect(result.sources.map((source) => source.title)).toEqual(["Fonte oficial em cache", "Nova fonte oficial"]);
+    expect(writes).toHaveLength(1);
   });
 });

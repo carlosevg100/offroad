@@ -39,13 +39,20 @@ export const workspaceRequestRouteSchema = z.object({
 });
 export type WorkspaceRequestRoute = z.infer<typeof workspaceRequestRouteSchema>;
 
-export const executableWorkspaceJobSchema = z.enum(["company_debt_view", "origination_thesis"]);
+export const executableWorkspaceJobSchema = z.enum(["company_debt_view", "origination_thesis", "capital_planning"]);
 export type ExecutableWorkspaceJob = z.infer<typeof executableWorkspaceJobSchema>;
 
 export const workspaceExecutionRouteSchema = z.object({
   action: z.enum(["queue_specialized_job", "collect_required_context", "conversation_only"]),
   analysisScope: executableWorkspaceJobSchema.nullable(),
-  requirements: z.array(z.enum(["company_identity", "assignment_context"])).max(2),
+  requirements: z.array(z.enum([
+    "company_identity",
+    "assignment_context",
+    "capital_intent",
+    "meeting_audience",
+    "desired_outcome",
+    "relationship_context",
+  ])).max(6),
   reasonCode: z.string().regex(/^[a-z0-9_]+$/),
   modelRoutingCalls: z.literal(0),
 });
@@ -64,6 +71,7 @@ export function routeWorkspaceExecution(input: {
   documentCount: number;
   artifactTypes: string[];
   requestText: string;
+  conversationText?: string;
   requestIntent?: WorkspaceRequestIntent;
   requestEffect?: WorkspaceRequestEffect;
 }): WorkspaceExecutionRoute {
@@ -109,7 +117,9 @@ export function routeWorkspaceExecution(input: {
 
   const finalArtifact = analysisScope.data === "company_debt_view"
     ? "company_debt_diagnostic"
-    : "meeting_brief";
+    : analysisScope.data === "origination_thesis"
+      ? "meeting_brief"
+      : "alternative_map";
   if (input.artifactTypes.includes(finalArtifact)) {
     return workspaceExecutionRouteSchema.parse({
       action: "conversation_only",
@@ -122,8 +132,14 @@ export function routeWorkspaceExecution(input: {
 
   const requirements: WorkspaceExecutionRoute["requirements"] = [];
   if (!input.companyName?.trim()) requirements.push("company_identity");
-  if (analysisScope.data === "origination_thesis" && input.requestText.trim().length < 10) {
-    requirements.push("assignment_context");
+  if (analysisScope.data === "origination_thesis") {
+    const corpus = `${input.conversationText ?? ""}\n${input.requestText}`.normalize("NFKC");
+    if (!originationContextPatterns.audience.test(corpus)) requirements.push("meeting_audience");
+    if (!originationContextPatterns.outcome.test(corpus)) requirements.push("desired_outcome");
+    if (!originationContextPatterns.relationship.test(corpus)) requirements.push("relationship_context");
+  }
+  if (analysisScope.data === "capital_planning" && input.requestText.trim().length < 10) {
+    requirements.push("capital_intent");
   }
   return workspaceExecutionRouteSchema.parse({
     action: requirements.length > 0 ? "collect_required_context" : "queue_specialized_job",
@@ -134,8 +150,14 @@ export function routeWorkspaceExecution(input: {
   });
 }
 
+const originationContextPatterns = {
+  audience: /\b(ceo|cfo|chief\s+(?:executive|financial)|tesour(?:aria|eiro)|treasur(?:y|er)|ri\b|investor\s+relations|controladoria|controller|conselho|board|acionista|s[oó]cio|diretor(?:a)?|presidente|vice[- ]?presidente|vp\b)\b/i,
+  outcome: /\b(refinanc|refi\b|along|liability|mercado\s+de\s+d[ií]vida|debt\s+market|alavancagem|estrutura\s+de\s+capital|capital\s+structure|capex|expans[aã]o|aquisi[cç][aã]o|m\s*&\s*a|capital\s+de\s+giro|working\s+capital|liquidez|dividend|reperfil|vencimentos?|maturit(?:y|ies)|covenants?|garantias?|pricing|emiss[aã]o|deb[eê]nture|bond)\b/i,
+  relationship: /\b(relacionamento|relationship|exposi[cç][aã]o|exposure|credor|creditor|cr[eé]dito\s+(?:existente|atual)|linha\s+(?:existente|atual)|opera[cç][aã]o\s+(?:anterior|existente)|sem\s+relacionamento|nenhum\s+relacionamento|n[aã]o\s+temos\s+exposi[cç][aã]o|first\s+contact|primeiro\s+contato)\b/i,
+} as const;
+
 const patterns = {
-  authorizeExternal: /\b(enviar|envie|mandar|mande|apresentar|apresente|introduzir|introduza|contatar|contate|abordar|aborde|send|introduce|contact|approach)\b/i,
+  authorizeExternal: /(?:\b(?:enviar|envie|mandar|mande|introduzir|introduza|contatar|contate|abordar|aborde|send|introduce|contact|approach)\b.{0,140}\b(?:fundo|financiador|investidor|lender|fund|investor|destinat[aá]rio|recipient)\b|\b(?:apresentar|apresente|present)\b.{0,80}\b(?:ao|à|para\s+(?:o|a)|to)\b.{0,80}\b(?:fundo|financiador|investidor|lender|fund|investor)\b)/i,
   compile: /\b(gerar|gere|produzir|produza|montar|monte|compilar|compile|generate|prepare|preparar)\b.*\b(teaser|memo|memorando|term\s*sheet|modelo|model|material|pacote|package|data\s*room)\b/i,
   simulate: /\b(e\s+se|simular|simule|simula[cç][aã]o|cen[aá]rio|what\s+if|simulate|scenario)\b/i,
   approve: /\b(aprovo|aprovado|confirmo|confirmado|pode\s+seguir|de\s+acordo|aceito|approve|approved|confirm|confirmed|go\s+ahead)\b/i,
@@ -330,6 +352,15 @@ export const workspaceJobActivationSchema = z.discriminatedUnion("job", [
       thesisToTest: z.string().trim().max(3_000).optional(),
       audience: z.string().trim().max(240).optional(),
       meetingDate: z.iso.date().optional(),
+    }),
+  }),
+  z.object({
+    job: z.literal("capital_planning"),
+    company: workspaceActivationCompanySchema,
+    brief: z.object({
+      capitalIntent: z.string().trim().min(10).max(5_000),
+      knownConstraints: z.string().trim().max(3_000).optional(),
+      decisionContext: z.string().trim().max(3_000).optional(),
     }),
   }),
 ]);

@@ -1,6 +1,11 @@
 "use server";
 
-import {capitalProjectJob, capitalProjectJobSchema, type CapitalProjectJob} from "@offroad/work-plan";
+import {
+  capitalProjectJob,
+  capitalProjectJobSchema,
+  inferCapitalProjectJob,
+  type CapitalProjectJob,
+} from "@offroad/work-plan";
 import {z} from "zod";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -11,7 +16,7 @@ const localeSchema = z.enum(["pt-BR", "en-US"]);
 const startSchema = z.object({
   locale: localeSchema,
   prompt: z.string().trim().min(2).max(8000),
-  entryJob: capitalProjectJobSchema.exclude(["prepare_materials_and_process"]),
+  entryJobHint: capitalProjectJobSchema.exclude(["prepare_materials_and_process"]).nullable().optional(),
   hasAttachments: z.boolean(),
   requestId: z.string().uuid(),
 });
@@ -25,7 +30,7 @@ const projectSchema = z.object({locale: localeSchema, projectId: z.string().uuid
 
 export type AdvisorActionError = "invalid" | "denied" | "duplicate" | "not_found" | "save" | "processing";
 export type StartAdvisorProjectResult =
-  | {ok: true; projectId: string; sessionId: string}
+  | {ok: true; entryJob: CapitalProjectJob; projectId: string; sessionId: string}
   | {ok: false; error: AdvisorActionError};
 export type AdvisorMessageResult = {ok: true} | {ok: false; error: AdvisorActionError};
 export type AdvisorUploadScopeResult =
@@ -57,7 +62,12 @@ function projectTitle(prompt: string, job: CapitalProjectJob, locale: "pt-BR" | 
 export async function startAdvisorProject(input: unknown): Promise<StartAdvisorProjectResult> {
   const parsed = startSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
-  const {locale, prompt, entryJob, hasAttachments, requestId} = parsed.data;
+  const {locale, prompt, entryJobHint, hasAttachments, requestId} = parsed.data;
+  const entryJob = inferCapitalProjectJob({
+    message: prompt,
+    hasAttachments,
+    explicitHint: entryJobHint,
+  }).job;
   const {supabase} = await requireWorkspace(locale);
   const baseName = projectTitle(prompt, entryJob, locale);
   const args = {
@@ -83,12 +93,13 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
   const projectId = typeof payload?.capital_project_id === "string" ? payload.capital_project_id : null;
   const sessionId = typeof payload?.intake_session_id === "string" ? payload.intake_session_id : null;
   if (!projectId || !sessionId) return {ok: false, error: "save"};
-  if (!hasAttachments) {
+  const privateCase = ["structure_from_documents", "review_existing_operation"].includes(entryJob);
+  if (!hasAttachments && !privateCase) {
     // Queueing is intentionally separate from shell creation: the project must remain available
     // even when the worker is paused. The queue command is idempotent and costs nothing itself.
     await supabase.rpc("queue_advisor_initial_turn_v1", {p_project_id: projectId});
   }
-  return {ok: true, projectId, sessionId};
+  return {ok: true, entryJob, projectId, sessionId};
 }
 
 export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessageResult> {
@@ -140,14 +151,21 @@ export async function beginAdvisorProjectProcessing(input: unknown): Promise<Adv
   const parsed = projectSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
   const {supabase, organization, userId} = await requireWorkspace(parsed.data.locale);
-  const {data: session} = await supabase.from("document_intake_sessions")
-    .select("id")
-    .eq("organization_id", organization.id)
-    .eq("capital_project_id", parsed.data.projectId)
-    .order("created_at", {ascending: true})
-    .limit(1)
-    .maybeSingle();
-  if (!session) return {ok: false, error: "not_found"};
+  const [{data: session}, {data: project}] = await Promise.all([
+    supabase.from("document_intake_sessions")
+      .select("id")
+      .eq("organization_id", organization.id)
+      .eq("capital_project_id", parsed.data.projectId)
+      .order("created_at", {ascending: true})
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("capital_projects")
+      .select("entry_job")
+      .eq("organization_id", organization.id)
+      .eq("id", parsed.data.projectId)
+      .maybeSingle(),
+  ]);
+  if (!session || !project) return {ok: false, error: "not_found"};
   const outcome = await processIntakeSession({
     supabase,
     organizationId: organization.id,
@@ -155,9 +173,10 @@ export async function beginAdvisorProjectProcessing(input: unknown): Promise<Adv
     locale: parsed.data.locale,
     sessionId: session.id,
   });
-  // The conversation must remain alive even when document processing cannot start. Queueing the
-  // first turn is idempotent and lets the advisor report the real inventory/state instead of
-  // leaving a static placeholder behind.
+  const privateCase = ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
+  if (privateCase) return outcome.ok ? {ok: true} : {ok: false, error: "processing"};
+  // Public planning and origination executors still begin through their deterministic activation
+  // route. Private work instead advances through the preliminary evidence gate above.
   const queued = await supabase.rpc("queue_advisor_initial_turn_v1", {p_project_id: parsed.data.projectId});
   return outcome.ok && !queued.error ? {ok: true} : {ok: false, error: "processing"};
 }

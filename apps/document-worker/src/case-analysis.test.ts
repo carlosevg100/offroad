@@ -4,7 +4,7 @@ import {parseDocument} from "@offroad/document-parsers";
 import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
-import {caseAnalysisExecutionPlan, processCaseAnalysisJob} from "./case-analysis";
+import {caseAnalysisExecutionPlan, processCaseAnalysisJob, researchSubjectFromDeclaration} from "./case-analysis";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
 import {documentEvidence, encodeReceivablesEvidence} from "./receivables-evidence";
 
@@ -226,6 +226,7 @@ describe("worker case analysis", () => {
       },
       recordDealStateObject: async () => { throw new Error("the preliminary job must not mutate Deal State"); },
       recordCaseSnapshot: async () => { throw new Error("the preliminary job must not persist a case snapshot"); },
+      recordOperatingControlSnapshot: async () => { throw new Error("the preliminary job must not persist operating controls"); },
       recordControlledExecution: async () => { throw new Error("the preliminary job must not create a controlled execution"); },
       loadAgentContext: async () => ({}),
       loadCapitalProjectContext: async () => ({}),
@@ -243,6 +244,11 @@ describe("worker case analysis", () => {
         return {
           output: {
             understandingSummary: "A companhia atua em distribuição B2B e busca capital para sustentar o crescimento do ciclo operacional.",
+            companyName: "Cedro Distribuição",
+            legalName: "Cedro Distribuição e Logística Ltda.",
+            website: null,
+            archetypeId: "working_capital",
+            capitalObjective: "Sustentar o crescimento do ciclo operacional.",
             companySummary: "A companhia se apresenta como distribuidora B2B com carteira própria de recebíveis.",
             sectorSummary: "A distribuição B2B depende de gestão de estoque, prazo a clientes e disponibilidade de capital de giro.",
             positioningSummary: "As fontes consultadas confirmam a presença digital informada, mas não permitem concluir posição competitiva.",
@@ -312,6 +318,17 @@ describe("worker case analysis", () => {
       analysis_scope: "preliminary_understanding",
       spend: {calls: 1},
     });
+  });
+
+  it("starts bounded public research from an explicitly named company in the opening request", () => {
+    expect(researchSubjectFromDeclaration("Tenho uma reunião com a Camil amanhã e quero discutir alternativas de dívida.")).toEqual({
+      legalName: "Camil",
+    });
+    expect(researchSubjectFromDeclaration("Please analyze https://www.example-capital.com before the meeting.")).toEqual({
+      legalName: "example capital",
+      website: "https://www.example-capital.com",
+    });
+    expect(researchSubjectFromDeclaration("Quero analisar uma companhia do varejo.")).toBeNull();
   });
 
   it("defaults to a zero-model diagnostic plan before governed confirmations", () => {
@@ -610,6 +627,14 @@ describe("worker case analysis", () => {
         recordedState = state as Record<string, unknown>;
         return "manifest-1";
       },
+      recordOperatingControlSnapshot: async () => ({
+        id: "f3000000-0000-4000-8000-000000000001",
+        allowed: false,
+        blockers: ["capability_not_accredited_for_recommend"],
+        warnings: [],
+        decisionFingerprint: "f".repeat(64),
+        replayed: false,
+      }),
       recordControlledExecution: async () => "execution-1",
       loadAgentContext: async () => ({}),
       loadCapitalProjectContext: async () => ({}),

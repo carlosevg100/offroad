@@ -59,7 +59,7 @@ import {
   type Sourced,
 } from "@offroad/fund-mandate";
 import {sha256} from "@offroad/governed-retrieval";
-import {gatewayCallLogSchema, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
+import {gatewayCallLogSchema, providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {
   buildPublicResearchPlan,
   runPublicResearch,
@@ -94,6 +94,11 @@ import {
 } from "./receivables-evidence";
 import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-design";
 import {buildGovernedMatchScreen} from "./match-screen";
+import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
+import {
+  buildCaseOperatingControlSnapshot,
+  caseAnalysisCapabilityScope,
+} from "./operating-control-snapshot";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const retrievalContextSchema = z.object({
@@ -386,6 +391,8 @@ const preliminaryCaseInputSchema = z.object({
   session: recordSchema,
   candidates: z.array(recordSchema),
   documents: z.array(recordSchema),
+  initial_request: z.string().trim().min(1).max(8_000).nullable().default(null),
+  correction_request: z.string().trim().min(3).max(4_000).nullable().default(null),
 });
 
 export type CaseAnalysisDependencies = {
@@ -393,6 +400,11 @@ export type CaseAnalysisDependencies = {
   gateway: ModelGateway;
   lineage: () => GatewayCallLog[];
   researchProviders?: PublicSearchProvider[];
+  officialResearchProviderFactory?: WorkerOfficialResearchProviderFactory;
+  securityEvidence?: {
+    providerPolicyEnforced: boolean;
+    externalToolsAllowlisted: boolean;
+  };
   now?: () => Date;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -519,6 +531,11 @@ function structureProposalForPersistence(state: ReturnType<typeof publicCaseStat
 
 const preliminaryNarrativeSchema = z.object({
   understandingSummary: z.string().min(40).max(2_400),
+  companyName: z.string().min(2).max(240).nullable(),
+  legalName: z.string().min(2).max(240).nullable(),
+  website: z.url().max(500).nullable(),
+  archetypeId: archetypeIdSchema,
+  capitalObjective: z.string().min(5).max(1_600).nullable(),
   companySummary: z.string().min(20).max(1_600),
   sectorSummary: z.string().min(20).max(1_200).nullable(),
   positioningSummary: z.string().min(20).max(1_200).nullable(),
@@ -551,6 +568,12 @@ Use only the supplied evidence classes:
 Rules:
 - Explain plainly what the company does, its sector/context, and what it wants the financing to
   achieve. Make the result easy for the user to correct.
+- The initial project request and correction request are user declarations. Extract an identity or
+  capital objective from them only when the text states it directly. Otherwise return null.
+- Classify the declared use of proceeds into exactly one archetypeId. This is a request-routing
+  label, not a recommendation: working_capital, growth_expansion, acquisition, refinance,
+  equipment_finance, venture_debt or other. A receivables mention is collateral or repayment
+  context, not automatically the capital need.
 - A public-source assertion must cite one or more URLs included in the input. Never create a URL.
 - Do not convert a public claim into a company fact. Describe positioning cautiously.
 - Never state that the operation is viable, affordable, financeable or correctly structured.
@@ -573,7 +596,9 @@ async function processPreliminaryUnderstanding(
     job,
     candidates,
     session: raw.session,
-    providers: dependencies.researchProviders ?? [],
+    discoveryProviders: dependencies.researchProviders ?? [],
+    officialProviderFactory: dependencies.officialResearchProviderFactory,
+    declaration: raw.initial_request,
   });
   const facts = raw.candidates
     .filter((candidate) => candidate.anchor_verified === true)
@@ -590,6 +615,8 @@ async function processPreliminaryUnderstanding(
   const preliminaryInput = {
     locale: raw.session.locale ?? "pt-BR",
     userDeclaration: {
+      initialRequest: raw.initial_request,
+      requestedCorrection: raw.correction_request,
       companyProfile: recordOrNull(raw.session.company_profile),
       operation: {
         archetype: raw.session.archetype ?? null,
@@ -625,6 +652,7 @@ async function processPreliminaryUnderstanding(
     input: [{type: "text", text: JSON.stringify(preliminaryInput)}],
     schema: preliminaryNarrativeSchema,
     schemaName: "preliminary_understanding_v1",
+    dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
     maxOutputTokens: 3_500,
     metadata: {
       jobId: job.job_id,
@@ -650,6 +678,7 @@ async function processPreliminaryUnderstanding(
     documents: raw.documents,
     publicResearch,
     narrative,
+    initialRequest: raw.initial_request,
   });
   const preliminaryUnderstandingId = await dependencies.queue.recordPreliminaryUnderstanding(job, {
     inputFingerprint,
@@ -724,7 +753,8 @@ export async function processCaseAnalysisJob(
       job,
       candidates,
       session: raw.session,
-      providers: dependencies.researchProviders ?? [],
+      discoveryProviders: dependencies.researchProviders ?? [],
+      officialProviderFactory: dependencies.officialResearchProviderFactory,
     });
     publicResearchCostExposureUsd = publicResearch.costExposureUsd;
 
@@ -806,6 +836,7 @@ export async function processCaseAnalysisJob(
           })}],
           schema: structureAlternativesInputSchema,
           schemaName: "structure_alternatives",
+          dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
           maxOutputTokens: 8_000,
           useShadow,
           metadata: {caseId: job.intake_session_id, caseFingerprint: context.caseFingerprint},
@@ -893,6 +924,7 @@ export async function processCaseAnalysisJob(
           }],
           schema: caseBriefSchema,
           schemaName: "case_brief",
+          dataHandling: {classification: "restricted", purpose: "artifact_generation", requiredPolicyVersion: providerDataPolicyVersion},
           useShadow,
         });
         writerProvider = generated.provider;
@@ -913,6 +945,7 @@ export async function processCaseAnalysisJob(
           input: [{type: "text", text: buildSemanticAuditInput({brief, facts, calculations})}],
           schema: semanticAuditSchema,
           schemaName: "semantic_claim_audit",
+          dataHandling: {classification: "restricted", purpose: "evaluation", requiredPolicyVersion: providerDataPolicyVersion},
           // The evidence review must not be performed by the provider that wrote the case.
           model: writerProvider === "openai"
             ? {provider: "anthropic", model: "claude-opus-5", effort: "high"}
@@ -1057,6 +1090,34 @@ export async function processCaseAnalysisJob(
     const manifestId = raw._execution.mode === "primary"
       ? await dependencies.queue.recordCaseSnapshot(job, manifest, stateWithManifest)
       : undefined;
+    const operatingControl = raw._execution.mode === "primary"
+      ? await dependencies.queue.recordOperatingControlSnapshot(job, {
+          scopeId: caseAnalysisCapabilityScope,
+          requestedUse: "internal_decision",
+          inputFingerprint,
+          binding: {
+            caseFingerprint: fingerprintJson({
+              operationTruth: result.state.operationTruth,
+              structureTruth: result.state.structureTruth,
+              pricingTruth: result.state.pricingTruth,
+            }),
+            materialFingerprint: result.state.materialTruth.fingerprint,
+            manifestFingerprint: manifest.manifestFingerprint,
+            controlledExecutionFingerprint: result.report.reportFingerprint,
+          },
+          snapshot: buildCaseOperatingControlSnapshot({
+            state: result.state,
+            session: raw.session,
+            snapshotAt: (dependencies.now?.() ?? new Date()).toISOString(),
+            costUsd: dependencies.gateway.spent().costUsd + publicResearchCostExposureUsd,
+            maxCostUsd: job.payload.model_budget?.max_cost_usd ?? null,
+            security: dependencies.securityEvidence ?? {
+              providerPolicyEnforced: false,
+              externalToolsAllowlisted: false,
+            },
+          }),
+        })
+      : undefined;
     await dependencies.queue.writeStage(job, "case_analysis", "succeeded", {
       reportFingerprint: result.report.reportFingerprint,
       manifestFingerprint: manifest.manifestFingerprint,
@@ -1070,9 +1131,12 @@ export async function processCaseAnalysisJob(
       dealWorkflowStage: raw.deal_workflow.stage,
       materialsAllowed: executionPlan.produceMaterials,
       matchingAllowed: executionPlan.screenMandates,
+      operatingControlAllowed: operatingControl?.allowed ?? false,
+      operatingControlBlockers: operatingControl?.blockers ?? ["not_evaluated_for_non_primary_execution"],
     });
     await dependencies.queue.complete(job, {
       ...(manifestId ? {manifest_id: manifestId} : {}),
+      ...(operatingControl ? {operating_control: operatingControl} : {}),
       report: result.report,
       ...(executionPlan.screenMandates ? {match_details: result.state.matching} : {}),
       ...(receivables?.privateReport ? {receivables_analysis: receivables.privateReport} : {}),
@@ -1112,6 +1176,7 @@ function buildPreliminaryUnderstanding(input: {
   documents: Record<string, unknown>[];
   publicResearch: PublicResearchSummary;
   narrative: PreliminaryNarrative;
+  initialRequest: string | null;
 }) {
   const companyProfile = recordOrNull(input.session.company_profile);
   const companyName = stringFrom(companyProfile, "name")
@@ -1119,16 +1184,22 @@ function buildPreliminaryUnderstanding(input: {
     ?? publicCandidate(input.candidates, "company.display_name")
     ?? publicCandidate(input.candidates, "company.name")
     ?? publicCandidate(input.candidates, "company.legal_name")
+    ?? input.narrative.companyName
     ?? (input.locale === "pt" ? "Companhia ainda não identificada" : "Company not yet identified");
   const legalName = stringFrom(companyProfile, "legal_name")
-    ?? publicCandidate(input.candidates, "company.legal_name");
+    ?? publicCandidate(input.candidates, "company.legal_name")
+    ?? input.narrative.legalName;
   const description = stringFrom(companyProfile, "description");
   const website = stringFrom(companyProfile, "website")
-    ?? publicCandidate(input.candidates, "company.website");
+    ?? publicCandidate(input.candidates, "company.website")
+    ?? input.narrative.website;
   const declaredObjective = typeof input.session.capital_objective === "string"
     ? input.session.capital_objective.trim()
     : "";
-  const objective = declaredObjective || publicCandidate(input.candidates, "transaction.purpose") || "";
+  const objective = declaredObjective
+    || publicCandidate(input.candidates, "transaction.purpose")
+    || input.narrative.capitalObjective
+    || "";
   const requestedAmount = numericString(input.session.requested_amount)
     ?? numericString(publicCandidate(input.candidates, "transaction.requested_amount"));
   const currency = typeof input.session.capital_currency === "string" && input.session.capital_currency.trim()
@@ -1143,7 +1214,8 @@ function buildPreliminaryUnderstanding(input: {
   const requestedTermMonths = Number.isInteger(input.session.requested_term_months)
     ? Number(input.session.requested_term_months)
     : Number(publicCandidate(input.candidates, "transaction.desired_term_months")) || null;
-  const archetypeId = archetypeIdSchema.catch("other").parse(input.session.archetype);
+  const archetypeId = input.narrative.archetypeId
+    ?? archetypeIdSchema.catch("other").parse(input.session.archetype);
   const archetypeLabels: Record<string, {pt: string; en: string}> = {
     growth_expansion: {pt: "crescimento ou expansão", en: "growth or expansion"},
     working_capital: {pt: "capital de giro", en: "working capital"},
@@ -1738,35 +1810,55 @@ async function collectPublicResearch(input: {
   job: CaseAnalysisJob;
   candidates: FactCandidate[];
   session: Record<string, unknown>;
-  providers: PublicSearchProvider[];
+  discoveryProviders: PublicSearchProvider[];
+  officialProviderFactory?: WorkerOfficialResearchProviderFactory | undefined;
+  declaration?: string | null;
 }): Promise<PublicResearchSummary> {
   const companyProfile = recordOrNull(input.session.company_profile);
+  const declaredSubject = researchSubjectFromDeclaration(input.declaration);
   const legalName = publicCandidate(input.candidates, "company.legal_name")
     ?? stringFrom(companyProfile, "legal_name")
-    ?? stringFrom(companyProfile, "name");
-  if (!legalName || input.providers.length === 0) {
+    ?? stringFrom(companyProfile, "name")
+    ?? declaredSubject?.legalName;
+  if (!legalName || (input.discoveryProviders.length === 0 && !input.officialProviderFactory)) {
     await input.queue.writeStage(input.job, "public_research", "skipped", {
       code: legalName ? "public_research_provider_unavailable" : "public_identity_unavailable",
     });
     return {status: "skipped", sourceCount: 0, topicCounts: {}, researchRunId: null, costExposureUsd: 0, sources: []};
   }
   const website = publicCandidate(input.candidates, "company.website")
-    ?? stringFrom(companyProfile, "website");
-  const plan = buildPublicResearchPlan({
+    ?? stringFrom(companyProfile, "website")
+    ?? declaredSubject?.website;
+  const subject = {
     legalName,
     ...(website && z.url().safeParse(website).success ? {website} : {}),
     ...(typeof input.session.sector === "string" && input.session.sector.trim() ? {sector: input.session.sector} : {}),
     ...(typeof input.session.geography === "string" && input.session.geography.trim() ? {geography: input.session.geography} : {}),
+  };
+  const plan = buildPublicResearchPlan(subject);
+  const locale = input.job.payload.locale ?? (input.session.locale === "en-US" ? "en-US" : "pt-BR");
+  const runtime = prepareWorkerDebtResearch({
+    work: input.job.kind === "preliminary_analysis" ? "capital_planning" : "structure_from_documents",
+    locale, subject,
+    discoveryProviders: input.discoveryProviders,
+    officialProviderFactory: input.officialProviderFactory,
+    evidenceBasis: "mixed",
   });
-  await input.queue.writeStage(input.job, "public_research", "started");
-  const result = await runPublicResearch({plan, providers: input.providers, maxSourcesPerQuery: 5});
-  const costExposureUsd = input.providers.some((provider) => provider.id === "perplexity")
-    ? plan.length * 0.005
-    : 0;
+  await input.queue.writeStage(input.job, "public_research", "started", {
+    queryCount: plan.length, researchStrategyFingerprint: runtime.strategy.fingerprint,
+    jurisdiction: runtime.strategy.jurisdiction,
+    jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
+  });
+  const result = await runPublicResearch({
+    plan, providers: runtime.providers, maxSourcesPerQuery: 5,
+  });
+  const costExposureUsd = Object.values(result.metrics.maxCostExposureUsdByProvider)
+    .reduce((total, value) => total + value, 0);
   const persisted = {
     ...result,
-    providerChain: input.providers.map((provider) => provider.id),
-  } satisfies ResearchRun & {providerChain: string[]};
+    providerChain: runtime.providers.map((provider) => provider.id),
+    debtResearchStrategy: runtime.strategy,
+  } satisfies ResearchRun & {providerChain: string[]; debtResearchStrategy: typeof runtime.strategy};
   const researchRunId = await input.queue.recordPublicResearch(input.job, plan, persisted);
   const topicCounts = result.sources.reduce<Record<string, number>>((counts, source) => {
     counts[source.topic] = (counts[source.topic] ?? 0) + 1;
@@ -1778,6 +1870,8 @@ async function collectPublicResearch(input: {
     topicCounts,
     researchRunId,
     costExposureUsd,
+    researchMetrics: result.metrics,
+    researchStrategyFingerprint: runtime.strategy.fingerprint,
   }, {
     external_search_cost_usd: costExposureUsd,
   });
@@ -1796,6 +1890,63 @@ async function collectPublicResearch(input: {
       publishedAt: source.publishedAt,
     })),
   };
+}
+
+/**
+ * Finds only an explicitly named company or URL in the user's opening request. This is not an
+ * entity-resolution model and deliberately abstains on lowercase or ambiguous prose. Its sole
+ * purpose is to let a request such as "reunião com a Camil" start bounded public research in the
+ * same preliminary run instead of paying for a separate conversational model call first.
+ */
+export function researchSubjectFromDeclaration(
+  declaration: string | null | undefined,
+): {legalName: string; website?: string} | null {
+  const text = declaration?.normalize("NFKC").replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  const url = text.match(/https?:\/\/[^\s<>()]+/iu)?.[0]?.replace(/[.,;:!?]+$/u, "");
+  const website = url && z.url().safeParse(url).success ? url : undefined;
+  const namePatterns = [
+    /(?:reuni[aã]o|conversa|encontro)\s+com\s+(?:a\s+|o\s+)?(?<name>[\p{Lu}][\p{L}\d&'.-]*(?:\s+(?:(?:de|da|do|das|dos|e)\s+)?[\p{Lu}][\p{L}\d&'.-]*){0,5})/iu,
+    /(?:assessorando|analisar|analise|estudar|sobre)\s+(?:a\s+|o\s+)?(?:companhia\s+|empresa\s+)?(?<name>[\p{Lu}][\p{L}\d&'.-]*(?:\s+(?:(?:de|da|do|das|dos|e)\s+)?[\p{Lu}][\p{L}\d&'.-]*){0,5})/iu,
+    /(?:meeting|conversation)\s+with\s+(?:the\s+)?(?<name>[\p{Lu}][\p{L}\d&'.-]*(?:\s+(?:(?:of|and|the)\s+)?[\p{Lu}][\p{L}\d&'.-]*){0,5})/iu,
+    /(?:analyze|analyse|study|about)\s+(?:the\s+)?(?:company\s+)?(?<name>[\p{Lu}][\p{L}\d&'.-]*(?:\s+(?:(?:of|and|the)\s+)?[\p{Lu}][\p{L}\d&'.-]*){0,5})/iu,
+  ];
+  const name = namePatterns
+    .map((pattern) => properNamePrefix(text.match(pattern)?.groups?.name))
+    .find((candidate): candidate is string => Boolean(
+      candidate
+      && candidate.length >= 2
+      && candidate[0] === candidate[0]?.toLocaleUpperCase("pt-BR")
+      && candidate[0] !== candidate[0]?.toLocaleLowerCase("pt-BR"),
+    ));
+  if (name) return {legalName: name, ...(website ? {website} : {})};
+  if (!website) return null;
+  const hostname = new URL(website).hostname.replace(/^www\./u, "");
+  const label = hostname.split(".")[0]?.replace(/[-_]+/gu, " ").trim();
+  return label ? {legalName: label, website} : null;
+}
+
+function properNamePrefix(candidate: string | undefined): string | null {
+  if (!candidate) return null;
+  const tokens = candidate.trim().split(/\s+/u);
+  const connectors = new Set(["de", "da", "do", "das", "dos", "e", "of", "and", "the"]);
+  const accepted: string[] = [];
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index]!.replace(/[,;:!?]+$/u, "");
+    const normalized = token.toLocaleLowerCase("pt-BR");
+    if (connectors.has(normalized) && accepted.length > 0) {
+      const next = tokens[index + 1]?.[0];
+      if (next && next === next.toLocaleUpperCase("pt-BR") && next !== next.toLocaleLowerCase("pt-BR")) {
+        accepted.push(token);
+        continue;
+      }
+      break;
+    }
+    const first = token[0];
+    if (!first || first !== first.toLocaleUpperCase("pt-BR") || first === first.toLocaleLowerCase("pt-BR")) break;
+    accepted.push(token);
+  }
+  return accepted.length ? accepted.join(" ") : null;
 }
 
 function recordOrNull(value: unknown): Record<string, unknown> | null {

@@ -1,6 +1,6 @@
 # Offroad Capital: Constituição de Produto e Operação
 
-Versão: 2.0 · 31 de agosto de 2026
+Versão: 2.2 · 1 de setembro de 2026
 
 Status: camada 0, fonte canônica de definição, fronteiras e comportamento do produto
 
@@ -128,6 +128,89 @@ permissões, não agentes autônomos conversando entre si.
 Pesquisa pública, dados privados do projeto, conhecimento da casa e inteligência de mercado
 permanecem em grafos e políticas distintos. Pesquisa externa nunca altera Company Truth sem
 evidência, reconciliação e promoção explícita.
+
+### 5.1 Missão universal de dívida
+
+A fundação não é organizada por recebíveis, FIDC ou qualquer outro instrumento. Cada trabalho
+combina cinco eixos independentes antes de recomendar uma alternativa:
+
+1. **necessidade de capital:** refinanciamento e liability management; liquidez e giro; capex e
+   expansão; aquisição; project finance; ativos e equipamentos; recebíveis, estoques e contratos;
+   bridge e take-out; eventos de acionista; comércio exterior e cadeia de fornecedores; capital
+   flexível; special situations; ou combinação desses usos;
+2. **capacidade e fonte de pagamento:** fluxo operacional, recebíveis, ativo, contrato, projeto,
+   refinanciamento, venda, sponsor support ou combinação explícita;
+3. **família de capital e provedores:** bancário bilateral, club ou sindicado, mercado de capitais,
+   securitização, fundos e crédito privado, direitos creditórios, asset-backed, project ou
+   acquisition finance, comércio exterior e agro, mezzanine ou capital híbrido e situações
+   especiais;
+4. **alocação de risco e reforços:** prazo, amortização, covenants, garantias, subordinação, reserva,
+   cash trap, condições precedentes, intercreditor e riscos retidos por cada parte;
+5. **executabilidade de mercado:** elegibilidade, ticket, mandato, timing, pricing, precedentes,
+   documentação, aprovações e probabilidade explicável de execução.
+
+Necessidade e instrumento são relações muitos-para-muitos. Uma expansão pode combinar linha
+bancária, financiamento de equipamento e recebíveis; uma operação de recebíveis pode financiar
+giro, capex ou aquisição. O sistema representa tranches, usos mistos, condições precedentes e
+fontes de pagamento diferentes. Nenhuma sugestão da interface pode ancorar silenciosamente o
+trabalho numa única família.
+
+O mesmo modelo opera sob três regimes de evidência:
+
+- **público:** resolve entidade, pesquisa fontes públicas vigentes, cita procedência e distingue
+  fato, inferência e desconhecido;
+- **privado autorizado:** lê primeiro o que foi enviado, compara com o mínimo material para a
+  decisão e pergunta somente o que continua faltando;
+- **híbrido:** reaproveita a base pública vigente e a reconcilia com documentos privados, sem
+  misturar procedência ou permitir que informação privada de outro projeto atravesse o escopo.
+
+Memória pública reutilizável contém matéria-prima e claims com fonte e validade, nunca a conversa
+ou a inteligência privada de outro usuário. Memória de projetos anteriores só reaparece para
+usuários autorizados na mesma organização, com projeto, data, versão e origem visíveis.
+
+### 5.2 Brasil, Estados Unidos e linguagem contínua
+
+Idioma de trabalho e jurisdição econômica são dimensões independentes. Um projeto brasileiro pode
+ser conduzido e entregue em inglês; um caso americano pode ser discutido em português; uma
+estrutura cross-border pode ter os dois idiomas e as duas jurisdições. Mudar o idioma nunca cria
+outro projeto, outro Deal State, outro cálculo ou outra evidência.
+
+O usuário pode alternar PT-BR e EN-US a qualquer momento. A interface, a próxima resposta, o plano
+de trabalho e os materiais solicitados são projetados no idioma atual. Mensagens e documentos já
+existentes permanecem no idioma em que foram produzidos. A fonte original nunca é sobrescrita:
+tradução de trabalho é derivada, declara fingerprint da fonte e começa como `machine_draft`.
+Material destinado a terceiro exige tradução revisada conforme o gate editorial aplicável.
+
+O conhecimento possui camadas combináveis e versionadas:
+
+1. **núcleo universal de dívida:** análise financeira, capacidade, estrutura de capital, risco,
+   cálculo, evidência e conceitos econômicos canônicos;
+2. **Brasil:** instrumentos, provedores, garantias, documentação, contabilidade, regulação e
+   prática de mercado brasileiras;
+3. **Estados Unidos:** instrumentos, providers, security mechanics, documentação, US GAAP,
+   regulação e prática de mercado americanas;
+4. **ponte Brasil–Estados Unidos:** diferenças de moeda, contabilidade, garantias, instrumentos,
+   documentação, mercado e execução cross-border;
+5. **depth packs:** setor, necessidade, instrumento e estrutura aplicáveis ao caso;
+6. **mercado vigente:** transações, preços, termos e mandatos com data de observação e validade.
+
+Cada registro de conhecimento declara conceito canônico, jurisdição, idioma, fonte, publisher,
+tipo de fonte, data de publicação ou vigência quando houver, data de captura, `as_of_date`, versão,
+status, fingerprint, confidencialidade, escopo de reutilização e classe de atualização. Conteúdo
+público e conhecimento aprovado da casa podem ser reutilizados; material privado de organização
+ou projeto nunca atravessa seu escopo autorizado.
+
+Tradução linguística não constitui equivalência jurídica, contábil ou econômica. Toda ponte entre
+conceitos BR e US declara relação `exact`, `functional`, `partial` ou `no_direct_equivalent`, além
+de ressalvas e fontes. Uma Cédula de Crédito Bancário, por exemplo, não pode virar silenciosamente
+“note”. Quando não houver equivalente direto, o termo original e sua função econômica são
+explicados.
+
+O DAG resolve jurisdição e regime de evidência ao identificar a companhia, define idioma e
+audiência antes de compilar entregáveis, carrega o knowledge pack aplicável antes de pesquisar
+setor e regulação, aplica filtros jurisdicionais ao universo de instrumentos e compila variantes
+de materiais a partir do mesmo snapshot econômico. Trocar o idioma invalida somente projeções
+linguísticas dependentes, nunca extração, conciliação, cálculos ou decisões já confirmadas.
 
 ## 6. Princípios inegociáveis
 
