@@ -5,6 +5,7 @@ import {
   buildOriginationResearchPlan,
   buildPublicResearchPlan,
   createPublicResearchCacheRecord,
+  createOpenAIWebSearchProvider,
   createPerplexitySearchProvider,
   runPublicResearch,
 } from "./index";
@@ -69,6 +70,37 @@ describe("governed public research", () => {
     expect(result.status).toBe("succeeded");
     expect(result.sources[0]).toMatchObject({provider: "perplexity", topic: "identity", publishedAt: "2026-08-20"});
     expect(result.sources[0]?.contentHash).toHaveLength(64);
+  });
+
+  it("keeps the cited OpenAI web-search passage instead of persisting source URLs without evidence", async () => {
+    const provider = createOpenAIWebSearchProvider({
+      apiKey: "secret-openai-key",
+      now: () => new Date("2026-09-02T12:00:00.000Z"),
+      fetch: async (_url, init) => {
+        const body = JSON.parse(String(init?.body));
+        expect(body).toMatchObject({store: false, max_tool_calls: 1, max_output_tokens: 1_400});
+        expect(String(body.input)).toContain("Prefer primary and official sources");
+        return new Response(JSON.stringify({output: [
+          {type: "web_search_call", action: {sources: [{title: "Release oficial", url: "https://ri.example.com/release"}]}},
+          {type: "message", content: [{
+            type: "output_text",
+            text: "A companhia divulgou seu cronograma de amortização no release oficial.\nOutro fato público.",
+            annotations: [{
+              type: "url_citation", start_index: 0, end_index: 72,
+              title: "Release oficial", url: "https://ri.example.com/release",
+            }],
+          }]},
+        ]}), {status: 200});
+      },
+    });
+    const plan = buildCompanyDebtResearchPlan({legalName: "Empresa Exemplo"}).slice(0, 1);
+    const result = await runPublicResearch({plan, providers: [provider]});
+    expect(result.sources).toHaveLength(1);
+    expect(result.sources[0]).toMatchObject({
+      provider: "openai",
+      url: "https://ri.example.com/release",
+      snippet: "A companhia divulgou seu cronograma de amortização no release oficial.",
+    });
   });
 
   it("falls back deterministically and abstains when every provider fails", async () => {

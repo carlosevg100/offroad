@@ -261,26 +261,44 @@ export function createOpenAIWebSearchProvider(input: {
         body: JSON.stringify({
           model: input.model ?? "gpt-5.6-terra",
           store: false,
-          input: query.query,
+          input: [
+            "Research the public debt-intelligence query below.",
+            "Return at most five concise factual findings and cite every finding inline.",
+            "Prefer primary and official sources. Do not infer facts that the sources do not support.",
+            `Query: ${query.query}`,
+          ].join("\n"),
           tools: [{type: "web_search", ...(query.domainAllowlist.length > 0 ? {filters: {allowed_domains: query.domainAllowlist}} : {})}],
           tool_choice: "required",
           max_tool_calls: 1,
+          max_output_tokens: 1_400,
           include: ["web_search_call.action.sources"],
         }),
       });
       if (!response.ok) throw Object.assign(new Error("openai web search failed"), {code: `openai_http_${response.status}`});
       const payload = openAIResponseSchema.parse(await response.json());
-      const candidates = payload.output.flatMap((item) => [
-        ...(item.type === "web_search_call" ? item.action?.sources ?? [] : []),
-        ...(item.type === "message" ? item.content.flatMap((content) => content.annotations ?? []) : []),
-      ]);
-      return [...new Map(candidates.filter((candidate) => candidate.url).map((candidate) => [canonicalUrl(candidate.url!), candidate])).values()]
-        .map((candidate) => source({
+      const candidates = payload.output.flatMap((item) => {
+        if (item.type === "web_search_call") return (item.action?.sources ?? []).map((candidate) => ({...candidate, snippet: ""}));
+        if (item.type !== "message") return [];
+        return item.content.flatMap((content) => content.annotations.map((annotation) => ({
+          ...annotation,
+          snippet: citationContext(content.text, annotation.start_index, annotation.end_index),
+        })));
+      });
+      const byUrl = new Map<string, (typeof candidates)[number]>();
+      for (const candidate of candidates) {
+        if (!candidate.url) continue;
+        const key = canonicalUrl(candidate.url);
+        const prior = byUrl.get(key);
+        // The web-search call lists every consulted URL; the message annotations identify the
+        // exact sourced passage. Preserve the latter whenever both shapes name the same URL.
+        if (!prior || candidate.snippet.length > prior.snippet.length) byUrl.set(key, candidate);
+      }
+      return [...byUrl.values()].map((candidate) => source({
           provider: "openai",
           topic: query.topic,
           title: candidate.title ?? new URL(candidate.url!).hostname,
           url: candidate.url!,
-          snippet: "",
+          snippet: candidate.snippet,
           publishedAt: null,
           retrievedAt: now().toISOString(),
         }));
@@ -310,14 +328,39 @@ const perplexityResponseSchema = z.object({
   })),
 });
 
-const webSourceSchema = z.object({title: z.string().optional(), url: z.url().optional()});
+const webSourceSchema = z.object({
+  type: z.string().optional(),
+  title: z.string().optional(),
+  url: z.url().optional(),
+  start_index: z.number().int().nonnegative().optional(),
+  end_index: z.number().int().nonnegative().optional(),
+});
 const openAIResponseSchema = z.object({
   output: z.array(z.object({
     type: z.string(),
     action: z.object({sources: z.array(webSourceSchema).default([])}).optional(),
-    content: z.array(z.object({annotations: z.array(webSourceSchema).default([])})).default([]),
+    content: z.array(z.object({
+      text: z.string().default(""),
+      annotations: z.array(webSourceSchema).default([]),
+    })).default([]),
   }).passthrough()).default([]),
 });
+
+function citationContext(text: string, start: number | undefined, end: number | undefined): string {
+  if (!text.trim()) return "";
+  if (start === undefined || end === undefined || start > text.length || end < start) {
+    return text.trim().slice(0, 2_000);
+  }
+  const safeStart = Math.max(0, Math.min(start, text.length));
+  const safeEnd = Math.max(safeStart, Math.min(end, text.length));
+  const paragraphStart = Math.max(0, text.lastIndexOf("\n", safeStart - 1) + 1);
+  // Citation indices can include the rendered citation marker and therefore point one or two
+  // characters past a paragraph break. Anchor the end to the paragraph that contains the
+  // citation start; otherwise the next uncited paragraph would be attributed to this URL.
+  const nextBreak = text.indexOf("\n", safeStart);
+  const paragraphEnd = nextBreak === -1 ? text.length : nextBreak;
+  return text.slice(paragraphStart, paragraphEnd).trim().slice(0, 2_000);
+}
 
 function source(input: Omit<ResearchSource, "contentHash">): ResearchSource {
   return researchSourceSchema.parse({...input, contentHash: sha256(`${canonicalUrl(input.url)}\n${input.snippet}`)});
