@@ -114,7 +114,11 @@ jobs:
           container["image"] = os.environ["IMAGE_URI"]
           arns = dict(line.split() for line in open("/tmp/secret-arns.txt") if line.strip())
           for secret in container["secrets"]:
-              secret["valueFrom"] = arns[secret["valueFrom"]]
+              secret_arn = arns[secret["valueFrom"]]
+              json_key = secret.pop("jsonKey", None)
+              # ECS can inject one field from a JSON Secrets Manager value without
+              # exposing or parsing the complete secret in the application.
+              secret["valueFrom"] = f"{secret_arn}:{json_key}::" if json_key else secret_arn
           json.dump(spec, open("/tmp/taskdef.json", "w"))
           PY
           ARN=$(aws ecs register-task-definition \
