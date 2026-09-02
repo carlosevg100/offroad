@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 import {describe, expect, it} from "vitest";
 import {
   assertPublicQuerySafe,
@@ -31,6 +32,9 @@ describe("governed public research", () => {
     expect(plan.filter((query) => query.topic === "market")).toHaveLength(2);
     expect(plan.some((query) => query.query.includes("endividamento"))).toBe(true);
     expect(plan.every((query) => query.query.length <= 400)).toBe(true);
+    expect(plan.every((query) => query.id === createHash("sha256")
+      .update(`${query.topic}:${query.query}`)
+      .digest("hex"))).toBe(true);
   });
 
   it("builds a bounded plan from public identity fields only", () => {

@@ -80,10 +80,9 @@ export function buildOriginationResearchPlan(raw: PublicResearchSubject): Resear
   ];
   return candidates.map((candidate) => {
     assertPublicQuerySafe(candidate.query);
-    // The plan version is part of the cache identity. A prior implementation cached discovery
-    // results even when the official CVM provider failed, so changing the acquisition contract
-    // must not silently reuse that incomplete entry until its TTL expires.
-    return researchQuerySchema.parse({...candidate, id: sha256(`origination-public-research.v2:${candidate.topic}:${candidate.query}`)});
+    // Cache schema versions isolate acquisition-contract changes. Keep the query id independently
+    // verifiable as sha256(topic:query), matching the capability-bound database contract.
+    return researchQuerySchema.parse({...candidate, id: sha256(`${candidate.topic}:${candidate.query}`)});
   });
 }
 
