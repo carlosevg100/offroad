@@ -512,7 +512,8 @@ export async function processOriginationThesisJob(
     const modelAttempts = summarizeModelAttempts(dependencies.lineage());
     await dependencies.queue.writeStage(job, "origination_thesis", "failed", {code, modelAttempts}).catch(() => undefined);
     const spend = dependencies.gateway.spent();
-    await dependencies.queue.fail(job, {code, spend, modelAttempts}, {retryable: code !== "origination_task_plan_mismatch", retryInSeconds: 30});
+    const retryable = code !== "origination_task_plan_mismatch" && code !== "all_attempts_failed";
+    await dependencies.queue.fail(job, {code, spend, modelAttempts}, {retryable, retryInSeconds: 30});
     log("origination_thesis.failed", {job: job.job_id, code, modelAttempts});
     return {status: "failed"};
   }

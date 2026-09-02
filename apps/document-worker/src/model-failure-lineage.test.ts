@@ -24,6 +24,7 @@ describe("model failure lineage", () => {
       usedFallback: false,
       fromCassette: false,
       schemaName: "origination_meeting_brief_v1",
+      providerError: {name: "RateLimitError", status: 429, type: "rate_limit_error"},
       metadata: {projectId: "private-project"},
     } satisfies GatewayCallLog;
 
@@ -35,6 +36,7 @@ describe("model failure lineage", () => {
       costStatus: "unknown",
       usedFallback: false,
       stopReason: "other",
+      providerError: {name: "RateLimitError", status: 429, type: "rate_limit_error"},
     }]);
   });
 });

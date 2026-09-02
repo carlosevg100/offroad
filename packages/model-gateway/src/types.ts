@@ -117,6 +117,16 @@ export type GatewayResult<T> = {
   attempts: Array<{provider: Provider; model: string; outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected"; message?: string}>;
 };
 
+export type ProviderErrorDiagnostic = {
+  /** Error class only; provider messages are deliberately never persisted. */
+  name: string;
+  /** HTTP status when exposed by the provider SDK. */
+  status?: number;
+  /** Machine-readable provider code/type only. */
+  code?: string;
+  type?: string;
+};
+
 export type GatewayCallLog = {
   invocationId: string;
   task: TaskKind;
@@ -139,6 +149,7 @@ export type GatewayCallLog = {
   dataClassification?: DataHandlingContext["classification"];
   providerPolicyVersion?: string;
   metadata?: Record<string, string>;
+  providerError?: ProviderErrorDiagnostic;
 };
 
 export class ModelGatewayError extends Error {
