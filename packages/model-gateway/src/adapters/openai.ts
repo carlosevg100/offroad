@@ -11,13 +11,15 @@ export type OpenAIAdapterOptions = {
 
 type JsonSchema = Record<string, unknown>;
 
-const strictUnsupportedKeywords = new Set(["minLength", "maxLength", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "minItems", "maxItems", "default", "$schema"]);
+const strictUnsupportedKeywords = new Set(["minLength", "maxLength", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "minItems", "maxItems", "default", "$schema", "format"]);
 
 /**
  * OpenAI strict structured outputs require every property to be listed in
  * `required` and `additionalProperties: false`; optional properties become
  * nullable and the gateway strips nulls before zod validation. Numeric/length
- * constraints are validated client-side by zod, so they are removed here.
+ * constraints and string formats are validated client-side by zod, so they are removed here.
+ * In particular, z.url() emits `format: "uri"`, which is not part of the provider's strict
+ * structured-output subset and makes an otherwise valid request fail before inference.
  */
 export function toOpenAIStrictSchema(schema: JsonSchema): JsonSchema {
   const walk = (node: unknown): unknown => {

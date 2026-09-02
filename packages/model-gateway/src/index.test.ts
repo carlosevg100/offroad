@@ -214,6 +214,7 @@ describe("adapters (pure builders)", () => {
       expect(schema.additionalProperties).toBe(false);
       expect(schema.properties.note).toEqual({type: ["string", "null"]});
       expect(JSON.stringify(schema)).not.toContain("minimum");
+      expect(JSON.stringify(schema)).not.toContain('"format"');
     }
     const first = Array.isArray(params.input) ? params.input[0] : undefined;
     const content = first && "content" in first && Array.isArray(first.content) ? first.content.map((c) => c.type) : [];
@@ -225,7 +226,7 @@ describe("adapters (pure builders)", () => {
     expect(mapOpenAIStopReason({status: "incomplete", incomplete_details: {reason: "max_output_tokens"}, output: []})).toBe("max_tokens");
     expect(mapOpenAIStopReason({status: "completed", incomplete_details: null, output: [{type: "message", id: "m", role: "assistant", status: "completed", content: [{type: "refusal", refusal: "no"}]}]})).toBe("refusal");
     expect(stripNulls({a: null, b: {c: null, d: 1}, e: [null, {f: null}]})).toEqual({b: {d: 1}, e: [null, {}]});
-    expect(toOpenAIStrictSchema({type: "object", properties: {a: {type: "string", maxLength: 3}, b: {anyOf: [{type: "string"}, {type: "number"}]}}, required: ["a"], additionalProperties: false, $schema: "x"})).toEqual({
+    expect(toOpenAIStrictSchema({type: "object", properties: {a: {type: "string", maxLength: 3, format: "uri"}, b: {anyOf: [{type: "string"}, {type: "number"}]}}, required: ["a"], additionalProperties: false, $schema: "x"})).toEqual({
       type: "object",
       properties: {a: {type: "string"}, b: {anyOf: [{type: "string"}, {type: "number"}, {type: "null"}]}},
       required: ["a", "b"],
@@ -300,6 +301,32 @@ describe("gateway", () => {
     expect(gateway.spent().unknownCostCalls).toBe(1);
     expect(gateway.spent().calls).toBe(2);
     expect(JSON.stringify(logs)).not.toContain("private content");
+  });
+
+  it("records content-free provider error diagnostics", async () => {
+    const logs: GatewayCallLog[] = [];
+    const error = Object.assign(new Error("sensitive provider message"), {
+      name: "RateLimitError",
+      status: 429,
+      code: "rate_limit_exceeded",
+      type: "rate_limit_error",
+    });
+    const gateway = createModelGateway({
+      adapters: {
+        anthropic: fakeAdapter("anthropic", [error]),
+        openai: fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]),
+      },
+      onCall: (log) => logs.push(log),
+    });
+
+    await gateway.complete(baseRequest);
+    expect(logs[0]?.providerError).toEqual({
+      name: "RateLimitError",
+      status: 429,
+      code: "rate_limit_exceeded",
+      type: "rate_limit_error",
+    });
+    expect(JSON.stringify(logs)).not.toContain("sensitive provider message");
   });
 
   it("throws when every attempt fails and reports each attempt", async () => {

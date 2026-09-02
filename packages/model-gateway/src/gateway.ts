@@ -17,6 +17,7 @@ import {
   type ModelRef,
   type Provider,
   type ProviderAdapter,
+  type ProviderErrorDiagnostic,
   type TaskKind,
 } from "./types";
 
@@ -175,6 +176,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         }
       } catch (error) {
         if (error instanceof ModelGatewayError && error.code === "cassette_missing") throw error;
+        const providerError = providerErrorDiagnostic(error);
         attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error)});
         spent.calls += 1;
         spent.unknownCostCalls += 1;
@@ -190,6 +192,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           inputFingerprint,
           outputFingerprint: fingerprint({outcome: "error", kind: error instanceof Error ? error.name : "unknown"}),
           providerPolicyVersion,
+          providerError,
         });
         continue;
       }
@@ -263,6 +266,7 @@ function emit(
     outputFingerprint: string;
     notCalled?: boolean;
     providerPolicyVersion: string | undefined;
+    providerError?: ProviderErrorDiagnostic;
   },
 ): void {
   if (!config.onCall) return;
@@ -289,7 +293,28 @@ function emit(
   if (entry.request.dataHandling) log.dataClassification = entry.request.dataHandling.classification;
   if (entry.providerPolicyVersion) log.providerPolicyVersion = entry.providerPolicyVersion;
   if (entry.request.metadata) log.metadata = entry.request.metadata;
+  if (entry.providerError) log.providerError = entry.providerError;
   config.onCall(log);
+}
+
+function providerErrorDiagnostic(error: unknown): ProviderErrorDiagnostic {
+  const value = error && typeof error === "object" ? error as Record<string, unknown> : {};
+  const nested = value.error && typeof value.error === "object" ? value.error as Record<string, unknown> : {};
+  const diagnostic: ProviderErrorDiagnostic = {
+    name: error instanceof Error ? error.name : "UnknownError",
+  };
+  const status = typeof value.status === "number" ? value.status : undefined;
+  const code = firstShortString(value.code, nested.code);
+  const type = firstShortString(value.type, nested.type);
+  if (status !== undefined) diagnostic.status = status;
+  if (code) diagnostic.code = code;
+  if (type) diagnostic.type = type;
+  return diagnostic;
+}
+
+function firstShortString(...values: unknown[]): string | undefined {
+  const value = values.find((candidate) => typeof candidate === "string" && candidate.length > 0);
+  return typeof value === "string" ? value.slice(0, 80) : undefined;
 }
 
 function fingerprint(value: unknown): string {
