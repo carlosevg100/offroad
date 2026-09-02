@@ -1,4 +1,14 @@
 import {z} from "zod";
+import {providerDataAssuranceSchema} from "@offroad/model-gateway";
+
+const providerAssuranceJsonSchema = z.string().transform((value, context) => {
+  try {
+    return providerDataAssuranceSchema.parse(JSON.parse(value));
+  } catch {
+    context.addIssue({code: "custom", message: "must be a valid provider assurance record"});
+    return z.NEVER;
+  }
+});
 
 /**
  * Worker configuration. Everything arrives through the environment, which the task
@@ -44,6 +54,12 @@ const schema = z.object({
   ENABLE_FIRECRAWL: z.string().default("false").transform((value) => value === "true"),
   OFFROAD_RESEARCH_USER_AGENT: z.string().min(10).max(300)
     .default("Offroad Capital research@offroad.capital"),
+  ENFORCE_PROVIDER_DATA_POLICY: z
+    .string()
+    .default("false")
+    .transform((value) => value === "true"),
+  ANTHROPIC_DATA_ASSURANCE_JSON: providerAssuranceJsonSchema.optional(),
+  OPENAI_DATA_ASSURANCE_JSON: providerAssuranceJsonSchema.optional(),
 
   PIPELINE_VERSION: z.string().min(1).default("f2-2026.08.24"),
   LEASE_SECONDS: z.coerce.number().int().min(60).max(3600).default(600),
@@ -86,6 +102,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
     const missing = parsed.error.issues.map((issue) => issue.path.join(".")).join(", ");
     throw new Error(`worker configuration is invalid or incomplete: ${missing}`);
   }
+  if (parsed.data.ENFORCE_PROVIDER_DATA_POLICY) {
+    if (parsed.data.ANTHROPIC_API_KEY && !parsed.data.ANTHROPIC_DATA_ASSURANCE_JSON) {
+      throw new Error("worker configuration is invalid or incomplete: ANTHROPIC_DATA_ASSURANCE_JSON");
+    }
+    if (parsed.data.OPENAI_API_KEY && !parsed.data.OPENAI_DATA_ASSURANCE_JSON) {
+      throw new Error("worker configuration is invalid or incomplete: OPENAI_DATA_ASSURANCE_JSON");
+    }
+  }
   return parsed.data;
 }
 
@@ -105,6 +129,9 @@ export function describeConfig(config: WorkerConfig): Record<string, string | nu
     openaiWebSearchEnabled: config.ENABLE_OPENAI_WEB_SEARCH,
     firecrawlKey: config.FIRECRAWL_API_KEY ? "present" : "absent",
     firecrawlEnabled: config.ENABLE_FIRECRAWL,
+    providerDataPolicyEnforced: config.ENFORCE_PROVIDER_DATA_POLICY,
+    anthropicDataAssurance: config.ANTHROPIC_DATA_ASSURANCE_JSON ? "present" : "absent",
+    openaiDataAssurance: config.OPENAI_DATA_ASSURANCE_JSON ? "present" : "absent",
     ocrLanguages: config.OCR_LANGUAGES,
     maxCostUsdPerJob: config.MODEL_MAX_COST_USD_PER_JOB,
     maxCallsPerJob: config.MODEL_MAX_CALLS_PER_JOB,

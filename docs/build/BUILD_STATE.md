@@ -29,6 +29,124 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 - Estado: candidate local. Nenhuma migration foi aplicada, nenhum conector pago foi ativado e
   nenhuma chamada paga foi feita. Os quatro jobs ainda sem executor continuam honestamente fora
   desta promoção.
+## Persistência fail-closed do control plane, 01/09/2026
+
+O candidato passa a persistir o que antes existia apenas como contrato puro. Um job de análise
+grava, com sua capability temporária, o snapshot que aquela execução efetivamente provou. O
+banco exige o input congelado e os fingerprints do relatório e manifesto persistidos, recalcula a
+decisão, guarda blockers e warnings, e não aceita que o worker declare o próprio credenciamento.
+A ausência de policy real do provider, orçamento, fonte, matemática conciliada ou decisão
+confirmada continua visível e bloqueada.
+
+O registry privado de capacidades é append-only e exige escopo e etapa estreitos. `production`
+requer procedimento, owner, implementação, gold/adversarial, zero crítico e vinte IDs distintos
+vindos do ledger de execuções controladas. Nenhum escopo foi artificialmente credenciado por esta
+entrega.
+
+Alterações em documento, input econômico, Deal State ou intervenção humana canônica geram um
+evento de invalidação persistente. Aprovação de pacote externo e introdução qualificada exigem
+snapshot atual, acreditação de produção e fingerprints exatos de caso, material, match, plano e
+autorização; qualquer evento posterior fecha o gate.
+
+Esta é uma mudança candidata. O [Quality run 33529805136](https://github.com/carlosevg100/offroad/actions/runs/33529805136)
+reconstruiu o banco do zero e passou RLS, adversariais, verticais, DAG, lint, gate integral e E2E.
+Não houve migration remota, deploy, ativação de provider ou chamada paga.
+
+## Control plane do pre-mortem, 01/09/2026
+
+O candidato transforma os principais modos de morte do produto em contratos fail-closed. A nova
+camada não calcula um score: fonte insuficiente, cálculo crítico não determinístico, artefato stale,
+boundary de segurança não verificada ou autoridade ausente continuam bloqueando mesmo se todo o
+resto estiver verde.
+
+`@offroad/release-governance` passa a acreditar capacidades por escopo e etapa (`Represent`,
+`Analyze`, `Recommend`, `Structure`, `External release`) e a separar uso preliminar, decisão
+interna, material externo e ação externa. Produção exige procedimento, implementação, owner,
+gold/adversarial, zero crítico e vinte casos reais distintos. O rollout `active` mantém duas ondas
+disjuntas de dez casos e agora também exige aceite do control plane.
+
+O mesmo pacote ganhou invalidação transitiva de evidência até cálculos, claims, materiais,
+aprovações e lender matching; e um ledger tipado de intervenção humana capaz de expor correção
+manual recorrente e minutos não capturados. Os contratos puros agora possuem a implementação
+persistente candidata descrita acima; ela ainda não está ativa em ambiente remoto.
+
+`@offroad/model-gateway` agora recebe classe e finalidade em todas as chamadas reais de
+classificação, extração, conversa, análise, estrutura, redação e auditoria. Existe policy
+fail-closed por provider, inclusive fallback, exigindo assurance vigente, finalidade/classe
+permitidas, treinamento proibido e `no_store` para dado não público. O worker aceita os registros
+por ambiente, mas enforcement permanece desligado até DPA/ZDR/base legal reais serem cadastrados;
+nenhuma promessa contratual de vendor foi inventada.
+
+A matriz completa está em `docs/build/PRE_MORTEM_CONTROL_MATRIX.md`. Este slice não adiciona SSO,
+SCIM, DLP, pentest, disaster recovery ou acreditação automática dos knowledge packs. Nenhuma API
+paga foi chamada e produção não foi alterada. O gate integral `pnpm check` em Node 24 aprovou os
+42 pacotes: web com 162 testes, worker com 85, model gateway com 22, release governance com 11 e
+build Next.js com 32 páginas.
+
+## Fundação Brasil–Estados Unidos e idioma contínuo, 01/09/2026
+
+O candidato passa a separar idioma de trabalho, idioma das fontes e jurisdição econômica. O mesmo
+projeto pode alternar PT-BR e EN-US pela navegação autenticada, preservando `projectId`, query e
+histórico. A locale do turno atual governa a próxima resposta do worker. O painel traduz os 80
+rótulos canônicos do plano sem duplicar IDs, TaskRuns ou o DAG congelado.
+
+`@offroad/credit-ontology` ganhou contratos para perfil BR, US ou cross-border, moeda, framework
+contábil, política de idioma, evidência original e tradução atribuída. A projeção de material em
+outro idioma referencia o mesmo fingerprint de conteúdo e o mesmo fingerprint econômico. Uma
+tradução nunca substitui a evidência nem dispara novamente análise, conciliação ou cálculo.
+
+A arquitetura de knowledge agora exige núcleo universal, pack Brasil, pack Estados Unidos e ponte
+BR–US, além dos packs setoriais, de instrumento e de mercado. Registros carregam fonte, publisher,
+jurisdição, idioma, data de vigência/captura, `as_of_date`, versão, status, fingerprint,
+confidencialidade, escopo de reutilização e classe de atualização. A ponte explicita equivalência
+exata, funcional, parcial ou inexistente; CCB não pode ser traduzida silenciosamente como “note”.
+
+As TaskSpecs continuam exatamente 80. M01 resolve jurisdição e regime de evidência; M05 define
+idioma e audiência; C02 carrega conhecimento aplicável; S03 aplica filtros jurisdicionais; A09
+gera variantes por audiência e idioma. O registry e o compilador subiram para `2026.09.01-v3`;
+planos já congelados permanecem imutáveis.
+
+Esta fatia implementa contrato, projeção de interface/conversa e guardrails. Ela não afirma que os
+quatro knowledge packs estejam preenchidos ou acreditados, nem que todos os materiais finais já
+possuam compilador bilíngue institucional. Popular, revisar, versionar e promover esse corpus e os
+compiladores continua sendo um programa de conteúdo e evals próprio. `pnpm check` com Node 24
+passou nos 42 pacotes; web tem 162 testes, worker 82, ontology e work-plan 29 cada, e o Next.js
+compilou 32 páginas. Nenhuma API paga foi chamada.
+
+## Missão universal de dívida, entrada inferida e memória anterior ao questionário, 01/09/2026
+
+O candidato atual remove a ancoragem implícita num instrumento. A nova ontologia representa a
+missão por necessidade de capital, fonte de pagamento, família de capital, alocação de risco e
+executabilidade de mercado, sob evidência pública, privada autorizada ou híbrida. Recebíveis
+passam a ser uma alternativa entre várias, não o produto-base. Usos mistos e tranches distintas
+são válidos desde a fundação.
+
+A home deixou de gravar `capital_planning` apenas porque nenhum atalho foi escolhido. Um roteador
+determinístico infere o job do pedido e dos anexos; o atalho funciona somente como desempate. O
+pedido “tenho uma reunião com a Camil e quero apresentar um pitch de alternativas de dívida” é
+classificado como tese de originação, não como ordem de contato externo. Antes de ativar o DAG, o
+contrato exige audiência, objetivo da reunião e relacionamento ou exposição atual, reunidos num
+único pacote curto de contexto.
+
+O worker recebe agora até oito projetos anteriores relevantes da mesma organização quando a
+companhia citada coincide. Essa memória é capability-bound, exclui o projeto corrente e não
+pesquisa outros tenants. O agente deve mencionar projeto, recência e work product anterior antes
+de perguntar se o usuário deseja atualizar ou começar algo novo. O painel de trabalho exibe a
+questão pendente e seu motivo enquanto aguarda a resposta.
+
+Este slice ainda é candidato local. Ele não foi aplicado a staging ou produção e não executa uma
+pesquisa pública em background enquanto faltam audiência e relacionamento; portanto a interface
+é obrigada a dizer apenas o que está realmente em execução. Mudança de intenção que exija trocar
+o plano congelado de um projeto já existente e os executores privados de análise, estrutura,
+materiais e matching continuam sendo fatias separadas.
+
+O gate integral local em Node 24 aprovou lint, typecheck, testes e build nos 42 pacotes; o Next.js
+compilou 32 páginas e o worker foi empacotado. O Quality run `33518894896` repetiu esse gate em
+runner limpo e também reconstruiu o Supabase do zero: migration, suíte integral de não
+interferência, verticais públicas, ativação semântica, schema lint e E2E/Playwright passaram. O
+preview Vercel foi publicado. Os testes focados cobrem o caso Camil, contexto em turnos
+sucessivos, memória anterior à pergunta, regimes de evidência e usos mistos. Zero chamada de
+modelo, busca ou API paga foi realizada.
 
 ## Roteamento semântico e ativação governada de DAG, 01/09/2026
 

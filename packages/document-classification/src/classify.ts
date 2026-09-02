@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {documentKinds, documentKindSchema, evidenceRankFor, informationClassSchema, suggestedDocumentName, type DocumentKind, type InformationClass} from "@offroad/credit-ontology";
-import type {ModelGateway} from "@offroad/model-gateway";
+import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
 import type {ParseResult} from "@offroad/document-parsers";
 
 /**
@@ -107,6 +107,7 @@ export function createClassifier(gateway: ModelGateway): Classifier {
       system: systemPrompt,
       schema: profileSchema,
       schemaName: "document_profile",
+      dataHandling: {classification: "restricted", purpose: "document_processing", requiredPolicyVersion: providerDataPolicyVersion},
       input: [
         {
           type: "text",

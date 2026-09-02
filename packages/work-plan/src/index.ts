@@ -1,7 +1,9 @@
 import {z} from "zod";
 
 export * from "./task-registry";
+export * from "./task-localization";
 export * from "./capital-jobs";
+export * from "./job-inference";
 
 export const workPlanTaskIds = [
   "secure_documents",

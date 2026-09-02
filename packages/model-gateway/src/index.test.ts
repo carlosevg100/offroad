@@ -14,6 +14,7 @@ import {
   defaultTaskPolicies,
   deniedModelPatterns,
   estimateCostUsd,
+  evaluateProviderDataPolicy,
   isValidCpf,
   mapAnthropicStopReason,
   mapAnthropicUsage,
@@ -27,6 +28,7 @@ import {
   type AdapterRequest,
   type AdapterResponse,
   type GatewayCallLog,
+  type ProviderDataAssurance,
   type ProviderAdapter,
 } from "./index";
 
@@ -66,6 +68,19 @@ const baseRequest = {
   schema: outputSchema,
   schemaName: "document_profile",
 };
+
+function assurance(provider: "anthropic" | "openai", allowedClassifications: ProviderDataAssurance["allowedClassifications"]): ProviderDataAssurance {
+  return {
+    provider,
+    policyVersion: "vendor-policy-2026-09",
+    approvedPurposes: ["document_processing", "case_analysis", "artifact_generation", "public_research", "localization", "evaluation"],
+    allowedClassifications,
+    trainingUse: "prohibited",
+    storage: "no_store",
+    reviewedAt: "2026-09-01T12:00:00.000Z",
+    validThrough: "2027-03-01T12:00:00.000Z",
+  };
+}
 
 describe("policy", () => {
   it("denies Haiku and cheap sub-tiers absolutely, and keeps everything else out of production", () => {
@@ -340,6 +355,63 @@ describe("gateway", () => {
     expect(second.costUsd).toBe(0);
     expect(replayer.spent().calls).toBe(0);
     await expect(replayer.complete({...baseRequest, system: "different"})).rejects.toMatchObject({code: "cassette_missing"});
+  });
+
+  it("fails closed when data-policy context is absent and never calls a provider", async () => {
+    const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5})]);
+    const gateway = createModelGateway({
+      adapters: {anthropic},
+      providerDataPolicy: {enforce: true, assurances: {anthropic: assurance("anthropic", ["public", "confidential"])}},
+    });
+    await expect(gateway.complete(baseRequest)).rejects.toMatchObject({code: "data_policy_violation"});
+    expect(anthropic.calls).toHaveLength(0);
+  });
+
+  it("routes only to a provider whose current assurance covers the purpose and data class", async () => {
+    const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5})]);
+    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.7})]);
+    const logs: GatewayCallLog[] = [];
+    const gateway = createModelGateway({
+      adapters: {anthropic, openai},
+      providerDataPolicy: {
+        enforce: true,
+        assurances: {
+          anthropic: assurance("anthropic", ["public"]),
+          openai: assurance("openai", ["public", "restricted"]),
+        },
+      },
+      onCall: (log) => logs.push(log),
+      now: () => Date.parse("2026-09-01T13:00:00.000Z"),
+    });
+    const result = await gateway.complete({
+      ...baseRequest,
+      dataHandling: {classification: "restricted", purpose: "document_processing", requiredPolicyVersion: "vendor-policy-2026-09"},
+    });
+    expect(result.provider).toBe("openai");
+    expect(result.usedFallback).toBe(true);
+    expect(result.attempts.map((entry) => entry.outcome)).toEqual(["policy_rejected", "ok"]);
+    expect(anthropic.calls).toHaveLength(0);
+    expect(openai.calls).toHaveLength(1);
+    expect(gateway.spent().calls).toBe(1);
+    expect(logs.map((entry) => entry.costStatus)).toEqual(["not_called", "measured"]);
+    expect(logs.every((entry) => entry.dataClassification === "restricted")).toBe(true);
+    expect(logs[1]?.providerPolicyVersion).toBe("vendor-policy-2026-09");
+  });
+
+  it("rejects expired or permissive provider assurances", () => {
+    const expired = {...assurance("openai", ["confidential"]), validThrough: "2026-08-01T12:00:00.000Z"};
+    expect(evaluateProviderDataPolicy({
+      provider: "openai",
+      context: {classification: "confidential", purpose: "case_analysis", requiredPolicyVersion: "vendor-policy-2026-09"},
+      assurance: expired,
+      now: new Date("2026-09-01T13:00:00.000Z"),
+    }).reasons).toContain("provider_assurance_expired");
+    expect(evaluateProviderDataPolicy({
+      provider: "openai",
+      context: {classification: "confidential", purpose: "case_analysis", requiredPolicyVersion: "vendor-policy-2026-09"},
+      assurance: {...assurance("openai", ["confidential"]), storage: "provider_retention", trainingUse: "unknown"},
+      now: new Date("2026-09-01T13:00:00.000Z"),
+    }).reasons).toEqual(expect.arrayContaining(["provider_training_use_not_prohibited", "non_public_data_requires_no_store"]));
   });
 });
 

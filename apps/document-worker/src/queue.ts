@@ -180,6 +180,20 @@ export type QueueClient = {
     dependencies?: unknown[];
   }): Promise<string>;
   recordCaseSnapshot(job: FullCaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
+  recordOperatingControlSnapshot(job: FullCaseAnalysisJob, input: {
+    scopeId: string;
+    requestedUse: "internal_decision";
+    inputFingerprint: string;
+    binding: unknown;
+    snapshot: unknown;
+  }): Promise<{
+    id: string;
+    allowed: boolean;
+    blockers: string[];
+    warnings: string[];
+    decisionFingerprint: string;
+    replayed: boolean;
+  }>;
   recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
   loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
@@ -490,6 +504,26 @@ export function createQueueClient(
         p_case_state: state,
       });
       return String(data);
+    },
+
+    async recordOperatingControlSnapshot(job, input) {
+      const data = await call("worker_record_operating_control_snapshot_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_scope_id: input.scopeId,
+        p_requested_use: input.requestedUse,
+        p_input_fingerprint: input.inputFingerprint,
+        p_binding: input.binding,
+        p_snapshot: input.snapshot,
+      });
+      return z.object({
+        id: z.uuid(),
+        allowed: z.boolean(),
+        blockers: z.array(z.string()),
+        warnings: z.array(z.string()),
+        decisionFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        replayed: z.boolean(),
+      }).parse(data);
     },
 
     async recordControlledExecution(job, report, manifest, comparison) {

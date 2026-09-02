@@ -136,6 +136,13 @@ async function main(): Promise<void> {
       : 0;
     const gateway = createModelGateway({
       adapters,
+      providerDataPolicy: {
+        enforce: config.ENFORCE_PROVIDER_DATA_POLICY,
+        assurances: {
+          ...(config.ANTHROPIC_DATA_ASSURANCE_JSON ? {anthropic: config.ANTHROPIC_DATA_ASSURANCE_JSON} : {}),
+          ...(config.OPENAI_DATA_ASSURANCE_JSON ? {openai: config.OPENAI_DATA_ASSURANCE_JSON} : {}),
+        },
+      },
       budget: {
         maxCostUsd: configuredMax - researchReserveUsd,
         maxCalls: Math.min(config.MODEL_MAX_CALLS_PER_JOB, requestedBudget?.max_calls ?? config.MODEL_MAX_CALLS_PER_JOB),
@@ -236,6 +243,10 @@ async function main(): Promise<void> {
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
           researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
           officialResearchProviderFactory,
+          securityEvidence: {
+            providerPolicyEnforced: config.ENFORCE_PROVIDER_DATA_POLICY,
+            externalToolsAllowlisted: true,
+          },
           log,
         })
       : job.kind === "capital_project_analysis"

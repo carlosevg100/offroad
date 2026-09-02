@@ -1,5 +1,5 @@
 import {z} from "zod";
-import type {ModelGateway} from "@offroad/model-gateway";
+import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
 import {
   indexLayer,
   rawExtractionCandidateSchema,
@@ -183,6 +183,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         input: [{type: "text", text: buildExtractionPrompt({profile, fileName: options.fileName, fields, evidence: chunk})}],
         schema: salvageExtractorOutputSchema,
         schemaName: "extractor_output",
+        dataHandling: {classification: "restricted", purpose: "document_processing", requiredPolicyVersion: providerDataPolicyVersion},
         ...(options.maxOutputTokens ? {maxOutputTokens: options.maxOutputTokens} : {}),
         cacheKey: `extract:${profile.kind}`,
         ...(options.model ? {model: options.model} : {}),
@@ -254,6 +255,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         })}],
         schema: salvageExtractorOutputSchema,
         schemaName: "extractor_output",
+        dataHandling: {classification: "restricted", purpose: "document_processing", requiredPolicyVersion: providerDataPolicyVersion},
         maxOutputTokens: options.maxOutputTokens ?? 4_000,
         cacheKey: `extract-table:${profile.kind}`,
         ...(options.model ? {model: options.model} : {}),

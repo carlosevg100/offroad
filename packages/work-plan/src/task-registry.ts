@@ -42,11 +42,11 @@ const task = (
  * case, E2E and measured cost exist. Registry presence never implies production readiness.
  */
 export const offroadTaskRegistry = [
-  task("M01", "Resolver companhia e grupo", "case", [], "extraction"),
+  task("M01", "Resolver companhia, grupo, jurisdição e regime de evidência", "case", [], "extraction"),
   task("M02", "Normalizar objetivo", "case", [], "extraction"),
   task("M03", "Registrar restrições", "case", ["M02"], "extraction"),
   task("M04", "Inferir arquétipos candidatos", "case", ["M01", "M02"], "judgment"),
-  task("M05", "Definir entregáveis", "case", ["M02", "M03"], "deterministic"),
+  task("M05", "Definir entregáveis, idioma e audiência", "case", ["M02", "M03"], "deterministic"),
   task("M06", "Compilar plano de tarefas", "case", ["M04", "M05"], "deterministic", "commit"),
   // The corrigible meeting brief is a compilation of the scoped execution plan plus the
   // public sector/regulatory and comparable-transaction research. Keeping those research
@@ -66,7 +66,7 @@ export const offroadTaskRegistry = [
   task("D11", "Processar nova resposta e invalidar descendentes", "case", ["D10"], "deterministic", "commit"),
 
   task("C01", "Reconstruir modelo de negócio", "case", ["D06"], "judgment"),
-  task("C02", "Pesquisar setor e regulação", "knowledge", ["M01", "M04"], "research", "none"),
+  task("C02", "Carregar conhecimento aplicável e pesquisar setor e regulação", "knowledge", ["M01", "M04"], "research", "none"),
   task("C03", "Construir spreading", "case", ["D06", "D07"], "deterministic"),
   task("C04", "Analisar qualidade do resultado", "case", ["C03"], "judgment"),
   task("C05", "Mapear dívida econômica", "case", ["D06"], "deterministic"),
@@ -79,7 +79,7 @@ export const offroadTaskRegistry = [
 
   task("S01", "Comparar pedido e necessidade", "case", ["M02", "C06", "C10"], "deterministic"),
   task("S02", "Gerar universo de instrumentos", "case", ["M04", "C10"], "deterministic"),
-  task("S03", "Aplicar filtros jurídicos e econômicos", "case", ["S02"], "deterministic"),
+  task("S03", "Aplicar filtros jurídicos, jurisdicionais e econômicos", "case", ["S02"], "deterministic"),
   task("S04", "Mapear garantias e haircuts", "case", ["D06", "C09"], "deterministic"),
   task("S05", "Desenhar alternativas", "case", ["S01", "S03", "S04"], "judgment"),
   task("S06", "Pesquisar preço e termos comparáveis", "knowledge", ["S05"], "research", "none"),
@@ -109,7 +109,7 @@ export const offroadTaskRegistry = [
   task("A06", "Compilar term sheet indicativo", "case", ["S12"], "compilation", "commit"),
   task("A07", "Compilar Q&A inicial", "case", ["D09", "C09"], "compilation", "commit"),
   task("A08", "Compilar índice da sala", "case", ["D01", "K10"], "compilation", "commit"),
-  task("A09", "Gerar variantes por audiência", "case", ["K10", "A03", "A04"], "compilation", "commit"),
+  task("A09", "Gerar variantes por audiência e idioma", "case", ["K10", "A03", "A04"], "compilation", "commit"),
   task("A10", "Rodar consistency gate", "case", ["A03", "A04", "A05", "A06", "A07", "A08", "A09"], "deterministic"),
   task("A11", "Renderizar e inspecionar", "case", ["A10"], "compilation", "commit"),
 

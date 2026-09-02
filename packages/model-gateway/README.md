@@ -31,6 +31,12 @@ The only door to LLM providers (P1 plan §13.3, §15). Nothing in the monorepo c
 - **Privacy defaults** — OpenAI requests set `store: false`; system prompts carry a
   cache breakpoint but never client data; call logs contain usage/cost/latency and
   ids only, never content.
+- **Provider data policy** — every production request declares a data class and purpose.
+  With enforcement enabled, primary, shadow and fallback candidates are checked independently
+  against a current, versioned assurance record before any content is sent. Non-public data
+  requires `no_store`, training use must be prohibited, and the exact purpose/class must be
+  approved. Assurance records are supplied by Offroad from real contract review; the package
+  never hard-codes a vendor promise.
 - **Cassettes** — `record` / `replay` / `off` for deterministic tests and CI
   (`FileCassetteStore` under a fixtures directory; only synthetic content may be
   recorded into the repository).
@@ -45,7 +51,7 @@ out of logs.
 ## Usage
 
 ```ts
-import {createModelGateway, createAnthropicAdapter, createOpenAIAdapter} from "@offroad/model-gateway";
+import {createModelGateway, createAnthropicAdapter, createOpenAIAdapter, providerDataPolicyVersion} from "@offroad/model-gateway";
 import {z} from "zod";
 
 const gateway = createModelGateway({
@@ -60,6 +66,16 @@ const result = await gateway.complete({
   input: [{type: "text", text: layerExcerpt}],
   schema: z.object({kind: z.string(), confidence: z.number()}),
   schemaName: "document_profile",
+  dataHandling: {
+    classification: "restricted",
+    purpose: "document_processing",
+    requiredPolicyVersion: providerDataPolicyVersion,
+  },
   metadata: {runId, documentId},
 });
 ```
+
+The worker can activate enforcement with `ENFORCE_PROVIDER_DATA_POLICY=true` and one JSON
+assurance record for each configured provider. It refuses to boot when enforcement is on but the
+record is missing. Keep enforcement off until DPA/ZDR, retention, training-use and legal-basis
+facts have actually been reviewed and encoded; a placeholder record defeats the control.

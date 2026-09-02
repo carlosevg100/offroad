@@ -59,7 +59,7 @@ import {
   type Sourced,
 } from "@offroad/fund-mandate";
 import {sha256} from "@offroad/governed-retrieval";
-import {gatewayCallLogSchema, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
+import {gatewayCallLogSchema, providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {
   buildPublicResearchPlan,
   runPublicResearch,
@@ -95,6 +95,10 @@ import {
 import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-design";
 import {buildGovernedMatchScreen} from "./match-screen";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
+import {
+  buildCaseOperatingControlSnapshot,
+  caseAnalysisCapabilityScope,
+} from "./operating-control-snapshot";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const retrievalContextSchema = z.object({
@@ -397,6 +401,10 @@ export type CaseAnalysisDependencies = {
   lineage: () => GatewayCallLog[];
   researchProviders?: PublicSearchProvider[];
   officialResearchProviderFactory?: WorkerOfficialResearchProviderFactory;
+  securityEvidence?: {
+    providerPolicyEnforced: boolean;
+    externalToolsAllowlisted: boolean;
+  };
   now?: () => Date;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -644,6 +652,7 @@ async function processPreliminaryUnderstanding(
     input: [{type: "text", text: JSON.stringify(preliminaryInput)}],
     schema: preliminaryNarrativeSchema,
     schemaName: "preliminary_understanding_v1",
+    dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
     maxOutputTokens: 3_500,
     metadata: {
       jobId: job.job_id,
@@ -827,6 +836,7 @@ export async function processCaseAnalysisJob(
           })}],
           schema: structureAlternativesInputSchema,
           schemaName: "structure_alternatives",
+          dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
           maxOutputTokens: 8_000,
           useShadow,
           metadata: {caseId: job.intake_session_id, caseFingerprint: context.caseFingerprint},
@@ -914,6 +924,7 @@ export async function processCaseAnalysisJob(
           }],
           schema: caseBriefSchema,
           schemaName: "case_brief",
+          dataHandling: {classification: "restricted", purpose: "artifact_generation", requiredPolicyVersion: providerDataPolicyVersion},
           useShadow,
         });
         writerProvider = generated.provider;
@@ -934,6 +945,7 @@ export async function processCaseAnalysisJob(
           input: [{type: "text", text: buildSemanticAuditInput({brief, facts, calculations})}],
           schema: semanticAuditSchema,
           schemaName: "semantic_claim_audit",
+          dataHandling: {classification: "restricted", purpose: "evaluation", requiredPolicyVersion: providerDataPolicyVersion},
           // The evidence review must not be performed by the provider that wrote the case.
           model: writerProvider === "openai"
             ? {provider: "anthropic", model: "claude-opus-5", effort: "high"}
@@ -1078,6 +1090,34 @@ export async function processCaseAnalysisJob(
     const manifestId = raw._execution.mode === "primary"
       ? await dependencies.queue.recordCaseSnapshot(job, manifest, stateWithManifest)
       : undefined;
+    const operatingControl = raw._execution.mode === "primary"
+      ? await dependencies.queue.recordOperatingControlSnapshot(job, {
+          scopeId: caseAnalysisCapabilityScope,
+          requestedUse: "internal_decision",
+          inputFingerprint,
+          binding: {
+            caseFingerprint: fingerprintJson({
+              operationTruth: result.state.operationTruth,
+              structureTruth: result.state.structureTruth,
+              pricingTruth: result.state.pricingTruth,
+            }),
+            materialFingerprint: result.state.materialTruth.fingerprint,
+            manifestFingerprint: manifest.manifestFingerprint,
+            controlledExecutionFingerprint: result.report.reportFingerprint,
+          },
+          snapshot: buildCaseOperatingControlSnapshot({
+            state: result.state,
+            session: raw.session,
+            snapshotAt: (dependencies.now?.() ?? new Date()).toISOString(),
+            costUsd: dependencies.gateway.spent().costUsd + publicResearchCostExposureUsd,
+            maxCostUsd: job.payload.model_budget?.max_cost_usd ?? null,
+            security: dependencies.securityEvidence ?? {
+              providerPolicyEnforced: false,
+              externalToolsAllowlisted: false,
+            },
+          }),
+        })
+      : undefined;
     await dependencies.queue.writeStage(job, "case_analysis", "succeeded", {
       reportFingerprint: result.report.reportFingerprint,
       manifestFingerprint: manifest.manifestFingerprint,
@@ -1091,9 +1131,12 @@ export async function processCaseAnalysisJob(
       dealWorkflowStage: raw.deal_workflow.stage,
       materialsAllowed: executionPlan.produceMaterials,
       matchingAllowed: executionPlan.screenMandates,
+      operatingControlAllowed: operatingControl?.allowed ?? false,
+      operatingControlBlockers: operatingControl?.blockers ?? ["not_evaluated_for_non_primary_execution"],
     });
     await dependencies.queue.complete(job, {
       ...(manifestId ? {manifest_id: manifestId} : {}),
+      ...(operatingControl ? {operating_control: operatingControl} : {}),
       report: result.report,
       ...(executionPlan.screenMandates ? {match_details: result.state.matching} : {}),
       ...(receivables?.privateReport ? {receivables_analysis: receivables.privateReport} : {}),

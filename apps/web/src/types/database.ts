@@ -1754,6 +1754,60 @@ export type Database = {
           },
         ]
       }
+      dependency_invalidation_events: {
+        Row: {
+          changed_roots: Json
+          graph_fingerprint: string
+          id: string
+          intake_session_id: string
+          invalidated: Json
+          occurred_at: string
+          organization_id: string
+          result_fingerprint: string
+          source_kind: string
+          source_reference: string
+        }
+        Insert: {
+          changed_roots: Json
+          graph_fingerprint: string
+          id?: string
+          intake_session_id: string
+          invalidated: Json
+          occurred_at?: string
+          organization_id: string
+          result_fingerprint: string
+          source_kind: string
+          source_reference: string
+        }
+        Update: {
+          changed_roots?: Json
+          graph_fingerprint?: string
+          id?: string
+          intake_session_id?: string
+          invalidated?: Json
+          occurred_at?: string
+          organization_id?: string
+          result_fingerprint?: string
+          source_kind?: string
+          source_reference?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dependency_invalidation_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dependency_invalidation_events_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       decline_communications: {
         Row: {
           channel: string
@@ -3728,6 +3782,98 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      operating_control_snapshots: {
+        Row: {
+          allowed: boolean
+          binding: Json
+          blockers: string[]
+          capability_accreditation_id: string | null
+          created_at: string
+          decision_fingerprint: string
+          id: string
+          input_fingerprint: string
+          intake_session_id: string
+          organization_id: string
+          processing_job_id: string
+          requested_use: string
+          schema_version: string
+          scope_id: string
+          snapshot: Json
+          snapshot_fingerprint: string
+          valid_until: string
+          warnings: string[]
+        }
+        Insert: {
+          allowed: boolean
+          binding: Json
+          blockers?: string[]
+          capability_accreditation_id?: string | null
+          created_at?: string
+          decision_fingerprint: string
+          id?: string
+          input_fingerprint: string
+          intake_session_id: string
+          organization_id: string
+          processing_job_id: string
+          requested_use: string
+          schema_version: string
+          scope_id: string
+          snapshot: Json
+          snapshot_fingerprint: string
+          valid_until: string
+          warnings?: string[]
+        }
+        Update: {
+          allowed?: boolean
+          binding?: Json
+          blockers?: string[]
+          capability_accreditation_id?: string | null
+          created_at?: string
+          decision_fingerprint?: string
+          id?: string
+          input_fingerprint?: string
+          intake_session_id?: string
+          organization_id?: string
+          processing_job_id?: string
+          requested_use?: string
+          schema_version?: string
+          scope_id?: string
+          snapshot?: Json
+          snapshot_fingerprint?: string
+          valid_until?: string
+          warnings?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operating_control_snapshots_capability_accreditation_id_fkey"
+            columns: ["capability_accreditation_id"]
+            isOneToOne: false
+            referencedRelation: "platform_capability_accreditations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operating_control_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operating_control_snapshots_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "operating_control_snapshots_organization_id_processing_job_id_fkey"
+            columns: ["organization_id", "processing_job_id"]
+            isOneToOne: false
+            referencedRelation: "processing_jobs"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -7135,6 +7281,18 @@ export type Database = {
           p_capability_token: string
           p_job_id: string
           p_query_ids: string[]
+        }
+        Returns: Json
+      }
+      worker_record_operating_control_snapshot_v1: {
+        Args: {
+          p_binding: Json
+          p_capability_token: string
+          p_input_fingerprint: string
+          p_job_id: string
+          p_requested_use: string
+          p_scope_id: string
+          p_snapshot: Json
         }
         Returns: Json
       }

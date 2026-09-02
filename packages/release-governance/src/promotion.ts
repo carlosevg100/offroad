@@ -38,6 +38,7 @@ export function decidePromotion(input: {
   wave1?: CohortEvidence;
   wave2?: CohortEvidence;
   externalReleaseApproved?: boolean;
+  operatingControlsApproved?: boolean;
 }): PromotionDecision {
   const parsed = {
     from: rolloutStateSchema.parse(input.from),
@@ -45,6 +46,7 @@ export function decidePromotion(input: {
     wave1: input.wave1 ? cohortEvidenceSchema.parse(input.wave1) : undefined,
     wave2: input.wave2 ? cohortEvidenceSchema.parse(input.wave2) : undefined,
     externalReleaseApproved: input.externalReleaseApproved === true,
+    operatingControlsApproved: input.operatingControlsApproved === true,
   };
   const reasons: string[] = [];
 
@@ -59,6 +61,7 @@ export function decidePromotion(input: {
       reasons.push("cohort_cases_must_not_overlap");
     }
     if (!parsed.externalReleaseApproved) reasons.push("external_release_approval_required");
+    if (!parsed.operatingControlsApproved) reasons.push("operating_controls_approval_required");
   }
 
   return decision(parsed.from, parsed.to, reasons, parsed);

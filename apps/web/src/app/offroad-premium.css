@@ -916,6 +916,11 @@
 .advisor-context-section li strong {display: block; font-size: 10px; font-weight: 570; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 .advisor-context-section li small {color: #90979b; display: block; font-size: 9px; margin-top: 2px;}
 .advisor-context-section > p {color: #8a9297; font-size: 10px; line-height: 1.5; margin: 0;}
+.advisor-context-section--waiting {background: #f5f7f2; border: 1px solid #d7decc; margin: 14px -10px 0; padding: 16px 12px;}
+.advisor-context-section--waiting > div {margin-bottom: 9px;}
+.advisor-context-section--waiting > div small {color: #6f8549; font-weight: 620;}
+.advisor-context-section--waiting > p {color: #30373d; font-size: 10px;}
+.advisor-context-section--waiting > small {color: #747d82; display: block; font-size: 9px; line-height: 1.5; margin-top: 7px;}
 
 @media (max-width: 1080px) {
   .advisor-project {grid-template-columns: minmax(0, 1fr) 300px;}
@@ -8972,6 +8977,33 @@ summary:focus-visible {
 .app-sidebar__footer {
   padding-top: 14px;
   border-top: 1px solid rgb(255 255 255 / 7%);
+}
+
+.app-sidebar__footer > .workspace-language-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 6px;
+  gap: 3px;
+}
+
+.workspace-language-switcher a {
+  display: grid;
+  min-height: 28px;
+  border-radius: 4px;
+  place-items: center;
+  color: #747b84;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+}
+
+.workspace-language-switcher a:hover,
+.workspace-language-switcher a[aria-current="page"] {
+  background: rgb(255 255 255 / 8%);
+  color: #f4f3ef;
 }
 
 @media (max-width: 980px) {

@@ -29,6 +29,99 @@ Focused tests are green (public research 20/20; worker 80/80; worker and web typ
 provider ran. The migration and its adversarial SQL test have not yet run against a reconstructed
 database because Docker is unavailable in this local environment; nothing in this candidate has
 been applied to staging or production. The other four capital jobs remain unreleased executors.
+### Engineering update: executable pre-mortem control plane, 1 September 2026
+
+The current candidate turns the product pre-mortem into deterministic release controls. A narrow
+capability can be `unsupported`, `specified`, `implemented`, `tested` or `production` for exactly
+one scope and one of `Represent`, `Analyze`, `Recommend`, `Structure` or `External release`.
+Production requires canonical procedure, implementation fingerprint, accountable owner, gold and
+adversarial evidence, no critical finding and twenty distinct real cases. The rollout state
+machine retains its two disjoint ten-case waves and now also requires operating-control approval.
+
+Case use is independently gated as preliminary, internal decision, external material or external
+action. Material claims must be source/entity/period/currentness complete; critical calculations
+must be deterministic and reconciled; judgment must compare alternatives and downside; external
+artifacts must be current, cross-consistent and approved; and an external action also needs current
+market fit plus exact recipient authority. There is no weighted quality score.
+
+New evidence can now invalidate every transitive dependent through facts, calculations, claims,
+artifacts, approvals and lender matches. Human intervention is typed and measured, exposing
+uncaptured minutes, recurring product failures and unreviewed manual canonical changes instead of
+hiding them behind the UI.
+
+Every real worker model call now declares data classification and purpose. The model gateway can
+enforce versioned provider-assurance records separately for each primary or fallback route before
+content leaves the perimeter. The path is deliberately disabled until actual Offroad DPA/ZDR and
+legal-basis records are provided; this candidate does not invent vendor assurances. It also does
+not implement persistence for the new control snapshots, SSO/SCIM/DLP, external pentesting or DR.
+No production environment or paid provider was touched.
+The complete Node 24 gate passed across all 42 packages: web 162 tests, worker 85, model gateway
+22, release governance 11, and a 32-page Next.js production build.
+
+### Engineering update: Brazil–US foundation and continuous language, 1 September 2026
+
+The current candidate separates working language, source language and economic jurisdiction.
+Authenticated users can switch PT-BR and EN-US inside the same project; the route keeps the exact
+project and query, the latest turn locale controls the next advisor response, and all 80 plan
+labels have an English projection without forking TaskSpec ids or TaskRuns. Prior messages remain
+in their original language.
+
+The credit ontology now models BR, US and cross-border jurisdiction profiles, accounting
+frameworks, currencies, original evidence plus attributed translations, and localized artifact
+projections tied to one canonical content fingerprint and one economic-state fingerprint. A
+language change is presentation invalidation only; it is not authority to rerun analysis or
+replace evidence. External material translation remains subject to editorial review.
+
+Knowledge is contracted as universal debt core, Brazil, United States and BR–US bridge, extended
+by sector, instrument and current-market packs. Every record carries source, publisher,
+jurisdiction, language, effective/retrieval and as-of dates, version, status, fingerprint, access
+and reuse scope, and freshness class. Public and approved house material may be reused; private
+organization/project material cannot cross its authorized boundary. Concept bridges expose exact,
+functional, partial or no-direct-equivalent relationships instead of silently translating legal
+terms such as CCB into a US “note”.
+
+The 80-node registry remains fixed in size but now resolves jurisdiction and evidence regime at
+M01, deliverable language and audience at M05, applicable knowledge at C02, jurisdictional filters
+at S03 and audience/language material variants at A09. New plans use registry/compiler
+`2026.09.01-v3`; historical snapshots remain immutable.
+
+This slice is a foundation, not a claim that the full BR/US corpus or every bilingual institutional
+material compiler is production-approved. Those packs still require authored content, dated
+sources, gold cases, adversarial mappings and individual promotion. Validation used no paid model
+or research call. The complete Node 24 gate passed across all 42 packages: web 162 tests, worker
+82, ontology and work-plan 29 each, and a 32-page Next.js production build.
+
+### Engineering update: universal debt mission and memory-first origination, 1 September 2026
+
+The current local candidate removes instrument-first behavior from the conversational entry. A
+new shared ontology represents five independent axes: capital need, repayment source/capacity,
+capital family/provider, risk allocation and market executability. Public-only, authorized-private
+and hybrid evidence are first-class regimes. Receivables is one possible asset and funding family,
+not the foundation of the product.
+
+The home no longer persists `capital_planning` when the user did not choose a starter. A
+deterministic inference layer reads the actual request and attachments, treating a starter only as
+a tie-breaker. The exact “Camil meeting / pitch / debt alternatives” request now resolves to
+`origination_thesis`; “present a pitch about” is explicitly not an instruction to contact an
+investor. Before activating origination, the execution contract collects meeting audience,
+desired outcome and current relationship/exposure as one concise context packet.
+
+The advisor worker can receive relevant prior projects for the named company from the same
+organization. The capability supplies the organization boundary, the current project is excluded
+and no other tenant is searchable. Prior project name, recency, active brief and artifact types
+reach the model so it can offer “update the previous work or start a new angle?” before asking
+questions. The work panel renders the pending context question and rationale from the persisted
+assistant response.
+
+The complete local gate passes on Node 24 across all 42 packages: lint, typecheck, tests and build;
+Next.js compiled 32 pages and the worker bundle completed with no paid calls. Quality run
+`33518894896` repeated the full gate in a clean runner, rebuilt Supabase from every migration,
+passed tenant non-interference, public vertical, semantic activation and schema lint checks, and
+passed the Playwright journey against the rebuilt stack. Vercel published the preview. This slice
+has not been deployed or applied to a remote database. Public refresh does not yet run
+concurrently while the context gate is waiting, existing projects cannot yet recompile their
+frozen plan after a material intent change, and private analysis/structuring/materials/matching
+executors remain unreleased. Those boundaries must stay visible in product copy and release claims.
 
 ### Engineering update: governed DAG results return to the project conversation, 1 September 2026
 

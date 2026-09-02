@@ -4272,6 +4272,105 @@ end;
 $$;
 
 set local role postgres;
+do $$
+begin
+  begin
+    insert into public.qualified_introductions (
+      id, organization_id, intake_session_id, plan_id, recipient_id,
+      provider_source, provider_id, fund_directory_id, contact_source, contact_uuid,
+      contact_id, contact_name, contact_email, contact_job_title,
+      case_fingerprint, material_fingerprint, mandate_fingerprint, rationale,
+      material_manifest, authorization_snapshot, introduced_by
+    ) values (
+      '83000000-0000-4000-8000-000000000001',
+      '20000000-0000-4000-8000-000000000001',
+      '40000000-0000-4000-8000-000000000001',
+      '81000000-0000-4000-8000-000000000001',
+      '82000000-0000-4000-8000-000000000001',
+      'directory', '70000000-0000-4000-8000-000000000701',
+      '70000000-0000-4000-8000-000000000701',
+      'directory_market', '82500000-0000-4000-8000-000000000001',
+      '82500000-0000-4000-8000-000000000001', 'Credit Team', 'credit@example.test',
+      'Private Credit', repeat('b', 64), repeat('a', 64), repeat('c', 64),
+      'Qualified introduction of the exact authorized package to the named contact.',
+      '["teaser","credit_memo","term_sheet"]'::jsonb,
+      (select authorization_snapshot from public.qualified_introduction_plans
+       where id = '81000000-0000-4000-8000-000000000001'),
+      '10000000-0000-4000-8000-000000000001'
+    );
+    raise exception 'qualified introduction bypassed the operating-control gate';
+  exception when insufficient_privilege then null;
+  end;
+end;
+$$;
+
+do $$
+declare
+  accreditation_id uuid;
+  authorization_fingerprint text;
+begin
+  insert into public.processing_runs (
+    id, organization_id, intake_session_id, run_no, trigger, status,
+    pipeline_version, created_by
+  ) values (
+    '89000000-0000-4000-8000-000000000001',
+    '20000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    99, 'manual', 'succeeded', 'operating-control-fixture-v1',
+    '10000000-0000-4000-8000-000000000001'
+  );
+  insert into public.processing_jobs (
+    id, organization_id, processing_run_id, intake_session_id, kind, status, payload
+  ) values (
+    '89100000-0000-4000-8000-000000000001',
+    '20000000-0000-4000-8000-000000000001',
+    '89000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    'case_analysis', 'succeeded', '{"operating_control_use":"external_action"}'::jsonb
+  );
+  accreditation_id := private.record_platform_capability_accreditation_v1(
+    'rls-qualified-introduction-v1', 'external_release', 'production', 'production', true,
+    jsonb_build_object(
+      'procedureVersion', 'MK-27-v1',
+      'implementationFingerprint', repeat('1', 64),
+      'ownerId', 'release-control-owner',
+      'goldCasesRequired', 20, 'goldCasesPassed', 20,
+      'adversarialCasesRequired', 10, 'adversarialCasesPassed', 10,
+      'criticalRegressions', 0, 'openCriticalFindings', 0,
+      'realCaseEvidenceSource', 'controlled_execution_ledger',
+      'realCaseIds', (select jsonb_agg('rls-real-case-' || value::text order by value)
+                      from generate_series(1, 20) value)
+    ), '{}'::text[], now(), now() + interval '1 day',
+    '10000000-0000-4000-8000-000000000001'
+  );
+  select encode(extensions.digest(convert_to(authorization_snapshot::text, 'utf8'), 'sha256'), 'hex')
+  into authorization_fingerprint
+  from public.qualified_introduction_plans
+  where id = '81000000-0000-4000-8000-000000000001';
+  insert into public.operating_control_snapshots (
+    organization_id, intake_session_id, processing_job_id, requested_use, scope_id,
+    schema_version, input_fingerprint, binding, snapshot, snapshot_fingerprint,
+    capability_accreditation_id, allowed, blockers, warnings, decision_fingerprint, valid_until
+  ) values (
+    '20000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    '89100000-0000-4000-8000-000000000001', 'external_action',
+    'rls-qualified-introduction-v1', 'operating-control-snapshot.v1', repeat('2', 64),
+    jsonb_build_object(
+      'caseFingerprint', repeat('b', 64), 'materialFingerprint', repeat('a', 64),
+      'matchScreenFingerprint', repeat('d', 64),
+      'qualifiedIntroductionPlanId', '81000000-0000-4000-8000-000000000001',
+      'authorizationFingerprint', authorization_fingerprint
+    ),
+    jsonb_build_object('authority', jsonb_build_object(
+      'authorizedTargetsFingerprint', authorization_fingerprint
+    )),
+    repeat('3', 64), accreditation_id, true, '{}'::text[], '{}'::text[], repeat('4', 64),
+    clock_timestamp() + interval '1 hour'
+  );
+end;
+$$;
+
 insert into public.qualified_introductions (
   id, organization_id, intake_session_id, plan_id, recipient_id,
   provider_source, provider_id, fund_directory_id, contact_source, contact_uuid,
@@ -4698,6 +4797,29 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'tenant B decided tenant A agent proposal'; end if;
+end;
+$$;
+
+-- Related project memory is deliberately resolved inside the capability-scoped worker context.
+-- Keep the tenant predicate and current-project exclusion explicit so a later refactor cannot
+-- turn authorized workspace memory into a cross-organization discovery surface.
+do $$
+declare
+  definition text;
+begin
+  select pg_get_functiondef(
+    'private.worker_load_agent_context(uuid,text)'::regprocedure
+  ) into definition;
+
+  if position('prior.organization_id = job_row.organization_id' in definition) = 0 then
+    raise exception 'related project memory lost its capability-bound organization predicate';
+  end if;
+  if position('prior.id is distinct from project_row.id' in definition) = 0 then
+    raise exception 'related project memory no longer excludes the current project';
+  end if;
+  if position('position(lower(identity.company_name) in lower(message_row.content))' in definition) = 0 then
+    raise exception 'related project memory is no longer scoped to the company named in the request';
+  end if;
 end;
 $$;
 

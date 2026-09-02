@@ -113,6 +113,68 @@ describe("agent operation brief worker", () => {
     expect(completed).toMatchObject({activated_job: "company_debt_view", spend: {costUsd: 0, calls: 0}});
   });
 
+  it("uses the latest turn locale without forking a project that started in Portuguese", async () => {
+    let modelInput = "";
+    let recordedResponse: Record<string, unknown> | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "en-US",
+        message: "Please continue in English and tell me the next step.",
+        brief: {currency: "BRL"},
+        snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-01T12:00:00.000Z",
+        manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          name: "Projeto Cedro",
+          entryJob: "capital_planning",
+          accessBasis: "authorized_private",
+          phase: "understand",
+          status: "active",
+        },
+        company_profile: {companyName: "Cedro"},
+        documents: [],
+        tasks: [{taskId: "M01", label: "Resolver companhia, grupo, jurisdição e regime de evidência", ordinal: 0, status: "succeeded"}],
+        artifacts: [],
+        recent_messages: [{
+          id: "33333333-3333-4333-8333-333333333333",
+          role: "assistant" as const,
+          content: "Estou organizando o entendimento inicial.",
+          created_at: "2026-09-01T11:59:00.000Z",
+        }],
+      }),
+      recordAgentResponse: async (_job: unknown, _messageId: string, response: unknown) => {
+        recordedResponse = response as Record<string, unknown>;
+        return {};
+      },
+      complete: async () => {},
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async (request: {input: Array<{type: string; text?: string}>}) => {
+        modelInput = request.input[0]?.text ?? "";
+        return {
+          output: {state: "idle", reply: "We are preserving the same project. The next step is to complete the current understanding."},
+          usage: {inputTokens: 100, outputTokens: 30, cachedInputTokens: 0},
+        };
+      },
+      spent: () => ({costUsd: 0.05, calls: 1}),
+    } as unknown as ModelGateway;
+
+    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(JSON.parse(modelInput)).toMatchObject({
+      locale: "en-US",
+      project: {name: "Projeto Cedro"},
+      recentConversation: [{content: "Estou organizando o entendimento inicial."}],
+      workPlan: [{taskId: "M01", label: "Resolve company, group, jurisdiction and evidence regime"}],
+    });
+    expect(recordedResponse?.reply).toContain("same project");
+  });
+
   it("uses the existing bounded turn to normalize an explicit company and then activates the exact selected DAG", async () => {
     let recordedActivation: Record<string, unknown> | undefined;
     let modelInput = "";
@@ -122,7 +184,7 @@ describe("agent operation brief worker", () => {
         session_id: job.intake_session_id,
         message_id: job.payload.message_id,
         locale: "pt-BR",
-        message: "Tenho uma reunião com a CVC amanhã e quero preparar uma tese de originação de dívida.",
+        message: "Tenho uma reunião com o CFO da CVC amanhã. Quero explorar um refinanciamento dos vencimentos de 2027 e ainda não temos relacionamento nem exposição de crédito.",
         brief: {},
         snapshot_fingerprint: "a".repeat(64),
         projection_updated_at: "2026-09-01T12:00:00.000Z",
@@ -180,6 +242,93 @@ describe("agent operation brief worker", () => {
       executionRoute: {action: "collect_required_context", analysisScope: "origination_thesis", modelRoutingCalls: 0},
     });
     expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "CVC"}});
+  });
+
+  it("uses relevant organization memory before asking for missing Camil meeting context", async () => {
+    let modelInput = "";
+    let recordedActivation: unknown;
+    let recordedResponse: Record<string, unknown> | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "Tenho uma reunião com a Camil amanhã e quero apresentar um pitch sobre alternativas estratégicas de endividamento.",
+        brief: {},
+        snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-01T12:00:00.000Z",
+        manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          name: "Camil · reunião",
+          entryJob: "origination_thesis",
+          accessBasis: "public_information",
+          phase: "understand",
+          status: "active",
+        },
+        company_profile: {},
+        related_project_memory: [{
+          projectId: "11111111-1111-4111-8111-111111111111",
+          projectName: "Camil · refinanciamento 2027",
+          companyName: "Camil",
+          entryJob: "origination_thesis",
+          currentPhase: "understand",
+          status: "completed",
+          updatedAt: "2026-06-01T12:00:00.000Z",
+          brief: {kind: "origination_thesis", content: {meetingContext: "Refinanciamento dos vencimentos de 2027."}},
+          artifactTypes: ["meeting_brief"],
+        }],
+        documents: [],
+        tasks: [],
+        artifacts: [],
+        recent_messages: [],
+      }),
+      recordAgentResponse: async (
+        _job: unknown,
+        _messageId: string,
+        response: unknown,
+        _proposal: unknown,
+        activation: unknown,
+      ) => {
+        recordedResponse = response as Record<string, unknown>;
+        recordedActivation = activation;
+        return {};
+      },
+      complete: async () => {},
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async (request: {input: Array<{type: string; text?: string}>}) => {
+        modelInput = request.input[0]?.text ?? "";
+        return {
+          output: {
+            state: "asking",
+            reply: "Encontrei o trabalho anterior sobre os vencimentos de 2027. Você quer atualizar aquela tese ou abrir uma agenda nova? Também preciso confirmar quem estará na reunião, o que quer provocar e qual é o relacionamento ou exposição atual.",
+            clarification: {
+              question: "Quem estará na reunião, o que você gostaria de provocar e qual é hoje o relacionamento ou a exposição com a Camil?",
+              whyItMatters: "A audiência, o objetivo e o histórico definem a profundidade, a novidade e as restrições do pitch.",
+              answerKind: "text",
+              choices: [],
+              priority: "required_now",
+            },
+          },
+          usage: {inputTokens: 180, outputTokens: 70, cachedInputTokens: 0},
+        };
+      },
+      spent: () => ({costUsd: 0.05, calls: 1}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const parsedInput = JSON.parse(modelInput) as Record<string, unknown>;
+    expect(result.status).toBe("succeeded");
+    expect(parsedInput).toMatchObject({
+      relatedProjectMemory: [{projectName: "Camil · refinanciamento 2027", artifactTypes: ["meeting_brief"]}],
+      executionRoute: {action: "collect_required_context", requirements: ["company_identity", "meeting_audience", "desired_outcome", "relationship_context"]},
+    });
+    expect(recordedResponse).toMatchObject({state: "asking"});
+    expect(recordedActivation).toBeUndefined();
   });
 
   it("turns a direct user declaration into a preview, never a silent mutation", async () => {
