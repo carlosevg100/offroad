@@ -52,7 +52,17 @@ begin
   if not found then raise exception 'intake_session_not_found' using errcode = 'P0002'; end if;
 
   if session_row.status = 'collecting'
+    and char_length(trim(coalesce(session_row.capital_objective, ''))) < 3
     and char_length(trim(coalesce(p_payload #>> '{operation,objective}', ''))) >= 3
+    and exists (
+      select 1 from public.agent_messages message
+      where message.organization_id = p_organization_id
+        and message.intake_session_id = p_session_id
+        and message.role = 'user'
+        and message.status in ('completed', 'processing')
+        and message.metadata ->> 'kind' = 'request'
+        and trim(message.content) = trim(p_payload #>> '{operation,objective}')
+    )
     and not exists (
       select 1 from public.source_documents document
       where document.organization_id = p_organization_id
