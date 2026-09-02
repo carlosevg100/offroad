@@ -12,7 +12,7 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
-import {compileWorkerDebtResearchStrategy} from "./debt-research-runtime";
+import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
@@ -108,6 +108,7 @@ export type OriginationThesisDependencies = {
   gateway: ModelGateway;
   lineage: () => GatewayCallLog[];
   researchProviders: PublicSearchProvider[];
+  officialResearchProviderFactory?: WorkerOfficialResearchProviderFactory;
   now?: () => Date;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -397,7 +398,8 @@ export async function processOriginationThesisJob(
       companyName,
       ...(website ? {website} : {}),
       queue: dependencies.queue,
-      providers: dependencies.researchProviders,
+      discoveryProviders: dependencies.researchProviders,
+      officialProviderFactory: dependencies.officialResearchProviderFactory,
     });
 
     const researchArtifactsPromise = Promise.all([
@@ -572,18 +574,21 @@ async function collectOriginationResearch(input: {
   companyName: string;
   website?: string;
   queue: QueueClient;
-  providers: PublicSearchProvider[];
+  discoveryProviders: PublicSearchProvider[];
+  officialProviderFactory?: WorkerOfficialResearchProviderFactory | undefined;
 }): Promise<ResearchSummary> {
-  const plan = buildOriginationResearchPlan({
+  const geography = optionalString(input.context.session.company_profile.geography);
+  const subject = {
     legalName: input.companyName,
     ...(input.website ? {website: input.website} : {}),
-  });
-  const geography = optionalString(input.context.session.company_profile.geography);
-  const runtime = compileWorkerDebtResearchStrategy({
-    work: "origination_thesis", locale: input.context.session.locale,
-    ...(input.website ? {website: input.website} : {}),
     ...(geography ? {geography} : {}),
-    providers: input.providers, evidenceBasis: "public_information",
+  };
+  const plan = buildOriginationResearchPlan(subject);
+  const runtime = prepareWorkerDebtResearch({
+    work: "origination_thesis", locale: input.context.session.locale, subject,
+    discoveryProviders: input.discoveryProviders,
+    officialProviderFactory: input.officialProviderFactory,
+    evidenceBasis: "public_information",
   });
   await input.queue.writeStage(input.job, "public_research", "started", {
     queryCount: plan.length, researchStrategyFingerprint: runtime.strategy.fingerprint,
@@ -592,14 +597,14 @@ async function collectOriginationResearch(input: {
   });
   const cache = createWorkerPublicResearchCache(input.queue, input.job);
   const result = await runPublicResearch({
-    plan, providers: input.providers, maxSourcesPerQuery: 5,
+    plan, providers: runtime.providers, maxSourcesPerQuery: 5,
     ...(cache ? {cache} : {}),
   });
   const safeSources = result.sources.filter((source) => source.url.startsWith("https://"));
   const persisted: ResearchRun & {providerChain: string[]; debtResearchStrategy: typeof runtime.strategy} = {
     ...result,
     sources: safeSources,
-    providerChain: input.providers.map((provider) => provider.id),
+    providerChain: runtime.providers.map((provider) => provider.id),
     debtResearchStrategy: runtime.strategy,
   };
   const researchRunId = await input.queue.recordPublicResearch(input.job, plan, persisted);

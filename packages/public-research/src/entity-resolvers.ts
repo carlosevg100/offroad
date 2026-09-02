@@ -63,21 +63,25 @@ export function createCvmOpenDataEntityResolver(input: {
   const request = input.fetch ?? fetch;
   const now = input.now ?? (() => new Date());
   const cadastroUrl = input.cadastroUrl ?? CVM_CADASTRO_URL;
+  let rowsPromise: Promise<CvmRow[]> | undefined;
+  const loadRows = () => rowsPromise ??= (async () => {
+    const response = await request(cadastroUrl, {headers: {Accept: "text/csv,application/octet-stream"}});
+    if (!response.ok) throw codedError(`cvm_registry_http_${response.status}`);
+    const text = new TextDecoder("windows-1252").decode(await response.arrayBuffer());
+    return parse(text, {
+      bom: true,
+      columns: true,
+      delimiter: ";",
+      skip_empty_lines: true,
+      relax_column_count: true,
+      trim: true,
+    }) as CvmRow[];
+  })();
   return {
     jurisdiction: "BR",
     async resolve(rawSubject) {
       const subject = officialEntitySubjectSchema.parse(rawSubject);
-      const response = await request(cadastroUrl, {headers: {Accept: "text/csv,application/octet-stream"}});
-      if (!response.ok) throw codedError(`cvm_registry_http_${response.status}`);
-      const text = new TextDecoder("windows-1252").decode(await response.arrayBuffer());
-      const rows = parse(text, {
-        bom: true,
-        columns: true,
-        delimiter: ";",
-        skip_empty_lines: true,
-        relax_column_count: true,
-        trim: true,
-      }) as CvmRow[];
+      const rows = await loadRows();
       const retrievedAt = now().toISOString();
       return rows.flatMap((row) => {
         const legalName = clean(row.DENOM_SOCIAL);
@@ -122,13 +126,17 @@ export function createSecEdgarEntityResolver(input: {
   const now = input.now ?? (() => new Date());
   const tickersUrl = input.tickersUrl ?? SEC_TICKERS_URL;
   const userAgent = z.string().trim().min(10).max(300).parse(input.userAgent);
+  let tickersPromise: Promise<Record<string, z.infer<typeof secTickerEntrySchema>>> | undefined;
+  const loadTickers = () => tickersPromise ??= (async () => {
+    const response = await request(tickersUrl, {headers: {Accept: "application/json", "User-Agent": userAgent}});
+    if (!response.ok) throw codedError(`sec_registry_http_${response.status}`);
+    return z.record(z.string(), secTickerEntrySchema).parse(await response.json());
+  })();
   return {
     jurisdiction: "US",
     async resolve(rawSubject) {
       const subject = officialEntitySubjectSchema.parse(rawSubject);
-      const response = await request(tickersUrl, {headers: {Accept: "application/json", "User-Agent": userAgent}});
-      if (!response.ok) throw codedError(`sec_registry_http_${response.status}`);
-      const payload = z.record(z.string(), secTickerEntrySchema).parse(await response.json());
+      const payload = await loadTickers();
       const retrievedAt = now().toISOString();
       return Object.values(payload).flatMap((entry) => {
         const matchScore = Math.max(

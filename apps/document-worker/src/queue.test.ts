@@ -174,7 +174,7 @@ describe("advisor specialized completion", () => {
       result: {capital_project_id: capitalJob.payload.capital_project_id},
     });
 
-    expect(rpc).toHaveBeenCalledWith("worker_complete_advisor_specialized_job_v1", {
+    expect(rpc).toHaveBeenCalledWith("worker_complete_advisor_specialized_job_v2", {
       p_job_id: capitalJob.job_id,
       p_capability_token: capitalJob.capability_token,
       p_completion_message_id: "a0000000-0000-4000-8000-000000000001",

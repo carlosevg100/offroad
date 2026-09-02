@@ -18,6 +18,43 @@ const job: AgentOperationBriefJob = {
 };
 
 describe("agent operation brief worker", () => {
+  it("activates capital planning deterministically when company and intent are already explicit", async () => {
+    let activation: unknown;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "Quero comparar alternativas de dívida para financiar a expansão da Camil.",
+        brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-02T12:00:00.000Z", manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Camil · capital",
+          entryJob: "capital_planning", accessBasis: "public_information",
+          phase: "understand", status: "active",
+        },
+        company_profile: {name: "Camil"}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+      }),
+      recordAgentResponse: async (_job: unknown, _id: string, _response: unknown, _proposal: unknown, value: unknown) => {
+        activation = value;
+        return {};
+      },
+      complete: async () => {}, recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => { throw new Error("deterministic activation must not call a model"); },
+      spent: () => ({costUsd: 0, calls: 0}),
+    } as unknown as ModelGateway;
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(result.status).toBe("succeeded");
+    expect(activation).toMatchObject({
+      job: "capital_planning", company: {name: "Camil"},
+      brief: {capitalIntent: "Quero comparar alternativas de dívida para financiar a expansão da Camil."},
+    });
+  });
+
   it("activates a released public DAG in the same project with zero routing model calls", async () => {
     let modelCalls = 0;
     let recordedActivation: Record<string, unknown> | undefined;

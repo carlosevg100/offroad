@@ -16,7 +16,7 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
-import {compileWorkerDebtResearchStrategy} from "./debt-research-runtime";
+import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
@@ -114,6 +114,7 @@ export type CompanyDebtViewDependencies = {
   gateway: ModelGateway;
   lineage: () => GatewayCallLog[];
   researchProviders: PublicSearchProvider[];
+  officialResearchProviderFactory?: WorkerOfficialResearchProviderFactory;
   now?: () => Date;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -357,7 +358,11 @@ export async function processCompanyDebtViewJob(
       externalSearchQueries: 8, finalGate: "user_confirmation_of_exact_artifact_fingerprint",
     }})});
 
-    const research = await collectResearch({job, context, companyName, ...(website ? {website} : {}), queue: dependencies.queue, providers: dependencies.researchProviders});
+    const research = await collectResearch({
+      job, context, companyName, ...(website ? {website} : {}), queue: dependencies.queue,
+      discoveryProviders: dependencies.researchProviders,
+      officialProviderFactory: dependencies.officialResearchProviderFactory,
+    });
     const synthesis = await synthesize(research);
     const sourceRefs = sourceEvidence(research.researchRunId, research.sources);
 
@@ -421,15 +426,21 @@ function assertExactTaskPlan(job: CapitalProjectAnalysisJob, context: Context): 
 
 async function collectResearch(input: {
   job: CapitalProjectAnalysisJob; context: Context; companyName: string; website?: string;
-  queue: QueueClient; providers: PublicSearchProvider[];
+  queue: QueueClient; discoveryProviders: PublicSearchProvider[];
+  officialProviderFactory?: WorkerOfficialResearchProviderFactory | undefined;
 }): Promise<ResearchSummary> {
-  const plan = buildCompanyDebtResearchPlan({legalName: input.companyName, ...(input.website ? {website: input.website} : {})});
   const geography = optionalString(input.context.session.company_profile.geography);
-  const runtime = compileWorkerDebtResearchStrategy({
-    work: "company_debt_view", locale: input.context.session.locale,
+  const subject = {
+    legalName: input.companyName,
     ...(input.website ? {website: input.website} : {}),
     ...(geography ? {geography} : {}),
-    providers: input.providers, evidenceBasis: "public_information",
+  };
+  const plan = buildCompanyDebtResearchPlan(subject);
+  const runtime = prepareWorkerDebtResearch({
+    work: "company_debt_view", locale: input.context.session.locale, subject,
+    discoveryProviders: input.discoveryProviders,
+    officialProviderFactory: input.officialProviderFactory,
+    evidenceBasis: "public_information",
   });
   await input.queue.writeStage(input.job, "public_research", "started", {
     queryCount: plan.length, researchStrategyFingerprint: runtime.strategy.fingerprint,
@@ -438,7 +449,7 @@ async function collectResearch(input: {
   });
   const cache = createWorkerPublicResearchCache(input.queue, input.job);
   const result = await runPublicResearch({
-    plan, providers: input.providers, maxSourcesPerQuery: 5,
+    plan, providers: runtime.providers, maxSourcesPerQuery: 5,
     ...(cache ? {cache} : {}),
   });
   const safeSources = result.sources.filter((source) => source.url.startsWith("https://"));
@@ -446,7 +457,7 @@ async function collectResearch(input: {
     ...result,
     status: safeSources.length === 0 ? "abstained" : result.status,
     sources: safeSources,
-    providerChain: input.providers.map((provider) => provider.id),
+    providerChain: runtime.providers.map((provider) => provider.id),
     debtResearchStrategy: runtime.strategy,
   };
   const researchRunId = await input.queue.recordPublicResearch(input.job, plan, persisted);

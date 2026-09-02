@@ -39,13 +39,13 @@ export const workspaceRequestRouteSchema = z.object({
 });
 export type WorkspaceRequestRoute = z.infer<typeof workspaceRequestRouteSchema>;
 
-export const executableWorkspaceJobSchema = z.enum(["company_debt_view", "origination_thesis"]);
+export const executableWorkspaceJobSchema = z.enum(["company_debt_view", "origination_thesis", "capital_planning"]);
 export type ExecutableWorkspaceJob = z.infer<typeof executableWorkspaceJobSchema>;
 
 export const workspaceExecutionRouteSchema = z.object({
   action: z.enum(["queue_specialized_job", "collect_required_context", "conversation_only"]),
   analysisScope: executableWorkspaceJobSchema.nullable(),
-  requirements: z.array(z.enum(["company_identity", "assignment_context"])).max(2),
+  requirements: z.array(z.enum(["company_identity", "assignment_context", "capital_intent"])).max(2),
   reasonCode: z.string().regex(/^[a-z0-9_]+$/),
   modelRoutingCalls: z.literal(0),
 });
@@ -109,7 +109,9 @@ export function routeWorkspaceExecution(input: {
 
   const finalArtifact = analysisScope.data === "company_debt_view"
     ? "company_debt_diagnostic"
-    : "meeting_brief";
+    : analysisScope.data === "origination_thesis"
+      ? "meeting_brief"
+      : "alternative_map";
   if (input.artifactTypes.includes(finalArtifact)) {
     return workspaceExecutionRouteSchema.parse({
       action: "conversation_only",
@@ -124,6 +126,9 @@ export function routeWorkspaceExecution(input: {
   if (!input.companyName?.trim()) requirements.push("company_identity");
   if (analysisScope.data === "origination_thesis" && input.requestText.trim().length < 10) {
     requirements.push("assignment_context");
+  }
+  if (analysisScope.data === "capital_planning" && input.requestText.trim().length < 10) {
+    requirements.push("capital_intent");
   }
   return workspaceExecutionRouteSchema.parse({
     action: requirements.length > 0 ? "collect_required_context" : "queue_specialized_job",
@@ -330,6 +335,15 @@ export const workspaceJobActivationSchema = z.discriminatedUnion("job", [
       thesisToTest: z.string().trim().max(3_000).optional(),
       audience: z.string().trim().max(240).optional(),
       meetingDate: z.iso.date().optional(),
+    }),
+  }),
+  z.object({
+    job: z.literal("capital_planning"),
+    company: workspaceActivationCompanySchema,
+    brief: z.object({
+      capitalIntent: z.string().trim().min(10).max(5_000),
+      knownConstraints: z.string().trim().max(3_000).optional(),
+      decisionContext: z.string().trim().max(3_000).optional(),
     }),
   }),
 ]);

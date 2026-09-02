@@ -64,6 +64,8 @@ export async function decideOriginationArtifact(
     ? "request_company_debt_view_revision_v1" as const
     : project?.entry_job === "origination_thesis"
       ? "request_origination_thesis_revision_v1" as const
+      : project?.entry_job === "capital_planning"
+        ? "request_capital_planning_revision_v1" as const
       : null;
   if (!revision) return {ok: false, code: "stale"};
 

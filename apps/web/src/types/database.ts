@@ -6340,6 +6340,14 @@ export type Database = {
         }
         Returns: Json
       }
+      request_capital_planning_revision_v1: {
+        Args: {
+          p_artifact_fingerprint: string
+          p_artifact_id: string
+          p_note: string
+        }
+        Returns: Json
+      }
       start_advisor_project_v1: {
         Args: {
           p_access_basis: string
@@ -6925,6 +6933,18 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_complete_advisor_specialized_job_v2: {
+        Args: {
+          p_artifact_fingerprint: string
+          p_artifact_id: string
+          p_capability_token: string
+          p_completion_message_id: string
+          p_content: string
+          p_job_id: string
+          p_result?: Json
+        }
+        Returns: Json
+      }
       worker_document_advisor_authorization: {
         Args: {
           p_capability_token: string
@@ -6981,6 +7001,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_capital_project_context_v2: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_case_input: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -7031,6 +7055,17 @@ export type Database = {
         Returns: Json
       }
       worker_record_agent_response_and_activate_v1: {
+        Args: {
+          p_activation?: Json
+          p_assistant_message_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_proposal?: Json
+          p_response: Json
+        }
+        Returns: Json
+      }
+      worker_record_agent_response_and_activate_v2: {
         Args: {
           p_activation?: Json
           p_assistant_message_id: string

@@ -36,6 +36,12 @@ export type ResearchSource = z.infer<typeof researchSourceSchema>;
 export type PublicSearchProvider = {
   readonly id: ResearchSource["provider"];
   readonly maxCostUsdPerCall?: number;
+  /**
+   * Official registries and filings complement discovery providers instead of replacing them.
+   * A provider must opt in explicitly: the default remains first-success fallback so paid search
+   * is not called after another discovery provider already answered.
+   */
+  readonly continueAfterSuccess?: boolean;
   search(query: ResearchQuery): Promise<ResearchSource[]>;
 };
 

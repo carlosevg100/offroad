@@ -11,6 +11,7 @@ import {requireWorkspace} from "@/lib/auth/workspace";
 
 import {OriginationDecision} from "./origination-decision";
 import {CompanyDebtProject} from "./company-debt-project";
+import {CapitalPlanningProject} from "./capital-planning-project";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "Projeto", robots: {index: false, follow: false}};
@@ -28,12 +29,15 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
     .eq("id", projectId)
     .maybeSingle();
   if (!project) notFound();
-  const specialized = ["company_debt_view", "origination_thesis"].includes(project.entry_job);
+  const specialized = ["company_debt_view", "origination_thesis", "capital_planning"].includes(project.entry_job);
   if (view !== "work" || !specialized) {
     return <ConversationalCapitalProject locale={locale} project={project} />;
   }
   if (project.entry_job === "company_debt_view") {
     return <CompanyDebtProject locale={locale} projectId={projectId} />;
+  }
+  if (project.entry_job === "capital_planning") {
+    return <CapitalPlanningProject locale={locale} projectId={projectId} />;
   }
   if (project.entry_job !== "origination_thesis") notFound();
 
@@ -246,7 +250,7 @@ async function ConversationalCapitalProject({
     projectName={project.project_name}
     sessionStatus={session.status}
     tasks={(tasks ?? []).map((task) => ({id: task.id, label: task.label, status: latestRunByTask.get(task.id)?.status ?? "waiting"}))}
-    workHref={["company_debt_view", "origination_thesis"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
+    workHref={["company_debt_view", "origination_thesis", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
   />;
 }
 

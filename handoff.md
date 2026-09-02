@@ -2418,3 +2418,28 @@ para o primeiro teste humano/gold case em produção, mas esse teste ainda preci
 qualidade financeira e editorial do work product. Os outros cinco jobs continuam sujeitos a
 executor, interface, gold case, adversarial e evidência de aceite próprios. O incremento seguinte
 deve promover `company_debt_view` reaproveitando o mesmo projeto, plano e runtime.
+
+## 37. Fundação oficial BR/US e terceiro DAG público, 02/09/2026
+
+O runtime de pesquisa pública agora combina fonte oficial aditiva com discovery. CVM DFP/ITR e
+SEC submissions/companyfacts são lidos diretamente, com resolução exata de emissor e recusa de
+ambiguidade. Perplexity e OpenAI Search continuam complementares, sujeitos a flag, orçamento e
+cache público. Firecrawl permanece aquisição, não fonte de verdade. Nenhum provider pago foi
+chamado neste incremento.
+
+`capital_planning` deixou de ser apenas uma opção visual. O chat ativa um plano congelado de 35
+tarefas, o worker persiste a trilha completa e entrega um mapa direcional de alternativas no mesmo
+projeto. A saída não possui campos de sizing, preço ou condições que a base pública não sustenta.
+O usuário pode confirmar ou pedir correção; a correção invalida apenas `S11`, reutiliza pesquisa e
+dependências e consome zero nova pesquisa externa.
+
+A migration canônica é `20260902033000_capital_planning_dag.sql`; o worker chama apenas as RPCs
+v2, que delegam as duas verticais anteriores e acrescentam o novo escopo sem duplicar memória.
+Docker não está disponível neste host, portanto a migration não foi aplicada nem o teste SQL foi
+executado localmente. Não promover nem declarar produção antes de banco reconstruído, RLS,
+Advisors, gold cases BR/US e QA visual.
+
+Próxima sequência: conectar `structure_from_documents` ao Case Graph privado existente, fechar o
+gate entendimento → lacunas/contradições → recomendação, e só então promover compiladores de
+teaser, modelo financeiro e term sheet. Matching e introdução continuam separados e exigem lender
+graph real, autorização específica e evidência própria.

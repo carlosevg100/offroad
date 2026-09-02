@@ -92,7 +92,7 @@ Rules:
 - Existing plan tasks and artifacts are real state. Explain what is running, complete or blocked
   without inventing progress.
 - executionRoute is a deterministic zero-model-call decision. Never select a different executor.
-- When executionRoute names company_debt_view or origination_thesis, an activation is allowed only
+- When executionRoute names company_debt_view, origination_thesis or capital_planning, an activation is allowed only
   for public-information work with no uploaded documents. If the company is explicit in the user
   conversation, return the exact company name and only user-stated assignment context in activation.
   If it is not explicit, ask only for the company name. Never infer a private company identity.
@@ -257,6 +257,13 @@ function buildDeterministicActivation(
     : undefined;
   if (route.analysisScope === "company_debt_view") {
     return {job: "company_debt_view", company: {name, ...(website ? {website} : {})}, brief: {focus: context.message}};
+  }
+  if (route.analysisScope === "capital_planning") {
+    return {
+      job: "capital_planning",
+      company: {name, ...(website ? {website} : {})},
+      brief: {capitalIntent: context.message},
+    };
   }
   return {
     job: "origination_thesis",

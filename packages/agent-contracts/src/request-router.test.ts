@@ -119,6 +119,22 @@ describe("workspace execution router", () => {
     });
   });
 
+  it("routes a public capital need to the released planning DAG without a model call", () => {
+    expect(routeWorkspaceExecution({
+      entryJob: "capital_planning",
+      accessBasis: "public_information",
+      companyName: "Camil",
+      documentCount: 0,
+      artifactTypes: [],
+      requestText: "Quero comparar alternativas para financiar crescimento e alongar a dívida.",
+    })).toMatchObject({
+      action: "queue_specialized_job",
+      analysisScope: "capital_planning",
+      requirements: [],
+      modelRoutingCalls: 0,
+    });
+  });
+
   it("does not reinterpret a material or external command as permission to start research", () => {
     expect(routeWorkspaceExecution({
       entryJob: "origination_thesis",

@@ -1,5 +1,26 @@
 # Acceptance Evidence
 
+## Planejamento de capital governado, candidate, 02/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Cobertura do plano | compiler + worker | 35 TaskSpecs exatas de `M01` a `S11`; dependências persistidas e final exige `S10` + `C11` |
+| Instrumentos amplos | contrato e prompt | 11 famílias de dívida; mínimo de duas alternativas; recebíveis nunca é default obrigatório |
+| Limite público | schema + quality gate | sem campo para sizing ou termos; detector recusa montante, percentual e spread propostos |
+| Evidência | pesquisa oficial + allowlist | afirmação pública só mantém URL persistida; CVM/SEC vêm antes de discovery; ambiguidade abstém |
+| Company Truth | 34 artefatos intermediários | spreading, dívida econômica, capacidade, pricing, garantias e sources & uses declaram `not_computable_public_only` sem base conciliada |
+| Síntese | model gateway | uma chamada `capital_planning`; Sonnet 5 medium, fallback/shadow Terra medium; máximo 8k de saída |
+| Custo de pesquisa | runtime | reserva dinâmica por provider e query; revisão de `S11` reserva US$ 0 externo e reaproveita pesquisa |
+| Correção incremental | RPC + worker | decisão pelo fingerprint exato; `S11` invalidada; `C11`/`S10` reutilizadas; replay idempotente |
+| Interface | Next server component | mapa, evidência, alternativas, comparação, recomendação, faltantes, fontes, tarefas e decisão no mesmo projeto |
+| Runtime local | Vitest/TypeScript/ESLint | worker 83/83; public research 24/24; contratos/gateway verdes; web e worker tipados; web lint verde |
+| Chamadas pagas | inspeção | zero chamadas pagas durante implementação e testes |
+| Banco | migration `20260902033000` | escrita e ligada às RPCs v2; execução local bloqueada porque Docker não está disponível neste host |
+
+Status: **candidate**. Não promover até reconstruir o banco, executar o teste SQL adversarial,
+validar RLS/Advisors, inspecionar a tela e aprovar um gold case BR e um US. Este incremento não
+prova estruturação privada, materiais institucionais, matching real ou introdução.
+
 ## Fundação de inteligência de dívida BR/US, candidate, 01/09/2026
 
 | Evidência | Verificação | Resultado |

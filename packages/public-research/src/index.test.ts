@@ -80,6 +80,50 @@ describe("governed public research", () => {
     expect(result).toMatchObject({status: "abstained", sources: [], failures: [{provider: "official", code: "official_unavailable"}]});
   });
 
+  it("keeps official evidence and continues to one complementary discovery provider", async () => {
+    const plan = buildPublicResearchPlan({legalName: "Empresa Exemplo"}).slice(0, 1);
+    const calls: string[] = [];
+    const result = await runPublicResearch({
+      plan,
+      providers: [
+        {
+          id: "official",
+          continueAfterSuccess: true,
+          search: async (query) => {
+            calls.push("official");
+            return [{
+              provider: "official", topic: query.topic, title: "Registro oficial",
+              url: "https://dados.cvm.gov.br/official", snippet: "Registro público.",
+              publishedAt: null, retrievedAt: "2026-09-01T12:00:00.000Z",
+              contentHash: "d".repeat(64),
+            }];
+          },
+        },
+        {
+          id: "perplexity",
+          search: async (query) => {
+            calls.push("perplexity");
+            return [{
+              provider: "perplexity", topic: query.topic, title: "Contexto complementar",
+              url: "https://example.com/context", snippet: "Contexto público.",
+              publishedAt: null, retrievedAt: "2026-09-01T12:00:00.000Z",
+              contentHash: "e".repeat(64),
+            }];
+          },
+        },
+        {
+          id: "openai",
+          search: async () => {
+            calls.push("openai");
+            return [];
+          },
+        },
+      ],
+    });
+    expect(calls).toEqual(["official", "perplexity"]);
+    expect(result.sources.map((source) => source.provider)).toEqual(["official", "perplexity"]);
+  });
+
   it("searches independent topics in parallel while preserving plan order", async () => {
     const plan = buildPublicResearchPlan({legalName: "Empresa Exemplo"});
     let inFlight = 0;

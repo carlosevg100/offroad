@@ -22,6 +22,7 @@ export * from "./cache";
 export * from "./source-registry";
 export * from "./entity-resolvers";
 export * from "./content-acquisition";
+export * from "./official-company-research";
 
 /**
  * Builds queries only from a deliberately public subject. Transaction context, financial values,
@@ -142,6 +143,7 @@ export async function runPublicResearch(input: {
     const cacheHit = cached.get(query.id);
     if (cacheHit) return {sources: cacheHit.sources.slice(0, maxSources), failures: [], cacheHit: true};
     const failures: ResearchRun["failures"] = [];
+    const collected: ResearchSource[] = [];
     for (const provider of input.providers) {
       try {
         providerCalls += 1;
@@ -151,7 +153,11 @@ export async function runPublicResearch(input: {
             provider.maxCostUsdPerCall ?? (provider.id === "perplexity" ? 0.005 : provider.id === "openai" ? 0.02 : 0)
           );
         const returned = z.array(researchSourceSchema).parse(await provider.search(query));
-        return {sources: returned.slice(0, maxSources), failures, cacheHit: false};
+        if (returned.length === 0) continue;
+        collected.push(...returned);
+        if (!provider.continueAfterSuccess) {
+          return {sources: collected.slice(0, maxSources), failures, cacheHit: false};
+        }
       } catch (error) {
         failures.push({queryId: query.id, provider: provider.id, code: stableErrorCode(error)});
       }
@@ -159,7 +165,7 @@ export async function runPublicResearch(input: {
     if (input.providers.length === 0) {
       failures.push({queryId: query.id, provider: "none", code: "provider_unavailable"});
     }
-    return {sources: [] as ResearchSource[], failures, cacheHit: false};
+    return {sources: collected.slice(0, maxSources), failures, cacheHit: false};
   }));
   const cacheRecords = queryResults.flatMap((result, index) => {
     if (result.cacheHit || result.sources.length === 0) return [];

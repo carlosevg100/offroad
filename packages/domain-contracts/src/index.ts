@@ -152,6 +152,114 @@ export const companyDebtDiagnosticArtifactSchema = companyDebtDiagnosticSchema.e
   }),
 });
 
+/** A planning start may be public-only and therefore cannot pretend to have sized, priced or
+ * legally screened a transaction. The contract contains alternatives, decision logic and the
+ * smallest next evidence batch; numerical proposed terms are intentionally absent. */
+export const capitalPlanningBriefSchema = z.object({
+  capitalIntent: z.string().trim().min(10).max(5_000),
+  knownConstraints: z.string().trim().max(3_000).optional(),
+  decisionContext: z.string().trim().max(3_000).optional(),
+});
+
+export const capitalPlanningAlternativeSchema = z.object({
+  id: z.string().regex(/^alt_[a-z0-9_]{2,60}$/),
+  family: z.enum([
+    "bilateral_bank", "club_or_syndicated", "capital_markets", "securitization",
+    "private_credit", "receivables", "asset_backed", "project_or_acquisition_finance",
+    "trade_or_agro", "flexible_capital", "special_situations",
+  ]),
+  title: z.string().min(5).max(180),
+  status: z.enum(["candidate", "conditional", "not_assessable"]),
+  fitRationale: z.string().min(30).max(1_200),
+  advantages: z.array(z.string().min(8).max(500)).min(1).max(8),
+  tradeoffs: z.array(z.string().min(8).max(500)).min(1).max(8),
+  prerequisites: z.array(z.string().min(8).max(500)).min(1).max(10),
+  disconfirmers: z.array(z.string().min(8).max(500)).min(1).max(10),
+  sourceUrls: z.array(z.url()).max(6),
+  evidenceClass: z.enum(["public_directional", "user_declared_only", "mixed_directional"]),
+});
+
+export const capitalPlanningMapSchema = z.object({
+  executiveRead: z.string().min(60).max(2_400),
+  understoodNeed: z.object({
+    objective: z.string().min(20).max(1_500),
+    constraints: z.array(z.string().min(8).max(500)).max(10),
+    assumptionsToConfirm: z.array(z.string().min(8).max(600)).min(1).max(12),
+  }),
+  evidenceCoverage: z.object({
+    status: z.enum(["public_only", "mixed_unreconciled", "insufficient"]),
+    supported: z.array(z.string().min(8).max(500)).max(12),
+    notYetSupported: z.array(z.string().min(8).max(500)).min(1).max(14),
+  }),
+  alternatives: z.array(capitalPlanningAlternativeSchema).min(2).max(8),
+  comparison: z.array(z.object({
+    dimension: z.string().min(3).max(120),
+    observations: z.array(z.object({
+      alternativeId: z.string().regex(/^alt_[a-z0-9_]{2,60}$/),
+      assessment: z.string().min(8).max(600),
+    })).min(2).max(8),
+  })).min(3).max(10),
+  directionalRecommendation: z.object({
+    status: z.enum(["not_ready", "directional"]),
+    alternativeId: z.string().regex(/^alt_[a-z0-9_]{2,60}$/).nullable(),
+    rationale: z.string().min(30).max(1_200),
+    conditionsBeforeConfirmation: z.array(z.string().min(8).max(600)).min(1).max(12),
+  }),
+  informationRequests: z.array(z.object({
+    request: z.string().min(8).max(500),
+    whyItMatters: z.string().min(15).max(700),
+    decisionImpact: z.string().min(15).max(700),
+    acceptableEvidence: z.array(z.string().min(3).max(300)).min(1).max(5),
+  })).min(1).max(5),
+  questions: z.array(z.object({
+    question: z.string().min(10).max(500),
+    whyItMatters: z.string().min(10).max(700),
+    answerChanges: z.string().min(10).max(700),
+  })).min(2).max(10),
+  unknowns: z.array(z.string().min(8).max(600)).min(1).max(14),
+}).superRefine((value, context) => {
+  const alternativeIds = new Set(value.alternatives.map((alternative) => alternative.id));
+  if (value.directionalRecommendation.status === "not_ready" && value.directionalRecommendation.alternativeId !== null) {
+    context.addIssue({code: "custom", path: ["directionalRecommendation", "alternativeId"], message: "not_ready cannot select an alternative"});
+  }
+  if (value.directionalRecommendation.status === "directional"
+    && (!value.directionalRecommendation.alternativeId
+      || !alternativeIds.has(value.directionalRecommendation.alternativeId))) {
+    context.addIssue({code: "custom", path: ["directionalRecommendation", "alternativeId"], message: "directional recommendation must reference an alternative"});
+  }
+  value.comparison.forEach((dimension, dimensionIndex) => {
+    dimension.observations.forEach((observation, observationIndex) => {
+      if (!alternativeIds.has(observation.alternativeId)) {
+        context.addIssue({
+          code: "custom",
+          path: ["comparison", dimensionIndex, "observations", observationIndex, "alternativeId"],
+          message: "comparison references an unknown alternative",
+        });
+      }
+    });
+  });
+});
+
+export const capitalPlanningMapArtifactSchema = capitalPlanningMapSchema.extend({
+  schemaVersion: z.literal("capital-planning-map.v1"),
+  asOfDate: z.iso.date(),
+  company: z.object({name: z.string().min(2), website: z.url().nullable()}),
+  sources: z.array(z.object({
+    title: z.string().min(1),
+    url: z.url(),
+    topic: z.enum(["identity", "news", "sector", "regulation", "market"]),
+    publishedAt: z.string().nullable(),
+    provider: z.enum(["perplexity", "openai", "official", "mcp"]),
+  })),
+  researchStatus: z.enum(["succeeded", "partial", "abstained"]),
+  scopeBoundary: z.string().min(20),
+  provenance: z.object({
+    provider: z.enum(["anthropic", "openai"]),
+    model: z.string().min(1),
+    executorVersion: z.string().min(3),
+  }),
+});
+
 export const taskEnvelopeSchema = z.object({
   taskId: uuidSchema,
   organizationId: uuidSchema,

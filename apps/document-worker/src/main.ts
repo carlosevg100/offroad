@@ -8,12 +8,20 @@ import {createExtractor} from "./extract";
 import {sleep} from "./sleep";
 import {processDocumentJob, type PipelineDependencies} from "./pipeline";
 import {createClassifier} from "@offroad/document-classification";
-import {createOpenAIWebSearchProvider, createPerplexitySearchProvider, type PublicSearchProvider} from "@offroad/public-research";
+import {
+  createCvmOpenDataEntityResolver,
+  createOfficialCompanyResearchProvider,
+  createOpenAIWebSearchProvider,
+  createPerplexitySearchProvider,
+  createSecEdgarEntityResolver,
+  type PublicSearchProvider,
+} from "@offroad/public-research";
 import {createStorageUrlGuard} from "./storage-url";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
 import {processCompanyDebtViewJob} from "./company-debt-view";
+import {processCapitalPlanningJob} from "./capital-planning";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -83,13 +91,10 @@ async function main(): Promise<void> {
     ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
     ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
   };
-  // Perplexity Search is raw retrieval, not an LLM writer. The API currently charges USD 5 per
-  // 1,000 successful requests. Preliminary/case analysis has five bounded queries; the
-  // origination vertical has seven. Reserve the exact maximum before the model gateway receives
-  // the remainder, so search and synthesis cannot silently escape the same per-job ledger.
-  const PERPLEXITY_CASE_RESERVE_USD = 0.025;
-  const PERPLEXITY_ORIGINATION_RESERVE_USD = 0.035;
-  const PERPLEXITY_COMPANY_DEBT_RESERVE_USD = 0.04;
+  // Discovery is complementary to zero-cost official sources. Reserve the conservative maximum
+  // of every configured fallback per query before giving the remainder to the writer. This stays
+  // correct if OpenAI Web Search is explicitly enabled next to Perplexity; the old fixed reserve
+  // understated the fallback chain.
   const researchProviders: PublicSearchProvider[] = [
     ...(config.PERPLEXITY_API_KEY
       ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})]
@@ -98,6 +103,19 @@ async function main(): Promise<void> {
       ? [createOpenAIWebSearchProvider({apiKey: config.OPENAI_API_KEY})]
       : []),
   ];
+  const officialEntityResolvers = [
+    createCvmOpenDataEntityResolver(),
+    createSecEdgarEntityResolver({userAgent: config.OFFROAD_RESEARCH_USER_AGENT}),
+  ];
+  const officialResearchProviderFactory = ({jurisdiction, subject}: {
+    jurisdiction: "BR" | "US";
+    subject: Parameters<typeof createOfficialCompanyResearchProvider>[0]["subject"];
+  }) => createOfficialCompanyResearchProvider({
+    jurisdiction,
+    subject,
+    resolvers: officialEntityResolvers,
+    userAgent: config.OFFROAD_RESEARCH_USER_AGENT,
+  });
   const newGateway = (job: ClaimedJob) => {
     const calls: GatewayCallLog[] = [];
     const requestedBudget = "model_budget" in job.payload ? job.payload.model_budget : undefined;
@@ -105,13 +123,14 @@ async function main(): Promise<void> {
       config.MODEL_MAX_COST_USD_PER_JOB,
       requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB,
     );
-    const requestedResearchReserve = job.kind === "capital_project_analysis" && !job.payload.revision_of_artifact_id
-      ? job.payload.analysis_scope === "company_debt_view"
-        ? PERPLEXITY_COMPANY_DEBT_RESERVE_USD
-        : PERPLEXITY_ORIGINATION_RESERVE_USD
-      : job.kind === "case_analysis" || job.kind === "preliminary_analysis"
-        ? PERPLEXITY_CASE_RESERVE_USD
-        : 0;
+    const maximumDiscoveryCostPerQuery = researchProviders.reduce(
+      (total, provider) => total + (provider.maxCostUsdPerCall ?? 0),
+      0,
+    );
+    const researchQueryCount = job.kind === "capital_project_analysis" && !job.payload.revision_of_artifact_id
+      ? job.payload.analysis_scope === "origination_thesis" ? 7 : 8
+      : job.kind === "case_analysis" || job.kind === "preliminary_analysis" ? 5 : 0;
+    const requestedResearchReserve = researchQueryCount * maximumDiscoveryCostPerQuery;
     const researchReserveUsd = researchProviders.length > 0
       ? Math.min(requestedResearchReserve, Math.max(0, configuredMax - 0.01))
       : 0;
@@ -216,6 +235,7 @@ async function main(): Promise<void> {
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
           researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
+          officialResearchProviderFactory,
           log,
         })
       : job.kind === "capital_project_analysis"
@@ -225,15 +245,26 @@ async function main(): Promise<void> {
               gateway: gatewayRun.gateway,
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
               researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
+              officialResearchProviderFactory,
               log,
             })
-          : processOriginationThesisJob(job, {
+          : job.payload.analysis_scope === "origination_thesis"
+            ? processOriginationThesisJob(job, {
               queue,
               gateway: gatewayRun.gateway,
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
               researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
+              officialResearchProviderFactory,
               log,
             })
+            : processCapitalPlanningJob(job, {
+                queue,
+                gateway: gatewayRun.gateway,
+                lineage: () => gatewayRun.calls.map((call) => ({...call})),
+                researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
+                officialResearchProviderFactory,
+                log,
+              })
       : job.kind === "agent_operation_brief"
         ? processAgentOperationBriefJob(job, {queue, gateway: gatewayRun.gateway, log})
       : processDocumentJob(job, dependenciesFor(gatewayRun)))

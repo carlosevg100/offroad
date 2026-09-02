@@ -1700,3 +1700,28 @@ Lição da noite: cada ponto de recall agora vem de uma regra pequena lida do ar
 - O refactor preserva os outputs econômicos e usa zero chamadas de modelo. `pnpm check` passou nos
   42 pacotes: lint, typecheck, todos os testes e build. `case-runner` ficou com 12 testes e
   `case-engine` com 30; nenhuma API paga foi chamada.
+
+## Pesquisa oficial BR/US e planejamento de capital, candidate, 02/09/2026
+
+- A pesquisa pública passou a começar por fonte primária oficial. No Brasil, o provider resolve a
+  companhia na CVM e lê as últimas DFP/ITR consolidadas diretamente dos ZIPs regulatórios; nos EUA,
+  resolve CIK e consulta submissions/companyfacts da SEC. Homônimo ou identidade ambígua encerra
+  sem escolha silenciosa. Perplexity e OpenAI Search permanecem complementares e desativáveis.
+- O cache global continua exclusivo para matéria-prima pública. Projeto privado nunca publica
+  query, snippet ou resultado no cache compartilhado. Uma revisão reutiliza somente fontes e
+  artefatos já governados no mesmo projeto; não repete pesquisa e reserva custo externo zero.
+- `capital_planning` é o terceiro DAG público executável. O plano congelado contém 35 TaskSpecs
+  `M01-S11`; 34 resultados intermediários explicitam método, evidência ou impossibilidade de
+  cálculo e `S11` produz um `alternative_map` corrigível. Há uma única síntese de modelo.
+- O mapa compara pelo menos duas famílias entre banco bilateral, club/sindicado, mercado de
+  capitais, securitização, crédito privado, recebíveis, asset-backed, project/acquisition finance,
+  comércio exterior/agro, capital flexível e situações especiais. Nenhuma família é forçada.
+- Em base pública, volume, pricing, prazo, amortização, covenant, advance rate, garantia e
+  capacidade permanecem ausentes por contrato. A saída contém vantagens, trade-offs,
+  pré-requisitos, disconfirmers, comparação e no máximo cinco pedidos de informação com impacto.
+- Chat, plano, execução, artefato e retorno ao projeto usam RPCs v2 capability-bound. A interface
+  agora renderiza o mapa, fontes, progresso das 35 tarefas e decisão. Correção invalida somente
+  `S11`, reaproveita `C11` e `S10` e não executa nova pesquisa.
+- Testes locais do worker, contratos, gateway, pesquisa pública, lint e tipagem passaram sem API
+  paga. A migration foi escrita, mas Docker não está disponível neste host; banco reconstruído,
+  teste SQL integral, Security Advisor, gold case e inspeção visual ainda bloqueiam promoção.

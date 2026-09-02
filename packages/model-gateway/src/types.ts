@@ -20,6 +20,7 @@ export type TaskKind =
   | "preliminary_understanding"
   | "origination_thesis"
   | "company_debt_view"
+  | "capital_planning"
   | "agent_operation_brief"
   | "write_output"
   | "audit_evidence"

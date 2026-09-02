@@ -5267,6 +5267,183 @@ summary:focus-visible {
   color: var(--signal);
 }
 
+.capital-planning-task-panel {
+  max-height: calc(100svh - 56px);
+  overflow-y: auto;
+}
+
+.capital-planning-need {
+  padding: 22px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.capital-planning-need > p {
+  margin: 0 0 20px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.capital-planning-need > div,
+.capital-planning-alternative-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 28px;
+}
+
+.capital-planning-need strong,
+.capital-planning-alternative-grid strong {
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.capital-planning-need ul,
+.capital-planning-need section > p,
+.capital-planning-alternative-grid ul,
+.capital-planning-recommendation ul {
+  margin: 8px 0 0;
+  padding-left: 17px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.capital-planning-need section > p {
+  padding: 0;
+}
+
+.capital-planning-alternatives {
+  display: grid;
+  gap: 12px;
+}
+
+.capital-planning-alternatives > article {
+  padding: 24px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.capital-planning-alternatives > article > header {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.capital-planning-alternatives h3 {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -.025em;
+}
+
+.capital-planning-alternatives small,
+.capital-planning-alternatives > article > header > span {
+  color: var(--signal);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.capital-planning-alternatives > article > header > span {
+  padding: 6px 8px;
+  border: 1px solid #cad5d9;
+  background: #f5f7f7;
+  white-space: nowrap;
+}
+
+.capital-planning-alternatives > article > p {
+  margin: 0 0 20px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.capital-planning-alternatives .origination-source-links {
+  margin-top: 18px;
+}
+
+.capital-planning-comparison {
+  border: 1px solid var(--line);
+}
+
+.capital-planning-comparison > section {
+  display: grid;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 24px;
+}
+
+.capital-planning-comparison > section:last-child {
+  border-bottom: 0;
+}
+
+.capital-planning-comparison > section > strong {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.capital-planning-comparison p {
+  display: grid;
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+  grid-template-columns: minmax(110px, .4fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.capital-planning-comparison p:last-child {
+  margin-bottom: 0;
+}
+
+.capital-planning-comparison p span {
+  color: var(--signal);
+  font-weight: 700;
+}
+
+.capital-planning-recommendation {
+  display: grid;
+  margin-top: 42px;
+  padding: 24px;
+  border: 1px solid #c8d3d7;
+  color: var(--signal);
+  background: #f4f7f7;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.capital-planning-recommendation span,
+.capital-planning-recommendation strong {
+  display: block;
+}
+
+.capital-planning-recommendation span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.capital-planning-recommendation strong {
+  margin: 5px 0 8px;
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.capital-planning-recommendation p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
 .origination-setup__aside > .origination-form__boundary {
   margin-top: 20px;
   border-color: rgb(255 255 255 / 16%);
@@ -5317,6 +5494,17 @@ summary:focus-visible {
 
   .company-debt-project .origination-task-panel {
     max-height: none;
+  }
+
+  .capital-planning-task-panel {
+    max-height: none;
+  }
+
+  .capital-planning-need > div,
+  .capital-planning-alternative-grid,
+  .capital-planning-comparison > section,
+  .capital-planning-comparison p {
+    grid-template-columns: 1fr;
   }
 
   .origination-form__wide {

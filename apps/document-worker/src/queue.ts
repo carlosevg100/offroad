@@ -73,7 +73,7 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
 export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
   kind: z.literal("capital_project_analysis"),
   payload: z.object({
-    analysis_scope: z.enum(["origination_thesis", "company_debt_view"]),
+    analysis_scope: z.enum(["origination_thesis", "company_debt_view", "capital_planning"]),
     locale: z.enum(["pt-BR", "en-US"]),
     capital_project_id: z.uuid(),
     capital_project_plan_id: z.uuid(),
@@ -511,14 +511,14 @@ export function createQueueClient(
     },
 
     async loadCapitalProjectContext(job) {
-      return call("worker_load_capital_project_context", {
+      return call("worker_load_capital_project_context_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
     },
 
     async recordAgentResponse(job, assistantMessageId, response, proposal, activation) {
-      return call("worker_record_agent_response_and_activate_v1", {
+      return call("worker_record_agent_response_and_activate_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_assistant_message_id: assistantMessageId,
@@ -537,7 +537,7 @@ export function createQueueClient(
     },
 
     async completeAdvisorSpecializedJob(job, input) {
-      await call("worker_complete_advisor_specialized_job_v1", {
+      await call("worker_complete_advisor_specialized_job_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_completion_message_id: input.completionMessageId,
