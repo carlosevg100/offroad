@@ -150,6 +150,14 @@ jobs:
               --query 'services[0].events[0:15].[createdAt,message]' --output table || true
             echo "::endgroup::"
 
+            echo "::group::Safe worker boot logs"
+            SINCE_MS=$(( ($(date +%s) - 900) * 1000 ))
+            aws logs filter-log-events --log-group-name "/ecs/offroad-document-worker" \
+              --start-time "$SINCE_MS" \
+              --filter-pattern '?"worker.boot" ?"worker configuration"' \
+              --query 'events[].message' --output text || true
+            echo "::endgroup::"
+
             echo "::group::Recent stopped task diagnostics"
             STOPPED_TASKS=$(aws ecs list-tasks --cluster "$ECS_CLUSTER" \
               --service-name "$ECS_SERVICE" --desired-status STOPPED \

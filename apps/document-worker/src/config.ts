@@ -24,8 +24,16 @@ const providerApiKeySchema = z.preprocess((value) => {
     const decoded: unknown = JSON.parse(trimmed);
     if (typeof decoded === "string") return decoded.trim();
     if (decoded && typeof decoded === "object" && !Array.isArray(decoded)) {
-      const values = Object.values(decoded);
-      if (values.length === 1 && typeof values[0] === "string") return values[0].trim();
+      const entries = Object.entries(decoded);
+      const entry = entries.length === 1 ? entries[0] : undefined;
+      if (entry) {
+        const [property, value] = entry;
+        // The normal console representation is {label: secret}. If the secret was
+        // accidentally pasted into the left-hand "key" box, preserve it as well when
+        // the right-hand value is clearly not an API key. Nothing is logged either way.
+        if (typeof value === "string" && value.trim().length >= 20) return value.trim();
+        if (property.trim().length >= 20) return property.trim();
+      }
     }
     return null;
   } catch {
