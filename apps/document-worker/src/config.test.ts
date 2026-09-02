@@ -59,6 +59,15 @@ describe("worker provider data-policy configuration", () => {
     expect(config.FIRECRAWL_API_KEY).toBe("synthetic-firecrawl-api-key");
   });
 
+  it("recovers a provider key pasted into the console object's property field", () => {
+    const config = loadConfig({
+      ...baseEnv(),
+      PERPLEXITY_API_KEY: JSON.stringify({"synthetic-perplexity-api-key": ""}),
+    });
+
+    expect(config.PERPLEXITY_API_KEY).toBe("synthetic-perplexity-api-key");
+  });
+
   it("rejects ambiguous provider secret objects without printing their contents", () => {
     const ambiguous = JSON.stringify({first: "synthetic-provider-api-key-one", second: "synthetic-provider-api-key-two"});
     expect(() => loadConfig({...baseEnv(), PERPLEXITY_API_KEY: ambiguous}))
