@@ -19,6 +19,7 @@ import {
   type ProviderAdapter,
   type ProviderErrorDiagnostic,
   type TaskKind,
+  type ValidationIssueDiagnostic,
 } from "./types";
 
 export type ModelGatewayConfig = {
@@ -213,8 +214,13 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
 
       const parsed = request.schema.safeParse(stripNulls(response.output));
       if (!parsed.success) {
+        const validationIssues: ValidationIssueDiagnostic[] = parsed.error.issues.slice(0, 5).map((issue) => ({
+          path: issue.path.join("."),
+          code: issue.code,
+          message: issue.message.slice(0, 180),
+        }));
         attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message: parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ")});
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
+        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues});
         continue;
       }
 
@@ -267,6 +273,7 @@ function emit(
     notCalled?: boolean;
     providerPolicyVersion: string | undefined;
     providerError?: ProviderErrorDiagnostic;
+    validationIssues?: ValidationIssueDiagnostic[];
   },
 ): void {
   if (!config.onCall) return;
@@ -294,6 +301,7 @@ function emit(
   if (entry.providerPolicyVersion) log.providerPolicyVersion = entry.providerPolicyVersion;
   if (entry.request.metadata) log.metadata = entry.request.metadata;
   if (entry.providerError) log.providerError = entry.providerError;
+  if (entry.validationIssues) log.validationIssues = entry.validationIssues;
   config.onCall(log);
 }
 

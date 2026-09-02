@@ -64,13 +64,17 @@ export function createAnthropicAdapter(options: AnthropicAdapterOptions = {}): P
     provider: "anthropic",
     async complete(request: AdapterRequest): Promise<AdapterResponse> {
       const params = buildAnthropicParams(request);
-      const message = await client.messages.parse(params, {timeout: request.timeoutMs});
+      // Do not use messages.parse here. The SDK helper runs the Zod validator inside the
+      // provider promise and throws away the otherwise valid Message (including usage and
+      // request id) when a client-side constraint fails. The gateway owns validation and
+      // fallback, so retain the raw structured response and validate it exactly once there.
+      const message = await client.messages.create(params, {timeout: request.timeoutMs});
       const rawText = message.content
         .filter((block): block is Anthropic.TextBlock => block.type === "text")
         .map((block) => block.text)
         .join("");
       const stopReason = mapAnthropicStopReason(message.stop_reason);
-      const output = message.parsed_output ?? safeJsonParse(rawText);
+      const output = safeJsonParse(rawText);
       const response: AdapterResponse = {output, rawText, usage: mapAnthropicUsage(message.usage), model: message.model, stopReason};
       const requestId = (message as {_request_id?: string | null})._request_id;
       if (requestId) response.requestId = requestId;

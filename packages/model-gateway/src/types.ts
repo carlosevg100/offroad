@@ -127,6 +127,13 @@ export type ProviderErrorDiagnostic = {
   type?: string;
 };
 
+export type ValidationIssueDiagnostic = {
+  /** Schema path and validator code only; never includes the rejected value. */
+  path: string;
+  code: string;
+  message: string;
+};
+
 export type GatewayCallLog = {
   invocationId: string;
   task: TaskKind;
@@ -150,6 +157,7 @@ export type GatewayCallLog = {
   providerPolicyVersion?: string;
   metadata?: Record<string, string>;
   providerError?: ProviderErrorDiagnostic;
+  validationIssues?: ValidationIssueDiagnostic[];
 };
 
 export class ModelGatewayError extends Error {

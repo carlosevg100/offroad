@@ -330,8 +330,14 @@ describe("gateway", () => {
   });
 
   it("throws when every attempt fails and reports each attempt", async () => {
-    const gateway = createModelGateway({adapters: {anthropic: fakeAdapter("anthropic", [new Error("down")]), openai: fakeAdapter("openai", [ok("gpt-5.6-terra", {bad: true})])}});
+    const logs: GatewayCallLog[] = [];
+    const gateway = createModelGateway({adapters: {anthropic: fakeAdapter("anthropic", [new Error("down")]), openai: fakeAdapter("openai", [ok("gpt-5.6-terra", {bad: true})])}, onCall: (log) => logs.push(log)});
     await expect(gateway.complete(baseRequest)).rejects.toMatchObject({code: "all_attempts_failed"});
+    expect(logs[1]?.validationIssues).toEqual(expect.arrayContaining([
+      expect.objectContaining({path: "kind", code: "invalid_value"}),
+      expect.objectContaining({path: "confidence", code: "invalid_type"}),
+    ]));
+    expect(JSON.stringify(logs[1]?.validationIssues)).not.toContain("bad");
   });
 
   it("enforces cost and call budgets", async () => {

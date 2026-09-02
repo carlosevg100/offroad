@@ -25,6 +25,7 @@ describe("model failure lineage", () => {
       fromCassette: false,
       schemaName: "origination_meeting_brief_v1",
       providerError: {name: "RateLimitError", status: 429, type: "rate_limit_error"},
+      validationIssues: [{path: "meetingQuestions", code: "too_small", message: "Too small: expected array to have >=3 items"}],
       metadata: {projectId: "private-project"},
     } satisfies GatewayCallLog;
 
@@ -37,6 +38,7 @@ describe("model failure lineage", () => {
       usedFallback: false,
       stopReason: "other",
       providerError: {name: "RateLimitError", status: 429, type: "rate_limit_error"},
+      validationIssues: [{path: "meetingQuestions", code: "too_small", message: "Too small: expected array to have >=3 items"}],
     }]);
   });
 });
