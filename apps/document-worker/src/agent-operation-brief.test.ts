@@ -18,6 +18,53 @@ const job: AgentOperationBriefJob = {
 };
 
 describe("agent operation brief worker", () => {
+  it("starts public company research and asks meeting context in parallel without a routing model call", async () => {
+    let activation: unknown;
+    let response: Record<string, unknown> | undefined;
+    let modelCalls = 0;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "Tenho uma reunião amanhã com a Camil Alimentos S.A. e quero preparar um pitch com alternativas estratégicas de endividamento.",
+        brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-02T12:00:00.000Z", manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Reunião Camil",
+          entryJob: "origination_thesis", accessBasis: "public_information",
+          phase: "understand", status: "active",
+        },
+        company_profile: {}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+      }),
+      recordAgentResponse: async (_job: unknown, _id: string, value: unknown, _proposal: unknown, activated: unknown) => {
+        response = value as Record<string, unknown>;
+        activation = activated;
+        return {};
+      },
+      complete: async () => {}, recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => {
+        modelCalls += 1;
+        throw new Error("the initial public route must be deterministic");
+      },
+      spent: () => ({costUsd: 0, calls: modelCalls}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(result.status).toBe("succeeded");
+    expect(modelCalls).toBe(0);
+    expect(activation).toMatchObject({
+      job: "origination_thesis", company: {name: "Camil Alimentos S.A."},
+    });
+    expect(response?.reply).toContain("Já iniciei em paralelo a pesquisa pública");
+    expect(response?.reply).toContain("com quem será a reunião");
+    expect(response?.reply).toContain("relacionamento ou a exposição");
+  });
+
   it("activates capital planning deterministically when company and intent are already explicit", async () => {
     let activation: unknown;
     const queue = {
@@ -175,9 +222,9 @@ describe("agent operation brief worker", () => {
     expect(recordedResponse?.reply).toContain("same project");
   });
 
-  it("uses the existing bounded turn to normalize an explicit company and then activates the exact selected DAG", async () => {
+  it("normalizes an explicit company and activates the exact selected DAG without a model call", async () => {
     let recordedActivation: Record<string, unknown> | undefined;
-    let modelInput = "";
+    let modelCalls = 0;
     const queue = {
       writeStage: async () => {},
       loadAgentContext: async () => ({
@@ -218,36 +265,23 @@ describe("agent operation brief worker", () => {
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
-      complete: async (request: {input: Array<{type: string; text?: string}>}) => {
-        modelInput = request.input[0]?.text ?? "";
-        return {
-          output: {
-            state: "idle",
-            reply: "Entendi a reunião e vou iniciar a tese pública para a CVC.",
-            activation: {
-              job: "origination_thesis",
-              company: {name: "CVC"},
-              brief: {meetingContext: "Reunião amanhã para discutir alternativas de dívida."},
-            },
-          },
-          usage: {inputTokens: 120, outputTokens: 45, cachedInputTokens: 0},
-        };
+      complete: async () => {
+        modelCalls += 1;
+        throw new Error("the explicit public route must not call a model");
       },
-      spent: () => ({costUsd: 0.04, calls: 1}),
+      spent: () => ({costUsd: 0, calls: modelCalls}),
     } as unknown as ModelGateway;
 
     const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
     expect(result.status).toBe("succeeded");
-    expect(JSON.parse(modelInput)).toMatchObject({
-      executionRoute: {action: "collect_required_context", analysisScope: "origination_thesis", modelRoutingCalls: 0},
-    });
+    expect(modelCalls).toBe(0);
     expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "CVC"}});
   });
 
   it("uses relevant organization memory before asking for missing Camil meeting context", async () => {
-    let modelInput = "";
     let recordedActivation: unknown;
     let recordedResponse: Record<string, unknown> | undefined;
+    let modelCalls = 0;
     const queue = {
       writeStage: async () => {},
       loadAgentContext: async () => ({
@@ -300,35 +334,20 @@ describe("agent operation brief worker", () => {
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
-      complete: async (request: {input: Array<{type: string; text?: string}>}) => {
-        modelInput = request.input[0]?.text ?? "";
-        return {
-          output: {
-            state: "asking",
-            reply: "Encontrei o trabalho anterior sobre os vencimentos de 2027. Você quer atualizar aquela tese ou abrir uma agenda nova? Também preciso confirmar quem estará na reunião, o que quer provocar e qual é o relacionamento ou exposição atual.",
-            clarification: {
-              question: "Quem estará na reunião, o que você gostaria de provocar e qual é hoje o relacionamento ou a exposição com a Camil?",
-              whyItMatters: "A audiência, o objetivo e o histórico definem a profundidade, a novidade e as restrições do pitch.",
-              answerKind: "text",
-              choices: [],
-              priority: "required_now",
-            },
-          },
-          usage: {inputTokens: 180, outputTokens: 70, cachedInputTokens: 0},
-        };
+      complete: async () => {
+        modelCalls += 1;
+        throw new Error("memory-aware public activation must not call a model");
       },
-      spent: () => ({costUsd: 0.05, calls: 1}),
+      spent: () => ({costUsd: 0, calls: modelCalls}),
     } as unknown as ModelGateway;
 
     const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
-    const parsedInput = JSON.parse(modelInput) as Record<string, unknown>;
     expect(result.status).toBe("succeeded");
-    expect(parsedInput).toMatchObject({
-      relatedProjectMemory: [{projectName: "Camil · refinanciamento 2027", artifactTypes: ["meeting_brief"]}],
-      executionRoute: {action: "collect_required_context", requirements: ["company_identity", "meeting_audience", "desired_outcome", "relationship_context"]},
-    });
-    expect(recordedResponse).toMatchObject({state: "asking"});
-    expect(recordedActivation).toBeUndefined();
+    expect(modelCalls).toBe(0);
+    expect(recordedResponse).toMatchObject({state: "idle"});
+    expect(recordedResponse?.reply).toContain("Camil · refinanciamento 2027");
+    expect(recordedResponse?.reply).toContain("atualiza aquela tese ou abre uma agenda nova");
+    expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "Camil"}});
   });
 
   it("turns a direct user declaration into a preview, never a silent mutation", async () => {
