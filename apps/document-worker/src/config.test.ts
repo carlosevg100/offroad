@@ -46,4 +46,22 @@ describe("worker provider data-policy configuration", () => {
     expect(JSON.stringify(described)).not.toContain("validThrough");
     expect(JSON.stringify(described)).not.toContain("synthetic-anthropic-api-key");
   });
+
+  it("accepts provider keys stored as plaintext or as a one-field Secrets Manager object", () => {
+    const config = loadConfig({
+      ...baseEnv(),
+      PERPLEXITY_API_KEY: "synthetic-perplexity-api-key",
+      FIRECRAWL_API_KEY: JSON.stringify({console_field: "synthetic-firecrawl-api-key"}),
+      ENABLE_FIRECRAWL: "true",
+    });
+
+    expect(config.PERPLEXITY_API_KEY).toBe("synthetic-perplexity-api-key");
+    expect(config.FIRECRAWL_API_KEY).toBe("synthetic-firecrawl-api-key");
+  });
+
+  it("rejects ambiguous provider secret objects without printing their contents", () => {
+    const ambiguous = JSON.stringify({first: "synthetic-provider-api-key-one", second: "synthetic-provider-api-key-two"});
+    expect(() => loadConfig({...baseEnv(), PERPLEXITY_API_KEY: ambiguous}))
+      .toThrow("worker configuration is invalid or incomplete: PERPLEXITY_API_KEY");
+  });
 });

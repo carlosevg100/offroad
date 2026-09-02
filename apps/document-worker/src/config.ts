@@ -11,6 +11,29 @@ const providerAssuranceJsonSchema = z.string().transform((value, context) => {
 });
 
 /**
+ * Secrets Manager can store a provider key either as plaintext or as the single value in
+ * the key/value object produced by its console. ECS injects the whole SecretString here.
+ * Normalising both representations at the process boundary keeps the task definition
+ * independent of a console-created JSON property name and never exposes the value.
+ */
+const providerApiKeySchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith('"')) return trimmed;
+  try {
+    const decoded: unknown = JSON.parse(trimmed);
+    if (typeof decoded === "string") return decoded.trim();
+    if (decoded && typeof decoded === "object" && !Array.isArray(decoded)) {
+      const values = Object.values(decoded);
+      if (values.length === 1 && typeof values[0] === "string") return values[0].trim();
+    }
+    return null;
+  } catch {
+    return trimmed;
+  }
+}, z.string().min(20).optional());
+
+/**
  * Worker configuration. Everything arrives through the environment, which the task
  * definition fills from AWS Secrets Manager at start-up (P1 plan §13, D-003).
  *
@@ -48,8 +71,8 @@ const schema = z.object({
 
   ANTHROPIC_API_KEY: z.string().min(20).optional(),
   OPENAI_API_KEY: z.string().min(20).optional(),
-  PERPLEXITY_API_KEY: z.string().min(20).optional(),
-  FIRECRAWL_API_KEY: z.string().min(20).optional(),
+  PERPLEXITY_API_KEY: providerApiKeySchema,
+  FIRECRAWL_API_KEY: providerApiKeySchema,
   ENABLE_OPENAI_WEB_SEARCH: z.string().default("false").transform((value) => value === "true"),
   ENABLE_FIRECRAWL: z.string().default("false").transform((value) => value === "true"),
   FIRECRAWL_ZERO_DATA_RETENTION: z.string().default("false").transform((value) => value === "true"),
