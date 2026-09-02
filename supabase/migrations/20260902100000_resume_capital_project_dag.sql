@@ -15,8 +15,8 @@ as $$
 declare
   job_row public.processing_jobs := private.job_for_capability(p_job_id, p_capability_token);
   base_context jsonb := private.worker_load_capital_project_context_v2(p_job_id, p_capability_token);
-  plan_id uuid := nullif(base_context #>> '{plan,id}', '')::uuid;
-  project_id uuid := nullif(base_context #>> '{project,id}', '')::uuid;
+  v_plan_id uuid := nullif(base_context #>> '{plan,id}', '')::uuid;
+  v_project_id uuid := nullif(base_context #>> '{project,id}', '')::uuid;
   completed jsonb;
 begin
   select coalesce(jsonb_agg(jsonb_build_object(
@@ -45,8 +45,8 @@ begin
       on plan_task.organization_id = task_run.organization_id
       and plan_task.id = task_run.plan_task_id
     where artifact.organization_id = job_row.organization_id
-      and artifact.capital_project_id = project_id
-      and artifact.plan_id = plan_id
+      and artifact.capital_project_id = v_project_id
+      and artifact.plan_id = v_plan_id
       and artifact.status not in ('stale', 'superseded')
     order by plan_task.task_id, artifact.created_at desc, artifact.id desc
   ) current_artifact;
