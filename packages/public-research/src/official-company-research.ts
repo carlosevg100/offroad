@@ -301,7 +301,7 @@ async function extractCvmStatementRows(bytes: Uint8Array, cvmCode: string): Prom
     results.push(...matching.filter((row) =>
       (!latestReference || row.DT_REFER === latestReference)
       && Number(row.VERSAO ?? 0) === latestVersion
-      && (!row.ORDEM_EXERC || /[ÚU]LTIMO|LAST/i.test(row.ORDEM_EXERC)),
+      && (!row.ORDEM_EXERC || /^(?:ULTIMO|LAST)$/.test(normalizeLabel(row.ORDEM_EXERC))),
     ));
   }
   return results;
@@ -315,14 +315,69 @@ function summarizeCvmRows(rows: CvmStatementRow[]): string {
   const header = ordered[0]
     ? `Company=${ordered[0].DENOM_CIA ?? ""} | reference=${ordered[0].DT_REFER ?? ""} | currency=${ordered[0].MOEDA ?? ""} | scale=${ordered[0].ESCALA_MOEDA ?? ""}`
     : "";
+  const metrics = summarizeCvmKeyMetrics(ordered);
   const lines = ordered.map((row) => [
     row.DT_REFER,
     row.CD_CONTA,
     row.DS_CONTA,
-    `value=${row.VL_CONTA}`,
-    row.ESCALA_MOEDA ? `scale=${row.ESCALA_MOEDA}` : null,
+    `value=${formatCvmValue(row)}`,
+    row.DT_FIM_EXERC ? `period_end=${row.DT_FIM_EXERC}` : null,
   ].filter(Boolean).join(" | "));
-  return [header, ...lines].join("\n").slice(0, 8_000);
+  return [header, metrics, ...lines].filter(Boolean).join("\n").slice(0, 8_000);
+}
+
+function summarizeCvmKeyMetrics(rows: CvmStatementRow[]): string {
+  const byCode = new Map(rows.map((row) => [row.CD_CONTA ?? "", row]));
+  const definitions = [
+    ["cash", "1.01.01"],
+    ["short_term_debt", "2.01.04"],
+    ["long_term_debt", "2.02.01"],
+    ["revenue", "3.01"],
+    ["ebit", "3.05"],
+    ["net_income", "3.11"],
+    ["operating_cash_flow", "6.01"],
+  ] as const;
+  const facts = definitions.flatMap(([label, code]) => {
+    const row = byCode.get(code);
+    return row ? [`${label}=${formatCvmValue(row)}`] : [];
+  });
+  const cash = numericCvmValue(byCode.get("1.01.01"));
+  const shortDebt = numericCvmValue(byCode.get("2.01.04"));
+  const longDebt = numericCvmValue(byCode.get("2.02.01"));
+  const unitRow = byCode.get("2.01.04") ?? byCode.get("2.02.01") ?? byCode.get("1.01.01");
+  if (unitRow && shortDebt !== null && longDebt !== null) {
+    const grossDebt = shortDebt + longDebt;
+    facts.splice(3, 0, `gross_debt=${formatCvmNumericValue(grossDebt, unitRow)}`);
+    if (cash !== null) facts.splice(4, 0, `net_debt=${formatCvmNumericValue(grossDebt - cash, unitRow)}`);
+  }
+  const period = rows[0]?.DT_FIM_EXERC ?? rows[0]?.DT_REFER ?? "not disclosed";
+  return facts.length > 0
+    ? `Key metrics (consolidated; source scale normalized) | period_end=${period} | ${facts.join(" | ")}`
+    : "";
+}
+
+function numericCvmValue(row: CvmStatementRow | undefined): number | null {
+  if (!row?.VL_CONTA) return null;
+  const value = Number(row.VL_CONTA.replace(",", "."));
+  return Number.isFinite(value) ? value : null;
+}
+
+function formatCvmValue(row: CvmStatementRow): string {
+  const value = numericCvmValue(row);
+  return value === null ? `${row.VL_CONTA ?? "not disclosed"} ${row.ESCALA_MOEDA ?? ""}`.trim()
+    : formatCvmNumericValue(value, row);
+}
+
+function formatCvmNumericValue(value: number, row: CvmStatementRow): string {
+  if (normalizeLabel(row.MOEDA ?? "") === "REAL" && normalizeLabel(row.ESCALA_MOEDA ?? "") === "MIL") {
+    return `BRL ${new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 0, maximumFractionDigits: 3}).format(value / 1_000)} milhões`;
+  }
+  const normalized = new Intl.NumberFormat("en-US", {useGrouping: false, maximumFractionDigits: 10}).format(value);
+  return `${row.MOEDA ?? "currency not disclosed"} ${normalized} ${row.ESCALA_MOEDA ?? "scale not disclosed"}`;
+}
+
+function normalizeLabel(value: string): string {
+  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
 }
 
 function recentSecFilings(submissions: z.infer<typeof secSubmissionsSchema>, cik: string) {

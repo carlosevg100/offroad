@@ -228,4 +228,28 @@ describe("governed public research", () => {
     expect(result.sources.map((source) => source.title)).toEqual(["Fonte oficial em cache", "Nova fonte oficial"]);
     expect(writes).toHaveLength(1);
   });
+
+  it("does not cache fallback material when an earlier authoritative provider failed", async () => {
+    const plan = buildOriginationResearchPlan({legalName: "Empresa Exemplo"}).slice(0, 1);
+    const writes: unknown[] = [];
+    const result = await runPublicResearch({
+      plan,
+      cache: {load: async () => [], store: async (records) => { writes.push(...records); }},
+      providers: [
+        {id: "official", continueAfterSuccess: true, search: async () => {
+          throw Object.assign(new Error("malformed official file"), {code: "official_parse_failed"});
+        }},
+        {id: "openai", search: async (query) => [{
+          provider: "openai", topic: query.topic, title: "Fallback discovery",
+          url: "https://example.com/fallback", snippet: "Public context only.",
+          publishedAt: null, retrievedAt: "2026-09-02T12:00:00.000Z",
+          contentHash: "f".repeat(64),
+        }]},
+      ],
+    });
+    expect(result.status).toBe("partial");
+    expect(result.sources).toHaveLength(1);
+    expect(result.metrics.cacheWrites).toBe(0);
+    expect(writes).toHaveLength(0);
+  });
 });

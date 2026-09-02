@@ -11,4 +11,9 @@ describe("material numeric evidence tokens", () => {
   it("keeps different amounts distinct", () => {
     expect(materialNumericTokens("R$ 1,0 bilhão")).not.toEqual(materialNumericTokens("R$ 1,1 bilhão"));
   });
+
+  it("preserves fully formatted BRL values and negative cash-flow facts", () => {
+    expect(materialNumericTokens("BRL 1.141,63 milhões")).toContain("brl1.141,63");
+    expect(materialNumericTokens("BRL -756,955 milhões")).toContain("brl-756,955");
+  });
 });

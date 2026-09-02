@@ -6,7 +6,8 @@
  * graders from disagreeing about an otherwise identical public-source number.
  */
 export function materialNumericTokens(value: string): string[] {
-  const matches = value.match(/(?:R\$|US\$|BRL|USD)\s*\d+(?:[.,]\d+)?|\b\d+(?:[.,]\d+)?\s*(?:%|x|milh(?:ões|oes)|bilh(?:ões|oes)|months?|meses|anos)\b/gi) ?? [];
+  const amount = "-?(?:\\d{1,3}(?:[.\\s]\\d{3})+(?:,\\d+)?|\\d+(?:[.,]\\d+)?)";
+  const matches = value.match(new RegExp(`(?:R\\$|US\\$|BRL|USD)\\s*${amount}|\\b${amount}\\s*(?:%|x|milh(?:ões|oes)|bilh(?:ões|oes)|million|billion|thousand|months?|meses|anos)\\b`, "gi")) ?? [];
   return [...new Set(matches.map((match) => canonicalMaterialNumericToken(match)))];
 }
 
