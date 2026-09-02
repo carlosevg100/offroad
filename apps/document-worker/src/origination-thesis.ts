@@ -95,6 +95,11 @@ Rules:
   question to investigate, not a conclusion that the company can finance it.
 - Never invent a financial number, maturity, debt instrument, covenant, transaction, investor,
   price, rating or management intention.
+- allowedMaterialNumericTokens is the exhaustive whitelist for amounts, percentages, multiples and
+  tenors. Do not emit any material numeric token outside that list, including an indicative tenor
+  or pricing assumption inside a hypothesis. When no supported number exists, stay qualitative
+  and ask the user to confirm the parameter. Currency whitespace is presentation only, but never
+  round, rescale or otherwise change a value.
 - If the sources do not support an angle, omit it and turn the issue into an unknown or meeting
   question.
 - For every angle state what information would be required and what could disconfirm it.
@@ -236,19 +241,25 @@ export async function processOriginationThesisJob(
 
     const synthesizeMeetingBrief = async (research: ResearchSummary) => {
       const allowedUrls = new Set(research.sources.map((source) => source.url));
+      const publicSources = research.sources.map((source) => ({
+        topic: source.topic,
+        title: source.title,
+        url: source.url,
+        snippet: source.snippet.slice(0, 1_200),
+        publishedAt: source.publishedAt,
+      }));
+      const allowedMaterialNumericTokens = materialNumericTokens(JSON.stringify({
+        meetingBrief: context.brief.content,
+        publicSources,
+      }));
       const modelInput = {
         locale: context.session.locale,
         asOfDate: (dependencies.now ?? (() => new Date()))().toISOString().slice(0, 10),
         company: {name: companyName, website: website ?? null},
         meetingBrief: context.brief.content,
         researchStatus: research.status,
-        publicSources: research.sources.map((source) => ({
-          topic: source.topic,
-          title: source.title,
-          url: source.url,
-          snippet: source.snippet.slice(0, 1_200),
-          publishedAt: source.publishedAt,
-        })),
+        allowedMaterialNumericTokens,
+        publicSources,
         ...(context.revision ? {
           requestedCorrection: context.revision.correction_note,
           priorWorkProduct: context.revision.prior_content,

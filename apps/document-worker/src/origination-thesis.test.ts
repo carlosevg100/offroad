@@ -148,7 +148,13 @@ describe("origination thesis vertical", () => {
     };
     const sourceUrl = "https://public.example/allowed";
     const gateway: ModelGateway = {
-      complete: (async () => ({
+      complete: (async (request) => {
+        const textInput = request.input.find((part) => part.type === "text");
+        if (!textInput || textInput.type !== "text") throw new Error("expected text model input");
+        const modelInput = JSON.parse(textInput.text) as {allowedMaterialNumericTokens?: string[]};
+        expect(modelInput.allowedMaterialNumericTokens).toContain("r$1,0");
+        expect(modelInput.allowedMaterialNumericTokens).not.toContain("24meses");
+        return {
         output: {
           executiveRead: "A companhia apresenta uma emissão pública de R$1,0 e sinais que merecem uma conversa dirigida sobre flexibilidade financeira e prioridades de capital.",
           companySnapshot: "A leitura pública identifica a atividade operacional, mas ainda não confirma números privados, perímetro ou intenção de financiamento.",
@@ -184,7 +190,7 @@ describe("origination thesis vertical", () => {
         usedFallback: false,
         fromCassette: false,
         attempts: [{provider: "anthropic" as const, model: "claude-sonnet-5", outcome: "ok" as const}],
-      })) as ModelGateway["complete"],
+      }}) as ModelGateway["complete"],
       spent: () => ({costUsd: 0.02, calls: 1, unknownCostCalls: 0, budgetExposureUsd: 0.03}),
     };
 
