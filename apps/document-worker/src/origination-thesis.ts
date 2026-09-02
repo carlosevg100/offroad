@@ -13,6 +13,7 @@ import {
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
 import {materialNumericTokens} from "./material-numeric-tokens";
+import {summarizeModelAttempts} from "./model-failure-lineage";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
@@ -508,10 +509,11 @@ export async function processOriginationThesisJob(
     return {status: "succeeded", artifactId: finalArtifact.id};
   } catch (error) {
     const code = errorCode(error);
-    await dependencies.queue.writeStage(job, "origination_thesis", "failed", {code}).catch(() => undefined);
+    const modelAttempts = summarizeModelAttempts(dependencies.lineage());
+    await dependencies.queue.writeStage(job, "origination_thesis", "failed", {code, modelAttempts}).catch(() => undefined);
     const spend = dependencies.gateway.spent();
-    await dependencies.queue.fail(job, {code, spend}, {retryable: code !== "origination_task_plan_mismatch", retryInSeconds: 30});
-    log("origination_thesis.failed", {job: job.job_id, code});
+    await dependencies.queue.fail(job, {code, spend, modelAttempts}, {retryable: code !== "origination_task_plan_mismatch", retryInSeconds: 30});
+    log("origination_thesis.failed", {job: job.job_id, code, modelAttempts});
     return {status: "failed"};
   }
 }
