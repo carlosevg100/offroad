@@ -1,4 +1,4 @@
-import {Building2, CircleGauge, FileLock2, Landmark, LogOut} from "lucide-react";
+import {Building2, CircleGauge, FileLock2, Landmark, LogOut, UserRoundCog} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
@@ -83,6 +83,7 @@ export default async function ApplicationLayout({children, params}: Props) {
           <div className="app-nav__group">
             <p>{t("workspaceNav")}</p>
             <Link href={`/${locale}/app`}><CircleGauge aria-hidden="true" size={16} /><span>{t("overview")}</span></Link>
+            <Link href={`/${locale}/app/context`}><UserRoundCog aria-hidden="true" size={16} /><span>{t("professionalContext")}</span></Link>
           </div>
           {canOriginate ? <WorkspaceProjectNavigation
             copy={{

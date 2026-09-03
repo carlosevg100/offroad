@@ -34,6 +34,30 @@ const contextSchema = z.object({
     status: z.string(),
   }).nullable().optional(),
   company_profile: z.record(z.string(), z.unknown()).default({}),
+  professional_context: z.object({
+    affiliationKind: z.string().nullable(),
+    professionalRole: z.string().nullable(),
+    teamName: z.string().nullable(),
+    institutionName: z.string().nullable(),
+    operatingModels: z.array(z.string()).max(20),
+    productFamilies: z.array(z.string()).max(30),
+    primaryObjectives: z.array(z.string()).max(20),
+    contextNotes: z.string().nullable(),
+    disclosureStatus: z.enum(["complete", "partial", "skipped"]),
+    lastConfirmedAt: z.string().nullable(),
+  }).nullable().optional(),
+  institution_capabilities: z.object({
+    institutionName: z.string().nullable(),
+    institutionKind: z.string().nullable(),
+    operatingModels: z.array(z.string()).max(20),
+    productFamilies: z.array(z.string()).max(30),
+    geographies: z.array(z.string()).max(40),
+    currencies: z.array(z.string()).max(20),
+    capabilityNotes: z.string().nullable(),
+    sourceKind: z.enum(["self_declared", "public_observed", "mixed", "unknown"]),
+    disclosureStatus: z.enum(["complete", "partial", "skipped"]),
+    lastConfirmedAt: z.string().nullable(),
+  }).nullable().optional(),
   related_project_memory: z.array(z.object({
     projectId: z.uuid(),
     projectName: z.string().max(80),
@@ -113,6 +137,18 @@ Rules:
   request. Use it before asking a question. When relevant history exists, mention the prior project,
   its recency and work product, then ask whether this assignment updates that thesis or starts a new
   one. Never imply that another client or organization supplied the history.
+- professionalContext and institutionCapabilities are durable context supplied by this user or
+  organization. Use them before asking how the user can act. They tailor execution; they are not
+  evidence about the target company, a current credit appetite or an approved mandate.
+- If executionRoute requires institution_capability_context, ask how the institution can act in
+  this assignment: lend from its balance sheet, structure, distribute, advise, invest, or combine
+  those roles. Explain that this prevents proposing a path the user cannot execute. Do not open
+  with an instrument catalogue. If the user does not know or prefers not to disclose it, continue
+  with an institution-neutral analysis and label the execution paths instead of asking again.
+- When executionRoute.reasonCode is specialized_work_in_progress, do not activate another job.
+  Report useful progress from the supplied tasks/artifacts. If capability context is still generic
+  after an earlier question, explicitly proceed with balance-sheet, distribution, advisory and
+  third-party-capital paths separated rather than repeating the question.
 - Never say that public research is already running unless a supplied task is actually queued or
   running. It is acceptable to say what will begin as soon as the missing mission context is confirmed.
 - executionRoute is a deterministic zero-model-call decision. Never select a different executor.
@@ -152,9 +188,23 @@ export async function processAgentOperationBriefJob(
       conversationText,
       requestIntent: route.intent,
       requestEffect: route.effect,
+      institutionOperatingModels: [
+        ...(context.professional_context?.operatingModels ?? []),
+        ...(context.institution_capabilities?.operatingModels ?? []),
+      ],
+      professionalContextStatus: context.professional_context?.disclosureStatus ?? null,
+      institutionCapabilityQuestionAsked: context.recent_messages.some((message) => message.role === "assistant"
+        && /(?:como\s+(?:sua|a\s+sua)\s+institui[cç][aã]o\s+pode\s+atuar|how\s+can\s+your\s+institution\s+act)/i.test(message.content)),
+      specializedWorkActive: context.tasks.some((task) => ["queued", "waiting", "running", "started"].includes(task.status)),
     });
-    const deterministicActivation = buildDeterministicActivation(context, executionRoute);
-    const completion = deterministicActivation
+    const deterministicClarification = buildDeterministicCapabilityClarification(context, executionRoute);
+    const deterministicActivation = deterministicClarification ? null : buildDeterministicActivation(context, executionRoute);
+    const completion = deterministicClarification
+      ? {
+          output: deterministicClarification,
+          usage: {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0},
+        }
+      : deterministicActivation
       ? {
           output: activationResponse(context.locale, deterministicActivation),
           usage: {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0},
@@ -169,6 +219,8 @@ export async function processAgentOperationBriefJob(
               currentBrief: context.brief,
               project: context.project ?? null,
               companyProfile: context.company_profile,
+              professionalContext: context.professional_context ?? null,
+              institutionCapabilities: context.institution_capabilities ?? null,
               relatedProjectMemory: context.related_project_memory,
               documentInventory: context.documents,
               workPlan: context.tasks.map((task) => ({
@@ -287,7 +339,7 @@ function buildDeterministicActivation(
     && route.analysisScope === "origination_thesis"
     && route.requirements.length > 0
     && route.requirements.every((requirement) => [
-      "meeting_audience", "desired_outcome", "relationship_context",
+      "meeting_audience", "desired_outcome", "relationship_context", "institution_capability_context",
     ].includes(requirement));
   if ((route.action !== "queue_specialized_job" && !mayResearchWhileCollectingMeetingContext) || !route.analysisScope) return null;
   const name = companyProfileString(context.company_profile, "name", "companyName")
@@ -316,6 +368,39 @@ function buildDeterministicActivation(
   };
 }
 
+function buildDeterministicCapabilityClarification(
+  context: AgentContext,
+  route: WorkspaceExecutionRoute,
+): AgentOperationBriefResponse | null {
+  const capabilityOnly = route.action === "collect_required_context"
+    && route.analysisScope === "origination_thesis"
+    && route.requirements.length === 1
+    && route.requirements[0] === "institution_capability_context";
+  const researchAlreadyActive = context.tasks.some((task) => ["queued", "waiting", "running", "started"].includes(task.status));
+  if (!capabilityOnly || !researchAlreadyActive) return null;
+  return capabilityContextResponse(context.locale, companyProfileString(context.company_profile, "name", "companyName")
+    ?? explicitCompanyNameFromConversation(context));
+}
+
+function capabilityContextResponse(locale: "pt-BR" | "en-US", companyName: string | null): AgentOperationBriefResponse {
+  const company = companyName ?? (locale === "pt-BR" ? "a companhia" : "the company");
+  return {
+    state: "asking",
+    reply: locale === "pt-BR"
+      ? `A pesquisa sobre ${company} continua avançando. Como este é um primeiro contato, quero calibrar as alternativas ao que sua instituição realmente consegue levar adiante: vocês podem emprestar com balanço próprio, estruturar e distribuir, atuar apenas como advisor, investir, ou combinar essas capacidades? Não preciso ainda de uma lista de produtos; esse enquadramento evita sugerir uma solução que dependa de uma capacidade que vocês não têm. Se preferir não informar ou ainda não souber, sigo com uma análise neutra e separo os caminhos por modelo de execução.`
+      : `Research on ${company} is continuing. Because this is a first contact, I want to calibrate the alternatives to what your institution can actually advance: can you lend from your balance sheet, structure and distribute, act only as an advisor, invest, or combine those capabilities? I do not need a product catalogue yet; this framing prevents proposing a path that depends on a capability you do not have. If you would rather not share or do not yet know, I will continue with a neutral analysis and separate the alternatives by execution model.`,
+    clarification: {
+      question: locale === "pt-BR" ? "Como sua instituição pode atuar nesta oportunidade?" : "How can your institution act on this opportunity?",
+      whyItMatters: locale === "pt-BR"
+        ? "A mesma tese pode exigir balanço, distribuição, advisory ou capital de terceiros; saber seu papel torna a recomendação executável."
+        : "The same thesis may require balance sheet, distribution, advisory or third-party capital; knowing your role makes the recommendation executable.",
+      answerKind: "text",
+      choices: [],
+      priority: "required_now",
+    },
+  };
+}
+
 function activationResponse(
   locale: "pt-BR" | "en-US",
   activation: WorkspaceJobActivation,
@@ -326,6 +411,10 @@ function activationResponse(
     && route?.action === "collect_required_context";
   const prior = context?.related_project_memory[0];
   if (parallelMeetingContext) {
+    if (route?.requirements.length === 1 && route.requirements[0] === "institution_capability_context") {
+      const capabilityPrompt = capabilityContextResponse(locale, activation.company.name);
+      return {state: "idle", reply: capabilityPrompt.reply, activation};
+    }
     const history = prior
       ? locale === "pt-BR"
         ? ` Encontrei também o projeto “${prior.projectName}”, atualizado em ${prior.updatedAt.slice(0, 10)}; diga se esta reunião atualiza aquela tese ou abre uma agenda nova.`
@@ -362,7 +451,7 @@ function enforceExecutionActivation(
     && route.analysisScope === "origination_thesis"
     && route.requirements.length > 0
     && route.requirements.every((requirement) => [
-      "meeting_audience", "desired_outcome", "relationship_context",
+      "meeting_audience", "desired_outcome", "relationship_context", "institution_capability_context",
     ].includes(requirement));
   if (!route.analysisScope
     || (route.action !== "queue_specialized_job" && !mayNormalizeOnlyIdentity && !mayResearchWhileCollectingMeetingContext)

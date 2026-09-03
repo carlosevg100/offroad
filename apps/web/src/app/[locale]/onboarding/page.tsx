@@ -28,6 +28,8 @@ import {redirect} from "next/navigation";
 
 import {BrandMark} from "@/components/brand-mark";
 import {CapitalJobLauncher} from "@/components/capital-job-launcher";
+import {professionalContextCopy} from "@/components/professional-context-copy";
+import {ProfessionalContextForm} from "@/components/professional-context-form";
 import {IntakeCollect} from "@/components/intake/intake-collect";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
@@ -66,6 +68,7 @@ import {
   saveFundStep,
   saveMandateStep,
   saveOrganizationStep,
+  saveProfessionalContextAction,
   startDocumentIntake,
 } from "./actions";
 
@@ -150,9 +153,10 @@ function EditSectionLink({locale, target, href, label, add = false}: {locale: st
 export default async function OnboardingPage({params, searchParams}: Props) {
   const {locale} = await params;
   const state = await searchParams;
-  const [t, tIntake] = await Promise.all([
+  const [t, tIntake, tProfessionalContext] = await Promise.all([
     getTranslations({locale, namespace: "Onboarding"}),
     getTranslations({locale, namespace: "Intake"}),
+    getTranslations({locale, namespace: "ProfessionalContext"}),
   ]);
   const supabase = await createClient();
   if (!supabase) redirect(`/${locale}/login?error=provider`);
@@ -170,6 +174,27 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const bootstrap = bootstrapData as unknown as OnboardingBootstrap;
   const {user_id: userId, organization, progress, profile, legal_document: activeLegalDocument} = bootstrap;
   if (progress.completed_at) redirect(`/${locale}/app`);
+
+  const {data: professionalContext} = await supabase
+    .from("professional_context_profiles")
+    .select("organization_id")
+    .eq("organization_id", organization.id)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!professionalContext) {
+    return (
+      <main className="professional-context-onboarding">
+        <header className="professional-context-onboarding__brand"><BrandMark locale={locale as AppLocale} /></header>
+        {state.error ? <p className="form-notice form-notice--error" role="alert">{tProfessionalContext("error")}</p> : null}
+        <ProfessionalContextForm
+          action={saveProfessionalContextAction}
+          copy={professionalContextCopy(tProfessionalContext)}
+          initial={progress.journey === "company" ? {affiliationKind: "company", operatingModels: ["raise_capital"]} : undefined}
+          locale={locale}
+        />
+      </main>
+    );
+  }
 
   const journey = progress.journey as Journey;
   const parsedEntryJob = capitalProjectJobSchema.safeParse(state.job);

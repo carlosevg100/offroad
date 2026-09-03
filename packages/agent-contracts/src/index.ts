@@ -66,7 +66,8 @@ export const workspaceExecutionRouteSchema = z.object({
     "meeting_audience",
     "desired_outcome",
     "relationship_context",
-  ])).max(6),
+    "institution_capability_context",
+  ])).max(7),
   reasonCode: z.string().regex(/^[a-z0-9_]+$/),
   modelRoutingCalls: z.literal(0),
 });
@@ -88,6 +89,10 @@ export function routeWorkspaceExecution(input: {
   conversationText?: string;
   requestIntent?: WorkspaceRequestIntent;
   requestEffect?: WorkspaceRequestEffect;
+  institutionOperatingModels?: string[];
+  professionalContextStatus?: "complete" | "partial" | "skipped" | null;
+  institutionCapabilityQuestionAsked?: boolean;
+  specializedWorkActive?: boolean;
 }): WorkspaceExecutionRoute {
   const analysisScope = executableWorkspaceJobSchema.safeParse(input.entryJob);
   if (!analysisScope.success) {
@@ -161,23 +166,47 @@ export function routeWorkspaceExecution(input: {
     if (!originationContextPatterns.audience.test(corpus)) requirements.push("meeting_audience");
     if (!originationContextPatterns.outcome.test(corpus)) requirements.push("desired_outcome");
     if (!originationContextPatterns.relationship.test(corpus)) requirements.push("relationship_context");
+    const meetingContextComplete = !requirements.some((requirement) => [
+      "meeting_audience", "desired_outcome", "relationship_context",
+    ].includes(requirement));
+    const relationshipMakesCapabilitiesMaterial = originationContextPatterns.noRelationship.test(corpus);
+    const declaredCapabilities = (input.institutionOperatingModels ?? []).length > 0
+      || originationContextPatterns.capabilities.test(corpus);
+    const capabilityQuestionWaived = input.professionalContextStatus === "skipped"
+      || originationContextPatterns.capabilityOptOut.test(corpus);
+    if (meetingContextComplete && relationshipMakesCapabilitiesMaterial && !declaredCapabilities
+      && !capabilityQuestionWaived && !input.institutionCapabilityQuestionAsked) {
+      requirements.push("institution_capability_context");
+    }
   }
   if (analysisScope.data === "capital_planning" && input.requestText.trim().length < 10) {
     requirements.push("capital_intent");
   }
+  const specializedWorkActive = input.specializedWorkActive && requirements.length === 0;
   return workspaceExecutionRouteSchema.parse({
-    action: requirements.length > 0 ? "collect_required_context" : "queue_specialized_job",
+    action: requirements.length > 0
+      ? "collect_required_context"
+      : specializedWorkActive
+        ? "conversation_only"
+        : "queue_specialized_job",
     analysisScope: analysisScope.data,
     requirements,
-    reasonCode: requirements.length > 0 ? "specialized_context_incomplete" : "specialized_executor_ready",
+    reasonCode: requirements.length > 0
+      ? "specialized_context_incomplete"
+      : specializedWorkActive
+        ? "specialized_work_in_progress"
+        : "specialized_executor_ready",
     modelRoutingCalls: 0,
   });
 }
 
 const originationContextPatterns = {
   audience: /\b(ceo|cfo|chief\s+(?:executive|financial)|tesour(?:aria|eiro)|treasur(?:y|er)|ri\b|investor\s+relations|controladoria|controller|conselho|board|acionista|s[oó]cio|diretor(?:a)?|presidente|vice[- ]?presidente|vp\b)\b/i,
-  outcome: /\b(refinanc|refi\b|along|liability|mercado\s+de\s+d[ií]vida|debt\s+market|alavancagem|estrutura\s+de\s+capital|capital\s+structure|capex|expans[aã]o|aquisi[cç][aã]o|m\s*&\s*a|capital\s+de\s+giro|working\s+capital|liquidez|dividend|reperfil|vencimentos?|maturit(?:y|ies)|covenants?|garantias?|pricing|emiss[aã]o|deb[eê]nture|bond)\b/i,
+  outcome: /\b(refinanc(?:e|iar|iamento|ing)?|refi\b|along|liability|mercado\s+de\s+d[ií]vida|debt\s+market|alavancagem|estrutura\s+de\s+capital|capital\s+structure|capex|expans[aã]o|aquisi[cç][aã]o|m\s*&\s*a|capital\s+de\s+giro|working\s+capital|liquidez|dividend|reperfil|vencimentos?|maturit(?:y|ies)|covenants?|garantias?|pricing|emiss[aã]o|deb[eê]nture|bond)\b/i,
   relationship: /\b(relacionamento|relationship|exposi[cç][aã]o|exposure|credor|creditor|cr[eé]dito\s+(?:existente|atual)|linha\s+(?:existente|atual)|opera[cç][aã]o\s+(?:anterior|existente)|sem\s+relacionamento|nenhum\s+relacionamento|n[aã]o\s+temos\s+exposi[cç][aã]o|first\s+contact|primeiro\s+contato)\b/i,
+  noRelationship: /\b(sem\s+relacionamento|nenhum\s+relacionamento|n[aã]o\s+(?:temos|tenho)\s+(?:relacionamento|exposi[cç][aã]o)|first\s+contact|primeiro\s+contato|no\s+(?:current\s+)?relationship|no\s+(?:credit\s+)?exposure)\b/i,
+  capabilities: /\b(balan[cç]o\s+pr[oó]prio|own\s+balance\s+sheet|emprest(?:ar|amos|imo)|lending|cr[eé]dito\s+bilateral|bilateral\s+credit|estrutur(?:ar|a[cç][aã]o)|structur(?:e|ing)|distribu(?:ir|i[cç][aã]o)|distribution|advisory|assessor(?:ia|amos)|invest(?:ir|imento)|underwrit(?:e|ing)|bookrunn(?:er|ing)|sindicaliza[cç][aã]o|syndicat(?:e|ion)|mercado\s+de\s+capitais|capital\s+markets|derivativos?|hedge|trade\s+finance|offshore)\b/i,
+  capabilityOptOut: /\b(prefiro\s+n[aã]o\s+(?:informar|dizer)|n[aã]o\s+quero\s+(?:informar|dizer)|n[aã]o\s+sei(?:\s+informar)?|sem\s+prefer[eê]ncia|pode\s+seguir\s+sem|rather\s+not\s+(?:say|share)|do\s+not\s+know|don't\s+know|proceed\s+without|no\s+preference)\b/i,
 } as const;
 
 const patterns = {
