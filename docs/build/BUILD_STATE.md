@@ -1985,7 +1985,7 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   procedimentos, cálculos determinísticos, termos, critérios de mercado, disconfirmers e gates.
 - Um catálogo separado reconhece 33 necessidades econômicas. Situação sem pack retorna como gap
   conhecido, nunca como falsa completude.
-- `financial-core` expõe 36 IDs estáveis de cálculo e o registry institucional expõe os IDs de
+- `financial-core` expõe 38 IDs estáveis de cálculo e o registry institucional expõe os IDs de
   procedimento da casa. O auditor de packs falha se qualquer referência ou dependência não existir.
 - `@offroad/dcm-specialization` compõe os manifestos sem criar uma solução por combinação. Um case
   como refinance + Brasil + debênture + covenant + downside preserva linhagem de cada pack.
@@ -1996,3 +1996,24 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   adversarial, identidade econômica bilíngue, ganho material sobre generalista e revisão
   independente; packs jurídicos ainda exigem revisão legal. Todos permanecem `implemented` e não
   podem ser anunciados como expertise de produção.
+
+## Motor financeiro institucional, implemented, 03/09/2026
+
+- O novo engine integra DRE, balanço, fluxo de caixa, capital de giro, PP&E, imposto, dívida,
+  liquidez, covenants e patrimônio período a período; balanço de abertura, ledger de dívida e cada
+  período projetado precisam fechar.
+- Receita aceita composição por segmento, volume, preço, mix, câmbio e efeito inorgânico. Custos,
+  capital de giro, capex de manutenção e crescimento, depreciação por safra e imposto caixa usam
+  drivers governados, não defaults escondidos.
+- O livro de premissas registra fonte, data-base, localização, racional, metodologia, confiança,
+  limites, editabilidade e impacto. Toda alteração cria um novo cenário imutável.
+- Curvas de IPCA, CDI, prefixado, Selic, SOFR, Treasury e câmbio têm fonte, data-base, nós,
+  interpolação, extrapolação, lag, piso e teto explícitos.
+- Dívida IPCA+ separa correção paga em caixa de correção capitalizada no principal. Cupom pago e
+  PIK também são independentes. Serviço da dívida, despesa financeira e saldo devedor não são
+  inferidos de uma taxa agregada.
+- O reviewer independente bloqueia falta de conciliação, premissa sem suporte, cenário misturado,
+  indexação ambígua e dívida negativa; expõe caixa insuficiente, covenant breach e coverage gaps.
+- O pack setorial inicial de alimentos e consumo essencial está `implemented`, não homologado. O
+  engine não se autopromove a expert e ainda precisa passar por gold cases, adversarial cases,
+  benchmark e revisão humana nominal.

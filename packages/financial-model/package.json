@@ -18,6 +18,7 @@
   "dependencies": {
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/deal-structure": "workspace:*",
+    "@offroad/financial-core": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "decimal.js": "10.6.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
