@@ -22,13 +22,14 @@ export function BrandMark({inverted = false, locale, size = "default"}: BrandMar
       <span className="brand-mark__asset-frame" aria-hidden="true">
         <Image
           className="brand-mark__asset"
-          src={inverted ? "/brand/offroad-capital-wordmark-inverted-v2.png" : "/brand/offroad-capital-wordmark-v2.png"}
+          src={inverted ? "/brand/offroad-wordmark-clean-inverted-v1.png" : "/brand/offroad-wordmark-clean-v1.png"}
           alt=""
           width={2036}
           height={484}
           loading="eager"
           sizes={size === "hero" ? "(max-width: 700px) 176px, 216px" : "216px"}
         />
+        <span className="brand-mark__signature">{brand.signature}</span>
       </span>
     </Link>
   );
