@@ -1,6 +1,7 @@
 import {randomUUID} from "node:crypto";
 
 import {createInitialDcmPlan} from "@offroad/agent-contracts";
+import {inferDepthPackActivationKeys, mapDepthRequirementsToTasks, selectDepthPacks} from "@offroad/dcm-specialization";
 import {localizedOffroadTaskLabel, offroadTaskRegistry} from "@offroad/work-plan";
 import {z} from "zod";
 
@@ -32,12 +33,16 @@ export async function ensureInitialAgentPlan(
   const planId = randomUUID();
   const workIds = new Map(context.tasks.map((task) => [task.id, randomUUID()]));
   const objective = objectiveFrom(context.objective, context.project.project_name);
+  const objectiveCorpus = collectText(context.objective).join("\n");
+  const specialization = selectDepthPacks({activationKeys: inferDepthPackActivationKeys(objectiveCorpus)});
   const plan = createInitialDcmPlan({
     id: planId,
     projectId: context.project.id,
     goal: objective,
     triggerRef: `processing_job:${job.job_id}`,
     createdAt: now().toISOString(),
+    specializationProfile: specialization.profile,
+    requirementKeysByTask: mapDepthRequirementsToTasks(specialization.profile, context.tasks.map((task) => task.id)),
     idForTask: (taskId) => {
       const id = workIds.get(taskId);
       if (!id) throw new Error(`missing work id for ${taskId}`);
@@ -60,6 +65,13 @@ export async function ensureInitialAgentPlan(
     }),
   });
   return queue.recordAgentPlan(job, plan);
+}
+
+function collectText(value: unknown): string[] {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(collectText);
+  if (value && typeof value === "object") return Object.values(value as Record<string, unknown>).flatMap(collectText);
+  return [];
 }
 
 function objectiveFrom(content: Record<string, unknown>, projectName: string): string {

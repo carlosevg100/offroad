@@ -47,6 +47,9 @@ importers:
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../../packages/credit-playbook
+      '@offroad/dcm-specialization':
+        specifier: workspace:*
+        version: link:../../packages/dcm-specialization
       '@offroad/document-classification':
         specifier: workspace:*
         version: link:../../packages/document-classification
@@ -105,6 +108,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@offroad/agent-contracts':
+        specifier: workspace:*
+        version: link:../../packages/agent-contracts
       '@offroad/case-engine':
         specifier: workspace:*
         version: link:../../packages/case-engine
@@ -505,6 +511,25 @@ importers:
       '@offroad/reconciliation':
         specifier: workspace:*
         version: link:../reconciliation
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+
+  packages/dcm-specialization:
+    dependencies:
+      '@offroad/agent-contracts':
+        specifier: workspace:*
+        version: link:../agent-contracts
+      '@offroad/credit-playbook':
+        specifier: workspace:*
+        version: link:../credit-playbook
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: ^20.19.43

@@ -2595,3 +2595,22 @@ O próximo passo correto é um gold case humano, começando sem distribuição. 
 qualidade do entendimento, das perguntas, do diagnóstico, da estrutura, dos materiais e do
 matching. Somente outputs aceitos podem avançar de tecnicamente disponíveis para padrão
 institucional comprovado.
+
+## 39. Packs econômicos Pareto implementados e não homologados, 03/09/2026
+
+A Wave 1 do motor de profundidade saiu do contrato abstrato e entrou no runtime. O conhecimento
+canônico contém packs para núcleo DCM, refinance/liability management, liquidez/giro, capex,
+aquisição, garantias, covenants, downside e instrumentos prioritários de Brasil e Estados Unidos.
+Um catálogo amplo reconhece também necessidades fora desse Pareto e as mantém visíveis como gap.
+
+O pacote novo `@offroad/dcm-specialization` valida referências contra os procedimentos da casa e
+os cálculos determinísticos, compõe packs e projeta coverage nos TaskSpecs. O Deal Captain usa essa
+camada ao criar o plano: lê somente intenção explícita PT-BR/EN-US, incorpora o perfil no snapshot
+`dcm-agent-plan.v1` e persiste requirements na infraestrutura já capability-bound. Não houve
+mudança de schema ou migration.
+
+Maturidade deliberada: `implemented`. Os testes de software demonstram integridade, composição,
+abstenção e integração, mas não homologam julgamento econômico. Para cada pack, a próxima promoção
+exige dois gold cases, um adversarial, benchmark cego contra generalista, identidade bilíngue,
+revisor independente e revisão legal quando aplicável. Até então, nenhum escopo pode ser descrito
+como expert em produção.

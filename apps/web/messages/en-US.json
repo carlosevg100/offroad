@@ -1142,6 +1142,7 @@
       "evidence": "Information coverage",
       "decisions": "Decisions under review",
       "verified": "Verified",
+      "notExamined": "Not yet examined",
       "openIssues": "Material open points",
       "artifacts": "Materials and analyses",
       "contextQuestion": "Confirm the assignment context",

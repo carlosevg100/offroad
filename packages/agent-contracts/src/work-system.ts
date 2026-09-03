@@ -1,6 +1,8 @@
 import {fingerprintJson} from "@offroad/case-understanding";
 import {z} from "zod";
 
+import {compiledSpecializationProfileSchema, type CompiledSpecializationProfile} from "./specializations";
+
 export const dcmSpecialistSchema = z.enum([
   "deal_captain",
   "context_intelligence",
@@ -219,6 +221,7 @@ export const dcmPlanRevisionSchema = z.object({
   workItems: z.array(dcmWorkItemSchema).min(1).max(120),
   createdAt: z.iso.datetime(),
   createdBy: z.enum(["deal_captain", "offroad_operator"]),
+  specializationProfile: compiledSpecializationProfileSchema.optional(),
   supersedesPlanId: z.uuid().nullable().default(null),
   fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
 }).superRefine((plan, context) => {
@@ -338,6 +341,7 @@ export function createInitialDcmPlan(input: {
   triggerRef: string;
   createdAt: string;
   taskSpecs: readonly CompiledTaskInput[];
+  specializationProfile?: CompiledSpecializationProfile;
   requirementKeysByTask?: Readonly<Record<string, readonly string[]>>;
   decisionKeysByTask?: Readonly<Record<string, readonly string[]>>;
   idForTask: (taskSpecId: string) => string;
@@ -353,6 +357,7 @@ export function createInitialDcmPlan(input: {
     status: "active",
     createdAt: input.createdAt,
     createdBy: "deal_captain",
+    ...(input.specializationProfile ? {specializationProfile: input.specializationProfile} : {}),
     supersedesPlanId: null,
     workItems: input.taskSpecs.map((task) => ({
       id: workIdByTask.get(task.id)!,

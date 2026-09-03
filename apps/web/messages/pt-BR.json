@@ -1142,6 +1142,7 @@
       "evidence": "Cobertura de informações",
       "decisions": "Decisões em análise",
       "verified": "Comprovados",
+      "notExamined": "Ainda não examinados",
       "openIssues": "Pontos materiais em aberto",
       "artifacts": "Materiais e análises",
       "contextQuestion": "Confirmar o contexto do trabalho",

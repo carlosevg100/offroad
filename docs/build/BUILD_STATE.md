@@ -1975,3 +1975,24 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Os packs econômicos ainda não estão acreditados. A infraestrutura impede que esse estado seja
   chamado de profundidade de produção; implementação, benchmark e revisão dos packs Pareto seguem
   obrigatórios antes da promoção de cada escopo.
+
+## Packs econômicos Pareto integrados ao Deal Captain, implemented, 03/09/2026
+
+- O playbook contém 17 packs combináveis: núcleo; quatro objetivos econômicos; collateral,
+  covenants e downside; Brasil e Estados Unidos; três famílias instrumentais Brasil e quatro
+  famílias instrumentais Estados Unidos.
+- Cada pack declara coverage esperado, evidência aceitável, materialidade, impacto decisório,
+  procedimentos, cálculos determinísticos, termos, critérios de mercado, disconfirmers e gates.
+- Um catálogo separado reconhece 33 necessidades econômicas. Situação sem pack retorna como gap
+  conhecido, nunca como falsa completude.
+- `financial-core` expõe 36 IDs estáveis de cálculo e o registry institucional expõe os IDs de
+  procedimento da casa. O auditor de packs falha se qualquer referência ou dependência não existir.
+- `@offroad/dcm-specialization` compõe os manifestos sem criar uma solução por combinação. Um case
+  como refinance + Brasil + debênture + covenant + downside preserva linhagem de cada pack.
+- O Deal Captain infere somente sinais explícitos em PT-BR/EN-US, incorpora o perfil compilado no
+  snapshot imutável do plano e distribui requirements pelos TaskSpecs analíticos existentes. O
+  snapshot e a coverage já usam a persistência capability-bound do projeto.
+- O gate de promoção por pack exige testes unitários e de integração, dois gold cases, um caso
+  adversarial, identidade econômica bilíngue, ganho material sobre generalista e revisão
+  independente; packs jurídicos ainda exigem revisão legal. Todos permanecem `implemented` e não
+  podem ser anunciados como expertise de produção.

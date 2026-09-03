@@ -22,6 +22,7 @@
     "@offroad/document-extraction": "workspace:*",
     "@offroad/document-intelligence": "workspace:*",
     "@offroad/document-parsers": "workspace:*",
+    "@offroad/dcm-specialization": "workspace:*",
     "@offroad/domain-contracts": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
     "@offroad/governed-retrieval": "workspace:*",
