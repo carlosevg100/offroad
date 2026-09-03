@@ -1,10 +1,13 @@
-import {createHash} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 import {z} from "zod";
 
 import {fingerprintJson} from "@offroad/case-understanding";
 import {
   collaborativeAdvisoryPolicy,
+  dcmAgentAssessmentSchema,
   workspaceJourneyBlueprint,
+  type DcmAgentAssessment,
+  type DcmEvidenceRef,
 } from "@offroad/agent-contracts";
 import {
   originationMeetingBriefSchema as legacyMeetingBriefSchema,
@@ -23,6 +26,7 @@ import {
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
 import {institutionCapabilitiesSchema, professionalContextSchema} from "./advisor-context";
+import {ambiguousDebtAmount} from "./debt-amount-units";
 import {materialNumericTokens} from "./material-numeric-tokens";
 import {summarizeModelAttempts} from "./model-failure-lineage";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
@@ -116,6 +120,10 @@ Rules:
   debt, explicitly distinguish an indexer paid in cash from inflation accrued or capitalized into
   principal; never assume one treatment from the words IPCA or inflation alone. Use null for a
   field that the sources do not disclose and list the gap in capitalStructure.keyUnknowns.
+- Preserve the complete monetary unit and scale of every debt amount exactly as evidenced. Never
+  emit a bare or abbreviated value such as "R$ 650" or "R$ 1,25" when the source means millions or
+  billions. Write "R$ 650 milhões", "R$ 1,25 bilhão" or the complete source amount. If the source
+  does not prove the scale, set amount to null and identify the missing scale in keyUnknowns.
 - Analyze liquidity, cash generation, working capital, seasonality, leverage, coverage, capex,
   acquisitions, shareholder distributions and management guidance when supported.
 - Rank genuinely distinct strategic alternatives. For each, explain the objective, indicative
@@ -362,14 +370,25 @@ export async function processOriginationThesisJob(
           usage: completion.usage as unknown as Record<string, unknown>,
         }),
       });
-      return {completion, finalArtifact};
+      return {completion, finalArtifact, readout: sanitized};
     };
 
     const completeSuccessfulJob = async (
       finalArtifact: ArtifactRef,
       research: ResearchSummary,
       usage: Record<string, number>,
+      readout: z.infer<typeof seniorReadoutSchema>,
     ) => {
+      await dependencies.queue.recordAgentAssessment?.(job, buildOriginationCoverageAssessment({
+        projectId: context.project.id,
+        briefId: context.brief.id,
+        briefFingerprint: context.brief.content_fingerprint,
+        processingRunId: job.processing_run_id,
+        locale: context.session.locale,
+        assessedAt: (dependencies.now ?? (() => new Date()))().toISOString(),
+        research,
+        readout,
+      }));
       await dependencies.queue.writeStage(job, "origination_thesis", "succeeded", {
         artifactId: finalArtifact.id,
         publicResearchStatus: research.status,
@@ -415,11 +434,12 @@ export async function processOriginationThesisJob(
         throw codedError("origination_revision_dependencies_incomplete");
       }
       const research = researchFromDependencyArtifacts(context.dependency_artifacts);
-      const {completion, finalArtifact} = await synthesizeMeetingBrief(research);
+      const {completion, finalArtifact, readout} = await synthesizeMeetingBrief(research);
       await completeSuccessfulJob(
         finalArtifact,
         research,
         completion.usage as unknown as Record<string, number>,
+        readout,
       );
       return {status: "succeeded", artifactId: finalArtifact.id};
     }
@@ -554,11 +574,12 @@ export async function processOriginationThesisJob(
 
     await researchArtifactsPromise;
     const research = await researchPromise;
-    const {completion, finalArtifact} = await synthesizeMeetingBrief(research);
+    const {completion, finalArtifact, readout} = await synthesizeMeetingBrief(research);
     await completeSuccessfulJob(
       finalArtifact,
       research,
       completion.usage as unknown as Record<string, number>,
+      readout,
     );
     return {status: "succeeded", artifactId: finalArtifact.id};
   } catch (error) {
@@ -926,6 +947,9 @@ function validateMeetingBrief(
   const supportedOfficialTokens = materialNumericTokens(JSON.stringify(officialStructuredSources));
   const coveredOfficialTokens = supportedOfficialTokens.filter((token) => outputTokens.includes(token));
   const requiredOfficialFacts = Math.min(3, supportedOfficialTokens.length);
+  const ambiguousAmounts = output.capitalStructure.debtStack
+    .filter((debt) => ambiguousDebtAmount(debt.amount))
+    .map((debt) => `${debt.instrument}: ${debt.amount}`);
   // “Market-ready” describes the completeness of the work product, not certainty of funding.
   // Reject only claims that a lender has approved, committed or guaranteed capital.
   const prohibited = /(?:cr[eé]dito aprovado|funding confirmado|opera[cç][aã]o garantida|will approve|financiamento garantido)/i.test(outputText);
@@ -942,8 +966,121 @@ function validateMeetingBrief(
     {id: "official_financial_coverage", passed: coveredOfficialTokens.length >= requiredOfficialFacts, detail: requiredOfficialFacts === 0
       ? "No structured official financial facts were available."
       : `${coveredOfficialTokens.length}/${requiredOfficialFacts} required structured official financial facts surfaced.`},
+    {id: "debt_amount_units", passed: ambiguousAmounts.length === 0, detail: ambiguousAmounts.length === 0
+      ? "Every disclosed debt amount preserves an explicit scale."
+      : `Ambiguous debt amount scale: ${ambiguousAmounts.join("; ")}`},
     {id: "scope_boundary", passed: !prohibited, detail: "No approval, funding or lender-commitment claim detected."},
   ];
+}
+
+function buildOriginationCoverageAssessment(input: {
+  projectId: string;
+  briefId: string;
+  briefFingerprint: string;
+  processingRunId: string;
+  locale: "pt-BR" | "en-US";
+  assessedAt: string;
+  research: ResearchSummary;
+  readout: z.infer<typeof seniorReadoutSchema>;
+}): DcmAgentAssessment {
+  const sourceByUrl = new Map(input.research.sources.map((source) => [source.url, source]));
+  const publicEvidence = (urls: readonly string[]): DcmEvidenceRef[] => urls.flatMap((url) => {
+    const source = sourceByUrl.get(url);
+    return source ? [{
+      type: "public_source" as const,
+      id: `source:${source.contentHash}`,
+      fingerprint: source.contentHash,
+      asOf: source.retrievedAt,
+      accessBasis: "public" as const,
+    }] : [];
+  }).slice(0, 20);
+  const briefEvidence: DcmEvidenceRef[] = [{
+    type: "user_message",
+    id: `capital_project_brief:${input.briefId}`,
+    fingerprint: input.briefFingerprint,
+    accessBasis: "public",
+  }];
+  const labels = input.locale === "pt-BR" ? {
+    perimeter: "Perímetro econômico da companhia",
+    financial: "Base financeira reconciliada",
+    debt: "Ledger de dívida e liquidez",
+    forward: "Modelo integrado e prospectivo",
+    assumptions: "Premissas editáveis e governadas",
+    objective: "Objetivo econômico e critério de decisão",
+  } : {
+    perimeter: "Company economic perimeter",
+    financial: "Reconciled financial foundation",
+    debt: "Debt and liquidity ledger",
+    forward: "Integrated forward case",
+    assumptions: "Editable governed assumptions",
+    objective: "Economic objective and decision criterion",
+  };
+  const coverage = [
+    {
+      key: "core.company-perimeter", label: labels.perimeter, status: "verified" as const,
+      materiality: "blocking" as const,
+      evidence: [...briefEvidence, ...publicEvidence(input.readout.companyAnalysis.sourceUrls)],
+      missingReason: null,
+      assessedBy: "company_and_sector" as const,
+    },
+    {
+      key: "core.financial-truth", label: labels.financial, status: "partial" as const,
+      materiality: "blocking" as const,
+      evidence: publicEvidence(input.readout.performanceAnalysis.sourceUrls),
+      missingReason: null,
+      assessedBy: "financial_analysis" as const,
+    },
+    {
+      key: "core.debt-truth", label: labels.debt,
+      status: input.readout.capitalStructure.debtStack.length ? "partial" as const : "missing" as const,
+      materiality: "blocking" as const,
+      evidence: publicEvidence(input.readout.capitalStructure.sourceUrls),
+      missingReason: input.readout.capitalStructure.debtStack.length ? null : input.readout.capitalStructure.keyUnknowns.join(" ").slice(0, 1_000),
+      assessedBy: "debt_and_capital_structure" as const,
+    },
+    {
+      key: "core.integrated-forward-case", label: labels.forward, status: "partial" as const,
+      materiality: "blocking" as const,
+      evidence: publicEvidence(input.readout.performanceAnalysis.sourceUrls),
+      missingReason: null,
+      assessedBy: "financial_analysis" as const,
+    },
+    {
+      key: "core.assumption-governance", label: labels.assumptions, status: "partial" as const,
+      materiality: "blocking" as const,
+      evidence: publicEvidence(input.readout.performanceAnalysis.sourceUrls),
+      missingReason: null,
+      assessedBy: "independent_verifier" as const,
+    },
+    {
+      key: "core.decision-objective", label: labels.objective, status: "verified" as const,
+      materiality: "high" as const,
+      evidence: briefEvidence,
+      missingReason: null,
+      assessedBy: "deal_captain" as const,
+    },
+  ];
+  return dcmAgentAssessmentSchema.parse({
+    schemaVersion: "dcm-agent-assessment.v1",
+    projectId: input.projectId,
+    assessmentRef: `processing_run:${input.processingRunId}`,
+    coverage: coverage.map((item) => ({
+      schemaVersion: "dcm-requirement-coverage.v1",
+      id: randomUUID(),
+      projectId: input.projectId,
+      requirementKey: item.key,
+      label: item.label,
+      status: item.status,
+      materiality: item.materiality,
+      decisionIds: [],
+      evidence: item.evidence,
+      missingReason: item.missingReason,
+      assessedAt: input.assessedAt,
+      assessedBy: item.assessedBy,
+    })),
+    requests: [],
+    decisions: [],
+  });
 }
 
 function stringValue(value: unknown): string {

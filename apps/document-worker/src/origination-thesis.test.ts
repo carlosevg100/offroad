@@ -56,6 +56,7 @@ describe("origination thesis vertical", () => {
   it("runs bounded public research, persists every TaskSpec output and leaves the brief pending confirmation", async () => {
     const recordedArtifacts: Array<{taskId: string; artifactType: string; status: string; dependencies: unknown[]}> = [];
     const completed: unknown[] = [];
+    const assessments: Array<{coverage: Array<{requirementKey: string; status: string}>}> = [];
     let taskRunSequence = 0;
     const taskByRun = new Map<string, string>();
 
@@ -152,6 +153,10 @@ describe("origination thesis vertical", () => {
       },
       finishCapitalTask: async (_job: CapitalProjectAnalysisJob, input: {taskRunId: string}) => input.taskRunId,
       recordPublicResearch: async () => ids.research,
+      recordAgentAssessment: async (_job: CapitalProjectAnalysisJob, assessment: {coverage: Array<{requirementKey: string; status: string}>}) => {
+        assessments.push(assessment);
+        return {agentPlanId: ids.plan, coverageCount: assessment.coverage.length, requestCount: 0, decisionCount: 0};
+      },
       writeStage: async () => {},
       complete: async (_job: CapitalProjectAnalysisJob, result: unknown) => { completed.push(result); },
       fail: async () => { throw new Error("job should not fail"); },
@@ -271,6 +276,13 @@ describe("origination thesis vertical", () => {
     expect(meetingBrief?.dependencies).toHaveLength(3);
     expect(completed).toHaveLength(1);
     expect(acquiredPages).toBe(1);
+    expect(assessments).toHaveLength(1);
+    expect(assessments[0]?.coverage).toEqual(expect.arrayContaining([
+      expect.objectContaining({requirementKey: "core.company-perimeter", status: "verified"}),
+      expect.objectContaining({requirementKey: "core.debt-truth", status: "missing"}),
+      expect.objectContaining({requirementKey: "core.decision-objective", status: "verified"}),
+    ]));
+    expect(assessments[0]?.coverage).toHaveLength(6);
   });
 
   it("fails closed when the persisted final TaskSpec does not consume the research outputs", async () => {
