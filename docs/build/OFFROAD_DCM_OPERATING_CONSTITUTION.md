@@ -1,6 +1,6 @@
 # Offroad Capital: Constituição de Produto e Operação
 
-Versão: 2.3 · 3 de setembro de 2026
+Versão: 2.4 · 3 de setembro de 2026
 
 Status: camada 0, fonte canônica de definição, fronteiras e comportamento do produto
 
@@ -38,7 +38,7 @@ do financiador; não promete proposta ou desembolso. O term sheet da Offroad é 
 estrutura-alvo. O financiador realiza underwriting, diligência, comitê, documentação e decisão
 final.
 
-## 2. As seis formas de começar
+## 2. Seis portas de entrada, um universo aberto de trabalhos
 
 A home não obriga o usuário a formular tecnicamente um problema antes de entrar. Ela abre um
 composer com **“Como a Offroad pode ajudar hoje?”**. Texto livre, URL e documentos podem ser
@@ -58,17 +58,18 @@ transformar a entrada em formulário ou funil:
 6. **Preparar materiais e conduzir o processo:** dentro de um projeto existente, compilar peças,
    mapear financiadores e continuar a execução.
 
-Essas entradas não são personas, produtos ou funis distintos. Elas compilam planos iniciais
-diferentes sobre os mesmos objetos e podem convergir, mudar de direção e continuar sem reiniciar
-o projeto. O papel de CFO, assessor, banker, analista ou equipe Offroad muda linguagem, defaults,
-permissões e formatos; nunca cria uma segunda verdade.
+Essas seis entradas são atalhos de intenção e não uma taxonomia exaustiva de jornadas. O usuário
+não precisa caber em uma delas. O texto livre pode iniciar qualquer trabalho legítimo de DCM e o
+Deal Captain compila o grafo necessário a partir do objetivo, do estágio e da evidência disponível.
+As entradas não são personas, produtos ou funis distintos. Elas podem convergir, se desdobrar,
+mudar de direção e continuar sem reiniciar o projeto.
 
 Monetização, packaging comercial e API ficam fora desta versão. Nenhuma decisão técnica deve
 otimizar cobrança antes de provar qualidade e continuidade do trabalho.
 
-### 2.1 Uma lógica consultiva, seis jornadas completas
+### 2.1 Uma lógica consultiva, múltiplos caminhos de trabalho
 
-Os seis pontos de entrada seguem a mesma lógica. O sistema primeiro entende a decisão que o
+Os seis pontos de entrada exemplificam a mesma lógica. O sistema primeiro entende a decisão que o
 usuário precisa tomar, lê o que já existe, recupera somente o contexto autorizado, pesquisa em
 paralelo quando aplicável, executa análise rastreável e devolve trabalho já realizado. A interação
 não termina com uma conclusão artificial: termina com alternativas, implicações e uma escolha
@@ -88,6 +89,11 @@ documentos privados; um banker pode transformar uma tese em pitch; um assessor p
 estrutura existente antes de preparar materiais. A companhia, o projeto e os objetos confirmados
 continuam os mesmos durante a mudança de direção.
 
+O mesmo projeto pode conter mais de um objetivo e mais de um branch simultâneo. Uma análise de
+vencimentos pode abrir uma rota de refinanciamento, outra de covenant amendment e outra de
+liquidez preventiva. Os branches compartilham a mesma base financeira e as mesmas evidências, mas
+preservam hipóteses, cálculos, decisões e artefatos próprios até serem combinados ou encerrados.
+
 ### 2.2 Companhia primeiro; perfil como contexto, nunca como limite
 
 O universo de alternativas nasce da companhia: objetivo econômico, balanço, fluxo, ativos,
@@ -106,6 +112,25 @@ Uma limitação da instituição pode alterar a terceira lente, mas nunca apagar
 para a companhia. O sistema não enquadra a conversa como “o que seu banco pode liderar”. Ele faz o
 trabalho de associate ou VP para um MD e pergunta, com naturalidade, quais caminhos fazem sentido,
 se devem ser combinados e quais merecem aprofundamento ou desenvolvimento no material.
+
+### 2.3 Função profissional é uma dimensão, não uma lista fechada de personas
+
+O sistema representa funções profissionais com granularidade suficiente para mudar postura,
+profundidade e produto de trabalho. Isso inclui, sem se limitar a:
+
+- CEO, fundador, conselho e acionista;
+- CFO, tesouraria, finanças corporativas, FP&A, controladoria e contabilidade;
+- DCM, corporate banking, relationship management e investment banking;
+- structured finance, project finance, syndicate e distribuição;
+- assessor de dívida e assessor financeiro independente;
+- analista de crédito, underwriter e risco de crédito;
+- gestor, CIO, comitê de investimento, originação de crédito e special situations;
+- jurídico de estruturação, operações e middle office.
+
+Função profissional não é identidade econômica da decisão. Um analista de crédito pode estar
+reconstruindo um case para comitê, um CFO pode estar comparando alternativas e um banker pode estar
+preparando uma tese de originação. O sistema combina `função + trabalho + companhia + objetivo`,
+em vez de presumir o trabalho a partir de um cargo.
 
 ## 3. Uma organização, companhias duráveis e projetos específicos
 
@@ -178,23 +203,36 @@ evidência, reconciliação e promoção explícita.
 
 ### 5.1 Missão universal de dívida
 
-A fundação não é organizada por recebíveis, FIDC ou qualquer outro instrumento. Cada trabalho
-combina cinco eixos independentes antes de recomendar uma alternativa:
+A fundação não é organizada por recebíveis, FIDC ou qualquer outro instrumento. Ela separa seis
+eixos que uma conversa comum tende a misturar:
 
-1. **necessidade de capital:** refinanciamento e liability management; liquidez e giro; capex e
-   expansão; aquisição; project finance; ativos e equipamentos; recebíveis, estoques e contratos;
-   bridge e take-out; eventos de acionista; comércio exterior e cadeia de fornecedores; capital
-   flexível; special situations; ou combinação desses usos;
-2. **capacidade e fonte de pagamento:** fluxo operacional, recebíveis, ativo, contrato, projeto,
-   refinanciamento, venda, sponsor support ou combinação explícita;
-3. **família de capital e provedores:** bancário bilateral, club ou sindicado, mercado de capitais,
+1. **situação observada:** vencimentos concentrados, pressão de caixa mínimo, sazonalidade ou
+   conversão de capital de giro, gap de crescimento, capex, aquisição ou ramp-up, dívida cara,
+   amortização inadequada, moeda ou indexador inadequado, pressão ou quebra de covenant, garantia
+   presa ou sobrealocada, concentração de fontes, dependência bancária, acesso limitado ao mercado,
+   capacidade não utilizada em recebíveis, estoques, ativos ou contratos, evento de acionista,
+   estresse de balanço, transição de rating ou janela oportunística de mercado;
+2. **objetivo econômico:** refinanciar vencimentos, alongar duration, suavizar amortização, reduzir
+   custo total, fazer repricing, alterar moeda ou indexador, diversificar fontes, acessar uma nova
+   base de capital, liberar ou reorganizar garantias, aumentar flexibilidade, criar liquidez
+   preventiva, financiar giro, capex, expansão ou aquisição, monetizar ativos ou fluxos, financiar
+   estoque ou fornecedores, construir bridge e take-out, recuperar covenant headroom, obter waiver
+   ou amendment, executar exchange ou tender, recapitalizar, financiar evento de acionista,
+   reestruturar passivo, otimizar juros caixa ou preservar dry powder;
+3. **uso dos recursos:** nenhum dinheiro novo, fins corporativos gerais, giro, estoque,
+   fornecedores, capex de manutenção ou crescimento, greenfield, brownfield, aquisição,
+   equipamento, frota, imóvel, tecnologia, obrigação fiscal ou jurídica, distribuição, buyout,
+   despesas, reservas ou combinação explícita;
+4. **capacidade e fonte de pagamento:** fluxo operacional, fluxo do projeto, recebíveis, contratos,
+   estoque, ativo, venda de ativo, distribuições de subsidiárias, sponsor support, refinancing
+   take-out ou combinação explícita;
+5. **família de capital e provedores:** bancário bilateral, club ou sindicado, mercado de capitais,
    securitização, fundos e crédito privado, direitos creditórios, asset-backed, project ou
-   acquisition finance, comércio exterior e agro, mezzanine ou capital híbrido e situações
-   especiais;
-4. **alocação de risco e reforços:** prazo, amortização, covenants, garantias, subordinação, reserva,
-   cash trap, condições precedentes, intercreditor e riscos retidos por cada parte;
-5. **executabilidade de mercado:** elegibilidade, ticket, mandato, timing, pricing, precedentes,
-   documentação, aprovações e probabilidade explicável de execução.
+   acquisition finance, comércio exterior e agro, mezzanine, capital híbrido, situações especiais
+   e reforços de crédito;
+6. **alocação de risco e executabilidade:** prazo, amortização, covenants, garantias, subordinação,
+   reserva, cash trap, condições precedentes, intercreditor, elegibilidade, ticket, mandato,
+   timing, pricing, precedentes, documentação, aprovações e contingência.
 
 Necessidade e instrumento são relações muitos-para-muitos. Uma expansão pode combinar linha
 bancária, financiamento de equipamento e recebíveis; uma operação de recebíveis pode financiar
@@ -222,7 +260,57 @@ escolhas estratégicas, conversas, uploads, perfis profissionais e conclusões d
 entram nesse acervo. Informação privada permanece vinculada à organização, à companhia privada ou
 ao projeto autorizado, conforme sua política, e jamais é promovida ao índice público.
 
-### 5.2 Brasil, Estados Unidos e linguagem contínua
+### 5.2 Profundidade combinável, sem generalização nem produtos fragmentados
+
+A unidade de expertise é o **depth pack** versionado, e não um prompt longo nem um produto
+independente. Cada case compila somente os packs ativados em nove dimensões:
+
+1. núcleo DCM;
+2. situação econômica;
+3. objetivo de capital;
+4. instrumento;
+5. setor;
+6. domínio de análise;
+7. função profissional;
+8. jurisdição;
+9. execução de mercado.
+
+Um trabalho pode compilar, por exemplo, `refinance + varejo + debênture + covenant + originação
+DCM`. O resultado carrega a linhagem de cada pack. Quando dois packs cobrem o mesmo requisito, o
+compilador une evidências, regras e impactos, aplica a maior materialidade e recusa definições
+incompatíveis. Assim, a Offroad não fica rasa em tudo e também não cria soluções isoladas como
+“recebíveis para saúde” ou “debênture para varejo”.
+
+Cada pack precisa declarar: gatilhos de ativação, trabalhos suportados, funções atendidas,
+coverage requirements, procedimentos, cálculos determinísticos, termos de estrutura, critérios de
+mercado, disconfirmers, quality gates, dependências, conflitos, owner, versão e maturidade. Um pack
+só pode chegar a `production` depois de implementação, testes, pelo menos dois gold cases, caso
+adversarial, benchmark contra o melhor modelo generalista e revisão especialista registrada. O
+nome de um instrumento no chat nunca é prova de expertise.
+
+### 5.3 Coverage map obrigatório: o sistema precisa saber o que não examinou
+
+Antes da análise, os packs compilados geram o mapa esperado da decisão. Toda dimensão começa como
+`not_examined`; nunca desaparece por ausência de dado. Depois do trabalho, cada uma deve estar em
+um destes estados:
+
+- `covered`: evidência suficiente e rastreável;
+- `insufficient_evidence`: analisada, mas a base não sustenta resposta;
+- `conflicting`: fontes materiais divergem;
+- `not_applicable`: inaplicabilidade explicada;
+- `deferred`: conscientemente adiada, com impacto conhecido;
+- `not_examined`: ainda não analisada.
+
+Uma dimensão bloqueadora em `not_examined`, `insufficient_evidence`, `conflicting` ou `deferred` impede que o
+sistema apresente a decisão como pronta. Dimensões não bloqueadoras continuam visíveis como
+limitações. Não existe score agregado capaz de esconder uma omissão material.
+
+No refinance, por exemplo, o mapa deve cobrir motivo econômico, dívida atual, custo de saída,
+vencimentos, liquidez, fonte de pagamento, cobertura, covenants, garantias, contratos existentes,
+alternativas, comparáveis, investidores, cronograma, risco de execução e plano de contingência.
+Outros objetivos compilam mapas diferentes a partir dos mesmos componentes versionados.
+
+### 5.4 Brasil, Estados Unidos e linguagem contínua
 
 Idioma de trabalho e jurisdição econômica são dimensões independentes. Um projeto brasileiro pode
 ser conduzido e entregue em inglês; um caso americano pode ser discutido em português; uma
@@ -594,6 +682,30 @@ Cada etapa precisa de:
 
 Nenhuma etapa pode promover o case silenciosamente. Erro, ausência, conflito e baixa confiança são
 estados diferentes e precisam permanecer diferentes.
+
+### 10.1 Teste de sobrevivência contra o melhor modelo generalista
+
+Um relatório bem escrito não comprova valor de produto. Para cada depth pack e job material, a
+Offroad deve ser comparada ao melhor modelo generalista disponível usando os mesmos documentos e o
+mesmo objetivo. O candidato só sobrevive se demonstrar, com evidência:
+
+- cobertura mais completa e omissões explícitas;
+- rastreabilidade de fatos e números até a fonte;
+- conciliação e cálculo determinísticos;
+- profundidade técnica específica ao cruzamento ativado;
+- insight não óbvio e discriminação real entre alternativas;
+- completude dos termos relevantes da estrutura;
+- matching que aplique restrições e diferencie provedores de capital;
+- impacto observável sobre a decisão ou sobre o trabalho profissional.
+
+Impacto não é alegado pelo modelo. Ele é registrado como `user_confirmed`, `externally_observed`,
+`measured_by_system` ou `estimated`. O produto mede se encontrou algo material não percebido,
+evitou erro, mudou a estrutura, melhorou o pitch, economizou tempo relevante, apoiou um mandato,
+melhorou o caminho de execução ou identificou um provedor de capital superior. Estimativa sem
+confirmação permanece separada e não satisfaz sozinha o gate de sobrevivência.
+
+Se o mesmo resultado puder ser obtido no melhor modelo generalista sem os procedimentos, dados,
+cálculos, memória, coverage map e feedback da Offroad, o pack não está pronto para produção.
 
 ## 11. Arquitetura obrigatória de conhecimento e execução
 

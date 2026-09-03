@@ -1942,3 +1942,28 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Este estado intermediário foi superado em 03/09: o histórico canônico foi reconciliado, oito
   migrations foram aplicadas e testadas em produção e o ledger local passou a espelhar exatamente
   as 164 versões remotas.
+
+## Motor de profundidade combinável, candidate, 03/09/2026
+
+- As seis entradas foram reclassificadas como atalhos de intenção, não jornadas exaustivas. O
+  runtime pode abrir jobs e branches adicionais dentro do mesmo projeto e da mesma Company Truth.
+- A ontologia separa situação econômica, objetivo de capital, uso dos recursos, fonte de pagamento,
+  família de capital e alocação de risco. Vencimentos, liquidez preventiva, liability management,
+  alongamento, repricing, garantias, diversificação e substituição de dívida agora são estados e
+  objetivos explícitos, não texto livre absorvido por um instrumento.
+- Funções profissionais incluem analista de crédito, underwriting, risco, syndicate, structured e
+  project finance, FP&A, controladoria, jurídico e comitê de investimento. O onboarding PT-BR/EN-US
+  e a migration correspondente preservam essas funções sem reduzi-las a “analista”.
+- `@offroad/agent-contracts` implementa manifestos e compilação de depth packs por núcleo, situação,
+  objetivo, instrumento, setor, domínio de análise, função, jurisdição e execução. Dependência
+  ausente, incompatibilidade ou definição conflitante falha fechado; sobreposição válida preserva
+  linhagem e maior materialidade.
+- O coverage map inicia toda dimensão esperada como `not_examined`, exige evidência para `covered`,
+  preserva insuficiência, conflito, inaplicabilidade e adiamento, e bloqueia readiness quando uma
+  dimensão bloqueadora permanece aberta.
+- Promoção de pack exige gold cases, caso adversarial, benchmark contra o melhor modelo generalista
+  e revisão especialista. O teste de sobrevivência também exige impacto decisório sustentado; texto
+  bem escrito ou outcome estimado não bastam.
+- Contratos e testes unitários passaram. A reconstrução SQL local não pôde ser executada porque o
+  Docker deste host está desligado. A migration não foi aplicada remotamente e os packs econômicos
+  ainda não estão acreditados; ambos permanecem pendentes antes de promoção.

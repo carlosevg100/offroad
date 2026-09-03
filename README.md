@@ -17,6 +17,7 @@ A orientação completa (produto, arquitetura, rotas, dados, segurança, dívida
 ## Produto e fontes de verdade
 
 - Constituição vigente: `docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`
+- Motor de profundidade combinável: `docs/build/COMPOSABLE_DCM_DEPTH_ENGINE.md`
 - Blueprint v3.0: snapshot histórico; seu posicionamento origination-first foi superado pela Constituição 2.2 e pela ADR 0019
 - Plano por gates: `docs/build/MASTER_PLAN.md`
 - Estado e evidências: `docs/build/BUILD_STATE.md`, `docs/build/ACCEPTANCE_EVIDENCE.md`

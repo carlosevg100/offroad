@@ -167,6 +167,54 @@ ADR 0011 governa este Gate. Fixtures e gold cases não contam como case real. O 
 canary; o segundo lote deve ser distinto e, junto com aprovação explícita, libera `active`. Toda
 organização permanece com saída externa desabilitada até a decisão final.
 
+## Gate 9: profundidade combinável e valor decisório
+
+Este gate transforma amplitude de produto em expertise comprovável, sem criar uma solução isolada
+para cada combinação de setor, instrumento e necessidade.
+
+- [x] Situação econômica, objetivo de capital e uso dos recursos separados de instrumento.
+- [x] Taxonomia ampliada de situações e objetivos, incluindo vencimentos, liquidez preventiva,
+  liability management, alongamento, repricing, garantias, diversificação e substituição de dívida.
+- [x] Funções profissionais ampliadas, com analista de crédito, underwriting, risco, syndicate,
+  structured finance, project finance, FP&A, controladoria, jurídico e comitê de investimento.
+- [x] Contrato versionado de depth pack nas dimensões núcleo, situação, objetivo, instrumento,
+  setor, análise, função, jurisdição e execução de mercado.
+- [x] Compilador recusa dependências ausentes, packs incompatíveis e definições conflitantes, e
+  preserva a linhagem quando requisitos se sobrepõem.
+- [x] Promoção a `production` exige ao menos dois gold cases, caso adversarial, benchmark contra
+  modelo generalista e revisão especialista registrada.
+- [x] Coverage map nasce com todas as dimensões esperadas em `not_examined`, preserva omissões e
+  bloqueia readiness enquanto uma dimensão bloqueadora estiver aberta ou conflitante.
+- [x] Contrato de outcome separa observação confirmada, externa, medida e estimada.
+- [x] Teste de sobrevivência falha quando o output não demonstra impacto decisório material além
+  de um modelo generalista.
+- [ ] Especificar e revisar o pack núcleo e os packs prioritários do Pareto com profissionais de
+  DCM, crédito, risco e jurídico.
+- [ ] Construir gold e adversarial cases independentes para cada pack prioritário.
+- [ ] Persistir o perfil compilado e o coverage map no projeto e projetá-los integralmente no
+  painel de trabalho.
+- [ ] Rodar o benchmark cego contra o melhor modelo generalista em cada promoção.
+- [ ] Instrumentar outcomes em casos reais e fechar o loop de melhoria com atribuição revisável.
+
+### Ordem de construção dos packs
+
+1. **Núcleo transversal:** companhia e setor, históricos, earnings quality, caixa e capital de
+   giro, dívida, liquidez, alavancagem, debt service, downside, alternativas e execução.
+2. **Objetivos de maior frequência:** refinance e liability management; liquidez e giro; capex e
+   expansão; aquisição; reorganização de garantias; diversificação de fontes.
+3. **Domínios críticos:** covenant, dívida e vencimentos, garantia, recebíveis, business plan,
+   pricing e comparáveis, estrutura e termos, capital-provider fit.
+4. **Instrumentos prioritários Brasil:** bancário bilateral, CCB, debênture, nota comercial, FIDC e
+   cessão, CRI/CRA quando aplicável, club e sindicado, trade e agro.
+5. **Instrumentos prioritários Estados Unidos:** revolver, term loan, ABL, private credit,
+   unitranche, syndicated loan, notes/bonds e acquisition finance.
+6. **Setores pelo volume real de casos:** o backlog é ordenado por uso e risco observado, não por
+   desejo de cobertura nominal.
+
+Nenhum item marcado como contrato implementado implica que os packs econômicos já foram
+acreditados. Até a revisão e os testes acima, o sistema pode usar a arquitetura para expor lacunas,
+mas não pode alegar domínio produtivo daquele cruzamento.
+
 ## Corte de lançamento
 
 ### Piloto interno

@@ -1,13 +1,7 @@
 import {z} from "zod";
 
+import {professionalFunctionGroupSchema} from "./professional-functions";
 import {executableWorkspaceJobSchema, type ExecutableWorkspaceJob} from "./workspace-jobs";
-
-const userContextSchema = z.enum([
-  "company_finance",
-  "banker_or_dcm",
-  "advisor",
-  "investor_or_lender",
-]);
 
 const evidenceModeSchema = z.enum(["public", "private", "hybrid"]);
 
@@ -54,7 +48,7 @@ export const collaborativeAdvisoryPolicy = collaborativeAdvisoryPolicySchema.par
 export const workspaceJourneyBlueprintSchema = z.object({
   schemaVersion: z.literal("workspace-journey-blueprint.v1"),
   id: executableWorkspaceJobSchema,
-  typicalUsers: z.array(userContextSchema).min(1),
+  typicalUsers: z.array(professionalFunctionGroupSchema).min(1),
   acceptedEvidenceModes: z.array(evidenceModeSchema).min(1),
   entryUnderstanding: z.string().min(20),
   contextBeforeWork: z.array(z.string().min(5)).max(5),
@@ -70,7 +64,7 @@ const journeyBlueprints: Record<ExecutableWorkspaceJob, WorkspaceJourneyBlueprin
   company_debt_view: {
     schemaVersion: "workspace-journey-blueprint.v1",
     id: "company_debt_view",
-    typicalUsers: ["company_finance", "banker_or_dcm", "advisor", "investor_or_lender"],
+    typicalUsers: ["company_leadership", "company_finance", "banker_or_dcm", "structured_finance", "advisor", "credit_analysis", "risk_and_underwriting", "investor_or_lender"],
     acceptedEvidenceModes: ["public", "private", "hybrid"],
     entryUnderstanding: "Understand a company, its financial position and capital structure before assuming a transaction.",
     contextBeforeWork: ["company identity", "the decision or discussion this analysis should inform"],
@@ -83,7 +77,7 @@ const journeyBlueprints: Record<ExecutableWorkspaceJob, WorkspaceJourneyBlueprin
   origination_thesis: {
     schemaVersion: "workspace-journey-blueprint.v1",
     id: "origination_thesis",
-    typicalUsers: ["banker_or_dcm", "advisor"],
+    typicalUsers: ["banker_or_dcm", "structured_finance", "syndicate_distribution", "advisor", "credit_analysis"],
     acceptedEvidenceModes: ["public", "hybrid"],
     entryUnderstanding: "Prepare a company-specific point of view and strategic capital alternatives for a real conversation.",
     contextBeforeWork: ["company identity", "audience", "desired outcome", "relationship context"],
@@ -96,7 +90,7 @@ const journeyBlueprints: Record<ExecutableWorkspaceJob, WorkspaceJourneyBlueprin
   capital_planning: {
     schemaVersion: "workspace-journey-blueprint.v1",
     id: "capital_planning",
-    typicalUsers: ["company_finance", "banker_or_dcm", "advisor"],
+    typicalUsers: ["company_leadership", "company_finance", "banker_or_dcm", "structured_finance", "advisor", "credit_analysis", "risk_and_underwriting"],
     acceptedEvidenceModes: ["public", "private", "hybrid"],
     entryUnderstanding: "Translate a capital question, balance-sheet objective or corporate plan into comparable financing strategies.",
     contextBeforeWork: ["company identity", "economic objective", "known timing or constraints when material"],
@@ -109,7 +103,7 @@ const journeyBlueprints: Record<ExecutableWorkspaceJob, WorkspaceJourneyBlueprin
   structure_from_documents: {
     schemaVersion: "workspace-journey-blueprint.v1",
     id: "structure_from_documents",
-    typicalUsers: ["company_finance", "banker_or_dcm", "advisor"],
+    typicalUsers: ["company_leadership", "company_finance", "banker_or_dcm", "structured_finance", "advisor", "credit_analysis", "risk_and_underwriting", "investor_or_lender"],
     acceptedEvidenceModes: ["private", "hybrid"],
     entryUnderstanding: "Read the material already available, infer the financing problem and develop structures without making the user repeat it.",
     contextBeforeWork: ["right to use the information", "decision or outcome the work should support when it cannot be inferred"],
@@ -122,7 +116,7 @@ const journeyBlueprints: Record<ExecutableWorkspaceJob, WorkspaceJourneyBlueprin
   review_existing_operation: {
     schemaVersion: "workspace-journey-blueprint.v1",
     id: "review_existing_operation",
-    typicalUsers: ["company_finance", "banker_or_dcm", "advisor", "investor_or_lender"],
+    typicalUsers: ["company_leadership", "company_finance", "banker_or_dcm", "structured_finance", "advisor", "credit_analysis", "risk_and_underwriting", "investor_or_lender", "legal_and_execution"],
     acceptedEvidenceModes: ["private", "hybrid"],
     entryUnderstanding: "Reconstruct an existing proposal or term sheet, test its economics and protections, and compare credible improvements.",
     contextBeforeWork: ["document or terms to review", "which side and decision the review should inform"],
@@ -135,7 +129,7 @@ const journeyBlueprints: Record<ExecutableWorkspaceJob, WorkspaceJourneyBlueprin
   prepare_materials_and_process: {
     schemaVersion: "workspace-journey-blueprint.v1",
     id: "prepare_materials_and_process",
-    typicalUsers: ["company_finance", "banker_or_dcm", "advisor", "investor_or_lender"],
+    typicalUsers: ["company_leadership", "company_finance", "banker_or_dcm", "structured_finance", "syndicate_distribution", "advisor", "credit_analysis", "risk_and_underwriting", "investor_or_lender", "legal_and_execution"],
     acceptedEvidenceModes: ["private", "hybrid"],
     entryUnderstanding: "Turn an agreed analytical direction into consistent decision or market materials without rebuilding the case.",
     contextBeforeWork: ["approved analytical snapshot", "audience and purpose of the material"],

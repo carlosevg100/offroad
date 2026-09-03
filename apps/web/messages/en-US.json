@@ -617,7 +617,7 @@
     "role": "Your role",
     "rolePlaceholder": "Select if useful",
     "roles": {
-      "cfoTreasury": "CFO or treasury", "corporateFinance": "Corporate finance", "dcmBanker": "DCM banker", "corporateBanker": "Corporate banker", "advisor": "Financial advisor", "investorLender": "Investor or lender", "portfolioManager": "Portfolio manager", "analyst": "Analyst", "executive": "Executive", "other": "Other role"
+      "cfoTreasury": "CFO or treasury", "corporateFinance": "Corporate finance", "fpAndA": "FP&A", "controllerAccounting": "Controllership or accounting", "dcmBanker": "DCM banker", "corporateBanker": "Corporate banker", "relationshipManager": "Relationship manager", "structuredFinanceBanker": "Structured finance banker", "projectFinanceBanker": "Project finance banker", "syndicateDistribution": "Syndicate or distribution", "advisor": "Financial advisor", "investorLender": "Investor or lender", "portfolioManager": "Portfolio manager", "creditAnalyst": "Credit analyst", "riskUnderwriter": "Underwriting or credit risk", "investmentCommittee": "Investment committee", "legalStructuring": "Transaction counsel", "boardShareholder": "Board member or shareholder", "analyst": "Analyst", "executive": "Executive", "other": "Other role"
     },
     "team": "Team or area",
     "teamPlaceholder": "E.g. DCM, treasury, private credit",

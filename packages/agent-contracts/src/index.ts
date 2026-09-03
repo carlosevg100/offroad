@@ -5,6 +5,9 @@ import {executableWorkspaceJobSchema} from "./workspace-jobs";
 
 export * from "./work-system";
 export * from "./workspace-jobs";
+export * from "./professional-functions";
+export * from "./specializations";
+export * from "./decision-value";
 
 export const workspaceRequestIntentSchema = z.enum([
   "explain",

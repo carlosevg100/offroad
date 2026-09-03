@@ -63,6 +63,25 @@ begin
 end;
 $$;
 
+do $$
+declare
+  saved jsonb;
+begin
+  saved := public.save_professional_capability_context_v1(
+    '20000000-0000-4000-8000-000000000301',
+    'credit_fund', 'credit_analyst', 'Crédito privado',
+    array['analyze_investments'],
+    'Gestora Exemplo',
+    array['investing'],
+    array['structured_flexible_capital'],
+    'Analisa crédito e estrutura antes do comitê.', false
+  );
+  if saved ->> 'professional_role' <> 'credit_analyst' then
+    raise exception 'credit analyst was collapsed into a generic role: %', saved;
+  end if;
+end;
+$$;
+
 select set_config(
   'request.jwt.claims',
   '{"sub":"10000000-0000-4000-8000-000000000302","role":"authenticated","aal":"aal1"}',
