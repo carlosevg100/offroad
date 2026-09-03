@@ -19,6 +19,8 @@ import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
+import {advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+
 export type AdvisorProjectMessage = {
   id: string;
   role: string;
@@ -98,15 +100,23 @@ export function AdvisorProject(props: Props) {
   const active = props.sessionStatus === "processing"
     || props.tasks.some((task) => ["queued", "running"].includes(task.status))
     || props.messages.some((message) => ["queued", "processing"].includes(message.status));
-  const needsAttention = !active && (props.sessionStatus === "failed"
-    || props.tasks.some((task) => task.status === "failed")
-    || props.messages.some((message) => message.status === "failed"));
+  const needsAttention = advisorNeedsAttention({
+    active,
+    sessionStatus: props.sessionStatus,
+    taskStatuses: props.tasks.map((task) => task.status),
+    messageStatuses: props.messages.map((message) => message.status),
+    events: props.activityEvents,
+  });
+  const successfulOutcomeAt = latestSuccessfulOutcomeAt(props.activityEvents);
   const completed = props.tasks.filter((task) => task.status === "succeeded").length;
   const allMessages = [...props.messages, ...optimistic];
   const proposalById = new Map(props.proposals.map((proposal) => [proposal.id, proposal]));
   const timeline = [
     ...allMessages.map((message) => ({kind: "message" as const, id: message.id, createdAt: message.createdAt, message})),
-    ...props.activityEvents.map((event) => ({kind: "activity" as const, id: event.id, createdAt: event.createdAt, event})),
+    ...props.activityEvents
+      .filter((event) => !["work_failed", "quality_gate_failed"].includes(event.type)
+        || !failureWasRecovered(event.createdAt, successfulOutcomeAt))
+      .map((event) => ({kind: "activity" as const, id: event.id, createdAt: event.createdAt, event})),
   ].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
   const lastActivityId = props.activityEvents.at(-1)?.id;
 
@@ -182,7 +192,7 @@ export function AdvisorProject(props: Props) {
               <div>
                 {message.role === "assistant" ? <small>{props.copy.advisor}</small> : null}
                 <p>{message.content}</p>
-                {message.status === "failed" ? <p className="advisor-thread__message-error" role="alert">{props.copy.messageFailed}</p> : null}
+                {message.status === "failed" && !failureWasRecovered(message.createdAt, successfulOutcomeAt) ? <p className="advisor-thread__message-error" role="alert">{props.copy.messageFailed}</p> : null}
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
                 {proposal ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
               </div>
