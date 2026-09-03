@@ -46,7 +46,7 @@ export async function HomeLanding({locale}: HomeLandingProps) {
             <div className={styles.heroCopy}>
               <p className={styles.kicker}>{t("category")}</p>
               <h1 id="home-title">
-                <span>{t("heroTitleLine1")}</span>
+                <span>{t("heroTitleLine1")}</span>{" "}
                 <span>{t("heroTitleLine2")}</span>
               </h1>
               <p className={styles.heroIntro}>{t("heroIntro")}</p>
