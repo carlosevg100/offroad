@@ -1942,3 +1942,36 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Este estado intermediário foi superado em 03/09: o histórico canônico foi reconciliado, oito
   migrations foram aplicadas e testadas em produção e o ledger local passou a espelhar exatamente
   as 164 versões remotas.
+
+## Motor de profundidade combinável, candidate, 03/09/2026
+
+- As seis entradas foram reclassificadas como atalhos de intenção, não jornadas exaustivas. O
+  runtime pode abrir jobs e branches adicionais dentro do mesmo projeto e da mesma Company Truth.
+- A ontologia separa situação econômica, objetivo de capital, uso dos recursos, fonte de pagamento,
+  família de capital e alocação de risco. Vencimentos, liquidez preventiva, liability management,
+  alongamento, repricing, garantias, diversificação e substituição de dívida agora são estados e
+  objetivos explícitos, não texto livre absorvido por um instrumento.
+- Funções profissionais incluem analista de crédito, underwriting, risco, syndicate, structured e
+  project finance, FP&A, controladoria, jurídico e comitê de investimento. O onboarding PT-BR/EN-US
+  e a migration correspondente preservam essas funções sem reduzi-las a “analista”.
+- `@offroad/agent-contracts` implementa manifestos e compilação de depth packs por núcleo, situação,
+  objetivo, instrumento, setor, domínio de análise, função, jurisdição e execução. Dependência
+  ausente, incompatibilidade ou definição conflitante falha fechado; sobreposição válida preserva
+  linhagem e maior materialidade.
+- O coverage map inicia toda dimensão esperada como `not_examined`, exige evidência para `covered`,
+  preserva insuficiência, conflito, inaplicabilidade e adiamento, e bloqueia readiness quando uma
+  dimensão bloqueadora permanece aberta.
+- Promoção de pack exige gold cases, caso adversarial, benchmark contra o melhor modelo generalista
+  e revisão especialista. O teste de sobrevivência também exige impacto decisório sustentado; texto
+  bem escrito ou outcome estimado não bastam.
+- Contratos e testes unitários passaram. O CI obrigatório do PR #378 reconstruiu o banco do zero,
+  aplicou todas as migrations, executou a suíte de RLS, lint do schema e E2E sem falhas. A migration
+  canônica `20260903182045_expand_professional_functions.sql` foi promovida ao único Supabase de
+  produção após esses gates.
+- Os advisors posteriores à promoção não atribuíram alerta novo à migration. Permanecem dois avisos
+  informativos já conhecidos para tabelas estritamente `private`, sem políticas de acesso cliente,
+  além de índices recentes ainda classificados como não utilizados. Nenhum deles justifica remover
+  isolamento ou índices de integridade antes de haver janela representativa de uso.
+- Os packs econômicos ainda não estão acreditados. A infraestrutura impede que esse estado seja
+  chamado de profundidade de produção; implementação, benchmark e revisão dos packs Pareto seguem
+  obrigatórios antes da promoção de cada escopo.

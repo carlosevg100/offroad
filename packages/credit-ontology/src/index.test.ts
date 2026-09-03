@@ -2,6 +2,8 @@ import {describe, expect, it} from "vitest";
 import {buildRedeHorizonteDocumentIntake, redeHorizonteFileHashes} from "@offroad/testing-fixtures";
 import {
   autoAcceptDecision,
+  capitalObjectiveSchema,
+  capitalSituationSchema,
   chartOfAccounts,
   chartOfAccountsMap,
   documentKindDefinition,
@@ -27,10 +29,27 @@ import {
   validateChartOfAccounts,
 } from "./index";
 
-describe("universal debt mission frame v2", () => {
+describe("universal debt mission frame v3", () => {
+  it("represents liability-management and balance-sheet situations without pretending they are instruments", () => {
+    for (const situation of [
+      "near_term_maturity_concentration",
+      "preventive_liquidity_need",
+      "high_cost_existing_debt",
+      "trapped_or_overallocated_collateral",
+      "concentrated_funding_sources",
+    ] as const) expect(capitalSituationSchema.parse(situation)).toBe(situation);
+    for (const objective of [
+      "execute_exchange_tender_or_other_liability_management",
+      "extend_duration",
+      "reprice_credit_spread",
+      "release_or_reorganize_collateral",
+      "diversify_funding_sources",
+    ] as const) expect(capitalObjectiveSchema.parse(objective)).toBe(objective);
+  });
+
   it("combines mixed capital needs without anchoring the project to one instrument", () => {
     const mission = debtMissionFrameSchema.parse({
-      schemaVersion: "debt-mission-frame.v2",
+      schemaVersion: "debt-mission-frame.v3",
       evidenceRegime: "hybrid",
       jurisdiction: {
         primary: "BR",
@@ -54,8 +73,22 @@ describe("universal debt mission frame v2", () => {
         desiredOutcome: "Comparar alternativas executáveis antes de preparar o pitch.",
       },
       needs: [
-        {kind: "refinancing_liability_management", description: "Alongar vencimentos de 2027.", priority: "primary"},
-        {kind: "capex_expansion_ramp_up", description: "Financiar novas unidades.", priority: "secondary"},
+        {
+          kind: "refinancing_liability_management",
+          description: "Alongar vencimentos de 2027.",
+          priority: "primary",
+          situations: ["near_term_maturity_concentration", "high_cost_existing_debt"],
+          objectives: ["refinance_maturities", "extend_duration", "reduce_all_in_cost"],
+          uses: ["no_new_money"],
+        },
+        {
+          kind: "capex_expansion_ramp_up",
+          description: "Financiar novas unidades.",
+          priority: "secondary",
+          situations: ["growth_funding_gap", "capex_funding_gap"],
+          objectives: ["fund_capex_or_expansion"],
+          uses: ["growth_capex"],
+        },
       ],
       repaymentSources: ["corporate_operating_cash_flow", "receivables_collection"],
       capitalFamilies: ["bilateral_bank", "capital_markets", "private_credit_funds", "receivables_finance"],
@@ -66,11 +99,14 @@ describe("universal debt mission frame v2", () => {
     expect(mission.needs).toHaveLength(2);
     expect(mission.capitalFamilies).toContain("capital_markets");
     expect(mission.capitalFamilies).toContain("receivables_finance");
+    expect(mission.needs[0]?.situations).toContain("near_term_maturity_concentration");
+    expect(mission.needs[0]?.objectives).toContain("extend_duration");
+    expect(mission.needs[0]?.uses).toEqual(["no_new_money"]);
   });
 
   it("treats public, private and hybrid as evidence regimes rather than product routes", () => {
     const base = {
-      schemaVersion: "debt-mission-frame.v2" as const,
+      schemaVersion: "debt-mission-frame.v3" as const,
       jurisdiction: {
         primary: "BR" as const,
         relevant: ["BR" as const],

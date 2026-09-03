@@ -27,6 +27,24 @@ describe("professional capability context", () => {
     expect(professionalContextStatus(input)).toBe("partial");
   });
 
+  it("preserves credit, risk and execution functions instead of collapsing them into analyst", () => {
+    for (const professionalRole of [
+      "credit_analyst",
+      "risk_underwriter",
+      "investment_committee",
+      "legal_structuring",
+      "syndicate_distribution",
+    ] as const) {
+      const input = professionalContextFormSchema.parse({
+        professionalRole,
+        operatingModels: ["investing"],
+        primaryObjectives: ["analyze_investments"],
+        productFamilies: [],
+      });
+      expect(input.professionalRole).toBe(professionalRole);
+    }
+  });
+
   it("records an explicit skip so the chat does not nag the user", () => {
     const input = professionalContextFormSchema.parse({
       operatingModels: [],
