@@ -278,6 +278,59 @@ describe("agent operation brief worker", () => {
     expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "CVC"}});
   });
 
+  it("asks for the institution operating model once research is already active without queueing it again", async () => {
+    let recordedResponse: Record<string, unknown> | undefined;
+    let recordedActivation: unknown;
+    let modelCalls = 0;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "A reunião é com o CFO. Queremos explorar refinance e não temos relacionamento nem exposição.",
+        brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-02T12:00:00.000Z", manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Reunião Camil",
+          entryJob: "origination_thesis", accessBasis: "public_information",
+          phase: "understand", status: "active",
+        },
+        company_profile: {name: "Camil"},
+        professional_context: null,
+        institution_capabilities: null,
+        documents: [],
+        tasks: [{taskId: "O01", label: "Pesquisar a companhia", ordinal: 0, status: "running"}],
+        artifacts: [],
+        recent_messages: [{
+          id: "33333333-3333-4333-8333-333333333333",
+          role: "user" as const,
+          content: "Tenho uma reunião com a Camil amanhã.",
+          created_at: "2026-09-02T11:59:00.000Z",
+        }],
+      }),
+      recordAgentResponse: async (_job: unknown, _id: string, response: unknown, _proposal: unknown, activation: unknown) => {
+        recordedResponse = response as Record<string, unknown>;
+        recordedActivation = activation;
+        return {};
+      },
+      complete: async () => {}, recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => { modelCalls += 1; throw new Error("capability clarification is deterministic"); },
+      spent: () => ({costUsd: 0, calls: modelCalls}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(result.status).toBe("succeeded");
+    expect(modelCalls).toBe(0);
+    expect(recordedActivation).toBeUndefined();
+    expect(recordedResponse).toMatchObject({state: "asking"});
+    expect(recordedResponse?.reply).toContain("balanço próprio");
+    expect(recordedResponse?.reply).toContain("análise neutra");
+  });
+
   it("uses relevant organization memory before asking for missing Camil meeting context", async () => {
     let recordedActivation: unknown;
     let recordedResponse: Record<string, unknown> | undefined;
@@ -522,6 +575,21 @@ describe("agent operation brief worker", () => {
           status: "active",
         },
         company_profile: {companyName: "Cedro", sector: "Distribuição"},
+        professional_context: {
+          affiliationKind: "bank", professionalRole: "dcm_banker", teamName: "DCM",
+          institutionName: "Banco Exemplo",
+          operatingModels: ["structuring", "distribution"], productFamilies: ["capital_markets"],
+          primaryObjectives: ["structure_transactions"], contextNotes: null,
+          disclosureStatus: "complete", lastConfirmedAt: "2026-09-01T10:00:00.000Z",
+        },
+        institution_capabilities: {
+          institutionName: "Banco Exemplo", institutionKind: "bank",
+          operatingModels: ["balance_sheet_lending", "structuring", "distribution"],
+          productFamilies: ["bilateral_credit", "capital_markets"],
+          geographies: ["BR", "US"], currencies: ["BRL", "USD"], capabilityNotes: null,
+          sourceKind: "self_declared", disclosureStatus: "complete",
+          lastConfirmedAt: "2026-09-01T10:00:00.000Z",
+        },
         documents: [{
           id: "11111111-1111-4111-8111-111111111111",
           name: "balancete.pdf",
@@ -580,6 +648,8 @@ describe("agent operation brief worker", () => {
       workPlan: [{taskId: "M01", status: "succeeded"}],
       artifacts: [{type: "preliminary_understanding", version: 1, status: "draft"}],
       latestUserMessage: "O que já sabemos e qual é o próximo passo?",
+      professionalContext: {professionalRole: "dcm_banker", operatingModels: ["structuring", "distribution"]},
+      institutionCapabilities: {institutionName: "Banco Exemplo", operatingModels: ["balance_sheet_lending", "structuring", "distribution"]},
     });
     expect(metadata).toMatchObject({projectEntryJob: "company_debt_view", documentCount: "1", artifactCount: "1"});
     expect(modelInput).not.toContain("object_path");

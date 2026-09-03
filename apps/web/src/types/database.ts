@@ -4243,6 +4243,65 @@ export type Database = {
           },
         ]
       }
+      institution_capability_profiles: {
+        Row: {
+          capability_notes: string | null
+          created_at: string
+          currencies: string[]
+          disclosure_status: string
+          geographies: string[]
+          institution_kind: string | null
+          institution_name: string | null
+          last_confirmed_at: string | null
+          operating_models: string[]
+          organization_id: string
+          product_families: string[]
+          source_kind: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          capability_notes?: string | null
+          created_at?: string
+          currencies?: string[]
+          disclosure_status?: string
+          geographies?: string[]
+          institution_kind?: string | null
+          institution_name?: string | null
+          last_confirmed_at?: string | null
+          operating_models?: string[]
+          organization_id: string
+          product_families?: string[]
+          source_kind?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          capability_notes?: string | null
+          created_at?: string
+          currencies?: string[]
+          disclosure_status?: string
+          geographies?: string[]
+          institution_kind?: string | null
+          institution_name?: string | null
+          last_confirmed_at?: string | null
+          operating_models?: string[]
+          organization_id?: string
+          product_families?: string[]
+          source_kind?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institution_capability_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_progress: {
         Row: {
           answers: Json
@@ -5383,6 +5442,65 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "document_intake_sessions"
             referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      professional_context_profiles: {
+        Row: {
+          affiliation_kind: string | null
+          context_notes: string | null
+          created_at: string
+          disclosure_status: string
+          institution_name: string | null
+          last_confirmed_at: string | null
+          operating_models: string[]
+          organization_id: string
+          primary_objectives: string[]
+          product_families: string[]
+          professional_role: string | null
+          team_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          affiliation_kind?: string | null
+          context_notes?: string | null
+          created_at?: string
+          disclosure_status?: string
+          institution_name?: string | null
+          last_confirmed_at?: string | null
+          operating_models?: string[]
+          organization_id: string
+          primary_objectives?: string[]
+          product_families?: string[]
+          professional_role?: string | null
+          team_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          affiliation_kind?: string | null
+          context_notes?: string | null
+          created_at?: string
+          disclosure_status?: string
+          institution_name?: string | null
+          last_confirmed_at?: string | null
+          operating_models?: string[]
+          organization_id?: string
+          primary_objectives?: string[]
+          product_families?: string[]
+          professional_role?: string | null
+          team_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_context_profiles_organization_id_user_id_fkey"
+            columns: ["organization_id", "user_id"]
+            isOneToOne: true
+            referencedRelation: "organization_memberships"
+            referencedColumns: ["organization_id", "user_id"]
           },
         ]
       }
@@ -7546,6 +7664,21 @@ export type Database = {
           p_rationale: string
           p_retest_triggers?: string[]
           p_session_id: string
+        }
+        Returns: Json
+      }
+      save_professional_capability_context_v1: {
+        Args: {
+          p_affiliation_kind?: string
+          p_capability_notes?: string
+          p_institution_name?: string
+          p_operating_models?: string[]
+          p_organization_id: string
+          p_primary_objectives?: string[]
+          p_product_families?: string[]
+          p_professional_role?: string
+          p_skip?: boolean
+          p_team_name?: string
         }
         Returns: Json
       }

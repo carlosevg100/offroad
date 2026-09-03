@@ -29,6 +29,7 @@ import type {Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import {compiledCapitalProjectPlan} from "@/lib/capital-project/plan";
+import {parseProfessionalContextForm} from "@/lib/professional-context";
 
 type Journey = "company" | "originator" | "capital_provider";
 type AnswerMap = Record<string, Json | undefined>;
@@ -93,6 +94,32 @@ async function onboardingContext(locale: AppLocale) {
 }
 
 type OnboardingContext = Awaited<ReturnType<typeof onboardingContext>>;
+
+export async function saveProfessionalContextAction(formData: FormData) {
+  const locale = localeFrom(formData);
+  const context = await onboardingContext(locale);
+  const skip = value(formData, "intent") === "skip";
+  const parsed = parseProfessionalContextForm(skip ? new FormData() : formData);
+  if (!parsed.success) redirect(`/${locale}/onboarding?error=validation`);
+
+  const {error} = await context.supabase.rpc("save_professional_capability_context_v1", {
+    p_organization_id: context.organizationId,
+    p_affiliation_kind: parsed.data.affiliationKind,
+    p_professional_role: parsed.data.professionalRole,
+    p_team_name: parsed.data.teamName,
+    p_primary_objectives: parsed.data.primaryObjectives,
+    p_institution_name: parsed.data.institutionName,
+    p_operating_models: parsed.data.operatingModels,
+    p_product_families: parsed.data.productFamilies,
+    p_capability_notes: parsed.data.capabilityNotes,
+    p_skip: skip,
+  });
+  if (error) {
+    reportServerFailure({step: "onboarding.save_professional_context", error});
+    redirect(`/${locale}/onboarding?error=save`);
+  }
+  redirect(`/${locale}/onboarding`);
+}
 
 async function updateProgress(
   context: OnboardingContext,

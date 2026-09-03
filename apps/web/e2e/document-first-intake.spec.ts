@@ -129,6 +129,14 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("form.auth-form--verification button[type=submit]").click();
 
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
+    await expect(page.locator(".professional-context--onboarding")).toBeVisible();
+    await expect(page.locator('input[name="affiliation_kind"][value="company"]')).toBeChecked();
+    await expect(page.locator('input[name="operating_models"][value="raise_capital"]')).toBeChecked();
+    await page.locator('input[name="institution_name"]').fill("Rede Horizonte Supermercados");
+    await page.locator('select[name="professional_role"]').selectOption("cfo_treasury");
+    await page.locator('input[name="primary_objectives"][value="evaluate_capital_options"]').check();
+    await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
+
     await expect(page.locator(".intake-start")).toBeVisible();
     await expect(page.locator(".workspace-welcome h1")).toHaveText("Bem-vindo.");
     await expect(page.locator(".intake-welcome__roles")).toContainText("Você faz");

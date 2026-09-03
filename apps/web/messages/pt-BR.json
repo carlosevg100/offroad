@@ -604,6 +604,48 @@
     "resendError": "Não foi possível reenviar o código. Tente novamente em alguns instantes.",
     "resendRateLimit": "O código anterior ainda é válido. Aguarde um minuto antes de solicitar outro."
   },
+  "ProfessionalContext": {
+    "eyebrow": "Seu contexto profissional",
+    "title": "Para a Offroad trabalhar do seu lado da mesa.",
+    "body": "Conte apenas o essencial sobre como você e sua instituição atuam. A Offroad usa esse contexto para propor caminhos compatíveis com a sua capacidade e evita repetir as mesmas perguntas em cada projeto.",
+    "institutionName": "Instituição",
+    "institutionPlaceholder": "Nome da companhia, banco, gestora ou assessoria",
+    "affiliationLegend": "Onde você atua",
+    "affiliation": {
+      "company": "Companhia", "bank": "Banco", "advisory": "Assessoria", "assetManager": "Gestora", "creditFund": "Fundo de crédito", "familyOffice": "Family office", "independent": "Independente", "other": "Outro"
+    },
+    "role": "Sua função",
+    "rolePlaceholder": "Selecione se fizer sentido",
+    "roles": {
+      "cfoTreasury": "CFO ou tesouraria", "corporateFinance": "Finanças corporativas", "dcmBanker": "Banker de DCM", "corporateBanker": "Corporate banker", "advisor": "Assessor financeiro", "investorLender": "Investidor ou financiador", "portfolioManager": "Gestor de portfólio", "analyst": "Analista", "executive": "Executivo", "other": "Outra função"
+    },
+    "team": "Área ou time",
+    "teamPlaceholder": "Ex.: DCM, tesouraria, crédito privado",
+    "operatingLegend": "Como vocês podem atuar em uma operação?",
+    "operatingBody": "Marque mais de uma opção. Isso define quais ideias podem realmente ser levadas adiante.",
+    "operating": {
+      "raiseCapital": "Captamos para a própria companhia", "balanceSheetLending": "Emprestamos com balanço próprio", "structuring": "Estruturamos operações", "distribution": "Distribuímos para investidores", "advisory": "Prestamos advisory", "investing": "Investimos ou financiamos"
+    },
+    "objectiveLegend": "Onde a Offroad deve ampliar sua capacidade?",
+    "objectiveBody": "Isso organiza a experiência inicial; você poderá usar todas as capacidades da plataforma.",
+    "objectives": {
+      "understandCompany": "Analisar companhias", "prepareMeetings": "Preparar reuniões", "originateIdeas": "Originar ideias", "evaluateCapitalOptions": "Avaliar alternativas de capital", "structureTransactions": "Estruturar transações", "prepareMaterials": "Preparar análises e materiais", "connectCapital": "Encontrar capital aderente", "analyzeInvestments": "Analisar oportunidades de investimento"
+    },
+    "optionalTitle": "Especialidades da instituição",
+    "optionalBody": "Opcional. Adicione produtos somente se isso ajudar a calibrar as recomendações.",
+    "products": {
+      "bilateralCredit": "Crédito bilateral", "clubSyndicated": "Club deals e sindicalizados", "capitalMarkets": "Mercado de capitais", "securitization": "Securitização", "assetBacked": "Asset-backed", "projectAcquisitionFinance": "Project e acquisition finance", "tradeExportAgri": "Trade, exportação e agro", "structuredFlexibleCapital": "Capital estruturado e flexível", "specialSituations": "Special situations", "derivativesHedging": "Derivativos e hedge"
+    },
+    "notes": "Algo importante sobre sua atuação",
+    "notesPlaceholder": "Ex.: atuamos no Brasil e nos EUA, com foco em middle market e operações distribuídas.",
+    "save": "Salvar e continuar",
+    "skip": "Responder depois",
+    "assurance": "Você pode atualizar esse contexto a qualquer momento. Ele nunca substitui os fatos e evidências de um projeto.",
+    "settingsTitle": "Seu contexto",
+    "settingsBody": "Ajuste como a Offroad deve considerar sua função e a capacidade da sua instituição.",
+    "saved": "Contexto atualizado.",
+    "error": "Não foi possível salvar. Revise as informações e tente novamente."
+  },
   "Recovery": {
     "contextEyebrow": "Recuperação de acesso",
     "contextTitle": "Retome seu acesso com segurança.",
@@ -1028,6 +1070,7 @@
   },
   "App": {
     "overview": "Visão geral",
+    "professionalContext": "Seu contexto",
     "newOpportunity": "Nova oportunidade",
     "newCapitalNeed": "Nova necessidade de capital",
     "fundsAndMandates": "Fundos e mandatos",

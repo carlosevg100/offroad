@@ -4809,6 +4809,8 @@ declare
 begin
   select pg_get_functiondef(
     'private.worker_load_agent_context(uuid,text)'::regprocedure
+  ) || pg_get_functiondef(
+    'private.worker_load_agent_context_before_professional_context_v1(uuid,text)'::regprocedure
   ) into definition;
 
   if position('prior.organization_id = job_row.organization_id' in definition) = 0 then

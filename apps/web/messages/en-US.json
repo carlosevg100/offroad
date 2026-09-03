@@ -604,6 +604,48 @@
     "resendError": "We could not resend the code. Try again in a few moments.",
     "resendRateLimit": "The previous code is still valid. Wait one minute before requesting another."
   },
+  "ProfessionalContext": {
+    "eyebrow": "Your professional context",
+    "title": "So Offroad can work from your side of the table.",
+    "body": "Share only the essentials about how you and your institution operate. Offroad uses this context to develop paths compatible with your capabilities and avoids repeating the same questions in every project.",
+    "institutionName": "Institution",
+    "institutionPlaceholder": "Company, bank, manager or advisory firm",
+    "affiliationLegend": "Where you work",
+    "affiliation": {
+      "company": "Company", "bank": "Bank", "advisory": "Advisory firm", "assetManager": "Asset manager", "creditFund": "Credit fund", "familyOffice": "Family office", "independent": "Independent", "other": "Other"
+    },
+    "role": "Your role",
+    "rolePlaceholder": "Select if useful",
+    "roles": {
+      "cfoTreasury": "CFO or treasury", "corporateFinance": "Corporate finance", "dcmBanker": "DCM banker", "corporateBanker": "Corporate banker", "advisor": "Financial advisor", "investorLender": "Investor or lender", "portfolioManager": "Portfolio manager", "analyst": "Analyst", "executive": "Executive", "other": "Other role"
+    },
+    "team": "Team or area",
+    "teamPlaceholder": "E.g. DCM, treasury, private credit",
+    "operatingLegend": "How can you act in a transaction?",
+    "operatingBody": "Select more than one. This determines which ideas can realistically be advanced.",
+    "operating": {
+      "raiseCapital": "We raise capital for our company", "balanceSheetLending": "We lend from our balance sheet", "structuring": "We structure transactions", "distribution": "We distribute to investors", "advisory": "We provide advisory", "investing": "We invest or lend"
+    },
+    "objectiveLegend": "Where should Offroad expand your capacity?",
+    "objectiveBody": "This organizes the initial experience; you will still have access to every platform capability.",
+    "objectives": {
+      "understandCompany": "Analyze companies", "prepareMeetings": "Prepare for meetings", "originateIdeas": "Originate ideas", "evaluateCapitalOptions": "Evaluate capital alternatives", "structureTransactions": "Structure transactions", "prepareMaterials": "Prepare analysis and materials", "connectCapital": "Find aligned capital", "analyzeInvestments": "Analyze investment opportunities"
+    },
+    "optionalTitle": "Institution specialties",
+    "optionalBody": "Optional. Add products only when they help calibrate recommendations.",
+    "products": {
+      "bilateralCredit": "Bilateral credit", "clubSyndicated": "Club and syndicated deals", "capitalMarkets": "Capital markets", "securitization": "Securitization", "assetBacked": "Asset-backed", "projectAcquisitionFinance": "Project and acquisition finance", "tradeExportAgri": "Trade, export and agriculture", "structuredFlexibleCapital": "Structured and flexible capital", "specialSituations": "Special situations", "derivativesHedging": "Derivatives and hedging"
+    },
+    "notes": "Anything important about your capabilities",
+    "notesPlaceholder": "E.g. we operate in Brazil and the US, focused on middle-market and distributed transactions.",
+    "save": "Save and continue",
+    "skip": "Answer later",
+    "assurance": "You can update this context at any time. It never replaces project facts or evidence.",
+    "settingsTitle": "Your context",
+    "settingsBody": "Adjust how Offroad should consider your role and your institution's capabilities.",
+    "saved": "Context updated.",
+    "error": "We could not save your context. Review the information and try again."
+  },
   "Recovery": {
     "contextEyebrow": "Access recovery",
     "contextTitle": "Recover access securely.",
@@ -1028,6 +1070,7 @@
   },
   "App": {
     "overview": "Overview",
+    "professionalContext": "Your context",
     "newOpportunity": "New opportunity",
     "newCapitalNeed": "New capital need",
     "fundsAndMandates": "Funds and mandates",

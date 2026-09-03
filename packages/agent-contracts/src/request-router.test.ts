@@ -154,10 +154,62 @@ describe("workspace execution router", () => {
       artifactTypes: [],
       conversationText: "Quero explorar o refinanciamento dos vencimentos de 2027 e comparar o efeito na alavancagem.",
       requestText: "A reunião será com o CFO e a tesouraria. Ainda não temos relacionamento nem exposição de crédito.",
+      institutionOperatingModels: ["balance_sheet_lending", "structuring"],
     })).toMatchObject({
       action: "queue_specialized_job",
       requirements: [],
       reasonCode: "specialized_executor_ready",
+    });
+  });
+
+  it("asks how the institution can act when a first-contact pitch is otherwise calibrated", () => {
+    expect(routeWorkspaceExecution({
+      entryJob: "origination_thesis",
+      accessBasis: "public_information",
+      companyName: "Camil",
+      documentCount: 0,
+      artifactTypes: [],
+      conversationText: "Quero explorar refinanciamento e alternativas de estrutura de capital.",
+      requestText: "A reunião será com o CFO. É o primeiro contato e não temos exposição.",
+      professionalContextStatus: null,
+    })).toMatchObject({
+      action: "collect_required_context",
+      requirements: ["institution_capability_context"],
+      reasonCode: "specialized_context_incomplete",
+    });
+  });
+
+  it("does not block research when the user prefers not to disclose institution capabilities", () => {
+    expect(routeWorkspaceExecution({
+      entryJob: "origination_thesis",
+      accessBasis: "public_information",
+      companyName: "Camil",
+      documentCount: 0,
+      artifactTypes: [],
+      conversationText: "Quero explorar refinanciamento. A reunião será com o CFO e não temos relacionamento.",
+      requestText: "Prefiro não informar o que o banco oferece. Pode seguir sem isso.",
+    })).toMatchObject({
+      action: "queue_specialized_job",
+      requirements: [],
+      reasonCode: "specialized_executor_ready",
+    });
+  });
+
+  it("accepts a generic capability answer after one question and continues with neutral execution paths", () => {
+    expect(routeWorkspaceExecution({
+      entryJob: "origination_thesis",
+      accessBasis: "public_information",
+      companyName: "Camil",
+      documentCount: 0,
+      artifactTypes: [],
+      conversationText: "A reunião é com o CFO. Quero explorar refinance. Não temos relacionamento. Trabalho em um banco.",
+      requestText: "Não tenho mais detalhes agora.",
+      institutionCapabilityQuestionAsked: true,
+      specializedWorkActive: true,
+    })).toMatchObject({
+      action: "conversation_only",
+      requirements: [],
+      reasonCode: "specialized_work_in_progress",
     });
   });
 
