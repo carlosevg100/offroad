@@ -1964,6 +1964,14 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Promoção de pack exige gold cases, caso adversarial, benchmark contra o melhor modelo generalista
   e revisão especialista. O teste de sobrevivência também exige impacto decisório sustentado; texto
   bem escrito ou outcome estimado não bastam.
-- Contratos e testes unitários passaram. A reconstrução SQL local não pôde ser executada porque o
-  Docker deste host está desligado. A migration não foi aplicada remotamente e os packs econômicos
-  ainda não estão acreditados; ambos permanecem pendentes antes de promoção.
+- Contratos e testes unitários passaram. O CI obrigatório do PR #378 reconstruiu o banco do zero,
+  aplicou todas as migrations, executou a suíte de RLS, lint do schema e E2E sem falhas. A migration
+  canônica `20260903182045_expand_professional_functions.sql` foi promovida ao único Supabase de
+  produção após esses gates.
+- Os advisors posteriores à promoção não atribuíram alerta novo à migration. Permanecem dois avisos
+  informativos já conhecidos para tabelas estritamente `private`, sem políticas de acesso cliente,
+  além de índices recentes ainda classificados como não utilizados. Nenhum deles justifica remover
+  isolamento ou índices de integridade antes de haver janela representativa de uso.
+- Os packs econômicos ainda não estão acreditados. A infraestrutura impede que esse estado seja
+  chamado de profundidade de produção; implementação, benchmark e revisão dos packs Pareto seguem
+  obrigatórios antes da promoção de cada escopo.
