@@ -138,7 +138,7 @@ describe("policy", () => {
       primary: {provider: "openai", model: "gpt-5.6-sol", effort: "high"},
       shadow: {provider: "openai", model: "gpt-5.6-terra", effort: "high"},
       fallback: {provider: "openai", model: "gpt-5.6-terra", effort: "high"},
-      maxOutputTokens: 16_000,
+      maxOutputTokens: 24_000,
       timeoutMs: 360_000,
     });
     expect(resolveModel("origination_thesis", defaultTaskPolicies, {}).primary).toEqual(policy.primary);
