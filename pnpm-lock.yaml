@@ -757,6 +757,9 @@ importers:
       '@offroad/deal-structure':
         specifier: workspace:*
         version: link:../deal-structure
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       '@offroad/reconciliation':
         specifier: workspace:*
         version: link:../reconciliation

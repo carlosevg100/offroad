@@ -983,3 +983,17 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Gate anti-marketing | `assessDepthPackPromotion` | benchmark ou revisão independente reprovados impedem produção; instrumento/jurisdição sem revisão legal também bloqueiam | 2026-09-03 |
 | Integração do Deal Captain | `apps/document-worker/src/agent-plan.ts` | sinais explícitos PT-BR/EN-US ativam perfil; requirements são ligados a TaskSpecs e o perfil entra no snapshot persistido | 2026-09-03 |
 | Estado de homologação | maturidade dos 17 packs | `implemented`; zero pack marcado `tested` ou `production`; gold/adversarial econômico, benchmark e revisão humana ainda pendentes | 2026-09-03 |
+
+## Motor financeiro institucional, implementação de 03/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Dívida indexada | `@offroad/financial-core/indexed-debt` | IPCA pago e capitalizado, cupom caixa e PIK, amortização, serviço, despesa financeira e saldo final permanecem separados; taxa indexada sem tratamento explícito falha fechado | 2026-09-03 |
+| Modelo integrado | `@offroad/financial-model/institutional-model` | DRE, balanço, fluxo de caixa, capital de giro, PP&E, imposto, dívida, liquidez e patrimônio fecham período a período | 2026-09-03 |
+| Premissas e cenários | `assumptions.ts` | fonte, data, locator, racional, metodologia, confiança, limites e impacto são obrigatórios; alteração cria cenário filho e preserva a base | 2026-09-03 |
+| Curvas | `market-curves.ts` | curvas datadas, interpolação, extrapolação, lag, piso, teto e spread rastreáveis; taxa por instrumento exige lineage própria | 2026-09-03 |
+| IPCA ponta a ponta | `institutional-model.test.ts` | mesma dívida como IPCA capitalizado fecha 2027 em principal 262; como IPCA caixa fecha em 250 e reduz caixa em 12; os dois balanços fecham | 2026-09-03 |
+| Revisão independente | `review.ts` | divergência de balanço ou dívida, premissa sem suporte, cenário misturado e indexação ambígua bloqueiam; engine nunca se autopromove a expert | 2026-09-03 |
+| Pack setorial | `sector.food-consumer-staples.br-v1` | drivers de categoria, preço, volume, mix, câmbio, commodities, hedge, safra, capital de giro, capex e ramp-up implementados com maturidade `implemented` | 2026-09-03 |
+| Testes focados | Vitest | financial-model 33/33, financial-core 66/66 e credit-playbook 162/162 verdes | 2026-09-03 |
+| Gate integral | `fnm exec --using=24 pnpm check` | lint, typecheck, testes e build verdes nos 43 pacotes; web 176, worker 114, evals 38; Next.js gerou 34 páginas | 2026-09-03 |

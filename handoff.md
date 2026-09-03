@@ -2614,3 +2614,24 @@ abstenção e integração, mas não homologam julgamento econômico. Para cada 
 exige dois gold cases, um adversarial, benchmark cego contra generalista, identidade bilíngue,
 revisor independente e revisão legal quando aplicável. Até então, nenhum escopo pode ser descrito
 como expert em produção.
+
+## 40. Motor financeiro institucional implementado, 03/09/2026
+
+O modelo genérico anterior foi identificado como incompatível com o padrão desejado: não projetava
+balanço e dependia de defaults agregados. Ele permanece somente para replay de artefatos antigos.
+O novo engine em `@offroad/financial-model` integra DRE, balanço, fluxo de caixa, capital de giro,
+PP&E, imposto, dívida, liquidez, covenants e patrimônio, com fechamento por período.
+
+Premissas materiais agora carregam fonte, data-base, localização, racional, metodologia,
+confiança, limites, editabilidade e impacto. Mudanças criam cenários filhos imutáveis. Curvas de
+mercado são datadas e preservam interpolação, extrapolação, lag, piso e teto.
+
+No ledger contratual, IPCA pago em caixa e IPCA capitalizado no principal são tratamentos
+distintos. Cupom caixa e PIK também são independentes. O teste ponta a ponta mostra a diferença no
+caixa e no saldo devedor sem quebrar a identidade contábil. Taxa sem lineage e tratamento
+contratual falha fechado.
+
+O primeiro pack setorial, alimentos e consumo essencial no Brasil, foi implementado com os
+drivers operacionais e downside próprios do setor. Nem o engine nem o pack estão homologados como
+expert. O próximo passo é o primeiro gold case acompanhado, seguido de caso adversarial, benchmark
+cego e revisão nominal independente antes de qualquer promoção de maturidade.

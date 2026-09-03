@@ -1,8 +1,9 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.08.27-v7";
+export const financialCoreVersion = "2026.09.03-v8";
 
 export * from "./financial-truth";
+export * from "./indexed-debt";
 export * from "./operation";
 export * from "./receivables/contracts";
 export * from "./receivables/eligibility-allocation";
@@ -164,6 +165,8 @@ export const financialCalculationRegistry = {
   "financial.weighted_average_life": "weightedAverageLife",
   "financial.debt_balance_bridge": "buildDebtBalanceBridge",
   "financial.interest_expense_bridge": "reconcileInterestExpense",
+  "financial.indexed_debt_schedule": "buildIndexedDebtSchedule",
+  "financial.indexed_debt_aggregation": "aggregateIndexedDebtSchedules",
   "financial.liquidity_coverage": "calculateLiquidityCoverage",
   "financial.rate_shock": "applyRateShock",
   "financial.cross_default_propagation": "propagateDefaults",
