@@ -1412,10 +1412,6 @@
   display: inline;
 }
 
-.heroCopy h1 span + span::before {
-  content: " ";
-}
-
 .heroIntro {
   max-width: 620px;
   margin: 0;
@@ -2242,10 +2238,6 @@
 
   .heroCopy h1 span {
     display: inline;
-  }
-
-  .heroCopy h1 span + span::before {
-    content: " ";
   }
 
   .heroActions {
