@@ -76,6 +76,30 @@ describe("origination thesis vertical", () => {
           privacy_status: "public_information",
           representation_status: "not_claimed",
         },
+        professional_context: {
+          affiliationKind: "bank",
+          professionalRole: "dcm_banker",
+          teamName: "DCM",
+          institutionName: "Banco Farol",
+          operatingModels: ["structuring", "distribution"],
+          productFamilies: ["bilateral_credit", "capital_markets"],
+          primaryObjectives: ["prepare_meetings", "originate_ideas"],
+          contextNotes: null,
+          disclosureStatus: "complete",
+          lastConfirmedAt: "2026-09-01T11:00:00.000Z",
+        },
+        institution_capabilities: {
+          institutionName: "Banco Farol",
+          institutionKind: "bank",
+          operatingModels: ["balance_sheet_lending", "structuring", "distribution"],
+          productFamilies: ["bilateral_credit", "capital_markets"],
+          geographies: ["BR"],
+          currencies: ["BRL"],
+          capabilityNotes: "A instituição estrutura, distribui e pode considerar uso de balanço.",
+          sourceKind: "self_declared",
+          disclosureStatus: "complete",
+          lastConfirmedAt: "2026-09-01T11:00:00.000Z",
+        },
         brief: {
           id: ids.brief,
           kind: "origination_thesis",
@@ -152,9 +176,20 @@ describe("origination thesis vertical", () => {
       complete: (async (request) => {
         const textInput = request.input.find((part) => part.type === "text");
         if (!textInput || textInput.type !== "text") throw new Error("expected text model input");
-        const modelInput = JSON.parse(textInput.text) as {allowedMaterialNumericTokens?: string[]};
+        const modelInput = JSON.parse(textInput.text) as {
+          allowedMaterialNumericTokens?: string[];
+          professionalContext?: {professionalRole?: string; institutionName?: string};
+          journeyBlueprint?: {id?: string};
+          collaborativeAdvisoryPolicy?: {alternativeUniverse?: string; professionalContextUse?: string};
+        };
         expect(modelInput.allowedMaterialNumericTokens).toContain("r$1,0");
         expect(modelInput.allowedMaterialNumericTokens).not.toContain("24meses");
+        expect(modelInput.professionalContext).toMatchObject({professionalRole: "dcm_banker", institutionName: "Banco Farol"});
+        expect(modelInput.journeyBlueprint?.id).toBe("origination_thesis");
+        expect(modelInput.collaborativeAdvisoryPolicy).toMatchObject({
+          alternativeUniverse: "company_first_and_unconstrained",
+          professionalContextUse: "prioritize_and_shape_never_suppress",
+        });
         expect(JSON.stringify(modelInput)).toContain("CONTEUDO_APROFUNDADO");
         return {
         output: {

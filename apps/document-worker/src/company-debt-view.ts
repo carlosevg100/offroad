@@ -1,5 +1,6 @@
 import {z} from "zod";
 
+import {collaborativeAdvisoryPolicy, workspaceJourneyBlueprint} from "@offroad/agent-contracts";
 import {fingerprintJson} from "@offroad/case-understanding";
 import {
   companyDebtDiagnosticArtifactSchema,
@@ -16,9 +17,11 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
+import {institutionCapabilitiesSchema, professionalContextSchema} from "./advisor-context";
 import {materialNumericTokens} from "./material-numeric-tokens";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
+import {createWorkerPublicCompanyMemory} from "./public-company-memory";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {buildPublicWorkAssessment} from "./agent-assessment";
 
@@ -41,6 +44,8 @@ const contextSchema = z.object({
     id: z.uuid(), locale: z.enum(["pt-BR", "en-US"]), company_profile: recordSchema,
     privacy_status: z.literal("public_information"), representation_status: z.literal("not_claimed"),
   }),
+  professional_context: professionalContextSchema.nullable().optional(),
+  institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
   brief: z.object({
     id: z.uuid(), kind: z.literal("company_debt_view"), version: z.number().int().positive(),
     content: companyDebtViewBriefSchema, content_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
@@ -62,7 +67,7 @@ const contextSchema = z.object({
 });
 
 const COMPANY_DEBT_SYSTEM = `You prepare a public-information company diagnostic through a debt
-lens for Offroad Capital, an issuer-side private-debt advisor.
+capital markets lens for Offroad Capital, a purpose-built decision and work platform for DCM.
 
 The work product must explain what public evidence supports, what it only suggests, and what
 cannot be calculated without reconciled financial documents. It is not underwriting, a rating,
@@ -71,6 +76,12 @@ a credit opinion, a lender decision or a transaction recommendation.
 Rules:
 - Use only publicSources for company-specific facts. User focus and known context are questions or
   unverified context, never evidence.
+- Understand the company holistically before assuming a transaction: business model, sector,
+  performance, cash conversion, liquidity, debt stack, capital allocation, agenda and material risks.
+- professionalContext and institutionCapabilities adjust depth, terminology and decision framing.
+  They are not company evidence and never suppress a company-relevant issue or opportunity.
+- Follow journeyBlueprint and collaborativeAdvisoryPolicy. Build the company view first and keep
+  company fit, market feasibility and the user's possible execution path analytically separate.
 - On a revision, priorWorkProduct is a previously validated, source-grounded artifact. You may
   preserve its facts only when their cited URL remains in publicSources; do not add a new fact
   merely because the correction note mentions it.
@@ -222,6 +233,10 @@ export async function processCompanyDebtViewJob(
         asOfDate: (dependencies.now ?? (() => new Date()))().toISOString().slice(0, 10),
         company: {name: companyName, website: website ?? null},
         userFocus: context.brief.content,
+        professionalContext: context.professional_context ?? null,
+        institutionCapabilities: context.institution_capabilities ?? null,
+        journeyBlueprint: workspaceJourneyBlueprint("company_debt_view"),
+        collaborativeAdvisoryPolicy,
         publicSources: research.sources.map((source) => ({
           topic: source.topic, title: source.title, url: source.url,
           snippet: source.snippet.slice(0, 1_600), publishedAt: source.publishedAt,
@@ -482,9 +497,11 @@ async function collectResearch(input: {
     jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
   });
   const cache = createWorkerPublicResearchCache(input.queue, input.job);
+  const companyMemory = createWorkerPublicCompanyMemory(input.queue, input.job);
   const result = await runPublicResearch({
     plan, providers: runtime.providers, maxSourcesPerQuery: 5,
     ...(cache ? {cache} : {}),
+    ...(companyMemory ? {companyMemory, companySubject: subject} : {}),
   });
   const safeSources = result.sources.filter((source) => source.url.startsWith("https://"));
   const persisted: ResearchRun & {providerChain: string[]; debtResearchStrategy: typeof runtime.strategy} = {

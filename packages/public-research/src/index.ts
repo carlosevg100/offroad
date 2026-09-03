@@ -16,6 +16,13 @@ import {
   type PublicResearchCache,
   type PublicResearchCacheRecord,
 } from "./cache";
+import {
+  createPublicCompanyMemoryRecord,
+  publicCompanyKey,
+  selectFreshPublicCompanyMemory,
+  type PublicCompanyMemory,
+  type PublicCompanyMemoryRecord,
+} from "./company-memory";
 
 export * from "./contracts";
 export * from "./cache";
@@ -23,6 +30,7 @@ export * from "./source-registry";
 export * from "./entity-resolvers";
 export * from "./content-acquisition";
 export * from "./official-company-research";
+export * from "./company-memory";
 
 /**
  * Builds queries only from a deliberately public subject. Transaction context, financial values,
@@ -128,6 +136,9 @@ export async function runPublicResearch(input: {
   maxSourcesPerQuery?: number;
   cache?: PublicResearchCache;
   cacheTtlHours?: number;
+  companyMemory?: PublicCompanyMemory;
+  companySubject?: PublicResearchSubject;
+  companyMemoryTtlHours?: number;
   now?: () => Date;
 }): Promise<ResearchRun> {
   const plan = z.array(researchQuerySchema).min(1).max(12).parse(input.plan);
@@ -135,6 +146,9 @@ export async function runPublicResearch(input: {
   const now = input.now ?? (() => new Date());
   let cacheReadFailed = false;
   let cacheWriteFailed = false;
+  let companyMemoryReadFailed = false;
+  let companyMemoryWriteFailed = false;
+  let priorCompanyMemory: PublicCompanyMemoryRecord | null = null;
   let cached = new Map<string, PublicResearchCacheRecord>();
   if (input.cache) {
     try {
@@ -145,6 +159,14 @@ export async function runPublicResearch(input: {
       });
     } catch {
       cacheReadFailed = true;
+    }
+  }
+  if (input.companyMemory && input.companySubject) {
+    try {
+      const loaded = await input.companyMemory.load(publicCompanyKey(input.companySubject));
+      priorCompanyMemory = selectFreshPublicCompanyMemory({subject: input.companySubject, record: loaded, now: now()});
+    } catch {
+      companyMemoryReadFailed = true;
     }
   }
   let providerCalls = 0;
@@ -210,6 +232,22 @@ export async function runPublicResearch(input: {
   const sources = queryResults.flatMap((result) => result.sources);
   const failures = queryResults.flatMap((result) => result.failures);
   const unique = [...new Map(sources.map((source) => [`${source.topic}:${canonicalUrl(source.url)}`, source])).values()];
+  // A useful fallback may still support the current run after an authoritative source fails,
+  // but partial chains are never promoted into shared company memory.
+  if (input.companyMemory && input.companySubject && unique.length > 0 && failures.length === 0) {
+    try {
+      await input.companyMemory.store(createPublicCompanyMemoryRecord({
+        subject: input.companySubject,
+        queryIds: plan.map((query) => query.id),
+        sources: unique,
+        previous: priorCompanyMemory,
+        storedAt: now(),
+        ...(input.companyMemoryTtlHours !== undefined ? {ttlHours: input.companyMemoryTtlHours} : {}),
+      }));
+    } catch {
+      companyMemoryWriteFailed = true;
+    }
+  }
   return {
     status: unique.length === 0 ? "abstained" : failures.length > 0 ? "partial" : "succeeded",
     queries: plan,
@@ -224,6 +262,9 @@ export async function runPublicResearch(input: {
       cacheWrites: cacheWriteFailed ? 0 : cacheRecords.length,
       cacheReadFailed,
       cacheWriteFailed,
+      companyMemoryHit: priorCompanyMemory !== null,
+      companyMemoryReadFailed,
+      companyMemoryWriteFailed,
     },
   };
 }
