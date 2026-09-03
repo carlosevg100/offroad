@@ -24,6 +24,7 @@ export type AdvisorProjectMessage = {
   role: string;
   content: string;
   status: string;
+  errorCode?: string | null;
   createdAt: string;
   artifactHref?: string;
   proposalId?: string | null;
@@ -59,6 +60,8 @@ export type AdvisorProjectCopy = {
   public: string;
   working: string;
   ready: string;
+  needsAttention: string;
+  messageFailed: string;
   errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; upload: string};
   proposal: AdvisorChangeProposalCopy;
 };
@@ -95,6 +98,9 @@ export function AdvisorProject(props: Props) {
   const active = props.sessionStatus === "processing"
     || props.tasks.some((task) => ["queued", "running"].includes(task.status))
     || props.messages.some((message) => ["queued", "processing"].includes(message.status));
+  const needsAttention = !active && (props.sessionStatus === "failed"
+    || props.tasks.some((task) => task.status === "failed")
+    || props.messages.some((message) => message.status === "failed"));
   const completed = props.tasks.filter((task) => task.status === "succeeded").length;
   const allMessages = [...props.messages, ...optimistic];
   const proposalById = new Map(props.proposals.map((proposal) => [proposal.id, proposal]));
@@ -155,7 +161,7 @@ export function AdvisorProject(props: Props) {
       <section className="advisor-project__conversation">
         <header className="advisor-project__header">
           <div><span className="section-kicker">{props.copy.conversation}</span><h1>{props.projectName}</h1></div>
-          <span className={active ? "is-working" : undefined}>{active ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : <Circle aria-hidden="true" size={13} />}{active ? props.copy.working : props.copy.ready}</span>
+          <span className={active ? "is-working" : needsAttention ? "is-failed" : undefined}>{active ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : needsAttention ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={13} />}{active ? props.copy.working : needsAttention ? props.copy.needsAttention : props.copy.ready}</span>
         </header>
 
         <div aria-live="polite" className="advisor-thread">
@@ -176,6 +182,7 @@ export function AdvisorProject(props: Props) {
               <div>
                 {message.role === "assistant" ? <small>{props.copy.advisor}</small> : null}
                 <p>{message.content}</p>
+                {message.status === "failed" ? <p className="advisor-thread__message-error" role="alert">{props.copy.messageFailed}</p> : null}
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
                 {proposal ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
               </div>

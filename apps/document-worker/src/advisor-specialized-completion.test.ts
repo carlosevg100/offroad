@@ -45,7 +45,7 @@ describe("advisor specialized completion", () => {
 
     expect(first).toEqual(replay);
     expect(first?.completionMessageId).toMatch(/^[0-9a-f-]{36}$/);
-    expect(first?.content).toContain("visão integrada da companhia");
+    expect(first?.content).toContain("primeira análise da companhia");
     expect(first?.content).toContain("Alguma delas faz mais sentido");
     expect(first?.content).not.toContain("sua instituição pode liderar");
     expect(advisorSpecializedCompletion({

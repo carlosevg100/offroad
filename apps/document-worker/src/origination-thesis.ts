@@ -112,8 +112,10 @@ Rules:
 - Read the company as an integrated operating and financing system. Explain cause and effect;
   never dump disconnected balance-sheet figures or repeat source snippets.
 - Build the debt stack instrument by instrument whenever disclosed: amount, maturity, cash cost,
-  indexer, currency, amortization, guarantees, covenants and prepayment terms. Use null for a field
-  that the sources do not disclose and list the gap in capitalStructure.keyUnknowns.
+  indexer, currency, amortization, guarantees, covenants and prepayment terms. For inflation-linked
+  debt, explicitly distinguish an indexer paid in cash from inflation accrued or capitalized into
+  principal; never assume one treatment from the words IPCA or inflation alone. Use null for a
+  field that the sources do not disclose and list the gap in capitalStructure.keyUnknowns.
 - Analyze liquidity, cash generation, working capital, seasonality, leverage, coverage, capex,
   acquisitions, shareholder distributions and management guidance when supported.
 - Rank genuinely distinct strategic alternatives. For each, explain the objective, indicative
@@ -134,8 +136,9 @@ Rules:
   debt signals must surface at least three decision-useful supported facts (for example cash,
   short- and long-term debt, gross or net debt, revenue or operating cash flow). Preserve the exact
   displayed value and period; do not replace available official facts with a generic request for them.
-- Keep the response concise but decision-useful. Depth comes from synthesis and specificity, not
-  repetition. Use the user's audience, objective and relationship context to shape the meeting plan.
+- Keep the complete structured response below roughly ten thousand output tokens. Depth comes from
+  synthesis and specificity, not repetition or filling every array to its maximum. Use the user's
+  audience, objective and relationship context to shape the meeting plan.
 - First build the alternatives that make the most sense for the company, regardless of the user's
   institution or current product set. Then use professionalContext and institutionCapabilities
   silently to prioritize the order, depth, framing and plausible ways each alternative could be
@@ -155,7 +158,7 @@ Rules:
 - Return only the structured object required by the schema, in the requested locale.`;
 
 const EXECUTOR_KEY = "offroad.origination_thesis";
-const EXECUTOR_VERSION = "2026.09.02-v3";
+const EXECUTOR_VERSION = "2026.09.03-v4";
 const ARTIFACT_SCHEMA_VERSION = "capital-artifact.v1";
 
 type Context = z.infer<typeof contextSchema>;
@@ -323,14 +326,14 @@ export async function processOriginationThesisJob(
         schema: seniorReadoutSchema,
         schemaName: "origination_senior_readout_v2",
         dataHandling: {classification: "confidential", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
-        maxOutputTokens: 8_000,
+        maxOutputTokens: 16_000,
         metadata: {
           jobId: job.job_id,
           projectId: context.project.id,
           publicSourceCount: String(research.sources.length),
           revision: context.revision ? "true" : "false",
         },
-        cacheKey: "origination-senior-readout-v3",
+        cacheKey: "origination-senior-readout-v4",
       });
       const sanitized = sanitizeCitations(normalizeReadout(completion.output), allowedUrls);
       const quality = validateMeetingBrief(sanitized, allowedUrls, modelInput);
@@ -563,7 +566,14 @@ export async function processOriginationThesisJob(
     const modelAttempts = summarizeModelAttempts(dependencies.lineage());
     await dependencies.queue.writeStage(job, "origination_thesis", "failed", {code, modelAttempts}).catch(() => undefined);
     const spend = dependencies.gateway.spent();
-    const retryable = code !== "origination_task_plan_mismatch" && code !== "all_attempts_failed";
+    const nonRetryable = new Set([
+      "origination_task_plan_mismatch",
+      "origination_persisted_plan_invalid",
+      "origination_revision_scope_invalid",
+      "origination_task_plan_incomplete",
+      "origination_task_dependencies_invalid",
+    ]);
+    const retryable = !nonRetryable.has(code);
     await dependencies.queue.fail(job, {code, spend, modelAttempts}, {retryable, retryInSeconds: 30});
     log("origination_thesis.failed", {job: job.job_id, code, modelAttempts});
     return {status: "failed"};

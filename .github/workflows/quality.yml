@@ -76,7 +76,10 @@ jobs:
       # migration reaches the only Supabase project we have.
       - name: Start local Supabase and apply migrations
         run: |
+          # A previous CLI attempt can leave a stopped-but-not-removed project container on a
+          # recycled hosted runner. Remove only this repository's exact local stack before boot.
           supabase stop --no-backup || true
+          docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
           supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,mailpit,logflare,vector
 
       - name: Resolve local database URL
@@ -142,6 +145,7 @@ jobs:
       - name: Start local Supabase and apply migrations
         run: |
           supabase stop --no-backup || true
+          docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
           supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
 
       # This stack has no document worker, so the journey test runs the deterministic extractor:

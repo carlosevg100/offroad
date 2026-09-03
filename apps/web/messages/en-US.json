@@ -1158,6 +1158,8 @@
       "public": "Public information only",
       "working": "Working now",
       "ready": "Ready to continue",
+      "needsAttention": "Needs attention",
+      "messageFailed": "This message was not processed. You can send it again; completed work will be preserved.",
       "activities": {
         "context": "Understanding the request and retrieving project history",
         "research": "Reading disclosures, results, news and sector context",

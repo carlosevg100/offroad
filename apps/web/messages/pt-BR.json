@@ -1158,6 +1158,8 @@
       "public": "Somente informações públicas",
       "working": "Trabalhando agora",
       "ready": "Pronto para continuar",
+      "needsAttention": "Precisa de atenção",
+      "messageFailed": "Esta mensagem não foi processada. Você pode enviá-la novamente; o trabalho já concluído será preservado.",
       "activities": {
         "context": "Entendendo o pedido e recuperando o histórico",
         "research": "Lendo divulgações, resultados, notícias e contexto setorial",

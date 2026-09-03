@@ -80,9 +80,12 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   structure_design: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 8_000, timeoutMs: 300_000},
   case_brief: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 32_000, timeoutMs: 600_000},
   preliminary_understanding: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 3_500, timeoutMs: 180_000},
-  // Empirical production runs showed materially better schema adherence and lower measured cost
-  // from Terra on the bounded meeting brief. Sonnet remains the independent fallback.
-  origination_thesis: {primary: openai("gpt-5.6-terra", "medium"), shadow: anthropic("claude-sonnet-5", "medium"), fallback: anthropic("claude-sonnet-5", "medium"), maxOutputTokens: 8_000, timeoutMs: 240_000},
+  // This is the customer-facing senior-banker synthesis. A production gold test showed Terra
+  // exhausting the former 8k ceiling before it could close the structured object, while the
+  // Anthropic fallback rejected that large schema. Keep both production attempts on OpenAI until
+  // the Anthropic schema is independently qualified, and reserve enough output for a complete
+  // institutional readout rather than accepting a truncated one.
+  origination_thesis: {primary: openai("gpt-5.6-sol", "high"), shadow: openai("gpt-5.6-terra", "high"), fallback: openai("gpt-5.6-terra", "high"), maxOutputTokens: 16_000, timeoutMs: 360_000},
   company_debt_view: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 8_000, timeoutMs: 240_000},
   capital_planning: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 8_000, timeoutMs: 240_000},
   agent_operation_brief: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-sol", "medium"), fallback: openai("gpt-5.6-sol", "medium"), maxOutputTokens: 6_000, timeoutMs: 180_000},
