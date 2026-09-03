@@ -7,7 +7,8 @@ export const brand = {
   description: "Offroad brings specialist financial intelligence, market context, and institutional execution capacity to debt capital markets.",
   category: "AI Platform for Debt Capital Markets",
   socialHeadline: "Powering a smarter, more efficient and connected debt market.",
-  signature: "Powering Debt Capital Markets",
+  signatureLead: "Powering",
+  signatureSubject: "Debt Capital Markets",
   capabilities: [
     "Investigate companies, sectors, debt markets, and financing alternatives",
     "Analyze financials, capital structures, debt capacity, risks, and scenarios",
