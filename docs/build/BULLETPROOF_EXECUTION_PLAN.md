@@ -188,13 +188,50 @@ para cada combinação de setor, instrumento e necessidade.
 - [x] Contrato de outcome separa observação confirmada, externa, medida e estimada.
 - [x] Teste de sobrevivência falha quando o output não demonstra impacto decisório material além
   de um modelo generalista.
-- [ ] Especificar e revisar o pack núcleo e os packs prioritários do Pareto com profissionais de
-  DCM, crédito, risco e jurídico.
+- [x] Especificar em código o pack núcleo e os packs prioritários do Pareto, com coverage,
+  procedimentos, cálculos, termos, critérios de mercado, disconfirmers e gates explícitos.
+- [ ] Revisar e homologar cada pack prioritário com profissionais independentes de DCM, crédito,
+  risco e jurídico; presença no registry continua sendo `implemented`, não `production`.
 - [ ] Construir gold e adversarial cases independentes para cada pack prioritário.
 - [ ] Persistir o perfil compilado e o coverage map no projeto e projetá-los integralmente no
   painel de trabalho.
 - [ ] Rodar o benchmark cego contra o melhor modelo generalista em cada promoção.
 - [ ] Instrumentar outcomes em casos reais e fechar o loop de melhoria com atribuição revisável.
+
+### Wave 1 implementada, ainda não homologada, 03/09/2026
+
+O conhecimento econômico canônico agora vive em `@offroad/credit-playbook`; o compilador de
+integração vive em `@offroad/dcm-specialization`, evitando dependência circular entre playbook,
+entendimento do case e contratos de agentes. Foram implementados:
+
+- núcleo institucional DCM;
+- refinance e liability management;
+- liquidez e capital de giro;
+- capex e expansão;
+- acquisition finance;
+- garantia e security package;
+- covenants;
+- downside e sensibilidades;
+- jurisdições Brasil e Estados Unidos;
+- instrumentos Brasil: empréstimo bancário/CCB/club-sindicado, debênture/nota comercial e
+  recebíveis/FIDC/cessão;
+- instrumentos Estados Unidos: revolver/term loan/syndicated, ABL, private credit/unitranche e
+  bond/private placement.
+
+A taxonomia econômica reconhece 33 situações. As que ainda não possuem pack permanecem
+`catalogued` e aparecem como activation keys não atendidas; não são absorvidas por uma resposta
+genérica. Todo cálculo citado resolve contra o registry determinístico de `financial-core` e todo
+procedimento resolve contra os IDs governados do playbook.
+
+O Deal Captain ativa packs conservadoramente a partir do objetivo PT-BR ou EN-US, compõe suas
+dependências, grava o perfil completo dentro do snapshot imutável `dcm-agent-plan.v1` e projeta
+requisitos nos TaskSpecs aplicáveis. Os RPCs existentes já persistem o snapshot e a cobertura por
+projeto, sem migration adicional.
+
+Nenhum pack foi promovido acima de `implemented`. O gate de produção exige, por versão exata, dois
+gold cases, um adversarial, integração, identidade bilíngue, vantagem material em benchmark cego
+contra o melhor generalista, revisão independente e, para instrumento/jurisdição, revisão
+jurídico-regulatória. Sem isso, a plataforma não pode chamar o escopo de expert.
 
 ### Ordem de construção dos packs
 

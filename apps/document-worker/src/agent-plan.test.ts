@@ -65,6 +65,10 @@ describe("Deal Captain plan projection", () => {
     );
     expect(recordAgentPlan.mock.calls[0]?.[1]).toMatchObject({
       goal: "Quero financiar a expansão da companhia e enviei os documentos disponíveis.",
+      specializationProfile: {
+        packIds: ["core.institutional-dcm", "objective.capex-expansion"],
+        minimumMaturity: "implemented",
+      },
       workItems: [
         {taskSpecId: "D01", specialist: "document_intelligence", status: "ready"},
         {taskSpecId: "C03", specialist: "financial_analysis", status: "pending"},

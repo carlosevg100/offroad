@@ -45,6 +45,7 @@ export type AdvisorProjectCopy = {
   decisions: string;
   verified: string;
   openIssues: string;
+  notExamined: string;
   artifacts: string;
   contextQuestion: string;
   awaitingAnswer: string;
@@ -70,7 +71,7 @@ type Props = {
   locale: "pt-BR" | "en-US";
   messages: AdvisorProjectMessage[];
   activityEvents: AdvisorProjectActivityEvent[];
-  coverage: {verified: number; total: number; openIssues: number};
+  coverage: {verified: number; total: number; openIssues: number; notExamined: number};
   decisionRecords: Array<{id: string; question: string; recommendation: string | null; status: string}>;
   projectId: string;
   projectName: string;
@@ -235,6 +236,7 @@ export function AdvisorProject(props: Props) {
           <div><strong>{props.copy.evidence}</strong><small>{props.coverage.verified}/{props.coverage.total}</small></div>
           <ul>
             <li><Check aria-hidden="true" size={12} /><span>{props.copy.verified}: {props.coverage.verified}</span></li>
+            {props.coverage.notExamined > 0 ? <li><Circle aria-hidden="true" size={12} /><span>{props.copy.notExamined}: {props.coverage.notExamined}</span></li> : null}
             <li><Circle aria-hidden="true" size={12} /><span>{props.copy.openIssues}: {props.coverage.openIssues}</span></li>
           </ul>
         </section> : null}

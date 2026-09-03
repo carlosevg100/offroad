@@ -217,6 +217,12 @@ ou apenas estimada. Uma estimativa isolada não aprova o pack.
 - bilateral, CCB, debênture, nota comercial, FIDC/cessão e club/sindicado no Brasil;
 - revolver, term loan, ABL, private credit, unitranche e syndicated loan nos Estados Unidos.
 
+**Estado em 03/09/2026:** os manifestos, o registry, a seleção conservadora PT-BR/EN-US, a
+composição, o vínculo com procedimentos/cálculos e a projeção no plano do Deal Captain estão
+implementados. A maturidade permanece `implemented`. Gold cases econômicos, benchmark cego,
+revisão DCM/crédito/risco e revisão legal dos packs de instrumento/jurisdição continuam sendo
+gates obrigatórios antes de qualquer promoção a `production`.
+
 ### Wave 2: profundidade de setor e mercado
 
 - setores ordenados por volume real e risco observado;

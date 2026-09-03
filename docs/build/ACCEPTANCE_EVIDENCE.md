@@ -971,3 +971,15 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Segurança remota | Supabase Advisors de produção | zero achado acionável de segurança ou performance; zero foreign key sem índice; somente INFO de tabelas privadas fail-closed e índices novos ainda sem tráfego | 2026-09-03 |
 | Interface de trabalho | página do projeto + `advisor-project.tsx` | chat mostra timeline e próxima intervenção; painel lateral mostra plano, cobertura e decisões; consulta preserva RLS por projeto e organização | 2026-09-03 |
 | Gate integral | `fnm exec --using=24 pnpm check` + PR #374 | lint, typecheck, testes e build verdes nos 42 pacotes; web 172, worker 113, contratos 33; Next.js gerou 32 páginas; banco, E2E, CodeQL, dependency review, Trivy e SBOM verdes | 2026-09-03 |
+
+## Packs econômicos Pareto, implementação de 03/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Registry econômico | `@offroad/credit-playbook/depth-packs` | 17 manifestos e 33 situações econômicas; coverage, procedimentos, cálculos, termos, mercado, disconfirmers e gates versionados | 2026-09-03 |
+| Integridade das referências | `auditDepthPackRegistry` | nenhum procedimento, cálculo ou dependency id inexistente; falha fechada coberta por teste | 2026-09-03 |
+| Composição sem fragmentação | `@offroad/dcm-specialization` | refinance + BR + debênture + covenant + downside e acquisition + US + bank/private credit compilam por packs reutilizáveis | 2026-09-03 |
+| Omissão explícita | caso `situation:rescue_or_dip` | situação reconhecida no catálogo e devolvida como activation key não atendida; nenhum pack genérico é inventado | 2026-09-03 |
+| Gate anti-marketing | `assessDepthPackPromotion` | benchmark ou revisão independente reprovados impedem produção; instrumento/jurisdição sem revisão legal também bloqueiam | 2026-09-03 |
+| Integração do Deal Captain | `apps/document-worker/src/agent-plan.ts` | sinais explícitos PT-BR/EN-US ativam perfil; requirements são ligados a TaskSpecs e o perfil entra no snapshot persistido | 2026-09-03 |
+| Estado de homologação | maturidade dos 17 packs | `implemented`; zero pack marcado `tested` ou `production`; gold/adversarial econômico, benchmark e revisão humana ainda pendentes | 2026-09-03 |

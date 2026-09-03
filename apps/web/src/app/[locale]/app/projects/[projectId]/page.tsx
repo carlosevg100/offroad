@@ -1,3 +1,4 @@
+import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
 import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
 import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
@@ -282,7 +283,7 @@ async function ConversationalCapitalProject({
   for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
   const {data: agentPlan} = await supabase.from("capital_project_agent_plans")
-    .select("id, revision, goal, status")
+    .select("id, revision, goal, status, snapshot")
     .eq("organization_id", organization.id)
     .eq("capital_project_id", project.id)
     .eq("status", "active")
@@ -318,7 +319,7 @@ async function ConversationalCapitalProject({
           .order("created_at")
           .limit(3),
         supabase.from("capital_project_requirement_coverage")
-          .select("id, status, materiality")
+          .select("id, requirement_key, status, materiality")
           .eq("organization_id", organization.id)
           .eq("capital_project_id", project.id),
         supabase.from("capital_project_decisions")
@@ -332,7 +333,7 @@ async function ConversationalCapitalProject({
     : [{data: []}, {data: []}, {data: []}, {data: []}, {data: []}];
 
   const copy: AdvisorProjectCopy = {
-    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
+    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
     proposal: {
       preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
@@ -401,10 +402,33 @@ async function ConversationalCapitalProject({
     summary: locale === "en-US" ? event.summary_en : event.summary_pt,
     createdAt: event.created_at,
   }));
-  const verifiedCoverage = (requirementCoverage ?? []).filter((item) => ["verified", "not_applicable"].includes(item.status)).length;
-  const openCoverage = (requirementCoverage ?? []).filter((item) =>
-    ["missing", "partial", "conflicting", "unavailable"].includes(item.status)
+  const snapshot = agentPlan?.snapshot && typeof agentPlan.snapshot === "object" && !Array.isArray(agentPlan.snapshot)
+    ? agentPlan.snapshot as Record<string, unknown>
+    : null;
+  const specialization = compiledSpecializationProfileSchema.safeParse(snapshot?.specializationProfile);
+  const assessedByKey = new Map((requirementCoverage ?? []).map((item) => [item.requirement_key, item]));
+  const expectedRequirements = specialization.success ? specialization.data.requirements : [];
+  const expectedKeys = new Set(expectedRequirements.map((item) => item.key));
+  const verifiedExpected = expectedRequirements.filter((requirement) => {
+    const assessment = assessedByKey.get(requirement.key);
+    return assessment && ["verified", "not_applicable"].includes(assessment.status);
+  }).length;
+  const verifiedOutsideProfile = (requirementCoverage ?? []).filter((item) =>
+    !expectedKeys.has(item.requirement_key) && ["verified", "not_applicable"].includes(item.status)).length;
+  const notExaminedCoverage = expectedRequirements.filter((requirement) => !assessedByKey.has(requirement.key)).length;
+  const openExpected = expectedRequirements.filter((requirement) => {
+    const assessment = assessedByKey.get(requirement.key);
+    return ["blocking", "high"].includes(requirement.materiality)
+      && (!assessment || ["missing", "partial", "conflicting", "unavailable"].includes(assessment.status));
+  }).length;
+  const openOutsideProfile = (requirementCoverage ?? []).filter((item) =>
+    !expectedKeys.has(item.requirement_key)
+    && ["missing", "partial", "conflicting", "unavailable"].includes(item.status)
     && ["blocking", "high"].includes(item.materiality)).length;
+  const verifiedCoverage = verifiedExpected + verifiedOutsideProfile;
+  const openCoverage = openExpected + openOutsideProfile;
+  const totalCoverage = expectedRequirements.length
+    + (requirementCoverage ?? []).filter((item) => !expectedKeys.has(item.requirement_key)).length;
 
   return <AdvisorProject
     accessBasis={project.access_basis}
@@ -418,7 +442,7 @@ async function ConversationalCapitalProject({
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
     activityEvents={activityEvents}
-    coverage={{verified: verifiedCoverage, total: requirementCoverage?.length ?? 0, openIssues: openCoverage}}
+    coverage={{verified: verifiedCoverage, total: totalCoverage, openIssues: openCoverage, notExamined: notExaminedCoverage}}
     decisionRecords={(decisionRecords ?? []).map((decision) => ({
       id: decision.id,
       question: decision.question,

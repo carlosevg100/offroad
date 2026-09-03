@@ -135,3 +135,56 @@ export function calculateCapacityEnvelope(input: {
     capacities: Object.fromEntries(Object.entries(constraints).map(([key, value]) => [key, canonical(value)])),
   };
 }
+
+/**
+ * Stable identifiers for deterministic calculations that depth packs may require.
+ *
+ * The registry is intentionally metadata-only: packs bind to a governed calculation id while
+ * the runtime continues to call the typed functions exported by this package. Renaming or
+ * removing a calculation therefore becomes a failing registry test instead of a silent prompt
+ * regression.
+ */
+export const financialCalculationRegistry = {
+  "financial.adjusted_ebitda": "calculateAdjustedEbitda",
+  "financial.net_leverage": "calculateLeverage",
+  "financial.dscr": "calculateDscr",
+  "financial.collateral_haircuts": "applyCollateralHaircuts",
+  "financial.maximum_debt_by_dscr": "solveMaximumDebtByDscr",
+  "financial.all_in_cost": "calculateAllInCost",
+  "financial.capacity_envelope": "calculateCapacityEnvelope",
+  "financial.working_capital": "calculateWorkingCapital",
+  "financial.working_capital_investment": "calculateWorkingCapitalInvestment",
+  "financial.cfads": "calculateCfads",
+  "financial.cash_conversion": "calculateCashConversion",
+  "financial.accounting_identity": "checkIdentity",
+  "financial.debt_ledger_balance": "debtLedgerBalance",
+  "financial.debt_views": "aggregateDebtViews",
+  "financial.maturity_buckets": "maturityBuckets",
+  "financial.debt_grouping": "groupDebt",
+  "financial.weighted_average_life": "weightedAverageLife",
+  "financial.debt_balance_bridge": "buildDebtBalanceBridge",
+  "financial.interest_expense_bridge": "reconcileInterestExpense",
+  "financial.liquidity_coverage": "calculateLiquidityCoverage",
+  "financial.rate_shock": "applyRateShock",
+  "financial.cross_default_propagation": "propagateDefaults",
+  "financial.seasonality": "calculateSeasonality",
+  "financial.concentration": "calculateConcentration",
+  "financial.currency_exposure": "calculateCurrencyExposure",
+  "operation.transaction_need": "calculateTransactionNeed",
+  "operation.sources_and_uses": "reconcileSourcesAndUses",
+  "operation.pro_forma_position": "calculateProFormaPosition",
+  "operation.incremental_working_capital": "calculateIncrementalWorkingCapital",
+  "operation.excess_funding_carry": "calculateExcessFundingCarry",
+  "operation.disbursement_coverage": "testDisbursementCoverage",
+  "structure.periodic_rate": "periodicRate",
+  "structure.debt_service_schedule": "buildDebtServiceSchedule",
+  "structure.coverage_series": "calculateCoverageSeries",
+  "structure.covenant_headroom": "calculateCovenantHeadroom",
+  "structure.maturity_concentration": "maturityConcentration",
+} as const;
+
+export type FinancialCalculationId = keyof typeof financialCalculationRegistry;
+
+export function isFinancialCalculationId(value: string): value is FinancialCalculationId {
+  return Object.hasOwn(financialCalculationRegistry, value);
+}
