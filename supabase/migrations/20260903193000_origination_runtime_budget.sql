@@ -19,6 +19,17 @@ begin
       to_jsonb(1.00::numeric),
       true
     );
+
+    -- Keep the durable run ledger aligned with the executable job envelope. The worker enforces
+    -- the job payload, while operators and audit surfaces read the run budget.
+    update public.processing_runs
+    set budget = jsonb_set(
+      budget,
+      '{maxCostUsd}',
+      to_jsonb(1.00::numeric),
+      true
+    )
+    where id = new.processing_run_id;
   end if;
   return new;
 end;
@@ -30,4 +41,3 @@ before insert on public.processing_jobs
 for each row execute function private.normalize_origination_runtime_budget_v1();
 
 revoke all on function private.normalize_origination_runtime_budget_v1() from public, anon, authenticated;
-
