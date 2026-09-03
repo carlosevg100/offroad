@@ -265,7 +265,7 @@ async function ConversationalCapitalProject({
     : [{data: []}, {data: []}];
   const [{data: messages}, {data: proposals}, {data: tasks}, {data: runs}] = await Promise.all([
     conversation
-      ? supabase.from("agent_messages").select("id, role, content, status, proposal_id, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
+      ? supabase.from("agent_messages").select("id, role, content, status, error_code, proposal_id, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
       : Promise.resolve({data: []}),
     supabase.from("agent_change_proposals")
       .select("id, status, title, rationale, impact_summary, proposal")
@@ -303,7 +303,7 @@ async function ConversationalCapitalProject({
           .neq("status", "superseded")
           .order("created_at"),
         supabase.from("capital_project_agent_events")
-          .select("id, event_type, summary_pt, summary_en, created_at")
+          .select("id, event_type, summary_pt, summary_en, detail, created_at")
           .eq("organization_id", organization.id)
           .eq("capital_project_id", project.id)
           .eq("agent_plan_id", agentPlan.id)
@@ -333,7 +333,7 @@ async function ConversationalCapitalProject({
     : [{data: []}, {data: []}, {data: []}, {data: []}, {data: []}];
 
   const copy: AdvisorProjectCopy = {
-    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
+    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
     proposal: {
       preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
@@ -361,6 +361,7 @@ async function ConversationalCapitalProject({
           role: message.role,
           content: message.content,
           status: message.status,
+          errorCode: message.error_code,
           createdAt: message.created_at,
           artifactHref: project.entry_job !== "origination_thesis" && artifactId && artifactIds.has(artifactId)
             ? `/${locale}/app/projects/${project.id}?view=work`
@@ -389,19 +390,24 @@ async function ConversationalCapitalProject({
     market: t("activities.market"),
     readout: t("activities.readout"),
   });
-  const visibleActivities = agentWorkItems?.length
+  const visibleActivities = project.entry_job === "origination_thesis"
+    ? compiledActivities
+    : agentWorkItems?.length
     ? agentWorkItems.map((item) => ({
         id: item.id,
         label: item.title,
         status: advisorWorkStatus(item.status),
       }))
     : compiledActivities;
-  const activityEvents = [...(agentEventsDescending ?? [])].reverse().map((event) => ({
-    id: event.id,
-    type: event.event_type,
-    summary: locale === "en-US" ? event.summary_en : event.summary_pt,
-    createdAt: event.created_at,
-  }));
+  const activityEvents = [...(agentEventsDescending ?? [])]
+    .reverse()
+    .filter((event) => project.entry_job !== "origination_thesis" || !eventTaskSpecId(event.detail))
+    .map((event) => ({
+      id: event.id,
+      type: event.event_type,
+      summary: locale === "en-US" ? event.summary_en : event.summary_pt,
+      createdAt: event.created_at,
+    }));
   const snapshot = agentPlan?.snapshot && typeof agentPlan.snapshot === "object" && !Array.isArray(agentPlan.snapshot)
     ? agentPlan.snapshot as Record<string, unknown>
     : null;
@@ -521,6 +527,12 @@ function advisorWorkStatus(status: string): "waiting" | "queued" | "running" | "
     return status as "running" | "succeeded" | "failed" | "blocked";
   }
   return "waiting";
+}
+
+function eventTaskSpecId(detail: unknown): string | null {
+  if (!detail || typeof detail !== "object" || Array.isArray(detail)) return null;
+  const value = (detail as Record<string, unknown>).task_spec_id;
+  return typeof value === "string" && value ? value : null;
 }
 
 function customerArtifactLabel(type: string, locale: string): string | null {

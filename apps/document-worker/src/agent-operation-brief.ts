@@ -187,7 +187,7 @@ export async function processAgentOperationBriefJob(
       professionalContextStatus: context.professional_context?.disclosureStatus ?? null,
       institutionCapabilityQuestionAsked: context.recent_messages.some((message) => message.role === "assistant"
         && /(?:como\s+(?:sua|a\s+sua)\s+institui[cç][aã]o\s+pode\s+atuar|how\s+can\s+your\s+institution\s+act)/i.test(message.content)),
-      specializedWorkActive: context.tasks.some((task) => ["queued", "waiting", "running", "started"].includes(task.status)),
+      specializedWorkActive: context.tasks.some((task) => ["queued", "running", "started"].includes(task.status)),
     });
     const deterministicClarification = buildDeterministicCapabilityClarification(context, executionRoute);
     const deterministicActivation = deterministicClarification ? null : buildDeterministicActivation(context, executionRoute);
@@ -372,7 +372,7 @@ function buildDeterministicCapabilityClarification(
     && route.analysisScope === "origination_thesis"
     && route.requirements.length === 1
     && route.requirements[0] === "institution_capability_context";
-  const researchAlreadyActive = context.tasks.some((task) => ["queued", "waiting", "running", "started"].includes(task.status));
+  const researchAlreadyActive = context.tasks.some((task) => ["queued", "running", "started"].includes(task.status));
   if (!capabilityOnly || !researchAlreadyActive) return null;
   return capabilityContextResponse(context.locale, companyProfileString(context.company_profile, "name", "companyName")
     ?? explicitCompanyNameFromConversation(context));
@@ -383,16 +383,18 @@ function capabilityContextResponse(locale: "pt-BR" | "en-US", companyName: strin
   return {
     state: "asking",
     reply: locale === "pt-BR"
-      ? `A pesquisa sobre ${company} continua avançando. Como este é um primeiro contato, quero entender melhor o ponto de vista que você levará para a conversa: sua instituição costuma emprestar com balanço próprio, estruturar e distribuir, atuar como advisor, investir ou combinar essas frentes? Não preciso de uma lista de produtos. Esse contexto ajuda a priorizar e tornar a discussão mais útil, sem limitar a análise das melhores alternativas para a companhia. Se preferir não informar ou ainda não souber, sigo normalmente com uma leitura ampla.`
-      : `Research on ${company} is continuing. Because this is a first contact, I want to understand the perspective you will bring to the conversation: does your institution typically lend from its balance sheet, structure and distribute, act as an advisor, invest, or combine those roles? I do not need a product catalogue. This context helps prioritize and make the discussion more useful without limiting the analysis of the best alternatives for the company. If you would rather not share or do not yet know, I will continue with a broad view.`,
+      ? `Já estou aprofundando a leitura de ${company}. Antes de organizar as alternativas para a conversa, há um ponto que me ajuda a deixá-las mais úteis para você.`
+      : `I am already deepening the readout on ${company}. Before organizing the alternatives for the conversation, one point will help me make them more useful to you.`,
     clarification: {
-      question: locale === "pt-BR" ? "Como sua instituição pode atuar nesta oportunidade?" : "How can your institution act on this opportunity?",
+      question: locale === "pt-BR"
+        ? "Neste trabalho, vocês podem emprestar com balanço próprio, estruturar e distribuir, atuar como advisor ou combinar essas frentes?"
+        : "For this assignment, can you lend from your balance sheet, structure and distribute, act as an advisor, or combine those roles?",
       whyItMatters: locale === "pt-BR"
-        ? "A mesma tese pode ser levada adiante de formas diferentes; conhecer seu contexto ajuda a calibrar a abordagem sem restringir as alternativas analisadas."
-        : "The same thesis can be advanced in different ways; knowing your context helps calibrate the approach without restricting the alternatives considered.",
+        ? "Vou analisar primeiro o que faz sentido para a companhia. Essa resposta só calibra a ordem, o nível de detalhe e os caminhos de execução. Se não souber ou preferir não informar, sigo com uma visão ampla."
+        : "I will first assess what makes sense for the company. This answer only calibrates the order, level of detail and execution paths. If you do not know or prefer not to say, I will continue with a broad view.",
       answerKind: "text",
       choices: [],
-      priority: "required_now",
+      priority: "high_value",
     },
   };
 }
@@ -409,18 +411,29 @@ function activationResponse(
   if (parallelMeetingContext) {
     if (route?.requirements.length === 1 && route.requirements[0] === "institution_capability_context") {
       const capabilityPrompt = capabilityContextResponse(locale, activation.company.name);
-      return {state: "idle", reply: capabilityPrompt.reply, activation};
+      return {...capabilityPrompt, activation};
     }
-    const history = prior
+    const question = prior
       ? locale === "pt-BR"
-        ? ` Encontrei também o projeto “${prior.projectName}”, atualizado em ${prior.updatedAt.slice(0, 10)}; diga se esta reunião atualiza aquela tese ou abre uma agenda nova.`
-        : ` I also found the “${prior.projectName}” project, updated on ${prior.updatedAt.slice(0, 10)}; tell me whether this meeting updates that thesis or starts a new agenda.`
-      : "";
+        ? `Vi o trabalho anterior “${prior.projectName}”. Ele ainda é um ponto de partida útil para esta reunião ou a pauta agora é diferente? Com quem será a conversa, o que você quer provocar e que relacionamento ou exposição já existe com a companhia?`
+        : `I found the earlier “${prior.projectName}” work. Is it still a useful starting point for this meeting, or is the agenda now different? Who will be in the conversation, what do you want it to provoke, and what relationship or exposure already exists with the company?`
+      : locale === "pt-BR"
+        ? "Com quem será a conversa, o que você quer que ela provoque e que relacionamento ou exposição já existe com a companhia?"
+        : "Who will be in the conversation, what do you want it to provoke, and what relationship or exposure already exists with the company?";
     return {
-      state: "idle",
+      state: "asking",
       reply: locale === "pt-BR"
-        ? `Entendi o pedido para ${activation.company.name}. Já iniciei em paralelo a pesquisa pública sobre a companhia, o setor, o endividamento e as operações observadas.${history} Para calibrar o pitch, responda em uma única mensagem: (1) com quem será a reunião — por exemplo, CEO, CFO ou tesouraria; (2) o que você quer provocar — mercado de dívida, refinanciamento, alavancagem, expansão ou outra agenda; e (3) qual é hoje o relacionamento ou a exposição da sua instituição com a companhia. Esses pontos definem a profundidade, o ângulo e o que seria realmente novo ou executável para o interlocutor.`
-        : `I understood the assignment for ${activation.company.name}. I have already started the public research on the company, sector, debt profile and observed transactions in parallel.${history} To calibrate the pitch, answer in one message: (1) who will attend — for example the CEO, CFO or treasury; (2) what you want to provoke — debt markets, refinancing, leverage, expansion or another agenda; and (3) your institution's current relationship or exposure to the company. These points determine the depth, angle and what would actually be new or actionable for the audience.`,
+        ? `${activation.company.name}. Vou começar pela companhia: negócio, setor, desempenho, geração de caixa, estrutura de capital, vencimentos e mercado de dívida. Enquanto essa leitura avança, quero alinhar o contexto que muda o que será realmente útil no pitch.`
+        : `${activation.company.name}. I will start with the company: business, sector, performance, cash generation, capital structure, maturities and debt markets. While that readout progresses, I want to align the context that changes what will actually be useful in the pitch.`,
+      clarification: {
+        question,
+        whyItMatters: locale === "pt-BR"
+          ? "O interlocutor define a profundidade; o objetivo define o ângulo; e o relacionamento existente evita repetir o óbvio ou propor algo que já esteja em curso. Responda apenas o que souber."
+          : "The audience determines depth; the objective determines the angle; and the existing relationship avoids repeating the obvious or proposing something already under way. Answer only what you know.",
+        answerKind: "text",
+        choices: [],
+        priority: "high_value",
+      },
       activation,
     };
   }

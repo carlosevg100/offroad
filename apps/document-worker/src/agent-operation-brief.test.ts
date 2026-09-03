@@ -60,9 +60,10 @@ describe("agent operation brief worker", () => {
     expect(activation).toMatchObject({
       job: "origination_thesis", company: {name: "Camil Alimentos S.A."},
     });
-    expect(response?.reply).toContain("Já iniciei em paralelo a pesquisa pública");
-    expect(response?.reply).toContain("com quem será a reunião");
-    expect(response?.reply).toContain("relacionamento ou a exposição");
+    expect(response).toMatchObject({state: "asking"});
+    expect(response?.reply).toContain("Enquanto essa leitura avança");
+    expect((response?.clarification as Record<string, unknown>)?.question).toContain("Com quem será a conversa");
+    expect((response?.clarification as Record<string, unknown>)?.question).toContain("relacionamento ou exposição");
   });
 
   it("activates capital planning deterministically when company and intent are already explicit", async () => {
@@ -327,9 +328,9 @@ describe("agent operation brief worker", () => {
     expect(modelCalls).toBe(0);
     expect(recordedActivation).toBeUndefined();
     expect(recordedResponse).toMatchObject({state: "asking"});
-    expect(recordedResponse?.reply).toContain("balanço próprio");
-    expect(recordedResponse?.reply).toContain("sem limitar a análise");
-    expect(recordedResponse?.reply).toContain("leitura ampla");
+    expect((recordedResponse?.clarification as Record<string, unknown>)?.question).toContain("balanço próprio");
+    expect((recordedResponse?.clarification as Record<string, unknown>)?.whyItMatters).toContain("companhia");
+    expect((recordedResponse?.clarification as Record<string, unknown>)?.whyItMatters).toContain("visão ampla");
   });
 
   it("uses relevant organization memory before asking for missing Camil meeting context", async () => {
@@ -398,9 +399,9 @@ describe("agent operation brief worker", () => {
     const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
     expect(result.status).toBe("succeeded");
     expect(modelCalls).toBe(0);
-    expect(recordedResponse).toMatchObject({state: "idle"});
-    expect(recordedResponse?.reply).toContain("Camil · refinanciamento 2027");
-    expect(recordedResponse?.reply).toContain("atualiza aquela tese ou abre uma agenda nova");
+    expect(recordedResponse).toMatchObject({state: "asking"});
+    expect((recordedResponse?.clarification as Record<string, unknown>)?.question).toContain("Camil · refinanciamento 2027");
+    expect((recordedResponse?.clarification as Record<string, unknown>)?.question).toContain("pauta agora é diferente");
     expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "Camil"}});
   });
 

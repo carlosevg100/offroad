@@ -102,6 +102,23 @@ describe("agent change contracts", () => {
     }).success).toBe(true);
 
     expect(agentOperationBriefResponseSchema.safeParse({
+      state: "asking",
+      reply: "Comecei a atualizar a leitura pública enquanto confirmamos o contexto da reunião.",
+      clarification: {
+        question: "Com quem será a conversa e o que você quer provocar?",
+        whyItMatters: "Isso calibra a profundidade e o ângulo da análise sem interromper a pesquisa.",
+        answerKind: "text",
+        choices: [],
+        priority: "high_value",
+      },
+      activation: {
+        job: "origination_thesis",
+        company: {name: "Camil"},
+        brief: {meetingContext: "Preparar uma reunião sobre alternativas de estrutura de capital."},
+      },
+    }).success).toBe(true);
+
+    expect(agentOperationBriefResponseSchema.safeParse({
       state: "proposing",
       reply: "Tentativa inválida.",
       activation: {

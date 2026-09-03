@@ -463,11 +463,14 @@ export const agentOperationBriefResponseSchema = z.object({
   if (response.clarification && response.proposal) {
     context.addIssue({code: "custom", message: "one response cannot ask and propose at the same time"});
   }
-  if (response.activation && response.state !== "idle") {
-    context.addIssue({code: "custom", path: ["activation"], message: "activation must be an idle handoff"});
+  if (response.activation && response.state === "proposing") {
+    context.addIssue({code: "custom", path: ["activation"], message: "activation cannot accompany a case proposal"});
   }
-  if (response.activation && (response.clarification || response.proposal)) {
-    context.addIssue({code: "custom", path: ["activation"], message: "activation cannot carry a clarification or proposal"});
+  if (response.activation && response.proposal) {
+    context.addIssue({code: "custom", path: ["activation"], message: "activation cannot carry a proposal"});
+  }
+  if (response.activation && response.state === "asking" && !response.clarification) {
+    context.addIssue({code: "custom", path: ["activation"], message: "asking activation requires one clarification"});
   }
 });
 export type AgentOperationBriefResponse = z.infer<typeof agentOperationBriefResponseSchema>;

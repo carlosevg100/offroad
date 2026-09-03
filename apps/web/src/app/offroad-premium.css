@@ -238,6 +238,7 @@
   white-space: nowrap;
 }
 .advisor-project__header > span.is-working {color: #66803d;}
+.advisor-project__header > span.is-failed {color: #a34839;}
 
 .advisor-thread {
   display: flex;
@@ -260,6 +261,12 @@
   padding: 11px 15px;
 }
 .advisor-thread__message p {color: #384149; font-size: 14px; line-height: 1.7; margin: 0; white-space: pre-wrap;}
+.advisor-thread__message .advisor-thread__message-error {
+  color: #93463a;
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
 .advisor-thread__message small {color: #718050; display: block; font-size: 9px; font-weight: 650; letter-spacing: .1em; margin: 0 0 6px; text-transform: uppercase;}
 .advisor-thread__avatar {align-items: center; background: #20262b; border-radius: 8px; color: #fff; display: flex; flex: 0 0 30px; height: 30px; justify-content: center;}
 .advisor-thread__artifact-link {
