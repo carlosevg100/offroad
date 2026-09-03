@@ -2,9 +2,11 @@ import {randomUUID} from "node:crypto";
 
 import {
   agentOperationBriefResponseSchema,
+  collaborativeAdvisoryPolicy,
   createAgentChangeProposal,
   routeWorkspaceExecution,
   routeWorkspaceRequest,
+  workspaceJourneyBlueprint,
   type AgentOperationBriefResponse,
   type WorkspaceExecutionRoute,
   type WorkspaceJobActivation,
@@ -14,6 +16,7 @@ import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gatew
 import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {z} from "zod";
 
+import {institutionCapabilitiesSchema, professionalContextSchema} from "./advisor-context";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 
 const contextSchema = z.object({
@@ -34,30 +37,8 @@ const contextSchema = z.object({
     status: z.string(),
   }).nullable().optional(),
   company_profile: z.record(z.string(), z.unknown()).default({}),
-  professional_context: z.object({
-    affiliationKind: z.string().nullable(),
-    professionalRole: z.string().nullable(),
-    teamName: z.string().nullable(),
-    institutionName: z.string().nullable(),
-    operatingModels: z.array(z.string()).max(20),
-    productFamilies: z.array(z.string()).max(30),
-    primaryObjectives: z.array(z.string()).max(20),
-    contextNotes: z.string().nullable(),
-    disclosureStatus: z.enum(["complete", "partial", "skipped"]),
-    lastConfirmedAt: z.string().nullable(),
-  }).nullable().optional(),
-  institution_capabilities: z.object({
-    institutionName: z.string().nullable(),
-    institutionKind: z.string().nullable(),
-    operatingModels: z.array(z.string()).max(20),
-    productFamilies: z.array(z.string()).max(30),
-    geographies: z.array(z.string()).max(40),
-    currencies: z.array(z.string()).max(20),
-    capabilityNotes: z.string().nullable(),
-    sourceKind: z.enum(["self_declared", "public_observed", "mixed", "unknown"]),
-    disclosureStatus: z.enum(["complete", "partial", "skipped"]),
-    lastConfirmedAt: z.string().nullable(),
-  }).nullable().optional(),
+  professional_context: professionalContextSchema.nullable().optional(),
+  institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
   related_project_memory: z.array(z.object({
     projectId: z.uuid(),
     projectName: z.string().max(80),
@@ -140,11 +121,16 @@ Rules:
 - professionalContext and institutionCapabilities are durable context supplied by this user or
   organization. Use them before asking how the user can act. They tailor execution; they are not
   evidence about the target company, a current credit appetite or an approved mandate.
+- Use professional context silently to prioritize, sequence and explain the work. Never use it to
+  suppress an alternative that may be better for the company. Build the company-relevant universe
+  first, then explain viable execution paths without declaring what the user's institution can or
+  cannot lead unless the user explicitly asks.
 - If executionRoute requires institution_capability_context, ask how the institution can act in
   this assignment: lend from its balance sheet, structure, distribute, advise, invest, or combine
-  those roles. Explain that this prevents proposing a path the user cannot execute. Do not open
-  with an instrument catalogue. If the user does not know or prefers not to disclose it, continue
-  with an institution-neutral analysis and label the execution paths instead of asking again.
+  those roles. Explain that this calibrates emphasis and makes the execution discussion more useful,
+  but never frames it as a boundary on the strategic analysis. Do not open with an instrument
+  catalogue. If the user does not know or prefers not to disclose it, continue with an
+  institution-neutral analysis and do not ask again.
 - When executionRoute.reasonCode is specialized_work_in_progress, do not activate another job.
   Report useful progress from the supplied tasks/artifacts. If capability context is still generic
   after an earlier question, explicitly proceed with balance-sheet, distribution, advisory and
@@ -159,6 +145,12 @@ Rules:
   Never infer a private company identity.
 - An activation queues a governed TaskSpec executor in the same project. It does not approve
   credit, choose a financing structure, contact a lender or grant external authority.
+- journeyBlueprint defines the current point of entry into the same advisory system. Follow its
+  context, parallel-work, analytical and interaction rules; never turn it into a rigid wizard.
+- collaborativeAdvisoryPolicy is mandatory. End substantive alternatives work like an associate or
+  VP presenting completed thinking to an MD: ask which path makes sense to pursue, combine or carry
+  into the material. Never ask the user to choose between an explicitly labelled "institution-led"
+  universe and a separate "broader" universe.
 - Keep the response in the locale supplied in the input.
 - A proposal is only a preview. The product applies it only after explicit user acceptance.
 - Only use the patch paths allowed by the response schema.`;
@@ -230,6 +222,10 @@ export async function processAgentOperationBriefJob(
               artifacts: context.artifacts,
               requestRoute: route,
               executionRoute,
+              journeyBlueprint: executionRoute.analysisScope
+                ? workspaceJourneyBlueprint(executionRoute.analysisScope)
+                : null,
+              collaborativeAdvisoryPolicy,
               recentConversation: context.recent_messages.map(({role, content}) => ({role, content})),
               latestUserMessage: context.message,
             }),
@@ -387,13 +383,13 @@ function capabilityContextResponse(locale: "pt-BR" | "en-US", companyName: strin
   return {
     state: "asking",
     reply: locale === "pt-BR"
-      ? `A pesquisa sobre ${company} continua avançando. Como este é um primeiro contato, quero calibrar as alternativas ao que sua instituição realmente consegue levar adiante: vocês podem emprestar com balanço próprio, estruturar e distribuir, atuar apenas como advisor, investir, ou combinar essas capacidades? Não preciso ainda de uma lista de produtos; esse enquadramento evita sugerir uma solução que dependa de uma capacidade que vocês não têm. Se preferir não informar ou ainda não souber, sigo com uma análise neutra e separo os caminhos por modelo de execução.`
-      : `Research on ${company} is continuing. Because this is a first contact, I want to calibrate the alternatives to what your institution can actually advance: can you lend from your balance sheet, structure and distribute, act only as an advisor, invest, or combine those capabilities? I do not need a product catalogue yet; this framing prevents proposing a path that depends on a capability you do not have. If you would rather not share or do not yet know, I will continue with a neutral analysis and separate the alternatives by execution model.`,
+      ? `A pesquisa sobre ${company} continua avançando. Como este é um primeiro contato, quero entender melhor o ponto de vista que você levará para a conversa: sua instituição costuma emprestar com balanço próprio, estruturar e distribuir, atuar como advisor, investir ou combinar essas frentes? Não preciso de uma lista de produtos. Esse contexto ajuda a priorizar e tornar a discussão mais útil, sem limitar a análise das melhores alternativas para a companhia. Se preferir não informar ou ainda não souber, sigo normalmente com uma leitura ampla.`
+      : `Research on ${company} is continuing. Because this is a first contact, I want to understand the perspective you will bring to the conversation: does your institution typically lend from its balance sheet, structure and distribute, act as an advisor, invest, or combine those roles? I do not need a product catalogue. This context helps prioritize and make the discussion more useful without limiting the analysis of the best alternatives for the company. If you would rather not share or do not yet know, I will continue with a broad view.`,
     clarification: {
       question: locale === "pt-BR" ? "Como sua instituição pode atuar nesta oportunidade?" : "How can your institution act on this opportunity?",
       whyItMatters: locale === "pt-BR"
-        ? "A mesma tese pode exigir balanço, distribuição, advisory ou capital de terceiros; saber seu papel torna a recomendação executável."
-        : "The same thesis may require balance sheet, distribution, advisory or third-party capital; knowing your role makes the recommendation executable.",
+        ? "A mesma tese pode ser levada adiante de formas diferentes; conhecer seu contexto ajuda a calibrar a abordagem sem restringir as alternativas analisadas."
+        : "The same thesis can be advanced in different ways; knowing your context helps calibrate the approach without restricting the alternatives considered.",
       answerKind: "text",
       choices: [],
       priority: "required_now",

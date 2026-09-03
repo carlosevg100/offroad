@@ -7854,6 +7854,14 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_capital_project_context_v3: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_capital_project_context_v4: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_case_input: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -7978,6 +7986,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_load_public_company_memory: {
+        Args: {
+          p_capability_token: string
+          p_company_key: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
       worker_record_operating_control_snapshot_v1: {
         Args: {
           p_binding: Json
@@ -8049,6 +8065,14 @@ export type Database = {
           p_capability_token: string
           p_entries: Json
           p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_store_public_company_memory: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_record: Json
         }
         Returns: Json
       }

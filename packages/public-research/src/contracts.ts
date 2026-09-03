@@ -66,5 +66,8 @@ export type ResearchRun = {
     cacheWrites: number;
     cacheReadFailed: boolean;
     cacheWriteFailed: boolean;
+    companyMemoryHit: boolean;
+    companyMemoryReadFailed: boolean;
+    companyMemoryWriteFailed: boolean;
   };
 };

@@ -1,6 +1,6 @@
 # Offroad Capital: Constituição de Produto e Operação
 
-Versão: 2.2 · 1 de setembro de 2026
+Versão: 2.3 · 3 de setembro de 2026
 
 Status: camada 0, fonte canônica de definição, fronteiras e comportamento do produto
 
@@ -65,6 +65,47 @@ permissões e formatos; nunca cria uma segunda verdade.
 
 Monetização, packaging comercial e API ficam fora desta versão. Nenhuma decisão técnica deve
 otimizar cobrança antes de provar qualidade e continuidade do trabalho.
+
+### 2.1 Uma lógica consultiva, seis jornadas completas
+
+Os seis pontos de entrada seguem a mesma lógica. O sistema primeiro entende a decisão que o
+usuário precisa tomar, lê o que já existe, recupera somente o contexto autorizado, pesquisa em
+paralelo quando aplicável, executa análise rastreável e devolve trabalho já realizado. A interação
+não termina com uma conclusão artificial: termina com alternativas, implicações e uma escolha
+colaborativa sobre o que aprofundar, combinar ou transformar em material.
+
+| Jornada | Contexto mínimo | Trabalho inicial | Devolutiva e continuação |
+| --- | --- | --- | --- |
+| Banker ou DCM preparando reunião | companhia, audiência, objetivo e relacionamento quando conhecido | memória autorizada, companhia, setor, resultados, passivo, agenda corporativa, mercado e precedentes | leitura de senior banker, alternativas, racional, riscos e pontos que mudam a tese; usuário escolhe o que aprofundar ou levar ao pitch |
+| CFO de companhia pública | questão de capital, decisão a subsidiar e restrições conhecidas | base pública vigente, estrutura de capital, liquidez, vencimentos, performance, plano e alternativas de mercado | mapa de alternativas para a companhia, impactos, condições e lacunas; CFO seleciona, combina ou adiciona contexto |
+| CFO de companhia privada | objetivo e documentos que já possui | inventário, extração, conciliação, pesquisa pública não confidencial e diagnóstico de cobertura | entendimento preliminar e somente o menor lote de informação que muda a análise; depois cenários e estruturas |
+| Necessidade de capital definida | uso, timing e documentos disponíveis; valor somente quando conhecido | fontes e usos, capacidade, fonte de pagamento, restrições, garantias e famílias de capital | alternativas comparáveis e requisitos de evidência; em seguida estrutura indicativa, sensibilidades e materiais |
+| Assessor com informação desestruturada | companhia, finalidade do trabalho e direito de uso | ler todos os materiais antes de perguntar, reconstruir o case e pesquisar contexto público | case compreendido, lacunas materiais e rotas de estruturação; depois pacote consistente e mercado aderente |
+| Investidor ou financiador avaliando oportunidade | lado da decisão, mandato aplicável e material recebido | reconstruir termos, conciliar fatos e cálculos, testar riscos, proteções e aderência | mapa de temas rastreável, perguntas materiais e alternativas de estrutura; underwriting e decisão permanecem com o financiador |
+
+Essas jornadas não são roteiros fixos. Um CFO pode começar com uma pergunta pública e depois enviar
+documentos privados; um banker pode transformar uma tese em pitch; um assessor pode rever uma
+estrutura existente antes de preparar materiais. A companhia, o projeto e os objetos confirmados
+continuam os mesmos durante a mudança de direção.
+
+### 2.2 Companhia primeiro; perfil como contexto, nunca como limite
+
+O universo de alternativas nasce da companhia: objetivo econômico, balanço, fluxo, ativos,
+passivos, riscos, setor, jurisdição e condições de mercado. Somente depois o perfil do usuário e as
+capacidades de sua instituição ajustam prioridade, profundidade, linguagem, forma de execução e o
+que merece entrar no primeiro material.
+
+Toda alternativa é avaliada separadamente em três lentes:
+
+1. **aderência à companhia:** resolve o problema e respeita sua capacidade, riscos e restrições;
+2. **viabilidade de mercado:** existe instrumento, apetite, precedente, timing e economia plausível;
+3. **caminho de execução:** como o usuário ou sua instituição poderia participar, inclusive por
+   balanço, estruturação, distribuição, advisory, investimento, parceria ou encaminhamento.
+
+Uma limitação da instituição pode alterar a terceira lente, mas nunca apagar uma alternativa boa
+para a companhia. O sistema não enquadra a conversa como “o que seu banco pode liderar”. Ele faz o
+trabalho de associate ou VP para um MD e pergunta, com naturalidade, quais caminhos fazem sentido,
+se devem ser combinados e quais merecem aprofundamento ou desenvolvimento no material.
 
 ## 3. Uma organização, companhias duráveis e projetos específicos
 
@@ -173,6 +214,13 @@ O mesmo modelo opera sob três regimes de evidência:
 Memória pública reutilizável contém matéria-prima e claims com fonte e validade, nunca a conversa
 ou a inteligência privada de outro usuário. Memória de projetos anteriores só reaparece para
 usuários autorizados na mesma organização, com projeto, data, versão e origem visíveis.
+
+O acervo público possui um índice canônico por companhia e por fonte. Esse índice pode ser
+reutilizado entre projetos públicos para evitar a repetição de buscas e aquisições, mas contém
+somente identidade pública, URLs, metadados, datas, hashes e conteúdo público adquirido. Sínteses,
+escolhas estratégicas, conversas, uploads, perfis profissionais e conclusões de um projeto nunca
+entram nesse acervo. Informação privada permanece vinculada à organização, à companhia privada ou
+ao projeto autorizado, conforme sua política, e jamais é promovida ao índice público.
 
 ### 5.2 Brasil, Estados Unidos e linguagem contínua
 

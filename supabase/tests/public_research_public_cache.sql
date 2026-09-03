@@ -28,7 +28,7 @@ select set_config(
 );
 
 create temporary table cache_test_ids (session_id uuid, project_id uuid, run_id uuid, job_id uuid);
-create temporary table cache_test_claim (job_id uuid, capability_token text, query_id text);
+create temporary table cache_test_claim (job_id uuid, capability_token text, query_id text, company_key text);
 do $$
 declare
   session_id uuid;
@@ -90,6 +90,9 @@ declare
   query_id text;
   entries jsonb;
   loaded jsonb;
+  company_record jsonb;
+  company_loaded jsonb;
+  rejected_payload boolean := false;
   rejected boolean := false;
 begin
   claim := public.worker_claim_job(repeat('w', 64), 600);
@@ -121,6 +124,42 @@ begin
     raise exception 'public cache did not replay the exact public record: %', loaded;
   end if;
 
+  company_record := jsonb_build_object(
+    'schemaVersion', 'public-company-memory.v1',
+    'companyKey', repeat('b', 64),
+    'subject', jsonb_build_object(
+      'legalName', 'Companhia Cache S.A.', 'website', 'https://companhia-cache.example',
+      'geography', 'Brasil'
+    ),
+    'queryIds', jsonb_build_array(query_id),
+    'sources', entries #> '{0,sources}',
+    'storedAt', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+    'validUntil', to_char((now() + interval '30 days') at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+    'reusePolicy', 'public_company_sources_only'
+  );
+  perform public.worker_store_public_company_memory(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', company_record
+  );
+  company_loaded := public.worker_load_public_company_memory(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', repeat('b', 64)
+  );
+  if company_loaded #>> '{subject,legalName}' <> 'Companhia Cache S.A.'
+    or company_loaded #>> '{reusePolicy}' <> 'public_company_sources_only'
+    or jsonb_array_length(company_loaded -> 'sources') <> 1 then
+    raise exception 'public company source memory did not replay: %', company_loaded;
+  end if;
+  begin
+    perform public.worker_store_public_company_memory(
+      (claim ->> 'job_id')::uuid,
+      claim ->> 'capability_token',
+      company_record || jsonb_build_object('conversation', 'private text must never enter shared memory')
+    );
+  exception when invalid_parameter_value then rejected_payload := true;
+  end;
+  if not rejected_payload then
+    raise exception 'public company source memory accepted a private extra field';
+  end if;
+
   begin
     perform public.worker_load_public_research_cache(
       (claim ->> 'job_id')::uuid, repeat('x', 64), array[query_id]
@@ -129,7 +168,7 @@ begin
   end;
   if not rejected then raise exception 'public cache accepted a guessed capability'; end if;
   insert into cache_test_claim values (
-    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', query_id
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', query_id, repeat('b', 64)
   );
 end;
 $$;
@@ -158,6 +197,14 @@ begin
   exception when insufficient_privilege then rejected := true;
   end;
   if not rejected then raise exception 'private project could read the cross-project public cache'; end if;
+  rejected := false;
+  begin
+    perform public.worker_load_public_company_memory(
+      claim.job_id, claim.capability_token, claim.company_key
+    );
+  exception when insufficient_privilege then rejected := true;
+  end;
+  if not rejected then raise exception 'private project could read global public company memory'; end if;
 end;
 $$;
 
@@ -172,6 +219,14 @@ begin
   end;
   reset role;
   if not rejected then raise exception 'anonymous role read the private public-research cache'; end if;
+  rejected := false;
+  set local role anon;
+  begin
+    perform count(*) from private.public_company_source_memory;
+  exception when insufficient_privilege then rejected := true;
+  end;
+  reset role;
+  if not rejected then raise exception 'anonymous role read public company source memory'; end if;
 end;
 $$;
 

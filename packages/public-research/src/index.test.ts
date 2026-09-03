@@ -5,6 +5,7 @@ import {
   buildCompanyDebtResearchPlan,
   buildOriginationResearchPlan,
   buildPublicResearchPlan,
+  createPublicCompanyMemoryRecord,
   createPublicResearchCacheRecord,
   createOpenAIWebSearchProvider,
   createPerplexitySearchProvider,
@@ -257,9 +258,12 @@ describe("governed public research", () => {
   it("does not cache fallback material when an earlier authoritative provider failed", async () => {
     const plan = buildOriginationResearchPlan({legalName: "Empresa Exemplo"}).slice(0, 1);
     const writes: unknown[] = [];
+    const companyWrites: unknown[] = [];
     const result = await runPublicResearch({
       plan,
       cache: {load: async () => [], store: async (records) => { writes.push(...records); }},
+      companySubject: {legalName: "Empresa Exemplo"},
+      companyMemory: {load: async () => null, store: async (record) => { companyWrites.push(record); }},
       providers: [
         {id: "official", continueAfterSuccess: true, search: async () => {
           throw Object.assign(new Error("malformed official file"), {code: "official_parse_failed"});
@@ -276,5 +280,38 @@ describe("governed public research", () => {
     expect(result.sources).toHaveLength(1);
     expect(result.metrics.cacheWrites).toBe(0);
     expect(writes).toHaveLength(0);
+    expect(companyWrites).toHaveLength(0);
+  });
+
+  it("maintains a company-centric public source catalog without changing the current research result", async () => {
+    const subject = {legalName: "Camil Alimentos", geography: "Brasil"};
+    const plan = buildCompanyDebtResearchPlan(subject).slice(0, 1);
+    const earlierSource = {
+      provider: "official" as const, topic: "identity" as const, title: "Relatório anual",
+      url: "https://ri.camil.com.br/relatorio-anual", snippet: "Material público histórico.",
+      publishedAt: "2025-12-31", retrievedAt: "2026-09-02T12:00:00.000Z", contentHash: "7".repeat(64),
+    };
+    const prior = createPublicCompanyMemoryRecord({
+      subject, queryIds: ["8".repeat(64)], sources: [earlierSource],
+      storedAt: new Date("2026-09-02T12:00:00.000Z"), ttlHours: 48,
+    });
+    const writes: typeof prior[] = [];
+    const result = await runPublicResearch({
+      plan, companySubject: subject, now: () => new Date("2026-09-03T12:00:00.000Z"),
+      companyMemory: {
+        load: async () => prior,
+        store: async (record) => { writes.push(record); },
+      },
+      providers: [{id: "official", search: async (query) => [{
+        provider: "official", topic: query.topic, title: "Release atual",
+        url: "https://ri.camil.com.br/release-atual", snippet: "Material público atual.",
+        publishedAt: "2026-08-31", retrievedAt: "2026-09-03T12:00:00.000Z", contentHash: "9".repeat(64),
+      }]}],
+    });
+    expect(result.sources.map((item) => item.title)).toEqual(["Release atual"]);
+    expect(result.metrics.companyMemoryHit).toBe(true);
+    expect(writes).toHaveLength(1);
+    expect(writes[0]?.sources.map((item) => item.title)).toEqual(["Relatório anual", "Release atual"]);
+    expect(JSON.stringify(writes[0])).not.toMatch(/project|conversation|organization|user/i);
   });
 });

@@ -1,7 +1,10 @@
 import {fingerprintJson} from "@offroad/case-understanding";
 import {z} from "zod";
 
+import {executableWorkspaceJobSchema} from "./workspace-jobs";
+
 export * from "./work-system";
+export * from "./workspace-jobs";
 
 export const workspaceRequestIntentSchema = z.enum([
   "explain",
@@ -41,15 +44,7 @@ export const workspaceRequestRouteSchema = z.object({
 });
 export type WorkspaceRequestRoute = z.infer<typeof workspaceRequestRouteSchema>;
 
-export const executableWorkspaceJobSchema = z.enum([
-  "company_debt_view",
-  "origination_thesis",
-  "capital_planning",
-  "structure_from_documents",
-  "review_existing_operation",
-  "prepare_materials_and_process",
-]);
-export type ExecutableWorkspaceJob = z.infer<typeof executableWorkspaceJobSchema>;
+export * from "./journeys";
 
 export const workspaceExecutionRouteSchema = z.object({
   action: z.enum([

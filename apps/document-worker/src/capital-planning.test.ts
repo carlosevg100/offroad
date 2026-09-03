@@ -65,6 +65,19 @@ describe("capital planning executor", () => {
           id: ids.session, locale: "pt-BR", company_profile: {name: "Camil", website: "https://ri.camil.com.br", geography: "Brasil"},
           privacy_status: "public_information", representation_status: "not_claimed",
         },
+        professional_context: {
+          affiliationKind: "company",
+          professionalRole: "cfo",
+          teamName: "Finanças",
+          institutionName: "Camil",
+          operatingModels: ["capital_raising"],
+          productFamilies: [],
+          primaryObjectives: ["capital_planning"],
+          contextNotes: null,
+          disclosureStatus: "complete",
+          lastConfirmedAt: "2026-09-02T11:00:00.000Z",
+        },
+        institution_capabilities: null,
         brief: {
           id: ids.brief, kind: "capital_planning", version: 1,
           content: {capitalIntent: "Quero comparar alternativas de dívida para financiar crescimento e alongar o perfil."},
@@ -97,7 +110,21 @@ describe("capital planning executor", () => {
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
-      complete: async () => ({
+      complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
+        const textInput = request.input.find((part) => part.type === "text");
+        if (!textInput || textInput.type !== "text") throw new Error("expected text model input");
+        const modelInput = JSON.parse(textInput.text) as {
+          professionalContext?: {professionalRole?: string; affiliationKind?: string};
+          journeyBlueprint?: {id?: string};
+          collaborativeAdvisoryPolicy?: {alternativeUniverse?: string; professionalContextUse?: string};
+        };
+        expect(modelInput.professionalContext).toMatchObject({professionalRole: "cfo", affiliationKind: "company"});
+        expect(modelInput.journeyBlueprint?.id).toBe("capital_planning");
+        expect(modelInput.collaborativeAdvisoryPolicy).toMatchObject({
+          alternativeUniverse: "company_first_and_unconstrained",
+          professionalContextUse: "prioritize_and_shape_never_suppress",
+        });
+        return ({
         output: {
           executiveRead: "A necessidade declarada combina crescimento e alongamento. Sem demonstrações reconciliadas, o trabalho compara famílias e identifica o que deve ser comprovado antes de uma estrutura.",
           understoodNeed: {
@@ -155,7 +182,8 @@ describe("capital planning executor", () => {
         provider: "anthropic",
         model: "claude-sonnet-5",
         usage: {inputTokens: 200, outputTokens: 400, cachedInputTokens: 0},
-      }),
+        });
+      },
       spent: () => ({costUsd: 0.2, budgetExposureUsd: 0.3, calls: 1}),
     } as unknown as ModelGateway;
 

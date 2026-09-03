@@ -328,7 +328,8 @@ describe("agent operation brief worker", () => {
     expect(recordedActivation).toBeUndefined();
     expect(recordedResponse).toMatchObject({state: "asking"});
     expect(recordedResponse?.reply).toContain("balanço próprio");
-    expect(recordedResponse?.reply).toContain("análise neutra");
+    expect(recordedResponse?.reply).toContain("sem limitar a análise");
+    expect(recordedResponse?.reply).toContain("leitura ampla");
   });
 
   it("uses relevant organization memory before asking for missing Camil meeting context", async () => {
@@ -650,6 +651,11 @@ describe("agent operation brief worker", () => {
       latestUserMessage: "O que já sabemos e qual é o próximo passo?",
       professionalContext: {professionalRole: "dcm_banker", operatingModels: ["structuring", "distribution"]},
       institutionCapabilities: {institutionName: "Banco Exemplo", operatingModels: ["balance_sheet_lending", "structuring", "distribution"]},
+      journeyBlueprint: {id: "company_debt_view", firstWorkProduct: expect.any(String)},
+      collaborativeAdvisoryPolicy: {
+        alternativeUniverse: "company_first_and_unconstrained",
+        professionalContextUse: "prioritize_and_shape_never_suppress",
+      },
     });
     expect(metadata).toMatchObject({projectEntryJob: "company_debt_view", documentCount: "1", artifactCount: "1"});
     expect(modelInput).not.toContain("object_path");

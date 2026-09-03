@@ -170,6 +170,8 @@ export type QueueClient = {
   recordPublicResearch(job: CaseAnalysisJob | CapitalProjectAnalysisJob, plan: unknown, result: unknown): Promise<string>;
   loadPublicResearchCache?(job: CapitalProjectAnalysisJob, queryIds: string[]): Promise<unknown>;
   storePublicResearchCache?(job: CapitalProjectAnalysisJob, entries: unknown[]): Promise<unknown>;
+  loadPublicCompanyMemory?(job: CapitalProjectAnalysisJob, companyKey: string): Promise<unknown>;
+  storePublicCompanyMemory?(job: CapitalProjectAnalysisJob, record: unknown): Promise<unknown>;
   recordPreliminaryUnderstanding(job: PreliminaryAnalysisJob, input: {
     inputFingerprint: string;
     payload: unknown;
@@ -491,6 +493,20 @@ export function createQueueClient(
         p_entries: entries,
       });
     },
+    async loadPublicCompanyMemory(job, companyKey) {
+      return call("worker_load_public_company_memory", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_company_key: companyKey,
+      });
+    },
+    async storePublicCompanyMemory(job, record) {
+      return call("worker_store_public_company_memory", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_record: record,
+      });
+    },
 
     async recordPreliminaryUnderstanding(job, input) {
       const data = await call("worker_record_preliminary_understanding", {
@@ -564,7 +580,7 @@ export function createQueueClient(
     },
 
     async loadCapitalProjectContext(job) {
-      return call("worker_load_capital_project_context_v3", {
+      return call("worker_load_capital_project_context_v4", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });

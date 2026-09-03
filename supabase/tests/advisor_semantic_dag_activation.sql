@@ -28,6 +28,17 @@ select set_config(
   true
 );
 
+select public.save_professional_capability_context_v1(
+  '20000000-0000-4000-8000-000000000231',
+  'bank', 'dcm_banker', 'DCM',
+  array['prepare_meetings', 'originate_ideas'],
+  'Banco Farol',
+  array['structuring', 'distribution'],
+  array['capital_markets'],
+  'Contexto usado para calibrar, nunca restringir, as alternativas.',
+  false
+);
+
 do $$
 declare
   source_request_id constant uuid := '30000000-0000-4000-8000-000000000231';
@@ -253,11 +264,20 @@ select set_config(
 do $$
 declare
   claim jsonb;
+  context jsonb;
 begin
   claim := public.worker_claim_job(repeat('s', 64), 600);
   if claim ->> 'kind' <> 'capital_project_analysis'
     or claim #>> '{payload,trigger_event,type}' <> 'advisor_semantic_route' then
     raise exception 'semantic completion did not claim the activated DAG: %', claim;
+  end if;
+  context := public.worker_load_capital_project_context_v4(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token'
+  );
+  if context #>> '{professional_context,professionalRole}' <> 'dcm_banker'
+    or context #>> '{professional_context,institutionName}' <> 'Banco Farol'
+    or context #>> '{institution_capabilities,operatingModels,0}' <> 'structuring' then
+    raise exception 'specialized project context did not receive the initiating user profile: %', context;
   end if;
   perform set_config('offroad_test.capital_job_id', claim ->> 'job_id', true);
   perform set_config('offroad_test.capability', claim ->> 'capability_token', true);
