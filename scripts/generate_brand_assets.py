@@ -140,6 +140,52 @@ def make_wordmark(source: Image.Image) -> Image.Image:
     return source.crop((44, 106, 2080, 590))
 
 
+def draw_tracked_text(
+    image: Image.Image,
+    text: str,
+    *,
+    center_x: int,
+    y: int,
+    typeface: ImageFont.FreeTypeFont,
+    fill: tuple[int, int, int, int],
+    tracking: int,
+) -> None:
+    """Draw a compact institutional tagline with explicit letter spacing."""
+    draw = ImageDraw.Draw(image)
+    widths = [draw.textlength(character, font=typeface) for character in text]
+    total_width = sum(widths) + tracking * (len(text) - 1)
+    x = center_x - total_width / 2
+    for character, width in zip(text, widths, strict=True):
+        draw.text((round(x), y), character, font=typeface, fill=fill)
+        x += width + tracking
+
+
+def make_dcm_wordmark(wordmark: Image.Image, *, inverted: bool = False) -> Image.Image:
+    """Replace the legacy CAPITAL descriptor with the current market promise."""
+    output = wordmark.copy()
+    draw = ImageDraw.Draw(output)
+    draw.rectangle((930, 332, output.width, output.height), fill=(255, 255, 255, 0))
+    tagline_color = (166, 178, 115, 255) if inverted else (117, 139, 79, 255)
+    draw_tracked_text(
+        output,
+        "POWERING DEBT CAPITAL MARKETS",
+        center_x=1490,
+        y=372,
+        typeface=font(35, bold=True),
+        fill=tagline_color,
+        tracking=5,
+    )
+    return output
+
+
+def make_clean_wordmark(wordmark: Image.Image) -> Image.Image:
+    """Remove the legacy descriptor so the interface can set the signature crisply."""
+    output = wordmark.copy()
+    draw = ImageDraw.Draw(output)
+    draw.rectangle((930, 332, output.width, output.height), fill=(255, 255, 255, 0))
+    return output
+
+
 def make_social_preview(wordmark: Image.Image) -> Image.Image:
     width, height = 1200, 630
     canvas = Image.new("RGBA", (width, height), CARBON_TOP)
@@ -166,19 +212,19 @@ def make_social_preview(wordmark: Image.Image) -> Image.Image:
 
     draw.text(
         (74, 190),
-        "AI-DRIVEN PRIVATE CREDIT ORIGINATION & MARKET ACCESS",
+        "THE AI PLATFORM FOR DEBT CAPITAL MARKETS",
         font=font(14, bold=True),
         fill=(166, 171, 174, 255),
         spacing=4,
     )
 
     headline_font = font(59, bold=True)
-    draw.text((72, 252), "Private credit origination", font=headline_font, fill=WHITE)
-    draw.text((72, 322), "beyond traditional channels.", font=headline_font, fill=WHITE)
+    draw.text((72, 252), "Powering a smarter, more efficient", font=headline_font, fill=WHITE)
+    draw.text((72, 322), "and connected debt market.", font=headline_font, fill=WHITE)
 
     draw.text(
         (74, 440),
-        "Structured for the market. Matched to the mandate.",
+        "Specialist intelligence for better capital decisions.",
         font=font(23, bold=True),
         fill=(218, 221, 220, 255),
     )
@@ -200,6 +246,14 @@ def main() -> None:
     inverted_wordmark = make_inverted(wordmark)
     inverted_wordmark.save(BRAND / "offroad-capital-wordmark-inverted.png", optimize=True)
     inverted_wordmark.save(BRAND / "offroad-capital-wordmark-inverted-v2.png", optimize=True)
+    clean_wordmark = make_clean_wordmark(wordmark)
+    clean_wordmark.save(BRAND / "offroad-wordmark-clean-v1.png", optimize=True)
+    clean_inverted_wordmark = make_clean_wordmark(inverted_wordmark)
+    clean_inverted_wordmark.save(BRAND / "offroad-wordmark-clean-inverted-v1.png", optimize=True)
+    dcm_wordmark = make_dcm_wordmark(wordmark)
+    dcm_wordmark.save(BRAND / "offroad-dcm-wordmark-v1.png", optimize=True)
+    inverted_dcm_wordmark = make_dcm_wordmark(inverted_wordmark, inverted=True)
+    inverted_dcm_wordmark.save(BRAND / "offroad-dcm-wordmark-inverted-v1.png", optimize=True)
 
     symbol_1024 = make_symbol(source, 1024)
     symbol_1024.save(BRAND / "offroad-symbol.png", optimize=True)
@@ -228,7 +282,7 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    social = make_social_preview(inverted_wordmark)
+    social = make_social_preview(inverted_dcm_wordmark)
     social.save(PUBLIC / "social-preview.png", optimize=True, quality=92)
 
 

@@ -8,16 +8,16 @@ import {BrandMark} from "./brand-mark";
 
 type SiteHeaderProps = {
   locale: AppLocale;
+  variant?: "default" | "landing";
 };
 
-export function SiteHeader({locale}: SiteHeaderProps) {
+export function SiteHeader({locale, variant = "default"}: SiteHeaderProps) {
   const t = useTranslations("Navigation");
-  const demoHref = `/${locale}/demo`;
   const loginHref = `/${locale}/login#access-form`;
   const createAccountHref = `/${locale}/signup`;
 
   return (
-    <header className="site-header">
+    <header className={`site-header ${variant === "landing" ? "site-header--landing" : ""}`}>
       <a className="skip-link" href="#main-content">
         {t("skip")}
       </a>
@@ -25,9 +25,10 @@ export function SiteHeader({locale}: SiteHeaderProps) {
         <BrandMark locale={locale} />
 
         <nav className="desktop-nav" aria-label={t("menu")}>
-          <a href="#como-funciona">{t("how")}</a>
+          <a href="#produto">{t("product")}</a>
           <a href="#para-quem">{t("audiences")}</a>
-          <a href="#seguranca">{t("trust")}</a>
+          <a href="#inteligencia">{t("intelligence")}</a>
+          <a href="#confianca">{t("trust")}</a>
         </nav>
 
         <div className="site-header__actions">
@@ -46,14 +47,11 @@ export function SiteHeader({locale}: SiteHeaderProps) {
               {t("english")}
             </Link>
           </div>
-          <Link className="access-link" href={createAccountHref}>
-            {t("createAccount")}
-          </Link>
           <Link className="access-link" href={loginHref}>
             {t("login")}
           </Link>
-          <Link className="button button--small" href={demoHref}>
-            <span>{t("demo")}</span>
+          <Link className="button button--small" href={createAccountHref}>
+            <span>{t("start")}</span>
             <ArrowUpRight aria-hidden="true" size={15} />
           </Link>
           <div className="mobile-locale-switcher" aria-label={t("language")}>
@@ -76,12 +74,12 @@ export function SiteHeader({locale}: SiteHeaderProps) {
               <Menu aria-hidden="true" size={20} />
             </summary>
             <div className="mobile-nav__panel">
-              <a href="#como-funciona">{t("how")}</a>
+              <a href="#produto">{t("product")}</a>
               <a href="#para-quem">{t("audiences")}</a>
-              <a href="#seguranca">{t("trust")}</a>
-              <Link href={createAccountHref}>{t("createAccount")}</Link>
+              <a href="#inteligencia">{t("intelligence")}</a>
+              <a href="#confianca">{t("trust")}</a>
               <Link href={loginHref}>{t("login")}</Link>
-              <Link href={demoHref}>{t("demo")}</Link>
+              <Link href={createAccountHref}>{t("start")}</Link>
             </div>
           </details>
         </div>

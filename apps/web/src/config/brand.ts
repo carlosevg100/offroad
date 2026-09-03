@@ -3,11 +3,18 @@ export const brand = {
   slug: "offroadcapital",
   domain: "offroad.capital",
   url: "https://offroad.capital",
-  browserTitle: "Offroad Capital | Private Credit Origination",
-  description: "Offroad Capital structures company financing needs into private credit opportunities and connects them with investors whose mandates are aligned with each transaction.",
-  category: "AI-Driven Private Credit Origination & Market Access",
-  socialHeadline: "Private credit origination beyond traditional channels.",
-  signature: "Structured for the market. Matched to the mandate.",
+  browserTitle: "Offroad Capital | AI for Debt Capital Markets",
+  description: "Offroad brings specialist financial intelligence, market context, and institutional execution capacity to debt capital markets.",
+  category: "AI Platform for Debt Capital Markets",
+  socialHeadline: "Powering a smarter, more efficient and connected debt market.",
+  signature: "Powering Debt Capital Markets",
+  capabilities: [
+    "Investigate companies, sectors, debt markets, and financing alternatives",
+    "Analyze financials, capital structures, debt capacity, risks, and scenarios",
+    "Compare and recommend indicative debt structures",
+    "Prepare evidence-linked analysis, models, term sheets, and presentation materials",
+    "Match relevant financing providers and support authorized qualified introductions",
+  ],
   email: "hello@offroad.capital",
 } as const;
 
