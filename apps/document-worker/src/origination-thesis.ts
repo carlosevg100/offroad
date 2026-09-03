@@ -158,7 +158,7 @@ Rules:
 - Return only the structured object required by the schema, in the requested locale.`;
 
 const EXECUTOR_KEY = "offroad.origination_thesis";
-const EXECUTOR_VERSION = "2026.09.03-v4";
+const EXECUTOR_VERSION = "2026.09.03-v5";
 const ARTIFACT_SCHEMA_VERSION = "capital-artifact.v1";
 
 type Context = z.infer<typeof contextSchema>;
@@ -326,14 +326,14 @@ export async function processOriginationThesisJob(
         schema: seniorReadoutSchema,
         schemaName: "origination_senior_readout_v2",
         dataHandling: {classification: "confidential", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
-        maxOutputTokens: 16_000,
+        maxOutputTokens: 24_000,
         metadata: {
           jobId: job.job_id,
           projectId: context.project.id,
           publicSourceCount: String(research.sources.length),
           revision: context.revision ? "true" : "false",
         },
-        cacheKey: "origination-senior-readout-v4",
+        cacheKey: "origination-senior-readout-v5",
       });
       const sanitized = sanitizeCitations(normalizeReadout(completion.output), allowedUrls);
       const quality = validateMeetingBrief(sanitized, allowedUrls, modelInput);
@@ -926,7 +926,9 @@ function validateMeetingBrief(
   const supportedOfficialTokens = materialNumericTokens(JSON.stringify(officialStructuredSources));
   const coveredOfficialTokens = supportedOfficialTokens.filter((token) => outputTokens.includes(token));
   const requiredOfficialFacts = Math.min(3, supportedOfficialTokens.length);
-  const prohibited = /(?:cr[eé]dito aprovado|funding confirmado|opera[cç][aã]o garantida|market[- ]ready|will approve|financiamento garantido)/i.test(outputText);
+  // “Market-ready” describes the completeness of the work product, not certainty of funding.
+  // Reject only claims that a lender has approved, committed or guaranteed capital.
+  const prohibited = /(?:cr[eé]dito aprovado|funding confirmado|opera[cç][aã]o garantida|will approve|financiamento garantido)/i.test(outputText);
   return [
     {id: "schema", passed: seniorReadoutSchema.safeParse(output).success, detail: "Senior-banker readout schema validated."},
     {id: "citation_allowlist", passed: citedUrls.every((url) => allowedUrls.has(url)), detail: "Every citation resolves to the persisted public-research set."},

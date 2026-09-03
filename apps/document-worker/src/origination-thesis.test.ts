@@ -203,7 +203,7 @@ describe("origination thesis vertical", () => {
           }],
           financingAngles: [{
             title: "Flexibilidade do balanço",
-            route: "Alternativas de dívida a investigar",
+            route: "Preparar uma operação market-ready sem presumir aprovação de crédito",
             rationale: "A reunião deve esclarecer prioridades de capital antes de desenhar qualquer estrutura indicativa.",
             sourceUrls: [sourceUrl],
             prerequisites: ["Confirmar dívida atual e cronograma de vencimentos."],
