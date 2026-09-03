@@ -1,5 +1,8 @@
 # Offroad Capital: Product and Engineering Handoff
 
+> **Historical snapshot.** Product positioning in this file is superseded by Constitution 2.2
+> and ADR 0019. Do not use its company descriptions as current agent context.
+
 > Current as of 18 August 2026, `main` after PRs #41, #44, #46, #47, #48, #49
 > and this documentation PR (previous baseline: `30b87f7`, PR #40).
 >

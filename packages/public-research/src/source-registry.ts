@@ -117,11 +117,16 @@ export const debtSourceRegistry = [
   }),
   source({
     id: "anbima_data", name: "ANBIMA Data", jurisdictions: ["BR"],
-    sourceClass: "self_regulatory_organization", access: "public_site", status: "contract_ready", authorityTier: 2,
-    capabilities: ["debt_instruments", "primary_market_terms", "secondary_market_pricing", "comparable_transactions", "lender_mandates"],
+    sourceClass: "self_regulatory_organization", access: "public_site", status: "manual_only", authorityTier: 2,
+    capabilities: ["debt_instruments", "primary_market_terms", "secondary_market_pricing", "comparable_transactions"],
     domains: ["anbima.com.br"], reuse: "public_reusable",
-    purpose: "Referência de debêntures, CRI, CRA, FIDC, documentos e dados analíticos publicados pela ANBIMA.",
-    limitations: ["A disponibilidade pública por ativo não substitui a escritura, o prospecto ou o documento do emissor."],
+    purpose: "Referência pública para ofertas, emissões, termos e preços indicativos recentes de debêntures, notas comerciais, CRI e CRA publicados pela ANBIMA.",
+    limitations: [
+      "O site público não é o ANBIMA Feed e não oferece a mesma cobertura histórica ou um contrato de API de produção.",
+      "Parte da consulta diária gratuita mantém apenas os cinco dias úteis mais recentes; histórico amplo pertence ao Feed contratado.",
+      "Uso automatizado e retenção precisam de validação dos termos aplicáveis antes de um adaptador sair de manual_only.",
+      "Não comprova mandato ou apetite de financiador e não substitui escritura, prospecto, documento do emissor, CVM ou B3.",
+    ],
   }),
   source({
     id: "anbima_feed", name: "ANBIMA Feed", jurisdictions: ["BR"],
@@ -129,7 +134,10 @@ export const debtSourceRegistry = [
     capabilities: ["secondary_market_pricing", "primary_market_terms", "comparable_transactions"],
     domains: ["api.anbima.com.br"], reuse: "licensed_reusable_within_contract",
     purpose: "API estruturada para preços indicativos, curvas de crédito e dados de títulos privados.",
-    limitations: ["Exige contratação e respeito ao pacote e à licença de redistribuição."], activationEnv: "ANBIMA_CLIENT_ID",
+    limitations: [
+      "A APP gratuita libera Sandbox com dados fixos e fictícios; dados oficiais exigem acesso de Produção.",
+      "Produção exige associação elegível ou contratação, Client ID e Client Secret, além de respeito ao pacote e à licença de redistribuição.",
+    ], activationEnv: "ANBIMA_CLIENT_ID",
   }),
   source({
     id: "sec_edgar", name: "SEC EDGAR", jurisdictions: ["US"],

@@ -19,4 +19,4 @@ export * from "./redaction";
 export * from "./cassette";
 export * from "./gateway";
 export {createAnthropicAdapter, buildAnthropicParams, mapAnthropicStopReason, mapAnthropicUsage, safeJsonParse} from "./adapters/anthropic";
-export {createOpenAIAdapter, buildOpenAIParams, toOpenAIStrictSchema, stripNulls, mapOpenAIStopReason, mapOpenAIUsage} from "./adapters/openai";
+export {createOpenAIAdapter, buildOpenAIParams, toOpenAIStrictSchema, stripOpenAIOptionalNulls, mapOpenAIStopReason, mapOpenAIUsage} from "./adapters/openai";

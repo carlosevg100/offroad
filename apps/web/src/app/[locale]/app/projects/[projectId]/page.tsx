@@ -281,8 +281,58 @@ async function ConversationalCapitalProject({
   const latestRunByTask = new Map<string, {status: string}>();
   for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
+  const {data: agentPlan} = await supabase.from("capital_project_agent_plans")
+    .select("id, revision, goal, status")
+    .eq("organization_id", organization.id)
+    .eq("capital_project_id", project.id)
+    .eq("status", "active")
+    .maybeSingle();
+  const [
+    {data: agentWorkItems},
+    {data: agentEventsDescending},
+    {data: informationRequests},
+    {data: requirementCoverage},
+    {data: decisionRecords},
+  ] = agentPlan
+    ? await Promise.all([
+        supabase.from("capital_project_agent_work_items")
+          .select("id, title, status, created_at")
+          .eq("organization_id", organization.id)
+          .eq("agent_plan_id", agentPlan.id)
+          .neq("status", "superseded")
+          .order("created_at"),
+        supabase.from("capital_project_agent_events")
+          .select("id, event_type, summary_pt, summary_en, created_at")
+          .eq("organization_id", organization.id)
+          .eq("capital_project_id", project.id)
+          .eq("agent_plan_id", agentPlan.id)
+          .order("created_at", {ascending: false})
+          .limit(40),
+        supabase.from("capital_project_information_requests")
+          .select("id, question, why_it_matters, decision_impact, priority, information_gain, materiality, created_at")
+          .eq("organization_id", organization.id)
+          .eq("capital_project_id", project.id)
+          .eq("status", "open")
+          .neq("priority", "later")
+          .order("information_gain", {ascending: false})
+          .order("created_at")
+          .limit(3),
+        supabase.from("capital_project_requirement_coverage")
+          .select("id, status, materiality")
+          .eq("organization_id", organization.id)
+          .eq("capital_project_id", project.id),
+        supabase.from("capital_project_decisions")
+          .select("id, question, recommendation, status, created_at")
+          .eq("organization_id", organization.id)
+          .eq("capital_project_id", project.id)
+          .neq("status", "superseded")
+          .order("created_at", {ascending: false})
+          .limit(5),
+      ])
+    : [{data: []}, {data: []}, {data: []}, {data: []}, {data: []}];
+
   const copy: AdvisorProjectCopy = {
-    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
+    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
     proposal: {
       preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
@@ -318,7 +368,43 @@ async function ConversationalCapitalProject({
         };
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", createdAt: new Date().toISOString()}];
-  const pendingContext = pendingAdvisorContext(messages ?? []);
+  const fallbackContext = pendingAdvisorContext(messages ?? []);
+  const pendingRequests = informationRequests?.length
+    ? informationRequests.map((request) => ({
+        id: request.id,
+        question: request.question,
+        whyItMatters: request.why_it_matters,
+        decisionImpact: request.decision_impact,
+      }))
+    : fallbackContext ? [{id: `context-${project.id}`, ...fallbackContext}] : [];
+  const compiledActivities = advisorActivities(project.entry_job, (tasks ?? []).map((task) => ({
+    id: task.id,
+    taskId: task.task_id,
+    label: localizedOffroadTaskLabel(task.task_id, task.label, locale === "en-US" ? "en-US" : "pt-BR"),
+    status: (latestRunByTask.get(task.id)?.status ?? "waiting") as "waiting" | "queued" | "running" | "succeeded" | "failed" | "blocked" | "cancelled",
+  })), {
+    context: t("activities.context"),
+    research: t("activities.research"),
+    market: t("activities.market"),
+    readout: t("activities.readout"),
+  });
+  const visibleActivities = agentWorkItems?.length
+    ? agentWorkItems.map((item) => ({
+        id: item.id,
+        label: item.title,
+        status: advisorWorkStatus(item.status),
+      }))
+    : compiledActivities;
+  const activityEvents = [...(agentEventsDescending ?? [])].reverse().map((event) => ({
+    id: event.id,
+    type: event.event_type,
+    summary: locale === "en-US" ? event.summary_en : event.summary_pt,
+    createdAt: event.created_at,
+  }));
+  const verifiedCoverage = (requirementCoverage ?? []).filter((item) => ["verified", "not_applicable"].includes(item.status)).length;
+  const openCoverage = (requirementCoverage ?? []).filter((item) =>
+    ["missing", "partial", "conflicting", "unavailable"].includes(item.status)
+    && ["blocking", "high"].includes(item.materiality)).length;
 
   return <AdvisorProject
     accessBasis={project.access_basis}
@@ -331,23 +417,21 @@ async function ConversationalCapitalProject({
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
-    pendingContext={pendingContext ?? undefined}
+    activityEvents={activityEvents}
+    coverage={{verified: verifiedCoverage, total: requirementCoverage?.length ?? 0, openIssues: openCoverage}}
+    decisionRecords={(decisionRecords ?? []).map((decision) => ({
+      id: decision.id,
+      question: decision.question,
+      recommendation: decision.recommendation,
+      status: decision.status,
+    }))}
+    pendingRequests={pendingRequests}
     proposals={(proposals ?? []).map((proposal): AdvisorChangeProposal => ({id: proposal.id, status: proposal.status, title: proposal.title, rationale: proposal.rationale, impactSummary: proposal.impact_summary, proposal: proposal.proposal}))}
     projectId={project.id}
     projectName={project.project_name}
     sessionId={session.id}
     sessionStatus={session.status}
-    tasks={advisorActivities(project.entry_job, (tasks ?? []).map((task) => ({
-      id: task.id,
-      taskId: task.task_id,
-      label: localizedOffroadTaskLabel(task.task_id, task.label, locale === "en-US" ? "en-US" : "pt-BR"),
-      status: (latestRunByTask.get(task.id)?.status ?? "waiting") as "waiting" | "queued" | "running" | "succeeded" | "failed" | "blocked" | "cancelled",
-    })), {
-      context: t("activities.context"),
-      research: t("activities.research"),
-      market: t("activities.market"),
-      readout: t("activities.readout"),
-    })}
+    tasks={visibleActivities}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
     workProduct={<>{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
       artifact={parsedOrigination.data}
@@ -401,6 +485,18 @@ async function ConversationalCapitalProject({
       sessionId={session.id}
     /> : null}</div> : null}</>}
   />;
+}
+
+function advisorWorkStatus(status: string): "waiting" | "queued" | "running" | "succeeded" | "failed" | "blocked" | "cancelled" {
+  if (status === "pending") return "waiting";
+  if (status === "ready") return "queued";
+  if (status === "review") return "running";
+  if (status === "waiting_user") return "blocked";
+  if (status === "superseded") return "cancelled";
+  if (["running", "succeeded", "failed", "blocked"].includes(status)) {
+    return status as "running" | "succeeded" | "failed" | "blocked";
+  }
+  return "waiting";
 }
 
 function customerArtifactLabel(type: string, locale: string): string | null {

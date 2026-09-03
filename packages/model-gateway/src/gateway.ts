@@ -4,7 +4,6 @@ import {cassetteKey, type CassetteMode, type CassetteStore} from "./cassette";
 import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
 import {estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
-import {stripNulls} from "./adapters/openai";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
 import {
   ModelGatewayError,
@@ -212,7 +211,10 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         continue;
       }
 
-      const parsed = request.schema.safeParse(stripNulls(response.output));
+      // Provider adapters normalize only quirks they introduced. The gateway must
+      // preserve semantic nulls because absence and an explicit negative answer
+      // are different states in governed financial work.
+      const parsed = request.schema.safeParse(response.output);
       if (!parsed.success) {
         const validationIssues: ValidationIssueDiagnostic[] = parsed.error.issues.slice(0, 5).map((issue) => ({
           path: issue.path.join("."),

@@ -29,6 +29,24 @@ describe("workspace request router", () => {
     });
   });
 
+  it("never turns a negated approval into a commit", () => {
+    expect(routeWorkspaceRequest({message: "Não aprovo essa estrutura.", surface: "case_workspace"})).toMatchObject({
+      intent: "clarify",
+      effect: "none",
+      requiresExplicitConfirmation: false,
+      reasonCode: "negated_governed_action",
+    });
+  });
+
+  it("never turns a negated lender instruction into an external action", () => {
+    expect(routeWorkspaceRequest({message: "Não envie o material ao Fundo Alfa.", surface: "market"})).toMatchObject({
+      intent: "clarify",
+      effect: "none",
+      requiresExplicitConfirmation: false,
+      reasonCode: "negated_governed_action",
+    });
+  });
+
   it("blocks an external instruction on the operation brief surface", () => {
     expect(routeWorkspaceRequest({message: "Pode enviar ao Fundo Alfa.", surface: "operation_brief"})).toMatchObject({
       intent: "authorize_external",
@@ -143,7 +161,7 @@ describe("workspace execution router", () => {
     });
   });
 
-  it("never sends private documents through a public-information executor", () => {
+  it("continues document-backed work through the private case pipeline", () => {
     expect(routeWorkspaceExecution({
       entryJob: "company_debt_view",
       accessBasis: "authorized_private",
@@ -152,8 +170,25 @@ describe("workspace execution router", () => {
       artifactTypes: [],
       requestText: "Analise os documentos enviados.",
     })).toMatchObject({
-      action: "conversation_only",
-      reasonCode: "private_case_requires_case_graph",
+      action: "continue_private_case",
+      reasonCode: "private_case_pipeline_active",
+      modelRoutingCalls: 0,
+    });
+  });
+
+  it("recognizes structure-from-documents as a released private executor", () => {
+    expect(routeWorkspaceExecution({
+      entryJob: "structure_from_documents",
+      accessBasis: "authorized_private",
+      companyName: null,
+      documentCount: 4,
+      artifactTypes: [],
+      requestText: "Analise a pasta e me ajude a estruturar as alternativas.",
+    })).toMatchObject({
+      action: "continue_private_case",
+      analysisScope: "structure_from_documents",
+      requirements: [],
+      reasonCode: "private_case_pipeline_active",
       modelRoutingCalls: 0,
     });
   });

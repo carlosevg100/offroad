@@ -16,7 +16,7 @@ const strictUnsupportedKeywords = new Set(["minLength", "maxLength", "minimum", 
 /**
  * OpenAI strict structured outputs require every property to be listed in
  * `required` and `additionalProperties: false`; optional properties become
- * nullable and the gateway strips nulls before zod validation. Numeric/length
+ * nullable and the adapter strips only those artificial nulls before zod validation. Numeric/length
  * constraints and string formats are validated client-side by zod, so they are removed here.
  * In particular, z.url() emits `format: "uri"`, which is not part of the provider's strict
  * structured-output subset and makes an otherwise valid request fail before inference.
@@ -54,18 +54,62 @@ function nullable(schema: JsonSchema): JsonSchema {
   return {anyOf: [schema, {type: "null"}]};
 }
 
-/** Removes `null` values that the strict schema forced for optional properties. */
-export function stripNulls(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(stripNulls);
-  if (value && typeof value === "object") {
-    const output: Record<string, unknown> = {};
-    for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-      if (entry === null) continue;
-      output[key] = stripNulls(entry);
-    }
-    return output;
+/**
+ * Removes only the `null` values introduced by OpenAI's strict-output contract.
+ *
+ * Strict output requires every object property to be present. We represent an
+ * originally optional property as nullable for the provider, then remove its
+ * artificial `null` before validating with the original Zod schema. A required
+ * nullable property is semantic data (for example, an honest `not_ready`
+ * recommendation with no alternative id) and must survive unchanged.
+ */
+export function stripOpenAIOptionalNulls(value: unknown, originalSchema: JsonSchema): unknown {
+  return stripAgainstSchema(value, originalSchema);
+}
+
+function stripAgainstSchema(value: unknown, schema: JsonSchema): unknown {
+  if (Array.isArray(value)) {
+    const itemSchema = schemaForValue(schema.items, value[0]);
+    return value.map((entry) => itemSchema ? stripAgainstSchema(entry, itemSchema) : entry);
   }
-  return value;
+  if (!value || typeof value !== "object") return value;
+
+  const objectSchema = schemaForValue(schema, value) ?? schema;
+  const properties = objectSchema.properties && typeof objectSchema.properties === "object"
+    ? objectSchema.properties as Record<string, unknown>
+    : {};
+  const required = new Set(Array.isArray(objectSchema.required) ? objectSchema.required as string[] : []);
+  const output: Record<string, unknown> = {};
+
+  for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+    const propertySchema = schemaForValue(properties[key], entry);
+    if (entry === null && Object.hasOwn(properties, key) && !required.has(key)) continue;
+    output[key] = propertySchema ? stripAgainstSchema(entry, propertySchema) : entry;
+  }
+  return output;
+}
+
+function schemaForValue(candidate: unknown, value: unknown): JsonSchema | undefined {
+  if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return undefined;
+  const schema = candidate as JsonSchema;
+  const alternatives = Array.isArray(schema.anyOf)
+    ? schema.anyOf
+    : Array.isArray(schema.oneOf)
+      ? schema.oneOf
+      : [];
+  if (alternatives.length === 0) return schema;
+
+  return alternatives
+    .map((entry) => schemaForValue(entry, value))
+    .find((entry) => entry && schemaMatchesValue(entry, value));
+}
+
+function schemaMatchesValue(schema: JsonSchema, value: unknown): boolean {
+  const type = schema.type;
+  if (value === null) return type === "null" || (Array.isArray(type) && type.includes("null"));
+  if (Array.isArray(value)) return type === "array" || (Array.isArray(type) && type.includes("array"));
+  if (typeof value === "object") return type === "object" || Boolean(schema.properties) || (Array.isArray(type) && type.includes("object"));
+  return type === typeof value || (Array.isArray(type) && type.includes(typeof value));
 }
 
 export function buildOpenAIParams(request: AdapterRequest): OpenAI.Responses.ResponseCreateParamsNonStreaming {
@@ -117,8 +161,9 @@ export function createOpenAIAdapter(options: OpenAIAdapterOptions = {}): Provide
       const params = buildOpenAIParams(request);
       const response = await client.responses.create(params, {timeout: request.timeoutMs});
       const rawText = response.output_text ?? "";
+      const originalSchema = z.toJSONSchema(request.schema) as JsonSchema;
       const adapterResponse: AdapterResponse = {
-        output: stripNulls(safeJsonParse(rawText)),
+        output: stripOpenAIOptionalNulls(safeJsonParse(rawText), originalSchema),
         rawText,
         usage: mapOpenAIUsage(response.usage),
         model: response.model,

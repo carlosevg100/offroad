@@ -10,10 +10,11 @@
 
 ## 1. Objetivo do produto
 
-A Offroad é uma plataforma especialista em alternativas de financiamento em dívida para
-companhias e profissionais do mercado. Ela transforma documentos dispersos, intenção de capital
-e contexto de mercado em planejamento, alternativas de dívida, estrutura, materiais e acesso
-qualificado aos financiadores aderentes.
+A Offroad é o advisor AI-native especialista em dívida que ajuda companhias e profissionais do
+mercado a pensar, investigar, analisar, decidir, estruturar e executar trabalhos relacionados a
+dívida. Ela transforma documentos dispersos, intenção de capital e contexto de mercado em
+planejamento, alternativas, decisões auditáveis, estruturas, materiais e, quando aplicável,
+acesso qualificado aos financiadores aderentes.
 
 O produto pode começar antes de existir uma operação, com uma leitura de companhia ou tese de
 originação, ou depois, com uma necessidade, estrutura ou pacote já existente. As seis formas de

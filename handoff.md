@@ -10,6 +10,21 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Canonical identity: universal debt advisor, 2 September 2026
+
+Offroad is the **AI-native debt advisor** that helps companies and market professionals think,
+investigate, analyze, decide, structure, and execute debt-related work. Origination, transaction
+structuring, materials, lender matching and qualified introductions are composable capabilities,
+not the identity of the company. Constitution 2.2 and ADR 0019 supersede every historical
+description of Offroad as merely a private-credit origination and market-access platform.
+
+The public site, metadata, manifest, social-asset generator and authenticated workspace copy now
+project this identity in PT-BR and EN-US. ANBIMA Data is catalogued as a complementary public,
+manual source; ANBIMA Feed remains a contracted source and is not active. A developer APP grants
+Sandbox access with fixed fictional responses, not official production data. See
+`docs/build/ANBIMA_SOURCE_DECISION.md`. No ANBIMA credential was stored or used; rotate the Client
+Secret exposed in the screenshot before any future integration.
+
 ### Candidate update: instant project shell, 2 September 2026
 
 Project creation no longer waits for the initial worker enqueue. The atomic project/session/plan/
@@ -1050,21 +1065,18 @@ journey.
 
 ## 1. Executive summary
 
-Offroad Capital is a private-credit origination and market-access platform,
-powered by specialized AI and current market intelligence. It is not an “AI
-platform” in the abstract and it is not a lender.
+Offroad Capital is the AI-native debt advisor for companies and market professionals. It can begin
+with a company, meeting, question, document set, capital need or existing transaction, then preserve
+the context as the work evolves. It is not a generic AI platform and it is not a lender.
 
-The product takes fragmented company and transaction information, turns it into
-a structured, evidence-linked private-credit opportunity, and identifies capital
-providers whose mandates are aligned with the transaction.
+The product investigates and reconciles company, sector, financial and debt-market information;
+analyzes capacity, risks and scenarios; compares alternatives; supports decisions; and produces
+the governed work needed to move forward. When the work converges to a financing transaction, it
+can also structure the case, prepare materials, select the relevant market and make an authorized
+qualified introduction.
 
-The product serves three participant groups:
-
-1. **Companies** seeking capital beyond traditional channels.
-2. **Advisors/originators** submitting and managing opportunities on behalf of
-   companies.
-3. **Private-credit investors and lenders**, including funds, FIDCs, factors,
-   managers, and alternative lenders.
+The primary users are **companies and market professionals**. Their role changes language,
+permissions, default context and outputs, but never creates a separate product or a separate truth.
 
 The intended transformation is:
 
@@ -1087,24 +1099,28 @@ documentation, funding, or closing.
 
 ### Core category
 
-**AI-driven private-credit origination and market access.**
+**AI-native debt advisor.**
 
-In Portuguese, avoid describing Offroad as “uma plataforma de IA.” Preferred
-framing: **“Originação de crédito privado impulsionada por IA.”**
+In Portuguese: **“advisor AI-native especialista em dívida.”** The complete approved description
+is: **“A Offroad ajuda companhias e profissionais do mercado a pensar, investigar, analisar,
+decidir, estruturar e executar trabalhos relacionados a dívida.”**
 
 ### Current public value proposition
 
-- Companies reach the market better prepared and gain access to capital that
-  may be outside their existing network.
-- Advisors originate with more consistency, speed, and reach.
-- Investors receive new, structured opportunities aligned with mandate, ticket,
-  sector, structure, risk profile, and return requirements.
+- Companies and market professionals can start before an operation exists and keep the same
+  company and project memory as questions become decisions and work products.
+- Company, sector, financial, capital-structure and debt-market intelligence is reconciled into an
+  evidence-linked view rather than a generic model answer.
+- The system compares alternatives before recommending an indicative structure and can prepare
+  analysis, models, term sheets, presentations and market work from the same governed state.
+- Matching and qualified introduction are available when applicable and authorized; they do not
+  define the whole product.
 - Evidence remains linked to the underlying source.
 - Deterministic financial calculations must remain separate from generative AI.
 
 ### Product signature
 
-> Structured for the market. Matched to the mandate.
+> Debt intelligence. Structured for action.
 
 ### Brand statement
 
@@ -1120,8 +1136,8 @@ framing: **“Originação de crédito privado impulsionada por IA.”**
 - Avoid consumer-SaaS language such as “enter the workspace” in public copy.
 - Avoid futuristic AI clichés, excessive glow, fake scores, fake clients, fake
   statistics, and decorative charts without analytical meaning.
-- Use “advisor” as the participant label; an advisor/originator is an origination
-  channel and may submit on behalf of a company, not a separate economic case.
+- Use “advisor” for the product category. “Origination” is allowed only when it names a concrete
+  job or activity, never as the company category.
 
 ## 3. Product principles and non-negotiable invariants
 
@@ -1850,7 +1866,7 @@ tests are approved.
 - Locale detection: disabled.
 - Messages: `apps/web/messages/pt-BR.json` and `en-US.json`.
 - Routing: `apps/web/src/i18n/routing.ts`.
-- Browser title: `Offroad Capital | Private Credit Origination`.
+- Browser title: `Offroad Capital | AI-Native Debt Advisor`.
 - Internal pages use the Next metadata title template.
 - Organization, WebSite, and SoftwareApplication JSON-LD are server-rendered.
 - Robots currently block indexing.

@@ -11,9 +11,15 @@ conhecimento.
 
 ## 1. Definição e mandato
 
-O Offroad é o AI-native advisor de dívida que ajuda empresas e profissionais do mercado a
-**pensar, analisar, estruturar e conectar**. Ele transforma documentos dispersos, intenção de
-capital e contexto de mercado em uma decisão executável e auditável.
+O Offroad é o **advisor AI-native especialista em dívida** que ajuda empresas e profissionais do
+mercado a **pensar, investigar, analisar, decidir, estruturar e executar trabalhos relacionados a
+dívida**. Ele transforma documentos dispersos, intenção de capital e contexto de mercado em uma
+decisão executável e auditável.
+
+Essa é a identidade do produto. Originação, estruturação de operações, preparação de materiais,
+matching e introdução qualificada são capacidades que podem ser acionadas ao longo do trabalho;
+nenhuma delas, isoladamente, define a Offroad. “Plataforma de originação de crédito privado e
+acesso ao mercado” é posicionamento histórico e não deve ser reutilizado como descrição atual.
 
 O produto pode começar antes de existir uma operação e pode continuar depois que uma estrutura
 foi escolhida. Sua cadeia de valor é:

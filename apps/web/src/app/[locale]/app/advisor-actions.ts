@@ -158,7 +158,7 @@ export async function beginAdvisorProjectProcessing(input: unknown): Promise<Adv
       .limit(1)
       .maybeSingle(),
     supabase.from("capital_projects")
-      .select("entry_job")
+      .select("entry_job, access_basis")
       .eq("organization_id", organization.id)
       .eq("id", parsed.data.projectId)
       .maybeSingle(),
@@ -171,7 +171,8 @@ export async function beginAdvisorProjectProcessing(input: unknown): Promise<Adv
     locale: parsed.data.locale,
     sessionId: session.id,
   });
-  const privateCase = ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
+  const privateCase = project.access_basis === "authorized_private"
+    || ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
   if (privateCase) return outcome.ok ? {ok: true} : {ok: false, error: "processing"};
   // Public planning and origination executors still begin through their deterministic activation
   // route. Private work instead advances through the preliminary evidence gate above.

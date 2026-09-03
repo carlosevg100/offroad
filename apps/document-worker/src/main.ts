@@ -23,6 +23,7 @@ import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
+import {ensureInitialAgentPlan} from "./agent-plan";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -243,7 +244,13 @@ async function main(): Promise<void> {
     );
 
     const gatewayRun = newGateway(job);
-    current = (job.kind === "case_analysis" || job.kind === "preliminary_analysis"
+    const prepareAgentPlan = job.kind === "capital_project_analysis"
+      || job.kind === "case_analysis"
+      || job.kind === "preliminary_analysis"
+      ? ensureInitialAgentPlan(job, queue)
+      : Promise.resolve(null);
+
+    current = prepareAgentPlan.then(() => (job.kind === "case_analysis" || job.kind === "preliminary_analysis"
       ? processCaseAnalysisJob(job, {
           queue,
           gateway: gatewayRun.gateway,
@@ -286,14 +293,14 @@ async function main(): Promise<void> {
               })
       : job.kind === "agent_operation_brief"
         ? processAgentOperationBriefJob(job, {queue, gateway: gatewayRun.gateway, log})
-      : processDocumentJob(job, dependenciesFor(gatewayRun)))
+      : processDocumentJob(job, dependenciesFor(gatewayRun))))
       .then((outcome) => {
         const spent = gatewayRun.gateway.spent();
         log("job.finished", {
           job: job?.job_id,
           status: outcome.status,
           ms: Date.now() - startedAt,
-          stages: "stages" in outcome ? outcome.stages.length : 10,
+          stages: "stages" in outcome && Array.isArray(outcome.stages) ? outcome.stages.length : 10,
           costUsd: spent.costUsd,
           modelCalls: spent.calls,
         });
