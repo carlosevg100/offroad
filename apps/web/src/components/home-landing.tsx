@@ -1,4 +1,14 @@
-import {ArrowRight, ArrowUp, Check, Paperclip, Plus} from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUp,
+  BriefcaseBusiness,
+  Building2,
+  Check,
+  ChevronDown,
+  Landmark,
+  Paperclip,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
@@ -32,62 +42,72 @@ export async function HomeLanding({locale}: HomeLandingProps) {
           <div className={styles.heroMesh} aria-hidden="true" />
           <div className={styles.grain} aria-hidden="true" />
 
-          <div className={styles.heroCopy}>
-            <p className={styles.kicker}>{t("category")}</p>
-            <h1 id="home-title">
-              <span>{t("heroTitleLine1")}</span>
-              <span>{t("heroTitleLine2")}</span>
-            </h1>
-            <p className={styles.heroBody}>{t("heroBody")}</p>
-            <div className={styles.heroActions}>
-              <Link className={styles.primaryButton} href={signupHref}>
-                {t("primaryCta")}
-              </Link>
-              <a className={styles.textLink} href="#produto">
-                {t("secondaryCta")} <ArrowRight aria-hidden="true" size={15} />
-              </a>
+          <div className={styles.heroLayout}>
+            <div className={styles.heroCopy}>
+              <p className={styles.kicker}>{t("category")}</p>
+              <h1 id="home-title">
+                <span>{t("heroTitleLine1")}</span>
+                <span>{t("heroTitleLine2")}</span>
+              </h1>
+              <p className={styles.heroIntro}>{t("heroIntro")}</p>
+              <p className={styles.heroBody}>{t("heroBody")}</p>
+              <p className={styles.heroNote}>{t("heroNote")}</p>
+              <div className={styles.heroActions}>
+                <Link className={styles.primaryButton} href={signupHref}>
+                  {t("primaryCta")}
+                </Link>
+                <a className={styles.textLink} href="#produto">
+                  {t("secondaryCta")} <ArrowRight aria-hidden="true" size={15} />
+                </a>
+              </div>
             </div>
-            <p className={styles.heroNote}>{t("heroNote")}</p>
+
+            <aside className={styles.heroProduct} aria-label={t("heroProductAria")}>
+              <header className={styles.workspaceBar}>
+                <WindowDots inline />
+                <strong>{t("heroWorkspaceTitle")}</strong>
+                <span>{t("illustrative")}</span>
+              </header>
+              <div className={styles.workspaceRequest}>
+                <span>{t("capitalQuestionLabel")}</span>
+                <p>{t("capitalQuestion")}</p>
+              </div>
+              <section className={styles.workspaceSection}>
+                <header><div><span>{t("capitalCardLabel")}</span><strong>{t("capitalCardTitle")}</strong></div><b>{t("capitalPathCount")}</b></header>
+                <div className={styles.capitalPaths}>
+                  <CapitalPath number="01" title={t("capitalPath1")} detail={t("capitalPath1Detail")} state={t("capitalPathStrong")} />
+                  <CapitalPath number="02" title={t("capitalPath2")} detail={t("capitalPath2Detail")} state={t("capitalPathReview")} />
+                  <CapitalPath number="03" title={t("capitalPath3")} detail={t("capitalPath3Detail")} state={t("capitalPathConditional")} />
+                </div>
+              </section>
+              <section className={`${styles.workspaceSection} ${styles.workspaceMatch}`}>
+                <header><div><span>{t("fitCardLabel")}</span><strong>{t("fitCardTitle")}</strong></div><b>{t("matchUpdated")}</b></header>
+                <CapitalMatchRow
+                  initials="FA"
+                  name={t("matchProvider1")}
+                  structure={t("matchStructure1")}
+                  detail={t("matchDetail1")}
+                  fit={t("matchFitHigh")}
+                  reason={t("matchReason1")}
+                  expanded
+                />
+                <CapitalMatchRow initials="BB" name={t("matchProvider2")} structure={t("matchStructure2")} detail={t("matchDetail2")} fit={t("matchFitRelevant")} />
+              </section>
+              <div className={styles.heroComposer} aria-label={t("composerAria")}>
+                <div className={styles.composer}>
+                  <i className={styles.composerPlus}><Plus aria-hidden="true" size={15} /></i>
+                  <span className={styles.composerPrompt} data-oc-prompt data-prompts={JSON.stringify(prompts)}>{prompts[0]}</span>
+                  <i className={styles.composerSend}><ArrowUp aria-hidden="true" size={14} /></i>
+                </div>
+              </div>
+            </aside>
+
+            <div className={styles.heroJourney} aria-label={t("heroJourneyAria")}>
+              <JourneyStep number="01" from={t("journey1From")} to={t("journey1To")} />
+              <JourneyStep number="02" from={t("journey2From")} to={t("journey2To")} />
+              <JourneyStep number="03" from={t("journey3From")} to={t("journey3To")} />
+            </div>
           </div>
-
-          <aside className={`${styles.floatCard} ${styles.capitalCard}`} data-oc-parallax="left" aria-label={t("capitalCardAria")}>
-            <span className={styles.floatLabel}>{t("capitalCardLabel")}</span>
-            <strong className={styles.floatTitle}>{t("capitalCardTitle")}</strong>
-            <div className={styles.metricRow}><strong>3,1x</strong><span>{t("capitalCardMetric")}</span></div>
-            <svg className={styles.spark} viewBox="0 0 180 52" aria-hidden="true">
-              <line x1="0" y1="42" x2="180" y2="42" />
-              <path d="M3 42 C25 40 32 30 50 32 S75 21 92 25 S117 13 134 18 S157 5 177 8" />
-            </svg>
-            <i className={styles.personBadge}>CFO</i>
-          </aside>
-
-          <aside className={`${styles.floatCard} ${styles.fitCard}`} data-oc-parallax="right" aria-label={t("fitCardAria")}>
-            <span className={styles.floatLabel}>{t("fitCardLabel")}</span>
-            <strong className={styles.floatTitle}>{t("fitCardTitle")}</strong>
-            <div className={styles.fitRing} aria-hidden="true">
-              <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" /><circle cx="32" cy="32" r="28" /></svg>
-              <b>{t("fitCardScore")}</b>
-            </div>
-            <div className={styles.fitMeta}><span>{t("fitCardMeta1")}</span><span>{t("fitCardMeta2")}</span></div>
-          </aside>
-
-          <aside className={`${styles.floatCard} ${styles.workCard}`} data-oc-parallax="left" aria-label={t("workCardAria")}>
-            <span className={styles.floatLabel}>{t("workCardLabel")}</span>
-            <strong className={styles.floatTitle}>{t("workCardTitle")}</strong>
-            <div className={styles.checkList}>
-              <div><i><Check aria-hidden="true" size={9} /></i>{t("workCardItem1")}</div>
-              <div><i><Check aria-hidden="true" size={9} /></i>{t("workCardItem2")}</div>
-              <div><i>3</i>{t("workCardItem3")}</div>
-            </div>
-          </aside>
-
-          <aside className={`${styles.floatCard} ${styles.heroComposer}`} aria-label={t("composerAria")}>
-            <div className={styles.composer}>
-              <i className={styles.composerPlus}><Plus aria-hidden="true" size={15} /></i>
-              <span className={styles.composerPrompt} data-oc-prompt data-prompts={JSON.stringify(prompts)}>{prompts[0]}</span>
-              <i className={styles.composerSend}><ArrowUp aria-hidden="true" size={14} /></i>
-            </div>
-          </aside>
         </section>
 
         <div className={styles.audienceLine} aria-label={t("audienceAria")}>
@@ -96,61 +116,14 @@ export async function HomeLanding({locale}: HomeLandingProps) {
           </div>
         </div>
 
-        <section className={`${styles.section} ${styles.foundation}`} id="produto" aria-labelledby="platform-title">
+        <section className={`${styles.section} ${styles.marketLayerSection}`} id="produto" aria-labelledby="platform-title">
           <div className={styles.shell}>
             <header className={styles.centerHeading} data-oc-reveal>
               <p className={styles.kicker}>{t("platformKicker")}</p>
               <h2 id="platform-title" className={styles.sectionTitle}>{t("platformTitle")}</h2>
               <p className={styles.sectionIntro}>{t("platformBody")}</p>
             </header>
-            <div className={styles.foundationGrid}>
-              <article className={styles.foundationCard} data-oc-reveal>
-                <div className={styles.foundationVisual}>
-                  <div className={styles.miniWindow}>
-                    <WindowDots />
-                    <div className={styles.miniWindowBody}>
-                      <span>{t("thinkVisualLabel")}</span>
-                      <strong>{t("thinkVisualTitle")}</strong>
-                      <div className={styles.miniBars} aria-hidden="true"><i /><i /><i /><i /></div>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.foundationCopy}><span>{t("thinkLabel")}</span><h3>{t("thinkTitle")}</h3><p>{t("thinkBody")}</p></div>
-              </article>
-
-              <article className={styles.foundationCard} data-oc-reveal>
-                <div className={styles.foundationVisual}>
-                  <div className={styles.miniWindow}>
-                    <WindowDots />
-                    <div className={styles.miniWindowBody}>
-                      <span>{t("structureVisualLabel")}</span>
-                      <strong>{t("structureVisualTitle")}</strong>
-                      <div className={styles.strategyGrid}>
-                        <div className={styles.selected}><span>{t("optionA")}</span><strong>Senior secured</strong></div>
-                        <div><span>{t("optionB")}</span><strong>{t("debenture")}</strong></div>
-                        <div><span>{t("optionC")}</span><strong>Asset-backed</strong></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.foundationCopy}><span>{t("structureLabel")}</span><h3>{t("structureTitle")}</h3><p>{t("structureBody")}</p></div>
-              </article>
-
-              <article className={styles.foundationCard} data-oc-reveal>
-                <div className={styles.foundationVisual}>
-                  <div className={styles.miniWindow}>
-                    <WindowDots />
-                    <div className={styles.miniWindowBody}>
-                      <span>{t("connectVisualLabel")}</span>
-                      <strong>{t("connectVisualTitle")}</strong>
-                      <FitRow name={t("providerA")} detail={t("providerADetail")} score={t("fitHigh")} />
-                      <FitRow name={t("providerB")} detail={t("providerBDetail")} score={t("fitHigh")} />
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.foundationCopy}><span>{t("connectLabel")}</span><h3>{t("connectTitle")}</h3><p>{t("connectBody")}</p></div>
-              </article>
-            </div>
+            <MarketWorkLayer t={t} />
           </div>
         </section>
 
@@ -275,6 +248,100 @@ export async function HomeLanding({locale}: HomeLandingProps) {
 }
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
+
+function CapitalPath({detail, number, state, title}: {detail: string; number: string; state: string; title: string}) {
+  return (
+    <div className={styles.capitalPath}>
+      <i>{number}</i>
+      <div><strong>{title}</strong><span>{detail}</span></div>
+      <b>{state}</b>
+    </div>
+  );
+}
+
+function CapitalMatchRow({detail, expanded = false, fit, initials, name, reason, structure}: {detail: string; expanded?: boolean; fit: string; initials: string; name: string; reason?: string; structure: string}) {
+  return (
+    <div className={`${styles.capitalMatchRow} ${expanded ? styles.expanded : ""}`}>
+      <div className={styles.matchSummary}>
+        <ChevronDown aria-hidden="true" size={13} />
+        <i>{initials}</i>
+        <div><strong>{name}<span>/</span>{structure}</strong><small>{detail}</small></div>
+        <b>{fit}</b>
+      </div>
+      {reason ? <div className={styles.matchReason}><Check aria-hidden="true" size={12} /><p><strong>{reason}</strong><span>{detail}</span></p></div> : null}
+    </div>
+  );
+}
+
+function JourneyStep({from, number, to}: {from: string; number: string; to: string}) {
+  return (
+    <div className={styles.journeyStep}>
+      <i>{number}</i>
+      <p><strong>{from}</strong><span>{to}</span></p>
+      <ArrowRight aria-hidden="true" size={15} />
+    </div>
+  );
+}
+
+function MarketWorkLayer({t}: {t: Translator}) {
+  const profiles = [
+    {
+      icon: <Building2 aria-hidden="true" size={18} />,
+      name: t("flowCompanyName"),
+      input: t("flowCompanyInput"),
+      outcomeTitle: t("flowCompanyOutcomeTitle"),
+      outcomeBody: t("flowCompanyOutcomeBody"),
+    },
+    {
+      icon: <BriefcaseBusiness aria-hidden="true" size={18} />,
+      name: t("flowProfessionalName"),
+      input: t("flowProfessionalInput"),
+      outcomeTitle: t("flowProfessionalOutcomeTitle"),
+      outcomeBody: t("flowProfessionalOutcomeBody"),
+    },
+    {
+      icon: <Landmark aria-hidden="true" size={18} />,
+      name: t("flowCapitalName"),
+      input: t("flowCapitalInput"),
+      outcomeTitle: t("flowCapitalOutcomeTitle"),
+      outcomeBody: t("flowCapitalOutcomeBody"),
+    },
+  ];
+
+  return (
+    <figure className={styles.marketFlow} data-oc-reveal aria-label={t("flowAria")}>
+      <div className={styles.flowColumnHead} aria-hidden="true">
+        <span>{t("flowInputLabel")}</span><span>{t("flowCoreLabel")}</span><span>{t("flowOutcomeLabel")}</span>
+      </div>
+
+      <article className={styles.flowCore}>
+        <div className={styles.coreMark}><span>O</span><i /></div>
+        <p>{t("flowCoreKicker")}</p>
+        <h3>{t("flowCoreTitle")}</h3>
+        <div className={styles.coreCapabilities}>
+          {["flowCapability1", "flowCapability2", "flowCapability3", "flowCapability4", "flowCapability5", "flowCapability6"].map((key, index) => (
+            <span key={key}><i>{String(index + 1).padStart(2, "0")}</i>{t(key)}</span>
+          ))}
+        </div>
+      </article>
+
+      {profiles.map((profile, index) => (
+        <div className={styles.flowLane} data-profile={index} key={profile.name}>
+          <article className={styles.flowEntry}>
+            <div className={styles.flowProfileIcon}>{profile.icon}</div>
+            <div><strong>{profile.name}</strong><p>{profile.input}</p></div>
+          </article>
+          <div className={styles.flowConnector} aria-hidden="true"><i /></div>
+          <article className={styles.flowOutcome}>
+            <span>{t("flowOutcomeEyebrow")}</span>
+            <h3>{profile.outcomeTitle}</h3>
+            <p>{profile.outcomeBody}</p>
+          </article>
+        </div>
+      ))}
+    </figure>
+  );
+}
 
 function WindowDots({inline = false}: {inline?: boolean}) {
   return <div className={inline ? styles.inlineDots : styles.windowDots} aria-hidden="true"><i /><i /><i /></div>;

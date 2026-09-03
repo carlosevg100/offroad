@@ -1959,33 +1959,57 @@ summary:focus-visible {
   position: relative;
   display: flex;
   align-items: center;
-  width: 216px;
+  width: 282px;
   height: 52px;
   overflow: visible;
 }
 
 .brand-mark__asset {
   position: static;
-  width: 216px;
+  width: 188px;
   max-width: none;
   height: auto;
 }
 
 .brand-mark__signature {
-  position: absolute;
-  right: 1px;
-  bottom: 1px;
+  display: grid;
+  align-content: center;
+  align-self: center;
+  min-height: 28px;
+  margin-left: 13px;
+  padding-left: 13px;
+  border-left: 1px solid rgb(23 25 28 / 16%);
   color: #758b4f;
-  font-size: 6.5px;
-  font-weight: 750;
-  letter-spacing: 0.075em;
-  line-height: 1;
+  font-size: 7px;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+  line-height: 1.25;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
+.brand-mark__signature span,
+.brand-mark__signature strong {
+  display: block;
+}
+
+.brand-mark__signature strong {
+  color: #31373c;
+  font-size: 7.5px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+}
+
 .brand-mark[data-inverted] .brand-mark__signature {
   color: #a6b273;
+}
+
+.brand-mark[data-inverted] .brand-mark__signature {
+  border-left-color: rgb(255 255 255 / 18%);
+}
+
+.brand-mark[data-inverted] .brand-mark__signature strong {
+  color: #f4f3ef;
 }
 
 .brand-mark[data-size="hero"] .brand-mark__asset-frame {
@@ -5166,8 +5190,12 @@ body:has(> #main-content) {
 }
 
 .site-header--landing .brand-mark__asset-frame,
+.site-header--landing .brand-mark__asset-frame {
+  width: 276px;
+}
+
 .site-header--landing .brand-mark__asset {
-  width: 208px;
+  width: 184px;
 }
 
 .site-header--landing .brand-mark__asset-frame {
@@ -5175,10 +5203,8 @@ body:has(> #main-content) {
 }
 
 .site-header--landing .brand-mark__signature {
-  right: 0;
-  bottom: 1px;
   font-size: 7px;
-  letter-spacing: 0.065em;
+  letter-spacing: 0.13em;
 }
 
 .site-header--landing .desktop-nav {
@@ -5212,9 +5238,12 @@ body:has(> #main-content) {
     width: calc(100% - 30px);
   }
 
-  .site-header--landing .brand-mark__asset-frame,
+  .site-header--landing .brand-mark__asset-frame {
+    width: 248px;
+  }
+
   .site-header--landing .brand-mark__asset {
-    width: 190px;
+    width: 164px;
   }
 
   .site-header--landing .brand-mark__asset-frame {
@@ -5222,8 +5251,9 @@ body:has(> #main-content) {
   }
 
   .site-header--landing .brand-mark__signature {
+    margin-left: 10px;
+    padding-left: 10px;
     font-size: 6.4px;
-    letter-spacing: 0.045em;
   }
 
   .site-header--landing .mobile-nav__panel {
@@ -5241,7 +5271,10 @@ body:has(> #main-content) {
     min-height: 68px;
   }
 
-  .site-header--landing .brand-mark__asset-frame,
+  .site-header--landing .brand-mark__asset-frame {
+    width: 178px;
+  }
+
   .site-header--landing .brand-mark__asset {
     width: 178px;
   }
@@ -5251,9 +5284,7 @@ body:has(> #main-content) {
   }
 
   .site-header--landing .brand-mark__signature {
-    bottom: 1px;
-    font-size: 6px;
-    letter-spacing: 0.025em;
+    display: none;
   }
 }
 
@@ -5271,9 +5302,6 @@ body:has(> #main-content) {
     height: 38px;
   }
 
-  .site-header--landing .brand-mark__signature {
-    font-size: 5.2px;
-  }
 }
 
 /* Public origination thesis: bounded research, auditable progress, editable work product. */

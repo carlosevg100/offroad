@@ -29,7 +29,10 @@ export function BrandMark({inverted = false, locale, size = "default"}: BrandMar
           loading="eager"
           sizes={size === "hero" ? "(max-width: 700px) 176px, 216px" : "216px"}
         />
-        <span className="brand-mark__signature">{brand.signature}</span>
+        <span className="brand-mark__signature">
+          <span>{brand.signatureLead}</span>
+          <strong>{brand.signatureSubject}</strong>
+        </span>
       </span>
     </Link>
   );
