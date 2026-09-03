@@ -595,6 +595,495 @@ export type Database = {
           },
         ]
       }
+      capital_project_agent_events: {
+        Row: {
+          agent_plan_id: string | null
+          capital_project_id: string
+          created_at: string
+          detail: Json
+          event_type: string
+          evidence: Json
+          id: string
+          organization_id: string
+          summary_en: string
+          summary_pt: string
+          work_item_id: string | null
+        }
+        Insert: {
+          agent_plan_id?: string | null
+          capital_project_id: string
+          created_at?: string
+          detail?: Json
+          event_type: string
+          evidence?: Json
+          id?: string
+          organization_id: string
+          summary_en: string
+          summary_pt: string
+          work_item_id?: string | null
+        }
+        Update: {
+          agent_plan_id?: string | null
+          capital_project_id?: string
+          created_at?: string
+          detail?: Json
+          event_type?: string
+          evidence?: Json
+          id?: string
+          organization_id?: string
+          summary_en?: string
+          summary_pt?: string
+          work_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_agent_events_organization_id_agent_plan_id_fkey"
+            columns: ["organization_id", "agent_plan_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_agent_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_agent_events_organization_id_capital_proje_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_agent_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_project_agent_events_organization_id_work_item_id_fkey"
+            columns: ["organization_id", "work_item_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_agent_work_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      capital_project_agent_plans: {
+        Row: {
+          base_plan_id: string
+          capital_project_id: string
+          created_at: string
+          created_by: string
+          goal: string
+          id: string
+          organization_id: string
+          plan_fingerprint: string
+          revision: number
+          schema_version: string
+          snapshot: Json
+          status: string
+          supersedes_plan_id: string | null
+          trigger_ref: string
+          trigger_type: string
+        }
+        Insert: {
+          base_plan_id: string
+          capital_project_id: string
+          created_at?: string
+          created_by: string
+          goal: string
+          id?: string
+          organization_id: string
+          plan_fingerprint: string
+          revision: number
+          schema_version: string
+          snapshot: Json
+          status: string
+          supersedes_plan_id?: string | null
+          trigger_ref: string
+          trigger_type: string
+        }
+        Update: {
+          base_plan_id?: string
+          capital_project_id?: string
+          created_at?: string
+          created_by?: string
+          goal?: string
+          id?: string
+          organization_id?: string
+          plan_fingerprint?: string
+          revision?: number
+          schema_version?: string
+          snapshot?: Json
+          status?: string
+          supersedes_plan_id?: string | null
+          trigger_ref?: string
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_agent_plans_organization_id_base_plan_id_fkey"
+            columns: ["organization_id", "base_plan_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_agent_plans_organization_id_capital_projec_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_agent_plans_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_project_agent_plans_organization_id_supersedes_pla_fkey"
+            columns: ["organization_id", "supersedes_plan_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_agent_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      capital_project_agent_work_items: {
+        Row: {
+          agent_plan_id: string
+          approval_required: boolean
+          budget: Json
+          capital_project_id: string
+          completed_at: string | null
+          created_at: string
+          decision_keys: string[]
+          dependencies: string[]
+          effect: string
+          id: string
+          input_evidence: Json
+          organization_id: string
+          output_refs: Json
+          requirement_keys: string[]
+          specialist: string
+          started_at: string | null
+          status: string
+          task_spec_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agent_plan_id: string
+          approval_required?: boolean
+          budget: Json
+          capital_project_id: string
+          completed_at?: string | null
+          created_at?: string
+          decision_keys?: string[]
+          dependencies?: string[]
+          effect: string
+          id?: string
+          input_evidence?: Json
+          organization_id: string
+          output_refs?: Json
+          requirement_keys?: string[]
+          specialist: string
+          started_at?: string | null
+          status: string
+          task_spec_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agent_plan_id?: string
+          approval_required?: boolean
+          budget?: Json
+          capital_project_id?: string
+          completed_at?: string | null
+          created_at?: string
+          decision_keys?: string[]
+          dependencies?: string[]
+          effect?: string
+          id?: string
+          input_evidence?: Json
+          organization_id?: string
+          output_refs?: Json
+          requirement_keys?: string[]
+          specialist?: string
+          started_at?: string | null
+          status?: string
+          task_spec_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_agent_work_it_organization_id_agent_plan_i_fkey"
+            columns: ["organization_id", "agent_plan_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_agent_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_agent_work_it_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_agent_work_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capital_project_decisions: {
+        Row: {
+          alternatives: Json
+          assessment_ref: string | null
+          assumptions: Json
+          capital_project_id: string
+          confidence: string
+          created_at: string
+          created_by: string
+          decision_fingerprint: string
+          decision_key: string
+          evidence: Json
+          id: string
+          organization_id: string
+          proposed_by: string
+          question: string
+          rationale_summary: string
+          recommendation: string | null
+          reviewed_by: string | null
+          revision: number
+          schema_version: string
+          status: string
+          supersedes_decision_id: string | null
+          unresolved: Json
+        }
+        Insert: {
+          alternatives?: Json
+          assessment_ref?: string | null
+          assumptions?: Json
+          capital_project_id: string
+          confidence: string
+          created_at?: string
+          created_by: string
+          decision_fingerprint: string
+          decision_key: string
+          evidence?: Json
+          id?: string
+          organization_id: string
+          proposed_by: string
+          question: string
+          rationale_summary: string
+          recommendation?: string | null
+          reviewed_by?: string | null
+          revision: number
+          schema_version: string
+          status: string
+          supersedes_decision_id?: string | null
+          unresolved?: Json
+        }
+        Update: {
+          alternatives?: Json
+          assessment_ref?: string | null
+          assumptions?: Json
+          capital_project_id?: string
+          confidence?: string
+          created_at?: string
+          created_by?: string
+          decision_fingerprint?: string
+          decision_key?: string
+          evidence?: Json
+          id?: string
+          organization_id?: string
+          proposed_by?: string
+          question?: string
+          rationale_summary?: string
+          recommendation?: string | null
+          reviewed_by?: string | null
+          revision?: number
+          schema_version?: string
+          status?: string
+          supersedes_decision_id?: string | null
+          unresolved?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_decisions_organization_id_capital_project__fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_decisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_project_decisions_organization_id_supersedes_decis_fkey"
+            columns: ["organization_id", "supersedes_decision_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_decisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      capital_project_information_requests: {
+        Row: {
+          acceptable_evidence: string[]
+          answer_kind: string
+          answer_ref: Json | null
+          answerability: number
+          capital_project_id: string
+          choices: string[]
+          created_at: string
+          decision_impact: string
+          id: string
+          information_gain: number
+          materiality: number
+          organization_id: string
+          priority: string
+          question: string
+          redundancy_penalty: number
+          requirement_key: string
+          status: string
+          updated_at: string
+          why_it_matters: string
+        }
+        Insert: {
+          acceptable_evidence: string[]
+          answer_kind: string
+          answer_ref?: Json | null
+          answerability: number
+          capital_project_id: string
+          choices?: string[]
+          created_at?: string
+          decision_impact: string
+          id?: string
+          information_gain: number
+          materiality: number
+          organization_id: string
+          priority: string
+          question: string
+          redundancy_penalty?: number
+          requirement_key: string
+          status: string
+          updated_at?: string
+          why_it_matters: string
+        }
+        Update: {
+          acceptable_evidence?: string[]
+          answer_kind?: string
+          answer_ref?: Json | null
+          answerability?: number
+          capital_project_id?: string
+          choices?: string[]
+          created_at?: string
+          decision_impact?: string
+          id?: string
+          information_gain?: number
+          materiality?: number
+          organization_id?: string
+          priority?: string
+          question?: string
+          redundancy_penalty?: number
+          requirement_key?: string
+          status?: string
+          updated_at?: string
+          why_it_matters?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_information_r_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_information_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capital_project_requirement_coverage: {
+        Row: {
+          assessed_at: string
+          assessed_by: string
+          capital_project_id: string
+          created_at: string
+          decision_ids: string[]
+          evidence: Json
+          id: string
+          label: string
+          materiality: string
+          missing_reason: string | null
+          organization_id: string
+          requirement_key: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assessed_at: string
+          assessed_by: string
+          capital_project_id: string
+          created_at?: string
+          decision_ids?: string[]
+          evidence?: Json
+          id?: string
+          label: string
+          materiality: string
+          missing_reason?: string | null
+          organization_id: string
+          requirement_key: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          assessed_at?: string
+          assessed_by?: string
+          capital_project_id?: string
+          created_at?: string
+          decision_ids?: string[]
+          evidence?: Json
+          id?: string
+          label?: string
+          materiality?: string
+          missing_reason?: string | null
+          organization_id?: string
+          requirement_key?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_requirement_c_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_requirement_coverage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       capital_project_artifacts: {
         Row: {
           artifact_fingerprint: string

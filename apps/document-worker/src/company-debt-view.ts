@@ -20,6 +20,7 @@ import {materialNumericTokens} from "./material-numeric-tokens";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
+import {buildPublicWorkAssessment} from "./agent-assessment";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const taskSchema = z.object({
@@ -281,13 +282,44 @@ export async function processCompanyDebtViewJob(
       });
     };
 
-    const completeJob = async (finalArtifact: ArtifactRef, research: ResearchSummary, usage: Record<string, unknown>) => {
+    const completeJob = async (
+      finalArtifact: ArtifactRef,
+      research: ResearchSummary,
+      synthesis: Awaited<ReturnType<typeof synthesize>>,
+    ) => {
+      const assessedAt = (dependencies.now ?? (() => new Date()))().toISOString();
+      await dependencies.queue.recordAgentAssessment?.(job, buildPublicWorkAssessment({
+        projectId: context.project.id,
+        assessmentRef: `processing_run:${job.processing_run_id}`,
+        locale: context.session.locale,
+        assessedAt,
+        requests: synthesis.diagnostic.informationRequests,
+        decision: {
+          decisionKey: "company_debt.next_evidence",
+          question: context.session.locale === "pt-BR"
+            ? "Qual evidência deve orientar o aprofundamento da análise de dívida?"
+            : "Which evidence should guide the next stage of the debt analysis?",
+          status: "open",
+          recommendation: null,
+          rationaleSummary: synthesis.diagnostic.executiveRead,
+          evidence: research.sources.slice(0, 20).map((source) => ({
+            type: "public_source",
+            id: `source:${source.contentHash}`,
+            fingerprint: source.contentHash,
+            asOf: source.retrievedAt,
+            accessBasis: "public",
+          })),
+          unresolved: synthesis.diagnostic.unknowns,
+          confidence: "insufficient",
+          proposedBy: "debt_and_capital_structure",
+        },
+      }));
       await dependencies.queue.writeStage(job, "company_debt_view", "succeeded", {
         artifactId: finalArtifact.id, publicResearchStatus: research.status,
         publicSourceCount: research.sources.length,
         executedTaskCount: context.revision ? 1 : artifacts.size,
         revision: Boolean(context.revision),
-      }, usage as Record<string, number>);
+      }, synthesis.usage as Record<string, number>);
       const spend = dependencies.gateway.spent();
       await completeAdvisorSpecializedWork({queue: dependencies.queue, job, artifact: finalArtifact, result: {
         capital_project_id: context.project.id,
@@ -323,7 +355,7 @@ export async function processCompanyDebtViewJob(
       const research = researchFromPrior(context);
       const synthesis = await synthesize(research);
       const finalArtifact = await persistFinal(research, synthesis);
-      await completeJob(finalArtifact, research, synthesis.usage);
+      await completeJob(finalArtifact, research, synthesis);
       return {status: "succeeded", artifactId: finalArtifact.id};
     }
 
@@ -391,7 +423,7 @@ export async function processCompanyDebtViewJob(
     await persistTask({taskId: "C09", artifactType: "risk_mitigation_diagnostic", build: async () => ({content: {risks: synthesis.diagnostic.risks, diagnosticHypotheses: synthesis.diagnostic.diagnosticHypotheses, unknowns: synthesis.diagnostic.unknowns}, evidenceRefs: sourceRefs})});
     await persistTask({taskId: "C10", artifactType: "capacity_assessment", build: async () => ({content: synthesis.diagnostic.capacityAssessment, evidenceRefs: sourceRefs})});
     const finalArtifact = await persistFinal(research, synthesis);
-    await completeJob(finalArtifact, research, synthesis.usage);
+    await completeJob(finalArtifact, research, synthesis);
     return {status: "succeeded", artifactId: finalArtifact.id};
   } catch (error) {
     const code = errorCode(error);

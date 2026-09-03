@@ -95,6 +95,7 @@ import {
 import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-design";
 import {buildGovernedMatchScreen} from "./match-screen";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
+import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-assessment";
 import {
   buildCaseOperatingControlSnapshot,
   caseAnalysisCapabilityScope,
@@ -684,6 +685,17 @@ async function processPreliminaryUnderstanding(
     inputFingerprint,
     payload,
   });
+  if (dependencies.queue.recordAgentAssessment) {
+    const projectId = z.uuid().parse(raw.session.capital_project_id);
+    const assessedAt = (dependencies.now?.() ?? new Date()).toISOString();
+    await dependencies.queue.recordAgentAssessment(job, buildPreliminaryAssessment({
+      projectId,
+      assessmentRef: `processing_run:${job.processing_run_id}`,
+      locale: locale === "pt" ? "pt-BR" : "en-US",
+      assessedAt,
+      openPoints: payload.preliminaryAssessment.openPoints,
+    }));
+  }
   await dependencies.queue.writeStage(job, "preliminary_understanding", "succeeded", {
     preliminaryUnderstandingId,
     publicResearchStatus: publicResearch.status,
@@ -1002,6 +1014,60 @@ export async function processCaseAnalysisJob(
       caseEngine: caseEngineVersion,
       retrieval: privateRetrievalLineage,
     });
+    if (dependencies.queue.recordAgentAssessment) {
+      const projectId = z.uuid().parse(raw.session.capital_project_id);
+      const assessedAt = (dependencies.now?.() ?? new Date()).toISOString();
+      const recommendation = result.state.structureAlternatives.recommendation;
+      const recommendedAlternative = recommendation
+        ? result.state.structureAlternatives.alternatives.find((alternative) => alternative.id === recommendation.alternativeId)
+        : null;
+      const structureDecision = {
+      decisionKey: "case.structure_direction",
+      question: locale === "pt"
+        ? "Qual estrutura de financiamento deve orientar a próxima etapa?"
+        : "Which financing structure should guide the next stage?",
+      status: recommendation?.status === "ready_for_confirmation" ? "directional" as const : "open" as const,
+      recommendation: recommendation?.status === "ready_for_confirmation" && recommendedAlternative
+        ? recommendedAlternative.label
+        : null,
+      alternatives: result.state.structureAlternatives.alternatives.map((alternative) => ({
+        id: keyForDecision(alternative.id),
+        label: alternative.label,
+        disposition: recommendation?.alternativeId === alternative.id && recommendation.status === "ready_for_confirmation"
+          ? "preferred" as const
+          : alternative.status === "blocked" ? "rejected" as const : "candidate" as const,
+        rationale: alternative.rationale,
+      })),
+      rationaleSummary: recommendation?.rationale
+        ?? (locale === "pt"
+          ? "A estrutura ainda não pode ser recomendada com a evidência disponível."
+          : "The structure cannot yet be recommended on the available evidence."),
+      evidence: (recommendation?.basisIds ?? []).map((id) => ({
+        type: "deterministic_calculation" as const,
+        id,
+        accessBasis: "derived" as const,
+      })),
+      assumptions: recommendedAlternative?.assumptions ?? [],
+      unresolved: [...new Set([
+        ...result.state.structureAlternatives.blockers,
+        ...result.state.structureAlternatives.missingInputs,
+      ])],
+      confidence: recommendation?.status === "ready_for_confirmation" ? "medium" as const : "insufficient" as const,
+      proposedBy: "transaction_structuring" as const,
+      };
+      await dependencies.queue.recordAgentAssessment(job, buildPrivateCaseAssessment({
+        projectId,
+        assessmentRef: `processing_run:${job.processing_run_id}`,
+        locale: locale === "pt" ? "pt-BR" : "en-US",
+        assessedAt,
+        archetypeId,
+        documents,
+        answers: informationAnswers,
+        responses: requirementResponsesFrom(raw.answers),
+        clientQuestions: result.state.clientQuestions,
+        decision: structureDecision,
+      }));
+    }
     const economicFingerprint = fingerprintJson({economics: economic, versions, caseEngine: caseEngineVersion});
     const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
     const currentLineage = dependencies.lineage();
@@ -1958,6 +2024,11 @@ function recordOrNull(value: unknown): Record<string, unknown> | null {
 function stringFrom(record: Record<string, unknown> | null, key: string): string | null {
   const value = record?.[key];
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function keyForDecision(value: string): string {
+  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9_.-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 120) || "alternative";
 }
 
 function publicCandidate(candidates: FactCandidate[], fieldPath: string): string | null {

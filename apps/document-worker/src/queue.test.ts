@@ -84,6 +84,109 @@ describe("operating-control persistence", () => {
   });
 });
 
+describe("agent-plan persistence", () => {
+  it("projects analytical stage progress into the customer-visible project timeline", async () => {
+    const rpc = vi.fn(async () => ({data: {recorded: true}, error: null}));
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await queue.writeStage(job, "case_analysis", "started", {scope: "full_case"}, {modelCalls: 1});
+
+    expect(rpc.mock.calls).toEqual([
+      ["worker_write_stage_result", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_stage: "case_analysis",
+        p_status: "started",
+        p_detail: {scope: "full_case"},
+        p_usage: {modelCalls: 1},
+      }],
+      ["worker_record_agent_stage_event_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_stage: "case_analysis",
+        p_status: "started",
+        p_detail: {scope: "full_case"},
+      }],
+    ]);
+  });
+
+  it("loads the planning context through the exact claimed capability", async () => {
+    const rpc = vi.fn(async () => ({data: {project: {id: "project"}}, error: null}));
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.loadAgentPlanContext!(job)).resolves.toEqual({project: {id: "project"}});
+    expect(rpc).toHaveBeenCalledWith("worker_load_agent_plan_context_v1", {
+      p_job_id: job.job_id,
+      p_capability_token: job.capability_token,
+    });
+  });
+
+  it("binds the Deal Captain plan to the claimed job capability", async () => {
+    const capitalJob: CapitalProjectAnalysisJob = {
+      claimed: true,
+      kind: "capital_project_analysis",
+      job_id: "10000000-0000-4000-8000-000000000002",
+      capability_token: "capability-token-with-at-least-32-characters",
+      lease_expires_at: "2026-09-03T18:00:00.000Z",
+      attempt: 1,
+      organization_id: "20000000-0000-4000-8000-000000000001",
+      intake_session_id: "30000000-0000-4000-8000-000000000001",
+      processing_run_id: "40000000-0000-4000-8000-000000000001",
+      payload: {
+        analysis_scope: "origination_thesis",
+        locale: "pt-BR",
+        capital_project_id: "50000000-0000-4000-8000-000000000001",
+        capital_project_plan_id: "60000000-0000-4000-8000-000000000001",
+        capital_project_brief_id: "70000000-0000-4000-8000-000000000001",
+        capital_task_ids: ["M01"],
+        capital_artifact_required: true,
+        trigger_event: {},
+        model_budget: {max_cost_usd: 1, max_calls: 1},
+      },
+    };
+    const plan = {schemaVersion: "dcm-agent-plan.v1"};
+    const rpc = vi.fn(async () => ({data: "80000000-0000-4000-8000-000000000001", error: null}));
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.recordAgentPlan!(capitalJob, plan)).resolves.toBe("80000000-0000-4000-8000-000000000001");
+    expect(rpc).toHaveBeenCalledWith("worker_record_agent_plan_v1", {
+      p_job_id: capitalJob.job_id,
+      p_capability_token: capitalJob.capability_token,
+      p_agent_plan: plan,
+    });
+  });
+
+  it("persists coverage, questions and decisions through one capability-bound assessment", async () => {
+    const assessment = {
+      schemaVersion: "dcm-agent-assessment.v1" as const,
+      projectId: "50000000-0000-4000-8000-000000000001",
+      assessmentRef: `processing_run:${job.processing_run_id}`,
+      coverage: [],
+      requests: [],
+      decisions: [],
+    };
+    const rpc = vi.fn(async () => ({data: {
+      agent_plan_id: "80000000-0000-4000-8000-000000000001",
+      coverage_count: 0,
+      request_count: 0,
+      decision_count: 0,
+    }, error: null}));
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.recordAgentAssessment!(job, assessment)).resolves.toEqual({
+      agentPlanId: "80000000-0000-4000-8000-000000000001",
+      coverageCount: 0,
+      requestCount: 0,
+      decisionCount: 0,
+    });
+    expect(rpc).toHaveBeenCalledWith("worker_record_agent_assessment_v1", {
+      p_job_id: job.job_id,
+      p_capability_token: job.capability_token,
+      p_assessment: assessment,
+    });
+  });
+});
+
 describe("capital TaskRun lifecycle", () => {
   it("passes the claimed capability, versioned executor and proof-bearing result", async () => {
     const taskRunId = "50000000-0000-4000-8000-000000000001";

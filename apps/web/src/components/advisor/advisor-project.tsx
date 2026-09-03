@@ -31,6 +31,7 @@ export type AdvisorProjectMessage = {
 export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string};
 export type AdvisorProjectTask = {id: string; label: string; status: string};
 export type AdvisorProjectArtifact = {id: string; label: string; status: string};
+export type AdvisorProjectActivityEvent = {id: string; type: string; summary: string; createdAt: string};
 
 export type AdvisorProjectCopy = {
   advisor: string;
@@ -39,6 +40,11 @@ export type AdvisorProjectCopy = {
   documents: string;
   noDocuments: string;
   plan: string;
+  activity: string;
+  evidence: string;
+  decisions: string;
+  verified: string;
+  openIssues: string;
   artifacts: string;
   contextQuestion: string;
   awaitingAnswer: string;
@@ -63,9 +69,12 @@ type Props = {
   documents: AdvisorProjectDocument[];
   locale: "pt-BR" | "en-US";
   messages: AdvisorProjectMessage[];
+  activityEvents: AdvisorProjectActivityEvent[];
+  coverage: {verified: number; total: number; openIssues: number};
+  decisionRecords: Array<{id: string; question: string; recommendation: string | null; status: string}>;
   projectId: string;
   projectName: string;
-  pendingContext?: {question: string; whyItMatters: string};
+  pendingRequests?: Array<{id: string; question: string; whyItMatters: string; decisionImpact?: string}>;
   proposals: AdvisorChangeProposal[];
   sessionId: string;
   sessionStatus: string;
@@ -88,6 +97,11 @@ export function AdvisorProject(props: Props) {
   const completed = props.tasks.filter((task) => task.status === "succeeded").length;
   const allMessages = [...props.messages, ...optimistic];
   const proposalById = new Map(props.proposals.map((proposal) => [proposal.id, proposal]));
+  const timeline = [
+    ...allMessages.map((message) => ({kind: "message" as const, id: message.id, createdAt: message.createdAt, message})),
+    ...props.activityEvents.map((event) => ({kind: "activity" as const, id: event.id, createdAt: event.createdAt, event})),
+  ].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+  const lastActivityId = props.activityEvents.at(-1)?.id;
 
   async function send() {
     const message = content.trim();
@@ -144,7 +158,17 @@ export function AdvisorProject(props: Props) {
         </header>
 
         <div aria-live="polite" className="advisor-thread">
-          {allMessages.map((message) => {
+          {timeline.map((item) => {
+            if (item.kind === "activity") {
+              const terminal = ["work_completed", "decision_recorded", "question_answered"].includes(item.event.type);
+              const failed = ["work_failed", "quality_gate_failed"].includes(item.event.type);
+              const live = active && item.id === lastActivityId && ["work_started", "work_progress"].includes(item.event.type);
+              return <article className={`advisor-thread__activity-event${failed ? " is-failed" : terminal ? " is-complete" : ""}`} key={`activity-${item.id}`}>
+                <span>{live ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : terminal ? <Check aria-hidden="true" size={13} /> : failed ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={12} />}</span>
+                <div><small>{props.copy.activity}</small><p>{item.event.summary}</p></div>
+              </article>;
+            }
+            const message = item.message;
             const proposal = message.proposalId ? proposalById.get(message.proposalId) : undefined;
             return <article className={`advisor-thread__message is-${message.role}`} key={message.id}>
               {message.role === "assistant" ? <span className="advisor-thread__avatar"><Bot aria-hidden="true" size={15} /></span> : null}
@@ -154,9 +178,21 @@ export function AdvisorProject(props: Props) {
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
                 {proposal ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
               </div>
-            </article>
+            </article>;
           })}
           {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
+          {props.pendingRequests?.length ? <article className="advisor-thread__message is-assistant advisor-thread__requests">
+            <span className="advisor-thread__avatar"><Bot aria-hidden="true" size={15} /></span>
+            <div>
+              <small>{props.copy.advisor}</small>
+              <strong>{props.copy.contextQuestion}</strong>
+              <p>{props.copy.awaitingAnswer}</p>
+              <ol>{props.pendingRequests.map((request, index) => <li key={request.id}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <div><strong>{request.question}</strong><small>{request.whyItMatters}</small>{request.decisionImpact ? <small>{request.decisionImpact}</small> : null}</div>
+              </li>)}</ol>
+            </div>
+          </article> : null}
         </div>
 
         <div className="advisor-project__composer-wrap">
@@ -190,10 +226,21 @@ export function AdvisorProject(props: Props) {
 
       <aside className="advisor-project__context">
         <header><span className="section-kicker">{props.copy.context}</span></header>
-        {props.pendingContext ? <section className="advisor-context-section advisor-context-section--waiting">
-          <div><strong>{props.copy.contextQuestion}</strong><small>{props.copy.awaitingAnswer}</small></div>
-          <p>{props.pendingContext.question}</p>
-          <small>{props.pendingContext.whyItMatters}</small>
+        {props.pendingRequests?.length ? <section className="advisor-context-section advisor-context-section--waiting">
+          <div><strong>{props.copy.contextQuestion}</strong><small>{props.pendingRequests.length}</small></div>
+          <p>{props.pendingRequests[0]!.question}</p>
+          <small>{props.pendingRequests[0]!.whyItMatters}</small>
+        </section> : null}
+        {props.coverage.total > 0 ? <section className="advisor-context-section">
+          <div><strong>{props.copy.evidence}</strong><small>{props.coverage.verified}/{props.coverage.total}</small></div>
+          <ul>
+            <li><Check aria-hidden="true" size={12} /><span>{props.copy.verified}: {props.coverage.verified}</span></li>
+            <li><Circle aria-hidden="true" size={12} /><span>{props.copy.openIssues}: {props.coverage.openIssues}</span></li>
+          </ul>
+        </section> : null}
+        {props.decisionRecords.length ? <section className="advisor-context-section">
+          <div><strong>{props.copy.decisions}</strong><small>{props.decisionRecords.length}</small></div>
+          <ul>{props.decisionRecords.map((decision) => <li key={decision.id}><Circle aria-hidden="true" size={12} /><span><strong>{decision.recommendation ?? decision.question}</strong><small>{decision.status}</small></span></li>)}</ul>
         </section> : null}
         <section className="advisor-context-section advisor-context-section--activity">
           <div><strong>{props.copy.plan}</strong><small>{completed}/{props.tasks.length}</small></div>

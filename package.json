@@ -19,5 +19,10 @@
     "turbo": "2.10.10",
     "typescript": "5.9.3",
     "vitest": "4.1.10"
+  },
+  "pnpm": {
+    "overrides": {
+      "fast-uri": "3.1.7"
+    }
   }
 }

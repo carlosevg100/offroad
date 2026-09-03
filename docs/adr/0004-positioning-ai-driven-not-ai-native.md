@@ -1,6 +1,6 @@
 # ADR 0004: Posicionamento público: "impulsionada por IA", não "AI-Native"
 
-Status: accepted
+Status: superseded by ADR 0019
 Data: 2026-08-18 (registra decisão tomada em 2026-08-15)
 
 ## Contexto
@@ -27,3 +27,10 @@ ao produto, mas nunca registrada, e o Blueprint continuou dizendo o contrário.
 
 Coerência entre site, produto e documentação; sessões futuras não "corrigem de
 volta" para AI-Native. Alterações de posicionamento passam a exigir novo ADR.
+
+## Superação
+
+Esta decisão preserva o registro histórico de 18 de agosto, mas não governa mais a identidade do
+produto. A Constituição 2.2 e a ADR 0019 redefinem a Offroad como advisor AI-native especialista
+em dívida. “Originação de crédito privado” permanece uma capacidade ou job específico, nunca a
+categoria da empresa.

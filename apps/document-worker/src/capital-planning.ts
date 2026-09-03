@@ -18,6 +18,7 @@ import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
+import {buildPublicWorkAssessment} from "./agent-assessment";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const taskSchema = z.object({
@@ -305,6 +306,49 @@ export async function processCapitalPlanningJob(
       status: "pending_confirmation", evidenceRefs: sourceRefs, quality,
       usage: completion.usage as unknown as Record<string, unknown>,
     });
+    const preferredAlternative = planningMap.directionalRecommendation.alternativeId
+      ? planningMap.alternatives.find((alternative) => alternative.id === planningMap.directionalRecommendation.alternativeId)
+      : null;
+    await dependencies.queue.recordAgentAssessment?.(job, buildPublicWorkAssessment({
+      projectId: context.project.id,
+      assessmentRef: `processing_run:${job.processing_run_id}`,
+      locale: context.session.locale,
+      assessedAt: (dependencies.now ?? (() => new Date()))().toISOString(),
+      requests: planningMap.informationRequests,
+      decision: {
+        decisionKey: "capital_strategy.direction",
+        question: context.session.locale === "pt-BR"
+          ? "Qual alternativa de capital deve ser aprofundada?"
+          : "Which capital alternative should be developed further?",
+        status: planningMap.directionalRecommendation.status === "directional" ? "directional" : "open",
+        recommendation: planningMap.directionalRecommendation.status === "directional" && preferredAlternative
+          ? preferredAlternative.title
+          : null,
+        alternatives: planningMap.alternatives.map((alternative) => ({
+          id: alternative.id,
+          label: alternative.title,
+          disposition: preferredAlternative?.id === alternative.id
+            ? "preferred" as const
+            : alternative.status === "not_assessable" ? "deferred" as const : "candidate" as const,
+          rationale: alternative.fitRationale,
+        })),
+        rationaleSummary: planningMap.directionalRecommendation.rationale,
+        evidence: research.sources.slice(0, 20).map((source) => ({
+          type: "public_source",
+          id: `source:${source.contentHash}`,
+          fingerprint: source.contentHash,
+          asOf: source.retrievedAt,
+          accessBasis: "public",
+        })),
+        assumptions: planningMap.understoodNeed.assumptionsToConfirm,
+        unresolved: [
+          ...planningMap.directionalRecommendation.conditionsBeforeConfirmation,
+          ...planningMap.unknowns,
+        ],
+        confidence: planningMap.directionalRecommendation.status === "directional" ? "medium" : "insufficient",
+        proposedBy: "transaction_structuring",
+      },
+    }));
     await dependencies.queue.writeStage(job, "capital_planning", "succeeded", {
       artifactId: finalArtifact.id, taskCount: context.revision ? 1 : artifacts.size,
       publicResearchStatus: research.status, publicSourceCount: research.sources.length,

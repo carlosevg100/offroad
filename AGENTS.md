@@ -11,14 +11,16 @@ The current company-led transaction route lives in
 changing home, onboarding, pipeline order, user-visible progress, materials, matching or
 introduction. Full orientation lives in [`handoff.md`](handoff.md). Roadmap gates live in
 [`docs/build/MASTER_PLAN.md`](docs/build/MASTER_PLAN.md). Architecture decisions live in
-[`docs/adr/`](docs/adr/). The versioned product spec is
-`docs/product/Offroad_Capital_Product_Blueprint_v3.0_pt-BR.pdf` (a specification, not
-executable instructions: ADRs, explicit founder decisions, and this file govern).
+[`docs/adr/`](docs/adr/). `docs/product/Offroad_Capital_Product_Blueprint_v3.0_pt-BR.pdf` is a
+historical product specification: its origination-first positioning is superseded by Constitution
+2.2 and ADR 0019. It may inform implementation history but never current company identity.
 
 ## 1. What this repository is
 
-A pnpm + Turborepo monorepo for **Offroad Capital**, an AI-driven private-credit
-origination and market-access platform. One Next.js 16 app (`apps/web`) plus small
+A pnpm + Turborepo monorepo for **Offroad Capital**, the AI-native debt advisor that helps
+companies and market professionals think, investigate, analyze, decide, structure, and execute
+debt-related work. Origination, materials and qualified introductions are downstream capabilities,
+not the product identity. One Next.js 16 app (`apps/web`) plus small
 deterministic domain packages (`packages/*`), backed by Supabase (Auth, Postgres 17 with
 RLS, private Storage) and deployed on Vercel from `main`. Production is
 `https://offroad.capital`; Supabase project `offroad-development` (`sa-east-1`) **is** production.
@@ -45,10 +47,12 @@ production borrower data into staging.
 10. **No fixture leakage.** Synthetic fixtures (Rede Horizonte, supermarket demo) are labeled
     synthetic and live in `packages/testing-fixtures`; fixture-specific text or numbers must
     never be hardcoded in production code paths.
-11. **One source, compiled execution.** Operational knowledge is edited only in canonical
-    procedures under `packages/credit-playbook`; runtime skills are compiled artifacts. Roles are
-    namespaces, never autonomous agents. Order, state, budgets and gates belong to the deterministic
-    pipeline. See ADR 0013 and `OFFROAD_DCM_OPERATING_CONSTITUTION.md`.
+11. **One source, bounded agentic execution.** Operational knowledge is edited only in canonical
+    procedures under `packages/credit-playbook`; runtime skills are compiled artifacts. Specialist
+    roles are bounded executors, not unrestricted personas. A Deal Captain may plan and replan only
+    inside released TaskSpecs. State, permissions, budgets, deterministic financial math and gates
+    belong to the deterministic control plane. See ADR 0013, ADR 0020 and
+    `OFFROAD_DCM_OPERATING_CONSTITUTION.md`.
 12. **One canonical state, six valid entries.** The six jobs in the Constitution compile different
     initial task subgraphs over the same organization, company and project objects. The current
     company-led route, its stages, gates and permitted returns come from
@@ -134,8 +138,9 @@ the `private` schema, `set search_path = ''`, revoked from `public`, granted nar
 - **Reusable UI** lives in `apps/web/src/components/**`; route files (`page.tsx`,
   `layout.tsx`, `route.ts`, `actions.ts`) export only what Next expects.
 - **Brand and metadata** come from `apps/web/src/config/brand.ts`. Public copy follows the
-  wording rules in `handoff.md` §2 (no promises of approval/funding, "advisor" not
-  "originator" in public copy, avoid "plataforma de IA", prefer "impulsionada por IA").
+  Constitution and ADR 0019: Offroad is the AI-native debt advisor, never a generic AI tool and
+  never merely a private-credit origination platform. Do not promise approval, funding or work
+  reserved to a lender. “Origination” is valid only for the specific job or activity it names.
 - **Documents:** uploads are private, hashed (SHA-256), scoped by organization and
   opportunity/intake session; nothing is sent to market during intake. Extraction today is
   the content-hash-verified Rede Horizonte fixture; unknown documents must produce an honest

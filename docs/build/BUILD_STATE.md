@@ -1,8 +1,51 @@
 # Build State
 
-Atualizado em: 2026-09-02
+Atualizado em: 2026-09-03
 Baseline: `main` após PR #359, commit `90a7153`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Sistema de trabalho agêntico de DCM, schema em produção, 03/09/2026
+
+- Todo trabalho analítico agora recebe um plano persistente do Deal Captain, limitado ao DAG
+  compilado e aos efeitos previamente autorizados. Status reais do worker alimentam a timeline do
+  chat; não há animação fictícia de atividade.
+- Análises públicas, planejamento de capital e casos privados projetam seus resultados em três
+  memórias operacionais do projeto: cobertura de evidências, decisões versionadas e no máximo três
+  pedidos de informação de alto valor por rodada.
+- Documentos classificados e respostas já existentes satisfazem requisitos automaticamente. O
+  sistema não pergunta novamente o que já conseguiu ler; conflitos financeiros têm precedência
+  sobre pedidos genéricos de documentação.
+- A interface central mostra atividade e perguntas como conversa. O painel direito mostra o plano,
+  documentos, cobertura, decisões e artefatos sem tirar o usuário do projeto.
+- Produção recebeu oito migrations em ordem: work system, índices, eventos de runtime, projeção de
+  assessment, autoria, duas correções fail-closed de resolução de variável e índices de ator dos
+  grupos de projetos. O ledger remoto e o repositório possuem exatamente 164 versões, sem drift.
+- O teste transacional real passou em staging e produção: persistência, replay, autoria, isolamento
+  por capability e limite de três perguntas, sempre com rollback. O Security Advisor não possui
+  achado acionável e o Performance Advisor não possui foreign key sem índice.
+- O gate integral em Node 24 passou nos 42 pacotes. Web: 172 testes; worker: 113 testes; contratos:
+  33 testes; build Next.js: 32 páginas. O PR #374 repetiu banco, E2E, build, CodeQL, dependency
+  review, Trivy de repositório e imagem e SBOM com resultado verde.
+- Estado: schema compatível já promovido e validado em produção; web e worker aguardam somente o
+  merge coordenado do PR #374.
+
+## Identidade canônica e decisão ANBIMA, candidate, 02/09/2026
+
+- A Constituição, a nova ADR 0019, `AGENTS.md`, README, handoff, workflow, metadados, manifest,
+  homepage PT-BR/EN-US e gerador de assets agora descrevem uma única Offroad: o advisor AI-native
+  especialista em dívida que ajuda companhias e profissionais a pensar, investigar, analisar,
+  decidir, estruturar e executar trabalhos relacionados a dívida.
+- Originação, estruturação de operações, materiais, matching e introdução qualificada permanecem
+  capacidades, não a identidade do produto. A ADR 0004 foi preservada como registro histórico e
+  marcada como superada; handoffs arquivados receberam aviso explícito de snapshot histórico.
+- Um teste de contrato impede que metadados, manifest e homepage retomem a categoria histórica.
+- ANBIMA Data público foi separado do ANBIMA Feed: o primeiro permanece fonte oficial
+  complementar e manual; o segundo continua desativado e contratado. A APP gratuita permite
+  Sandbox fictício, não dados oficiais de produção. Nenhuma credencial foi armazenada ou usada.
+- O Client Secret exibido em captura precisa ser rotacionado antes de qualquer uso futuro.
+- O gate integral em Node 24 passou nos 42 pacotes; web tem 172 testes verdes e o build Next.js
+  gerou 32 páginas. As homepages PT-BR e EN-US foram inspecionadas localmente sem overflow.
+- Estado: candidate local; produção e provedores pagos não foram alterados.
 
 ## Entrada instantânea no projeto, candidate, 02/09/2026
 
@@ -1875,3 +1918,27 @@ O produto está tecnicamente disponível para teste humano controlado. Isso não
 institucional comprovado para cada output: qualidade financeira, editorial, matching real e custo
 devem ser promovidos individualmente por gold case. Nenhuma introdução é automática e
 underwriting, diligência, decisão de crédito e fechamento continuam fora da execução Offroad.
+
+## Deal Captain limitado e remediação da auditoria, 02/09/2026
+
+- A auditoria independente do commit `4251614` foi revalidada contra a árvore corrente e recebeu
+  disposição item a item em `AUDIT_DISPOSITION_2026-09-02.md`.
+- O gateway preserva `null` semântico obrigatório e remove apenas o `null` artificial de campo
+  opcional exigido pelo strict schema da OpenAI. Os testes incluem abstenção e fallback.
+- O roteamento privado não desliga mais o pipeline quando há documento. As seis entradas podem
+  continuar para o Case Graph privado sem exigir redigitação do conteúdo anexado.
+- O Deal Captain projeta o plano TaskSpec imutável para um plano de trabalho tipado com
+  especialistas, dependências, orçamento, efeito, cobertura, perguntas e decisões. O banco rejeita
+  tarefa inventada ou dependência fora do plano.
+- O worker grava o plano com capability temporária antes dos DAGs públicos e das análises privadas
+  preliminar e completa. A mesma projeção limitada do plano nasce mesmo quando a primeira resposta
+  do usuário é uma pasta de documentos. As tabelas novas são tenant-scoped, RLS/FORCE e read-only
+  para o browser; efeitos externos exigem aprovação.
+- `Não aprovo` e `Não envie` são interceptados antes das regras de commit e ação externa.
+- O CI executa todos os testes SQL automaticamente. Actions foram fixadas por SHA e um workflow de
+  segurança adiciona CodeQL, dependency review, Trivy e SBOM.
+- Testes locais: `@offroad/agent-contracts` 33/33; `@offroad/document-worker` 106/106. O gate
+  integral forçado aprovou lint, typecheck, testes e build nos 42 pacotes com Node 24.19.0.
+- Este estado intermediário foi superado em 03/09: o histórico canônico foi reconciliado, oito
+  migrations foram aplicadas e testadas em produção e o ledger local passou a espelhar exatamente
+  as 164 versões remotas.

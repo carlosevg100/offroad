@@ -279,6 +279,41 @@
 .advisor-thread__artifact-link:hover,
 .advisor-thread__artifact-link:focus-visible {background: #f2f5ef; border-color: #9eac8b; outline: none;}
 
+.advisor-thread__activity-event {
+  align-items: flex-start;
+  color: #697279;
+  display: flex;
+  gap: 10px;
+  margin-left: 41px;
+  max-width: 680px;
+}
+.advisor-thread__activity-event > span {
+  align-items: center;
+  background: #f1f3ef;
+  border: 1px solid #dde2d8;
+  border-radius: 50%;
+  color: #71884f;
+  display: flex;
+  flex: 0 0 25px;
+  height: 25px;
+  justify-content: center;
+}
+.advisor-thread__activity-event > div {padding-top: 2px;}
+.advisor-thread__activity-event small {color: #8a9297; font-size: 8px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase;}
+.advisor-thread__activity-event p {font-size: 11px; line-height: 1.5; margin: 3px 0 0;}
+.advisor-thread__activity-event.is-complete > span {background: #eff3e9; border-color: #d3ddc6; color: #617a3d;}
+.advisor-thread__activity-event.is-failed > span {background: #fff2ef; border-color: #ead4cf; color: #a34839;}
+
+.advisor-thread__requests > div {max-width: 700px; width: 100%;}
+.advisor-thread__requests > div > strong {color: #242b30; display: block; font-size: 14px; font-weight: 650; margin-bottom: 4px;}
+.advisor-thread__requests > div > p {color: #727b80; font-size: 11px; line-height: 1.55;}
+.advisor-thread__requests ol {border: 1px solid #dce2d7; border-radius: 10px; list-style: none; margin: 14px 0 0; overflow: hidden; padding: 0;}
+.advisor-thread__requests li {align-items: flex-start; background: #fbfcfa; display: grid; gap: 12px; grid-template-columns: 24px minmax(0, 1fr); padding: 14px 16px;}
+.advisor-thread__requests li + li {border-top: 1px solid #e3e6e0;}
+.advisor-thread__requests li > span {color: #71884f; font-family: var(--font-geist-mono), monospace; font-size: 9px; padding-top: 2px;}
+.advisor-thread__requests li strong {color: #30373d; display: block; font-size: 12px; font-weight: 610; line-height: 1.45;}
+.advisor-thread__requests li small {color: #727b80; font-size: 10px; font-weight: 400; letter-spacing: 0; line-height: 1.5; margin: 5px 0 0; text-transform: none;}
+
 .advisor-thread__work-product {
   width: 100%;
 }

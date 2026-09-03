@@ -23,11 +23,12 @@ import {
   redactPersonalIdentifiers,
   resolveModel,
   sweepCandidateModels,
-  stripNulls,
+  stripOpenAIOptionalNulls,
   toOpenAIStrictSchema,
   type AdapterRequest,
   type AdapterResponse,
   type GatewayCallLog,
+  type GatewayRequest,
   type ProviderDataAssurance,
   type ProviderAdapter,
 } from "./index";
@@ -233,11 +234,41 @@ describe("adapters (pure builders)", () => {
     expect(content).toEqual(["input_text", "input_image", "input_file"]);
   });
 
-  it("maps OpenAI stop reasons and strips nulls", () => {
+  it("maps OpenAI stop reasons and strips only nulls forced onto optional properties", () => {
     expect(mapOpenAIStopReason({status: "completed", incomplete_details: null, output: []})).toBe("end");
     expect(mapOpenAIStopReason({status: "incomplete", incomplete_details: {reason: "max_output_tokens"}, output: []})).toBe("max_tokens");
     expect(mapOpenAIStopReason({status: "completed", incomplete_details: null, output: [{type: "message", id: "m", role: "assistant", status: "completed", content: [{type: "refusal", refusal: "no"}]}]})).toBe("refusal");
-    expect(stripNulls({a: null, b: {c: null, d: 1}, e: [null, {f: null}]})).toEqual({b: {d: 1}, e: [null, {}]});
+    const originalSchema = {
+      type: "object",
+      properties: {
+        requiredNull: {anyOf: [{type: "string"}, {type: "null"}]},
+        optionalNull: {type: "string"},
+        nested: {
+          type: "object",
+          properties: {requiredNull: {type: ["number", "null"]}, optionalNull: {type: "string"}},
+          required: ["requiredNull"],
+        },
+        entries: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {requiredNull: {type: ["string", "null"]}, optionalNull: {type: "string"}},
+            required: ["requiredNull"],
+          },
+        },
+      },
+      required: ["requiredNull", "nested", "entries"],
+    };
+    expect(stripOpenAIOptionalNulls({
+      requiredNull: null,
+      optionalNull: null,
+      nested: {requiredNull: null, optionalNull: null},
+      entries: [{requiredNull: null, optionalNull: null}],
+    }, originalSchema)).toEqual({
+      requiredNull: null,
+      nested: {requiredNull: null},
+      entries: [{requiredNull: null}],
+    });
     expect(toOpenAIStrictSchema({type: "object", properties: {a: {type: "string", maxLength: 3, format: "uri"}, b: {anyOf: [{type: "string"}, {type: "number"}]}}, required: ["a"], additionalProperties: false, $schema: "x"})).toEqual({
       type: "object",
       properties: {a: {type: "string"}, b: {anyOf: [{type: "string"}, {type: "number"}, {type: "null"}]}},
@@ -277,7 +308,7 @@ describe("gateway", () => {
 
   it("falls back to the next provider on refusal, error or invalid output", async () => {
     const refusing = fakeAdapter("anthropic", [ok("claude-sonnet-5", undefined, {stopReason: "refusal"})]);
-    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5, note: null})]);
+    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
     const gateway = createModelGateway({adapters: {anthropic: refusing, openai}});
     const result = await gateway.complete(baseRequest);
     expect(result.usedFallback).toBe(true);
@@ -295,6 +326,29 @@ describe("gateway", () => {
     const third = await createModelGateway({adapters: {anthropic: invalid, openai: openai3}}).complete(baseRequest);
     expect(third.attempts[0]?.outcome).toBe("invalid_output");
     expect(third.usedFallback).toBe(true);
+  });
+
+  it("preserves required nullable values returned by every provider", async () => {
+    const recommendationSchema = z.object({
+      status: z.enum(["not_ready", "directional"]),
+      alternativeId: z.string().nullable(),
+      note: z.string().optional(),
+    });
+    const request: GatewayRequest<typeof recommendationSchema> = {
+      task: "extract_fields",
+      schema: recommendationSchema,
+      schemaName: "directional_recommendation",
+      system: "Return an honest recommendation or abstain.",
+      input: [{type: "text", text: "Evidence is insufficient."}],
+    };
+    const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {
+      status: "not_ready",
+      alternativeId: null,
+    })]);
+
+    const result = await createModelGateway({adapters: {anthropic}}).complete(request);
+
+    expect(result.output).toEqual({status: "not_ready", alternativeId: null});
   });
 
   it("records failed provider attempts without logging their content", async () => {

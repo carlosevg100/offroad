@@ -1,9 +1,9 @@
 # Offroad Capital
 
-Monorepo oficial da Offroad Capital, originação de crédito privado e acesso ao mercado,
-impulsionada por IA. Este repositório contém o site institucional bilíngue, a aplicação
-autenticada (empresas, advisors/originadores e provedores de capital) e os núcleos
-determinísticos de domínio.
+Monorepo oficial da Offroad Capital, o advisor AI-native especialista em dívida que ajuda
+companhias e profissionais do mercado a pensar, investigar, analisar, decidir, estruturar e
+executar trabalhos relacionados a dívida. Este repositório contém o site institucional bilíngue,
+a aplicação autenticada e os núcleos determinísticos de domínio.
 
 ## Estado atual
 
@@ -16,7 +16,8 @@ A orientação completa (produto, arquitetura, rotas, dados, segurança, dívida
 
 ## Produto e fontes de verdade
 
-- Blueprint vigente: `docs/product/Offroad_Capital_Product_Blueprint_v3.0_pt-BR.pdf` (especificação; ADRs, decisões explícitas e o código governam a implementação)
+- Constituição vigente: `docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`
+- Blueprint v3.0: snapshot histórico; seu posicionamento origination-first foi superado pela Constituição 2.2 e pela ADR 0019
 - Plano por gates: `docs/build/MASTER_PLAN.md`
 - Estado e evidências: `docs/build/BUILD_STATE.md`, `docs/build/ACCEPTANCE_EVIDENCE.md`
 - Decisões arquiteturais: `docs/adr/`

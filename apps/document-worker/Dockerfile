@@ -91,6 +91,13 @@ RUN apt-get update \
       tini \
  && rm -rf /var/lib/apt/lists/*
 
+# Production executes the compiled worker directly with Node. npm and npx are build-time
+# tooling only; leaving npm's dependency tree in the runtime image needlessly expands the
+# attack surface and has previously reintroduced vulnerable archive and URL parsers through
+# the upstream Node base image.
+RUN rm -rf /usr/local/lib/node_modules/npm \
+ && rm -f /usr/local/bin/npm /usr/local/bin/npx
+
 # Virus definitions are baked into the image so a cold task can scan immediately; the
 # entrypoint refreshes them in the background afterwards.
 RUN freshclam --quiet || true

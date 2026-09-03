@@ -68,10 +68,10 @@ export function productPhaseForState(state: ProductWorkflowState): ProductPhase 
 }
 
 export const offroadProductBoundary = {
-  version: "2026.08.31-v2",
+  version: "2026.09.02-v3",
   valueProposition: {
-    pt: "Estruturação financeira e acesso qualificado ao mercado de crédito privado.",
-    en: "Financial structuring and qualified access to the private credit market.",
+    pt: "Inteligência e execução especializada para decisões relacionadas a dívida.",
+    en: "Specialist intelligence and execution for debt-related decisions.",
   },
   deliverable: {
     pt: "Caso compreendido, estrutura recomendada, materiais preparados, mercado selecionado e introdução qualificada realizada.",

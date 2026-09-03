@@ -1,5 +1,24 @@
 # Acceptance Evidence
 
+## Identidade canônica e decisão ANBIMA, candidate, 02/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Fonte de verdade | Constituição 2.2 + ADR 0019 | categoria e descrição canônicas em PT-BR e EN-US; capacidades downstream não definem a empresa |
+| Orientação de agentes | `AGENTS.md`, README e handoff vigente | descrição antiga removida; precedência explícita; snapshots antigos marcados como históricos |
+| Projeção pública | `brand.ts`, JSON-LD, manifest, homepage e social asset | mesma identidade em metadata e copy; capability list substitui descrição estreita de originação |
+| Regressão | `brand.test.ts` | 172/172 testes web; categoria, manifest e idiomas fixados; frases históricas proibidas no conjunto público |
+| ANBIMA Data | source registry + decisão de fonte | fonte pública complementar, manual e sem falso mandato de financiador |
+| ANBIMA Feed | documentação oficial + registry | Sandbox fictício separado de produção contratada; provider permanece desligado |
+| Segurança | inspeção | nenhum segredo lido, copiado, versionado ou ativado; rotação indicada para o segredo exposto em imagem |
+| Custo externo | inspeção | zero chamada à API ANBIMA e zero ativação de provider pago |
+| Gate integral | Node 24, `pnpm check` | lint, typecheck, testes e build verdes nos 42 pacotes; Next.js gerou 32 páginas |
+| Revisão visual | homepage local PT-BR e EN-US | título, hero e proposta canônica visíveis; sem overflow horizontal em 1265 px |
+
+Status: **candidate local**. A identidade está corrigida no código e na orientação; publicação
+depende do gate integral, revisão visual e deploy. A automação de ANBIMA Data permanece bloqueada
+até validar termos aplicáveis ao recurso exato.
+
 ## Entrada instantânea no projeto, candidate, 02/09/2026
 
 | Evidência | Verificação | Resultado |
@@ -928,3 +947,27 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Deploy web | Vercel deployment `9iHU9GnUgyF91jmeDTHMMZJtWnf4` | deployment de `main` concluído com status success | 2026-09-02 |
 | Deploy worker | workflow `33588131083` | imagem construída, task definition registrada e rollout ECS estabilizado em 5m01s | 2026-09-02 |
 | Fronteira externa | contratos, RPCs e interface | nenhuma distribuição automática; introdução exige representação verificada, material exato, destinatários exatos e autorização específica; nenhum provedor pago foi chamado na promoção | 2026-09-02 |
+
+## Deal Captain e remediação da auditoria, 02/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Abstenção preservada | `@offroad/model-gateway` | campo obrigatório nullable sobrevive; campo opcional artificial é removido apenas no adapter OpenAI; fallback Anthropic não perde `null` | 2026-09-02 |
+| Roteamento negativo | `@offroad/agent-contracts` | `Não aprovo essa estrutura` não vira commit e `Não envie o material` não vira ação externa | 2026-09-02 |
+| Plano limitado | `work-system.ts` + 33 testes | plano dinâmico referencia exclusivamente TaskSpecs compilados, valida dependências, aprovação externa, evidência, decisão e ciclo | 2026-09-02 |
+| Persistência capability-bound | migrations `20260903034438` a `20260903034457` | worker não envia tenant; banco resolve job, sessão, projeto e plano para pesquisa pública ou análise privada, rejeita TaskSpec inventada e grava timeline bilíngue | 2026-09-02 |
+| Segurança de supply chain | `.github/workflows/security.yml` | CodeQL, dependency review, Trivy de repositório e imagem, SBOM e actions pinadas por SHA adicionados | 2026-09-02 |
+| Verificação local | Node 24.19.0 | contratos 33/33, worker 106/106 e `pnpm check` forçado com 42/42 pacotes em lint, typecheck, testes e build | 2026-09-02 |
+| Banco remoto | histórico de migrations | estado intermediário superado em 03/09; produção e repositório reconciliados em 164 versões | 2026-09-02 |
+
+## Memória operacional e projeção analítica, 03/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Coverage e perguntas | `agent-assessment.ts` + testes do worker | documentos e respostas fecham requisitos automaticamente; conflitos ganham prioridade; duplicatas são eliminadas; cada rodada fica limitada a três perguntas | 2026-09-03 |
+| Decisões versionadas | `worker_record_agent_assessment_v1` | recomendação, alternativas, evidências, premissas e incertezas persistem no projeto; replay não duplica decisão e automação não substitui decisão humana confirmada ou rejeitada | 2026-09-03 |
+| Teste SQL transacional | `supabase/tests/agentic_dcm_work_system.sql` em staging e produção | comando real gravou coverage, request, decisão e três eventos; autoria atribuída; replay idempotente; lote com quatro perguntas recusado; rollback sem resíduos | 2026-09-03 |
+| Schema canônico | Supabase production + repositório | 164 migrations em ambos os lados e zero versões divergentes; oito migrations novas aplicadas em ordem | 2026-09-03 |
+| Segurança remota | Supabase Advisors de produção | zero achado acionável de segurança ou performance; zero foreign key sem índice; somente INFO de tabelas privadas fail-closed e índices novos ainda sem tráfego | 2026-09-03 |
+| Interface de trabalho | página do projeto + `advisor-project.tsx` | chat mostra timeline e próxima intervenção; painel lateral mostra plano, cobertura e decisões; consulta preserva RLS por projeto e organização | 2026-09-03 |
+| Gate integral | `fnm exec --using=24 pnpm check` + PR #374 | lint, typecheck, testes e build verdes nos 42 pacotes; web 172, worker 113, contratos 33; Next.js gerou 32 páginas; banco, E2E, CodeQL, dependency review, Trivy e SBOM verdes | 2026-09-03 |

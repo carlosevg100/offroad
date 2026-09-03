@@ -54,6 +54,14 @@ describe("debt intelligence source registry", () => {
     expect(firecrawl).toMatchObject({retrievalOnly: true, sourceClass: "content_acquisition"});
   });
 
+  it("separates free ANBIMA Data from the contracted ANBIMA Feed", () => {
+    const publicData = debtSourceRegistry.find((source) => source.id === "anbima_data");
+    const feed = debtSourceRegistry.find((source) => source.id === "anbima_feed");
+    expect(publicData).toMatchObject({access: "public_site", status: "manual_only", activationEnv: null});
+    expect(publicData?.capabilities).not.toContain("lender_mandates");
+    expect(feed).toMatchObject({access: "contracted_api", status: "contract_ready", activationEnv: "ANBIMA_CLIENT_ID"});
+  });
+
   it("uses geography or a country domain before locale and marks locale defaults for confirmation", () => {
     expect(inferDebtJurisdiction({locale: "en-US", geography: "Brasil"})).toEqual({
       jurisdiction: "BR", basis: "explicit_geography", needsConfirmation: false,

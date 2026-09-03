@@ -1,6 +1,8 @@
 import {fingerprintJson} from "@offroad/case-understanding";
 import {z} from "zod";
 
+export * from "./work-system";
+
 export const workspaceRequestIntentSchema = z.enum([
   "explain",
   "inspect",
@@ -39,11 +41,23 @@ export const workspaceRequestRouteSchema = z.object({
 });
 export type WorkspaceRequestRoute = z.infer<typeof workspaceRequestRouteSchema>;
 
-export const executableWorkspaceJobSchema = z.enum(["company_debt_view", "origination_thesis", "capital_planning"]);
+export const executableWorkspaceJobSchema = z.enum([
+  "company_debt_view",
+  "origination_thesis",
+  "capital_planning",
+  "structure_from_documents",
+  "review_existing_operation",
+  "prepare_materials_and_process",
+]);
 export type ExecutableWorkspaceJob = z.infer<typeof executableWorkspaceJobSchema>;
 
 export const workspaceExecutionRouteSchema = z.object({
-  action: z.enum(["queue_specialized_job", "collect_required_context", "conversation_only"]),
+  action: z.enum([
+    "queue_specialized_job",
+    "continue_private_case",
+    "collect_required_context",
+    "conversation_only",
+  ]),
   analysisScope: executableWorkspaceJobSchema.nullable(),
   requirements: z.array(z.enum([
     "company_identity",
@@ -105,12 +119,22 @@ export function routeWorkspaceExecution(input: {
     });
   }
 
-  if (input.accessBasis !== "public_information" || input.documentCount > 0) {
+  if (input.accessBasis === "authorized_private" || input.documentCount > 0) {
     return workspaceExecutionRouteSchema.parse({
-      action: "conversation_only",
+      action: "continue_private_case",
       analysisScope: analysisScope.data,
       requirements: [],
-      reasonCode: "private_case_requires_case_graph",
+      reasonCode: "private_case_pipeline_active",
+      modelRoutingCalls: 0,
+    });
+  }
+
+  if (["structure_from_documents", "review_existing_operation", "prepare_materials_and_process"].includes(analysisScope.data)) {
+    return workspaceExecutionRouteSchema.parse({
+      action: "collect_required_context",
+      analysisScope: analysisScope.data,
+      requirements: ["assignment_context"],
+      reasonCode: "private_case_context_required",
       modelRoutingCalls: 0,
     });
   }
@@ -157,6 +181,7 @@ const originationContextPatterns = {
 } as const;
 
 const patterns = {
+  negatedGovernedAction: /(?:\b(?:n[aã]o|nao)\s+(?:aprovo|confirmo|aceito|envie|enviar|mande|mandar|contate|contatar|introduza|introduzir|apresente|apresentar|pode\s+seguir)\b|\b(?:do\s+not|don't|cannot|can't)\s+(?:approve|confirm|accept|send|contact|introduce|present|go\s+ahead)\b)/i,
   authorizeExternal: /(?:\b(?:enviar|envie|mandar|mande|introduzir|introduza|contatar|contate|abordar|aborde|send|introduce|contact|approach)\b.{0,140}\b(?:fundo|financiador|investidor|lender|fund|investor|destinat[aá]rio|recipient)\b|\b(?:apresentar|apresente|present)\b.{0,80}\b(?:ao|à|para\s+(?:o|a)|to)\b.{0,80}\b(?:fundo|financiador|investidor|lender|fund|investor)\b)/i,
   compile: /\b(gerar|gere|produzir|produza|montar|monte|compilar|compile|generate|prepare|preparar)\b.*\b(teaser|memo|memorando|term\s*sheet|modelo|model|material|pacote|package|data\s*room)\b/i,
   simulate: /\b(e\s+se|simular|simule|simula[cç][aã]o|cen[aá]rio|what\s+if|simulate|scenario)\b/i,
@@ -202,6 +227,9 @@ export function routeWorkspaceRequest(input: {
   });
 
   if (!message) return route("clarify", "none", "empty_request", true, false, "ambiguous");
+  if (patterns.negatedGovernedAction.test(message)) {
+    return route("clarify", "none", "negated_governed_action", true, false);
+  }
   if (patterns.authorizeExternal.test(message)) {
     return route("authorize_external", "external", "external_action_language", input.surface === "market");
   }

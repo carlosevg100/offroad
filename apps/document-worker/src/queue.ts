@@ -1,5 +1,6 @@
 import {z} from "zod";
 import type {SupabaseClient} from "@supabase/supabase-js";
+import type {DcmAgentAssessment} from "@offroad/agent-contracts";
 
 /**
  * The worker's only vocabulary against the database: the seven commands created in
@@ -102,6 +103,7 @@ export type PreliminaryAnalysisJob = z.infer<typeof preliminaryAnalysisJobSchema
 export type CaseAnalysisJob = FullCaseAnalysisJob | PreliminaryAnalysisJob;
 export type AgentOperationBriefJob = z.infer<typeof agentOperationBriefJobSchema>;
 export type CapitalProjectAnalysisJob = z.infer<typeof capitalProjectAnalysisJobSchema>;
+export type AgentPlanJob = CaseAnalysisJob | CapitalProjectAnalysisJob;
 
 const noJobSchema = z.object({
   claimed: z.literal(false),
@@ -197,6 +199,14 @@ export type QueueClient = {
   recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
   loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
+  loadAgentPlanContext?(job: AgentPlanJob): Promise<unknown>;
+  recordAgentPlan?(job: AgentPlanJob, plan: unknown): Promise<string>;
+  recordAgentAssessment?(job: AgentPlanJob, assessment: DcmAgentAssessment): Promise<{
+    agentPlanId: string;
+    coverageCount: number;
+    requestCount: number;
+    decisionCount: number;
+  }>;
   recordAgentResponse(
     job: AgentOperationBriefJob,
     assistantMessageId: string,
@@ -267,6 +277,15 @@ export function createQueueClient(
         p_detail: detail ?? {},
         p_usage: usage ?? {},
       });
+      if (["preliminary_analysis", "case_analysis", "capital_project_analysis"].includes(job.kind)) {
+        await call("worker_record_agent_stage_event_v1", {
+          p_job_id: job.job_id,
+          p_capability_token: job.capability_token,
+          p_stage: stage,
+          p_status: status,
+          p_detail: detail ?? {},
+        });
+      }
     },
 
     async startCapitalTask(job, input) {
@@ -549,6 +568,42 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
+    },
+
+    async loadAgentPlanContext(job) {
+      return call("worker_load_agent_plan_context_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+      });
+    },
+
+    async recordAgentPlan(job, plan) {
+      const data = await call("worker_record_agent_plan_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_agent_plan: plan,
+      });
+      return z.uuid().parse(data);
+    },
+
+    async recordAgentAssessment(job, assessment) {
+      const data = await call("worker_record_agent_assessment_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_assessment: assessment,
+      });
+      const parsed = z.object({
+        agent_plan_id: z.uuid(),
+        coverage_count: z.number().int().nonnegative(),
+        request_count: z.number().int().min(0).max(3),
+        decision_count: z.number().int().nonnegative(),
+      }).parse(data);
+      return {
+        agentPlanId: parsed.agent_plan_id,
+        coverageCount: parsed.coverage_count,
+        requestCount: parsed.request_count,
+        decisionCount: parsed.decision_count,
+      };
     },
 
     async recordAgentResponse(job, assistantMessageId, response, proposal, activation) {

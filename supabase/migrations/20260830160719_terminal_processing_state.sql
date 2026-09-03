@@ -58,4 +58,3 @@ where session.organization_id = run.organization_id
   and session.id = run.intake_session_id
   and session.status = 'processing'
   and run.status in ('failed', 'cancelled');
-
