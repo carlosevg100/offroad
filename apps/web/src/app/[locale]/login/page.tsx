@@ -9,7 +9,7 @@ import type {AppLocale} from "@/i18n/routing";
 import {signInWithPassword} from "./actions";
 import {LoginSubmit} from "./login-submit";
 
-export const metadata: Metadata = {title: "Institutional Access", robots: {index: false, follow: false}};
+export const metadata: Metadata = {title: "Sign in", robots: {index: false, follow: false}};
 
 type Props = {
   params: Promise<{locale: string}>;
@@ -25,7 +25,6 @@ export default async function LoginPage({params, searchParams}: Props) {
     <AuthShell
       assurance={t("security")}
       body={t("body")}
-      eyebrow={t("eyebrow")}
       locale={locale as AppLocale}
       title={t("title")}
     >
@@ -35,7 +34,6 @@ export default async function LoginPage({params, searchParams}: Props) {
 
         <form action={signInWithPassword} className="auth-form" id="access-form">
           <div className="auth-form__heading">
-            <p className="section-kicker">{t("loginEyebrow")}</p>
             <h2>{t("loginTitle")}</h2>
             <p>{t("loginBody")}</p>
           </div>

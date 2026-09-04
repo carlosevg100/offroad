@@ -1,9 +1,9 @@
 export const brand = {
-  name: "Offroad Capital",
+  name: "Offroad",
   slug: "offroadcapital",
   domain: "offroad.capital",
   url: "https://offroad.capital",
-  browserTitle: "Offroad Capital | AI for Debt Capital Markets",
+  browserTitle: "Offroad | AI for Debt Capital Markets",
   description: "Offroad brings specialist financial intelligence, market context, and institutional execution capacity to debt capital markets.",
   category: "AI Platform for Debt Capital Markets",
   socialHeadline: "Powering a smarter, more efficient and connected debt market.",
