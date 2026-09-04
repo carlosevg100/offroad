@@ -64,7 +64,7 @@ export const originationMeetingBriefArtifactSchema = originationMeetingBriefSche
 /** Senior-banker work product used by the conversational origination workflow. Unlike the legacy
  * meeting brief, this contract forces the synthesis to explain the operating business, financial
  * trajectory, capital structure and strategic financing choices before proposing a meeting plan. */
-export const originationSeniorReadoutSchema = z.object({
+const originationSeniorReadoutV3Schema = z.object({
   executiveRead: z.string().min(60).max(3_600),
   companyAnalysis: z.object({
     businessOverview: z.string().min(40).max(1_800),
@@ -81,6 +81,39 @@ export const originationSeniorReadoutSchema = z.object({
     cashFlowAndWorkingCapital: z.string().min(40).max(1_800),
     outlookAndPlans: z.string().min(30).max(1_500),
     sourceUrls: z.array(z.url()).min(1).max(64),
+  }),
+  /** A public-information readout still needs a forward view, but it must not disguise an
+   * Offroad scenario as management guidance. Assumptions are individually sourced, explain how
+   * they enter the analysis and remain editable through the conversation. */
+  preliminaryForwardCase: z.object({
+    status: z.enum(["directional", "not_computable"]),
+    horizon: z.string().min(4).max(240),
+    nature: z.string().min(30).max(1_000),
+    assumptions: z.array(z.object({
+      id: z.string().regex(/^[a-z][a-z0-9_]{2,80}$/),
+      category: z.enum([
+        "revenue", "costs_and_margin", "working_capital", "capex_and_depreciation",
+        "tax", "macro_and_market", "debt_service", "sector_specific",
+      ]),
+      driver: z.string().min(5).max(180),
+      baseCase: z.string().min(8).max(600),
+      downside: z.string().min(8).max(600),
+      methodology: z.string().min(15).max(800),
+      rationale: z.string().min(15).max(800),
+      confidence: z.enum(["high", "medium", "low"]),
+      editable: z.literal(true),
+      sourceUrls: z.array(z.url()).min(1).max(8),
+    })).min(7).max(12),
+    projectedEffects: z.array(z.object({
+      category: z.enum(["revenue", "ebitda", "cash_flow", "net_debt_and_leverage", "liquidity_and_debt_service", "covenants"]),
+      metric: z.string().min(3).max(160),
+      baseCase: z.string().min(12).max(700),
+      downside: z.string().min(12).max(700),
+      debtRelevance: z.string().min(15).max(700),
+      sourceUrls: z.array(z.url()).min(1).max(8),
+    })).min(5).max(10),
+    missingInputs: z.array(z.string().min(8).max(600)).min(1).max(12),
+    limitations: z.array(z.string().min(8).max(600)).min(1).max(8),
   }),
   capitalStructure: z.object({
     overview: z.string().min(40).max(1_800),
@@ -137,8 +170,15 @@ export const originationSeniorReadoutSchema = z.object({
   unknowns: z.array(z.string().min(8).max(600)).min(1).max(16),
 });
 
-export const originationSeniorReadoutArtifactSchema = originationSeniorReadoutSchema.extend({
-  schemaVersion: z.literal("origination-senior-readout.v2"),
+/** The executable contract always targets the current senior readout. The v2 shape remains
+ * available below solely to read immutable artifacts created before the forward-case upgrade. */
+export const originationSeniorReadoutSchema = originationSeniorReadoutV3Schema;
+
+export const originationSeniorReadoutV2Schema = originationSeniorReadoutV3Schema.omit({
+  preliminaryForwardCase: true,
+});
+
+const originationSeniorReadoutArtifactMetadata = {
   asOfDate: z.iso.date(),
   company: z.object({name: z.string().min(2), website: z.url().nullable()}),
   sources: originationMeetingBriefArtifactSchema.shape.sources,
@@ -149,10 +189,21 @@ export const originationSeniorReadoutArtifactSchema = originationSeniorReadoutSc
     model: z.string().min(1),
     executorVersion: z.string().min(3),
   }),
+};
+
+export const originationSeniorReadoutV2ArtifactSchema = originationSeniorReadoutV2Schema.extend({
+  schemaVersion: z.literal("origination-senior-readout.v2"),
+  ...originationSeniorReadoutArtifactMetadata,
+});
+
+export const originationSeniorReadoutArtifactSchema = originationSeniorReadoutSchema.extend({
+  schemaVersion: z.literal("origination-senior-readout.v3"),
+  ...originationSeniorReadoutArtifactMetadata,
 });
 
 export const originationConversationArtifactSchema = z.union([
   originationSeniorReadoutArtifactSchema,
+  originationSeniorReadoutV2ArtifactSchema,
   originationMeetingBriefArtifactSchema,
 ]);
 
@@ -692,6 +743,7 @@ export type OriginationThesisBrief = z.infer<typeof originationThesisBriefSchema
 export type OriginationMeetingBrief = z.infer<typeof originationMeetingBriefSchema>;
 export type OriginationMeetingBriefArtifact = z.infer<typeof originationMeetingBriefArtifactSchema>;
 export type OriginationSeniorReadout = z.infer<typeof originationSeniorReadoutSchema>;
+export type OriginationSeniorReadoutV2Artifact = z.infer<typeof originationSeniorReadoutV2ArtifactSchema>;
 export type OriginationSeniorReadoutArtifact = z.infer<typeof originationSeniorReadoutArtifactSchema>;
 export type OriginationConversationArtifact = z.infer<typeof originationConversationArtifactSchema>;
 export type CompanyDebtViewBrief = z.infer<typeof companyDebtViewBriefSchema>;

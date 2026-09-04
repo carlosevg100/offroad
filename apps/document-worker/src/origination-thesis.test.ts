@@ -54,7 +54,7 @@ const job: CapitalProjectAnalysisJob = {
 
 describe("origination thesis vertical", () => {
   it("runs bounded public research, persists every TaskSpec output and leaves the brief pending confirmation", async () => {
-    const recordedArtifacts: Array<{taskId: string; artifactType: string; status: string; dependencies: unknown[]}> = [];
+    const recordedArtifacts: Array<{taskId: string; artifactType: string; status: string; dependencies: unknown[]; content?: Record<string, unknown>}> = [];
     const completed: unknown[] = [];
     const assessments: Array<{coverage: Array<{requirementKey: string; status: string}>}> = [];
     let taskRunSequence = 0;
@@ -134,7 +134,7 @@ describe("origination thesis vertical", () => {
         return runId;
       },
       recordCapitalProjectArtifact: async (_job: CapitalProjectAnalysisJob, input: {
-        taskRunId: string; artifactType: string; status: string; dependencies?: unknown[];
+        taskRunId: string; artifactType: string; status: string; dependencies?: unknown[]; content?: Record<string, unknown>;
       }) => {
         const taskId = taskByRun.get(input.taskRunId)!;
         recordedArtifacts.push({
@@ -142,6 +142,7 @@ describe("origination thesis vertical", () => {
           artifactType: input.artifactType,
           status: input.status,
           dependencies: input.dependencies ?? [],
+          ...(input.content ? {content: input.content} : {}),
         });
         const ordinal = taskDefinitions.findIndex((task) => task.id === taskId) + 101;
         return {
@@ -247,6 +248,15 @@ describe("origination thesis vertical", () => {
       publishedAt: null,
       retrievedAt: "2026-09-01T12:00:00.000Z",
       contentHash: query.id,
+    }, {
+      provider: "perplexity",
+      topic: query.topic,
+      title: "Resultado consultado, mas não utilizado",
+      url: `https://irrelevant.example/${query.id}`,
+      snippet: "Resultado de descoberta sem suporte para a leitura final.",
+      publishedAt: null,
+      retrievedAt: "2026-09-01T12:00:00.000Z",
+      contentHash: "9".repeat(64),
     }];
 
     const result = await processOriginationThesisJob(job, {
@@ -274,8 +284,13 @@ describe("origination thesis vertical", () => {
     const meetingBrief = recordedArtifacts.find((artifact) => artifact.taskId === "M07");
     expect(meetingBrief).toMatchObject({artifactType: "meeting_brief", status: "pending_confirmation"});
     expect(meetingBrief?.dependencies).toHaveLength(3);
+    expect(meetingBrief?.content).toMatchObject({
+      schemaVersion: "origination-senior-readout.v3",
+      preliminaryForwardCase: {status: "not_computable"},
+      sources: [{url: sourceUrl}],
+    });
     expect(completed).toHaveLength(1);
-    expect(acquiredPages).toBe(1);
+    expect(acquiredPages).toBe(4);
     expect(assessments).toHaveLength(1);
     expect(assessments[0]?.coverage).toEqual(expect.arrayContaining([
       expect.objectContaining({requirementKey: "core.company-perimeter", status: "verified"}),
@@ -461,6 +476,11 @@ describe("origination thesis vertical", () => {
         plan: {id: ids.plan, version: 1, fingerprint: "a".repeat(64), compiler_version: "2026.09.01-v2", registry_version: "2026.09.01-v2"},
         tasks: taskDefinitions.map((task, ordinal) => ({id: task.id, ordinal, batch: ordinal, dependencies: [...task.dependencies], execution_class: "deterministic", effect: "propose_state"})),
         completed_artifacts: completedArtifacts,
+        prior_failed_task_feedback: [{
+          task_id: "M07", attempt_no: 1,
+          quality_results: [{id: "unsupported_material_numbers", passed: false, detail: "Unsupported tokens: 3.5x"}],
+          error: {code: "quality_gate_m07_failed"},
+        }],
       }),
       startCapitalTask: async (_job: CapitalProjectAnalysisJob, input: {taskId: string}) => {
         startedTasks.push(input.taskId);
@@ -480,7 +500,13 @@ describe("origination thesis vertical", () => {
       fail: async () => { throw new Error("resumed job should not fail"); },
     } as unknown as QueueClient;
     const gateway = {
-      complete: async () => ({
+      complete: (async (request) => {
+        const textInput = request.input.find((part) => part.type === "text");
+        if (!textInput || textInput.type !== "text") throw new Error("expected text model input");
+        expect(JSON.parse(textInput.text)).toMatchObject({qualityRetry: {
+          failedTaskFeedback: [{task_id: "M07", quality_results: [{id: "unsupported_material_numbers", passed: false}]}],
+        }});
+        return ({
         output: {
           executiveRead: "A leitura pública orienta uma conversa sobre flexibilidade financeira sem presumir intenção de captação.",
           companySnapshot: "As fontes públicas permitem preparar perguntas, mas não substituem dados privados da companhia.",
@@ -498,7 +524,7 @@ describe("origination thesis vertical", () => {
         usage: {inputTokens: 600, outputTokens: 500, cachedInputTokens: 0}, costUsd: 0.01,
         latencyMs: 500, stopReason: "end" as const, usedFallback: false, fromCassette: false,
         attempts: [{provider: "anthropic" as const, model: "claude-sonnet-5", outcome: "ok" as const}],
-      }),
+      });}) as ModelGateway["complete"],
       spent: () => ({costUsd: 0.01, calls: 1, unknownCostCalls: 0, budgetExposureUsd: 0.02}),
     } as unknown as ModelGateway;
 

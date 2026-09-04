@@ -1,4 +1,8 @@
-import type {OriginationConversationArtifact, OriginationSeniorReadoutArtifact} from "@offroad/domain-contracts";
+import type {
+  OriginationConversationArtifact,
+  OriginationSeniorReadoutArtifact,
+  OriginationSeniorReadoutV2Artifact,
+} from "@offroad/domain-contracts";
 import {Check, ChevronRight, ExternalLink, Lightbulb} from "lucide-react";
 
 import {OriginationDecision} from "@/app/[locale]/app/projects/[projectId]/origination-decision";
@@ -55,7 +59,10 @@ const copy = {
 } as const;
 
 export function OriginationConversationWork(props: Props) {
-  if (props.artifact.schemaVersion === "origination-senior-readout.v2") return <SeniorReadout {...props} artifact={props.artifact} />;
+  if (props.artifact.schemaVersion === "origination-senior-readout.v2"
+    || props.artifact.schemaVersion === "origination-senior-readout.v3") {
+    return <SeniorReadout {...props} artifact={props.artifact} />;
+  }
   const t = copy[props.locale];
   return <article className="advisor-banker-readout">
     <header>
@@ -117,7 +124,7 @@ export function OriginationConversationWork(props: Props) {
   </article>;
 }
 
-function SeniorReadout(props: Props & {artifact: OriginationSeniorReadoutArtifact}) {
+function SeniorReadout(props: Props & {artifact: OriginationSeniorReadoutArtifact | OriginationSeniorReadoutV2Artifact}) {
   const t = copy[props.locale];
   const {artifact} = props;
   const debtLabels = props.locale === "pt-BR"
@@ -148,6 +155,9 @@ function SeniorReadout(props: Props & {artifact: OriginationSeniorReadoutArtifac
       <h3>{t.company}</h3><p>{artifact.companyAnalysis.businessOverview}</p>
       <div>{analyses.map(([title, body]) => <article key={title}><strong>{title}</strong><p>{body}</p></article>)}</div>
     </section>
+    {artifact.schemaVersion === "origination-senior-readout.v3"
+      ? <ForwardCase artifact={artifact} locale={props.locale} />
+      : null}
     {artifact.capitalStructure.debtStack.length ? <section className="advisor-banker-readout__debt-stack">
       <h3>{props.locale === "pt-BR" ? "Mapa da dívida" : "Debt stack"}</h3>
       <div>{artifact.capitalStructure.debtStack.map((debt, index) => <article key={`${debt.instrument}-${index}`}>
@@ -171,6 +181,37 @@ function SeniorReadout(props: Props & {artifact: OriginationSeniorReadoutArtifac
     <details className="advisor-banker-readout__sources"><summary><span>{t.sources} · {artifact.sources.length}</span><ChevronRight aria-hidden="true" size={15} /></summary><ol>{artifact.sources.map((source, index) => <li key={`${source.url}-${index}`}><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={11} /></a></li>)}</ol></details>
     {props.status === "pending_confirmation" ? <OriginationDecision artifactId={props.artifactId} copy={{confirm: t.confirm, confirmed: t.confirmed, errorInvalid: t.errors.invalid, errorSave: t.errors.save, errorStale: t.errors.stale, note: t.note, notePlaceholder: t.notePlaceholder, requestChanges: t.requestChanges, requested: t.requested, title: t.title}} fingerprint={props.fingerprint} locale={props.locale} projectId={props.projectId} /> : props.decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{props.decision.decision === "confirm" ? t.confirmed : t.requested}</p> : null}
   </article>;
+}
+
+function ForwardCase({artifact, locale}: {artifact: OriginationSeniorReadoutArtifact; locale: "pt-BR" | "en-US"}) {
+  const forward = artifact.preliminaryForwardCase;
+  const pt = locale === "pt-BR";
+  return <section className="advisor-banker-readout__forward">
+    <header>
+      <div><span>{pt ? "CENÁRIO PROSPECTIVO" : "FORWARD CASE"}</span><h3>{pt ? "Como a tese se comporta adiante" : "How the thesis behaves forward"}</h3></div>
+      <small data-status={forward.status}>{forward.status === "directional" ? (pt ? "Direcional" : "Directional") : (pt ? "Ainda não calculável" : "Not yet computable")}</small>
+    </header>
+    <p>{forward.nature}</p>
+    <div className="advisor-banker-readout__forward-horizon"><strong>{pt ? "Horizonte" : "Horizon"}</strong><span>{forward.horizon}</span></div>
+    <div className="advisor-banker-readout__assumptions">
+      {forward.assumptions.map((assumption) => <article key={assumption.id}>
+        <header><strong>{assumption.driver}</strong><span>{pt ? "Editável no chat" : "Editable in chat"}</span></header>
+        <dl>
+          <div><dt>{pt ? "Cenário-base" : "Base case"}</dt><dd>{assumption.baseCase}</dd></div>
+          <div><dt>Downside</dt><dd>{assumption.downside}</dd></div>
+          <div><dt>{pt ? "Método e racional" : "Method and rationale"}</dt><dd>{assumption.methodology} {assumption.rationale}</dd></div>
+        </dl>
+        <CitationLinks sources={artifact.sources} urls={assumption.sourceUrls} />
+      </article>)}
+    </div>
+    <details>
+      <summary><span>{pt ? "Efeitos projetados e lacunas" : "Projected effects and gaps"}</span><ChevronRight aria-hidden="true" size={15} /></summary>
+      <div className="advisor-banker-readout__forward-effects">
+        {forward.projectedEffects.map((effect) => <article key={effect.metric}><strong>{effect.metric}</strong><p><b>{pt ? "Base: " : "Base: "}</b>{effect.baseCase}</p><p><b>Downside: </b>{effect.downside}</p><p>{effect.debtRelevance}</p><CitationLinks sources={artifact.sources} urls={effect.sourceUrls} /></article>)}
+      </div>
+      <div className="advisor-banker-readout__forward-gaps"><section><strong>{pt ? "Para elevar a convicção" : "To increase conviction"}</strong><ul>{forward.missingInputs.map((item) => <li key={item}>{item}</li>)}</ul></section><section><strong>{pt ? "Limites desta leitura" : "Limits of this readout"}</strong><ul>{forward.limitations.map((item) => <li key={item}>{item}</li>)}</ul></section></div>
+    </details>
+  </section>;
 }
 
 function CitationLinks({sources, urls}: {sources: OriginationConversationArtifact["sources"]; urls: string[]}) {

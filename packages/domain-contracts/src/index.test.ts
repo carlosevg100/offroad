@@ -7,6 +7,7 @@ import {
   initialDealWorkflowState,
   originationMeetingBriefSchema,
   originationSeniorReadoutSchema,
+  originationSeniorReadoutV2ArtifactSchema,
   scenarioTermsSchema,
   taskEnvelopeSchema,
   type DealStateObject,
@@ -40,6 +41,48 @@ describe("domain contracts", () => {
       strategicAlternatives: [],
     };
     expect(originationSeniorReadoutSchema.safeParse(shallow).success).toBe(false);
+  });
+
+  it("keeps immutable v2 readouts readable after the governed forward-case upgrade", () => {
+    const url = "https://example.com/source";
+    const legacy = {
+      schemaVersion: "origination-senior-readout.v2",
+      asOfDate: "2026-09-03",
+      company: {name: "Companhia Exemplo", website: null},
+      executiveRead: "x".repeat(80),
+      companyAnalysis: {
+        businessOverview: "x".repeat(50), businessModel: "x".repeat(50),
+        revenueAndCustomers: "x".repeat(40), costAndMarginDrivers: "x".repeat(40),
+        sectorPosition: "x".repeat(40), seasonality: "x".repeat(30), recentDevelopments: [], sourceUrls: [url],
+      },
+      performanceAnalysis: {
+        operatingPerformance: "x".repeat(50), cashFlowAndWorkingCapital: "x".repeat(50),
+        outlookAndPlans: "x".repeat(40), sourceUrls: [url],
+      },
+      capitalStructure: {
+        overview: "x".repeat(50), liquidity: "x".repeat(40), debtStack: [],
+        keyUnknowns: ["Debt schedule remains unavailable"], sourceUrls: [url],
+      },
+      strategicAgenda: {priorities: [], implicationsForDebt: "x".repeat(40), sourceUrls: [url]},
+      strategicAlternatives: [{
+        rank: 1, title: "Refinancing review", objective: "x".repeat(30), structure: "x".repeat(30),
+        rationale: "x".repeat(50), balanceSheetImpact: "x".repeat(30), advantages: ["x".repeat(10)],
+        risks: ["x".repeat(10)], conditions: ["x".repeat(10)], disconfirmers: ["x".repeat(10)], sourceUrls: [url],
+      }],
+      meetingStrategy: {
+        narrative: "x".repeat(50), recommendedAgenda: ["x".repeat(12), "y".repeat(12)],
+        decisionQuestions: Array.from({length: 3}, (_, index) => ({
+          question: `Question ${index} ${"x".repeat(10)}`, whyItMatters: "x".repeat(12), answerChanges: "x".repeat(12),
+        })),
+      },
+      unknowns: ["Debt schedule remains unavailable"],
+      sources: [{title: "Source", url, topic: "identity", publishedAt: null, provider: "official"}],
+      researchStatus: "succeeded",
+      scopeBoundary: "Public-information readout with explicit limitations.",
+      provenance: {provider: "openai", model: "gpt-test", executorVersion: "v2-test"},
+    };
+    expect(originationSeniorReadoutV2ArtifactSchema.safeParse(legacy).success).toBe(true);
+    expect(originationSeniorReadoutSchema.safeParse(legacy).success).toBe(false);
   });
 
   it("preserves detailed debt economics and complete traceability", () => {

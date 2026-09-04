@@ -261,6 +261,7 @@ declare
   project_id uuid;
   session_id uuid;
   failed_job public.processing_jobs;
+  failed_task public.capital_project_plan_tasks;
 begin
   select brief.capital_project_id into strict project_id
   from public.capital_project_briefs brief
@@ -272,6 +273,28 @@ begin
   from public.processing_jobs job
   where job.kind = 'capital_project_analysis'
     and job.payload ->> 'capital_project_id' = project_id::text;
+
+  select task.* into strict failed_task
+  from public.capital_project_plan_tasks task
+  where task.organization_id = failed_job.organization_id
+    and task.plan_id = (failed_job.payload ->> 'capital_project_plan_id')::uuid
+    and task.task_id = 'M07';
+  insert into public.capital_project_task_runs (
+    id, organization_id, capital_project_id, plan_id, plan_task_id,
+    processing_job_id, attempt_no, status, trigger_event, context_manifest,
+    input_fingerprint, executor_key, executor_version, quality_results, error,
+    started_at, completed_at
+  ) values (
+    '50000000-0000-4000-8000-000000000230', failed_job.organization_id,
+    project_id, failed_task.plan_id, failed_task.id, failed_job.id, 1, 'failed',
+    failed_job.payload -> 'trigger_event', '{}'::jsonb, repeat('f', 64),
+    'offroad.origination_thesis', 'fixture-v1',
+    jsonb_build_array(jsonb_build_object(
+      'id', 'unsupported_material_numbers', 'passed', false,
+      'detail', 'Unsupported tokens: 3.5x'
+    )),
+    jsonb_build_object('code', 'quality_gate_m07_failed'), now(), now()
+  );
 
   update public.processing_jobs
   set status = 'failed', last_error = '{"code":"fixture_failure"}'::jsonb
@@ -399,12 +422,14 @@ begin
     or claim #>> '{payload,trigger_event,reason}' <> 'failed_analysis_retry' then
     raise exception 'semantic completion did not claim the activated DAG: %', claim;
   end if;
-  context := public.worker_load_capital_project_context_v4(
+  context := public.worker_load_capital_project_context_v5(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token'
   );
   if context #>> '{professional_context,professionalRole}' <> 'dcm_banker'
     or context #>> '{professional_context,institutionName}' <> 'Banco Farol'
-    or context #>> '{institution_capabilities,operatingModels,0}' <> 'structuring' then
+    or context #>> '{institution_capabilities,operatingModels,0}' <> 'structuring'
+    or context #>> '{prior_failed_task_feedback,0,task_id}' <> 'M07'
+    or context #>> '{prior_failed_task_feedback,0,quality_results,0,id}' <> 'unsupported_material_numbers' then
     raise exception 'specialized project context did not receive the initiating user profile: %', context;
   end if;
   perform set_config('offroad_test.capital_job_id', claim ->> 'job_id', true);
