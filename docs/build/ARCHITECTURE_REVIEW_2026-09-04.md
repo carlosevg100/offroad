@@ -1,6 +1,6 @@
 # Revisão do Atlas e da arquitetura técnica
 
-Data: 4 de setembro de 2026
+Data: 4 de setembro de 2026, revisada no mesmo dia com os ajustes do fundador (v1.1; registro no fim)
 Base: `main` em `d38c5dc` e o projeto Supabase de produção, medidos hoje. Nada abaixo foi tirado de um documento de intenção; onde um número aparece, ele foi contado.
 Objeto: `docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md` v0.9 e ADR 0021, mais as perguntas de arquitetura do fundador.
 
@@ -9,7 +9,7 @@ Objeto: `docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md` v0.9 e ADR 0021, mais 
 1. **O Atlas acerta a tese e erra a forma em três lugares.** A regra central (persona define cobertura, intenção define trabalho, contexto define execução, evidência define até onde afirmar, audiência define apresentação, autorização define efeitos) é correta e é a que a Constituição já enunciava. Os erros: as vinte famílias misturam três coisas que o próprio Intent Envelope já separa (que trabalho, para quem e em que forma, com que efeito); os objetos recebem um parágrafo cada enquanto os workflows recebem trinta linhas, invertendo onde mora o risco de engenharia; e o documento desenha uma ontologia inteira antes de um único caso estar provado ponta a ponta.
 2. **A fundação técnica está certa e não deve ser trocada.** Postgres com RLS como fonte de verdade, control plane determinístico, TaskSpecs como allowlist, âncoras de evidência verificadas por código, gateway com política de dados dos provedores e verificação em provedor diferente. Boa parte do que o fundador pergunta se "precisamos de" já existe como tabela ou pacote: premissa governada, fato com classe de informação, grafo de invalidação, manifesto de contexto por tarefa, orçamento por run, snapshot de controle. O trabalho é generalizar cinco coisas, não substituir nada.
 3. **Não precisamos de lakehouse, banco de grafo, banco vetorial externo nem framework de agentes.** O banco tem 132 MB. O vetor já está instalado dentro do Postgres e, por isso, dentro da fronteira de RLS. Mover retrieval para fora do banco moveria a autorização para código de aplicação, o que contraria o invariante mais importante do sistema.
-4. **O gargalo hoje é confiabilidade e profundidade provada do trilho que existe, não largura de intenções.** Em produção: 54 runs em sete dias, 20 falhas; p95 de 22 minutos; 36 jobs falhos sem motivo registrado na linha do job; 45 de 61 requisitos de cobertura em `missing`; 0 correções capturadas; 0 perfis profissionais preenchidos até ontem. Nenhum desses números melhora com mais famílias no Atlas.
+4. **O gargalo hoje é confiabilidade e profundidade provada do trilho que existe, não largura de intenções.** Segmentado por cohort: as 54 runs em sete dias são todas da conta do fundador, nenhuma de cliente; a taxa de falha é 40% no pipeline de documentos, 53% na tese de originação e 26% na conversa; o p95 de 22 minutos é dos dois primeiros, a conversa responde em 2 s; 36 jobs falhos não têm motivo na linha do job; 0 correções capturadas; 0 perfis profissionais até ontem. O mapa de cobertura, ao contrário, funciona: os 45 requisitos em `missing` são de um único projeto privado criado hoje, todos avaliados, com motivo e materialidade registrados. Nenhum desses números melhora com mais famílias no Atlas.
 5. **Plano em quatro fases com gates**, começando pela confiabilidade do que existe e por cinco casos gold que o trilho atual consegue rodar, e só depois o roteador por intenção em modo sombra.
 
 ## 1. O que foi medido
@@ -24,13 +24,18 @@ Objeto: `docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md` v0.9 e ADR 0021, mais 
 | Retrieval | 4 fontes governadas (ADR 0010); chunks de case só lexicais, `to_tsvector('simple')`; pgvector 0.8.2 instalado; embeddings só para notas de mandato, com 0 linhas |
 | Banco | 114 tabelas em `public` e `private`, 58 de `public` vazias; 132 MB |
 | Runs | 54 entre 28/08 e 04/09: 29 sucesso, 20 falha, 3 parcial, 2 cancelada; p50 42 s; p95 1.321 s; US$ 30,67 em 500 chamadas de modelo |
+| Cohort | todas as 54 runs criadas pela conta do fundador; nenhuma de cliente; gatilhos: 32 manual, 8 upload, 7 resposta, 7 reprocessamento; falhas espalhadas por 28/08, 02/09, 03/09 e 04/09, não concentradas no início |
+| Por pipeline | documentos: 15 runs, 6 falhas, p50 56 s, p95 1.364 s; tese de originação: 15 runs, 8 falhas, p50 156 s, p95 982 s; conversa: 23 runs, 6 falhas, p50 0 s, p95 2 s |
+| Tempo até valor | primeiro artefato: p50 3 s, p95 6 s em 14 projetos; primeira pergunta material: 39 min no único projeto com pedidos registrados |
 | Jobs | 164: 100 sucesso, 36 falha, 28 cancelada; os 36 falhos têm `result` nulo, o motivo só existe na run |
 | Motivos de falha (runs) | `agent_processing_failed` 6, `all_attempts_failed` 5, `invalid_case_input` 3, `budget_exceeded` 2, gate M07 1, outros 3 |
 | Task runs | 126: 119 sucesso, 6 falha (todas `quality_gate_m07_failed`), 1 invalidada; 100% com `context_manifest` |
-| Cobertura | 61 requisitos registrados: 12 `verified`, 4 `partial`, 45 `missing` |
+| Cobertura | 61 requisitos em 2 projetos. Os 45 `missing` são todos de um projeto privado de estruturação criado hoje, cada um avaliado, com motivo escrito e materialidade (9 `blocking`, 29 `high`, 7 `medium`). O outro projeto tem 0 `missing`, 4 `partial`, 2 `verified` e 10 artefatos |
 | Linhagem | 120 artefatos com `input_fingerprint`, `artifact_fingerprint`, `evidence_refs`, `dependencies`, `superseded_at`; 28 eventos de invalidação |
 | Conhecimento | 296 chunks de case; 8 chunks de playbook; 602 fontes públicas em 22 runs de pesquisa; 0 linhas em `extraction_feedback` |
 | Fontes registradas | CVM Dados Abertos, B3, ANBIMA Data (manual, complementar), ANBIMA Feed (não contratado), SEC EDGAR |
+| Staging | branch `staging` existe desde 24/08, recebe migrações do git (171 aplicadas, a última em 03/09 12:37), a execução seguinte falhou (`MIGRATIONS_FAILED`) e ela está com 107 tabelas contra 114 em produção |
+| Extensões | `vector` 0.8.2 instalada; `pg_trgm`, `unaccent` e `pgmq` disponíveis e não instaladas |
 | Worker | ECS Fargate, polling em `worker_claim_job`, capability token por job, sem broker de fila |
 | Parsers | PDF, XLSX e XLS legado, CSV, DOCX, PPTX, ZIP de NF-e, OCR por Tesseract |
 
@@ -68,8 +73,8 @@ A consequência prática: o Atlas deveria referenciar as tabelas e pacotes que j
 
 **Situações a declarar dentro ou fora**
 
-- Reestruturação, recuperação judicial ou extrajudicial, standstill, DIP: o Atlas cita "reestruturação, stress, special situations" dentro da I07. É um regime diferente, com objetos próprios (classes de credores, plano). Recomendação: fora do escopo de produção até existir pack próprio, dito explicitamente.
-- Execução de mercado (book-building, price talk, alocação): a Offroad não executa. Deve constar como fronteira, não como dimensão de especialização.
+- Reestruturação, recuperação judicial ou extrajudicial, standstill, DIP: o Atlas cita "reestruturação, stress, special situations" dentro da I07 como se fosse mais um objetivo. É um regime diferente, com objetos que não existem hoje (classes de credores, plano, ordem de prioridade sob a Lei 11.101) e números contestados por natureza. Recomendação: catalogada, não homologada, com fronteira escrita. A Offroad nunca atua como advogada, representa credores, negocia plano, conduz assembleia ou executa DIP. Pode analisar o passivo, projetar cenários, mapear credores e prioridades, testar reperfilamento, comparar alternativas, analisar liquidez e recuperação, preparar material interno e examinar propostas. O roteador precisa reconhecer o regime e nunca tratar um caso em stress como estratégia de capital ordinária.
+- Execução de mercado: a Offroad não faz book-building, distribuição nem alocação. Pode apoiar preparação, acompanhamento, comparação e organização do processo. Fronteira escrita, não dimensão de especialização.
 - Opinião jurídica: já é fronteira. Manter.
 
 **Usuários**: mesa de sindicato e vendas, agente fiduciário, servicer, auditor. Nenhum precisa entrar; todos precisam ser nomeados como fora, para o roteador não os confundir com uma função interna.
@@ -82,16 +87,22 @@ Certa: `work_responsibility` pertence ao projeto ou ao turno, não ao cadastro. 
 
 Erros:
 
-1. **A §9.15 contradiz a §9.16.** "Para o MD, primeiro entrega decisão; para o Analyst, primeiro entrega tarefas de produção" é comportamento dirigido por cargo entrando pela porta dos fundos. A §9.16 diz o oposto, e está certa. Corrigir a §9.15 para falar em termos do envelope: `work_responsibility = decision_maker` recebe decisão primeiro; `producer` recebe tarefas primeiro. O cargo não aparece.
+1. **A §9.15 contradiz a §9.16.** "Para o MD, primeiro entrega decisão; para o Analyst, primeiro entrega tarefas de produção" é comportamento dirigido por cargo entrando pela porta dos fundos. A §9.16 diz o oposto, e está certa. Corrigir a §9.15 para falar só em termos do envelope: `decision_maker` recebe decisão, alternativas e implicações primeiro; `reviewer` recebe inconsistências, riscos e comentários primeiro; `producer` recebe fontes, tarefas, cálculos e entregáveis primeiro; `coordinator` recebe plano, dependências, cobertura e versões primeiro. Um MD frequentemente será `decision_maker`; isso é correlação, não regra, e o cargo não aparece no runtime.
 2. **"Contexto" é três coisas com confiança diferente.** Evidência (claims com âncora), memória de trabalho (decisões, premissas, estado do plano) e orientação (perfil e playbook). Só a primeira sustenta afirmação material. O Atlas usa a palavra para as três.
 3. **Especialização sem regra de precedência.** Quando um pack de project finance e um de recebíveis definem DSCR de forma diferente, quem vence? A regra tem de ser: fórmulas vivem no `financial-core` com teste; packs contribuem parâmetros, defaults, checks e chaves de cobertura, nunca fórmulas; o pack mais específico sobrescreve parâmetro, e cada parâmetro carrega o id e a versão do pack no trace. Sem isso nascem as "centenas de soluções isoladas" que o fundador teme.
 4. **Dois campos do envelope nunca podem ser inferidos.** `authority` e `evidence_regime` são fatos do control plane (base de acesso do projeto, aceite, autorização exata). O §3 diz que qualquer campo pode ser inferido. Esses dois só admitem `explicit` ou `reused_confirmed`.
 
 ### 2.5 Pergunta 4: onde está genérico, superficial, redundante ou complexo
 
-**Redundante: vinte famílias são nove trabalhos mais quatro eixos.** Várias "famílias" são valores de eixos que o envelope já tem:
+**Nove trabalhos no roteador, vinte composições no catálogo.** Várias "famílias" são valores de eixos que o envelope já tem. Isso reduz o classificador; não empobrece a biblioteca funcional. As vinte continuam existindo como composições nomeadas (preparar reunião, revisar trabalho, preparar material, levar ao comitê, monitorar, atualizar, introduzir, controlar versões), guardadas como dado: trabalho primário mais valores fixos dos modificadores. Derivadas assim, catálogo e roteador não conseguem divergir.
 
-| Família no Atlas | O que é de fato |
+```text
+9 trabalhos primários
++ modificadores (profundidade, forma de saída, responsabilidade, continuidade, efeito)
+= composição específica do workflow
+```
+
+| Família no Atlas | Como se compõe |
 | --- | --- |
 | I04 pergunta pontual | eixo `depth = pontual` sobre qualquer trabalho |
 | I11 reunião, I12 materiais, I14 comitê | eixo audiência e forma de saída (briefing, material, memo de decisão) |
@@ -114,26 +125,31 @@ Proposta de taxonomia para o roteador, nove trabalhos:
 8. Mercado e precedentes (I16)
 9. Capital aderente e conexão (I17 e I18)
 
-E os eixos, que já estão no envelope: profundidade (pontual, preliminar, institucional), audiência e forma (chat, artefato, material), responsabilidade (produzir, revisar, decidir), continuidade (única, atualização, monitorar), efeito (nenhum, propor, gravar, externo). Um roteador que escolhe entre 9 rótulos com pouca sobreposição e preenche 5 eixos é mais confiável, mais testável e mais barato do que um que escolhe entre 20 rótulos sobrepostos.
+E os eixos, que já estão no envelope: profundidade (pontual, preliminar, institucional), audiência e forma (chat, artefato, material), responsabilidade (produzir, coordenar, revisar, decidir), continuidade (única, atualização, monitorar), efeito (nenhum, propor, gravar, externo). Um roteador que escolhe entre 9 rótulos com pouca sobreposição e preenche 5 eixos é mais confiável, mais testável e mais barato do que um que escolhe entre 20 rótulos sobrepostos. O catálogo com as vinte composições continua sendo o mapa para descoberta de casos, cobertura, vocabulário de interface e testes.
 
 **Genérico: "trabalho necessário" lê como sumário de manual.** "Analisar receita, margem, EBITDA, caixa" não diz o que é difícil nem o que é verificado. Cada família deve nomear as três a cinco coisas em que um modelo generalista erra e o check determinístico correspondente. É isso que define alpha. Exemplo para conciliação: IPCA capitalizado no principal versus pago em caixa; perímetro de consolidação e eliminações; caixa restrito e aplicações que não são caixa; arrendamentos IFRS 16 dentro ou fora da dívida; EBITDA de covenant versus reportado. O §I06 já faz isso em parte; a regra tem de valer para todas.
 
 **Superficial: mercado sem estratégia de fonte.** A I16 não cita fonte alguma. No Brasil, a vantagem real é ingestão governada de CVM (ITR, DFP, FRE), B3, SND, debêntures e ANBIMA Data com licença por fonte e freshness por dado. A decisão sobre o ANBIMA Feed já existe (não contratar agora). O registro de fontes é um ativo do produto e deve ser objeto no Atlas.
 
-**Complexo demais para o que está provado.** 18 campos com 6 estados, 13 dimensões de especialização, 9 gates, 6 estados de cobertura e 20 casos Pareto, com 54 runs em produção e 3 ids de caso no harness. Reduzir o alvo do roteador a 8 campos que ele consegue inferir com confiança (`action`, `object`, `desired_outcome`, `decision`, `audience`, `depth`, `continuity`, mais `work_responsibility`) e tratar os demais como anotações opcionais preenchidas depois. `urgency`, `language`, `jurisdiction` e `freshness` são deriváveis e não devem estar no alvo de classificação.
+**Complexo demais para o que está provado, e o envelope precisa de duas camadas.** 18 campos com 6 estados, 13 dimensões de especialização, 9 gates, 6 estados de cobertura e 20 casos Pareto, com 54 runs em produção e 3 ids de caso no harness. O envelope não deve simplesmente cair de 18 para 8 campos; deve se dividir:
+
+- **Núcleo de roteamento**, os oito campos que descobrem o trabalho inicial e são o alvo do classificador: `action`, `object`, `desired_outcome`, `decision`, `audience`, `depth`, `continuity`, `work_responsibility`.
+- **Contexto governado de execução**, necessário para executar mas não para rotear. Uma parte vem do sistema e o modelo nunca preenche: `authority`, `evidence_regime`, permissões, organização, documentos disponíveis. Outra parte pode ser inferida, mas exige confirmação quando é material: jurisdição, data-base, moeda, audiência, prazo. O resto acompanha: `constraints`, `language`, `urgency`, `sponsor_instruction`.
+
+Dizer que jurisdição ou data-base são "deriváveis" seria arriscado: com frequência são exatamente as ambiguidades que mudam a análise. A diferença é que a confirmação delas passa pela política de perguntas, que só pergunta quando a resposta muda a decisão.
 
 **Falta um critério de tempo.** Uma pergunta pontual respondida em 90 segundos por um DAG é uma falha mesmo quando está certa. O p95 hoje é 22 minutos. Latência por nível de profundidade tem de ser critério de aceite por família, ao lado de exatidão.
 
 ### 2.6 Pergunta 5: o que muda antes de virar arquitetura de produção
 
 1. Dividir o Atlas em três documentos: ontologia (objetos e schemas, versionados, referenciando as tabelas que existem), trabalhos (nove famílias, cada uma com o que o generalista erra e os checks) e política de apresentação e efeitos (eixos, gates, formas de saída).
-2. Reduzir o envelope do roteador a oito campos; `authority` e `evidence_regime` nunca inferidos.
+2. Dividir o envelope em núcleo de roteamento (oito campos) e contexto governado de execução; `authority`, `evidence_regime`, permissões, organização e documentos vêm do sistema e nunca são inferidos.
 3. Promover Premissa, Cálculo, Claim, Pergunta e Snapshot a objetos de banco com linhagem.
 4. Regime regulatório e tributário, hedge e rating como packs de parâmetros consumidos pela família de estratégia de capital.
 5. Regra de composição de packs: fórmula canônica, parâmetro por pack, precedência do mais específico, id e versão no trace.
-6. Cortar os 20 casos Pareto para 5 que o trilho atual roda hoje, e provar esses com latência e alpha medidos antes de ampliar.
+6. Manter os 20 casos: 5 com compromisso imediato de implementação e 15 catalogados, com o contrato da §11 preenchido progressivamente e usados como teste de regressão do roteador e do mapa de cobertura mesmo antes de existir executor.
 7. Definir o teste de sobrevivência em números (seção 4.8).
-8. Corrigir a §9.15 e nomear as fronteiras (reestruturação, execução de mercado, opinião jurídica).
+8. Corrigir a §9.15 e escrever as fronteiras: reestruturação e execução de mercado catalogadas com o que a Offroad pode e não pode fazer; opinião jurídica fora.
 
 ## 3. Arquitetura técnica e de IA
 
@@ -146,9 +162,9 @@ Cada bloco responde às perguntas do fundador com o estado medido, a recomendaç
 **Recomendações.**
 
 - **Sistema de registro: Postgres e object storage continuam.** Não há razão de volume, de consulta ou de governança para outra coisa. Regra: nenhum objeto canônico vive fora do banco; índices são projeções reconstruíveis.
-- **Lakehouse: não agora, com gatilho definido.** Definir desde já a projeção de arquivo (Parquet em S3, particionado por organização e projeto) como formato de arquivamento e análise. Acionar quando o volume quente passar de 50 GB ou quando consultas analíticas disputarem com o OLTP. Séries de mercado, mesmo na escala de um feed diário de milhares de instrumentos por anos, cabem em uma tabela particionada.
+- **Lakehouse: não agora, com gatilhos de revisão, não de decisão.** Definir desde já a projeção de arquivo (Parquet em S3, particionado por organização e projeto) como formato de arquivamento e análise. Os números abaixo são heurísticas para reabrir a conversa, não compromissos: volume quente acima de 50 GB, consultas analíticas disputando com o OLTP. Qualquer decisão combina volume, contenção, latência, custo, complexidade operacional, necessidade analítica, recuperação de falha e experiência do usuário. Séries de mercado, mesmo na escala de um feed diário de milhares de instrumentos por anos, cabem em uma tabela particionada.
 - **Vetor: pgvector, dentro do RLS, como projeção.** O argumento decisivo não é desempenho, é fronteira. Com o índice no mesmo banco, a consulta roda sob o papel do tenant e não há como recuperar um chunk de outra organização. Um banco vetorial externo (LanceDB incluído) moveria a autorização para código de aplicação. O ADR 0010 mantém chunks de case só lexicais por escolha; manter o lexical como primeiro recuperador, porque a âncora exata é auditável, e adicionar embedding por versão de documento como segundo estágio de recall e reordenação, calculado pelo worker, nunca canônico. LanceDB só faz sentido para um corpus **público** (regulação, demonstrações públicas, notícias) se ele um dia passar de dezenas de milhões de chunks. Hoje são 296.
-- **Correção barata e mensurável: o índice lexical usa `to_tsvector('simple')`.** Sem stemming nem stopwords em português, "debênture" não casa com "debêntures". Trocar para a configuração `portuguese` com `unaccent` e medir recall nos casos gold.
+- **O índice lexical usa `to_tsvector('simple')`, e a correção não é uma troca direta.** Sem stemming nem stopwords em português, "debênture" não casa com "debêntures". Mas trocar `simple` por `portuguese` prejudicaria nomes próprios, siglas, termos em inglês, códigos de instrumento, cláusulas e buscas exatas. O desenho é híbrido: busca exata por token, stemming em português, `unaccent`, trigrama para códigos e nomes (`pg_trgm`), recuperação semântica como segundo estágio e reordenação por tarefa. No Postgres isso é uma segunda coluna `tsvector`, duas extensões que já estão disponíveis e não instaladas, e uma combinação de scores. A promoção só acontece contra um conjunto gold de consultas financeiras, nunca porque um exemplo isolado melhorou.
 - **Grafo: tabela de arestas, não banco de grafo.** As relações (grupo econômico, garantias, intercreditor, cross-default, definições de covenant que citam outras definições, e sobretudo a linhagem fonte → fato → cálculo → artefato) são grafos pequenos por projeto. Uma tabela `lineage_edges` (sujeito, predicado, objeto, versão, procedência) com CTE recursiva resolve invalidação, "o que depende deste número" e o gate de consistência. Banco de grafo só se justifica para travessia em escala que o produto não tem.
 - **Freshness, supersessão e conflito.** Todo claim e observação de mercado carrega `as_of`, `observed_at`, `source_version`, `supersedes_id` e `valid_until`. "Vigente" é uma view, não um flag mutável. Conflito é uma linha (`claim_decisions` já existe para isso) que bloqueia o downstream dependente até resolução. Invalidação propaga pelas arestas e reutiliza `dependency_invalidation_events`.
 
@@ -212,7 +228,7 @@ O que não está em pé: o roteamento é por job de entrada e 18 expressões reg
 **Recomendações.**
 
 - **Verificador independente do executor.** Primeiro checks determinísticos, baratos: número resolve para trace, citação resolve para manifesto, período, unidade e definição consistentes entre artefatos pela linhagem, afirmação de cobertura bate com o mapa. Depois o verificador de modelo em outro provedor, que vê só output, manifesto e traces, nunca o raciocínio do executor.
-- **O que não foi analisado.** O mapa de cobertura já registra; hoje 45 de 61 requisitos estão em `missing`. Esse número tem de aparecer para a pessoa, em cada artefato, não só no banco.
+- **O que não foi analisado.** O mapa de cobertura já faz o que deve: cada requisito em `missing` está avaliado, com motivo escrito e materialidade, o que responde as quatro perguntas certas (deveria ter encontrado e não encontrou; reconheceu a ausência; explicou o impacto; pediu o próximo input correto). O que falta é isso aparecer para a pessoa em cada artefato, não só no banco, e provar que os 45 pedidos de um projeto são os próximos inputs certos e não uma lista longa demais.
 - **Bloquear ou limitar.** Bloqueia: erro numérico, claim material sem âncora, divergência crítica de conciliação, autoridade ausente para um efeito. Limita: dimensão `not_examined`, fonte de baixa confiança, dado fora da data-base.
 - **Gold, adversarial e benchmark.** Por caso: fixtures, objetos gold (base conciliada, cronograma, mapa de cobertura, achados esperados), mutações adversariais (unidade trocada, período trocado, reapresentação, nota faltante, fontes contraditórias), execução do melhor generalista com os mesmos arquivos, e rubrica de alpha nas doze dimensões do §16, pontuada por um painel humano.
 - **Correções sem chain of thought.** Capturar como delta sobre objeto (valor de claim, mapeamento, definição), com identidade do revisor, nunca o raciocínio do modelo. `extraction_feedback` já tem esse formato.
@@ -237,11 +253,11 @@ O que não está em pé: o roteamento é por job de entrada e 18 expressões reg
 **Recomendações.**
 
 - Síncrono: interpretar o turno, respostas pontuais e leitura de tela, com alvo abaixo de 10 s. Assíncrono: todo o resto, com eventos de estágio transmitidos à interface (já existem).
-- Fila: polling no Postgres basta para dezenas de jobs por dia. Trocar por `pgmq` ou SQS só acima de cerca de 50 jobs concorrentes ou com mais de um pool de workers. Não agora.
+- Fila: polling no Postgres basta para dezenas de jobs por dia. `pgmq` ou SQS entram na conversa com mais de um pool de workers ou quando a contenção aparecer; "50 jobs concorrentes" é heurística para reabrir a discussão, não gatilho fixo. Não agora.
 - Idempotência e falha parcial: memoização por `input_fingerprint` em nó; status por nó já existe; gravar o motivo de falha na linha do job (hoje só existe na run).
 - Custo: existe por run e por organização; acrescentar view por nó, por família e por artefato, com tag de tenant em cada chamada.
 - Incremental: chunk e embedding por versão de documento, nó de cálculo por hash de entrada, delta de monitoramento só sobre dependências afetadas.
-- Profundidade sem lentidão: pré-computar na ingestão (spreading, cronograma, chunks), memoizar, transmitir parciais, paralelizar nós e definir SLO por profundidade: pontual até 15 s, preliminar até 3 min, institucional até 15 min com progresso visível.
+- Profundidade sem lentidão: pré-computar na ingestão (spreading, cronograma, chunks), memoizar, transmitir parciais, paralelizar nós. SLO por profundidade só depois de segmentar as métricas por cohort, job, versão, causa e regime de evidência; as hipóteses iniciais a calibrar são pontual até 15 s, preliminar até 3 min, institucional até 15 min com progresso visível. Medir também tempo até primeiro resultado útil, até primeira evidência, até primeira pergunta material, até artefato revisável, e custo por caso aprovado, não só por run.
 
 ## 4. Plano
 
@@ -264,7 +280,7 @@ O que não está em pé: o roteamento é por job de entrada e 18 expressões reg
 | Loop de correção | desenhado, 0 linhas | ligar |
 | Worker e fila | polling, ECS, sem motivo de falha no job | manter, corrigir registro de falha |
 | Monitoramento | teste de covenant, sem agenda | construir na fase 4 |
-| Staging | inexistente (R-015, D-009) | criar antes da fase 1 |
+| Staging | branch existe desde 24/08, 171 migrações aplicadas até 03/09, última execução falhou, 7 tabelas atrás | diagnosticar a falha e ressincronizar antes da fase 1; corrigir R-015 e D-009 |
 | Perfil profissional | separado de capacidade, consumo como texto | consumir estruturado na fase 3 |
 
 ### 4.2 Arquitetura-alvo
@@ -335,7 +351,7 @@ Gates de autoridade ──► matching ──► introdução exata ──► fe
 
 ### 4.6 Ordem de implementação
 
-**Fase 0, confiabilidade do trilho atual (1 a 2 semanas).** Gravar motivo de falha na linha do job. Trocar a configuração lexical para português com `unaccent` e medir. Mostrar cobertura `missing` na interface. Definir SLO por profundidade e medir. Criar staging (branch ou projeto) para ensaio de migração. Rodar os cinco casos gold ponta a ponta e capturar cada run como fixture de regressão. Gate: cinco casos verdes, p95 medido, zero falha sem motivo.
+**Fase 0, confiabilidade do trilho atual (1 a 2 semanas), em paralelo com as correções do Atlas.** Gravar motivo de falha na linha do job. Segmentar as métricas por cohort, job, versão, causa e regime de evidência, e só então fixar SLO por profundidade. Experimento de recuperação híbrida atrás de flag, medido contra um conjunto gold de consultas. Mostrar cobertura `missing` com motivo e materialidade na interface. Diagnosticar a execução que falhou na branch `staging` e ressincronizá-la para servir de ensaio de migração. Rodar os cinco casos comprometidos ponta a ponta, com revisão profissional dos outputs, e capturar cada run como fixture de regressão. Gate: cinco casos verdes e revisados, p95 por pipeline medido, zero falha sem motivo.
 
 **Fase 1, linhagem e snapshot (2 a 3 semanas).** `lineage_edges`; premissa e cálculo como objetos; gate universal de procedência numérica no compilador de output; `findings_ledger`. Gate: mudança de premissa propaga até o material em um caso gold, e nenhum número sem trace sai em nenhum artefato.
 
@@ -351,7 +367,7 @@ Padrão estrangulador. O roteador novo grava em sombra e o antigo continua decid
 
 ### 4.8 Casos gold, benchmarks e gates de produção
 
-**Os cinco primeiros casos**, escolhidos porque o trilho atual os executa e porque já existem fixtures:
+**Cinco casos com compromisso imediato e quinze catalogados.** Os quinze restantes do Atlas não são descartados: recebem o contrato da §11 progressivamente e servem como teste de regressão arquitetural, porque o envelope e o mapa de cobertura de cada um podem ser verificados em sombra antes de existir executor. Os cinco de agora, escolhidos porque o trilho atual os executa, porque já existem fixtures e porque juntos testam público, privado, continuidade, contrato, perfil e responsabilidade:
 
 1. Reunião com CFO de companhia aberta a partir de briefs públicos (Camil): famílias 3, 6 e forma "briefing".
 2. Estruturação com recebíveis a partir de documentos dispersos (Rede Horizonte): famílias 2, 4, 6.
@@ -382,10 +398,26 @@ Padrão estrangulador. O roteador novo grava em sombra e o antigo continua decid
 
 ### 4.10 Outras mudanças necessárias
 
-1. Criar staging antes de qualquer migração da fase 1 (D-009).
+1. Ressincronizar a branch `staging` antes de qualquer migração da fase 1 e reconciliar as fontes canônicas: R-015 e D-009 dizem que não há staging; o estado live diz que há uma branch com a última execução falha.
 2. Captura de run como fixture de regressão, começando pelos briefs da Camil, para que a conta do fundador seja descartável.
 3. Consumo estruturado do perfil profissional, já especificado em `docs/product/PROFESSIONAL_CONTEXT_CONSUMPTION.md`, como parte da fase 3.
 4. Registro de fontes brasileiras como ativo do produto, com licença, freshness e custo por fonte; a decisão sobre o ANBIMA Feed permanece.
 5. `findings_ledger` como superfície de prova para o usuário e para o benchmark por release.
-6. Nomear no Atlas as fronteiras: reestruturação fora até existir pack, execução de mercado fora, opinião jurídica fora.
-7. Corrigir a §9.15 e reduzir o envelope; publicar o Atlas v1.0 só depois dos gates da fase 2.
+6. Escrever no Atlas as fronteiras de reestruturação e execução de mercado (o que a Offroad pode e não pode fazer em cada uma), ambas catalogadas e não homologadas; opinião jurídica fora.
+7. Corrigir a §9.15, dividir o envelope em duas camadas e separar o Atlas em ontologia, catálogo de trabalhos e política de apresentação e efeitos; publicar o Atlas v1.0 só depois dos gates da fase 2.
+
+## 5. Registro de alterações da v1.1
+
+Ajustes do fundador em 4 de setembro, depois da primeira leitura, e como cada um entrou:
+
+1. Nove trabalhos no roteador não significam nove famílias no Atlas: aceito. As vinte composições ficam no catálogo, derivadas como dado (seção 2.5).
+2. Envelope em duas camadas, com parte vinda do sistema e parte inferida com confirmação quando material: aceito; "derivável" saiu do texto (seção 2.5).
+3. A §9.15 se corrige pelo mapa de quatro responsabilidades, e cargo é correlação, não regra: aceito (seção 2.4).
+4. Os vinte casos não são cortados: cinco comprometidos, quinze catalogados como regressão: aceito (seções 2.6 e 4.8).
+5. Reestruturação e execução de mercado catalogadas com fronteira, não fora: aceito (seção 2.3).
+6. Não trocar `simple` por `portuguese` diretamente; recuperação híbrida promovida por conjunto gold: aceito no método. Mantido que o experimento entra na fase 0 atrás de flag, porque custa pouco e a medição é o que decide (seção 3.1).
+7. Segmentar as métricas antes de fixar SLO: aceito, e feito. O resultado mudou uma conclusão: os 45 requisitos em `missing` eram prova de que o mapa de cobertura funciona, não de que o sistema falha (seções 1, 3.6 e 3.8).
+8. Reconciliar o staging com o estado live: feito. A branch existe, recebe migrações do git e a última execução falhou; R-015 e D-009 estavam desatualizados (seções 1, 4.1 e 4.10).
+9. Limiares de lakehouse, fila e latência viram gatilhos de revisão, não decisões: aceito (seções 3.1 e 3.8).
+
+Sequência adotada, na ordem do fundador: corrigir o Atlas; separar ontologia, catálogo e política; manter os vinte casos priorizando cinco; corrigir falhas e observabilidade do runtime, em paralelo com os três primeiros passos porque não dependem deles; reexecutar os cinco casos com revisão profissional; persistir claim, premissa, cálculo, pergunta e snapshot com linhagem única; rodar o roteador em sombra; promover só quando provar intenção composta, correção e abstenção; expandir packs e famílias progressivamente.
