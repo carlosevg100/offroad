@@ -49,6 +49,8 @@ export type AdvisorProjectCopy = {
   verified: string;
   openIssues: string;
   notExamined: string;
+  openRequirements: string;
+  materiality: Record<string, string>;
   artifacts: string;
   contextQuestion: string;
   awaitingAnswer: string;
@@ -78,6 +80,7 @@ type Props = {
   activityEvents: AdvisorProjectActivityEvent[];
   outcomeEvents?: AdvisorProjectActivityEvent[];
   coverage: {verified: number; total: number; openIssues: number; notExamined: number};
+  openRequirements: Array<{id: string; label: string; status: string; materiality: string; reason: string | null}>;
   decisionRecords: Array<{id: string; question: string; recommendation: string | null; status: string}>;
   projectId: string;
   projectName: string;
@@ -260,6 +263,17 @@ export function AdvisorProject(props: Props) {
             {props.coverage.notExamined > 0 ? <li><Circle aria-hidden="true" size={12} /><span>{props.copy.notExamined}: {props.coverage.notExamined}</span></li> : null}
             <li><Circle aria-hidden="true" size={12} /><span>{props.copy.openIssues}: {props.coverage.openIssues}</span></li>
           </ul>
+          {props.openRequirements.length ? <div className="advisor-context-gaps">
+            <strong>{props.copy.openRequirements}</strong>
+            <ul>
+              {props.openRequirements.map((item) => (
+                <li key={item.id}>
+                  <span><b>{item.label}</b><i data-materiality={item.materiality}>{props.copy.materiality[item.materiality] ?? item.materiality}</i></span>
+                  {item.reason ? <small>{item.reason}</small> : null}
+                </li>
+              ))}
+            </ul>
+          </div> : null}
         </section> : null}
         {props.decisionRecords.length ? <section className="advisor-context-section">
           <div><strong>{props.copy.decisions}</strong><small>{props.decisionRecords.length}</small></div>

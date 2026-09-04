@@ -9,7 +9,7 @@ Objeto: `docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md` v0.9 e ADR 0021, mais 
 1. **O Atlas acerta a tese e erra a forma em três lugares.** A regra central (persona define cobertura, intenção define trabalho, contexto define execução, evidência define até onde afirmar, audiência define apresentação, autorização define efeitos) é correta e é a que a Constituição já enunciava. Os erros: as vinte famílias misturam três coisas que o próprio Intent Envelope já separa (que trabalho, para quem e em que forma, com que efeito); os objetos recebem um parágrafo cada enquanto os workflows recebem trinta linhas, invertendo onde mora o risco de engenharia; e o documento desenha uma ontologia inteira antes de um único caso estar provado ponta a ponta.
 2. **A fundação técnica está certa e não deve ser trocada.** Postgres com RLS como fonte de verdade, control plane determinístico, TaskSpecs como allowlist, âncoras de evidência verificadas por código, gateway com política de dados dos provedores e verificação em provedor diferente. Boa parte do que o fundador pergunta se "precisamos de" já existe como tabela ou pacote: premissa governada, fato com classe de informação, grafo de invalidação, manifesto de contexto por tarefa, orçamento por run, snapshot de controle. O trabalho é generalizar cinco coisas, não substituir nada.
 3. **Não precisamos de lakehouse, banco de grafo, banco vetorial externo nem framework de agentes.** O banco tem 132 MB. O vetor já está instalado dentro do Postgres e, por isso, dentro da fronteira de RLS. Mover retrieval para fora do banco moveria a autorização para código de aplicação, o que contraria o invariante mais importante do sistema.
-4. **O gargalo hoje é confiabilidade e profundidade provada do trilho que existe, não largura de intenções.** Segmentado por cohort: as 54 runs em sete dias são todas da conta do fundador, nenhuma de cliente; a taxa de falha é 40% no pipeline de documentos, 53% na tese de originação e 26% na conversa; o p95 de 22 minutos é dos dois primeiros, a conversa responde em 2 s; 36 jobs falhos não têm motivo na linha do job; 0 correções capturadas; 0 perfis profissionais até ontem. O mapa de cobertura, ao contrário, funciona: os 45 requisitos em `missing` são de um único projeto privado criado hoje, todos avaliados, com motivo e materialidade registrados. Nenhum desses números melhora com mais famílias no Atlas.
+4. **O gargalo hoje é confiabilidade e profundidade provada do trilho que existe, não largura de intenções.** Segmentado por cohort: as 54 runs em sete dias são todas da conta do fundador, nenhuma de cliente; a taxa de falha é 40% no pipeline de documentos, 53% na tese de originação e 26% na conversa; o p95 de 22 minutos é dos dois primeiros, a conversa responde em 2 s; os 36 jobs falhos têm categoria (`last_error.code`) mas, nos casos recentes, não têm causa; 0 correções capturadas; 0 perfis profissionais até ontem. O mapa de cobertura, ao contrário, funciona: os 45 requisitos em `missing` são de um único projeto privado criado hoje, todos avaliados, com motivo e materialidade registrados. Nenhum desses números melhora com mais famílias no Atlas.
 5. **Plano em quatro fases com gates**, começando pela confiabilidade do que existe e por cinco casos gold que o trilho atual consegue rodar, e só depois o roteador por intenção em modo sombra.
 
 ## 1. O que foi medido
@@ -27,7 +27,7 @@ Objeto: `docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md` v0.9 e ADR 0021, mais 
 | Cohort | todas as 54 runs criadas pela conta do fundador; nenhuma de cliente; gatilhos: 32 manual, 8 upload, 7 resposta, 7 reprocessamento; falhas espalhadas por 28/08, 02/09, 03/09 e 04/09, não concentradas no início |
 | Por pipeline | documentos: 15 runs, 6 falhas, p50 56 s, p95 1.364 s; tese de originação: 15 runs, 8 falhas, p50 156 s, p95 982 s; conversa: 23 runs, 6 falhas, p50 0 s, p95 2 s |
 | Tempo até valor | primeiro artefato: p50 3 s, p95 6 s em 14 projetos; primeira pergunta material: 39 min no único projeto com pedidos registrados |
-| Jobs | 164: 100 sucesso, 36 falha, 28 cancelada; os 36 falhos têm `result` nulo, o motivo só existe na run |
+| Jobs | 164: 100 sucesso, 36 falha, 28 cancelada; todos os 36 têm `last_error` com categoria; os de 28/08 trazem mensagem (schema `requestHash`, not-null em `normalized_value`, statement timeout ao gravar chunks, já corrigidos); os de 02 a 04/09 trazem só a categoria, sem a causa |
 | Motivos de falha (runs) | `agent_processing_failed` 6, `all_attempts_failed` 5, `invalid_case_input` 3, `budget_exceeded` 2, gate M07 1, outros 3 |
 | Task runs | 126: 119 sucesso, 6 falha (todas `quality_gate_m07_failed`), 1 invalidada; 100% com `context_manifest` |
 | Cobertura | 61 requisitos em 2 projetos. Os 45 `missing` são todos de um projeto privado de estruturação criado hoje, cada um avaliado, com motivo escrito e materialidade (9 `blocking`, 29 `high`, 7 `medium`). O outro projeto tem 0 `missing`, 4 `partial`, 2 `verified` e 10 artefatos |
@@ -185,7 +185,7 @@ Cada bloco responde às perguntas do fundador com o estado medido, a recomendaç
 
 **Hoje.** O ADR 0020 já é a resposta: control plane determinístico no banco (planos, tarefas, runs, orçamento, gates, invalidação) e um Deal Captain que só escolhe dentro dos 80 TaskSpecs. Executores têm chave e versão em cada task run; quality results por tarefa; orçamento mensal por organização e teto por job, aplicado no início da run (`budget_exceeded` disparou duas vezes); retentativas por `attempt_no`; lotes paralelos. As seis falhas de task run foram todas no gate de qualidade M07, ou seja, o gate funciona.
 
-O que não está em pé: o roteamento é por job de entrada e 18 expressões regulares; a companhia é dependência universal; o perfil chega ao modelo como bloco de texto; a política de perguntar, continuar, assumir ou abster vive em prompt, não em tabela; e o motivo de falha não é gravado na linha do job.
+O que não está em pé: o roteamento é por job de entrada e 18 expressões regulares; a companhia é dependência universal; o perfil chega ao modelo como bloco de texto; a política de perguntar, continuar, assumir ou abster vive em prompt, não em tabela; e a categoria de falha é gravada na linha do job sem a causa por trás dela.
 
 **Recomendações.**
 
@@ -248,13 +248,13 @@ O que não está em pé: o roteamento é por job de entrada e 18 expressões reg
 
 ### 3.8 Operação e escalabilidade
 
-**Hoje.** Worker em ECS fazendo polling de `worker_claim_job`; sem broker; orçamento mensal e por job; retentativas; upload idempotente; p50 42 s, p95 1.321 s; US$ 30,67 em 500 chamadas (cerca de US$ 0,57 por run); 36 jobs falhos sem motivo na linha.
+**Hoje.** Worker em ECS fazendo polling de `worker_claim_job`; sem broker; orçamento mensal e por job; retentativas; upload idempotente; p50 42 s, p95 1.321 s; US$ 30,67 em 500 chamadas (cerca de US$ 0,57 por run); 36 jobs falhos com categoria e, nos recentes, sem causa.
 
 **Recomendações.**
 
 - Síncrono: interpretar o turno, respostas pontuais e leitura de tela, com alvo abaixo de 10 s. Assíncrono: todo o resto, com eventos de estágio transmitidos à interface (já existem).
 - Fila: polling no Postgres basta para dezenas de jobs por dia. `pgmq` ou SQS entram na conversa com mais de um pool de workers ou quando a contenção aparecer; "50 jobs concorrentes" é heurística para reabrir a discussão, não gatilho fixo. Não agora.
-- Idempotência e falha parcial: memoização por `input_fingerprint` em nó; status por nó já existe; gravar o motivo de falha na linha do job (hoje só existe na run).
+- Idempotência e falha parcial: memoização por `input_fingerprint` em nó; status por nó já existe; gravar a causa da falha na linha do job, não só a categoria.
 - Custo: existe por run e por organização; acrescentar view por nó, por família e por artefato, com tag de tenant em cada chamada.
 - Incremental: chunk e embedding por versão de documento, nó de cálculo por hash de entrada, delta de monitoramento só sobre dependências afetadas.
 - Profundidade sem lentidão: pré-computar na ingestão (spreading, cronograma, chunks), memoizar, transmitir parciais, paralelizar nós. SLO por profundidade só depois de segmentar as métricas por cohort, job, versão, causa e regime de evidência; as hipóteses iniciais a calibrar são pontual até 15 s, preliminar até 3 min, institucional até 15 min com progresso visível. Medir também tempo até primeiro resultado útil, até primeira evidência, até primeira pergunta material, até artefato revisável, e custo por caso aprovado, não só por run.
@@ -278,7 +278,7 @@ O que não está em pé: o roteamento é por job de entrada e 18 expressões reg
 | Gateway de modelos | 16 tarefas, sombra, fallback, política de dados | manter, acrescentar 3 tarefas |
 | Harness | 3 ids de caso, fábrica FIDC, adversarial | generalizar para 5 casos gold com baseline |
 | Loop de correção | desenhado, 0 linhas | ligar |
-| Worker e fila | polling, ECS, sem motivo de falha no job | manter, corrigir registro de falha |
+| Worker e fila | polling, ECS, categoria de falha sem causa | manter, corrigir registro de falha |
 | Monitoramento | teste de covenant, sem agenda | construir na fase 4 |
 | Staging | branch existe desde 24/08, 171 migrações aplicadas até 03/09, última execução falhou, 7 tabelas atrás | diagnosticar a falha e ressincronizar antes da fase 1; corrigir R-015 e D-009 |
 | Perfil profissional | separado de capacidade, consumo como texto | consumir estruturado na fase 3 |
@@ -351,7 +351,7 @@ Gates de autoridade ──► matching ──► introdução exata ──► fe
 
 ### 4.6 Ordem de implementação
 
-**Fase 0, confiabilidade do trilho atual (1 a 2 semanas), em paralelo com as correções do Atlas.** Gravar motivo de falha na linha do job. Segmentar as métricas por cohort, job, versão, causa e regime de evidência, e só então fixar SLO por profundidade. Experimento de recuperação híbrida atrás de flag, medido contra um conjunto gold de consultas. Mostrar cobertura `missing` com motivo e materialidade na interface. Diagnosticar a execução que falhou na branch `staging` e ressincronizá-la para servir de ensaio de migração. Rodar os cinco casos comprometidos ponta a ponta, com revisão profissional dos outputs, e capturar cada run como fixture de regressão. Gate: cinco casos verdes e revisados, p95 por pipeline medido, zero falha sem motivo.
+**Fase 0, confiabilidade do trilho atual (1 a 2 semanas), em paralelo com as correções do Atlas.** Gravar a causa de cada falha na linha do job, com classe e mensagem sem conteúdo. Segmentar as métricas por cohort, job, versão, causa e regime de evidência, e só então fixar SLO por profundidade. Experimento de recuperação híbrida atrás de flag, medido contra um conjunto gold de consultas. Mostrar cobertura `missing` com motivo e materialidade na interface. Diagnosticar a execução que falhou na branch `staging` e ressincronizá-la para servir de ensaio de migração. Rodar os cinco casos comprometidos ponta a ponta, com revisão profissional dos outputs, e capturar cada run como fixture de regressão. Gate: cinco casos verdes e revisados, p95 por pipeline medido, zero falha sem causa.
 
 **Fase 1, linhagem e snapshot (2 a 3 semanas).** `lineage_edges`; premissa e cálculo como objetos; gate universal de procedência numérica no compilador de output; `findings_ledger`. Gate: mudança de premissa propaga até o material em um caso gold, e nenhum número sem trace sai em nenhum artefato.
 
@@ -388,7 +388,7 @@ Padrão estrangulador. O roteador novo grava em sombra e o antigo continua decid
 | Técnico | complexidade antes de prova (R-011) | fases com gate; nada da fase 2 antes do gate da fase 0 |
 | Financeiro | runs institucionais caras em Opus | orçamento por profundidade, memoização, custo por nó visível, tetos de D-012 |
 | Operacional | um só projeto Supabase é produção (R-015) | staging na fase 0; CI de banco continua obrigatório |
-| Operacional | falhas sem motivo registrado | corrigir na fase 0; alerta quando `result` nulo |
+| Operacional | falhas com categoria e sem causa | corrigir na fase 0; a view `failures_without_cause` tem de ficar vazia |
 | Operacional | um fundador e agentes como equipe | tudo que decide vira dado versionado, não conhecimento de sessão; fixtures de run |
 | Regulatório | ato regulado apresentado como software (R-002) | fronteiras nomeadas no Atlas; introdução só com gate de autoridade; parecer nunca vinculante |
 | Regulatório | licença de dados de mercado | registro de fontes com licença; ANBIMA Data manual até confirmar termos; sem scraping como feed |

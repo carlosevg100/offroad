@@ -320,7 +320,7 @@ async function ConversationalCapitalProject({
           .order("created_at")
           .limit(3),
         supabase.from("capital_project_requirement_coverage")
-          .select("id, requirement_key, status, materiality")
+          .select("id, requirement_key, label, status, materiality, missing_reason")
           .eq("organization_id", organization.id)
           .eq("capital_project_id", project.id),
         supabase.from("capital_project_decisions")
@@ -334,7 +334,7 @@ async function ConversationalCapitalProject({
     : [{data: []}, {data: []}, {data: []}, {data: []}, {data: []}];
 
   const copy: AdvisorProjectCopy = {
-    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
+    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
     proposal: {
       preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
@@ -449,6 +449,21 @@ async function ConversationalCapitalProject({
     !expectedKeys.has(item.requirement_key)
     && ["missing", "partial", "conflicting", "unavailable"].includes(item.status)
     && ["blocking", "high"].includes(item.materiality)).length;
+  // What is still open is more useful than how much is open. Each requirement already carries
+  // the reason it matters and its materiality, so the screen can say why a gap changes the work
+  // instead of showing a count and leaving the person to guess.
+  const materialityRank: Record<string, number> = {blocking: 0, high: 1, medium: 2, low: 3};
+  const openRequirements = (requirementCoverage ?? [])
+    .filter((item) => ["missing", "partial", "conflicting", "unavailable"].includes(item.status))
+    .sort((a, b) => (materialityRank[a.materiality] ?? 9) - (materialityRank[b.materiality] ?? 9))
+    .slice(0, 6)
+    .map((item) => ({
+      id: item.id,
+      label: item.label ?? item.requirement_key,
+      status: item.status,
+      materiality: item.materiality,
+      reason: item.missing_reason ?? null,
+    }));
   const verifiedCoverage = verifiedExpected + verifiedOutsideProfile;
   const openCoverage = openExpected + openOutsideProfile;
   const totalCoverage = expectedRequirements.length
@@ -468,6 +483,7 @@ async function ConversationalCapitalProject({
     activityEvents={activityEvents}
     outcomeEvents={outcomeEvents}
     coverage={{verified: verifiedCoverage, total: totalCoverage, openIssues: openCoverage, notExamined: notExaminedCoverage}}
+    openRequirements={openRequirements}
     decisionRecords={(decisionRecords ?? []).map((decision) => ({
       id: decision.id,
       question: decision.question,

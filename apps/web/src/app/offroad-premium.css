@@ -932,6 +932,16 @@
 .advisor-context-section > div {align-items: center; display: flex; justify-content: space-between; margin-bottom: 13px;}
 .advisor-context-section > div strong {color: #30373d; font-size: 11px; font-weight: 650; letter-spacing: .02em;}
 .advisor-context-section > div small {color: #8a9297; font-size: 9px;}
+.advisor-context-gaps {margin-top: 14px; padding-top: 12px; border-top: 1px dashed #dfe2de;}
+.advisor-context-gaps > strong {display: block; margin-bottom: 8px; color: #4f5a61; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;}
+.advisor-context-gaps ul {display: grid; gap: 9px; margin: 0; padding: 0; list-style: none;}
+.advisor-context-gaps li {display: grid; gap: 3px;}
+.advisor-context-gaps li > span {display: flex; align-items: baseline; gap: 8px;}
+.advisor-context-gaps li b {color: #2b3236; font-size: 11.5px; font-weight: 600; line-height: 1.3;}
+.advisor-context-gaps li i {flex: 0 0 auto; padding: 1px 6px; border-radius: 999px; background: #eceee9; color: #5f6870; font-size: 9px; font-style: normal; letter-spacing: .03em;}
+.advisor-context-gaps li i[data-materiality="blocking"] {background: #f4e5df; color: #8f4522;}
+.advisor-context-gaps li i[data-materiality="high"] {background: #efe6cf; color: #6e5423;}
+.advisor-context-gaps li small {color: #6f787e; font-size: 10.5px; line-height: 1.45;}
 .advisor-context-section__open {
   align-items: center;
   border: 1px solid #d5dad3;
