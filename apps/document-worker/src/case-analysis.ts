@@ -96,6 +96,7 @@ import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-de
 import {buildGovernedMatchScreen} from "./match-screen";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-assessment";
+import {describeJobFailure} from "./job-failure";
 import {
   buildCaseOperatingControlSnapshot,
   caseAnalysisCapabilityScope,
@@ -1261,14 +1262,16 @@ export async function processCaseAnalysisJob(
   } catch (error) {
     const validation = caseInputValidationDetail(error);
     await dependencies.queue.writeStage(job, stageName, "failed", {code: errorCode(error)});
-    await dependencies.queue.fail(job, {
+    await dependencies.queue.fail(job, describeJobFailure(error, {
       reason: "case_analysis_failed",
       code: errorCode(error),
+      stage: stageName,
       failure_phase: failurePhase,
       ...(validation ? {validation} : {}),
       spend: spendIncludingResearch(dependencies.gateway.spent(), publicResearchCostExposureUsd),
       model_lineage: dependencies.lineage(),
-    }, {retryable: retryable(error), retryInSeconds: 60});
+      retryable: retryable(error),
+    }), {retryable: retryable(error), retryInSeconds: 60});
     log("case.failed", {job: job.job_id, code: errorCode(error)});
     return {status: "failed"};
   }

@@ -2198,3 +2198,26 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   vigente é `gjkkjtbfnssdsbmlhmwk`, criada às 20:29 UTC a partir do histórico corrigido, ao custo
   horário de US$ 0,01344. Verificação de paridade (190 migrações, 114 tabelas) registrada em
   `ACCEPTANCE_EVIDENCE.md` quando concluída.
+## Fase 0, frente de confiabilidade: falha com causa, candidate, 04/09/2026
+
+- Todo executor do worker passa a gravar, na linha do job, a causa da falha e não só a categoria:
+  `last_error.cause` com classe (orçamento, modelo esgotado, saída inválida, política, gate de
+  qualidade, input inválido, schema, constraint, timeout de banco, autorização, transitório, erro
+  do worker), nome do erro e mensagem limitada e sem conteúdo (números com quatro ou mais dígitos,
+  e-mails e valores monetários são substituídos antes de gravar).
+- `private.job_failure_class` e `private.job_failure_has_cause` classificam também as linhas
+  antigas pelo que elas carregam. Views operacionais em `private`, sem exposição ao Data API:
+  `job_failure_causes`, `failures_without_cause`, `run_metrics_by_pipeline`, `run_metrics_by_day`,
+  `run_metrics_by_cohort`, `project_time_to_value`.
+- Linha de base medida ao aplicar: 36 jobs falhos, 12 sem causa (6 `agent_processing_failed`,
+  os demais códigos de análise de caso e gate M07), todos anteriores à mudança. O gate da fase é
+  `failures_without_cause` vazio para tudo criado a partir de 05/09/2026; as 12 linhas antigas
+  ficam visíveis como dívida, não são maquiadas.
+- A tela do projeto passa a listar o que ainda falta com o motivo e a materialidade de cada
+  requisito, em vez de mostrar só a contagem.
+- Correção da revisão de arquitetura: os 36 jobs falhos sempre tiveram `last_error`; o que faltava
+  era a causa por trás da categoria, e a revisão dizia "sem motivo" por ter lido a coluna errada.
+- Staging: a branch antiga (`lxmpsxwlpmfisbauakaz`) tinha histórico de migrações divergente do de
+  produção (nomes e versões diferentes, série `_validation` inexistente em produção) e não era
+  ressincronizável por rebase. Foi apagada e recriada a partir de produção em 04/09 às 20:09 UTC
+  (`ylyldbudqrrzuhgjulmi`), ao mesmo custo horário da anterior (US$ 0,01344/h).

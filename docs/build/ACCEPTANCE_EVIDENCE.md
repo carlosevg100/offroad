@@ -1096,3 +1096,14 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Cinco casos | `docs/product/gold-cases/01..05` | envelope em duas camadas, inputs com fixture e política de hash, cobertura com materialidade, cálculos, achados, outputs, ramos, adversariais, baseline, painel, "nunca" | 2026-09-04 |
 | Causa raiz do staging | `select ... from supabase_migrations.schema_migrations where statements[1] !~* '(create|alter|...)'` | uma única linha de placeholder, versão `20260831092552`; corrigida com o SQL do arquivo | 2026-09-04 |
 | Log da branch | `query_logs` no projeto da branch | `syntax error at or near "Canonical"` um segundo após a migração anterior; reproduzido na criação e no reset | 2026-09-04 |
+## Fase 0, falha com causa e métricas segmentadas, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Envelope de falha | `apps/document-worker/src/job-failure.ts` + teste | 4 testes: exceção comum preserva nome e mensagem; classes de produção reconhecidas (schema, timeout de banco, constraint, modelo esgotado, orçamento, gate, transitório); valores e e-mails nunca gravados; retentativa por classe | 2026-09-04 |
+| Executores ligados | `agent-operation-brief`, `case-analysis`, `capital-planning`, `company-debt-view`, `origination-thesis` | os cinco pontos de falha passam pelo envelope; pipeline de documentos já carregava mensagem | 2026-09-04 |
+| Migração aplicada | `20260904201650_job_failure_causes_and_run_metrics` | funções e seis views em `private`, revogadas de `anon` e `authenticated` | 2026-09-04 |
+| Regressão SQL no projeto | `supabase/tests/job_failure_causes.sql` via `execute_sql` | `job_failure_causes_passed`; classificador cobre os formatos antigos e o novo; categoria nua não conta como causa | 2026-09-04 |
+| Linha de base | `private.failures_without_cause` | 12 de 36 falhas históricas sem causa; classes: schema 10, modelo esgotado 5, constraint 3, input inválido 3, orçamento 2, timeout 2, gate 1, worker 1, sem classe 9 | 2026-09-04 |
+| Testes do worker | Vitest | 26 arquivos / 132 testes verdes | 2026-09-04 |
+| Web | typecheck, paridade i18n, testes | verdes com as chaves novas de cobertura | 2026-09-04 |
