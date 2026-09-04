@@ -3,9 +3,11 @@ import {caseStageIds} from "@offroad/case-runner";
 import {parseDocument} from "@offroad/document-parsers";
 import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
+import {z} from "zod";
 
 import {
   caseAnalysisExecutionPlan,
+  caseInputValidationDetail,
   isReservedExampleWebsite,
   processCaseAnalysisJob,
   researchSubjectFromDeclaration,
@@ -116,6 +118,22 @@ function structureProposalFromRequest(request: {
 }
 
 describe("worker case analysis", () => {
+  it("records bounded schema diagnostics without including rejected customer values", () => {
+    const validation = caseInputValidationDetail(z.object({
+      session: z.object({locale: z.enum(["pt-BR", "en-US"])}),
+    }).safeParse({session: {locale: "unexpected-private-value"}}).error);
+
+    expect(validation).toEqual({
+      issueCount: 1,
+      issues: [{
+        path: "session.locale",
+        code: "invalid_value",
+        message: "Invalid option: expected one of \"pt-BR\"|\"en-US\"",
+      }],
+    });
+    expect(JSON.stringify(validation)).not.toContain("unexpected-private-value");
+  });
+
   it("runs the first understanding as one bounded read without loading or executing the full case DAG", async () => {
     const preliminaryJob: CaseAnalysisJob = {
       ...job,

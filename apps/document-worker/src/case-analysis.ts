@@ -1246,10 +1246,12 @@ export async function processCaseAnalysisJob(
     });
     return {status: "succeeded", ...(manifestId ? {manifestId} : {})};
   } catch (error) {
+    const validation = caseInputValidationDetail(error);
     await dependencies.queue.writeStage(job, stageName, "failed", {code: errorCode(error)});
     await dependencies.queue.fail(job, {
       reason: "case_analysis_failed",
       code: errorCode(error),
+      ...(validation ? {validation} : {}),
       spend: spendIncludingResearch(dependencies.gateway.spent(), publicResearchCostExposureUsd),
       model_lineage: dependencies.lineage(),
     }, {retryable: retryable(error), retryInSeconds: 60});
@@ -2457,6 +2459,21 @@ function errorCode(error: unknown): string {
     return error.code.slice(0, 100);
   }
   return error instanceof z.ZodError ? "invalid_case_input" : "case_analysis_failed";
+}
+
+export function caseInputValidationDetail(error: unknown): {
+  issueCount: number;
+  issues: Array<{path: string; code: string; message: string}>;
+} | null {
+  if (!(error instanceof z.ZodError)) return null;
+  return {
+    issueCount: error.issues.length,
+    issues: error.issues.slice(0, 25).map((issue) => ({
+      path: issue.path.map(String).join(".") || "$",
+      code: issue.code,
+      message: issue.message.slice(0, 300),
+    })),
+  };
 }
 
 function retryable(error: unknown): boolean {
