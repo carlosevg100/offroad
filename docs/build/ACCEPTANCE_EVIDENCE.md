@@ -1117,3 +1117,4 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Regressão SQL no projeto | `supabase/tests/organization_methodology.sql` via `execute_sql` | `organization_methodology_passed`: versões avançam, uma ativa, revisada registra confirmador, membro lê e não grava, insert direto recusado, outro tenant cego, capacidade recusada; rollback sem resíduo | 2026-09-04 |
 | Schema e resolução | `methodology.test.ts` | 6 testes: defaults sem threshold, só definições da ontologia, sobrescrita entrada a entrada, capacidades fora, checks derivados, correções com pessoa | 2026-09-04 |
 | Worker | typecheck, lint, 134 testes | bloco aceito no contexto dos quatro executores e repassado ao modelo | 2026-09-04 |
+| Contrato de falha em produção | `20260904210542_job_failure_contract` aplicada às 21:0x UTC, depois do deploy do worker de `924da6c` (20:58) | `failures_without_cause` continua em 12, todas anteriores; 0 novas desde o deploy | 2026-09-04 |
