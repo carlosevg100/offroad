@@ -94,6 +94,12 @@ const contextSchema = z.object({
     content: recordSchema,
     evidence_refs: z.array(recordSchema),
   })).default([]),
+  prior_failed_task_feedback: z.array(z.object({
+    task_id: z.string().regex(/^[A-Z][0-9]{2}$/),
+    attempt_no: z.number().int().positive(),
+    quality_results: z.array(recordSchema).max(30),
+    error: recordSchema.nullable(),
+  })).max(20).default([]),
   professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
 });
@@ -126,6 +132,18 @@ Rules:
   does not prove the scale, set amount to null and identify the missing scale in keyUnknowns.
 - Analyze liquidity, cash generation, working capital, seasonality, leverage, coverage, capex,
   acquisitions, shareholder distributions and management guidance when supported.
+- Build preliminaryForwardCase as the bridge between historical evidence and the financing ideas.
+  It is an Offroad scenario, never management guidance. Cover the operating drivers that matter
+  for this company, cash conversion, capex, tax, macro or market variables, and the resulting debt
+  trajectory. Each assumption must state its evidence, methodology, rationale and downside, and
+  must remain editable through the conversation. If the public evidence cannot support a numeric
+  forecast, keep the paths qualitative and set status to not_computable; do not fabricate a thin
+  revenue-and-margin model. Explicitly name the smallest private inputs that would turn the frame
+  into a decision-grade model.
+- The forward assumption ledger must include each core category exactly once before adding any
+  sector_specific driver: revenue, costs_and_margin, working_capital, capex_and_depreciation, tax,
+  macro_and_market and debt_service. The projected effects must cover revenue, EBITDA, cash flow,
+  net debt/leverage and liquidity/debt service. Unknown is a valid governed treatment; omission is not.
 - Rank genuinely distinct strategic alternatives. For each, explain the objective, indicative
   structure, balance-sheet impact, advantages, risks, conditions and disconfirmers. Do not force a
   refinancing thesis when the evidence points elsewhere.
@@ -166,7 +184,7 @@ Rules:
 - Return only the structured object required by the schema, in the requested locale.`;
 
 const EXECUTOR_KEY = "offroad.origination_thesis";
-const EXECUTOR_VERSION = "2026.09.03-v5";
+const EXECUTOR_VERSION = "2026.09.03-v6";
 const ARTIFACT_SCHEMA_VERSION = "capital-artifact.v1";
 
 type Context = z.infer<typeof contextSchema>;
@@ -322,6 +340,11 @@ export async function processOriginationThesisJob(
         researchStatus: research.status,
         allowedMaterialNumericTokens,
         publicSources,
+        qualityRetry: job.attempt > 1 || context.prior_failed_task_feedback.length > 0 ? {
+          attempt: job.attempt,
+          instruction: "Re-audit every amount, percentage, multiple and tenor against allowedMaterialNumericTokens. Remove or make qualitative any expression that is not present verbatim in that exhaustive whitelist.",
+          failedTaskFeedback: context.prior_failed_task_feedback.filter((feedback) => feedback.task_id === "M07"),
+        } : null,
         ...(context.revision ? {
           requestedCorrection: context.revision.correction_note,
           priorWorkProduct: context.revision.prior_content,
@@ -341,7 +364,7 @@ export async function processOriginationThesisJob(
           publicSourceCount: String(research.sources.length),
           revision: context.revision ? "true" : "false",
         },
-        cacheKey: "origination-senior-readout-v5",
+        cacheKey: "origination-senior-readout-v6",
       });
       const sanitized = sanitizeCitations(normalizeReadout(completion.output), allowedUrls);
       const quality = validateMeetingBrief(sanitized, allowedUrls, modelInput);
@@ -351,11 +374,11 @@ export async function processOriginationThesisJob(
         status: "pending_confirmation",
         build: async () => ({
           content: {
-            schemaVersion: "origination-senior-readout.v2",
+            schemaVersion: "origination-senior-readout.v3",
             asOfDate: modelInput.asOfDate,
             company: modelInput.company,
             ...sanitized,
-            sources: research.sources.map((source) => ({
+            sources: selectReferencedSources(sanitized, research.sources).map((source) => ({
               title: source.title, url: source.url, topic: source.topic,
               publishedAt: source.publishedAt, provider: source.provider,
             })),
@@ -549,11 +572,13 @@ export async function processOriginationThesisJob(
       build: async () => ({content: {
         sections: [
           "executive_read", "company_analysis", "performance_analysis", "capital_structure",
-          "strategic_agenda", "strategic_alternatives", "meeting_strategy", "unknowns", "sources",
+          "preliminary_forward_case", "strategic_agenda", "strategic_alternatives",
+          "meeting_strategy", "unknowns", "sources",
         ],
         acceptance: [
           "Every analytical section and strategic alternative cites allowed public evidence.",
           "The debt stack distinguishes disclosed terms from explicit unknowns.",
+          "The forward case separates sourced facts, editable assumptions and missing inputs.",
           "Alternatives state balance-sheet impact, conditions, risks and disconfirmers.",
         ],
       }}),
@@ -861,6 +886,42 @@ function normalizeReadout(output: z.infer<typeof seniorReadoutSchema>): z.infer<
       outlookAndPlans: legacy.executiveRead,
       sourceUrls: evidence,
     },
+    preliminaryForwardCase: {
+      status: "not_computable",
+      horizon: "Horizonte a confirmar com o usuário",
+      nature: "Quadro prospectivo preliminar da Offroad, sem projeção numérica porque a base pública disponível não sustenta um modelo integrado.",
+      assumptions: [
+        ["receita", "revenue"], ["custos_margem", "costs_and_margin"],
+        ["capital_giro", "working_capital"], ["capex_depreciacao", "capex_and_depreciation"],
+        ["impostos", "tax"], ["macro_mercado", "macro_and_market"],
+        ["servico_divida", "debt_service"],
+      ].map(([id, category]) => ({
+        id: id!,
+        category: category as "revenue" | "costs_and_margin" | "working_capital" | "capex_and_depreciation" | "tax" | "macro_and_market" | "debt_service",
+        driver: id!.replace("_", " "),
+        baseCase: "Tratamento qualitativo até receber premissas ou evidências suficientes.",
+        downside: "Sensibilidade qualitativa; impacto numérico ainda não calculável.",
+        methodology: "Usar histórico reconciliado e evidência prospectiva antes de calcular.",
+        rationale: "O driver afeta geração de caixa, capacidade de serviço e flexibilidade financeira.",
+        confidence: "low" as const,
+        editable: true as const,
+        sourceUrls: evidence,
+      })),
+      projectedEffects: [
+        ["Receita", "revenue"], ["EBITDA", "ebitda"], ["Geração de caixa", "cash_flow"],
+        ["Dívida líquida e alavancagem", "net_debt_and_leverage"],
+        ["Liquidez e serviço da dívida", "liquidity_and_debt_service"],
+      ].map(([metric, category]) => ({
+        category: category as "revenue" | "ebitda" | "cash_flow" | "net_debt_and_leverage" | "liquidity_and_debt_service",
+        metric: metric!,
+        baseCase: "Não calculável com a evidência pública preservada nesta versão.",
+        downside: "Não calculável com a evidência pública preservada nesta versão.",
+        debtRelevance: "Precisa ser calculado antes de dimensionar ou recomendar termos de uma operação.",
+        sourceUrls: evidence,
+      })),
+      missingInputs: legacy.unknowns,
+      limitations: ["Não representa orçamento, guidance ou projeção da administração."],
+    },
     capitalStructure: {
       overview: signalText,
       liquidity: legacy.executiveRead,
@@ -901,6 +962,15 @@ function sanitizeCitations(output: z.infer<typeof seniorReadoutSchema>, allowedU
     ...output,
     companyAnalysis: {...output.companyAnalysis, sourceUrls: sanitize(output.companyAnalysis.sourceUrls)},
     performanceAnalysis: {...output.performanceAnalysis, sourceUrls: sanitize(output.performanceAnalysis.sourceUrls)},
+    preliminaryForwardCase: {
+      ...output.preliminaryForwardCase,
+      assumptions: output.preliminaryForwardCase.assumptions.map((assumption) => ({
+        ...assumption, sourceUrls: sanitize(assumption.sourceUrls),
+      })),
+      projectedEffects: output.preliminaryForwardCase.projectedEffects.map((effect) => ({
+        ...effect, sourceUrls: sanitize(effect.sourceUrls),
+      })),
+    },
     capitalStructure: {
       ...output.capitalStructure,
       sourceUrls: sanitize(output.capitalStructure.sourceUrls),
@@ -917,19 +987,38 @@ function sanitizeCitations(output: z.infer<typeof seniorReadoutSchema>, allowedU
   };
 }
 
-function validateMeetingBrief(
-  output: z.infer<typeof seniorReadoutSchema>,
-  allowedUrls: Set<string>,
-  input: Record<string, unknown>,
-): QualityResult[] {
-  const citedUrls = [
+function readoutCitationUrls(output: z.infer<typeof seniorReadoutSchema>): string[] {
+  return [
     ...output.companyAnalysis.sourceUrls,
     ...output.performanceAnalysis.sourceUrls,
+    ...output.preliminaryForwardCase.assumptions.flatMap((assumption) => assumption.sourceUrls),
+    ...output.preliminaryForwardCase.projectedEffects.flatMap((effect) => effect.sourceUrls),
     ...output.capitalStructure.sourceUrls,
     ...output.capitalStructure.debtStack.flatMap((debt) => debt.sourceUrls),
     ...output.strategicAgenda.sourceUrls,
     ...output.strategicAlternatives.flatMap((alternative) => alternative.sourceUrls),
   ];
+}
+
+/** The research run keeps the full discovery trail. The client artifact exposes only evidence
+ * the analysis actually relies on, preventing an irrelevant search result from looking like a
+ * source used by the banker. */
+function selectReferencedSources(
+  output: z.infer<typeof seniorReadoutSchema>,
+  sources: readonly ResearchSource[],
+): ResearchSource[] {
+  const cited = new Set(readoutCitationUrls(output));
+  return [...new Map(sources
+    .filter((source) => cited.has(source.url))
+    .map((source) => [source.url, source] as const)).values()];
+}
+
+function validateMeetingBrief(
+  output: z.infer<typeof seniorReadoutSchema>,
+  allowedUrls: Set<string>,
+  input: Record<string, unknown>,
+): QualityResult[] {
+  const citedUrls = readoutCitationUrls(output);
   const outputText = JSON.stringify({
     ...output,
     // Ranking is an editorial ordinal, not an economic claim.
@@ -938,6 +1027,15 @@ function validateMeetingBrief(
   const inputTokens = materialNumericTokens(JSON.stringify(input));
   const outputTokens = materialNumericTokens(outputText);
   const unsupportedNumbers = outputTokens.filter((token) => !inputTokens.includes(token));
+  const requiredAssumptionCategories = [
+    "revenue", "costs_and_margin", "working_capital", "capex_and_depreciation",
+    "tax", "macro_and_market", "debt_service",
+  ];
+  const requiredEffectCategories = [
+    "revenue", "ebitda", "cash_flow", "net_debt_and_leverage", "liquidity_and_debt_service",
+  ];
+  const assumptionCategories = new Set<string>(output.preliminaryForwardCase.assumptions.map((assumption) => assumption.category));
+  const effectCategories = new Set<string>(output.preliminaryForwardCase.projectedEffects.map((effect) => effect.category));
   const officialStructuredSources = Array.isArray(input.publicSources)
     ? input.publicSources.filter((source): source is Record<string, unknown> => Boolean(
         source && typeof source === "object" && "title" in source
@@ -958,10 +1056,18 @@ function validateMeetingBrief(
     {id: "citation_allowlist", passed: citedUrls.every((url) => allowedUrls.has(url)), detail: "Every citation resolves to the persisted public-research set."},
     {id: "citation_coverage", passed: output.companyAnalysis.sourceUrls.length > 0
       && output.performanceAnalysis.sourceUrls.length > 0
+      && output.preliminaryForwardCase.assumptions.every((assumption) => assumption.sourceUrls.length > 0)
+      && output.preliminaryForwardCase.projectedEffects.every((effect) => effect.sourceUrls.length > 0)
       && output.capitalStructure.sourceUrls.length > 0
       && output.strategicAgenda.sourceUrls.length > 0
       && output.strategicAlternatives.every((alternative) => alternative.sourceUrls.length > 0), detail: "Every analytical section and strategic alternative carries public evidence."},
     {id: "uncertainty", passed: output.unknowns.length > 0 && output.meetingStrategy.decisionQuestions.length >= 3, detail: "Unknowns and decision-changing meeting questions remain explicit."},
+    {id: "forward_case_governance", passed: output.preliminaryForwardCase.missingInputs.length > 0
+      && output.preliminaryForwardCase.limitations.length > 0
+      && output.preliminaryForwardCase.assumptions.every((assumption) => assumption.editable && assumption.methodology.length >= 15)
+      && requiredAssumptionCategories.every((category) => assumptionCategories.has(category))
+      && requiredEffectCategories.every((category) => effectCategories.has(category)),
+    detail: "The forward case covers every core driver and output, with editable assumptions, methodology, limitations and missing inputs."},
     {id: "unsupported_material_numbers", passed: unsupportedNumbers.length === 0, detail: unsupportedNumbers.length === 0 ? "No unsupported material numeric token detected." : `Unsupported tokens: ${unsupportedNumbers.join(", ")}`},
     {id: "official_financial_coverage", passed: coveredOfficialTokens.length >= requiredOfficialFacts, detail: requiredOfficialFacts === 0
       ? "No structured official financial facts were available."
@@ -1041,15 +1147,17 @@ function buildOriginationCoverageAssessment(input: {
     {
       key: "core.integrated-forward-case", label: labels.forward, status: "partial" as const,
       materiality: "blocking" as const,
-      evidence: publicEvidence(input.readout.performanceAnalysis.sourceUrls),
-      missingReason: null,
+      evidence: publicEvidence(input.readout.preliminaryForwardCase.projectedEffects.flatMap((effect) => effect.sourceUrls)),
+      missingReason: input.readout.preliminaryForwardCase.missingInputs.join(" ").slice(0, 1_000),
       assessedBy: "financial_analysis" as const,
     },
     {
       key: "core.assumption-governance", label: labels.assumptions, status: "partial" as const,
       materiality: "blocking" as const,
-      evidence: publicEvidence(input.readout.performanceAnalysis.sourceUrls),
-      missingReason: null,
+      evidence: publicEvidence(input.readout.preliminaryForwardCase.assumptions.flatMap((assumption) => assumption.sourceUrls)),
+      missingReason: input.readout.preliminaryForwardCase.status === "directional"
+        ? null
+        : input.readout.preliminaryForwardCase.limitations.join(" ").slice(0, 1_000),
       assessedBy: "independent_verifier" as const,
     },
     {

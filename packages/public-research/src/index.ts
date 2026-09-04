@@ -66,37 +66,40 @@ export function buildPublicResearchPlan(raw: PublicResearchSubject): ResearchQue
  */
 export function buildOriginationResearchPlan(raw: PublicResearchSubject): ResearchQuery[] {
   const subject = publicResearchSubjectSchema.parse(raw);
+  // Exact-name matching materially reduces false positives for short issuer names (for example,
+  // a surname or a similarly named individual). Broad sector queries remain unquoted below.
+  const issuer = `"${subject.legalName.replaceAll('"', "").trim()}"`;
   const officialDomain = subject.website ? domainOf(subject.website) : null;
   const geography = subject.geography ? ` ${subject.geography}` : "";
   const sector = subject.sector ? ` ${subject.sector}` : "";
   const candidates: Array<Omit<ResearchQuery, "id">> = [
     {
       topic: "identity",
-      query: `${subject.legalName}${geography} site oficial companhia segmentos produtos clientes modelo de negócio`,
+      query: `${issuer}${geography} site oficial companhia segmentos produtos clientes modelo de negócio`,
       domainAllowlist: officialDomain ? [officialDomain] : [],
     },
     {
       topic: "identity",
-      query: `${subject.legalName}${geography} relações com investidores release de resultados apresentação webcast teleconferência`,
+      query: `${issuer}${geography} relações com investidores release de resultados apresentação webcast teleconferência`,
       domainAllowlist: officialDomain ? [officialDomain] : [],
     },
     {
       topic: "identity",
-      query: `${subject.legalName}${geography} demonstrações financeiras notas explicativas endividamento empréstimos financiamentos vencimentos`,
+      query: `${issuer}${geography} demonstrações financeiras notas explicativas endividamento empréstimos financiamentos vencimentos`,
       domainAllowlist: officialDomain ? [officialDomain] : [],
     },
     {
       topic: "identity",
-      query: `${subject.legalName}${geography} fluxo de caixa capital de giro estoques contas a receber capex guidance`,
+      query: `${issuer}${geography} fluxo de caixa capital de giro estoques contas a receber capex guidance`,
       domainAllowlist: officialDomain ? [officialDomain] : [],
     },
-    {topic: "news", query: `${subject.legalName}${geography} notícias fatos relevantes aquisições investimentos dividendos últimos 18 meses`, domainAllowlist: []},
-    {topic: "news", query: `${subject.legalName}${geography} administração entrevista estratégia expansão desinvestimento últimos 18 meses`, domainAllowlist: []},
-    {topic: "sector", query: `${subject.legalName}${sector}${geography} setor concorrentes participação de mercado drivers de receita margens sazonalidade`, domainAllowlist: []},
+    {topic: "news", query: `${issuer}${geography} notícias fatos relevantes aquisições investimentos dividendos últimos 18 meses`, domainAllowlist: []},
+    {topic: "news", query: `${issuer}${geography} administração entrevista estratégia expansão desinvestimento últimos 18 meses`, domainAllowlist: []},
+    {topic: "sector", query: `${issuer}${sector}${geography} setor concorrentes participação de mercado drivers de receita margens sazonalidade`, domainAllowlist: []},
     {topic: "sector", query: `${subject.sector ?? subject.legalName}${geography} perspectivas setoriais preços demanda custos câmbio juros capital de giro`, domainAllowlist: []},
     {topic: "regulation", query: `${subject.sector ?? subject.legalName}${geography} regulação riscos setoriais tributação crédito`, domainAllowlist: []},
-    {topic: "market", query: `${subject.legalName}${geography} dívida debênture nota comercial empréstimo rating custo garantia covenant vencimento`, domainAllowlist: []},
-    {topic: "market", query: `${subject.legalName}${geography} emissões captações refinanciamento pré-pagamento estrutura de capital`, domainAllowlist: []},
+    {topic: "market", query: `${issuer}${geography} dívida debênture nota comercial empréstimo rating custo garantia covenant vencimento`, domainAllowlist: []},
+    {topic: "market", query: `${issuer}${geography} emissões captações refinanciamento pré-pagamento estrutura de capital`, domainAllowlist: []},
     {topic: "market", query: `${subject.sector ?? subject.legalName}${geography} transações comparáveis dívida debênture crédito privado prazo spread garantia`, domainAllowlist: []},
   ];
   return candidates.map((candidate) => {
