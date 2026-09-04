@@ -1,5 +1,16 @@
 # Acceptance Evidence
 
+## Nome curto e entrada de acesso reescrita, 04/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Nome | `brand.ts`, manifest e catálogo de mensagens | `Offroad` em todo lugar; nenhuma ocorrência de `Offroad Capital` restante na copy dos dois idiomas |
+| Contrato de identidade | `brand.test.ts` | título do navegador fixado no nome curto; categoria e frases proibidas seguem barradas |
+| Copy de acesso | login e cadastro em servidor local | sem rótulo de acesso institucional, sem vocabulário interno de segregação de dados |
+| Tipografia | painel de contexto em 1180 px | serif da marca; a frase fecha em quatro linhas em vez de seis fragmentos |
+| Colisão preexistente | comparação com produção antes da mudança | o título do cadastro renderizava sob o link de voltar em produção; corrigido reservando a altura do link |
+| Gate | `pnpm check` em Node 24 | lint, typecheck, testes e build verdes nos 43 alvos; 182 testes web |
+
 ## Casca e entrada do advisor refeitas, 04/09/2026
 
 | Evidência | Verificação | Resultado |

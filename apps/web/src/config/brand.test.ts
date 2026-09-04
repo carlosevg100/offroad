@@ -18,7 +18,7 @@ describe("replaceable brand configuration", () => {
 
   it("projects the specialist debt-capital-markets identity without reviving the old category", () => {
     expect(brand).toMatchObject({
-      browserTitle: "Offroad Capital | AI for Debt Capital Markets",
+      browserTitle: "Offroad | AI for Debt Capital Markets",
       category: "AI Platform for Debt Capital Markets",
     });
     expect(manifest.description).toBe(brand.description);
