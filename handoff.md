@@ -26,6 +26,42 @@ Sandbox access with fixed fictional responses, not official production data. See
 `docs/build/ANBIMA_SOURCE_DECISION.md`. No ANBIMA credential was stored or used; rotate the Client
 Secret exposed in the screenshot before any future integration.
 
+### Engineering update: gold cases measured for real, 4 September 2026
+
+Tudo abaixo está mesclado na main e vivo em produção.
+
+- **Roteador em sombra.** Cada turno do advisor gera um Intent Envelope v1 em `intent_envelopes`
+  (worker → `worker_record_intent_envelope`). Nada lê a tabela para decidir; o roteador de
+  produção é o mesmo. Dezesseis turnos gold em `packages/evals/src/intent-gold.ts` são a régua
+  antes de qualquer troca. Até a noite de 04/09 não havia turno real depois do deploy, então a
+  tabela está vazia: o primeiro uso do chat vai populá-la.
+- **Source pack do Caso 01.** `packages/testing-fixtures/assets/camil/source-pack/` (20 itens,
+  29 MB, hash e licença por item, todos de fontes públicas achadas pelo agente: índice IPE da
+  CVM → links diretos do ENET; ANBIMA; Banco Central). Rebuild: `pnpm --filter @offroad/evals
+  source-pack:build <manifest> <dir>`. O adquirente reconhece PDF, ZIP e JSON por assinatura
+  quando o servidor declara html.
+- **Gabarito v0.2** em `docs/product/gold-cases/gc01-gabarito-rascunho.md`, rascunho até a revisão
+  linha a linha do fundador. O achado que muda a leitura: 13ª e 14ª emissões (lastro de CRA) com
+  covenant de 3,5x, mais apertado que os 4,0x do ITR; pro forma 4,72x.
+- **Baseline justo.** `pnpm --filter @offroad/evals baseline:gold -- --case gc01` monta a base
+  (turnos, documentos, pack, data-base) com hash por entrada. Chaves de modelo só existem no
+  Secrets Manager: a execução oficial é o workflow manual `Gold case baseline` (OIDC,
+  `offroadGitHubEvalsRole`), artefato baixado com `gh run download` e commitado em
+  `docs/product/gold-cases/runs/<caso>/baseline/<data>/`. Primeira run do Caso 01: Opus 5,
+  US$ 5,75; ver a tabela no arquivo do caso.
+- **Execução congelada no produto.** `private.gold_case_bindings` vincula um projeto a um pack;
+  `worker_claim_job` devolve `source_pack_id`; o worker decide por job (`research-routing.ts`):
+  job vinculado lê o pack e nada mais, os demais seguem vivos, pack ausente falha com
+  `source_pack_unavailable`. O pack viaja na imagem (`/app/source-packs`, `SOURCE_PACKS_DIR`).
+  Procedimento: o fundador cria o projeto e envia os documentos; o operador insere o vínculo pela
+  conexão de gestão; cada turno digitado no produto roda contra o pack.
+- **Armadilhas novas.** Toda função plpgsql nova passa por `plpgsql_check` no staging antes do PR
+  (o CI `database` roda `supabase db lint --fail-on error` e pegou três erros que o
+  `apply_migration` não pega). Um workflow novo só pode ser disparado depois de existir na main.
+  Ao renderizar um PDF pelo parser do produto, `page.tables` precisa entrar junto com
+  `page.blocks`, senão os números das notas somem. O servidor da CVM derruba conexões sob carga:
+  o builder do pack tenta quatro vezes.
+
 ### Candidate update: instant project shell, 2 September 2026
 
 Project creation no longer waits for the initial worker enqueue. The atomic project/session/plan/
