@@ -98,6 +98,9 @@ describe("no em dash reaches a reader", () => {
         const full = join(directory, entry.name);
         if (entry.isDirectory()) {
           if (entry.name === "node_modules" || entry.name === "dist" || entry.name === "coverage") continue;
+          // Recorded model outputs under the gold cases are evidence, not house prose: their bytes
+          // are hashed in the run record and editing them would falsify the measurement.
+          if (full.endsWith(join("docs", "product", "gold-cases", "runs"))) continue;
           walk(full);
           continue;
         }
