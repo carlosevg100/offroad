@@ -71,7 +71,22 @@ describe("advisor specialized completion", () => {
     }));
   });
 
-  it("keeps direct and revision runs on the generic completion rail", async () => {
+  it("describes a chat-requested revision as a new governed version", () => {
+    const revision = advisorSpecializedCompletion({
+      ...baseJob,
+      payload: {
+        ...baseJob.payload,
+        revision_of_artifact_id: artifact.id,
+        correction_decision_id: "b0000000-0000-4000-8000-000000000001",
+      },
+    }, artifact);
+
+    expect(revision?.content).toContain("nova versão da análise");
+    expect(revision?.content).toContain("trilha de evidências");
+    expect(revision?.content).not.toContain("primeira análise");
+  });
+
+  it("keeps non-chat direct runs on the generic completion rail", async () => {
     const completeAdvisorSpecializedJob = vi.fn(async () => {});
     const complete = vi.fn(async () => {});
     const queue = {completeAdvisorSpecializedJob, complete} as unknown as QueueClient;

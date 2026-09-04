@@ -220,6 +220,22 @@ const patterns = {
   caseScope: /\b(companhia|empresa|opera[cç][aã]o|capta[cç][aã]o|caso|estrutura|prazo|valor|garantia|company|transaction|deal|case|structure|term|amount|collateral)\b/i,
 } as const;
 
+const governedWorkProductRevisionPattern = /(?:^|[^\p{L}\p{N}_])(?:aprofund(?:e|ar|amento)|deepen|expand|revis(?:e|ar|ão|ao)|review|revise|atualiz(?:e|ar|ação|acao)|update|corrig(?:a|ir|e|indo)|correct|fix|ajust(?:e|ar)|adjust|refa(?:ça|ca|zer)|redo|rework|complet(?:e|ar)|complete|incorpor(?:e|ar)|incorporate|inclu(?:a|ir)|include|adicion(?:e|ar)|add)(?=$|[^\p{L}\p{N}_])/iu;
+const governedWorkProductRequestedOutputPattern = /(?:\b(?:quero|gostaria|preciso)\b|\b(?:i\s+want|i\s+need|i(?:'d|\s+would)\s+like)\b).{0,100}(?:nova\s+vers[aã]o|new\s+version|cen[aá]rio|scenario|premissas?|assumptions?|proje[cç][oõ]es?|projections?|an[aá]lise\s+prospectiva|forward\s+(?:case|analysis))/iu;
+
+/**
+ * Identifies an explicit request to create a new governed version of the work product currently
+ * under review. This is deliberately narrower than general conversation: questions about a
+ * number, an explanation or a hypothetical remain chat turns, while action verbs such as
+ * "aprofunde", "corrija" and "inclua" preserve the user's note as the revision brief.
+ */
+export function isGovernedWorkProductRevisionRequest(message: string): boolean {
+  const normalized = message.normalize("NFKC").trim();
+  if (!normalized) return false;
+  return governedWorkProductRevisionPattern.test(normalized)
+    || governedWorkProductRequestedOutputPattern.test(normalized);
+}
+
 /**
  * A deterministic first line of defence between conversation and canonical state. It does not
  * pretend to understand every sentence. Ambiguity routes to clarification, and no route mutates
