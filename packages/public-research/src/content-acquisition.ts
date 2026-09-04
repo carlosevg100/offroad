@@ -35,6 +35,18 @@ export function sniffContentType(declared: string, bytes: Uint8Array): string {
   if (!generic || bytes.byteLength < 4) return declared;
   if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) return "application/pdf";
   if (bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) return "application/zip";
+  if (bytes.byteLength <= 2_000_000 && /^text\/html/i.test(declared)) {
+    // Open-data APIs (the Central Bank's SGS among them) answer JSON under a text/html label.
+    const text = new TextDecoder("utf-8", {fatal: false}).decode(bytes).trim();
+    if (text.startsWith("[") || text.startsWith("{")) {
+      try {
+        JSON.parse(text);
+        return "application/json";
+      } catch {
+        return declared;
+      }
+    }
+  }
   return declared;
 }
 

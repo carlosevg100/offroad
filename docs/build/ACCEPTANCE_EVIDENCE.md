@@ -1134,3 +1134,12 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Caminho da resposta intocado | `agent-operation-brief.test.ts` | testes determinísticos continuam provando zero chamadas de modelo com `shadowRouting: false`; worker 134 testes verdes | 2026-09-04 |
 | Gold do roteador | `intent-gold.test.ts` | 16 turnos; todos os nove trabalhos e cinco responsabilidades cobertos; abstenção, pontual, atualização e intenção composta presentes | 2026-09-04 |
 | Gabarito do caso 01 | `gc01-gabarito-rascunho.md` | dívida por instrumento, movimentação, cronograma, caixa, derivativos, dívida líquida contratual, covenant pro forma, resultado do trimestre e sete fatos que mudam a leitura, com página e nota; rascunho para revisão | 2026-09-04 |
+
+## Source pack da Camil e gabarito v0.2, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Pack construído do manifesto | `pnpm --filter @offroad/evals source-pack:build` | 20 entradas, 0 falhas após retries; hash de cada arquivo confere com `source-pack.json` (verificação independente em Python) | 2026-09-04 |
+| Assinatura de bytes | `content-acquisition.test.ts` | PDF e ZIP sob text/html, JSON sob text/html, html e csv preservados; 41 testes verdes | 2026-09-04 |
+| Fontes por documento | `source-pack.json` | cada entrada com URL do ENET/CVM, ANBIMA ou BCB, `acquiredAt`, `asOfDate`, `version`, `licence` | 2026-09-04 |
+| Gabarito v0.2 | `gc01-gabarito-rascunho.md` §11 | termos por série, dois covenants (4,0x e 3,5x), captações nomeadas, duas dívidas líquidas, curva e CDI da data-base; zero travessões | 2026-09-04 |

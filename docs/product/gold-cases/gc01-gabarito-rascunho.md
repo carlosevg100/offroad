@@ -1,10 +1,12 @@
-# Caso 01: gabarito econômico, rascunho v0.1 para revisão do fundador
+# Caso 01: gabarito econômico, rascunho v0.2 para revisão do fundador
 
-Status: **rascunho**. Extraído por leitura direta do ITR de 31 de maio de 2026 da Camil
-(`packages/testing-fixtures/assets/camil/01_ITR_1T26_31mai2026.pdf`, 62 páginas; as páginas 1 a 5
-são o release de resultados e as demais as demonstrações intermediárias). Nada aqui passou pelo
-sistema. Só vira gabarito congelado depois da revisão linha a linha do fundador; até lá, nenhuma
-execução do caso é medida contra ele.
+Status: **rascunho**. Seções 1 a 10 extraídas por leitura direta do ITR de 31 de maio de 2026 da
+Camil (`packages/testing-fixtures/assets/camil/01_ITR_1T26_31mai2026.pdf`, 62 páginas; as páginas
+1 a 5 são o release de resultados e as demais as demonstrações intermediárias). A seção 11 vem do
+source pack público congelado em 4 de setembro de 2026
+(`packages/testing-fixtures/assets/camil/source-pack/`), lido documento a documento. Nada aqui
+passou pelo sistema. Só vira gabarito congelado depois da revisão linha a linha do fundador; até
+lá, nenhuma execução do caso é medida contra ele.
 
 Unidade: R$ mil, consolidado, exceto onde indicado. Âncora: página do PDF e nota explicativa.
 
@@ -160,10 +162,10 @@ reconhecimento fiscal, não da operação. Isso é um achado, não um número a 
 
 | Chave | Estado | Motivo |
 | --- | --- | --- |
-| indexador e spread por série de debênture | insufficient_evidence | não constam do ITR; escrituras e DFP |
-| IPCA capitalizado versus pago | insufficient_evidence | depende do item acima |
-| custo de saída e prepayment das obrigações | insufficient_evidence | escrituras |
-| EBITDA de covenant com ajustes | insufficient_evidence | a companhia não abre o cálculo |
+| indexador e spread por série de debênture | covered | não constam do ITR, mas os relatórios anuais do agente fiduciário arquivados na CVM (source pack, seção 11) trazem série a série |
+| IPCA capitalizado versus pago | covered ou insufficient_evidence | as séries IPCA e seus saldos são conhecidos (seção 11); o ITR não separa a atualização monetária capitalizada da paga |
+| custo de saída e prepayment das obrigações | covered ou insufficient_evidence | os relatórios do agente fiduciário trazem as regras de resgate antecipado por série; o prêmio depende de cada escritura |
+| EBITDA de covenant com ajustes | insufficient_evidence | a companhia não abre o cálculo; os relatórios do agente fiduciário trazem só o índice apurado (seção 11) |
 | plano gerencial, orçamento e capex | deferred | importa, mas não está na base pública; a análise preliminar segue com cenários declarados |
 | hedge cambial da dívida em USD, CLP e PEN | insufficient_evidence | a nota 25 traz só o valor justo dos derivativos, não a política |
 
@@ -175,9 +177,105 @@ reconhecimento fiscal, não da operação. Isso é um achado, não um número a 
 4. Lucro do trimestre sustentado por crédito fiscal, com resultado antes de impostos negativo.
 5. Contingências possíveis sem provisão maiores que o EBITDA anual implícito.
 6. Um quinto da dívida bruta em moeda estrangeira, com receber em moeda que cobre só parte.
+7. O covenant relevante não é um só: a 13ª e a 14ª emissões limitam dívida líquida sobre EBITDA
+   a 3,5x, mais apertado que os 4,0x da 11ª e do ITR (seção 11).
+8. A companhia contratou, em maio de 2026, R$ 251 milhões em notas comerciais de 4 anos e até
+   R$ 535 milhões em CPR de até 3 anos: parte da captação de 2,05 bilhões do trimestre tem nome,
+   prazo e credor (seção 11).
 
 ## 10. Mutações adversariais aplicáveis a este gabarito
 
 Trocar a escala de uma tabela (milhares por milhões); afirmar "covenant rompido"; usar EBITDA
 trimestral anualizado como EBITDA de covenant sem dizer; somar arrendamento à dívida bruta sem
 declarar; tratar o pro forma da companhia como cálculo próprio.
+
+## 11. O que o source pack público acrescenta (congelado em 04/09/2026)
+
+Fontes: relatórios anuais do agente fiduciário (exercício 2025) das 11ª, 13ª, 14ª e 15ª emissões,
+atas do conselho de 27/05/2026 e 14/07/2026, release e apresentação 1T26 arquivados na CVM em
+14/07/2026, calendário de eventos v2, índice IPE 2026, curva ANBIMA e séries do Banco Central.
+Cada item tem URL, hash e licença em `source-pack.json`.
+
+### 11.1 Termos por série (relatórios do agente fiduciário)
+
+| Emissão e série | Vencimento | Remuneração vigente | Observação |
+| --- | --- | --- | --- |
+| 11ª, 1ª e 2ª séries | 30/10/2028 | 100% do CDI + 1,55% a.a. | debênture verde; R$ 150 milhões emitidos em novembro de 2021; covenant ≤ 4,0x, apurado 3,240 no exercício 2025/2026 |
+| 13ª, 1ª série | 16/11/2028 | 100% da Taxa DI + 0,65% a.a. | lastro da 292ª emissão de CRA |
+| 13ª, 2ª série | 18/11/2030 | IPCA + 6,3416% a.a. | lastro de CRA |
+| 13ª, 3ª série | 16/11/2033 | IPCA + 6,5264% a.a. | lastro de CRA |
+| 14ª, 1ª série | 15/06/2029 | 104% da Taxa DI | lastro da 329ª emissão de CRA |
+| 14ª, 2ª série | 16/06/2031 | IPCA + 6,8286% a.a. | lastro de CRA |
+| 14ª, 3ª série | 15/06/2034 | IPCA + 6,9982% a.a. | lastro de CRA |
+| 15ª, 1ª série | 18/11/2030 | 105% da Taxa DI | lastro da 389ª emissão de CRA |
+| 15ª, 2ª série | 16/11/2032 | prefixada 14,15% a.a. | lastro de CRA |
+| 15ª, 3ª série | 16/11/2032 | IPCA + 8,20% a.a. | lastro de CRA (CRA02500ACB) |
+| 15ª, 4ª série | 16/11/2035 | IPCA + 8,70% a.a. | lastro de CRA |
+
+Leitura esperada: as debêntures da 13ª, 14ª e 15ª emissões são o lastro de CRA distribuídos no
+mercado; o credor econômico é o investidor do CRA, e a securitizadora é a titular formal. Isso
+muda quem se negocia em qualquer reperfilamento e explica a nota "garantia quirografária" do ITR.
+As séries em IPCA somam sete; com os saldos por série do ITR (seção 1) o sistema deve conseguir
+separar o estoque indexado a IPCA do estoque em CDI e prefixado.
+
+### 11.2 Covenants: dois limites, não um
+
+| Instrumento | Limite | Apuração mais recente informada | Fonte |
+| --- | --- | --- | --- |
+| 11ª emissão | dívida líquida sobre EBITDA ≤ 4,0x | 3,240 (exercício 2025/2026) | relatório do agente fiduciário |
+| 13ª e 14ª emissões | dívida líquida sobre EBITDA ≤ 3,5x | 2,97 (fevereiro de 2025) | relatórios do agente fiduciário |
+| 15ª emissão | não informado no relatório (N/A) | | relatório do agente fiduciário |
+| ITR 1T26, nota 15 | ≤ 4,0x, medição anual | pro forma 4,72x em 31/05/2026 | ITR |
+
+Achado esperado: com pro forma de 4,72x, o headroom negativo interino é maior contra o limite de
+3,5x da 13ª e da 14ª emissões do que contra os 4,0x citados no ITR. Qualquer tese de refinanciamento
+tem de tratar os dois limites e a medição anual de fevereiro de 2027. O gabarito registra a
+apuração de 2,97 como de fevereiro de 2025 (o relatório do exercício 2025 mostra as medições
+trimestrais seguintes como N/A); o valor de fevereiro de 2026 para esses instrumentos não está no
+pack e fica `insufficient_evidence`.
+
+### 11.3 Captações nomeadas no trimestre (atas do conselho de 27/05/2026)
+
+| Instrumento | Valor | Prazo | Contraparte |
+| --- | --- | --- | --- |
+| 1ª emissão de notas comerciais escriturais, série única, colocação privada | R$ 251.000.000 (251.000 notas de R$ 1.000) | 4 anos da data de emissão | Bank of China (Brasil) |
+| Operação estruturada com CPR (Cédula de Produto Rural) | até R$ 535.000.000 | até 3 anos, amortizações anuais | contrato de abertura de crédito |
+
+Leitura esperada: as duas operações somam até R$ 786 milhões e caem nos anos safra 2027/28 a
+2029/30 do cronograma da seção 3; o release não as nomeia. O sistema deve ligar a "captação de
+2.046.140" da nota 15 a instrumentos com nome quando a fonte pública permite.
+
+### 11.4 Release e apresentação 1T26 (arquivados na CVM em 14/07/2026)
+
+| Fato | Valor | Diferença para o ITR |
+| --- | --- | --- |
+| Dívida líquida, definição do release | 4.214,4 milhões | 5.670,2 menos caixa e aplicações de 1.455,8; sem derivativos. O ITR, pela definição contratual, dá 4.228,5 (seção 5) |
+| Dívida líquida sobre EBITDA UDM | 4,7x (4,1x no 1T25; 3,2x no 4T25) | coerente com o pro forma de 4,72x da nota 15 |
+| Capex do trimestre | R$ 77,5 milhões (queda de 35,3% em um ano) | obras de Cambaí (RS), nova planta de grãos e termoelétrica, concluídas no 4T25 |
+| Caixa e equivalentes | 1.430,7 milhões | igual à nota 3 |
+| Debêntures | 3.262,3 milhões | igual à nota 15 |
+
+Achado esperado: existem duas dívidas líquidas com nomes iguais e definições diferentes (release
+e covenant); o sistema deve usar a contratual para covenant e dizer qual está usando.
+
+### 11.5 Outros fatos do pack
+
+- Nenhum Fato Relevante arquivado pela Camil em 2026 até 04/09/2026 (índice IPE). A ausência é um
+  dado: eventos de 2026 aparecem como atas, comunicados e relatórios, não como fato relevante.
+- Calendário v2: a divulgação do ITR do 1º trimestre foi adiada de 07/07 para 14/07/2026, e a
+  apresentação pública de 08/07 para 15/07/2026.
+- Ata de 14/07/2026: nova diretoria e reestruturação dos comitês do conselho, com a criação do
+  Comitê de Finanças, Investimentos, Riscos e Estratégia. A ata contém RG e CPF de
+  administradores; nenhuma saída pode reproduzir esses dados.
+- Curva ANBIMA em 04/09/2026: prefixada a 13,43% em 252 dias úteis e 14,04% em 756; IPCA real a
+  6,96% em 252 e 7,92% em 756; inflação implícita de 6,05% em um ano. CDI diário de 0,05166% em
+  1 a 3 de setembro de 2026; meta Selic de 14,00% (Banco Central, SGS 12 e 432).
+- Índices ITR e IPE da CVM: a Camil tem código CVM 024228 e CNPJ 64.904.295/0001-03; o ITR 1T26
+  foi recebido pela CVM em 14/07/2026, versão 1.
+
+### 11.6 Mutações adversariais adicionais
+
+Citar 4,0x como único covenant; tratar a dívida líquida do release como a contratual; somar as
+notas comerciais e a CPR à dívida bruta de 31/05/2026 sem verificar se já estão nas captações do
+trimestre; chamar a securitizadora de credor econômico; citar a curva de 04/09/2026 como se fosse
+a curva da data-base do ITR.

@@ -2290,3 +2290,23 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   cadastro, ITR e IPE da CVM (dados abertos, retidos), ANBIMA Data como referência manual, e três
   itens pendentes de confirmação de link ou de registro de fonte (release e apresentação 1T26 no
   RI, curvas de referência). O pack ainda não foi construído: essa é a próxima ação.
+
+## Source pack público do Caso 01 fechado, candidate, 04/09/2026
+
+- `packages/testing-fixtures/assets/camil/source-pack/`: vinte itens congelados com URL, data de
+  aquisição, SHA-256, versão, data-base e licença (29 MB). Tudo veio de fontes públicas achadas pelo
+  próprio agente: o índice IPE 2026 da CVM traz o link direto de cada documento no sistema ENET, e
+  por ele foram congelados release e apresentação 1T26, DFP 2025, o pacote ENET do ITR (PDF e XML),
+  os relatórios anuais do agente fiduciário das 11ª, 13ª, 14ª e 15ª emissões e da debênture verde,
+  as atas do conselho de 27/05 e 14/07/2026 e o calendário de eventos. Curva ANBIMA de 04/09/2026 e
+  séries CDI e Selic do Banco Central completam o mercado. ANBIMA Data continua manual, sem bytes.
+- O adquirente público reconhece PDF, ZIP e JSON pela assinatura dos bytes quando o servidor os
+  declara como html (o ENET da CVM e o SGS do Banco Central fazem isso); a lineage guarda o tipo
+  real. O builder do pack espera até 180 s por item, aceita 30 MB e tenta quatro vezes: o servidor da
+  CVM derruba conexões sob carga e um documento público não pode ficar fora do pack por isso.
+- Gabarito do Caso 01 em v0.2: a seção 11 registra o que o pack acrescenta ao ITR. O achado que
+  muda a leitura: a 13ª e a 14ª emissões (lastro de CRA) limitam dívida líquida sobre EBITDA a 3,5x,
+  mais apertado que os 4,0x do ITR e da 11ª; com pro forma de 4,72x, são dois limites a tratar. As
+  atas de maio nomeiam R$ 251 milhões em notas comerciais (Bank of China, 4 anos) e até R$ 535
+  milhões em CPR (3 anos) dentro da captação de 2,05 bilhões do trimestre. Continua rascunho até a
+  revisão linha a linha do fundador.
