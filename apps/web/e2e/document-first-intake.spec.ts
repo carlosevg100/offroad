@@ -444,6 +444,25 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".workspace-project").filter({hasText: projectTitle})).toHaveCount(0);
   });
 
+  test("starts and processes an advisor project from documents alone", async () => {
+    await page.goto("/pt-BR/app");
+    const composer = page.locator(".advisor-composer--start");
+
+    // A prepared package is itself a valid request. The user does not need to restate the
+    // company or capital need before the system reads what was attached.
+    await composer.locator('input[type="file"]').setInputFiles(dataRoomFiles);
+    await expect(composer.locator(".advisor-composer__files > span")).toHaveCount(dataRoomExpectations.documents);
+    await expect(composer.locator("textarea")).toHaveValue("");
+    await expect(composer.locator(".advisor-composer__send")).toBeEnabled();
+    await composer.locator(".advisor-composer__send").click();
+
+    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+    await expect(page.locator(".advisor-project__composer-wrap footer span")).toHaveText("Projeto privado");
+    await expect(page.locator(".advisor-project__context")).toContainText(`Documentos ${dataRoomExpectations.documents}`);
+    await expect(page.locator(".advisor-private-work__understanding")).toBeVisible({timeout: 120_000});
+    await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
+  });
+
   test("signs out and logs back in with the password", async () => {
     await page.goto("/pt-BR/app");
     await page.locator(".app-sidebar__footer form button[type=submit]").click();
