@@ -22,7 +22,7 @@ import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
-import {customerEventType} from "@/components/advisor/advisor-project-state";
+import {currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
 
 import {OriginationDecision} from "./origination-decision";
 import {CompanyDebtProject} from "./company-debt-project";
@@ -400,14 +400,19 @@ async function ConversationalCapitalProject({
         status: advisorWorkStatus(item.status),
       }))
     : compiledActivities;
-  const activityEvents = [...(agentEventsDescending ?? [])]
-    .reverse()
+  const activityEvents = currentActivityCycle([...(agentEventsDescending ?? [])].map((event) => ({
+    id: event.id,
+    type: event.event_type,
+    createdAt: event.created_at,
+    detail: event.detail,
+    summary: locale === "en-US" ? event.summary_en : event.summary_pt,
+  })))
     .filter((event) => project.entry_job !== "origination_thesis" || !eventTaskSpecId(event.detail))
     .map((event) => ({
       id: event.id,
-      type: customerEventType(event.event_type, event.detail),
-      summary: locale === "en-US" ? event.summary_en : event.summary_pt,
-      createdAt: event.created_at,
+      type: customerEventType(event.type, event.detail),
+      summary: event.summary,
+      createdAt: event.createdAt,
     }));
   const outcomeEvents = [...(agentEventsDescending ?? [])]
     .reverse()

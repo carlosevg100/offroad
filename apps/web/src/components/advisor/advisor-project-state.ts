@@ -3,6 +3,11 @@ export type AdvisorOutcomeEvent = {
   createdAt: string;
 };
 
+export type AdvisorCycleEvent = AdvisorOutcomeEvent & {
+  id: string;
+  detail?: unknown;
+};
+
 const SUCCESS_EVENTS = new Set(["work_completed", "decision_recorded", "question_answered"]);
 const FAILURE_EVENTS = new Set(["work_failed", "quality_gate_failed"]);
 const TERMINAL_STAGES = new Set([
@@ -27,6 +32,35 @@ export function customerEventType(eventType: string, detail: unknown): string {
 function timestamp(value: string): number {
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function eventJobId(detail: unknown): string | null {
+  if (!detail || typeof detail !== "object" || Array.isArray(detail)) return null;
+  const value = (detail as Record<string, unknown>).job_id;
+  return typeof value === "string" && value ? value : null;
+}
+
+/**
+ * Retries belong to the same project history, but replaying every stage from every attempt makes
+ * the live conversation look as if the worker is repeating itself. Keep the latest job cycle,
+ * its post-run assessments/questions, and the most recent plan that preceded it.
+ */
+export function currentActivityCycle<T extends AdvisorCycleEvent>(events: readonly T[]): T[] {
+  const ordered = [...events].sort((left, right) => timestamp(left.createdAt) - timestamp(right.createdAt));
+  const latestJobEvent = [...ordered].reverse().find((event) => eventJobId(event.detail));
+  const jobId = latestJobEvent ? eventJobId(latestJobEvent.detail) : null;
+  if (!jobId) return ordered;
+  const jobEvents = ordered.filter((event) => eventJobId(event.detail) === jobId);
+  const cycleStartedAt = Math.min(...jobEvents.map((event) => timestamp(event.createdAt)));
+  const latestPlan = [...ordered]
+    .reverse()
+    .find((event) => event.type === "plan_created" && timestamp(event.createdAt) <= cycleStartedAt);
+  return ordered.filter((event) => {
+    if (latestPlan && event.id === latestPlan.id) return true;
+    const candidateJobId = eventJobId(event.detail);
+    if (candidateJobId) return candidateJobId === jobId;
+    return timestamp(event.createdAt) >= cycleStartedAt;
+  });
 }
 
 export function latestSuccessfulOutcomeAt(events: readonly AdvisorOutcomeEvent[]): number | null {
