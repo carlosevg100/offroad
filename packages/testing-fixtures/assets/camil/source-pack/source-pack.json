@@ -7,7 +7,7 @@
     "sector": "Alimentos",
     "geography": "BR"
   },
-  "frozenAt": "2026-09-04T21:13:33.963Z",
+  "frozenAt": "2026-09-04T22:16:45.985Z",
   "entries": [
     {
       "id": "cvm_cadastro_cia_aberta",
@@ -15,7 +15,7 @@
       "title": "CVM Dados Abertos: cadastro de companhias abertas",
       "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/CAD/DADOS/cad_cia_aberta.csv",
       "finalUrl": "https://dados.cvm.gov.br/dados/CIA_ABERTA/CAD/DADOS/cad_cia_aberta.csv",
-      "acquiredAt": "2026-09-04T21:13:34.241Z",
+      "acquiredAt": "2026-09-04T22:16:46.286Z",
       "asOfDate": "2026-09-04",
       "version": "snapshot 2026-09-04",
       "sha256": "778df91701936c356cd6d2cdcc2aaac366694fad1a1a3b5535ba225d8a0255c1",
@@ -35,7 +35,7 @@
       "title": "ANBIMA Data: emissões e termos recentes de debêntures do setor",
       "url": "https://data.anbima.com.br/",
       "finalUrl": "https://data.anbima.com.br/",
-      "acquiredAt": "2026-09-04T21:13:33.963Z",
+      "acquiredAt": "2026-09-04T22:16:45.985Z",
       "asOfDate": "2026-09-04",
       "version": "consulta manual 2026-09-04",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -47,6 +47,366 @@
         "note": "Decisão vigente: uso manual e complementar; nenhuma aquisição automatizada até confirmar os termos do endpoint"
       },
       "path": null,
+      "country": "BR"
+    },
+    {
+      "id": "cvm_ipe_2026",
+      "topic": "news",
+      "title": "CVM Dados Abertos: índice de documentos IPE de 2026 (fatos relevantes, comunicados, atas, relatórios)",
+      "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_2026.zip",
+      "finalUrl": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_2026.zip",
+      "acquiredAt": "2026-09-04T22:16:46.431Z",
+      "asOfDate": "2026-09-04",
+      "version": "dataset 2026, baixado em 2026-09-04",
+      "sha256": "660e7b15db19434da9b4553be0e3a35a10616fdb0e60e776111387a52fcf60b9",
+      "byteSize": 1551349,
+      "contentType": "application/zip",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Dados abertos do governo federal; reuso público"
+      },
+      "path": "cvm_ipe_2026.zip",
+      "country": "BR"
+    },
+    {
+      "id": "cvm_itr_1t26_enet",
+      "topic": "identity",
+      "title": "ITR 31/05/2026 (pacote ENET com PDF e XML estruturado)",
+      "url": "https://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=1&NumeroSequencialDocumento=159513",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=1&NumeroSequencialDocumento=159513",
+      "acquiredAt": "2026-09-04T22:17:02.198Z",
+      "asOfDate": "2026-05-31",
+      "version": "ITR 1T26 v1, entregue em 2026-07-14",
+      "sha256": "687e4ede3523df74be07d2acdd432b6b93c6be3986ee35e35eccc33d7551bde9",
+      "byteSize": 8681856,
+      "contentType": "application/zip",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "cvm_itr_1t26_enet.zip",
+      "country": "BR"
+    },
+    {
+      "id": "ri_release_1t26",
+      "topic": "news",
+      "title": "Earnings Release 1T26 (38 páginas, arquivado na CVM)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544774&numSequencia=1069480&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544774&numSequencia=1069480&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:05.342Z",
+      "asOfDate": "2026-05-31",
+      "version": "1T26, entregue em 2026-07-14",
+      "sha256": "eadfa96297cf7caaea008da4e63fe2b0a30a8a048f45824c729f0f111ca44dc9",
+      "byteSize": 3922945,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "ri_release_1t26.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "ri_apresentacao_1t26",
+      "topic": "news",
+      "title": "Apresentação de Resultados 1T26 (arquivada na CVM)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544812&numSequencia=1069518&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544812&numSequencia=1069518&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:08.566Z",
+      "asOfDate": "2026-05-31",
+      "version": "1T26, entregue em 2026-07-14",
+      "sha256": "350b23432890cc25d2febb9bea8fed5f97b05b390fdd7d206bd8d394d2505e63",
+      "byteSize": 3803381,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "ri_apresentacao_1t26.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "cvm_dfp_2025",
+      "topic": "identity",
+      "title": "Demonstrações financeiras anuais completas do exercício encerrado em 28/02/2026 (v2)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1519086&numSequencia=1043792&numVersao=2",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1519086&numSequencia=1043792&numVersao=2",
+      "acquiredAt": "2026-09-04T22:17:11.420Z",
+      "asOfDate": "2026-02-28",
+      "version": "DFP 2025 v2, entregue em 2026-05-08",
+      "sha256": "3c44c327bca34fffbc28e6f03db4912f598b8f64a88e5ace6844d0c32c2a4417",
+      "byteSize": 2770423,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "cvm_dfp_2025.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "af_11a_emissao",
+      "topic": "identity",
+      "title": "Relatório anual do agente fiduciário, 11ª emissão de debêntures (exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1538974&numSequencia=1063680&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1538974&numSequencia=1063680&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:11.853Z",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-26",
+      "sha256": "2fb5fcf1f83ff84e9c90d5fdc7f593245e769cdc9e7589cd7c2085131af110b2",
+      "byteSize": 571614,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "af_11a_emissao.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "af_13a_emissao",
+      "topic": "identity",
+      "title": "Relatório anual do agente fiduciário, 13ª emissão de debêntures, lastro da 292ª emissão de CRA (exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537238&numSequencia=1061944&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537238&numSequencia=1061944&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:12.807Z",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-22",
+      "sha256": "3ad304e3d1d3576158cc8cd9dcc942fa7705e1387abfcafb36f2be5692caf5e4",
+      "byteSize": 476870,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "af_13a_emissao.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "af_14a_emissao",
+      "topic": "identity",
+      "title": "Relatório anual do agente fiduciário, 14ª emissão de debêntures, lastro da 329ª emissão de CRA (exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537239&numSequencia=1061945&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537239&numSequencia=1061945&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:19.297Z",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-22",
+      "sha256": "e41315e1f6f12f4f682c161790b73b06b541e12f2330b2b8569cf71071e2c5d7",
+      "byteSize": 4933140,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "af_14a_emissao.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "af_15a_emissao",
+      "topic": "identity",
+      "title": "Relatório anual do agente fiduciário, 15ª emissão de debêntures, lastro da 389ª emissão de CRA (exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537240&numSequencia=1061946&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537240&numSequencia=1061946&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:19.781Z",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-22",
+      "sha256": "f4a2c5602006b73ec5ba661e8209287ba7a6edcde419edfaa3611d24333c40fb",
+      "byteSize": 478190,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "af_15a_emissao.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "af_debenture_verde",
+      "topic": "identity",
+      "title": "Relatório do agente fiduciário sobre a debênture verde (11ª emissão, exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1538982&numSequencia=1063688&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1538982&numSequencia=1063688&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:20.109Z",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-26",
+      "sha256": "c3dcdaafe6bf4f6951eabaec3f2b97eea4255797df10237d3088fcafabe8597e",
+      "byteSize": 344705,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "af_debenture_verde.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "ca_notas_comerciais_2026-05-27",
+      "topic": "news",
+      "title": "Ata do conselho de 27/05/2026: 1ª emissão de notas comerciais, R$ 251 milhões, série única, colocação privada, prazo de 4 anos",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1527455&numSequencia=1052161&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1527455&numSequencia=1052161&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:20.403Z",
+      "asOfDate": "2026-05-27",
+      "version": "entregue em 2026-05-27",
+      "sha256": "d7ce801832941eb9366a733a23a814d1cb60277de0a6fe6ffacc1f58ce15bb6d",
+      "byteSize": 257082,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "ca_notas_comerciais_2026-05-27.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "ca_operacao_estruturada_2026-05-27",
+      "topic": "news",
+      "title": "Ata do conselho de 27/05/2026: operação estruturada com CPR de até R$ 535 milhões, prazo de até 3 anos",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1527453&numSequencia=1052159&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1527453&numSequencia=1052159&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:20.700Z",
+      "asOfDate": "2026-05-27",
+      "version": "entregue em 2026-05-27",
+      "sha256": "d4f2ba6f7bdb6acb74398840c42cdc13eca007362b086377f7377a4890436acf",
+      "byteSize": 244579,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "ca_operacao_estruturada_2026-05-27.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "ca_governanca_2026-07-14",
+      "topic": "news",
+      "title": "Ata do conselho de 14/07/2026: eleição da diretoria e reestruturação dos comitês de assessoramento",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544771&numSequencia=1069477&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544771&numSequencia=1069477&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:21.016Z",
+      "asOfDate": "2026-07-14",
+      "version": "entregue em 2026-07-14",
+      "sha256": "51ea8805b2159b1e069a1cc1fff0bc11b5a15c544e2b50a214dbfcec8bf24f8d",
+      "byteSize": 260455,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "ca_governanca_2026-07-14.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "ca_aprovacao_itr_1t26",
+      "topic": "news",
+      "title": "Ata do conselho de 14/07/2026: aprovação do ITR 1T26 e do relatório de sustentabilidade",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544765&numSequencia=1069471&numVersao=1",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544765&numSequencia=1069471&numVersao=1",
+      "acquiredAt": "2026-09-04T22:17:24.304Z",
+      "asOfDate": "2026-07-14",
+      "version": "entregue em 2026-07-14",
+      "sha256": "3eccd0e5ad65fc7b916146e4b6bcb967a360da583040be796ab4aed30d167c3a",
+      "byteSize": 195038,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "ca_aprovacao_itr_1t26.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "calendario_eventos_2026",
+      "topic": "news",
+      "title": "Calendário de eventos corporativos 2026 (v2)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1528669&numSequencia=1053375&numVersao=2",
+      "finalUrl": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1528669&numSequencia=1053375&numVersao=2",
+      "acquiredAt": "2026-09-04T22:17:24.435Z",
+      "asOfDate": "2026-05-29",
+      "version": "v2, entregue em 2026-05-29",
+      "sha256": "d97219bf730cd985c061d25e7cf02549e96c962a96376b08aec89aad74d4d8fd",
+      "byteSize": 38311,
+      "contentType": "application/pdf",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "path": "calendario_eventos_2026.pdf",
+      "country": "BR"
+    },
+    {
+      "id": "anbima_ettj_2026-09-04",
+      "topic": "market",
+      "title": "ANBIMA: estrutura a termo das taxas de juros (prefixada e IPCA) em 04/09/2026, parâmetros e vértices",
+      "url": "https://www.anbima.com.br/informacoes/est-termo/CZ-down.asp?Idioma=PT&Dt_Ref=04/09/2026&saida=csv",
+      "finalUrl": "https://www.anbima.com.br/informacoes/est-termo/CZ-down.asp?Idioma=PT&Dt_Ref=04/09/2026&saida=csv",
+      "acquiredAt": "2026-09-04T22:17:24.637Z",
+      "asOfDate": "2026-09-04",
+      "version": "ETTJ 2026-09-04",
+      "sha256": "531e97d7ead363068fc801156d29043024390ee9bc5bc105fb85917c607c9129",
+      "byteSize": 2934,
+      "contentType": "text/csv",
+      "publisherSourceId": "anbima_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Consulta pública diária da ANBIMA, uma aquisição por caso com citação da fonte; nenhuma coleta recorrente automatizada"
+      },
+      "path": "anbima_ettj_2026-09-04.csv",
+      "country": "BR"
+    },
+    {
+      "id": "bcb_sgs_cdi_diario",
+      "topic": "market",
+      "title": "Banco Central, SGS série 12: taxa CDI diária, 1 a 4 de setembro de 2026",
+      "url": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=01/09/2026&dataFinal=04/09/2026",
+      "finalUrl": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=01/09/2026&dataFinal=04/09/2026",
+      "acquiredAt": "2026-09-04T22:17:24.901Z",
+      "asOfDate": "2026-09-04",
+      "version": "SGS 12, consulta em 2026-09-04",
+      "sha256": "bc2c8c0e9b36ba9a1a69d74be03e7ce6cd89bc290481e2320c4c745e73fb22bb",
+      "byteSize": 124,
+      "contentType": "application/json; charset=utf-8",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Dados abertos do governo federal; reuso público"
+      },
+      "path": "bcb_sgs_cdi_diario.json",
+      "country": "BR"
+    },
+    {
+      "id": "bcb_sgs_selic_meta",
+      "topic": "market",
+      "title": "Banco Central, SGS série 432: meta Selic, 1 a 4 de setembro de 2026",
+      "url": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados?formato=json&dataInicial=01/09/2026&dataFinal=04/09/2026",
+      "finalUrl": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados?formato=json&dataInicial=01/09/2026&dataFinal=04/09/2026",
+      "acquiredAt": "2026-09-04T22:17:24.963Z",
+      "asOfDate": "2026-09-04",
+      "version": "SGS 432, consulta em 2026-09-04",
+      "sha256": "46ab2cf0d0ba1422614a1fa0fe0ebdeb0f185d65db2c48d7abaeea6978e63b93",
+      "byteSize": 153,
+      "contentType": "application/json; charset=utf-8",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Dados abertos do governo federal; reuso público"
+      },
+      "path": "bcb_sgs_selic_meta.json",
       "country": "BR"
     }
   ]

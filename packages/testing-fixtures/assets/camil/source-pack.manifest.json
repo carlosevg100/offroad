@@ -21,65 +21,6 @@
       "country": "BR"
     },
     {
-      "id": "cvm_itr_2026",
-      "topic": "identity",
-      "title": "CVM Dados Abertos: ITR das companhias abertas, 2026",
-      "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/ITR/DADOS/itr_cia_aberta_2026.zip",
-      "asOfDate": "2026-05-31",
-      "version": "dataset 2026",
-      "licence": {
-        "policy": "public_reusable",
-        "note": "Dados abertos; o pacote traz o dataset inteiro, o caso usa só a Camil"
-      },
-      "country": "BR",
-      "pending": true,
-      "note": "o dataset anual da CVM tem dezenas de megabytes e não cabe no pack; congelar os documentos específicos da Camil (ITR, fatos relevantes) pelos links diretos do sistema da CVM, a confirmar"
-    },
-    {
-      "id": "cvm_ipe_2026",
-      "topic": "news",
-      "title": "CVM Dados Abertos: fatos relevantes e comunicados (IPE), 2026",
-      "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_2026.zip",
-      "asOfDate": "2026-09-04",
-      "version": "dataset 2026",
-      "licence": {
-        "policy": "public_reusable"
-      },
-      "country": "BR",
-      "pending": true,
-      "note": "o dataset anual da CVM tem dezenas de megabytes e não cabe no pack; congelar os documentos específicos da Camil (ITR, fatos relevantes) pelos links diretos do sistema da CVM, a confirmar"
-    },
-    {
-      "id": "ri_release_1t26",
-      "topic": "news",
-      "title": "Release de resultados 1T26 (RI da companhia)",
-      "url": "https://www.camilalimentos.com.br/ri/",
-      "asOfDate": "2026-05-31",
-      "version": "1T26",
-      "licence": {
-        "policy": "public_reusable",
-        "note": "Divulgação obrigatória; confirmar link direto do PDF antes de adquirir"
-      },
-      "country": "BR",
-      "pending": true,
-      "note": "link direto do release ainda não confirmado"
-    },
-    {
-      "id": "ri_apresentacao_1t26",
-      "topic": "news",
-      "title": "Apresentação de resultados 1T26 (RI da companhia)",
-      "url": "https://www.camilalimentos.com.br/ri/",
-      "asOfDate": "2026-05-31",
-      "version": "1T26",
-      "licence": {
-        "policy": "public_reusable",
-        "note": "Divulgação obrigatória; confirmar link direto do PDF antes de adquirir"
-      },
-      "country": "BR",
-      "pending": true,
-      "note": "link direto da apresentação ainda não confirmado"
-    },
-    {
       "id": "anbima_data_emissoes",
       "topic": "market",
       "title": "ANBIMA Data: emissões e termos recentes de debêntures do setor",
@@ -93,19 +34,246 @@
       "country": "BR"
     },
     {
-      "id": "curvas_referencia",
-      "topic": "market",
-      "title": "Curvas de referência (CDI, IPCA, NTN-B) na data-base",
-      "url": "https://www.anbima.com.br/",
+      "id": "cvm_ipe_2026",
+      "topic": "news",
+      "title": "CVM Dados Abertos: índice de documentos IPE de 2026 (fatos relevantes, comunicados, atas, relatórios)",
+      "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_2026.zip",
       "asOfDate": "2026-09-04",
-      "version": "snapshot 2026-09-04",
+      "version": "dataset 2026, baixado em 2026-09-04",
       "licence": {
-        "policy": "manual_only",
-        "note": "As curvas entram pelo registro de `market-curves`, com lineage própria; este item só documenta a data-base"
+        "policy": "public_reusable",
+        "note": "Dados abertos do governo federal; reuso público"
       },
       "country": "BR",
-      "pending": true,
-      "note": "fonte e licença da curva a registrar em market-curves antes de congelar"
+      "note": "58 linhas da Camil em 2026; os documentos abaixo foram congelados pelos links diretos que este índice traz"
+    },
+    {
+      "id": "cvm_itr_1t26_enet",
+      "topic": "identity",
+      "title": "ITR 31/05/2026 (pacote ENET com PDF e XML estruturado)",
+      "url": "https://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=1&NumeroSequencialDocumento=159513",
+      "asOfDate": "2026-05-31",
+      "version": "ITR 1T26 v1, entregue em 2026-07-14",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR",
+      "note": "o PDF do ITR usado como documento do caso é o da companhia (fixture); este pacote traz também o XML das demonstrações"
+    },
+    {
+      "id": "ri_release_1t26",
+      "topic": "news",
+      "title": "Earnings Release 1T26 (38 páginas, arquivado na CVM)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544774&numSequencia=1069480&numVersao=1",
+      "asOfDate": "2026-05-31",
+      "version": "1T26, entregue em 2026-07-14",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "ri_apresentacao_1t26",
+      "topic": "news",
+      "title": "Apresentação de Resultados 1T26 (arquivada na CVM)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544812&numSequencia=1069518&numVersao=1",
+      "asOfDate": "2026-05-31",
+      "version": "1T26, entregue em 2026-07-14",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cvm_dfp_2025",
+      "topic": "identity",
+      "title": "Demonstrações financeiras anuais completas do exercício encerrado em 28/02/2026 (v2)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1519086&numSequencia=1043792&numVersao=2",
+      "asOfDate": "2026-02-28",
+      "version": "DFP 2025 v2, entregue em 2026-05-08",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "af_11a_emissao",
+      "topic": "identity",
+      "title": "Relatório anual do agente fiduciário, 11ª emissão de debêntures (exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1538974&numSequencia=1063680&numVersao=1",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-26",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "af_13a_emissao",
+      "topic": "identity",
+      "title": "Relatório anual do agente fiduciário, 13ª emissão de debêntures, lastro da 292ª emissão de CRA (exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537238&numSequencia=1061944&numVersao=1",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-22",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "af_14a_emissao",
+      "topic": "identity",
+      "title": "Relatório anual do agente fiduciário, 14ª emissão de debêntures, lastro da 329ª emissão de CRA (exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537239&numSequencia=1061945&numVersao=1",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-22",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "af_15a_emissao",
+      "topic": "identity",
+      "title": "Relatório anual do agente fiduciário, 15ª emissão de debêntures, lastro da 389ª emissão de CRA (exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1537240&numSequencia=1061946&numVersao=1",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-22",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "af_debenture_verde",
+      "topic": "identity",
+      "title": "Relatório do agente fiduciário sobre a debênture verde (11ª emissão, exercício 2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1538982&numSequencia=1063688&numVersao=1",
+      "asOfDate": "2026-02-28",
+      "version": "entregue em 2026-06-26",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "ca_notas_comerciais_2026-05-27",
+      "topic": "news",
+      "title": "Ata do conselho de 27/05/2026: 1ª emissão de notas comerciais, R$ 251 milhões, série única, colocação privada, prazo de 4 anos",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1527455&numSequencia=1052161&numVersao=1",
+      "asOfDate": "2026-05-27",
+      "version": "entregue em 2026-05-27",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "ca_operacao_estruturada_2026-05-27",
+      "topic": "news",
+      "title": "Ata do conselho de 27/05/2026: operação estruturada com CPR de até R$ 535 milhões, prazo de até 3 anos",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1527453&numSequencia=1052159&numVersao=1",
+      "asOfDate": "2026-05-27",
+      "version": "entregue em 2026-05-27",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "ca_governanca_2026-07-14",
+      "topic": "news",
+      "title": "Ata do conselho de 14/07/2026: eleição da diretoria e reestruturação dos comitês de assessoramento",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544771&numSequencia=1069477&numVersao=1",
+      "asOfDate": "2026-07-14",
+      "version": "entregue em 2026-07-14",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR",
+      "note": "contém dados pessoais de administradores; nunca reproduzir RG ou CPF em saída"
+    },
+    {
+      "id": "ca_aprovacao_itr_1t26",
+      "topic": "news",
+      "title": "Ata do conselho de 14/07/2026: aprovação do ITR 1T26 e do relatório de sustentabilidade",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1544765&numSequencia=1069471&numVersao=1",
+      "asOfDate": "2026-07-14",
+      "version": "entregue em 2026-07-14",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "calendario_eventos_2026",
+      "topic": "news",
+      "title": "Calendário de eventos corporativos 2026 (v2)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1528669&numSequencia=1053375&numVersao=2",
+      "asOfDate": "2026-05-29",
+      "version": "v2, entregue em 2026-05-29",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória arquivada na CVM; acesso público pelo sistema ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "anbima_ettj_2026-09-04",
+      "topic": "market",
+      "title": "ANBIMA: estrutura a termo das taxas de juros (prefixada e IPCA) em 04/09/2026, parâmetros e vértices",
+      "url": "https://www.anbima.com.br/informacoes/est-termo/CZ-down.asp?Idioma=PT&Dt_Ref=04/09/2026&saida=csv",
+      "asOfDate": "2026-09-04",
+      "version": "ETTJ 2026-09-04",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Consulta pública diária da ANBIMA, uma aquisição por caso com citação da fonte; nenhuma coleta recorrente automatizada"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "bcb_sgs_cdi_diario",
+      "topic": "market",
+      "title": "Banco Central, SGS série 12: taxa CDI diária, 1 a 4 de setembro de 2026",
+      "url": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=01/09/2026&dataFinal=04/09/2026",
+      "asOfDate": "2026-09-04",
+      "version": "SGS 12, consulta em 2026-09-04",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Dados abertos do governo federal; reuso público"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "bcb_sgs_selic_meta",
+      "topic": "market",
+      "title": "Banco Central, SGS série 432: meta Selic, 1 a 4 de setembro de 2026",
+      "url": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados?formato=json&dataInicial=01/09/2026&dataFinal=04/09/2026",
+      "asOfDate": "2026-09-04",
+      "version": "SGS 432, consulta em 2026-09-04",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Dados abertos do governo federal; reuso público"
+      },
+      "country": "BR"
     }
+  ],
+  "notes": [
+    "Índice ITR da CVM (itr_cia_aberta_2026.zip, 19,5 MB) consultado em 2026-09-04 só para obter o link direto do ITR; não retido por tamanho.",
+    "O site de RI (ri.camil.com.br) carrega os documentos por JavaScript; os mesmos arquivos estão arquivados na CVM e foram congelados por lá.",
+    "Nenhum Fato Relevante foi arquivado pela Camil em 2026 até 2026-09-04 no índice IPE."
   ]
 }

@@ -66,4 +66,12 @@ describe("sniffContentType", () => {
     expect(sniffContentType("text/csv", new TextEncoder().encode("%PDF-1.7"))).toBe("text/csv");
     expect(sniffContentType("application/pdf", html)).toBe("application/pdf");
   });
+
+  it("recognises JSON served as html, and leaves html that merely starts with a brace alone", async () => {
+    const {sniffContentType} = await import("./content-acquisition");
+    const json = new TextEncoder().encode('[{"data":"01/09/2026","valor":"0.051660"}]');
+    const notJson = new TextEncoder().encode("{not json at all");
+    expect(sniffContentType("text/html; charset=utf-8", json)).toBe("application/json");
+    expect(sniffContentType("text/html", notJson)).toBe("text/html");
+  });
 });

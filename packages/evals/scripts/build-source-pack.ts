@@ -61,7 +61,22 @@ async function main(): Promise<void> {
   const manifest = manifestSchema.parse(JSON.parse(readFileSync(resolve(manifestPath), "utf8")));
   const root = resolve(outputDir);
   mkdirSync(root, {recursive: true});
-  const acquire = createDirectPublicContentAcquirer();
+  // Regulators serve multi-megabyte packages slowly; a frozen acquisition can afford to wait.
+  const acquire = createDirectPublicContentAcquirer({timeoutMs: 180_000, maxBytes: 30_000_000});
+  // CVM's document server drops some connections under load; a frozen acquisition retries with a pause
+  // rather than leaving a public document out of the pack.
+  const acquireWithRetry = async (url: string) => {
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= 4; attempt += 1) {
+      try {
+        return await acquire({url});
+      } catch (error) {
+        lastError = error;
+        await new Promise((resolve) => setTimeout(resolve, attempt * 3_000));
+      }
+    }
+    throw lastError;
+  };
   const now = new Date().toISOString();
   const entries: SourcePackEntry[] = [];
   const failures: string[] = [];
@@ -84,7 +99,7 @@ async function main(): Promise<void> {
       continue;
     }
     try {
-      const acquired = await acquire({url: item.url});
+      const acquired = await acquireWithRetry(item.url);
       const file = `${item.id}.${extensionFor(acquired.lineage.contentType, acquired.lineage.finalUrl)}`;
       const bytes = typeof acquired.content === "string" ? Buffer.from(acquired.content) : Buffer.from(acquired.content);
       writeFileSync(join(root, file), bytes);
