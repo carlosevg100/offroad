@@ -135,6 +135,21 @@ não de acesso a fontes. A saída do generalista é guardada ao lado da execuç�
 data e versão do modelo. O alpha é medido nas doze dimensões do Atlas §16; conta como alpha só o
 que um revisor consegue apontar com referência. Texto mais bonito ou mais longo não conta.
 
+### 5.1 Como o baseline roda
+
+`pnpm --filter @offroad/evals baseline:gold -- --case gc01` monta a base de informação do caso
+(turnos do gold, documentos da fixture, conteúdo do source pack, data-base e perfil profissional),
+grava o hash de cada entrada e envia tudo ao generalista mais forte da política
+(`baseline_generalist`: Opus 5, fallback GPT-5.6), um turno de cada vez, com a resposta anterior
+no histórico. Documentos e PDFs do pack entram como o texto e as tabelas que o parser do produto
+produz, página a página; índices compactados entram só como metadados; o cadastro de companhias
+entra filtrado à companhia. `--dry-run` monta e mede sem chamar modelo. Como as chaves de modelo
+vivem só no Secrets Manager, a execução oficial é o workflow `Gold case baseline` (manual), que lê
+as chaves por OIDC, roda o mesmo comando e publica o diretório da run como artefato; quem
+disparou commita o resultado em `docs/product/gold-cases/runs/<caso>/baseline/<data>/`, com
+`run.json` (modelo, versão, custo, tokens, hash da base e de cada entrada) e um arquivo Markdown
+por turno.
+
 ## 6. Rubrica de revisão
 
 | Dimensão | Bloqueia se | Limita se |

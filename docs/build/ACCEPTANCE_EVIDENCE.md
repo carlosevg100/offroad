@@ -1143,3 +1143,11 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Assinatura de bytes | `content-acquisition.test.ts` | PDF e ZIP sob text/html, JSON sob text/html, html e csv preservados; 41 testes verdes | 2026-09-04 |
 | Fontes por documento | `source-pack.json` | cada entrada com URL do ENET/CVM, ANBIMA ou BCB, `acquiredAt`, `asOfDate`, `version`, `licence` | 2026-09-04 |
 | Gabarito v0.2 | `gc01-gabarito-rascunho.md` §11 | termos por série, dois covenants (4,0x e 3,5x), captações nomeadas, duas dívidas líquidas, curva e CDI da data-base; zero travessões | 2026-09-04 |
+
+## Baseline justo, runner e workflow, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Base de informação determinística | `gold-baseline.test.ts` | ordem por id, hash muda com qualquer byte, instrução sem rubrica, filtro de CSV; evals 47 testes | 2026-09-04 |
+| Números das notas presentes | `baseline:gold --dry-run --dump` | 5.670.186, 1.229.828, 2.407.895, 3.262.291, 1.264.059, 6,3416, 14,1500 e 251.000.000 encontrados na base renderizada | 2026-09-04 |
+| Gateway | `model-gateway` 26 testes | tarefa `baseline_generalist` com política Opus 5 e fallback GPT-5.6 | 2026-09-04 |
