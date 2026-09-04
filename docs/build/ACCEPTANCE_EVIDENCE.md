@@ -1108,3 +1108,4 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Linha de base | `private.failures_without_cause` | 12 de 36 falhas históricas sem causa; classes: schema 10, modelo esgotado 5, constraint 3, input inválido 3, orçamento 2, timeout 2, gate 1, worker 1, sem classe 9 | 2026-09-04 |
 | Testes do worker | Vitest | 26 arquivos / 132 testes verdes | 2026-09-04 |
 | Web | typecheck, paridade i18n, testes | verdes com as chaves novas de cobertura | 2026-09-04 |
+| Contrato de falha em produção | `20260904210542_job_failure_contract` aplicada às 21:0x UTC, depois do deploy do worker de `924da6c` (20:58) | `failures_without_cause` continua em 12, todas anteriores; 0 novas desde o deploy | 2026-09-04 |
