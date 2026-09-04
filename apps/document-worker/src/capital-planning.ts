@@ -16,7 +16,7 @@ import {
 import {z} from "zod";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
-import {institutionCapabilitiesSchema, professionalContextSchema} from "./advisor-context";
+import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import {createWorkerPublicCompanyMemory} from "./public-company-memory";
@@ -63,6 +63,7 @@ const contextSchema = z.object({
   })).default([]),
   professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
+  organization_methodology: organizationMethodologySchema.nullable().optional(),
 });
 
 const CAPITAL_PLANNING_SYSTEM = `You prepare a directional capital-planning map for Offroad

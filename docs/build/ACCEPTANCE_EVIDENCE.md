@@ -1115,4 +1115,12 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | --- | --- | --- | --- |
 | Schema e comportamento | `source-pack.test.ts` | 5 testes: retenção segue a licença, busca só do pack por tópico, país e allowlist, aquisição recusa URL fora do pack e detecta drift, verificação do pack inteiro, entrada a partir de uma aquisição | 2026-09-04 |
 | Worker em modo congelado | `main.ts` + `source-pack-runtime.ts` | provedores, fábrica oficial e adquirente trocados pelo pack quando `PUBLIC_RESEARCH_MODE=frozen`; typecheck, lint e 134 testes verdes | 2026-09-04 |
+## Metodologia institucional, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Migração aplicada | `20260904210147_organization_methodology` | tabela versionada com RLS e FORCE RLS, índice de uma ativa por organização, RPC privada com wrapper `security invoker`, dois carregadores reescritos | 2026-09-04 |
+| Regressão SQL no projeto | `supabase/tests/organization_methodology.sql` via `execute_sql` | `organization_methodology_passed`: versões avançam, uma ativa, revisada registra confirmador, membro lê e não grava, insert direto recusado, outro tenant cego, capacidade recusada; rollback sem resíduo | 2026-09-04 |
+| Schema e resolução | `methodology.test.ts` | 6 testes: defaults sem threshold, só definições da ontologia, sobrescrita entrada a entrada, capacidades fora, checks derivados, correções com pessoa | 2026-09-04 |
+| Worker | typecheck, lint, 134 testes | bloco aceito no contexto dos quatro executores e repassado ao modelo | 2026-09-04 |
 | Contrato de falha em produção | `20260904210542_job_failure_contract` aplicada às 21:0x UTC, depois do deploy do worker de `924da6c` (20:58) | `failures_without_cause` continua em 12, todas anteriores; 0 novas desde o deploy | 2026-09-04 |

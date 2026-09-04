@@ -2222,6 +2222,24 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   ressincronizável por rebase. Foi apagada e recriada a partir de produção em 04/09 às 20:09 UTC
   (`ylyldbudqrrzuhgjulmi`), ao mesmo custo horário da anterior (US$ 0,01344/h).
 
+## Metodologia institucional como objeto, candidate, 04/09/2026
+
+- `organization_methodologies`: uma versão ativa por organização, todas as anteriores preservadas
+  como `superseded`; gravada só por quem administra a organização, através de
+  `save_organization_methodology_v1`; o Data API não insere nem atualiza diretamente; membros
+  leem; outro tenant não vê nada. `source_kind` distingue default da casa, autodeclarada e
+  revisada, e a revisada registra quem confirmou.
+- `packages/credit-playbook/src/methodology.ts`: schema do objeto (definições adotadas por id da
+  ontologia com parâmetros, nunca fórmula nova; ajustes de EBITDA permitidos com teto e exigência
+  de evidência; thresholds por escopo; elegibilidade; referências a mandato; padrão de
+  apresentação; sequência de revisão; cenários mínimos; métricas obrigatórias; decisões e
+  correções anteriores), defaults da casa que não impõem threshold de crédito, resolução do
+  perfil da organização sobre a casa, e a derivação dos checks que um verificador roda.
+- Capacidades continuam fora: o objeto só aponta para `institution_capability_profiles`, e a RPC
+  recusa conteúdo que tente carregá-las.
+- Os dois carregadores de contexto do agente entregam o bloco `organization_methodology` ao lado
+  do perfil profissional e das capacidades; os executores o repassam ao modelo. O consumo
+  estruturado (critérios, checks e apresentação modificados pela metodologia) é a fase 3.
 ## Contratos das três camadas do moat, candidate, 04/09/2026
 
 - ADR 0022 registra a decisão: leitura comprovadamente completa, metodologia institucional e

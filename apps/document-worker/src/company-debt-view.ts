@@ -17,7 +17,7 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
-import {institutionCapabilitiesSchema, professionalContextSchema} from "./advisor-context";
+import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
 import {materialNumericTokens} from "./material-numeric-tokens";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
@@ -47,6 +47,7 @@ const contextSchema = z.object({
   }),
   professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
+  organization_methodology: organizationMethodologySchema.nullable().optional(),
   brief: z.object({
     id: z.uuid(), kind: z.literal("company_debt_view"), version: z.number().int().positive(),
     content: companyDebtViewBriefSchema, content_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),

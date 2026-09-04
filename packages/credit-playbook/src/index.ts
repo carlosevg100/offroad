@@ -30,3 +30,4 @@ export * from "./receivables-routes";
 export * from "./receivables-evidence";
 export * from "./depth-packs";
 export {commonClosing} from "./closing";
+export * from "./methodology";
