@@ -2402,6 +2402,13 @@ begin
   if has_function_privilege('authenticated', 'private.worker_identity(text)', 'execute') then
     raise exception 'private.worker_identity is directly executable by authenticated';
   end if;
+  if has_function_privilege(
+    'authenticated',
+    'private.worker_retry_failed_advisor_specialized_job_v1(uuid,text,uuid,jsonb)',
+    'execute'
+  ) then
+    raise exception 'private failed-analysis retry helper is directly executable by authenticated';
+  end if;
 end;
 $$;
 

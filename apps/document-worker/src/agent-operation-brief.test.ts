@@ -279,6 +279,56 @@ describe("agent operation brief worker", () => {
     expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "CVC"}});
   });
 
+  it("carries answered meeting context into a retry activation instead of rebuilding the brief from the retry sentence", async () => {
+    let recordedActivation: Record<string, unknown> | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "Retome a análise usando todas as informações que já forneci.",
+        brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-04T00:55:00.000Z", manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Reunião Camil",
+          entryJob: "origination_thesis", accessBasis: "public_information",
+          phase: "understand", status: "active",
+        },
+        company_profile: {name: "Camil"}, documents: [], tasks: [], artifacts: [],
+        recent_messages: [{
+          id: "11111111-1111-4111-8111-111111111111",
+          role: "user" as const,
+          content: "Tenho uma reunião amanhã com a Camil e quero alternativas de estrutura de capital.",
+          created_at: "2026-09-04T00:10:00.000Z",
+        }, {
+          id: "22222222-2222-4222-8222-222222222222",
+          role: "user" as const,
+          content: "É uma primeira conversa com CFO e tesouraria. Não temos relacionamento nem exposição de crédito. Podemos usar balanço próprio, estruturar e distribuir mercado de capitais e oferecer hedge.",
+          created_at: "2026-09-04T00:11:00.000Z",
+        }],
+      }),
+      recordAgentResponse: async (
+        _job: unknown, _messageId: string, _response: unknown, _proposal: unknown, activation: unknown,
+      ) => { recordedActivation = activation as Record<string, unknown>; return {}; },
+      complete: async () => {}, recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => { throw new Error("retry routing must remain deterministic"); },
+      spent: () => ({costUsd: 0, calls: 0}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    expect(result.status).toBe("succeeded");
+    expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "Camil"}});
+    const meetingContext = (recordedActivation?.brief as {meetingContext: string}).meetingContext;
+    expect(meetingContext).toContain("primeira conversa com CFO e tesouraria");
+    expect(meetingContext).toContain("Não temos relacionamento nem exposição de crédito");
+    expect(meetingContext).toContain("estruturar e distribuir mercado de capitais");
+    expect(meetingContext).toContain("Retome a análise");
+  });
+
   it("asks for the institution operating model once research is already active without queueing it again", async () => {
     let recordedResponse: Record<string, unknown> | undefined;
     let recordedActivation: unknown;
