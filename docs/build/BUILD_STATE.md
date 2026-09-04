@@ -2131,3 +2131,24 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - A declaração de que o usuário está autorizado a representar a organização indicada saiu do
   rodapé do cadastro. Representação é um gate próprio, verificado no momento da introdução, e
   afirmá-la na criação da conta dava a ela um peso que ela não tem.
+
+## Onboarding profissional multivalorado, candidate, 04/09/2026
+
+- O contexto profissional deixou de aceitar uma função e um vínculo. Uma pessoa pode ser banker
+  e assessor, cobrir DCM e corporate banking, e usar a plataforma dentro de uma instituição e por
+  conta própria ao mesmo tempo. O schema passou a guardar `use_forms`, `professional_roles` e
+  `practice_areas` como arrays, e o vocabulário de objetivos foi de oito para treze opções.
+- As colunas de capacidade saíram do perfil pessoal. O que uma pessoa diz sobre o próprio trabalho
+  custa nada aceitar; o que uma instituição consegue fazer tem consequência em matching e no que o
+  produto pode afirmar. Capacidade vive em `institution_capability_profiles`, que já carrega
+  origem, responsável e data de confirmação, e o formulário de onboarding não pode escrevê-la.
+- O nome da organização só é gravado para quem disse que trabalha em uma. A RPC anula o campo em
+  qualquer outro caso, e o teste de regressão prova isso.
+- A tela virou quatro perguntas numeradas com opções multisseleção, e a pergunta sobre onde a
+  pessoa trabalha aparece como desdobramento da primeira, apenas quando faz sentido. Nada chega
+  pré-marcado: a jornada de empresa não presume mais que a pessoa levanta capital.
+- O contrato de consumo está escrito em `docs/product/PROFESSIONAL_CONTEXT_CONSUMPTION.md`. Ele
+  define quem lê cada campo, o que pode influenciar e o que nunca pode. O consumo estruturado
+  descrito ali ainda **não** está implementado: hoje o perfil chega aos modelos como bloco de
+  contexto, e os testes por função que provariam mesma verdade com abordagem diferente são o
+  próximo passo, não o estado atual.

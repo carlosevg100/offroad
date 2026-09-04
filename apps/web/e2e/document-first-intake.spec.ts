@@ -150,10 +150,17 @@ test.describe("Document-first intake (company journey)", () => {
 
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
     await expect(page.locator(".professional-context--onboarding")).toBeVisible();
-    await expect(page.locator('input[name="affiliation_kind"][value="company"]')).toBeChecked();
-    await expect(page.locator('input[name="operating_models"][value="raise_capital"]')).toBeChecked();
+    // Nothing arrives pre-answered: this screen exists to ask, not to assume, and where someone
+    // works is only asked once they have said they work somewhere.
+    await expect(page.locator('input[name="use_forms"]:checked')).toHaveCount(0);
+    await expect(page.locator('input[name="institution_name"]')).toHaveCount(0);
+    await page.locator('input[name="use_forms"][value="institutional_work"]').check();
     await page.locator('input[name="institution_name"]').fill("Rede Horizonte Supermercados");
-    await page.locator('select[name="professional_role"]').selectOption("cfo_treasury");
+    // Several roles and several areas at once, which is the point of the new shape.
+    await page.locator('input[name="professional_roles"][value="cfo"]').check();
+    await page.locator('input[name="professional_roles"][value="treasury"]').check();
+    await page.locator('input[name="practice_areas"][value="treasury"]').check();
+    await page.locator('input[name="practice_areas"][value="corporate_finance"]').check();
     await page.locator('input[name="primary_objectives"][value="evaluate_capital_options"]').check();
     await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
 

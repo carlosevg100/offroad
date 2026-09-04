@@ -66,14 +66,11 @@ describe("capital planning executor", () => {
           privacy_status: "public_information", representation_status: "not_claimed",
         },
         professional_context: {
-          affiliationKind: "company",
-          professionalRole: "cfo",
-          teamName: "Finanças",
-          institutionName: "Camil",
-          operatingModels: ["capital_raising"],
-          productFamilies: [],
-          primaryObjectives: ["capital_planning"],
-          contextNotes: null,
+          useForms: ["institutional_work"],
+          professionalRoles: ["cfo", "treasury"],
+          practiceAreas: ["treasury", "corporate_finance"],
+          primaryObjectives: ["evaluate_capital_options"],
+          institutionName: "Rede Horizonte",
           disclosureStatus: "complete",
           lastConfirmedAt: "2026-09-02T11:00:00.000Z",
         },
@@ -114,11 +111,11 @@ describe("capital planning executor", () => {
         const textInput = request.input.find((part) => part.type === "text");
         if (!textInput || textInput.type !== "text") throw new Error("expected text model input");
         const modelInput = JSON.parse(textInput.text) as {
-          professionalContext?: {professionalRole?: string; affiliationKind?: string};
+          professionalContext?: {professionalRoles?: string[]; useForms?: string[]};
           journeyBlueprint?: {id?: string};
           collaborativeAdvisoryPolicy?: {alternativeUniverse?: string; professionalContextUse?: string};
         };
-        expect(modelInput.professionalContext).toMatchObject({professionalRole: "cfo", affiliationKind: "company"});
+        expect(modelInput.professionalContext).toMatchObject({professionalRoles: ["cfo", "treasury"], useForms: ["institutional_work"]});
         expect(modelInput.journeyBlueprint?.id).toBe("capital_planning");
         expect(modelInput.collaborativeAdvisoryPolicy).toMatchObject({
           alternativeUniverse: "company_first_and_unconstrained",

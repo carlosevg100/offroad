@@ -1,51 +1,45 @@
-import {ArrowRight, BriefcaseBusiness, Building2, Check, ChevronDown, Sparkles} from "lucide-react";
+"use client";
+
+import {ArrowRight, Building2, Check} from "lucide-react";
+import {useState} from "react";
 
 import {
-  affiliationKinds,
-  operatingModels,
-  productFamilies,
+  practiceAreas,
   professionalObjectives,
   professionalRoles,
+  useForms,
 } from "@/lib/professional-context";
 
 export type ProfessionalContextCopy = {
-  eyebrow: string;
   title: string;
   body: string;
-  institutionName: string;
+  useFormsQuestion: string;
+  useFormsHelp: string;
+  useForms: Record<(typeof useForms)[number], string>;
+  institutionQuestion: string;
+  institutionHelp: string;
   institutionPlaceholder: string;
-  affiliationLegend: string;
-  affiliation: Record<(typeof affiliationKinds)[number], string>;
-  role: string;
-  rolePlaceholder: string;
+  rolesQuestion: string;
+  rolesHelp: string;
   roles: Record<(typeof professionalRoles)[number], string>;
-  team: string;
-  teamPlaceholder: string;
-  operatingLegend: string;
-  operatingBody: string;
-  operating: Record<(typeof operatingModels)[number], string>;
-  objectiveLegend: string;
-  objectiveBody: string;
+  areasQuestion: string;
+  areasHelp: string;
+  areas: Record<(typeof practiceAreas)[number], string>;
+  objectivesQuestion: string;
+  objectivesHelp: string;
   objectives: Record<(typeof professionalObjectives)[number], string>;
-  optionalTitle: string;
-  optionalBody: string;
-  products: Record<(typeof productFamilies)[number], string>;
-  notes: string;
-  notesPlaceholder: string;
   save: string;
+  saveSettings: string;
   skip: string;
   assurance: string;
 };
 
 export type ProfessionalContextValue = {
-  affiliationKind?: string | null;
-  professionalRole?: string | null;
-  institutionName?: string | null;
-  teamName?: string | null;
-  operatingModels?: string[];
+  useForms?: string[];
+  professionalRoles?: string[];
+  practiceAreas?: string[];
   primaryObjectives?: string[];
-  productFamilies?: string[];
-  capabilityNotes?: string | null;
+  institutionName?: string | null;
 };
 
 type Props = {
@@ -56,103 +50,101 @@ type Props = {
   mode?: "onboarding" | "settings";
 };
 
+type OptionGridProps<Option extends string> = {
+  copy: Record<Option, string>;
+  name: string;
+  onToggle?: (option: Option, checked: boolean) => void;
+  options: readonly Option[];
+  selected: Set<string>;
+  wide?: boolean;
+};
+
+function OptionGrid<Option extends string>({copy, name, onToggle, options, selected, wide}: OptionGridProps<Option>) {
+  return (
+    <div className={wide ? "professional-context__options professional-context__options--wide" : "professional-context__options"}>
+      {options.map((option) => (
+        <label key={option}>
+          <input
+            defaultChecked={selected.has(option)}
+            name={name}
+            onChange={(event) => onToggle?.(option, event.target.checked)}
+            type="checkbox"
+            value={option}
+          />
+          <span><i aria-hidden="true"><Check size={11} strokeWidth={3} /></i>{copy[option]}</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 export function ProfessionalContextForm({action, copy, initial = {}, locale, mode = "onboarding"}: Props) {
-  const selectedOperatingModels = new Set(initial.operatingModels ?? []);
-  const selectedObjectives = new Set(initial.primaryObjectives ?? []);
-  const selectedProducts = new Set(initial.productFamilies ?? []);
+  // Asking where someone works only makes sense once they have said they work somewhere. The
+  // follow-up therefore belongs to the first question rather than standing as one of its own.
+  const [institutional, setInstitutional] = useState(Boolean(initial.useForms?.includes("institutional_work")));
 
   return (
     <section className={`professional-context professional-context--${mode}`}>
       <header className="professional-context__header">
-        <span className="professional-context__mark"><Sparkles aria-hidden="true" size={19} /></span>
-        <div>
-          <p className="section-kicker">{copy.eyebrow}</p>
-          <h1>{copy.title}</h1>
-          <p>{copy.body}</p>
-        </div>
+        <h1>{copy.title}</h1>
+        <p>{copy.body}</p>
       </header>
 
       <form action={action} className="professional-context__form">
         <input name="locale" type="hidden" value={locale} />
 
-        <div className="professional-context__identity">
-          <label className="field field--wide">
-            <span>{copy.institutionName}</span>
-            <div className="field-with-icon"><Building2 aria-hidden="true" size={16} /><input defaultValue={initial.institutionName ?? ""} maxLength={200} name="institution_name" placeholder={copy.institutionPlaceholder} /></div>
-          </label>
-          <label className="field">
-            <span>{copy.role}</span>
-            <select defaultValue={initial.professionalRole ?? ""} name="professional_role">
-              <option value="">{copy.rolePlaceholder}</option>
-              {professionalRoles.map((role) => <option key={role} value={role}>{copy.roles[role]}</option>)}
-            </select>
-          </label>
-          <label className="field">
-            <span>{copy.team}</span>
-            <div className="field-with-icon"><BriefcaseBusiness aria-hidden="true" size={16} /><input defaultValue={initial.teamName ?? ""} maxLength={160} name="team_name" placeholder={copy.teamPlaceholder} /></div>
-          </label>
-        </div>
-
-        <fieldset className="professional-context__choice-group">
-          <legend>{copy.affiliationLegend}</legend>
-          <div className="professional-context__pills professional-context__pills--compact">
-            {affiliationKinds.map((kind) => (
-              <label key={kind}>
-                <input defaultChecked={initial.affiliationKind === kind} name="affiliation_kind" type="radio" value={kind} />
-                <span>{copy.affiliation[kind]}<Check aria-hidden="true" size={12} /></span>
-              </label>
-            ))}
-          </div>
+        <fieldset className="professional-context__question">
+          <legend><b>01</b>{copy.useFormsQuestion}</legend>
+          <p>{copy.useFormsHelp}</p>
+          <OptionGrid
+            copy={copy.useForms}
+            name="use_forms"
+            onToggle={(option, checked) => {
+              if (option === "institutional_work") setInstitutional(checked);
+            }}
+            options={useForms}
+            selected={new Set(initial.useForms ?? [])}
+          />
+          {institutional ? (
+            <label className="professional-context__follow-up">
+              <span>{copy.institutionQuestion}</span>
+              <div className="field-with-icon">
+                <Building2 aria-hidden="true" size={15} />
+                <input
+                  defaultValue={initial.institutionName ?? ""}
+                  maxLength={200}
+                  name="institution_name"
+                  placeholder={copy.institutionPlaceholder}
+                />
+              </div>
+              <small>{copy.institutionHelp}</small>
+            </label>
+          ) : null}
         </fieldset>
 
-        <div className="professional-context__columns">
-          <fieldset className="professional-context__choice-group">
-            <legend>{copy.operatingLegend}</legend>
-            <p>{copy.operatingBody}</p>
-            <div className="professional-context__pills">
-              {operatingModels.map((model) => (
-                <label key={model}>
-                  <input defaultChecked={selectedOperatingModels.has(model)} name="operating_models" type="checkbox" value={model} />
-                  <span>{copy.operating[model]}<Check aria-hidden="true" size={12} /></span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
+        <fieldset className="professional-context__question">
+          <legend><b>02</b>{copy.rolesQuestion}</legend>
+          <p>{copy.rolesHelp}</p>
+          <OptionGrid copy={copy.roles} name="professional_roles" options={professionalRoles} selected={new Set(initial.professionalRoles ?? [])} wide />
+        </fieldset>
 
-          <fieldset className="professional-context__choice-group">
-            <legend>{copy.objectiveLegend}</legend>
-            <p>{copy.objectiveBody}</p>
-            <div className="professional-context__pills">
-              {professionalObjectives.map((objective) => (
-                <label key={objective}>
-                  <input defaultChecked={selectedObjectives.has(objective)} name="primary_objectives" type="checkbox" value={objective} />
-                  <span>{copy.objectives[objective]}<Check aria-hidden="true" size={12} /></span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        </div>
+        <fieldset className="professional-context__question">
+          <legend><b>03</b>{copy.areasQuestion}</legend>
+          <p>{copy.areasHelp}</p>
+          <OptionGrid copy={copy.areas} name="practice_areas" options={practiceAreas} selected={new Set(initial.practiceAreas ?? [])} wide />
+        </fieldset>
 
-        <details className="professional-context__optional">
-          <summary><span><strong>{copy.optionalTitle}</strong><small>{copy.optionalBody}</small></span><ChevronDown aria-hidden="true" size={16} /></summary>
-          <div className="professional-context__optional-body">
-            <div className="professional-context__pills professional-context__pills--products">
-              {productFamilies.map((product) => (
-                <label key={product}>
-                  <input defaultChecked={selectedProducts.has(product)} name="product_families" type="checkbox" value={product} />
-                  <span>{copy.products[product]}<Check aria-hidden="true" size={12} /></span>
-                </label>
-              ))}
-            </div>
-            <label className="field field--wide"><span>{copy.notes}</span><textarea defaultValue={initial.capabilityNotes ?? ""} maxLength={2000} name="capability_notes" placeholder={copy.notesPlaceholder} rows={3} /></label>
-          </div>
-        </details>
+        <fieldset className="professional-context__question">
+          <legend><b>04</b>{copy.objectivesQuestion}</legend>
+          <p>{copy.objectivesHelp}</p>
+          <OptionGrid copy={copy.objectives} name="primary_objectives" options={professionalObjectives} selected={new Set(initial.primaryObjectives ?? [])} />
+        </fieldset>
 
         <footer className="professional-context__actions">
-          <p><Check aria-hidden="true" size={13} />{copy.assurance}</p>
+          <p>{copy.assurance}</p>
           <div>
             {mode === "onboarding" ? <button className="button button--ghost" name="intent" type="submit" value="skip">{copy.skip}</button> : null}
-            <button className="button" type="submit">{copy.save}<ArrowRight aria-hidden="true" size={15} /></button>
+            <button className="button" type="submit">{mode === "onboarding" ? copy.save : copy.saveSettings}<ArrowRight aria-hidden="true" size={15} /></button>
           </div>
         </footer>
       </form>

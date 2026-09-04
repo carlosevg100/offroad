@@ -13,16 +13,13 @@ export async function updateProfessionalContextAction(formData: FormData) {
   if (!parsed.success) redirect(`/${locale}/app/context?error=validation`);
 
   const {supabase, organization} = await requireWorkspace(locale);
-  const {error} = await supabase.rpc("save_professional_capability_context_v1", {
+  const {error} = await supabase.rpc("save_professional_capability_context_v2", {
     p_organization_id: organization.id,
-    p_affiliation_kind: parsed.data.affiliationKind,
-    p_professional_role: parsed.data.professionalRole,
-    p_team_name: parsed.data.teamName,
+    p_use_forms: parsed.data.useForms,
+    p_professional_roles: parsed.data.professionalRoles,
+    p_practice_areas: parsed.data.practiceAreas,
     p_primary_objectives: parsed.data.primaryObjectives,
     p_institution_name: parsed.data.institutionName,
-    p_operating_models: parsed.data.operatingModels,
-    p_product_families: parsed.data.productFamilies,
-    p_capability_notes: parsed.data.capabilityNotes,
     p_skip: false,
   });
   if (error) {

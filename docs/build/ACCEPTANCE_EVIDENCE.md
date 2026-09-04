@@ -1065,3 +1065,16 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Verificação nomeia o destinatário | `signup/verify/page.tsx` + `signup-cookie.ts` | cookie de cadastro alimenta `verifyBodyNamed`; ausência do cookie cai para a cópia genérica sem quebrar a tela | 2026-09-04 |
 | Jornada ponta a ponta | `document-first-intake.spec.ts` | o E2E prova a ausência dos campos removidos e exige o e-mail impresso na tela de verificação | 2026-09-04 |
 | Gate integral | `fnm exec --using=24 pnpm check` | lint, typecheck, testes e build verdes; 43/43 tarefas | 2026-09-04 |
+
+## Contexto profissional multivalorado, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Migração aplicada | `20260904164935_professional_context_multi_select` | arrays criados com vocabulário restrito; seis colunas de capacidade removidas do perfil pessoal; ambos os loaders de contexto e a RPC de gravação reescritos; `v1` e a cópia órfã `..._before_personal_institutio` removidas | 2026-09-04 |
+| Regressão SQL no projeto | `supabase/tests/professional_capability_context.sql` via `execute_sql` | "professional context regression passed"; várias funções e áreas preservadas, nome da organização descartado para quem não declarou vínculo, papel fora do vocabulário recusado, capacidade institucional continua vazia; rollback verificado (0 linhas residuais) | 2026-09-04 |
+| Advisors | MCP `get_advisors` security | 0 erros e 0 avisos; apenas dois INFO pré-existentes de tabelas `private` sem policy | 2026-09-04 |
+| Worker separa pessoa de instituição | `agent-operation-brief.ts` | `institutionOperatingModels` passa a vir só de `institution_capabilities`; a autodescrição de uma pessoa não é mais lida como capacidade do empregador | 2026-09-04 |
+| Testes do worker | Vitest | 25 arquivos / 128 testes verdes com as fixtures no formato novo | 2026-09-04 |
+| Jornada ponta a ponta | `document-first-intake.spec.ts` | o E2E exige que nada venha pré-marcado, que o campo da organização só exista após declarar vínculo e que duas funções e duas áreas sejam salvas juntas | 2026-09-04 |
+| Tela verificada | dev server, 1280 e 1440 px | quatro perguntas numeradas, desdobramento condicional, estados de seleção e ações conferidos por captura | 2026-09-04 |
+| Gate integral | `fnm exec --using=24 pnpm check` | lint, typecheck, testes e build verdes; 43/43 tarefas | 2026-09-04 |
