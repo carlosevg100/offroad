@@ -755,7 +755,7 @@ securitização; secondary; co-investment; opportunity sem material suficiente.
 proteções, documentação, mandato, dados faltantes e próximos gates.
 
 **Outputs:** screening estruturado, fit map, red flags, informação requerida e recomendação de
-continuar, manter em observação ou não priorizar — nunca decisão vinculante da Offroad.
+continuar, manter em observação ou não priorizar. Nunca uma decisão vinculante da Offroad.
 
 ### I16. Mapear mercado, precedentes e condições
 
@@ -1127,21 +1127,21 @@ Offroad prestar aconselhamento jurídico.
 **Situação:** o MD identifica uma possível oportunidade numa companhia listada de alimentos e pede
 ao VP que avalie se vale levar uma tese de liability management à reunião com o CFO.
 
-**MD — intenção e decisão:**
+**MD: intenção e decisão**
 
 - quer saber se existe uma ideia relevante para a companhia;
 - precisa escolher o que merece entrar na conversa;
 - espera síntese executiva, fundamento, implicações e objeções;
 - não quer receber uma descrição genérica do balanço nem páginas prematuras.
 
-**VP — enquadramento e direção:**
+**VP: enquadramento e direção**
 
 - traduz a provocação em perguntas analíticas;
 - define análise de vencimentos, custo de saída, liquidez, projeções e alternativas;
 - decide quais cenários e comparáveis serão necessários;
 - revisa se a tese é defensável antes de devolvê-la ao MD.
 
-**Associate — integração e construção:**
+**Associate: integração e construção**
 
 - organiza o workplan e as dependências;
 - revisa a base financeira e os ajustes;
@@ -1149,7 +1149,7 @@ ao VP que avalie se vale levar uma tese de liability management à reunião com 
 - coordena modelo, comparáveis e páginas;
 - garante coerência entre análise e narrativa.
 
-**Analyst — produção e controle:**
+**Analyst: produção e controle**
 
 - atualiza documentos e séries históricas;
 - extrai e concilia a dívida por instrumento;
@@ -1441,7 +1441,7 @@ O Atlas está pronto para governar implementação quando:
 
 Antes de converter todo o Atlas em contratos de runtime, precisam ser homologados:
 
-1. vocabulário final das famílias na interface — os IDs internos não precisam aparecer;
+1. vocabulário final das famílias na interface, já que os IDs internos não precisam aparecer;
 2. prioridade e ordem dos 20 casos Pareto;
 3. coverage map gold de cada caso;
 4. nível mínimo de profundidade por output;
