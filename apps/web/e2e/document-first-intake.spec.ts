@@ -480,7 +480,10 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("signs out and logs back in with the password", async () => {
     await page.goto("/pt-BR/app");
-    await page.locator(".app-sidebar__footer form button[type=submit]").click();
+    // Signing out moved into the account menu at the foot of the rail.
+    await page.locator(".app-rail__account").click();
+    await expect(page.locator(".app-rail__menu")).toBeVisible();
+    await page.locator(".app-rail__menu form button[type=submit]").click();
     await expect(page).toHaveURL(/\/pt-BR\/?$/);
 
     await page.goto("/pt-BR/login");
