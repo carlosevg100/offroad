@@ -406,6 +406,43 @@ describe("gateway", () => {
     expect(JSON.stringify(logs[1]?.validationIssues)).not.toContain("bad");
   });
 
+  it("reports a truncated structured response honestly when the fallback call budget is unavailable", async () => {
+    const logs: GatewayCallLog[] = [];
+    const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", undefined, {
+      rawText: '{"kind":"other"',
+      stopReason: "max_tokens",
+    })]);
+    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
+    const gateway = createModelGateway({
+      adapters: {anthropic, openai},
+      budget: {maxCalls: 1},
+      onCall: (log) => logs.push(log),
+    });
+
+    await expect(gateway.complete(baseRequest)).rejects.toMatchObject({code: "output_truncated"});
+    expect(anthropic.calls).toHaveLength(1);
+    expect(openai.calls).toHaveLength(0);
+    expect(logs[0]).toMatchObject({
+      outcome: "invalid_output",
+      stopReason: "max_tokens",
+      validationIssues: [{path: "", code: "output_truncated", message: expect.any(String)}],
+    });
+
+    const fallbackLogs: GatewayCallLog[] = [];
+    const fallbackAnthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", undefined, {
+      rawText: '{"kind":"other"',
+      stopReason: "max_tokens",
+    })]);
+    const fallbackOpenai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
+    const recovered = await createModelGateway({
+      adapters: {anthropic: fallbackAnthropic, openai: fallbackOpenai},
+      budget: {maxCalls: 2},
+      onCall: (log) => fallbackLogs.push(log),
+    }).complete(baseRequest);
+    expect(recovered).toMatchObject({provider: "openai", usedFallback: true});
+    expect(fallbackLogs.map((log) => log.outcome)).toEqual(["invalid_output", "ok"]);
+  });
+
   it("enforces cost and call budgets", async () => {
     const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5}), ok("claude-sonnet-5", {kind: "other", confidence: 0.5})]);
     const gateway = createModelGateway({adapters: {anthropic}, budget: {maxCalls: 1}});
