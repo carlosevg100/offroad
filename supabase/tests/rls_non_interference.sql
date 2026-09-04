@@ -4839,12 +4839,16 @@ declare
   proposal_id constant uuid := 'a2000000-0000-4000-8000-000000000003';
   event_id constant uuid := 'a2000000-0000-4000-8000-000000000004';
   failure_message_id constant uuid := 'a2000000-0000-4000-8000-000000000005';
+  retry_message_id constant uuid := 'a2000000-0000-4000-8000-000000000006';
   submitted jsonb;
   replayed jsonb;
   claim jsonb;
   context jsonb;
   applied jsonb;
   failure_claim jsonb;
+  retry_submitted jsonb;
+  retry_claim jsonb;
+  retry_context jsonb;
   job_id uuid;
   capability text;
   snapshot text;
@@ -4973,6 +4977,40 @@ begin
   set local role postgres;
   if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
     raise exception 'Agent failure incorrectly failed the intake session';
+  end if;
+
+  -- A failed advisor execution must not erase the user's source statement. The following retry
+  -- receives that durable context while failed assistant output remains excluded.
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  retry_submitted := public.submit_agent_message(
+    org_a, session_id, retry_message_id, 'Tente novamente usando o contexto que já forneci.', 'pt-BR'
+  );
+  set local role postgres;
+  update public.processing_jobs set available_at = '1900-01-01T00:00:00Z'
+  where id = (retry_submitted ->> 'job_id')::uuid;
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
+    true
+  );
+  retry_claim := public.worker_claim_job(repeat('w', 64), 600);
+  retry_context := public.worker_load_agent_context(
+    (retry_claim ->> 'job_id')::uuid, retry_claim ->> 'capability_token'
+  );
+  if not exists (
+    select 1
+    from jsonb_array_elements(retry_context -> 'recent_messages') recent
+    where recent ->> 'id' = failure_message_id::text
+      and recent ->> 'role' = 'user'
+      and recent ->> 'content' = 'Considere também uma carência maior.'
+  ) then
+    raise exception 'failed user-authored message disappeared from retry memory: %', retry_context;
   end if;
 
   set local role authenticated;
