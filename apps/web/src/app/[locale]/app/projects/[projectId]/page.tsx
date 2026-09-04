@@ -22,6 +22,7 @@ import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
+import {customerEventType} from "@/components/advisor/advisor-project-state";
 
 import {OriginationDecision} from "./origination-decision";
 import {CompanyDebtProject} from "./company-debt-project";
@@ -404,7 +405,7 @@ async function ConversationalCapitalProject({
     .filter((event) => project.entry_job !== "origination_thesis" || !eventTaskSpecId(event.detail))
     .map((event) => ({
       id: event.id,
-      type: event.event_type,
+      type: customerEventType(event.event_type, event.detail),
       summary: locale === "en-US" ? event.summary_en : event.summary_pt,
       createdAt: event.created_at,
     }));
@@ -412,7 +413,7 @@ async function ConversationalCapitalProject({
     .reverse()
     .map((event) => ({
       id: event.id,
-      type: event.event_type,
+      type: customerEventType(event.event_type, event.detail),
       summary: locale === "en-US" ? event.summary_en : event.summary_pt,
       createdAt: event.created_at,
     }));
