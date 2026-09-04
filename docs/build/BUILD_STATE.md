@@ -2196,8 +2196,8 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - A branch antiga (`lxmpsxwlpmfisbauakaz`, histórico divergente com série `_validation`) e a
   intermediária (`ylyldbudqrrzuhgjulmi`, criada antes da correção) foram apagadas. A branch
   vigente é `gjkkjtbfnssdsbmlhmwk`, criada às 20:29 UTC a partir do histórico corrigido, ao custo
-  horário de US$ 0,01344. Verificação de paridade (190 migrações, 114 tabelas) registrada em
-  `ACCEPTANCE_EVIDENCE.md` quando concluída.
+  horário de US$ 0,01344. Paridade verificada às 20:31 UTC: 184 migrações aplicadas nos dois lados, última
+  `20260904201650`, 114 tabelas e 7 views em `private` na branch e em produção.
 ## Fase 0, frente de confiabilidade: falha com causa, candidate, 04/09/2026
 
 - Todo executor do worker passa a gravar, na linha do job, a causa da falha e não só a categoria:

@@ -1096,6 +1096,7 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Cinco casos | `docs/product/gold-cases/01..05` | envelope em duas camadas, inputs com fixture e política de hash, cobertura com materialidade, cálculos, achados, outputs, ramos, adversariais, baseline, painel, "nunca" | 2026-09-04 |
 | Causa raiz do staging | `select ... from supabase_migrations.schema_migrations where statements[1] !~* '(create|alter|...)'` | uma única linha de placeholder, versão `20260831092552`; corrigida com o SQL do arquivo | 2026-09-04 |
 | Log da branch | `query_logs` no projeto da branch | `syntax error at or near "Canonical"` um segundo após a migração anterior; reproduzido na criação e no reset | 2026-09-04 |
+| Paridade do staging | `execute_sql` em `gjkkjtbfnssdsbmlhmwk` e em produção | 184 migrações em ambos, última `20260904201650`, 114 tabelas, 7 views `private`; a branch nasce sincronizada depois da correção do histórico | 2026-09-04 |
 ## Fase 0, falha com causa e métricas segmentadas, 04/09/2026
 
 | Evidência | Comando/artefato | Resultado | Data |
