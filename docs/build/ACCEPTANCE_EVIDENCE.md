@@ -1088,6 +1088,15 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Pareto de homologação | seção 10 do Atlas | 20 casos cobrindo produção, revisão, originação, companhia, crédito, investimento, estruturas, materiais, matching e monitoramento | 2026-09-04 |
 | Decisão arquitetural | ADR 0021 + Constituição 2.5 | seis entradas preservadas como atalhos; arquitetura-alvo compila workflows pelo Intent Envelope e permite objetos não company-led | 2026-09-04 |
 
+## Fase 0, casos gold e staging, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Contrato de congelamento | `docs/product/gold-cases/README.md` | oito blocos congelados por caso, árvore conversacional, 18 perguntas de revisão com bloqueio marcado, protocolo de baseline, rubrica, painel, critério de saída | 2026-09-04 |
+| Cinco casos | `docs/product/gold-cases/01..05` | envelope em duas camadas, inputs com fixture e política de hash, cobertura com materialidade, cálculos, achados, outputs, ramos, adversariais, baseline, painel, "nunca" | 2026-09-04 |
+| Causa raiz do staging | `select ... from supabase_migrations.schema_migrations where statements[1] !~* '(create|alter|...)'` | uma única linha de placeholder, versão `20260831092552`; corrigida com o SQL do arquivo | 2026-09-04 |
+| Log da branch | `query_logs` no projeto da branch | `syntax error at or near "Canonical"` um segundo após a migração anterior; reproduzido na criação e no reset | 2026-09-04 |
+| Paridade do staging | `execute_sql` em `gjkkjtbfnssdsbmlhmwk` e em produção | 184 migrações em ambos, última `20260904201650`, 114 tabelas, 7 views `private`; a branch nasce sincronizada depois da correção do histórico | 2026-09-04 |
 ## Fase 0, falha com causa e métricas segmentadas, 04/09/2026
 
 | Evidência | Comando/artefato | Resultado | Data |
