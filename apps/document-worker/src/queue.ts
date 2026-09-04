@@ -41,6 +41,8 @@ const claimedJobBase = z.object({
   organization_id: z.uuid(),
   intake_session_id: z.uuid(),
   processing_run_id: z.uuid(),
+  /** Present when the job's project is bound to a frozen source pack: the worker reads that pack and nothing else. */
+  source_pack_id: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,79}$/).nullable().optional(),
 });
 export const documentJobSchema = claimedJobBase.extend({
   kind: z.literal("document_pipeline"),

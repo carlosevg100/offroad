@@ -1,10 +1,15 @@
 {
   "family": "offroad-document-worker",
   "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
   "cpu": "2048",
   "memory": "4096",
-  "runtimePlatform": {"cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX"},
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
   "executionRoleArn": "arn:aws:iam::389642461544:role/offroadEcsTaskExecutionRole",
   "taskRoleArn": "arn:aws:iam::389642461544:role/offroadDocumentWorkerTaskRole",
   "containerDefinitions": [
@@ -14,31 +19,104 @@
       "essential": true,
       "stopTimeout": 120,
       "environment": [
-        {"name": "NODE_ENV", "value": "production"},
-        {"name": "SUPABASE_URL", "value": "https://ifnogpksgdadruooqydi.supabase.co"},
-        {"name": "PIPELINE_VERSION", "value": "f2-2026.08.24"},
-        {"name": "LEASE_SECONDS", "value": "600"},
-        {"name": "HEARTBEAT_SECONDS", "value": "120"},
-        {"name": "IDLE_POLL_SECONDS", "value": "5"},
-        {"name": "MAX_CONCURRENT_JOBS", "value": "1"},
-        {"name": "REQUIRE_VIRUS_SCAN", "value": "true"},
-        {"name": "OCR_LANGUAGES", "value": "por+eng"},
-        {"name": "MODEL_MAX_COST_USD_PER_JOB", "value": "1"},
-        {"name": "MODEL_MAX_CALLS_PER_JOB", "value": "8"},
-        {"name": "ENABLE_OPENAI_WEB_SEARCH", "value": "true"},
-        {"name": "ENABLE_FIRECRAWL", "value": "true"},
-        {"name": "FIRECRAWL_ZERO_DATA_RETENTION", "value": "false"},
-        {"name": "LOG_LEVEL", "value": "info"}
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "SUPABASE_URL",
+          "value": "https://ifnogpksgdadruooqydi.supabase.co"
+        },
+        {
+          "name": "PIPELINE_VERSION",
+          "value": "f2-2026.08.24"
+        },
+        {
+          "name": "LEASE_SECONDS",
+          "value": "600"
+        },
+        {
+          "name": "HEARTBEAT_SECONDS",
+          "value": "120"
+        },
+        {
+          "name": "IDLE_POLL_SECONDS",
+          "value": "5"
+        },
+        {
+          "name": "MAX_CONCURRENT_JOBS",
+          "value": "1"
+        },
+        {
+          "name": "REQUIRE_VIRUS_SCAN",
+          "value": "true"
+        },
+        {
+          "name": "OCR_LANGUAGES",
+          "value": "por+eng"
+        },
+        {
+          "name": "MODEL_MAX_COST_USD_PER_JOB",
+          "value": "1"
+        },
+        {
+          "name": "MODEL_MAX_CALLS_PER_JOB",
+          "value": "8"
+        },
+        {
+          "name": "ENABLE_OPENAI_WEB_SEARCH",
+          "value": "true"
+        },
+        {
+          "name": "ENABLE_FIRECRAWL",
+          "value": "true"
+        },
+        {
+          "name": "FIRECRAWL_ZERO_DATA_RETENTION",
+          "value": "false"
+        },
+        {
+          "name": "LOG_LEVEL",
+          "value": "info"
+        },
+        {
+          "name": "SOURCE_PACKS_DIR",
+          "value": "/app/source-packs"
+        }
       ],
       "secrets": [
-        {"name": "ANTHROPIC_API_KEY", "valueFrom": "offroad/anthropic-api-key"},
-        {"name": "OPENAI_API_KEY", "valueFrom": "offroad/openai-api-key"},
-        {"name": "PERPLEXITY_API_KEY", "valueFrom": "offroad/perplexity-api-key"},
-        {"name": "FIRECRAWL_API_KEY", "valueFrom": "offroad/firecrawl-api-key"},
-        {"name": "SUPABASE_PUBLISHABLE_KEY", "valueFrom": "offroad/supabase-publishable-key"},
-        {"name": "WORKER_ACCOUNT_EMAIL", "valueFrom": "offroad/worker-account-email"},
-        {"name": "WORKER_ACCOUNT_PASSWORD", "valueFrom": "offroad/worker-account-password"},
-        {"name": "OFFROAD_WORKER_TOKEN", "valueFrom": "offroad/worker-token"}
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "valueFrom": "offroad/anthropic-api-key"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "valueFrom": "offroad/openai-api-key"
+        },
+        {
+          "name": "PERPLEXITY_API_KEY",
+          "valueFrom": "offroad/perplexity-api-key"
+        },
+        {
+          "name": "FIRECRAWL_API_KEY",
+          "valueFrom": "offroad/firecrawl-api-key"
+        },
+        {
+          "name": "SUPABASE_PUBLISHABLE_KEY",
+          "valueFrom": "offroad/supabase-publishable-key"
+        },
+        {
+          "name": "WORKER_ACCOUNT_EMAIL",
+          "valueFrom": "offroad/worker-account-email"
+        },
+        {
+          "name": "WORKER_ACCOUNT_PASSWORD",
+          "valueFrom": "offroad/worker-account-password"
+        },
+        {
+          "name": "OFFROAD_WORKER_TOKEN",
+          "valueFrom": "offroad/worker-token"
+        }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
