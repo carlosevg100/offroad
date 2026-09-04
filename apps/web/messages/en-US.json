@@ -1201,6 +1201,7 @@
       "kicker": "INITIAL UNDERSTANDING",
       "title": "What we understand so far",
       "body": "This view combines your account, the initial documents, and public sources. Confirm or correct it before we request more information.",
+      "bodyDocumentsOnly": "This view was built from the documents provided. Confirm or correct the understanding before we proceed to the analysis.",
       "company": "Company",
       "operation": "Capital need",
       "sector": "Sector",

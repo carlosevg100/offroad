@@ -80,11 +80,22 @@ describe("agent assessment projection", () => {
       assessmentRef: "processing_run:20000000-0000-4000-8000-000000000003",
       locale: "pt-BR",
       assessedAt,
-      openPoints: ["Objetivo", "Montante", "Prazo", "Garantias", "Perímetro"],
+      openPoints: [
+        {question: "Qual é o objetivo?", whyItMatters: "Define a destinação dos recursos.", category: "operation"},
+        {question: "Qual é o montante?", whyItMatters: "Define o dimensionamento inicial.", category: "operation"},
+        {question: "Qual é o prazo?", whyItMatters: "Define o perfil de amortização.", category: "operation"},
+        {question: "Quais garantias existem?", whyItMatters: "Define as estruturas elegíveis.", category: "operation"},
+        {question: "Qual é o perímetro?", whyItMatters: "Define as entidades analisadas.", category: "company"},
+      ],
     });
 
     expect(assessment.requests).toHaveLength(3);
     expect(assessment.coverage).toHaveLength(5);
+    expect(assessment.requests[0]).toMatchObject({
+      question: "Qual é o objetivo?",
+      whyItMatters: "Define a destinação dos recursos.",
+      decisionImpact: "Pode alterar o desenho, o dimensionamento ou a prioridade da operação.",
+    });
   });
 
   it("keeps repeated public prompts addressable without key collisions", () => {

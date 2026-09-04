@@ -19,7 +19,7 @@ import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
-import {advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
 
 export type AdvisorProjectMessage = {
   id: string;
@@ -98,9 +98,11 @@ export function AdvisorProject(props: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [optimistic, setOptimistic] = useState<AdvisorProjectMessage[]>([]);
-  const active = props.sessionStatus === "processing"
-    || props.tasks.some((task) => ["queued", "running"].includes(task.status))
-    || props.messages.some((message) => ["queued", "processing"].includes(message.status));
+  const active = advisorIsActive({
+    sessionStatus: props.sessionStatus,
+    taskStatuses: props.tasks.map((task) => task.status),
+    messageStatuses: props.messages.map((message) => message.status),
+  });
   const outcomeEvents = props.outcomeEvents ?? props.activityEvents;
   const needsAttention = advisorNeedsAttention({
     active,
@@ -209,7 +211,7 @@ export function AdvisorProject(props: Props) {
               <p>{props.copy.awaitingAnswer}</p>
               <ol>{props.pendingRequests.map((request, index) => <li key={request.id}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
-                <div><strong>{request.question}</strong><small>{request.whyItMatters}</small>{request.decisionImpact ? <small>{request.decisionImpact}</small> : null}</div>
+                <div><strong>{request.question}</strong><small>{request.whyItMatters}</small></div>
               </li>)}</ol>
             </div>
           </article> : null}

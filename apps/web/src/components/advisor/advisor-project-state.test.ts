@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {
+  advisorIsActive,
   advisorNeedsAttention,
   currentActivityCycle,
   customerEventType,
@@ -11,6 +12,19 @@ import {
 describe("advisor project current state", () => {
   const failed = {type: "quality_gate_failed", createdAt: "2026-09-03T10:00:00.000Z"};
   const recovered = {type: "work_completed", createdAt: "2026-09-03T10:05:00.000Z"};
+
+  it("does not treat planned work as running while the project awaits review", () => {
+    expect(advisorIsActive({
+      sessionStatus: "review_ready",
+      taskStatuses: ["queued", "pending"],
+      messageStatuses: ["completed"],
+    })).toBe(false);
+    expect(advisorIsActive({
+      sessionStatus: "processing",
+      taskStatuses: ["queued"],
+      messageStatuses: ["completed"],
+    })).toBe(true);
+  });
 
   it("does not keep a project in attention after a later successful retry", () => {
     expect(advisorNeedsAttention({

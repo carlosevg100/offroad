@@ -33,6 +33,12 @@ export type RequestedInformation = {
   acceptableEvidence: string[];
 };
 
+export type PreliminaryOpenPoint = {
+  question: string;
+  whyItMatters: string;
+  category: "company" | "sector" | "operation" | "scope";
+};
+
 export type DirectionalDecision = {
   decisionKey: string;
   question: string;
@@ -132,21 +138,33 @@ export function buildPreliminaryAssessment(input: {
   assessmentRef: string;
   locale: Locale;
   assessedAt: string;
-  openPoints: readonly string[];
+  openPoints: readonly PreliminaryOpenPoint[];
 }): DcmAgentAssessment {
   const publicRequests = input.openPoints.map((point): RequestedInformation => ({
-    request: point,
-    whyItMatters: input.locale === "pt-BR"
-      ? "Este ponto altera o entendimento da companhia, da necessidade de capital ou do escopo da análise."
-      : "This point changes the understanding of the company, capital need, or analysis scope.",
-    decisionImpact: input.locale === "pt-BR"
-      ? "A resposta define quais análises e alternativas devem ser priorizadas na próxima etapa."
-      : "The answer determines which analyses and alternatives should be prioritized next.",
+    request: point.question,
+    whyItMatters: point.whyItMatters,
+    decisionImpact: preliminaryDecisionImpact(point.category, input.locale),
     acceptableEvidence: input.locale === "pt-BR"
       ? ["Resposta no chat", "Documento de suporte"]
       : ["Chat response", "Supporting document"],
   }));
   return buildPublicWorkAssessment({...input, requests: publicRequests});
+}
+
+function preliminaryDecisionImpact(category: PreliminaryOpenPoint["category"], locale: Locale): string {
+  const pt: Record<PreliminaryOpenPoint["category"], string> = {
+    company: "Define o perímetro da companhia e a base factual aplicável à análise.",
+    sector: "Define os drivers setoriais e as referências de mercado aplicáveis.",
+    operation: "Pode alterar o desenho, o dimensionamento ou a prioridade da operação.",
+    scope: "Define o escopo e os entregáveis que devem ser priorizados na próxima etapa.",
+  };
+  const en: Record<PreliminaryOpenPoint["category"], string> = {
+    company: "It defines the company perimeter and the factual basis for the analysis.",
+    sector: "It defines the applicable sector drivers and market references.",
+    operation: "It may change the transaction design, sizing, or priority.",
+    scope: "It defines the scope and deliverables to prioritize in the next stage.",
+  };
+  return (locale === "pt-BR" ? pt : en)[category];
 }
 
 function assessment(

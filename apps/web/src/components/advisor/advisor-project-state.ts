@@ -8,6 +8,17 @@ export type AdvisorCycleEvent = AdvisorOutcomeEvent & {
   detail?: unknown;
 };
 
+/** Planned tasks may be ready before the user confirms the next stage. They are not active work. */
+export function advisorIsActive(input: {
+  sessionStatus: string;
+  taskStatuses: readonly string[];
+  messageStatuses: readonly string[];
+}): boolean {
+  return input.sessionStatus === "processing"
+    || input.taskStatuses.includes("running")
+    || input.messageStatuses.some((status) => status === "queued" || status === "processing");
+}
+
 const SUCCESS_EVENTS = new Set(["work_completed", "decision_recorded", "question_answered"]);
 const FAILURE_EVENTS = new Set(["work_failed", "quality_gate_failed"]);
 const TERMINAL_STAGES = new Set([

@@ -1201,6 +1201,7 @@
       "kicker": "ENTENDIMENTO INICIAL",
       "title": "O que entendemos até aqui",
       "body": "Esta leitura combina seu relato, os documentos iniciais e fontes públicas. Confirme ou corrija antes de pedirmos novas informações.",
+      "bodyDocumentsOnly": "Esta leitura foi construída a partir dos documentos enviados. Confirme ou corrija o entendimento antes de avançarmos para a análise.",
       "company": "Companhia",
       "operation": "Necessidade de capital",
       "sector": "Setor",

@@ -32,6 +32,7 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
   const [retrying, setRetrying] = useState(false);
   const [state, action] = useActionState(decidePrivateProjectPreliminary, initialState);
   const current = preliminary.current;
+  const hasResearchEvidence = Boolean(current?.value.preliminaryAssessment.researchSignals.length);
 
   useEffect(() => {
     if (!shouldStart || attemptedStart.current) return;
@@ -93,7 +94,7 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
           : current.row.status === "pending_confirmation"
             ? (
                 <section className="advisor-private-work__understanding">
-                  <header><span>{t("kicker")}</span><h2>{t("title")}</h2><p>{t("body")}</p></header>
+                  <header><span>{t("kicker")}</span><h2>{t("title")}</h2><p>{t(hasResearchEvidence ? "body" : "bodyDocumentsOnly")}</p></header>
                   <blockquote>{current.value.summary}</blockquote>
                   <div className="advisor-private-work__summary-grid">
                     <section>
@@ -123,10 +124,10 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
                     </section>
                   ) : null}
 
-                  <ResearchEvidence
+                  {hasResearchEvidence ? <ResearchEvidence
                     signals={current.value.preliminaryAssessment.researchSignals}
                     sources={current.value.basis.publicResearch.sources}
-                  />
+                  /> : null}
 
                   <p className="advisor-private-work__boundary"><AlertCircle aria-hidden="true" size={13} />{current.value.preliminaryAssessment.boundary}</p>
 

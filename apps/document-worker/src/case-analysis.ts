@@ -717,7 +717,7 @@ async function processPreliminaryUnderstanding(
       assessmentRef: `processing_run:${job.processing_run_id}`,
       locale: locale === "pt" ? "pt-BR" : "en-US",
       assessedAt,
-      openPoints: payload.preliminaryAssessment.openPoints,
+      openPoints: narrative.openPoints,
     }));
   }
   await dependencies.queue.writeStage(job, "preliminary_understanding", "succeeded", {
