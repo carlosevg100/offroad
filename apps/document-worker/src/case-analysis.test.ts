@@ -457,6 +457,7 @@ describe("worker case analysis", () => {
     const raw = {
       session: {
         id: job.intake_session_id,
+        capital_project_id: "12121212-1212-4212-8212-121212121212",
         archetype: "growth_expansion",
         locale: "pt-BR",
         extraction_version: "fixture-v1",

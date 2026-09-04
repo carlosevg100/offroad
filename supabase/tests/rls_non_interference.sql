@@ -1443,6 +1443,8 @@ begin
 
   case_input := public.worker_load_case_input(case_job_id, case_capability);
   if case_input->'session'->>'id' <> '40000000-0000-4000-8000-000000000003'
+    or not (case_input->'session' ? 'capital_project_id')
+    or (case_input->'session'->>'capital_project_id')::uuid is null
     or jsonb_array_length(case_input->'documents') <> 1
     or jsonb_array_length(case_input->'receivables_evidence') <> 1
     or jsonb_array_length(case_input->'receivables_provider_context'->'programs') <> 1
