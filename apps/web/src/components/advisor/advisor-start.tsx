@@ -11,8 +11,9 @@ import {
   Route,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import {useRouter} from "next/navigation";
-import {useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 
 import type {CapitalProjectJob} from "@offroad/work-plan";
 
@@ -37,10 +38,11 @@ const icons = {
 } as const;
 
 export type AdvisorStartCopy = {
-  kicker: string;
+  greeting: string;
+  greetingNamed: string;
   title: string;
-  body: string;
   prompt: string;
+  promptIdeas: string[];
   starterLabel: string;
   starters: Record<(typeof starterJobs)[number], {label: string; placeholder: string}>;
   attach: string;
@@ -59,9 +61,10 @@ type Props = {
   userId: string;
   groupId?: string;
   groupName?: string;
+  userFirstName?: string;
 };
 
-export function AdvisorStart({copy, groupId, groupName, locale, organizationId, userId}: Props) {
+export function AdvisorStart({copy, groupId, groupName, locale, organizationId, userFirstName, userId}: Props) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
   const [entryJobHint, setEntryJobHint] = useState<(typeof starterJobs)[number] | null>(null);
@@ -69,14 +72,24 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "creating" | "uploading" | "starting">("idle");
   const [error, setError] = useState("");
+  const [promptIdeaIndex, setPromptIdeaIndex] = useState(0);
   const pending = status !== "idle";
-  const placeholder = entryJobHint ? copy.starters[entryJobHint].placeholder : copy.prompt;
+  const rotatingPrompt = copy.promptIdeas[promptIdeaIndex] ?? copy.prompt;
+  const placeholder = entryJobHint ? copy.starters[entryJobHint].placeholder : rotatingPrompt;
   const statusLabel = status === "creating" ? copy.status.creating : status === "uploading" ? copy.status.uploading : copy.status.starting;
   const distinctFiles = useMemo(() => {
     const byKey = new Map<string, File>();
     for (const file of files) byKey.set(`${file.name}:${file.size}:${file.lastModified}`, file);
     return [...byKey.values()];
   }, [files]);
+
+  useEffect(() => {
+    if (entryJobHint || prompt || copy.promptIdeas.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => {
+      setPromptIdeaIndex((current) => (current + 1) % copy.promptIdeas.length);
+    }, 3800);
+    return () => window.clearInterval(timer);
+  }, [copy.promptIdeas, entryJobHint, prompt]);
 
   function addFiles(selected: FileList | null) {
     if (!selected?.length) return;
@@ -146,29 +159,14 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
       <section className="advisor-start__center">
         <header>
           {groupName ? <span className="advisor-start__project-context">{copy.groupContext.replace("{project}", groupName)}</span> : null}
-          <span className="section-kicker">{copy.kicker}</span>
+          <span className="advisor-start__mark" aria-hidden="true">
+            <Image alt="" height={72} priority src="/brand/offroad-symbol.png" width={72} />
+          </span>
+          <p className="advisor-start__greeting">
+            {userFirstName ? copy.greetingNamed.replace("{name}", userFirstName) : copy.greeting}
+          </p>
           <h1>{copy.title}</h1>
-          <p>{copy.body}</p>
         </header>
-
-        <div aria-label={copy.starterLabel} className="advisor-starters" role="list">
-          {starterJobs.map((job) => {
-            const Icon = icons[job];
-            const selected = entryJobHint === job;
-            return (
-              <button
-                aria-pressed={selected}
-                className={selected ? "is-selected" : undefined}
-                key={job}
-                onClick={() => setEntryJobHint((current) => current === job ? null : job)}
-                type="button"
-              >
-                <Icon aria-hidden="true" size={15} />
-                <span>{copy.starters[job].label}</span>
-              </button>
-            );
-          })}
-        </div>
 
         <section className="advisor-composer advisor-composer--start">
           <label>
@@ -226,6 +224,28 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
             >{pending ? <LoaderCircle aria-hidden="true" className="spin" size={17} /> : <ArrowUp aria-hidden="true" size={17} />}</button>
           </footer>
         </section>
+
+        <div aria-label={copy.starterLabel} className="advisor-starters" role="list">
+          {starterJobs.map((job) => {
+            const Icon = icons[job];
+            const selected = entryJobHint === job;
+            return (
+              <button
+                aria-pressed={selected}
+                className={selected ? "is-selected" : undefined}
+                key={job}
+                onClick={() => {
+                  setEntryJobHint((current) => current === job ? null : job);
+                  setPromptIdeaIndex(0);
+                }}
+                type="button"
+              >
+                <Icon aria-hidden="true" size={14} />
+                <span>{copy.starters[job].label}</span>
+              </button>
+            );
+          })}
+        </div>
 
         {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
       </section>

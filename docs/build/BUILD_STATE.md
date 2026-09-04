@@ -2017,3 +2017,16 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - O pack setorial inicial de alimentos e consumo essencial está `implemented`, não homologado. O
   engine não se autopromove a expert e ainda precisa passar por gold cases, adversarial cases,
   benchmark e revisão humana nominal.
+
+## Entrada conversacional simplificada, candidate, 04/09/2026
+
+- A entrada autenticada passou a priorizar uma única ação: descrever o trabalho ou anexar os
+  documentos disponíveis. Os atalhos de intenção foram movidos para baixo do composer e continuam
+  sendo sugestões opcionais, nunca etapas obrigatórias.
+- A saudação usa somente o primeiro nome salvo no perfil do próprio usuário. Na ausência desse
+  dado, a interface usa uma saudação neutra e não infere identidade.
+- O farol da marca substitui o rótulo interno `OFFROAD ADVISOR`; título e hierarquia visual foram
+  reduzidos para aproximar a entrada do workspace conversacional já definido na Constituição.
+- Exemplos PT-BR/EN-US alternam no campo apenas enquanto ele está vazio, não há um atalho escolhido
+  e o usuário não solicitou redução de movimento. Criação, upload, confidencialidade e vínculo ao
+  projeto permanecem inalterados.
