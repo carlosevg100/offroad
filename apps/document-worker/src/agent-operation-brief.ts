@@ -327,6 +327,22 @@ function companyProfileString(profile: Record<string, unknown>, ...keys: string[
   return null;
 }
 
+function durableUserRequestContext(context: AgentContext, maxCharacters: number): string {
+  const turns = [
+    ...context.recent_messages
+      .filter((message) => message.role === "user")
+      .map((message) => message.content.trim()),
+    context.message.trim(),
+  ].filter(Boolean);
+  const combined = turns.join("\n\n");
+  if (combined.length <= maxCharacters) return combined;
+
+  const separator = "\n\n[… contexto anterior condensado …]\n\n";
+  const available = maxCharacters - separator.length;
+  const leadingCharacters = Math.floor(available * 0.4);
+  return `${combined.slice(0, leadingCharacters)}${separator}${combined.slice(-(available - leadingCharacters))}`;
+}
+
 function buildDeterministicActivation(
   context: AgentContext,
   route: WorkspaceExecutionRoute,
@@ -348,19 +364,23 @@ function buildDeterministicActivation(
     ? websiteCandidate
     : undefined;
   if (route.analysisScope === "company_debt_view") {
-    return {job: "company_debt_view", company: {name, ...(website ? {website} : {})}, brief: {focus: context.message}};
+    return {
+      job: "company_debt_view",
+      company: {name, ...(website ? {website} : {})},
+      brief: {focus: durableUserRequestContext(context, 2_900)},
+    };
   }
   if (route.analysisScope === "capital_planning") {
     return {
       job: "capital_planning",
       company: {name, ...(website ? {website} : {})},
-      brief: {capitalIntent: context.message},
+      brief: {capitalIntent: durableUserRequestContext(context, 4_900)},
     };
   }
   return {
     job: "origination_thesis",
     company: {name, ...(website ? {website} : {})},
-    brief: {meetingContext: context.message},
+    brief: {meetingContext: durableUserRequestContext(context, 4_900)},
   };
 }
 

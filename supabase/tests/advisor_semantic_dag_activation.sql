@@ -121,7 +121,7 @@ begin
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token'
   );
   begin
-    perform public.worker_record_agent_response_and_activate_v1(
+    perform public.worker_record_agent_response_and_activate_v2(
       (claim ->> 'job_id')::uuid,
       claim ->> 'capability_token',
       assistant_id,
@@ -141,7 +141,7 @@ begin
     raise exception 'semantic activation trusted a company identity not supplied by the user';
   end if;
 
-  recorded := public.worker_record_agent_response_and_activate_v1(
+  recorded := public.worker_record_agent_response_and_activate_v2(
     (claim ->> 'job_id')::uuid,
     claim ->> 'capability_token',
     assistant_id,
@@ -171,7 +171,7 @@ begin
     raise exception 'semantic activation did not persist one coherent execution: %', recorded;
   end if;
 
-  replayed := public.worker_record_agent_response_and_activate_v1(
+  replayed := public.worker_record_agent_response_and_activate_v2(
     (claim ->> 'job_id')::uuid,
     claim ->> 'capability_token',
     assistant_id,
@@ -191,7 +191,7 @@ begin
   end if;
 
   begin
-    perform public.worker_record_agent_response_and_activate_v1(
+    perform public.worker_record_agent_response_and_activate_v2(
       (claim ->> 'job_id')::uuid, repeat('x', 64), gen_random_uuid(),
       jsonb_build_object('state', 'idle', 'reply', 'Token inválido.'), null, null
     );
@@ -253,6 +253,132 @@ begin
 end;
 $$;
 
+-- A terminal specialized job does not make its brief permanently un-runnable. A later user turn
+-- creates one new immutable brief version and one new analysis run with the enriched context.
+reset role;
+do $$
+declare
+  project_id uuid;
+  session_id uuid;
+  failed_job public.processing_jobs;
+begin
+  select brief.capital_project_id into strict project_id
+  from public.capital_project_briefs brief
+  where brief.request_id = '30000000-0000-4000-8000-000000000231'::uuid;
+  select session.id into strict session_id
+  from public.document_intake_sessions session
+  where session.capital_project_id = project_id;
+  select job.* into strict failed_job
+  from public.processing_jobs job
+  where job.kind = 'capital_project_analysis'
+    and job.payload ->> 'capital_project_id' = project_id::text;
+
+  update public.processing_jobs
+  set status = 'failed', last_error = '{"code":"fixture_failure"}'::jsonb
+  where id = failed_job.id;
+  update public.processing_runs set status = 'failed' where id = failed_job.processing_run_id;
+  update public.document_intake_sessions set status = 'failed' where id = session_id;
+end;
+$$;
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000231","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  retry_message_id constant uuid := '30000000-0000-4000-8000-000000000232';
+  retry_assistant_id constant uuid := '40000000-0000-4000-8000-000000000232';
+  project_id uuid;
+  session_id uuid;
+  submitted jsonb;
+  claim jsonb;
+  context jsonb;
+  retried jsonb;
+begin
+  select project.id, session.id into strict project_id, session_id
+  from public.document_intake_sessions session
+  join public.capital_projects project
+    on project.organization_id = session.organization_id
+    and project.id = session.capital_project_id
+  where project.project_name = 'Reunião Farol';
+
+  submitted := public.submit_advisor_turn_v1(
+    project_id,
+    retry_message_id,
+    'pt-BR',
+    'A conversa é com CFO e tesouraria. Não temos exposição. Retome usando este contexto.'
+  );
+  claim := public.worker_claim_job(repeat('s', 64), 600);
+  if claim ->> 'kind' <> 'agent_operation_brief'
+    or claim ->> 'job_id' <> submitted ->> 'job_id' then
+    raise exception 'failed-analysis retry did not claim the advisor turn: %', claim;
+  end if;
+  context := public.worker_load_agent_context(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token'
+  );
+  retried := public.worker_record_agent_response_and_activate_v2(
+    (claim ->> 'job_id')::uuid,
+    claim ->> 'capability_token',
+    retry_assistant_id,
+    jsonb_build_object('state', 'idle', 'reply', 'Vou retomar a análise com o contexto já fornecido.'),
+    null,
+    jsonb_build_object(
+      'job', 'origination_thesis',
+      'company', jsonb_build_object('name', 'Companhia Farol'),
+      'brief', jsonb_build_object(
+        'meetingContext', 'Preparar uma reunião sobre alternativas de dívida para a Companhia Farol. A conversa é com CFO e tesouraria. Não temos exposição.'
+      )
+    )
+  );
+  if retried #>> '{activation,retried}' <> 'true'
+    or retried #>> '{activation,replayed}' <> 'false'
+    or coalesce(retried #>> '{activation,job_id}', '') = '' then
+    raise exception 'failed specialized analysis was not retried: %', retried;
+  end if;
+  perform public.worker_complete_job(
+    (claim ->> 'job_id')::uuid,
+    claim ->> 'capability_token',
+    jsonb_build_object('activation', retried -> 'activation')
+  );
+end;
+$$;
+
+reset role;
+do $$
+declare
+  project_id uuid;
+  active_brief public.capital_project_briefs;
+  retry_job public.processing_jobs;
+begin
+  select project.id into strict project_id
+  from public.capital_projects project
+  where project.project_name = 'Reunião Farol';
+  select brief.* into strict active_brief
+  from public.capital_project_briefs brief
+  where brief.capital_project_id = project_id and brief.status = 'active';
+  select job.* into strict retry_job
+  from public.processing_jobs job
+  where job.kind = 'capital_project_analysis'
+    and job.payload ->> 'capital_project_id' = project_id::text
+    and job.status = 'queued';
+
+  if active_brief.brief_version <> 2
+    or active_brief.content ->> 'meetingContext' not like '%CFO e tesouraria%'
+    or retry_job.payload #>> '{trigger_event,type}' <> 'advisor_semantic_route'
+    or retry_job.payload #>> '{trigger_event,reason}' <> 'failed_analysis_retry'
+    or retry_job.payload ->> 'capital_project_brief_id' <> active_brief.id::text
+    or (select count(*) from public.capital_project_briefs brief where brief.capital_project_id = project_id) <> 2
+    or (select count(*) from public.capital_project_briefs brief where brief.capital_project_id = project_id and brief.status = 'superseded') <> 1
+    or (select count(*) from public.processing_jobs job where job.kind = 'capital_project_analysis' and job.payload ->> 'capital_project_id' = project_id::text) <> 2 then
+    raise exception 'failed-analysis retry did not preserve one immutable brief and one new run';
+  end if;
+end;
+$$;
+
 -- Claim the newly activated DAG as the worker. Its short-lived capability is carried only in a
 -- transaction-local setting so the database-owner fixture can attach one exact final artifact.
 set local role authenticated;
@@ -269,7 +395,8 @@ declare
 begin
   claim := public.worker_claim_job(repeat('s', 64), 600);
   if claim ->> 'kind' <> 'capital_project_analysis'
-    or claim #>> '{payload,trigger_event,type}' <> 'advisor_semantic_route' then
+    or claim #>> '{payload,trigger_event,type}' <> 'advisor_semantic_route'
+    or claim #>> '{payload,trigger_event,reason}' <> 'failed_analysis_retry' then
     raise exception 'semantic completion did not claim the activated DAG: %', claim;
   end if;
   context := public.worker_load_capital_project_context_v4(
