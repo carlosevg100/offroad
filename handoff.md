@@ -2647,7 +2647,49 @@ drivers operacionais e downside próprios do setor. Nem o engine nem o pack est�
 expert. O próximo passo é o primeiro gold case acompanhado, seguido de caso adversarial, benchmark
 cego e revisão nominal independente antes de qualquer promoção de maturidade.
 
+## 43. Casca e entrada refeitas, 04/09/2026
+
+A seção 41 descreve a entrada anterior e permanece como registro histórico. A tela foi refeita
+depois de uma revisão de design que confrontou o produto com Harvey, Hebbia e Rogo. O diagnóstico
+não foi de gosto e sim de causa:
+
+- a escala tipográfica ia de 8 px em rótulos a 45 px no título, com quase nada no meio;
+- o `:root` já definia tokens e a entrada não usava nenhum, escrevendo oito cinzas à mão e um
+  `!important` na saudação;
+- o composer tinha raio de 18 px e duas sombras somadas sobre canvas com gradiente radial, que é
+  a gramática visual de template genérico;
+- os cinco pills custavam a segunda maior área da tela e só trocavam o placeholder;
+- **Novo projeto** não criava projeto: criava uma pasta, devolvia à home com `?group=` e só então
+  o texto digitado criava o projeto. Um gatilho no banco já cria uma pasta por projeto, então a
+  barra lateral mostrava pastas de uma conversa só, com o mesmo nome.
+
+O que passou a valer:
+
+- a barra lateral é um componente cliente único, recolhível para 58 px, com o estado em cookie
+  para o servidor renderizar já na largura escolhida em vez de piscar depois da hidratação;
+- **Novo chat** com `⌘J` é a ação primária e cria a conversa direto; busca com `⌘K`;
+- `Recentes` é uma lista plana de conversas. Pastas continuam existindo e sendo criáveis, mas as
+  geradas pelo gatilho, uma conversa de mesmo nome, ficam ocultas por essa assinatura exata;
+- a entrada mostra o símbolo da marca, a saudação por horário em preto e a pergunta em cinza;
+- o placeholder digita e apaga sete pedidos reais, um por função profissional, e para no instante
+  em que o campo recebe qualquer texto;
+- os pills viraram quatro sugestões em texto que escrevem um pedido completo e preservam a dica de
+  jornada, incluindo a escolha explícita da rota por documentos;
+- `Continuar` traz os três trabalhos mais recentes como lista com estado em monoespaçada;
+- superfícies planas, hairline de 1 px, raio de 9 px e zero sombra; o foco escurece a borda.
+
+Tokens novos em `offroad-premium.css` cobrem rail, mesa e metadado, e a IBM Plex Mono entra
+exclusivamente para metadado, estado, atalho e horário. Sessenta e seis regras de CSS morto foram
+removidas junto, provadas mortas por varredura de classes usadas no TSX.
+
+Verificado em servidor local numa rota de preview temporária, criada e apagada dentro do mesmo
+trabalho, em 1180 px expandido e recolhido. O E2E foi atualizado para a estrutura nova; ele é o
+guarda de regressão desta tela e continua cobrindo renomear, arquivar, criar pasta, abrir conversa
+e as duas jornadas com dica explícita.
+
 ## 41. Entrada do advisor simplificada, 04/09/2026
+
+> Superada pela seção 43. Mantida como registro do que existia antes.
 
 A home autenticada foi reorganizada como uma entrada de trabalho, não como um seletor de produto.
 Ela mostra o farol da Offroad, cumprimenta o usuário pelo primeiro nome confirmado no perfil e

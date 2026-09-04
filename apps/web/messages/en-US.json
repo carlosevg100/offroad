@@ -612,29 +612,77 @@
     "institutionPlaceholder": "Company, bank, manager or advisory firm",
     "affiliationLegend": "Where you work",
     "affiliation": {
-      "company": "Company", "bank": "Bank", "advisory": "Advisory firm", "assetManager": "Asset manager", "creditFund": "Credit fund", "familyOffice": "Family office", "independent": "Independent", "other": "Other"
+      "company": "Company",
+      "bank": "Bank",
+      "advisory": "Advisory firm",
+      "assetManager": "Asset manager",
+      "creditFund": "Credit fund",
+      "familyOffice": "Family office",
+      "independent": "Independent",
+      "other": "Other"
     },
     "role": "Your role",
     "rolePlaceholder": "Select if useful",
     "roles": {
-      "cfoTreasury": "CFO or treasury", "corporateFinance": "Corporate finance", "fpAndA": "FP&A", "controllerAccounting": "Controllership or accounting", "dcmBanker": "DCM banker", "corporateBanker": "Corporate banker", "relationshipManager": "Relationship manager", "structuredFinanceBanker": "Structured finance banker", "projectFinanceBanker": "Project finance banker", "syndicateDistribution": "Syndicate or distribution", "advisor": "Financial advisor", "investorLender": "Investor or lender", "portfolioManager": "Portfolio manager", "creditAnalyst": "Credit analyst", "riskUnderwriter": "Underwriting or credit risk", "investmentCommittee": "Investment committee", "legalStructuring": "Transaction counsel", "boardShareholder": "Board member or shareholder", "analyst": "Analyst", "executive": "Executive", "other": "Other role"
+      "cfoTreasury": "CFO or treasury",
+      "corporateFinance": "Corporate finance",
+      "fpAndA": "FP&A",
+      "controllerAccounting": "Controllership or accounting",
+      "dcmBanker": "DCM banker",
+      "corporateBanker": "Corporate banker",
+      "relationshipManager": "Relationship manager",
+      "structuredFinanceBanker": "Structured finance banker",
+      "projectFinanceBanker": "Project finance banker",
+      "syndicateDistribution": "Syndicate or distribution",
+      "advisor": "Financial advisor",
+      "investorLender": "Investor or lender",
+      "portfolioManager": "Portfolio manager",
+      "creditAnalyst": "Credit analyst",
+      "riskUnderwriter": "Underwriting or credit risk",
+      "investmentCommittee": "Investment committee",
+      "legalStructuring": "Transaction counsel",
+      "boardShareholder": "Board member or shareholder",
+      "analyst": "Analyst",
+      "executive": "Executive",
+      "other": "Other role"
     },
     "team": "Team or area",
     "teamPlaceholder": "E.g. DCM, treasury, private credit",
     "operatingLegend": "How can you act in a transaction?",
     "operatingBody": "Select more than one. This determines which ideas can realistically be advanced.",
     "operating": {
-      "raiseCapital": "We raise capital for our company", "balanceSheetLending": "We lend from our balance sheet", "structuring": "We structure transactions", "distribution": "We distribute to investors", "advisory": "We provide advisory", "investing": "We invest or lend"
+      "raiseCapital": "We raise capital for our company",
+      "balanceSheetLending": "We lend from our balance sheet",
+      "structuring": "We structure transactions",
+      "distribution": "We distribute to investors",
+      "advisory": "We provide advisory",
+      "investing": "We invest or lend"
     },
     "objectiveLegend": "Where should Offroad expand your capacity?",
     "objectiveBody": "This organizes the initial experience; you will still have access to every platform capability.",
     "objectives": {
-      "understandCompany": "Analyze companies", "prepareMeetings": "Prepare for meetings", "originateIdeas": "Originate ideas", "evaluateCapitalOptions": "Evaluate capital alternatives", "structureTransactions": "Structure transactions", "prepareMaterials": "Prepare analysis and materials", "connectCapital": "Find aligned capital", "analyzeInvestments": "Analyze investment opportunities"
+      "understandCompany": "Analyze companies",
+      "prepareMeetings": "Prepare for meetings",
+      "originateIdeas": "Originate ideas",
+      "evaluateCapitalOptions": "Evaluate capital alternatives",
+      "structureTransactions": "Structure transactions",
+      "prepareMaterials": "Prepare analysis and materials",
+      "connectCapital": "Find aligned capital",
+      "analyzeInvestments": "Analyze investment opportunities"
     },
     "optionalTitle": "Institution specialties",
     "optionalBody": "Optional. Add products only when they help calibrate recommendations.",
     "products": {
-      "bilateralCredit": "Bilateral credit", "clubSyndicated": "Club and syndicated deals", "capitalMarkets": "Capital markets", "securitization": "Securitization", "assetBacked": "Asset-backed", "projectAcquisitionFinance": "Project and acquisition finance", "tradeExportAgri": "Trade, export and agriculture", "structuredFlexibleCapital": "Structured and flexible capital", "specialSituations": "Special situations", "derivativesHedging": "Derivatives and hedging"
+      "bilateralCredit": "Bilateral credit",
+      "clubSyndicated": "Club and syndicated deals",
+      "capitalMarkets": "Capital markets",
+      "securitization": "Securitization",
+      "assetBacked": "Asset-backed",
+      "projectAcquisitionFinance": "Project and acquisition finance",
+      "tradeExportAgri": "Trade, export and agriculture",
+      "structuredFlexibleCapital": "Structured and flexible capital",
+      "specialSituations": "Special situations",
+      "derivativesHedging": "Derivatives and hedging"
     },
     "notes": "Anything important about your capabilities",
     "notesPlaceholder": "E.g. we operate in Brazil and the US, focused on middle-market and distributed transactions.",
@@ -717,46 +765,46 @@
       "guidanceEyebrow": "Offroad guidance",
       "guidanceTitle": "Start with what you have.",
       "guidanceBody": "You do not need to gather everything at once. As you progress, we show the essential information and the most useful next step.",
-    "autoSave": "Your progress is saved after each block.",
-    "comingSoon": "Coming soon",
-    "agent": {
-      "eyebrow": "OFFROAD AGENT",
-      "title": "Discuss the transaction",
-      "body": "Explain a change or answer what is missing. The agent prepares the edit and shows its impact before applying it.",
-      "placeholder": "E.g. the intended amount is now BRL 50 million",
-      "send": "Send",
-      "states": {
-        "analyzing": "Analyzing your message",
-        "asking": "Waiting for your answer",
-        "proposing": "Proposal ready for review",
-        "idle": "Ready to help",
-        "failed": "This analysis could not be completed"
+      "autoSave": "Your progress is saved after each block.",
+      "comingSoon": "Coming soon",
+      "agent": {
+        "eyebrow": "OFFROAD AGENT",
+        "title": "Discuss the transaction",
+        "body": "Explain a change or answer what is missing. The agent prepares the edit and shows its impact before applying it.",
+        "placeholder": "E.g. the intended amount is now BRL 50 million",
+        "send": "Send",
+        "states": {
+          "analyzing": "Analyzing your message",
+          "asking": "Waiting for your answer",
+          "proposing": "Proposal ready for review",
+          "idle": "Ready to help",
+          "failed": "This analysis could not be completed"
+        },
+        "preview": "CHANGE PREVIEW",
+        "impact": "Impact",
+        "accept": "Accept and apply",
+        "reject": "Discard",
+        "applied": "Change applied",
+        "rejected": "Proposal discarded",
+        "stale": "This preview is no longer current",
+        "control": "Nothing changes in the transaction without your confirmation.",
+        "monthValue": "{value} months",
+        "fields": {
+          "objective": "Objective",
+          "requestedAmount": "Requested amount",
+          "currency": "Currency",
+          "urgency": "Funding timeline",
+          "requestedTermMonths": "Facility term",
+          "requestedGraceMonths": "Grace period",
+          "consequenceIfNotExecuted": "Impact of not executing",
+          "sector": "Sector",
+          "geography": "Geography",
+          "instruments": "Instruments considered",
+          "collateralKinds": "Available collateral",
+          "expectedRate": "Pricing expectation"
+        }
       },
-      "preview": "CHANGE PREVIEW",
-      "impact": "Impact",
-      "accept": "Accept and apply",
-      "reject": "Discard",
-      "applied": "Change applied",
-      "rejected": "Proposal discarded",
-      "stale": "This preview is no longer current",
-      "control": "Nothing changes in the transaction without your confirmation.",
-      "monthValue": "{value} months",
-      "fields": {
-        "objective": "Objective",
-        "requestedAmount": "Requested amount",
-        "currency": "Currency",
-        "urgency": "Funding timeline",
-        "requestedTermMonths": "Facility term",
-        "requestedGraceMonths": "Grace period",
-        "consequenceIfNotExecuted": "Impact of not executing",
-        "sector": "Sector",
-        "geography": "Geography",
-        "instruments": "Instruments considered",
-        "collateralKinds": "Available collateral",
-        "expectedRate": "Pricing expectation"
-      }
-    },
-    "workPlan": {
+      "workPlan": {
         "status": {
           "pending": "Waiting for the previous step",
           "running": "Running now",
@@ -808,9 +856,18 @@
       "workspaceTitle": "Before you begin.",
       "workspaceBody": "Before you begin, we confirm how your information is protected and give the financing a name. Nothing is shared without your authorization.",
       "status": {
-        "private": {"title": "Private preparation", "body": "No external distribution authorized"},
-        "verified": {"title": "Representation confirmed", "body": "Distribution still requires authorization"},
-        "authorized": {"title": "Distribution authorized", "body": "Limited to the approved package and recipients"}
+        "private": {
+          "title": "Private preparation",
+          "body": "No external distribution authorized"
+        },
+        "verified": {
+          "title": "Representation confirmed",
+          "body": "Distribution still requires authorization"
+        },
+        "authorized": {
+          "title": "Distribution authorized",
+          "body": "Limited to the approved package and recipients"
+        }
       },
       "terms": {
         "kicker": "OFFROAD CAPITAL",
@@ -1079,10 +1136,8 @@
     "search": "Search or go to",
     "workspaceNav": "Workspace",
     "projects": "Projects",
-    "createProject": "New project",
     "projectNamePlaceholder": "Project name",
     "newConversation": "New conversation",
-    "noConversations": "No conversations in this project",
     "deleteProjectGroup": "Delete project",
     "deleteProjectGroupConfirm": "Delete project \"{project}\" from the workspace? Its conversations, documents and history will remain preserved.",
     "close": "Close",
@@ -1112,30 +1167,82 @@
     },
     "advisor": {
       "groupContext": "New conversation in {project}",
-      "greeting": "Hi.",
-      "greetingNamed": "Hi, {name}.",
-      "title": "What are we working on today?",
-      "prompt": "Describe what you need or attach the documents you already have.",
-      "promptIdeas": {
-        "0": "I have a company meeting and want to arrive with concrete ideas...",
-        "1": "I want to assess alternatives to finance an expansion...",
-        "2": "Analyze these documents and help me structure the transaction...",
-        "3": "I want to review a proposal and test whether the terms make sense..."
-      },
-      "starterLabel": "Starting points",
-      "starters": {
-        "companyDebt": {"label": "Understand a company", "placeholder": "Example: analyze the company through a debt lens and show the risks, financial capacity and what still needs to be proven."},
-        "origination": {"label": "Prepare a meeting", "placeholder": "Example: I have a meeting with this company and want an independent view and financing alternatives to explore."},
-        "capitalPlanning": {"label": "Plan a capital need", "placeholder": "Example: I need to finance growth, working capital, an acquisition or refinance maturities. Help me compare the alternatives."},
-        "documents": {"label": "Structure from documents", "placeholder": "Attach the folder you received and add any context you know. Offroad identifies the company, organizes the case and shows what is missing."},
-        "review": {"label": "Review a transaction", "placeholder": "Example: I received a proposal or term sheet and want to test the structure, terms, risks and alternatives."}
-      },
+      "prompt": "Describe the work, or attach the documents you already have.",
       "attach": "Attach documents",
       "remove": "Remove document",
       "send": "Start project",
       "privacy": "Private workspace. Nothing is shared without your authorization.",
-      "status": {"creating": "Creating the project...", "uploading": "Receiving the documents...", "starting": "Starting the review..."},
-      "errors": {"invalid": "Describe what you want to do or attach a document.", "denied": "Accept the confidentiality terms to work with private documents.", "duplicate": "A project with this name already exists.", "notFound": "The project is not available.", "save": "Could not start the project.", "processing": "The documents were received, but the review needs to be started again.", "upload": "One or more documents could not be received securely."}
+      "status": {
+        "creating": "Creating the project...",
+        "uploading": "Receiving the documents...",
+        "starting": "Starting the review..."
+      },
+      "errors": {
+        "invalid": "Describe what you want to do or attach a document.",
+        "denied": "Accept the confidentiality terms to work with private documents.",
+        "duplicate": "A project with this name already exists.",
+        "notFound": "The project is not available.",
+        "save": "Could not start the project.",
+        "processing": "The documents were received, but the review needs to be started again.",
+        "upload": "One or more documents could not be received securely."
+      },
+      "greetings": {
+        "morning": "Good morning",
+        "afternoon": "Good afternoon",
+        "evening": "Good evening"
+      },
+      "question": "How can Offroad help you?",
+      "exampleLabel": "Example",
+      "examples": {
+        "0": {
+          "role": "CFO",
+          "prompt": "I have R$ 380 million maturing in 18 months. Compare rolling it, extending it and a new issue before I talk to the banks."
+        },
+        "1": {
+          "role": "DCM banker",
+          "prompt": "Meeting tomorrow with a listed food company. I want to arrive with capital structure alternatives, not a product catalogue."
+        },
+        "2": {
+          "role": "Credit analyst",
+          "prompt": "I received this deck and the financials. Is it worth going deeper? Where are the inconsistencies between the balance sheet and the debt schedule?"
+        },
+        "3": {
+          "role": "Credit fund manager",
+          "prompt": "Test this opportunity against my mandate: ticket, tenor, security, return, and what would make me pass."
+        },
+        "4": {
+          "role": "Project finance",
+          "prompt": "New plant with a 24-month ramp-up. Build the debt schedule, test DSCR in the downside, and tell me which constraint binds the sizing."
+        },
+        "5": {
+          "role": "Founder",
+          "prompt": "I do not know whether I need debt, equity or working capital. I grow 40% a year and cash is tight. Where do I start?"
+        },
+        "6": {
+          "role": "Treasury",
+          "prompt": "I want to cut CDI exposure and extend average tenor without raising net debt. What is available today?"
+        }
+      },
+      "seeds": {
+        "company": {
+          "label": "Understand a company",
+          "text": "Analyse the company through a debt lens: financial position, capital structure, capacity, risks, and what still has to be evidenced. Company: "
+        },
+        "alternatives": {
+          "label": "Compare alternatives",
+          "text": "I need to fund a requirement and want to compare the alternatives before choosing an instrument. Requirement, approximate amount and intended tenor: "
+        },
+        "review": {
+          "label": "Review a term sheet",
+          "text": "I received a proposal and want to test the structure, terms, all-in cost, risks and the alternatives that should be on the table. Context: "
+        },
+        "documents": {
+          "label": "Structure from documents",
+          "text": "I will work from the documents I have. Attach the folder and add the context you already know: "
+        }
+      },
+      "documentsOnly": "Analyse the attached documents and tell me what they support.",
+      "continueLabel": "Continue"
     },
     "advisorProject": {
       "advisor": "Offroad Agent",
@@ -1183,10 +1290,36 @@
         "rejected": "Proposal discarded",
         "stale": "This preview is no longer current",
         "monthValue": "{value} months",
-        "errors": {"invalid": "This decision is not valid.", "stale": "The case changed after this preview. Request a new proposal.", "save": "The decision could not be recorded.", "processing": "The change was applied, but the analysis needs to be started again."},
-        "fields": {"objective": "Objective", "requestedAmount": "Requested amount", "currency": "Currency", "urgency": "Funding timeline", "requestedTermMonths": "Facility term", "requestedGraceMonths": "Grace period", "consequenceIfNotExecuted": "Impact of not executing", "sector": "Sector", "geography": "Geography", "instruments": "Instruments considered", "collateralKinds": "Available collateral", "expectedRate": "Pricing expectation"}
+        "errors": {
+          "invalid": "This decision is not valid.",
+          "stale": "The case changed after this preview. Request a new proposal.",
+          "save": "The decision could not be recorded.",
+          "processing": "The change was applied, but the analysis needs to be started again."
+        },
+        "fields": {
+          "objective": "Objective",
+          "requestedAmount": "Requested amount",
+          "currency": "Currency",
+          "urgency": "Funding timeline",
+          "requestedTermMonths": "Facility term",
+          "requestedGraceMonths": "Grace period",
+          "consequenceIfNotExecuted": "Impact of not executing",
+          "sector": "Sector",
+          "geography": "Geography",
+          "instruments": "Instruments considered",
+          "collateralKinds": "Available collateral",
+          "expectedRate": "Pricing expectation"
+        }
       },
-      "errors": {"invalid": "Review the message.", "denied": "This action is not authorized for this project.", "duplicate": "This message or document has already been recorded.", "notFound": "The project is no longer available.", "save": "Could not record the message.", "processing": "The review could not be started.", "upload": "One or more documents could not be received securely."}
+      "errors": {
+        "invalid": "Review the message.",
+        "denied": "This action is not authorized for this project.",
+        "duplicate": "This message or document has already been recorded.",
+        "notFound": "The project is no longer available.",
+        "save": "Could not record the message.",
+        "processing": "The review could not be started.",
+        "upload": "One or more documents could not be received securely."
+      }
     },
     "privateCase": {
       "processingTitle": "Offroad is working on this project",
@@ -1243,7 +1376,11 @@
       "diagnosticExceptionsBody": "Discrepancies or points requiring treatment.",
       "diagnosticOpenPoints": "Material blockers",
       "diagnosticOpenPointsBody": "Items preventing case confirmation.",
-      "diagnosticStates": {"blocked": "Material blockers remain.", "in_progress": "The review is still developing.", "ready": "The case can be submitted for your confirmation."},
+      "diagnosticStates": {
+        "blocked": "Material blockers remain.",
+        "in_progress": "The review is still developing.",
+        "ready": "The case can be submitted for your confirmation."
+      },
       "diagnosticBlockers": "What still prevents progress",
       "diagnosticBlockersBody": "Respond in the chat or attach the relevant evidence. Only changed inputs will be reprocessed.",
       "diagnosticDossier": "Technical case dossier",
@@ -1253,7 +1390,11 @@
       "diagnosticConfirmBody": "This approval accepts the current case reading for the next stage. It does not approve credit, terms, materials, or market contact.",
       "diagnosticConfirm": "Confirm diagnostic",
       "diagnosticConfirming": "Confirming...",
-      "diagnosticErrors": {"stale": "The diagnostic changed. Reload the project before confirming.", "save": "The diagnostic could not be confirmed.", "processing": "The diagnostic was confirmed, but the next stage needs to be started again."},
+      "diagnosticErrors": {
+        "stale": "The diagnostic changed. Reload the project before confirming.",
+        "save": "The diagnostic could not be confirmed.",
+        "processing": "The diagnostic was confirmed, but the next stage needs to be started again."
+      },
       "structureKicker": "INDICATIVE STRUCTURE",
       "structureProcessingTitle": "Offroad is designing and testing the alternatives",
       "structureProcessingBody": "The system compares routes, sources and uses, capacity, tenor, amortization, security, covenants, conditions precedent, and dependencies before recommending an alternative.",
@@ -1281,7 +1422,12 @@
       "structureBoundary": "Indicative structure for case preparation. It is not an approval, capital commitment, or binding proposal.",
       "structureDeclinedTitle": "The structure was declined",
       "structureDeclinedBody": "The diagnostic and evidence remain preserved. The project can receive new context or a different direction through the chat.",
-      "structureErrors": {"invalid": "Select an alternative and describe the adjustment when required.", "stale": "The structure changed. Reload the project before deciding.", "save": "The decision could not be recorded.", "processing": "The decision was recorded, but the next stage needs to be started again."},
+      "structureErrors": {
+        "invalid": "Select an alternative and describe the adjustment when required.",
+        "stale": "The structure changed. Reload the project before deciding.",
+        "save": "The decision could not be recorded.",
+        "processing": "The decision was recorded, but the next stage needs to be started again."
+      },
       "productionKicker": "PREPARATION PLAN",
       "productionTitle": "The package will be built from this same basis",
       "productionBody": "Review the plan before production starts. Every item remains linked to the confirmed structure, assumptions, and case evidence.",
@@ -1291,10 +1437,22 @@
       "productionApproving": "Starting preparation...",
       "productionBoundary": "This gate prepares internal materials. It does not authorize contact, underwriting, an offer, or a capital commitment.",
       "artifacts": {
-        "teaser": {"title": "Institutional teaser", "description": "Company, need, credit thesis, target structure, and principal risks."},
-        "financial_model": {"title": "Financial model", "description": "Historical results, projections, debt, capacity, sensitivities, and auditable formulas."},
-        "indicative_term_sheet": {"title": "Indicative term sheet", "description": "Target terms, amortization, security, covenants, conditions, and definitions."},
-        "data_room_index": {"title": "Information-room index", "description": "Documents organized by purpose, entity, period, version, and evidence."}
+        "teaser": {
+          "title": "Institutional teaser",
+          "description": "Company, need, credit thesis, target structure, and principal risks."
+        },
+        "financial_model": {
+          "title": "Financial model",
+          "description": "Historical results, projections, debt, capacity, sensitivities, and auditable formulas."
+        },
+        "indicative_term_sheet": {
+          "title": "Indicative term sheet",
+          "description": "Target terms, amortization, security, covenants, conditions, and definitions."
+        },
+        "data_room_index": {
+          "title": "Information-room index",
+          "description": "Documents organized by purpose, entity, period, version, and evidence."
+        }
       },
       "materialsProcessingTitle": "The materials are being compiled",
       "materialsProcessingBody": "Offroad reuses the approved basis, checks consistency across outputs, and blocks unsupported claims.",
@@ -1307,7 +1465,12 @@
       "materialsReady": "Prepared and linked to the approved plan.",
       "materialsPending": "Not yet compiled safely.",
       "materialsOpen": "Open",
-      "materialActions": {"open": "Open", "pdf": "Open PDF-ready version", "excel": "Download Excel", "word": "Download Word"},
+      "materialActions": {
+        "open": "Open",
+        "pdf": "Open PDF-ready version",
+        "excel": "Download Excel",
+        "word": "Download Word"
+      },
       "materialsBlocked": "Pending",
       "materialsApprovalTitle": "Pin this version as the approved package",
       "materialsApprovalBody": "The exact fingerprint of all four artifacts will be preserved for matching.",
@@ -1339,7 +1502,20 @@
         "no_eligible_mandates": "No current mandate was aligned with the approved structure.",
         "ready_for_review": "The shortlist is ready for review."
       },
-      "providerKinds": {"fidc": "Receivables fund", "credit_fund": "Credit fund", "securitizadora": "Securitization company", "bank": "Bank", "family_office": "Family office", "multi_strategy": "Multi-strategy", "factoring": "Factoring company", "development_agency": "Development agency", "finance_company": "Finance company", "alternative_lender": "Alternative lender", "other": "Other provider", "unknown": "Capital provider"},
+      "providerKinds": {
+        "fidc": "Receivables fund",
+        "credit_fund": "Credit fund",
+        "securitizadora": "Securitization company",
+        "bank": "Bank",
+        "family_office": "Family office",
+        "multi_strategy": "Multi-strategy",
+        "factoring": "Factoring company",
+        "development_agency": "Development agency",
+        "finance_company": "Finance company",
+        "alternative_lender": "Alternative lender",
+        "other": "Other provider",
+        "unknown": "Capital provider"
+      },
       "introductionPlanProcessingTitle": "The shortlist has been preserved",
       "introductionPlanProcessingBody": "The responsible contacts, mandate freshness, and exact material set must now be validated.",
       "introductionKicker": "INTRODUCTION PLAN",
@@ -1348,7 +1524,11 @@
       "introductionAuthorizedTitle": "Specific introductions authorized",
       "introductionAuthorizedBody": "Authorization is limited to the people and versions shown below.",
       "introductionAuthorizedStatus": "No additional recipient or material was authorized.",
-      "contactStatus": {"unresolved": "Contact under validation", "resolved": "Contact validated", "unavailable": "Contact unavailable"},
+      "contactStatus": {
+        "unresolved": "Contact under validation",
+        "resolved": "Contact validated",
+        "unavailable": "Contact unavailable"
+      },
       "representationAttestationTitle": "I confirm that I am authorized to request these introductions",
       "representationAttestationBody": "The declaration applies only to the recipients and materials in this plan. Offroad also requires verified representation.",
       "representationVerificationRequired": "Representation must still be verified before any market authorization.",
@@ -1376,12 +1556,48 @@
       "feedbackSaved": "The update was added to the history.",
       "feedbackRequestedCount": "{count} additional items",
       "feedbackBoundary": "Feedback records observed outcomes. Diligence, the credit decision, the offer, and funding belong to the financing provider.",
-      "feedbackEvents": {"introduction_accepted": "Introduction accepted", "case_declined": "Case declined", "diligence_requested": "Additional information requested", "process_advanced": "Process advanced", "proposal_issued": "Proposal issued", "funded": "Transaction funded"},
-      "feedbackSources": {"lender": "Financing provider", "company": "Company", "advisor": "Advisor", "offroad": "Offroad"},
-      "feedbackVerification": {"reported": "Reported", "confirmed": "Confirmed", "verified": "Verified"},
-      "feedbackReasons": {"ticket_outside_mandate": "Ticket outside mandate", "sector_outside_mandate": "Sector outside mandate", "leverage_outside_mandate": "Leverage outside mandate", "structure_not_supported": "Structure not supported", "insufficient_information": "Insufficient information", "timing": "Timing or tenor", "pricing": "Pricing or return", "other": "Other reason"},
-      "feedbackErrors": {"invalid": "Review the required fields for this outcome.", "stale": "This introduction is no longer available in the current project version.", "save": "The update could not be recorded."},
-      "governedErrors": {"invalid": "Review the selection or required declaration.", "stale": "This version changed. Reload the project before deciding.", "save": "This decision could not be recorded.", "processing": "The decision was preserved, but the next analysis needs to resume.", "incomplete": "The package does not yet contain every planned artifact.", "forbidden": "Your role or representation verification does not yet permit this action."},
+      "feedbackEvents": {
+        "introduction_accepted": "Introduction accepted",
+        "case_declined": "Case declined",
+        "diligence_requested": "Additional information requested",
+        "process_advanced": "Process advanced",
+        "proposal_issued": "Proposal issued",
+        "funded": "Transaction funded"
+      },
+      "feedbackSources": {
+        "lender": "Financing provider",
+        "company": "Company",
+        "advisor": "Advisor",
+        "offroad": "Offroad"
+      },
+      "feedbackVerification": {
+        "reported": "Reported",
+        "confirmed": "Confirmed",
+        "verified": "Verified"
+      },
+      "feedbackReasons": {
+        "ticket_outside_mandate": "Ticket outside mandate",
+        "sector_outside_mandate": "Sector outside mandate",
+        "leverage_outside_mandate": "Leverage outside mandate",
+        "structure_not_supported": "Structure not supported",
+        "insufficient_information": "Insufficient information",
+        "timing": "Timing or tenor",
+        "pricing": "Pricing or return",
+        "other": "Other reason"
+      },
+      "feedbackErrors": {
+        "invalid": "Review the required fields for this outcome.",
+        "stale": "This introduction is no longer available in the current project version.",
+        "save": "The update could not be recorded."
+      },
+      "governedErrors": {
+        "invalid": "Review the selection or required declaration.",
+        "stale": "This version changed. Reload the project before deciding.",
+        "save": "This decision could not be recorded.",
+        "processing": "The decision was preserved, but the next analysis needs to resume.",
+        "incomplete": "The package does not yet contain every planned artifact.",
+        "forbidden": "Your role or representation verification does not yet permit this action."
+      },
       "errors": {
         "invalid": "Describe the correction before sending it.",
         "stale": "This understanding has changed. Reload the project before deciding.",
@@ -1394,61 +1610,474 @@
       "kicker": "Company through a debt lens",
       "title": "Understand the balance sheet before choosing a transaction.",
       "body": "Identify the company. Offroad starts with public sources, separates evidence from hypotheses, and shows exactly which private information is needed to advance safely.",
-      "companySection": {"title": "Identify the company", "body": "The company is enough to begin. You do not need to invent a capital need or arrive with a transaction structure."},
-      "contextSection": {"title": "Add context, if useful", "body": "This is optional. Use it only to direct the analysis or record something public research will not find."},
-      "fields": {"projectName": "Project name", "projectNamePlaceholder": "Example: Project Cedar", "companyName": "Company", "companyNamePlaceholder": "Company to analyze", "website": "Company website", "websitePlaceholder": "https://company.com", "websiteHelp": "Helps avoid namesakes and improves research precision.", "focus": "Is there a question that deserves attention?", "focusPlaceholder": "Example: understand the maturity profile and reliance on working capital.", "focusHelp": "Optional. The analysis also works without an initial hypothesis.", "knownContext": "Public context you already know", "knownContextPlaceholder": "Example: a recent acquisition and a stated intention to extend debt maturities.", "knownContextHelp": "Do not include confidential information in this public stage. This text guides research but is not evidence by itself."},
-      "boundary": {"title": "Public analysis, not underwriting.", "body": "Offroad does not calculate debt capacity or recommend a definitive transaction without reconciled financial documents."},
-      "actionNote": "The project opens immediately and the analysis starts in the background.", "submit": "Analyze company", "submitting": "Creating project...",
-      "aside": {"kicker": "First work product", "title": "A useful read before requesting an entire folder.", "steps": {"research": {"title": "Research", "body": "Company, sector, financial disclosures, debt, liquidity, news, and market references."}, "diagnose": {"title": "Diagnose", "body": "Business model, cash generation, financial signals, risks, sensitivities, and debt-lens hypotheses."}, "request": {"title": "Prioritize", "body": "At most five information requests, each with reason, decision impact, and acceptable evidence."}}, "footer": "Sources remain linked to each claim. Where the evidence cannot support a conclusion, Offroad states the limitation."},
-      "errors": {"duplicate": "An active project already uses this name.", "save": "We could not create the project. Review the fields or try again."},
-      "project": {"kicker": "Public diagnostic", "unknownCompany": "company not yet identified", "subtitle": "Public debt-lens analysis for {company}.", "publicOnly": "Public sources only", "publicOnlyBody": "User context guides research but is not treated as evidence.", "workingKicker": "Analysis in progress", "workingTitle": "Offroad is reconstructing the company view.", "workingBody": "Research runs in parallel. Synthesis begins only after identity, sector, financial signals, debt, liquidity, and market context have been organized.", "failedTitle": "The analysis needs attention.", "failedBody": "A task did not complete. History and sources already collected were preserved for a safe restart.", "taskProgress": "{complete} of {total} tasks complete", "invalidArtifactTitle": "The diagnostic failed validation.", "invalidArtifactBody": "The result was preserved, but it will not be shown as usable work product until it satisfies the quality contract."},
-      "diagnostic": {"kicker": "Work product for review", "title": "Company through a debt lens", "asOf": "Sources reviewed through {date}", "executiveRead": "Executive read", "companySnapshot": "Company on one page", "coverage": "Evidence coverage", "coverageBody": "What can be assessed now and what requires private documents.", "criticalMissing": "What still prevents a robust conclusion", "businessRisk": "Business model and enterprise risk", "businessRiskBody": "How the company generates cash and which variables most affect financial capacity.", "cashDrivers": "Cash generation drivers", "sensitivities": "Sensitivities", "financialSignals": "Public financial signals", "debtSignals": "Debt and liquidity signals", "workingCapitalSignals": "Working capital signals", "risks": "Risks that matter for debt", "risksBody": "Available evidence, implications, and mitigants still to test.", "debtRelevance": "Debt relevance: ", "capacity": "Financial capacity", "capacityBoundary": "Capacity, leverage, and coverage are calculated only from reconciled, traceable numbers.", "hypotheses": "Diagnostic hypotheses", "hypothesesBody": "Views to test, never presented as established facts.", "hypothesis": "HYPOTHESIS", "support": "What supports it", "disconfirmers": "What may disprove it", "requests": "Most useful next information", "requestsBody": "A short queue prioritized by how much each item changes the analysis.", "questions": "Questions that change the view", "questionsBody": "What a company conversation must clarify before alternatives can be structured.", "why": "Why it matters: ", "changes": "What changes: ", "acceptableEvidence": "Can be answered with: ", "implication": "Implication: ", "bindingUnknowns": "Unknowns blocking capacity calculation", "unknowns": "Other remaining unknowns", "sources": "Sources", "sourceList": "Sources reviewed"},
-      "artifactStatus": {"pending_confirmation": "Awaiting your review", "confirmed": "Confirmed", "superseded": "Superseded", "draft": "Draft", "approved": "Approved", "stale": "Outdated"},
-      "dataQuality": {"limited": "Limited public basis", "partial": "Partial public basis", "strong": "Consistent public basis"},
-      "capacityStatus": {"not_computable": "Not yet computable", "directional_only": "Directional view only"},
-      "claimClass": {"fact": "Supported fact", "reference": "Market reference", "hypothesis": "Hypothesis"},
-      "confidence": {"high": "High confidence", "medium": "Medium confidence", "low": "Low confidence"},
-      "sourceTopics": {"identity": "Company", "news": "News", "sector": "Sector", "regulation": "Regulation", "market": "Debt market"},
-      "decision": {"title": "Your decision on this version", "confirm": "Confirm this analysis", "confirmed": "Analysis confirmed", "requestChanges": "Request corrections", "requested": "Correction recorded; a new version is in preparation", "note": "What needs to change?", "notePlaceholder": "Identify the incorrect fact, preferred source, or hypothesis that should be reviewed.", "errors": {"invalid": "Describe the correction before recording it.", "save": "We could not record your decision.", "stale": "This version has changed. Reload the page before deciding."}},
-      "tasks": {"kicker": "Work plan", "title": "How this analysis was built", "footer": "Every result remains linked to the tasks, versions, and sources that produced it."},
-      "taskLabels": {"M01": "Resolve company identity", "M02": "Define the analysis objective", "M03": "Record limits and assumptions", "M04": "Define debt lenses", "M05": "Specify the diagnostic", "M06": "Compile the execution plan", "D01": "Check documents received", "D02": "Classify documents", "D03": "Extract document content", "D04": "Extract fact candidates", "D05": "Resolve entity, period, and unit", "D06": "Check for a reconciled basis", "D07": "Check accounting identities", "C01": "Understand the business model", "C02": "Research company and sector", "C03": "Map financial signals", "C04": "Assess earnings quality", "C05": "Map debt and liquidity", "C06": "Map working capital", "C07": "Bound possible projections", "C08": "Bound possible stresses", "C09": "Assess credit risks", "C10": "Assess financial capacity", "C11": "Compile the diagnostic"},
-      "taskStatus": {"waiting": "Waiting for dependencies", "queued": "Queued", "running": "Running", "succeeded": "Complete", "failed": "Needs attention", "blocked": "Blocked", "cancelled": "Cancelled"}
+      "companySection": {
+        "title": "Identify the company",
+        "body": "The company is enough to begin. You do not need to invent a capital need or arrive with a transaction structure."
+      },
+      "contextSection": {
+        "title": "Add context, if useful",
+        "body": "This is optional. Use it only to direct the analysis or record something public research will not find."
+      },
+      "fields": {
+        "projectName": "Project name",
+        "projectNamePlaceholder": "Example: Project Cedar",
+        "companyName": "Company",
+        "companyNamePlaceholder": "Company to analyze",
+        "website": "Company website",
+        "websitePlaceholder": "https://company.com",
+        "websiteHelp": "Helps avoid namesakes and improves research precision.",
+        "focus": "Is there a question that deserves attention?",
+        "focusPlaceholder": "Example: understand the maturity profile and reliance on working capital.",
+        "focusHelp": "Optional. The analysis also works without an initial hypothesis.",
+        "knownContext": "Public context you already know",
+        "knownContextPlaceholder": "Example: a recent acquisition and a stated intention to extend debt maturities.",
+        "knownContextHelp": "Do not include confidential information in this public stage. This text guides research but is not evidence by itself."
+      },
+      "boundary": {
+        "title": "Public analysis, not underwriting.",
+        "body": "Offroad does not calculate debt capacity or recommend a definitive transaction without reconciled financial documents."
+      },
+      "actionNote": "The project opens immediately and the analysis starts in the background.",
+      "submit": "Analyze company",
+      "submitting": "Creating project...",
+      "aside": {
+        "kicker": "First work product",
+        "title": "A useful read before requesting an entire folder.",
+        "steps": {
+          "research": {
+            "title": "Research",
+            "body": "Company, sector, financial disclosures, debt, liquidity, news, and market references."
+          },
+          "diagnose": {
+            "title": "Diagnose",
+            "body": "Business model, cash generation, financial signals, risks, sensitivities, and debt-lens hypotheses."
+          },
+          "request": {
+            "title": "Prioritize",
+            "body": "At most five information requests, each with reason, decision impact, and acceptable evidence."
+          }
+        },
+        "footer": "Sources remain linked to each claim. Where the evidence cannot support a conclusion, Offroad states the limitation."
+      },
+      "errors": {
+        "duplicate": "An active project already uses this name.",
+        "save": "We could not create the project. Review the fields or try again."
+      },
+      "project": {
+        "kicker": "Public diagnostic",
+        "unknownCompany": "company not yet identified",
+        "subtitle": "Public debt-lens analysis for {company}.",
+        "publicOnly": "Public sources only",
+        "publicOnlyBody": "User context guides research but is not treated as evidence.",
+        "workingKicker": "Analysis in progress",
+        "workingTitle": "Offroad is reconstructing the company view.",
+        "workingBody": "Research runs in parallel. Synthesis begins only after identity, sector, financial signals, debt, liquidity, and market context have been organized.",
+        "failedTitle": "The analysis needs attention.",
+        "failedBody": "A task did not complete. History and sources already collected were preserved for a safe restart.",
+        "taskProgress": "{complete} of {total} tasks complete",
+        "invalidArtifactTitle": "The diagnostic failed validation.",
+        "invalidArtifactBody": "The result was preserved, but it will not be shown as usable work product until it satisfies the quality contract."
+      },
+      "diagnostic": {
+        "kicker": "Work product for review",
+        "title": "Company through a debt lens",
+        "asOf": "Sources reviewed through {date}",
+        "executiveRead": "Executive read",
+        "companySnapshot": "Company on one page",
+        "coverage": "Evidence coverage",
+        "coverageBody": "What can be assessed now and what requires private documents.",
+        "criticalMissing": "What still prevents a robust conclusion",
+        "businessRisk": "Business model and enterprise risk",
+        "businessRiskBody": "How the company generates cash and which variables most affect financial capacity.",
+        "cashDrivers": "Cash generation drivers",
+        "sensitivities": "Sensitivities",
+        "financialSignals": "Public financial signals",
+        "debtSignals": "Debt and liquidity signals",
+        "workingCapitalSignals": "Working capital signals",
+        "risks": "Risks that matter for debt",
+        "risksBody": "Available evidence, implications, and mitigants still to test.",
+        "debtRelevance": "Debt relevance: ",
+        "capacity": "Financial capacity",
+        "capacityBoundary": "Capacity, leverage, and coverage are calculated only from reconciled, traceable numbers.",
+        "hypotheses": "Diagnostic hypotheses",
+        "hypothesesBody": "Views to test, never presented as established facts.",
+        "hypothesis": "HYPOTHESIS",
+        "support": "What supports it",
+        "disconfirmers": "What may disprove it",
+        "requests": "Most useful next information",
+        "requestsBody": "A short queue prioritized by how much each item changes the analysis.",
+        "questions": "Questions that change the view",
+        "questionsBody": "What a company conversation must clarify before alternatives can be structured.",
+        "why": "Why it matters: ",
+        "changes": "What changes: ",
+        "acceptableEvidence": "Can be answered with: ",
+        "implication": "Implication: ",
+        "bindingUnknowns": "Unknowns blocking capacity calculation",
+        "unknowns": "Other remaining unknowns",
+        "sources": "Sources",
+        "sourceList": "Sources reviewed"
+      },
+      "artifactStatus": {
+        "pending_confirmation": "Awaiting your review",
+        "confirmed": "Confirmed",
+        "superseded": "Superseded",
+        "draft": "Draft",
+        "approved": "Approved",
+        "stale": "Outdated"
+      },
+      "dataQuality": {
+        "limited": "Limited public basis",
+        "partial": "Partial public basis",
+        "strong": "Consistent public basis"
+      },
+      "capacityStatus": {
+        "not_computable": "Not yet computable",
+        "directional_only": "Directional view only"
+      },
+      "claimClass": {
+        "fact": "Supported fact",
+        "reference": "Market reference",
+        "hypothesis": "Hypothesis"
+      },
+      "confidence": {
+        "high": "High confidence",
+        "medium": "Medium confidence",
+        "low": "Low confidence"
+      },
+      "sourceTopics": {
+        "identity": "Company",
+        "news": "News",
+        "sector": "Sector",
+        "regulation": "Regulation",
+        "market": "Debt market"
+      },
+      "decision": {
+        "title": "Your decision on this version",
+        "confirm": "Confirm this analysis",
+        "confirmed": "Analysis confirmed",
+        "requestChanges": "Request corrections",
+        "requested": "Correction recorded; a new version is in preparation",
+        "note": "What needs to change?",
+        "notePlaceholder": "Identify the incorrect fact, preferred source, or hypothesis that should be reviewed.",
+        "errors": {
+          "invalid": "Describe the correction before recording it.",
+          "save": "We could not record your decision.",
+          "stale": "This version has changed. Reload the page before deciding."
+        }
+      },
+      "tasks": {
+        "kicker": "Work plan",
+        "title": "How this analysis was built",
+        "footer": "Every result remains linked to the tasks, versions, and sources that produced it."
+      },
+      "taskLabels": {
+        "M01": "Resolve company identity",
+        "M02": "Define the analysis objective",
+        "M03": "Record limits and assumptions",
+        "M04": "Define debt lenses",
+        "M05": "Specify the diagnostic",
+        "M06": "Compile the execution plan",
+        "D01": "Check documents received",
+        "D02": "Classify documents",
+        "D03": "Extract document content",
+        "D04": "Extract fact candidates",
+        "D05": "Resolve entity, period, and unit",
+        "D06": "Check for a reconciled basis",
+        "D07": "Check accounting identities",
+        "C01": "Understand the business model",
+        "C02": "Research company and sector",
+        "C03": "Map financial signals",
+        "C04": "Assess earnings quality",
+        "C05": "Map debt and liquidity",
+        "C06": "Map working capital",
+        "C07": "Bound possible projections",
+        "C08": "Bound possible stresses",
+        "C09": "Assess credit risks",
+        "C10": "Assess financial capacity",
+        "C11": "Compile the diagnostic"
+      },
+      "taskStatus": {
+        "waiting": "Waiting for dependencies",
+        "queued": "Queued",
+        "running": "Running",
+        "succeeded": "Complete",
+        "failed": "Needs attention",
+        "blocked": "Blocked",
+        "cancelled": "Cancelled"
+      }
     },
     "capitalPlanning": {
       "back": "Back to workspace",
-      "project": {"kicker": "Capital planning", "unknownCompany": "company not yet identified", "subtitle": "Directional debt alternatives map for {company}.", "publicOnly": "Public basis and stated intent", "publicOnlyBody": "No capacity, term, or lender acceptance has been assumed.", "workingKicker": "Plan in progress", "workingTitle": "Offroad is comparing the available routes.", "workingBody": "The work organizes the need, researches public context, and tests debt families in parallel. Sizing, pricing, and capacity remain open until reconciled documents exist.", "failedTitle": "The plan needs attention.", "failedBody": "A task did not complete. History and valid results were preserved for a safe restart.", "taskProgress": "{complete} of {total} tasks complete", "invalidArtifactTitle": "The map did not pass validation.", "invalidArtifactBody": "The result was preserved but will not be shown as usable work until it meets the quality contract."},
-      "map": {"kicker": "Work product for review", "title": "Debt alternatives map", "asOf": "Basis reviewed through {date}", "executiveRead": "Executive read", "understoodNeed": "Our understanding of the need", "understoodNeedBody": "Objective, constraints, and assumptions that still require confirmation.", "constraints": "Known constraints", "assumptions": "Assumptions to confirm", "noneDeclared": "No constraint was stated.", "evidence": "Evidence coverage", "evidenceBody": "What the basis supports and what cannot yet be treated as proven.", "supported": "What is supported", "notSupported": "What is not yet supported", "noneSupported": "The current basis does not yet support a specific conclusion.", "alternatives": "Alternatives to consider", "alternativesBody": "Distinct families compared through the conditions that support or weaken each route.", "advantages": "Potential advantages", "tradeoffs": "Trade-offs", "prerequisites": "Prerequisites", "disconfirmers": "What could rule it out", "comparison": "Comparison", "comparisonBody": "How each route behaves across the dimensions that matter for this need.", "recommendation": "Directional recommendation", "notReady": "There is not yet enough basis to choose a structure", "requests": "Most useful next information", "requestsBody": "A short queue prioritized by how much each item changes the choice and structure.", "questions": "Questions that change the decision", "questionsBody": "Points to confirm before moving from alternatives to structure.", "why": "Why it matters: ", "changes": "What it changes: ", "acceptableEvidence": "Can be supported with: ", "unknowns": "Open unknowns", "nextGate": "Next gate", "nextGateBody": "Confirm or correct this map. A structure will only be designed after the minimum basis is supported.", "sources": "Sources", "sourceList": "Sources reviewed"},
-      "families": {"bilateral_bank": "Bilateral bank", "club_or_syndicated": "Club or syndicated", "capital_markets": "Capital markets", "securitization": "Securitization", "private_credit": "Private credit", "receivables": "Receivables", "asset_backed": "Asset-backed", "project_or_acquisition_finance": "Project or acquisition finance", "trade_or_agro": "Trade or agribusiness", "flexible_capital": "Flexible capital", "special_situations": "Special situations"},
-      "alternativeStatus": {"candidate": "Candidate", "conditional": "Conditional", "not_assessable": "Not yet assessable"},
-      "artifactStatus": {"pending_confirmation": "Awaiting your review", "confirmed": "Confirmed", "superseded": "Superseded", "draft": "Draft", "approved": "Approved", "stale": "Outdated"},
-      "sourceTopics": {"identity": "Company", "news": "News", "sector": "Sector", "regulation": "Regulation", "market": "Debt market"},
-      "decision": {"title": "Your decision on this version", "confirm": "Confirm this map", "confirmed": "Map confirmed", "requestChanges": "Request corrections", "requested": "Correction recorded; a new version is in preparation", "note": "What needs to change?", "notePlaceholder": "Identify the incorrect understanding, alternative that needs review, or constraint that was not considered.", "errors": {"invalid": "Describe the correction before recording it.", "save": "We could not record your decision.", "stale": "This version has changed. Reload the page before deciding."}},
-      "tasks": {"kicker": "Work plan", "title": "How the map was built", "footer": "Every conclusion remains linked to the tasks, versions, sources, and boundaries that produced it."},
-      "taskStatus": {"waiting": "Waiting for dependencies", "queued": "Queued", "running": "Running", "succeeded": "Complete", "failed": "Needs attention", "blocked": "Blocked", "cancelled": "Cancelled"}
+      "project": {
+        "kicker": "Capital planning",
+        "unknownCompany": "company not yet identified",
+        "subtitle": "Directional debt alternatives map for {company}.",
+        "publicOnly": "Public basis and stated intent",
+        "publicOnlyBody": "No capacity, term, or lender acceptance has been assumed.",
+        "workingKicker": "Plan in progress",
+        "workingTitle": "Offroad is comparing the available routes.",
+        "workingBody": "The work organizes the need, researches public context, and tests debt families in parallel. Sizing, pricing, and capacity remain open until reconciled documents exist.",
+        "failedTitle": "The plan needs attention.",
+        "failedBody": "A task did not complete. History and valid results were preserved for a safe restart.",
+        "taskProgress": "{complete} of {total} tasks complete",
+        "invalidArtifactTitle": "The map did not pass validation.",
+        "invalidArtifactBody": "The result was preserved but will not be shown as usable work until it meets the quality contract."
+      },
+      "map": {
+        "kicker": "Work product for review",
+        "title": "Debt alternatives map",
+        "asOf": "Basis reviewed through {date}",
+        "executiveRead": "Executive read",
+        "understoodNeed": "Our understanding of the need",
+        "understoodNeedBody": "Objective, constraints, and assumptions that still require confirmation.",
+        "constraints": "Known constraints",
+        "assumptions": "Assumptions to confirm",
+        "noneDeclared": "No constraint was stated.",
+        "evidence": "Evidence coverage",
+        "evidenceBody": "What the basis supports and what cannot yet be treated as proven.",
+        "supported": "What is supported",
+        "notSupported": "What is not yet supported",
+        "noneSupported": "The current basis does not yet support a specific conclusion.",
+        "alternatives": "Alternatives to consider",
+        "alternativesBody": "Distinct families compared through the conditions that support or weaken each route.",
+        "advantages": "Potential advantages",
+        "tradeoffs": "Trade-offs",
+        "prerequisites": "Prerequisites",
+        "disconfirmers": "What could rule it out",
+        "comparison": "Comparison",
+        "comparisonBody": "How each route behaves across the dimensions that matter for this need.",
+        "recommendation": "Directional recommendation",
+        "notReady": "There is not yet enough basis to choose a structure",
+        "requests": "Most useful next information",
+        "requestsBody": "A short queue prioritized by how much each item changes the choice and structure.",
+        "questions": "Questions that change the decision",
+        "questionsBody": "Points to confirm before moving from alternatives to structure.",
+        "why": "Why it matters: ",
+        "changes": "What it changes: ",
+        "acceptableEvidence": "Can be supported with: ",
+        "unknowns": "Open unknowns",
+        "nextGate": "Next gate",
+        "nextGateBody": "Confirm or correct this map. A structure will only be designed after the minimum basis is supported.",
+        "sources": "Sources",
+        "sourceList": "Sources reviewed"
+      },
+      "families": {
+        "bilateral_bank": "Bilateral bank",
+        "club_or_syndicated": "Club or syndicated",
+        "capital_markets": "Capital markets",
+        "securitization": "Securitization",
+        "private_credit": "Private credit",
+        "receivables": "Receivables",
+        "asset_backed": "Asset-backed",
+        "project_or_acquisition_finance": "Project or acquisition finance",
+        "trade_or_agro": "Trade or agribusiness",
+        "flexible_capital": "Flexible capital",
+        "special_situations": "Special situations"
+      },
+      "alternativeStatus": {
+        "candidate": "Candidate",
+        "conditional": "Conditional",
+        "not_assessable": "Not yet assessable"
+      },
+      "artifactStatus": {
+        "pending_confirmation": "Awaiting your review",
+        "confirmed": "Confirmed",
+        "superseded": "Superseded",
+        "draft": "Draft",
+        "approved": "Approved",
+        "stale": "Outdated"
+      },
+      "sourceTopics": {
+        "identity": "Company",
+        "news": "News",
+        "sector": "Sector",
+        "regulation": "Regulation",
+        "market": "Debt market"
+      },
+      "decision": {
+        "title": "Your decision on this version",
+        "confirm": "Confirm this map",
+        "confirmed": "Map confirmed",
+        "requestChanges": "Request corrections",
+        "requested": "Correction recorded; a new version is in preparation",
+        "note": "What needs to change?",
+        "notePlaceholder": "Identify the incorrect understanding, alternative that needs review, or constraint that was not considered.",
+        "errors": {
+          "invalid": "Describe the correction before recording it.",
+          "save": "We could not record your decision.",
+          "stale": "This version has changed. Reload the page before deciding."
+        }
+      },
+      "tasks": {
+        "kicker": "Work plan",
+        "title": "How the map was built",
+        "footer": "Every conclusion remains linked to the tasks, versions, sources, and boundaries that produced it."
+      },
+      "taskStatus": {
+        "waiting": "Waiting for dependencies",
+        "queued": "Queued",
+        "running": "Running",
+        "succeeded": "Complete",
+        "failed": "Needs attention",
+        "blocked": "Blocked",
+        "cancelled": "Cancelled"
+      }
     },
     "origination": {
       "back": "Back to workspace",
       "kicker": "Prepare for a debt conversation",
       "title": "Walk into the meeting with a point of view.",
       "body": "Identify the company and the meeting context. Offroad researches public sources, reads the situation through a debt lens, and prepares company-specific hypotheses and questions without assuming a transaction.",
-      "projectSection": {"title": "Identify this work", "body": "The project preserves research, decisions, and versions so you can resume without losing context."},
-      "briefSection": {"title": "Provide meeting context", "body": "Explain what prompted the conversation and what you need to discover. You do not need to arrive with a finished structure."},
-      "fields": {
-        "projectName": "Project name", "projectNamePlaceholder": "E.g. Project Horizon", "companyName": "Company", "companyNamePlaceholder": "Company to research", "website": "Company website", "websitePlaceholder": "https://company.com", "meetingContext": "What is the meeting context?", "meetingContextPlaceholder": "E.g. we have a first meeting with the CFO. We want to understand the current debt profile, upcoming maturities, and potential financing opportunities.", "meetingContextHelp": "Include only information suitable for this public-research environment.", "audience": "Who will attend?", "audiencePlaceholder": "E.g. CFO and head of treasury", "meetingDate": "Meeting date", "thesis": "Is there a hypothesis you want to test?", "thesisPlaceholder": "E.g. test whether maturities can be extended without adding collateral.", "thesisHelp": "Optional. Offroad can also build hypotheses from the research."
+      "projectSection": {
+        "title": "Identify this work",
+        "body": "The project preserves research, decisions, and versions so you can resume without losing context."
       },
-      "boundary": {"title": "Public research, with no market contact.", "body": "Do not include confidential documents or information here. No representation, offer, or lender outreach will occur."},
-      "actionNote": "Research starts in the background and the project opens immediately.", "submit": "Prepare analysis", "submitting": "Creating project...",
-      "aside": {"kicker": "What happens next", "title": "A company-specific origination agenda.", "steps": {"research": {"title": "Research", "body": "Identity, financial disclosures, news, sector, regulation, and comparable transactions."}, "read": {"title": "Interpret", "body": "Debt-relevant signals, clearly separated into facts, hypotheses, and open questions."}, "prepare": {"title": "Prepare", "body": "Financing angles, conditions that must be confirmed, and questions that can change the recommendation."}}, "footer": "Research uses public sources only and preserves every supporting link."},
-      "errors": {"duplicate": "An active project already uses this name.", "save": "The project could not be created. Review the fields or try again."},
-      "project": {"kicker": "Origination thesis", "unknownCompany": "company not yet identified", "subtitle": "Public research and meeting agenda for {company}.", "publicOnly": "Public sources only", "publicOnlyBody": "No private document was used.", "workingKicker": "Research in progress", "workingTitle": "Offroad is building the analysis.", "workingBody": "The tasks below run through explicit dependencies. Synthesis begins only after company, sector, and comparable transaction research is complete.", "failedTitle": "The research needs attention.", "failedBody": "One task did not complete. Its history was preserved for diagnosis and safe recovery.", "taskProgress": "{complete} of {total} tasks complete", "invalidArtifactTitle": "The brief did not pass validation.", "invalidArtifactBody": "The output was preserved but will not be displayed as usable work product until it satisfies the quality contract."},
-      "brief": {"kicker": "Work product for review", "title": "Meeting brief", "asOf": "Sources reviewed through {date}", "executiveRead": "Executive read", "companySnapshot": "Company on one page", "signals": "Debt-relevant signals", "signalsBody": "What public sources support and why it matters for the conversation.", "sources": "Sources", "angles": "Financing angles to explore", "anglesBody": "Working hypotheses, not offers or final recommendations.", "prerequisites": "What must be true", "disconfirmers": "What weakens the hypothesis", "questions": "Meeting questions", "questionsBody": "Each question states why it matters and what the answer may change.", "why": "Why it matters: ", "changes": "What changes: ", "opening": "Suggested opening", "unknowns": "What remains unknown", "sourceList": "Sources reviewed"},
-      "artifactStatus": {"pending_confirmation": "Awaiting your review", "confirmed": "Confirmed", "superseded": "Superseded", "draft": "Draft", "approved": "Approved", "stale": "Stale"},
-      "confidence": {"high": "High confidence", "medium": "Medium confidence", "low": "Low confidence"},
-      "sourceTopics": {"identity": "Company", "news": "News", "sector": "Sector", "regulation": "Regulation", "market": "Debt market"},
-      "decision": {"title": "Your decision on this version", "confirm": "Confirm this analysis", "confirmed": "Analysis confirmed", "requestChanges": "Request corrections", "requested": "Correction recorded; a new version is being prepared", "note": "What needs to change?", "notePlaceholder": "Identify the incorrect fact, the source that should prevail, or the hypothesis that does not reflect the conversation.", "errors": {"invalid": "Describe the correction before recording it.", "save": "Your decision could not be recorded.", "stale": "This version has changed. Reload the page before deciding."}},
-      "tasks": {"kicker": "Work plan", "title": "How this analysis was built", "footer": "Every result remains linked to the tasks, versions, and sources that produced it."},
-      "taskLabels": {"M01": "Resolve company identity", "M02": "Define the meeting mandate", "M03": "Register constraints and assumptions", "M04": "Define research lenses", "M05": "Specify the brief", "M06": "Compile execution plan", "C02": "Research company, sector, and regulation", "K04": "Research comparable transactions", "M07": "Synthesize meeting brief"},
-      "taskStatus": {"waiting": "Waiting for dependencies", "queued": "Queued", "running": "Running", "succeeded": "Complete", "failed": "Needs attention", "blocked": "Blocked", "cancelled": "Cancelled"}
+      "briefSection": {
+        "title": "Provide meeting context",
+        "body": "Explain what prompted the conversation and what you need to discover. You do not need to arrive with a finished structure."
+      },
+      "fields": {
+        "projectName": "Project name",
+        "projectNamePlaceholder": "E.g. Project Horizon",
+        "companyName": "Company",
+        "companyNamePlaceholder": "Company to research",
+        "website": "Company website",
+        "websitePlaceholder": "https://company.com",
+        "meetingContext": "What is the meeting context?",
+        "meetingContextPlaceholder": "E.g. we have a first meeting with the CFO. We want to understand the current debt profile, upcoming maturities, and potential financing opportunities.",
+        "meetingContextHelp": "Include only information suitable for this public-research environment.",
+        "audience": "Who will attend?",
+        "audiencePlaceholder": "E.g. CFO and head of treasury",
+        "meetingDate": "Meeting date",
+        "thesis": "Is there a hypothesis you want to test?",
+        "thesisPlaceholder": "E.g. test whether maturities can be extended without adding collateral.",
+        "thesisHelp": "Optional. Offroad can also build hypotheses from the research."
+      },
+      "boundary": {
+        "title": "Public research, with no market contact.",
+        "body": "Do not include confidential documents or information here. No representation, offer, or lender outreach will occur."
+      },
+      "actionNote": "Research starts in the background and the project opens immediately.",
+      "submit": "Prepare analysis",
+      "submitting": "Creating project...",
+      "aside": {
+        "kicker": "What happens next",
+        "title": "A company-specific origination agenda.",
+        "steps": {
+          "research": {
+            "title": "Research",
+            "body": "Identity, financial disclosures, news, sector, regulation, and comparable transactions."
+          },
+          "read": {
+            "title": "Interpret",
+            "body": "Debt-relevant signals, clearly separated into facts, hypotheses, and open questions."
+          },
+          "prepare": {
+            "title": "Prepare",
+            "body": "Financing angles, conditions that must be confirmed, and questions that can change the recommendation."
+          }
+        },
+        "footer": "Research uses public sources only and preserves every supporting link."
+      },
+      "errors": {
+        "duplicate": "An active project already uses this name.",
+        "save": "The project could not be created. Review the fields or try again."
+      },
+      "project": {
+        "kicker": "Origination thesis",
+        "unknownCompany": "company not yet identified",
+        "subtitle": "Public research and meeting agenda for {company}.",
+        "publicOnly": "Public sources only",
+        "publicOnlyBody": "No private document was used.",
+        "workingKicker": "Research in progress",
+        "workingTitle": "Offroad is building the analysis.",
+        "workingBody": "The tasks below run through explicit dependencies. Synthesis begins only after company, sector, and comparable transaction research is complete.",
+        "failedTitle": "The research needs attention.",
+        "failedBody": "One task did not complete. Its history was preserved for diagnosis and safe recovery.",
+        "taskProgress": "{complete} of {total} tasks complete",
+        "invalidArtifactTitle": "The brief did not pass validation.",
+        "invalidArtifactBody": "The output was preserved but will not be displayed as usable work product until it satisfies the quality contract."
+      },
+      "brief": {
+        "kicker": "Work product for review",
+        "title": "Meeting brief",
+        "asOf": "Sources reviewed through {date}",
+        "executiveRead": "Executive read",
+        "companySnapshot": "Company on one page",
+        "signals": "Debt-relevant signals",
+        "signalsBody": "What public sources support and why it matters for the conversation.",
+        "sources": "Sources",
+        "angles": "Financing angles to explore",
+        "anglesBody": "Working hypotheses, not offers or final recommendations.",
+        "prerequisites": "What must be true",
+        "disconfirmers": "What weakens the hypothesis",
+        "questions": "Meeting questions",
+        "questionsBody": "Each question states why it matters and what the answer may change.",
+        "why": "Why it matters: ",
+        "changes": "What changes: ",
+        "opening": "Suggested opening",
+        "unknowns": "What remains unknown",
+        "sourceList": "Sources reviewed"
+      },
+      "artifactStatus": {
+        "pending_confirmation": "Awaiting your review",
+        "confirmed": "Confirmed",
+        "superseded": "Superseded",
+        "draft": "Draft",
+        "approved": "Approved",
+        "stale": "Stale"
+      },
+      "confidence": {
+        "high": "High confidence",
+        "medium": "Medium confidence",
+        "low": "Low confidence"
+      },
+      "sourceTopics": {
+        "identity": "Company",
+        "news": "News",
+        "sector": "Sector",
+        "regulation": "Regulation",
+        "market": "Debt market"
+      },
+      "decision": {
+        "title": "Your decision on this version",
+        "confirm": "Confirm this analysis",
+        "confirmed": "Analysis confirmed",
+        "requestChanges": "Request corrections",
+        "requested": "Correction recorded; a new version is being prepared",
+        "note": "What needs to change?",
+        "notePlaceholder": "Identify the incorrect fact, the source that should prevail, or the hypothesis that does not reflect the conversation.",
+        "errors": {
+          "invalid": "Describe the correction before recording it.",
+          "save": "Your decision could not be recorded.",
+          "stale": "This version has changed. Reload the page before deciding."
+        }
+      },
+      "tasks": {
+        "kicker": "Work plan",
+        "title": "How this analysis was built",
+        "footer": "Every result remains linked to the tasks, versions, and sources that produced it."
+      },
+      "taskLabels": {
+        "M01": "Resolve company identity",
+        "M02": "Define the meeting mandate",
+        "M03": "Register constraints and assumptions",
+        "M04": "Define research lenses",
+        "M05": "Specify the brief",
+        "M06": "Compile execution plan",
+        "C02": "Research company, sector, and regulation",
+        "K04": "Research comparable transactions",
+        "M07": "Synthesize meeting brief"
+      },
+      "taskStatus": {
+        "waiting": "Waiting for dependencies",
+        "queued": "Queued",
+        "running": "Running",
+        "succeeded": "Complete",
+        "failed": "Needs attention",
+        "blocked": "Blocked",
+        "cancelled": "Cancelled"
+      }
     },
     "notifications": "Notifications",
     "resources": "Resources",
@@ -1596,7 +2225,10 @@
         "totalSources": "Total sources",
         "totalUses": "Total uses",
         "sourcesUsesStatus": "Sources and uses",
-        "sourcesUses": {"pass": "Reconciled", "fail": "Not yet reconciled"},
+        "sourcesUses": {
+          "pass": "Reconciled",
+          "fail": "Not yet reconciled"
+        },
         "months": "{count} months",
         "days": "{min} to {max} days",
         "notEstimated": "Not estimated",
@@ -1680,36 +2312,36 @@
         "resolvedBy": "confirmation required: {value}",
         "mandateRefresh": "This provider may only join a contact list after the indicated mandate data is refreshed or confirmed.",
         "showExcluded": "Show {count, plural, one {1 excluded provider} other {# excluded providers}}",
-      "noContactTitle": "No contact has been authorised",
-      "noContactBody": "This block only organises the mandate-fit analysis. Recipient selection and authorisation to present the case will be separate decisions tied to this exact material version.",
-      "selectProvider": "Select {name} for the shortlist",
-      "approvalTitle": "Confirm which institutions should move to the introduction plan",
-      "approvalBody": "This approval closes the shortlist only. Before any contact, you will see the recipients, materials and rationale for each introduction.",
-      "approve": "APPROVE SHORTLIST",
-      "approving": "RECORDING APPROVAL...",
-      "approvedTitle": "Shortlist approved",
-      "approvedBody": "{count, plural, one {1 institution will move} other {# institutions will move}} to introduction planning. No contact has been initiated.",
-      "planKicker": "PRIVATE PLAN IN PREPARATION",
-      "planTitle": "We now validate the correct recipients",
-      "planBody": "The shortlist is preserved. For each institution, Offroad validates the contact responsible for this transaction profile and prepares the exact rationale and materials to be presented.",
-      "planBoundary": "Nothing is sent at this stage. Before any contact, you will review the recipients and the exact material version and provide a specific authorisation.",
-      "contactStatus": {
-        "unresolved": "Contact being validated",
-        "resolved": "Contact validated",
-        "unavailable": "Contact not yet available"
-      },
-      "authorizationKicker": "SPECIFIC AUTHORISATION",
-      "authorizationTitle": "Review the recipients and materials",
-      "authorizationBody": "This is the exact list of people and materials prepared for the first presentation. Authorisation applies only to the items below and does not allow other recipients or versions to be added.",
-      "authorizationDeclarationTitle": "Authorise these qualified introductions",
-      "authorizationDeclarationBody": "I confirm that I have reviewed the recipients and materials above and authorise Offroad to present this case version only to these people.",
-      "authorize": "AUTHORISE INTRODUCTIONS",
-      "authorizing": "RECORDING AUTHORISATION...",
-      "authorizationPending": "Offroad is still validating contacts, mandate currency and the exact material version. Authorisation is enabled only after every control is complete.",
-      "authorizationCompleteTitle": "Introductions authorised",
-      "authorizationCompleteBody": "Authorisation has been recorded for these recipients and this exact material version.",
-      "authorizationCompleteStatus": "Offroad may make only the introductions listed above. No other recipient has been authorised.",
-      "boundary": "Offroad directs the case and prepares a qualified introduction. The capital provider conducts its own assessment, diligence and credit decision.",
+        "noContactTitle": "No contact has been authorised",
+        "noContactBody": "This block only organises the mandate-fit analysis. Recipient selection and authorisation to present the case will be separate decisions tied to this exact material version.",
+        "selectProvider": "Select {name} for the shortlist",
+        "approvalTitle": "Confirm which institutions should move to the introduction plan",
+        "approvalBody": "This approval closes the shortlist only. Before any contact, you will see the recipients, materials and rationale for each introduction.",
+        "approve": "APPROVE SHORTLIST",
+        "approving": "RECORDING APPROVAL...",
+        "approvedTitle": "Shortlist approved",
+        "approvedBody": "{count, plural, one {1 institution will move} other {# institutions will move}} to introduction planning. No contact has been initiated.",
+        "planKicker": "PRIVATE PLAN IN PREPARATION",
+        "planTitle": "We now validate the correct recipients",
+        "planBody": "The shortlist is preserved. For each institution, Offroad validates the contact responsible for this transaction profile and prepares the exact rationale and materials to be presented.",
+        "planBoundary": "Nothing is sent at this stage. Before any contact, you will review the recipients and the exact material version and provide a specific authorisation.",
+        "contactStatus": {
+          "unresolved": "Contact being validated",
+          "resolved": "Contact validated",
+          "unavailable": "Contact not yet available"
+        },
+        "authorizationKicker": "SPECIFIC AUTHORISATION",
+        "authorizationTitle": "Review the recipients and materials",
+        "authorizationBody": "This is the exact list of people and materials prepared for the first presentation. Authorisation applies only to the items below and does not allow other recipients or versions to be added.",
+        "authorizationDeclarationTitle": "Authorise these qualified introductions",
+        "authorizationDeclarationBody": "I confirm that I have reviewed the recipients and materials above and authorise Offroad to present this case version only to these people.",
+        "authorize": "AUTHORISE INTRODUCTIONS",
+        "authorizing": "RECORDING AUTHORISATION...",
+        "authorizationPending": "Offroad is still validating contacts, mandate currency and the exact material version. Authorisation is enabled only after every control is complete.",
+        "authorizationCompleteTitle": "Introductions authorised",
+        "authorizationCompleteBody": "Authorisation has been recorded for these recipients and this exact material version.",
+        "authorizationCompleteStatus": "Offroad may make only the introductions listed above. No other recipient has been authorised.",
+        "boundary": "Offroad directs the case and prepares a qualified introduction. The capital provider conducts its own assessment, diligence and credit decision.",
         "verdicts": {
           "eligible": "Aligned mandate",
           "fits": "Compatible mandate",
@@ -1731,10 +2363,22 @@
           "unknown": "Capital provider"
         },
         "empty": {
-          "not_screened": {"title": "No governed mandates are available yet", "body": "The package remains approved, but a shortlist can only be formed from verifiable and current market information."},
-          "needs_mandate_refresh": {"title": "Mandates need to be refreshed", "body": "There may be aligned providers, but current confirmation is missing for criteria that can exclude the transaction."},
-          "no_eligible_mandates": {"title": "No current mandate is aligned", "body": "Objective exclusions remain recorded. They may guide a structure adjustment or a renewed market review."},
-          "ready_for_review": {"title": "Shortlist ready for review", "body": "Review the providers and rationale before preparing any authorisation."}
+          "not_screened": {
+            "title": "No governed mandates are available yet",
+            "body": "The package remains approved, but a shortlist can only be formed from verifiable and current market information."
+          },
+          "needs_mandate_refresh": {
+            "title": "Mandates need to be refreshed",
+            "body": "There may be aligned providers, but current confirmation is missing for criteria that can exclude the transaction."
+          },
+          "no_eligible_mandates": {
+            "title": "No current mandate is aligned",
+            "body": "Objective exclusions remain recorded. They may guide a structure adjustment or a renewed market review."
+          },
+          "ready_for_review": {
+            "title": "Shortlist ready for review",
+            "body": "Review the providers and rationale before preparing any authorisation."
+          }
         }
       },
       "declined": {
@@ -1762,13 +2406,13 @@
         "material_package_changed": "The package changed since the page was opened. Review the current version.",
         "material_package_incomplete": "The package still has pending artifacts and cannot be approved.",
         "material_package_approved": "Package approved. No market contact was authorised.",
-      "match_started": "Package approved. Current mandates are being screened without authorising any contact.",
-      "match_changed": "The mandate-fit analysis changed since this page was opened. Review the current version.",
-      "match_selection_invalid": "The shortlist includes an institution that is not yet eligible. Review the current criteria.",
-      "match_approved": "Shortlist approved. Offroad may now prepare the introduction plan, still without contacting the market.",
-      "introduction_plan_changed": "The introduction plan changed since this page was opened. Review the current recipients and materials.",
-      "introduction_authorization_failed": "Authorisation was not recorded. A contact, mandate, material or required control still needs to be validated.",
-      "introduction_authorized": "Authorisation recorded for the exact recipients and materials presented on this screen.",
+        "match_started": "Package approved. Current mandates are being screened without authorising any contact.",
+        "match_changed": "The mandate-fit analysis changed since this page was opened. Review the current version.",
+        "match_selection_invalid": "The shortlist includes an institution that is not yet eligible. Review the current criteria.",
+        "match_approved": "Shortlist approved. Offroad may now prepare the introduction plan, still without contacting the market.",
+        "introduction_plan_changed": "The introduction plan changed since this page was opened. Review the current recipients and materials.",
+        "introduction_authorization_failed": "Authorisation was not recorded. A contact, mandate, material or required control still needs to be validated.",
+        "introduction_authorized": "Authorisation recorded for the exact recipients and materials presented on this screen.",
         "structure_revision_started": "Changes recorded. A new version of the alternatives is being prepared.",
         "structure_declined": "Decision recorded. No preparation or contact was initiated."
       }
@@ -1793,7 +2437,16 @@
       "sourceAnchored": "source anchored",
       "versioned": "versioned",
       "evidenceCompiled": "evidence compiled"
-    }
+    },
+    "newChat": "New chat",
+    "recent": "Recent",
+    "folders": "Folders",
+    "collapseRail": "Collapse menu",
+    "expandRail": "Expand menu",
+    "account": "Account and preferences",
+    "language": "Language",
+    "createFolder": "New folder",
+    "createFolderPlaceholder": "Folder name"
   },
   "Demo": {
     "eyebrow": "Demonstration with synthetic data",

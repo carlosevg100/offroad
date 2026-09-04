@@ -1,5 +1,18 @@
 # Acceptance Evidence
 
+## Casca e entrada do advisor refeitas, 04/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Estado do menu | cookie `offroad_rail_collapsed` lido no layout | servidor renderiza já na largura escolhida; sem piscar e sem divergência de hidratação |
+| Lista plana | regra de ocultação por assinatura exata | pasta com uma conversa de mesmo nome fica oculta; criada, renomeada, vazia ou com duas continua visível |
+| Placeholder rotativo | sete exemplos, um por função | digita e apaga com o campo vazio, para ao primeiro caractere, respeita `prefers-reduced-motion` |
+| Dica de jornada | quatro sugestões em texto | preservam `entryJobHint`, incluindo a escolha explícita da rota por documentos |
+| CSS morto | varredura de classes usadas no TSX | 66 regras removidas, cada uma sem consumidor; chaves balanceadas nos dois arquivos |
+| Render autenticado | rota de preview temporária em servidor local | expandido e recolhido em 1180 px; marca, lista, composer e continuar corretos; rota apagada no mesmo trabalho |
+| Regressão | `apps/web/e2e/document-first-intake.spec.ts` | atualizado para a estrutura nova, cobrindo renomear, arquivar, criar pasta, abrir conversa e as duas jornadas com dica |
+| Gate | `pnpm check` em Node 24 | lint, typecheck, testes e build verdes nos 43 alvos |
+
 ## Marca nova em site e plataforma, 04/09/2026
 
 | Evidência | Verificação | Resultado |

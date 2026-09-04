@@ -1883,86 +1883,7 @@ summary:focus-visible {
   display: grid;
   min-height: 100svh;
   background: #eff0eb;
-  grid-template-columns: 250px minmax(0, 1fr);
-}
-
-.app-sidebar {
-  position: sticky;
-  top: 0;
-  display: flex;
-  height: 100svh;
-  padding: 24px 18px;
-  flex-direction: column;
-  background: var(--night);
-  color: var(--paper);
-}
-
-.app-workspace-id {
-  display: grid;
-  margin-block: 42px 30px;
-  padding: 16px;
-  border: 1px solid rgb(255 255 255 / 9%);
-  border-radius: 10px;
-  background: rgb(255 255 255 / 4%);
-}
-
-.app-workspace-id span,
-.app-workspace-id small {
-  color: rgb(255 255 255 / 44%);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.app-workspace-id strong {
-  margin-block: 4px;
-  overflow: hidden;
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.app-nav {
-  display: grid;
-  gap: 4px;
-}
-
-.app-nav a,
-.app-sidebar__footer button {
-  display: flex;
-  min-height: 42px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 7px;
-  align-items: center;
-  gap: 11px;
-  background: transparent;
-  color: rgb(255 255 255 / 64%);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 160ms ease, color 160ms ease;
-}
-
-.app-nav a:hover,
-.app-sidebar__footer button:hover {
-  background: rgb(255 255 255 / 7%);
-  color: var(--paper);
-}
-
-.app-sidebar__footer {
-  display: grid;
-  margin-top: auto;
-  gap: 8px;
-}
-
-.app-sidebar__footer > .workspace-language-switcher {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding: 3px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 7px;
-  gap: 3px;
+  grid-template-columns: auto minmax(0, 1fr);
 }
 
 .workspace-language-switcher a {
@@ -1980,22 +1901,6 @@ summary:focus-visible {
 .workspace-language-switcher a[aria-current="page"] {
   background: rgb(255 255 255 / 9%);
   color: var(--paper);
-}
-
-.app-sidebar__footer > div {
-  display: flex;
-  min-width: 0;
-  padding: 10px 12px;
-  align-items: center;
-  gap: 10px;
-  color: rgb(255 255 255 / 40%);
-  font-size: 10px;
-}
-
-.app-sidebar__footer > div span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .app-main {
@@ -2783,27 +2688,7 @@ summary:focus-visible {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .application-shell {
-    grid-template-columns: 76px minmax(0, 1fr);
-  }
-
-  .app-sidebar {
-    padding-inline: 12px;
-  }
-
-  .app-sidebar .brand-mark__word,
-  .app-workspace-id,
-  .app-nav a span,
-  .app-sidebar__footer span,
-  .app-sidebar__footer button {
-    display: none;
-  }
-
-  .app-nav a {
-    justify-content: center;
-  }
-
-  .credit-room__body {
+.credit-room__body {
     grid-template-columns: 64px minmax(0, 1fr);
   }
 
@@ -2854,39 +2739,6 @@ summary:focus-visible {
 
   .onboarding-submit {
     width: 100%;
-  }
-
-  .application-shell {
-    display: block;
-  }
-
-  .app-sidebar {
-    position: relative;
-    display: grid;
-    width: 100%;
-    height: auto;
-    min-height: 68px;
-    padding: 10px 16px;
-    grid-template-columns: auto 1fr;
-  }
-
-  .app-sidebar .brand-mark__word {
-    display: inline;
-  }
-
-  .app-nav {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .app-nav a {
-    width: 44px;
-    padding: 0;
-  }
-
-  .app-nav a:nth-child(n + 4),
-  .app-sidebar__footer {
-    display: none;
   }
 
   .app-page-header {

@@ -612,29 +612,77 @@
     "institutionPlaceholder": "Nome da companhia, banco, gestora ou assessoria",
     "affiliationLegend": "Onde você atua",
     "affiliation": {
-      "company": "Companhia", "bank": "Banco", "advisory": "Assessoria", "assetManager": "Gestora", "creditFund": "Fundo de crédito", "familyOffice": "Family office", "independent": "Independente", "other": "Outro"
+      "company": "Companhia",
+      "bank": "Banco",
+      "advisory": "Assessoria",
+      "assetManager": "Gestora",
+      "creditFund": "Fundo de crédito",
+      "familyOffice": "Family office",
+      "independent": "Independente",
+      "other": "Outro"
     },
     "role": "Sua função",
     "rolePlaceholder": "Selecione se fizer sentido",
     "roles": {
-      "cfoTreasury": "CFO ou tesouraria", "corporateFinance": "Finanças corporativas", "fpAndA": "FP&A", "controllerAccounting": "Controladoria ou contabilidade", "dcmBanker": "Banker de DCM", "corporateBanker": "Corporate banker", "relationshipManager": "Gerente de relacionamento", "structuredFinanceBanker": "Banker de crédito estruturado", "projectFinanceBanker": "Banker de project finance", "syndicateDistribution": "Syndicate ou distribuição", "advisor": "Assessor financeiro", "investorLender": "Investidor ou financiador", "portfolioManager": "Gestor de portfólio", "creditAnalyst": "Analista de crédito", "riskUnderwriter": "Underwriting ou risco de crédito", "investmentCommittee": "Comitê de investimento", "legalStructuring": "Jurídico de estruturação", "boardShareholder": "Conselho ou acionista", "analyst": "Analista", "executive": "Executivo", "other": "Outra função"
+      "cfoTreasury": "CFO ou tesouraria",
+      "corporateFinance": "Finanças corporativas",
+      "fpAndA": "FP&A",
+      "controllerAccounting": "Controladoria ou contabilidade",
+      "dcmBanker": "Banker de DCM",
+      "corporateBanker": "Corporate banker",
+      "relationshipManager": "Gerente de relacionamento",
+      "structuredFinanceBanker": "Banker de crédito estruturado",
+      "projectFinanceBanker": "Banker de project finance",
+      "syndicateDistribution": "Syndicate ou distribuição",
+      "advisor": "Assessor financeiro",
+      "investorLender": "Investidor ou financiador",
+      "portfolioManager": "Gestor de portfólio",
+      "creditAnalyst": "Analista de crédito",
+      "riskUnderwriter": "Underwriting ou risco de crédito",
+      "investmentCommittee": "Comitê de investimento",
+      "legalStructuring": "Jurídico de estruturação",
+      "boardShareholder": "Conselho ou acionista",
+      "analyst": "Analista",
+      "executive": "Executivo",
+      "other": "Outra função"
     },
     "team": "Área ou time",
     "teamPlaceholder": "Ex.: DCM, tesouraria, crédito privado",
     "operatingLegend": "Como vocês podem atuar em uma operação?",
     "operatingBody": "Marque mais de uma opção. Isso define quais ideias podem realmente ser levadas adiante.",
     "operating": {
-      "raiseCapital": "Captamos para a própria companhia", "balanceSheetLending": "Emprestamos com balanço próprio", "structuring": "Estruturamos operações", "distribution": "Distribuímos para investidores", "advisory": "Prestamos advisory", "investing": "Investimos ou financiamos"
+      "raiseCapital": "Captamos para a própria companhia",
+      "balanceSheetLending": "Emprestamos com balanço próprio",
+      "structuring": "Estruturamos operações",
+      "distribution": "Distribuímos para investidores",
+      "advisory": "Prestamos advisory",
+      "investing": "Investimos ou financiamos"
     },
     "objectiveLegend": "Onde a Offroad deve ampliar sua capacidade?",
     "objectiveBody": "Isso organiza a experiência inicial; você poderá usar todas as capacidades da plataforma.",
     "objectives": {
-      "understandCompany": "Analisar companhias", "prepareMeetings": "Preparar reuniões", "originateIdeas": "Originar ideias", "evaluateCapitalOptions": "Avaliar alternativas de capital", "structureTransactions": "Estruturar transações", "prepareMaterials": "Preparar análises e materiais", "connectCapital": "Encontrar capital aderente", "analyzeInvestments": "Analisar oportunidades de investimento"
+      "understandCompany": "Analisar companhias",
+      "prepareMeetings": "Preparar reuniões",
+      "originateIdeas": "Originar ideias",
+      "evaluateCapitalOptions": "Avaliar alternativas de capital",
+      "structureTransactions": "Estruturar transações",
+      "prepareMaterials": "Preparar análises e materiais",
+      "connectCapital": "Encontrar capital aderente",
+      "analyzeInvestments": "Analisar oportunidades de investimento"
     },
     "optionalTitle": "Especialidades da instituição",
     "optionalBody": "Opcional. Adicione produtos somente se isso ajudar a calibrar as recomendações.",
     "products": {
-      "bilateralCredit": "Crédito bilateral", "clubSyndicated": "Club deals e sindicalizados", "capitalMarkets": "Mercado de capitais", "securitization": "Securitização", "assetBacked": "Asset-backed", "projectAcquisitionFinance": "Project e acquisition finance", "tradeExportAgri": "Trade, exportação e agro", "structuredFlexibleCapital": "Capital estruturado e flexível", "specialSituations": "Special situations", "derivativesHedging": "Derivativos e hedge"
+      "bilateralCredit": "Crédito bilateral",
+      "clubSyndicated": "Club deals e sindicalizados",
+      "capitalMarkets": "Mercado de capitais",
+      "securitization": "Securitização",
+      "assetBacked": "Asset-backed",
+      "projectAcquisitionFinance": "Project e acquisition finance",
+      "tradeExportAgri": "Trade, exportação e agro",
+      "structuredFlexibleCapital": "Capital estruturado e flexível",
+      "specialSituations": "Special situations",
+      "derivativesHedging": "Derivativos e hedge"
     },
     "notes": "Algo importante sobre sua atuação",
     "notesPlaceholder": "Ex.: atuamos no Brasil e nos EUA, com foco em middle market e operações distribuídas.",
@@ -717,46 +765,46 @@
       "guidanceEyebrow": "Orientação Offroad",
       "guidanceTitle": "Comece com o que você tem.",
       "guidanceBody": "Você não precisa reunir tudo de uma vez. A cada avanço, indicamos as informações essenciais e o próximo passo mais útil.",
-    "autoSave": "Seu progresso é salvo a cada bloco.",
-    "comingSoon": "Em breve",
-    "agent": {
-      "eyebrow": "AGENTE OFFROAD",
-      "title": "Converse sobre a operação",
-      "body": "Explique uma mudança ou responda ao que faltar. O agente prepara a alteração e mostra o impacto antes de aplicar.",
-      "placeholder": "Ex.: o valor pretendido passou para R$ 50 milhões",
-      "send": "Enviar",
-      "states": {
-        "analyzing": "Analisando sua mensagem",
-        "asking": "Aguardando sua resposta",
-        "proposing": "Proposta pronta para revisão",
-        "idle": "Pronto para ajudar",
-        "failed": "Não foi possível concluir esta análise"
+      "autoSave": "Seu progresso é salvo a cada bloco.",
+      "comingSoon": "Em breve",
+      "agent": {
+        "eyebrow": "AGENTE OFFROAD",
+        "title": "Converse sobre a operação",
+        "body": "Explique uma mudança ou responda ao que faltar. O agente prepara a alteração e mostra o impacto antes de aplicar.",
+        "placeholder": "Ex.: o valor pretendido passou para R$ 50 milhões",
+        "send": "Enviar",
+        "states": {
+          "analyzing": "Analisando sua mensagem",
+          "asking": "Aguardando sua resposta",
+          "proposing": "Proposta pronta para revisão",
+          "idle": "Pronto para ajudar",
+          "failed": "Não foi possível concluir esta análise"
+        },
+        "preview": "PRÉVIA DA ALTERAÇÃO",
+        "impact": "Impacto",
+        "accept": "Aceitar e aplicar",
+        "reject": "Descartar",
+        "applied": "Alteração aplicada",
+        "rejected": "Proposta descartada",
+        "stale": "Esta prévia ficou desatualizada",
+        "control": "Nada muda na operação sem sua confirmação.",
+        "monthValue": "{value} meses",
+        "fields": {
+          "objective": "Objetivo",
+          "requestedAmount": "Valor pretendido",
+          "currency": "Moeda",
+          "urgency": "Prazo para captação",
+          "requestedTermMonths": "Prazo da operação",
+          "requestedGraceMonths": "Carência",
+          "consequenceIfNotExecuted": "Impacto de não executar",
+          "sector": "Setor",
+          "geography": "Geografia",
+          "instruments": "Instrumentos considerados",
+          "collateralKinds": "Garantias disponíveis",
+          "expectedRate": "Expectativa de custo"
+        }
       },
-      "preview": "PRÉVIA DA ALTERAÇÃO",
-      "impact": "Impacto",
-      "accept": "Aceitar e aplicar",
-      "reject": "Descartar",
-      "applied": "Alteração aplicada",
-      "rejected": "Proposta descartada",
-      "stale": "Esta prévia ficou desatualizada",
-      "control": "Nada muda na operação sem sua confirmação.",
-      "monthValue": "{value} meses",
-      "fields": {
-        "objective": "Objetivo",
-        "requestedAmount": "Valor pretendido",
-        "currency": "Moeda",
-        "urgency": "Prazo para captação",
-        "requestedTermMonths": "Prazo da operação",
-        "requestedGraceMonths": "Carência",
-        "consequenceIfNotExecuted": "Impacto de não executar",
-        "sector": "Setor",
-        "geography": "Geografia",
-        "instruments": "Instrumentos considerados",
-        "collateralKinds": "Garantias disponíveis",
-        "expectedRate": "Expectativa de custo"
-      }
-    },
-    "workPlan": {
+      "workPlan": {
         "status": {
           "pending": "Aguardando a etapa anterior",
           "running": "Em execução agora",
@@ -808,9 +856,18 @@
       "workspaceTitle": "Antes de começar.",
       "workspaceBody": "Antes de começar, confirmamos como suas informações serão protegidas e damos um nome à captação. Nada é compartilhado sem sua autorização.",
       "status": {
-        "private": {"title": "Em preparação privada", "body": "Nenhuma distribuição externa autorizada"},
-        "verified": {"title": "Representação confirmada", "body": "Distribuição ainda depende de autorização"},
-        "authorized": {"title": "Distribuição autorizada", "body": "Limitada ao pacote e destinatários aprovados"}
+        "private": {
+          "title": "Em preparação privada",
+          "body": "Nenhuma distribuição externa autorizada"
+        },
+        "verified": {
+          "title": "Representação confirmada",
+          "body": "Distribuição ainda depende de autorização"
+        },
+        "authorized": {
+          "title": "Distribuição autorizada",
+          "body": "Limitada ao pacote e destinatários aprovados"
+        }
       },
       "terms": {
         "kicker": "OFFROAD CAPITAL",
@@ -1079,10 +1136,8 @@
     "search": "Buscar ou ir para",
     "workspaceNav": "Workspace",
     "projects": "Projetos",
-    "createProject": "Novo projeto",
     "projectNamePlaceholder": "Nome do projeto",
     "newConversation": "Nova conversa",
-    "noConversations": "Nenhuma conversa neste projeto",
     "deleteProjectGroup": "Excluir projeto",
     "deleteProjectGroupConfirm": "Excluir o projeto \"{project}\" da área de trabalho? Suas conversas, documentos e histórico serão preservados.",
     "close": "Fechar",
@@ -1112,30 +1167,82 @@
     },
     "advisor": {
       "groupContext": "Nova conversa em {project}",
-      "greeting": "Olá.",
-      "greetingNamed": "Olá, {name}.",
-      "title": "No que vamos trabalhar hoje?",
-      "prompt": "Descreva o que precisa ou anexe os documentos que já tiver.",
-      "promptIdeas": {
-        "0": "Tenho uma reunião com uma companhia e quero chegar com ideias concretas...",
-        "1": "Quero avaliar alternativas para financiar uma expansão...",
-        "2": "Analise estes documentos e me ajude a estruturar a operação...",
-        "3": "Quero revisar uma proposta e testar se os termos fazem sentido..."
-      },
-      "starterLabel": "Pontos de partida",
-      "starters": {
-        "companyDebt": {"label": "Entender uma companhia", "placeholder": "Ex.: analise a companhia na ótica de dívida e mostre os riscos, a capacidade financeira e o que ainda precisa ser comprovado."},
-        "origination": {"label": "Preparar uma reunião", "placeholder": "Ex.: tenho uma reunião com esta companhia e quero chegar com uma leitura própria e alternativas de financiamento para explorar."},
-        "capitalPlanning": {"label": "Planejar uma necessidade", "placeholder": "Ex.: preciso financiar crescimento, capital de giro, uma aquisição ou refinanciar vencimentos. Ajude a comparar as alternativas."},
-        "documents": {"label": "Estruturar pelos documentos", "placeholder": "Anexe a pasta que recebeu e conte o contexto que já conhece. A Offroad identifica a companhia, organiza o caso e mostra o que falta."},
-        "review": {"label": "Revisar uma operação", "placeholder": "Ex.: recebi uma proposta ou term sheet e quero testar a estrutura, os termos, os riscos e as alternativas."}
-      },
+      "prompt": "Descreva o trabalho ou anexe os documentos que já tiver.",
       "attach": "Anexar documentos",
       "remove": "Remover documento",
       "send": "Iniciar projeto",
       "privacy": "Ambiente privado. Nada é compartilhado sem sua autorização.",
-      "status": {"creating": "Criando o projeto...", "uploading": "Recebendo os documentos...", "starting": "Iniciando a leitura..."},
-      "errors": {"invalid": "Descreva o que deseja fazer ou anexe um documento.", "denied": "Confirme os termos de confidencialidade para trabalhar com documentos privados.", "duplicate": "Já existe um projeto com esse nome.", "notFound": "O projeto não está disponível.", "save": "Não foi possível iniciar o projeto.", "processing": "Os documentos foram recebidos, mas a leitura precisa ser iniciada novamente.", "upload": "Um ou mais documentos não puderam ser recebidos com segurança."}
+      "status": {
+        "creating": "Criando o projeto...",
+        "uploading": "Recebendo os documentos...",
+        "starting": "Iniciando a leitura..."
+      },
+      "errors": {
+        "invalid": "Descreva o que deseja fazer ou anexe um documento.",
+        "denied": "Confirme os termos de confidencialidade para trabalhar com documentos privados.",
+        "duplicate": "Já existe um projeto com esse nome.",
+        "notFound": "O projeto não está disponível.",
+        "save": "Não foi possível iniciar o projeto.",
+        "processing": "Os documentos foram recebidos, mas a leitura precisa ser iniciada novamente.",
+        "upload": "Um ou mais documentos não puderam ser recebidos com segurança."
+      },
+      "greetings": {
+        "morning": "Bom dia",
+        "afternoon": "Boa tarde",
+        "evening": "Boa noite"
+      },
+      "question": "Como a Offroad pode te ajudar?",
+      "exampleLabel": "Exemplo",
+      "examples": {
+        "0": {
+          "role": "CFO",
+          "prompt": "Tenho R$ 380 milhões vencendo em 18 meses. Compare rolagem, alongamento e emissão nova antes de eu falar com os bancos."
+        },
+        "1": {
+          "role": "Banker de DCM",
+          "prompt": "Reunião amanhã com uma companhia aberta de alimentos. Quero chegar com alternativas de estrutura de capital, não com catálogo de produto."
+        },
+        "2": {
+          "role": "Analista de crédito",
+          "prompt": "Recebi este deck e as demonstrações. Vale aprofundar? Onde estão as inconsistências entre o balanço e o mapa de dívida?"
+        },
+        "3": {
+          "role": "Gestor de crédito",
+          "prompt": "Analise esta oportunidade contra o meu mandato: ticket, prazo, garantia, retorno e o que me faria dizer não."
+        },
+        "4": {
+          "role": "Project finance",
+          "prompt": "Planta nova com ramp-up de 24 meses. Monte o cronograma de dívida, teste o DSCR no downside e diga qual restrição amarra o sizing."
+        },
+        "5": {
+          "role": "Fundador",
+          "prompt": "Não sei se preciso de dívida, equity ou capital de giro. Cresço 40% ao ano e o caixa está apertado. Por onde começo?"
+        },
+        "6": {
+          "role": "Tesouraria",
+          "prompt": "Quero reduzir exposição a CDI e alongar o prazo médio sem aumentar a dívida líquida. O que é possível hoje?"
+        }
+      },
+      "seeds": {
+        "company": {
+          "label": "Entender uma companhia",
+          "text": "Analise a companhia na ótica de dívida: posição financeira, estrutura de capital, capacidade, riscos e o que ainda precisa ser comprovado. Companhia: "
+        },
+        "alternatives": {
+          "label": "Comparar alternativas",
+          "text": "Preciso financiar uma necessidade e quero comparar as alternativas antes de escolher instrumento. Necessidade, valor aproximado e prazo pretendido: "
+        },
+        "review": {
+          "label": "Revisar um term sheet",
+          "text": "Recebi uma proposta e quero testar estrutura, termos, custo total, riscos e as alternativas que deveriam estar na mesa. Contexto: "
+        },
+        "documents": {
+          "label": "Estruturar pelos documentos",
+          "text": "Vou trabalhar a partir dos documentos que tenho. Anexe a pasta e conte o contexto que já conhece: "
+        }
+      },
+      "documentsOnly": "Analise os documentos anexados e me diga o que eles sustentam.",
+      "continueLabel": "Continuar"
     },
     "advisorProject": {
       "advisor": "Agente Offroad",
@@ -1183,10 +1290,36 @@
         "rejected": "Proposta descartada",
         "stale": "Esta prévia ficou desatualizada",
         "monthValue": "{value} meses",
-        "errors": {"invalid": "Esta decisão não é válida.", "stale": "O caso mudou desde esta prévia. Peça uma nova proposta.", "save": "Não foi possível registrar a decisão.", "processing": "A alteração foi aplicada, mas a análise precisa ser iniciada novamente."},
-        "fields": {"objective": "Objetivo", "requestedAmount": "Valor pretendido", "currency": "Moeda", "urgency": "Prazo para captação", "requestedTermMonths": "Prazo da operação", "requestedGraceMonths": "Carência", "consequenceIfNotExecuted": "Impacto de não executar", "sector": "Setor", "geography": "Geografia", "instruments": "Instrumentos considerados", "collateralKinds": "Garantias disponíveis", "expectedRate": "Expectativa de custo"}
+        "errors": {
+          "invalid": "Esta decisão não é válida.",
+          "stale": "O caso mudou desde esta prévia. Peça uma nova proposta.",
+          "save": "Não foi possível registrar a decisão.",
+          "processing": "A alteração foi aplicada, mas a análise precisa ser iniciada novamente."
+        },
+        "fields": {
+          "objective": "Objetivo",
+          "requestedAmount": "Valor pretendido",
+          "currency": "Moeda",
+          "urgency": "Prazo para captação",
+          "requestedTermMonths": "Prazo da operação",
+          "requestedGraceMonths": "Carência",
+          "consequenceIfNotExecuted": "Impacto de não executar",
+          "sector": "Setor",
+          "geography": "Geografia",
+          "instruments": "Instrumentos considerados",
+          "collateralKinds": "Garantias disponíveis",
+          "expectedRate": "Expectativa de custo"
+        }
       },
-      "errors": {"invalid": "Revise a mensagem.", "denied": "Esta ação não está autorizada neste projeto.", "duplicate": "Esta mensagem ou documento já foi registrado.", "notFound": "O projeto não está mais disponível.", "save": "Não foi possível registrar a mensagem.", "processing": "A leitura não pôde ser iniciada.", "upload": "Um ou mais documentos não puderam ser recebidos com segurança."}
+      "errors": {
+        "invalid": "Revise a mensagem.",
+        "denied": "Esta ação não está autorizada neste projeto.",
+        "duplicate": "Esta mensagem ou documento já foi registrado.",
+        "notFound": "O projeto não está mais disponível.",
+        "save": "Não foi possível registrar a mensagem.",
+        "processing": "A leitura não pôde ser iniciada.",
+        "upload": "Um ou mais documentos não puderam ser recebidos com segurança."
+      }
     },
     "privateCase": {
       "processingTitle": "A Offroad está trabalhando neste projeto",
@@ -1243,7 +1376,11 @@
       "diagnosticExceptionsBody": "Divergências ou pontos que exigem tratamento.",
       "diagnosticOpenPoints": "Bloqueios materiais",
       "diagnosticOpenPointsBody": "Itens que impedem confirmar o caso.",
-      "diagnosticStates": {"blocked": "Ainda há bloqueios materiais.", "in_progress": "A leitura ainda está em formação.", "ready": "O caso pode ser submetido à sua confirmação."},
+      "diagnosticStates": {
+        "blocked": "Ainda há bloqueios materiais.",
+        "in_progress": "A leitura ainda está em formação.",
+        "ready": "O caso pode ser submetido à sua confirmação."
+      },
       "diagnosticBlockers": "O que ainda impede avançar",
       "diagnosticBlockersBody": "Responda no chat ou anexe a evidência correspondente. A análise será refeita apenas no que mudou.",
       "diagnosticDossier": "Dossiê técnico do caso",
@@ -1253,7 +1390,11 @@
       "diagnosticConfirmBody": "Este aceite aprova a leitura atual do caso para a próxima etapa. Não aprova crédito, termos, materiais ou contato com o mercado.",
       "diagnosticConfirm": "Confirmar diagnóstico",
       "diagnosticConfirming": "Confirmando...",
-      "diagnosticErrors": {"stale": "O diagnóstico mudou. Recarregue o projeto antes de confirmar.", "save": "Não foi possível confirmar o diagnóstico.", "processing": "O diagnóstico foi confirmado, mas a próxima etapa precisa ser iniciada novamente."},
+      "diagnosticErrors": {
+        "stale": "O diagnóstico mudou. Recarregue o projeto antes de confirmar.",
+        "save": "Não foi possível confirmar o diagnóstico.",
+        "processing": "O diagnóstico foi confirmado, mas a próxima etapa precisa ser iniciada novamente."
+      },
       "structureKicker": "ESTRUTURA INDICATIVA",
       "structureProcessingTitle": "A Offroad está desenhando e testando as alternativas",
       "structureProcessingBody": "O sistema compara rotas, fontes e usos, capacidade, prazo, amortização, garantias, covenants, condições precedentes e dependências antes de recomendar uma alternativa.",
@@ -1281,7 +1422,12 @@
       "structureBoundary": "Estrutura indicativa para preparação do caso. Não constitui aprovação, compromisso de capital ou proposta vinculante.",
       "structureDeclinedTitle": "A estrutura foi recusada",
       "structureDeclinedBody": "O diagnóstico e as evidências permanecem preservados. O projeto pode receber novo contexto ou outra direção pelo chat.",
-      "structureErrors": {"invalid": "Selecione uma alternativa e descreva o ajuste quando necessário.", "stale": "A estrutura mudou. Recarregue o projeto antes de decidir.", "save": "Não foi possível registrar a decisão.", "processing": "A decisão foi registrada, mas a próxima etapa precisa ser iniciada novamente."},
+      "structureErrors": {
+        "invalid": "Selecione uma alternativa e descreva o ajuste quando necessário.",
+        "stale": "A estrutura mudou. Recarregue o projeto antes de decidir.",
+        "save": "Não foi possível registrar a decisão.",
+        "processing": "A decisão foi registrada, mas a próxima etapa precisa ser iniciada novamente."
+      },
       "productionKicker": "PLANO DE PREPARAÇÃO",
       "productionTitle": "O pacote será construído desta mesma base",
       "productionBody": "Revise o plano antes de iniciar a produção. Cada peça continuará vinculada à estrutura confirmada, às premissas e às evidências do caso.",
@@ -1291,10 +1437,22 @@
       "productionApproving": "Iniciando preparação...",
       "productionBoundary": "Este gate prepara materiais internos. Não autoriza contato, underwriting, proposta ou compromisso de capital.",
       "artifacts": {
-        "teaser": {"title": "Teaser institucional", "description": "Companhia, necessidade, tese de crédito, estrutura-alvo e principais riscos."},
-        "financial_model": {"title": "Modelo financeiro", "description": "Histórico, projeções, dívida, capacidade, sensibilidades e fórmulas auditáveis."},
-        "indicative_term_sheet": {"title": "Term sheet indicativo", "description": "Termos-alvo, amortização, garantias, covenants, condições e definições."},
-        "data_room_index": {"title": "Índice da sala de informações", "description": "Documentos organizados por finalidade, entidade, período, versão e evidência."}
+        "teaser": {
+          "title": "Teaser institucional",
+          "description": "Companhia, necessidade, tese de crédito, estrutura-alvo e principais riscos."
+        },
+        "financial_model": {
+          "title": "Modelo financeiro",
+          "description": "Histórico, projeções, dívida, capacidade, sensibilidades e fórmulas auditáveis."
+        },
+        "indicative_term_sheet": {
+          "title": "Term sheet indicativo",
+          "description": "Termos-alvo, amortização, garantias, covenants, condições e definições."
+        },
+        "data_room_index": {
+          "title": "Índice da sala de informações",
+          "description": "Documentos organizados por finalidade, entidade, período, versão e evidência."
+        }
       },
       "materialsProcessingTitle": "Os materiais estão sendo compilados",
       "materialsProcessingBody": "A Offroad reutiliza a base aprovada, verifica consistência entre as peças e bloqueia qualquer afirmação sem suporte.",
@@ -1307,7 +1465,12 @@
       "materialsReady": "Preparado e ligado ao plano aprovado.",
       "materialsPending": "Ainda não foi compilado com segurança.",
       "materialsOpen": "Abrir",
-      "materialActions": {"open": "Abrir", "pdf": "Abrir versão para PDF", "excel": "Baixar Excel", "word": "Baixar Word"},
+      "materialActions": {
+        "open": "Abrir",
+        "pdf": "Abrir versão para PDF",
+        "excel": "Baixar Excel",
+        "word": "Baixar Word"
+      },
       "materialsBlocked": "Pendente",
       "materialsApprovalTitle": "Fixar esta versão como pacote aprovado",
       "materialsApprovalBody": "O fingerprint exato dos quatro artefatos será preservado para o matching.",
@@ -1339,7 +1502,20 @@
         "no_eligible_mandates": "Nenhum mandato atual se mostrou aderente à versão aprovada da estrutura.",
         "ready_for_review": "A shortlist está pronta para revisão."
       },
-      "providerKinds": {"fidc": "FIDC", "credit_fund": "Fundo de crédito", "securitizadora": "Securitizadora", "bank": "Banco", "family_office": "Family office", "multi_strategy": "Multiestratégia", "factoring": "Fomento mercantil", "development_agency": "Agência de desenvolvimento", "finance_company": "Financeira", "alternative_lender": "Financiador alternativo", "other": "Outro provedor", "unknown": "Provedor de capital"},
+      "providerKinds": {
+        "fidc": "FIDC",
+        "credit_fund": "Fundo de crédito",
+        "securitizadora": "Securitizadora",
+        "bank": "Banco",
+        "family_office": "Family office",
+        "multi_strategy": "Multiestratégia",
+        "factoring": "Fomento mercantil",
+        "development_agency": "Agência de desenvolvimento",
+        "finance_company": "Financeira",
+        "alternative_lender": "Financiador alternativo",
+        "other": "Outro provedor",
+        "unknown": "Provedor de capital"
+      },
       "introductionPlanProcessingTitle": "A shortlist foi preservada",
       "introductionPlanProcessingBody": "Agora os contatos responsáveis, a atualidade do mandato e o conjunto exato de materiais precisam ser validados.",
       "introductionKicker": "PLANO DE INTRODUÇÃO",
@@ -1348,7 +1524,11 @@
       "introductionAuthorizedTitle": "Apresentações específicas autorizadas",
       "introductionAuthorizedBody": "A autorização ficou limitada às pessoas e às versões apresentadas abaixo.",
       "introductionAuthorizedStatus": "Nenhum destinatário ou material adicional foi autorizado.",
-      "contactStatus": {"unresolved": "Contato em validação", "resolved": "Contato validado", "unavailable": "Contato indisponível"},
+      "contactStatus": {
+        "unresolved": "Contato em validação",
+        "resolved": "Contato validado",
+        "unavailable": "Contato indisponível"
+      },
       "representationAttestationTitle": "Confirmo que estou autorizado a solicitar estas apresentações",
       "representationAttestationBody": "A declaração vale somente para os destinatários e materiais listados neste plano. A Offroad também exige que a representação esteja verificada.",
       "representationVerificationRequired": "A representação ainda precisa ser verificada antes de qualquer autorização de mercado.",
@@ -1376,12 +1556,48 @@
       "feedbackSaved": "Atualização registrada no histórico.",
       "feedbackRequestedCount": "{count} itens adicionais",
       "feedbackBoundary": "Feedback registra outcomes observados. A diligência, a decisão de crédito, a proposta e o desembolso pertencem ao financiador.",
-      "feedbackEvents": {"introduction_accepted": "Introdução aceita", "case_declined": "Caso recusado", "diligence_requested": "Informações adicionais pedidas", "process_advanced": "Processo avançou", "proposal_issued": "Proposta emitida", "funded": "Operação desembolsada"},
-      "feedbackSources": {"lender": "Financiador", "company": "Companhia", "advisor": "Assessor", "offroad": "Offroad"},
-      "feedbackVerification": {"reported": "Informado", "confirmed": "Confirmado", "verified": "Verificado"},
-      "feedbackReasons": {"ticket_outside_mandate": "Tíquete fora do mandato", "sector_outside_mandate": "Setor fora do mandato", "leverage_outside_mandate": "Alavancagem fora do mandato", "structure_not_supported": "Estrutura não suportada", "insufficient_information": "Informação insuficiente", "timing": "Momento ou prazo", "pricing": "Preço ou retorno", "other": "Outro motivo"},
-      "feedbackErrors": {"invalid": "Revise os campos obrigatórios deste resultado.", "stale": "Esta introdução não está mais disponível nesta versão do projeto.", "save": "Não foi possível registrar a atualização."},
-      "governedErrors": {"invalid": "Revise a seleção ou a declaração obrigatória.", "stale": "Esta versão mudou. Recarregue o projeto antes de decidir.", "save": "Não foi possível registrar esta decisão.", "processing": "A decisão foi preservada, mas a próxima análise precisa ser retomada.", "incomplete": "O pacote ainda não possui todos os artefatos previstos.", "forbidden": "Seu perfil ou a verificação de representação ainda não permite esta ação."},
+      "feedbackEvents": {
+        "introduction_accepted": "Introdução aceita",
+        "case_declined": "Caso recusado",
+        "diligence_requested": "Informações adicionais pedidas",
+        "process_advanced": "Processo avançou",
+        "proposal_issued": "Proposta emitida",
+        "funded": "Operação desembolsada"
+      },
+      "feedbackSources": {
+        "lender": "Financiador",
+        "company": "Companhia",
+        "advisor": "Assessor",
+        "offroad": "Offroad"
+      },
+      "feedbackVerification": {
+        "reported": "Informado",
+        "confirmed": "Confirmado",
+        "verified": "Verificado"
+      },
+      "feedbackReasons": {
+        "ticket_outside_mandate": "Tíquete fora do mandato",
+        "sector_outside_mandate": "Setor fora do mandato",
+        "leverage_outside_mandate": "Alavancagem fora do mandato",
+        "structure_not_supported": "Estrutura não suportada",
+        "insufficient_information": "Informação insuficiente",
+        "timing": "Momento ou prazo",
+        "pricing": "Preço ou retorno",
+        "other": "Outro motivo"
+      },
+      "feedbackErrors": {
+        "invalid": "Revise os campos obrigatórios deste resultado.",
+        "stale": "Esta introdução não está mais disponível nesta versão do projeto.",
+        "save": "Não foi possível registrar a atualização."
+      },
+      "governedErrors": {
+        "invalid": "Revise a seleção ou a declaração obrigatória.",
+        "stale": "Esta versão mudou. Recarregue o projeto antes de decidir.",
+        "save": "Não foi possível registrar esta decisão.",
+        "processing": "A decisão foi preservada, mas a próxima análise precisa ser retomada.",
+        "incomplete": "O pacote ainda não possui todos os artefatos previstos.",
+        "forbidden": "Seu perfil ou a verificação de representação ainda não permite esta ação."
+      },
       "errors": {
         "invalid": "Descreva a correção antes de enviar.",
         "stale": "Esta leitura foi atualizada. Recarregue o projeto antes de decidir.",
@@ -1394,45 +1610,318 @@
       "kicker": "Companhia na ótica de dívida",
       "title": "Entenda o balanço antes de escolher a operação.",
       "body": "Identifique a companhia. A Offroad começa pelas fontes públicas, separa evidência de hipótese e mostra exatamente quais informações privadas são necessárias para avançar com segurança.",
-      "companySection": {"title": "Identifique a companhia", "body": "A companhia basta para começar. Não é preciso inventar uma necessidade de capital nem chegar com uma estrutura pronta."},
-      "contextSection": {"title": "Acrescente contexto, se houver", "body": "Esta parte é opcional. Use-a somente para direcionar a leitura ou registrar algo que uma pesquisa pública não encontrará."},
+      "companySection": {
+        "title": "Identifique a companhia",
+        "body": "A companhia basta para começar. Não é preciso inventar uma necessidade de capital nem chegar com uma estrutura pronta."
+      },
+      "contextSection": {
+        "title": "Acrescente contexto, se houver",
+        "body": "Esta parte é opcional. Use-a somente para direcionar a leitura ou registrar algo que uma pesquisa pública não encontrará."
+      },
       "fields": {
-        "projectName": "Nome do projeto", "projectNamePlaceholder": "Ex.: Projeto Cedro", "companyName": "Companhia", "companyNamePlaceholder": "Nome da companhia a analisar", "website": "Site da companhia", "websitePlaceholder": "https://empresa.com.br", "websiteHelp": "Ajuda a evitar homônimos e melhora a precisão da pesquisa.",
-        "focus": "Existe alguma questão que merece atenção?", "focusPlaceholder": "Ex.: quero compreender o perfil de vencimentos e a dependência de capital de giro.", "focusHelp": "Opcional. A análise também funciona sem uma hipótese inicial.",
-        "knownContext": "Contexto público que você já conhece", "knownContextPlaceholder": "Ex.: houve uma aquisição recente e a companhia divulgou intenção de alongar a dívida.", "knownContextHelp": "Não inclua informação confidencial nesta etapa pública. O texto orienta a pesquisa, mas não vira evidência por si só."
+        "projectName": "Nome do projeto",
+        "projectNamePlaceholder": "Ex.: Projeto Cedro",
+        "companyName": "Companhia",
+        "companyNamePlaceholder": "Nome da companhia a analisar",
+        "website": "Site da companhia",
+        "websitePlaceholder": "https://empresa.com.br",
+        "websiteHelp": "Ajuda a evitar homônimos e melhora a precisão da pesquisa.",
+        "focus": "Existe alguma questão que merece atenção?",
+        "focusPlaceholder": "Ex.: quero compreender o perfil de vencimentos e a dependência de capital de giro.",
+        "focusHelp": "Opcional. A análise também funciona sem uma hipótese inicial.",
+        "knownContext": "Contexto público que você já conhece",
+        "knownContextPlaceholder": "Ex.: houve uma aquisição recente e a companhia divulgou intenção de alongar a dívida.",
+        "knownContextHelp": "Não inclua informação confidencial nesta etapa pública. O texto orienta a pesquisa, mas não vira evidência por si só."
       },
-      "boundary": {"title": "Leitura pública, não underwriting.", "body": "A Offroad não calcula capacidade de dívida nem recomenda uma operação definitiva sem documentos financeiros reconciliados."},
-      "actionNote": "O projeto abre imediatamente e a análise começa em segundo plano.", "submit": "Analisar companhia", "submitting": "Criando o projeto...",
-      "aside": {"kicker": "Primeira devolutiva", "title": "Uma leitura útil antes de pedir uma pasta inteira.", "steps": {"research": {"title": "Pesquisar", "body": "Companhia, setor, divulgações financeiras, dívida, liquidez, notícias e referências de mercado."}, "diagnose": {"title": "Diagnosticar", "body": "Modelo de negócio, geração de caixa, sinais financeiros, riscos, sensibilidades e hipóteses na ótica de dívida."}, "request": {"title": "Priorizar", "body": "No máximo cinco solicitações de informação, cada uma com motivo, impacto e evidências aceitáveis."}}, "footer": "As fontes permanecem ligadas a cada afirmação. Onde a base não sustentar uma conclusão, a Offroad declara a limitação."},
-      "errors": {"duplicate": "Já existe um projeto ativo com esse nome.", "save": "Não foi possível criar o projeto. Revise os campos ou tente novamente."},
-      "project": {"kicker": "Diagnóstico público", "unknownCompany": "companhia ainda não identificada", "subtitle": "Leitura pública na ótica de dívida para {company}.", "publicOnly": "Somente fontes públicas", "publicOnlyBody": "Contexto informado orienta a busca, mas não é tratado como prova.", "workingKicker": "Análise em andamento", "workingTitle": "A Offroad está reconstruindo a leitura da companhia.", "workingBody": "As pesquisas rodam em paralelo. A síntese só começa depois que identidade, setor, sinais financeiros, dívida, liquidez e contexto de mercado foram organizados.", "failedTitle": "A análise precisa de atenção.", "failedBody": "Uma tarefa não foi concluída. O histórico e as fontes já obtidas foram preservados para retomada segura.", "taskProgress": "{complete} de {total} tarefas concluídas", "invalidArtifactTitle": "O diagnóstico não passou na validação.", "invalidArtifactBody": "O resultado foi preservado, mas não será exibido como material utilizável até cumprir o contrato de qualidade."},
+      "boundary": {
+        "title": "Leitura pública, não underwriting.",
+        "body": "A Offroad não calcula capacidade de dívida nem recomenda uma operação definitiva sem documentos financeiros reconciliados."
+      },
+      "actionNote": "O projeto abre imediatamente e a análise começa em segundo plano.",
+      "submit": "Analisar companhia",
+      "submitting": "Criando o projeto...",
+      "aside": {
+        "kicker": "Primeira devolutiva",
+        "title": "Uma leitura útil antes de pedir uma pasta inteira.",
+        "steps": {
+          "research": {
+            "title": "Pesquisar",
+            "body": "Companhia, setor, divulgações financeiras, dívida, liquidez, notícias e referências de mercado."
+          },
+          "diagnose": {
+            "title": "Diagnosticar",
+            "body": "Modelo de negócio, geração de caixa, sinais financeiros, riscos, sensibilidades e hipóteses na ótica de dívida."
+          },
+          "request": {
+            "title": "Priorizar",
+            "body": "No máximo cinco solicitações de informação, cada uma com motivo, impacto e evidências aceitáveis."
+          }
+        },
+        "footer": "As fontes permanecem ligadas a cada afirmação. Onde a base não sustentar uma conclusão, a Offroad declara a limitação."
+      },
+      "errors": {
+        "duplicate": "Já existe um projeto ativo com esse nome.",
+        "save": "Não foi possível criar o projeto. Revise os campos ou tente novamente."
+      },
+      "project": {
+        "kicker": "Diagnóstico público",
+        "unknownCompany": "companhia ainda não identificada",
+        "subtitle": "Leitura pública na ótica de dívida para {company}.",
+        "publicOnly": "Somente fontes públicas",
+        "publicOnlyBody": "Contexto informado orienta a busca, mas não é tratado como prova.",
+        "workingKicker": "Análise em andamento",
+        "workingTitle": "A Offroad está reconstruindo a leitura da companhia.",
+        "workingBody": "As pesquisas rodam em paralelo. A síntese só começa depois que identidade, setor, sinais financeiros, dívida, liquidez e contexto de mercado foram organizados.",
+        "failedTitle": "A análise precisa de atenção.",
+        "failedBody": "Uma tarefa não foi concluída. O histórico e as fontes já obtidas foram preservados para retomada segura.",
+        "taskProgress": "{complete} de {total} tarefas concluídas",
+        "invalidArtifactTitle": "O diagnóstico não passou na validação.",
+        "invalidArtifactBody": "O resultado foi preservado, mas não será exibido como material utilizável até cumprir o contrato de qualidade."
+      },
       "diagnostic": {
-        "kicker": "Work product para revisão", "title": "Companhia na ótica de dívida", "asOf": "Fontes consultadas até {date}", "executiveRead": "Leitura executiva", "companySnapshot": "A companhia em uma página", "coverage": "Cobertura da evidência", "coverageBody": "O que pode ser avaliado agora e o que exige documentação privada.", "criticalMissing": "O que ainda impede uma conclusão robusta", "businessRisk": "Modelo de negócio e risco empresarial", "businessRiskBody": "Como a companhia gera caixa e quais variáveis mais afetam sua capacidade financeira.", "cashDrivers": "Vetores de geração de caixa", "sensitivities": "Sensibilidades", "financialSignals": "Sinais financeiros públicos", "debtSignals": "Sinais de dívida e liquidez", "workingCapitalSignals": "Sinais de capital de giro", "risks": "Riscos que importam para dívida", "risksBody": "Evidência disponível, implicação e mitigantes que ainda precisam ser testados.", "debtRelevance": "Relevância para dívida: ", "capacity": "Capacidade financeira", "capacityBoundary": "Capacidade, alavancagem e cobertura só serão calculadas com números reconciliados e rastreáveis.", "hypotheses": "Hipóteses diagnósticas", "hypothesesBody": "Leituras para testar, nunca apresentadas como fatos consumados.", "hypothesis": "HIPÓTESE", "support": "O que sustenta", "disconfirmers": "O que pode derrubar", "requests": "Próximas informações mais úteis", "requestsBody": "Uma fila curta, priorizada pelo quanto cada item muda a análise.", "questions": "Perguntas que mudam a leitura", "questionsBody": "O que uma conversa com a companhia precisa esclarecer antes de estruturar alternativas.", "why": "Por que importa: ", "changes": "O que muda: ", "acceptableEvidence": "Pode ser atendido com: ", "implication": "Implicação: ", "bindingUnknowns": "Incertezas que impedem calcular capacidade", "unknowns": "Outros pontos ainda desconhecidos", "sources": "Fontes", "sourceList": "Fontes consultadas"
+        "kicker": "Work product para revisão",
+        "title": "Companhia na ótica de dívida",
+        "asOf": "Fontes consultadas até {date}",
+        "executiveRead": "Leitura executiva",
+        "companySnapshot": "A companhia em uma página",
+        "coverage": "Cobertura da evidência",
+        "coverageBody": "O que pode ser avaliado agora e o que exige documentação privada.",
+        "criticalMissing": "O que ainda impede uma conclusão robusta",
+        "businessRisk": "Modelo de negócio e risco empresarial",
+        "businessRiskBody": "Como a companhia gera caixa e quais variáveis mais afetam sua capacidade financeira.",
+        "cashDrivers": "Vetores de geração de caixa",
+        "sensitivities": "Sensibilidades",
+        "financialSignals": "Sinais financeiros públicos",
+        "debtSignals": "Sinais de dívida e liquidez",
+        "workingCapitalSignals": "Sinais de capital de giro",
+        "risks": "Riscos que importam para dívida",
+        "risksBody": "Evidência disponível, implicação e mitigantes que ainda precisam ser testados.",
+        "debtRelevance": "Relevância para dívida: ",
+        "capacity": "Capacidade financeira",
+        "capacityBoundary": "Capacidade, alavancagem e cobertura só serão calculadas com números reconciliados e rastreáveis.",
+        "hypotheses": "Hipóteses diagnósticas",
+        "hypothesesBody": "Leituras para testar, nunca apresentadas como fatos consumados.",
+        "hypothesis": "HIPÓTESE",
+        "support": "O que sustenta",
+        "disconfirmers": "O que pode derrubar",
+        "requests": "Próximas informações mais úteis",
+        "requestsBody": "Uma fila curta, priorizada pelo quanto cada item muda a análise.",
+        "questions": "Perguntas que mudam a leitura",
+        "questionsBody": "O que uma conversa com a companhia precisa esclarecer antes de estruturar alternativas.",
+        "why": "Por que importa: ",
+        "changes": "O que muda: ",
+        "acceptableEvidence": "Pode ser atendido com: ",
+        "implication": "Implicação: ",
+        "bindingUnknowns": "Incertezas que impedem calcular capacidade",
+        "unknowns": "Outros pontos ainda desconhecidos",
+        "sources": "Fontes",
+        "sourceList": "Fontes consultadas"
       },
-      "artifactStatus": {"pending_confirmation": "Aguardando sua revisão", "confirmed": "Confirmado", "superseded": "Substituído", "draft": "Rascunho", "approved": "Aprovado", "stale": "Desatualizado"},
-      "dataQuality": {"limited": "Base pública limitada", "partial": "Base pública parcial", "strong": "Base pública consistente"},
-      "capacityStatus": {"not_computable": "Ainda não calculável", "directional_only": "Leitura apenas direcional"},
-      "claimClass": {"fact": "Fato sustentado", "reference": "Referência de mercado", "hypothesis": "Hipótese"},
-      "confidence": {"high": "Alta confiança", "medium": "Confiança média", "low": "Baixa confiança"},
-      "sourceTopics": {"identity": "Companhia", "news": "Notícias", "sector": "Setor", "regulation": "Regulação", "market": "Mercado de dívida"},
-      "decision": {"title": "Sua decisão sobre esta versão", "confirm": "Confirmar esta leitura", "confirmed": "Leitura confirmada", "requestChanges": "Indicar correções", "requested": "Correção registrada; nova versão em preparação", "note": "O que precisa mudar?", "notePlaceholder": "Aponte o fato incorreto, a fonte que deve prevalecer ou a hipótese que precisa ser revista.", "errors": {"invalid": "Descreva a correção antes de registrar.", "save": "Não foi possível registrar sua decisão.", "stale": "Esta versão foi atualizada. Recarregue a página antes de decidir."}},
-      "tasks": {"kicker": "Plano de trabalho", "title": "Como esta leitura foi construída", "footer": "Cada resultado permanece ligado às tarefas, versões e fontes que o produziram."},
+      "artifactStatus": {
+        "pending_confirmation": "Aguardando sua revisão",
+        "confirmed": "Confirmado",
+        "superseded": "Substituído",
+        "draft": "Rascunho",
+        "approved": "Aprovado",
+        "stale": "Desatualizado"
+      },
+      "dataQuality": {
+        "limited": "Base pública limitada",
+        "partial": "Base pública parcial",
+        "strong": "Base pública consistente"
+      },
+      "capacityStatus": {
+        "not_computable": "Ainda não calculável",
+        "directional_only": "Leitura apenas direcional"
+      },
+      "claimClass": {
+        "fact": "Fato sustentado",
+        "reference": "Referência de mercado",
+        "hypothesis": "Hipótese"
+      },
+      "confidence": {
+        "high": "Alta confiança",
+        "medium": "Confiança média",
+        "low": "Baixa confiança"
+      },
+      "sourceTopics": {
+        "identity": "Companhia",
+        "news": "Notícias",
+        "sector": "Setor",
+        "regulation": "Regulação",
+        "market": "Mercado de dívida"
+      },
+      "decision": {
+        "title": "Sua decisão sobre esta versão",
+        "confirm": "Confirmar esta leitura",
+        "confirmed": "Leitura confirmada",
+        "requestChanges": "Indicar correções",
+        "requested": "Correção registrada; nova versão em preparação",
+        "note": "O que precisa mudar?",
+        "notePlaceholder": "Aponte o fato incorreto, a fonte que deve prevalecer ou a hipótese que precisa ser revista.",
+        "errors": {
+          "invalid": "Descreva a correção antes de registrar.",
+          "save": "Não foi possível registrar sua decisão.",
+          "stale": "Esta versão foi atualizada. Recarregue a página antes de decidir."
+        }
+      },
+      "tasks": {
+        "kicker": "Plano de trabalho",
+        "title": "Como esta leitura foi construída",
+        "footer": "Cada resultado permanece ligado às tarefas, versões e fontes que o produziram."
+      },
       "taskLabels": {
-        "M01": "Resolver a identidade da companhia", "M02": "Definir o objetivo da análise", "M03": "Registrar limites e premissas", "M04": "Definir as lentes de dívida", "M05": "Especificar o diagnóstico", "M06": "Compilar o plano de execução", "D01": "Verificar documentos recebidos", "D02": "Classificar documentos", "D03": "Extrair conteúdo documental", "D04": "Extrair candidatos a fatos", "D05": "Resolver entidade, período e unidade", "D06": "Verificar se há base conciliada", "D07": "Verificar identidades contábeis", "C01": "Entender o modelo de negócio", "C02": "Pesquisar companhia e setor", "C03": "Mapear sinais financeiros", "C04": "Avaliar qualidade dos resultados", "C05": "Mapear dívida e liquidez", "C06": "Mapear capital de giro", "C07": "Delimitar projeções possíveis", "C08": "Delimitar estresses possíveis", "C09": "Avaliar riscos de crédito", "C10": "Avaliar capacidade financeira", "C11": "Compilar o diagnóstico"
+        "M01": "Resolver a identidade da companhia",
+        "M02": "Definir o objetivo da análise",
+        "M03": "Registrar limites e premissas",
+        "M04": "Definir as lentes de dívida",
+        "M05": "Especificar o diagnóstico",
+        "M06": "Compilar o plano de execução",
+        "D01": "Verificar documentos recebidos",
+        "D02": "Classificar documentos",
+        "D03": "Extrair conteúdo documental",
+        "D04": "Extrair candidatos a fatos",
+        "D05": "Resolver entidade, período e unidade",
+        "D06": "Verificar se há base conciliada",
+        "D07": "Verificar identidades contábeis",
+        "C01": "Entender o modelo de negócio",
+        "C02": "Pesquisar companhia e setor",
+        "C03": "Mapear sinais financeiros",
+        "C04": "Avaliar qualidade dos resultados",
+        "C05": "Mapear dívida e liquidez",
+        "C06": "Mapear capital de giro",
+        "C07": "Delimitar projeções possíveis",
+        "C08": "Delimitar estresses possíveis",
+        "C09": "Avaliar riscos de crédito",
+        "C10": "Avaliar capacidade financeira",
+        "C11": "Compilar o diagnóstico"
       },
-      "taskStatus": {"waiting": "Aguardando dependências", "queued": "Na fila", "running": "Em execução", "succeeded": "Concluída", "failed": "Requer atenção", "blocked": "Bloqueada", "cancelled": "Cancelada"}
+      "taskStatus": {
+        "waiting": "Aguardando dependências",
+        "queued": "Na fila",
+        "running": "Em execução",
+        "succeeded": "Concluída",
+        "failed": "Requer atenção",
+        "blocked": "Bloqueada",
+        "cancelled": "Cancelada"
+      }
     },
     "capitalPlanning": {
       "back": "Voltar ao workspace",
-      "project": {"kicker": "Planejamento de capital", "unknownCompany": "companhia ainda não identificada", "subtitle": "Mapa direcional de alternativas de dívida para {company}.", "publicOnly": "Base pública e intenção declarada", "publicOnlyBody": "Nenhuma capacidade, condição ou aceitação de financiador foi presumida.", "workingKicker": "Plano em execução", "workingTitle": "A Offroad está comparando as rotas possíveis.", "workingBody": "O trabalho organiza a necessidade, pesquisa o contexto público e testa famílias de dívida em paralelo. Sizing, pricing e capacidade permanecem em aberto até existir documentação conciliada.", "failedTitle": "O planejamento precisa de atenção.", "failedBody": "Uma tarefa não foi concluída. O histórico e os resultados válidos foram preservados para retomada segura.", "taskProgress": "{complete} de {total} tarefas concluídas", "invalidArtifactTitle": "O mapa não passou na validação.", "invalidArtifactBody": "O resultado foi preservado, mas não será exibido como recomendação utilizável até cumprir o contrato de qualidade."},
-      "map": {"kicker": "Work product para revisão", "title": "Mapa de alternativas de dívida", "asOf": "Base consultada até {date}", "executiveRead": "Leitura executiva", "understoodNeed": "O que entendemos da necessidade", "understoodNeedBody": "Objetivo, restrições e premissas que ainda precisam ser confirmadas.", "constraints": "Restrições conhecidas", "assumptions": "Premissas a confirmar", "noneDeclared": "Nenhuma restrição foi declarada.", "evidence": "Cobertura da evidência", "evidenceBody": "O que a base sustenta e o que ainda não pode ser tratado como comprovado.", "supported": "O que está sustentado", "notSupported": "O que ainda não está sustentado", "noneSupported": "A base ainda não sustenta uma conclusão específica.", "alternatives": "Alternativas para considerar", "alternativesBody": "Famílias distintas, comparadas pelas condições que as favorecem ou afastam.", "advantages": "Vantagens potenciais", "tradeoffs": "Trade-offs", "prerequisites": "Pré-requisitos", "disconfirmers": "O que pode afastar", "comparison": "Comparação", "comparisonBody": "Como cada rota se comporta nas dimensões relevantes para esta necessidade.", "recommendation": "Recomendação direcional", "notReady": "Ainda não há base para escolher uma estrutura", "requests": "Próximas informações mais úteis", "requestsBody": "Uma fila curta, priorizada pelo quanto cada item muda a escolha e a estrutura.", "questions": "Perguntas que mudam a decisão", "questionsBody": "Pontos para confirmar antes de avançar de alternativa para estrutura.", "why": "Por que importa: ", "changes": "O que muda: ", "acceptableEvidence": "Pode ser atendido com: ", "unknowns": "Pontos ainda desconhecidos", "nextGate": "Próximo gate", "nextGateBody": "Confirme ou corrija este mapa. A estrutura só será desenhada depois que a base mínima estiver sustentada.", "sources": "Fontes", "sourceList": "Fontes consultadas"},
-      "families": {"bilateral_bank": "Bancário bilateral", "club_or_syndicated": "Club ou sindicado", "capital_markets": "Mercado de capitais", "securitization": "Securitização", "private_credit": "Crédito privado", "receivables": "Direitos creditórios", "asset_backed": "Asset-backed", "project_or_acquisition_finance": "Project ou acquisition finance", "trade_or_agro": "Comércio exterior ou agro", "flexible_capital": "Capital flexível", "special_situations": "Situações especiais"},
-      "alternativeStatus": {"candidate": "Candidata", "conditional": "Condicional", "not_assessable": "Ainda não avaliável"},
-      "artifactStatus": {"pending_confirmation": "Aguardando sua revisão", "confirmed": "Confirmado", "superseded": "Substituído", "draft": "Rascunho", "approved": "Aprovado", "stale": "Desatualizado"},
-      "sourceTopics": {"identity": "Companhia", "news": "Notícias", "sector": "Setor", "regulation": "Regulação", "market": "Mercado de dívida"},
-      "decision": {"title": "Sua decisão sobre esta versão", "confirm": "Confirmar este mapa", "confirmed": "Mapa confirmado", "requestChanges": "Indicar correções", "requested": "Correção registrada; nova versão em preparação", "note": "O que precisa mudar?", "notePlaceholder": "Aponte o entendimento incorreto, a alternativa que precisa ser revista ou uma restrição que não foi considerada.", "errors": {"invalid": "Descreva a correção antes de registrar.", "save": "Não foi possível registrar sua decisão.", "stale": "Esta versão foi atualizada. Recarregue a página antes de decidir."}},
-      "tasks": {"kicker": "Plano de trabalho", "title": "Como o mapa foi construído", "footer": "Cada conclusão permanece ligada às tarefas, versões, fontes e limites que a produziram."},
-      "taskStatus": {"waiting": "Aguardando dependências", "queued": "Na fila", "running": "Em execução", "succeeded": "Concluída", "failed": "Requer atenção", "blocked": "Bloqueada", "cancelled": "Cancelada"}
+      "project": {
+        "kicker": "Planejamento de capital",
+        "unknownCompany": "companhia ainda não identificada",
+        "subtitle": "Mapa direcional de alternativas de dívida para {company}.",
+        "publicOnly": "Base pública e intenção declarada",
+        "publicOnlyBody": "Nenhuma capacidade, condição ou aceitação de financiador foi presumida.",
+        "workingKicker": "Plano em execução",
+        "workingTitle": "A Offroad está comparando as rotas possíveis.",
+        "workingBody": "O trabalho organiza a necessidade, pesquisa o contexto público e testa famílias de dívida em paralelo. Sizing, pricing e capacidade permanecem em aberto até existir documentação conciliada.",
+        "failedTitle": "O planejamento precisa de atenção.",
+        "failedBody": "Uma tarefa não foi concluída. O histórico e os resultados válidos foram preservados para retomada segura.",
+        "taskProgress": "{complete} de {total} tarefas concluídas",
+        "invalidArtifactTitle": "O mapa não passou na validação.",
+        "invalidArtifactBody": "O resultado foi preservado, mas não será exibido como recomendação utilizável até cumprir o contrato de qualidade."
+      },
+      "map": {
+        "kicker": "Work product para revisão",
+        "title": "Mapa de alternativas de dívida",
+        "asOf": "Base consultada até {date}",
+        "executiveRead": "Leitura executiva",
+        "understoodNeed": "O que entendemos da necessidade",
+        "understoodNeedBody": "Objetivo, restrições e premissas que ainda precisam ser confirmadas.",
+        "constraints": "Restrições conhecidas",
+        "assumptions": "Premissas a confirmar",
+        "noneDeclared": "Nenhuma restrição foi declarada.",
+        "evidence": "Cobertura da evidência",
+        "evidenceBody": "O que a base sustenta e o que ainda não pode ser tratado como comprovado.",
+        "supported": "O que está sustentado",
+        "notSupported": "O que ainda não está sustentado",
+        "noneSupported": "A base ainda não sustenta uma conclusão específica.",
+        "alternatives": "Alternativas para considerar",
+        "alternativesBody": "Famílias distintas, comparadas pelas condições que as favorecem ou afastam.",
+        "advantages": "Vantagens potenciais",
+        "tradeoffs": "Trade-offs",
+        "prerequisites": "Pré-requisitos",
+        "disconfirmers": "O que pode afastar",
+        "comparison": "Comparação",
+        "comparisonBody": "Como cada rota se comporta nas dimensões relevantes para esta necessidade.",
+        "recommendation": "Recomendação direcional",
+        "notReady": "Ainda não há base para escolher uma estrutura",
+        "requests": "Próximas informações mais úteis",
+        "requestsBody": "Uma fila curta, priorizada pelo quanto cada item muda a escolha e a estrutura.",
+        "questions": "Perguntas que mudam a decisão",
+        "questionsBody": "Pontos para confirmar antes de avançar de alternativa para estrutura.",
+        "why": "Por que importa: ",
+        "changes": "O que muda: ",
+        "acceptableEvidence": "Pode ser atendido com: ",
+        "unknowns": "Pontos ainda desconhecidos",
+        "nextGate": "Próximo gate",
+        "nextGateBody": "Confirme ou corrija este mapa. A estrutura só será desenhada depois que a base mínima estiver sustentada.",
+        "sources": "Fontes",
+        "sourceList": "Fontes consultadas"
+      },
+      "families": {
+        "bilateral_bank": "Bancário bilateral",
+        "club_or_syndicated": "Club ou sindicado",
+        "capital_markets": "Mercado de capitais",
+        "securitization": "Securitização",
+        "private_credit": "Crédito privado",
+        "receivables": "Direitos creditórios",
+        "asset_backed": "Asset-backed",
+        "project_or_acquisition_finance": "Project ou acquisition finance",
+        "trade_or_agro": "Comércio exterior ou agro",
+        "flexible_capital": "Capital flexível",
+        "special_situations": "Situações especiais"
+      },
+      "alternativeStatus": {
+        "candidate": "Candidata",
+        "conditional": "Condicional",
+        "not_assessable": "Ainda não avaliável"
+      },
+      "artifactStatus": {
+        "pending_confirmation": "Aguardando sua revisão",
+        "confirmed": "Confirmado",
+        "superseded": "Substituído",
+        "draft": "Rascunho",
+        "approved": "Aprovado",
+        "stale": "Desatualizado"
+      },
+      "sourceTopics": {
+        "identity": "Companhia",
+        "news": "Notícias",
+        "sector": "Setor",
+        "regulation": "Regulação",
+        "market": "Mercado de dívida"
+      },
+      "decision": {
+        "title": "Sua decisão sobre esta versão",
+        "confirm": "Confirmar este mapa",
+        "confirmed": "Mapa confirmado",
+        "requestChanges": "Indicar correções",
+        "requested": "Correção registrada; nova versão em preparação",
+        "note": "O que precisa mudar?",
+        "notePlaceholder": "Aponte o entendimento incorreto, a alternativa que precisa ser revista ou uma restrição que não foi considerada.",
+        "errors": {
+          "invalid": "Descreva a correção antes de registrar.",
+          "save": "Não foi possível registrar sua decisão.",
+          "stale": "Esta versão foi atualizada. Recarregue a página antes de decidir."
+        }
+      },
+      "tasks": {
+        "kicker": "Plano de trabalho",
+        "title": "Como o mapa foi construído",
+        "footer": "Cada conclusão permanece ligada às tarefas, versões, fontes e limites que a produziram."
+      },
+      "taskStatus": {
+        "waiting": "Aguardando dependências",
+        "queued": "Na fila",
+        "running": "Em execução",
+        "succeeded": "Concluída",
+        "failed": "Requer atenção",
+        "blocked": "Bloqueada",
+        "cancelled": "Cancelada"
+      }
     },
     "origination": {
       "back": "Voltar ao workspace",
@@ -1475,9 +1964,18 @@
         "kicker": "O que será feito",
         "title": "Uma pauta de originação específica para a companhia.",
         "steps": {
-          "research": {"title": "Pesquisar", "body": "Identidade, divulgações financeiras, notícias, setor, regulação e transações comparáveis."},
-          "read": {"title": "Interpretar", "body": "Sinais relevantes na ótica de dívida, sempre separados entre fato, hipótese e ponto ainda desconhecido."},
-          "prepare": {"title": "Preparar", "body": "Ângulos de financiamento, condições que precisam ser confirmadas e perguntas que mudam a recomendação."}
+          "research": {
+            "title": "Pesquisar",
+            "body": "Identidade, divulgações financeiras, notícias, setor, regulação e transações comparáveis."
+          },
+          "read": {
+            "title": "Interpretar",
+            "body": "Sinais relevantes na ótica de dívida, sempre separados entre fato, hipótese e ponto ainda desconhecido."
+          },
+          "prepare": {
+            "title": "Preparar",
+            "body": "Ângulos de financiamento, condições que precisam ser confirmadas e perguntas que mudam a recomendação."
+          }
         },
         "footer": "A pesquisa utiliza apenas fontes públicas e mantém os links utilizados."
       },
@@ -1529,8 +2027,18 @@
         "approved": "Aprovado",
         "stale": "Desatualizado"
       },
-      "confidence": {"high": "Alta confiança", "medium": "Confiança média", "low": "Baixa confiança"},
-      "sourceTopics": {"identity": "Companhia", "news": "Notícias", "sector": "Setor", "regulation": "Regulação", "market": "Mercado de dívida"},
+      "confidence": {
+        "high": "Alta confiança",
+        "medium": "Confiança média",
+        "low": "Baixa confiança"
+      },
+      "sourceTopics": {
+        "identity": "Companhia",
+        "news": "Notícias",
+        "sector": "Setor",
+        "regulation": "Regulação",
+        "market": "Mercado de dívida"
+      },
       "decision": {
         "title": "Sua decisão sobre esta versão",
         "confirm": "Confirmar esta leitura",
@@ -1539,7 +2047,11 @@
         "requested": "Correção registrada; nova versão em preparação",
         "note": "O que precisa mudar?",
         "notePlaceholder": "Aponte o fato incorreto, a fonte que deve prevalecer ou a hipótese que não reflete a conversa.",
-        "errors": {"invalid": "Descreva a correção antes de registrar.", "save": "Não foi possível registrar sua decisão.", "stale": "Esta versão foi atualizada. Recarregue a página antes de decidir."}
+        "errors": {
+          "invalid": "Descreva a correção antes de registrar.",
+          "save": "Não foi possível registrar sua decisão.",
+          "stale": "Esta versão foi atualizada. Recarregue a página antes de decidir."
+        }
       },
       "tasks": {
         "kicker": "Plano de trabalho",
@@ -1557,7 +2069,15 @@
         "K04": "Pesquisar transações comparáveis",
         "M07": "Sintetizar o brief de reunião"
       },
-      "taskStatus": {"waiting": "Aguardando dependências", "queued": "Na fila", "running": "Em execução", "succeeded": "Concluída", "failed": "Requer atenção", "blocked": "Bloqueada", "cancelled": "Cancelada"}
+      "taskStatus": {
+        "waiting": "Aguardando dependências",
+        "queued": "Na fila",
+        "running": "Em execução",
+        "succeeded": "Concluída",
+        "failed": "Requer atenção",
+        "blocked": "Bloqueada",
+        "cancelled": "Cancelada"
+      }
     },
     "notifications": "Notificações",
     "resources": "Recursos",
@@ -1705,7 +2225,10 @@
         "totalSources": "Total de fontes",
         "totalUses": "Total de usos",
         "sourcesUsesStatus": "Fechamento de fontes e usos",
-        "sourcesUses": {"pass": "Conciliado", "fail": "Ainda não conciliado"},
+        "sourcesUses": {
+          "pass": "Conciliado",
+          "fail": "Ainda não conciliado"
+        },
         "months": "{count} meses",
         "days": "{min} a {max} dias",
         "notEstimated": "Não estimado",
@@ -1789,36 +2312,36 @@
         "resolvedBy": "confirmação necessária: {value}",
         "mandateRefresh": "Este financiador só poderá integrar uma lista de contato depois que os dados de mandato indicados forem atualizados ou confirmados.",
         "showExcluded": "Ver {count, plural, one {1 financiador excluído} other {# financiadores excluídos}}",
-      "noContactTitle": "Nenhum contato foi autorizado",
-      "noContactBody": "Este bloco apenas organiza a leitura de aderência. A seleção dos destinatários e a autorização para apresentar o caso serão decisões separadas, vinculadas a esta versão exata dos materiais.",
-      "selectProvider": "Selecionar {name} para a shortlist",
-      "approvalTitle": "Confirme quais instituições devem seguir para o plano de introdução",
-      "approvalBody": "Esta aprovação fecha somente a shortlist. Antes de qualquer contato, você verá os destinatários, os materiais e a justificativa de cada introdução.",
-      "approve": "APROVAR SHORTLIST",
-      "approving": "REGISTRANDO APROVAÇÃO...",
-      "approvedTitle": "Shortlist aprovada",
-      "approvedBody": "{count, plural, one {1 instituição seguirá} other {# instituições seguirão}} para a preparação do plano de introdução. Nenhum contato foi iniciado.",
-      "planKicker": "PLANO PRIVADO EM PREPARAÇÃO",
-      "planTitle": "Agora validamos os destinatários corretos",
-      "planBody": "A shortlist está preservada. Para cada instituição, a Offroad valida o contato responsável por este perfil de operação e prepara o racional e os materiais exatos que serão apresentados.",
-      "planBoundary": "Nada será enviado nesta etapa. Antes de qualquer contato, você revisará os destinatários e a versão exata dos materiais e dará uma autorização específica.",
-      "contactStatus": {
-        "unresolved": "Contato em validação",
-        "resolved": "Contato validado",
-        "unavailable": "Contato ainda indisponível"
-      },
-      "authorizationKicker": "AUTORIZAÇÃO ESPECÍFICA",
-      "authorizationTitle": "Revise os destinatários e os materiais",
-      "authorizationBody": "Esta é a relação exata de pessoas e materiais preparada para a primeira apresentação. A autorização vale somente para os itens abaixo e não permite incluir outros destinatários ou versões.",
-      "authorizationDeclarationTitle": "Autorizar estas apresentações qualificadas",
-      "authorizationDeclarationBody": "Confirmo que revisei os destinatários e os materiais acima e autorizo a Offroad a apresentar esta versão do caso somente a essas pessoas.",
-      "authorize": "AUTORIZAR APRESENTAÇÕES",
-      "authorizing": "REGISTRANDO AUTORIZAÇÃO...",
-      "authorizationPending": "A Offroad ainda está validando os contatos, a atualidade dos mandatos e a versão exata dos materiais. A autorização só será liberada quando todos os controles estiverem concluídos.",
-      "authorizationCompleteTitle": "Apresentações autorizadas",
-      "authorizationCompleteBody": "A autorização ficou registrada para estes destinatários e para esta versão exata dos materiais.",
-      "authorizationCompleteStatus": "A Offroad pode realizar apenas as apresentações listadas acima. Nenhum outro destinatário foi autorizado.",
-      "boundary": "A Offroad direciona o caso e prepara uma introdução qualificada. O financiador conduz sua própria análise, diligência e decisão de crédito.",
+        "noContactTitle": "Nenhum contato foi autorizado",
+        "noContactBody": "Este bloco apenas organiza a leitura de aderência. A seleção dos destinatários e a autorização para apresentar o caso serão decisões separadas, vinculadas a esta versão exata dos materiais.",
+        "selectProvider": "Selecionar {name} para a shortlist",
+        "approvalTitle": "Confirme quais instituições devem seguir para o plano de introdução",
+        "approvalBody": "Esta aprovação fecha somente a shortlist. Antes de qualquer contato, você verá os destinatários, os materiais e a justificativa de cada introdução.",
+        "approve": "APROVAR SHORTLIST",
+        "approving": "REGISTRANDO APROVAÇÃO...",
+        "approvedTitle": "Shortlist aprovada",
+        "approvedBody": "{count, plural, one {1 instituição seguirá} other {# instituições seguirão}} para a preparação do plano de introdução. Nenhum contato foi iniciado.",
+        "planKicker": "PLANO PRIVADO EM PREPARAÇÃO",
+        "planTitle": "Agora validamos os destinatários corretos",
+        "planBody": "A shortlist está preservada. Para cada instituição, a Offroad valida o contato responsável por este perfil de operação e prepara o racional e os materiais exatos que serão apresentados.",
+        "planBoundary": "Nada será enviado nesta etapa. Antes de qualquer contato, você revisará os destinatários e a versão exata dos materiais e dará uma autorização específica.",
+        "contactStatus": {
+          "unresolved": "Contato em validação",
+          "resolved": "Contato validado",
+          "unavailable": "Contato ainda indisponível"
+        },
+        "authorizationKicker": "AUTORIZAÇÃO ESPECÍFICA",
+        "authorizationTitle": "Revise os destinatários e os materiais",
+        "authorizationBody": "Esta é a relação exata de pessoas e materiais preparada para a primeira apresentação. A autorização vale somente para os itens abaixo e não permite incluir outros destinatários ou versões.",
+        "authorizationDeclarationTitle": "Autorizar estas apresentações qualificadas",
+        "authorizationDeclarationBody": "Confirmo que revisei os destinatários e os materiais acima e autorizo a Offroad a apresentar esta versão do caso somente a essas pessoas.",
+        "authorize": "AUTORIZAR APRESENTAÇÕES",
+        "authorizing": "REGISTRANDO AUTORIZAÇÃO...",
+        "authorizationPending": "A Offroad ainda está validando os contatos, a atualidade dos mandatos e a versão exata dos materiais. A autorização só será liberada quando todos os controles estiverem concluídos.",
+        "authorizationCompleteTitle": "Apresentações autorizadas",
+        "authorizationCompleteBody": "A autorização ficou registrada para estes destinatários e para esta versão exata dos materiais.",
+        "authorizationCompleteStatus": "A Offroad pode realizar apenas as apresentações listadas acima. Nenhum outro destinatário foi autorizado.",
+        "boundary": "A Offroad direciona o caso e prepara uma introdução qualificada. O financiador conduz sua própria análise, diligência e decisão de crédito.",
         "verdicts": {
           "eligible": "Mandato aderente",
           "fits": "Mandato compatível",
@@ -1840,10 +2363,22 @@
           "unknown": "Provedor de capital"
         },
         "empty": {
-          "not_screened": {"title": "Ainda não há mandatos governados para analisar", "body": "O pacote permanece aprovado, mas uma shortlist só pode ser formada com informações verificáveis e atuais sobre o mercado."},
-          "needs_mandate_refresh": {"title": "Os mandatos precisam ser atualizados", "body": "Há possíveis aderências, mas faltam confirmações atuais em critérios que podem excluir a operação."},
-          "no_eligible_mandates": {"title": "Nenhum mandato atual se mostrou aderente", "body": "As exclusões objetivas permanecem registradas. Isso pode orientar um ajuste de estrutura ou uma nova leitura de mercado."},
-          "ready_for_review": {"title": "Shortlist pronta para revisão", "body": "Revise os financiadores e os fundamentos antes de preparar qualquer autorização."}
+          "not_screened": {
+            "title": "Ainda não há mandatos governados para analisar",
+            "body": "O pacote permanece aprovado, mas uma shortlist só pode ser formada com informações verificáveis e atuais sobre o mercado."
+          },
+          "needs_mandate_refresh": {
+            "title": "Os mandatos precisam ser atualizados",
+            "body": "Há possíveis aderências, mas faltam confirmações atuais em critérios que podem excluir a operação."
+          },
+          "no_eligible_mandates": {
+            "title": "Nenhum mandato atual se mostrou aderente",
+            "body": "As exclusões objetivas permanecem registradas. Isso pode orientar um ajuste de estrutura ou uma nova leitura de mercado."
+          },
+          "ready_for_review": {
+            "title": "Shortlist pronta para revisão",
+            "body": "Revise os financiadores e os fundamentos antes de preparar qualquer autorização."
+          }
         }
       },
       "declined": {
@@ -1871,13 +2406,13 @@
         "material_package_changed": "O pacote mudou desde que a página foi aberta. Revise a versão atual.",
         "material_package_incomplete": "O pacote ainda possui artefatos pendentes e não pode ser aprovado.",
         "material_package_approved": "Pacote aprovado. Nenhum contato com o mercado foi autorizado.",
-      "match_started": "Pacote aprovado. Os mandatos vigentes estão sendo analisados sem autorizar qualquer contato.",
-      "match_changed": "A análise de aderência mudou desde que a página foi aberta. Revise a versão atual.",
-      "match_selection_invalid": "A shortlist contém uma instituição que ainda não está elegível. Revise os critérios atuais.",
-      "match_approved": "Shortlist aprovada. Agora a Offroad pode preparar o plano de introdução, ainda sem contatar o mercado.",
-      "introduction_plan_changed": "O plano de introdução mudou desde que a página foi aberta. Revise os destinatários e os materiais atuais.",
-      "introduction_authorization_failed": "A autorização não foi registrada. Um contato, mandato, material ou controle obrigatório ainda precisa ser validado.",
-      "introduction_authorized": "Autorização registrada para os destinatários e materiais exatos apresentados nesta tela.",
+        "match_started": "Pacote aprovado. Os mandatos vigentes estão sendo analisados sem autorizar qualquer contato.",
+        "match_changed": "A análise de aderência mudou desde que a página foi aberta. Revise a versão atual.",
+        "match_selection_invalid": "A shortlist contém uma instituição que ainda não está elegível. Revise os critérios atuais.",
+        "match_approved": "Shortlist aprovada. Agora a Offroad pode preparar o plano de introdução, ainda sem contatar o mercado.",
+        "introduction_plan_changed": "O plano de introdução mudou desde que a página foi aberta. Revise os destinatários e os materiais atuais.",
+        "introduction_authorization_failed": "A autorização não foi registrada. Um contato, mandato, material ou controle obrigatório ainda precisa ser validado.",
+        "introduction_authorized": "Autorização registrada para os destinatários e materiais exatos apresentados nesta tela.",
         "structure_revision_started": "Ajustes registrados. Uma nova versão das alternativas está sendo preparada.",
         "structure_declined": "Decisão registrada. Nenhuma preparação ou contato foi iniciado."
       }
@@ -1902,7 +2437,16 @@
       "sourceAnchored": "ancorados na fonte",
       "versioned": "versionados",
       "evidenceCompiled": "compilados com evidência"
-    }
+    },
+    "newChat": "Novo chat",
+    "recent": "Recentes",
+    "folders": "Pastas",
+    "collapseRail": "Recolher menu",
+    "expandRail": "Expandir menu",
+    "account": "Conta e preferências",
+    "language": "Idioma",
+    "createFolder": "Nova pasta",
+    "createFolderPlaceholder": "Nome da pasta"
   },
   "Demo": {
     "eyebrow": "Demonstração com dados sintéticos",
