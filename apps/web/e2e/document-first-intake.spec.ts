@@ -295,6 +295,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".private-project-gate__accepted")).toHaveCount(0);
     await expect(page.locator('input[name="terms_agreed"]')).not.toBeChecked();
     await expect(page.locator('input[name="information_rights_declared"]')).not.toBeChecked();
+    await page.locator('input[name="signatory_title"]').fill("Diretora financeira");
     await page.locator('input[name="terms_agreed"]').check();
     await page.locator('input[name="information_rights_declared"]').check();
     await page.locator('.private-project-gate__form button[type="submit"]').click();
