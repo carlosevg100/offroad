@@ -2165,3 +2165,36 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Vinte casos Pareto definem a próxima cobertura de homologação. O Atlas especifica schema de caso,
   coverage, gates, outputs, teste de sobrevivência e implicações para router, compiler e evals.
 - Estado é `specified`: nenhum novo runtime, migration ou pack foi promovido por esta documentação.
+
+## Fase 0, frente de especificação: cinco casos gold congelados, 04/09/2026
+
+- `docs/product/gold-cases/` traz o contrato de congelamento (README) e os cinco casos com
+  compromisso de implementação: analista de IB com instrução vaga do VP (Camil, público), CFO da
+  Camil preparando o conselho (público mais gerencial autorizado), assessor com operação de
+  recebíveis (Aurora, privado), analista de investimentos da Prisma avaliando operação recebida
+  contra mandato (lado provedor), banker pensando na expansão da Camil com produção de material e
+  mudança de premissa (três turnos).
+- Cada caso congela inputs com hash, cobertura com materialidade, cálculos determinísticos,
+  achados com âncora, outputs por turno, árvore conversacional com os ramos exercitados e os
+  `deferred`, adversariais, protocolo de baseline, painel e rubrica. Maturidade: `specified`.
+- Fixtures que ainda não existem e que os casos declaram como ramo `deferred` até serem criadas:
+  dados gerenciais da Camil (orçamento, capex, caixa mínimo, cronograma contratual), tape e aging
+  de recebíveis da Aurora, mandato sintético da Prisma no formato `Mandate`.
+- Os casos 01, 02 e 05 usam a mesma base pública da Camil por desenho: a prova de identidade
+  econômica é que os mesmos fatos saem com os mesmos valores, âncoras e traces nos três.
+
+## Fase 0, frente de staging: causa raiz e recriação, 04/09/2026
+
+- A branch `staging` nunca ficou utilizável porque a linha de `20260831092552
+  project_scoped_company_profile` em `supabase_migrations.schema_migrations` de produção guardava,
+  em vez do SQL, o texto "Canonical migration applied from repository commit f48f928". Toda
+  criação ou reset de branch replica o histórico de produção e executava essa prosa como SQL
+  (`syntax error at or near "Canonical"`), parando em 128 de 190 migrações. Era a única linha
+  assim no histórico.
+- A linha foi corrigida com o conteúdo verbatim do arquivo (9.215 bytes). Nenhuma DDL mudou; só o
+  registro do que já tinha sido aplicado.
+- A branch antiga (`lxmpsxwlpmfisbauakaz`, histórico divergente com série `_validation`) e a
+  intermediária (`ylyldbudqrrzuhgjulmi`, criada antes da correção) foram apagadas. A branch
+  vigente é `gjkkjtbfnssdsbmlhmwk`, criada às 20:29 UTC a partir do histórico corrigido, ao custo
+  horário de US$ 0,01344. Verificação de paridade (190 migrações, 114 tabelas) registrada em
+  `ACCEPTANCE_EVIDENCE.md` quando concluída.
