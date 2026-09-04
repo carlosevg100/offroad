@@ -1,9 +1,10 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 1 September 2026. Receivables Phase 6 and the conversational handoff to the two
-> released public DAGs are live on `main`. Receivables Phase 7 remains a separate candidate that
-> connects actual uploads to the full governed vertical; it is not live until its own controlled
-> replay is complete.
+> Current as of 4 September 2026. The universal advisor foundation, persistent project memory,
+> public/private workflows, governed research, Deal Captain, coverage map and conversational
+> workspace are live on `main`. Economic depth packs and the institutional financial model are
+> implemented but not yet homologated as top-tier expertise. The first human gold case remains the
+> controlling next step; section 42 is the current operational handoff.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
@@ -2647,3 +2648,489 @@ Nenhuma regra econômica ou operacional mudou: os atalhos apenas informam o prim
 upload continua privado e o projeto continua sendo criado e processado pelas mesmas fronteiras. A
 ausência de nome usa saudação neutra. A versão inglesa preserva a mesma função com redação própria.
 Typecheck, 31 arquivos/182 testes da web, lint e build de produção passaram localmente com Node 24.
+O PR #400 foi incorporado em `main` no commit `5cba551e`; todos os gates de segurança, banco,
+qualidade e E2E passaram e o deployment Vercel de produção `6259543314` concluiu com sucesso.
+
+## 42. Handoff integral: da fundação técnica à mesa institucional homologada, 04/09/2026
+
+### 42.1 O produto que estamos construindo
+
+A Offroad não é um gerador de relatórios, um formulário de captação, um chatbot financeiro nem um
+instrumento único disfarçado de plataforma. É a camada de trabalho especializada que ajuda quem
+capta, origina, assessora, analisa, estrutura ou investe a desenvolver trabalho de Debt Capital
+Markets com continuidade, profundidade e evidência.
+
+O ponto de entrada pode ser uma pergunta, uma companhia, uma reunião, uma pasta de documentos, uma
+necessidade de capital, uma proposta existente ou uma oportunidade recebida. A partir daí, o
+sistema deve:
+
+1. compreender o usuário, a companhia, a intenção e o contexto já autorizado;
+2. identificar o que precisa ser conhecido antes de responder e pedir apenas o que muda a análise;
+3. pesquisar, extrair, conciliar e construir uma visão histórica e prospectiva da companhia;
+4. reconhecer lacunas, contradições, premissas e dimensões ainda não examinadas;
+5. desenvolver e comparar alternativas de capital, sem escolher instrumento cedo demais;
+6. aprofundar com o usuário os caminhos que merecem avançar;
+7. estruturar uma operação indicativa e testar sua capacidade, riscos, termos e execução;
+8. preparar modelos, análises e materiais coerentes a partir da mesma verdade do projeto;
+9. quando aplicável, discriminar financiadores e investidores com aderência demonstrável;
+10. somente após autorização específica, preparar uma introdução qualificada aos destinatários
+    exatos.
+
+O sistema é o motor de análise, julgamento assistido, estruturação e preparação. Ele não substitui
+underwriting, diligência, parecer jurídico, aprovação de crédito, distribuição regulada ou
+fechamento. Ele também não deve encerrar prematuramente uma questão econômica: apresenta
+considerações, alternativas, sensibilidades, recomendação fundamentada e o que mudaria essa
+recomendação.
+
+### 42.2 Experiência obrigatória
+
+A interação deve se comportar como um workspace contemporâneo de IA, não como um wizard:
+
+- uma entrada principal por chat, com upload no próprio composer;
+- projetos persistentes por companhia, necessidade ou mandato;
+- memória do próprio usuário e da própria organização, usada somente quando existir e for
+  autorizada;
+- pesquisa, leitura, conciliação, modelagem e revisão aparecendo em tempo real como trabalho em
+  andamento, em linguagem profissional e útil;
+- perguntas contextuais em controles leves quando respostas estruturadas forem convenientes, com
+  opção de escrever livremente, pular ou fornecer documento;
+- respostas parciais úteis enquanto o trabalho avança;
+- artifacts abertos no painel lateral e também resumidos no chat;
+- números, premissas, cálculos e conclusões navegáveis até a evidência;
+- correções e novos inputs atualizando somente os nós afetados, sem reconstruir o projeto inteiro;
+- PT-BR e EN-US como projeções naturais do mesmo trabalho, preservando termos técnicos e diferenças
+  jurídicas, econômicas e contábeis entre Brasil e Estados Unidos.
+
+A home simplificada da seção 41 implementa apenas essa porta de entrada. Ela não comprova, por si
+só, a qualidade do trabalho que acontece depois.
+
+### 42.3 Arquitetura disponível hoje
+
+A fundação existente já representa:
+
+- memória segregada por organização, projeto, companhia e conversa;
+- matéria-prima pública reutilizável sem compartilhar contexto privado entre clientes;
+- pesquisa oficial CVM/SEC e discovery complementar governado;
+- ingestão privada, extração, reconciliação, classificação e procedência;
+- Knowledge Graph, Case Graph e Market Graph com TaskSpecs e efeitos explícitos;
+- Deal Captain que compila um plano limitado por tarefas conhecidas, dependências e orçamento;
+- coverage map com estados distintos para coberto, insuficiente, conflitante, inaplicável,
+  adiado e não examinado;
+- decisões, versões, invalidação incremental e trilha de auditoria;
+- packs combináveis por núcleo, situação, objetivo, instrumento, setor, domínio analítico,
+  função e jurisdição;
+- motor financeiro integrado com DRE, balanço, fluxo de caixa, capital de giro, PP&E, impostos,
+  dívida, liquidez, covenants e patrimônio;
+- livro governado de premissas e cenários filhos imutáveis;
+- curvas macroeconômicas datadas e tratamentos separados para indexação, juros e amortização;
+- preparação e matching como subgrafos governados, sem autorização implícita para contato externo.
+
+Isso é uma fundação técnica real. Não é ainda evidência de que todos os caminhos produzam trabalho
+de nível banco top tier.
+
+### 42.4 Estado do primeiro teste: banker preparando reunião com companhia pública
+
+O primeiro gold case humano usa a seguinte intenção-base:
+
+> Tenho uma reunião amanhã com a Camil e gostaria de preparar um pitch sobre alternativas
+> estratégicas possíveis no âmbito do endividamento e da estrutura de capital.
+
+Esse teste representa um banker, assessor ou originador que precisa chegar à conversa dominando a
+companhia e levando ideias relevantes. Ele não pediu uma lista genérica de produtos, uma conclusão
+de crédito nem um roteiro teatral de reunião.
+
+#### O que já foi implementado para esse case
+
+- roteamento da intenção para `origination_thesis`;
+- criação e continuidade do projeto sem exigir formulário prévio da operação;
+- recuperação de memória relacionada somente quando existe contexto autorizado;
+- perguntas sobre audiência, objetivo e relacionamento quando realmente mudam o trabalho;
+- contexto profissional capaz de orientar a análise sem limitar o universo econômico da companhia;
+- pesquisa pública com fontes oficiais e discovery complementar;
+- plano de trabalho persistido e atividades visíveis no workspace;
+- síntese inicial, coverage, decisões e artifacts ligados ao mesmo projeto;
+- packs de núcleo DCM, refinance, liquidez, capex, aquisição, garantia, covenant, downside,
+  jurisdição Brasil e instrumentos prioritários;
+- motor prospectivo e dívida indexada implementados em código;
+- nova entrada visual do workspace promovida pelo PR #400, com E2E remoto e deployment de produção
+  concluídos na data deste handoff.
+
+#### O que o teste ensinou e o que ainda está inadequado
+
+A primeira versão mostrou que pipeline e tela podem funcionar e ainda assim o resultado ser
+superficial. Os principais desvios observados foram:
+
+- linguagem interna exposta ao usuário, como “resolver identidade” ou “reconstruir companhia”;
+- relatório separado e prematuro no lugar de trabalho progressivo no chat;
+- fatos estáticos apresentados sem contexto operacional, setorial e prospectivo suficiente;
+- perguntas padronizadas antes de demonstrar entendimento e sem explicar o impacto da resposta;
+- alternativas de dívida derivadas cedo demais de um único balanço histórico;
+- ausência de modelo forward suficientemente visível, discutível e editável;
+- falta de ligação clara entre análise, racional da alternativa, benefício, complexidade e
+  executabilidade;
+- artifacts que pareciam um brief genérico, não o trabalho de um associate/VP outstanding para
+  revisão de um MD;
+- fechamento inconsistente do job e dificuldade de abrir todos os outputs produzidos.
+
+#### O que ainda não foi validado com qualidade de banco top tier
+
+- o output final visível no chat;
+- a qualidade completa da modelagem e das projeções;
+- premissas editáveis, datadas, justificadas e ligadas aos drivers corretos da companhia e do setor;
+- tratamento linha a linha de juros, amortização, fees, hedges, pré-pagamento, IPCA pago em caixa,
+  IPCA capitalizado no principal, cupom caixa e PIK;
+- estrutura sugerida, sizing, prazo, amortização, garantias, covenants, flexibilidade e contingência;
+- comparação antes/depois e base/downside de cada alternativa;
+- materiais finais com qualidade editorial e financeira institucional;
+- matching discriminado com mandatos atuais e razões específicas de aderência ou exclusão;
+- todos os packs do Pareto, funções profissionais, jornadas e combinações relevantes;
+- Brasil, Estados Unidos e casos cross-border;
+- superioridade material diante do melhor modelo generalista usando os mesmos inputs.
+
+#### Sequência imediata para completar o primeiro teste
+
+1. Reexecutar o mesmo case com o diagnóstico, coverage map, packs e motor financeiro recém-
+   implantados.
+2. Corrigir o fechamento final do job: sucesso econômico, falha, insuficiência e espera por usuário
+   precisam terminar em estados diferentes e coerentes.
+3. Abrir no produto todos os outputs do case, mantendo resumo decisório no chat e detalhe navegável
+   nos artifacts.
+4. Fazer revisão linha a linha como MD, senior DCM banker e credit analyst:
+   - números e períodos;
+   - fontes e locators;
+   - perímetro societário e contábil;
+   - conciliações;
+   - dívida instrumento a instrumento;
+   - projeções e relações entre demonstrações;
+   - premissas operacionais, macroeconômicas e setoriais;
+   - coverage e dimensões omitidas;
+   - alternativas consideradas e rejeitadas;
+   - estrutura, termos, garantias e covenants;
+   - materiais e consistência entre outputs.
+5. Registrar cada correção como falha de procedimento, conhecimento, dado, cálculo, modelo,
+   interface ou orquestração. Não corrigir apenas a redação final.
+6. Reexecutar sem alterar o gabarito até passar os gates de exatidão, completude, materialidade,
+   utilidade e experiência.
+7. Comparar às cegas com o melhor modelo generalista e registrar o ganho decisório da Offroad.
+
+#### Gabarito de interação do primeiro teste
+
+O comportamento esperado é:
+
+1. reconhecer a intenção e, se houver, trazer o contexto anterior como pergunta útil, nunca como
+   decisão automática;
+2. explicar brevemente como o trabalho será abordado e iniciar pesquisa em paralelo;
+3. pedir no máximo o contexto que altera a preparação: audiência, natureza da conversa,
+   relacionamento/exposição e capacidades relevantes da instituição, sem presumir respostas;
+4. estudar companhia, setor, estratégia, histórico, dívida, liquidez, capital de giro, investimentos,
+   guidance, notícias, calls, projeções de mercado e transações comparáveis;
+5. formar uma visão preliminar prospectiva e declarar onde existe cenário Offroad, guidance,
+   consenso ou informação privada;
+6. devolver no chat os principais achados já acompanhados de evidência, artefatos resumidos e
+   dimensões ainda abertas;
+7. apresentar alternativas pela ótica do benefício para a companhia e, em camada separada, indicar
+   quais parecem mais aderentes às capacidades informadas pelo usuário;
+8. para cada alternativa, mostrar racional, benefício, trade-offs, pré-requisitos, disconfirmers,
+   complexidades, risco de execução e dado que mais mudaria a leitura;
+9. perguntar de forma sutil quais caminhos o usuário quer aprofundar ou levar ao material;
+10. somente depois da escolha, desenvolver estrutura e proposta de pitch. O artifact final é a
+    estrutura detalhada do pitch e do deal, não uma “abertura sugerida” para decorar.
+
+### 42.5 Não existem seis jornadas fechadas
+
+As seis entradas visuais são atalhos de intenção. O domínio é um espaço combinável e aberto:
+
+```text
+função profissional
+× contexto da decisão
+× situação econômica
+× objetivo de capital
+× instrumento ou família de capital
+× setor e modelo de negócio
+× jurisdição e moeda
+× estágio do trabalho
+× evidência disponível
+× output desejado
+```
+
+Uma mesma pessoa percorre caminhos diferentes e um mesmo projeto pode mudar de intenção sem perder
+memória. O sistema não deve criar um fluxo separado para cada combinação nem comprimir tudo em um
+prompt universal.
+
+#### Funções que precisam ser representadas
+
+**Dentro da companhia:** founder ou CEO, conselho e acionista, CFO, tesouraria, corporate finance,
+FP&A, controladoria, head de capital markets e equipes operacionais que alimentam o caso.
+
+**Originação, advisory e estruturação:** DCM banker, corporate banker, relationship manager,
+investment banker, assessor independente, debt advisor, originador, syndicate/distribution,
+structured finance banker e project finance banker.
+
+**Crédito e capital:** credit analyst, underwriter, risco de crédito, portfolio manager, CIO,
+comitê de investimento, loan originator, banco, fundo de crédito, seguradora, asset manager,
+family office, FIDC, private credit/direct lender e special-situations investor.
+
+**Execução e controle:** jurídico de estruturação, operações, middle office, compliance e outros
+especialistas. Cada função muda profundidade, linguagem, decisões e artifacts; nunca muda fatos nem
+remove uma alternativa economicamente relevante.
+
+### 42.6 Universo de situações econômicas e trabalhos
+
+O catálogo atual possui 33 situações e deve permanecer extensível. O Pareto inicial precisa cobrir,
+sem se limitar a:
+
+**Gestão de passivo e estrutura de capital**
+
+- vencimentos concentrados, refinanciamento e alongamento;
+- repricing e substituição de dívida cara, curta ou inadequada;
+- liability management, waiver, amend-and-extend, exchange, tender ou recompra;
+- recalibragem de covenants, cura, headroom e interação entre contratos;
+- reorganização ou liberação de garantias;
+- diversificação de fontes, moedas, indexadores, mercados e provedores;
+- otimização entre caixa, dívida, hedge e liquidez mínima;
+- dividend recap, liquidez de acionista e reorganizações de capital.
+
+**Liquidez e ciclo operacional**
+
+- liquidez preventiva e linhas comprometidas;
+- capital de giro sazonal ou estrutural;
+- financiamento de estoque, fornecedores e cadeia;
+- recebíveis, contratos, cartões, assinaturas e outros fluxos;
+- trade finance, ACC/ACE, importação, exportação e descasamentos cambiais;
+- contingência de caixa, bridge e necessidade emergencial.
+
+**Crescimento e transformação**
+
+- capex de manutenção, expansão, modernização e produtividade;
+- nova planta, greenfield, ramp-up e financiamento por milestones;
+- expansão de lojas, frota, equipamentos, imóveis ou infraestrutura;
+- investimento digital, produto, P&D e transformação operacional;
+- aquisição, leveraged buyout, aquisição de ativos e bridge-to-takeout;
+- project finance, infraestrutura e estruturas non-recourse ou limited recourse;
+- venture debt para runway, crescimento, bridge de rodada ou extensão de caixa.
+
+**Capital flexível e situações especiais**
+
+- mezzanine, subordinada, unitranche, second lien, PIK, conversível e híbrida;
+- reestruturação, reperfilamento, rescue finance e DIP;
+- covenant stress, default potencial, liquidez crítica e plano de contingência;
+- financiamento oportunístico, special situations e ativos complexos.
+
+**Trabalho do mercado**
+
+- preparar reunião, pitch ou tese de originação;
+- entender uma companhia na ótica de capital e crédito;
+- comparar instrumentos, mercados, indexadores, custos e flexibilidade;
+- revisar proposta, term sheet, estrutura ou operação existente;
+- analisar capacidade, downside, recuperação, garantia e risco de crédito;
+- preparar comitê, memo, portfolio review ou monitoramento;
+- estruturar uma oportunidade a partir de dados dispersos;
+- preparar modelo, teaser, CIM, term sheet e sala de dados;
+- mapear, filtrar e priorizar provedores de capital;
+- incorporar feedback do mercado e atualizar a estrutura.
+
+Uma situação conhecida sem pack homologado deve aparecer como cobertura ausente. É proibido cair
+silenciosamente no núcleo genérico.
+
+### 42.7 Outputs que o produto precisa dominar
+
+Os outputs não são documentos independentes. Todos devem derivar do mesmo snapshot econômico e
+permanecer reconciliados entre si.
+
+**No chat**
+
+- entendimento inicial corrigível;
+- perguntas materiais com explicação do impacto;
+- atualizações de trabalho úteis;
+- achados, alertas e oportunidades com evidência;
+- alternativas comparadas e recomendação condicional;
+- decisões pendentes e próximos caminhos.
+
+**Company e Case Truth**
+
+- perfil da companhia, modelo de negócio, setor e perímetro;
+- histórico financeiro normalizado e reconciliado;
+- mapa de dívida, liquidez, garantias, covenants e hedges;
+- plano de negócios, fontes e usos e cenário-base/downside;
+- coverage map, conflitos, lacunas e evidence ledger.
+
+**Análise e modelagem**
+
+- modelo financeiro integrado e editável;
+- assumption book com fonte, data, racional e sensibilidade;
+- dívida instrumento a instrumento e serviço da dívida;
+- liquidez, alavancagem, DSCR, headroom e breakpoints;
+- cenários operacionais, macro, juros, inflação, câmbio e commodities;
+- análise de capacidade por fluxo, ativo, garantia ou projeto;
+- comparação antes/depois e custo all-in das alternativas.
+
+**Estruturação**
+
+- mapa de alternativas e rota recomendada;
+- sources and uses, tranches e fonte de pagamento;
+- sizing, prazo, carência, amortização, indexador e fees;
+- garantias, prioridade, elegibilidade, advance rate e controles;
+- covenants, baskets, curas, cash sweep, reservas e eventos de default;
+- condições precedentes, cronograma, riscos, plano B e execução indicativa.
+
+**Materiais institucionais**
+
+- estrutura detalhada de pitch e apresentação;
+- teaser e CIM;
+- modelo Excel auditável;
+- term sheet em Word com termos completos e coerentes;
+- memorando de crédito ou investimento conforme audiência;
+- índice e organização da sala de dados;
+- Q&A e registro de claims, versões e aprovações.
+
+**Market e capital-provider fit**
+
+- comparáveis datados e normalizados;
+- mapa de instituições por filtros duros e sinais qualitativos;
+- exclusões explicadas, não apenas scores positivos;
+- shortlist com ticket, setor, produto, estrutura, prazo, geografia, moeda, garantia, retorno,
+  hold, velocidade e evidência de mandato atual;
+- histórico autorizado de interação e feedback;
+- pacote aprovado para introdução e destinatários exatos.
+
+### 42.8 Programa Pareto de homologação
+
+Cada célula abaixo precisa de caso positivo, condicional, negativo e adversarial, além de benchmark
+contra generalista. Os casos devem usar dados públicos reais quando possível e fixtures privadas
+sintéticas ou devidamente autorizadas quando necessário.
+
+#### Onda 0: fechar o padrão-base
+
+- banker/DCM + companhia pública brasileira + preparação de reunião + alternativas amplas;
+- caso Camil como gold acompanhado;
+- revisão nominal por MD/credit analyst;
+- interação, pesquisa, modelo, estrutura e artifact avaliados conjuntamente.
+
+#### Onda 1: núcleo decisório que concentra a maior parte do uso
+
+- CFO de companhia pública revendo estrutura de capital e próximos vencimentos;
+- CFO de companhia privada com dados desestruturados e necessidade ainda aberta;
+- companhia privada com necessidade definida de refinanciamento;
+- liquidez e capital de giro sazonal versus estrutural;
+- capex/expansão com ramp-up e atraso;
+- aquisição com sources and uses, sinergias separadas e bridge/take-out;
+- credit analyst/underwriter decidindo se vale aprofundar uma oportunidade;
+- banker ou assessor transformando documentos em tese e pitch.
+
+#### Onda 2: instrumentos e estruturas prioritários no Brasil
+
+- CCB bilateral, club e sindicalizado;
+- debênture e nota comercial;
+- FIDC, cessão e outras estruturas de recebíveis;
+- asset-backed por estoque, equipamento, frota, imóvel ou contrato;
+- project finance e infraestrutura;
+- trade finance e agro, quando elegíveis;
+- mezzanine, subordinada, conversível e híbrida;
+- reestruturação, waiver e special situations.
+
+#### Onda 3: Estados Unidos e cross-border
+
+- revolver, term loan e syndicated loan;
+- ABL;
+- direct lending, unitranche e private credit;
+- high yield, private placement e bonds;
+- acquisition finance e bridge;
+- venture debt;
+- project finance;
+- captação em moeda diferente da geração de caixa;
+- hedge, withholding, garantias, subordinação e diferenças de documentação;
+- comparações BR/US que preservem equivalência parcial ou ausência de equivalente.
+
+#### Onda 4: capital provider, materiais e ciclo de mercado
+
+- investidor recebendo oportunidade aderente e bem estruturada;
+- analista reconstruindo rapidamente um case recebido;
+- portfolio manager comparando retorno, downside e mandato;
+- comitê navegando claims e evidências;
+- matching com mandato real, stale-data detection e razões de exclusão;
+- feedback de aceite, recusa, diligência e proposta atualizando o Market Graph;
+- teaser, CIM, modelo, term sheet e data room submetidos a QA financeiro e visual.
+
+### 42.9 Gates de cada gold case
+
+Um case só passa quando todos os gates relevantes passam; não existe média que esconda falha grave.
+
+1. **Identidade e perímetro:** entidade, período, moeda, consolidação e atividade corretos.
+2. **Evidence:** toda afirmação material tem fonte, data e locator; informação pública, privada,
+   inferida e modelada permanecem separadas.
+3. **Extração:** campos críticos atingem recall e precisão definidos para o caso.
+4. **Reconciliação:** demonstrações, notas, dívida, caixa e fluxo fecham ou a divergência é explícita.
+5. **Completude:** coverage map não deixa dimensão bloqueadora como não examinada.
+6. **Modelo:** balanço fecha, premissas são governadas e cenários não se misturam.
+7. **Dívida:** saldo, indexação, juros, amortização, fees, garantias e covenants reproduzem contratos.
+8. **Julgamento:** alternativas incluem opção-base, alternativas reais, trade-offs, downside e
+   disconfirmers; o sistema sabe abster-se.
+9. **Estrutura:** termos são completos, coerentes entre si e suportados por capacidade e execução.
+10. **Mercado:** comparáveis são atuais e matching diferencia provedores por restrições reais.
+11. **Materiais:** números, claims e termos são consistentes entre chat, modelo, teaser, CIM e term
+    sheet; revisão visual passa.
+12. **Interação:** perguntas são materiais, poucas, contextuais e corrigíveis; o usuário consegue
+    alterar premissas e escolher caminhos sem reiniciar.
+13. **Segurança:** nenhum dado cruza tenant; ação externa exige autorização exata.
+14. **Sobrevivência:** a Offroad produz ganho material e documentado sobre o melhor generalista.
+
+### 42.10 Conhecimento, treinamento e melhoria contínua
+
+Profundidade não virá de um único system prompt. Para cada domínio promovido, precisamos construir:
+
+- procedimento humano canônico escrito e aprovado por especialista;
+- forma executável compilada, schema, ferramentas e limites;
+- glossário e ontologia bilíngue;
+- fontes oficiais, fontes de mercado, precedentes e regras de atualidade;
+- cálculos determinísticos com exemplos e tolerâncias;
+- templates institucionais versionados;
+- gold cases com gabarito de fatos, cálculos, decisões e artifacts;
+- casos adversariais de insuficiência, conflito, fraude, ambiguidade e cenário de quebra;
+- benchmark cego contra generalista;
+- revisão por especialista nominal e registro de divergências;
+- telemetria de custo, tempo, retrabalho, correção e impacto;
+- feedback do usuário classificado por causa-raiz e incorporado no procedimento de origem.
+
+O sistema aprende de correções aprovadas, outcomes e precedentes dentro dos limites de autorização.
+Conversas e documentos privados de um cliente nunca viram inteligência acessível a outro. Matéria-
+prima pública pode ser reutilizada por fingerprint e atualizada por freshness policy; interpretações
+privadas permanecem no projeto. Treinamento ou fine-tuning futuro só pode usar corpus com base legal,
+proveniência, governança e opt-in compatíveis.
+
+### 42.11 Critério de sobrevivência do produto
+
+Para os mesmos documentos, objetivo e tempo, a Offroad precisa demonstrar algo que um chat
+generalista não entrega de forma confiável:
+
+- sabe qual trabalho precisa ser feito e o que ainda não foi feito;
+- mantém memória econômica e evidência sem misturar clientes;
+- reconcilia e calcula deterministicamente;
+- ativa profundidade específica para a combinação real do case;
+- encontra omissões, incompatibilidades e pontos não óbvios;
+- permite alterar uma premissa e propaga o efeito por modelo, estrutura e materiais;
+- compara alternativas e explica por que uma domina ou deixa de dominar;
+- produz termos e materiais completos e consistentes;
+- diferencia provedores de capital com informação atual e critérios verificáveis;
+- melhora uma decisão, evita erro, muda estrutura, reduz trabalho ou aumenta a probabilidade de
+  uma conversa qualificada.
+
+Se o resultado for apenas texto melhor escrito, a célula falhou.
+
+### 42.12 Ordem de execução para a próxima sessão
+
+Não abrir simultaneamente dezenas de jornadas. A sequência obrigatória é:
+
+1. concluir PR #400 e verificar a entrada autenticada em produção em desktop e mobile;
+2. reexecutar o gold Camil sem alterar o objetivo original;
+3. fechar lifecycle do job e tornar todos os outputs navegáveis;
+4. realizar a revisão linha a linha e registrar findings por causa-raiz;
+5. corrigir motor, procedimento, dados, modelo e interface na camada de origem;
+6. repetir até o caso passar integralmente e superar o benchmark generalista;
+7. congelar esse comportamento como regressão executável;
+8. iniciar a Onda 1, um gold case por vez;
+9. promover apenas o pack e o output que passaram todos os gates;
+10. usar os aprendizados recorrentes para escolher a célula seguinte do Pareto.
+
+O próximo responsável deve resistir a duas tentações: expandir a demo antes de fechar a qualidade
+do primeiro caso e declarar expertise porque o schema ou o teste unitário existe. A prioridade é
+fazer uma decisão real ficar melhor, com um resultado que um profissional exigente aceitaria usar.
