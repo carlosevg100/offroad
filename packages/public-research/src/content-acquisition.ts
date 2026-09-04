@@ -25,6 +25,19 @@ export type AcquiredPublicContent = {
 
 type ResolveHost = (hostname: string) => Promise<string[]>;
 
+/**
+ * Regulators' document servers (CVM's ENET among them) label a PDF or a ZIP as text/html. The
+ * bytes decide: a declared text or octet-stream type yields to the file signature, so the
+ * document keeps its real type in lineage and the stored file gets the right extension.
+ */
+export function sniffContentType(declared: string, bytes: Uint8Array): string {
+  const generic = /^(?:text\/html|text\/plain|application\/octet-stream)(?:;|$)/i.test(declared);
+  if (!generic || bytes.byteLength < 4) return declared;
+  if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) return "application/pdf";
+  if (bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) return "application/zip";
+  return declared;
+}
+
 const allowedContentType = /^(?:text\/[a-z0-9.+-]+|application\/(?:pdf|json|xml|xhtml\+xml|octet-stream|zip)|image\/(?:png|jpeg|webp))(?:;|$)/i;
 
 export function createDirectPublicContentAcquirer(input: {
@@ -57,12 +70,13 @@ export function createDirectPublicContentAcquirer(input: {
         continue;
       }
       if (!response.ok) throw codedError(`public_acquisition_http_${response.status}`);
-      const contentType = (response.headers.get("content-type") ?? "application/octet-stream").trim();
-      if (!allowedContentType.test(contentType)) throw codedError("public_acquisition_content_type_rejected");
+      const declaredContentType = (response.headers.get("content-type") ?? "application/octet-stream").trim();
+      if (!allowedContentType.test(declaredContentType)) throw codedError("public_acquisition_content_type_rejected");
       const declaredLength = Number(response.headers.get("content-length") ?? "0");
       if (Number.isFinite(declaredLength) && declaredLength > maxBytes) throw codedError("public_acquisition_too_large");
       const bytes = new Uint8Array(await response.arrayBuffer());
       if (bytes.byteLength > maxBytes) throw codedError("public_acquisition_too_large");
+      const contentType = sniffContentType(declaredContentType, bytes);
       const publisher = classifyDebtSource({url: current, ...(raw.issuerDomains ? {issuerDomains: raw.issuerDomains} : {})});
       return {
         lineage: publicContentLineageSchema.parse({
