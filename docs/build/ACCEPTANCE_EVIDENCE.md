@@ -1108,4 +1108,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Linha de base | `private.failures_without_cause` | 12 de 36 falhas históricas sem causa; classes: schema 10, modelo esgotado 5, constraint 3, input inválido 3, orçamento 2, timeout 2, gate 1, worker 1, sem classe 9 | 2026-09-04 |
 | Testes do worker | Vitest | 26 arquivos / 132 testes verdes | 2026-09-04 |
 | Web | typecheck, paridade i18n, testes | verdes com as chaves novas de cobertura | 2026-09-04 |
+
+## Metodologia institucional, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Migração aplicada | `20260904210147_organization_methodology` | tabela versionada com RLS e FORCE RLS, índice de uma ativa por organização, RPC privada com wrapper `security invoker`, dois carregadores reescritos | 2026-09-04 |
+| Regressão SQL no projeto | `supabase/tests/organization_methodology.sql` via `execute_sql` | `organization_methodology_passed`: versões avançam, uma ativa, revisada registra confirmador, membro lê e não grava, insert direto recusado, outro tenant cego, capacidade recusada; rollback sem resíduo | 2026-09-04 |
+| Schema e resolução | `methodology.test.ts` | 6 testes: defaults sem threshold, só definições da ontologia, sobrescrita entrada a entrada, capacidades fora, checks derivados, correções com pessoa | 2026-09-04 |
+| Worker | typecheck, lint, 134 testes | bloco aceito no contexto dos quatro executores e repassado ao modelo | 2026-09-04 |
 | Contrato de falha em produção | `20260904210542_job_failure_contract` aplicada às 21:0x UTC, depois do deploy do worker de `924da6c` (20:58) | `failures_without_cause` continua em 12, todas anteriores; 0 novas desde o deploy | 2026-09-04 |

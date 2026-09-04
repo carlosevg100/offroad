@@ -25,7 +25,7 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
-import {institutionCapabilitiesSchema, professionalContextSchema} from "./advisor-context";
+import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
 import {ambiguousDebtAmount} from "./debt-amount-units";
 import {materialNumericTokens} from "./material-numeric-tokens";
 import {summarizeModelAttempts} from "./model-failure-lineage";
@@ -103,6 +103,7 @@ const contextSchema = z.object({
   })).max(20).default([]),
   professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
+  organization_methodology: organizationMethodologySchema.nullable().optional(),
 });
 
 const ORIGINATION_THESIS_SYSTEM = `You are the senior debt-capital-markets banker inside Offroad.

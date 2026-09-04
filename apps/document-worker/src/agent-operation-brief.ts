@@ -16,7 +16,7 @@ import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gatew
 import {localizedOffroadTaskLabel} from "@offroad/work-plan";
 import {z} from "zod";
 
-import {institutionCapabilitiesSchema, professionalContextSchema} from "./advisor-context";
+import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 
@@ -40,6 +40,7 @@ const contextSchema = z.object({
   company_profile: z.record(z.string(), z.unknown()).default({}),
   professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
+  organization_methodology: organizationMethodologySchema.nullable().optional(),
   related_project_memory: z.array(z.object({
     projectId: z.uuid(),
     projectName: z.string().max(80),
@@ -213,6 +214,7 @@ export async function processAgentOperationBriefJob(
               companyProfile: context.company_profile,
               professionalContext: context.professional_context ?? null,
               institutionCapabilities: context.institution_capabilities ?? null,
+              organizationMethodology: context.organization_methodology ?? null,
               relatedProjectMemory: context.related_project_memory,
               documentInventory: context.documents,
               workPlan: context.tasks.map((task) => ({

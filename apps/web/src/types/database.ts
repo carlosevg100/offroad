@@ -4799,6 +4799,56 @@ export type Database = {
           },
         ]
       }
+      organization_methodologies: {
+        Row: {
+          confirmed_at: string | null
+          confirmed_by: string | null
+          content: Json
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          source_kind: string
+          status: string
+          updated_at: string
+          version_number: number
+        }
+        Insert: {
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          content: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          organization_id: string
+          source_kind?: string
+          status?: string
+          updated_at?: string
+          version_number: number
+        }
+        Update: {
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          content?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          source_kind?: string
+          status?: string
+          updated_at?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_methodologies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_rollout_policies: {
         Row: {
           created_at: string
@@ -7521,6 +7571,14 @@ export type Database = {
           p_website: string
         }
         Returns: undefined
+      }
+      save_organization_methodology_v1: {
+        Args: {
+          p_content: Json
+          p_organization_id: string
+          p_source_kind?: string
+        }
+        Returns: Json
       }
       save_professional_capability_context_v2: {
         Args: {

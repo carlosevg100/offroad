@@ -27,3 +27,15 @@ export const institutionCapabilitiesSchema = z.object({
   disclosureStatus: z.enum(["complete", "partial", "skipped"]),
   lastConfirmedAt: z.string().nullable(),
 });
+
+/**
+ * The active methodology of the organization, as the loader delivers it. Its content is
+ * validated against `organizationMethodologySchema` where it is consumed; here it only has to
+ * be an object with a version, so a malformed row cannot take the whole context down.
+ */
+export const organizationMethodologySchema = z.object({
+  version: z.number().int().min(1),
+  content: z.record(z.string(), z.unknown()),
+  sourceKind: z.enum(["house_default", "self_declared", "reviewed"]),
+  confirmedAt: z.string().nullable(),
+});
