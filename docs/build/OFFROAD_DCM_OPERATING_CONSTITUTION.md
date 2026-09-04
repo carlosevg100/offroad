@@ -1,6 +1,6 @@
 # Offroad Capital: Constituição de Produto e Operação
 
-Versão: 2.4 · 3 de setembro de 2026
+Versão: 2.5 · 4 de setembro de 2026
 
 Status: camada 0, fonte canônica de definição, fronteiras e comportamento do produto
 
@@ -94,12 +94,14 @@ vencimentos pode abrir uma rota de refinanciamento, outra de covenant amendment 
 liquidez preventiva. Os branches compartilham a mesma base financeira e as mesmas evidências, mas
 preservam hipóteses, cálculos, decisões e artefatos próprios até serem combinados ou encerrados.
 
-### 2.2 Companhia primeiro; perfil como contexto, nunca como limite
+### 2.2 Intenção e realidade econômica primeiro; perfil como contexto, nunca como limite
 
-O universo de alternativas nasce da companhia: objetivo econômico, balanço, fluxo, ativos,
-passivos, riscos, setor, jurisdição e condições de mercado. Somente depois o perfil do usuário e as
-capacidades de sua instituição ajustam prioridade, profundidade, linguagem, forma de execução e o
-que merece entrar no primeiro material.
+O trabalho nasce da intenção atual do usuário, do objeto relevante e da realidade econômica. O
+objeto pode ser companhia, operação, instrumento, contrato, modelo, ativo, pool, projeto, mercado,
+mandato, material ou portfólio. Quando uma companhia é material, seu objetivo econômico, balanço,
+fluxo, ativos, passivos, riscos, setor, jurisdição e condições de mercado governam as alternativas.
+Somente depois o perfil do usuário e as capacidades de sua instituição ajustam prioridade,
+profundidade, linguagem, forma de execução e o que merece entrar no primeiro material.
 
 Toda alternativa é avaliada separadamente em três lentes:
 
@@ -129,8 +131,13 @@ profundidade e produto de trabalho. Isso inclui, sem se limitar a:
 
 Função profissional não é identidade econômica da decisão. Um analista de crédito pode estar
 reconstruindo um case para comitê, um CFO pode estar comparando alternativas e um banker pode estar
-preparando uma tese de originação. O sistema combina `função + trabalho + companhia + objetivo`,
-em vez de presumir o trabalho a partir de um cargo.
+preparando uma tese de originação. O sistema combina `intenção + objeto + responsabilidade no
+trabalho + objetivo + audiência + evidência`, usando função como contexto, em vez de presumir o
+trabalho a partir de um cargo.
+
+O Atlas Canônico de Intenções e Workflows em
+`docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md` especifica esse contrato, as famílias de intenção,
+os objetos, os branches, a cobertura e os casos de homologação.
 
 ## 3. Uma organização, companhias duráveis e projetos específicos
 
@@ -138,13 +145,15 @@ em vez de presumir o trabalho a partir de um cargo.
   institucional.
 - **Companhia:** cérebro durável de identidade, grupo, documentos, demonstrações, dívida,
   covenants, garantias, setor, eventos e fatos confirmados.
-- **Projeto:** uma decisão de capital específica, com objetivo, audiência, autoridade, fontes,
-  plano, branches, outputs, decisões e histórico.
+- **Projeto:** um trabalho ou conjunto de decisões relacionadas, com intenção, objetos, audiência,
+  autoridade, fontes, plano, branches, outputs, decisões e histórico.
 
 Uma organização pode trabalhar com várias companhias. Uma companhia pode ter vários projetos sem
-duplicar seu cérebro. Um projeto pode ser iniciado sem companhia confirmada, mas deve resolver a
-entidade antes de promover fatos privados ou produzir uma recomendação. Nenhum projeto herda
-silenciosamente um fato mutável: o usuário vê a origem, a data e a versão reaproveitada.
+duplicar seu cérebro. Um projeto pode existir sem companhia quando o trabalho recai sobre outro
+objeto, como documento, cláusula, modelo, instrumento, waterfall, mercado ou mandato. Quando uma
+companhia for material, sua identidade e seu perímetro precisam ser resolvidos antes de promover
+fatos privados ou produzir recomendação dependente dela. Nenhum projeto herda silenciosamente um
+fato mutável: o usuário vê a origem, a data e a versão reaproveitada.
 
 Documento, conversa e material não são a fonte de verdade. Eles alimentam objetos estruturados e
 versionados. Teaser, modelo, memo e term sheet são compilações de um snapshot, nunca depósitos
