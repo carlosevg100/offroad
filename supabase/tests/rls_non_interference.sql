@@ -804,6 +804,8 @@ begin
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values (session_id, org, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
 
+  perform public.set_workspace_project_job(session_id, 'structure_from_documents');
+
   perform public.register_intake_document_command(
     org, session_id, '51000000-0000-4000-8000-000000000004', document_id,
     'opportunity-documents', org::text || '/' || session_id::text || '/df.pdf',
@@ -1404,12 +1406,15 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
     true
   );
-  perform public.decide_preliminary_understanding(
-    '20000000-0000-4000-8000-000000000001',
-    '40000000-0000-4000-8000-000000000003',
+  perform public.decide_advisor_preliminary_v1(
+    (select capital_project_id from public.document_intake_sessions
+      where id = '40000000-0000-4000-8000-000000000003'),
     (select object_fingerprint from public.preliminary_understandings where id = preliminary_id),
     'confirmed', null
   );
+  if (select status from public.preliminary_understandings where id = preliminary_id) <> 'confirmed' then
+    raise exception 'advisor confirmation invalidated its own preliminary understanding';
+  end if;
   second_run := public.begin_processing_run(
     '20000000-0000-4000-8000-000000000001',
     '40000000-0000-4000-8000-000000000003',
