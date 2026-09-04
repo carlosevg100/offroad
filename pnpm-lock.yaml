@@ -707,6 +707,9 @@ importers:
       '@offroad/model-gateway':
         specifier: workspace:*
         version: link:../model-gateway
+      '@offroad/public-research':
+        specifier: workspace:*
+        version: link:../public-research
       '@offroad/receivables-analysis':
         specifier: workspace:*
         version: link:../receivables-analysis
