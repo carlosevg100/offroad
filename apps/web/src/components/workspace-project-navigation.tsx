@@ -54,24 +54,44 @@ function useFloatingMenu() {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({left: 8, top: 8});
 
-  function toggle() {
-    if (open) return setOpen(false);
+  function place() {
     const rect = buttonRef.current?.getBoundingClientRect();
-    if (rect) setPosition({
+    if (!rect) return;
+    setPosition({
       left: Math.max(8, Math.min(rect.right - 216, window.innerWidth - 224)),
       top: Math.max(8, Math.min(rect.bottom + 4, window.innerHeight - 230)),
     });
+  }
+
+  function toggle() {
+    if (open) return setOpen(false);
+    place();
     setOpen(true);
   }
 
+  /**
+   * The menu follows its trigger instead of closing on any scroll. Closing was
+   * fragile: the project list scrolls, and so does the page, so a scroll the user
+   * never asked for, including the one a click performs to bring a control into
+   * view, would tear the menu down mid-interaction. It now only closes when the
+   * trigger has left the viewport, which is the case where following it is
+   * meaningless.
+   */
   useEffect(() => {
     if (!open) return;
-    const close = () => setOpen(false);
-    window.addEventListener("resize", close);
-    window.addEventListener("scroll", close, true);
+    const follow = () => {
+      const rect = buttonRef.current?.getBoundingClientRect();
+      if (!rect || rect.bottom < 0 || rect.top > window.innerHeight) return setOpen(false);
+      place();
+    };
+    const onKey = (event: KeyboardEvent) => {if (event.key === "Escape") setOpen(false);};
+    window.addEventListener("resize", follow);
+    window.addEventListener("scroll", follow, true);
+    window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("resize", close);
-      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", follow);
+      window.removeEventListener("scroll", follow, true);
+      window.removeEventListener("keydown", onKey);
     };
   }, [open]);
 

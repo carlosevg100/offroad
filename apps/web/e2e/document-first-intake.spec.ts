@@ -1,4 +1,4 @@
-import {expect, test, type BrowserContext, type Page} from "@playwright/test";
+import {expect, test, type BrowserContext, type Locator, type Page} from "@playwright/test";
 
 import {assertDataRoomPresent, dataRoomExpectations, dataRoomFiles} from "./support/data-room";
 import {waitForOneTimeCode} from "./support/mail";
@@ -41,6 +41,19 @@ async function openFolder(page: Page, folderName: string) {
 /** Conversations are listed flat under Recentes; only folders holding more than one nest. */
 function railProject(page: Page, name: string) {
   return page.locator(".app-rail__item").filter({hasText: name}).first();
+}
+
+/**
+ * Opening the action menu is two steps, and both have to be asserted. Clicking the
+ * trigger and then reaching straight for a button inside the portal hides whether the
+ * menu ever appeared, which turns a menu that closes on its own into a four-minute
+ * timeout instead of a clear failure.
+ */
+async function openActionMenu(page: Page, trigger: Locator) {
+  await trigger.click();
+  const menu = page.locator(".workspace-project-actions__menu--floating");
+  await expect(menu).toBeVisible();
+  return menu;
 }
 
 async function completeCompanyMilestone(page: Page) {
@@ -331,16 +344,16 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(projectList).toContainText(secondaryProjectName);
 
     const secondaryProject = railProject(page, secondaryProjectName);
-    await secondaryProject.locator(".workspace-project-actions__trigger").click();
+    const renameMenu = await openActionMenu(page, secondaryProject.locator(".workspace-project-actions__trigger"));
     const renamedProjectName = `Projeto Renomeado ${runId}`;
-    await page.locator(".workspace-project-actions__plain").click();
-    await page.locator('.workspace-project-actions__menu input[name="project_name"]').fill(renamedProjectName);
-    await page.locator('.workspace-project-actions__menu form:has(input[name="project_name"]) button[type="submit"]').click();
+    await renameMenu.locator(".workspace-project-actions__plain").click();
+    await renameMenu.locator('input[name="project_name"]').fill(renamedProjectName);
+    await renameMenu.locator('form:has(input[name="project_name"]) button[type="submit"]').click();
     await expect(projectList).toContainText(renamedProjectName);
 
-    await railProject(page, renamedProjectName).locator(".workspace-project-actions__trigger").click();
+    const archiveMenu = await openActionMenu(page, railProject(page, renamedProjectName).locator(".workspace-project-actions__trigger"));
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator(".workspace-project-actions__archive").click();
+    await archiveMenu.locator(".workspace-project-actions__archive").click();
     await expect(page.locator(".app-rail__item").filter({hasText: renamedProjectName})).toHaveCount(0);
     await expect(projectList).toContainText(initialProjectName);
   });
@@ -372,9 +385,9 @@ test.describe("Document-first intake (company journey)", () => {
     await page.goto("/pt-BR/app");
     const createdProject = railProject(page, companyDebtProjectName);
     await expect(createdProject).toBeVisible();
-    await createdProject.locator(".workspace-project-actions__trigger").click();
+    const createdMenu = await openActionMenu(page, createdProject.locator(".workspace-project-actions__trigger"));
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator(".workspace-project-actions__archive").click();
+    await createdMenu.locator(".workspace-project-actions__archive").click();
     await expect(page.locator(".app-rail__item").filter({hasText: companyDebtProjectName})).toHaveCount(0);
   });
 
@@ -386,15 +399,15 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page).toHaveURL(/\/pt-BR\/app\?group=[0-9a-f-]+$/);
 
     let workspaceGroup = page.locator(".app-rail__folder").filter({hasText: workspaceGroupName});
-    await workspaceGroup.locator(".workspace-project-actions__trigger").click();
-    await page.locator(".workspace-project-actions__plain").click();
-    await page.locator('.workspace-project-actions__menu input[name="group_name"]').fill(renamedWorkspaceGroupName);
-    await page.locator('.workspace-project-actions__menu form:has(input[name="group_name"]) button[type="submit"]').click();
+    const groupMenu = await openActionMenu(page, workspaceGroup.locator(".workspace-project-actions__trigger"));
+    await groupMenu.locator(".workspace-project-actions__plain").click();
+    await groupMenu.locator('input[name="group_name"]').fill(renamedWorkspaceGroupName);
+    await groupMenu.locator('form:has(input[name="group_name"]) button[type="submit"]').click();
     await expect(page.locator(".app-rail__scroll")).toContainText(renamedWorkspaceGroupName);
 
     workspaceGroup = page.locator(".app-rail__folder").filter({hasText: renamedWorkspaceGroupName});
-    await workspaceGroup.locator(".workspace-project-actions__trigger").click();
-    await page.getByRole("link", {name: "Nova conversa"}).click();
+    const newConversationMenu = await openActionMenu(page, workspaceGroup.locator(".workspace-project-actions__trigger"));
+    await newConversationMenu.getByRole("link", {name: "Nova conversa"}).click();
     await expect(page.locator(".advisor-start__head h1")).toContainText("Como a Offroad pode te ajudar?");
     await expect(page.locator(".advisor-start__project-context")).toContainText(renamedWorkspaceGroupName);
     await page.locator(".advisor-start__seeds button").filter({hasText: "Comparar alternativas"}).click();
@@ -417,9 +430,9 @@ test.describe("Document-first intake (company journey)", () => {
 
     await page.goto("/pt-BR/app");
     workspaceGroup = page.locator(".app-rail__folder").filter({hasText: renamedWorkspaceGroupName});
-    await workspaceGroup.locator(".workspace-project-actions__trigger").click();
+    const folderArchiveMenu = await openActionMenu(page, workspaceGroup.locator(".workspace-project-actions__trigger"));
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator(".workspace-project-actions__archive").click();
+    await folderArchiveMenu.locator(".workspace-project-actions__archive").click();
     await expect(page.locator(".app-rail__folder").filter({hasText: renamedWorkspaceGroupName})).toHaveCount(0);
   });
 
@@ -439,9 +452,9 @@ test.describe("Document-first intake (company journey)", () => {
     await page.goto("/pt-BR/app");
     const project = railProject(page, projectTitle);
     await expect(project).toBeVisible();
-    await project.locator(".workspace-project-actions__trigger").click();
+    const privateMenu = await openActionMenu(page, project.locator(".workspace-project-actions__trigger"));
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator(".workspace-project-actions__archive").click();
+    await privateMenu.locator(".workspace-project-actions__archive").click();
     await expect(page.locator(".app-rail__item").filter({hasText: projectTitle})).toHaveCount(0);
   });
 
