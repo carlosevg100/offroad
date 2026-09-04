@@ -216,7 +216,7 @@ async function ConversationalCapitalProject({
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, processing_status").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
     supabase.from("capital_project_plans").select("id").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
-    supabase.from("capital_project_artifacts").select("id, artifact_type, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
+    supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
   ]);
   const privateCase = ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
@@ -408,6 +408,14 @@ async function ConversationalCapitalProject({
       summary: locale === "en-US" ? event.summary_en : event.summary_pt,
       createdAt: event.created_at,
     }));
+  const outcomeEvents = [...(agentEventsDescending ?? [])]
+    .reverse()
+    .map((event) => ({
+      id: event.id,
+      type: event.event_type,
+      summary: locale === "en-US" ? event.summary_en : event.summary_pt,
+      createdAt: event.created_at,
+    }));
   const snapshot = agentPlan?.snapshot && typeof agentPlan.snapshot === "object" && !Array.isArray(agentPlan.snapshot)
     ? agentPlan.snapshot as Record<string, unknown>
     : null;
@@ -440,7 +448,7 @@ async function ConversationalCapitalProject({
     accessBasis={project.access_basis}
     artifacts={(artifacts ?? []).filter((artifact) => customerArtifactLabel(artifact.artifact_type, locale) !== null).map((artifact) => ({
       id: artifact.id,
-      label: customerArtifactLabel(artifact.artifact_type, locale)!,
+      label: `${customerArtifactLabel(artifact.artifact_type, locale)!} · v${artifact.artifact_version}`,
       status: artifact.status,
     }))}
     copy={copy}
@@ -448,6 +456,7 @@ async function ConversationalCapitalProject({
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
     activityEvents={activityEvents}
+    outcomeEvents={outcomeEvents}
     coverage={{verified: verifiedCoverage, total: totalCoverage, openIssues: openCoverage, notExamined: notExaminedCoverage}}
     decisionRecords={(decisionRecords ?? []).map((decision) => ({
       id: decision.id,

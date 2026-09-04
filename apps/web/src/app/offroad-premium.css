@@ -333,6 +333,9 @@
   color: #22282d;
   overflow: hidden;
 }
+.advisor-banker-readout p,
+.advisor-banker-readout dd,
+.advisor-banker-readout li {overflow-wrap: anywhere;}
 .advisor-banker-readout > header {border-bottom: 1px solid #e6e8e4; padding: 25px 27px 23px;}
 .advisor-banker-readout > header > span {color: #71884f; display: block; font-size: 9px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;}
 .advisor-banker-readout h2 {font-family: var(--font-newsreader), Georgia, serif; font-size: clamp(27px, 3vw, 36px); font-weight: 450; letter-spacing: -.025em; line-height: 1.08; margin: 6px 0 0;}
