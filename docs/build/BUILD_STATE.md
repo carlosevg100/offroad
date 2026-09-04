@@ -2274,3 +2274,19 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   caso 01, extraída por leitura direta do ITR de 31/05/2026 com âncora por página e nota, marcada
   como rascunho até a revisão do fundador. Inclui o achado de maior materialidade: alavancagem
   pro forma de 4,72x contra covenant de 4,0x, com medição anual em fevereiro de 2027.
+## Source pack e pesquisa congelada, candidate, 04/09/2026
+
+- `packages/public-research/src/source-pack.ts`: manifesto de fontes públicas de um caso (id,
+  tópico, URL, data de aquisição, data-base, versão, SHA-256, tamanho, tipo, licença, caminho dos
+  bytes). Entradas cuja licença não permite retenção entram como referência sem bytes, e a regra
+  é verificada no schema. Um provedor de busca responde só do pack e um adquirente serve só os
+  bytes do pack, recusando URL fora dele e detectando arquivo que divergiu do manifesto.
+- Worker: `PUBLIC_RESEARCH_MODE=frozen` com `SOURCE_PACK_PATH` troca descoberta, fontes oficiais
+  e aquisição de conteúdo pelo pack; nada chega à rede. Em modo `live` nada muda.
+- `pnpm --filter @offroad/evals source-pack:build <manifesto> <pasta>` adquire cada item uma vez,
+  grava hash e data, e escreve `source-pack.json`; itens `pending` são pulados com aviso até o
+  link ser confirmado.
+- Manifesto do caso 01 em `packages/testing-fixtures/assets/camil/source-pack.manifest.json`:
+  cadastro, ITR e IPE da CVM (dados abertos, retidos), ANBIMA Data como referência manual, e três
+  itens pendentes de confirmação de link ou de registro de fonte (release e apresentação 1T26 no
+  RI, curvas de referência). O pack ainda não foi construído: essa é a próxima ação.

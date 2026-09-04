@@ -14,6 +14,8 @@ import {
   createOfficialCompanyResearchProvider,
   createOpenAIWebSearchProvider,
   createPerplexitySearchProvider,
+  createSourcePackAcquirer,
+  createSourcePackProvider,
   createSecEdgarEntityResolver,
   type PublicSearchProvider,
 } from "@offroad/public-research";
@@ -24,6 +26,7 @@ import {processOriginationThesisJob} from "./origination-thesis";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
+import {loadSourcePack} from "./source-pack-runtime";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -124,6 +127,13 @@ async function main(): Promise<void> {
         zeroDataRetention: config.FIRECRAWL_ZERO_DATA_RETENTION,
       })
     : undefined;
+  // Frozen research: a gold case runs against its source pack and nothing else. Discovery,
+  // official lookups and content acquisition all read the pack.
+  const sourcePack = config.PUBLIC_RESEARCH_MODE === "frozen" ? await loadSourcePack(config.SOURCE_PACK_PATH!) : null;
+  const effectiveResearchProviders: PublicSearchProvider[] = sourcePack ? [createSourcePackProvider(sourcePack.pack)] : researchProviders;
+  const effectiveOfficialResearchProviderFactory = sourcePack ? undefined : officialResearchProviderFactory;
+  const effectiveContentAcquirer = sourcePack ? createSourcePackAcquirer(sourcePack.pack, sourcePack.read) : firecrawlContentAcquirer;
+  if (sourcePack) log("research.frozen", {caseId: sourcePack.pack.caseId, entries: sourcePack.pack.entries.length});
   const newGateway = (job: ClaimedJob) => {
     const calls: GatewayCallLog[] = [];
     const requestedBudget = "model_budget" in job.payload ? job.payload.model_budget : undefined;
@@ -131,7 +141,7 @@ async function main(): Promise<void> {
       config.MODEL_MAX_COST_USD_PER_JOB,
       requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB,
     );
-    const maximumDiscoveryCostPerQuery = researchProviders.reduce(
+    const maximumDiscoveryCostPerQuery = effectiveResearchProviders.reduce(
       (total, provider) => total + (provider.maxCostUsdPerCall ?? 0),
       0,
     );
@@ -139,7 +149,7 @@ async function main(): Promise<void> {
       ? job.payload.analysis_scope === "origination_thesis" ? 12 : 8
       : job.kind === "case_analysis" || job.kind === "preliminary_analysis" ? 5 : 0;
     const requestedResearchReserve = researchQueryCount * maximumDiscoveryCostPerQuery;
-    const researchReserveUsd = researchProviders.length > 0
+    const researchReserveUsd = effectiveResearchProviders.length > 0
       ? Math.min(requestedResearchReserve, Math.max(0, configuredMax - 0.01))
       : 0;
     const gateway = createModelGateway({
@@ -255,8 +265,8 @@ async function main(): Promise<void> {
           queue,
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
-          researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
-          officialResearchProviderFactory,
+          researchProviders: gatewayRun.researchReserveUsd > 0 ? effectiveResearchProviders : [],
+          ...(effectiveOfficialResearchProviderFactory ? {officialResearchProviderFactory: effectiveOfficialResearchProviderFactory} : {}),
           securityEvidence: {
             providerPolicyEnforced: config.ENFORCE_PROVIDER_DATA_POLICY,
             externalToolsAllowlisted: true,
@@ -269,8 +279,8 @@ async function main(): Promise<void> {
               queue,
               gateway: gatewayRun.gateway,
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
-              researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
-              officialResearchProviderFactory,
+              researchProviders: gatewayRun.researchReserveUsd > 0 ? effectiveResearchProviders : [],
+              ...(effectiveOfficialResearchProviderFactory ? {officialResearchProviderFactory: effectiveOfficialResearchProviderFactory} : {}),
               log,
             })
           : job.payload.analysis_scope === "origination_thesis"
@@ -278,17 +288,17 @@ async function main(): Promise<void> {
               queue,
               gateway: gatewayRun.gateway,
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
-              researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
-              officialResearchProviderFactory,
-              ...(firecrawlContentAcquirer ? {contentAcquirer: firecrawlContentAcquirer} : {}),
+              researchProviders: gatewayRun.researchReserveUsd > 0 ? effectiveResearchProviders : [],
+              ...(effectiveOfficialResearchProviderFactory ? {officialResearchProviderFactory: effectiveOfficialResearchProviderFactory} : {}),
+              ...(effectiveContentAcquirer ? {contentAcquirer: effectiveContentAcquirer} : {}),
               log,
             })
             : processCapitalPlanningJob(job, {
                 queue,
                 gateway: gatewayRun.gateway,
                 lineage: () => gatewayRun.calls.map((call) => ({...call})),
-                researchProviders: gatewayRun.researchReserveUsd > 0 ? researchProviders : [],
-                officialResearchProviderFactory,
+                researchProviders: gatewayRun.researchReserveUsd > 0 ? effectiveResearchProviders : [],
+                ...(effectiveOfficialResearchProviderFactory ? {officialResearchProviderFactory: effectiveOfficialResearchProviderFactory} : {}),
                 log,
               })
       : job.kind === "agent_operation_brief"

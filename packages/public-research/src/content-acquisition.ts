@@ -10,7 +10,7 @@ export const publicContentLineageSchema = z.object({
   finalUrl: z.url(),
   publisherSourceId: z.string().regex(/^[a-z0-9_]+$/).nullable(),
   publisherAuthorityTier: z.number().int().min(1).max(5).nullable(),
-  acquiredBy: z.enum(["direct_https", "firecrawl"]),
+  acquiredBy: z.enum(["direct_https", "firecrawl", "source_pack"]),
   retrievedAt: z.iso.datetime(),
   contentType: z.string().min(1).max(200),
   byteSize: z.number().int().nonnegative(),

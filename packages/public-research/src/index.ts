@@ -31,6 +31,7 @@ export * from "./entity-resolvers";
 export * from "./content-acquisition";
 export * from "./official-company-research";
 export * from "./company-memory";
+export * from "./source-pack";
 
 /**
  * Builds queries only from a deliberately public subject. Transaction context, financial values,

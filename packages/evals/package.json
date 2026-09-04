@@ -25,10 +25,11 @@
     "measure:classification:local": "tsx --env-file=../../.env.local scripts/measure-classification.ts",
     "measure:local": "tsx --env-file=../../.env.local scripts/measure-extraction.ts",
     "nimbus:gold": "tsx scripts/build-nimbus-gold.ts",
+    "rescore": "tsx scripts/rescore.ts",
+    "source-pack:build": "tsx scripts/build-source-pack.ts",
     "test": "vitest run --exclude 'dist/**'",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "verify:case": "tsx scripts/verify-fakeco.ts",
-    "rescore": "tsx scripts/rescore.ts"
+    "verify:case": "tsx scripts/verify-fakeco.ts"
   },
   "dependencies": {
     "@offroad/agent-contracts": "workspace:*",
@@ -47,6 +48,7 @@
     "@offroad/fund-mandate": "workspace:*",
     "@offroad/market-reference": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
+    "@offroad/public-research": "workspace:*",
     "@offroad/receivables-analysis": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
