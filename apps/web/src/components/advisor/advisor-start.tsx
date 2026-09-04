@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  ArrowUp,
-  Building2,
-  FileSearch2,
-  FolderInput,
-  LoaderCircle,
-  MessageSquareText,
-  Paperclip,
-  Route,
-  X,
-} from "lucide-react";
+import {ArrowUp, LoaderCircle, Paperclip, X} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useEffect, useMemo, useRef, useState} from "react";
 
@@ -21,34 +12,25 @@ import {beginAdvisorProjectProcessing, startAdvisorProject} from "@/app/[locale]
 import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
-const starterJobs = [
-  "company_debt_view",
-  "origination_thesis",
-  "capital_planning",
-  "structure_from_documents",
-  "review_existing_operation",
-] as const satisfies readonly CapitalProjectJob[];
+const seedJobs = ["company_debt_view", "capital_planning", "review_existing_operation", "structure_from_documents"] as const;
+type SeedJob = (typeof seedJobs)[number];
 
-const icons = {
-  company_debt_view: Building2,
-  origination_thesis: MessageSquareText,
-  capital_planning: Route,
-  structure_from_documents: FolderInput,
-  review_existing_operation: FileSearch2,
-} as const;
+export type AdvisorStartExample = {role: string; prompt: string};
+export type AdvisorStartRecent = {id: string; href: string; name: string; state: string};
 
 export type AdvisorStartCopy = {
-  greeting: string;
-  greetingNamed: string;
-  title: string;
+  greetings: {morning: string; afternoon: string; evening: string};
+  question: string;
   prompt: string;
-  promptIdeas: string[];
-  starterLabel: string;
-  starters: Record<(typeof starterJobs)[number], {label: string; placeholder: string}>;
+  exampleLabel: string;
+  examples: AdvisorStartExample[];
+  seeds: Record<SeedJob, {label: string; text: string}>;
+  documentsOnly: string;
   attach: string;
   remove: string;
   send: string;
   privacy: string;
+  continueLabel: string;
   status: {creating: string; uploading: string; starting: string};
   errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; upload: string};
   groupContext: string;
@@ -61,35 +43,79 @@ type Props = {
   userId: string;
   groupId?: string;
   groupName?: string;
+  recents: AdvisorStartRecent[];
   userFirstName?: string;
 };
 
-export function AdvisorStart({copy, groupId, groupName, locale, organizationId, userFirstName, userId}: Props) {
+function greetingFor(copy: AdvisorStartCopy["greetings"], name: string): string {
+  const hour = new Date().getHours();
+  const salute = hour < 12 ? copy.morning : hour < 18 ? copy.afternoon : copy.evening;
+  return name ? `${salute}, ${name}.` : `${salute}.`;
+}
+
+/**
+ * The placeholder types a real request and erases it, cycling through the roles the
+ * desk actually serves. It is the cheapest answer to the only question a new user
+ * has on this screen, which is what may be asked of it at all. It stops the moment
+ * the field holds anything, so it never competes with the user's own text.
+ */
+function useRotatingExample(examples: AdvisorStartExample[], idle: boolean, fallback: string) {
+  const [index, setIndex] = useState(0);
+  const [typed, setTyped] = useState("");
+  const reduced = useRef(false);
+
+  useEffect(() => {
+    reduced.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  useEffect(() => {
+    if (!idle || examples.length === 0) return;
+    const text = examples[index % examples.length]?.prompt ?? "";
+    let cursor = 0;
+    let timer = 0;
+
+    // Every state change happens inside a scheduled callback, never in the effect
+    // body, so a re-render can never be triggered synchronously by the effect.
+    const advance = () => setIndex((current) => current + 1);
+    const erase = () => {
+      cursor -= 3;
+      setTyped(text.slice(0, Math.max(0, cursor)));
+      timer = cursor > 0 ? window.setTimeout(erase, 8) : window.setTimeout(advance, 260);
+    };
+    const type = () => {
+      cursor += 1;
+      setTyped(text.slice(0, cursor));
+      timer = cursor < text.length ? window.setTimeout(type, 17) : window.setTimeout(erase, 2400);
+    };
+    const hold = () => {
+      setTyped(text);
+      timer = window.setTimeout(advance, 6000);
+    };
+
+    timer = window.setTimeout(reduced.current ? hold : type, 260);
+    return () => window.clearTimeout(timer);
+  }, [examples, idle, index]);
+
+  const role = idle && examples.length > 0 ? examples[index % examples.length]?.role ?? "" : "";
+  return {placeholder: idle && typed ? typed : fallback, role};
+}
+
+export function AdvisorStart({copy, groupId, groupName, locale, organizationId, recents, userFirstName, userId}: Props) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
-  const [entryJobHint, setEntryJobHint] = useState<(typeof starterJobs)[number] | null>(null);
+  const [entryJobHint, setEntryJobHint] = useState<CapitalProjectJob | null>(null);
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "creating" | "uploading" | "starting">("idle");
   const [error, setError] = useState("");
-  const [promptIdeaIndex, setPromptIdeaIndex] = useState(0);
   const pending = status !== "idle";
-  const rotatingPrompt = copy.promptIdeas[promptIdeaIndex] ?? copy.prompt;
-  const placeholder = entryJobHint ? copy.starters[entryJobHint].placeholder : rotatingPrompt;
   const statusLabel = status === "creating" ? copy.status.creating : status === "uploading" ? copy.status.uploading : copy.status.starting;
   const distinctFiles = useMemo(() => {
     const byKey = new Map<string, File>();
     for (const file of files) byKey.set(`${file.name}:${file.size}:${file.lastModified}`, file);
     return [...byKey.values()];
   }, [files]);
-
-  useEffect(() => {
-    if (entryJobHint || prompt || copy.promptIdeas.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => {
-      setPromptIdeaIndex((current) => (current + 1) % copy.promptIdeas.length);
-    }, 3800);
-    return () => window.clearInterval(timer);
-  }, [copy.promptIdeas, entryJobHint, prompt]);
+  const {placeholder, role} = useRotatingExample(copy.examples, !prompt && distinctFiles.length === 0, copy.prompt);
 
   function addFiles(selected: FileList | null) {
     if (!selected?.length) return;
@@ -97,17 +123,14 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
   }
 
   async function submit() {
-    const normalizedPrompt = prompt.trim()
-      || (distinctFiles.length > 0
-        ? entryJobHint ? copy.starters[entryJobHint].label : copy.starters.structure_from_documents.label
-        : "");
+    const normalizedPrompt = prompt.trim() || (distinctFiles.length > 0 ? copy.documentsOnly : "");
     if (!normalizedPrompt || pending) return;
     setError("");
     setStatus("creating");
     const result = await startAdvisorProject({
       locale,
       prompt: normalizedPrompt,
-      entryJobHint,
+      entryJobHint: distinctFiles.length > 0 && !entryJobHint ? "structure_from_documents" : entryJobHint,
       hasAttachments: distinctFiles.length > 0,
       requestId: crypto.randomUUID(),
       groupId: groupId ?? null,
@@ -156,19 +179,19 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
 
   return (
     <main className="advisor-start">
-      <section className="advisor-start__center">
-        <header>
-          {groupName ? <span className="advisor-start__project-context">{copy.groupContext.replace("{project}", groupName)}</span> : null}
-          <span className="advisor-start__mark" aria-hidden="true">
-            <Image alt="" height={73} priority src="/brand/offroad-symbol.png" width={72} />
-          </span>
-          <p className="advisor-start__greeting">
-            {userFirstName ? copy.greetingNamed.replace("{name}", userFirstName) : copy.greeting}
-          </p>
-          <h1>{copy.title}</h1>
+      <div className="advisor-start__center">
+        {groupName ? <span className="advisor-start__project-context">{copy.groupContext.replace("{project}", groupName)}</span> : null}
+
+        <header className="advisor-start__head">
+          <Image alt="" className="advisor-start__mark" height={520} priority src="/brand/offroad-symbol.png" width={512} />
+          <h1>
+            <span suppressHydrationWarning>{greetingFor(copy.greetings, userFirstName ?? "")}</span>
+            <span className="advisor-start__question">{copy.question}</span>
+          </h1>
         </header>
 
         <section className="advisor-composer advisor-composer--start">
+          {role ? <p className="advisor-composer__example"><span>{copy.exampleLabel}</span><i aria-hidden="true" /><span>{role}</span></p> : null}
           <label>
             <span className="sr-only">{copy.prompt}</span>
             <textarea
@@ -183,7 +206,7 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
                 }
               }}
               placeholder={placeholder}
-              rows={4}
+              rows={3}
               value={prompt}
             />
           </label>
@@ -207,13 +230,11 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
           ) : null}
 
           <footer>
-            <div>
-              <input accept={DOCUMENT_ACCEPT} hidden multiple onChange={(event) => addFiles(event.target.files)} ref={fileInput} type="file" />
-              <button aria-label={copy.attach} disabled={pending} onClick={() => fileInput.current?.click()} title={copy.attach} type="button">
-                <Paperclip aria-hidden="true" size={17} />
-              </button>
-              <span>{pending ? statusLabel : copy.privacy}</span>
-            </div>
+            <input accept={DOCUMENT_ACCEPT} hidden multiple onChange={(event) => addFiles(event.target.files)} ref={fileInput} type="file" />
+            <button aria-label={copy.attach} disabled={pending} onClick={() => fileInput.current?.click()} title={copy.attach} type="button">
+              <Paperclip aria-hidden="true" size={16} />
+            </button>
+            <span className="advisor-composer__grow" />
             <button
               aria-label={copy.send}
               className="advisor-composer__send"
@@ -221,34 +242,39 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
               onClick={() => void submit()}
               title={copy.send}
               type="button"
-            >{pending ? <LoaderCircle aria-hidden="true" className="spin" size={17} /> : <ArrowUp aria-hidden="true" size={17} />}</button>
+            >{pending ? <LoaderCircle aria-hidden="true" className="spin" size={15} /> : <ArrowUp aria-hidden="true" size={15} />}</button>
           </footer>
         </section>
 
-        <div aria-label={copy.starterLabel} className="advisor-starters" role="list">
-          {starterJobs.map((job) => {
-            const Icon = icons[job];
-            const selected = entryJobHint === job;
-            return (
-              <button
-                aria-pressed={selected}
-                className={selected ? "is-selected" : undefined}
-                key={job}
-                onClick={() => {
-                  setEntryJobHint((current) => current === job ? null : job);
-                  setPromptIdeaIndex(0);
-                }}
-                type="button"
-              >
-                <Icon aria-hidden="true" size={14} />
-                <span>{copy.starters[job].label}</span>
-              </button>
-            );
-          })}
+        <p className="advisor-start__privacy">{pending ? statusLabel : copy.privacy}</p>
+
+        <div className="advisor-start__seeds">
+          {seedJobs.map((job) => (
+            <button
+              key={job}
+              onClick={() => {
+                setEntryJobHint(job);
+                setPrompt(copy.seeds[job].text);
+              }}
+              type="button"
+            >{copy.seeds[job].label}</button>
+          ))}
         </div>
 
         {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
-      </section>
+
+        {recents.length > 0 ? (
+          <section className="advisor-start__continue">
+            <header><h2>{copy.continueLabel}</h2></header>
+            {recents.map((recent) => (
+              <Link href={recent.href} key={recent.id}>
+                <span>{recent.name}</span>
+                <small>{recent.state}</small>
+              </Link>
+            ))}
+          </section>
+        ) : null}
+      </div>
     </main>
   );
 }

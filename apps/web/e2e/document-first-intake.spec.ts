@@ -1,4 +1,4 @@
-import {expect, test, type BrowserContext, type Page} from "@playwright/test";
+import {expect, test, type BrowserContext, type Locator, type Page} from "@playwright/test";
 
 import {assertDataRoomPresent, dataRoomExpectations, dataRoomFiles} from "./support/data-room";
 import {waitForOneTimeCode} from "./support/mail";
@@ -30,11 +30,30 @@ async function expectNoErrorNotice(page: Page) {
   await expect(page.locator(".form-notice--error")).toHaveCount(0);
 }
 
-async function openConversationGroup(page: Page, conversationName: string) {
-  const group = page.locator(".workspace-project-group").filter({hasText: conversationName});
-  await expect(group).toHaveCount(1);
-  if (await group.getAttribute("open") === null) await group.locator("summary").click();
-  return group;
+async function openFolder(page: Page, folderName: string) {
+  const folder = page.locator(".app-rail__folder").filter({hasText: folderName});
+  await expect(folder).toHaveCount(1);
+  const toggle = folder.locator(".app-rail__item--folder");
+  if (await toggle.getAttribute("aria-expanded") === "false") await toggle.click();
+  return folder;
+}
+
+/** Conversations are listed flat under Recentes; only folders holding more than one nest. */
+function railProject(page: Page, name: string) {
+  return page.locator(".app-rail__item").filter({hasText: name}).first();
+}
+
+/**
+ * Opening the action menu is two steps, and both have to be asserted. Clicking the
+ * trigger and then reaching straight for a button inside the portal hides whether the
+ * menu ever appeared, which turns a menu that closes on its own into a four-minute
+ * timeout instead of a clear failure.
+ */
+async function openActionMenu(page: Page, trigger: Locator) {
+  await trigger.click();
+  const menu = page.locator(".workspace-project-actions__menu--floating");
+  await expect(menu).toBeVisible();
+  return menu;
 }
 
 async function completeCompanyMilestone(page: Page) {
@@ -250,7 +269,7 @@ test.describe("Document-first intake (company journey)", () => {
   test("opens the governed workspace with its source context", async () => {
     await page.goto("/pt-BR/app");
     await expect(page.locator(".advisor-start")).toBeVisible();
-    await expect(page.locator(".workspace-project-list")).toContainText(initialProjectName);
+    await expect(page.locator(".app-rail__scroll")).toContainText(initialProjectName);
 
     await page.goto(confirmedOpportunityUrl);
     await expect(page.locator(".deal-workspace__topbar h1")).toHaveText(initialProjectName);
@@ -320,25 +339,22 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("lists, opens, renames and removes projects from the workspace navigator", async () => {
     await page.goto("/pt-BR/app");
-    const projectList = page.locator(".workspace-project-list");
+    const projectList = page.locator(".app-rail__scroll");
     await expect(projectList).toContainText(initialProjectName);
     await expect(projectList).toContainText(secondaryProjectName);
 
-    const secondaryGroup = await openConversationGroup(page, secondaryProjectName);
-    const secondaryProject = secondaryGroup.locator(".workspace-project").filter({hasText: secondaryProjectName});
-    await secondaryProject.locator(".workspace-project-actions__trigger").click();
+    const secondaryProject = railProject(page, secondaryProjectName);
+    const renameMenu = await openActionMenu(page, secondaryProject.locator(".workspace-project-actions__trigger"));
     const renamedProjectName = `Projeto Renomeado ${runId}`;
-    await page.locator(".workspace-project-actions__plain").click();
-    await page.locator('.workspace-project-actions__menu input[name="project_name"]').fill(renamedProjectName);
-    await page.locator('.workspace-project-actions__menu form:has(input[name="project_name"]) button[type="submit"]').click();
+    await renameMenu.locator(".workspace-project-actions__plain").click();
+    await renameMenu.locator('input[name="project_name"]').fill(renamedProjectName);
+    await renameMenu.locator('form:has(input[name="project_name"]) button[type="submit"]').click();
     await expect(projectList).toContainText(renamedProjectName);
 
-    const renamedProjectGroup = await openConversationGroup(page, renamedProjectName);
-    const renamedProject = renamedProjectGroup.locator(".workspace-project").filter({hasText: renamedProjectName});
-    await renamedProject.locator(".workspace-project-actions__trigger").click();
+    const archiveMenu = await openActionMenu(page, railProject(page, renamedProjectName).locator(".workspace-project-actions__trigger"));
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator(".workspace-project-actions__archive").click();
-    await expect(page.locator(".workspace-project").filter({hasText: renamedProjectName})).toHaveCount(0);
+    await archiveMenu.locator(".workspace-project-actions__archive").click();
+    await expect(page.locator(".app-rail__item").filter({hasText: renamedProjectName})).toHaveCount(0);
     await expect(projectList).toContainText(initialProjectName);
   });
 
@@ -367,35 +383,34 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".origination-working")).toContainText("A Offroad está reconstruindo a leitura da companhia.");
 
     await page.goto("/pt-BR/app");
-    const companyDebtGroup = await openConversationGroup(page, companyDebtProjectName);
-    const createdProject = companyDebtGroup.locator(".workspace-project").filter({hasText: companyDebtProjectName});
+    const createdProject = railProject(page, companyDebtProjectName);
     await expect(createdProject).toBeVisible();
-    await createdProject.locator(".workspace-project-actions__trigger").click();
+    const createdMenu = await openActionMenu(page, createdProject.locator(".workspace-project-actions__trigger"));
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator(".workspace-project-actions__archive").click();
-    await expect(page.locator(".workspace-project").filter({hasText: companyDebtProjectName})).toHaveCount(0);
+    await createdMenu.locator(".workspace-project-actions__archive").click();
+    await expect(page.locator(".app-rail__item").filter({hasText: companyDebtProjectName})).toHaveCount(0);
   });
 
   test("creates and reopens one conversational project from the workspace composer", async () => {
     await page.goto("/pt-BR/app");
-    await page.getByRole("button", {name: "Novo projeto"}).first().click();
-    await page.locator('.workspace-project-create input[name="group_name"]').fill(workspaceGroupName);
-    await page.locator('.workspace-project-create button[type="submit"]').click();
+    await page.getByRole("button", {name: "Nova pasta"}).first().click();
+    await page.locator('.app-rail__create input[name="group_name"]').fill(workspaceGroupName);
+    await page.locator('.app-rail__create button[type="submit"]').click();
     await expect(page).toHaveURL(/\/pt-BR\/app\?group=[0-9a-f-]+$/);
 
-    let workspaceGroup = page.locator(".workspace-project-group").filter({hasText: workspaceGroupName});
-    await expect(workspaceGroup).toContainText("Nenhuma conversa neste projeto");
-    await workspaceGroup.locator("summary .workspace-project-actions__trigger").click();
-    await page.locator(".workspace-project-actions__plain").click();
-    await page.locator('.workspace-project-actions__menu input[name="group_name"]').fill(renamedWorkspaceGroupName);
-    await page.locator('.workspace-project-actions__menu form:has(input[name="group_name"]) button[type="submit"]').click();
-    await expect(page.locator(".workspace-project-list")).toContainText(renamedWorkspaceGroupName);
+    let workspaceGroup = page.locator(".app-rail__folder").filter({hasText: workspaceGroupName});
+    const groupMenu = await openActionMenu(page, workspaceGroup.locator(".workspace-project-actions__trigger"));
+    await groupMenu.locator(".workspace-project-actions__plain").click();
+    await groupMenu.locator('input[name="group_name"]').fill(renamedWorkspaceGroupName);
+    await groupMenu.locator('form:has(input[name="group_name"]) button[type="submit"]').click();
+    await expect(page.locator(".app-rail__scroll")).toContainText(renamedWorkspaceGroupName);
 
-    workspaceGroup = page.locator(".workspace-project-group").filter({hasText: renamedWorkspaceGroupName});
-    await workspaceGroup.locator(".workspace-project-group__new").click();
-    await expect(page.locator(".advisor-start h1")).toHaveText("No que vamos trabalhar hoje?");
+    workspaceGroup = page.locator(".app-rail__folder").filter({hasText: renamedWorkspaceGroupName});
+    const newConversationMenu = await openActionMenu(page, workspaceGroup.locator(".workspace-project-actions__trigger"));
+    await newConversationMenu.getByRole("link", {name: "Nova conversa"}).click();
+    await expect(page.locator(".advisor-start__head h1")).toContainText("Como a Offroad pode te ajudar?");
     await expect(page.locator(".advisor-start__project-context")).toContainText(renamedWorkspaceGroupName);
-    await page.locator(".advisor-starters button").filter({hasText: "Planejar uma necessidade"}).click();
+    await page.locator(".advisor-start__seeds button").filter({hasText: "Comparar alternativas"}).click();
     const request = `Conversa ${runId}: planejar R$ 20 milhões`;
     await page.locator(".advisor-composer--start textarea").fill(request);
     await page.locator(".advisor-composer--start .advisor-composer__send").click();
@@ -407,23 +422,23 @@ test.describe("Document-first intake (company journey)", () => {
 
     const projectUrl = page.url();
     await page.goto("/pt-BR/app");
-    workspaceGroup = await openConversationGroup(page, request);
-    const project = workspaceGroup.locator(".workspace-project").filter({hasText: request});
+    const folder = await openFolder(page, renamedWorkspaceGroupName);
+    const project = folder.locator(".app-rail__item").filter({hasText: request}).first();
     await expect(project).toBeVisible();
     await project.locator("a").first().click();
     await expect(page).toHaveURL(projectUrl);
 
     await page.goto("/pt-BR/app");
-    workspaceGroup = page.locator(".workspace-project-group").filter({hasText: renamedWorkspaceGroupName});
-    await workspaceGroup.locator("summary .workspace-project-actions__trigger").click();
+    workspaceGroup = page.locator(".app-rail__folder").filter({hasText: renamedWorkspaceGroupName});
+    const folderArchiveMenu = await openActionMenu(page, workspaceGroup.locator(".workspace-project-actions__trigger"));
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator(".workspace-project-actions__archive").click();
-    await expect(page.locator(".workspace-project-group").filter({hasText: renamedWorkspaceGroupName})).toHaveCount(0);
+    await folderArchiveMenu.locator(".workspace-project-actions__archive").click();
+    await expect(page.locator(".app-rail__folder").filter({hasText: renamedWorkspaceGroupName})).toHaveCount(0);
   });
 
   test("honors an explicitly selected private-document workflow", async () => {
     await page.goto("/pt-BR/app");
-    await page.locator(".advisor-starters button").filter({hasText: "Estruturar pelos documentos"}).click();
+    await page.locator(".advisor-start__seeds button").filter({hasText: "Estruturar pelos documentos"}).click();
     const request = `Caso privado ${runId}: compreender, conciliar e diagnosticar antes de estruturar`;
     const projectTitle = request.slice(0, 80);
     await page.locator(".advisor-composer--start textarea").fill(request);
@@ -435,13 +450,12 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
 
     await page.goto("/pt-BR/app");
-    const privateProjectGroup = await openConversationGroup(page, projectTitle);
-    const project = privateProjectGroup.locator(".workspace-project").filter({hasText: projectTitle});
+    const project = railProject(page, projectTitle);
     await expect(project).toBeVisible();
-    await project.locator(".workspace-project-actions__trigger").click();
+    const privateMenu = await openActionMenu(page, project.locator(".workspace-project-actions__trigger"));
     page.once("dialog", (dialog) => dialog.accept());
-    await page.locator(".workspace-project-actions__archive").click();
-    await expect(page.locator(".workspace-project").filter({hasText: projectTitle})).toHaveCount(0);
+    await privateMenu.locator(".workspace-project-actions__archive").click();
+    await expect(page.locator(".app-rail__item").filter({hasText: projectTitle})).toHaveCount(0);
   });
 
   test("starts and processes an advisor project from documents alone", async () => {
@@ -466,7 +480,10 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("signs out and logs back in with the password", async () => {
     await page.goto("/pt-BR/app");
-    await page.locator(".app-sidebar__footer form button[type=submit]").click();
+    // Signing out moved into the account menu at the foot of the rail.
+    await page.locator(".app-rail__account").click();
+    await expect(page.locator(".app-rail__menu")).toBeVisible();
+    await page.locator(".app-rail__menu form button[type=submit]").click();
     await expect(page).toHaveURL(/\/pt-BR\/?$/);
 
     await page.goto("/pt-BR/login");
@@ -475,6 +492,6 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("form button.auth-form__primary").click();
     await expect(page).toHaveURL(/\/pt-BR\/app/);
     await expect(page.locator(".advisor-start")).toBeVisible();
-    await expect(page.locator(".workspace-project-list")).toContainText(initialProjectName);
+    await expect(page.locator(".app-rail__scroll")).toContainText(initialProjectName);
   });
 });

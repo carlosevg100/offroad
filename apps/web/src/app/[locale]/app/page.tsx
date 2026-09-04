@@ -2,7 +2,11 @@ import {Building2, CheckCircle2, CircleAlert, Landmark, Target} from "lucide-rea
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
-import {AdvisorStart, type AdvisorStartCopy} from "@/components/advisor/advisor-start";
+import {AdvisorStart, type AdvisorStartCopy, type AdvisorStartRecent} from "@/components/advisor/advisor-start";
+
+// The rotating examples are a fixed-length catalogue: next-intl resolves leaf keys, so the
+// count lives here and the message-catalogue parity test keeps both locales in step.
+const advisorExampleIndexes = [0, 1, 2, 3, 4, 5, 6] as const;
 import {requireWorkspace} from "@/lib/auth/workspace";
 
 type Props = {params: Promise<{locale: string}>; searchParams: Promise<{welcome?: string; group?: string}>};
@@ -65,24 +69,46 @@ export default async function ApplicationHome({params, searchParams}: Props) {
     );
   }
 
+  const {data: recentSessions} = await supabase
+    .from("document_intake_sessions")
+    .select("id, capital_project_id, project_name, status, opportunity_id, updated_at, archived_at")
+    .eq("organization_id", organization.id)
+    .is("archived_at", null)
+    .neq("status", "cancelled")
+    .order("updated_at", {ascending: false})
+    .limit(3);
+  const recents: AdvisorStartRecent[] = (recentSessions ?? []).map((session) => ({
+    href: session.capital_project_id
+      ? `/${locale}/app/projects/${session.capital_project_id}`
+      : session.status === "confirmed" && session.opportunity_id
+        ? `/${locale}/app/opportunities/${session.opportunity_id}`
+        : `/${locale}/app/new?mode=documents&session=${session.id}`,
+    id: session.id,
+    name: session.project_name || t("untitledProject"),
+    state: t(`projectStatus.${session.status === "review_ready" ? "reviewReady" : session.status}`),
+  }));
+
   const copy: AdvisorStartCopy = {
-    greeting: t("advisor.greeting"),
-    greetingNamed: t("advisor.greetingNamed"),
-    title: t("advisor.title"),
+    greetings: {morning: t("advisor.greetings.morning"), afternoon: t("advisor.greetings.afternoon"), evening: t("advisor.greetings.evening")},
+    question: t("advisor.question"),
     prompt: t("advisor.prompt"),
-    promptIdeas: [t("advisor.promptIdeas.0"), t("advisor.promptIdeas.1"), t("advisor.promptIdeas.2"), t("advisor.promptIdeas.3")],
-    starterLabel: t("advisor.starterLabel"),
-    starters: {
-      company_debt_view: {label: t("advisor.starters.companyDebt.label"), placeholder: t("advisor.starters.companyDebt.placeholder")},
-      origination_thesis: {label: t("advisor.starters.origination.label"), placeholder: t("advisor.starters.origination.placeholder")},
-      capital_planning: {label: t("advisor.starters.capitalPlanning.label"), placeholder: t("advisor.starters.capitalPlanning.placeholder")},
-      structure_from_documents: {label: t("advisor.starters.documents.label"), placeholder: t("advisor.starters.documents.placeholder")},
-      review_existing_operation: {label: t("advisor.starters.review.label"), placeholder: t("advisor.starters.review.placeholder")},
+    exampleLabel: t("advisor.exampleLabel"),
+    examples: advisorExampleIndexes.map((index) => ({
+      prompt: t(`advisor.examples.${index}.prompt`),
+      role: t(`advisor.examples.${index}.role`),
+    })),
+    seeds: {
+      company_debt_view: {label: t("advisor.seeds.company.label"), text: t("advisor.seeds.company.text")},
+      capital_planning: {label: t("advisor.seeds.alternatives.label"), text: t("advisor.seeds.alternatives.text")},
+      review_existing_operation: {label: t("advisor.seeds.review.label"), text: t("advisor.seeds.review.text")},
+      structure_from_documents: {label: t("advisor.seeds.documents.label"), text: t("advisor.seeds.documents.text")},
     },
+    documentsOnly: t("advisor.documentsOnly"),
     attach: t("advisor.attach"),
     remove: t("advisor.remove"),
     send: t("advisor.send"),
     privacy: t("advisor.privacy"),
+    continueLabel: t("advisor.continueLabel"),
     status: {creating: t("advisor.status.creating"), uploading: t("advisor.status.uploading"), starting: t("advisor.status.starting")},
     errors: {
       invalid: t("advisor.errors.invalid"), denied: t("advisor.errors.denied"), duplicate: t("advisor.errors.duplicate"), not_found: t("advisor.errors.notFound"), save: t("advisor.errors.save"), processing: t("advisor.errors.processing"), upload: t("advisor.errors.upload"),
@@ -90,5 +116,5 @@ export default async function ApplicationHome({params, searchParams}: Props) {
     groupContext: t("advisor.groupContext"),
   };
 
-  return <AdvisorStart copy={copy} groupId={selectedGroup?.id} groupName={selectedGroup?.name} locale={locale === "en-US" ? "en-US" : "pt-BR"} organizationId={organization.id} userFirstName={userFirstName} userId={userId} />;
+  return <AdvisorStart copy={copy} groupId={selectedGroup?.id} groupName={selectedGroup?.name} locale={locale === "en-US" ? "en-US" : "pt-BR"} organizationId={organization.id} recents={recents} userFirstName={userFirstName} userId={userId} />;
 }
