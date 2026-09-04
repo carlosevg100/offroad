@@ -150,6 +150,27 @@ disparou commita o resultado em `docs/product/gold-cases/runs/<caso>/baseline/<d
 `run.json` (modelo, versão, custo, tokens, hash da base e de cada entrada) e um arquivo Markdown
 por turno.
 
+### 5.2 Como a Offroad roda congelada, no produto real
+
+O lado da Offroad não roda em laboratório: roda no produto, com a conta de quem revisa, contra o
+mesmo pack. O mecanismo é o vínculo de projeto (`private.gold_case_bindings`, PR #423): um
+projeto vinculado a um `source_pack_id` faz o worker de produção ler o pack do caso e nada mais
+para todos os jobs daquele projeto, enquanto o resto do workspace segue com pesquisa viva.
+
+1. Quem revisa cria o projeto no produto e envia os documentos congelados do caso (para o Caso 01,
+   o ITR e a proposta da AGOE que estão em `packages/testing-fixtures/assets/camil/`).
+2. O operador vincula o projeto ao pack pela conexão de gestão (nunca pela Data API):
+   `insert into private.gold_case_bindings (organization_id, capital_project_id, source_pack_id, note)`
+   com o id do projeto e `gc01-analista-ib-camil`. O pack precisa existir na imagem do worker em
+   `SOURCE_PACKS_DIR/<source_pack_id>/source-pack.json`; um vínculo sem pack faz o job falhar com
+   causa `source_pack_unavailable`, nunca cai para a internet.
+3. Cada turno do caso é digitado no produto, na ordem do gold. O worker registra
+   `research.frozen_job` com o pack e o caso no log de cada job.
+4. A revisão usa o próprio produto (chat, timeline, artefatos, arquivos) e o registro do baseline
+   guardado em `runs/<caso>/baseline/<data>/`.
+
+Nada disso muda o roteador de produção nem a pesquisa dos outros projetos.
+
 ## 6. Rubrica de revisão
 
 | Dimensão | Bloqueia se | Limita se |

@@ -160,6 +160,12 @@ Generalista recebe o ITR, a proposta da AGOE, o conteúdo do source pack e os do
 instrumento conciliada com as notas; maturity wall por ano; distinção IPCA capitalizado versus
 pago; alternativas com custo de saída; pontos que derrubam a tese.
 
+### Execuções do baseline
+
+| Data | Modelo | Registro | Leitura rápida (não é a revisão) |
+| --- | --- | --- | --- |
+| 2026-09-04 | Opus 5, esforço alto, workflow `Gold case baseline` (run 33928973469) | `runs/gc01/baseline/2026-09-04-23-18-46/` | pegou 4,72x contra 4,0x com medição em fevereiro de 2027, valor justo abaixo do contábil, dividendos comprometidos, notas comerciais e CPR nomeadas com a ressalva de desembolso, degrau de 2028/29 e o lastro em CRA; não viu o limite de 3,5x da 13ª e da 14ª emissões, as contingências possíveis nem o lucro sustentado por crédito fiscal. US$ 5,75 e 5,9 minutos nos dois turnos. |
+
 ## Painel de revisão
 
 Banker de DCM (função encenada), analista de crédito (função oposta), fundador.
