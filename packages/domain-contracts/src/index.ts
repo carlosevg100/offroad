@@ -74,37 +74,43 @@ export const originationSeniorReadoutSchema = z.object({
     sectorPosition: z.string().min(30).max(1_500),
     seasonality: z.string().min(20).max(1_000),
     recentDevelopments: z.array(z.string().min(12).max(700)).max(8),
-    sourceUrls: z.array(z.url()).min(1).max(8),
+    sourceUrls: z.array(z.url()).min(1).max(64),
   }),
   performanceAnalysis: z.object({
     operatingPerformance: z.string().min(40).max(1_800),
     cashFlowAndWorkingCapital: z.string().min(40).max(1_800),
     outlookAndPlans: z.string().min(30).max(1_500),
-    sourceUrls: z.array(z.url()).min(1).max(8),
+    sourceUrls: z.array(z.url()).min(1).max(64),
   }),
   capitalStructure: z.object({
     overview: z.string().min(40).max(1_800),
     liquidity: z.string().min(30).max(1_500),
     debtStack: z.array(z.object({
-      instrument: z.string().min(3).max(200),
+      instrument: z.string().min(3).max(400),
       amount: z.string().min(1).max(120).nullable(),
-      maturity: z.string().min(1).max(240).nullable(),
-      cost: z.string().min(1).max(160).nullable(),
-      indexer: z.string().min(1).max(120).nullable(),
-      currency: z.string().min(1).max(80).nullable(),
-      amortization: z.string().min(1).max(240).nullable(),
-      guarantees: z.string().min(1).max(300).nullable(),
-      covenants: z.string().min(1).max(300).nullable(),
-      prepayment: z.string().min(1).max(240).nullable(),
-      sourceUrls: z.array(z.url()).min(1).max(4),
+      maturity: z.string().min(1).max(600).nullable(),
+      cost: z.string().min(1).max(600).nullable(),
+      // Public debt disclosures often describe indexation together with spreads,
+      // step-ups, capitalization and hedging. Preserve that economic meaning
+      // instead of rejecting an otherwise valid readout at an arbitrary UI length.
+      indexer: z.string().min(1).max(600).nullable(),
+      currency: z.string().min(1).max(600).nullable(),
+      amortization: z.string().min(1).max(600).nullable(),
+      guarantees: z.string().min(1).max(600).nullable(),
+      covenants: z.string().min(1).max(600).nullable(),
+      prepayment: z.string().min(1).max(600).nullable(),
+      sourceUrls: z.array(z.url()).min(1).max(12),
     })).max(16),
     keyUnknowns: z.array(z.string().min(10).max(600)).min(1).max(12),
-    sourceUrls: z.array(z.url()).min(1).max(8),
+    // A reconciled capital structure can legitimately rely on many filings and
+    // offering documents. The renderer deduplicates citations; the contract must
+    // not discard traceability simply because more than eight sources are needed.
+    sourceUrls: z.array(z.url()).min(1).max(64),
   }),
   strategicAgenda: z.object({
     priorities: z.array(z.string().min(12).max(700)).max(10),
     implicationsForDebt: z.string().min(30).max(1_500),
-    sourceUrls: z.array(z.url()).min(1).max(8),
+    sourceUrls: z.array(z.url()).min(1).max(64),
   }),
   strategicAlternatives: z.array(z.object({
     rank: z.number().int().min(1).max(8),
@@ -117,7 +123,7 @@ export const originationSeniorReadoutSchema = z.object({
     risks: z.array(z.string().min(8).max(500)).min(1).max(6),
     conditions: z.array(z.string().min(8).max(500)).min(1).max(8),
     disconfirmers: z.array(z.string().min(8).max(500)).min(1).max(6),
-    sourceUrls: z.array(z.url()).min(1).max(6),
+    sourceUrls: z.array(z.url()).min(1).max(24),
   })).min(1).max(6),
   meetingStrategy: z.object({
     narrative: z.string().min(40).max(1_500),
