@@ -1314,7 +1314,7 @@ begin
   case_job_id := (case_claim->>'job_id')::uuid;
   case_capability := case_claim->>'capability_token';
 
-  preliminary_input := public.worker_load_preliminary_input(case_job_id, case_capability);
+  preliminary_input := public.worker_load_preliminary_input_v2(case_job_id, case_capability);
   if preliminary_input->'session'->>'id' <> '40000000-0000-4000-8000-000000000003'
     or not (preliminary_input->'session' ? 'capital_project_id')
     or preliminary_input->'session'->>'capital_project_id' is distinct from
