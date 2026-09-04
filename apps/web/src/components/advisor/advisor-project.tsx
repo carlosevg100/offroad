@@ -76,6 +76,7 @@ type Props = {
   locale: "pt-BR" | "en-US";
   messages: AdvisorProjectMessage[];
   activityEvents: AdvisorProjectActivityEvent[];
+  outcomeEvents?: AdvisorProjectActivityEvent[];
   coverage: {verified: number; total: number; openIssues: number; notExamined: number};
   decisionRecords: Array<{id: string; question: string; recommendation: string | null; status: string}>;
   projectId: string;
@@ -100,14 +101,15 @@ export function AdvisorProject(props: Props) {
   const active = props.sessionStatus === "processing"
     || props.tasks.some((task) => ["queued", "running"].includes(task.status))
     || props.messages.some((message) => ["queued", "processing"].includes(message.status));
+  const outcomeEvents = props.outcomeEvents ?? props.activityEvents;
   const needsAttention = advisorNeedsAttention({
     active,
     sessionStatus: props.sessionStatus,
     taskStatuses: props.tasks.map((task) => task.status),
     messageStatuses: props.messages.map((message) => message.status),
-    events: props.activityEvents,
+    events: outcomeEvents,
   });
-  const successfulOutcomeAt = latestSuccessfulOutcomeAt(props.activityEvents);
+  const successfulOutcomeAt = latestSuccessfulOutcomeAt(outcomeEvents);
   const completed = props.tasks.filter((task) => task.status === "succeeded").length;
   const allMessages = [...props.messages, ...optimistic];
   const proposalById = new Map(props.proposals.map((proposal) => [proposal.id, proposal]));
