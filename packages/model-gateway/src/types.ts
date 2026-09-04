@@ -26,7 +26,8 @@ export type TaskKind =
   | "write_output"
   | "audit_evidence"
   | "localize"
-  | "route_intent";
+  | "route_intent"
+  | "baseline_generalist";
 
 export type ModelRef = {provider: Provider; model: string; effort: Effort};
 
