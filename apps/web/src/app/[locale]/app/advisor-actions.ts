@@ -1,5 +1,6 @@
 "use server";
 
+import {isGovernedWorkProductRevisionRequest} from "@offroad/agent-contracts";
 import {
   capitalProjectJob,
   capitalProjectJobSchema,
@@ -104,6 +105,20 @@ export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessa
   const parsed = continueSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
   const {supabase} = await requireWorkspace(parsed.data.locale);
+  if (isGovernedWorkProductRevisionRequest(parsed.data.content)) {
+    const revision = await supabase.rpc("submit_advisor_artifact_revision_turn_v1", {
+      p_project_id: parsed.data.projectId,
+      p_message_id: parsed.data.messageId,
+      p_locale: parsed.data.locale,
+      p_content: parsed.data.content,
+    });
+    if (!revision.error) return {ok: true};
+    // No pending governed artifact means this is an ordinary conversational request. The generic
+    // turn remains available; authorization, stale-state and validation errors still fail closed.
+    if (revision.error.code !== "P0002" || !revision.error.message.includes("advisor_revision_artifact_not_available")) {
+      return {ok: false, error: actionError(revision.error)};
+    }
+  }
   const {error} = await supabase.rpc("submit_advisor_turn_v1", {
     p_project_id: parsed.data.projectId,
     p_message_id: parsed.data.messageId,

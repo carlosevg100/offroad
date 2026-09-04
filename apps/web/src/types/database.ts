@@ -7169,6 +7169,15 @@ export type Database = {
         }
         Returns: Json
       }
+      submit_advisor_artifact_revision_turn_v1: {
+        Args: {
+          p_content: string
+          p_locale: string
+          p_message_id: string
+          p_project_id: string
+        }
+        Returns: Json
+      }
       start_advisor_project_v1: {
         Args: {
           p_access_basis: string

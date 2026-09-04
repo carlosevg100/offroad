@@ -1,7 +1,27 @@
 import {describe, expect, it} from "vitest";
-import {routeWorkspaceExecution, routeWorkspaceRequest} from "./index";
+import {
+  isGovernedWorkProductRevisionRequest,
+  routeWorkspaceExecution,
+  routeWorkspaceRequest,
+} from "./index";
 
 describe("workspace request router", () => {
+  it("recognizes an explicit request to deepen the governed work product", () => {
+    expect(isGovernedWorkProductRevisionRequest(
+      "Aprofunde esta leitura com premissas editáveis e inclua um cenário downside.",
+    )).toBe(true);
+    expect(isGovernedWorkProductRevisionRequest(
+      "Quero um cenário prospectivo com premissas editáveis e um downside explícito.",
+    )).toBe(true);
+    expect(isGovernedWorkProductRevisionRequest("Revisão completa do cenário atual.")).toBe(true);
+  });
+
+  it("does not turn an analytical question into a work-product revision", () => {
+    expect(isGovernedWorkProductRevisionRequest(
+      "Como você chegou ao EBITDA e quais contas considerou no caixa?",
+    )).toBe(false);
+  });
+
   it("keeps a hypothetical case question read-only", () => {
     expect(routeWorkspaceRequest({message: "E se o prazo fosse cinco anos?", surface: "case_workspace"})).toMatchObject({
       intent: "simulate",

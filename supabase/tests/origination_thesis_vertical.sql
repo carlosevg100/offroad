@@ -177,6 +177,7 @@ declare
   revision_context jsonb;
   revision_result jsonb;
   revision_replay jsonb;
+  chat_replay jsonb;
   v_task_id text;
   v_task_run_id uuid;
   v_input_fingerprint text;
@@ -292,8 +293,10 @@ begin
     jsonb_build_object('meeting_brief_artifact_id', v_meeting_artifact_id)
   );
 
-  revision_result := public.request_origination_thesis_revision_v1(
-    v_meeting_artifact_id, v_meeting_artifact_fingerprint,
+  revision_result := public.submit_advisor_artifact_revision_turn_v1(
+    (context #>> '{project,id}')::uuid,
+    '90000000-0000-4000-8000-000000000201',
+    'pt-BR',
     'Priorizar capital de giro; a hipótese de refinanciamento não reflete a conversa.'
   );
   if revision_result ->> 'replayed' <> 'false'
@@ -302,8 +305,13 @@ begin
     or (select count(*) from public.capital_project_task_runs task_run
         join public.capital_project_plan_tasks plan_task on plan_task.id = task_run.plan_task_id
         where task_run.organization_id = (claim ->> 'organization_id')::uuid
-          and plan_task.task_id in ('M06','C02','K04') and task_run.status = 'succeeded') <> 3 then
-    raise exception 'incremental revision did not preserve the exact M07-only boundary: %', revision_result;
+          and plan_task.task_id in ('M06','C02','K04') and task_run.status = 'succeeded') <> 3
+    or (select count(*) from public.agent_messages
+        where id in (
+          '90000000-0000-4000-8000-000000000201',
+          (revision_result ->> 'assistant_message_id')::uuid
+        ) and status = 'completed') <> 2 then
+    raise exception 'conversational revision did not preserve the exact M07-only boundary: %', revision_result;
   end if;
 
   revision_replay := public.request_origination_thesis_revision_v1(
@@ -316,11 +324,25 @@ begin
     raise exception 'incremental revision idempotency failed: %', revision_replay;
   end if;
 
+  chat_replay := public.submit_advisor_artifact_revision_turn_v1(
+    (context #>> '{project,id}')::uuid,
+    '90000000-0000-4000-8000-000000000201',
+    'pt-BR',
+    'Este texto diferente não pode duplicar uma mensagem com o mesmo identificador.'
+  );
+  if chat_replay ->> 'replayed' <> 'true'
+    or chat_replay ->> 'message_id' <> '90000000-0000-4000-8000-000000000201' then
+    raise exception 'conversational revision message idempotency failed: %', chat_replay;
+  end if;
+
   revision_claim := public.worker_claim_job(repeat('w', 64), 600);
   if revision_claim ->> 'job_id' <> revision_result ->> 'job_id'
     or revision_claim #>> '{payload,capital_task_ids,0}' <> 'M07'
     or jsonb_array_length(revision_claim #> '{payload,capital_task_ids}') <> 1
     or revision_claim #>> '{payload,model_budget,max_calls}' <> '1'
+    or revision_claim #>> '{payload,trigger_event,type}' <> 'advisor_semantic_route'
+    or revision_claim #>> '{payload,trigger_event,sourceMessageId}' <>
+      '90000000-0000-4000-8000-000000000201'
     or coalesce(revision_claim #>> '{payload,revision_of_artifact_id}', '') <> v_meeting_artifact_id::text then
     raise exception 'worker did not claim the exact revision job: %', revision_claim;
   end if;

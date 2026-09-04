@@ -21,8 +21,13 @@ function deterministicUuid(seed: string): string {
 
 export function advisorSpecializedCompletion(job: CapitalProjectAnalysisJob, artifact: FinalArtifact) {
   if (!semanticTriggerSchema.safeParse(job.payload.trigger_event).success) return null;
+  const isRevision = Boolean(job.payload.revision_of_artifact_id && job.payload.correction_decision_id);
 
-  const content = job.payload.locale === "pt-BR"
+  const content = isRevision
+    ? job.payload.locale === "pt-BR"
+      ? "Concluí a nova versão da análise. Incorporei o ajuste solicitado, preservei a trilha de evidências e deixei explícito o que mudou, o que continua válido e quais pontos ainda dependem de informação adicional. A versão revisada está abaixo para sua avaliação."
+      : "I completed the new version of the analysis. I incorporated the requested adjustment, preserved the evidence trail, and made clear what changed, what remains valid, and which points still depend on additional information. The revised version is below for your review."
+    : job.payload.locale === "pt-BR"
     ? job.payload.analysis_scope === "origination_thesis"
       ? "Terminei uma primeira análise da companhia, do setor, da performance financeira, das perspectivas disponíveis e do endividamento. Abaixo estão os pontos que considero mais relevantes para a conversa e as alternativas estratégicas que merecem ser discutidas. Alguma delas faz mais sentido para o caminho que você pretende seguir? Posso aprofundar uma alternativa, combinar elementos de mais de uma ou desenvolver todas para comparação no material."
       : job.payload.analysis_scope === "company_debt_view"
