@@ -91,6 +91,10 @@ async function startPrivateProject(page: Page, projectName: string, acceptTerms 
     await page.locator(".private-project-gate__full-terms summary").click();
     await expect(page.locator(".private-project-gate__full-terms")).toContainText("4. NENHUMA DISTRIBUIÇÃO AUTOMÁTICA");
     await expect(page.locator(".private-project-gate__full-terms")).toContainText("Este Termo não constitui contratação de assessoria, exclusividade, mandato");
+    // The signatory's relation to the company is stated here, at acceptance, and not carried
+    // from the account: the same person can be a CFO on one project and an advisor on the next.
+    await expect(page.locator('input[name="signatory_name"]')).toHaveValue(account.fullName);
+    await page.locator('input[name="signatory_title"]').fill("Diretora financeira");
     await page.locator('input[name="terms_agreed"]').check();
     await page.locator('input[name="information_rights_declared"]').check();
     await page.locator('.private-project-gate__form button[type="submit"]').click();
