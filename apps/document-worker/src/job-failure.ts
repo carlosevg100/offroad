@@ -41,12 +41,19 @@ export const failureCauseSchema = z.object({
 });
 export type FailureCause = z.infer<typeof failureCauseSchema>;
 
-export type JobFailureRecord = {
-  code: string;
-  stage: string;
-  cause: FailureCause;
-  retryable: boolean;
-} & Record<string, unknown>;
+/**
+ * The contract every failed job must satisfy before the row is written. The database enforces
+ * the same shape in `private.assert_job_failure_record`, so a failure without a cause is refused
+ * on both sides of the boundary rather than found in a view the next morning.
+ */
+export const jobFailureRecordSchema = z.object({
+  code: z.string().regex(/^[a-z0-9_]{3,120}$/),
+  stage: z.string().min(1).max(80),
+  cause: failureCauseSchema,
+  retryable: z.boolean(),
+}).passthrough();
+
+export type JobFailureRecord = z.infer<typeof jobFailureRecordSchema>;
 
 const TRANSIENT = /timeout|ETIMEDOUT|ECONNRESET|ENOTFOUND|EAI_AGAIN|fetch failed|expired|rate.?limit|\b429\b|\b5\d\d\b/i;
 const DB_TIMEOUT = /statement timeout|canceling statement|lock timeout/i;
@@ -85,6 +92,7 @@ export function classifyFailure(error: unknown, code?: string): FailureClass {
   }
   if (/budget/i.test(own)) return "budget";
   if (/quality_gate/i.test(own)) return "quality_gate";
+  if (/^(infected|unreadable_document)$/i.test(own)) return "invalid_input";
   if (/invalid_.*input|invalid_case/i.test(own)) return "invalid_input";
   const message = error instanceof Error ? error.message : String(error ?? "");
   if (DB_TIMEOUT.test(message)) return "db_timeout";
@@ -111,11 +119,11 @@ export function describeJobFailure(
     class: failureClass,
     message: safeMessage(error) || `${failureClass} without message`,
   });
-  return {
+  return jobFailureRecordSchema.parse({
     ...extra,
     code,
     stage,
     cause,
     retryable: retryable ?? (failureClass === "transient" || failureClass === "db_timeout"),
-  };
+  });
 }

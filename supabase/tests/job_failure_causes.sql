@@ -20,7 +20,7 @@ begin
   if private.job_failure_class('{"reason":"worker_error","message":"worker_record_retrieval_chunks failed: canceling statement due to statement timeout"}'::jsonb) <> 'db_timeout' then raise exception 'db timeout not classified'; end if;
   if private.job_failure_class('{"reason":"worker_error","message":"worker_record_candidates failed: null value in column \"normalized_value\" violates not-null constraint"}'::jsonb) <> 'db_constraint' then raise exception 'db constraint not classified'; end if;
   if private.job_failure_class('{"reason":"transient_error","message":"fetch failed"}'::jsonb) <> 'transient' then raise exception 'transient not classified'; end if;
-  if private.job_failure_class('{"reason":"infected","signature":"x"}'::jsonb) <> 'authorization' then raise exception 'infected file not classified'; end if;
+  if private.job_failure_class('{"reason":"infected","signature":"x"}'::jsonb) <> 'invalid_input' then raise exception 'infected file not classified'; end if;
 
   -- A bare category is the defect Phase 0 removes: it has no cause.
   if private.job_failure_class('{"code":"agent_processing_failed","spend":{"costUsd":0.02}}'::jsonb) <> 'unclassified' then raise exception 'bare category should be unclassified'; end if;

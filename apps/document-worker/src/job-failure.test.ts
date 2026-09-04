@@ -2,7 +2,7 @@ import {ModelGatewayError} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
 import {z} from "zod";
 
-import {classifyFailure, describeJobFailure, safeMessage} from "./job-failure";
+import {classifyFailure, describeJobFailure, jobFailureRecordSchema, safeMessage} from "./job-failure";
 
 describe("job failure envelope", () => {
   it("keeps the cause of an ordinary exception instead of an empty object", () => {
@@ -43,6 +43,18 @@ describe("job failure envelope", () => {
   it("marks database timeouts and transport failures as retryable by default", () => {
     expect(describeJobFailure(new Error("canceling statement due to statement timeout"), {code: "case_analysis_failed", stage: "case"}).retryable).toBe(true);
     expect(describeJobFailure(new Error("violates not-null constraint"), {code: "case_analysis_failed", stage: "case"}).retryable).toBe(false);
-    expect(describeJobFailure(new Error("fetch failed"), {code: "x", stage: "s", retryable: false}).retryable).toBe(false);
+    expect(describeJobFailure(new Error("fetch failed"), {code: "sync_failed", stage: "sync", retryable: false}).retryable).toBe(false);
+  });
+
+  it("refuses a bare category at the queue boundary", () => {
+    expect(jobFailureRecordSchema.safeParse({code: "agent_processing_failed", spend: {costUsd: 0.02}}).success).toBe(false);
+    expect(jobFailureRecordSchema.safeParse({reason: "case_analysis_failed", code: "case_analysis_failed"}).success).toBe(false);
+    expect(jobFailureRecordSchema.safeParse(describeJobFailure(new Error("boom"), {code: "x_failed", stage: "s"})).success).toBe(true);
+  });
+
+  it("treats a rejected file as invalid input, not as an authorization failure", () => {
+    const record = describeJobFailure(new Error("file rejected by the scanner: Eicar-Test-Signature"), {code: "infected", stage: "scan", retryable: false});
+    expect(record.cause.class).toBe("invalid_input");
+    expect(record.retryable).toBe(false);
   });
 });

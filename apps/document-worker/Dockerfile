@@ -73,6 +73,8 @@ ENV NODE_ENV=production \
 # spreadsheets and decks and needs nothing else. Language packs for OCR are por + eng, which
 # is what this market sends.
 RUN apt-get update \
+ # Security updates of the base image ship between node image rebuilds; take them every build.
+ && apt-get upgrade -y \
  && apt-get install --no-install-recommends -y \
       libreoffice-writer \
       libreoffice-calc \
