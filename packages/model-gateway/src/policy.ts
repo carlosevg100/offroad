@@ -79,7 +79,7 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   explain_exception: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 4_000, timeoutMs: 180_000},
   structure_design: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 8_000, timeoutMs: 300_000},
   case_brief: {primary: anthropic("claude-opus-5", "high"), shadow: openai("gpt-5.6-sol", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 32_000, timeoutMs: 600_000},
-  preliminary_understanding: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 3_500, timeoutMs: 180_000},
+  preliminary_understanding: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 8_000, timeoutMs: 180_000},
   // This is the customer-facing senior-banker synthesis. A production gold test showed Terra
   // exhausting the former 8k ceiling before it could close the structured object, while the
   // Anthropic fallback rejected that large schema. A production run then showed Sol exhausting

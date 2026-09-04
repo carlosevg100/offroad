@@ -84,6 +84,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     const attempts: GatewayResult<unknown>["attempts"] = [];
     const candidates: ModelRef[] = fallback ? [primary, fallback] : [primary];
     let policyRejected = 0;
+    let lastFailureWasTruncation = false;
 
     for (const [index, ref] of candidates.entries()) {
       let providerPolicyVersion: string | undefined;
@@ -121,6 +122,10 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         }
       }
       if (config.budget?.maxCalls !== undefined && spent.calls >= config.budget.maxCalls) {
+        // A failed provider attempt followed by an unavailable fallback is not a new budget
+        // failure. Preserve the actual provider outcome instead of masking it as
+        // `budget_exceeded`; the latter remains reserved for calls that cannot start at all.
+        if (attempts.length > 0) break;
         throw new ModelGatewayError(`call budget exhausted (${spent.calls}/${config.budget.maxCalls})`, "budget_exceeded", {...spent, exposureUsd: budgetExposureUsd});
       }
       const adapterRequest: AdapterRequest = {
@@ -216,12 +221,19 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       // are different states in governed financial work.
       const parsed = request.schema.safeParse(response.output);
       if (!parsed.success) {
-        const validationIssues: ValidationIssueDiagnostic[] = parsed.error.issues.slice(0, 5).map((issue) => ({
-          path: issue.path.join("."),
-          code: issue.code,
-          message: issue.message.slice(0, 180),
-        }));
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message: parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ")});
+        const truncated = response.stopReason === "max_tokens";
+        const validationIssues: ValidationIssueDiagnostic[] = truncated
+          ? [{path: "", code: "output_truncated", message: "Provider stopped at the output-token limit before completing the structured response."}]
+          : parsed.error.issues.slice(0, 5).map((issue) => ({
+              path: issue.path.join("."),
+              code: issue.code,
+              message: issue.message.slice(0, 180),
+            }));
+        const message = truncated
+          ? "provider stopped at the output-token limit before completing the structured response"
+          : parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
+        attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message});
+        lastFailureWasTruncation = truncated;
         emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues});
         continue;
       }
@@ -247,6 +259,9 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
 
     if (policyRejected === candidates.length) {
       throw new ModelGatewayError(`no provider satisfies the data policy for task "${request.task}"`, "data_policy_violation", attempts);
+    }
+    if (lastFailureWasTruncation) {
+      throw new ModelGatewayError(`model output was truncated for task "${request.task}"`, "output_truncated", attempts);
     }
     throw new ModelGatewayError(`all model attempts failed for task "${request.task}"`, "all_attempts_failed", attempts);
   };

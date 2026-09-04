@@ -4138,7 +4138,8 @@ begin
   if (select (versions->>'reused_document_count')::integer from public.processing_runs where id = run_id) <> 1 then
     raise exception 'unchanged retry did not record reuse provenance';
   end if;
-  if (select (payload->'model_budget'->>'max_cost_usd')::numeric from public.processing_jobs where processing_run_id = run_id and kind = 'preliminary_analysis') <> 0.60 then
+  if (select (payload->'model_budget'->>'max_cost_usd')::numeric from public.processing_jobs where processing_run_id = run_id and kind = 'preliminary_analysis') <> 0.90
+    or (select (payload->'model_budget'->>'max_calls')::integer from public.processing_jobs where processing_run_id = run_id and kind = 'preliminary_analysis') <> 2 then
     raise exception 'preliminary understanding did not receive its hard model budget';
   end if;
 end;

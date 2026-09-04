@@ -237,9 +237,11 @@ describe("worker case analysis", () => {
       fail: async (_job, error) => { throw new Error(`the preliminary job should not fail: ${JSON.stringify(error)}`); },
     };
     let spent = {costUsd: 0, calls: 0};
+    let requestedMaxOutputTokens: number | undefined;
     const gateway = {
-      complete: async (request: {task: string}) => {
+      complete: async (request: {task: string; maxOutputTokens?: number}) => {
         calls.push(request.task);
+        requestedMaxOutputTokens = request.maxOutputTokens;
         spent = {costUsd: 0.08, calls: 1};
         return {
           output: {
@@ -295,6 +297,7 @@ describe("worker case analysis", () => {
 
     expect(outcome).toEqual({status: "succeeded"});
     expect(calls).toEqual(["preliminary_understanding"]);
+    expect(requestedMaxOutputTokens).toBe(8_000);
     expect(stages).toEqual([
       {stage: "preliminary_understanding", status: "started"},
       {stage: "public_research", status: "started"},
