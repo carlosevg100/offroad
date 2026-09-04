@@ -8,6 +8,10 @@ export * from "./workspace-jobs";
 export * from "./professional-functions";
 export * from "./specializations";
 export * from "./decision-value";
+export * from "./intent-envelope";
+export * from "./reading-manifest";
+export * from "./autonomy";
+export * from "./findings";
 
 export const workspaceRequestIntentSchema = z.enum([
   "explain",
