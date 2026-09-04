@@ -1,6 +1,7 @@
 import {z} from "zod";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import type {DcmAgentAssessment} from "@offroad/agent-contracts";
+import {jobFailureRecordSchema} from "./job-failure";
 
 /**
  * The worker's only vocabulary against the database: the seven commands created in
@@ -662,10 +663,13 @@ export function createQueueClient(
     },
 
     async fail(job, error, opts) {
+      // A failure that cannot explain itself is refused here, before it reaches the database,
+      // which refuses it again. Executors build the record with `describeJobFailure`.
+      const record = jobFailureRecordSchema.parse(error);
       await call("worker_fail_job", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
-        p_error: error ?? {},
+        p_error: record,
         p_retryable: opts?.retryable ?? true,
         p_retry_in_seconds: opts?.retryInSeconds ?? 60,
       });

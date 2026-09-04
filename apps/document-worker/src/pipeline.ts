@@ -19,6 +19,7 @@ import {
   fiscalArchiveEvidence,
 } from "./receivables-evidence";
 import {genericExtractionPolicy} from "./extraction-policy";
+import {describeJobFailure} from "./job-failure";
 
 /**
  * What happens to one document, start to finish (P1 plan §5, stages E0–E1).
@@ -131,13 +132,16 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       await queue.recordDocument(job, {scanResult: verdict});
       await queue.fail(
         job,
-        {
+        describeJobFailure(new Error(`file rejected by the scanner: ${verdict.signature}`), {
+          code: "infected",
+          stage: "scan",
           reason: "infected",
           signature: verdict.signature,
           document: payload.original_name,
+          retryable: false,
           ...(deps.spend ? {spend: deps.spend()} : {}),
           ...(deps.lineage ? {model_lineage: deps.lineage()} : {}),
-        },
+        }),
         {retryable: false},
       );
       log("document.infected", {job: job.job_id, signature: verdict.signature});
@@ -358,7 +362,14 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     const failure = describeFailure(error);
     await queue.fail(
       job,
-      {...failure.detail, ...(deps.spend ? {spend: deps.spend()} : {}), ...(deps.lineage ? {model_lineage: deps.lineage()} : {})},
+      describeJobFailure(error, {
+        ...failure.detail,
+        code: failure.detail.code ?? failure.detail.reason,
+        stage: "document_pipeline",
+        retryable: failure.retryable,
+        ...(deps.spend ? {spend: deps.spend()} : {}),
+        ...(deps.lineage ? {model_lineage: deps.lineage()} : {}),
+      }),
       {retryable: failure.retryable, retryInSeconds: failure.retryInSeconds},
     );
     log("document.failed", {job: job.job_id, reason: failure.detail.reason});

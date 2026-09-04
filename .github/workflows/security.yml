@@ -67,6 +67,9 @@ jobs:
           format: sarif
           output: trivy-repository.sarif
           severity: HIGH,CRITICAL
+          # Without this the action reports every severity in the SARIF and lets the exit code
+          # fail on UNKNOWN Debian temp advisories, which is what turned the check red.
+          limit-severities-for-sarif: true
           ignore-unfixed: true
           exit-code: 1
       - name: Explain repository findings

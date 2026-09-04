@@ -319,7 +319,7 @@ begin
   );
 
   update public.processing_jobs
-  set status = 'failed', last_error = '{"code":"fixture_failure"}'::jsonb
+  set status = 'failed', last_error = '{"code":"fixture_failure","stage":"test","retryable":false,"cause":{"name":"Error","class":"worker_error","message":"synthetic failure raised by the contract test"}}'::jsonb
   where id = failed_job.id;
   update public.processing_runs set status = 'failed' where id = failed_job.processing_run_id;
   update public.document_intake_sessions set status = 'failed' where id = session_id;

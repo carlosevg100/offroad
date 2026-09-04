@@ -3225,7 +3225,7 @@ begin
     raise exception 'worker did not receive the prior successful report for the same case';
   end if;
   perform public.worker_fail_job(
-    job_id_two, capability_two, '{"code":"test_cleanup"}'::jsonb, false, 60
+    job_id_two, capability_two, '{"code":"test_cleanup","stage":"test","retryable":false,"cause":{"name":"Error","class":"worker_error","message":"synthetic failure raised by the contract test"}}'::jsonb, false, 60
   );
 
   perform set_config(
@@ -5000,7 +5000,7 @@ begin
   );
   perform public.worker_fail_job(
     (failure_claim ->> 'job_id')::uuid, failure_claim ->> 'capability_token',
-    '{"code":"agent_processing_failed"}'::jsonb, false, 60
+    '{"code":"agent_processing_failed","stage":"test","retryable":false,"cause":{"name":"Error","class":"worker_error","message":"synthetic failure raised by the contract test"}}'::jsonb, false, 60
   );
   set local role postgres;
   if (select status from public.document_intake_sessions where id = session_id) <> 'processing' then
