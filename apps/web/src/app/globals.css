@@ -1683,23 +1683,7 @@ summary:focus-visible {
   max-width: 490px;
   color: rgb(255 255 255 / 68%);
   font-size: 16px;
-}
-
-.auth-assurance {
-  display: flex;
-  max-width: 500px;
-  align-items: flex-start;
-  gap: 12px;
-  color: rgb(255 255 255 / 62%);
-  font-size: 12px;
-}
-
-.auth-assurance svg {
-  flex: 0 0 auto;
-  color: var(--accent-bright);
-}
-
-.auth-panel--form {
+}.auth-panel--form {
   display: flex;
   flex-direction: column;
   justify-content: center;

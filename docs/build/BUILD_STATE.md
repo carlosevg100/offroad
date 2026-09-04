@@ -4,6 +4,27 @@ Atualizado em: 2026-09-04
 Baseline: `main` após PR #401, commit `16a3e07`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Polimento da entrada e correção do menu, 04/09/2026
+
+- Corrigido um defeito que eu mesmo introduzi: recolher o menu escondia o próprio botão de
+  recolher, então não havia como expandir de volta. Agora o símbolo segura o lugar e o controle
+  aparece por cima dele no hover ou no foco de teclado, de modo que recolher nunca remove o
+  caminho de volta.
+- O símbolo da entrada foi de 78 para 104 px e ganhou um fundo que respira e uma rotação de 120
+  segundos. É lento o bastante para ler como vivo e não como animação, e ambos param por completo
+  sob `prefers-reduced-motion`.
+- Saíram a linha de privacidade sob o composer e as quatro sugestões em texto. Com as sugestões
+  fora, a rota privada passa a ser escolhida anexando um documento, que é como o usuário a escolhe
+  de fato; o E2E foi reescrito para exercitar esse caminho em vez do atalho removido.
+- `Continuar` virou três cards planos, com hairline e sem sombra. Cada um mostra o tipo de trabalho
+  em monoespaçada acima do nome, então a linha diz que tipo de trabalho é antes de dizer como se
+  chama. O horário é carimbo absoluto: tempo relativo exige o instante atual, que a regra de pureza
+  do React não deixa ler durante o render, e uma mesa lê carimbo mais rápido que intervalo.
+- A tela de acesso perdeu a faixa de garantia e ganhou copy com intenção: o título fala do que o
+  produto faz antes do term sheet, e o corpo diz o que existe dentro em vez de mandar entrar.
+- Gate integral verde nos 43 alvos em Node 24. Verificado em servidor local, incluindo o ciclo
+  completo de recolher e expandir.
+
 ## Nome curto e entrada de acesso reescrita, 04/09/2026
 
 - A marca passa a ser **Offroad**, não Offroad Capital, acompanhando a logotipia nova. O domínio,

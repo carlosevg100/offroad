@@ -38,7 +38,6 @@ export default async function SignupPage({params, searchParams}: Props) {
 
   return (
     <AuthShell
-      assurance={t("assurance")}
       body={t("contextBody")}
       locale={locale as AppLocale}
       title={t("contextTitle")}
