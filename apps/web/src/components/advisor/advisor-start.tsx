@@ -125,9 +125,16 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
         setStatus("idle");
         return;
       }
-      if (!["structure_from_documents", "review_existing_operation"].includes(result.entryJob)) {
-        setStatus("starting");
-        await beginAdvisorProjectProcessing({locale, projectId: result.projectId});
+      // Uploading the documents is only the intake boundary. Every document-backed project must
+      // cross the preliminary evidence gate immediately afterwards, including the two journeys
+      // whose prompt may consist entirely of the attached package. Otherwise a documents-only
+      // start creates a valid project and then leaves it idle with no analysis to continue.
+      setStatus("starting");
+      const processing = await beginAdvisorProjectProcessing({locale, projectId: result.projectId});
+      if (!processing.ok) {
+        setError(copy.errors[processing.error]);
+        setStatus("idle");
+        return;
       }
     }
 
