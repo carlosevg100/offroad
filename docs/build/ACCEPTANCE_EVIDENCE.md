@@ -5,7 +5,10 @@
 | Evidência | Verificação | Resultado |
 |---|---|---|
 | Estado do menu | cookie `offroad_rail_collapsed` lido no layout | servidor renderiza já na largura escolhida; sem piscar e sem divergência de hidratação |
-| Lista plana | regra de ocultação por assinatura exata | pasta com uma conversa de mesmo nome fica oculta; criada, renomeada, vazia ou com duas continua visível |
+| Lista plana | coluna `auto_created` + `supabase/tests/workspace_project_folders.sql` | gatilho marca, criação por pessoa não marca, rename limpa; teste passou em produção com rollback |
+| Dados reais | quatro pastas ativas em produção | só a gerada pelo gatilho foi marcada; as três do usuário, incluindo uma com uma conversa só, seguem visíveis |
+| Ensaio | branch `staging` | inutilizável, em `MIGRATIONS_FAILED` desde agosto e sem a tabela; achado P2-07 segue aberto |
+| Advisors | Security Advisor após as duas migrations | nenhum achado novo; permanecem os dois INFO preexistentes de tabelas do schema `private` |
 | Placeholder rotativo | sete exemplos, um por função | digita e apaga com o campo vazio, para ao primeiro caractere, respeita `prefers-reduced-motion` |
 | Dica de jornada | quatro sugestões em texto | preservam `entryJobHint`, incluindo a escolha explícita da rota por documentos |
 | CSS morto | varredura de classes usadas no TSX | 66 regras removidas, cada uma sem consumidor; chaves balanceadas nos dois arquivos |

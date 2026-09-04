@@ -111,15 +111,17 @@ export function WorkspaceRail(props: Props) {
   ), [locale, normalized]);
 
   /**
-   * A database trigger creates one folder per project, named after it. Those are
-   * noise: they show a conversation nested inside a folder of the same name, which
-   * is what made starting a project read as two steps. They are hidden here by that
-   * exact signature. A folder the user made, renamed, emptied or filled with more
-   * than one conversation is real and stays visible.
+   * A database trigger creates one folder per project, named after it, and those are
+   * noise: a conversation nested under a folder repeating its own name is what made
+   * starting work read as two steps. The database marks them, so this is a fact rather
+   * than a guess. Matching on the name would break the moment either side is renamed,
+   * and matching on the child count would hide a real folder that holds one
+   * conversation. Renaming a folder clears the mark, because naming it is the act that
+   * makes it the person's own.
    */
   const visibleFolders = useMemo(() => groups
+    .filter((group) => !group.autoCreated)
     .map((group) => ({group, children: projects.filter((project) => project.groupId === group.id)}))
-    .filter(({group, children}) => !(children.length === 1 && children[0]!.name === group.name))
     .map((entry) => ({group: entry.group, children: entry.children.filter(matches)}))
     .filter((entry) => !normalized
       || entry.children.length > 0

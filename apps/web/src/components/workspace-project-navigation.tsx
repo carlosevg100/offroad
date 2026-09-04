@@ -25,7 +25,7 @@ export type WorkspaceNavigationProject = {
   jobLabel?: string;
 };
 
-export type WorkspaceNavigationGroup = {id: string; name: string};
+export type WorkspaceNavigationGroup = {id: string; name: string; autoCreated: boolean};
 
 export type WorkspaceNavigationCopy = {
   actions: string;

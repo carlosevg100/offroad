@@ -10,9 +10,15 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
   para o servidor já renderizar na largura escolhida. `Novo chat` com `⌘J` é a ação primária e cria
   a conversa direto; a busca subiu para o topo com `⌘K` em vez de ficar enterrada na lista.
 - `Recentes` é lista plana. Um gatilho do banco cria uma pasta por projeto, com o mesmo nome, e era
-  isso que fazia a barra parecer uma coleção de pastas de uma conversa só. Essas ficam ocultas pela
-  assinatura exata; pasta criada, renomeada, esvaziada ou com mais de uma conversa continua visível
-  e continua podendo ser criada.
+  isso que fazia a barra parecer uma coleção de pastas de uma conversa só. A distinção virou coluna,
+  `workspace_project_groups.auto_created`, escrita pelo gatilho e limpa ao renomear, porque nomear
+  uma pasta é o ato que a torna do usuário. Heurística por nome quebrava no primeiro rename, e por
+  contagem esconderia uma pasta real com uma conversa só, que é exatamente o caso da pasta
+  `Rede Horizonte` em produção. Pastas do usuário continuam visíveis e continuam podendo ser criadas.
+- As duas migrations foram aplicadas em produção e verificadas: das quatro pastas ativas, só a
+  gerada pelo gatilho foi marcada. O `staging` não pôde servir de ensaio porque está em
+  `MIGRATIONS_FAILED` desde agosto e sequer possui a tabela; é o achado P2-07 da auditoria, ainda
+  aberto. A prova limpa é o job de banco no CI, que reconstrói todas as migrations do zero.
 - A entrada mostra o símbolo da marca, saudação por horário em preto e a pergunta em cinza. O
   placeholder digita e apaga sete pedidos reais, um por função profissional, e para assim que o
   campo recebe texto. Os cinco pills saíram; quatro sugestões em texto escrevem um pedido completo

@@ -38,7 +38,7 @@ export default async function ApplicationLayout({children, params}: Props) {
       : Promise.resolve({data: []}),
     canOriginate
       ? supabase.from("workspace_project_groups")
-          .select("id, name, updated_at")
+          .select("id, name, auto_created, updated_at")
           .eq("organization_id", organization.id)
           .is("archived_at", null)
           .order("updated_at", {ascending: false})
@@ -46,7 +46,7 @@ export default async function ApplicationLayout({children, params}: Props) {
       : Promise.resolve({data: []}),
   ]);
   const capitalProjectById = new Map((capitalProjects ?? []).map((project) => [project.id, project]));
-  const groups: WorkspaceNavigationGroup[] = (workspaceGroups ?? []).map((group) => ({id: group.id, name: group.name}));
+  const groups: WorkspaceNavigationGroup[] = (workspaceGroups ?? []).map((group) => ({autoCreated: group.auto_created, id: group.id, name: group.name}));
   const projects: WorkspaceNavigationProject[] = (navigationSessions ?? []).map((session) => {
     const capitalProject = session.capital_project_id ? capitalProjectById.get(session.capital_project_id) : null;
     return {
