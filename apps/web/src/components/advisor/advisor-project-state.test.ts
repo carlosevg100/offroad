@@ -3,6 +3,7 @@ import {describe, expect, it} from "vitest";
 import {
   advisorIsActive,
   advisorNeedsAttention,
+  canShowAdvisorInformationRequests,
   currentActivityCycle,
   customerEventType,
   failureWasRecovered,
@@ -24,6 +25,12 @@ describe("advisor project current state", () => {
       taskStatuses: ["queued"],
       messageStatuses: ["completed"],
     })).toBe(true);
+  });
+
+  it("holds the information request until the preliminary understanding is accepted", () => {
+    expect(canShowAdvisorInformationRequests("pending_confirmation")).toBe(false);
+    expect(canShowAdvisorInformationRequests("confirmed")).toBe(true);
+    expect(canShowAdvisorInformationRequests(null)).toBe(true);
   });
 
   it("does not keep a project in attention after a later successful retry", () => {

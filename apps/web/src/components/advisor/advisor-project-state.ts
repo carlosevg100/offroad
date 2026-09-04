@@ -19,6 +19,11 @@ export function advisorIsActive(input: {
     || input.messageStatuses.some((status) => status === "queued" || status === "processing");
 }
 
+/** Preliminary gaps become active requests only after the user accepts the initial understanding. */
+export function canShowAdvisorInformationRequests(preliminaryStatus: string | null): boolean {
+  return preliminaryStatus !== "pending_confirmation";
+}
+
 const SUCCESS_EVENTS = new Set(["work_completed", "decision_recorded", "question_answered"]);
 const FAILURE_EVENTS = new Set(["work_failed", "quality_gate_failed"]);
 const TERMINAL_STAGES = new Set([
