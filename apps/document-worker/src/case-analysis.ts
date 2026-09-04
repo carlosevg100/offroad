@@ -697,11 +697,11 @@ async function processPreliminaryUnderstanding(
     inputFingerprint,
     payload,
   });
-  if (dependencies.queue.recordAgentAssessment) {
-    const projectId = z.uuid().parse(raw.session.capital_project_id);
+  const projectId = z.uuid().safeParse(raw.session.capital_project_id);
+  if (dependencies.queue.recordAgentAssessment && projectId.success) {
     const assessedAt = (dependencies.now?.() ?? new Date()).toISOString();
     await dependencies.queue.recordAgentAssessment(job, buildPreliminaryAssessment({
-      projectId,
+      projectId: projectId.data,
       assessmentRef: `processing_run:${job.processing_run_id}`,
       locale: locale === "pt" ? "pt-BR" : "en-US",
       assessedAt,

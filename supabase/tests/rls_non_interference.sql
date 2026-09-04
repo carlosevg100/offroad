@@ -1316,8 +1316,8 @@ begin
 
   preliminary_input := public.worker_load_preliminary_input(case_job_id, case_capability);
   if preliminary_input->'session'->>'id' <> '40000000-0000-4000-8000-000000000003'
-    or preliminary_input->'session'->>'capital_project_id' is null
-    or preliminary_input->'session'->>'capital_project_id' <>
+    or not (preliminary_input->'session' ? 'capital_project_id')
+    or preliminary_input->'session'->>'capital_project_id' is distinct from
       (select capital_project_id::text from public.document_intake_sessions
        where id = '40000000-0000-4000-8000-000000000003')
     or jsonb_array_length(preliminary_input->'documents') <> 1
