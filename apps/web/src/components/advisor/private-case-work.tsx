@@ -1,6 +1,6 @@
 "use client";
 
-import {AlertCircle, Check, Circle, ExternalLink, FileCheck2, LoaderCircle, Search, ShieldCheck} from "lucide-react";
+import {AlertCircle, Check, Circle, ExternalLink, FileCheck2, LoaderCircle, RotateCcw, Search, ShieldCheck} from "lucide-react";
 import {useActionState, useEffect, useRef, useState} from "react";
 import {useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
@@ -17,17 +17,19 @@ type Props = {
   preliminary: PreliminaryUnderstandingState;
   projectId: string;
   sessionId: string;
+  canRetry: boolean;
   shouldStart: boolean;
 };
 
 const initialState: PrivatePreliminaryDecisionState = {ok: false};
 
-export function PrivateCaseWork({checklist, locale, preliminary, projectId, sessionId, shouldStart}: Props) {
+export function PrivateCaseWork({canRetry, checklist, locale, preliminary, projectId, sessionId, shouldStart}: Props) {
   const t = useTranslations("App.privateCase");
   const router = useRouter();
   const attemptedStart = useRef(false);
   const [bootstrapping, setBootstrapping] = useState(shouldStart);
   const [bootstrapFailed, setBootstrapFailed] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const [state, action] = useActionState(decidePrivateProjectPreliminary, initialState);
   const current = preliminary.current;
 
@@ -42,6 +44,16 @@ export function PrivateCaseWork({checklist, locale, preliminary, projectId, sess
   }, [locale, projectId, router, shouldStart]);
 
   const showingProcessing = preliminary.isProcessing || bootstrapping;
+  const showingFailure = !current && !showingProcessing && (canRetry || bootstrapFailed);
+
+  async function retryProcessing() {
+    setBootstrapFailed(false);
+    setRetrying(true);
+    const result = await beginAdvisorProjectProcessing({locale, projectId});
+    setRetrying(false);
+    if (!result.ok) setBootstrapFailed(true);
+    router.refresh();
+  }
 
   return (
     <article className="advisor-private-work">
@@ -57,9 +69,18 @@ export function PrivateCaseWork({checklist, locale, preliminary, projectId, sess
         </section>
       ) : null}
 
-      {bootstrapFailed ? <p className="form-notice form-notice--error" role="alert">{t("errors.processing")}</p> : null}
+      {showingFailure ? (
+        <section className="advisor-private-work__failure" role="alert">
+          <AlertCircle aria-hidden="true" size={18} />
+          <div><strong>{t("failedTitle")}</strong><p>{t("failedBody")}</p></div>
+          <button className="button button--ghost button--small" disabled={retrying} onClick={() => void retryProcessing()} type="button">
+            {retrying ? <LoaderCircle aria-hidden="true" className="spin" size={14} /> : <RotateCcw aria-hidden="true" size={14} />}
+            {retrying ? t("retrying") : t("retry")}
+          </button>
+        </section>
+      ) : null}
 
-      {!current && !showingProcessing && !bootstrapFailed ? (
+      {!current && !showingProcessing && !showingFailure ? (
         <section className="advisor-private-work__empty">
           <FileCheck2 aria-hidden="true" size={18} />
           <div><strong>{t("emptyTitle")}</strong><p>{t("emptyBody")}</p></div>

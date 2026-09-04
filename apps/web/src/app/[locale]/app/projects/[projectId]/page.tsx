@@ -486,6 +486,7 @@ async function ConversationalCapitalProject({
       preliminary={preliminary}
       projectId={project.id}
       sessionId={session.id}
+      canRetry={session.status === "failed"}
       shouldStart={session.status === "collecting"}
     />{privateWorkbench ? <PrivateDiagnosticWork
       isProcessing={privateWorkbench.isProcessing}

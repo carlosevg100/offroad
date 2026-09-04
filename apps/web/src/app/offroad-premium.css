@@ -434,6 +434,7 @@
 
 .advisor-private-work__processing,
 .advisor-private-work__empty,
+.advisor-private-work__failure,
 .advisor-private-work__understanding,
 .advisor-private-work__request {
   background: #fff;
@@ -447,28 +448,32 @@
 }
 
 .advisor-private-work__processing > header,
-.advisor-private-work__empty {
+.advisor-private-work__empty,
+.advisor-private-work__failure {
   align-items: flex-start;
   display: flex;
   gap: 11px;
 }
 
 .advisor-private-work__processing > header > svg,
-.advisor-private-work__empty > svg {
+.advisor-private-work__empty > svg,
+.advisor-private-work__failure > svg {
   color: #718a4d;
   flex: 0 0 auto;
   margin-top: 1px;
 }
 
 .advisor-private-work__processing strong,
-.advisor-private-work__empty strong {
+.advisor-private-work__empty strong,
+.advisor-private-work__failure strong {
   display: block;
   font-size: 12px;
   font-weight: 650;
 }
 
 .advisor-private-work__processing p,
-.advisor-private-work__empty p {
+.advisor-private-work__empty p,
+.advisor-private-work__failure p {
   color: #6d767d;
   font-size: 11px;
   line-height: 1.55;
@@ -501,6 +506,19 @@
 
 .advisor-private-work__empty {
   padding: 18px 20px;
+}
+
+.advisor-private-work__failure {
+  align-items: center;
+  padding: 18px 20px;
+}
+
+.advisor-private-work__failure > svg {
+  color: #aa594d;
+}
+
+.advisor-private-work__failure > div {
+  flex: 1;
 }
 
 .advisor-private-work__understanding,
