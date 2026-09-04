@@ -4,7 +4,12 @@ import {parseDocument} from "@offroad/document-parsers";
 import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
-import {caseAnalysisExecutionPlan, processCaseAnalysisJob, researchSubjectFromDeclaration} from "./case-analysis";
+import {
+  caseAnalysisExecutionPlan,
+  isReservedExampleWebsite,
+  processCaseAnalysisJob,
+  researchSubjectFromDeclaration,
+} from "./case-analysis";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
 import {documentEvidence, encodeReceivablesEvidence} from "./receivables-evidence";
 
@@ -157,7 +162,7 @@ describe("worker case analysis", () => {
           company_profile: {
             name: "Companhia Exemplo",
             legal_name: "Companhia Exemplo Ltda.",
-            website: "https://companhia.example",
+            website: "https://companhia-exemplo.com.br",
             description: "Distribuidora B2B com carteira de recebíveis.",
           },
           capital_objective: null,
@@ -307,12 +312,23 @@ describe("worker case analysis", () => {
     expect(calls).toEqual(["preliminary_understanding"]);
     expect(requestedMaxOutputTokens).toBe(8_000);
     expect(narrativeInput).toMatchObject({
+      resolvedDocumentCompany: {
+        source: "verified_document_facts",
+        legalName: "Companhia Exemplo Ltda.",
+      },
       resolvedDocumentOperation: {
         source: "verified_document_facts",
         objective: "Financiar o crescimento do capital de giro.",
         requestedAmount: "20000000",
         currency: "BRL",
       },
+      documentFacts: expect.arrayContaining([
+        expect.objectContaining({
+          fieldPath: "transaction.requested_amount",
+          rawValue: "R$ 20 milhões",
+          sourceAnchor: {page: 2},
+        }),
+      ]),
     });
     expect(assessedProjectId).toBe("abababab-abab-4bab-8bab-abababababab");
     expect(stages).toEqual([
@@ -349,6 +365,12 @@ describe("worker case analysis", () => {
       website: "https://www.example-capital.com",
     });
     expect(researchSubjectFromDeclaration("Quero analisar uma companhia do varejo.")).toBeNull();
+  });
+
+  it("recognizes reserved example identities so synthetic cases never search public homonyms", () => {
+    expect(isReservedExampleWebsite("https://www.redehorizonte.example")).toBe(true);
+    expect(isReservedExampleWebsite("https://example.com")).toBe(false);
+    expect(isReservedExampleWebsite("https://companhia.com.br")).toBe(false);
   });
 
   it("defaults to a zero-model diagnostic plan before governed confirmations", () => {

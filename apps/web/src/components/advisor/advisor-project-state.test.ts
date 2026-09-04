@@ -1,6 +1,12 @@
 import {describe, expect, it} from "vitest";
 
-import {advisorNeedsAttention, customerEventType, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import {
+  advisorNeedsAttention,
+  currentActivityCycle,
+  customerEventType,
+  failureWasRecovered,
+  latestSuccessfulOutcomeAt,
+} from "./advisor-project-state";
 
 describe("advisor project current state", () => {
   const failed = {type: "quality_gate_failed", createdAt: "2026-09-03T10:00:00.000Z"};
@@ -31,5 +37,23 @@ describe("advisor project current state", () => {
     expect(customerEventType("work_progress", {stage: "preliminary_understanding", status: "succeeded"})).toBe("work_completed");
     expect(customerEventType("work_progress", {stage: "public_research", status: "succeeded"})).toBe("work_progress");
     expect(customerEventType("work_progress", {stage: "case_analysis", status: "started"})).toBe("work_progress");
+  });
+
+  it("shows the latest retry cycle without replaying earlier worker stages", () => {
+    const events = [
+      {id: "old-start", type: "work_started", createdAt: "2026-09-03T10:01:00.000Z", detail: {job_id: "old"}},
+      {id: "plan", type: "plan_created", createdAt: "2026-09-03T10:00:00.000Z", detail: {revision: 1}},
+      {id: "old-failure", type: "work_failed", createdAt: "2026-09-03T10:02:00.000Z", detail: {job_id: "old"}},
+      {id: "new-start", type: "work_started", createdAt: "2026-09-03T10:03:00.000Z", detail: {job_id: "new"}},
+      {id: "new-research", type: "work_progress", createdAt: "2026-09-03T10:04:00.000Z", detail: {job_id: "new"}},
+      {id: "new-question", type: "question_created", createdAt: "2026-09-03T10:05:00.000Z", detail: {request_count: 2}},
+    ];
+
+    expect(currentActivityCycle(events).map((event) => event.id)).toEqual([
+      "plan",
+      "new-start",
+      "new-research",
+      "new-question",
+    ]);
   });
 });

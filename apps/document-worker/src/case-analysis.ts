@@ -574,7 +574,8 @@ Rules:
 - Uploaded documents are a valid primary input. When verified document facts consistently state
   the amount, use of proceeds or transaction purpose, describe them as document-provided facts
   subject to the user's confirmation; do not call them missing merely because the user typed no
-  narrative. Use resolvedDocumentOperation as the compact consistency reference.
+  narrative. Use resolvedDocumentCompany and resolvedDocumentOperation as compact consistency
+  references. Never ask the user to confirm a company attribute already present in either object.
 - Classify the declared use of proceeds into exactly one archetypeId. This is a request-routing
   label, not a recommendation: working_capital, growth_expansion, acquisition, refinance,
   equipment_finance, venture_debt or other. A receivables mention is collateral or repayment
@@ -584,6 +585,13 @@ Rules:
 - Never state that the operation is viable, affordable, financeable or correctly structured.
 - Never propose an instrument, amount, term, guarantee, covenant, price or lender.
 - Never infer missing financial figures. Turn material uncertainty into a focused open point.
+- Read metric periods and bases before calling values inconsistent. A 7M, LTM, annual, budget or
+  run-rate value is not a conflict with another period. sourceAnchor carries the underlying excerpt;
+  if a normalized field path disagrees with that excerpt, preserve the excerpt's period and treat it
+  as an extraction-classification issue, not a question for the user.
+- Search results for similarly named entities are not evidence about the company. Do not ask whether
+  unrelated public homonyms belong to the group unless a document or authoritative identifier gives
+  a positive reason to suspect that relationship.
 - Never ask for a fact already present in resolvedDocumentOperation. Ask one unresolved matter per
   open point; do not combine a known amount or currency with an unknown term in one question.
 - Be concise and non-repetitive: keep the understanding summary under 250 words; use one short
@@ -618,10 +626,13 @@ async function processPreliminaryUnderstanding(
       fieldPath: String(candidate.field_path ?? ""),
       label: String(candidate.label ?? candidate.field_path ?? "fact"),
       value: candidate.normalized_value ?? candidate.raw_value ?? null,
+      rawValue: candidate.raw_value ?? null,
       informationClass: String(candidate.information_class ?? "document_fact"),
       confidence: numberOr(candidate.confidence, 0),
       sourceDocumentId: String(candidate.source_document_id ?? ""),
+      sourceAnchor: candidate.source_anchor ?? null,
     }));
+  const documentCompany = documentCompanyEvidence(candidates);
   const documentOperation = documentOperationEvidence(candidates, locale);
   const preliminaryInput = {
     locale: raw.session.locale ?? "pt-BR",
@@ -647,6 +658,7 @@ async function processPreliminaryUnderstanding(
       kind: document.document_kind ?? null,
       sha256: document.sha256 ?? null,
     })),
+    resolvedDocumentCompany: documentCompany,
     resolvedDocumentOperation: documentOperation,
     documentFacts: facts,
     publicSources: publicResearch.sources.slice(0, 25).map((source) => ({
@@ -1909,6 +1921,12 @@ async function collectPublicResearch(input: {
   const website = publicCandidate(input.candidates, "company.website")
     ?? stringFrom(companyProfile, "website")
     ?? declaredSubject?.website;
+  if (website && isReservedExampleWebsite(website)) {
+    await input.queue.writeStage(input.job, "public_research", "skipped", {
+      code: "reserved_example_identity",
+    });
+    return {status: "skipped", sourceCount: 0, topicCounts: {}, researchRunId: null, costExposureUsd: 0, sources: []};
+  }
   const subject = {
     legalName,
     ...(website && z.url().safeParse(website).success ? {website} : {}),
@@ -1970,6 +1988,13 @@ async function collectPublicResearch(input: {
       publishedAt: source.publishedAt,
     })),
   };
+}
+
+export function isReservedExampleWebsite(value: string): boolean {
+  const parsed = z.url().safeParse(value);
+  if (!parsed.success) return false;
+  const hostname = new URL(parsed.data).hostname.toLowerCase();
+  return hostname === "example" || hostname.endsWith(".example");
 }
 
 /**
@@ -2060,6 +2085,35 @@ type ResolvedDocumentOperation = {
   expansionAmount: string | undefined;
   refinancingAmount: string | undefined;
 };
+
+type ResolvedDocumentCompany = {
+  source: "verified_document_facts";
+  legalName: string | null;
+  displayName: string | null;
+  website: string | null;
+  sector: string | null;
+  subsector: string | null;
+  description: string | null;
+  city: string | null;
+  state: string | null;
+  jurisdiction: string | null;
+};
+
+/** Company identity and business model facts that the extractor has already anchored. */
+function documentCompanyEvidence(candidates: FactCandidate[]): ResolvedDocumentCompany {
+  return {
+    source: "verified_document_facts",
+    legalName: publicCandidate(candidates, "company.legal_name"),
+    displayName: publicCandidate(candidates, "company.display_name"),
+    website: publicCandidate(candidates, "company.website"),
+    sector: publicCandidate(candidates, "company.sector"),
+    subsector: publicCandidate(candidates, "company.subsector"),
+    description: publicCandidate(candidates, "company.description"),
+    city: publicCandidate(candidates, "company.city"),
+    state: publicCandidate(candidates, "company.state"),
+    jurisdiction: publicCandidate(candidates, "company.jurisdiction"),
+  };
+}
 
 /**
  * Compact, deterministic transaction context for the first narrative call.
