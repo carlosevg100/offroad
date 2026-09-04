@@ -2,6 +2,8 @@ import {Building2, CheckCircle2, CircleAlert, Landmark, Target} from "lucide-rea
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 
+import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
+
 import {AdvisorStart, type AdvisorStartCopy, type AdvisorStartRecent} from "@/components/advisor/advisor-start";
 
 // The rotating examples are a fixed-length catalogue: next-intl resolves leaf keys, so the
@@ -77,6 +79,15 @@ export default async function ApplicationHome({params, searchParams}: Props) {
     .neq("status", "cancelled")
     .order("updated_at", {ascending: false})
     .limit(3);
+  const recentProjectIds = (recentSessions ?? []).flatMap((session) => session.capital_project_id ? [session.capital_project_id] : []);
+  const {data: capitalProjects} = recentProjectIds.length > 0
+    ? await supabase.from("capital_projects").select("id, entry_job").eq("organization_id", organization.id).in("id", recentProjectIds)
+    : {data: []};
+  // An absolute stamp rather than "2h ago": relative time needs the current instant,
+  // which a render may not read, and a desk reads a timestamp faster than an interval.
+  const stamp = new Intl.DateTimeFormat(locale, {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
+  const since = (iso: string | null) => (iso ? stamp.format(new Date(iso)) : "");
+  const recentProjectById = new Map((capitalProjects ?? []).map((project) => [project.id, project]));
   const recents: AdvisorStartRecent[] = (recentSessions ?? []).map((session) => ({
     href: session.capital_project_id
       ? `/${locale}/app/projects/${session.capital_project_id}`
@@ -84,8 +95,14 @@ export default async function ApplicationHome({params, searchParams}: Props) {
         ? `/${locale}/app/opportunities/${session.opportunity_id}`
         : `/${locale}/app/new?mode=documents&session=${session.id}`,
     id: session.id,
+    job: (() => {
+      const project = session.capital_project_id ? recentProjectById.get(session.capital_project_id) : null;
+      const parsed = capitalProjectJobSchema.safeParse(project?.entry_job);
+      return parsed.success ? capitalProjectJob(parsed.data).title[locale === "en-US" ? "en" : "pt"] : t("projectInPreparation");
+    })(),
     name: session.project_name || t("untitledProject"),
     state: t(`projectStatus.${session.status === "review_ready" ? "reviewReady" : session.status}`),
+    when: since(session.updated_at),
   }));
 
   const copy: AdvisorStartCopy = {
@@ -97,17 +114,10 @@ export default async function ApplicationHome({params, searchParams}: Props) {
       prompt: t(`advisor.examples.${index}.prompt`),
       role: t(`advisor.examples.${index}.role`),
     })),
-    seeds: {
-      company_debt_view: {label: t("advisor.seeds.company.label"), text: t("advisor.seeds.company.text")},
-      capital_planning: {label: t("advisor.seeds.alternatives.label"), text: t("advisor.seeds.alternatives.text")},
-      review_existing_operation: {label: t("advisor.seeds.review.label"), text: t("advisor.seeds.review.text")},
-      structure_from_documents: {label: t("advisor.seeds.documents.label"), text: t("advisor.seeds.documents.text")},
-    },
     documentsOnly: t("advisor.documentsOnly"),
     attach: t("advisor.attach"),
     remove: t("advisor.remove"),
     send: t("advisor.send"),
-    privacy: t("advisor.privacy"),
     continueLabel: t("advisor.continueLabel"),
     status: {creating: t("advisor.status.creating"), uploading: t("advisor.status.uploading"), starting: t("advisor.status.starting")},
     errors: {

@@ -6,17 +6,12 @@ import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useEffect, useMemo, useRef, useState} from "react";
 
-import type {CapitalProjectJob} from "@offroad/work-plan";
-
 import {beginAdvisorProjectProcessing, startAdvisorProject} from "@/app/[locale]/app/advisor-actions";
 import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
-const seedJobs = ["company_debt_view", "capital_planning", "review_existing_operation", "structure_from_documents"] as const;
-type SeedJob = (typeof seedJobs)[number];
-
 export type AdvisorStartExample = {role: string; prompt: string};
-export type AdvisorStartRecent = {id: string; href: string; name: string; state: string};
+export type AdvisorStartRecent = {id: string; href: string; name: string; job: string; state: string; when: string};
 
 export type AdvisorStartCopy = {
   greetings: {morning: string; afternoon: string; evening: string};
@@ -24,12 +19,10 @@ export type AdvisorStartCopy = {
   prompt: string;
   exampleLabel: string;
   examples: AdvisorStartExample[];
-  seeds: Record<SeedJob, {label: string; text: string}>;
   documentsOnly: string;
   attach: string;
   remove: string;
   send: string;
-  privacy: string;
   continueLabel: string;
   status: {creating: string; uploading: string; starting: string};
   errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; upload: string};
@@ -103,7 +96,6 @@ function useRotatingExample(examples: AdvisorStartExample[], idle: boolean, fall
 export function AdvisorStart({copy, groupId, groupName, locale, organizationId, recents, userFirstName, userId}: Props) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
-  const [entryJobHint, setEntryJobHint] = useState<CapitalProjectJob | null>(null);
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "creating" | "uploading" | "starting">("idle");
@@ -130,7 +122,7 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
     const result = await startAdvisorProject({
       locale,
       prompt: normalizedPrompt,
-      entryJobHint: distinctFiles.length > 0 && !entryJobHint ? "structure_from_documents" : entryJobHint,
+      entryJobHint: distinctFiles.length > 0 ? "structure_from_documents" : null,
       hasAttachments: distinctFiles.length > 0,
       requestId: crypto.randomUUID(),
       groupId: groupId ?? null,
@@ -183,7 +175,9 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
         {groupName ? <span className="advisor-start__project-context">{copy.groupContext.replace("{project}", groupName)}</span> : null}
 
         <header className="advisor-start__head">
-          <Image alt="" className="advisor-start__mark" height={520} priority src="/brand/offroad-symbol.png" width={512} />
+          <span aria-hidden="true" className="advisor-start__mark">
+            <Image alt="" height={520} priority src="/brand/offroad-symbol.png" width={512} />
+          </span>
           <h1>
             <span suppressHydrationWarning>{greetingFor(copy.greetings, userFirstName ?? "")}</span>
             <span className="advisor-start__question">{copy.question}</span>
@@ -246,32 +240,23 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
           </footer>
         </section>
 
-        <p className="advisor-start__privacy">{pending ? statusLabel : copy.privacy}</p>
-
-        <div className="advisor-start__seeds">
-          {seedJobs.map((job) => (
-            <button
-              key={job}
-              onClick={() => {
-                setEntryJobHint(job);
-                setPrompt(copy.seeds[job].text);
-              }}
-              type="button"
-            >{copy.seeds[job].label}</button>
-          ))}
-        </div>
+        {pending ? <p className="advisor-start__status" role="status">{statusLabel}</p> : null}
 
         {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
 
         {recents.length > 0 ? (
           <section className="advisor-start__continue">
-            <header><h2>{copy.continueLabel}</h2></header>
-            {recents.map((recent) => (
-              <Link href={recent.href} key={recent.id}>
-                <span>{recent.name}</span>
-                <small>{recent.state}</small>
-              </Link>
-            ))}
+            <h2>{copy.continueLabel}</h2>
+            <div>
+              {recents.map((recent) => (
+                <Link href={recent.href} key={recent.id}>
+                  <em>{recent.job}</em>
+                  <strong>{recent.name}</strong>
+                  <span><i /> {recent.state}</span>
+                  <time>{recent.when}</time>
+                </Link>
+              ))}
+            </div>
           </section>
         ) : null}
       </div>

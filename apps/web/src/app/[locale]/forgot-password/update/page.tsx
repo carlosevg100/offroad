@@ -16,7 +16,7 @@ export default async function UpdatePasswordPage({params, searchParams}: Props) 
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "Recovery"});
   return (
-    <AuthShell assurance={t("assurance")} body={t("updateContextBody")} eyebrow={t("contextEyebrow")} locale={locale as AppLocale} title={t("updateContextTitle")}>
+    <AuthShell body={t("updateContextBody")} eyebrow={t("contextEyebrow")} locale={locale as AppLocale} title={t("updateContextTitle")}>
       <form action={updatePassword} className="auth-form auth-form--verification">
         <input name="locale" type="hidden" value={locale} />
         <LockKeyhole aria-hidden="true" className="auth-form__icon" size={26} />

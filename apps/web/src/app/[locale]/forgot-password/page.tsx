@@ -17,7 +17,7 @@ export default async function ForgotPasswordPage({params, searchParams}: Props) 
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "Recovery"});
   return (
-    <AuthShell assurance={t("assurance")} body={t("contextBody")} eyebrow={t("contextEyebrow")} locale={locale as AppLocale} title={t("contextTitle")}>
+    <AuthShell body={t("contextBody")} eyebrow={t("contextEyebrow")} locale={locale as AppLocale} title={t("contextTitle")}>
       <Link className="text-link auth-back" href={`/${locale}/login`}><ArrowLeft aria-hidden="true" size={14} /> {t("back")}</Link>
       <form action={requestPasswordCode} className="auth-form">
         <div className="auth-form__heading"><p className="section-kicker">{t("eyebrow")}</p><h2>{t("title")}</h2><p>{t("body")}</p></div>

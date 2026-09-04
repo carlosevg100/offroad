@@ -528,8 +528,8 @@
     "footerRights": "Todos os direitos reservados."
   },
   "Auth": {
-    "title": "As melhores oportunidades raramente estão no caminho óbvio.",
-    "body": "Entre para retomar seus projetos e continuar o trabalho de onde parou.",
+    "title": "A operação certa começa muito antes do term sheet.",
+    "body": "Análise, estrutura e materiais no mesmo projeto, com evidência ligada a cada número.",
     "loginTitle": "Entrar",
     "loginBody": "Use o e-mail da sua organização.",
     "email": "E-mail",
@@ -542,7 +542,6 @@
     "resetComplete": "Senha atualizada. Você já pode entrar.",
     "error": "Não foi possível concluir o acesso. Revise os dados ou tente novamente.",
     "providerMissing": "O ambiente de identidade ainda não está configurado.",
-    "security": "Seus documentos ficam privados. Nada sai daqui sem a sua autorização.",
     "back": "Voltar ao site",
     "errorTitle": "O link não pôde ser confirmado",
     "errorBody": "Ele pode ter expirado ou já ter sido utilizado. Solicite um novo link de acesso."
@@ -550,7 +549,6 @@
   "Signup": {
     "contextTitle": "Estrutura e visibilidade para quem busca capital. Aderência para quem investe.",
     "contextBody": "Analise uma companhia, compare alternativas de dívida, estruture a operação e prepare os materiais. Tudo no mesmo projeto, com a evidência ligada a cada número.",
-    "assurance": "Nada é enviado ao mercado sem a sua autorização, e representar uma companhia é confirmado à parte.",
     "back": "Já tenho uma conta",
     "title": "Crie sua conta",
     "body": "Selecione o ambiente que corresponde à atuação da sua organização.",
@@ -1168,7 +1166,6 @@
       "attach": "Anexar documentos",
       "remove": "Remover documento",
       "send": "Iniciar projeto",
-      "privacy": "Ambiente privado. Nada é compartilhado sem sua autorização.",
       "status": {
         "creating": "Criando o projeto...",
         "uploading": "Recebendo os documentos...",
@@ -1218,24 +1215,6 @@
         "6": {
           "role": "Tesouraria",
           "prompt": "Quero reduzir exposição a CDI e alongar o prazo médio sem aumentar a dívida líquida. O que é possível hoje?"
-        }
-      },
-      "seeds": {
-        "company": {
-          "label": "Entender uma companhia",
-          "text": "Analise a companhia na ótica de dívida: posição financeira, estrutura de capital, capacidade, riscos e o que ainda precisa ser comprovado. Companhia: "
-        },
-        "alternatives": {
-          "label": "Comparar alternativas",
-          "text": "Preciso financiar uma necessidade e quero comparar as alternativas antes de escolher instrumento. Necessidade, valor aproximado e prazo pretendido: "
-        },
-        "review": {
-          "label": "Revisar um term sheet",
-          "text": "Recebi uma proposta e quero testar estrutura, termos, custo total, riscos e as alternativas que deveriam estar na mesa. Contexto: "
-        },
-        "documents": {
-          "label": "Estruturar pelos documentos",
-          "text": "Vou trabalhar a partir dos documentos que tenho. Anexe a pasta e conte o contexto que já conhece: "
         }
       },
       "documentsOnly": "Analise os documentos anexados e me diga o que eles sustentam.",

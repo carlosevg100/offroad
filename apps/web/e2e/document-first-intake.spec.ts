@@ -410,7 +410,6 @@ test.describe("Document-first intake (company journey)", () => {
     await newConversationMenu.getByRole("link", {name: "Nova conversa"}).click();
     await expect(page.locator(".advisor-start__head h1")).toContainText("Como a Offroad pode te ajudar?");
     await expect(page.locator(".advisor-start__project-context")).toContainText(renamedWorkspaceGroupName);
-    await page.locator(".advisor-start__seeds button").filter({hasText: "Comparar alternativas"}).click();
     const request = `Conversa ${runId}: planejar R$ 20 milhões`;
     await page.locator(".advisor-composer--start textarea").fill(request);
     await page.locator(".advisor-composer--start .advisor-composer__send").click();
@@ -436,13 +435,16 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".app-rail__folder").filter({hasText: renamedWorkspaceGroupName})).toHaveCount(0);
   });
 
-  test("honors an explicitly selected private-document workflow", async () => {
+  test("honors the private-document workflow chosen by attaching", async () => {
     await page.goto("/pt-BR/app");
-    await page.locator(".advisor-start__seeds button").filter({hasText: "Estruturar pelos documentos"}).click();
     const request = `Caso privado ${runId}: compreender, conciliar e diagnosticar antes de estruturar`;
     const projectTitle = request.slice(0, 80);
-    await page.locator(".advisor-composer--start textarea").fill(request);
-    await page.locator(".advisor-composer--start .advisor-composer__send").click();
+    const composer = page.locator(".advisor-composer--start");
+    await composer.locator("textarea").fill(request);
+    // Attaching is what selects the private route now; the entry carries no starter buttons.
+    await composer.locator('input[type="file"]').setInputFiles(dataRoomFiles.slice(0, 1));
+    await expect(composer.locator(".advisor-composer__files > span")).toHaveCount(1);
+    await composer.locator(".advisor-composer__send").click();
 
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
     await expect(page.locator(".advisor-project__composer-wrap footer span")).toHaveText("Projeto privado");

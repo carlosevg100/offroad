@@ -528,8 +528,8 @@
     "footerRights": "All rights reserved."
   },
   "Auth": {
-    "title": "The best opportunities are rarely on the obvious path.",
-    "body": "Sign in to reopen your projects and pick the work up where you left it.",
+    "title": "The right transaction starts long before the term sheet.",
+    "body": "Analysis, structure and materials in one project, with evidence linked to every number.",
     "loginTitle": "Sign in",
     "loginBody": "Use your organisation e-mail.",
     "email": "Email",
@@ -542,7 +542,6 @@
     "resetComplete": "Password updated. You can now log in.",
     "error": "We could not complete access. Review the details or try again.",
     "providerMissing": "The identity environment is not configured yet.",
-    "security": "Your documents stay private. Nothing leaves here without your authorisation.",
     "back": "Back to website",
     "errorTitle": "The link could not be confirmed",
     "errorBody": "It may have expired or already been used. Request a new access link."
@@ -550,7 +549,6 @@
   "Signup": {
     "contextTitle": "Structure and visibility for capital seekers. Alignment for investors.",
     "contextBody": "Analyse a company, compare debt alternatives, structure the transaction and prepare the materials. All in one project, with evidence linked to every number.",
-    "assurance": "Nothing reaches the market without your authorisation, and authority to represent a company is confirmed separately.",
     "back": "I already have an account",
     "title": "Create your account",
     "body": "Select the workspace that corresponds to your organization's role.",
@@ -1168,7 +1166,6 @@
       "attach": "Attach documents",
       "remove": "Remove document",
       "send": "Start project",
-      "privacy": "Private workspace. Nothing is shared without your authorization.",
       "status": {
         "creating": "Creating the project...",
         "uploading": "Receiving the documents...",
@@ -1218,24 +1215,6 @@
         "6": {
           "role": "Treasury",
           "prompt": "I want to cut CDI exposure and extend average tenor without raising net debt. What is available today?"
-        }
-      },
-      "seeds": {
-        "company": {
-          "label": "Understand a company",
-          "text": "Analyse the company through a debt lens: financial position, capital structure, capacity, risks, and what still has to be evidenced. Company: "
-        },
-        "alternatives": {
-          "label": "Compare alternatives",
-          "text": "I need to fund a requirement and want to compare the alternatives before choosing an instrument. Requirement, approximate amount and intended tenor: "
-        },
-        "review": {
-          "label": "Review a term sheet",
-          "text": "I received a proposal and want to test the structure, terms, all-in cost, risks and the alternatives that should be on the table. Context: "
-        },
-        "documents": {
-          "label": "Structure from documents",
-          "text": "I will work from the documents I have. Attach the folder and add the context you already know: "
         }
       },
       "documentsOnly": "Analyse the attached documents and tell me what they support.",

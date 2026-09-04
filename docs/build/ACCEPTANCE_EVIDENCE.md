@@ -1,5 +1,16 @@
 # Acceptance Evidence
 
+## Polimento da entrada e correção do menu, 04/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Menu recolhível | ciclo completo em servidor local | recolhe e expande nas duas direções; o controle aparece sobre o símbolo no hover e no foco |
+| Símbolo animado | render em 1180 px com animação pausada | anel a 104 px sobre o fundo que respira; `prefers-reduced-motion` desliga as duas animações |
+| Rota privada | E2E reescrito | escolhida por anexo, que é o caminho real depois da remoção das sugestões |
+| Horário dos cards | regra `react-hooks/purity` | carimbo absoluto no servidor; tempo relativo exigiria ler o instante atual durante o render |
+| CSS morto | varredura após as remoções | regras de privacidade, sugestões e faixa de garantia removidas dos dois arquivos |
+| Gate | `pnpm check` em Node 24 | lint, typecheck, testes e build verdes nos 43 alvos |
+
 ## Nome curto e entrada de acesso reescrita, 04/09/2026
 
 | Evidência | Verificação | Resultado |

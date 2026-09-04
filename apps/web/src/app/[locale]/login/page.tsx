@@ -23,7 +23,6 @@ export default async function LoginPage({params, searchParams}: Props) {
 
   return (
     <AuthShell
-      assurance={t("security")}
       body={t("body")}
       locale={locale as AppLocale}
       title={t("title")}

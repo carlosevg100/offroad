@@ -17,7 +17,7 @@ export default async function VerifyPasswordPage({params, searchParams}: Props) 
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "Recovery"});
   return (
-    <AuthShell assurance={t("assurance")} body={t("verifyContextBody")} eyebrow={t("contextEyebrow")} locale={locale as AppLocale} title={t("verifyContextTitle")}>
+    <AuthShell body={t("verifyContextBody")} eyebrow={t("contextEyebrow")} locale={locale as AppLocale} title={t("verifyContextTitle")}>
       <Link className="text-link auth-back" href={`/${locale}/forgot-password`}><ArrowLeft aria-hidden="true" size={14} /> {t("changeEmail")}</Link>
       <form action={verifyPasswordCode} className="auth-form auth-form--verification">
         <input name="locale" type="hidden" value={locale} />
