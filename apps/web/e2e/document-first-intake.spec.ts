@@ -458,7 +458,8 @@ test.describe("Document-first intake (company journey)", () => {
 
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
     await expect(page.locator(".advisor-project__composer-wrap footer span")).toHaveText("Projeto privado");
-    await expect(page.locator(".advisor-project__context")).toContainText(`Documentos ${dataRoomExpectations.documents}`);
+    const documentsSummary = page.getByText("Documentos", {exact: true}).locator("..");
+    await expect(documentsSummary.locator("small")).toHaveText(String(dataRoomExpectations.documents));
     await expect(page.locator(".advisor-private-work__understanding")).toBeVisible({timeout: 120_000});
     await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
   });
