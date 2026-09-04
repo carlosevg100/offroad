@@ -1,5 +1,17 @@
 # Acceptance Evidence
 
+## Marca nova em site e plataforma, 04/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Origem única | `docs/brand/` + `scripts/generate_brand_assets.py` | dois arquivos governam a identidade inteira; variantes claras trocam RGB e preservam alfa, sem redesenho |
+| Legibilidade do símbolo | tira renderizada em 16, 20, 24, 32, 48 e 64 px | contorno aberto e forma reconhecível como O em todos os tamanhos |
+| Cabeçalho público | servidor local em 1440 px e 375 px | assinatura alinhada com a navegação, sem transbordo em nenhum dos dois |
+| Robustez de layout | seis regras responsivas de `brand-mark` | ativo dimensionado por altura; proporção 27% mais alta não quebra cabeçalho |
+| Higiene de ativos | `git rm` de nove PNGs + varredura de referências | nenhuma referência órfã em código, CSS ou manifest; apenas snapshots históricos citam os nomes antigos |
+| Cache | `?v=4` nos ícones, `?v=6` no social, manifest `#0b0d0f` | usuários existentes recebem os ativos novos em vez do farol em cache |
+| Gate | `pnpm check` em Node 24 | lint, typecheck, testes e build verdes nos 43 alvos |
+
 ## Identidade canônica e decisão ANBIMA, candidate, 02/09/2026
 
 | Evidência | Verificação | Resultado |

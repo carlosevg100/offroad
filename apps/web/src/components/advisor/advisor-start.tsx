@@ -160,7 +160,7 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
         <header>
           {groupName ? <span className="advisor-start__project-context">{copy.groupContext.replace("{project}", groupName)}</span> : null}
           <span className="advisor-start__mark" aria-hidden="true">
-            <Image alt="" height={72} priority src="/brand/offroad-symbol.png" width={72} />
+            <Image alt="" height={73} priority src="/brand/offroad-symbol.png" width={72} />
           </span>
           <p className="advisor-start__greeting">
             {userFirstName ? copy.greetingNamed.replace("{name}", userFirstName) : copy.greeting}

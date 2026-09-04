@@ -4,17 +4,17 @@
   "description": "Offroad brings specialist financial intelligence, market context, and institutional execution capacity to debt capital markets.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#05192a",
-  "theme_color": "#05192a",
+  "background_color": "#0b0d0f",
+  "theme_color": "#0b0d0f",
   "icons": [
     {
-      "src": "/icon-192.png?v=3",
+      "src": "/icon-192.png?v=4",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png?v=3",
+      "src": "/icon-512.png?v=4",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"

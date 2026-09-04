@@ -1872,18 +1872,28 @@ tests are approved.
 - Organization, WebSite, and SoftwareApplication JSON-LD are server-rendered.
 - Robots currently block indexing.
 
-Brand assets:
+Brand assets (mark replaced 4 September 2026; the lighthouse is retired):
 
-- official logo: `apps/web/public/brand/offroad-capital-logo.png`;
-- wordmark: `apps/web/public/brand/offroad-capital-wordmark.png`;
-- symbol: `apps/web/public/brand/offroad-symbol.png`;
+- source art, not served: `docs/brand/offroad-lockup.png` and
+  `docs/brand/offroad-symbol.png`, black artwork on a real alpha channel;
+- generator: `scripts/generate_brand_assets.py` produces every derived asset from
+  those two files. The light variants are a channel swap that preserves alpha, not
+  a redraw, so nothing downstream re-proportions the marks;
+- signature: `apps/web/public/brand/offroad-lockup.png` and
+  `offroad-lockup-inverted.png`, 1600 x 482;
+- symbol: `apps/web/public/brand/offroad-symbol.png` and
+  `offroad-symbol-inverted.png`, 512 x 520;
 - favicon and app icons: `apps/web/public/icon*`, `favicon.ico`,
-  `apple-touch-icon.png`;
+  `apple-touch-icon.png`, the ring in white on the `#0b0d0f` ground with a fifth of
+  the canvas reserved on each side;
 - social preview: `apps/web/public/social-preview.png`;
 - hero media: `apps/web/public/media/offroad-capital-hero-loop-v1.*`.
 
-Do not replace the standalone favicon with the full wordmark; it is not legible
-at browser-tab size.
+Never put the full signature in the favicon; it is not legible at browser-tab size.
+The ring alone holds down to 16 px and the reserved margin is what keeps its counter
+open, so do not tighten `ICON_INSET` to make the mark look bigger. `brand-mark`
+sizes the asset by height, never by width, so a future change to the signature's
+proportion cannot silently overflow a header.
 
 ## 15. Design system and interaction direction
 

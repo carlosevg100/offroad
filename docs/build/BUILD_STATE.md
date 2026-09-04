@@ -1,8 +1,28 @@
 # Build State
 
-Atualizado em: 2026-09-03
-Baseline: `main` após PR #359, commit `90a7153`
+Atualizado em: 2026-09-04
+Baseline: `main` após PR #401, commit `16a3e07`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Marca nova em site e plataforma, 04/09/2026
+
+- O farol foi aposentado. A identidade passa a ser o anel de pincel com a logotipia Didone, nos
+  dois arquivos de origem que o fundador aprovou. Ilustração representativa não sobrevive a
+  tamanho de interface: em 24 px a torre, o facho e as rochas viravam um borrão, que era a causa
+  real de a barra lateral e o favicon parecerem amadores.
+- `scripts/generate_brand_assets.py` foi reescrito e produz tudo a partir de `docs/brand/`. As
+  variantes claras trocam apenas o plano RGB e preservam o canal alfa original, então não existe
+  redesenho, redesenho parcial nem reamostragem de proporção em lugar nenhum da cadeia.
+- Os ícones quadrados levam o anel branco sobre o fundo `#0b0d0f` da própria plataforma, com um
+  quinto da tela reservado de cada lado. Medido de 16 a 64 px: o contorno permanece aberto e a
+  forma continua legível como um O em todos eles. O manifest passou de `#05192a` para `#0b0d0f`.
+- `brand-mark` passou a dimensionar o ativo por altura em vez de largura, nas seis regras
+  responsivas. A assinatura nova é 27% mais alta que a anterior na mesma largura, e com largura
+  fixa ela estouraria os cabeçalhos. Por altura, mudança futura de proporção não quebra layout.
+- Nove PNGs do farol foram removidos. Restam quatro ativos servidos, dois da assinatura e dois do
+  símbolo, mais os ícones e a imagem social regenerados.
+- Verificado no servidor local em 1440 px e em 375 px: cabeçalho público alinhado em ambos, sem
+  transbordo. Gate integral verde. Produção ainda não recebeu esta fatia.
 
 ## Sistema de trabalho agêntico de DCM, schema em produção, 03/09/2026
 
