@@ -2113,3 +2113,21 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Exemplos PT-BR/EN-US alternam no campo apenas enquanto ele está vazio, não há um atalho escolhido
   e o usuário não solicitou redução de movimento. Criação, upload, confidencialidade e vínculo ao
   projeto permanecem inalterados.
+
+## Criação de conta sem lado de mercado, candidate, 04/09/2026
+
+- A criação de conta deixou de perguntar de que lado do mercado a pessoa está. A separação entre
+  "empresas e assessores" e "provedores de capital" pertencia a um produto anterior e não descreve
+  como a plataforma é usada: quem analisa uma companhia, quem estrutura uma operação e quem avalia
+  uma alternativa de crédito fazem o mesmo trabalho analítico. Todo workspace novo nasce do lado
+  que pode começar a trabalhar; o workspace de provedor de capital continua acessível apenas para
+  organizações que já o possuem.
+- O campo de cargo saiu do formulário. Cargo isolado não influenciava nenhuma decisão do produto e
+  competia com o contexto profissional, que é onde a função, a atuação e o objetivo são perguntados
+  com consequência.
+- A tela de verificação passou a nomear o endereço para onde o código foi enviado, lido de um
+  cookie de sessão de cadastro. Não anuncia mais o formato do código no título, porque o próprio
+  campo já o mostra.
+- A declaração de que o usuário está autorizado a representar a organização indicada saiu do
+  rodapé do cadastro. Representação é um gate próprio, verificado no momento da introdução, e
+  afirmá-la na criação da conta dava a ela um peso que ela não tem.

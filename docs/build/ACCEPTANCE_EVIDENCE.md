@@ -1055,3 +1055,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Identidade bilíngue | `apps/web/messages/pt-BR.json` e `en-US.json` | mesmas chaves para saudação, título e quatro exemplos; teste de paridade aprovado | 2026-09-04 |
 | Fluxo preservado | `AdvisorStart` | mudança restrita à hierarquia visual; criação atômica, upload privado, início da leitura e roteamento mantidos | 2026-09-04 |
 | Qualidade local | web typecheck, Vitest, ESLint e Next build com Node 24.19.0 | tipos aprovados; 31 arquivos/182 testes aprovados; lint aprovado; build de 34 páginas aprovado | 2026-09-04 |
+
+## Criação de conta e verificação de e-mail, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Seletor removido do produto | `apps/web/src/app/[locale]/signup/` | componente, dez rótulos, onze chaves de mensagem e vinte e três regras de CSS excluídos; nenhuma referência remanescente a `entry_path`, `originating_role` ou `job_title` no app | 2026-09-04 |
+| Jornada padrão documentada | `apps/web/src/lib/auth/registration.ts` | `defaultRegistrationJourney` substitui a escolha de caminho; `registration.test.ts` cobre metadados sem cargo | 2026-09-04 |
+| Verificação nomeia o destinatário | `signup/verify/page.tsx` + `signup-cookie.ts` | cookie de cadastro alimenta `verifyBodyNamed`; ausência do cookie cai para a cópia genérica sem quebrar a tela | 2026-09-04 |
+| Jornada ponta a ponta | `document-first-intake.spec.ts` | o E2E prova a ausência dos campos removidos e exige o e-mail impresso na tela de verificação | 2026-09-04 |
+| Gate integral | `fnm exec --using=24 pnpm check` | lint, typecheck, testes e build verdes; 43/43 tarefas | 2026-09-04 |

@@ -6,13 +6,15 @@ import {redirect} from "next/navigation";
 import {
   canContinuePendingRegistration,
   initializeRegistrationWorkspace,
-  registrationJourneyForEntryPath,
+  defaultRegistrationJourney,
   registrationSchema,
 } from "@/lib/auth/registration";
 import {createClient} from "@/lib/supabase/server";
+
+import {SIGNUP_EMAIL_COOKIE} from "./signup-cookie";
 import {reportServerFailure} from "@/lib/observability/report";
 
-const emailCookie = "offroad_signup_email";
+const emailCookie = SIGNUP_EMAIL_COOKIE;
 
 const registrationErrorReason: Record<string, string> = {
   email_address_invalid: "email",
@@ -46,15 +48,10 @@ async function rememberSignupEmail(locale: string, email: string) {
 }
 
 export async function startRegistration(formData: FormData) {
-  const journey = registrationJourneyForEntryPath(
-    field(formData, "entry_path"),
-    field(formData, "originating_role"),
-  );
   const parsed = registrationSchema.safeParse({
     locale: field(formData, "locale"),
-    journey: journey ?? "",
+    journey: defaultRegistrationJourney,
     fullName: field(formData, "full_name"),
-    jobTitle: field(formData, "job_title"),
     email: field(formData, "email"),
     password: field(formData, "password"),
     confirmPassword: field(formData, "confirm_password"),
@@ -77,7 +74,6 @@ export async function startRegistration(formData: FormData) {
     options: {
       data: {
         full_name: parsed.data.fullName,
-        job_title: parsed.data.jobTitle,
         locale: parsed.data.locale,
         registration_role: parsed.data.journey,
       },

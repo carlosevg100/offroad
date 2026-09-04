@@ -21,7 +21,6 @@ const account = {
   email: `e2e-${runId}@example.com`,
   password: `Offroad-E2E-${runId}!`,
   fullName: "QA Offroad",
-  jobTitle: "Diretora financeira",
 };
 
 test.describe.configure({mode: "serial"});
@@ -132,17 +131,19 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("signs up with e-mail verification and lands on onboarding", async () => {
     await page.goto("/pt-BR/signup");
-    // Company journey is the default selection.
-    await expect(page.locator('input[name="entry_path"][value="origination"]')).toBeChecked();
-    await expect(page.locator('input[name="originating_role"][value="company"]')).toBeChecked();
+    // Account creation asks for identity and nothing else: no market side, no job title.
+    // Everything that shapes the work is asked by the professional onboarding below.
+    await expect(page.locator('input[name="entry_path"]')).toHaveCount(0);
+    await expect(page.locator('input[name="job_title"]')).toHaveCount(0);
     await page.locator('input[name="full_name"]').fill(account.fullName);
-    await page.locator('input[name="job_title"]').fill(account.jobTitle);
     await page.locator('input[name="email"]').fill(account.email);
     await page.locator('input[name="password"]').fill(account.password);
     await page.locator('input[name="confirm_password"]').fill(account.password);
     await page.locator("form.auth-form--registration button[type=submit]").click();
 
     await expect(page).toHaveURL(/\/pt-BR\/signup\/verify/);
+    // The verification screen names the address the code went to, read from the pending cookie.
+    await expect(page.locator(".auth-form__heading p")).toContainText(account.email);
     const code = await waitForOneTimeCode(account.email);
     await page.locator('input[name="token"]').fill(code);
     await page.locator("form.auth-form--verification button[type=submit]").click();
