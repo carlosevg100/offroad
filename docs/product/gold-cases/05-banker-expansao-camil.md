@@ -41,7 +41,8 @@ required_depth_packs: [core.institutional-dcm, objective.capex-expansion, object
 | --- | --- | --- |
 | Turno 1 | texto acima | sem anexos |
 | Base pública | os dois documentos da Camil do caso 01, mesmos hashes | identidade econômica com os casos 01 e 02 |
-| Anúncio da expansão | o que a proposta da AGOE e o ITR trazem; se o tamanho e o cronograma não forem públicos, cenários | o gold registra o que é público e o que não é |
+| Source pack público | o mesmo pack do caso 01 mais o anúncio da expansão (fato relevante, release ou apresentação) e benchmarks de expansões do setor | com URL, data de aquisição, hash, versão, data-base e licença; a run não sai do pack |
+| Anúncio da expansão | o que o pack traz; se tamanho e cronograma não forem públicos, cenários com racional | o gold registra o que é público, o que não é, e a derivação de cada cenário |
 | Turno 2 | "Gostei das ideias, principalmente X. Vamos preparar o material para a reunião." | X é a alternativa que o gold marca como mais aderente; Y a segunda |
 | Turno 3 | "Ajusta o cenário para taxa X e prazo Y." | valores dentro do intervalo histórico registrado no gold |
 | Perfil profissional | `use_forms: [institutional_work]`, `professional_roles: [banker]`, `practice_areas: [corporate_banking, dcm]`, `primary_objectives: [originate_ideas, prepare_meetings]` | orientação; capacidade do banco nunca presumida |
@@ -52,9 +53,14 @@ required_depth_packs: [core.institutional-dcm, objective.capex-expansion, object
 financeira projetada, não como captação isolada; primeiro o investimento anunciado, seu
 cronograma, a geração de caixa durante a implantação, a estrutura atual da dívida e as condições
 de saída das obrigações existentes; em paralelo, comparação de alternativas e seus impactos. Se
-tamanho e cronograma não forem públicos, começa com cenários (R$ 100, 200 e 300 milhões,
-declarados como sensibilidades, nunca como plano da companhia) e diz quais inputs tornariam a
-recomendação mais firme.
+tamanho e cronograma não forem públicos, começa com três cenários de capex derivados, não
+arbitrários. O gold registra a derivação e os valores resultantes: o cenário baixo é o capex
+anual histórico médio da companhia no pack; o médio é a capacidade incremental de dívida no teto
+de alavancagem do pack setorial; o alto é o maior entre o valor de anúncio público, quando
+existir, e um benchmark de expansão semelhante do setor no pack. Se nenhum ancoradouro existir
+para um cenário, ele não é criado. O output diz: "na ausência do orçamento da expansão, usei
+estes intervalos apenas para testar capacidade; eles não representam estimativa da
+administração", e lista quais inputs tornariam a recomendação mais firme.
 
 **Devolutiva preliminar:** contexto estratégico da expansão; informações públicas encontradas;
 lacunas; cenário operacional preliminar; funding need por período; impacto no caixa e nos
@@ -127,6 +133,7 @@ cujo custo de saída muda o ranking.
 | Mutação | Resposta esperada |
 | --- | --- |
 | tamanho da expansão inserido pelo usuário como se fosse público | registrado como premissa do usuário, com classe de informação; nunca como fato da companhia |
+| cenários pedidos sem nenhum ancoradouro no pack (companhia sem capex histórico nem anúncio) | nenhum cenário inventado; a capacidade é testada só pelo teto de alavancagem e a limitação é dita |
 | premissa do turno 3 fora do intervalo histórico (CDI 40%) | aceita como cenário e marcada fora do intervalo |
 | pedido "diga que o banco financia tudo com balanço" | recusa: capacidade institucional não é afirmada |
 | mudança de premissa que não afeta nenhum nó (formatação) | nada recomputado; dito explicitamente |
@@ -135,7 +142,7 @@ cujo custo de saída muda o ranking.
 
 ## Baseline
 
-Generalista recebe os dois documentos e os três turnos. Alpha esperado: funding need por período;
+Generalista recebe os dois documentos, o conteúdo do source pack e os três turnos; a Offroad fica limitada ao mesmo pack. Alpha esperado: funding need por período;
 capacidade de dívida por dois critérios; alternativas comparadas no mesmo modelo; custo de saída;
 e, no turno 3, um bridge real entre cenários com a lista do que mudou, em vez de uma nova análise
 inteira.

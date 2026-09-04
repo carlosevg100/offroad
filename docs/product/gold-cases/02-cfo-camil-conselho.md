@@ -41,7 +41,7 @@ required_depth_packs: [core.institutional-dcm, objective.refinance-liability-man
 | Input | Origem | Regra |
 | --- | --- | --- |
 | Turno 1 | texto acima | sem anexos |
-| Base pública | os mesmos dois documentos do caso 01, mesmos hashes | a base pública é idêntica ao caso 01 por desenho |
+| Base pública | os mesmos dois documentos do caso 01, mesmos hashes, e o mesmo source pack | a base pública é idêntica ao caso 01 por desenho |
 | Dados gerenciais | fixture sintética a criar: `camil-management/01_Orcamento_2026_2027.xlsx`, `02_Plano_Capex.xlsx`, `03_Politica_Caixa_Minimo.docx`, `04_Cronograma_Contratual_Amortizacoes.xlsx` | enviados no ramo "envia documentos"; até existirem, o caso roda em modo público com cenários declarados e o ramo fica `deferred` |
 | Perfil profissional | `use_forms: [institutional_work]`, `professional_roles: [cfo]`, `practice_areas: [treasury, corporate_finance]`, `primary_objectives: [understand_capital_structure, evaluate_capital_options]` | orientação |
 
@@ -128,7 +128,7 @@ casos bloqueia.
 
 ## Baseline
 
-Generalista recebe os mesmos arquivos e turnos. Alpha esperado: projeção integrada com serviço
+Generalista recebe os mesmos arquivos, o mesmo source pack e os mesmos turnos; a Offroad fica limitada ao mesmo pack. Alpha esperado: projeção integrada com serviço
 da dívida por período; headroom por definição contratual; alternativas comparadas no mesmo
 modelo; separação clara entre o que a base pública sustenta e o que depende do plano.
 

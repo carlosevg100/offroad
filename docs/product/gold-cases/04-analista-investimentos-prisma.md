@@ -44,6 +44,7 @@ required_depth_packs: [core.institutional-dcm, instrument.br-capital-markets, an
 | `02_Pedido_Simulado_Debentures_2026.docx` | fixture sintética | classe de informação: declaração do originador; nunca fato até conciliar |
 | Mandato da Prisma | fixture a criar em `packages/testing-fixtures/assets/prisma/mandate.json`, no formato `Mandate` de `packages/fund-mandate` (ticket, prazo, setores, instrumentos, garantias, geografias, teto de alavancagem, DSCR mínimo, ativo), com `Sourced` e data | chega no ramo "mandato cadastrado"; sem ele, o caso corre pelo ramo "mandato ausente" |
 | Perfil profissional | `use_forms: [institutional_work]`, `professional_roles: [credit_analyst]`, `practice_areas: [private_credit, credit]`, `primary_objectives: [analyze_investments]` | orientação; nunca substitui o mandato |
+| Source pack público | comparáveis de debêntures do setor (ANBIMA Data, snapshot datado) e cadastro CVM da companhia | com URL, data de aquisição, hash, versão, data-base e licença; a run não sai do pack |
 
 ## Comportamento esperado
 
@@ -73,9 +74,9 @@ observação ou não priorizar. A decisão fica com o investidor.
 | fonte de pagamento e geração de caixa | bloqueante | covered pelo release |
 | alavancagem, cobertura, liquidez | bloqueante | covered com definição explícita |
 | estrutura proposta: prazo, amortização, indexador, garantias, covenants | bloqueante | covered pela proposta |
-| aderência ao mandato, por critério | bloqueante | covered se mandato cadastrado; not_applicable com pedido se ausente |
+| aderência ao mandato, por critério | bloqueante | covered se mandato cadastrado; insufficient_evidence com pedido se ausente. Nunca not_applicable: o fit importa, só falta o mandato |
 | retorno versus risco | alta | covered com sensibilidades |
-| comparáveis de mercado | média | covered se o registro de fontes tem; senão insufficient_evidence |
+| comparáveis de mercado | média | covered se o source pack tem; senão insufficient_evidence |
 | downside | alta | covered |
 | informação faltante para comitê | alta | listada com materialidade |
 
@@ -107,8 +108,8 @@ que a companhia precisa fornecer antes de qualquer comitê.
 - Raiz: turno 1 com os dois documentos.
 - Mandato cadastrado e vigente: fit calculado critério a critério, com fonte e data de cada
   critério e divergências entre declarado e observado mostradas.
-- Mandato ausente: a análise de crédito sai inteira; o fit fica `not_applicable` com pedido
-  explícito; nenhum critério é presumido a partir do perfil do analista.
+- Mandato ausente: a análise de crédito sai inteira; o fit fica `insufficient_evidence` com
+  pedido explícito; nenhum critério é presumido a partir do perfil do analista.
 - Envia documentos: o analista envia critérios em texto livre → registrados como mandato
   `self_declared` com data; fit recalculado.
 - Pede justificativa: "por que a alavancagem da proposta é menor que a sua?" → duas definições
@@ -131,7 +132,7 @@ que a companhia precisa fornecer antes de qualquer comitê.
 
 ## Baseline
 
-Generalista recebe os dois arquivos, os critérios do mandato em texto e o turno. Alpha esperado:
+Generalista recebe os dois arquivos, o conteúdo do source pack, os critérios do mandato em texto e o turno; a Offroad fica limitada ao mesmo pack. Alpha esperado:
 tabela declaração versus prova; número não conciliado encontrado; duas definições de alavancagem;
 fit critério a critério com fonte; separação entre falta de fit e falta de informação.
 

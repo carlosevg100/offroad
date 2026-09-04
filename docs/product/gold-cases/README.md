@@ -13,7 +13,8 @@ gerou.
 
 | Bloco | O que fica escrito antes de rodar |
 | --- | --- |
-| Inputs | mensagens de cada turno, documentos com caminho e SHA-256, fontes públicas permitidas com data-base, perfil profissional e contexto de execução (regime de evidência, autoridade, jurisdição, moeda, prazo) |
+| Inputs | mensagens de cada turno, documentos com caminho e SHA-256, perfil profissional e contexto de execução (regime de evidência, autoridade, jurisdição, moeda, prazo) |
+| Source pack | toda fonte pública que o caso usa, adquirida antes da execução e guardada com URL, data de aquisição, SHA-256, versão, data-base e licença ou política de uso. Nenhum caso roda contra a internet viva: a pesquisa pública lê só o pack. Uma mudança no site da companhia não pode alterar o teste sem alterar o commit |
 | Coverage | as chaves de cobertura que a decisão exige, cada uma com materialidade e o estado esperado ao final (`covered`, `not_examined`, `insufficient_evidence`, `not_applicable`) |
 | Cálculos | os números que precisam sair do motor determinístico, com fórmula canônica, inputs por id e tolerância |
 | Achados | fatos, riscos e tensões que a Offroad precisa encontrar, cada um com a âncora onde está a prova |
@@ -21,6 +22,22 @@ gerou.
 | Adversariais | mutações dos inputs que precisam ser detectadas ou recusadas, e a resposta esperada para cada uma |
 | Baseline | o protocolo de execução do melhor modelo generalista com os mesmos arquivos e as mesmas perguntas |
 | Rubrica | as perguntas de revisão, quem revisa, o que bloqueia e o que só limita |
+
+### 1.1 O que cada estado de cobertura significa
+
+Os estados têm significado fixo, e trocar um pelo outro é erro de especificação:
+
+- `not_examined`: o sistema não olhou. Só é aceitável quando a dimensão foi conscientemente
+  deixada de fora e o output diz isso.
+- `insufficient_evidence`: o sistema olhou e o que existe não basta para afirmar. É o estado
+  correto quando as notas não trazem a informação, quando o dado é gerencial e não está na base
+  pública, ou quando um mandato não está cadastrado.
+- `deferred`: a dimensão importa, a análise pode seguir sem ela nesta etapa, e a limitação está
+  explicada no output.
+- `covered`: evidência, procedimento, executor, data, versão e impacto na decisão registrados.
+- `conflicting`: duas fontes discordam e o downstream dependente está bloqueado.
+- `not_applicable`: a dimensão não importa economicamente para esta decisão. Nunca é o estado de
+  algo que importa e apenas não está disponível.
 
 ## 2. Cada caso é uma árvore, não um prompt
 
@@ -65,7 +82,12 @@ Em termos verificáveis:
    usado antes de ser perguntado.
 3. Uma pergunta só existe quando a resposta muda a análise, e vem com o motivo.
 4. Um valor desconhecido que não bloqueia vira cenário declarado como sensibilidade, nunca como
-   plano da companhia.
+   plano da companhia. Cenários não são arbitrários: cada intervalo tem racional registrado no
+   gold, derivado de pelo menos um destes ancoradouros: proporção do capex histórico; percentual
+   da receita ou do EBITDA; capacidade incremental de dívida; anúncio público; benchmark de
+   operações semelhantes; intervalo informado pelo usuário. O output diz, com estas palavras ou
+   equivalentes: "na ausência do orçamento, usei estes intervalos apenas para testar capacidade;
+   eles não representam estimativa da administração".
 5. Nenhuma pergunta é feita duas vezes; nenhuma inferência material fica sem mostrar sua base.
 
 ## 4. As perguntas que a revisão responde
@@ -94,11 +116,24 @@ nos itens marcados com asterisco bloqueia; os demais limitam.
 
 ## 5. Protocolo de baseline
 
-O melhor modelo generalista disponível recebe os mesmos arquivos e os mesmos turnos, sem
-ferramentas além de leitura de arquivo, e sem instrução que revele a rubrica. Sua saída é
-guardada ao lado da execução da Offroad, com data e versão do modelo. O alpha é medido nas doze
-dimensões do Atlas §16; conta como alpha só o que um revisor consegue apontar com referência.
-Texto mais bonito ou mais longo não conta.
+O teste é justo só quando os dois lados partem da mesma base informacional:
+
+```text
+mesmo pedido
++ mesmo conjunto congelado de fontes (o source pack)
++ mesmos documentos
++ mesmo histórico conversacional
++ mesma janela de tempo
+```
+
+A Offroad usa seus motores, workflows e objetos, e também fica limitada ao source pack: nenhuma
+pesquisa pública fora dele durante a execução do caso. O melhor modelo generalista disponível
+recebe o conteúdo equivalente das fontes adquiridas, os mesmos documentos e os mesmos turnos, sem
+ferramentas além de leitura de arquivo e sem instrução que revele a rubrica. Assim o alpha medido
+vem de conciliação, completude, modelagem, julgamento, continuidade e qualidade dos outputs, e
+não de acesso a fontes. A saída do generalista é guardada ao lado da execução da Offroad, com
+data e versão do modelo. O alpha é medido nas doze dimensões do Atlas §16; conta como alpha só o
+que um revisor consegue apontar com referência. Texto mais bonito ou mais longo não conta.
 
 ## 6. Rubrica de revisão
 

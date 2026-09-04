@@ -42,9 +42,28 @@ required_depth_packs: [core.institutional-dcm, objective.refinance-liability-man
 | Turno 1 | texto acima | sem anexos |
 | `packages/testing-fixtures/assets/camil/01_ITR_1T26_31mai2026.pdf` | fixture pública | SHA-256 registrado no manifesto antes da primeira execução |
 | `packages/testing-fixtures/assets/camil/02_Proposta_Administracao_AGOE_2026.pdf` | fixture pública | idem |
-| Fontes públicas | CVM Dados Abertos, B3, ANBIMA Data | só as do registro de fontes; data-base congelada em 4 de setembro de 2026 |
+| Source pack público | tabela abaixo | adquirido antes da primeira execução; a run lê só o pack, nunca a internet viva |
 | Perfil profissional | `use_forms: [institutional_work]`, `professional_roles: [banker]`, `practice_areas: [investment_banking, dcm]`, `primary_objectives: [prepare_meetings]` | orientação, nunca fato |
 | Excluído | `03_Pedido_Simulado_CRA_2026.docx` | pertence a outro caso; sua presença é uma mutação adversarial |
+
+### Source pack público
+
+O trabalho em background que o caso exige (release e apresentação de resultados, eventos,
+guidance, condições de mercado e comparáveis) só é honesto se essas fontes existirem congeladas.
+Cada item entra em `packages/testing-fixtures/assets/camil/source-pack.json` com URL, data de
+aquisição, SHA-256, versão, data-base e licença ou política de uso, antes da primeira execução.
+
+| Item | Origem | Data-base | Uso no caso |
+| --- | --- | --- | --- |
+| release de resultados 1T26 | RI da companhia | 1T26 | desempenho recente, guidance |
+| apresentação de resultados 1T26 | RI da companhia | 1T26 | outlook, capex, eventos |
+| fatos relevantes e comunicados do período | CVM | 1T26 até 4 de setembro de 2026 | eventos corporativos |
+| cadastro e documentos periódicos | CVM Dados Abertos | vigente em 4 de setembro de 2026 | identidade, grupo, perímetro |
+| emissões e termos recentes do setor | ANBIMA Data, uso manual conforme a decisão vigente | snapshot de 4 de setembro de 2026 | comparáveis |
+| curvas de referência (CDI, IPCA, NTN-B) | fonte registrada em `market-curves` | 4 de setembro de 2026 | custo e sensibilidades |
+
+Item que não estiver no pack não pode ser citado. Item cuja licença não permita retenção fica
+fora do pack e a dimensão correspondente fica `insufficient_evidence`.
 
 ## Comportamento esperado por turno
 
@@ -80,11 +99,11 @@ preservados por referência, nunca copiados à mão.
 | dívida por instrumento (saldo, custo, indexador, vencimento, garantia) | bloqueante | covered |
 | cronograma de vencimentos e maturity wall | bloqueante | covered |
 | liquidez, caixa e cobertura | alta | covered |
-| IPCA capitalizado versus pago em caixa | alta | covered ou not_examined justificado |
+| IPCA capitalizado versus pago em caixa | alta | covered ou insufficient_evidence, se as notas não permitirem distinguir |
 | covenants e headroom | alta | covered se as notas trazem; senão insufficient_evidence com pedido |
 | custo de saída e prepayment das obrigações atuais | alta | covered ou insufficient_evidence |
 | condições de mercado e comparáveis | média | covered |
-| plano gerencial e orçamento | média | not_applicable no regime público, dito explicitamente |
+| plano gerencial e orçamento | média | deferred, com a limitação explicada; insufficient_evidence se a conclusão depender dele. Nunca not_applicable: importa para a decisão, só não está na base pública |
 
 ## Cálculos determinísticos
 
@@ -137,7 +156,7 @@ registra o valor aqui para não vazar para o prompt; vive em `expected/` do fixt
 
 ## Baseline
 
-Generalista recebe o ITR, a proposta da AGOE e os dois turnos. Alpha esperado: dívida por
+Generalista recebe o ITR, a proposta da AGOE, o conteúdo do source pack e os dois turnos, na mesma janela de tempo; a Offroad fica limitada ao mesmo pack. Alpha esperado: dívida por
 instrumento conciliada com as notas; maturity wall por ano; distinção IPCA capitalizado versus
 pago; alternativas com custo de saída; pontos que derrubam a tese.
 
