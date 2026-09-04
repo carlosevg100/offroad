@@ -26,6 +26,8 @@ import {processOriginationThesisJob} from "./origination-thesis";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
+import {describeJobFailure} from "./job-failure";
+import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
 
 /**
@@ -134,14 +136,26 @@ async function main(): Promise<void> {
   const effectiveOfficialResearchProviderFactory = sourcePack ? undefined : officialResearchProviderFactory;
   const effectiveContentAcquirer = sourcePack ? createSourcePackAcquirer(sourcePack.pack, sourcePack.read) : firecrawlContentAcquirer;
   if (sourcePack) log("research.frozen", {caseId: sourcePack.pack.caseId, entries: sourcePack.pack.entries.length});
-  const newGateway = (job: ClaimedJob) => {
+  // A job whose project is bound to a frozen pack reads that pack and nothing else, on this same
+  // worker; everyone else keeps the live set above.
+  const researchFor = createResearchRouter({
+    live: {
+      providers: effectiveResearchProviders,
+      officialResearchProviderFactory: effectiveOfficialResearchProviderFactory,
+      contentAcquirer: effectiveContentAcquirer,
+      frozenCaseId: sourcePack?.pack.caseId ?? null,
+    },
+    packsDir: config.SOURCE_PACKS_DIR,
+    contentAcquirerFromPack: (loaded) => createSourcePackAcquirer(loaded.pack, loaded.read),
+  });
+  const newGateway = (job: ClaimedJob, research: Awaited<ReturnType<typeof researchFor>>) => {
     const calls: GatewayCallLog[] = [];
     const requestedBudget = "model_budget" in job.payload ? job.payload.model_budget : undefined;
     const configuredMax = Math.min(
       config.MODEL_MAX_COST_USD_PER_JOB,
       requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB,
     );
-    const maximumDiscoveryCostPerQuery = effectiveResearchProviders.reduce(
+    const maximumDiscoveryCostPerQuery = research.providers.reduce(
       (total, provider) => total + (provider.maxCostUsdPerCall ?? 0),
       0,
     );
@@ -149,7 +163,7 @@ async function main(): Promise<void> {
       ? job.payload.analysis_scope === "origination_thesis" ? 12 : 8
       : job.kind === "case_analysis" || job.kind === "preliminary_analysis" ? 5 : 0;
     const requestedResearchReserve = researchQueryCount * maximumDiscoveryCostPerQuery;
-    const researchReserveUsd = effectiveResearchProviders.length > 0
+    const researchReserveUsd = research.providers.length > 0
       ? Math.min(requestedResearchReserve, Math.max(0, configuredMax - 0.01))
       : 0;
     const gateway = createModelGateway({
@@ -253,7 +267,19 @@ async function main(): Promise<void> {
       log("job.heartbeat_failed", {job: job?.job_id, message: error.message}),
     );
 
-    const gatewayRun = newGateway(job);
+    let research: Awaited<ReturnType<typeof researchFor>>;
+    try {
+      research = await researchFor(job);
+    } catch (error) {
+      // A bound project without its pack must not run live. Fail the job with a cause a reviewer
+      // can read; the binding or the image is what needs fixing.
+      const failure = describeJobFailure(error, {code: "source_pack_unavailable", stage: "claim", retryable: false});
+      await queue.fail(job, failure).catch((reportError: Error) => log("job.unreported_failure", {job: job.job_id, message: reportError.message}));
+      stopHeartbeat();
+      continue;
+    }
+    if (research.sourcePackId) log("research.frozen_job", {job: job.job_id, sourcePackId: research.sourcePackId, caseId: research.frozenCaseId});
+    const gatewayRun = newGateway(job, research);
     const prepareAgentPlan = job.kind === "capital_project_analysis"
       || job.kind === "case_analysis"
       || job.kind === "preliminary_analysis"
@@ -265,8 +291,8 @@ async function main(): Promise<void> {
           queue,
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
-          researchProviders: gatewayRun.researchReserveUsd > 0 ? effectiveResearchProviders : [],
-          ...(effectiveOfficialResearchProviderFactory ? {officialResearchProviderFactory: effectiveOfficialResearchProviderFactory} : {}),
+          researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
+          ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),
           securityEvidence: {
             providerPolicyEnforced: config.ENFORCE_PROVIDER_DATA_POLICY,
             externalToolsAllowlisted: true,
@@ -279,8 +305,8 @@ async function main(): Promise<void> {
               queue,
               gateway: gatewayRun.gateway,
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
-              researchProviders: gatewayRun.researchReserveUsd > 0 ? effectiveResearchProviders : [],
-              ...(effectiveOfficialResearchProviderFactory ? {officialResearchProviderFactory: effectiveOfficialResearchProviderFactory} : {}),
+              researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
+              ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),
               log,
             })
           : job.payload.analysis_scope === "origination_thesis"
@@ -288,17 +314,17 @@ async function main(): Promise<void> {
               queue,
               gateway: gatewayRun.gateway,
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
-              researchProviders: gatewayRun.researchReserveUsd > 0 ? effectiveResearchProviders : [],
-              ...(effectiveOfficialResearchProviderFactory ? {officialResearchProviderFactory: effectiveOfficialResearchProviderFactory} : {}),
-              ...(effectiveContentAcquirer ? {contentAcquirer: effectiveContentAcquirer} : {}),
+              researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
+              ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),
+              ...(research.contentAcquirer ? {contentAcquirer: research.contentAcquirer} : {}),
               log,
             })
             : processCapitalPlanningJob(job, {
                 queue,
                 gateway: gatewayRun.gateway,
                 lineage: () => gatewayRun.calls.map((call) => ({...call})),
-                researchProviders: gatewayRun.researchReserveUsd > 0 ? effectiveResearchProviders : [],
-                ...(effectiveOfficialResearchProviderFactory ? {officialResearchProviderFactory: effectiveOfficialResearchProviderFactory} : {}),
+                researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
+                ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),
                 log,
               })
       : job.kind === "agent_operation_brief"

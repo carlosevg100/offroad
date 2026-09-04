@@ -2311,6 +2311,20 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   milhões em CPR (3 anos) dentro da captação de 2,05 bilhões do trimestre. Continua rascunho até a
   revisão linha a linha do fundador.
 
+## Pesquisa congelada por projeto no worker de produção, candidate, 04/09/2026
+
+- `private.gold_case_bindings` (migração `20260904231340`): um projeto pode ser vinculado a um source
+  pack pelo operador (nunca pelo tenant; a tabela fica fora da Data API). `worker_claim_job` passa
+  a devolver `source_pack_id` quando a sessão do job pertence a um projeto vinculado.
+- Worker: `research-routing.ts` decide por job. Job vinculado lê o pack e nada mais (provedor,
+  aquisição e fontes oficiais vêm do pack); job sem vínculo segue com a pesquisa viva. Pack ausente
+  ou diretório não configurado falha o job com causa `source_pack_unavailable`, nunca cai para a
+  internet. O mesmo worker de produção serve os dois modos, sem segundo serviço.
+- Imagem: o pack do Caso 01 viaja em `/app/source-packs/gc01-analista-ib-camil`;
+  `SOURCE_PACKS_DIR` na task definition; o deploy passa a observar
+  `packages/testing-fixtures/assets/**`.
+- Isso é o que faltava para o passo 5 do Caso 01: o fundador cria o projeto no produto, o operador
+  vincula o projeto ao pack, e cada turno roda no produto real contra as fontes congeladas.
 ## Baseline justo dos casos gold, candidate, 04/09/2026
 
 - `packages/evals/src/gold-baseline.ts` e `scripts/run-gold-baseline.ts`: montam a base de

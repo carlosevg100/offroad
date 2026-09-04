@@ -122,6 +122,9 @@ WORKDIR /app
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /out/dist ./dist
 COPY --from=build /out/package.json ./package.json
+# Frozen source packs of the gold cases travel with the image: a job bound to a pack reads it
+# from here and never reaches the internet.
+COPY packages/testing-fixtures/assets/camil/source-pack ./source-packs/gc01-analista-ib-camil
 COPY apps/document-worker/docker-entrypoint.sh /usr/local/bin/document-worker-entrypoint
 RUN chmod +x /usr/local/bin/document-worker-entrypoint
 

@@ -86,6 +86,8 @@ const schema = z.object({
   /** `frozen` makes every public lookup read the source pack at SOURCE_PACK_PATH; nothing reaches the network. */
   PUBLIC_RESEARCH_MODE: z.enum(["live", "frozen"]).default("live"),
   SOURCE_PACK_PATH: z.string().min(1).optional(),
+  /** Directory holding one frozen source pack per id (`<dir>/<source_pack_id>/source-pack.json`); a job bound to a pack reads it from here. */
+  SOURCE_PACKS_DIR: z.string().min(1).optional(),
   FIRECRAWL_ZERO_DATA_RETENTION: z.string().default("false").transform((value) => value === "true"),
   OFFROAD_RESEARCH_USER_AGENT: z.string().min(10).max(300)
     .default("Offroad Capital research@offroad.capital"),

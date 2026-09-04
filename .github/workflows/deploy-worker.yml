@@ -39,6 +39,7 @@ on:
       - "packages/data-room/**"
       - "packages/financial-core/**"
       - "packages/matching-core/**"
+      - "packages/testing-fixtures/assets/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/deploy-worker.yml"
   workflow_dispatch:

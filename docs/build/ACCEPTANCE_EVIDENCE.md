@@ -1144,6 +1144,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Fontes por documento | `source-pack.json` | cada entrada com URL do ENET/CVM, ANBIMA ou BCB, `acquiredAt`, `asOfDate`, `version`, `licence` | 2026-09-04 |
 | Gabarito v0.2 | `gc01-gabarito-rascunho.md` §11 | termos por série, dois covenants (4,0x e 3,5x), captações nomeadas, duas dívidas líquidas, curva e CDI da data-base; zero travessões | 2026-09-04 |
 
+## Pesquisa congelada por projeto, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Migração aplicada | `20260904231340_gold_case_bindings` | `plpgsql_check` sem achados no staging; aplicada em produção | 2026-09-04 |
+| Contrato SQL | `supabase/tests/gold_case_bindings.sql` | projeto iniciado pelo RPC real, turno enfileirado, vínculo inserido como operador, claim traz `source_pack_id`; tenants não leem a tabela; ensaio em produção com rollback: `gold_case_bindings_passed` | 2026-09-04 |
+| Roteamento por job | `research-routing.test.ts` | job sem vínculo segue vivo; job vinculado lê só o pack (carregado uma vez); pack ausente falha em vez de ir à internet; worker 137 testes | 2026-09-04 |
 ## Baseline justo, runner e workflow, 04/09/2026
 
 | Evidência | Comando/artefato | Resultado | Data |
