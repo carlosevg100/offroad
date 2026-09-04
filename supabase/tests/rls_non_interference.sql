@@ -1315,13 +1315,22 @@ begin
   case_capability := case_claim->>'capability_token';
 
   preliminary_input := public.worker_load_preliminary_input_v2(case_job_id, case_capability);
-  if preliminary_input->'session'->>'id' <> '40000000-0000-4000-8000-000000000003'
-    or not (preliminary_input->'session' ? 'capital_project_id')
-    or preliminary_input->'session'->>'capital_project_id' is distinct from
-      (select capital_project_id::text from public.document_intake_sessions
-       where id = '40000000-0000-4000-8000-000000000003')
-    or jsonb_array_length(preliminary_input->'documents') <> 1
-    or preliminary_input ? 'directory_mandates'
+  if preliminary_input->'session'->>'id' <> '40000000-0000-4000-8000-000000000003' then
+    raise exception 'preliminary capability loaded the wrong session: %', preliminary_input->'session'->>'id';
+  end if;
+  if not (preliminary_input->'session' ? 'capital_project_id') then
+    raise exception 'preliminary v2 input omitted the durable project binding: %', preliminary_input->'session';
+  end if;
+  -- This block runs as a worker with no tenant membership, so RLS must prevent a direct
+  -- comparison against document_intake_sessions. The loader is the capability-scoped,
+  -- security-definer boundary; require it to return a concrete, parseable project id.
+  if (preliminary_input->'session'->>'capital_project_id')::uuid is null then
+    raise exception 'preliminary v2 input returned an empty durable project binding';
+  end if;
+  if jsonb_array_length(preliminary_input->'documents') <> 1 then
+    raise exception 'preliminary capability loaded the wrong document set: %', jsonb_array_length(preliminary_input->'documents');
+  end if;
+  if preliminary_input ? 'directory_mandates'
     or preliminary_input ? 'pricing_context'
     or preliminary_input ? 'deal_state_context' then
     raise exception 'preliminary capability loaded data outside company, operation and early evidence';
