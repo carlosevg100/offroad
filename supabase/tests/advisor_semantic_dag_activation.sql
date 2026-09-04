@@ -464,7 +464,7 @@ begin
     task_run_id, capital_job.organization_id,
     (capital_job.payload ->> 'capital_project_id')::uuid,
     (capital_job.payload ->> 'capital_project_plan_id')::uuid,
-    plan_task.id, capital_job.id, 1, 'running', capital_job.payload -> 'trigger_event',
+    plan_task.id, capital_job.id, 2, 'running', capital_job.payload -> 'trigger_event',
     '{}'::jsonb, repeat('1', 64), 'origination-thesis', '2026.09.01-v1', now()
   );
 
