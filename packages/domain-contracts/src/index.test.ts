@@ -42,6 +42,33 @@ describe("domain contracts", () => {
     expect(originationSeniorReadoutSchema.safeParse(shallow).success).toBe(false);
   });
 
+  it("preserves detailed debt economics and complete traceability", () => {
+    const sourceUrls = Array.from({length: 20}, (_, index) => `https://example.com/debt/${index}`);
+    const capitalStructure = originationSeniorReadoutSchema.shape.capitalStructure.parse({
+      overview: "x".repeat(80),
+      liquidity: "x".repeat(80),
+      debtStack: [{
+        instrument: "Debenture",
+        amount: "R$ 650 milhões",
+        maturity: "2030",
+        cost: "CDI + spread",
+        indexer: "IPCA capitalizado no principal até o vencimento, acrescido de spread anual e sujeito às condições de hedge descritas no instrumento.",
+        currency: `BRL. ${"Descrição de exposição cambial e hedge. ".repeat(4)}`,
+        amortization: "Bullet",
+        guarantees: "Quirografária",
+        covenants: "Alavancagem financeira",
+        prepayment: "Sujeito a prêmio contratual",
+        sourceUrls: sourceUrls.slice(0, 10),
+      }],
+      keyUnknowns: ["Saldo atualizado por instrumento ainda não reconciliado."],
+      sourceUrls,
+    });
+
+    expect(capitalStructure.sourceUrls).toHaveLength(20);
+    expect(capitalStructure.debtStack[0]?.indexer).toContain("capitalizado no principal");
+    expect(capitalStructure.debtStack[0]?.currency?.length).toBeGreaterThan(80);
+  });
+
   it("keeps a public debt diagnostic from claiming calculated capacity", () => {
     const base = {
       executiveRead: "x".repeat(80), companySnapshot: "x".repeat(60),
