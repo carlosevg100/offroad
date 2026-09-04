@@ -218,6 +218,7 @@ export type QueueClient = {
     activation?: unknown,
   ): Promise<unknown>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
+  recordIntentEnvelope(job: AgentOperationBriefJob, input: {envelope: unknown; classifier: unknown; model: string; costUsd: number}): Promise<void>;
   completeAdvisorSpecializedJob(job: CapitalProjectAnalysisJob, input: {
     completionMessageId: string;
     artifactId: string;
@@ -631,6 +632,17 @@ export function createQueueClient(
         p_response: response,
         p_proposal: proposal ?? null,
         p_activation: activation ?? null,
+      });
+    },
+
+    async recordIntentEnvelope(job, input) {
+      await call("worker_record_intent_envelope", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_envelope: input.envelope,
+        p_classifier: input.classifier,
+        p_model: input.model,
+        p_cost_usd: input.costUsd,
       });
     },
 

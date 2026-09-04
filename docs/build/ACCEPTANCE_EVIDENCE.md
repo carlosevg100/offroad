@@ -1118,3 +1118,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Schema e resolução | `methodology.test.ts` | 6 testes: defaults sem threshold, só definições da ontologia, sobrescrita entrada a entrada, capacidades fora, checks derivados, correções com pessoa | 2026-09-04 |
 | Worker | typecheck, lint, 134 testes | bloco aceito no contexto dos quatro executores e repassado ao modelo | 2026-09-04 |
 | Contrato de falha em produção | `20260904210542_job_failure_contract` aplicada às 21:0x UTC, depois do deploy do worker de `924da6c` (20:58) | `failures_without_cause` continua em 12, todas anteriores; 0 novas desde o deploy | 2026-09-04 |
+
+## Roteador em sombra e gabarito do caso 01, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Migração aplicada | `20260904213420_intent_envelopes_shadow` | tabela com RLS e FORCE RLS, escrita só pelo worker; ensaio do teste SQL em produção com rollback: `intent_envelopes_shadow_passed` | 2026-09-04 |
+| Classificador | `apps/document-worker/src/intent-shadow.ts` | envelope validado por `intentEnvelopeSchema`; campos de sistema nunca vêm do modelo; custo por chamada medido pelo gateway | 2026-09-04 |
+| Caminho da resposta intocado | `agent-operation-brief.test.ts` | testes determinísticos continuam provando zero chamadas de modelo com `shadowRouting: false`; worker 134 testes verdes | 2026-09-04 |
+| Gold do roteador | `intent-gold.test.ts` | 16 turnos; todos os nove trabalhos e cinco responsabilidades cobertos; abstenção, pontual, atualização e intenção composta presentes | 2026-09-04 |
+| Gabarito do caso 01 | `gc01-gabarito-rascunho.md` | dívida por instrumento, movimentação, cronograma, caixa, derivativos, dívida líquida contratual, covenant pro forma, resultado do trimestre e sete fatos que mudam a leitura, com página e nota; rascunho para revisão | 2026-09-04 |

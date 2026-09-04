@@ -108,6 +108,7 @@ function fakes(overrides: Partial<PipelineDependencies> = {}) {
       loadCapitalProjectContext: async () => ({}),
       recordAgentResponse: async () => ({}),
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       completeAdvisorSpecializedJob: async (_job, input) => {
         calls.completed.push(input.result);
       },

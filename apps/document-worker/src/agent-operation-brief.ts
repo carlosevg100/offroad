@@ -19,6 +19,7 @@ import {z} from "zod";
 import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
+import {shadowIntentEnvelope} from "./intent-shadow";
 
 const contextSchema = z.object({
   session_id: z.uuid(),
@@ -85,6 +86,8 @@ export type AgentOperationBriefDependencies = {
   queue: QueueClient;
   gateway: ModelGateway;
   log: (event: string, detail?: Record<string, unknown>) => void;
+  /** Shadow routing records an Intent Envelope per turn for measurement. Off only in tests. */
+  shadowRouting?: boolean;
 };
 
 const SYSTEM = `You are the Offroad Agent inside one persistent private-debt advisory project.
@@ -166,6 +169,41 @@ export async function processAgentOperationBriefJob(
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));
     const route = routeWorkspaceRequest({message: context.message, surface: "case_workspace"});
+    // Shadow routing: the envelope is recorded for measurement and never consulted here. A
+    // failure in the classifier is logged and the turn proceeds exactly as before.
+    if (dependencies.shadowRouting !== false) {
+      try {
+        const shadow = await shadowIntentEnvelope({
+          gateway,
+          context: {
+            locale: context.locale,
+            message: context.message,
+            recentMessages: context.recent_messages.map(({role, content}) => ({role, content})),
+            organizationId: job.organization_id,
+            projectId: context.project?.id ?? null,
+            entryJob: context.project?.entryJob ?? null,
+            accessBasis: context.project?.accessBasis ?? null,
+            documentIds: context.documents.map((document) => document.id),
+            professionalContext: context.professional_context
+              ? {
+                  useForms: context.professional_context.useForms,
+                  professionalRoles: context.professional_context.professionalRoles,
+                  practiceAreas: context.professional_context.practiceAreas,
+                  primaryObjectives: context.professional_context.primaryObjectives,
+                }
+              : null,
+          },
+        });
+        await queue.recordIntentEnvelope(job, {
+          envelope: shadow.envelope,
+          classifier: {abstain: shadow.output.abstain, abstainReason: shadow.output.abstainReason, firstQuestion: shadow.output.firstQuestion},
+          model: shadow.model,
+          costUsd: shadow.costUsd,
+        });
+      } catch (shadowError) {
+        log("agent_operation_brief.shadow_routing_failed", {job: job.job_id, message: shadowError instanceof Error ? shadowError.message.slice(0, 200) : "unknown"});
+      }
+    }
     const conversationText = context.recent_messages
       .filter((message) => message.role === "user")
       .map((message) => message.content)

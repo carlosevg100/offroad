@@ -3931,6 +3931,74 @@ export type Database = {
           },
         ]
       }
+      intent_envelopes: {
+        Row: {
+          capital_project_id: string | null
+          classifier: Json
+          cost_usd: number
+          created_at: string
+          envelope: Json
+          id: string
+          message_id: string
+          model: string
+          organization_id: string
+          processing_job_id: string
+        }
+        Insert: {
+          capital_project_id?: string | null
+          classifier?: Json
+          cost_usd?: number
+          created_at?: string
+          envelope: Json
+          id?: string
+          message_id: string
+          model: string
+          organization_id: string
+          processing_job_id: string
+        }
+        Update: {
+          capital_project_id?: string | null
+          classifier?: Json
+          cost_usd?: number
+          created_at?: string
+          envelope?: Json
+          id?: string
+          message_id?: string
+          model?: string
+          organization_id?: string
+          processing_job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intent_envelopes_organization_id_capital_project_id_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "intent_envelopes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intent_envelopes_organization_id_message_id_fkey"
+            columns: ["organization_id", "message_id"]
+            isOneToOne: true
+            referencedRelation: "agent_messages"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "intent_envelopes_organization_id_processing_job_id_fkey"
+            columns: ["organization_id", "processing_job_id"]
+            isOneToOne: false
+            referencedRelation: "processing_jobs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       mandate_note_embeddings: {
         Row: {
           citation: Json
@@ -8197,6 +8265,17 @@ export type Database = {
       worker_record_intake_request_ladders: {
         Args: { p_capability_token: string; p_events: Json; p_job_id: string }
         Returns: Json
+      }
+      worker_record_intent_envelope: {
+        Args: {
+          p_capability_token: string
+          p_classifier: Json
+          p_cost_usd: number
+          p_envelope: Json
+          p_job_id: string
+          p_model: string
+        }
+        Returns: string
       }
       worker_record_operating_control_snapshot_v1: {
         Args: {
