@@ -54,7 +54,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0, calls: modelCalls}),
     } as unknown as ModelGateway;
 
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(result.status).toBe("succeeded");
     expect(modelCalls).toBe(0);
     expect(activation).toMatchObject({
@@ -95,7 +95,7 @@ describe("agent operation brief worker", () => {
       complete: async () => { throw new Error("deterministic activation must not call a model"); },
       spent: () => ({costUsd: 0, calls: 0}),
     } as unknown as ModelGateway;
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(result.status).toBe("succeeded");
     expect(activation).toMatchObject({
       job: "capital_planning", company: {name: "Camil"},
@@ -144,6 +144,7 @@ describe("agent operation brief worker", () => {
       },
       complete: async (_job: unknown, result: unknown) => { completed = result as Record<string, unknown>; },
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
@@ -154,7 +155,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0, calls: modelCalls}),
     } as unknown as ModelGateway;
 
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(result.status).toBe("succeeded");
     expect(modelCalls).toBe(0);
     expect(recordedActivation).toMatchObject({job: "company_debt_view", company: {name: "Camil"}});
@@ -200,6 +201,7 @@ describe("agent operation brief worker", () => {
       },
       complete: async () => {},
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
@@ -213,7 +215,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0.05, calls: 1}),
     } as unknown as ModelGateway;
 
-    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(JSON.parse(modelInput)).toMatchObject({
       locale: "en-US",
       project: {name: "Projeto Cedro"},
@@ -263,6 +265,7 @@ describe("agent operation brief worker", () => {
       },
       complete: async () => {},
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
@@ -273,7 +276,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0, calls: modelCalls}),
     } as unknown as ModelGateway;
 
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(result.status).toBe("succeeded");
     expect(modelCalls).toBe(0);
     expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "CVC"}});
@@ -319,7 +322,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0, calls: 0}),
     } as unknown as ModelGateway;
 
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(result.status).toBe("succeeded");
     expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "Camil"}});
     const meetingContext = (recordedActivation?.brief as {meetingContext: string}).meetingContext;
@@ -373,7 +376,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0, calls: modelCalls}),
     } as unknown as ModelGateway;
 
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(result.status).toBe("succeeded");
     expect(modelCalls).toBe(0);
     expect(recordedActivation).toBeUndefined();
@@ -436,6 +439,7 @@ describe("agent operation brief worker", () => {
       },
       complete: async () => {},
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
@@ -446,7 +450,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0, calls: modelCalls}),
     } as unknown as ModelGateway;
 
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(result.status).toBe("succeeded");
     expect(modelCalls).toBe(0);
     expect(recordedResponse).toMatchObject({state: "asking"});
@@ -477,6 +481,7 @@ describe("agent operation brief worker", () => {
       },
       complete: async (_job: unknown, result: unknown) => { completed = result as Record<string, unknown>; },
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
@@ -497,7 +502,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0.12, calls: 1}),
     } as unknown as ModelGateway;
 
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(result.status).toBe("succeeded");
     expect(recordedProposal?.target).toBe("operation_brief");
     expect(recordedProposal?.evidence).toEqual([{kind: "user_statement", id: job.payload.message_id}]);
@@ -526,6 +531,7 @@ describe("agent operation brief worker", () => {
       },
       complete: async () => {},
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
@@ -546,7 +552,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0.12, calls: 1}),
     } as unknown as ModelGateway;
 
-    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(recordedResponse?.state).toBe("asking");
   });
 
@@ -574,6 +580,7 @@ describe("agent operation brief worker", () => {
       },
       complete: async (_job: unknown, result: unknown) => { completed = result as Record<string, unknown>; },
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
@@ -597,7 +604,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0.12, calls: 1}),
     } as unknown as ModelGateway;
 
-    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     expect(modelInput).toContain('"intent":"authorize_external"');
     expect(recordedResponse).toMatchObject({state: "idle"});
     expect(completed?.request_route).toMatchObject({intent: "authorize_external", effect: "external"});
@@ -666,6 +673,7 @@ describe("agent operation brief worker", () => {
       recordAgentResponse: async () => ({}),
       complete: async () => {},
       recordAgentFailure: async () => {},
+      recordIntentEnvelope: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
     const gateway = {
@@ -689,7 +697,7 @@ describe("agent operation brief worker", () => {
       spent: () => ({costUsd: 0.08, calls}),
     } as unknown as ModelGateway;
 
-    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}});
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
     const parsedInput = JSON.parse(modelInput) as Record<string, unknown>;
 
     expect(result.status).toBe("succeeded");

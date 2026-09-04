@@ -2255,6 +2255,25 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   entre execuções e o scorecard de benchmark com omissões materiais e falsos alertas.
 - O Atlas recebe a §17.10 com as sete exigências de 4 de setembro e a escada de autonomia.
 
+## Roteador por intenção em sombra, candidate, 04/09/2026
+
+- Toda mensagem do advisor passa também por um classificador barato (`route_intent`, Sonnet 5
+  em esforço baixo, sombra no GPT-5.6 Terra) que escreve um Intent Envelope v1 completo: núcleo de
+  roteamento e campos inferíveis vindos do modelo; regime de evidência, autoridade, organização,
+  projeto e documentos carimbados pelo sistema depois da resposta. O envelope vai para
+  `intent_envelopes`, gravado só pelo worker via `worker_record_intent_envelope`, que recusa
+  envelope cujos campos de sistema não estejam marcados como `system`.
+- Nada lê essa tabela para decidir. O roteador de produção continua o mesmo; uma falha do
+  classificador é registrada e o turno segue como antes. Os testes determinísticos do brief rodam
+  com `shadowRouting: false` para continuar provando zero chamadas de modelo no caminho da resposta.
+- `packages/evals/src/intent-gold.ts`: dezesseis turnos gold dos cinco casos, cobrindo os nove
+  trabalhos primários, cinco responsabilidades, profundidade pontual, atualização, intenção
+  composta, mudança de objetivo e abstenção. É o conjunto contra o qual o envelope será medido
+  antes de rotear qualquer coisa.
+- `docs/product/gold-cases/gc01-gabarito-rascunho.md`: primeira versão do gabarito econômico do
+  caso 01, extraída por leitura direta do ITR de 31/05/2026 com âncora por página e nota, marcada
+  como rascunho até a revisão do fundador. Inclui o achado de maior materialidade: alavancagem
+  pro forma de 4,72x contra covenant de 4,0x, com medição anual em fevereiro de 2027.
 ## Source pack e pesquisa congelada, candidate, 04/09/2026
 
 - `packages/public-research/src/source-pack.ts`: manifesto de fontes públicas de um caso (id,

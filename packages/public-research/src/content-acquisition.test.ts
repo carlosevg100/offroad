@@ -49,3 +49,21 @@ describe("public content acquisition", () => {
     expect(result.content).toBe("# Resultado trimestral");
   });
 });
+
+describe("sniffContentType", () => {
+  it("trusts the file signature over a generic declared type", async () => {
+    const {sniffContentType} = await import("./content-acquisition");
+    const pdf = new TextEncoder().encode("%PDF-1.7 rest");
+    const zip = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]);
+    expect(sniffContentType("text/html; charset=utf-8", pdf)).toBe("application/pdf");
+    expect(sniffContentType("application/octet-stream", zip)).toBe("application/zip");
+  });
+
+  it("keeps a specific declared type and keeps text that is really text", async () => {
+    const {sniffContentType} = await import("./content-acquisition");
+    const html = new TextEncoder().encode("<!doctype html><html></html>");
+    expect(sniffContentType("text/html", html)).toBe("text/html");
+    expect(sniffContentType("text/csv", new TextEncoder().encode("%PDF-1.7"))).toBe("text/csv");
+    expect(sniffContentType("application/pdf", html)).toBe("application/pdf");
+  });
+});
