@@ -748,15 +748,19 @@ export async function processCaseAnalysisJob(
 ): Promise<CaseAnalysisOutcome> {
   const log = dependencies.log ?? (() => {});
   let publicResearchCostExposureUsd = 0;
+  let failurePhase = "initialize";
   const stageName = job.kind === "preliminary_analysis"
     ? "preliminary_understanding"
     : "case_analysis";
   await dependencies.queue.writeStage(job, stageName, "started");
   try {
     if (job.kind === "preliminary_analysis") {
+      failurePhase = "load_preliminary_input";
       const raw = preliminaryCaseInputSchema.parse(await dependencies.queue.loadPreliminaryInput(job));
+      failurePhase = "preliminary_understanding";
       return await processPreliminaryUnderstanding(job, raw, dependencies);
     }
+    failurePhase = "load_case_input";
     const raw = rawCaseInputSchema.parse(await dependencies.queue.loadCaseInput(job));
     const executionPlan = caseAnalysisExecutionPlan(raw.deal_workflow);
     const useShadow = raw._execution.mode === "shadow";
@@ -822,6 +826,7 @@ export async function processCaseAnalysisJob(
     const requestedStructureChanges = structureRequestedChangesFrom(raw.deal_state_context);
     const informationAnswers = informationAnswersFrom(raw.answers);
     const caseReviewFeedback = informationAnswers.case_review_feedback;
+    failurePhase = "execute_case_engine";
     const result = await executeCaseEngine({
       runId: job.processing_run_id,
       caseId: job.intake_session_id,
@@ -1038,6 +1043,7 @@ export async function processCaseAnalysisJob(
       caseEngine: caseEngineVersion,
       retrieval: privateRetrievalLineage,
     });
+    failurePhase = "record_agent_assessment";
     if (dependencies.queue.recordAgentAssessment) {
       const projectId = raw.session.capital_project_id;
       const assessedAt = (dependencies.now?.() ?? new Date()).toISOString();
@@ -1092,6 +1098,7 @@ export async function processCaseAnalysisJob(
         decision: structureDecision,
       }));
     }
+    failurePhase = "compose_case_snapshot";
     const economicFingerprint = fingerprintJson({economics: economic, versions, caseEngine: caseEngineVersion});
     const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
     const currentLineage = dependencies.lineage();
@@ -1115,6 +1122,7 @@ export async function processCaseAnalysisJob(
       executionPlan,
       retrieval: publicRetrievalLineage,
     };
+    failurePhase = "persist_deal_state";
     const dealStateObjectIds = raw._execution.mode === "primary"
       ? await persistDealStateObjects({
           queue: dependencies.queue,
@@ -1176,10 +1184,13 @@ export async function processCaseAnalysisJob(
         candidate: result.report,
       });
     }
+    failurePhase = "record_controlled_execution";
     await dependencies.queue.recordControlledExecution(job, result.report, manifest, comparison);
+    failurePhase = "record_case_snapshot";
     const manifestId = raw._execution.mode === "primary"
       ? await dependencies.queue.recordCaseSnapshot(job, manifest, stateWithManifest)
       : undefined;
+    failurePhase = "record_operating_control";
     const operatingControl = raw._execution.mode === "primary"
       ? await dependencies.queue.recordOperatingControlSnapshot(job, {
           scopeId: caseAnalysisCapabilityScope,
@@ -1208,6 +1219,7 @@ export async function processCaseAnalysisJob(
           }),
         })
       : undefined;
+    failurePhase = "publish_success_stage";
     await dependencies.queue.writeStage(job, "case_analysis", "succeeded", {
       reportFingerprint: result.report.reportFingerprint,
       manifestFingerprint: manifest.manifestFingerprint,
@@ -1224,6 +1236,7 @@ export async function processCaseAnalysisJob(
       operatingControlAllowed: operatingControl?.allowed ?? false,
       operatingControlBlockers: operatingControl?.blockers ?? ["not_evaluated_for_non_primary_execution"],
     });
+    failurePhase = "complete_job";
     await dependencies.queue.complete(job, {
       ...(manifestId ? {manifest_id: manifestId} : {}),
       ...(operatingControl ? {operating_control: operatingControl} : {}),
@@ -1251,6 +1264,7 @@ export async function processCaseAnalysisJob(
     await dependencies.queue.fail(job, {
       reason: "case_analysis_failed",
       code: errorCode(error),
+      failure_phase: failurePhase,
       ...(validation ? {validation} : {}),
       spend: spendIncludingResearch(dependencies.gateway.spent(), publicResearchCostExposureUsd),
       model_lineage: dependencies.lineage(),
@@ -2457,6 +2471,10 @@ function artifactKind(kind: Material["kind"]): "teaser" | "credit_memo" | "term_
 function errorCode(error: unknown): string {
   if (error && typeof error === "object" && "code" in error && typeof error.code === "string") {
     return error.code.slice(0, 100);
+  }
+  if (error instanceof Error) {
+    const rpcCode = /failed:\s*([a-z][a-z0-9_]{2,99})/i.exec(error.message)?.[1];
+    if (rpcCode) return rpcCode.toLowerCase();
   }
   return error instanceof z.ZodError ? "invalid_case_input" : "case_analysis_failed";
 }
