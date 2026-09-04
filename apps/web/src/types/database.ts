@@ -5519,51 +5519,42 @@ export type Database = {
       }
       professional_context_profiles: {
         Row: {
-          affiliation_kind: string | null
-          context_notes: string | null
           created_at: string
           disclosure_status: string
           institution_name: string | null
           last_confirmed_at: string | null
-          operating_models: string[]
           organization_id: string
+          practice_areas: string[]
           primary_objectives: string[]
-          product_families: string[]
-          professional_role: string | null
-          team_name: string | null
+          professional_roles: string[]
           updated_at: string
+          use_forms: string[]
           user_id: string
         }
         Insert: {
-          affiliation_kind?: string | null
-          context_notes?: string | null
           created_at?: string
           disclosure_status?: string
           institution_name?: string | null
           last_confirmed_at?: string | null
-          operating_models?: string[]
           organization_id: string
+          practice_areas?: string[]
           primary_objectives?: string[]
-          product_families?: string[]
-          professional_role?: string | null
-          team_name?: string | null
+          professional_roles?: string[]
           updated_at?: string
+          use_forms?: string[]
           user_id: string
         }
         Update: {
-          affiliation_kind?: string | null
-          context_notes?: string | null
           created_at?: string
           disclosure_status?: string
           institution_name?: string | null
           last_confirmed_at?: string | null
-          operating_models?: string[]
           organization_id?: string
+          practice_areas?: string[]
           primary_objectives?: string[]
-          product_families?: string[]
-          professional_role?: string | null
-          team_name?: string | null
+          professional_roles?: string[]
           updated_at?: string
+          use_forms?: string[]
           user_id?: string
         }
         Relationships: [
@@ -7531,33 +7522,15 @@ export type Database = {
         }
         Returns: undefined
       }
-      save_professional_capability_context_before_personal_institutio: {
+      save_professional_capability_context_v2: {
         Args: {
-          p_affiliation_kind?: string
-          p_capability_notes?: string
           p_institution_name?: string
-          p_operating_models?: string[]
           p_organization_id: string
+          p_practice_areas?: string[]
           p_primary_objectives?: string[]
-          p_product_families?: string[]
-          p_professional_role?: string
+          p_professional_roles?: string[]
           p_skip?: boolean
-          p_team_name?: string
-        }
-        Returns: Json
-      }
-      save_professional_capability_context_v1: {
-        Args: {
-          p_affiliation_kind?: string
-          p_capability_notes?: string
-          p_institution_name?: string
-          p_operating_models?: string[]
-          p_organization_id: string
-          p_primary_objectives?: string[]
-          p_product_families?: string[]
-          p_professional_role?: string
-          p_skip?: boolean
-          p_team_name?: string
+          p_use_forms?: string[]
         }
         Returns: Json
       }

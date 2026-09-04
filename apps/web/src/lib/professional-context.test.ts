@@ -1,56 +1,69 @@
 import {describe, expect, it} from "vitest";
 
-import {professionalContextFormSchema, professionalContextStatus} from "./professional-context";
+import {
+  normalizeProfessionalContext,
+  professionalContextFormSchema,
+  professionalContextStatus,
+} from "./professional-context";
 
-describe("professional capability context", () => {
-  it("accepts a complete institutional profile", () => {
+const empty = {useForms: [], professionalRoles: [], practiceAreas: [], primaryObjectives: []};
+
+describe("professional context", () => {
+  it("keeps every role and area a person holds instead of forcing one", () => {
     const input = professionalContextFormSchema.parse({
-      affiliationKind: "bank",
-      professionalRole: "dcm_banker",
+      ...empty,
+      useForms: ["institutional_work", "independent_practice"],
+      professionalRoles: ["banker", "financial_advisor"],
+      practiceAreas: ["dcm", "corporate_banking", "structured_finance"],
+      primaryObjectives: ["prepare_meetings", "originate_ideas"],
       institutionName: "Banco Exemplo",
-      teamName: "DCM",
-      operatingModels: ["balance_sheet_lending", "structuring", "distribution"],
-      primaryObjectives: ["prepare_meetings", "originate_ideas", "structure_transactions"],
-      productFamilies: ["bilateral_credit", "capital_markets"],
-      capabilityNotes: "Atuação local e offshore.",
     });
+    expect(input.professionalRoles).toEqual(["banker", "financial_advisor"]);
+    expect(input.practiceAreas).toHaveLength(3);
     expect(professionalContextStatus(input)).toBe("complete");
   });
 
-  it("keeps incomplete answers useful instead of rejecting them", () => {
+  it("distinguishes the functions that change the work instead of collapsing them", () => {
     const input = professionalContextFormSchema.parse({
-      professionalRole: "advisor",
-      operatingModels: [],
-      primaryObjectives: ["structure_transactions"],
-      productFamilies: [],
+      ...empty,
+      useForms: ["institutional_work"],
+      professionalRoles: ["credit_analyst", "risk_underwriting"],
+      practiceAreas: ["credit", "underwriting", "risk"],
+      primaryObjectives: ["analyze_investments"],
     });
+    expect(input.professionalRoles).toContain("credit_analyst");
+    expect(input.professionalRoles).toContain("risk_underwriting");
+  });
+
+  it("keeps incomplete answers useful instead of rejecting them", () => {
+    const input = professionalContextFormSchema.parse({...empty, professionalRoles: ["cfo"]});
     expect(professionalContextStatus(input)).toBe("partial");
   });
 
-  it("preserves credit, risk and execution functions instead of collapsing them into analyst", () => {
-    for (const professionalRole of [
-      "credit_analyst",
-      "risk_underwriter",
-      "investment_committee",
-      "legal_structuring",
-      "syndicate_distribution",
-    ] as const) {
-      const input = professionalContextFormSchema.parse({
-        professionalRole,
-        operatingModels: ["investing"],
-        primaryObjectives: ["analyze_investments"],
-        productFamilies: [],
-      });
-      expect(input.professionalRole).toBe(professionalRole);
-    }
+  it("records an explicit skip so the workspace does not ask again", () => {
+    expect(professionalContextStatus(professionalContextFormSchema.parse(empty))).toBe("skipped");
   });
 
-  it("records an explicit skip so the chat does not nag the user", () => {
+  it("drops an organization name nobody said they work at", () => {
     const input = professionalContextFormSchema.parse({
-      operatingModels: [],
-      primaryObjectives: [],
-      productFamilies: [],
+      ...empty,
+      useForms: ["independent_practice"],
+      institutionName: "Banco Exemplo",
     });
-    expect(professionalContextStatus(input)).toBe("skipped");
+    expect(normalizeProfessionalContext(input).institutionName).toBeUndefined();
+  });
+
+  it("keeps the organization name when the person works at one", () => {
+    const input = professionalContextFormSchema.parse({
+      ...empty,
+      useForms: ["institutional_work"],
+      institutionName: "Banco Exemplo",
+    });
+    expect(normalizeProfessionalContext(input).institutionName).toBe("Banco Exemplo");
+  });
+
+  it("rejects a value outside the published vocabulary", () => {
+    const parsed = professionalContextFormSchema.safeParse({...empty, professionalRoles: ["chief_vibes_officer"]});
+    expect(parsed.success).toBe(false);
   });
 });

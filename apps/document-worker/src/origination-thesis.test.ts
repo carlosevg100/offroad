@@ -78,14 +78,11 @@ describe("origination thesis vertical", () => {
           representation_status: "not_claimed",
         },
         professional_context: {
-          affiliationKind: "bank",
-          professionalRole: "dcm_banker",
-          teamName: "DCM",
+          useForms: ["institutional_work"],
+          professionalRoles: ["banker", "originator"],
+          practiceAreas: ["dcm", "origination", "syndicate_distribution"],
+          primaryObjectives: ["originate_ideas", "prepare_meetings"],
           institutionName: "Banco Farol",
-          operatingModels: ["structuring", "distribution"],
-          productFamilies: ["bilateral_credit", "capital_markets"],
-          primaryObjectives: ["prepare_meetings", "originate_ideas"],
-          contextNotes: null,
           disclosureStatus: "complete",
           lastConfirmedAt: "2026-09-01T11:00:00.000Z",
         },
@@ -184,13 +181,13 @@ describe("origination thesis vertical", () => {
         if (!textInput || textInput.type !== "text") throw new Error("expected text model input");
         const modelInput = JSON.parse(textInput.text) as {
           allowedMaterialNumericTokens?: string[];
-          professionalContext?: {professionalRole?: string; institutionName?: string};
+          professionalContext?: {professionalRoles?: string[]; institutionName?: string};
           journeyBlueprint?: {id?: string};
           collaborativeAdvisoryPolicy?: {alternativeUniverse?: string; professionalContextUse?: string};
         };
         expect(modelInput.allowedMaterialNumericTokens).toContain("r$1,0");
         expect(modelInput.allowedMaterialNumericTokens).not.toContain("24meses");
-        expect(modelInput.professionalContext).toMatchObject({professionalRole: "dcm_banker", institutionName: "Banco Farol"});
+        expect(modelInput.professionalContext).toMatchObject({professionalRoles: ["banker", "originator"], institutionName: "Banco Farol"});
         expect(modelInput.journeyBlueprint?.id).toBe("origination_thesis");
         expect(modelInput.collaborativeAdvisoryPolicy).toMatchObject({
           alternativeUniverse: "company_first_and_unconstrained",

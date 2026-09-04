@@ -102,16 +102,13 @@ export async function saveProfessionalContextAction(formData: FormData) {
   const parsed = parseProfessionalContextForm(skip ? new FormData() : formData);
   if (!parsed.success) redirect(`/${locale}/onboarding?error=validation`);
 
-  const {error} = await context.supabase.rpc("save_professional_capability_context_v1", {
+  const {error} = await context.supabase.rpc("save_professional_capability_context_v2", {
     p_organization_id: context.organizationId,
-    p_affiliation_kind: parsed.data.affiliationKind,
-    p_professional_role: parsed.data.professionalRole,
-    p_team_name: parsed.data.teamName,
+    p_use_forms: parsed.data.useForms,
+    p_professional_roles: parsed.data.professionalRoles,
+    p_practice_areas: parsed.data.practiceAreas,
     p_primary_objectives: parsed.data.primaryObjectives,
     p_institution_name: parsed.data.institutionName,
-    p_operating_models: parsed.data.operatingModels,
-    p_product_families: parsed.data.productFamilies,
-    p_capability_notes: parsed.data.capabilityNotes,
     p_skip: skip,
   });
   if (error) {

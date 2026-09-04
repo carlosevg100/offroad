@@ -5,11 +5,14 @@ import type {Database} from "@/types/database";
 export const registrationJourneys = ["company", "originator", "capital_provider"] as const;
 export type RegistrationJourney = (typeof registrationJourneys)[number];
 
-export function registrationJourneyForEntryPath(entryPath: string, originatingRole: string): RegistrationJourney | null {
-  if (entryPath === "capital_provider") return "capital_provider";
-  if (entryPath !== "origination") return null;
-  return originatingRole === "originator" ? "originator" : "company";
-}
+/**
+ * Account creation no longer asks which side of the market someone is on. That split
+ * belonged to an earlier product and did not describe how the platform is used; the
+ * professional onboarding asks the questions that actually shape the work. Every new
+ * workspace starts on the borrower side, which is the one that can begin work, and the
+ * capital-provider workspace stays reachable only for organizations that already have it.
+ */
+export const defaultRegistrationJourney: RegistrationJourney = "company";
 
 export const passwordSchema = z.string().min(8).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[\p{P}\p{S}]/u);
 
@@ -31,7 +34,6 @@ export const registrationSchema = z.object({
   locale: z.enum(["pt-BR", "en-US"]),
   journey: z.enum(registrationJourneys),
   fullName: z.string().trim().min(2).max(160),
-  jobTitle: z.string().trim().min(2).max(120),
   email: z.email().trim().toLowerCase().max(254),
   password: passwordSchema,
   confirmPassword: z.string(),
@@ -51,7 +53,6 @@ export async function initializeRegistrationWorkspace(supabase: NonNullable<Supa
   const parsed = z.object({
     registration_role: z.enum(registrationJourneys),
     full_name: z.string().trim().min(2).max(160),
-    job_title: z.string().trim().max(120).optional().default(""),
     locale: z.enum(["pt-BR", "en-US"]).default("pt-BR"),
   }).safeParse(metadata);
 
@@ -59,7 +60,6 @@ export async function initializeRegistrationWorkspace(supabase: NonNullable<Supa
 
   const {data, error} = await supabase.rpc("initialize_professional_onboarding", {
     p_full_name: parsed.data.full_name,
-    p_job_title: parsed.data.job_title || undefined,
     p_journey: parsed.data.registration_role,
     p_locale: parsed.data.locale,
   } as Database["public"]["Functions"]["initialize_professional_onboarding"]["Args"]);

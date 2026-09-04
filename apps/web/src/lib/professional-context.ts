@@ -1,114 +1,127 @@
 import {z} from "zod";
 
-export const affiliationKinds = [
-  "company",
-  "bank",
-  "advisory",
-  "asset_manager",
-  "credit_fund",
-  "family_office",
-  "independent",
-  "other",
+/**
+ * The personal professional context. Every list here is multi-valued on purpose: a person can be
+ * a banker and an advisor, cover DCM and corporate banking, and use the product both inside an
+ * institution and on their own. Forcing one answer per question produced a profile that was
+ * tidy and wrong.
+ *
+ * These answers are guidance. They change how work is approached and what is delivered. They
+ * never narrow the economic universe, never authorize access to a document, never prove what an
+ * institution is able to do and are never read as a mandate.
+ */
+export const useForms = [
+  "institutional_work",
+  "independent_practice",
+  "personal_projects",
+  "exploring",
 ] as const;
 
 export const professionalRoles = [
-  "cfo_treasury",
-  "corporate_finance",
-  "fp_and_a",
-  "controller_accounting",
-  "dcm_banker",
-  "corporate_banker",
-  "relationship_manager",
-  "structured_finance_banker",
-  "project_finance_banker",
-  "syndicate_distribution",
-  "advisor",
-  "investor_lender",
-  "portfolio_manager",
-  "credit_analyst",
-  "risk_underwriter",
-  "investment_committee",
-  "legal_structuring",
-  "analyst",
-  "executive",
+  "ceo_founder",
   "board_shareholder",
+  "cfo",
+  "treasury",
+  "corporate_finance",
+  "banker",
+  "financial_advisor",
+  "originator",
+  "credit_analyst",
+  "risk_underwriting",
+  "investor_portfolio_manager",
+  "legal_operations",
+  "independent_consultant",
+  "student_researcher",
   "other",
 ] as const;
 
-export const operatingModels = [
-  "raise_capital",
-  "balance_sheet_lending",
-  "structuring",
-  "distribution",
-  "advisory",
-  "investing",
+export const practiceAreas = [
+  "treasury",
+  "corporate_finance",
+  "fp_and_a",
+  "strategy",
+  "corporate_development",
+  "investor_relations",
+  "dcm",
+  "investment_banking",
+  "corporate_banking",
+  "structured_finance",
+  "project_finance",
+  "origination",
+  "syndicate_distribution",
+  "credit",
+  "underwriting",
+  "risk",
+  "private_credit",
+  "investments",
+  "portfolio_management",
+  "special_situations",
+  "legal",
+  "operations",
+  "other",
 ] as const;
 
 export const professionalObjectives = [
   "understand_company",
+  "understand_capital_structure",
+  "evaluate_capital_options",
   "prepare_meetings",
   "originate_ideas",
-  "evaluate_capital_options",
+  "organize_documents",
+  "analyze_investments",
   "structure_transactions",
   "prepare_materials",
   "connect_capital",
-  "analyze_investments",
+  "monitor_positions",
+  "explore_platform",
+  "other",
 ] as const;
 
-export const productFamilies = [
-  "bilateral_credit",
-  "club_syndicated",
-  "capital_markets",
-  "securitization",
-  "asset_backed",
-  "project_acquisition_finance",
-  "trade_export_agri",
-  "structured_flexible_capital",
-  "special_situations",
-  "derivatives_hedging",
-] as const;
+export type UseForm = (typeof useForms)[number];
+export type ProfessionalRole = (typeof professionalRoles)[number];
+export type PracticeArea = (typeof practiceAreas)[number];
+export type ProfessionalObjective = (typeof professionalObjectives)[number];
 
 export const professionalContextFormSchema = z.object({
-  affiliationKind: z.enum(affiliationKinds).optional(),
-  professionalRole: z.enum(professionalRoles).optional(),
-  institutionName: z.string().trim().max(200).optional(),
-  teamName: z.string().trim().max(160).optional(),
-  operatingModels: z.array(z.enum(operatingModels)).max(operatingModels.length),
+  useForms: z.array(z.enum(useForms)).max(useForms.length),
+  professionalRoles: z.array(z.enum(professionalRoles)).max(professionalRoles.length),
+  practiceAreas: z.array(z.enum(practiceAreas)).max(practiceAreas.length),
   primaryObjectives: z.array(z.enum(professionalObjectives)).max(professionalObjectives.length),
-  productFamilies: z.array(z.enum(productFamilies)).max(productFamilies.length),
-  capabilityNotes: z.string().trim().max(2_000).optional(),
+  institutionName: z.string().trim().max(200).optional(),
 });
 
 export type ProfessionalContextForm = z.infer<typeof professionalContextFormSchema>;
 
+/**
+ * The organization name only means something for someone who said they work at one. Keeping it
+ * otherwise would record an affiliation the person did not declare, which the database rejects
+ * as well; dropping it here keeps the two sides in agreement.
+ */
+export function normalizeProfessionalContext(input: ProfessionalContextForm): ProfessionalContextForm {
+  const institutional = input.useForms.includes("institutional_work");
+  return {...input, institutionName: institutional ? input.institutionName : undefined};
+}
+
 export function professionalContextStatus(input: ProfessionalContextForm) {
-  const hasAnyContext = Boolean(
-    input.affiliationKind
-    || input.professionalRole
-    || input.institutionName
-    || input.teamName
-    || input.operatingModels.length
-    || input.primaryObjectives.length
-    || input.productFamilies.length
-    || input.capabilityNotes,
-  );
-  if (!hasAnyContext) return "skipped" as const;
-  if (input.professionalRole && input.operatingModels.length > 0 && input.primaryObjectives.length > 0) {
+  const normalized = normalizeProfessionalContext(input);
+  const answered = normalized.useForms.length
+    + normalized.professionalRoles.length
+    + normalized.practiceAreas.length
+    + normalized.primaryObjectives.length
+    + (normalized.institutionName ? 1 : 0);
+  if (answered === 0) return "skipped" as const;
+  if (normalized.useForms.length > 0 && normalized.professionalRoles.length > 0 && normalized.primaryObjectives.length > 0) {
     return "complete" as const;
   }
   return "partial" as const;
 }
 
 export function parseProfessionalContextForm(formData: FormData) {
-  const optional = (name: string) => String(formData.get(name) ?? "").trim() || undefined;
   return professionalContextFormSchema.safeParse({
-    affiliationKind: optional("affiliation_kind"),
-    professionalRole: optional("professional_role"),
-    institutionName: optional("institution_name"),
-    teamName: optional("team_name"),
-    operatingModels: formData.getAll("operating_models").map(String),
+    useForms: formData.getAll("use_forms").map(String),
+    professionalRoles: formData.getAll("professional_roles").map(String),
+    practiceAreas: formData.getAll("practice_areas").map(String),
     primaryObjectives: formData.getAll("primary_objectives").map(String),
-    productFamilies: formData.getAll("product_families").map(String),
-    capabilityNotes: optional("capability_notes"),
+    institutionName: String(formData.get("institution_name") ?? "").trim() || undefined,
   });
 }

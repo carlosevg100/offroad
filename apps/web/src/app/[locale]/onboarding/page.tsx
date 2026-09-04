@@ -189,7 +189,6 @@ export default async function OnboardingPage({params, searchParams}: Props) {
         <ProfessionalContextForm
           action={saveProfessionalContextAction}
           copy={professionalContextCopy(tProfessionalContext)}
-          initial={progress.journey === "company" ? {affiliationKind: "company", operatingModels: ["raise_capital"]} : undefined}
           locale={locale}
         />
       </main>

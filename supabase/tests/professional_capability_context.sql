@@ -34,27 +34,45 @@ do $$
 declare
   saved jsonb;
 begin
-  saved := public.save_professional_capability_context_v1(
+  saved := public.save_professional_capability_context_v2(
     '20000000-0000-4000-8000-000000000301',
-    'bank', 'dcm_banker', 'DCM',
+    array['institutional_work', 'independent_practice'],
+    array['banker', 'financial_advisor'],
+    array['dcm', 'corporate_banking', 'structured_finance'],
     array['prepare_meetings', 'originate_ideas', 'structure_transactions'],
-    'Banco Exemplo',
-    array['balance_sheet_lending', 'structuring', 'distribution'],
-    array['bilateral_credit', 'capital_markets'],
-    'Brasil e Estados Unidos.', false
+    'Banco Exemplo', false
   );
   if saved ->> 'status' <> 'complete' then
     raise exception 'complete professional context was not persisted: %', saved;
   end if;
-  if (select operating_models from public.institution_capability_profiles
-      where organization_id = '20000000-0000-4000-8000-000000000301')
-      <> array['balance_sheet_lending', 'structuring', 'distribution'] then
-    raise exception 'institution operating models were not preserved';
+  -- Several roles and several areas survive. Collapsing them into one was the defect this
+  -- shape exists to fix: a banker who also advises is not one or the other.
+  if (select professional_roles from public.professional_context_profiles
+      where organization_id = '20000000-0000-4000-8000-000000000301'
+        and user_id = '10000000-0000-4000-8000-000000000301')
+      <> array['banker', 'financial_advisor'] then
+    raise exception 'multiple professional roles were not preserved';
+  end if;
+  if (select cardinality(practice_areas) from public.professional_context_profiles
+      where organization_id = '20000000-0000-4000-8000-000000000301'
+        and user_id = '10000000-0000-4000-8000-000000000301') <> 3 then
+    raise exception 'practice areas were not preserved';
   end if;
   if (select institution_name from public.professional_context_profiles
       where organization_id = '20000000-0000-4000-8000-000000000301'
         and user_id = '10000000-0000-4000-8000-000000000301') <> 'Banco Exemplo' then
-    raise exception 'user institution name was not preserved';
+    raise exception 'declared organization was not preserved';
+  end if;
+  -- The organization gets its name and nothing more. Saying a person works at a bank is not
+  -- evidence that the bank lends from its balance sheet, structures or distributes.
+  if (select institution_name from public.institution_capability_profiles
+      where organization_id = '20000000-0000-4000-8000-000000000301') <> 'Banco Exemplo' then
+    raise exception 'declared organization name did not reach the institution profile';
+  end if;
+  if (select cardinality(operating_models) + cardinality(product_families)
+      from public.institution_capability_profiles
+      where organization_id = '20000000-0000-4000-8000-000000000301') <> 0 then
+    raise exception 'onboarding invented an institutional capability';
   end if;
   if (select answers #>> '{professional_context,status}' from public.onboarding_progress
       where organization_id = '20000000-0000-4000-8000-000000000301') <> 'complete' then
@@ -63,22 +81,38 @@ begin
 end;
 $$;
 
+-- An organization name only means something for someone who says they work at one.
+do $$
+begin
+  perform public.save_professional_capability_context_v2(
+    '20000000-0000-4000-8000-000000000301',
+    array['independent_practice'],
+    array['independent_consultant'],
+    array['credit'],
+    array['analyze_investments'],
+    'Empresa Que Nao Existe', false
+  );
+  if (select institution_name from public.professional_context_profiles
+      where organization_id = '20000000-0000-4000-8000-000000000301'
+        and user_id = '10000000-0000-4000-8000-000000000301') is not null then
+    raise exception 'an affiliation nobody declared was recorded';
+  end if;
+end;
+$$;
+
+-- Values outside the published vocabulary are refused rather than stored as free text.
 do $$
 declare
-  saved jsonb;
+  accepted boolean := true;
 begin
-  saved := public.save_professional_capability_context_v1(
-    '20000000-0000-4000-8000-000000000301',
-    'credit_fund', 'credit_analyst', 'Crédito privado',
-    array['analyze_investments'],
-    'Gestora Exemplo',
-    array['investing'],
-    array['structured_flexible_capital'],
-    'Analisa crédito e estrutura antes do comitê.', false
-  );
-  if saved ->> 'professional_role' <> 'credit_analyst' then
-    raise exception 'credit analyst was collapsed into a generic role: %', saved;
-  end if;
+  begin
+    perform public.save_professional_capability_context_v2(
+      '20000000-0000-4000-8000-000000000301',
+      p_professional_roles => array['chief_vibes_officer']
+    );
+  exception when others then accepted := false;
+  end;
+  if accepted then raise exception 'an unpublished role was accepted'; end if;
 end;
 $$;
 
@@ -99,8 +133,8 @@ begin
     raise exception 'tenant B read tenant A professional context';
   end if;
   begin
-    perform public.save_professional_capability_context_v1(
-      '20000000-0000-4000-8000-000000000301', p_professional_role => 'advisor'
+    perform public.save_professional_capability_context_v2(
+      '20000000-0000-4000-8000-000000000301', p_professional_roles => array['financial_advisor']
     );
   exception when insufficient_privilege then accepted := false;
   end;
@@ -114,7 +148,7 @@ do $$
 declare
   skipped jsonb;
 begin
-  skipped := public.save_professional_capability_context_v1(
+  skipped := public.save_professional_capability_context_v2(
     '20000000-0000-4000-8000-000000000302', p_skip => true
   );
   if skipped ->> 'status' <> 'skipped'

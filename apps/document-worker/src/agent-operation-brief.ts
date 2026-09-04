@@ -180,10 +180,9 @@ export async function processAgentOperationBriefJob(
       conversationText,
       requestIntent: route.intent,
       requestEffect: route.effect,
-      institutionOperatingModels: [
-        ...(context.professional_context?.operatingModels ?? []),
-        ...(context.institution_capabilities?.operatingModels ?? []),
-      ],
+      // Only the institution profile answers what an institution can do. A person's own
+      // description of their work is not evidence of their employer's capability.
+      institutionOperatingModels: context.institution_capabilities?.operatingModels ?? [],
       professionalContextStatus: context.professional_context?.disclosureStatus ?? null,
       institutionCapabilityQuestionAsked: context.recent_messages.some((message) => message.role === "assistant"
         && /(?:como\s+(?:sua|a\s+sua)\s+institui[cç][aã]o\s+pode\s+atuar|how\s+can\s+your\s+institution\s+act)/i.test(message.content)),

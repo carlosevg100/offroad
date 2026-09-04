@@ -21,7 +21,6 @@ const account = {
   email: `e2e-${runId}@example.com`,
   password: `Offroad-E2E-${runId}!`,
   fullName: "QA Offroad",
-  jobTitle: "Diretora financeira",
 };
 
 test.describe.configure({mode: "serial"});
@@ -92,6 +91,10 @@ async function startPrivateProject(page: Page, projectName: string, acceptTerms 
     await page.locator(".private-project-gate__full-terms summary").click();
     await expect(page.locator(".private-project-gate__full-terms")).toContainText("4. NENHUMA DISTRIBUIÇÃO AUTOMÁTICA");
     await expect(page.locator(".private-project-gate__full-terms")).toContainText("Este Termo não constitui contratação de assessoria, exclusividade, mandato");
+    // The signatory's relation to the company is stated here, at acceptance, and not carried
+    // from the account: the same person can be a CFO on one project and an advisor on the next.
+    await expect(page.locator('input[name="signatory_name"]')).toHaveValue(account.fullName);
+    await page.locator('input[name="signatory_title"]').fill("Diretora financeira");
     await page.locator('input[name="terms_agreed"]').check();
     await page.locator('input[name="information_rights_declared"]').check();
     await page.locator('.private-project-gate__form button[type="submit"]').click();
@@ -132,27 +135,36 @@ test.describe("Document-first intake (company journey)", () => {
 
   test("signs up with e-mail verification and lands on onboarding", async () => {
     await page.goto("/pt-BR/signup");
-    // Company journey is the default selection.
-    await expect(page.locator('input[name="entry_path"][value="origination"]')).toBeChecked();
-    await expect(page.locator('input[name="originating_role"][value="company"]')).toBeChecked();
+    // Account creation asks for identity and nothing else: no market side, no job title.
+    // Everything that shapes the work is asked by the professional onboarding below.
+    await expect(page.locator('input[name="entry_path"]')).toHaveCount(0);
+    await expect(page.locator('input[name="job_title"]')).toHaveCount(0);
     await page.locator('input[name="full_name"]').fill(account.fullName);
-    await page.locator('input[name="job_title"]').fill(account.jobTitle);
     await page.locator('input[name="email"]').fill(account.email);
     await page.locator('input[name="password"]').fill(account.password);
     await page.locator('input[name="confirm_password"]').fill(account.password);
     await page.locator("form.auth-form--registration button[type=submit]").click();
 
     await expect(page).toHaveURL(/\/pt-BR\/signup\/verify/);
+    // The verification screen names the address the code went to, read from the pending cookie.
+    await expect(page.locator(".auth-form__heading p")).toContainText(account.email);
     const code = await waitForOneTimeCode(account.email);
     await page.locator('input[name="token"]').fill(code);
     await page.locator("form.auth-form--verification button[type=submit]").click();
 
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
     await expect(page.locator(".professional-context--onboarding")).toBeVisible();
-    await expect(page.locator('input[name="affiliation_kind"][value="company"]')).toBeChecked();
-    await expect(page.locator('input[name="operating_models"][value="raise_capital"]')).toBeChecked();
+    // Nothing arrives pre-answered: this screen exists to ask, not to assume, and where someone
+    // works is only asked once they have said they work somewhere.
+    await expect(page.locator('input[name="use_forms"]:checked')).toHaveCount(0);
+    await expect(page.locator('input[name="institution_name"]')).toHaveCount(0);
+    await page.locator('input[name="use_forms"][value="institutional_work"]').check();
     await page.locator('input[name="institution_name"]').fill("Rede Horizonte Supermercados");
-    await page.locator('select[name="professional_role"]').selectOption("cfo_treasury");
+    // Several roles and several areas at once, which is the point of the new shape.
+    await page.locator('input[name="professional_roles"][value="cfo"]').check();
+    await page.locator('input[name="professional_roles"][value="treasury"]').check();
+    await page.locator('input[name="practice_areas"][value="treasury"]').check();
+    await page.locator('input[name="practice_areas"][value="corporate_finance"]').check();
     await page.locator('input[name="primary_objectives"][value="evaluate_capital_options"]').check();
     await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
 
@@ -283,6 +295,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".private-project-gate__accepted")).toHaveCount(0);
     await expect(page.locator('input[name="terms_agreed"]')).not.toBeChecked();
     await expect(page.locator('input[name="information_rights_declared"]')).not.toBeChecked();
+    await page.locator('input[name="signatory_title"]').fill("Diretora financeira");
     await page.locator('input[name="terms_agreed"]').check();
     await page.locator('input[name="information_rights_declared"]').check();
     await page.locator('.private-project-gate__form button[type="submit"]').click();

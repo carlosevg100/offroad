@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 
 import {
   canContinuePendingRegistration,
-  registrationJourneyForEntryPath,
+  defaultRegistrationJourney,
   registrationSchema,
 } from "./registration";
 
@@ -10,7 +10,6 @@ const validRegistration = {
   locale: "pt-BR" as const,
   journey: "company" as const,
   fullName: "Carla Mendes",
-  jobTitle: "CFO",
   email: "carla@empresa.com.br",
   password: "Capital@",
   confirmPassword: "Capital@",
@@ -30,15 +29,13 @@ describe("registrationSchema", () => {
   });
 });
 
-describe("registrationJourneyForEntryPath", () => {
-  it("keeps company and advisor as refinements of the origination path", () => {
-    expect(registrationJourneyForEntryPath("origination", "company")).toBe("company");
-    expect(registrationJourneyForEntryPath("origination", "originator")).toBe("originator");
+describe("defaultRegistrationJourney", () => {
+  it("starts every new workspace on the side that can begin work", () => {
+    expect(defaultRegistrationJourney).toBe("company");
   });
 
-  it("maps the capital path directly and rejects unknown paths", () => {
-    expect(registrationJourneyForEntryPath("capital_provider", "")).toBe("capital_provider");
-    expect(registrationJourneyForEntryPath("unknown", "company")).toBeNull();
+  it("never lands a new account on the capital-provider workspace, which signup no longer offers", () => {
+    expect(defaultRegistrationJourney).not.toBe("capital_provider");
   });
 });
 

@@ -28,15 +28,37 @@ select set_config(
   true
 );
 
-select public.save_professional_capability_context_v1(
+-- What the person says about their own work.
+select public.save_professional_capability_context_v2(
   '20000000-0000-4000-8000-000000000231',
-  'bank', 'dcm_banker', 'DCM',
+  array['institutional_work'],
+  array['banker', 'originator'],
+  array['dcm', 'origination'],
   array['prepare_meetings', 'originate_ideas'],
   'Banco Farol',
-  array['structuring', 'distribution'],
-  array['capital_markets'],
-  'Contexto usado para calibrar, nunca restringir, as alternativas.',
   false
+);
+
+-- What the institution can do is a separate fact, confirmed by someone who manages the
+-- organization. The onboarding form cannot write it, so the test states it on its own.
+reset role;
+insert into public.institution_capability_profiles (
+  organization_id, institution_name, institution_kind, operating_models, product_families,
+  source_kind, disclosure_status, last_confirmed_at, updated_by
+) values (
+  '20000000-0000-4000-8000-000000000231', 'Banco Farol', 'bank',
+  array['structuring', 'distribution'], array['capital_markets'],
+  'self_declared', 'complete', now(), '10000000-0000-4000-8000-000000000231'
+)
+on conflict (organization_id) do update set
+  operating_models = excluded.operating_models,
+  product_families = excluded.product_families;
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000231","role":"authenticated","aal":"aal1"}',
+  true
 );
 
 do $$
@@ -425,7 +447,8 @@ begin
   context := public.worker_load_capital_project_context_v5(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token'
   );
-  if context #>> '{professional_context,professionalRole}' <> 'dcm_banker'
+  if context #>> '{professional_context,professionalRoles,0}' <> 'banker'
+    or context #>> '{professional_context,practiceAreas,0}' <> 'dcm'
     or context #>> '{professional_context,institutionName}' <> 'Banco Farol'
     or context #>> '{institution_capabilities,operatingModels,0}' <> 'structuring'
     or context #>> '{prior_failed_task_feedback,0,task_id}' <> 'M07'

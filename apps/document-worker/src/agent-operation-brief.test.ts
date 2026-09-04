@@ -628,10 +628,11 @@ describe("agent operation brief worker", () => {
         },
         company_profile: {companyName: "Cedro", sector: "Distribuição"},
         professional_context: {
-          affiliationKind: "bank", professionalRole: "dcm_banker", teamName: "DCM",
+          useForms: ["institutional_work"],
+          professionalRoles: ["banker", "originator"],
+          practiceAreas: ["dcm", "corporate_banking", "structured_finance"],
+          primaryObjectives: ["structure_transactions"],
           institutionName: "Banco Exemplo",
-          operatingModels: ["structuring", "distribution"], productFamilies: ["capital_markets"],
-          primaryObjectives: ["structure_transactions"], contextNotes: null,
           disclosureStatus: "complete", lastConfirmedAt: "2026-09-01T10:00:00.000Z",
         },
         institution_capabilities: {
@@ -700,7 +701,7 @@ describe("agent operation brief worker", () => {
       workPlan: [{taskId: "M01", status: "succeeded"}],
       artifacts: [{type: "preliminary_understanding", version: 1, status: "draft"}],
       latestUserMessage: "O que já sabemos e qual é o próximo passo?",
-      professionalContext: {professionalRole: "dcm_banker", operatingModels: ["structuring", "distribution"]},
+      professionalContext: {professionalRoles: ["banker", "originator"], practiceAreas: ["dcm", "corporate_banking", "structured_finance"]},
       institutionCapabilities: {institutionName: "Banco Exemplo", operatingModels: ["balance_sheet_lending", "structuring", "distribution"]},
       journeyBlueprint: {id: "company_debt_view", firstWorkProduct: expect.any(String)},
       collaborativeAdvisoryPolicy: {

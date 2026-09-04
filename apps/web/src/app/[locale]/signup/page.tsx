@@ -8,7 +8,6 @@ import type {AppLocale} from "@/i18n/routing";
 
 import {startRegistration} from "./actions";
 import {PasswordFields} from "./password-fields";
-import {SignupRoleSelector} from "./role-selector";
 import {SignupSubmitButton} from "./submit-button";
 
 export const metadata: Metadata = {title: "Create Account", robots: {index: false, follow: false}};
@@ -53,22 +52,8 @@ export default async function SignupPage({params, searchParams}: Props) {
         </div>
         {state.error ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
-        <SignupRoleSelector labels={{
-          pathLegend: t("pathLegend"),
-          origination: t("origination"),
-          originationBody: t("originationBody"),
-          provider: t("provider"),
-          providerBody: t("providerBody"),
-          roleLegend: t("roleLegend"),
-          company: t("company"),
-          companyBody: t("companyBody"),
-          originator: t("originator"),
-          originatorBody: t("originatorBody"),
-        }} />
-
         <div className="registration-fields">
-          <label className="field"><span>{t("fullName")}</span><input autoComplete="name" maxLength={160} minLength={2} name="full_name" required /></label>
-          <label className="field"><span>{t("jobTitle")}</span><input autoComplete="organization-title" maxLength={120} minLength={2} name="job_title" required /></label>
+          <label className="field field--wide"><span>{t("fullName")}</span><input autoComplete="name" maxLength={160} minLength={2} name="full_name" required /></label>
           <label className="field field--wide"><span>{t("email")}</span><input autoComplete="email" maxLength={254} name="email" required type="email" /></label>
           <PasswordFields
             confirmLabel={t("confirmPassword")}

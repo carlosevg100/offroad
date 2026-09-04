@@ -2113,3 +2113,42 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Exemplos PT-BR/EN-US alternam no campo apenas enquanto ele está vazio, não há um atalho escolhido
   e o usuário não solicitou redução de movimento. Criação, upload, confidencialidade e vínculo ao
   projeto permanecem inalterados.
+
+## Criação de conta sem lado de mercado, candidate, 04/09/2026
+
+- A criação de conta deixou de perguntar de que lado do mercado a pessoa está. A separação entre
+  "empresas e assessores" e "provedores de capital" pertencia a um produto anterior e não descreve
+  como a plataforma é usada: quem analisa uma companhia, quem estrutura uma operação e quem avalia
+  uma alternativa de crédito fazem o mesmo trabalho analítico. Todo workspace novo nasce do lado
+  que pode começar a trabalhar; o workspace de provedor de capital continua acessível apenas para
+  organizações que já o possuem.
+- O campo de cargo saiu do formulário. Cargo isolado não influenciava nenhuma decisão do produto e
+  competia com o contexto profissional, que é onde a função, a atuação e o objetivo são perguntados
+  com consequência.
+- A tela de verificação passou a nomear o endereço para onde o código foi enviado, lido de um
+  cookie de sessão de cadastro. Não anuncia mais o formato do código no título, porque o próprio
+  campo já o mostra.
+- A declaração de que o usuário está autorizado a representar a organização indicada saiu do
+  rodapé do cadastro. Representação é um gate próprio, verificado no momento da introdução, e
+  afirmá-la na criação da conta dava a ela um peso que ela não tem.
+
+## Onboarding profissional multivalorado, candidate, 04/09/2026
+
+- O contexto profissional deixou de aceitar uma função e um vínculo. Uma pessoa pode ser banker
+  e assessor, cobrir DCM e corporate banking, e usar a plataforma dentro de uma instituição e por
+  conta própria ao mesmo tempo. O schema passou a guardar `use_forms`, `professional_roles` e
+  `practice_areas` como arrays, e o vocabulário de objetivos foi de oito para treze opções.
+- As colunas de capacidade saíram do perfil pessoal. O que uma pessoa diz sobre o próprio trabalho
+  custa nada aceitar; o que uma instituição consegue fazer tem consequência em matching e no que o
+  produto pode afirmar. Capacidade vive em `institution_capability_profiles`, que já carrega
+  origem, responsável e data de confirmação, e o formulário de onboarding não pode escrevê-la.
+- O nome da organização só é gravado para quem disse que trabalha em uma. A RPC anula o campo em
+  qualquer outro caso, e o teste de regressão prova isso.
+- A tela virou quatro perguntas numeradas com opções multisseleção, e a pergunta sobre onde a
+  pessoa trabalha aparece como desdobramento da primeira, apenas quando faz sentido. Nada chega
+  pré-marcado: a jornada de empresa não presume mais que a pessoa levanta capital.
+- O contrato de consumo está escrito em `docs/product/PROFESSIONAL_CONTEXT_CONSUMPTION.md`. Ele
+  define quem lê cada campo, o que pode influenciar e o que nunca pode. O consumo estruturado
+  descrito ali ainda **não** está implementado: hoje o perfil chega aos modelos como bloco de
+  contexto, e os testes por função que provariam mesma verdade com abordagem diferente são o
+  próximo passo, não o estado atual.

@@ -1,11 +1,13 @@
 import {ArrowLeft, ArrowRight, MailCheck} from "lucide-react";
 import type {Metadata} from "next";
+import {cookies} from "next/headers";
 import {getTranslations} from "next-intl/server";
 
 import {AuthShell} from "@/components/auth-shell";
 import type {AppLocale} from "@/i18n/routing";
 
 import {resendRegistrationCode, restartRegistration, verifyRegistrationCode} from "../actions";
+import {SIGNUP_EMAIL_COOKIE} from "../signup-cookie";
 
 export const metadata: Metadata = {title: "Verify Email", robots: {index: false, follow: false}};
 
@@ -15,6 +17,9 @@ export default async function VerifySignupPage({params, searchParams}: Props) {
   const {locale} = await params;
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "Signup"});
+  // The address is already in the browser from the step before, so the screen can name it
+  // instead of saying "the e-mail you entered" and making the reader remember which one.
+  const pendingEmail = (await cookies()).get(SIGNUP_EMAIL_COOKIE)?.value ?? "";
 
   return (
     <AuthShell body={t("verifyContextBody")} locale={locale as AppLocale} title={t("verifyContextTitle")}>
@@ -26,9 +31,8 @@ export default async function VerifySignupPage({params, searchParams}: Props) {
         <input name="locale" type="hidden" value={locale} />
         <MailCheck aria-hidden="true" className="auth-form__icon" size={26} />
         <div className="auth-form__heading">
-          <p className="section-kicker">{t("verifyEyebrow")}</p>
           <h2>{t("verifyTitle")}</h2>
-          <p>{t("verifyBody")}</p>
+          <p>{pendingEmail ? t("verifyBodyNamed", {email: pendingEmail}) : t("verifyBody")}</p>
         </div>
         {state.sent === "1" ? <p className="form-notice form-notice--success" role="status">{t("resent")}</p> : null}
         {state.pending === "1" ? <p className="form-notice form-notice--success" role="status">{t("codeAlreadySent")}</p> : null}
