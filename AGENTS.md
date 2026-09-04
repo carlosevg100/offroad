@@ -6,6 +6,8 @@ weakening security, or drifting from the product. Read them fully before your fi
 
 The canonical product definition and six entry jobs live in
 [`docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`](docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md).
+The intent ontology and workflow-compilation contract live in
+[`docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md`](docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md).
 The current company-led transaction route lives in
 [`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). Read both before
 changing home, onboarding, pipeline order, user-visible progress, materials, matching or
@@ -53,8 +55,9 @@ production borrower data into staging.
     inside released TaskSpecs. State, permissions, budgets, deterministic financial math and gates
     belong to the deterministic control plane. See ADR 0013, ADR 0020 and
     `OFFROAD_DCM_OPERATING_CONSTITUTION.md`.
-12. **One canonical state, six valid entries.** The six jobs in the Constitution compile different
-    initial task subgraphs over the same organization, company and project objects. The current
+12. **One canonical state, open intent universe.** The six home entries are optional shortcuts;
+    runtime work is compiled from the current intention, objects, responsibility, evidence and
+    audience under the canonical Intent Atlas. The current
     company-led route, its stages, gates and permitted returns come from
     `docs/product/PRODUCT_WORKFLOW.md`. No entry may create a parallel truth, skip an applicable
     gate or force the user to restart. Expensive production begins only after the structure and

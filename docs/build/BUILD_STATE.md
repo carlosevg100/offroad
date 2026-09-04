@@ -2152,3 +2152,16 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   descrito ali ainda **não** está implementado: hoje o perfil chega aos modelos como bloco de
   contexto, e os testes por função que provariam mesma verdade com abordagem diferente são o
   próximo passo, não o estado atual.
+
+## Atlas canônico intent-driven, specified, 04/09/2026
+
+- O contrato funcional deixou de tratar persona ou uma das seis entradas como rota universal. O
+  Atlas define 20 famílias combináveis de intenção, 18 objetos de trabalho e um `Intent Envelope`
+  que inclui responsabilidade atual, sponsor, audiência, estágio, evidência, autoridade e output.
+- A matriz de 14 funções profissionais serve para descobrir cobertura e padrões de revisão; não
+  altera fatos nem limita o usuário ao trabalho típico de seu cargo.
+- A rota company-led continua válida quando ativada. Trabalhos sobre contrato, modelo, waterfall,
+  instrumento, mercado, mandato ou material podem existir sem companhia quando ela não é material.
+- Vinte casos Pareto definem a próxima cobertura de homologação. O Atlas especifica schema de caso,
+  coverage, gates, outputs, teste de sobrevivência e implicações para router, compiler e evals.
+- Estado é `specified`: nenhum novo runtime, migration ou pack foi promovido por esta documentação.

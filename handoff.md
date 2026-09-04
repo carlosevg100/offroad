@@ -3186,3 +3186,34 @@ Não abrir simultaneamente dezenas de jornadas. A sequência obrigatória é:
 O próximo responsável deve resistir a duas tentações: expandir a demo antes de fechar a qualidade
 do primeiro caso e declarar expertise porque o schema ou o teste unitário existe. A prioridade é
 fazer uma decisão real ficar melhor, com um resultado que um profissional exigente aceitaria usar.
+
+## 43. Atlas canônico de intenções e workflows, 04/09/2026
+
+O produto passou a ter uma especificação funcional acima das seis entradas e abaixo da
+Constituição: `docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md`.
+
+A correção central é que função profissional não roteia o trabalho. Analyst, Associate, VP, MD,
+CFO, assessor ou investidor são lentes para descobrir tudo que a biblioteca precisa dominar. Em
+runtime, a intenção atual, os objetos, a responsabilidade naquele trabalho, a decisão, a audiência,
+a evidência e a autoridade compilam o workflow.
+
+O Atlas contém:
+
+- `Intent Envelope` versionado com 18 campos;
+- 18 objetos canônicos, incluindo companhia, operação, contrato, modelo, waterfall, mercado e
+  mandato;
+- 20 famílias de intenção combináveis;
+- contrato de decomposição por TaskSpec, dependência, coverage, verificação e invalidação;
+- matriz de 14 funções profissionais, separando Analyst, Associate, VP e Director/MD;
+- 20 casos Pareto para gold, adversarial, benchmark generalista e revisão especialista;
+- gates universais, padrão de interação, outputs e teste de sobrevivência;
+- implicações explícitas para Intent Router, Workflow Compiler, Object Resolver, Coverage Engine,
+  Question Engine, Output Compiler e Eval Harness.
+
+A Constituição foi atualizada para 2.5: intenção e realidade econômica vêm primeiro; companhia é
+um objeto material em muitos trabalhos, não raiz obrigatória de todos eles. ADR 0021 registra essa
+decisão. As seis entradas continuam como atalhos da home e compatibilidade transitória.
+
+Estado: `specified`. O router por regex e `CapitalProjectJob` continuam em produção como
+implementação anterior; não devem ser confundidos com a arquitetura-alvo nem removidos sem schema,
+migração, compatibilidade, gold cases e rollout seguro.

@@ -1078,3 +1078,12 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Jornada ponta a ponta | `document-first-intake.spec.ts` | o E2E exige que nada venha pré-marcado, que o campo da organização só exista após declarar vínculo e que duas funções e duas áreas sejam salvas juntas | 2026-09-04 |
 | Tela verificada | dev server, 1280 e 1440 px | quatro perguntas numeradas, desdobramento condicional, estados de seleção e ações conferidos por captura | 2026-09-04 |
 | Gate integral | `fnm exec --using=24 pnpm check` | lint, typecheck, testes e build verdes; 43/43 tarefas | 2026-09-04 |
+
+## Atlas canônico de intenções, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Contrato funcional | `docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md` | envelope com intenção, objetos, responsabilidade, sponsor, audiência, evidência, autoridade e output; 20 famílias combináveis | 2026-09-04 |
+| Cobertura por função | seção 9 do Atlas | 14 lentes profissionais, com separação explícita entre Analyst, Associate, VP e Director/MD; função não é rota de runtime | 2026-09-04 |
+| Pareto de homologação | seção 10 do Atlas | 20 casos cobrindo produção, revisão, originação, companhia, crédito, investimento, estruturas, materiais, matching e monitoramento | 2026-09-04 |
+| Decisão arquitetural | ADR 0021 + Constituição 2.5 | seis entradas preservadas como atalhos; arquitetura-alvo compila workflows pelo Intent Envelope e permite objetos não company-led | 2026-09-04 |
