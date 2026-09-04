@@ -547,8 +547,8 @@
     "errorBody": "It may have expired or already been used. Request a new access link."
   },
   "Signup": {
-    "contextTitle": "Structure and visibility for capital seekers. Alignment for investors.",
-    "contextBody": "Analyse a company, compare debt alternatives, structure the transaction and prepare the materials. All in one project, with evidence linked to every number.",
+    "contextTitle": "Welcome to Offroad.",
+    "contextBody": "Specialist intelligence, financial analysis and market knowledge to assess companies, develop capital strategies, structure credit transactions and connect them to the most aligned investors and lenders.",
     "back": "I already have an account",
     "title": "Create your account",
     "body": "Select the workspace that corresponds to your organization's role.",
