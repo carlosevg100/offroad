@@ -1,0 +1,184 @@
+{
+  "schemaVersion": "gold-baseline-run.v1",
+  "caseId": "gc01-analista-ib-camil",
+  "caseVersion": "1.0",
+  "asOfDate": "2026-09-04",
+  "startedAt": "2026-09-04T23:18:46.987Z",
+  "finishedAt": "2026-09-04T23:24:46.229Z",
+  "provider": "anthropic",
+  "model": "claude-opus-5",
+  "effort": "high",
+  "systemPromptSha256": "0871e2dda5450ae47cdcdf8ca83aee0689cdb6114d429713f1b704bab9ccfb71",
+  "informationBaseSha256": "be203ddf04397c0bdba94a9986d495a8bde724ed9705c3a879ae70262eb49821",
+  "informationBaseChars": 1046613,
+  "inputs": {
+    "documents": [
+      {
+        "id": "itr_1t26",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pages": 62,
+        "chars": 151584
+      },
+      {
+        "id": "proposta_agoe_2026",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pages": 138,
+        "chars": 314793
+      }
+    ],
+    "sources": [
+      {
+        "id": "cvm_cadastro_cia_aberta",
+        "sha256": "778df91701936c356cd6d2cdcc2aaac366694fad1a1a3b5535ba225d8a0255c1",
+        "rendering": "filtered_rows",
+        "chars": 4531
+      },
+      {
+        "id": "anbima_data_emissoes",
+        "sha256": null,
+        "rendering": "not_retained",
+        "chars": 0
+      },
+      {
+        "id": "cvm_ipe_2026",
+        "sha256": "660e7b15db19434da9b4553be0e3a35a10616fdb0e60e776111387a52fcf60b9",
+        "rendering": "metadata_only",
+        "chars": 0
+      },
+      {
+        "id": "cvm_itr_1t26_enet",
+        "sha256": "687e4ede3523df74be07d2acdd432b6b93c6be3986ee35e35eccc33d7551bde9",
+        "rendering": "metadata_only",
+        "chars": 0
+      },
+      {
+        "id": "ri_release_1t26",
+        "sha256": "eadfa96297cf7caaea008da4e63fe2b0a30a8a048f45824c729f0f111ca44dc9",
+        "rendering": "full_text",
+        "chars": 113811
+      },
+      {
+        "id": "ri_apresentacao_1t26",
+        "sha256": "350b23432890cc25d2febb9bea8fed5f97b05b390fdd7d206bd8d394d2505e63",
+        "rendering": "full_text",
+        "chars": 16002
+      },
+      {
+        "id": "cvm_dfp_2025",
+        "sha256": "3c44c327bca34fffbc28e6f03db4912f598b8f64a88e5ace6844d0c32c2a4417",
+        "rendering": "full_text",
+        "chars": 281581
+      },
+      {
+        "id": "af_11a_emissao",
+        "sha256": "2fb5fcf1f83ff84e9c90d5fdc7f593245e769cdc9e7589cd7c2085131af110b2",
+        "rendering": "full_text",
+        "chars": 9050
+      },
+      {
+        "id": "af_13a_emissao",
+        "sha256": "3ad304e3d1d3576158cc8cd9dcc942fa7705e1387abfcafb36f2be5692caf5e4",
+        "rendering": "full_text",
+        "chars": 37263
+      },
+      {
+        "id": "af_14a_emissao",
+        "sha256": "e41315e1f6f12f4f682c161790b73b06b541e12f2330b2b8569cf71071e2c5d7",
+        "rendering": "full_text",
+        "chars": 37373
+      },
+      {
+        "id": "af_15a_emissao",
+        "sha256": "f4a2c5602006b73ec5ba661e8209287ba7a6edcde419edfaa3611d24333c40fb",
+        "rendering": "full_text",
+        "chars": 37948
+      },
+      {
+        "id": "af_debenture_verde",
+        "sha256": "c3dcdaafe6bf4f6951eabaec3f2b97eea4255797df10237d3088fcafabe8597e",
+        "rendering": "full_text",
+        "chars": 2601
+      },
+      {
+        "id": "ca_notas_comerciais_2026-05-27",
+        "sha256": "d7ce801832941eb9366a733a23a814d1cb60277de0a6fe6ffacc1f58ce15bb6d",
+        "rendering": "full_text",
+        "chars": 6778
+      },
+      {
+        "id": "ca_operacao_estruturada_2026-05-27",
+        "sha256": "d4f2ba6f7bdb6acb74398840c42cdc13eca007362b086377f7377a4890436acf",
+        "rendering": "full_text",
+        "chars": 4951
+      },
+      {
+        "id": "ca_governanca_2026-07-14",
+        "sha256": "51ea8805b2159b1e069a1cc1fff0bc11b5a15c544e2b50a214dbfcec8bf24f8d",
+        "rendering": "full_text",
+        "chars": 8968
+      },
+      {
+        "id": "ca_aprovacao_itr_1t26",
+        "sha256": "3eccd0e5ad65fc7b916146e4b6bcb967a360da583040be796ab4aed30d167c3a",
+        "rendering": "full_text",
+        "chars": 4370
+      },
+      {
+        "id": "calendario_eventos_2026",
+        "sha256": "d97219bf730cd985c061d25e7cf02549e96c962a96376b08aec89aad74d4d8fd",
+        "rendering": "full_text",
+        "chars": 1667
+      },
+      {
+        "id": "anbima_ettj_2026-09-04",
+        "sha256": "531e97d7ead363068fc801156d29043024390ee9bc5bc105fb85917c607c9129",
+        "rendering": "full_text",
+        "chars": 2934
+      },
+      {
+        "id": "bcb_sgs_cdi_diario",
+        "sha256": "bc2c8c0e9b36ba9a1a69d74be03e7ce6cd89bc290481e2320c4c745e73fb22bb",
+        "rendering": "full_text",
+        "chars": 124
+      },
+      {
+        "id": "bcb_sgs_selic_meta",
+        "sha256": "46ab2cf0d0ba1422614a1fa0fe0ebdeb0f185d65db2c48d7abaeea6978e63b93",
+        "rendering": "full_text",
+        "chars": 153
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "gc01-t01",
+      "messageSha256": "d15341a0faa6d203717d429935c3c71ba6ea1076e8ee58c1bc007f83d8ff6f94",
+      "outputSha256": "c73064fddbd5caa3e6d9a5dcc4ae1086eabce0716e2379a97631f2c1f8b15aab",
+      "outputFile": "gc01-t01.output.md",
+      "inputTokens": 508910,
+      "outputTokens": 10459,
+      "cachedInputTokens": 0,
+      "costUsd": 2.806025,
+      "latencyMs": 154747,
+      "stopReason": "end"
+    },
+    {
+      "id": "gc01-t02",
+      "messageSha256": "2c5d8950301fd63f15714fd8d2c4806490e8566846c0079233bb89da989ff2d3",
+      "outputSha256": "e0ff5db1afc8aa8cca797e7e529914319a9d0f06fbc7ff997345d892fb0261f5",
+      "outputFile": "gc01-t02.output.md",
+      "inputTokens": 515321,
+      "outputTokens": 14627,
+      "cachedInputTokens": 0,
+      "costUsd": 2.94228,
+      "latencyMs": 197848,
+      "stopReason": "end"
+    }
+  ],
+  "totalCostUsd": 5.748305,
+  "caveats": [
+    "PDFs entraram como texto extraído por página (camada de texto do pdfjs); tabelas aparecem como linhas de texto, sem grade.",
+    "Arquivos compactados do pack (índices da CVM) entraram só como metadados; os documentos que eles indexam entraram por inteiro.",
+    "O cadastro de companhias abertas entrou filtrado às linhas que citam a companhia."
+  ]
+}

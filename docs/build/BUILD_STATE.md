@@ -2326,3 +2326,19 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Workflow manual `Gold case baseline`: lê as chaves por OIDC (`offroadGitHubEvalsRole`, as
   mesmas duas secrets da medição de extração), roda o comando e publica a run como artefato.
   Nenhuma chave de modelo existe no laptop nem na Vercel, e isso é deliberado.
+
+## Primeira execução do baseline do Caso 01, candidate, 04/09/2026
+
+- Run 33928973469 do workflow `Gold case baseline`, na main, com as chaves lidas por OIDC. Opus 5
+  em esforço alto recebeu a base congelada (1,05 milhão de caracteres; 509 mil e 515 mil tokens
+  de entrada nos dois turnos, sem cache) e escreveu 10,5 mil e 14,6 mil tokens. Custo total
+  US$ 5,75; 155 s e 198 s de latência. Saídas e `run.json` em
+  `docs/product/gold-cases/runs/gc01/baseline/2026-09-04-23-18-46/`.
+- Leitura rápida contra o gabarito v0.2, sem valer como revisão: o generalista acertou o núcleo
+  (4,72x contra 4,0x com medição anual em fevereiro de 2027, definição contratual da dívida
+  líquida, degrau de 2028/29, lastro em CRA, notas comerciais e CPR com a ressalva certa de que as
+  atas não provam desembolso, valor justo abaixo do contábil, dividendos comprometidos) e deixou
+  de fora três achados que o gabarito considera materiais: o limite de 3,5x da 13ª e da 14ª
+  emissões, as contingências possíveis sem provisão e o lucro do trimestre sustentado por crédito
+  fiscal. Também recusou projetar EBITDA sem guidance, o que é a postura esperada.
+- O painel de revisão mede as duas execuções pela mesma rubrica; nada aqui substitui isso.

@@ -1151,3 +1151,10 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Base de informação determinística | `gold-baseline.test.ts` | ordem por id, hash muda com qualquer byte, instrução sem rubrica, filtro de CSV; evals 47 testes | 2026-09-04 |
 | Números das notas presentes | `baseline:gold --dry-run --dump` | 5.670.186, 1.229.828, 2.407.895, 3.262.291, 1.264.059, 6,3416, 14,1500 e 251.000.000 encontrados na base renderizada | 2026-09-04 |
 | Gateway | `model-gateway` 26 testes | tarefa `baseline_generalist` com política Opus 5 e fallback GPT-5.6 | 2026-09-04 |
+
+## Baseline do Caso 01 executado, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Execução oficial | workflow `Gold case baseline`, run 33928973469 | sucesso; artefato `gold-baseline-gc01` baixado e commitado com `run.json` (hash da base `be203ddf…`, hash por documento e fonte, modelo, custo, tokens) | 2026-09-04 |
+| Reprodutibilidade | `baseline:gold --dry-run` local | mesma base, mesmo hash `be203ddf04397c0b…` que a run em CI registrou | 2026-09-04 |
