@@ -4,6 +4,26 @@ Atualizado em: 2026-09-04
 Baseline: `main` após PR #401, commit `16a3e07`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Casca e entrada do advisor refeitas, 04/09/2026
+
+- A barra lateral virou um componente cliente único, recolhível para 58 px, com o estado em cookie
+  para o servidor já renderizar na largura escolhida. `Novo chat` com `⌘J` é a ação primária e cria
+  a conversa direto; a busca subiu para o topo com `⌘K` em vez de ficar enterrada na lista.
+- `Recentes` é lista plana. Um gatilho do banco cria uma pasta por projeto, com o mesmo nome, e era
+  isso que fazia a barra parecer uma coleção de pastas de uma conversa só. Essas ficam ocultas pela
+  assinatura exata; pasta criada, renomeada, esvaziada ou com mais de uma conversa continua visível
+  e continua podendo ser criada.
+- A entrada mostra o símbolo da marca, saudação por horário em preto e a pergunta em cinza. O
+  placeholder digita e apaga sete pedidos reais, um por função profissional, e para assim que o
+  campo recebe texto. Os cinco pills saíram; quatro sugestões em texto escrevem um pedido completo
+  e preservam a dica de jornada. `Continuar` traz os três trabalhos recentes com estado em mono.
+- Superfícies planas, hairline de 1 px, raio de 9 px, zero sombra, uma rampa de cinza só e a IBM
+  Plex Mono reservada a metadado. Sessenta e seis regras de CSS morto removidas, cada uma provada
+  morta por varredura das classes usadas no TSX.
+- Verificado em servidor local por rota de preview temporária, criada e apagada no mesmo trabalho,
+  em 1180 px expandido e recolhido. Gate integral verde nos 43 alvos em Node 24. O E2E foi
+  atualizado para a estrutura nova. Produção ainda não recebeu esta fatia.
+
 ## Marca nova em site e plataforma, 04/09/2026
 
 - O farol foi aposentado. A identidade passa a ser o anel de pincel com a logotipia Didone, nos

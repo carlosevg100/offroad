@@ -1,13 +1,10 @@
-import {Building2, CircleGauge, FileLock2, Landmark, LogOut, UserRoundCog} from "lucide-react";
 import type {Metadata} from "next";
-import Link from "next/link";
+import {cookies} from "next/headers";
 import {getTranslations} from "next-intl/server";
 import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
-import {BrandMark} from "@/components/brand-mark";
-import {WorkspaceProjectNavigation, type WorkspaceNavigationGroup, type WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
-import {WorkspaceLanguageSwitcher} from "@/components/workspace-language-switcher";
-import type {AppLocale} from "@/i18n/routing";
+import type {WorkspaceNavigationGroup, WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
+import {RAIL_COLLAPSE_COOKIE, WorkspaceRail, type WorkspaceRailCopy} from "@/components/workspace-rail";
 import {requireWorkspace} from "@/lib/auth/workspace";
 
 import {signOut} from "./actions";
@@ -20,7 +17,7 @@ type Props = {children: React.ReactNode; params: Promise<{locale: string}>};
 export default async function ApplicationLayout({children, params}: Props) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "App"});
-  const {organization, membership, email, supabase} = await requireWorkspace(locale);
+  const {organization, email, supabase, userId} = await requireWorkspace(locale);
   const canOriginate = organization.organization_type !== "capital_provider";
   const {data: navigationSessions} = canOriginate
     ? await supabase.from("document_intake_sessions")
@@ -71,70 +68,67 @@ export default async function ApplicationLayout({children, params}: Props) {
     })(),
   }});
 
+  const railCollapsed = (await cookies()).get(RAIL_COLLAPSE_COOKIE)?.value === "1";
+  const {data: profile} = await supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle();
+  const copy: WorkspaceRailCopy = {
+    account: t("account"),
+    actions: t("projectActions"),
+    archive: t("deleteProject"),
+    archiveConfirm: t("deleteProjectConfirm"),
+    close: t("close"),
+    collapse: t("collapseRail"),
+    createFolder: t("createFolder"),
+    createFolderPlaceholder: t("createFolderPlaceholder"),
+    empty: t("noProjects"),
+    errors: {
+      denied: t("projectErrors.denied"),
+      duplicate: t("projectErrors.duplicate"),
+      invalid: t("projectErrors.invalid"),
+      not_found: t("projectErrors.notFound"),
+      save: t("projectErrors.save"),
+    },
+    expand: t("expandRail"),
+    folders: t("folders"),
+    groupActions: t("projectActions"),
+    groupArchive: t("deleteProjectGroup"),
+    groupArchiveConfirm: t("deleteProjectGroupConfirm"),
+    language: t("language"),
+    newChat: t("newChat"),
+    newConversation: t("newConversation"),
+    noResults: t("noProjectResults"),
+    open: t("openProject"),
+    overview: t("overview"),
+    professionalContext: t("professionalContext"),
+    recent: t("recent"),
+    rename: t("renameProject"),
+    save: t("saveProjectName"),
+    search: t("searchProjects"),
+    signOut: t("signOut"),
+    status: {
+      cancelled: t("projectStatus.cancelled"),
+      collecting: t("projectStatus.collecting"),
+      confirmed: t("projectStatus.confirmed"),
+      failed: t("projectStatus.failed"),
+      processing: t("projectStatus.processing"),
+      review_ready: t("projectStatus.reviewReady"),
+    },
+    workspaceNav: t("workspaceNav"),
+  };
+
   return (
     <div className="application-shell">
-      <aside className="app-sidebar">
-        <div className="app-sidebar__brand"><BrandMark inverted locale={locale as AppLocale} /></div>
-        <div className="app-workspace-id">
-          <span className="app-workspace-id__icon">{canOriginate ? <Building2 aria-hidden="true" size={15} /> : <Landmark aria-hidden="true" size={15} />}</span>
-          <span><small>{t("workspace")}</small><strong>{organization.name}</strong><em>{membership.role}</em></span>
-        </div>
-        <nav aria-label={t("workspace")} className="app-nav">
-          <div className="app-nav__group">
-            <p>{t("workspaceNav")}</p>
-            <Link href={`/${locale}/app`}><CircleGauge aria-hidden="true" size={16} /><span>{t("overview")}</span></Link>
-            <Link href={`/${locale}/app/context`}><UserRoundCog aria-hidden="true" size={16} /><span>{t("professionalContext")}</span></Link>
-          </div>
-          {canOriginate ? <WorkspaceProjectNavigation
-            copy={{
-              actions: t("projectActions"),
-              archive: t("deleteProject"),
-              archiveConfirm: t("deleteProjectConfirm"),
-              close: t("close"),
-              createGroup: t("createProject"),
-              createGroupPlaceholder: t("projectNamePlaceholder"),
-              empty: t("noProjects"),
-              emptyGroup: t("noConversations"),
-              errors: {
-                denied: t("projectErrors.denied"),
-                duplicate: t("projectErrors.duplicate"),
-                invalid: t("projectErrors.invalid"),
-                not_found: t("projectErrors.notFound"),
-                save: t("projectErrors.save"),
-              },
-              groupActions: t("projectActions"),
-              groupArchive: t("deleteProjectGroup"),
-              groupArchiveConfirm: t("deleteProjectGroupConfirm"),
-              newConversation: t("newConversation"),
-              noResults: t("noProjectResults"),
-              open: t("openProject"),
-              projects: t("projects"),
-              rename: t("renameProject"),
-              save: t("saveProjectName"),
-              search: t("searchProjects"),
-              status: {
-                cancelled: t("projectStatus.cancelled"),
-                collecting: t("projectStatus.collecting"),
-                confirmed: t("projectStatus.confirmed"),
-                failed: t("projectStatus.failed"),
-                processing: t("projectStatus.processing"),
-                review_ready: t("projectStatus.reviewReady"),
-              },
-            }}
-            groups={groups}
-            locale={locale}
-            projects={projects}
-          /> : <div className="app-nav__group"><p>{t("projects")}</p><Link href={`/${locale}/app#funds`}><Landmark aria-hidden="true" size={16} /><span>{t("fundsAndMandates")}</span></Link></div>}
-        </nav>
-        <div className="app-sidebar__footer">
-          <WorkspaceLanguageSwitcher locale={locale === "en-US" ? "en-US" : "pt-BR"} />
-          <div><FileLock2 aria-hidden="true" size={15} /><span>{email}</span></div>
-          <form action={signOut}>
-            <input name="locale" type="hidden" value={locale} />
-            <button type="submit"><LogOut aria-hidden="true" size={15} />{t("signOut")}</button>
-          </form>
-        </div>
-      </aside>
+      <WorkspaceRail
+        copy={copy}
+        email={email}
+        fullName={profile?.full_name ?? ""}
+        groups={groups}
+        initialCollapsed={railCollapsed}
+        locale={locale === "en-US" ? "en-US" : "pt-BR"}
+        organizationName={organization.name}
+        projects={projects}
+        showProjects={canOriginate}
+        signOutAction={signOut}
+      />
       <div className="app-main">{children}</div>
     </div>
   );

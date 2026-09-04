@@ -1,5 +1,5 @@
 import type {Metadata} from "next";
-import {Inter, Newsreader} from "next/font/google";
+import {IBM_Plex_Mono, Inter, Newsreader} from "next/font/google";
 import {hasLocale, NextIntlClientProvider} from "next-intl";
 import {getMessages} from "next-intl/server";
 import {notFound} from "next/navigation";
@@ -19,6 +19,15 @@ const inter = Inter({
 const newsreader = Newsreader({
   subsets: ["latin"],
   variable: "--font-editorial",
+  display: "swap",
+});
+
+// Metadata, state and shortcuts are read as data, not as prose. A monospaced face
+// with tabular figures is what separates a timestamp from a sentence at a glance.
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-metric",
   display: "swap",
 });
 
@@ -154,7 +163,7 @@ export default async function LocaleLayout({children, params}: Props) {
   return (
     <html
       lang={locale}
-      className={`${inter.variable} ${newsreader.variable}`}
+      className={`${inter.variable} ${newsreader.variable} ${plexMono.variable}`}
     >
       <body>
         <script
