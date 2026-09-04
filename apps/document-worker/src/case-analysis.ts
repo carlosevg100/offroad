@@ -569,8 +569,12 @@ Use only the supplied evidence classes:
 Rules:
 - Explain plainly what the company does, its sector/context, and what it wants the financing to
   achieve. Make the result easy for the user to correct.
-- The initial project request and correction request are user declarations. Extract an identity or
-  capital objective from them only when the text states it directly. Otherwise return null.
+- The initial project request and correction request are user declarations. Do not attribute a
+  statement to the user unless the text states it directly.
+- Uploaded documents are a valid primary input. When verified document facts consistently state
+  the amount, use of proceeds or transaction purpose, describe them as document-provided facts
+  subject to the user's confirmation; do not call them missing merely because the user typed no
+  narrative. Use resolvedDocumentOperation as the compact consistency reference.
 - Classify the declared use of proceeds into exactly one archetypeId. This is a request-routing
   label, not a recommendation: working_capital, growth_expansion, acquisition, refinance,
   equipment_finance, venture_debt or other. A receivables mention is collateral or repayment
@@ -580,6 +584,8 @@ Rules:
 - Never state that the operation is viable, affordable, financeable or correctly structured.
 - Never propose an instrument, amount, term, guarantee, covenant, price or lender.
 - Never infer missing financial figures. Turn material uncertainty into a focused open point.
+- Never ask for a fact already present in resolvedDocumentOperation. Ask one unresolved matter per
+  open point; do not combine a known amount or currency with an unknown term in one question.
 - Be concise and non-repetitive: keep the understanding summary under 250 words; use one short
   paragraph for each other summary; return at most five material research signals and six open
   points that could actually change the next information request.
@@ -616,6 +622,7 @@ async function processPreliminaryUnderstanding(
       confidence: numberOr(candidate.confidence, 0),
       sourceDocumentId: String(candidate.source_document_id ?? ""),
     }));
+  const documentOperation = documentOperationEvidence(candidates, locale);
   const preliminaryInput = {
     locale: raw.session.locale ?? "pt-BR",
     userDeclaration: {
@@ -640,6 +647,7 @@ async function processPreliminaryUnderstanding(
       kind: document.document_kind ?? null,
       sha256: document.sha256 ?? null,
     })),
+    resolvedDocumentOperation: documentOperation,
     documentFacts: facts,
     publicSources: publicResearch.sources.slice(0, 25).map((source) => ({
       topic: source.topic,
@@ -682,6 +690,7 @@ async function processPreliminaryUnderstanding(
     documents: raw.documents,
     publicResearch,
     narrative,
+    documentOperation,
     initialRequest: raw.initial_request,
   });
   const preliminaryUnderstandingId = await dependencies.queue.recordPreliminaryUnderstanding(job, {
@@ -1245,6 +1254,7 @@ function buildPreliminaryUnderstanding(input: {
   documents: Record<string, unknown>[];
   publicResearch: PublicResearchSummary;
   narrative: PreliminaryNarrative;
+  documentOperation: ResolvedDocumentOperation;
   initialRequest: string | null;
 }) {
   const companyProfile = recordOrNull(input.session.company_profile);
@@ -1267,10 +1277,11 @@ function buildPreliminaryUnderstanding(input: {
     : "";
   const objective = declaredObjective
     || publicCandidate(input.candidates, "transaction.purpose")
+    || input.documentOperation.objective
     || input.narrative.capitalObjective
     || "";
   const requestedAmount = numericString(input.session.requested_amount)
-    ?? numericString(publicCandidate(input.candidates, "transaction.requested_amount"));
+    ?? input.documentOperation.requestedAmount;
   const currency = typeof input.session.capital_currency === "string" && input.session.capital_currency.trim()
     ? input.session.capital_currency
     : publicCandidate(input.candidates, "transaction.currency") ?? "BRL";
@@ -2039,6 +2050,69 @@ function publicCandidate(candidates: FactCandidate[], fieldPath: string): string
     .filter((candidate) => candidate.fieldPath === fieldPath && candidate.anchorVerified)
     .sort((left, right) => left.evidenceRank - right.evidenceRank)[0]
     ?.normalizedValue.trim() || null;
+}
+
+type ResolvedDocumentOperation = {
+  source: "verified_document_facts";
+  objective: string | null;
+  requestedAmount: string | undefined;
+  currency: string;
+  expansionAmount: string | undefined;
+  refinancingAmount: string | undefined;
+};
+
+/**
+ * Compact, deterministic transaction context for the first narrative call.
+ *
+ * A documents-only project must not behave as if an empty text box means an empty mandate. The
+ * extractor has already produced anchored facts; this projection makes their implications
+ * explicit enough for the narrative model to avoid asking the user to retype them.
+ */
+function documentOperationEvidence(
+  candidates: FactCandidate[],
+  locale: "pt" | "en",
+): ResolvedDocumentOperation {
+  const requestedAmount = numericString(publicCandidate(candidates, "transaction.requested_amount"));
+  const expansionAmount = numericString(publicCandidate(candidates, "transaction.expansion_debt"));
+  const refinancingAmount = numericString(
+    publicCandidate(candidates, "transaction.refinancing")
+      ?? publicCandidate(candidates, "transaction.refinanced_debt"),
+  );
+  const currency = publicCandidate(candidates, "transaction.currency") ?? "BRL";
+  const statedPurpose = publicCandidate(candidates, "transaction.purpose");
+  const statedUses = candidates
+    .filter((candidate) => /^transaction\.use_of_proceeds\.\d+\.item$/.test(candidate.fieldPath) && candidate.anchorVerified)
+    .sort((left, right) => left.fieldPath.localeCompare(right.fieldPath))
+    .map((candidate) => candidate.normalizedValue.trim())
+    .filter(Boolean);
+  const format = (amount: string) => new Intl.NumberFormat(locale === "pt" ? "pt-BR" : "en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(Number(amount));
+  const objective = statedPurpose
+    ?? (statedUses.length ? statedUses.join(locale === "pt" ? "; " : "; ") : null)
+    ?? (expansionAmount && refinancingAmount
+      ? locale === "pt"
+        ? `Financiar ${format(expansionAmount)} de expansão e refinanciar ${format(refinancingAmount)} de dívida existente, conforme os documentos enviados.`
+        : `Fund ${format(expansionAmount)} of expansion and refinance ${format(refinancingAmount)} of existing debt, based on the uploaded documents.`
+      : expansionAmount
+        ? locale === "pt"
+          ? `Financiar ${format(expansionAmount)} de expansão, conforme os documentos enviados.`
+          : `Fund ${format(expansionAmount)} of expansion, based on the uploaded documents.`
+        : refinancingAmount
+          ? locale === "pt"
+            ? `Refinanciar ${format(refinancingAmount)} de dívida existente, conforme os documentos enviados.`
+            : `Refinance ${format(refinancingAmount)} of existing debt, based on the uploaded documents.`
+          : null);
+  return {
+    source: "verified_document_facts",
+    objective,
+    requestedAmount,
+    currency,
+    expansionAmount,
+    refinancingAmount,
+  };
 }
 
 async function persistCaseStage(

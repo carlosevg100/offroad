@@ -110,7 +110,7 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
                       <strong>{current.value.operation.archetypeLabel}</strong>
                       <p>{current.value.operation.operationSummary}</p>
                       <dl>
-                        {current.value.operation.requestedAmount ? <><dt>{t("amount")}</dt><dd>{current.value.operation.currency} {current.value.operation.requestedAmount}</dd></> : null}
+                        {current.value.operation.requestedAmount ? <><dt>{t("amount")}</dt><dd>{formatMoney(current.value.operation.requestedAmount, current.value.operation.currency, locale)}</dd></> : null}
                         {current.value.operation.requestedTermMonths ? <><dt>{t("term")}</dt><dd>{t("months", {count: current.value.operation.requestedTermMonths})}</dd></> : null}
                       </dl>
                     </section>
@@ -123,12 +123,10 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
                     </section>
                   ) : null}
 
-                  <section className="advisor-private-work__research">
-                    <div><Search aria-hidden="true" size={14} /><strong>{t("research")}</strong><span>{t("sourceCount", {count: current.value.basis.publicResearch.sourceCount})}</span></div>
-                    {current.value.basis.publicResearch.sources.length ? <ul>{current.value.basis.publicResearch.sources.slice(0, 6).map((source) => (
-                      <li key={`${source.topic}:${source.url}`}><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={10} /></a></li>
-                    ))}</ul> : <p>{t("researchPending")}</p>}
-                  </section>
+                  <ResearchEvidence
+                    signals={current.value.preliminaryAssessment.researchSignals}
+                    sources={current.value.basis.publicResearch.sources}
+                  />
 
                   <p className="advisor-private-work__boundary"><AlertCircle aria-hidden="true" size={13} />{current.value.preliminaryAssessment.boundary}</p>
 
@@ -155,6 +153,42 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
             : null
       ) : null}
     </article>
+  );
+}
+
+function formatMoney(value: string, currency: string, locale: "pt-BR" | "en-US"): string {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return `${currency} ${value}`;
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${currency} ${value}`;
+  }
+}
+
+function ResearchEvidence({signals, sources}: {
+  signals: Array<{claim: string; sourceUrls: string[]}>;
+  sources: Array<{title: string; url: string}>;
+}) {
+  const t = useTranslations("App.privateCase");
+  const titleByUrl = new Map(sources.map((source) => [source.url, source.title]));
+  const sourceCount = new Set(signals.flatMap((signal) => signal.sourceUrls)).size;
+  return (
+    <section className="advisor-private-work__research">
+      <div><Search aria-hidden="true" size={14} /><strong>{t("research")}</strong><span>{t("sourceCount", {count: sourceCount})}</span></div>
+      {signals.length ? <ul>{signals.map((signal, index) => (
+        <li key={`${index}:${signal.claim}`}>
+          <p>{signal.claim}</p>
+          <div>{signal.sourceUrls.map((url) => (
+            <a href={url} key={url} rel="noreferrer" target="_blank">{titleByUrl.get(url) ?? t("source")}<ExternalLink aria-hidden="true" size={10} /></a>
+          ))}</div>
+        </li>
+      ))}</ul> : <p>{t("researchPending")}</p>}
+    </section>
   );
 }
 
