@@ -325,7 +325,7 @@ const receivablesProviderContextSchema = z.object({
   })),
 });
 const rawCaseInputSchema = z.object({
-  session: recordSchema,
+  session: z.object({capital_project_id: z.uuid()}).passthrough(),
   run: recordSchema,
   candidates: z.array(recordSchema),
   sources: z.array(recordSchema),
@@ -1039,7 +1039,7 @@ export async function processCaseAnalysisJob(
       retrieval: privateRetrievalLineage,
     });
     if (dependencies.queue.recordAgentAssessment) {
-      const projectId = z.uuid().parse(raw.session.capital_project_id);
+      const projectId = raw.session.capital_project_id;
       const assessedAt = (dependencies.now?.() ?? new Date()).toISOString();
       const recommendation = result.state.structureAlternatives.recommendation;
       const recommendedAlternative = recommendation
