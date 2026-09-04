@@ -244,6 +244,9 @@ importers:
       '@offroad/case-understanding':
         specifier: workspace:*
         version: link:../case-understanding
+      '@offroad/work-plan':
+        specifier: workspace:*
+        version: link:../work-plan
       zod:
         specifier: 4.4.3
         version: 4.4.3

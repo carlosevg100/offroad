@@ -12,6 +12,23 @@ export const offroadExecutionClassSchema = z.enum([
 export const offroadTaskEffectSchema = z.enum(["none", "propose_state", "commit", "external"]);
 export const offroadTaskMaturitySchema = z.enum(["specified", "implemented", "tested", "production"]);
 
+/**
+ * How a task reads. Retrieval answers "which passages look relevant"; credit work often has to
+ * answer "was everything material examined". A task that reads a covenant or reconciles a debt
+ * schedule cannot rest on the ten most similar chunks, so every TaskSpec declares its reading
+ * strategies and the runtime produces a manifest of what was and was not covered.
+ */
+export const readingStrategySchema = z.enum([
+  "exact_search",
+  "semantic_retrieval",
+  "structured_query",
+  "exhaustive_corpus",
+  "version_reconciliation",
+  "original_vs_amendment",
+  "threshold_scan",
+]);
+export type ReadingStrategy = z.infer<typeof readingStrategySchema>;
+
 export type OffroadGraph = z.infer<typeof offroadGraphSchema>;
 export type OffroadExecutionClass = z.infer<typeof offroadExecutionClassSchema>;
 export type OffroadTaskEffect = z.infer<typeof offroadTaskEffectSchema>;
@@ -25,6 +42,40 @@ export type OffroadTaskSpec = {
   executionClass: OffroadExecutionClass;
   effect: OffroadTaskEffect;
   maturity: OffroadTaskMaturity;
+  /** Never empty. Selective reading is a declared choice, not a default nobody wrote down. */
+  readingStrategies: readonly ReadingStrategy[];
+};
+
+/** The reading a class of work needs when the task does not say otherwise. */
+export function defaultReadingStrategies(executionClass: OffroadExecutionClass): readonly ReadingStrategy[] {
+  switch (executionClass) {
+    case "extraction": return ["exhaustive_corpus"];
+    case "deterministic": return ["structured_query"];
+    case "research": return ["exact_search", "semantic_retrieval"];
+    case "judgment": return ["structured_query", "semantic_retrieval"];
+    case "compilation": return ["structured_query"];
+    case "action": return ["structured_query"];
+  }
+}
+
+/**
+ * Tasks whose subject makes selective reading wrong. A covenant, a guarantee package or a debt
+ * reconciliation is examined whole, against the previous version and against thresholds.
+ */
+const readingOverrides: Record<string, readonly ReadingStrategy[]> = {
+  D03: ["exhaustive_corpus"],
+  D04: ["exhaustive_corpus"],
+  D06: ["structured_query", "version_reconciliation"],
+  D11: ["structured_query", "version_reconciliation"],
+  S04: ["exhaustive_corpus", "original_vs_amendment", "structured_query"],
+  S08: ["exhaustive_corpus", "original_vs_amendment", "threshold_scan"],
+  K04: ["exact_search", "semantic_retrieval", "structured_query"],
+  L01: ["threshold_scan", "version_reconciliation"],
+  L02: ["threshold_scan", "version_reconciliation"],
+  L03: ["threshold_scan", "version_reconciliation"],
+  L04: ["threshold_scan", "version_reconciliation"],
+  L05: ["threshold_scan", "version_reconciliation"],
+  L06: ["threshold_scan", "version_reconciliation"],
 };
 
 const task = (
@@ -34,7 +85,10 @@ const task = (
   dependencies: readonly string[],
   executionClass: OffroadExecutionClass,
   effect: OffroadTaskEffect = "propose_state",
-): OffroadTaskSpec => ({id, label, graph, dependencies, executionClass, effect, maturity: "specified"});
+): OffroadTaskSpec => ({
+  id, label, graph, dependencies, executionClass, effect, maturity: "specified",
+  readingStrategies: readingOverrides[id] ?? defaultReadingStrategies(executionClass),
+});
 
 /**
  * Canonical target registry from the approved OffroadOS architecture. `specified` is deliberate:

@@ -2221,3 +2221,18 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   produção (nomes e versões diferentes, série `_validation` inexistente em produção) e não era
   ressincronizável por rebase. Foi apagada e recriada a partir de produção em 04/09 às 20:09 UTC
   (`ylyldbudqrrzuhgjulmi`), ao mesmo custo horário da anterior (US$ 0,01344/h).
+
+## Contratos das três camadas do moat, candidate, 04/09/2026
+
+- ADR 0022 registra a decisão: leitura comprovadamente completa, metodologia institucional e
+  proatividade governada entram primeiro como contrato e só depois como comportamento. Nada em
+  produção muda com este slice.
+- Toda `TaskSpec` declara `readingStrategies` (`packages/work-plan`), com padrão por classe de
+  execução e sobrescritas para extração, conciliação, garantias, covenants, comparáveis e
+  monitoramento; 80 de 80 declaram, e o teste impede uma tarefa sem estratégia.
+- `packages/agent-contracts` ganha o Intent Envelope v1 em duas camadas (núcleo de roteamento e
+  contexto governado, com campos do sistema que o modelo nunca escreve e as vinte composições do
+  Atlas derivadas dos nove trabalhos), o manifesto de leitura, a escada de autonomia de sete
+  degraus, o ledger de achados com origem solicitada ou descoberta, a explicação de mudança
+  entre execuções e o scorecard de benchmark com omissões materiais e falsos alertas.
+- O Atlas recebe a §17.10 com as sete exigências de 4 de setembro e a escada de autonomia.

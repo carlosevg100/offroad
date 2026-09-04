@@ -1422,6 +1422,43 @@ existentes cobrem parte do trabalho, mas faltam contrato, executor, objeto ou ga
 9. Conectar output compiler e verifier ao mesmo snapshot econômico.
 10. Promover família por família após gold, adversarial, benchmark e revisão especialista.
 
+### 17.10 Exigências acrescentadas em 4 de setembro de 2026
+
+As três camadas que criam o moat (metodologia institucional codificada, leitura comprovadamente
+completa e inteligência proativa governada) entram primeiro como contrato e só depois como
+comportamento. Enquanto os casos reativos não estiverem verdes, nada aqui vira execução autônoma.
+
+1. Cada `TaskSpec` declara sua estratégia de leitura: busca exata, recuperação semântica,
+   consulta estruturada, leitura exaustiva do corpus, conciliação entre versões, comparação
+   original versus aditivo, varredura contra thresholds. O runtime produz um manifesto de leitura
+   com arquivos, páginas, períodos e dimensões cobertos e não cobertos. Um trabalho de covenant ou
+   contrato nunca depende dos dez chunks mais semelhantes.
+2. Cada caso gold contém achados que o sistema deveria encontrar mesmo sem pergunta explícita.
+3. O benchmark mede também omissões materiais e falsos alertas, não só o que foi encontrado.
+4. O `FindingsLedger` distingue resposta solicitada de descoberta autônoma, e cada achado carrega o
+   que foi identificado, por que surgiu agora, por que é material, evidências e cálculos,
+   confiança, decisão ou artefato afetado, hipótese contrária considerada e próximo teste.
+5. O perfil organizacional armazena metodologia, não só dados de onboarding: definições
+   financeiras adotadas, ajustes permitidos de EBITDA, thresholds e políticas, critérios de
+   elegibilidade, mandato e restrições, templates, sequência de revisão, cenários mínimos,
+   métricas obrigatórias, produtos e capacidades, decisões e correções anteriores. A intenção
+   continua comandando o workflow; a metodologia modifica critérios, checks e apresentação.
+6. Toda mudança entre duas execuções explica exatamente qual fonte, fato ou premissa alterou o
+   resultado, e quais outputs foram afetados.
+7. Depois dos casos reativos verdes, homologam-se três monitores iniciais: vencimentos, liquidez
+   e headroom de covenant; novas divulgações versus o snapshot anterior; novas oportunidades
+   versus mandatos de capital.
+
+Autonomia é concedida por degraus, e cada degrau é um efeito permitido: ler e sinalizar;
+calcular e testar; preparar drafts; propor alterações; aplicar internamente após aprovação;
+preparar conexão externa; compartilhar ou introduzir só com autorização específica. A Offroad
+nunca envia material, contata investidor ou assume decisão financeira por conta própria.
+
+Para quem tem projetos ativos, a entrada deixa de ser só uma caixa de chat: passa a entregar um
+briefing de trabalho e uma fila de decisões, ordenados pela responsabilidade da pessoa naquele
+trabalho, nunca pelo cargo. O chat continua sendo a porta para intenção, correção e
+aprofundamento.
+
 ## 18. Critério de aceite do Atlas
 
 O Atlas está pronto para governar implementação quando:
