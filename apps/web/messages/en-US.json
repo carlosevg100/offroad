@@ -1280,6 +1280,13 @@
         "save": "Could not record the message.",
         "processing": "The review could not be started.",
         "upload": "One or more documents could not be received securely."
+      },
+      "openRequirements": "What is still open and why it matters",
+      "materiality": {
+        "blocking": "blocking",
+        "high": "high",
+        "medium": "medium",
+        "low": "low"
       }
     },
     "privateCase": {

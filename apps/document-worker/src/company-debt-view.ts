@@ -24,6 +24,7 @@ import {createWorkerPublicResearchCache} from "./public-research-cache";
 import {createWorkerPublicCompanyMemory} from "./public-company-memory";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {buildPublicWorkAssessment} from "./agent-assessment";
+import {describeJobFailure} from "./job-failure";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const taskSchema = z.object({
@@ -444,7 +445,7 @@ export async function processCompanyDebtViewJob(
     const code = errorCode(error);
     await dependencies.queue.writeStage(job, "company_debt_view", "failed", {code}).catch(() => undefined);
     const spend = dependencies.gateway.spent();
-    await dependencies.queue.fail(job, {code, spend}, {retryable: code !== "company_debt_task_plan_mismatch", retryInSeconds: 30});
+    await dependencies.queue.fail(job, describeJobFailure(error, {code, stage: "company_debt_view", spend, retryable: code !== "company_debt_task_plan_mismatch"}), {retryable: code !== "company_debt_task_plan_mismatch", retryInSeconds: 30});
     log("company_debt_view.failed", {job: job.job_id, code});
     return {status: "failed"};
   }

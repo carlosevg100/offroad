@@ -33,6 +33,7 @@ import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} f
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import {createWorkerPublicCompanyMemory} from "./public-company-memory";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
+import {describeJobFailure} from "./job-failure";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const taskSchema = z.object({
@@ -620,7 +621,7 @@ export async function processOriginationThesisJob(
       "origination_task_dependencies_invalid",
     ]);
     const retryable = !nonRetryable.has(code);
-    await dependencies.queue.fail(job, {code, spend, modelAttempts}, {retryable, retryInSeconds: 30});
+    await dependencies.queue.fail(job, describeJobFailure(error, {code, stage: "origination_thesis", spend, modelAttempts}), {retryable, retryInSeconds: 30});
     log("origination_thesis.failed", {job: job.job_id, code, modelAttempts});
     return {status: "failed"};
   }

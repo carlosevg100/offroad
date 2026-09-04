@@ -18,6 +18,7 @@ import {z} from "zod";
 
 import {institutionCapabilitiesSchema, professionalContextSchema} from "./advisor-context";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
+import {describeJobFailure} from "./job-failure";
 
 const contextSchema = z.object({
   session_id: z.uuid(),
@@ -311,7 +312,7 @@ export async function processAgentOperationBriefJob(
         message: recordError instanceof Error ? recordError.message.slice(0, 300) : "unknown",
       });
     }
-    await queue.fail(job, {code: "agent_processing_failed", spend: gateway.spent()}, {retryable: false});
+    await queue.fail(job, describeJobFailure(error, {code: "agent_processing_failed", stage: "agent_operation_brief", spend: gateway.spent(), retryable: false}), {retryable: false});
     return {status: "failed"};
   }
 }

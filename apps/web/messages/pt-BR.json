@@ -1280,6 +1280,13 @@
         "save": "Não foi possível registrar a mensagem.",
         "processing": "A leitura não pôde ser iniciada.",
         "upload": "Um ou mais documentos não puderam ser recebidos com segurança."
+      },
+      "openRequirements": "O que ainda falta e por que importa",
+      "materiality": {
+        "blocking": "bloqueia",
+        "high": "alta",
+        "medium": "média",
+        "low": "baixa"
       }
     },
     "privateCase": {

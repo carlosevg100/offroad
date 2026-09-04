@@ -22,6 +22,7 @@ import {createWorkerPublicResearchCache} from "./public-research-cache";
 import {createWorkerPublicCompanyMemory} from "./public-company-memory";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {buildPublicWorkAssessment} from "./agent-assessment";
+import {describeJobFailure} from "./job-failure";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const taskSchema = z.object({
@@ -400,7 +401,7 @@ export async function processCapitalPlanningJob(
   } catch (error) {
     const code = errorCode(error);
     await dependencies.queue.writeStage(job, "capital_planning", "failed", {code}).catch(() => undefined);
-    await dependencies.queue.fail(job, {code, spend: dependencies.gateway.spent()}, {retryable: false});
+    await dependencies.queue.fail(job, describeJobFailure(error, {code, stage: "capital_planning", spend: dependencies.gateway.spent(), retryable: false}), {retryable: false});
     log("capital_planning.failed", {job: job.job_id, code});
     return {status: "failed"};
   }

@@ -1087,3 +1087,15 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Cobertura por função | seção 9 do Atlas | 14 lentes profissionais, com separação explícita entre Analyst, Associate, VP e Director/MD; função não é rota de runtime | 2026-09-04 |
 | Pareto de homologação | seção 10 do Atlas | 20 casos cobrindo produção, revisão, originação, companhia, crédito, investimento, estruturas, materiais, matching e monitoramento | 2026-09-04 |
 | Decisão arquitetural | ADR 0021 + Constituição 2.5 | seis entradas preservadas como atalhos; arquitetura-alvo compila workflows pelo Intent Envelope e permite objetos não company-led | 2026-09-04 |
+
+## Fase 0, falha com causa e métricas segmentadas, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Envelope de falha | `apps/document-worker/src/job-failure.ts` + teste | 4 testes: exceção comum preserva nome e mensagem; classes de produção reconhecidas (schema, timeout de banco, constraint, modelo esgotado, orçamento, gate, transitório); valores e e-mails nunca gravados; retentativa por classe | 2026-09-04 |
+| Executores ligados | `agent-operation-brief`, `case-analysis`, `capital-planning`, `company-debt-view`, `origination-thesis` | os cinco pontos de falha passam pelo envelope; pipeline de documentos já carregava mensagem | 2026-09-04 |
+| Migração aplicada | `20260904201650_job_failure_causes_and_run_metrics` | funções e seis views em `private`, revogadas de `anon` e `authenticated` | 2026-09-04 |
+| Regressão SQL no projeto | `supabase/tests/job_failure_causes.sql` via `execute_sql` | `job_failure_causes_passed`; classificador cobre os formatos antigos e o novo; categoria nua não conta como causa | 2026-09-04 |
+| Linha de base | `private.failures_without_cause` | 12 de 36 falhas históricas sem causa; classes: schema 10, modelo esgotado 5, constraint 3, input inválido 3, orçamento 2, timeout 2, gate 1, worker 1, sem classe 9 | 2026-09-04 |
+| Testes do worker | Vitest | 26 arquivos / 132 testes verdes | 2026-09-04 |
+| Web | typecheck, paridade i18n, testes | verdes com as chaves novas de cobertura | 2026-09-04 |
