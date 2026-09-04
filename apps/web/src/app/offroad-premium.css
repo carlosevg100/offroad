@@ -13291,3 +13291,37 @@ button[disabled].workspace-search,
   color: var(--desk-dim);
   cursor: pointer;
 }
+
+/* The access panel is the only brand moment before the workspace, so it speaks in
+   the same voice as the entry: the brand serif, at a size that reads as a
+   statement rather than a shout. The premium layer had reset it to the heavy
+   grotesque, which pushed the line into six stacked fragments. */
+.auth-panel__copy h1,
+.auth-page:has(.auth-form--registration) .auth-panel__copy h1 {
+  max-width: 22ch;
+  font-family: var(--serif);
+  font-size: clamp(32px, 3.6vw, 46px);
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.auth-panel__copy > p {
+  max-width: 46ch;
+}
+
+@media (max-width: 760px) {
+  .auth-page .auth-panel__copy h1 {
+    max-width: 20ch;
+    font-size: clamp(28px, 7.6vw, 36px);
+  }
+}
+
+/* The back link is pinned to the panel corner and sits out of flow, so a form tall
+   enough to start at the top, registration being the one that is, renders its
+   heading underneath the link. Reserving the link's own height fixes the collision
+   without moving a short, vertically centred form. */
+.auth-panel--form {
+  padding-top: 96px;
+}

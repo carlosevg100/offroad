@@ -4,6 +4,22 @@ Atualizado em: 2026-09-04
 Baseline: `main` após PR #401, commit `16a3e07`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Nome curto e entrada de acesso reescrita, 04/09/2026
+
+- A marca passa a ser **Offroad**, não Offroad Capital, acompanhando a logotipia nova. O domínio,
+  o e-mail e a razão social não mudam; muda o nome exibido em metadados, manifest, título do
+  navegador e toda a copy de produto.
+- A tela de acesso perdeu o rótulo `Acesso institucional`, o título `Acesse a plataforma Offroad
+  Capital` e as duas frases que descreviam controle de acesso em vocabulário interno. No lugar
+  entrou a declaração de marca da própria casa, o motivo de entrar, e a promessa de privacidade
+  dita como o usuário a entende.
+- O título do painel de contexto voltou ao serif da marca. A camada premium o havia redefinido
+  para o grotesco pesado, o que quebrava a frase em seis fragmentos empilhados.
+- Corrigido um defeito que já existia em produção: o link de voltar é posicionado de forma
+  absoluta no canto do painel, então um formulário alto o bastante para começar no topo, o de
+  cadastro, renderizava o próprio título por baixo dele.
+- Gate integral verde nos 43 alvos em Node 24. Login e cadastro verificados em servidor local.
+
 ## Casca e entrada do advisor refeitas, 04/09/2026
 
 - A barra lateral virou um componente cliente único, recolhível para 58 px, com o estado em cookie
