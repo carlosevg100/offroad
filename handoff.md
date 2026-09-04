@@ -2635,3 +2635,15 @@ O primeiro pack setorial, alimentos e consumo essencial no Brasil, foi implement
 drivers operacionais e downside próprios do setor. Nem o engine nem o pack estão homologados como
 expert. O próximo passo é o primeiro gold case acompanhado, seguido de caso adversarial, benchmark
 cego e revisão nominal independente antes de qualquer promoção de maturidade.
+
+## 41. Entrada do advisor simplificada, 04/09/2026
+
+A home autenticada foi reorganizada como uma entrada de trabalho, não como um seletor de produto.
+Ela mostra o farol da Offroad, cumprimenta o usuário pelo primeiro nome confirmado no perfil e
+pergunta apenas `No que vamos trabalhar hoje?`. O composer vem antes dos atalhos e alterna exemplos
+curtos enquanto está vazio; os cinco pontos de partida permanecem disponíveis abaixo dele.
+
+Nenhuma regra econômica ou operacional mudou: os atalhos apenas informam o primeiro subgrafo, o
+upload continua privado e o projeto continua sendo criado e processado pelas mesmas fronteiras. A
+ausência de nome usa saudação neutra. A versão inglesa preserva a mesma função com redação própria.
+Typecheck, 31 arquivos/182 testes da web, lint e build de produção passaram localmente com Node 24.

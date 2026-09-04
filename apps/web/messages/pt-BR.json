@@ -1112,16 +1112,22 @@
     },
     "advisor": {
       "groupContext": "Nova conversa em {project}",
-      "kicker": "OFFROAD ADVISOR",
-      "title": "Como a Offroad pode ajudar hoje?",
-      "body": "Descreva o trabalho com suas palavras ou anexe o que já tiver. A companhia, as evidências, as decisões e os materiais permanecerão no mesmo projeto.",
-      "prompt": "Descreva a companhia, a necessidade ou a operação que deseja analisar.",
+      "greeting": "Olá.",
+      "greetingNamed": "Olá, {name}.",
+      "title": "No que vamos trabalhar hoje?",
+      "prompt": "Descreva o que precisa ou anexe os documentos que já tiver.",
+      "promptIdeas": {
+        "0": "Tenho uma reunião com uma companhia e quero chegar com ideias concretas...",
+        "1": "Quero avaliar alternativas para financiar uma expansão...",
+        "2": "Analise estes documentos e me ajude a estruturar a operação...",
+        "3": "Quero revisar uma proposta e testar se os termos fazem sentido..."
+      },
       "starterLabel": "Pontos de partida",
       "starters": {
         "companyDebt": {"label": "Entender uma companhia", "placeholder": "Ex.: analise a companhia na ótica de dívida e mostre os riscos, a capacidade financeira e o que ainda precisa ser comprovado."},
         "origination": {"label": "Preparar uma reunião", "placeholder": "Ex.: tenho uma reunião com esta companhia e quero chegar com uma leitura própria e alternativas de financiamento para explorar."},
         "capitalPlanning": {"label": "Planejar uma necessidade", "placeholder": "Ex.: preciso financiar crescimento, capital de giro, uma aquisição ou refinanciar vencimentos. Ajude a comparar as alternativas."},
-        "documents": {"label": "Estruturar pelos documentos", "placeholder": "Anexe a pasta que recebeu e conte o contexto que já conhece. A Offroad identifica a companhia, reconstrói o caso e mostra o que falta."},
+        "documents": {"label": "Estruturar pelos documentos", "placeholder": "Anexe a pasta que recebeu e conte o contexto que já conhece. A Offroad identifica a companhia, organiza o caso e mostra o que falta."},
         "review": {"label": "Revisar uma operação", "placeholder": "Ex.: recebi uma proposta ou term sheet e quero testar a estrutura, os termos, os riscos e as alternativas."}
       },
       "attach": "Anexar documentos",

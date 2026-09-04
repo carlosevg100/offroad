@@ -393,7 +393,7 @@ test.describe("Document-first intake (company journey)", () => {
 
     workspaceGroup = page.locator(".workspace-project-group").filter({hasText: renamedWorkspaceGroupName});
     await workspaceGroup.locator(".workspace-project-group__new").click();
-    await expect(page.locator(".advisor-start h1")).toHaveText("Como a Offroad pode ajudar hoje?");
+    await expect(page.locator(".advisor-start h1")).toHaveText("No que vamos trabalhar hoje?");
     await expect(page.locator(".advisor-start__project-context")).toContainText(renamedWorkspaceGroupName);
     await page.locator(".advisor-starters button").filter({hasText: "Planejar uma necessidade"}).click();
     const request = `Conversa ${runId}: planejar R$ 20 milhões`;

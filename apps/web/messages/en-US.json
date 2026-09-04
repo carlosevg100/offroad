@@ -1112,16 +1112,22 @@
     },
     "advisor": {
       "groupContext": "New conversation in {project}",
-      "kicker": "OFFROAD ADVISOR",
-      "title": "How can Offroad help today?",
-      "body": "Describe the assignment in your own words or attach what you already have. The company, evidence, decisions and materials will stay in the same project.",
-      "prompt": "Describe the company, capital need or transaction you want to examine.",
+      "greeting": "Hi.",
+      "greetingNamed": "Hi, {name}.",
+      "title": "What are we working on today?",
+      "prompt": "Describe what you need or attach the documents you already have.",
+      "promptIdeas": {
+        "0": "I have a company meeting and want to arrive with concrete ideas...",
+        "1": "I want to assess alternatives to finance an expansion...",
+        "2": "Analyze these documents and help me structure the transaction...",
+        "3": "I want to review a proposal and test whether the terms make sense..."
+      },
       "starterLabel": "Starting points",
       "starters": {
         "companyDebt": {"label": "Understand a company", "placeholder": "Example: analyze the company through a debt lens and show the risks, financial capacity and what still needs to be proven."},
         "origination": {"label": "Prepare a meeting", "placeholder": "Example: I have a meeting with this company and want an independent view and financing alternatives to explore."},
         "capitalPlanning": {"label": "Plan a capital need", "placeholder": "Example: I need to finance growth, working capital, an acquisition or refinance maturities. Help me compare the alternatives."},
-        "documents": {"label": "Structure from documents", "placeholder": "Attach the folder you received and add any context you know. Offroad identifies the company, reconstructs the case and shows what is missing."},
+        "documents": {"label": "Structure from documents", "placeholder": "Attach the folder you received and add any context you know. Offroad identifies the company, organizes the case and shows what is missing."},
         "review": {"label": "Review a transaction", "placeholder": "Example: I received a proposal or term sheet and want to test the structure, terms, risks and alternatives."}
       },
       "attach": "Attach documents",

@@ -12,14 +12,19 @@ export default async function ApplicationHome({params, searchParams}: Props) {
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "App"});
   const {supabase, organization, userId} = await requireWorkspace(locale);
-  const {data: selectedGroup} = state.group
-    ? await supabase.from("workspace_project_groups")
+  const [selectedGroupResult, profileResult] = await Promise.all([
+    state.group
+      ? supabase.from("workspace_project_groups")
         .select("id, name")
         .eq("organization_id", organization.id)
         .eq("id", state.group)
         .is("archived_at", null)
         .maybeSingle()
-    : {data: null};
+      : Promise.resolve({data: null}),
+    supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle(),
+  ]);
+  const selectedGroup = selectedGroupResult.data;
+  const userFirstName = profileResult.data?.full_name?.trim().split(/\s+/)[0] ?? "";
 
   if (organization.organization_type === "capital_provider") {
     const [{data: funds}, {data: mandates}, {data: contacts}, {data: requests}] = await Promise.all([
@@ -61,10 +66,11 @@ export default async function ApplicationHome({params, searchParams}: Props) {
   }
 
   const copy: AdvisorStartCopy = {
-    kicker: t("advisor.kicker"),
+    greeting: t("advisor.greeting"),
+    greetingNamed: t("advisor.greetingNamed"),
     title: t("advisor.title"),
-    body: t("advisor.body"),
     prompt: t("advisor.prompt"),
+    promptIdeas: [t("advisor.promptIdeas.0"), t("advisor.promptIdeas.1"), t("advisor.promptIdeas.2"), t("advisor.promptIdeas.3")],
     starterLabel: t("advisor.starterLabel"),
     starters: {
       company_debt_view: {label: t("advisor.starters.companyDebt.label"), placeholder: t("advisor.starters.companyDebt.placeholder")},
@@ -84,5 +90,5 @@ export default async function ApplicationHome({params, searchParams}: Props) {
     groupContext: t("advisor.groupContext"),
   };
 
-  return <AdvisorStart copy={copy} groupId={selectedGroup?.id} groupName={selectedGroup?.name} locale={locale === "en-US" ? "en-US" : "pt-BR"} organizationId={organization.id} userId={userId} />;
+  return <AdvisorStart copy={copy} groupId={selectedGroup?.id} groupName={selectedGroup?.name} locale={locale === "en-US" ? "en-US" : "pt-BR"} organizationId={organization.id} userFirstName={userFirstName} userId={userId} />;
 }

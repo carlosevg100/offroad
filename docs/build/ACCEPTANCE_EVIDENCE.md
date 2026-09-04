@@ -997,3 +997,11 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Pack setorial | `sector.food-consumer-staples.br-v1` | drivers de categoria, preço, volume, mix, câmbio, commodities, hedge, safra, capital de giro, capex e ramp-up implementados com maturidade `implemented` | 2026-09-03 |
 | Testes focados | Vitest | financial-model 33/33, financial-core 66/66 e credit-playbook 162/162 verdes | 2026-09-03 |
 | Gate integral | `fnm exec --using=24 pnpm check` | lint, typecheck, testes e build verdes nos 43 pacotes; web 176, worker 114, evals 38; Next.js gerou 34 páginas | 2026-09-03 |
+
+## Entrada conversacional do workspace, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Identidade bilíngue | `apps/web/messages/pt-BR.json` e `en-US.json` | mesmas chaves para saudação, título e quatro exemplos; teste de paridade aprovado | 2026-09-04 |
+| Fluxo preservado | `AdvisorStart` | mudança restrita à hierarquia visual; criação atômica, upload privado, início da leitura e roteamento mantidos | 2026-09-04 |
+| Qualidade local | web typecheck, Vitest, ESLint e Next build com Node 24.19.0 | tipos aprovados; 31 arquivos/182 testes aprovados; lint aprovado; build de 34 páginas aprovado | 2026-09-04 |
