@@ -83,6 +83,9 @@ const schema = z.object({
   FIRECRAWL_API_KEY: providerApiKeySchema,
   ENABLE_OPENAI_WEB_SEARCH: z.string().default("false").transform((value) => value === "true"),
   ENABLE_FIRECRAWL: z.string().default("false").transform((value) => value === "true"),
+  /** `frozen` makes every public lookup read the source pack at SOURCE_PACK_PATH; nothing reaches the network. */
+  PUBLIC_RESEARCH_MODE: z.enum(["live", "frozen"]).default("live"),
+  SOURCE_PACK_PATH: z.string().min(1).optional(),
   FIRECRAWL_ZERO_DATA_RETENTION: z.string().default("false").transform((value) => value === "true"),
   OFFROAD_RESEARCH_USER_AGENT: z.string().min(10).max(300)
     .default("Offroad Capital research@offroad.capital"),
@@ -119,6 +122,9 @@ const schema = z.object({
 }).superRefine((config, context) => {
   if (config.ENABLE_OPENAI_WEB_SEARCH && !config.OPENAI_API_KEY) {
     context.addIssue({code: "custom", path: ["OPENAI_API_KEY"], message: "required when OpenAI web search is enabled"});
+  }
+  if (config.PUBLIC_RESEARCH_MODE === "frozen" && !config.SOURCE_PACK_PATH) {
+    context.addIssue({code: "custom", path: ["SOURCE_PACK_PATH"], message: "required when public research is frozen"});
   }
   if (config.ENABLE_FIRECRAWL && !config.FIRECRAWL_API_KEY) {
     context.addIssue({code: "custom", path: ["FIRECRAWL_API_KEY"], message: "required when Firecrawl is enabled"});

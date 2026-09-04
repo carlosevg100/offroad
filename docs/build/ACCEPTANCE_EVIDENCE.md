@@ -1109,6 +1109,12 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Testes do worker | Vitest | 26 arquivos / 132 testes verdes | 2026-09-04 |
 | Web | typecheck, paridade i18n, testes | verdes com as chaves novas de cobertura | 2026-09-04 |
 
+## Source pack, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Schema e comportamento | `source-pack.test.ts` | 5 testes: retenção segue a licença, busca só do pack por tópico, país e allowlist, aquisição recusa URL fora do pack e detecta drift, verificação do pack inteiro, entrada a partir de uma aquisição | 2026-09-04 |
+| Worker em modo congelado | `main.ts` + `source-pack-runtime.ts` | provedores, fábrica oficial e adquirente trocados pelo pack quando `PUBLIC_RESEARCH_MODE=frozen`; typecheck, lint e 134 testes verdes | 2026-09-04 |
 ## Metodologia institucional, 04/09/2026
 
 | Evidência | Comando/artefato | Resultado | Data |

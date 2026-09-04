@@ -22,7 +22,7 @@ export const researchQuerySchema = z.object({
 export type ResearchQuery = z.infer<typeof researchQuerySchema>;
 
 export const researchSourceSchema = z.object({
-  provider: z.enum(["perplexity", "openai", "official", "mcp"]),
+  provider: z.enum(["perplexity", "openai", "official", "mcp", "source_pack"]),
   topic: researchTopicSchema,
   title: z.string().trim().min(1).max(500),
   url: z.url(),
@@ -31,7 +31,7 @@ export const researchSourceSchema = z.object({
   retrievedAt: z.iso.datetime(),
   contentHash: z.string().regex(/^[a-f0-9]{64}$/),
   contentAcquisition: z.object({
-    acquiredBy: z.enum(["direct_https", "firecrawl"]),
+    acquiredBy: z.enum(["direct_https", "firecrawl", "source_pack"]),
     finalUrl: z.url(),
     retrievedAt: z.iso.datetime(),
     byteSize: z.number().int().nonnegative(),
