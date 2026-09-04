@@ -2087,9 +2087,9 @@ summary:focus-visible {
 
 .brand-mark__asset {
   position: static;
-  width: 188px;
+  width: auto;
   max-width: none;
-  height: auto;
+  height: 44px;
 }
 
 .brand-mark__signature {
@@ -5012,7 +5012,7 @@ summary:focus-visible {
   }
 
   .brand-mark__asset {
-    width: 176px;
+    height: 38px;
   }
 
   .premium-hero__inner {
@@ -5681,7 +5681,7 @@ body:has(> #main-content) {
 }
 
 .site-header--landing .brand-mark__asset {
-  width: 184px;
+  height: 42px;
 }
 
 .site-header--landing .brand-mark__asset-frame {
@@ -5729,7 +5729,7 @@ body:has(> #main-content) {
   }
 
   .site-header--landing .brand-mark__asset {
-    width: 164px;
+    height: 39px;
   }
 
   .site-header--landing .brand-mark__asset-frame {
@@ -5762,7 +5762,7 @@ body:has(> #main-content) {
   }
 
   .site-header--landing .brand-mark__asset {
-    width: 178px;
+    height: 36px;
   }
 
   .site-header--landing .brand-mark__asset-frame {
@@ -5779,9 +5779,12 @@ body:has(> #main-content) {
     column-gap: 8px;
   }
 
-  .site-header--landing .brand-mark__asset-frame,
-  .site-header--landing .brand-mark__asset {
+  .site-header--landing .brand-mark__asset-frame {
     width: 154px;
+  }
+
+  .site-header--landing .brand-mark__asset {
+    height: 32px;
   }
 
   .site-header--landing .brand-mark__asset-frame {
