@@ -11,6 +11,8 @@
   },
   "scripts": {
     "baseline": "tsx src/cli.ts baseline",
+    "baseline:gold": "tsx scripts/run-gold-baseline.ts",
+    "baseline:gold:local": "tsx --env-file=../../.env.local scripts/run-gold-baseline.ts",
     "build": "tsc -p tsconfig.json",
     "camil:gold": "tsx scripts/build-camil-gold.ts",
     "cogna:gold": "tsx scripts/build-cogna-gold.ts",

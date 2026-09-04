@@ -1,0 +1,91 @@
+name: Gold case baseline
+
+# Runs the fair baseline of a gold case (docs/product/gold-cases/README.md §5): the strongest
+# generalist receives the same turns, the same documents, the equivalent content of the frozen
+# source pack and the same time window, with no tools and no hint of the rubric. The outputs and
+# the run record (every input hash, model, cost) are uploaded as an artifact and committed beside
+# the case by whoever dispatched the run.
+#
+# The model keys live in Secrets Manager and nowhere else; `offroadGitHubEvalsRole` may read the
+# two secrets and nothing else. Manual only: it spends real money with the providers.
+
+on:
+  workflow_dispatch:
+    inputs:
+      case:
+        description: "Gold case to run (gc01 … gc05)"
+        required: false
+        default: "gc01"
+      max_cost:
+        description: "Budget in USD for the whole run"
+        required: false
+        default: "25"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: gold-baseline-${{ inputs.case || 'gc01' }}
+  cancel-in-progress: false
+
+jobs:
+  baseline:
+    name: Run the generalist on the frozen information base
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
+          aws-region: sa-east-1
+
+      - name: Run the baseline
+        env:
+          CASE: ${{ inputs.case || 'gc01' }}
+          MAX_COST: ${{ inputs.max_cost || '25' }}
+        run: |
+          set -euo pipefail
+          # Masked the moment they exist, so a stray echo or a crash dump cannot print one.
+          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
+          echo "::add-mask::$ANTHROPIC_API_KEY"
+          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
+          echo "::add-mask::$OPENAI_API_KEY"
+          export ANTHROPIC_API_KEY OPENAI_API_KEY
+
+          pnpm --filter @offroad/evals baseline:gold -- --case "$CASE" --max-cost "$MAX_COST" --out "$RUNNER_TEMP/baseline-run" 2>&1 \
+            | grep -vE 'Warning: (TT|Required "glyf"|UnknownErrorException)' | tee /tmp/baseline.log
+
+          {
+            echo "## Gold baseline — $CASE"
+            echo
+            grep -E '^(document|source|information base|turn|run record)' /tmp/baseline.log | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the run (outputs and record)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gold-baseline-${{ inputs.case || 'gc01' }}
+          path: ${{ runner.temp }}/baseline-run
+          if-no-files-found: error
+          retention-days: 90

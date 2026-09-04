@@ -1151,3 +1151,10 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Migração aplicada | `20260904231340_gold_case_bindings` | `plpgsql_check` sem achados no staging; aplicada em produção | 2026-09-04 |
 | Contrato SQL | `supabase/tests/gold_case_bindings.sql` | projeto iniciado pelo RPC real, turno enfileirado, vínculo inserido como operador, claim traz `source_pack_id`; tenants não leem a tabela; ensaio em produção com rollback: `gold_case_bindings_passed` | 2026-09-04 |
 | Roteamento por job | `research-routing.test.ts` | job sem vínculo segue vivo; job vinculado lê só o pack (carregado uma vez); pack ausente falha em vez de ir à internet; worker 137 testes | 2026-09-04 |
+## Baseline justo, runner e workflow, 04/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Base de informação determinística | `gold-baseline.test.ts` | ordem por id, hash muda com qualquer byte, instrução sem rubrica, filtro de CSV; evals 47 testes | 2026-09-04 |
+| Números das notas presentes | `baseline:gold --dry-run --dump` | 5.670.186, 1.229.828, 2.407.895, 3.262.291, 1.264.059, 6,3416, 14,1500 e 251.000.000 encontrados na base renderizada | 2026-09-04 |
+| Gateway | `model-gateway` 26 testes | tarefa `baseline_generalist` com política Opus 5 e fallback GPT-5.6 | 2026-09-04 |

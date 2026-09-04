@@ -2325,3 +2325,18 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   `packages/testing-fixtures/assets/**`.
 - Isso é o que faltava para o passo 5 do Caso 01: o fundador cria o projeto no produto, o operador
   vincula o projeto ao pack, e cada turno roda no produto real contra as fontes congeladas.
+## Baseline justo dos casos gold, candidate, 04/09/2026
+
+- `packages/evals/src/gold-baseline.ts` e `scripts/run-gold-baseline.ts`: montam a base de
+  informação de um caso (turnos do gold, documentos da fixture, conteúdo do source pack, data-base,
+  perfil profissional), renderizam de forma determinística com hash de cada entrada e enviam ao
+  generalista mais forte (`baseline_generalist` no gateway: Opus 5, fallback GPT-5.6, 32 mil tokens
+  de saída) turno a turno, com a resposta anterior no histórico. O sistema de instruções é o que um
+  VP diria a qualquer analista e não menciona a rubrica; o teste garante isso.
+- Os PDFs entram como o texto e as tabelas que o parser do produto produz. No ensaio, a primeira
+  renderização só trazia os blocos de prosa e perdia todos os números das notas (dívida bruta,
+  cronograma, contingências); as tabelas estavam na camada, em `page.tables`, e passaram a ser
+  renderizadas. A base do Caso 01 mede 1,05 milhão de caracteres, cerca de 330 mil tokens.
+- Workflow manual `Gold case baseline`: lê as chaves por OIDC (`offroadGitHubEvalsRole`, as
+  mesmas duas secrets da medição de extração), roda o comando e publica a run como artefato.
+  Nenhuma chave de modelo existe no laptop nem na Vercel, e isso é deliberado.
