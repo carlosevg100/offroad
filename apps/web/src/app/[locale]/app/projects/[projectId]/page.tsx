@@ -22,7 +22,7 @@ import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
-import {currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
+import {canShowAdvisorInformationRequests, currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
 
 import {OriginationDecision} from "./origination-decision";
 import {CompanyDebtProject} from "./company-debt-project";
@@ -372,14 +372,18 @@ async function ConversationalCapitalProject({
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", createdAt: new Date().toISOString()}];
   const fallbackContext = pendingAdvisorContext(messages ?? []);
-  const pendingRequests = informationRequests?.length
-    ? informationRequests.map((request) => ({
+  const showInformationRequests = canShowAdvisorInformationRequests(preliminary?.current?.row.status ?? null);
+  const visibleInformationRequests = showInformationRequests
+    ? informationRequests ?? []
+    : [];
+  const pendingRequests = visibleInformationRequests.length
+    ? visibleInformationRequests.map((request) => ({
         id: request.id,
         question: request.question,
         whyItMatters: request.why_it_matters,
         decisionImpact: request.decision_impact,
       }))
-    : fallbackContext ? [{id: `context-${project.id}`, ...fallbackContext}] : [];
+    : showInformationRequests && fallbackContext ? [{id: `context-${project.id}`, ...fallbackContext}] : [];
   const compiledActivities = advisorActivities(project.entry_job, (tasks ?? []).map((task) => ({
     id: task.id,
     taskId: task.task_id,

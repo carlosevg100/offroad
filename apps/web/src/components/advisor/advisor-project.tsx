@@ -186,7 +186,7 @@ export function AdvisorProject(props: Props) {
               const live = active && item.id === lastActivityId && ["work_started", "work_progress"].includes(item.event.type);
               return <article className={`advisor-thread__activity-event${failed ? " is-failed" : terminal ? " is-complete" : ""}`} key={`activity-${item.id}`}>
                 <span>{live ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : terminal ? <Check aria-hidden="true" size={13} /> : failed ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={12} />}</span>
-                <div><small>{props.copy.activity}</small><p>{item.event.summary}</p></div>
+                <div><small>{failed ? props.copy.needsAttention : terminal ? props.copy.ready : props.copy.activity}</small><p>{item.event.summary}</p></div>
               </article>;
             }
             const message = item.message;
