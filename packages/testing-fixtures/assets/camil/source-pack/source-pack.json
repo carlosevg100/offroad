@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "source-pack.v1",
+  "caseId": "gc01-analista-ib-camil",
+  "subject": {
+    "legalName": "Camil Alimentos S.A.",
+    "website": "https://www.camilalimentos.com.br",
+    "sector": "Alimentos",
+    "geography": "BR"
+  },
+  "frozenAt": "2026-09-04T21:13:33.963Z",
+  "entries": [
+    {
+      "id": "cvm_cadastro_cia_aberta",
+      "topic": "identity",
+      "title": "CVM Dados Abertos: cadastro de companhias abertas",
+      "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/CAD/DADOS/cad_cia_aberta.csv",
+      "finalUrl": "https://dados.cvm.gov.br/dados/CIA_ABERTA/CAD/DADOS/cad_cia_aberta.csv",
+      "acquiredAt": "2026-09-04T21:13:34.241Z",
+      "asOfDate": "2026-09-04",
+      "version": "snapshot 2026-09-04",
+      "sha256": "778df91701936c356cd6d2cdcc2aaac366694fad1a1a3b5535ba225d8a0255c1",
+      "byteSize": 1493174,
+      "contentType": "application/octet-stream",
+      "publisherSourceId": "cvm_open_data",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Dados abertos do governo federal; reuso público"
+      },
+      "path": "cvm_cadastro_cia_aberta.csv",
+      "country": "BR"
+    },
+    {
+      "id": "anbima_data_emissoes",
+      "topic": "market",
+      "title": "ANBIMA Data: emissões e termos recentes de debêntures do setor",
+      "url": "https://data.anbima.com.br/",
+      "finalUrl": "https://data.anbima.com.br/",
+      "acquiredAt": "2026-09-04T21:13:33.963Z",
+      "asOfDate": "2026-09-04",
+      "version": "consulta manual 2026-09-04",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "byteSize": 0,
+      "contentType": "manual",
+      "publisherSourceId": null,
+      "licence": {
+        "policy": "manual_only",
+        "note": "Decisão vigente: uso manual e complementar; nenhuma aquisição automatizada até confirmar os termos do endpoint"
+      },
+      "path": null,
+      "country": "BR"
+    }
+  ]
+}

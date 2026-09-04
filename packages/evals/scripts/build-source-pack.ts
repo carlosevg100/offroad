@@ -39,7 +39,10 @@ const manifestSchema = z.object({
   })).min(1),
 });
 
-const extensionFor = (contentType: string): string => {
+const extensionFor = (contentType: string, url: string): string => {
+  // Open-data portals often serve a CSV as octet-stream; the URL knows better than the header.
+  const fromUrl = /\.(pdf|zip|csv|json|xml|html?|txt|xlsx?)$/i.exec(new URL(url).pathname)?.[1]?.toLowerCase();
+  if (fromUrl) return fromUrl === "htm" ? "html" : fromUrl;
   if (/pdf/i.test(contentType)) return "pdf";
   if (/zip/i.test(contentType)) return "zip";
   if (/csv/i.test(contentType)) return "csv";
@@ -82,7 +85,7 @@ async function main(): Promise<void> {
     }
     try {
       const acquired = await acquire({url: item.url});
-      const file = `${item.id}.${extensionFor(acquired.lineage.contentType)}`;
+      const file = `${item.id}.${extensionFor(acquired.lineage.contentType, acquired.lineage.finalUrl)}`;
       const bytes = typeof acquired.content === "string" ? Buffer.from(acquired.content) : Buffer.from(acquired.content);
       writeFileSync(join(root, file), bytes);
       entries.push(sourcePackEntryFromAcquisition({

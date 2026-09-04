@@ -1,6 +1,11 @@
 {
   "caseId": "gc01-analista-ib-camil",
-  "subject": {"legalName": "Camil Alimentos S.A.", "website": "https://www.camilalimentos.com.br", "sector": "Alimentos", "geography": "BR"},
+  "subject": {
+    "legalName": "Camil Alimentos S.A.",
+    "website": "https://www.camilalimentos.com.br",
+    "sector": "Alimentos",
+    "geography": "BR"
+  },
   "items": [
     {
       "id": "cvm_cadastro_cia_aberta",
@@ -9,7 +14,10 @@
       "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/CAD/DADOS/cad_cia_aberta.csv",
       "asOfDate": "2026-09-04",
       "version": "snapshot 2026-09-04",
-      "licence": {"policy": "public_reusable", "note": "Dados abertos do governo federal; reuso público"},
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Dados abertos do governo federal; reuso público"
+      },
       "country": "BR"
     },
     {
@@ -19,8 +27,13 @@
       "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/ITR/DADOS/itr_cia_aberta_2026.zip",
       "asOfDate": "2026-05-31",
       "version": "dataset 2026",
-      "licence": {"policy": "public_reusable", "note": "Dados abertos; o pacote traz o dataset inteiro, o caso usa só a Camil"},
-      "country": "BR"
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Dados abertos; o pacote traz o dataset inteiro, o caso usa só a Camil"
+      },
+      "country": "BR",
+      "pending": true,
+      "note": "o dataset anual da CVM tem dezenas de megabytes e não cabe no pack; congelar os documentos específicos da Camil (ITR, fatos relevantes) pelos links diretos do sistema da CVM, a confirmar"
     },
     {
       "id": "cvm_ipe_2026",
@@ -29,8 +42,12 @@
       "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_2026.zip",
       "asOfDate": "2026-09-04",
       "version": "dataset 2026",
-      "licence": {"policy": "public_reusable"},
-      "country": "BR"
+      "licence": {
+        "policy": "public_reusable"
+      },
+      "country": "BR",
+      "pending": true,
+      "note": "o dataset anual da CVM tem dezenas de megabytes e não cabe no pack; congelar os documentos específicos da Camil (ITR, fatos relevantes) pelos links diretos do sistema da CVM, a confirmar"
     },
     {
       "id": "ri_release_1t26",
@@ -39,7 +56,10 @@
       "url": "https://www.camilalimentos.com.br/ri/",
       "asOfDate": "2026-05-31",
       "version": "1T26",
-      "licence": {"policy": "public_reusable", "note": "Divulgação obrigatória; confirmar link direto do PDF antes de adquirir"},
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória; confirmar link direto do PDF antes de adquirir"
+      },
       "country": "BR",
       "pending": true,
       "note": "link direto do release ainda não confirmado"
@@ -51,7 +71,10 @@
       "url": "https://www.camilalimentos.com.br/ri/",
       "asOfDate": "2026-05-31",
       "version": "1T26",
-      "licence": {"policy": "public_reusable", "note": "Divulgação obrigatória; confirmar link direto do PDF antes de adquirir"},
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Divulgação obrigatória; confirmar link direto do PDF antes de adquirir"
+      },
       "country": "BR",
       "pending": true,
       "note": "link direto da apresentação ainda não confirmado"
@@ -63,7 +86,10 @@
       "url": "https://data.anbima.com.br/",
       "asOfDate": "2026-09-04",
       "version": "consulta manual 2026-09-04",
-      "licence": {"policy": "manual_only", "note": "Decisão vigente: uso manual e complementar; nenhuma aquisição automatizada até confirmar os termos do endpoint"},
+      "licence": {
+        "policy": "manual_only",
+        "note": "Decisão vigente: uso manual e complementar; nenhuma aquisição automatizada até confirmar os termos do endpoint"
+      },
       "country": "BR"
     },
     {
@@ -73,7 +99,10 @@
       "url": "https://www.anbima.com.br/",
       "asOfDate": "2026-09-04",
       "version": "snapshot 2026-09-04",
-      "licence": {"policy": "manual_only", "note": "As curvas entram pelo registro de `market-curves`, com lineage própria; este item só documenta a data-base"},
+      "licence": {
+        "policy": "manual_only",
+        "note": "As curvas entram pelo registro de `market-curves`, com lineage própria; este item só documenta a data-base"
+      },
       "country": "BR",
       "pending": true,
       "note": "fonte e licença da curva a registrar em market-curves antes de congelar"
