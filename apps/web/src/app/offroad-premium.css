@@ -982,7 +982,6 @@
 @media (max-width: 860px) {
   .advisor-start {align-items: flex-start; padding: 42px 18px;}
   .advisor-start__center > header {text-align: center;}
-  .advisor-starters {justify-content: center;}
   .advisor-project {display: block;}
   .advisor-project__context {border-left: 0; border-top: 1px solid #dfe2df; min-height: auto;}
   .advisor-thread {padding-left: 20px; padding-right: 20px;}
