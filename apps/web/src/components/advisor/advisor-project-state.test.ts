@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import {advisorNeedsAttention, customerEventType, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
 
 describe("advisor project current state", () => {
   const failed = {type: "quality_gate_failed", createdAt: "2026-09-03T10:00:00.000Z"};
@@ -25,5 +25,11 @@ describe("advisor project current state", () => {
       messageStatuses: ["failed"],
       events: [recovered, {...failed, createdAt: "2026-09-03T10:06:00.000Z"}],
     })).toBe(true);
+  });
+
+  it("treats only terminal stage progress as a completed work product", () => {
+    expect(customerEventType("work_progress", {stage: "preliminary_understanding", status: "succeeded"})).toBe("work_completed");
+    expect(customerEventType("work_progress", {stage: "public_research", status: "succeeded"})).toBe("work_progress");
+    expect(customerEventType("work_progress", {stage: "case_analysis", status: "started"})).toBe("work_progress");
   });
 });

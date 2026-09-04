@@ -125,6 +125,8 @@ describe("worker case analysis", () => {
     const calls: string[] = [];
     const stages: Array<{stage: string; status: string}> = [];
     let recorded: {inputFingerprint: string; payload: unknown} | null = null;
+    let assessedProjectId: string | null = null;
+    let narrativeInput: Record<string, unknown> | null = null;
     let completed: Record<string, unknown> | null = null;
     const queue: QueueClient = {
       claim: async () => null,
@@ -149,6 +151,7 @@ describe("worker case analysis", () => {
       loadPreliminaryInput: async () => ({
         session: {
           id: job.intake_session_id,
+          capital_project_id: "abababab-abab-4bab-8bab-abababababab",
           locale: "pt-BR",
           archetype: "working_capital",
           company_profile: {
@@ -228,6 +231,10 @@ describe("worker case analysis", () => {
       recordCaseSnapshot: async () => { throw new Error("the preliminary job must not persist a case snapshot"); },
       recordOperatingControlSnapshot: async () => { throw new Error("the preliminary job must not persist operating controls"); },
       recordControlledExecution: async () => { throw new Error("the preliminary job must not create a controlled execution"); },
+      recordAgentAssessment: async (_job, assessment) => {
+        assessedProjectId = assessment.projectId;
+        return {agentPlanId: "cdcdcdcd-cdcd-4dcd-8dcd-cdcdcdcdcdcd", coverageCount: 1, requestCount: 1, decisionCount: 0};
+      },
       loadAgentContext: async () => ({}),
       loadCapitalProjectContext: async () => ({}),
       recordAgentResponse: async () => ({}),
@@ -239,9 +246,10 @@ describe("worker case analysis", () => {
     let spent = {costUsd: 0, calls: 0};
     let requestedMaxOutputTokens: number | undefined;
     const gateway = {
-      complete: async (request: {task: string; maxOutputTokens?: number}) => {
+      complete: async (request: {task: string; maxOutputTokens?: number; input: Array<{type: string; text?: string}>}) => {
         calls.push(request.task);
         requestedMaxOutputTokens = request.maxOutputTokens;
+        narrativeInput = JSON.parse(request.input[0]?.text ?? "{}") as Record<string, unknown>;
         spent = {costUsd: 0.08, calls: 1};
         return {
           output: {
@@ -298,6 +306,15 @@ describe("worker case analysis", () => {
     expect(outcome).toEqual({status: "succeeded"});
     expect(calls).toEqual(["preliminary_understanding"]);
     expect(requestedMaxOutputTokens).toBe(8_000);
+    expect(narrativeInput).toMatchObject({
+      resolvedDocumentOperation: {
+        source: "verified_document_facts",
+        objective: "Financiar o crescimento do capital de giro.",
+        requestedAmount: "20000000",
+        currency: "BRL",
+      },
+    });
+    expect(assessedProjectId).toBe("abababab-abab-4bab-8bab-abababababab");
     expect(stages).toEqual([
       {stage: "preliminary_understanding", status: "started"},
       {stage: "public_research", status: "started"},

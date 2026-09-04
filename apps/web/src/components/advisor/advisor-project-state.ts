@@ -5,6 +5,24 @@ export type AdvisorOutcomeEvent = {
 
 const SUCCESS_EVENTS = new Set(["work_completed", "decision_recorded", "question_answered"]);
 const FAILURE_EVENTS = new Set(["work_failed", "quality_gate_failed"]);
+const TERMINAL_STAGES = new Set([
+  "preliminary_understanding",
+  "case_analysis",
+  "company_debt_view",
+  "capital_planning",
+  "origination_thesis",
+  "agent_operation_brief",
+]);
+
+/** Stage telemetry uses `work_progress` for both intermediate and terminal success. Normalize
+ * only stages that finish a customer-visible unit of work. */
+export function customerEventType(eventType: string, detail: unknown): string {
+  if (eventType !== "work_progress" || !detail || typeof detail !== "object" || Array.isArray(detail)) return eventType;
+  const record = detail as Record<string, unknown>;
+  return record.status === "succeeded" && typeof record.stage === "string" && TERMINAL_STAGES.has(record.stage)
+    ? "work_completed"
+    : eventType;
+}
 
 function timestamp(value: string): number {
   const parsed = Date.parse(value);

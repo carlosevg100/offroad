@@ -1,6 +1,6 @@
 "use client";
 
-import {AlertCircle, Check, Circle, ExternalLink, FileCheck2, LoaderCircle, Search, ShieldCheck} from "lucide-react";
+import {AlertCircle, Check, Circle, ExternalLink, FileCheck2, LoaderCircle, RotateCcw, Search, ShieldCheck} from "lucide-react";
 import {useActionState, useEffect, useRef, useState} from "react";
 import {useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
@@ -17,17 +17,19 @@ type Props = {
   preliminary: PreliminaryUnderstandingState;
   projectId: string;
   sessionId: string;
+  canRetry: boolean;
   shouldStart: boolean;
 };
 
 const initialState: PrivatePreliminaryDecisionState = {ok: false};
 
-export function PrivateCaseWork({checklist, locale, preliminary, projectId, sessionId, shouldStart}: Props) {
+export function PrivateCaseWork({canRetry, checklist, locale, preliminary, projectId, sessionId, shouldStart}: Props) {
   const t = useTranslations("App.privateCase");
   const router = useRouter();
   const attemptedStart = useRef(false);
   const [bootstrapping, setBootstrapping] = useState(shouldStart);
   const [bootstrapFailed, setBootstrapFailed] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const [state, action] = useActionState(decidePrivateProjectPreliminary, initialState);
   const current = preliminary.current;
 
@@ -42,6 +44,16 @@ export function PrivateCaseWork({checklist, locale, preliminary, projectId, sess
   }, [locale, projectId, router, shouldStart]);
 
   const showingProcessing = preliminary.isProcessing || bootstrapping;
+  const showingFailure = !current && !showingProcessing && (canRetry || bootstrapFailed);
+
+  async function retryProcessing() {
+    setBootstrapFailed(false);
+    setRetrying(true);
+    const result = await beginAdvisorProjectProcessing({locale, projectId});
+    setRetrying(false);
+    if (!result.ok) setBootstrapFailed(true);
+    router.refresh();
+  }
 
   return (
     <article className="advisor-private-work">
@@ -57,9 +69,18 @@ export function PrivateCaseWork({checklist, locale, preliminary, projectId, sess
         </section>
       ) : null}
 
-      {bootstrapFailed ? <p className="form-notice form-notice--error" role="alert">{t("errors.processing")}</p> : null}
+      {showingFailure ? (
+        <section className="advisor-private-work__failure" role="alert">
+          <AlertCircle aria-hidden="true" size={18} />
+          <div><strong>{t("failedTitle")}</strong><p>{t("failedBody")}</p></div>
+          <button className="button button--ghost button--small" disabled={retrying} onClick={() => void retryProcessing()} type="button">
+            {retrying ? <LoaderCircle aria-hidden="true" className="spin" size={14} /> : <RotateCcw aria-hidden="true" size={14} />}
+            {retrying ? t("retrying") : t("retry")}
+          </button>
+        </section>
+      ) : null}
 
-      {!current && !showingProcessing && !bootstrapFailed ? (
+      {!current && !showingProcessing && !showingFailure ? (
         <section className="advisor-private-work__empty">
           <FileCheck2 aria-hidden="true" size={18} />
           <div><strong>{t("emptyTitle")}</strong><p>{t("emptyBody")}</p></div>
@@ -89,7 +110,7 @@ export function PrivateCaseWork({checklist, locale, preliminary, projectId, sess
                       <strong>{current.value.operation.archetypeLabel}</strong>
                       <p>{current.value.operation.operationSummary}</p>
                       <dl>
-                        {current.value.operation.requestedAmount ? <><dt>{t("amount")}</dt><dd>{current.value.operation.currency} {current.value.operation.requestedAmount}</dd></> : null}
+                        {current.value.operation.requestedAmount ? <><dt>{t("amount")}</dt><dd>{formatMoney(current.value.operation.requestedAmount, current.value.operation.currency, locale)}</dd></> : null}
                         {current.value.operation.requestedTermMonths ? <><dt>{t("term")}</dt><dd>{t("months", {count: current.value.operation.requestedTermMonths})}</dd></> : null}
                       </dl>
                     </section>
@@ -102,12 +123,10 @@ export function PrivateCaseWork({checklist, locale, preliminary, projectId, sess
                     </section>
                   ) : null}
 
-                  <section className="advisor-private-work__research">
-                    <div><Search aria-hidden="true" size={14} /><strong>{t("research")}</strong><span>{t("sourceCount", {count: current.value.basis.publicResearch.sourceCount})}</span></div>
-                    {current.value.basis.publicResearch.sources.length ? <ul>{current.value.basis.publicResearch.sources.slice(0, 6).map((source) => (
-                      <li key={`${source.topic}:${source.url}`}><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={10} /></a></li>
-                    ))}</ul> : <p>{t("researchPending")}</p>}
-                  </section>
+                  <ResearchEvidence
+                    signals={current.value.preliminaryAssessment.researchSignals}
+                    sources={current.value.basis.publicResearch.sources}
+                  />
 
                   <p className="advisor-private-work__boundary"><AlertCircle aria-hidden="true" size={13} />{current.value.preliminaryAssessment.boundary}</p>
 
@@ -134,6 +153,42 @@ export function PrivateCaseWork({checklist, locale, preliminary, projectId, sess
             : null
       ) : null}
     </article>
+  );
+}
+
+function formatMoney(value: string, currency: string, locale: "pt-BR" | "en-US"): string {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return `${currency} ${value}`;
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${currency} ${value}`;
+  }
+}
+
+function ResearchEvidence({signals, sources}: {
+  signals: Array<{claim: string; sourceUrls: string[]}>;
+  sources: Array<{title: string; url: string}>;
+}) {
+  const t = useTranslations("App.privateCase");
+  const titleByUrl = new Map(sources.map((source) => [source.url, source.title]));
+  const sourceCount = new Set(signals.flatMap((signal) => signal.sourceUrls)).size;
+  return (
+    <section className="advisor-private-work__research">
+      <div><Search aria-hidden="true" size={14} /><strong>{t("research")}</strong><span>{t("sourceCount", {count: sourceCount})}</span></div>
+      {signals.length ? <ul>{signals.map((signal, index) => (
+        <li key={`${index}:${signal.claim}`}>
+          <p>{signal.claim}</p>
+          <div>{signal.sourceUrls.map((url) => (
+            <a href={url} key={url} rel="noreferrer" target="_blank">{titleByUrl.get(url) ?? t("source")}<ExternalLink aria-hidden="true" size={10} /></a>
+          ))}</div>
+        </li>
+      ))}</ul> : <p>{t("researchPending")}</p>}
+    </section>
   );
 }
 
