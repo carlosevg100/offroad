@@ -1,6 +1,6 @@
-# Caso 01: gabarito econômico, rascunho v0.4 para revisão independente
+# Caso 01: gabarito econômico, rascunho v0.5 para revisão independente
 
-Status: **rascunho v0.4**. A v0.4 acrescenta a seção 13, lida nas escrituras arquivadas na CVM, que resolve o covenant e descreve o custo de saída por família de série. A v0.2 passou pela auditoria número a número do fundador em 4 de
+Status: **rascunho v0.5**. A v0.4 acrescentou a seção 13, lida nas escrituras arquivadas na CVM, que resolve o covenant e descreve o custo de saída por família de série; a v0.5 fecha as taxas de referência do make-whole e registra onde os termos de securitização dos CRA não estão. A v0.2 passou pela auditoria número a número do fundador em 4 de
 setembro de 2026; os números principais conferiram e onze correções materiais foram incorporadas
 aqui (seção 12 lista cada uma). A próxima revisão deve ser independente, não do fundador. Seções
 1 a 10 extraídas por leitura direta do ITR de 31 de maio de 2026 da
@@ -328,9 +328,11 @@ promover 1,23x a cobertura de juros contratual; tratar contingências possíveis
 | 10 | Caixa equivalente não é liquidez em D0 (resgate em até 90 dias, nota 3) | seção 4 |
 | 11 | Contingências maiores que o EBITDA são alerta de dimensão, não dívida provável | seção 7 |
 
-Pendências que impedem o congelamento mesmo após estas correções: escrituras e aditivos das
-emissões (regras de pré-pagamento, definições de covenant por instrumento) ainda fora do source
-pack; revisão independente ainda não feita.
+Pendências que impedem o congelamento: os termos de securitização dos CRA (292ª, 329ª e 389ª
+emissões da Eco Securitizadora) não estão no índice IPE da CVM, onde a securitizadora só arquiva
+relatórios de rating; vivem na B3 ou no site da securitizadora e ainda não foram congelados. A
+comprovação da quitação ordinária dos CRA de referência do covenant (5ª, 8ª e 257ª emissões da
+Eco) também não foi localizada. Revisão independente ainda não feita.
 
 ## 13. O que as escrituras resolvem (lidas em 4 de setembro de 2026, pack v2)
 
@@ -363,8 +365,8 @@ não no ITR.
 | Família | Regra | Âncora |
 | --- | --- | --- |
 | Séries em Taxa DI (13ª 1ª, 14ª 1ª, 15ª 1ª) | amortização extraordinária ou resgate total facultativo, a partir de 14/05/2026 (13ª) e 15/06/2026 (14ª), pelo valor nominal mais remuneração pro rata mais prêmio de 0,40% ao ano, base 252, sobre os dias úteis restantes até o vencimento | 13ª 7.18.1; 14ª 7.18.1; 15ª 7.16.1.2 |
-| Séries em IPCA (13ª 2ª e 3ª, 14ª 2ª e 3ª) | amortização extraordinária só a partir de 14/05/2027 e 15/05/2028 (13ª) e 15/06/2027 e 15/06/2028 (14ª); valor igual ao maior entre (A) valor nominal atualizado mais remuneração pro rata e (B) valor presente dos fluxos a uma taxa de referência; a diferença é o prêmio (make-whole). A taxa de referência do item (B) ainda não foi extraída | 13ª 7.18.2 e 7.18.2.1; 14ª 7.18.2 |
-| Série prefixada (15ª 2ª) | resgate total facultativo pelo maior entre (A) nominal mais remuneração pro rata e (B) valor presente a uma taxa de referência, ainda não extraída | 15ª 7.16.2.2 |
+| Séries em IPCA (13ª 2ª e 3ª, 14ª 2ª e 3ª) | amortização extraordinária só a partir de 14/05/2027 e 15/05/2028 (13ª) e 15/06/2027 e 15/06/2028 (14ª); valor igual ao maior entre (A) valor nominal atualizado mais remuneração pro rata e (B) valor presente das parcelas remanescentes descontadas à taxa interna de retorno da NTN-B com duration mais próxima da duration remanescente, pela cotação indicativa da ANBIMA do segundo dia útil anterior; a diferença é o prêmio (make-whole) | 13ª 7.18.2 e 7.18.2.1; 14ª 7.18.2 |
+| Série prefixada (15ª 2ª) | resgate total facultativo pelo maior entre (A) nominal mais remuneração pro rata e (B) valor presente das parcelas remanescentes descontadas à taxa DI de 252 dias úteis da curva Pré x DI da B3, no vértice de dias corridos mais próximo da duration remanescente, apurada no segundo dia útil anterior | 15ª 7.16.2.2 |
 | 11ª emissão (CDI + 1,55%) | aquisição facultativa e oferta de resgate antecipado à totalidade, com prêmio fixado no edital, que não pode ser negativo; adesão em no mínimo quinze dias | 11ª 4.13 e 4.14 |
 
 Leitura: trocar as séries em DI custa pouco a partir de 2026 (prêmio de 0,40% ao ano sobre o
@@ -378,7 +380,7 @@ qualquer refinanciamento: o degrau de 2028/29 é majoritariamente DI e prefixado
 | Chave | Antes | Agora |
 | --- | --- | --- |
 | covenants e headroom | limites distintos a reconciliar | covered: uma definição, dois degraus, 4,00x aplicável, comprovação da quitação dos CRA de referência `insufficient_evidence` |
-| custo de saída e prepayment | insufficient_evidence | covered por família; taxa de referência do make-whole `insufficient_evidence` |
+| custo de saída e prepayment | insufficient_evidence | covered por família e por taxa de referência (NTN-B pela ANBIMA para IPCA; curva Pré x DI da B3 para a prefixada; 0,40% ao ano para DI); o cálculo do prêmio em uma data exige a cotação daquele dia |
 | EBITDA de covenant | insufficient_evidence | definição covered; valor apurado pela companhia `insufficient_evidence` |
 
 ### 13.4 Mutações adversariais adicionais
