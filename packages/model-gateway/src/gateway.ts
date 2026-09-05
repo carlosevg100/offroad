@@ -334,10 +334,6 @@ function providerErrorDiagnostic(error: unknown): ProviderErrorDiagnostic {
   if (status !== undefined) diagnostic.status = status;
   if (code) diagnostic.code = code;
   if (type) diagnostic.type = type;
-  // A provider's rejection names the request problem (a parameter, a schema keyword), never our
-  // content; without it a 400 is undiagnosable from the log alone.
-  const message = firstShortString(nested.message, value.message);
-  if (message && (status === undefined || status < 500)) diagnostic.message = message.slice(0, 240);
   return diagnostic;
 }
 
