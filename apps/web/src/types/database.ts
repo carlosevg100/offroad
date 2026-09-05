@@ -7295,6 +7295,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_integration_preview_status_v1: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
       get_workspace_bootstrap: { Args: never; Returns: Json }
       get_workspace_project_setup: { Args: { p_locale: string }; Returns: Json }

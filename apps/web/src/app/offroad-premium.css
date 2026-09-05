@@ -13203,3 +13203,70 @@ button[disabled].workspace-search,
 .auth-panel--form {
   padding-top: 96px;
 }
+
+/* Internal validation banner (integration_preview). Deliberately loud and impossible to mistake
+   for product chrome: a warm amber band across the top of every workspace screen. */
+.integration-preview-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d9a441;
+  border-left-width: 4px;
+  border-radius: 0.5rem;
+  background: #fff6e0;
+  color: #4a3410;
+}
+.integration-preview-banner > svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: #a86f0c;
+}
+.integration-preview-banner__kicker {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a86f0c;
+}
+.integration-preview-banner strong {
+  display: block;
+  font-size: 0.9rem;
+}
+.integration-preview-banner p {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+/* integration_preview work panel: the executors' objects, one section per method. */
+.preview-work { display: grid; gap: 1rem; margin: 0.5rem 0 1rem; }
+.preview-work__header { border: 1px solid #d9a441; border-left-width: 4px; border-radius: 0.5rem; background: #fff6e0; padding: 0.85rem 1rem; color: #4a3410; }
+.preview-work__kicker { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a86f0c; }
+.preview-work__header h2 { margin: 0.25rem 0 0.35rem; font-size: 1.05rem; }
+.preview-work__header p { margin: 0; font-size: 0.85rem; line-height: 1.45; }
+.preview-work__section { border: 1px solid #e3ddd2; border-radius: 0.5rem; padding: 0.85rem 1rem; background: #fffdf9; display: grid; gap: 0.6rem; }
+.preview-work__section > header { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+.preview-work__section > header h3 { margin: 0; font-size: 0.98rem; }
+.preview-work__section > header small { color: #6b6257; font-size: 0.74rem; }
+.preview-work__state { flex: 0 0 auto; font-size: 0.74rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 999px; background: #eee9e0; color: #4a3410; white-space: nowrap; }
+.preview-work__state[data-state="compared"], .preview-work__state[data-state="complete"], .preview-work__state[data-state="resolved"], .preview-work__state[data-state="planned"], .preview-work__state[data-state="declared"], .preview-work__state[data-state="diagnosed"] { background: #e2f1e6; color: #1f5a30; }
+.preview-work__state[data-state="blocked"], .preview-work__state[data-state="identity_failed"] { background: #f8e2df; color: #7a2418; }
+.preview-work__figures { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.4rem 1rem; margin: 0; }
+.preview-work__figures dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #7a7167; }
+.preview-work__figures dd { margin: 0; font-variant-numeric: tabular-nums; font-size: 0.86rem; }
+.preview-work__table > div { overflow-x: auto; }
+.preview-work__table table { border-collapse: collapse; font-size: 0.78rem; min-width: 100%; }
+.preview-work__table th, .preview-work__table td { text-align: left; padding: 0.25rem 0.5rem; border-bottom: 1px solid #efe9df; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.preview-work__table th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: #7a7167; }
+.preview-work__gaps ul { margin: 0.2rem 0 0.5rem 1rem; padding: 0; font-size: 0.8rem; line-height: 1.4; }
+.preview-work__gaps em { font-style: normal; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #a86f0c; }
+.preview-work__blocks { display: grid; gap: 0.5rem; }
+.preview-work__block { border-left: 3px solid #cfc7ba; padding-left: 0.6rem; font-size: 0.84rem; }
+.preview-work__block.is-filled { border-left-color: #2e8b57; }
+.preview-work__block ul { margin: 0.2rem 0 0 1rem; padding: 0; }
+.preview-work__block small { color: #7a7167; }
+.preview-work__pages ol { margin: 0.2rem 0 0 1rem; padding: 0; font-size: 0.84rem; }
+.preview-work__evidence, .preview-work__premises { margin: 0; font-size: 0.76rem; color: #6b6257; }

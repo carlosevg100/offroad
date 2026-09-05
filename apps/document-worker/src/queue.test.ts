@@ -1,6 +1,6 @@
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {describe, expect, it, vi} from "vitest";
-import {createQueueClient, type CapitalProjectAnalysisJob, type CaseAnalysisJob} from "./queue";
+import {claimedJobSchema, createQueueClient, type CapitalProjectAnalysisJob, type CaseAnalysisJob} from "./queue";
 
 const job: CaseAnalysisJob = {
   claimed: true,
@@ -14,6 +14,35 @@ const job: CaseAnalysisJob = {
   processing_run_id: "40000000-0000-4000-8000-000000000001",
   payload: {execution_mode: "primary", analysis_scope: "full_case"},
 };
+
+describe("claimed job parsing", () => {
+  it("accepts a case_analysis job enqueued without a scope, because the kind already fixes it as the full case", () => {
+    // Intake confirmation, replays and incremental deal-state analyses enqueue this kind with a
+    // locale and an execution only; the claim used to be rejected at payload.analysis_scope.
+    const {payload: _payload, ...claimedRow} = job;
+    const parsed = claimedJobSchema.parse({...claimedRow, payload: {locale: "pt-BR", execution_mode: "primary"}});
+    expect(parsed.kind).toBe("case_analysis");
+    expect(parsed.payload).toMatchObject({analysis_scope: "full_case", execution_mode: "primary", locale: "pt-BR"});
+  });
+
+  it("lets only the integration_preview scope run without an artifact per task run", () => {
+    const {payload: _payload, kind: _kind, ...claimedRow} = job;
+    const preview = {
+      analysis_scope: "integration_preview", locale: "pt-BR", capital_project_id: "50000000-0000-4000-8000-000000000001",
+      capital_project_plan_id: "50000000-0000-4000-8000-000000000002", capital_project_brief_id: "50000000-0000-4000-8000-000000000003",
+      capital_task_ids: ["C05"], capital_artifact_required: false, model_budget: {max_cost_usd: 1, max_calls: 1},
+      preview: {mode: "integration_preview", composition: "prepare_meeting", caseId: "gc01-analista-ib-camil", workflow: {id: "case01.prepare_meeting", version: "2026.09.05-v1", fingerprint: "a".repeat(64)}, premises: {}},
+    };
+    expect(claimedJobSchema.safeParse({...claimedRow, kind: "capital_project_analysis", integration_preview: true, payload: preview}).success).toBe(true);
+    expect(claimedJobSchema.safeParse({...claimedRow, kind: "capital_project_analysis", payload: {...preview, analysis_scope: "origination_thesis", preview: undefined}}).success).toBe(false);
+  });
+
+  it("still rejects a case_analysis job that carries the preliminary scope", () => {
+    const {payload: _payload, ...claimedRow} = job;
+    const result = claimedJobSchema.safeParse({...claimedRow, payload: {locale: "pt-BR", analysis_scope: "preliminary_understanding"}});
+    expect(result.success).toBe(false);
+  });
+});
 
 describe("case input loading", () => {
   it("freezes live case data before attaching the prior report cache", async () => {

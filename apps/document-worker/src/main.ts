@@ -26,6 +26,7 @@ import {processOriginationThesisJob} from "./origination-thesis";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
+import {processIntegrationPreviewRunJob} from "./integration-preview";
 import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
@@ -300,7 +301,12 @@ async function main(): Promise<void> {
           log,
         })
       : job.kind === "capital_project_analysis"
-        ? job.payload.analysis_scope === "company_debt_view"
+        ? job.payload.analysis_scope === "integration_preview"
+          // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.
+          ? (job.integration_preview === true
+              ? processIntegrationPreviewRunJob(job, {queue, log})
+              : queue.fail(job, describeJobFailure(new Error("integration_preview run claimed without the grant"), {code: "integration_preview_not_granted", stage: "integration_preview", retryable: false}), {retryable: false}).then(() => ({status: "failed" as const})))
+          : job.payload.analysis_scope === "company_debt_view"
           ? processCompanyDebtViewJob(job, {
               queue,
               gateway: gatewayRun.gateway,

@@ -1,6 +1,6 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 4 September 2026. The universal advisor foundation, persistent project memory,
+> Current as of 5 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are
 > implemented but not yet homologated as top-tier expertise. The first human gold case remains the
@@ -25,6 +25,29 @@ manual source; ANBIMA Feed remains a contracted source and is not active. A deve
 Sandbox access with fixed fictional responses, not official production data. See
 `docs/build/ANBIMA_SOURCE_DECISION.md`. No ANBIMA credential was stored or used; rotate the Client
 Secret exposed in the screenshot before any future integration.
+
+### Engineering update: integration_preview and the Case 01 endgame, 5 September 2026
+
+Decisão do fundador na tarde de 5 de setembro: o fluxo completo do Caso 01 roda no produto antes
+da homologação profunda de cada componente. O modo interno `integration_preview` executa métodos
+em estágio `implemented` para uma organização concedida, com banner, marcas e restrições; nada é
+liberação. Roteador determinístico de turno, corrida das nove etapas com replay por fingerprint,
+devolutiva compilada dos objetos, painel com os nove artefatos e jornada E2E gravada com o worker
+no stack local. Detalhes e estado em `docs/build/INTEGRATION_PREVIEW.md` (PR #443). O primeiro E2E com
+worker (5 set) ensinou três coisas, todas corrigidas no mesmo PR: a organização nova só chega ao
+compositor depois do aceite de confidencialidade e do primeiro projeto; a ativação reaproveitava
+plano com o mesmo fingerprint, e um plano com runs não pode ser reativado (agora um plano por
+turno, replay de artefatos entre planos, etapa replicada registra run no plano do turno); e o
+worker recusava na claim todo `case_analysis` enfileirado sem `analysis_scope` desde o PR #329
+(P1 fora da prévia, corrigido com default `full_case` pelo tipo do job).
+
+### Engineering update: Case 01 round 5 merged, 5 September 2026
+
+Os nove executores do Caso 01 saíram de mais uma rodada de revisão independente e estão na `main`
+(PR #441): ledger v15, covenants v14, demonstrações v9, muralha v8, juros v7, saída v8, antes/depois
+v7, cenários v6, devolutiva v7; financial-core v14. Nenhum método está em `ai_reviewed`: a revisão
+seguinte está bloqueada porque a conta da OpenAI ficou sem créditos. Detalhes, fatos verificados e
+como retomar em `docs/build/HANDOFF_2026-09-05.md`.
 
 ### Engineering update: gold cases measured for real, 4 September 2026
 

@@ -16,6 +16,7 @@ import {PrivateDiagnosticWork} from "@/components/advisor/private-diagnostic-wor
 import {PrivateMarketWork} from "@/components/advisor/private-market-work";
 import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work";
 import {PrivateStructureWork} from "@/components/advisor/private-structure-work";
+import {IntegrationPreviewWork} from "@/components/integration-preview/integration-preview-work";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
 import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
@@ -216,7 +217,7 @@ async function ConversationalCapitalProject({
   const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}] = await Promise.all([
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, processing_status").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
-    supabase.from("capital_project_plans").select("id").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
+    supabase.from("capital_project_plans").select("id, compiler_version").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
     supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
   ]);
@@ -345,6 +346,9 @@ async function ConversationalCapitalProject({
     },
   };
   const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
+  const previewArtifacts = (artifacts ?? []).filter((artifact) => artifact.artifact_type.startsWith("preview_") && artifact.status !== "superseded").map((artifact) => ({
+    id: artifact.id, type: artifact.artifact_type, version: artifact.artifact_version, status: artifact.status, createdAt: artifact.created_at, content: artifact.content,
+  }));
   const originationArtifact = project.entry_job === "origination_thesis"
     ? (artifacts ?? []).find((artifact) => artifact.artifact_type === "meeting_brief" && artifact.status !== "superseded")
     : undefined;
@@ -395,7 +399,17 @@ async function ConversationalCapitalProject({
     market: t("activities.market"),
     readout: t("activities.readout"),
   });
-  const visibleActivities = project.entry_job === "origination_thesis"
+  // A preview plan lists its own steps, each bound to a method; the grouped activities of the
+  // released journeys would hide them.
+  const previewPlan = typeof plan?.compiler_version === "string" && plan.compiler_version.startsWith("integration-preview");
+  const previewTasks = (tasks ?? []).map((task) => ({
+    id: task.id,
+    label: task.label,
+    status: (latestRunByTask.get(task.id)?.status ?? "waiting") as "waiting" | "queued" | "running" | "succeeded" | "failed" | "blocked" | "cancelled",
+  }));
+  const visibleActivities = previewPlan
+    ? previewTasks
+    : project.entry_job === "origination_thesis"
     ? compiledActivities
     : agentWorkItems?.length
     ? agentWorkItems.map((item) => ({
@@ -498,7 +512,7 @@ async function ConversationalCapitalProject({
     sessionStatus={session.status}
     tasks={visibleActivities}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={<>{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
+    workProduct={<>{previewArtifacts.length ? <IntegrationPreviewWork artifacts={previewArtifacts} locale={locale === "en-US" ? "en-US" : "pt-BR"} /> : null}{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
       artifact={parsedOrigination.data}
       artifactId={originationArtifact.id}
       decision={originationDecision}
@@ -573,6 +587,15 @@ function eventTaskSpecId(detail: unknown): string | null {
 
 function customerArtifactLabel(type: string, locale: string): string | null {
   const labels: Record<string, [string, string]> = {
+    preview_debt_ledger: ["Prévia: dívida por instrumento", "Preview: debt by instrument"],
+    preview_financial_statements: ["Prévia: conciliação", "Preview: reconciliation"],
+    preview_covenants: ["Prévia: covenants", "Preview: covenants"],
+    preview_maturity_wall: ["Prévia: vencimentos", "Preview: maturities"],
+    preview_interest_schedule: ["Prévia: juros e correção", "Preview: interest and indexation"],
+    preview_exit_costs: ["Prévia: custo de saída", "Preview: exit cost"],
+    preview_scenarios: ["Prévia: cenários", "Preview: scenarios"],
+    preview_alternatives: ["Prévia: alternativas", "Preview: alternatives"],
+    preview_meeting_brief: ["Prévia: plano da devolutiva", "Preview: readout plan"],
     meeting_brief: ["Leitura para a reunião", "Meeting readout"],
     company_debt_diagnostic: ["Análise da companhia", "Company analysis"],
     capital_planning_map: ["Alternativas de financiamento", "Financing alternatives"],

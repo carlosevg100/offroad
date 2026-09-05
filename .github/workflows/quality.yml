@@ -175,6 +175,49 @@ jobs:
       - name: Build the web app against the local stack
         run: pnpm --filter web build
 
+      # The integration_preview journey needs the worker: a service account that belongs to no
+      # organization, its hashed token, and the grant that follows every organization created in
+      # this stack. None of this touches production; the SQL file is not a migration.
+      - name: Provision the local worker and the integration_preview grant
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          DB_URL="${DB_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}"
+          curl -sS -X POST "${API_URL}/auth/v1/signup" \
+            -H "apikey: ${PUBLISHABLE_KEY:-${ANON_KEY}}" -H "Content-Type: application/json" \
+            -d '{"email":"local-worker@offroad.invalid","password":"local-worker-password-2026"}' > /dev/null
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -q \
+            -c "update auth.users set email_confirmed_at = coalesce(email_confirmed_at, now()) where email = 'local-worker@offroad.invalid';"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f apps/web/e2e/support/integration-preview-local.sql
+
+      # The worker ships as a bundle of first-party code with third-party packages external, so it
+      # runs from a deployed tree with a hoisted node_modules, exactly as the image does.
+      - name: Build and deploy the worker
+        run: |
+          set -euo pipefail
+          pnpm --filter @offroad/document-worker... build
+          pnpm deploy --legacy --filter @offroad/document-worker --prod --config.node-linker=hoisted "$RUNNER_TEMP/worker"
+          out=$(cd "$RUNNER_TEMP/worker" && env -i PATH="$PATH" HOME=/tmp node dist/main.js 2>&1 || true)
+          printf '%s' "$out" | grep -q 'worker configuration is invalid or incomplete' || { printf '%s\n' "$out" | head -5; echo 'the deployed worker bundle does not boot'; exit 1; }
+
+      - name: Start the worker
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          export SUPABASE_URL="${API_URL}"
+          export SUPABASE_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY}}"
+          export WORKER_ACCOUNT_EMAIL="local-worker@offroad.invalid"
+          export WORKER_ACCOUNT_PASSWORD="local-worker-password-2026"
+          export OFFROAD_WORKER_TOKEN="e2e-worker-token-e2e-worker-token-e2e-worker-token-e2e-worker-token-"
+          export REQUIRE_VIRUS_SCAN=false
+          export IDLE_POLL_SECONDS=2
+          export LOG_LEVEL=info
+          nohup node "$RUNNER_TEMP/worker/dist/main.js" > worker.log 2>&1 &
+          echo $! > worker.pid
+          sleep 5
+          if ! kill -0 "$(cat worker.pid)" 2>/dev/null; then cat worker.log; exit 1; fi
+          grep -q '"event":"worker.signed_in"' worker.log || (sleep 10; grep -q '"event":"worker.signed_in"' worker.log || (cat worker.log; exit 1))
+
       # `--with-deps` runs apt-get, which stalled on the Azure mirror three times
       # (PR #57 ~30 min, PR #58 twice ~15 min each), always right after
       # "Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist". The same logs show the
@@ -207,6 +250,21 @@ jobs:
           path: |
             apps/web/playwright-report
             apps/web/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Stop the worker and keep its log
+        if: always()
+        run: |
+          if [ -f worker.pid ]; then kill "$(cat worker.pid)" 2>/dev/null || true; fi
+          tail -n 200 worker.log || true
+
+      - name: Upload the worker log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: local-worker-log
+          path: worker.log
           if-no-files-found: ignore
           retention-days: 7
 

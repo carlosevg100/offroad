@@ -5,7 +5,9 @@ import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
 import type {WorkspaceNavigationGroup, WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
 import {RAIL_COLLAPSE_COOKIE, WorkspaceRail, type WorkspaceRailCopy} from "@/components/workspace-rail";
+import {IntegrationPreviewBanner} from "@/components/integration-preview/integration-preview-banner";
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 
 import {signOut} from "./actions";
 
@@ -69,6 +71,7 @@ export default async function ApplicationLayout({children, params}: Props) {
   }});
 
   const railCollapsed = (await cookies()).get(RAIL_COLLAPSE_COOKIE)?.value === "1";
+  const integrationPreview = await loadIntegrationPreviewStatus(supabase, organization.id);
   const {data: profile} = await supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle();
   const copy: WorkspaceRailCopy = {
     account: t("account"),
@@ -129,7 +132,18 @@ export default async function ApplicationLayout({children, params}: Props) {
         showProjects={canOriginate}
         signOutAction={signOut}
       />
-      <div className="app-main">{children}</div>
+      <div className="app-main">
+        {integrationPreview.enabled ? <IntegrationPreviewBanner
+          copy={{
+            kicker: t("integrationPreview.kicker"),
+            title: t("integrationPreview.title"),
+            body: t("integrationPreview.body"),
+            note: t("integrationPreview.note"),
+          }}
+          note={integrationPreview.note}
+        /> : null}
+        {children}
+      </div>
     </div>
   );
 }

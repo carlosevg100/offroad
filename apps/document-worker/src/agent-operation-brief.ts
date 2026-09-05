@@ -20,6 +20,7 @@ import {institutionCapabilitiesSchema, organizationMethodologySchema, profession
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 import {shadowIntentEnvelope} from "./intent-shadow";
+import {routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
 
 const contextSchema = z.object({
   session_id: z.uuid(),
@@ -160,6 +161,13 @@ Rules:
 - A proposal is only a preview. The product applies it only after explicit user acceptance.
 - Only use the patch paths allowed by the response schema.`;
 
+const previewArtifactsSchema = z.array(z.object({
+  task_id: z.string(),
+  artifact_type: z.string(),
+  artifact_fingerprint: z.string(),
+  content: z.record(z.string(), z.unknown()),
+}));
+
 export async function processAgentOperationBriefJob(
   job: AgentOperationBriefJob,
   dependencies: AgentOperationBriefDependencies,
@@ -203,6 +211,33 @@ export async function processAgentOperationBriefJob(
       } catch (shadowError) {
         log("agent_operation_brief.shadow_routing_failed", {job: job.job_id, message: shadowError instanceof Error ? shadowError.message.slice(0, 200) : "unknown"});
       }
+    }
+    // Internal validation: a granted organization's turn is routed by the deterministic preview
+    // router, which replies from the objects and may activate a preview run. No model call.
+    if (job.integration_preview === true) {
+      const priorArtifacts = previewArtifactsSchema.safeParse(queue.loadIntegrationPreviewArtifacts ? await queue.loadIntegrationPreviewArtifacts(job).catch(() => []) : []);
+      const priorOutputs = new Map<string, PreviewStepOutput>();
+      for (const artifact of priorArtifacts.success ? priorArtifacts.data : []) {
+        const output = artifact.content.output;
+        if (output && typeof output === "object" && !Array.isArray(output)) priorOutputs.set(artifact.task_id, output as PreviewStepOutput);
+      }
+      const decision = routeIntegrationPreviewTurn({
+        locale: context.locale,
+        message: context.message,
+        recentMessages: context.recent_messages.map(({role, content}) => ({role, content})),
+        artifactTypes: context.artifacts.map((artifact) => artifact.type),
+        runActive: context.tasks.some((task) => ["queued", "running", "started"].includes(task.status)),
+        priorOutputs,
+        entryJob: context.project?.entryJob ?? "origination_thesis",
+        messageId: job.payload.message_id,
+      });
+      const previewMessageId = randomUUID();
+      const previewResponse = {state: "idle" as const, reply: decision.reply};
+      await queue.recordAgentResponse(job, previewMessageId, previewResponse, undefined, decision.activation ?? undefined);
+      await queue.writeStage(job, "agent_operation_brief", "succeeded", {messageId: previewMessageId, state: "idle", mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition, modelCalls: 0});
+      await queue.complete(job, {mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition ?? null, assistantMessageId: previewMessageId, spend: gateway.spent()});
+      log("integration_preview.turn_routed", {job: job.job_id, decision: decision.kind, composition: decision.activation?.composition ?? null});
+      return {status: "succeeded"};
     }
     const conversationText = context.recent_messages
       .filter((message) => message.role === "user")
