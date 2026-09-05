@@ -11,6 +11,7 @@ import {z} from "zod";
 import {case01Evidence, case01EvidenceManifest, type Case01Evidence} from "../cases/gc01";
 import * as executors from "../executors";
 import type {BriefInput} from "../executors/plan-meeting-brief";
+import {synthesisSkeleton, type SynthesisOutput} from "./synthesis";
 import {case01PreviewSteps, previewStepByTask, type PreviewComposition, type PreviewWorkflowStep} from "./workflow";
 
 export const previewPremisesSchema = z.object({
@@ -51,11 +52,13 @@ export type PreviewRunContext = {
   candidateQuestions?: BriefInput["candidateQuestions"];
   /** Answers the person gave to earlier questions, carried into the sponsor instruction the planner reads. */
   answers?: Array<{questionId: string; answer: string}>;
+  /** The previous synthesis, so the new one names what changed. */
+  previousSynthesis?: SynthesisOutput | null;
 };
 
 /** Which premises a step consumes: they enter its input fingerprint, so a changed premise recomputes exactly the steps it touches. */
 export function premisesFor(step: PreviewWorkflowStep, premises: PreviewPremises): Partial<PreviewPremises> {
-  if (step.methodId === "compare-refinancing-before-after" || step.methodId === "plan-meeting-brief") return premises;
+  if (step.methodId === "compare-refinancing-before-after" || step.stage === "material") return premises;
   return {};
 }
 
@@ -89,6 +92,7 @@ export function previewStepInput(step: PreviewWorkflowStep, context: PreviewRunC
       };
     }
     case "plan-meeting-brief": return meetingBriefInput(context);
+    case "write-meeting-synthesis": return {outputs: context.outputs, request: context.request};
     default: throw new Error(`no input binding for method ${step.methodId}`);
   }
 }
@@ -115,6 +119,7 @@ export function runPreviewStep(step: PreviewWorkflowStep, context: PreviewRunCon
       case "declare-scenarios": return executors.declareScenarios(input as Parameters<typeof executors.declareScenarios>[0]);
       case "compare-refinancing-before-after": return executors.compareRefinancingBeforeAfter(input as Parameters<typeof executors.compareRefinancingBeforeAfter>[0]);
       case "plan-meeting-brief": return executors.planMeetingBrief(input as BriefInput);
+      case "write-meeting-synthesis": return synthesisSkeleton({outputs: context.outputs, request: context.request, locale: "pt-BR", objectFingerprints: briefObjectFingerprints(context.outputs), previous: context.previousSynthesis ?? null}) as unknown as PreviewStepOutput;
       default: throw new Error(`no executor bound to method ${step.methodId}`);
     }
   })();
@@ -199,7 +204,7 @@ export function headlinesFor(step: PreviewWorkflowStep, output: PreviewStepOutpu
 
 /** The meeting brief input, built from the outputs of the other steps: signed content, states and facts. */
 export function meetingBriefInput(context: PreviewRunContext): BriefInput {
-  const objects = case01PreviewSteps.filter((step) => step.methodId !== "plan-meeting-brief").flatMap((step) => {
+  const objects = case01PreviewSteps.filter((step) => step.stage !== "material").flatMap((step) => {
     const output = context.outputs.get(step.taskId);
     if (!output) return [];
     const content = {...output};
@@ -241,7 +246,7 @@ export function meetingBriefInput(context: PreviewRunContext): BriefInput {
 
 /** The fingerprints the brief planner saw for each object, keyed as the planner keys them; the next turn's change note compares against these. */
 export function briefObjectFingerprints(outputs: Map<string, PreviewStepOutput>): Record<string, string> {
-  return Object.fromEntries(case01PreviewSteps.filter((step) => step.methodId !== "plan-meeting-brief" && outputs.has(step.taskId)).map((step) => [step.taskId.toLowerCase(), fingerprintOf({...outputs.get(step.taskId)!})]));
+  return Object.fromEntries(case01PreviewSteps.filter((step) => step.methodId !== "plan-meeting-brief" && step.methodId !== "write-meeting-synthesis" && outputs.has(step.taskId)).map((step) => [step.taskId.toLowerCase(), fingerprintOf({...outputs.get(step.taskId)!})]));
 }
 
 /** What the artifact of a step records around the executor's output. */

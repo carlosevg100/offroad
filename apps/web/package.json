@@ -26,8 +26,8 @@
     "@offroad/extraction-learning": "workspace:*",
     "@offroad/financial-core": "workspace:*",
     "@offroad/financial-model": "workspace:*",
-    "@offroad/investor-base": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
+    "@offroad/investor-base": "workspace:*",
     "@offroad/market-reference": "workspace:*",
     "@offroad/matching-core": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
@@ -43,6 +43,7 @@
     "posthog-js": "1.416.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "4.4.3"
   },
   "devDependencies": {

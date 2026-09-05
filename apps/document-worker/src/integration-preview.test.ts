@@ -15,7 +15,7 @@ const ids = {
   plan: "66666666-6666-4666-8666-666666666666",
   brief: "77777777-7777-4777-8777-777777777777",
 };
-const steps = ["C05", "D07", "C09", "C10", "C07", "S07", "C08", "S10", "A01"];
+const steps = ["C05", "D07", "C09", "C10", "C07", "S07", "C08", "S10", "A01", "A02"];
 
 const previewJob = (composition: "prepare_meeting" | "prepare_material" | "change_premise" | "deepen", premises: Record<string, unknown> = {}): CapitalProjectAnalysisJob => ({
   claimed: true,
@@ -89,7 +89,7 @@ describe("integration_preview turn router", () => {
     const decision = routeIntegrationPreviewTurn({...base, message: "Sou analista no time de Investment Banking. Meu VP me pediu para preparar material para uma reunião com a Camil na segunda. Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera.", artifactTypes: []});
     expect(decision.kind).toBe("activate");
     expect(decision.activation?.composition).toBe("prepare_meeting");
-    expect(decision.activation?.plan.taskSpecs).toHaveLength(9);
+    expect(decision.activation?.plan.taskSpecs).toHaveLength(10);
     expect(decision.activation?.plan.taskSpecs.every((task) => task.maturity === "implemented")).toBe(true);
     // Every turn compiles its own plan: a plan that already holds runs is never reactivated.
     const later = routeIntegrationPreviewTurn({...base, message: "Vamos preparar a reunião com a Camil: refinanciamento.", artifactTypes: [], messageId: "10000000-0000-4000-8000-000000000077"});
@@ -134,10 +134,10 @@ describe("integration_preview run processor", () => {
   it("runs the nine steps on the frozen evidence, records one preview artifact each and publishes the compiled readout", async () => {
     const fake = fakeQueue({composition: "prepare_meeting"});
     const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: fake.queue});
-    expect(fake.failure()).toBeNull();
+    expect(fake.failure(), JSON.stringify(fake.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     expect(fake.started).toEqual(steps);
-    expect(fake.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_debt_ledger", "preview_financial_statements", "preview_covenants", "preview_maturity_wall", "preview_interest_schedule", "preview_exit_costs", "preview_scenarios", "preview_alternatives", "preview_meeting_brief"]);
+    expect(fake.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_debt_ledger", "preview_financial_statements", "preview_covenants", "preview_maturity_wall", "preview_interest_schedule", "preview_exit_costs", "preview_scenarios", "preview_alternatives", "preview_meeting_brief", "preview_material"]);
     for (const artifact of fake.recorded) {
       expect((artifact.content.preview as {mode: string}).mode).toBe("integration_preview");
       expect((artifact.content.preview as {methodMaturity: string}).methodMaturity).toBe("implemented");
@@ -148,14 +148,14 @@ describe("integration_preview run processor", () => {
     expect(completion.content).toMatch(/^\[Validação interna, integration_preview\]/);
     expect(completion.content).toContain("Primeira devolutiva do Caso 01");
     expect(completion.content).toContain("Para alinhar com o VP");
-    expect(fake.stages.filter((stage) => stage.stage.startsWith("integration_preview:") && stage.status === "succeeded")).toHaveLength(9);
+    expect(fake.stages.filter((stage) => stage.stage.startsWith("integration_preview:") && stage.status === "succeeded")).toHaveLength(10);
   });
   it("replays every unchanged step by fingerprint on a repeated run, and recomputes only the alternatives and the plan when a premise changes", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
     await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
     const repeat = fakeQueue({composition: "deepen", prior: first.recorded});
     const outcome = await processIntegrationPreviewRunJob(previewJob("deepen"), {queue: repeat.queue});
-    expect(repeat.failure()).toBeNull();
+    expect(repeat.failure(), JSON.stringify(repeat.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     // A replayed step is still a run of this turn's plan (the plan's dependency gate reads its own runs); no artifact is written.
     expect(repeat.started).toEqual(steps);
@@ -165,8 +165,8 @@ describe("integration_preview run processor", () => {
     const changedOutcome = await processIntegrationPreviewRunJob(previewJob("change_premise", {newDebtAnnualRate: "0.155"}), {queue: changed.queue});
     expect(changedOutcome.status).toBe("succeeded");
     expect(changed.started).toEqual(steps);
-    expect(changed.recorded.map((artifact) => artifact.taskId)).toEqual(["S10", "A01"]);
-    expect(changed.completion()?.content).toContain("7 de 9 etapas replicaram");
+    expect(changed.recorded.map((artifact) => artifact.taskId)).toEqual(["S10", "A01", "A02"]);
+    expect(changed.completion()?.content).toContain("7 de 10 etapas replicaram");
     const alternatives = changed.recorded.find((artifact) => artifact.taskId === "S10")!;
     expect((alternatives.content.preview as {premisesApplied: unknown}).premisesApplied).toEqual({newDebtAnnualRate: "0.155"});
   });
@@ -175,10 +175,10 @@ describe("integration_preview run processor", () => {
     await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
     const material = fakeQueue({composition: "prepare_material", prior: first.recorded, request: {turn: 2, audience: {primary: "vp", others: ["companhia"]}, form: "pitch_pages", pages: 3, sponsorInstruction: "três páginas de pitch", undefinedAspects: []}});
     const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_material"), {queue: material.queue});
-    expect(material.failure()).toBeNull();
+    expect(material.failure(), JSON.stringify(material.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     expect(material.started).toEqual(steps);
-    expect(material.recorded.map((artifact) => artifact.taskId)).toEqual(["A01"]);
+    expect(material.recorded.map((artifact) => artifact.taskId)).toEqual(["A01", "A02"]);
     expect(material.completion()?.content).toContain("Plano do material");
     const brief = material.recorded[0]!.content.output as {page_plan: {state: string; pages: unknown[]}};
     expect(brief.page_plan.state).toBe("proposed");

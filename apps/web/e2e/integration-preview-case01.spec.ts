@@ -137,7 +137,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     record("primeira devolutiva", readout);
     const work = page.locator('[data-testid="integration-preview-work"]');
     await expect(work).toBeVisible();
-    await expect(work.locator(".preview-work__section")).toHaveCount(9);
+    await expect(work.locator(".preview-work__section")).toHaveCount(10);
     await expect(work.locator('[data-artifact-type="preview_debt_ledger"] .preview-work__state')).toContainText("incompleto");
     await expect(work.locator('[data-artifact-type="preview_alternatives"] .preview-work__state')).toContainText("comparado");
     await expect(work.locator('[data-artifact-type="preview_covenants"] .preview-work__gaps')).toBeVisible();
@@ -170,7 +170,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await send(page, "Altere a taxa da nova dívida para 15,50% a.a.");
     const acknowledged = await waitForAssistant(page, /Premissa registrada \(taxa da nova dívida 15[.,]50% a\.a\.\)/);
     record("premissa alterada", acknowledged);
-    const updated = await waitForAssistant(page, /7 de 9 etapas replicaram sem recálculo/);
+    const updated = await waitForAssistant(page, /7 de 10 etapas replicaram sem recálculo/);
     expect(updated).toContain(MARK);
     record("atualização incremental", updated);
     await expect(page.locator('[data-artifact-type="preview_alternatives"] .preview-work__premises')).toContainText("newDebtAnnualRate = 0.155");

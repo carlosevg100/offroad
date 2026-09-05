@@ -104,6 +104,24 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
 - Orçamento do run de prévia: três chamadas e dez centavos (migration
   `integration_preview_run_budget`), sob os tetos do worker.
 
+## 3.3 Estado da fatia D (5 de setembro, noite)
+
+- Décima etapa do workflow: `A02` `write-meeting-synthesis` (método registrado na biblioteca,
+  estágio implemented, `knowledge/procedures/materials/write-meeting-synthesis.md`), depois do
+  plano da devolutiva. Sem modelo, esqueleto: as manchetes que o plano assinou para cada objeto,
+  por seção fixa. Em modo `live`, uma chamada (`preview_synthesis`, sonnet) redige a prosa das
+  cinco seções só com o que os objetos afirmam; depois, a verificação determinística remove toda
+  frase cujo número os objetos não sustentam (vocabulário numérico extraído dos próprios objetos,
+  nas formas em que a prosa escreve: 5.670.186, 4,72x, 15,5%) e lista o que removeu. Fonte,
+  modelo, custo, latência, números verificados e frases removidas ficam na saída e na devolutiva.
+- Arquivo real: `/[locale]/app/projects/[projectId]/preview/material?format=docx|xlsx` gera, do
+  último artefato `preview_material` e das tabelas dos objetos, um Word (`case-export`) e uma
+  planilha (SheetJS), com versão e fingerprint do artefato nos cabeçalhos; links no painel.
+- Atualização incremental: a síntese depende dos nove objetos; premissa alterada muda S10, A01 e
+  A02 (7 de 10 replicam), a nova síntese nomeia o que mudou por fingerprint e o arquivo sai em
+  nova versão. Cobertura no gate vivo: download do Word e da planilha, versão maior depois da
+  premissa.
+
 ## 4. O que continua fora
 
 Liberação a clientes, aprovação ou parecer. A trilha de revisão independente segue em paralelo,

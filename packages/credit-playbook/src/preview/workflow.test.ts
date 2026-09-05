@@ -26,7 +26,7 @@ describe("integration_preview workflow of Case 01", () => {
     const batches = previewBatches();
     const batchOf = new Map(batches.flatMap((batch, index) => batch.map((taskId) => [taskId, index] as const)));
     for (const step of case01PreviewSteps) for (const dependency of step.dependencies) expect(batchOf.get(dependency)!).toBeLessThan(batchOf.get(step.taskId)!);
-    expect(previewTargetTaskIds("prepare_material")).toEqual(["A01"]);
+    expect(previewTargetTaskIds("prepare_material")).toEqual(["A01", "A02"]);
     expect(previewTargetTaskIds("prepare_meeting")).not.toContain("A01");
     expect(previewTargetTaskIds("prepare_meeting")).toHaveLength(8);
   });

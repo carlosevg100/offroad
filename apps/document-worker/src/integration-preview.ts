@@ -18,6 +18,7 @@ import type {ModelGateway} from "@offroad/model-gateway";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 
 import {generatePreviewQuestions, type CandidateQuestion, type PreviewQuestionsResult} from "./preview-questions";
+import {writePreviewSynthesis} from "./preview-synthesis";
 
 const {
   briefObjectFingerprints,
@@ -361,6 +362,9 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       ? (context.brief.content.answers as Array<Record<string, unknown>>).flatMap((answer) => typeof answer.questionId === "string" && typeof answer.answer === "string" ? [{questionId: answer.questionId, answer: answer.answer}] : [])
       : [];
     if (briefAnswers.length) runContext.answers = briefAnswers;
+    const previousSynthesisArtifact = context.prior_artifacts.find((artifact) => artifact.task_id === "A02");
+    const previousSynthesis = previousSynthesisArtifact ? outputOf(previousSynthesisArtifact) : null;
+    if (previousSynthesis) runContext.previousSynthesis = previousSynthesis as unknown as preview.SynthesisOutput;
     let questionsResult: PreviewQuestionsResult | null = null;
     for (const step of case01PreviewSteps) {
       if (!planTaskIds.has(step.taskId)) throw new Error(`the preview plan does not hold TaskSpec ${step.taskId}`);
@@ -437,6 +441,15 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       let stepResult: {output: PreviewStepOutput};
       try {
         stepResult = runPreviewStep(step, runContext);
+        if (step.methodId === "write-meeting-synthesis") {
+          const skeleton = stepResult.output as unknown as preview.SynthesisOutput;
+          const synthesis = await writePreviewSynthesis({
+            gateway: job.integration_preview_mode === "live" && dependencies.gateway ? dependencies.gateway : null,
+            locale, outputs, request, objectFingerprints: skeleton.objects_read, previous: runContext.previousSynthesis ?? null, skeleton,
+          });
+          stepResult = {output: synthesis as unknown as PreviewStepOutput};
+          log("integration_preview.synthesis", {job: job.job_id, source: synthesis.source.kind, model: synthesis.source.model, costUsd: synthesis.source.costUsd, latencyMs: synthesis.source.latencyMs, verified: synthesis.numbers.verified, removed: synthesis.numbers.removed.length, reason: synthesis.source.reason});
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message.slice(0, 500) : "unknown";
         await queue.finishCapitalTask(job, {taskRunId, status: "failed", qualityResults: [], error: {code: "integration_preview_step_failed", method: step.methodId, message}}).catch(() => undefined);
@@ -462,7 +475,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       await queue.writeStage(job, `${stage}:${step.taskId}`, "succeeded", {summary_pt: `${step.label.pt}: ${stateLabel(String(output.state), "pt-BR")}`, summary_en: `${step.label.en}: ${stateLabel(String(output.state), "en-US")}`, task_spec_id: step.taskId, state: output.state});
     }
 
-    const final = artifactByTask.get("A01")!;
+    const final = artifactByTask.get(case01PreviewSteps.at(-1)!.taskId)!;
     const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, request, questions: questionsResult});
     const completionMessageId = randomUUID();
     if (!queue.completeIntegrationPreviewRun) throw new Error("the queue cannot complete an integration_preview run");
@@ -499,7 +512,7 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
   const lines: string[] = [];
   const brief = outputs.get("A01");
   const deliverable = brief?.deliverable && typeof brief.deliverable === "object" ? (brief.deliverable as {blocks: Array<{id: string; label: string; state: string; object_ids: string[]; gap: string | null; headlines: Array<{text: string}>}>; objects_pending: Array<{id: string; state: string; reason?: string}>}) : null;
-  const states = case01PreviewSteps.filter((step) => step.methodId !== "plan-meeting-brief").map((step) => `${step.label[locale === "en-US" ? "en" : "pt"]}: ${stateLabel(String(outputs.get(step.taskId)?.state ?? "blocked"), locale)}`);
+  const states = case01PreviewSteps.filter((step) => step.stage !== "material").map((step) => `${step.label[locale === "en-US" ? "en" : "pt"]}: ${stateLabel(String(outputs.get(step.taskId)?.state ?? "blocked"), locale)}`);
   if (input.composition === "prepare_material") {
     const plan = brief?.page_plan && typeof brief.page_plan === "object" ? (brief.page_plan as {state: string; pages: Array<{title: string; blocks: string[]}>; reason?: string | null}) : null;
     lines.push(t(locale, "Plano do material a partir dos objetos assinados.", "Material plan from the signed objects."));
@@ -528,6 +541,13 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
     if (input.questions?.source === "model") lines.push(t(locale, `Perguntas geradas das lacunas declaradas pelos objetos (modelo ${input.questions.model}, US$ ${input.questions.costUsd.toFixed(4)}).`, `Questions generated from the gaps the objects declare (model ${input.questions.model}, US$ ${input.questions.costUsd.toFixed(4)}).`));
     else if (input.questions && input.questions.source === "fixed") lines.push(t(locale, `Perguntas fixas da primeira devolutiva (${input.questions.reason ?? "modelo indisponível"}).`, `Fixed questions of the first readout (${input.questions.reason ?? "model unavailable"}).`));
     if (questions.length) lines.push(t(locale, `Para alinhar com o VP: ${questions.map((question, index) => `(${index + 1}) ${question.text ?? question.question ?? ""}`).join(" ")}`, `To align with the VP: ${questions.map((question, index) => `(${index + 1}) ${question.text ?? question.question ?? ""}`).join(" ")}`));
+  }
+  const synthesis = outputs.get("A02") as unknown as preview.SynthesisOutput | undefined;
+  if (synthesis) {
+    lines.push(synthesis.source.kind === "model"
+      ? t(locale, `Síntese redigida pelo modelo ${synthesis.source.model} (US$ ${synthesis.source.costUsd.toFixed(4)}): ${synthesis.numbers.verified} números verificados nos objetos, ${synthesis.numbers.removed.length} frases removidas por número não sustentado. Arquivo Word e planilha no painel.`, `Synthesis written by the model ${synthesis.source.model} (US$ ${synthesis.source.costUsd.toFixed(4)}): ${synthesis.numbers.verified} numbers verified against the objects, ${synthesis.numbers.removed.length} sentences removed for an unsupported number. Word file and spreadsheet in the panel.`)
+      : t(locale, `Síntese em esqueleto (${synthesis.source.reason ?? "sem modelo"}): as manchetes dos próprios objetos, sem prosa. Arquivo Word e planilha no painel.`, `Skeleton synthesis (${synthesis.source.reason ?? "no model"}): the objects' own headlines, no prose. Word file and spreadsheet in the panel.`));
+    if (synthesis.change_note.length) lines.push(t(locale, `Mudanças desde a síntese anterior: ${synthesis.change_note.join("; ")}.`, `Changes since the previous synthesis: ${synthesis.change_note.join("; ")}.`));
   }
   lines.push(t(locale, "Os objetos completos, com âncoras, operandos e lacunas, estão no painel de trabalho. Métodos em estágio implemented; validação interna, sem liberação.", "The full objects, with anchors, operands and gaps, are in the work panel. Methods in the implemented rung; internal validation, no release."));
   return `${mark} ${lines.join("\n")}`.slice(0, 4_000);

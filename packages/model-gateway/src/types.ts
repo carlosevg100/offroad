@@ -28,6 +28,7 @@ export type TaskKind =
   | "localize"
   | "route_intent"
   | "preview_questions"
+  | "preview_synthesis"
   | "baseline_generalist";
 
 export type ModelRef = {provider: Provider; model: string; effort: Effort};

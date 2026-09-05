@@ -40,7 +40,7 @@ function gapText(item: unknown): string {
 export function extractPreviewGaps(outputs: Map<string, PreviewStepOutput>, locale: "pt-BR" | "en-US" = "pt-BR", perObjectLimit = 12): PreviewGap[] {
   const gaps: PreviewGap[] = [];
   for (const step of case01PreviewSteps) {
-    if (step.methodId === "plan-meeting-brief") continue;
+    if (step.stage === "material") continue;
     const output = outputs.get(step.taskId);
     if (!output) continue;
     let count = 0;

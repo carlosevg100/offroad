@@ -15,7 +15,7 @@ export type PreviewArtifactView = {
   content: unknown;
 };
 
-type Props = {artifacts: PreviewArtifactView[]; locale: "pt-BR" | "en-US"};
+type Props = {artifacts: PreviewArtifactView[]; locale: "pt-BR" | "en-US"; materialHref?: string};
 
 const labels: Record<string, [string, string]> = {
   preview_debt_ledger: ["Dívida instrumento a instrumento", "Debt instrument by instrument"],
@@ -114,7 +114,7 @@ function rows(output: Record<string, unknown>, key: string): {columns: string[];
   return {columns, rows: value.slice(0, 12).map((row) => columns.map((column) => formatValue((row as Record<string, unknown>)[column]))), total: value.length};
 }
 
-export function IntegrationPreviewWork({artifacts, locale}: Props) {
+export function IntegrationPreviewWork({artifacts, locale, materialHref}: Props) {
   const t = copy[locale];
   const latestByType = new Map<string, PreviewArtifactView>();
   for (const artifact of [...artifacts].sort((a, b) => a.createdAt.localeCompare(b.createdAt))) latestByType.set(artifact.type, artifact);
@@ -136,6 +136,8 @@ export function IntegrationPreviewWork({artifacts, locale}: Props) {
         const tables = (tableKeys[artifact.type] ?? []).map((key) => ({key, table: rows(output, key)})).filter((entry) => entry.table);
         const brief = artifact.type === "preview_meeting_brief" && isRecord(output.deliverable) ? output.deliverable : null;
         const pagePlan = artifact.type === "preview_meeting_brief" && isRecord(output.page_plan) ? output.page_plan : null;
+        const synthesis = artifact.type === "preview_material" && Array.isArray(output.sections) ? output.sections as Array<{id: string; title: string; paragraphs: Array<{text: string; references: string[]}>}> : null;
+        const synthesisSource = artifact.type === "preview_material" && isRecord(output.source) ? output.source : null;
         return (
           <section className={`preview-work__section is-${state}`} data-artifact-type={artifact.type} key={artifact.id}>
             <header>
@@ -152,7 +154,19 @@ export function IntegrationPreviewWork({artifacts, locale}: Props) {
                 {Array.isArray(block.headlines) && block.headlines.length ? <ul>{block.headlines.map((headline, index) => isRecord(headline) ? <li key={index}>{String(headline.text)}</li> : null)}</ul> : null}
                 {typeof block.gap === "string" ? <small>{block.gap}</small> : null}
               </div> : null)}
-              {pagePlan ? <div className="preview-work__pages"><strong>{String(pagePlan.state)}</strong>{Array.isArray(pagePlan.pages) ? <ol>{pagePlan.pages.map((page, index) => isRecord(page) ? <li key={index}>{String(page.title)}{Array.isArray(page.blocks) ? `: ${page.blocks.map(String).join(", ")}` : ""}</li> : null)}</ol> : null}{typeof pagePlan.reason === "string" ? <small>{pagePlan.reason}</small> : null}</div> : null}
+              {synthesis ? (
+              <div className="preview-work__synthesis" data-source={String(synthesisSource?.kind ?? "")}>
+                {materialHref ? <p className="preview-work__downloads"><a href={`${materialHref}?format=docx`}>{locale === "en-US" ? "Download the Word file" : "Baixar o arquivo Word"}</a> · <a href={`${materialHref}?format=xlsx`}>{locale === "en-US" ? "Download the spreadsheet" : "Baixar a planilha"}</a></p> : null}
+                {synthesisSource ? <p className="preview-work__note">{locale === "en-US" ? "Source" : "Fonte"}: {String(synthesisSource.kind)}{synthesisSource.model ? ` · ${String(synthesisSource.model)}` : ""}{typeof synthesisSource.costUsd === "number" ? ` · US$ ${synthesisSource.costUsd.toFixed(4)}` : ""}</p> : null}
+                {synthesis.map((section) => (
+                  <section key={section.id}>
+                    <h4>{section.title}</h4>
+                    {section.paragraphs.map((paragraph, index) => <p key={`${section.id}-${index}`}>{paragraph.text}</p>)}
+                  </section>
+                ))}
+              </div>
+            ) : null}
+            {pagePlan ? <div className="preview-work__pages"><strong>{String(pagePlan.state)}</strong>{Array.isArray(pagePlan.pages) ? <ol>{pagePlan.pages.map((page, index) => isRecord(page) ? <li key={index}>{String(page.title)}{Array.isArray(page.blocks) ? `: ${page.blocks.map(String).join(", ")}` : ""}</li> : null)}</ol> : null}{typeof pagePlan.reason === "string" ? <small>{pagePlan.reason}</small> : null}</div> : null}
             </div> : null}
             {!brief && scalarEntries(output).length ? <dl className="preview-work__figures">
               {scalarEntries(output).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}

@@ -44,6 +44,7 @@ export const case01PreviewSteps: readonly PreviewWorkflowStep[] = [
   {taskId: "C08", methodId: "declare-scenarios", methodVersion: "2026.09.05-v6", executorKey: "integration-preview.declare-scenarios", artifactType: "preview_scenarios", label: {pt: "Declarar cenários e estresses", en: "Declare scenarios and stresses"}, dependencies: ["C05", "C10"], executionClass: "deterministic", stage: "analysis"},
   {taskId: "S10", methodId: "compare-refinancing-before-after", methodVersion: "2026.09.05-v7", executorKey: "integration-preview.compare-refinancing-before-after", artifactType: "preview_alternatives", label: {pt: "Comparar as alternativas antes e depois", en: "Compare the alternatives before and after"}, dependencies: ["C05", "C09", "C10", "S07", "C08"], executionClass: "deterministic", stage: "alternatives"},
   {taskId: "A01", methodId: "plan-meeting-brief", methodVersion: "2026.09.05-v7", executorKey: "integration-preview.plan-meeting-brief", artifactType: "preview_meeting_brief", label: {pt: "Planejar a devolutiva e o material", en: "Plan the readout and the material"}, dependencies: ["C05", "D07", "C09", "C10", "C07", "S07", "C08", "S10"], executionClass: "compilation", stage: "material"},
+  {taskId: "A02", methodId: "write-meeting-synthesis", methodVersion: "2026.09.05-v1", executorKey: "integration-preview.write-meeting-synthesis", artifactType: "preview_material", label: {pt: "Escrever a síntese e o material", en: "Write the synthesis and the material"}, dependencies: ["C05", "D07", "C09", "C10", "C07", "S07", "C08", "S10", "A01"], executionClass: "compilation", stage: "material"},
 ] as const;
 
 const canonical = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) : inner));
@@ -60,7 +61,7 @@ export function previewWorkflowIdentity(composition: PreviewComposition): {id: s
 /** Which steps a composition targets; the plan always holds every step so dependencies resolve. */
 export function previewTargetTaskIds(composition: PreviewComposition): string[] {
   switch (composition) {
-    case "prepare_material": return ["A01"];
+    case "prepare_material": return ["A01", "A02"];
     case "prepare_meeting":
     case "prepare_decision":
     case "deepen":
