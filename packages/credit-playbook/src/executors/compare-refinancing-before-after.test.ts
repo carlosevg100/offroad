@@ -93,8 +93,12 @@ describe("compare-refinancing-before-after executor", () => {
     }
     const extend = result.alternatives.find((alternative) => alternative.id === "extend-di")!;
     expect(extend.concentration!.map((row) => row.period)).toEqual(["2027", "2028", "2029", "2030", "2031", "2032+"]);
+    // Schedule identity: after = before - retired principal + new principal (the schedule excludes the transaction-cost line, so it is not the gross debt).
     const consolidated = extend.concentration!.reduce((sum, row) => sum.plus(row.consolidated), d("0"));
-    expect(consolidated.toFixed()).toBe(d(extend.after!.grossDebt).toFixed());
+    const beforeTotal = Object.values(base.before.schedule).reduce((sum, value) => sum.plus(value), d("0"));
+    const extendInput = base.alternatives.find((alternative) => alternative.id === "extend-di")!;
+    const retired = extendInput.retired!.reduce((sum, series) => sum.plus(series.principal), d("0"));
+    expect(consolidated.toDecimalPlaces(2).toFixed()).toBe(beforeTotal.minus(retired).plus(extendInput.newDebt!.amount).toDecimalPlaces(2).toFixed());
     expect(result.ranking?.discriminator).toBe("peak_amount");
     expect(result.ranking?.order[0]?.reason).toBe("best peak_amount");
     const tie = compareRefinancingBeforeAfter({...base, alternatives: [base.alternatives[2]!, {...base.alternatives[2]!, id: "status-quo-twin", label: "Manter, de novo"}], ranking: {discriminator: "peak_amount", rationale: "empate"}});
