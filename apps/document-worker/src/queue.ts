@@ -281,7 +281,10 @@ export function createQueueClient(
       if (!claimed.success) {
         // A payload we cannot understand is a bug in the app that queued it, not something to
         // guess our way through.
-        throw new Error(`worker_claim_job returned an unusable job: ${claimed.error.issues.map((i) => i.path.join(".")).join(", ")}`);
+        // Content-free: the kind and the scope name a route, never a document or a value.
+        const raw = data as Record<string, unknown>;
+        const payload = raw.payload && typeof raw.payload === "object" ? (raw.payload as Record<string, unknown>) : {};
+        throw new Error(`worker_claim_job returned an unusable job (kind ${String(raw.kind)}, scope ${String(payload.analysis_scope ?? "none")}): ${claimed.error.issues.map((i) => i.path.join(".")).join(", ")}`);
       }
       return claimed.data;
     },
