@@ -597,4 +597,6 @@ begin
 end;
 $$;
 
-revoke all on function private.get_integration_preview_status(uuid) from public, anon, authenticated;
+-- The public invoker wrapper runs as the caller, so authenticated keeps execute on the private implementation.
+revoke all on function private.get_integration_preview_status(uuid) from public, anon;
+grant execute on function private.get_integration_preview_status(uuid) to authenticated;
