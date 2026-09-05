@@ -66,6 +66,52 @@ tem a concessão.
    transição de material.
 5. **Gravação**: jornada E2E com worker no stack local, vídeo e transcrição como artefato da CI.
 
+## 4.1 Estado em 5 de setembro de 2026 (PR #443)
+
+As cinco fatias estão no mesmo PR, na ordem em que foram provadas:
+
+1. Fundação: migration `integration_preview_mode` (concessão, leitura de status, flag no claim,
+   ativação, despachante v3, conclusão, carregador de contexto v6, `brief_kind` alargado), teste SQL
+   `supabase/tests/integration_preview_mode.sql`, contrato do worker, banner. Provada no staging
+   (`plpgsql_check` limpo, teste passou) e reconstruída do zero pela CI.
+2. Evidência e workflow: `packages/credit-playbook/src/cases/gc01/` (entradas congeladas, antes
+   dentro dos testes) e `src/preview/workflow.ts` (nove TaskSpecs ligadas aos nove métodos:
+   C05 ledger, D07 demonstrações, C09 covenants, C10 muralha, C07 juros, S07 saída, C08 cenários,
+   S10 antes/depois, A01 devolutiva).
+3. Runtime: `apps/document-worker/src/integration-preview.ts` (roteador determinístico do turno,
+   corrida das nove etapas com replay por fingerprint, devolutiva compilada dos objetos) e
+   migration `integration_preview_runtime` (eventos com resumo próprio, leitura dos objetos por um
+   turno). Zero chamadas de modelo; o gateway continua com dois provedores para o que ainda usar
+   modelo fora da prévia.
+4. Interface: painel `integration-preview-work.tsx` com os nove objetos (estado, números, tabelas,
+   lacunas, evidência); plano e progresso vêm das tabelas de plano e corridas já existentes.
+5. Gravação: `apps/web/e2e/integration-preview-case01.spec.ts` roda a jornada inteira no stack local
+   da CI com o worker (vídeo e transcrição em `test-results/integration-preview-case01/`), e o
+   log do worker fica como artefato `local-worker-log`.
+
+Estado honesto que a prévia mostra hoje para o Caso 01: ledger, demonstrações e muralha
+`incomplete`; covenants `conditioned`; juros e saída `partial`; cenários `blocked` (manifesto do
+corpus); antes/depois `compared`; devolutiva `planned` com alternativas e pontos a favor preenchidos
+e o resto declarado como lacuna. É isso que o produto deve mostrar enquanto a evidência não fecha.
+
+### Como ligar para uma organização (operador, conexão de gestão)
+
+```sql
+insert into private.integration_preview_grants (organization_id, note, granted_by)
+values ('<organization_id>', 'Caso 01 em validação interna', '<quem concedeu>')
+on conflict (organization_id) do update set enabled = true, note = excluded.note, updated_at = now();
+```
+
+Desligar: `update private.integration_preview_grants set enabled = false where organization_id = '<id>'`.
+O banner some e as ativações passam a ser recusadas no mesmo instante; o que já foi gravado fica
+marcado como prévia.
+
+### Ordem de rollout em produção
+
+As migrations entram antes do código: o worker novo chama `worker_record_agent_response_and_activate_v3`
+em todo turno, com ou sem concessão. Aplicar `integration_preview_mode` e `integration_preview_runtime`
+no projeto de produção, alinhar os nomes dos arquivos ao carimbo gravado, e só então mesclar.
+
 ## 5. Qualidade em paralelo
 
 - Testes determinísticos a cada commit (CI completa).

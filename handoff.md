@@ -26,6 +26,15 @@ Sandbox access with fixed fictional responses, not official production data. See
 `docs/build/ANBIMA_SOURCE_DECISION.md`. No ANBIMA credential was stored or used; rotate the Client
 Secret exposed in the screenshot before any future integration.
 
+### Engineering update: integration_preview and the Case 01 endgame, 5 September 2026
+
+Decisão do fundador na tarde de 5 de setembro: o fluxo completo do Caso 01 roda no produto antes
+da homologação profunda de cada componente. O modo interno `integration_preview` executa métodos
+em estágio `implemented` para uma organização concedida, com banner, marcas e restrições; nada é
+liberação. Roteador determinístico de turno, corrida das nove etapas com replay por fingerprint,
+devolutiva compilada dos objetos, painel com os nove artefatos e jornada E2E gravada com o worker
+no stack local. Detalhes e estado em `docs/build/INTEGRATION_PREVIEW.md` (PR #443).
+
 ### Engineering update: Case 01 round 5 merged, 5 September 2026
 
 Os nove executores do Caso 01 saíram de mais uma rodada de revisão independente e estão na `main`
