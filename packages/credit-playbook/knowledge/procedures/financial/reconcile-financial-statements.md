@@ -1,6 +1,6 @@
 ---
 id: reconcile-financial-statements
-version: 2026.09.05-v1
+version: 2026.09.05-v2
 maturity: implemented
 title_pt: Conciliar as demonstrações entre si e com o release
 title_en: Reconcile the financial statements with each other and with the release
@@ -10,7 +10,7 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-financial-statements
 implementation_export: reconcileFinancialStatements
-result_contract: method.reconcile-financial-statements.v1
+result_contract: method.reconcile-financial-statements.v2
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -45,11 +45,11 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 
 # Inputs mínimos e substitutos
 - Demonstração do período com notas; release e apresentação quando existirem.
-- Tolerância versionada de conciliação por demonstração e escala; sem ela, usa-se tolerância zero e a diferença vira divergência aberta.
+- Tolerância versionada de conciliação por demonstração e escala (chave e versão da política no resultado); sem ela, usa-se tolerância zero e a diferença vira divergência aberta.
 
 # Sequência operacional
 1. [deterministic] Montar identidades :: Ativo igual a passivo mais patrimônio; caixa inicial mais variação igual a caixa final; dívida inicial mais movimentação igual a dívida final ; Registrar cada identidade com as âncoras | tools: financial.accounting_identity, financial.debt_balance_bridge | evidence: balanço, fluxo de caixa, nota de dívida
-2. [deterministic] Confrontar fontes da mesma conta :: Para cada conta material com duas fontes, calcular a diferença e classificá-la pela tolerância ; Diferença acima da tolerância sem explicação na nota vira divergência aberta com as duas âncoras | evidence: notas, release
+2. [deterministic] Confrontar fontes da mesma conta :: Para cada conta material com duas ou mais fontes, decidir primeiro a comparabilidade pelos componentes que cada fonte conta e pela data (nome igual não é definição igual; a dívida líquida do release e a contratual não se comparam); só então calcular a diferença e classificá-la pela tolerância; uma explicação vai de uma fonte a outra com sinal preservado; conta de fonte única fica registrada, nunca comparada ; Diferença acima da tolerância sem explicação na nota vira divergência aberta com as duas âncoras | evidence: notas, release
 3. [deterministic] Conciliar juros :: Confrontar a despesa de juros do resultado com a movimentação de juros da nota de dívida ; Diferença é registrada, não distribuída | tools: financial.interest_expense_bridge | evidence: nota de dívida, resultado
 4. [model_assisted] Redigir o mapa :: Listar o que fecha, o que difere com explicação e o que fica aberto ; Nunca escrever "aproximadamente" para esconder uma diferença
 
@@ -72,9 +72,16 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 - Identidade material não fecha e a nota não explica.
 
 # Outputs
-- reconciliations (array, required): por conta, valores por fonte, diferença, tolerância, estado e âncoras
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v2`
+- reference_date (date, required): data-base
+- unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
+- block_reasons (array, required): motivos estruturados de bloqueio (base vazia)
+- incomplete_reasons (array, required): identidades ou pontes que a base não permitiu testar
+- reconciliations (array, required): por conta, valores por fonte (definição, componentes, data, âncora), comparabilidade decidida pelos componentes e pela data, diferença, tolerância (valor, chave e versão da política), estado (closes, explained, open, not_comparable, single_source) e explicação direcional (de uma fonte a outra, com sinal, esperado, real e resíduo)
 - open_divergences (array, required): divergências abertas com as duas âncoras e o motivo
-- identities (array, required): identidades testadas com resultado
+- identities (array, required): identidades testadas com resultado (balanço, ponte de dívida, ponte de caixa, ponte de juros)
+- uncovered_terms (array, required): contas de fonte única e identidades sem base, com estado `insufficient_evidence` e motivo
+- trace (object, required): cálculos executados (id, fórmula, operandos, resultado, unidade) e fingerprints de entrada e saída
 
 # Exemplos
 ## Bom
@@ -88,9 +95,9 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 ## Gold
 - gc01-analista-ib-camil: divergência de dividendos e conciliação de estoques detectadas e registradas
 ## Adversarial
-- valor alterado em uma fonte é detectado pela conciliação; escala trocada é detectada pela identidade
+- valor alterado em uma fonte é detectado pela conciliação; escala trocada é detectada pela identidade; dívida do release rotulada como contratual, fontes em datas diferentes e trimestre anualizado contra doze meses são `not_comparable`; explicação com sentido trocado deixa resíduo; duplicatas, explicação para fonte inexistente, tolerância sem política e unidade fora do catálogo são recusadas; base vazia bloqueia; sem balanço a conciliação fica `incomplete`
 ## Aceitação
-- nenhuma diferença escondida; divergências com duas âncoras
+- nenhuma diferença escondida; divergências com duas âncoras; ponte de juros entre a movimentação da nota e a despesa do resultado registrada com a diferença; fingerprints iguais sob vinte permutações de contas, fontes, linhas, componentes, chaves de tolerância e ordem de chaves, com o trace dentro do fingerprint
 
 # Evidência
 ## Hierarquia
