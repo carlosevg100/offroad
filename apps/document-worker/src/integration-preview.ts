@@ -458,8 +458,9 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
       : t(locale, "Primeira devolutiva do Caso 01, compilada dos objetos assinados. Estado de cada método:", "First readout of Case 01, compiled from the signed objects. State of each method:"));
     lines.push(states.join("; ") + ".");
     if (deliverable) {
-      const filled = deliverable.blocks.filter((block) => block.state === "filled");
-      const facts = filled.flatMap((block) => block.headlines.map((headline) => headline.text));
+      // Facts once each, from the blocks that cite objects; the open questions are listed apart.
+      const filled = deliverable.blocks.filter((block) => block.state === "filled" && block.id !== "open_questions");
+      const facts = [...new Set(filled.flatMap((block) => block.headlines.map((headline) => headline.text)))];
       if (facts.length) lines.push(t(locale, `Achados citáveis: ${facts.join(" | ")}.`, `Citable findings: ${facts.join(" | ")}.`));
       const gaps = deliverable.blocks.filter((block) => block.state === "gap" && block.gap);
       if (gaps.length) lines.push(t(locale, `Lacunas declaradas: ${gaps.map((block) => `${block.label} (${block.gap})`).join("; ")}.`, `Declared gaps: ${gaps.map((block) => `${block.label} (${block.gap})`).join("; ")}.`));
