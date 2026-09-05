@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `diagnose-maturity-wall` (v5, after the fourth independent review). Reads
+ * Executor of the method `diagnose-maturity-wall` (v6, after the fifth independent review). Reads
  * the ledger's schedule, names the walls against a versioned threshold (a share strictly above it),
  * measures each period's cover sequentially through financial-core (cash carried forward, the
  * generation declared for that period and nothing for a period without one, contracted sources),
@@ -64,9 +64,9 @@ export const maturityWallInputSchema = z.object({
     claimedPeriod: nonEmpty.nullable(),
     evidence: z.object({
       approval: anchorSchema.nullable(),
-      contract: z.object({kind: z.literal("contract"), date: isoDate, anchor: anchorSchema}).strict().nullable(),
-      /** The disbursement must fall after the reference date: an earlier one already sits inside the cash. */
-      disbursement: z.object({kind: z.literal("disbursement_proof"), date: isoDate, anchor: anchorSchema}).strict().nullable(),
+      contract: z.object({kind: z.literal("contract"), date: isoDate, /** The amount the contract states. */ amount: nonNegative, anchor: anchorSchema}).strict().nullable(),
+      /** The disbursement must fall after the reference date: an earlier one already sits inside the cash. Its amount and date are what the cover uses, never the claimed figure. */
+      disbursement: z.object({kind: z.literal("disbursement_proof"), date: isoDate, amount: nonNegative, anchor: anchorSchema}).strict().nullable(),
     }).strict(),
   }).strict()).default([]),
   /** Concentration strictly above this share of gross debt in one period is a wall; the policy is named. */
@@ -82,6 +82,7 @@ export const maturityWallInputSchema = z.object({
   if (new Decimal(input.wallThreshold.share).gt(1)) context.addIssue({code: "custom", path: ["wallThreshold", "share"], message: "a wall threshold is a share of gross debt between 0 and 1"});
   if (!UNIT_WORDS[input.unit].test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a rescaled schedule under another label is refused`});
   const seen = new Set<string>();
+  const maturityIds = new Set(input.periods.filter((period) => period.kind === "maturity").map((period) => period.period));
   input.periods.forEach((period, index) => {
     if (seen.has(period.period)) context.addIssue({code: "custom", path: ["periods", index], message: `duplicate period ${period.period}`});
     seen.add(period.period);
@@ -90,14 +91,15 @@ export const maturityWallInputSchema = z.object({
     if (period.kind === "maturity" && period.amount.startsWith("-")) context.addIssue({code: "custom", path: ["periods", index, "amount"], message: `period ${period.period} carries a negative amount; only a typed adjustment row may, and it never enters the cover`});
     if (period.kind === "adjustment" && period.endsAt !== null) context.addIssue({code: "custom", path: ["periods", index], message: `adjustment ${period.period} belongs to no period and cannot end on a date`});
   });
-  for (const key of Object.keys(input.interestByPeriod ?? {})) if (!seen.has(key)) context.addIssue({code: "custom", path: ["interestByPeriod"], message: `interest names a period that is not in the schedule: ${key}`});
-  for (const key of Object.keys(input.operatingGeneration?.byPeriod ?? {})) if (!seen.has(key)) context.addIssue({code: "custom", path: ["operatingGeneration"], message: `generation names a period that is not in the schedule: ${key}`});
+  for (const key of Object.keys(input.interestByPeriod ?? {})) if (!maturityIds.has(key)) context.addIssue({code: "custom", path: ["interestByPeriod"], message: `interest names a period that is not a maturity bucket of the schedule: ${key}`});
+  for (const key of Object.keys(input.operatingGeneration?.byPeriod ?? {})) if (!maturityIds.has(key)) context.addIssue({code: "custom", path: ["operatingGeneration"], message: `generation names a period that is not a maturity bucket of the schedule: ${key}`});
   if (input.grossDebt.unit !== input.unit) context.addIssue({code: "custom", path: ["grossDebt", "unit"], message: `the ledger reports the gross debt in ${input.grossDebt.unit} and the schedule is declared in ${input.unit}`});
   const sourceIds = new Set<string>();
   input.claimedSources.forEach((source, index) => {
     if (sourceIds.has(source.id)) context.addIssue({code: "custom", path: ["claimedSources", index, "id"], message: `duplicate source ${source.id}`});
     sourceIds.add(source.id);
-    if (source.claimedPeriod !== null && !seen.has(source.claimedPeriod)) context.addIssue({code: "custom", path: ["claimedSources", index, "claimedPeriod"], message: `source "${source.label}" names a period that is not in the schedule`});
+    if (source.claimedPeriod !== null && !maturityIds.has(source.claimedPeriod)) context.addIssue({code: "custom", path: ["claimedSources", index, "claimedPeriod"], message: `source "${source.label}" names a period that is not a maturity bucket of the schedule`});
+    if (source.evidence.contract && source.evidence.disbursement && new Decimal(source.evidence.disbursement.amount).gt(source.evidence.contract.amount)) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence"], message: `source "${source.label}": disbursed ${source.evidence.disbursement.amount}, more than the ${source.evidence.contract.amount} contracted`});
     if (source.evidence.contract && source.evidence.disbursement && source.evidence.contract.anchor.document === source.evidence.disbursement.anchor.document) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence"], message: `source "${source.label}": the contract and the disbursement proof must be two documents of the base, not two places of one`});
     if (source.evidence.disbursement && source.evidence.disbursement.date <= input.referenceDate) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence", "disbursement"], message: `source "${source.label}": disbursed on ${source.evidence.disbursement.date}, on or before the reference date; that cash already sits in the balance and counting it again is double counting`});
     if (source.evidence.contract && source.evidence.disbursement && source.evidence.disbursement.date < source.evidence.contract.date) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence"], message: `source "${source.label}": disbursed before it was contracted`});
@@ -109,7 +111,7 @@ export type MaturityWallInput = z.input<typeof maturityWallInputSchema>;
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type MaturityWallOutput = {
-  schema_version: "method.diagnose-maturity-wall.v5";
+  schema_version: "method.diagnose-maturity-wall.v6";
   reference_date: string;
   unit: string;
   state: "complete" | "incomplete" | "blocked";
@@ -130,7 +132,8 @@ export type MaturityWallOutput = {
     caveat: string;
   };
   /** `period` is set only for a proven source; `claimed_period` keeps what the file says. */
-  sources: Array<{id: string; label: string; amount: string; period: string | null; claimed_period: string | null; state: "proven" | "unproven"; reason: string; evidence: {approval: Anchor | null; contract: {date: string; anchor: Anchor} | null; disbursement: {date: string; anchor: Anchor} | null}}>;
+  /** A proven source enters the cover with the amount and the period the disbursement proves, never the claimed figure or the claimed period. */
+  sources: Array<{id: string; label: string; claimed_amount: string; amount: string | null; period: string | null; claimed_period: string | null; state: "proven" | "unproven"; reason: string; evidence: {approval: Anchor | null; contract: {date: string; amount: string; anchor: Anchor} | null; disbursement: {date: string; amount: string; anchor: Anchor} | null}}>;
   /** Rows of the schedule that belong to no period (transaction costs); they reconcile the schedule to the gross debt and never enter the cover. */
   schedule_adjustments: Array<{id: string; amount: string}>;
   /** The acceleration reading the indenture allows, recorded apart from the contractual schedule and never added to it. */
@@ -160,7 +163,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
   const uncovered: MaturityWallOutput["uncovered_terms"] = [];
   const notes: MaturityWallOutput["notes"] = input.acceleration
     ? [{text: `a covenant that is not met is a non-automatic acceleration event under the clause in the base: ${input.acceleration.defaultOutcome === "declared_unless_assembly_waives" ? "the acceleration is declared unless the assembly of holders, duly installed with quorum, resolves not to declare it" : "the acceleration is declared only by resolution of the assembly of holders"}; the contractual schedule and an acceleration scenario are never added together`, anchor: input.acceleration.clause.anchor}]
-    : [{text: "a covenant that is not met is a non-automatic acceleration event; the indenture clause that writes the assembly's default is not in the base, so the mechanism is not asserted; the contractual schedule and an acceleration scenario are never added together", anchor: null}];
+    : [{text: "no indenture clause on acceleration is in the base: nothing is asserted about what a covenant breach triggers; the contractual schedule and an acceleration scenario are never added together", anchor: null}];
   const accelerationScenario: MaturityWallOutput["acceleration_scenario"] = input.acceleration
     ? {state: "recorded", clause: input.acceleration.clause.anchor, default_outcome: input.acceleration.defaultOutcome, accelerable_balance: input.acceleration.accelerableBalance ? {value: out(d(input.acceleration.accelerableBalance.value)), anchor: input.acceleration.accelerableBalance.anchor} : null, note: input.acceleration.accelerableBalance ? `if declared, ${out(d(input.acceleration.accelerableBalance.value))} becomes due at once; recorded apart from the contractual schedule, never added to it` : "the accelerable balance is not in the base; the scenario is recorded without an amount"}
     : {state: "not_asserted", clause: null, default_outcome: null, accelerable_balance: null, note: "no acceleration clause in the base; no acceleration scenario is asserted"};
@@ -174,7 +177,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
   if (blockReasons.length > 0) {
     // A blocked ledger stops the diagnosis: no wall, no peak, no cover is computed on numbers that do not reconcile.
     const body = {
-      schema_version: "method.diagnose-maturity-wall.v5" as const, reference_date: input.referenceDate, unit: input.unit, state: "blocked" as const, block_reasons: blockReasons, incomplete_reasons: [],
+      schema_version: "method.diagnose-maturity-wall.v6" as const, reference_date: input.referenceDate, unit: input.unit, state: "blocked" as const, block_reasons: blockReasons, incomplete_reasons: [],
       wall_threshold: input.wallThreshold, walls: [], peak: null,
       coverage: {cash_definition: input.cash.definition, cash: {value: out(d(input.cash.value)), anchor: input.cash.anchor}, operating_generation: null, coverage_basis: input.interestByPeriod ? "full_debt_service" as const : "principal_only" as const, by_period: [], cumulative_deficit: "0", caveat: "diagnosis stopped: the ledger is blocked"},
       sources: [], schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), acceleration_scenario: accelerationScenario, uncovered_terms: [], notes,
@@ -197,10 +200,12 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
   const peak = concentration.peak ? {period: concentration.peak.period, amount: concentration.peak.consolidated, share_of_gross: out(gross.isZero() ? d(0) : d(concentration.peak.consolidated).div(gross))} : null;
 
   // 2. Sources: proven only with contract and disbursement in the base.
+  const periodOfDate = (date: string): string | null => { const dated = maturities.filter((period) => period.endsAt !== null); const hit = dated.find((period) => date <= period.endsAt!); if (hit) return hit.period; return maturities.find((period) => period.endsAt === null)?.period ?? null; };
   const sources = input.claimedSources.map((source) => {
     const proven = source.evidence.contract !== null && source.evidence.disbursement !== null;
+    const provenPeriod = proven ? periodOfDate(source.evidence.disbursement!.date) : null;
     const reason = proven ? "a contract and a disbursement proof, each in its own document, are in the base" : `${[source.evidence.approval ? "approved" : null, source.evidence.contract ? "contracted" : null].filter(Boolean).join(" and ") || "mentioned"} only; without a contract and a disbursement proof in the base an approval is not a source of payment`;
-    return {id: source.id, label: source.label, amount: out(d(source.amount)), period: proven ? source.claimedPeriod : null, claimed_period: source.claimedPeriod, state: proven ? "proven" as const : "unproven" as const, reason: proven ? `${reason}; contracted ${source.evidence.contract!.date}, disbursed ${source.evidence.disbursement!.date}, after the reference date` : `${reason}; the period the file assigns (${source.claimedPeriod ?? "none"}) is not used`, evidence: {approval: source.evidence.approval, contract: source.evidence.contract ? {date: source.evidence.contract.date, anchor: source.evidence.contract.anchor} : null, disbursement: source.evidence.disbursement ? {date: source.evidence.disbursement.date, anchor: source.evidence.disbursement.anchor} : null}};
+    return {id: source.id, label: source.label, claimed_amount: out(d(source.amount)), amount: proven ? out(d(source.evidence.disbursement!.amount)) : null, period: provenPeriod, claimed_period: source.claimedPeriod, state: proven ? "proven" as const : "unproven" as const, reason: proven ? `${reason}; contracted ${source.evidence.contract!.date} for ${source.evidence.contract!.amount}, disbursed ${source.evidence.disbursement!.date} for ${source.evidence.disbursement!.amount}, placed in ${provenPeriod ?? "no period"} by the disbursement date${d(source.evidence.disbursement!.amount).eq(source.amount) ? "" : `; the file claimed ${source.amount}, the proof says ${source.evidence.disbursement!.amount}, the proof is used`}${provenPeriod === source.claimedPeriod ? "" : `; the file assigned ${source.claimedPeriod ?? "no period"}, the date says ${provenPeriod ?? "no period"}`}` : `${reason}; the period the file assigns (${source.claimedPeriod ?? "none"}) is not used`, evidence: {approval: source.evidence.approval, contract: source.evidence.contract ? {date: source.evidence.contract.date, amount: source.evidence.contract.amount, anchor: source.evidence.contract.anchor} : null, disbursement: source.evidence.disbursement ? {date: source.evidence.disbursement.date, amount: source.evidence.disbursement.amount, anchor: source.evidence.disbursement.anchor} : null}};
   });
   for (const source of sources.filter((entry) => entry.state === "unproven")) uncovered.push({id: `source:${source.id}`, state: "insufficient_evidence", reason: source.reason});
 
@@ -224,7 +229,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
     if (period.endsAt === null) return {period: period.period, principal: out(d(period.amount)), interest: null, interest_anchor: null, basis: "principal_only" as const, debt_service: out(d(period.amount)), opening_cash: "0", generation: null, generation_declared: false, contracted_sources: "0", sources: "0", coverage: null, closing_cash: "0", incremental_deficit: "0", cumulative_deficit: "0", rollover_dependency: "not assessed: open-ended bucket", state: "not_assessed" as const};
     const generation = generationFor(period.period);
     const interest = interestFor(period.period);
-    const contracted = sources.filter((source) => source.state === "proven" && source.period === period.period).reduce((sum, source) => sum.plus(source.amount), d(0));
+    const contracted = sources.filter((source) => source.state === "proven" && source.period === period.period).reduce((sum, source) => sum.plus(source.amount!), d(0));
     const row = calculateLiquidityCoverage([{period: period.period, openingCash: carriedCash, cfads: generation ?? 0, principal: period.amount, interest: interest ?? 0, contractedSources: contracted}])[0]!;
     const incremental = d(row.deficit);
     cumulative = cumulative.plus(incremental);
@@ -243,7 +248,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
       : "cash follows the contractual net debt definition; availability for payment is not asserted";
   const state: MaturityWallOutput["state"] = blockReasons.length > 0 ? "blocked" : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.diagnose-maturity-wall.v5" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
+    schema_version: "method.diagnose-maturity-wall.v6" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     wall_threshold: input.wallThreshold, walls, peak,
     coverage: {cash_definition: input.cash.definition, cash: {value: out(cash), anchor: input.cash.anchor}, operating_generation: input.operatingGeneration ? {basis: input.operatingGeneration.basis, anchor: input.operatingGeneration.anchor, periods_declared: Object.keys(input.operatingGeneration.byPeriod).sort(compare)} : null, coverage_basis: interestComplete ? "full_debt_service" as const : "principal_only" as const, by_period: byPeriod, cumulative_deficit: out(cumulative), caveat},
     sources, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), acceleration_scenario: accelerationScenario, uncovered_terms: uncovered, notes,

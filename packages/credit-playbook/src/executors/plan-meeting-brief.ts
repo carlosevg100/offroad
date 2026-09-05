@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 
 /**
- * Executor of the method `plan-meeting-brief` (v4, after the third independent review). Assembles
+ * Executor of the method `plan-meeting-brief` (v5, after the fourth independent review). Assembles
  * the first deliverable only from objects in a usable state, each fact bound to the fingerprint of
  * the object it cites; a conditioned, partial or open object names a gap instead of filling a block.
  * Points for and against the thesis come from the stance each object declared on its facts. The
@@ -16,8 +16,11 @@ import {z} from "zod";
  * Without audience or form the deliverable still goes out and the page plan waits. Points for and
  * against the thesis come from the stance any usable object declared, never from a list of kinds.
  * Only cited objects count as used. A question is asked only after a declared search of the base
- * that found no answer. A fact's unit cannot contradict the fact's own words. This executor plans;
- * the prose of the pages is a model step downstream, never produced here.
+ * that found no answer. A fact's unit cannot contradict the fact's own words nor the unit of the
+ * object it quotes; every fact names the field of the object it reproduces; a fact that asserts a
+ * legal event (a breach) is refused, since no object asserts one. A plan that cannot hold the pages
+ * asked emits the question. Every gap, open questions included, is an uncovered term. This executor
+ * plans; the prose of the pages is a model step downstream, never produced here.
  */
 const nonEmpty = z.string().trim().min(1);
 const identifier = z.string().regex(/^[a-z][a-z0-9_.-]*$/);
@@ -35,8 +38,10 @@ export const approvedObjectSchema = z.object({
   kind: z.enum(objectKinds),
   state: z.enum(["complete", "resolved", "closes", "declared", "compared", "diagnosed", "conditioned", "incomplete", "partial", "open_divergences", "identity_failed", "blocked"]),
   fingerprint: sha256,
-  /** Facts the deliverable may cite; each one is bound to the object's fingerprint and declares its stance on the thesis. */
-  headlines: z.array(z.object({text: nonEmpty, stance: z.enum(["for", "against", "neutral"]), objectFingerprint: sha256, /** Unit of any figure the text carries (R$ mil, x, %); required when the text carries a thousands-separated number. */ unit: nonEmpty.nullable().default(null), /** The field of the object the fact quotes, so a fact can be audited against the object it is bound to. */ objectPath: nonEmpty.nullable().default(null)}).strict()).max(12).default([]),
+  /** The monetary unit the object's figures are stated in, when it has any; a fact quoting a figure must carry the same unit. */
+  unit: nonEmpty.nullable().default(null),
+  /** Facts the deliverable may cite; each one is bound to the object's fingerprint, names the field it reproduces and declares its stance on the thesis. */
+  headlines: z.array(z.object({text: nonEmpty, stance: z.enum(["for", "against", "neutral"]), objectFingerprint: sha256, /** Unit of any figure the text carries (R$ mil, x, %); required when the text carries a thousands-separated number. */ unit: nonEmpty.nullable().default(null), /** The field of the object the fact reproduces, so a fact can be audited against the object it is bound to. */ objectPath: nonEmpty}).strict()).max(12).default([]),
 }).strict();
 
 export const briefRequestSchema = z.object({
@@ -84,6 +89,8 @@ export const briefInputSchema = z.object({
     object.headlines.forEach((headline, position) => {
       if (headline.objectFingerprint !== object.fingerprint) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the headline is bound to another fingerprint than the object's`});
       if (headline.unit === null && /\d{1,3}(\.\d{3})+/.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact with a figure needs its unit`});
+      if (/rompid|rompiment|breach|descumpr|inadimpl|default declar/i.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact asserts a breach or a default; no object asserts a legal event, only an interim reading against a limit`});
+      if (headline.unit !== null && object.unit !== null && /\d{1,3}(\.\d{3})+/.test(headline.text) && headline.unit.toLowerCase() !== object.unit.toLowerCase()) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the fact quotes a figure in ${headline.unit} and the object states its figures in ${object.unit}`});
       if (headline.unit !== null) {
         const words = headline.text.toLowerCase();
         const unit = headline.unit.toLowerCase();
@@ -139,7 +146,7 @@ const PAGE_PLANS: Record<"pitch_pages" | "internal_briefing" | "analysis_with_sc
 type Block = {id: string; label: string; state: "filled" | "gap"; object_ids: string[]; pending_object_ids: string[]; headlines: Array<{text: string; unit: string | null; object_id: string; object_fingerprint: string; object_path: string | null}>; gap: string | null};
 type Page = {number: number; title: string; blocks: string[]};
 export type BriefOutput = {
-  schema_version: "method.plan-meeting-brief.v4";
+  schema_version: "method.plan-meeting-brief.v5";
   case_id: string;
   turn: number;
   state: "planned" | "awaiting_confirmation";
@@ -187,7 +194,7 @@ function fitPages(base: Array<{title: string; blocks: string[]}>, pages: number 
 
 export function planMeetingBrief(raw: BriefInput): BriefOutput {
   const parsed = briefInputSchema.parse(raw);
-  const input = {...parsed, request: {...parsed.request, audience: parsed.request.audience ? {primary: parsed.request.audience.primary, others: [...parsed.request.audience.others].sort(compare)} : null, undefinedAspects: [...parsed.request.undefinedAspects].sort(compare)}, objects: [...parsed.objects].sort((a, b) => compare(a.id, b.id)).map((object) => ({...object, headlines: [...object.headlines].sort((a, b) => compare(a.text, b.text) || compare(a.stance, b.stance) || compare(a.unit ?? "", b.unit ?? ""))})), candidateQuestions: [...parsed.candidateQuestions].sort((a, b) => a.priority - b.priority || compare(a.id, b.id)), previousVersion: parsed.previousVersion ? {...parsed.previousVersion, blocks: [...parsed.previousVersion.blocks].sort((a, b) => compare(a.id, b.id)).map((block) => ({...block, objectIds: [...block.objectIds].sort(compare)}))} : null};
+  const input = {...parsed, request: {...parsed.request, audience: parsed.request.audience ? {primary: parsed.request.audience.primary, others: [...parsed.request.audience.others].sort(compare)} : null, undefinedAspects: [...parsed.request.undefinedAspects].sort(compare)}, objects: [...parsed.objects].sort((a, b) => compare(a.id, b.id)).map((object) => ({...object, headlines: [...object.headlines].sort((a, b) => compare(a.text, b.text) || compare(a.stance, b.stance) || compare(a.unit ?? "", b.unit ?? "") || compare(a.objectPath, b.objectPath))})), candidateQuestions: [...parsed.candidateQuestions].sort((a, b) => a.priority - b.priority || compare(a.id, b.id)).map((question) => ({...question, coverage: question.coverage ? {...question.coverage, searched: [...question.coverage.searched].sort(compare)} : null})), previousVersion: parsed.previousVersion ? {...parsed.previousVersion, blocks: [...parsed.previousVersion.blocks].sort((a, b) => compare(a.id, b.id)).map((block) => ({...block, objectIds: [...block.objectIds].sort(compare)}))} : null};
   const usable = input.objects.filter((object) => USABLE_STATES.has(object.state));
   const pending = input.objects.filter((object) => !USABLE_STATES.has(object.state) && object.state !== "blocked");
   const excluded = input.objects.filter((object) => object.state === "blocked");
@@ -229,11 +236,16 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
   });
 
   const audience = input.request.audience;
+  const refreshOpenQuestions = () => { const block = blocks.find((entry) => entry.id === "open_questions")!; block.state = asked.length > 0 ? "filled" : "gap"; block.headlines = asked.map((question) => ({text: question.text, unit: null, object_id: `question:${question.id}`, object_fingerprint: fingerprint(question), object_path: null})); block.gap = asked.length > 0 ? null : "no question that changes the work remains"; };
   let pagePlan: BriefOutput["page_plan"] = {state: "not_requested", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: "the first deliverable is not a material; the page plan waits for the audience and the form"};
   if (audience === null || input.request.form === null) pagePlan = {state: "awaiting_audience_and_form", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: `the deliverable goes out; the page plan waits for ${[audience === null ? "the audience" : null, input.request.form === null ? "the form" : null].filter(Boolean).join(" and ")}`};
   else if (input.request.form !== "first_deliverable") {
     const layout = fitPages(PAGE_PLANS[input.request.form], input.request.pages);
-    if (!layout) pagePlan = {state: "unsupported", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: `${input.request.pages} pages exceed the blocks the form ${input.request.form} carries; ask the person which blocks the extra pages should hold`};
+    if (!layout) {
+      pagePlan = {state: "unsupported", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: `${input.request.pages} pages exceed the blocks the form ${input.request.form} carries; the question goes back to the person`};
+      // The question the method promises: it is asked, not only announced.
+      asked.push({id: "q-pages-exceed-blocks", text: `Foram pedidas ${input.request.pages} páginas e a forma ${input.request.form} tem ${PAGE_PLANS[input.request.form].reduce((sum, page) => sum + page.blocks.length, 0)} blocos; que conteúdo as páginas extras devem receber?`, changes_the_work: "define o plano de páginas, sem o qual nada é produzido"});
+    }
     else {
       const pages: Page[] = layout.map((page, index) => ({number: index + 1, title: page.title, blocks: page.blocks}));
       const discriminator = `what changes the decision of ${audience.primary} comes first${audience.others.length > 0 ? `; ${audience.others.join(", ")} read the same pages` : ""}`;
@@ -243,6 +255,7 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
     }
   }
 
+  refreshOpenQuestions();
   const aspects: Record<string, string> = {thesis: "which thesis to carry", meeting_type: "whether the meeting explores or tests a product", format: "which format is expected", audience: "who the material is for", depth: "how deep the material goes"};
   const ambiguityNamed = input.request.undefinedAspects.length > 0 ? `the sponsor's instruction leaves undefined: ${input.request.undefinedAspects.map((aspect) => aspects[aspect]).join("; ")}. The deliverable says so and starts the work anyway` : null;
 
@@ -265,11 +278,11 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
   }
 
   const uncovered = [
-    ...blocks.filter((block) => block.state === "gap" && block.id !== "open_questions").map((block) => ({id: block.id, state: "insufficient_evidence" as const, reason: block.gap!})),
+    ...blocks.filter((block) => block.state === "gap").map((block) => ({id: block.id, state: "insufficient_evidence" as const, reason: block.gap!})),
     ...pending.map((object) => ({id: `object:${object.id}`, state: "insufficient_evidence" as const, reason: `${object.id} (${object.kind}) is ${object.state}; its findings are carried as conditions and not written into the deliverable: ${object.headlines.map((headline) => headline.text).join("; ") || "no facts declared"}`})),
   ];
   const body = {
-    schema_version: "method.plan-meeting-brief.v4" as const,
+    schema_version: "method.plan-meeting-brief.v5" as const,
     case_id: input.caseId,
     turn: input.request.turn,
     state: pagePlan.state === "proposed" ? "awaiting_confirmation" as const : "planned" as const,

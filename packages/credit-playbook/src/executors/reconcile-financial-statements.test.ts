@@ -10,7 +10,7 @@ const release = (page: number, table: string) => ({document: "ri_release_1t26.pd
 const asOf = "2026-05-31";
 const policy = (value: string) => ({value, policyKey: "policy.reconciliation.tolerance", policyVersion: referenceDataRegistryVersion});
 type Source = ReconciliationInput["pairedAccounts"] extends Array<infer A> | undefined ? (A extends {sources: Array<infer S>} ? S : never) : never;
-const source = (name: string, value: string, definition: string, definitionKey: string, components: string[], anchor: Source["anchor"], definitionAnchor: Source["anchor"] = anchor): Source => ({source: name, value, definition, definitionKey, definitionAnchor, components, asOf, anchor});
+const source = (name: string, value: string, definition: string, definitionKey: string, components: string[], anchor: Source["anchor"], definitionAnchor: Source["anchor"] = anchor, periodMonths = 0): Source => ({source: name, value, definition, definitionKey, definitionAnchor, components, asOf, anchor, periodMonths});
 /** A release figure published in R$ million with one decimal, converted to R$ thousand with its rounding band recorded. */
 const million = (statedValue: string) => ({stated: {value: statedValue, unit: "BRL million" as const, decimals: 1}});
 /** Camil 1T26: the dividend divergence (four amounts), the three inventory presentations plus the balance sheet, the two net debt definitions, the roll-forwards and the interest bridge. R$ thousand. */
@@ -62,7 +62,7 @@ const camil = (): ReconciliationInput => ({
 });
 const by = (result: ReturnType<typeof reconcileFinancialStatements>, id: string) => result.reconciliations.find((entry) => entry.id === id)!;
 
-describe("reconcile-financial-statements executor (v6)", () => {
+describe("reconcile-financial-statements executor (v7)", () => {
   it("gold: the roll-forwards close, the four inventory presentations connect through the stated bridges, the two carrying amounts of dividends stay open inside a non-comparable account, and the two net debt definitions are not comparable", () => {
     const result = reconcileFinancialStatements(camil());
     expect(result.identities.map((identity) => [identity.id, identity.state])).toEqual([["balance_sheet", "holds"], ["debt_bridge", "holds"], ["cash_bridge", "holds"], ["interest_bridge", "not_comparable"]]);
@@ -78,7 +78,9 @@ describe("reconcile-financial-statements executor (v6)", () => {
     // Release figures enter with their published scale and a rounding half band of 50 thousand; the recomputed net debt closes within the tolerance, not "exactly".
     expect(by(result, "net_debt_release").values.find((value) => value.source === "release")?.stated).toEqual({value: "4214.4", unit: "BRL million", decimals: 1, roundingHalfBand: "50"});
     expect(by(result, "net_debt_release").rounding_half_band).toBe("50");
-    expect(by(result, "net_debt_release").closes_within).toBe("tolerance");
+    // The spread of 23 fits the release's rounding of 50: the pair closes by the published rounding, not by the policy tolerance.
+    expect(by(result, "net_debt_release").closes_within).toBe("published_rounding");
+    expect(by(result, "net_debt_release").comparable_subsets).toEqual([]);
     expect(result.trace.calculations.find((calculation) => calculation.id === "financial.accounting_identity:dividends:balanço (valor presente):derivation")?.operands["ajuste a valor presente"]).toBe("56435");
     expect(Object.keys(result.identities.find((identity) => identity.id === "balance_sheet")!.anchors)).toEqual(["assets", "liabilities", "equity"]);
     expect(result.identities.find((identity) => identity.id === "cash_bridge")?.anchors.netChange?.page).toBe(16);
@@ -137,6 +139,10 @@ describe("reconcile-financial-statements executor (v6)", () => {
     // A subset only forms among sources that state the same thing: two definitions never compare among themselves.
     expect(by(annualized, "z").comparable_subsets).toEqual([]);
     expect(by(annualized, "z").state).toBe("not_comparable");
+    // A quarter relabelled with the twelve-month key and components still covers three months: the span decides, not the label.
+    const relabelled = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "w", label: "w", family: "ebitda", sources: [source("trimestre rotulado", "840000", "EBITDA dos últimos doze meses", "ebitda.ltm", ["ebitda", "ltm"], anchor, anchor, 3), source("doze meses", "895864", "EBITDA dos últimos doze meses", "ebitda.ltm", ["ebitda", "ltm"], anchor, anchor, 12)]}]});
+    expect(by(relabelled, "w").state).toBe("not_comparable");
+    expect(by(relabelled, "w").comparability.reasons[0]).toMatch(/cover different spans/);
   });
 
   it("refuses duplicates, an explanation naming an unknown source, a tolerance without a registered policy at its current version, and blocks an empty base", () => {
@@ -204,6 +210,11 @@ describe("reconcile-financial-statements executor (v6)", () => {
     expect(by(within, "r").state).toBe("closes");
     expect(by(within, "r").closes_within).toBe("published_rounding");
     expect(by(within, "r").spread).toBe("23");
+    // A pair that closes as a whole leaves no open subset and no divergence behind.
+    expect(by(within, "r").comparable_subsets).toEqual([]);
+    expect(within.open_divergences).toEqual([]);
+    // Without the bridges the run is incomplete, never closes as a whole; the pair itself closes.
+    expect(within.state).toBe("incomplete");
     const beyond = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "r", label: "r", family: "x", sources: [{...source("release", "4214400", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor), stated: {value: "4214.4", unit: "BRL million", decimals: 1}}, source("notas", "4214300", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor)]}]});
     expect(by(beyond, "r").state).toBe("open");
     expect(() => reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "r", label: "r", family: "x", sources: [{...source("release", "4214400", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor), stated: {value: "4214.5", unit: "BRL million", decimals: 1}}, source("notas", "4214377", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor)]}]})).toThrow(/converts to 4214500 BRL thousand, not 4214400/);

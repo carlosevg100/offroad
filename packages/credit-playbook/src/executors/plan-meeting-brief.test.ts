@@ -2,19 +2,22 @@ import {describe, expect, it} from "vitest";
 
 import {contractMismatch} from "./contract";
 
+import {createHash} from "node:crypto";
+
 import {planMeetingBrief, type BriefInput} from "./plan-meeting-brief";
 
-const fp = (seed: string) => seed.padEnd(64, "0");
-const headline = (text: string, stance: "for" | "against" | "neutral", seed: string, unit: string | null = null) => ({text, stance, objectFingerprint: fp(seed), unit});
+/** Fingerprints derived from the object's own content, as the executors that produce the objects would compute them. */
+const fp = (seed: string) => createHash("sha256").update(JSON.stringify({object: seed})).digest("hex");
+const headline = (text: string, stance: "for" | "against" | "neutral", seed: string, unit: string | null = null, objectPath = "headline") => ({text, stance, objectFingerprint: fp(seed), unit, objectPath});
 const objects = (): BriefInput["objects"] => [
-  {id: "ledger-01", kind: "debt_ledger", state: "complete", fingerprint: fp("a1"), headlines: [headline("Dívida bruta de 5.670.186 em 31/05/2026; contratual líquida de 4.228.477", "neutral", "a1", "R$ mil")]},
-  {id: "wall-01", kind: "maturity_wall", state: "diagnosed", fingerprint: fp("b2"), headlines: [headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil"), headline("Caixa e equivalentes mais aplicações financeiras de 1.455.809 excedem em 225.981 o principal de 2026/27; cobertura aritmética, não disponibilidade em D0", "for", "b2", "R$ mil")]},
-  {id: "cov-01", kind: "covenants", state: "conditioned", fingerprint: fp("c3"), headlines: [headline("4,72x pró forma contra 4,00x, medição em 28/02/2027; degrau condicionado à quitação dos CRA", "against", "c3", "x")]},
-  {id: "rec-01", kind: "reconciliation", state: "open_divergences", fingerprint: fp("d4"), headlines: [headline("Dividendos com quatro valores; estoques em três apresentações", "against", "d4")]},
-  {id: "exit-01", kind: "exit_costs", state: "complete", fingerprint: fp("e5"), headlines: []},
-  {id: "ba-01", kind: "before_after", state: "compared", fingerprint: fp("f6"), headlines: [headline("Alongar as séries DI suaviza 2028/29", "for", "f6")]},
-  {id: "sc-01", kind: "scenarios", state: "declared", fingerprint: fp("a7"), headlines: []},
-  {id: "blocked-01", kind: "interest_schedule", state: "blocked", fingerprint: fp("b8"), headlines: [headline("must not appear", "for", "b8")]},
+  {id: "ledger-01", kind: "debt_ledger", state: "complete", fingerprint: fp("a1"), unit: "R$ mil", headlines: [headline("Dívida bruta de 5.670.186 em 31/05/2026; contratual líquida de 4.228.477", "neutral", "a1", "R$ mil", "gross_debt")]},
+  {id: "wall-01", kind: "maturity_wall", state: "diagnosed", fingerprint: fp("b2"), unit: "R$ mil", headlines: [headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil", "walls"), headline("Caixa e equivalentes mais aplicações financeiras de 1.455.809 excedem em 225.981 o principal de 2026/27; cobertura aritmética, não disponibilidade em D0", "for", "b2", "R$ mil", "coverage.by_period[0]")]},
+  {id: "cov-01", kind: "covenants", state: "conditioned", fingerprint: fp("c3"), unit: null, headlines: [headline("4,72x pró forma contra os degraus de 3,50x (enquanto os CRA de referência vivem) e 4,00x (condicionado à prova da quitação ordinária); medição em 28/02/2027; comparabilidade condicionada à abertura do EBITDA e às informações complementares da companhia", "against", "c3", "x", "covenants[0].index")]},
+  {id: "rec-01", kind: "reconciliation", state: "open_divergences", fingerprint: fp("d4"), unit: "R$ mil", headlines: [headline("Dividendos com quatro valores; estoques em três apresentações", "against", "d4", null, "open_divergences")]},
+  {id: "exit-01", kind: "exit_costs", state: "complete", fingerprint: fp("e5"), unit: "R$ mil", headlines: []},
+  {id: "ba-01", kind: "before_after", state: "compared", fingerprint: fp("f6"), unit: "R$ mil", headlines: [headline("Alongar as séries DI suaviza 2028/29", "for", "f6", null, "ranking")]},
+  {id: "sc-01", kind: "scenarios", state: "declared", fingerprint: fp("a7"), unit: "R$ mil", headlines: []},
+  {id: "blocked-01", kind: "interest_schedule", state: "blocked", fingerprint: fp("b8"), unit: "R$ mil", headlines: [headline("must not appear", "for", "b8", null, "rows")]},
 ];
 const itr = {document: "01_ITR_1T26_31mai2026.pdf", page: 1};
 const turn1 = (): BriefInput => ({
@@ -36,7 +39,7 @@ const block = (result: ReturnType<typeof planMeetingBrief>, id: string) => resul
 describe("plan-meeting-brief executor", () => {
   it("turn 1: fills blocks only from usable objects, names conditioned objects as gaps, and asks at most three questions the base does not answer", () => {
     const result = planMeetingBrief(turn1());
-    expect(result.schema_version).toBe("method.plan-meeting-brief.v4");
+    expect(result.schema_version).toBe("method.plan-meeting-brief.v5");
     expect(result.ambiguity_named).toMatch(/which format is expected; which thesis to carry/);
     expect(result.deliverable.objects_used).not.toContain("blocked-01");
     expect(result.deliverable.objects_pending).toEqual([{id: "cov-01", state: "conditioned"}, {id: "rec-01", state: "open_divergences"}]);
@@ -56,10 +59,12 @@ describe("plan-meeting-brief executor", () => {
     expect(result.page_plan.state).toBe("not_requested");
     expect(result.state).toBe("planned");
     expect(result.uncovered_terms.map((term) => term.id)).toContain("company_view");
+    expect(block(result, "debt_by_instrument").headlines[0]?.object_path).toBe("gross_debt");
+    expect(result.uncovered_terms.find((term) => term.id === "object:cov-01")?.reason).toMatch(/3,50x .* 4,00x .* abertura do EBITDA/);
     // A usable object without facts does not fill a block, and a conditioned object is carried as an uncovered term with its finding.
     expect(block(result, "assumptions").state).toBe("gap");
     expect(block(result, "assumptions").gap).toMatch(/sc-01 usable but without facts/);
-    expect(result.uncovered_terms.find((term) => term.id === "object:cov-01")?.reason).toMatch(/is conditioned; its findings are carried as conditions.*4,72x pró forma contra 4,00x/);
+    expect(result.uncovered_terms.find((term) => term.id === "object:cov-01")?.reason).toMatch(/is conditioned; its findings are carried as conditions.*4,72x pró forma contra os degraus de 3,50x/);
     expect(block(result, "points_against_thesis").label).toBe("Pontos contra a tese");
   });
 
@@ -79,6 +84,16 @@ describe("plan-meeting-brief executor", () => {
     const wrongUnit = turn1();
     wrongUnit.objects[0] = {...wrongUnit.objects[0]!, headlines: [headline("Dívida bruta de 5.670.186 (R$ mil)", "neutral", "a1", "R$ milhões")]};
     expect(() => planMeetingBrief(wrongUnit)).toThrow(/says thousands and its unit says millions/);
+    // The unit of a quoted figure must be the unit of the object, whatever the words of the fact.
+    const silentRelabel = turn1();
+    silentRelabel.objects[0] = {...silentRelabel.objects[0]!, headlines: [headline("Dívida bruta de 5.670.186", "neutral", "a1", "R$ milhões")]};
+    expect(() => planMeetingBrief(silentRelabel)).toThrow(/quotes a figure in R\$ milhões and the object states its figures in R\$ mil/);
+    const breach = turn1();
+    breach.objects[2] = {...breach.objects[2]!, state: "resolved", headlines: [headline("Covenant rompido: 4,72x contra 4,00x", "against", "c3", "x")]};
+    expect(() => planMeetingBrief(breach)).toThrow(/asserts a breach or a default/);
+    const noPath = turn1();
+    noPath.objects[0] = {...noPath.objects[0]!, headlines: [{text: "Dívida bruta de 5.670.186", stance: "neutral", objectFingerprint: fp("a1"), unit: "R$ mil"} as unknown as NonNullable<BriefInput["objects"][number]["headlines"]>[number]]};
+    expect(() => planMeetingBrief(noPath)).toThrow();
     const duplicateBlocks = turn1();
     duplicateBlocks.previousVersion = {outputFingerprint: fp("ff"), blocks: [{id: "company_view", state: "gap", objectIds: []}, {id: "company_view", state: "filled", objectIds: ["x-01"]}], objectFingerprints: {}};
     expect(() => planMeetingBrief(duplicateBlocks)).toThrow(/duplicate block company_view/);
@@ -130,6 +145,12 @@ describe("plan-meeting-brief executor", () => {
     expect(five.page_plan.pages.flatMap((page) => page.blocks)).toEqual(proposed.page_plan.pages.flatMap((page) => page.blocks));
     const nine = planMeetingBrief({...turn2(), request: {...turn2().request, pages: 9}});
     expect(nine.page_plan.state).toBe("unsupported");
+    // The question the method promises is asked, not only announced, and the open questions block carries it.
+    expect(nine.alignment_questions.map((question) => question.id)).toContain("q-pages-exceed-blocks");
+    expect(block(nine, "open_questions").state).toBe("filled");
+    const noQuestions = planMeetingBrief({...turn1(), candidateQuestions: []});
+    expect(block(noQuestions, "open_questions").state).toBe("gap");
+    expect(noQuestions.uncovered_terms.map((term) => term.id)).toContain("open_questions");
     expect(() => planMeetingBrief({...turn1(), request: {...turn1().request, pages: 3}})).toThrow(/no page plan/);
   });
 
@@ -150,7 +171,7 @@ describe("plan-meeting-brief executor", () => {
     const base = (): BriefInput => {
       const input = turn1();
       input.request = {...input.request, audience: {primary: "vp", others: ["companhia", "md", "associado"]}};
-      input.objects = input.objects.map((object) => (object.id === "wall-01" ? {...object, headlines: [...object.headlines!, headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "neutral", "b2", "R$ mil")]} : object));
+      input.objects = input.objects.map((object) => (object.id === "wall-01" ? {...object, headlines: [...object.headlines!, headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil", "peak"), headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "neutral", "b2", "R$ mil", "walls")]} : object));
       input.previousVersion = {outputFingerprint: fp("ff"), blocks: [{id: "debt_by_instrument", state: "filled", objectIds: ["ledger-01"]}, {id: "company_view", state: "gap", objectIds: []}], objectFingerprints: {"ledger-01": fp("a1"), "wall-01": fp("b0")}};
       return input;
     };
@@ -160,7 +181,7 @@ describe("plan-meeting-brief executor", () => {
     for (let seed = 1; seed <= 20; seed += 1) {
       const shuffled = base();
       shuffled.objects = permute(shuffled.objects, seed).map((object) => ({...object, headlines: permute(object.headlines ?? [], seed + 1)}));
-      shuffled.candidateQuestions = permute(shuffled.candidateQuestions!, seed + 2);
+      shuffled.candidateQuestions = permute(shuffled.candidateQuestions!, seed + 2).map((question) => (question.coverage ? {...question, coverage: {...question.coverage, searched: permute(question.coverage.searched, seed + 6)}} : question));
       shuffled.request = {...shuffled.request, audience: {primary: "vp", others: permute(["companhia", "md", "associado"], seed + 3)}, undefinedAspects: permute(["format", "thesis"], seed + 4)};
       shuffled.previousVersion = {...shuffled.previousVersion!, blocks: permute(shuffled.previousVersion!.blocks, seed + 5)};
       const again = planMeetingBrief(seed % 2 ? reversedKeys(shuffled) : shuffled);
