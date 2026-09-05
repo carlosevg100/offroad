@@ -68,7 +68,7 @@ export const debtLedgerRowInputSchema = z.object({
   }).strict(),
 }).strict().superRefine((row, context) => {
   const balance = new Decimal(row.balance);
-  if (row.contra && balance.gte(0)) context.addIssue({code: "custom", path: ["contra"], message: `contra line ${row.id} must carry a negative balance`});
+  if (row.contra && balance.gt(0)) context.addIssue({code: "custom", path: ["contra"], message: `contra line ${row.id} must carry a non-positive balance (zero when the costs are fully amortized)`});
   if (row.priorBalance !== null && row.contra && new Decimal(row.priorBalance).gt(0)) context.addIssue({code: "custom", path: ["priorBalance"], message: `contra line ${row.id} cannot carry a positive prior balance`});
   if (row.priorBalance !== null && !row.contra && new Decimal(row.priorBalance).lt(0)) context.addIssue({code: "custom", path: ["priorBalance"], message: `row ${row.id} has a negative prior balance and is not a contra line`});
   if (!row.contra && balance.lt(0)) context.addIssue({code: "custom", path: ["balance"], message: `row ${row.id} has a negative balance and is not a contra line`});
@@ -145,7 +145,7 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schema_version: "method.build-debt-ledger.v11";
+  schema_version: "method.build-debt-ledger.v12";
   reference_date: string;
   prior_date: string | null;
   unit: string;
@@ -193,7 +193,7 @@ const RESIDUAL = /outra rubrica que se refira a divida onerosa|outra divida oner
 const DEBT = /emprestim|financiament|debenture|divida bruta|gross debt|loan|borrowing/;
 const DEBT_BASE_OK = /divida bruta|gross debt|(?=[^.;]*emprestim)(?=[^.;]*financiament)(?=[^.;]*debenture)/;
 /** Components that never belong to a net debt definition; their presence on the added side is a contradiction, not a nuance. */
-const FOREIGN = /fornecedor|supplier|payable|estoque|inventor|receb|receivable|imobilizado|fixed asset|salario|tributo|tax/;
+const FOREIGN = /fornecedor|supplier|payable|estoque|inventor|receb|receivable|imobilizado|fixed asset|salario|tributo|tax|dividend|provis|contingen|arrendamento a pagar|juros sobre capital/;
 const normalize = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** What a definition adds and what it deducts: the text before the first "menos"/"less"/"minus" and the text after it. */
@@ -362,9 +362,12 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
     const definition = input.definitions[name];
     if (!definition) continue;
     const text = normalize(definition.text);
-    const counted = (row: Row) => row.obligation !== undefined && ((row.obligation.kind === "loan" && /emprestim|financiament|divida bruta|gross debt|loan/.test(text)) || (row.obligation.kind === "debenture" && /debenture|divida bruta|gross debt/.test(text)) || ((row.obligation.kind === "commercial_note" || row.obligation.kind === "cpr") && /emprestim|financiament|divida bruta|gross debt|nota comercial|cpr/.test(text)));
+    const counted = (row: Row) => row.obligation !== undefined && ((row.obligation.kind === "loan" && /emprestim|financiament|divida bruta|gross debt|loan/.test(text)) || (row.obligation.kind === "debenture" && /debenture|divida bruta|gross debt/.test(text)) || ((row.obligation.kind === "commercial_note" || row.obligation.kind === "cpr") && /emprestim|financiament|divida bruta|gross debt|nota comercial|cpr/.test(text)) || (row.obligation.kind === "lease" && /arrendament|lease|outra.{0,25}divida onerosa|other.{0,25}onerous/.test(text)) || (row.obligation.kind === "other" && /outra.{0,25}divida onerosa|other.{0,25}onerous|other debt/.test(text)));
     const excluded = rows.filter((row) => !row.contra && counted(row) && !row.obligation!.views.includes(name));
     if (excluded.length > 0) blockReasons.push(`the ${name} definition counts ${excluded.map((row) => row.obligation!.kind).filter((kind, index, all) => all.indexOf(kind) === index).join(" and ")} rows, yet ${excluded.map((row) => row.id).join(", ")} ${excluded.length === 1 ? "is" : "are"} kept out of that view`);
+    // The reverse: a lease or other row placed inside a view whose definition never names leases nor a residual of other onerous debt is not covered by the text, anchor or not.
+    const uncoveredInclusions = rows.filter((row) => !row.contra && (row.obligation!.kind === "lease" || row.obligation!.kind === "other") && row.obligation!.views.includes(name) && !counted(row));
+    if (uncoveredInclusions.length > 0) blockReasons.push(`the ${name} definition never names ${uncoveredInclusions.map((row) => row.obligation!.kind).filter((kind, index, all) => all.indexOf(kind) === index).join(" nor ")} rows nor a residual of other onerous debt, yet ${uncoveredInclusions.map((row) => row.id).join(", ")} ${uncoveredInclusions.length === 1 ? "is" : "are"} placed in that view; an inclusion anchor does not override the literal definition`);
   }
   if (rows.length > 0) {
     // A definition that contradicts the formula blocks whether or not the cash components are in the base.
@@ -426,7 +429,7 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.build-debt-ledger.v11" as const,
+    schema_version: "method.build-debt-ledger.v12" as const,
     reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, unit_anchor: input.unitAnchor, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),

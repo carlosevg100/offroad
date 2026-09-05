@@ -1,6 +1,6 @@
 ---
 id: reconcile-covenant-definitions
-version: 2026.09.05-v10
+version: 2026.09.05-v11
 maturity: implemented
 title_pt: Reconciliar as definições de covenant com as escrituras
 title_en: Reconcile covenant definitions against the indentures
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-covenant-definitions
 implementation_export: reconcileCovenantDefinitions
-result_contract: method.reconcile-covenant-definitions.v10
+result_contract: method.reconcile-covenant-definitions.v11
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -60,6 +60,10 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - financial.net_leverage: índice pela definição literal, com os componentes anotados.
 - financial.debt_views: visão contratual reproduzida a partir do ledger.
 
+# Regras de comparação do índice reportado
+- O texto literal da definição reportada precisa nomear cada componente estruturado que o chamador declara; texto e componentes em desacordo são recusados.
+- Índice reportado de outra data, outro perímetro ou outros componentes é não comparável e não gera EBITDA implícito; o índice fica sozinho.
+
 # Julgamentos permitidos
 - Decidir se um pro forma divulgado pela companhia usa a mesma definição da escritura exige comparar componentes, não aceitar o nome.
 
@@ -76,7 +80,7 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - Nenhuma escritura no pack e o trabalho exige afirmar headroom.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v10`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v11`
 - as_of_date (date, required): data-base da comparação
 - unit (string, required): unidade declarada pelo chamador para toda a base (linhas, EBITDA e aberturas têm de coincidir), presente mesmo no resultado bloqueado; entra no fingerprint, para que uma troca uniforme de escala mude o resultado
 - block_reasons (array, required): motivos estruturados de bloqueio, vazio quando não há

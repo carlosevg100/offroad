@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `declare-scenarios` (v3, after the second independent review). When
+ * Executor of the method `declare-scenarios` (v4, after the third independent review). When
  * management data is missing, the work goes on with declared scenarios: every parameter carries its
  * origin, its rationale and an anchor in a document of the class that origin requires; the executor
  * picks, per role and period, the best origin the register offers. A scenario that declares a lever
@@ -14,8 +14,11 @@ import {z} from "zod";
  * the executor; a CFADS haircut is its own assumption, never derived from the EBITDA haircut. Net
  * debt follows the contractual components; leverage carries the EBITDA's comparability; headroom
  * exists only against an applicable, resolved and comparable limit, otherwise the arithmetic
- * difference is shown as conditioned. Interest enters the service only when the ledger states it.
- * Every derived number carries the assumptions and anchors it rests on.
+ * difference is shown as conditioned; a tier is applicable, conditional or not applicable, never a
+ * bare boolean. Interest enters the service only when the ledger states it for that period, and the
+ * rate shock is reported apart, never spread over periods. Every derived number carries every
+ * assumption and anchor it rests on, the previous periods' included; a contracted source keeps its
+ * contract and disbursement in the output; documents are bound to the corpus by their hash.
  */
 const nonNegative = z.string().regex(/^\d+(\.\d+)?$/);
 const nonEmpty = z.string().trim().min(1);
@@ -60,8 +63,8 @@ export const scenarioInputSchema = z.object({
   unit: moneyUnit,
   /** Where the source states the unit; its note must name it, so a relabelled scale is refused. */
   unitAnchor: anchorSchema.extend({note: nonEmpty}),
-  /** The documents of the base with their class; every anchor must name one, and an origin may cite only the classes it is allowed. */
-  documents: z.array(z.object({name: nonEmpty, kind: documentKindSchema}).strict()).min(1),
+  /** The documents of the base with their class and the SHA-256 the corpus manifest records; every anchor must name one, and an origin may cite only the classes it is allowed. */
+  documents: z.array(z.object({name: nonEmpty, kind: documentKindSchema, sha256: z.string().regex(/^[a-f0-9]{64}$/)}).strict()).min(1),
   assumptions: z.array(assumptionSchema).min(1),
   position: z.object({
     perimeter: z.enum(["consolidated", "parent"]).default("consolidated"),
@@ -74,12 +77,12 @@ export const scenarioInputSchema = z.object({
       financialInvestments: z.object({value: nonNegative, anchor: anchorSchema}).strict(),
     }).strict(),
     /** The EBITDA the leverage is measured on: twelve months, its definition, how it was derived, and how comparable it is with the covenant definitions. */
-    ltmEbitda: z.object({value: nonNegative, months: z.literal(12), definitionKey: nonEmpty, basis: z.enum(["company_opened", "implied_from_reported_index", "derived_proxy"]), comparability: z.enum(["comparable", "conditional", "not_comparable"]), comparabilityReasons: z.array(nonEmpty).default([]), anchor: anchorSchema}).strict().nullable(),
+    ltmEbitda: z.object({value: nonNegative, /** The twelve months the figure covers, as dates: an annualized quarter cannot claim them. */ periodStart: isoDate, periodEnd: isoDate, definitionKey: nonEmpty, basis: z.enum(["company_opened", "implied_from_reported_index", "derived_proxy"]), comparability: z.enum(["comparable", "conditional", "not_comparable"]), comparabilityReasons: z.array(nonEmpty).default([]), anchor: anchorSchema}).strict().nullable(),
     averageDebtBalance: z.object({value: nonNegative, basis: nonEmpty, anchor: anchorSchema}).strict(),
     baseAnnualRate: z.object({value: nonNegative, basis: nonEmpty, anchor: anchorSchema}).strict(),
   }).strict(),
   /** The covenant the scenarios are read against, from the covenant executor; null when none is resolved. */
-  covenant: z.object({instrument: nonEmpty, limit: nonNegative, direction: z.enum(["maximum", "minimum"]), tier: z.object({applicable: z.boolean(), condition: nonEmpty}).strict(), state: z.enum(["resolved", "insufficient_evidence"]), comparability: z.enum(["comparable", "conditional", "not_comparable"]), measurement: z.object({frequency: z.enum(["annual", "semiannual", "quarterly"]), nextDate: isoDate}).strict(), anchor: anchorSchema}).strict().nullable().default(null),
+  covenant: z.object({instrument: nonEmpty, limit: nonNegative, direction: z.enum(["maximum", "minimum"]), /** applicable when its condition is proven, conditional while the proof is missing, not_applicable when the indenture rules it out. */ tier: z.object({applicability: z.enum(["applicable", "conditional", "not_applicable"]), condition: nonEmpty}).strict(), state: z.enum(["resolved", "insufficient_evidence"]), comparability: z.enum(["comparable", "conditional", "not_comparable"]), measurement: z.object({frequency: z.enum(["annual", "semiannual", "quarterly"]), nextDate: isoDate}).strict(), anchor: anchorSchema}).strict().nullable().default(null),
   /** Debt service by period from the ledger, in the ledger's own periods; interest only when the ledger states it. */
   periods: z.array(z.object({period: nonEmpty, endsAt: isoDate, principal: z.object({value: nonNegative, anchor: anchorSchema}).strict(), interest: z.object({value: nonNegative, anchor: anchorSchema}).strict().nullable()}).strict()).min(1),
   scenarios: z.array(z.object({
@@ -99,7 +102,12 @@ export const scenarioInputSchema = z.object({
   const checkAnchor = (anchor: Anchor, path: (string | number)[]) => { if (!documents.has(anchor.document)) context.addIssue({code: "custom", path, message: `anchor names ${anchor.document}, which is not a document of the base`}); };
   checkAnchor(input.unitAnchor, ["unitAnchor"]);
   for (const [name, component] of Object.entries(input.position.components)) checkAnchor(component.anchor, ["position", "components", name]);
-  if (input.position.ltmEbitda) checkAnchor(input.position.ltmEbitda.anchor, ["position", "ltmEbitda"]);
+  if (input.position.ltmEbitda) {
+    checkAnchor(input.position.ltmEbitda.anchor, ["position", "ltmEbitda"]);
+    const start = new Date(`${input.position.ltmEbitda.periodStart}T00:00:00Z`); start.setUTCMonth(start.getUTCMonth() + 12);
+    if (start.toISOString().slice(0, 10) !== input.position.ltmEbitda.periodEnd) context.addIssue({code: "custom", path: ["position", "ltmEbitda"], message: `the EBITDA covers ${input.position.ltmEbitda.periodStart} to ${input.position.ltmEbitda.periodEnd}, not twelve months; an annualized shorter period is not an LTM figure`});
+    if (input.position.ltmEbitda.periodEnd > input.referenceDate) context.addIssue({code: "custom", path: ["position", "ltmEbitda"], message: "the EBITDA period ends after the reference date"});
+  }
   checkAnchor(input.position.averageDebtBalance.anchor, ["position", "averageDebtBalance"]);
   checkAnchor(input.position.baseAnnualRate.anchor, ["position", "baseAnnualRate"]);
   if (input.covenant) { checkAnchor(input.covenant.anchor, ["covenant"]); if (input.covenant.measurement.nextDate <= input.referenceDate) context.addIssue({code: "custom", path: ["covenant", "measurement"], message: "the next measurement date must follow the reference date"}); }
@@ -131,6 +139,7 @@ export const scenarioInputSchema = z.object({
     if (assumption.role === "cfads" && assumption.period === null) context.addIssue({code: "custom", path: ["assumptions", index, "period"], message: `${assumption.key}: CFADS is declared per period of the schedule, never split or repeated by the executor`});
     if (RATIO_ROLES.has(assumption.role) && assumption.unit !== "ratio") context.addIssue({code: "custom", path: ["assumptions", index, "unit"], message: `${assumption.key}: a ${assumption.role} is a ratio`});
     if (BOUNDED_ROLES.has(assumption.role) && new Decimal(assumption.value).gt(1)) context.addIssue({code: "custom", path: ["assumptions", index, "value"], message: `${assumption.key}: a ${assumption.role} lies between 0 and 1`});
+    if ((assumption.role === "rate_shock" || assumption.role === "ebitda_haircut" || assumption.role === "cfads_haircut") && new Decimal(assumption.value).isZero()) context.addIssue({code: "custom", path: ["assumptions", index, "value"], message: `${assumption.key}: a ${assumption.role} of zero is not a stress; register a positive value or leave the lever out`});
     if (!RATIO_ROLES.has(assumption.role) && assumption.unit !== input.unit) context.addIssue({code: "custom", path: ["assumptions", index, "unit"], message: `${assumption.key}: a monetary assumption must be in ${input.unit}`});
     if (assumption.period !== null && !periodIds.has(assumption.period)) context.addIssue({code: "custom", path: ["assumptions", index, "period"], message: `${assumption.key} names a period that is not projected`});
   });
@@ -145,28 +154,28 @@ export const scenarioInputSchema = z.object({
 });
 export type ScenarioInput = z.input<typeof scenarioInputSchema>;
 
-type Origin = {origin: string; key: string; anchor: Anchor};
+type Origin = {origin: string; key: string; anchor: Anchor; evidence?: {contract: Anchor; disbursement: Anchor}};
 type Calculation = {id: string; scenario: string; formula: string; operands: Record<string, string>; result: string; unit: string; origins: Origin[]};
 type Assumption = z.infer<typeof assumptionSchema>;
 
 export type ScenarioOutput = {
-  schema_version: "method.declare-scenarios.v3";
+  schema_version: "method.declare-scenarios.v4";
   reference_date: string;
   unit: string;
   state: "declared" | "partial" | "blocked";
   block_reasons: string[];
-  assumption_register: Array<{key: string; role: string; period: string | null; value: string; unit: string; origin: string; origin_rank: number; rationale: string; as_of: string; anchor: Anchor; confidence: string; selected: boolean}>;
+  assumption_register: Array<{key: string; role: string; period: string | null; value: string; unit: string; origin: string; origin_rank: number; rationale: string; as_of: string; anchor: Anchor; evidence: {contract: Anchor; disbursement: Anchor} | null; confidence: string; selected: boolean}>;
   scenarios: Array<{
     id: string; label: string;
     state: "declared" | "partial" | "blocked";
     block_reasons: string[];
-    parameters: Array<{role: string; period: string | null; key: string; value: string; origin: string; rationale: string; anchor: Anchor}>;
+    parameters: Array<{role: string; period: string | null; key: string; value: string; origin: string; rationale: string; anchor: Anchor; evidence: {contract: Anchor; disbursement: Anchor} | null}>;
     results: {
       pro_forma: {gross_debt: string; deductible_cash: string; contractual_net_debt: string; leverage: {value: string; ebitda_definition: string; ebitda_basis: string; comparability: string; comparability_reasons: string[]} | null; origins: Origin[]};
       headroom: {absolute: string; within_limit: boolean; limit: string; instrument: string; note: string} | null;
       headroom_note: string;
       interest: {base: string; stressed: string; delta: string; origins: Origin[]} | null;
-      liquidity: {basis: "principal_only" | "full_debt_service"; rows: Array<{period: string; principal: string; interest: string | null; cfads_declared: string; cfads_used: string; cfads_haircut: string | null; contracted_sources: string; rolled_principal: string; coverage: string | null; closing_cash: string; deficit: string; origins: Origin[]}>} | null;
+      liquidity: {basis: "principal_only" | "full_debt_service" | "mixed"; rows: Array<{period: string; basis: "principal_only" | "full_debt_service"; principal: string; interest: string | null; cfads_declared: string; cfads_used: string; cfads_haircut: string | null; contracted_sources: string; rolled_principal: string; coverage: string | null; closing_cash: string; deficit: string; origins: Origin[]}>} | null;
     };
     caveat: string;
     uncovered_terms: Array<{id: string; state: "insufficient_evidence"; reason: string}>;
@@ -194,7 +203,7 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
   const input = canonical(scenarioInputSchema.parse(raw));
   const calculations: Calculation[] = [];
   const selectedKeys = new Set<string>();
-  const originOf = (assumption: Assumption): Origin => ({origin: originLabel[assumption.origin] ?? assumption.origin, key: assumption.key, anchor: assumption.anchor});
+  const originOf = (assumption: Assumption): Origin => ({origin: originLabel[assumption.origin] ?? assumption.origin, key: assumption.key, anchor: assumption.anchor, ...(assumption.evidence?.contract && assumption.evidence.disbursement ? {evidence: {contract: assumption.evidence.contract, disbursement: assumption.evidence.disbursement}} : {})});
   const baseOrigins: Origin[] = [
     {origin: "base pública", key: "position.grossDebt", anchor: input.position.components.grossDebt.anchor},
     {origin: "base pública", key: "position.cashAndEquivalents", anchor: input.position.components.cashAndEquivalents.anchor},
@@ -212,7 +221,6 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
   const deductibleCash = d(components.cashAndEquivalents.value).plus(components.financialInvestments.value);
   const views = aggregateDebtViews({rows: [{id: "gross_debt", principal: components.grossDebt.value, covenantIncluded: true}, {id: "derivative_liabilities", principal: components.derivativeLiabilities.value, covenantIncluded: true}], cash: deductibleCash.plus(components.derivativeAssets.value)});
   calculations.push({id: "financial.debt_views:contractual", scenario: "all", formula: "grossDebt + derivativeLiabilities - cashAndEquivalents - financialInvestments - derivativeAssets", operands: {grossDebt: components.grossDebt.value, derivativeLiabilities: components.derivativeLiabilities.value, cashAndEquivalents: components.cashAndEquivalents.value, financialInvestments: components.financialInvestments.value, derivativeAssets: components.derivativeAssets.value}, result: views.netFinancialDebt, unit: input.unit, origins: baseOrigins});
-  const interestDeclared = input.periods.every((period) => period.interest !== null);
 
   const scenarios = input.scenarios.map((scenario): ScenarioOutput["scenarios"][number] => {
     const parameters: ScenarioOutput["scenarios"][number]["parameters"] = [];
@@ -220,7 +228,7 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
     const blocks: string[] = [];
     const use = (role: Assumption["role"], period: string | null): Assumption | null => {
       const assumption = pick(role, period);
-      if (assumption) { selectedKeys.add(assumption.key); parameters.push({role, period, key: assumption.key, value: out(d(assumption.value)), origin: assumption.origin, rationale: assumption.rationale, anchor: assumption.anchor}); }
+      if (assumption) { selectedKeys.add(assumption.key); parameters.push({role, period, key: assumption.key, value: out(d(assumption.value)), origin: assumption.origin, rationale: assumption.rationale, anchor: assumption.anchor, evidence: null}); }
       return assumption;
     };
     const originsOf = (...items: Array<Assumption | null>) => items.filter((item): item is Assumption => item !== null).map(originOf).sort((a, b) => compare(a.key, b.key));
@@ -244,7 +252,8 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
       if (!leverage) return "no leverage measured; no headroom";
       const reasons: string[] = [];
       if (input.covenant.state !== "resolved") reasons.push(`the limit of ${input.covenant.instrument} is ${input.covenant.state}`);
-      if (!input.covenant.tier.applicable) reasons.push(`the ${input.covenant.limit}x tier is not applicable (${input.covenant.tier.condition})`);
+      if (input.covenant.tier.applicability === "conditional") reasons.push(`the ${input.covenant.limit}x tier is conditional (${input.covenant.tier.condition})`);
+      if (input.covenant.tier.applicability === "not_applicable") reasons.push(`the ${input.covenant.limit}x tier is not applicable (${input.covenant.tier.condition})`);
       if (input.covenant.comparability !== "comparable") reasons.push(`the covenant comparison is ${input.covenant.comparability}`);
       if (input.position.ltmEbitda && input.position.ltmEbitda.comparability !== "comparable") reasons.push(`the EBITDA is ${input.position.ltmEbitda.comparability} with the covenant definition`);
       if (reasons.length === 0) return `headroom measured against the ${input.covenant.limit}x tier of ${input.covenant.instrument}, as a scenario reading before the measurement of ${input.covenant.measurement.nextDate}`;
@@ -288,24 +297,29 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
       const cfads = use("cfads", period.period);
       if (!cfads) uncovered.push({id: `cfads:${period.period}`, state: "insufficient_evidence", reason: `no CFADS registered for ${period.period}; the cover of that period is not measured and no figure is repeated from another period`});
       const sources = input.assumptions.filter((assumption) => assumption.role === "contracted_source" && assumption.period === period.period);
-      for (const source of sources) { selectedKeys.add(source.key); parameters.push({role: "contracted_source", period: period.period, key: source.key, value: out(d(source.value)), origin: source.origin, rationale: source.rationale, anchor: source.anchor}); }
+      for (const source of sources) { selectedKeys.add(source.key); parameters.push({role: "contracted_source", period: period.period, key: source.key, value: out(d(source.value)), origin: source.origin, rationale: source.rationale, anchor: source.anchor, evidence: source.evidence?.contract && source.evidence.disbursement ? {contract: source.evidence.contract, disbursement: source.evidence.disbursement} : null}); }
       const contracted = sources.reduce((sum, source) => sum.plus(source.value), d(0));
       const rolled = scenario.rolloverAllowed && rollover ? d(period.principal.value).times(rollover.value) : d(0);
       const used = cfads ? d(cfads.value).times(d(1).minus(cfadsHaircut ? cfadsHaircut.value : 0)) : null;
-      const origins: Origin[] = [{origin: "base pública", key: `periods.${period.period}.principal`, anchor: period.principal.anchor}, ...(period.interest ? [{origin: "base pública", key: `periods.${period.period}.interest`, anchor: period.interest.anchor}] : []), ...originsOf(cfads, cfadsHaircut, ...sources, scenario.rolloverAllowed ? rollover : null), ...(interest ? interest.origins : [])];
+      const origins: Origin[] = [{origin: "base pública", key: `periods.${period.period}.principal`, anchor: period.principal.anchor}, ...(period.interest ? [{origin: "base pública", key: `periods.${period.period}.interest`, anchor: period.interest.anchor}] : []), ...originsOf(cfads, cfadsHaircut, ...sources, scenario.rolloverAllowed ? rollover : null)];
       return {period, cfads, used, contracted, rolled, origins};
     });
+    // Each period's numbers rest on everything before them: the opening cash of the first, then every earlier period's inputs.
+    const cashOrigins: Origin[] = [{origin: "base pública", key: "position.cashAndEquivalents", anchor: components.cashAndEquivalents.anchor}, {origin: "base pública", key: "position.financialInvestments", anchor: components.financialInvestments.anchor}];
+    const cumulativeOrigins = periodInputs.map((_entry, index) => [...cashOrigins, ...periodInputs.slice(0, index + 1).flatMap((previous) => previous.origins)].filter((origin, position, all) => all.findIndex((other) => other.key === origin.key) === position));
     const measurable = periodInputs.every((entry) => entry.cfads !== null);
     let liquidity: ScenarioOutput["scenarios"][number]["results"]["liquidity"] = null;
     if (measurable) {
-      const rows = calculateLiquidityCoverage(periodInputs.map((entry, index) => ({period: entry.period.period, openingCash: index === 0 ? deductibleCash : d(0), cfads: entry.used!, contractedSources: entry.contracted.plus(entry.rolled), principal: entry.period.principal.value, interest: entry.period.interest ? d(entry.period.interest.value).plus(interest && interestDeclared ? d(interest.delta).div(input.periods.length) : 0) : 0})));
-      for (const row of rows) {
-        const entry = periodInputs.find((item) => item.period.period === row.period)!;
-        calculations.push({id: `financial.liquidity_coverage:${row.period}`, scenario: scenario.id, formula: `(openingCash + cfadsUsed + contractedSources + rolledPrincipal) / (principal${interestDeclared ? " + interest" : ""})`, operands: {openingCash: row.openingCash, cfadsUsed: out(entry.used!), contractedSources: out(entry.contracted), rolledPrincipal: out(entry.rolled), debtService: row.debtService}, result: row.coverage ?? "n/a", unit: "x", origins: entry.origins});
-      }
-      liquidity = {basis: interestDeclared ? "full_debt_service" : "principal_only", rows: rows.map((row) => { const entry = periodInputs.find((item) => item.period.period === row.period)!; return {period: row.period, principal: out(d(entry.period.principal.value)), interest: entry.period.interest ? out(d(entry.period.interest.value)) : null, cfads_declared: out(d(entry.cfads!.value)), cfads_used: out(entry.used!), cfads_haircut: cfadsHaircut ? cfadsHaircut.value : null, contracted_sources: out(entry.contracted), rolled_principal: out(entry.rolled), coverage: row.coverage, closing_cash: row.closingCash, deficit: row.deficit, origins: entry.origins}; })};
+      // The shock delta is reported apart (above) and never spread over the periods: only the interest the ledger states enters the service.
+      const rows = calculateLiquidityCoverage(periodInputs.map((entry, index) => ({period: entry.period.period, openingCash: index === 0 ? deductibleCash : d(0), cfads: entry.used!, contractedSources: entry.contracted.plus(entry.rolled), principal: entry.period.principal.value, interest: entry.period.interest ? entry.period.interest.value : 0})));
+      rows.forEach((row, index) => {
+        const entry = periodInputs[index]!;
+        calculations.push({id: `financial.liquidity_coverage:${row.period}`, scenario: scenario.id, formula: `(openingCash + cfadsUsed + contractedSources + rolledPrincipal) / (principal${entry.period.interest ? " + interest" : ""})`, operands: {openingCash: row.openingCash, cfadsUsed: out(entry.used!), contractedSources: out(entry.contracted), rolledPrincipal: out(entry.rolled), debtService: row.debtService}, result: row.coverage ?? "n/a", unit: "x", origins: cumulativeOrigins[index]!});
+      });
+      const bases = periodInputs.map((entry) => (entry.period.interest ? "full_debt_service" as const : "principal_only" as const));
+      liquidity = {basis: bases.every((basis) => basis === "full_debt_service") ? "full_debt_service" : bases.every((basis) => basis === "principal_only") ? "principal_only" : "mixed", rows: rows.map((row, index) => { const entry = periodInputs[index]!; return {period: row.period, basis: bases[index]!, principal: out(d(entry.period.principal.value)), interest: entry.period.interest ? out(d(entry.period.interest.value)) : null, cfads_declared: out(d(entry.cfads!.value)), cfads_used: out(entry.used!), cfads_haircut: cfadsHaircut ? cfadsHaircut.value : null, contracted_sources: out(entry.contracted), rolled_principal: out(entry.rolled), coverage: row.coverage, closing_cash: row.closingCash, deficit: row.deficit, origins: cumulativeOrigins[index]!}; })};
     }
-    if (!interestDeclared) uncovered.push({id: "interest", state: "insufficient_evidence", reason: "the ledger states no interest for every period; the cover is principal-only and the shock delta is reported apart"});
+    for (const period of input.periods) if (!period.interest) uncovered.push({id: `interest:${period.period}`, state: "insufficient_evidence", reason: `the ledger states no interest for ${period.period}; that period's cover is principal-only and the shock delta is reported apart, never spread over periods`});
     const state: "declared" | "partial" = uncovered.length > 0 ? "partial" : "declared";
     return {
       id: scenario.id, label: scenario.label, state, block_reasons: [], parameters,
@@ -316,11 +330,11 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
       caveat: caveatFor(state), uncovered_terms: uncovered,
     };
   });
-  const register = input.assumptions.map((assumption) => ({key: assumption.key, role: assumption.role, period: assumption.period, value: out(d(assumption.value)), unit: assumption.unit, origin: assumption.origin, origin_rank: originRank[assumption.origin], rationale: assumption.rationale, as_of: assumption.asOf, anchor: assumption.anchor, confidence: assumption.confidence, selected: selectedKeys.has(assumption.key)}));
+  const register = input.assumptions.map((assumption) => ({key: assumption.key, role: assumption.role, period: assumption.period, value: out(d(assumption.value)), unit: assumption.unit, origin: assumption.origin, origin_rank: originRank[assumption.origin], rationale: assumption.rationale, as_of: assumption.asOf, anchor: assumption.anchor, evidence: assumption.evidence?.contract && assumption.evidence.disbursement ? {contract: assumption.evidence.contract, disbursement: assumption.evidence.disbursement} : null, confidence: assumption.confidence, selected: selectedKeys.has(assumption.key)}));
   const minimum = scenarios.filter((scenario) => ["base", "adverse", "no_rollover"].includes(scenario.id));
   const blockReasons = minimum.filter((scenario) => scenario.state === "blocked").map((scenario) => `${scenario.id}: ${scenario.block_reasons.join("; ")}`);
   const state: ScenarioOutput["state"] = blockReasons.length > 0 ? "blocked" : scenarios.some((scenario) => scenario.state === "partial") ? "partial" : "declared";
-  const body = {schema_version: "method.declare-scenarios.v3" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, assumption_register: register, scenarios};
+  const body = {schema_version: "method.declare-scenarios.v4" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, assumption_register: register, scenarios};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }

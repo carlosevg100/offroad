@@ -1,6 +1,6 @@
 ---
 id: reconcile-financial-statements
-version: 2026.09.05-v5
+version: 2026.09.05-v6
 maturity: implemented
 title_pt: Conciliar as demonstrações entre si e com o release
 title_en: Reconcile the financial statements with each other and with the release
@@ -10,7 +10,7 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-financial-statements
 implementation_export: reconcileFinancialStatements
-result_contract: method.reconcile-financial-statements.v5
+result_contract: method.reconcile-financial-statements.v6
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -63,6 +63,11 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 - Metadados de política (chave e versão) são conferidos mesmo com tolerância zero; nunca entram na saída sem existir no registro.
 - Dentro de uma conta não comparável no todo, fontes com a mesma definição, componentes e data são comparadas entre si; a divergência entre dois valores contábeis nunca some atrás de um nominal ou de um valor justo.
 
+# Escala, sinal e âncoras
+- Valor publicado em outra escala (release em R$ milhões com uma casa) entra com o valor, a unidade e as casas publicadas; o executor converte, registra a meia banda de arredondamento e um par cuja diferença cabe nela fecha "dentro do arredondamento publicado", nunca "exatamente".
+- Sinal publicado (despesa entre parênteses) é declarado como leitura literal ou de magnitude; a normalização fica no trace.
+- Cada linha da ponte de dívida, a abertura e o fechamento carregam âncora própria; derivações (nominal remanescente, valor contábil, dívida líquida contratual) entram com operandos ancorados e são recalculadas.
+
 # Julgamentos permitidos
 - Decidir se uma diferença dentro da tolerância é arredondamento exige ver a escala e a nota, não assumir.
 
@@ -78,7 +83,7 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 
 # Outputs
 - state (enum, required): closes, differences_explained, open_divergences, incomplete, identity_failed ou blocked, nesta precedência inversa: bloqueio antes de identidade falha, antes de incompleto, antes de divergências abertas, antes de diferenças explicadas, antes de fecha | values: closes, differences_explained, open_divergences, incomplete, identity_failed, blocked
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v5`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v6`
 - reference_date (date, required): data-base
 - unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
 - block_reasons (array, required): motivos estruturados de bloqueio (base vazia)

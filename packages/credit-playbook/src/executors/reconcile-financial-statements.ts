@@ -7,7 +7,7 @@ import {z} from "zod";
 import {referenceDataRegistry} from "../reference-data";
 
 /**
- * Executor of the method `reconcile-financial-statements` (v5, after the fourth independent review).
+ * Executor of the method `reconcile-financial-statements` (v6, after the fifth independent review).
  * Proves that material numbers close between statements, notes and release, runs the identities
  * through financial-core, and keeps every difference above the tolerance as an open divergence
  * with its anchors. Two sources that disagree are never averaged and never silently resolved. Two
@@ -18,8 +18,11 @@ import {referenceDataRegistry} from "../reference-data";
  * never compared. Inside an account that is not comparable as a whole, the sources that share a
  * definition, components and date are compared among themselves, so a divergence between two
  * carrying amounts is never lost behind a nominal or a fair value. Every component tag is a known
- * tag the definition text names. Every calculation carries the anchors of its operands. An empty
- * base blocks.
+ * tag the definition text names. Every calculation carries the anchors of its operands. A figure the
+ * source publishes in another scale enters with its stated value, unit and decimals, and its rounding
+ * band is recorded, so two figures that differ by less than the coarser rounding close "within the
+ * published rounding", never "exactly". A sign the source publishes as an expense is declared and
+ * normalized in the trace. Every line of a bridge carries its own anchor. An empty base blocks.
  */
 const money = z.string().regex(/^-?\d+(\.\d+)?$/);
 const nonNegative = z.string().regex(/^\d+(\.\d+)?$/);
@@ -77,9 +80,16 @@ const COMPONENT_WORDS: Record<string, RegExp> = {
 export const knownComponents = Object.keys(COMPONENT_WORDS).sort();
 const normalize = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+const scaleUnits = z.enum(["BRL", "BRL thousand", "BRL million"]);
+const SCALE: Record<z.infer<typeof scaleUnits>, string> = {"BRL": "1", "BRL thousand": "1000", "BRL million": "1000000"};
+
 export const statementSourceSchema = z.object({
   source: nonEmpty,
   value: money,
+  /** When the source publishes the figure in another scale (a release in R$ million with one decimal): the value as published, its unit and its decimals; the executor converts and records the rounding band. */
+  stated: z.object({value: money, unit: scaleUnits, decimals: z.number().int().min(0).max(6)}).strict().nullable().default(null),
+  /** as_published keeps the sign the source prints; absolute declares that the executor compares magnitudes (an expense printed in parentheses). */
+  sign: z.enum(["as_published", "absolute"]).default("as_published"),
   /** When the value is recomputed from other figures, the derivation with each operand anchored; the executor re-runs it. */
   derivation: z.object({formula: z.enum(["sum", "difference"]), operands: z.array(z.object({label: nonEmpty, value: money, anchor: anchorSchema}).strict()).min(2)}).strict().nullable().default(null),
   /** What the source counts, as text, as a definition key shared by sources that count the same thing, and as component tags. */
@@ -110,15 +120,16 @@ export const reconciliationInputSchema = z.object({
   balanceSheet: z.object({assets: z.object({value: money, anchor: anchorSchema}).strict(), liabilities: z.object({value: money, anchor: anchorSchema}).strict(), equity: z.object({value: money, anchor: anchorSchema}).strict()}).strict().nullable().default(null),
   /** Debt roll-forward from the note: opening plus movements equals closing. */
   debtBridge: z.object({
-    opening: money,
-    lines: z.array(z.object({id: nonEmpty, label: nonEmpty, value: money, category: z.enum(["drawdowns", "accruedInterest", "pik", "indexation", "foreignExchange", "acquisitions", "otherAdditions", "amortizations", "prepayments", "writeOffs"])}).strict()).min(1),
-    closing: money,
+    opening: z.object({value: money, anchor: anchorSchema}).strict(),
+    lines: z.array(z.object({id: nonEmpty, label: nonEmpty, value: money, category: z.enum(["drawdowns", "accruedInterest", "pik", "indexation", "foreignExchange", "acquisitions", "otherAdditions", "amortizations", "prepayments", "writeOffs"]), anchor: anchorSchema}).strict()).min(1),
+    closing: z.object({value: money, anchor: anchorSchema}).strict(),
     anchor: anchorSchema,
   }).strict().nullable().default(null),
   /** Cash roll-forward: opening plus net change equals closing. */
   cashBridge: z.object({opening: z.object({value: money, anchor: anchorSchema}).strict(), netChange: z.object({value: money, anchor: anchorSchema}).strict(), closing: z.object({value: money, anchor: anchorSchema}).strict()}).strict().nullable().default(null),
   /** Interest expense: the note's accrued interest against the income statement's expense; the difference is recorded, never hidden. */
-  interestBridge: z.object({fromDebtMovement: z.object({value: money, components: z.array(nonEmpty).min(1), anchor: anchorSchema}).strict(), fromIncomeStatement: z.object({value: money, components: z.array(nonEmpty).min(1), anchor: anchorSchema}).strict()}).strict().nullable().default(null),
+  /** Each side with the value as the source prints it (an expense may be negative) and how the executor is to read it: as printed or as a magnitude; the normalization is traced. */
+  interestBridge: z.object({fromDebtMovement: z.object({value: money, sign: z.enum(["as_published", "absolute"]).default("as_published"), components: z.array(nonEmpty).min(1), anchor: anchorSchema}).strict(), fromIncomeStatement: z.object({value: money, sign: z.enum(["as_published", "absolute"]).default("as_published"), components: z.array(nonEmpty).min(1), anchor: anchorSchema}).strict()}).strict().nullable().default(null),
 }).strict().superRefine((input, context) => {
   for (const [side, entry] of Object.entries(input.interestBridge ?? {})) for (const component of entry.components) if (!COMPONENT_WORDS[component]) context.addIssue({code: "custom", path: ["interestBridge", side], message: `unknown component tag ${component} in the interest bridge`});
   for (const [family, tolerance] of Object.entries(input.tolerance)) {
@@ -139,6 +150,10 @@ export const reconciliationInputSchema = z.object({
         const words = COMPONENT_WORDS[component];
         if (!words) { context.addIssue({code: "custom", path: ["pairedAccounts", index, "sources", position, "components"], message: `${account.id}/${source.source}: unknown component tag ${component}; the known tags are ${knownComponents.join(", ")}`}); continue; }
         if (!words.test(text)) context.addIssue({code: "custom", path: ["pairedAccounts", index, "sources", position, "components"], message: `${account.id}/${source.source}: the definition text never names the component ${component}`});
+      }
+      if (source.stated) {
+        const converted = new Decimal(source.stated.value).times(SCALE[source.stated.unit]).div(SCALE[input.unit as z.infer<typeof scaleUnits>] ?? "1");
+        if (!converted.eq(source.value)) context.addIssue({code: "custom", path: ["pairedAccounts", index, "sources", position, "stated"], message: `${account.id}/${source.source}: ${source.stated.value} ${source.stated.unit} converts to ${converted.toFixed()} ${input.unit}, not ${source.value}`});
       }
       if (source.derivation) {
         const operands = source.derivation.operands.map((operand) => new Decimal(operand.value));
@@ -167,7 +182,7 @@ type PairState = "closes" | "explained" | "open" | "not_comparable" | "single_so
 type Calculation = {id: string; formula: string; operands: Record<string, string>; anchors: Record<string, Anchor>; result: string; unit: string};
 
 export type ReconciliationOutput = {
-  schema_version: "method.reconcile-financial-statements.v5";
+  schema_version: "method.reconcile-financial-statements.v6";
   reference_date: string;
   unit: string;
   state: "closes" | "differences_explained" | "open_divergences" | "identity_failed" | "incomplete" | "blocked";
@@ -175,11 +190,14 @@ export type ReconciliationOutput = {
   incomplete_reasons: string[];
   reconciliations: Array<{
     id: string; label: string; family: string;
-    values: Array<{source: string; value: string; definition: string; definitionKey: string; definitionAnchor: Anchor; components: string[]; asOf: string; anchor: Anchor}>;
+    values: Array<{source: string; value: string; stated: {value: string; unit: string; decimals: number; roundingHalfBand: string} | null; sign: string; definition: string; definitionKey: string; definitionAnchor: Anchor; components: string[]; asOf: string; anchor: Anchor}>;
     comparability: {comparable: boolean; reasons: string[]};
     spread: string | null;
+    /** The coarser published rounding among the sources (half of the last published digit, in the executor's unit); a spread inside it closes within the published rounding, never exactly. */
+    rounding_half_band: string | null;
     tolerance: {value: string; policyKey: string | null; policyVersion: string | null};
     state: PairState;
+    closes_within: "tolerance" | "published_rounding" | null;
     explanations: Array<{fromSource: string; toSource: string; adjustment: string; expected: string; actual: string; residual: string; holds: boolean; description: string; anchor: Anchor}>;
     /** Sources connected by explanations that hold; more than one group means the account is not explained as a whole. */
     explanation_groups: string[][];
@@ -223,10 +241,13 @@ export function reconcileFinancialStatements(raw: ReconciliationInput): Reconcil
 
   const reconciliations = input.pairedAccounts.map((account): ReconciliationOutput["reconciliations"][number] => {
     const tolerance = toleranceOf(account.family);
-    const values = account.sources.map((source) => ({source: source.source, value: out(d(source.value)), definition: source.definition, definitionKey: source.definitionKey, definitionAnchor: source.definitionAnchor, components: source.components, asOf: source.asOf, anchor: source.anchor}));
+    const halfBand = (source: (typeof account.sources)[number]) => (source.stated ? d(10).pow(-source.stated.decimals).div(2).times(SCALE[source.stated.unit]).div(SCALE[input.unit as z.infer<typeof scaleUnits>] ?? "1") : d(0));
+    const values = account.sources.map((source) => ({source: source.source, value: out(d(source.value)), stated: source.stated ? {value: source.stated.value, unit: source.stated.unit, decimals: source.stated.decimals, roundingHalfBand: out(halfBand(source))} : null, sign: source.sign, definition: source.definition, definitionKey: source.definitionKey, definitionAnchor: source.definitionAnchor, components: source.components, asOf: source.asOf, anchor: source.anchor}));
+    const roundingBand = account.sources.reduce((widest, source) => Decimal.max(widest, halfBand(source)), d(0));
+    for (const source of account.sources.filter((entry) => entry.stated)) record({id: `financial.scale_conversion:${account.id}:${source.source}`, formula: "stated value * stated scale / executor scale; rounding half band = 10^-decimals / 2 * stated scale / executor scale", operands: {stated: source.stated!.value, statedUnit: source.stated!.unit, decimals: String(source.stated!.decimals), converted: source.value, roundingHalfBand: out(halfBand(source))}, anchors: {source: source.anchor}, result: source.value});
     if (account.sources.length === 1) {
       uncovered.push({id: account.id, state: "insufficient_evidence", reason: `${account.label} has a single source (${account.sources[0]!.source}); recorded, not reconciled`});
-      return {id: account.id, label: account.label, family: account.family, values, comparability: {comparable: false, reasons: ["single source"]}, spread: null, tolerance, state: "single_source", explanations: [], explanation_groups: [[account.sources[0]!.source]], unexplained_sources: [], comparable_subsets: []};
+      return {id: account.id, label: account.label, family: account.family, values, comparability: {comparable: false, reasons: ["single source"]}, spread: null, rounding_half_band: null, tolerance, state: "single_source", closes_within: null, explanations: [], explanation_groups: [[account.sources[0]!.source]], unexplained_sources: [], comparable_subsets: []};
     }
     // Comparability is decided on the definition key, the components and the date, never on the name of the account.
     const reasons: string[] = [];
@@ -265,13 +286,15 @@ export function reconcileFinancialStatements(raw: ReconciliationInput): Reconcil
     // An explanation exists to bridge presentations that count different things; it never bridges different dates, and without one the pair is not comparable.
     const datesDiffer = reasons.some((reason) => reason.startsWith("the sources are dated differently"));
     if (datesDiffer || (reasons.length > 0 && explanations.length === 0)) {
-      return {id: account.id, label: account.label, family: account.family, values, comparability: {comparable: false, reasons}, spread: out(spread), tolerance, state: "not_comparable", explanations, explanation_groups: groups, unexplained_sources: account.sources.map((source) => source.source), comparable_subsets: subsets};
+      return {id: account.id, label: account.label, family: account.family, values, comparability: {comparable: false, reasons}, spread: out(spread), rounding_half_band: out(roundingBand), tolerance, state: "not_comparable", closes_within: null, explanations, explanation_groups: groups, unexplained_sources: account.sources.map((source) => source.source), comparable_subsets: subsets};
     }
     let state: PairState;
-    if (spread.lte(tolerance.value) && reasons.length === 0) state = "closes";
+    let closesWithin: "tolerance" | "published_rounding" | null = null;
+    if (spread.lte(tolerance.value) && reasons.length === 0) { state = "closes"; closesWithin = "tolerance"; }
+    else if (spread.lte(roundingBand) && reasons.length === 0) { state = "closes"; closesWithin = "published_rounding"; }
     else if (explanations.length > 0 && roots.size === 1) state = "explained";
     else state = "open";
-    return {id: account.id, label: account.label, family: account.family, values, comparability: {comparable: reasons.length === 0, reasons}, spread: out(spread), tolerance, state, explanations, explanation_groups: groups, unexplained_sources: state === "open" ? (unexplained.length > 0 ? unexplained : account.sources.map((source) => source.source)) : [], comparable_subsets: subsets};
+    return {id: account.id, label: account.label, family: account.family, values, comparability: {comparable: reasons.length === 0, reasons}, spread: out(spread), rounding_half_band: out(roundingBand), tolerance, state, closes_within: closesWithin, explanations, explanation_groups: groups, unexplained_sources: state === "open" ? (unexplained.length > 0 ? unexplained : account.sources.map((source) => source.source)) : [], comparable_subsets: subsets};
   });
 
   const identities: ReconciliationOutput["identities"] = [];
@@ -286,9 +309,9 @@ export function reconcileFinancialStatements(raw: ReconciliationInput): Reconcil
   if (input.debtBridge) {
     const byCategory: Record<string, Decimal> = {};
     for (const line of input.debtBridge.lines) byCategory[line.category] = (byCategory[line.category] ?? d(0)).plus(line.value);
-    const bridge = buildDebtBalanceBridge({openingBalance: input.debtBridge.opening, ...Object.fromEntries(Object.entries(byCategory).map(([category, value]) => [category, out(value)]))});
-    record({id: "financial.debt_balance_bridge", formula: "opening + additions - reductions", operands: Object.fromEntries(bridge.lines.map((line) => [line.id, line.value])), anchors: {note: input.debtBridge.anchor}, result: bridge.value});
-    identity("debt_bridge", "opening + movements = closing", bridge.value, input.debtBridge.closing, "debt", {note: input.debtBridge.anchor});
+    const bridge = buildDebtBalanceBridge({openingBalance: input.debtBridge.opening.value, ...Object.fromEntries(Object.entries(byCategory).map(([category, value]) => [category, out(value)]))});
+    record({id: "financial.debt_balance_bridge", formula: "opening + additions - reductions", operands: {opening: input.debtBridge.opening.value, ...Object.fromEntries(input.debtBridge.lines.map((line) => [line.id, line.value]))}, anchors: {opening: input.debtBridge.opening.anchor, ...Object.fromEntries(input.debtBridge.lines.map((line) => [line.id, line.anchor]))}, result: bridge.value});
+    identity("debt_bridge", "opening + movements = closing", bridge.value, input.debtBridge.closing.value, "debt", {note: input.debtBridge.anchor, opening: input.debtBridge.opening.anchor, closing: input.debtBridge.closing.anchor, ...Object.fromEntries(input.debtBridge.lines.map((line) => [line.id, line.anchor]))});
   } else absent("debt_bridge", "the debt roll-forward was not tested: the note's movement is not in the base");
   if (input.cashBridge) identity("cash_bridge", "opening + net change = closing", d(input.cashBridge.opening.value).plus(input.cashBridge.netChange.value), input.cashBridge.closing.value, "cash", {opening: input.cashBridge.opening.anchor, netChange: input.cashBridge.netChange.anchor, closing: input.cashBridge.closing.anchor});
   else absent("cash_bridge", "the cash bridge was not tested: opening, net change and closing are not in the base");
@@ -296,8 +319,11 @@ export function reconcileFinancialStatements(raw: ReconciliationInput): Reconcil
     const left = input.interestBridge.fromDebtMovement;
     const right = input.interestBridge.fromIncomeStatement;
     const sameComponents = sortStrings(left.components).join("+") === sortStrings(right.components).join("+");
-    const bridge = checkIdentity({id: "interest_bridge", left: left.value, right: right.value, absoluteTolerance: toleranceOf("interest").value});
-    record({id: "financial.interest_expense_bridge", formula: "accrued interest in the debt movement - interest expense in the income statement", operands: {fromDebtMovement: bridge.left, fromIncomeStatement: bridge.right, tolerance: bridge.tolerance, comparable: String(sameComponents)}, anchors: {fromDebtMovement: left.anchor, fromIncomeStatement: right.anchor}, result: bridge.difference});
+    // The sign the source prints is kept unless the caller declares a magnitude reading; the normalization is traced, never silent.
+    const leftValue = left.sign === "absolute" ? d(left.value).abs() : d(left.value);
+    const rightValue = right.sign === "absolute" ? d(right.value).abs() : d(right.value);
+    const bridge = checkIdentity({id: "interest_bridge", left: leftValue, right: rightValue, absoluteTolerance: toleranceOf("interest").value});
+    record({id: "financial.interest_expense_bridge", formula: "accrued interest in the debt movement - interest expense in the income statement, each read as published or as a magnitude as declared", operands: {fromDebtMovementPublished: left.value, fromDebtMovementRead: out(leftValue), fromDebtMovementSign: left.sign, fromIncomeStatementPublished: right.value, fromIncomeStatementRead: out(rightValue), fromIncomeStatementSign: right.sign, tolerance: bridge.tolerance, comparable: String(sameComponents)}, anchors: {fromDebtMovement: left.anchor, fromIncomeStatement: right.anchor}, result: bridge.difference});
     const anchors = {fromDebtMovement: left.anchor, fromIncomeStatement: right.anchor};
     if (sameComponents) identities.push({id: "interest_bridge", formula: "accrued interest (note) = interest expense (income statement)", left: bridge.left, right: bridge.right, difference: bridge.difference, holds: bridge.status === "pass", state: bridge.status === "pass" ? "holds" : "fails", anchors});
     else {
@@ -326,7 +352,7 @@ export function reconcileFinancialStatements(raw: ReconciliationInput): Reconcil
     : openDivergences.length > 0 ? "open_divergences"
     : reconciliations.some((entry) => entry.state === "explained") ? "differences_explained" : "closes";
   const body = {
-    schema_version: "method.reconcile-financial-statements.v5" as const, reference_date: input.referenceDate, unit: input.unit, state,
+    schema_version: "method.reconcile-financial-statements.v6" as const, reference_date: input.referenceDate, unit: input.unit, state,
     block_reasons: blockReasons, incomplete_reasons: incompleteReasons, reconciliations, open_divergences: openDivergences, identities, uncovered_terms: uncovered,
   };
   const inputFingerprint = fingerprint(input);

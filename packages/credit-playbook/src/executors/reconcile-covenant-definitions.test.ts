@@ -52,7 +52,7 @@ const camil = (state: "ordinary" | "unknown" | "outstanding" | "accelerated"): C
   componentValues,
   ltmEbitda: null,
   // The ITR enumerates loans, financings, debentures, derivatives, cash and investments; it never reproduces "qualquer outra dívida onerosa".
-  reported: {value: "4.72", asOf, definition: "dívida líquida da nota 15 sobre EBITDA dos últimos doze meses, pro forma", netDebtComponents: ["loans_and_financings", "debentures", "derivative_liabilities", "derivative_assets", "cash_and_equivalents", "financial_investments"], ebitdaOpening: null, anchor: itr(40, "15")},
+  reported: {value: "4.72", asOf, definition: "dívida líquida da nota 15 (empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, caixa e equivalentes e aplicações financeiras) sobre EBITDA dos últimos doze meses, pro forma", netDebtComponents: ["loans_and_financings", "debentures", "derivative_liabilities", "derivative_assets", "cash_and_equivalents", "financial_investments"], ebitdaOpening: null, anchor: itr(40, "15")},
 });
 
 /** Deterministic permutation, different at every step. */
@@ -133,7 +133,7 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
 
   it("hypothetical, not gold: residual enumerated, EBITDA opened and consistent, no lease in the base: headroom from financial-core; the 11th stays conditional on its numerator obligation", () => {
     const base = withoutLeases(camil("ordinary"));
-    const opened: CovenantReconciliationInput = {...base, reported: {...base.reported!, netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40, "15, hipotético")}}};
+    const opened: CovenantReconciliationInput = {...base, reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40, "15, hipotético")}}};
     const result = reconcileCovenantDefinitions(opened);
     const deb13 = by(result, "deb-13");
     expect(deb13.comparability).toBe("comparable");
@@ -155,10 +155,10 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
 
   it("mutation: an opening that does not reproduce the reported index, an opening dated elsewhere, or an EBITDA of zero refuse the comparison", () => {
     const base = withoutLeases(camil("ordinary"));
-    const inconsistent = reconcileCovenantDefinitions({...base, reported: {...base.reported!, netDebtComponents: [...contractual], ebitdaOpening: {value: "1200000", unit, asOf, months: 12, anchor: itr(40)}}});
+    const inconsistent = reconcileCovenantDefinitions({...base, reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", netDebtComponents: [...contractual], ebitdaOpening: {value: "1200000", unit, asOf, months: 12, anchor: itr(40)}}});
     expect(by(inconsistent, "deb-13").comparability).toBe("not_comparable");
     expect(by(inconsistent, "deb-13").comparabilityReasons.some((reason) => reason.includes("does not reproduce the reported index"))).toBe(true);
-    expect(() => reconcileCovenantDefinitions({...base, reported: {...base.reported!, ebitdaOpening: {value: "895864", unit, asOf: "2026-02-28", months: 12, anchor: itr(40)}}})).toThrow(/dated at the as-of date/);
+    expect(() => reconcileCovenantDefinitions({...base, reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", ebitdaOpening: {value: "895864", unit, asOf: "2026-02-28", months: 12, anchor: itr(40)}}})).toThrow(/dated at the as-of date/);
     const zero = reconcileCovenantDefinitions({...base, reported: null, ltmEbitda: {value: "0", unit, asOf, months: 12, incorporatesAdjustments: [], anchor: itr(40)}});
     expect(by(zero, "deb-13").index).toBeNull();
     expect(by(zero, "deb-13").comparability).toBe("not_comparable");
@@ -197,14 +197,14 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
 
   it("mutation: undated settlements (ordinary or accelerated), an old reported index, a component dated elsewhere and duplicate ids are refused or not comparable", () => {
     const base = camil("unknown");
-    const old = reconcileCovenantDefinitions({...base, reported: {...base.reported!, asOf: "2026-02-28"}});
+    const old = reconcileCovenantDefinitions({...base, reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", asOf: "2026-02-28"}});
     expect(by(old, "deb-13").comparability).toBe("not_comparable");
     expect(() => reconcileCovenantDefinitions({...base, componentValues: componentValues.map((line, index) => index === 0 ? {...line, asOf: "2026-02-28"} : line)})).toThrow(/not the as-of date/);
     expect(() => reconcileCovenantDefinitions({...base, referenceSettlements: [{instrument: "cra-eco-8", maturityDate: "2025-04-15", settlement: "ordinary", anchor: {document: "x"}}]})).toThrow(/needs its date/);
     expect(() => reconcileCovenantDefinitions({...base, referenceSettlements: [{instrument: "cra-eco-8", maturityDate: "2025-04-15", settlement: "accelerated", anchor: {document: "x"}}]})).toThrow(/needs its date/);
     expect(() => reconcileCovenantDefinitions({...base, referenceSettlements: [...settlement("unknown"), settlement("unknown")[0]!]})).toThrow(/duplicate settlement fact/);
     expect(() => reconcileCovenantDefinitions({...base, instruments: [...base.instruments, base.instruments[1]!]})).toThrow(/duplicate instrument/);
-    expect(() => reconcileCovenantDefinitions({...base, reported: {...base.reported!, asOf: "2026-06-30"}})).toThrow(/after the as-of date/);
+    expect(() => reconcileCovenantDefinitions({...base, reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", asOf: "2026-06-30"}})).toThrow(/after the as-of date/);
   });
 
   it("mutation: the next measurement follows the stated frequency, including a leap year end", () => {
@@ -237,7 +237,7 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     const minimum: CovenantReconciliationInput = {
       ...base,
       instruments: [{...(base.instruments[1] as Instrument), id: "deb-min", direction: "minimum", tiers: [{limit: "6.00", condition: {type: "unconditional"}, anchor: {document: "hipotetico.pdf", clause: "7.24.3(VIII)(c)", page: 1}}]}],
-      reported: {...base.reported!, netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40)}},
+      reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40)}},
     };
     const result = reconcileCovenantDefinitions(minimum);
     expect(by(result, "deb-min").headroom?.absolute).toBe("-1.28");
@@ -292,7 +292,7 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
 
   it("mutation: a missing component, a residual without a line, a zero opening or a different perimeter never yield headroom", () => {
     const base = withoutLeases(camil("ordinary"));
-    const opened: CovenantReconciliationInput = {...base, reported: {...base.reported!, netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40)}}};
+    const opened: CovenantReconciliationInput = {...base, reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40)}}};
     expect(by(reconcileCovenantDefinitions(opened), "deb-13").headroom).not.toBeNull();
     const missing = reconcileCovenantDefinitions({...opened, componentValues: opened.componentValues!.filter((line) => line.component !== "derivative_liabilities")});
     expect(by(missing, "deb-13").comparability).toBe("not_comparable");
@@ -300,10 +300,10 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     const residualOpen = reconcileCovenantDefinitions({...opened, componentValues: opened.componentValues!.filter((line) => line.component !== "other_onerous_debt")});
     expect(by(residualOpen, "deb-13").comparability).toBe("conditional");
     expect(by(residualOpen, "deb-13").headroom).toBeNull();
-    const zeroOpening = reconcileCovenantDefinitions({...opened, reported: {...opened.reported!, ebitdaOpening: {value: "0", unit, asOf, months: 12, anchor: itr(40)}}});
+    const zeroOpening = reconcileCovenantDefinitions({...opened, reported: {...opened.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", ebitdaOpening: {value: "0", unit, asOf, months: 12, anchor: itr(40)}}});
     expect(by(zeroOpening, "deb-13").comparability).toBe("not_comparable");
     expect(by(zeroOpening, "deb-13").headroom).toBeNull();
-    const parent = reconcileCovenantDefinitions({...opened, reported: {...opened.reported!, perimeter: "parent"}});
+    const parent = reconcileCovenantDefinitions({...opened, reported: {...opened.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", perimeter: "parent"}});
     expect(by(parent, "deb-13").comparability).toBe("not_comparable");
     expect(by(parent, "deb-13").comparabilityReasons.some((reason) => reason.includes("perimeter"))).toBe(true);
   });
@@ -395,8 +395,8 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
   it("gold: the acquisition payables of note 16 are carried as a candidate for the sellers finance obligation, never added and never called absent", () => {
     const input = camil("unknown");
     input.candidateObligations = [
-      {id: "note16-acquisition-cost", description: "contas a pagar por aquisição de investimentos, custo de aquisição", value: "27119", unit, asOf, relatedAdjustmentId: "sellers-finance", anchor: itr(47, "nota 16")},
-      {id: "note16-contingent", description: "contas a pagar por aquisição de investimentos, passivo contingente", value: "51290", unit, asOf, relatedAdjustmentId: "sellers-finance", anchor: itr(47, "nota 16")},
+      {id: "note16-acquisition-cost", description: "contas a pagar por aquisição de investimentos, custo de aquisição", value: "27119", unit, asOf, relatedAdjustmentId: "sellers-finance", anchor: itr(41, "nota 16")},
+      {id: "note16-contingent", description: "contas a pagar por aquisição de investimentos, passivo contingente", value: "51290", unit, asOf, relatedAdjustmentId: "sellers-finance", anchor: itr(41, "nota 16")},
     ];
     const result = reconcileCovenantDefinitions(input);
     expect(result.uncovered_terms.map((term) => term.id)).toEqual(["candidate:note16-acquisition-cost", "candidate:note16-contingent", "obligation:deb-11:sellers-finance"]);
@@ -408,5 +408,19 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     const without = reconcileCovenantDefinitions(camil("unknown"));
     expect(without.uncovered_terms.map((term) => term.id)).toEqual(["obligation:deb-11:sellers-finance"]);
     expect(without.trace.inputFingerprint).not.toBe(result.trace.inputFingerprint);
+  });
+
+  it("mutation: the literal reported definition must name every component it claims, and a reported index of another date implies no EBITDA", () => {
+    const literal = camil("unknown");
+    literal.reported = {...literal.reported!, definition: "somente caixa e equivalentes"};
+    expect(() => reconcileCovenantDefinitions(literal)).toThrow(/never names the component loans_and_financings|literal definition and the structured components disagree/);
+    const old = camil("unknown");
+    old.reported = {...old.reported!, asOf: "2026-02-28"};
+    const result = reconcileCovenantDefinitions(old);
+    const deb13 = by(result, "deb-13");
+    expect(deb13.comparability).toBe("not_comparable");
+    expect(deb13.index?.ebitda).toBeNull();
+    expect(deb13.comparabilityReasons.some((reason) => /no EBITDA is implied from a reported index that is not comparable/.test(reason))).toBe(true);
+    expect(result.trace.calculations.some((calculation) => calculation.id.startsWith("financial.implied_ebitda:"))).toBe(false);
   });
 });

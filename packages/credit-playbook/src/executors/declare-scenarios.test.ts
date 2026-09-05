@@ -9,10 +9,11 @@ const d = (value: Decimal.Value) => new Decimal(value);
 const itr = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, ...(note ? {note} : {})});
 const user = (note?: string) => ({document: "declaracao_do_usuario.md", ...(note ? {note} : {})});
 const asOf = "2026-05-31";
+const sha = (seed: string) => seed.padEnd(64, "0");
 const documents: ScenarioInput["documents"] = [
-  {name: "01_ITR_1T26_31mai2026.pdf", kind: "itr"}, {name: "declaracao_do_usuario.md", kind: "user"}, {name: "reference-data.ts", kind: "benchmark"},
-  {name: "gc02-gabarito-rascunho.md", kind: "other"}, {name: "escritura_13a_emissao.pdf", kind: "indenture"}, {name: "ca_notas_comerciais_2026-05-27.pdf", kind: "announcement"},
-  {name: "contrato_hipotetico.pdf", kind: "contract"}, {name: "extrato_hipotetico.pdf", kind: "disbursement_proof"}, {name: "orcamento_gerencial_hipotetico.xlsx", kind: "management"},
+  {name: "01_ITR_1T26_31mai2026.pdf", kind: "itr", sha256: sha("a1")}, {name: "declaracao_do_usuario.md", kind: "user", sha256: sha("b2")}, {name: "reference-data.ts", kind: "benchmark", sha256: sha("c3")},
+  {name: "gc02-gabarito-rascunho.md", kind: "other", sha256: sha("d4")}, {name: "escritura_13a_emissao.pdf", kind: "indenture", sha256: sha("e5")}, {name: "ca_notas_comerciais_2026-05-27.pdf", kind: "announcement", sha256: sha("f6")},
+  {name: "contrato_hipotetico.pdf", kind: "contract", sha256: sha("a7")}, {name: "extrato_hipotetico.pdf", kind: "disbursement_proof", sha256: sha("b8")}, {name: "orcamento_gerencial_hipotetico.xlsx", kind: "management", sha256: sha("c9")},
 ];
 /**
  * Camil without management data, R$ thousand: CFADS is a declared range per window of the ledger's
@@ -36,11 +37,11 @@ const camil = (): ScenarioInput => ({
   position: {
     perimeter: "consolidated",
     components: {grossDebt: {value: "5670186", anchor: itr(39, "15")}, derivativeLiabilities: {value: "14335", anchor: itr(51, "25")}, derivativeAssets: {value: "235", anchor: itr(51, "25")}, cashAndEquivalents: {value: "1430714", anchor: itr(20, "3")}, financialInvestments: {value: "25095", anchor: itr(11)}},
-    ltmEbitda: {value: "895864", months: 12, definitionKey: "ebitda.covenant_ltm", basis: "implied_from_reported_index", comparability: "conditional", comparabilityReasons: ["a companhia não abre o EBITDA; o valor é implícito de 4,72x sobre 4.228.477", "a 11ª carrega ajuste pro forma de aquisições que o índice reportado não mostra"], anchor: itr(40, "15: 4.228.477 / 4,72, derivado")},
+    ltmEbitda: {value: "895864", periodStart: "2025-05-31", periodEnd: "2026-05-31", definitionKey: "ebitda.covenant_ltm", basis: "implied_from_reported_index", comparability: "conditional", comparabilityReasons: ["a companhia não abre o EBITDA; o valor é implícito de 4,72x sobre 4.228.477", "a 11ª carrega ajuste pro forma de aquisições que o índice reportado não mostra"], anchor: itr(40, "15: 4.228.477 / 4,72, derivado")},
     averageDebtBalance: {value: "5329284.5", basis: "média simples dos saldos de 28/02/2026 e 31/05/2026", anchor: itr(39, "15")},
     baseAnnualRate: {value: "0.1246", basis: "serviço base do caso 02 sobre a dívida bruta", anchor: {document: "gc02-gabarito-rascunho.md", note: "seção 3"}},
   },
-  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", tier: {applicable: false, condition: "4,00x depois da quitação ordinária dos CRA de referência; até a prova, 3,50x"}, state: "insufficient_evidence", comparability: "conditional", measurement: {frequency: "annual", nextDate: "2027-02-28"}, anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
+  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", tier: {applicability: "conditional", condition: "4,00x condicionado à prova da quitação ordinária dos CRA de referência; até a prova, 3,50x é o degrau vigente"}, state: "insufficient_evidence", comparability: "conditional", measurement: {frequency: "annual", nextDate: "2027-02-28"}, anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
   periods: [
     {period: "2026/27", endsAt: "2027-05-31", principal: {value: "1229828", anchor: itr(40, "15, cronograma")}, interest: null},
     {period: "2027/28", endsAt: "2028-05-31", principal: {value: "776868", anchor: itr(40, "15, cronograma")}, interest: null},
@@ -56,7 +57,7 @@ const by = (result: ReturnType<typeof declareScenarios>, id: string) => result.s
 describe("declare-scenarios executor (v3)", () => {
   it("gold: net debt follows the contractual components, leverage carries the EBITDA's comparability, no headroom against an inapplicable unresolved tier, and every number carries origins with anchors", () => {
     const result = declareScenarios(camil());
-    expect(result.schema_version).toBe("method.declare-scenarios.v3");
+    expect(result.schema_version).toBe("method.declare-scenarios.v4");
     expect(result.state).toBe("partial");
     for (const scenario of result.scenarios) {
       expect(scenario.caveat).toMatch(/não é guidance da companhia/);
@@ -64,8 +65,8 @@ describe("declare-scenarios executor (v3)", () => {
       expect(scenario.results.pro_forma.deductible_cash).toBe("1455809");
       expect(scenario.results.pro_forma.origins.map((origin) => origin.key)).toEqual(expect.arrayContaining(["position.grossDebt", "position.cashAndEquivalents", "position.ltmEbitda"]));
       expect(scenario.results.headroom).toBeNull();
-      expect(scenario.results.headroom_note).toMatch(/no headroom: the limit of 13ª emissão is insufficient_evidence; the 4.00x tier is not applicable/);
-      expect(scenario.uncovered_terms.some((term) => term.id === "interest")).toBe(true);
+      expect(scenario.results.headroom_note).toMatch(/no headroom: the limit of 13ª emissão is insufficient_evidence; the 4.00x tier is conditional \(4,00x condicionado/);
+      expect(scenario.uncovered_terms.some((term) => term.id === "interest:2026/27")).toBe(true);
     }
     const base = by(result, "base");
     expect(base.results.pro_forma.leverage?.value).toBe(d("4228477").div("895864").toDecimalPlaces(8).toFixed());
@@ -74,7 +75,9 @@ describe("declare-scenarios executor (v3)", () => {
     expect(base.parameters.map((parameter) => parameter.role)).toEqual(["rollover", "cfads", "cfads"]);
     expect(base.caveat).toMatch(/histórico da companhia \(rollover.bank_lines: a companhia rolou as linhas bancárias/);
     expect(base.results.liquidity?.basis).toBe("principal_only");
-    expect(base.results.liquidity?.rows[0]?.origins.map((origin) => origin.key)).toEqual(["periods.2026/27.principal", "cfads.2026-27.range", "rollover.bank_lines"]);
+    expect(base.results.liquidity?.rows[0]?.origins.map((origin) => origin.key)).toEqual(["position.cashAndEquivalents", "position.financialInvestments", "periods.2026/27.principal", "cfads.2026-27.range", "rollover.bank_lines"]);
+    // The second period rests on everything before it: the opening cash and the first period's inputs.
+    expect(base.results.liquidity?.rows[1]?.origins.map((origin) => origin.key)).toEqual(["position.cashAndEquivalents", "position.financialInvestments", "periods.2026/27.principal", "cfads.2026-27.range", "rollover.bank_lines", "periods.2027/28.principal", "cfads.2027-28.range"]);
     expect(result.assumption_register.filter((entry) => entry.selected).map((entry) => entry.key)).toEqual(["cfads.2026-27.range", "cfads.2027-28.range", "haircut.cfads.adverse", "haircut.ebitda.adverse", "rollover.bank_lines", "shock.rate.parallel"]);
   });
 
@@ -82,6 +85,9 @@ describe("declare-scenarios executor (v3)", () => {
     const result = declareScenarios(camil());
     const adverse = by(result, "adverse");
     expect(adverse.results.interest?.delta).toBe("106585.69");
+    // The shock delta stands apart: the service of a period never carries a share of it.
+    expect(adverse.results.liquidity?.rows[0]?.coverage).toBe(by(result, "base").results.liquidity?.rows[0]?.coverage === null ? null : adverse.results.liquidity?.rows[0]?.coverage);
+    expect(result.trace.calculations.find((calculation) => calculation.id === "financial.liquidity_coverage:2026/27" && calculation.scenario === "adverse")?.operands.debtService).toBe("1229828");
     expect(adverse.results.pro_forma.leverage?.value).toBe(d("4228477").div(d("895864").times("0.85")).toDecimalPlaces(8).toFixed());
     expect(adverse.results.liquidity?.rows[0]?.cfads_declared).toBe("200000");
     expect(adverse.results.liquidity?.rows[0]?.cfads_used).toBe("180000");
@@ -124,13 +130,17 @@ describe("declare-scenarios executor (v3)", () => {
 
   it("measures headroom only against an applicable, resolved and comparable limit with a comparable EBITDA", () => {
     const base = camil();
-    const resolved: ScenarioInput = {...base, covenant: {...base.covenant!, state: "resolved", comparability: "comparable", tier: {applicable: true, condition: "quitação ordinária dos CRA provada (hipótese de teste)"}}, position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, comparability: "comparable", comparabilityReasons: []}}};
+    const resolved: ScenarioInput = {...base, covenant: {...base.covenant!, state: "resolved", comparability: "comparable", tier: {applicability: "applicable", condition: "quitação ordinária dos CRA provada (hipótese de teste)"}}, position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, comparability: "comparable", comparabilityReasons: []}}};
     const result = declareScenarios(resolved);
     expect(by(result, "base").results.headroom?.absolute).toBe(d("4").minus(d("4228477").div("895864").toDecimalPlaces(8)).toDecimalPlaces(8).toFixed());
     expect(by(result, "base").results.headroom?.within_limit).toBe(false);
     expect(by(result, "base").results.headroom?.note).toMatch(/scenario reading before the measurement of 2027-02-28/);
-    const inapplicable = declareScenarios({...resolved, covenant: {...resolved.covenant!, tier: {applicable: false, condition: "degrau posterior"}}});
+    const inapplicable = declareScenarios({...resolved, covenant: {...resolved.covenant!, tier: {applicability: "not_applicable", condition: "degrau posterior"}}});
     expect(by(inapplicable, "base").results.headroom).toBeNull();
+    expect(by(inapplicable, "base").results.headroom_note).toMatch(/is not applicable/);
+    const conditional = declareScenarios({...resolved, covenant: {...resolved.covenant!, tier: {applicability: "conditional", condition: "quitação a provar"}}});
+    expect(by(conditional, "base").results.headroom).toBeNull();
+    expect(by(conditional, "base").results.headroom_note).toMatch(/is conditional \(quitação a provar\)/);
     const conditionalEbitda = declareScenarios({...resolved, position: {...resolved.position, ltmEbitda: {...resolved.position.ltmEbitda!, comparability: "conditional"}}});
     expect(by(conditionalEbitda, "base").results.headroom_note).toMatch(/the EBITDA is conditional with the covenant definition/);
   });
@@ -142,9 +152,20 @@ describe("declare-scenarios executor (v3)", () => {
     const announcement = {...base, assumptions: [...base.assumptions, {key: "source.notas", role: "contracted_source" as const, period: "2026/27", value: "251000", unit: "BRL thousand" as const, origin: "public_announcement" as const, rationale: "notas comerciais aprovadas", asOf, anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, confidence: "medium" as const, evidence: {contract: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, disbursement: null}}]};
     expect(() => declareScenarios(announcement)).toThrow(/needs its contract and its disbursement/);
     const contracted = {...base, assumptions: [...base.assumptions, {key: "source.notas", role: "contracted_source" as const, period: "2026/27", value: "251000", unit: "BRL thousand" as const, origin: "public_announcement" as const, rationale: "notas comerciais contratadas e desembolsadas (hipótese)", asOf, anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, confidence: "medium" as const, evidence: {contract: {document: "contrato_hipotetico.pdf"}, disbursement: {document: "extrato_hipotetico.pdf"}}}]};
-    expect(by(declareScenarios(contracted), "no_rollover").results.liquidity?.rows[0]?.contracted_sources).toBe("251000");
+    const withSource = declareScenarios(contracted);
+    expect(by(withSource, "no_rollover").results.liquidity?.rows[0]?.contracted_sources).toBe("251000");
+    expect(by(withSource, "no_rollover").parameters.find((parameter) => parameter.key === "source.notas")?.evidence).toEqual({contract: {document: "contrato_hipotetico.pdf"}, disbursement: {document: "extrato_hipotetico.pdf"}});
+    expect(withSource.assumption_register.find((entry) => entry.key === "source.notas")?.evidence?.disbursement).toEqual({document: "extrato_hipotetico.pdf"});
+    expect(by(withSource, "no_rollover").results.liquidity?.rows[0]?.origins.find((origin) => origin.key === "source.notas")?.evidence?.contract).toEqual({document: "contrato_hipotetico.pdf"});
     expect(() => declareScenarios({...base, unit: "BRL million"})).toThrow(/does not name the unit BRL million/);
-    expect(() => declareScenarios({...base, position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, months: 3 as unknown as 12}}})).toThrow();
+    expect(() => declareScenarios({...base, position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, periodStart: "2026-02-28"}}})).toThrow(/not twelve months; an annualized shorter period is not an LTM figure/);
+    expect(() => declareScenarios({...base, assumptions: base.assumptions.map((assumption) => assumption.role === "rate_shock" ? {...assumption, value: "0"} : assumption)})).toThrow(/of zero is not a stress/);
+    expect(() => declareScenarios({...base, documents: base.documents.map((document) => ({...document, sha256: "abc"}))})).toThrow();
+    const mixed = declareScenarios({...base, periods: base.periods.map((period, index) => (index === 0 ? {...period, interest: {value: "100000", anchor: itr(40, "juros hipotéticos do primeiro período")}} : period))});
+    expect(by(mixed, "base").results.liquidity?.basis).toBe("mixed");
+    expect(by(mixed, "base").results.liquidity?.rows.map((row) => row.basis)).toEqual(["full_debt_service", "principal_only"]);
+    expect(by(mixed, "base").uncovered_terms.map((term) => term.id)).toContain("interest:2027/28");
+    expect(by(mixed, "base").uncovered_terms.map((term) => term.id)).not.toContain("interest:2026/27");
     expect(() => declareScenarios({...base, assumptions: base.assumptions.map((assumption) => assumption.role === "ebitda_haircut" ? {...assumption, value: "1.5"} : assumption)})).toThrow(/lies between 0 and 1/);
     expect(() => declareScenarios({...base, assumptions: base.assumptions.map((assumption) => assumption.role === "cfads" ? {...assumption, value: "-1"} : assumption)})).toThrow();
     expect(() => declareScenarios({...base, assumptions: base.assumptions.map((assumption) => assumption.role === "cfads" ? {...assumption, anchor: {document: "inventado.pdf"}} : assumption)})).toThrow(/not a document of the base/);

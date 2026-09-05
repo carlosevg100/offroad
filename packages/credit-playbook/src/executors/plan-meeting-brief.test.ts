@@ -22,12 +22,13 @@ const turn1 = (): BriefInput => ({
   request: {turn: 1, audience: {primary: "vp"}, form: "first_deliverable", sponsorInstruction: "Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera.", undefinedAspects: ["thesis", "format"]},
   objects: objects(),
   candidateQuestions: [
-    {id: "q-angle", text: "Leitura de refinanciamento ou alternativas mais amplas?", changesTheWork: "define o universo de alternativas", priority: 0},
-    {id: "q-meeting", text: "Reunião exploratória ou produto a testar?", changesTheWork: "define profundidade e forma", priority: 1},
-    {id: "q-format", text: "Briefing interno, páginas de pitch ou análise com cenários?", changesTheWork: "define o material", priority: 2},
-    {id: "q-itr-date", text: "Qual é a data do último ITR?", changesTheWork: "define a data-base", coverage: {answeredBy: itr, answer: "31/05/2026, capa do ITR"}, priority: 0},
-    {id: "q-trivial", text: "Qual a cor do template?", changesTheWork: "nenhuma", priority: 0},
-    {id: "q-fourth", text: "Quem vai à reunião?", changesTheWork: "tom do material", priority: 9},
+    {id: "q-angle", text: "Leitura de refinanciamento ou alternativas mais amplas?", changesTheWork: "define o universo de alternativas", coverage: {searched: ["01_ITR_1T26_31mai2026.pdf", "release_1T26.pdf"], answeredBy: null, answer: null}, priority: 0},
+    {id: "q-meeting", text: "Reunião exploratória ou produto a testar?", changesTheWork: "define profundidade e forma", coverage: {searched: ["01_ITR_1T26_31mai2026.pdf"], answeredBy: null, answer: null}, priority: 1},
+    {id: "q-format", text: "Briefing interno, páginas de pitch ou análise com cenários?", changesTheWork: "define o material", coverage: {searched: ["01_ITR_1T26_31mai2026.pdf"], answeredBy: null, answer: null}, priority: 2},
+    {id: "q-itr-date", text: "Qual é a data do último ITR?", changesTheWork: "define a data-base", coverage: {searched: ["01_ITR_1T26_31mai2026.pdf"], answeredBy: itr, answer: "31/05/2026, capa do ITR"}, priority: 0},
+    {id: "q-trivial", text: "Qual a cor do template?", changesTheWork: "nenhuma", coverage: {searched: ["01_ITR_1T26_31mai2026.pdf"], answeredBy: null, answer: null}, priority: 0},
+    {id: "q-fourth", text: "Quem vai à reunião?", changesTheWork: "tom do material", coverage: {searched: ["01_ITR_1T26_31mai2026.pdf"], answeredBy: null, answer: null}, priority: 9},
+    {id: "q-unsearched", text: "Qual é o EBITDA dos últimos doze meses?", changesTheWork: "define a alavancagem", priority: 0},
   ],
 });
 const block = (result: ReturnType<typeof planMeetingBrief>, id: string) => result.deliverable.blocks.find((entry) => entry.id === id)!;
@@ -35,7 +36,7 @@ const block = (result: ReturnType<typeof planMeetingBrief>, id: string) => resul
 describe("plan-meeting-brief executor", () => {
   it("turn 1: fills blocks only from usable objects, names conditioned objects as gaps, and asks at most three questions the base does not answer", () => {
     const result = planMeetingBrief(turn1());
-    expect(result.schema_version).toBe("method.plan-meeting-brief.v3");
+    expect(result.schema_version).toBe("method.plan-meeting-brief.v4");
     expect(result.ambiguity_named).toMatch(/which format is expected; which thesis to carry/);
     expect(result.deliverable.objects_used).not.toContain("blocked-01");
     expect(result.deliverable.objects_pending).toEqual([{id: "cov-01", state: "conditioned"}, {id: "rec-01", state: "open_divergences"}]);
@@ -45,7 +46,11 @@ describe("plan-meeting-brief executor", () => {
     expect(block(result, "company_view").gap).toMatch(/no usable object of kind company_view/);
     expect(block(result, "liquidity_coverage").gap).toMatch(/interest_schedule: blocked-01 is blocked|no usable object of kind interest_schedule/);
     expect(result.alignment_questions.map((question) => question.id)).toEqual(["q-angle", "q-meeting", "q-format"]);
-    expect(result.refused_questions.map((question) => question.id)).toEqual(["q-fourth", "q-itr-date", "q-trivial"]);
+    expect(result.refused_questions.map((question) => question.id)).toEqual(["q-fourth", "q-itr-date", "q-trivial", "q-unsearched"]);
+    expect(result.refused_questions.find((question) => question.id === "q-unsearched")?.reason).toMatch(/no search of the base is declared/);
+    expect(result.deliverable.objects_used).toEqual(["ba-01", "ledger-01", "wall-01"]);
+    expect(result.deliverable.objects_usable_not_cited).toEqual(["exit-01", "sc-01"]);
+    expect(result.not_produced_here[0]).toMatch(/prose of the pages/);
     expect(result.refused_questions.find((question) => question.id === "q-itr-date")?.answered_by).toEqual(itr);
     expect(result.refused_questions.find((question) => question.id === "q-trivial")?.reason).toMatch(/does not change the work/);
     expect(result.page_plan.state).toBe("not_requested");
@@ -67,10 +72,16 @@ describe("plan-meeting-brief executor", () => {
     expect(() => planMeetingBrief({...turn1(), request: {turn: 1, audience: null, form: null, pages: 3}})).toThrow(/no page plan/);
   });
 
-  it("refuses a fact with a thousands figure and no unit", () => {
+  it("refuses a fact with a thousands figure and no unit, a unit that contradicts the fact's words, and duplicate blocks in the previous version", () => {
     const missingUnit = turn1();
     missingUnit.objects[0] = {...missingUnit.objects[0]!, headlines: [headline("Dívida bruta de 5.670.186", "neutral", "a1")]};
     expect(() => planMeetingBrief(missingUnit)).toThrow(/needs its unit/);
+    const wrongUnit = turn1();
+    wrongUnit.objects[0] = {...wrongUnit.objects[0]!, headlines: [headline("Dívida bruta de 5.670.186 (R$ mil)", "neutral", "a1", "R$ milhões")]};
+    expect(() => planMeetingBrief(wrongUnit)).toThrow(/says thousands and its unit says millions/);
+    const duplicateBlocks = turn1();
+    duplicateBlocks.previousVersion = {outputFingerprint: fp("ff"), blocks: [{id: "company_view", state: "gap", objectIds: []}, {id: "company_view", state: "filled", objectIds: ["x-01"]}], objectFingerprints: {}};
+    expect(() => planMeetingBrief(duplicateBlocks)).toThrow(/duplicate block company_view/);
   });
 
   it("splits points for and against by the stance each object declared, never by the block a kind belongs to", () => {
@@ -81,6 +92,10 @@ describe("plan-meeting-brief executor", () => {
     expect(against.headlines.map((entry) => entry.object_id)).toEqual(["wall-01"]);
     expect(against.pending_object_ids).toEqual(["cov-01", "rec-01"]);
     expect(against.headlines.some((entry) => /4,72x/.test(entry.text))).toBe(false);
+    // A usable object of any kind with an against stance enters the against block: kinds never decide the side.
+    const withScenario = turn1();
+    withScenario.objects = withScenario.objects.map((object) => (object.id === "sc-01" ? {...object, headlines: [headline("No cenário sem rolagem, 2027/28 abre déficit de 150.887", "against", "a7", "R$ mil")]} : object));
+    expect(block(planMeetingBrief(withScenario), "points_against_thesis").headlines.map((entry) => entry.object_id)).toEqual(["sc-01", "wall-01"]);
   });
 
   it("refuses a headline bound to another fingerprint and a duplicate id", () => {

@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `reconcile-covenant-definitions` (v10, after the ninth independent review).
+ * Executor of the method `reconcile-covenant-definitions` (v11, after the tenth independent review).
  * It never writes "breached". Each indenture carries the anchor of its definitions and one anchor per
  * tier; EBITDA adjustments are typed (denominator additions versus numerator obligations) and never
  * folded together; the net debt of each instrument is computed from that instrument's own component
@@ -48,6 +48,7 @@ const COMPONENT_WORDS: Record<NetDebtComponent, RegExp> = {
 };
 /** An open-ended residual ("qualquer outra dívida onerosa"): its absence from the base is a condition, not a mismatch. */
 const RESIDUAL: NetDebtComponent = "other_onerous_debt";
+
 
 export const covenantTierSchema = z.object({
   limit: ratio,
@@ -183,6 +184,14 @@ export const covenantReconciliationInputSchema = z.object({
     });
   });
   if (input.reported && input.reported.asOf > input.asOfDate) context.addIssue({code: "custom", path: ["reported", "asOf"], message: "the reported index is dated after the as-of date"});
+  if (input.reported) {
+    const text = input.reported.definition.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    for (const component of input.reported.netDebtComponents) {
+      const words = COMPONENT_WORDS[component];
+      if (words && !words.test(text)) context.addIssue({code: "custom", path: ["reported", "definition"], message: `the reported definition text never names the component ${component} it claims to count; the literal definition and the structured components disagree`});
+    }
+    if (/somente|apenas|only/.test(text) && input.reported.netDebtComponents.length > 2) context.addIssue({code: "custom", path: ["reported", "definition"], message: "the reported definition text restricts itself (somente/apenas/only) while the structured components list several; the literal definition and the structured components disagree"});
+  }
 });
 export type CovenantReconciliationInput = z.input<typeof covenantReconciliationInputSchema>;
 
@@ -190,7 +199,7 @@ type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type CovenantReconciliationOutput = {
-  schema_version: "method.reconcile-covenant-definitions.v10";
+  schema_version: "method.reconcile-covenant-definitions.v11";
   as_of_date: string;
   /** The unit every value below is expressed in; part of the output and of its fingerprint. */
   unit: string;
@@ -461,14 +470,14 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
           record({id: `financial.net_leverage:${instrument.id}:check`, formula: "baseNetDebt / ebitdaOpening, compared with the reported index (before numerator obligations)", operands: {baseNetDebt: out(baseNetDebt), ebitdaOpening: reported.ebitdaOpening.value, reportedIndex: reported.value}, result: recomputed.value});
           if (d(recomputed.value).minus(reported.value).abs().gt("0.005")) { comparability = "not_comparable"; reasons.push(`the opened EBITDA does not reproduce the reported index (${recomputed.value} against ${reported.value}); the opening and the index do not belong together`); }
         }
-      } else if (baseNetDebt) {
-        // The reported index does not declare the numerator obligations of this indenture: the implied EBITDA rests on the base net debt.
+      } else if (baseNetDebt && comparability !== "not_comparable") {
+        // The reported index does not declare the numerator obligations of this indenture: the implied EBITDA rests on the base net debt, and only when the index is dated at the as-of date on the same perimeter and components.
         const implied = calculateImpliedEbitda(out(baseNetDebt), reported.value);
         record({id: `financial.implied_ebitda:${instrument.id}`, formula: "baseNetDebt / reportedIndex (before numerator obligations)", operands: {baseNetDebt: out(baseNetDebt), reportedIndex: reported.value}, result: implied.value});
         ebitda = {value: implied.value, basis: "implied_from_reported"};
       }
       if (ebitda) index = {value: reported.value, basis: "reported", ebitda, anchor: reported.anchor};
-      else { index = {value: reported.value, basis: "reported", ebitda: null, anchor: reported.anchor}; if (comparability !== "not_comparable") comparability = "conditional"; reasons.push("no net debt by definition and no opened EBITDA: the reported index stands alone, its EBITDA unknown"); }
+      else { index = {value: reported.value, basis: "reported", ebitda: null, anchor: reported.anchor}; if (comparability !== "not_comparable") { comparability = "conditional"; reasons.push("no net debt by definition and no opened EBITDA: the reported index stands alone, its EBITDA unknown"); } else reasons.push("no EBITDA is implied from a reported index that is not comparable (date, perimeter or components); the index stands alone"); }
     }
     if (comparability === "comparable" && legalHere.length > 0) { comparability = "conditional"; reasons.push("a legal condition touches the numerator of this covenant; no headroom until it is resolved"); }
     if (comparability !== "no_index" && instrument.measurement.frequency !== "annual") reasons.push(`measurement is ${instrument.measurement.frequency}; the next measurement is ${measurement.nextMeasurementDate}`);
@@ -499,7 +508,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schema_version: "method.reconcile-covenant-definitions.v10" as const,
+    schema_version: "method.reconcile-covenant-definitions.v11" as const,
     as_of_date: input.asOfDate,
     unit,
     state,

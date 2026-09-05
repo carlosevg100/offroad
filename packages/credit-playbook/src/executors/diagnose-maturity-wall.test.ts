@@ -22,7 +22,7 @@ const camil = (): MaturityWallInput => ({
     {period: "2029/30", amount: "694497", prior: prior("586660"), endsAt: "2030-05-31"},
     {period: "2030/31", amount: "994544", prior: prior("989147"), endsAt: "2031-05-31"},
     {period: "after 2031", amount: "809198", prior: prior("805151"), endsAt: null},
-    {period: "debenture costs", amount: "-63224", prior: prior("-66343"), endsAt: null},
+    {period: "debenture costs", amount: "-63224", kind: "adjustment", prior: prior("-66343"), endsAt: null},
   ],
   scheduleAnchor: itr(40, "15"),
   cash: {value: "1430714", definition: "accounting_equivalents_up_to_90_days", anchor: itr(20, "3")},
@@ -34,13 +34,15 @@ const camil = (): MaturityWallInput => ({
   wallThreshold: threshold,
 });
 
-describe("diagnose-maturity-wall executor (v4)", () => {
+describe("diagnose-maturity-wall executor (v5)", () => {
   it("gold: names the two walls of the case 01 answer key against the versioned threshold, the growth of the second, and the peak", () => {
     const result = diagnoseMaturityWall(camil());
     expect(result.walls.filter((wall) => wall.is_wall).map((wall) => wall.period)).toEqual(["2026/27", "2028/29"]);
     expect(result.walls.find((wall) => wall.period === "2028/29")?.change_from_prior).toEqual({amount: "342288", prior_as_of: "2026-02-28", anchor: itr(40, "15, coluna 28/02/2026")});
     expect(result.walls[0]?.prior_comparability).toBe("earlier date, same unit and perimeter");
-    expect(result.schema_version).toBe("method.diagnose-maturity-wall.v4");
+    expect(result.schema_version).toBe("method.diagnose-maturity-wall.v5");
+    expect(result.schedule_adjustments).toEqual([{id: "debenture costs", amount: "-63224"}]);
+    expect(result.walls.map((wall) => wall.period)).not.toContain("debenture costs");
     expect(result.walls[0]?.share_of_gross.startsWith("0.2168")).toBe(true);
     expect(result.walls[0]?.anchor).toEqual(itr(40, "15"));
     expect(result.peak).toEqual({period: "2026/27", amount: "1229828", share_of_gross: result.walls[0]!.share_of_gross});
@@ -68,19 +70,23 @@ describe("diagnose-maturity-wall executor (v4)", () => {
     expect(result.sources.every((source) => source.state === "unproven")).toBe(true);
     expect(result.sources[0]?.reason).toMatch(/approved only/);
     expect(result.uncovered_terms.map((term) => term.id)).toEqual(expect.arrayContaining(["operating_generation", "cash_availability", "source:notas-comerciais-2026"]));
-    expect(result.notes[0]).toMatch(/non-automatic acceleration/);
+    expect(result.notes[0]?.text).toMatch(/non-automatic acceleration/);
   });
 
   it("hypothetical: a source counts only with contract and disbursement, and generation enters only with a declared basis", () => {
     const base = camil();
-    const contracted = diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", anchor: {document: "hipotetico_contrato.pdf", page: 1}}, disbursement: {kind: "disbursement_proof", anchor: {document: "hipotetico_extrato.pdf", page: 1}}}}]});
+    const contracted = diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", date: "2026-06-10", anchor: {document: "hipotetico_contrato.pdf", page: 1}}, disbursement: {kind: "disbursement_proof", date: "2026-06-20", anchor: {document: "hipotetico_extrato.pdf", page: 1}}}}]});
     expect(contracted.sources[0]?.state).toBe("proven");
+    expect(contracted.sources[0]?.reason).toMatch(/contracted 2026-06-10, disbursed 2026-06-20, after the reference date/);
     expect(contracted.coverage.by_period[0]?.contracted_sources).toBe("251000");
     expect(contracted.coverage.by_period[0]?.closing_cash).toBe("451886");
-    const approvedFlaggedTrue = diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", anchor: {document: "hipotetico_contrato.pdf", page: 1}}, disbursement: null}}]});
+    const approvedFlaggedTrue = diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", date: "2026-06-10", anchor: {document: "hipotetico_contrato.pdf", page: 1}}, disbursement: null}}]});
     expect(approvedFlaggedTrue.sources[0]?.state).toBe("unproven");
     expect(approvedFlaggedTrue.sources[0]?.reason).toMatch(/approved and contracted only/);
-    expect(() => diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}}, disbursement: {kind: "disbursement_proof", anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}}}}]})).toThrow(/must be two documents of the base|not a contract/);
+    expect(() => diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", date: "2026-06-10", anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}}, disbursement: {kind: "disbursement_proof", date: "2026-06-20", anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}}}}]})).toThrow(/must be two documents of the base|not a contract/);
+    // A disbursement on or before the reference date already sits inside the cash: counting it again is double counting.
+    expect(() => diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", date: "2026-05-10", anchor: {document: "hipotetico_contrato.pdf", page: 1}}, disbursement: {kind: "disbursement_proof", date: "2026-05-20", anchor: {document: "hipotetico_extrato.pdf", page: 1}}}}]})).toThrow(/counting it again is double counting/);
+    expect(() => diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", date: "2026-07-10", anchor: {document: "hipotetico_contrato.pdf", page: 1}}, disbursement: {kind: "disbursement_proof", date: "2026-06-20", anchor: {document: "hipotetico_extrato.pdf", page: 1}}}}]})).toThrow(/disbursed before it was contracted/);
     const declared = Object.fromEntries(["2026/27", "2027/28", "2028/29", "2029/30", "2030/31"].map((period) => [period, "500000"]));
     const interest = Object.fromEntries(["2026/27", "2027/28", "2028/29", "2029/30", "2030/31"].map((period) => [period, {value: "100000", anchor: {document: "hipotetico_juros.pdf", note: "juros por período, hipótese sintética"}}]));
     const withGeneration = diagnoseMaturityWall({...base, operatingGeneration: {basis: "cfads_declared_projection", byPeriod: declared, anchor: {document: "hipotetico_cfads.pdf", note: "hipótese sintética de geração de caixa para o serviço da dívida, por período"}}, interestByPeriod: interest});
@@ -157,5 +163,43 @@ describe("diagnose-maturity-wall executor (v4)", () => {
     expect(result.sources[0]?.claimed_period).toBe("2026/27");
     expect(result.sources[0]?.reason).toMatch(/the period the file assigns \(2026\/27\) is not used/);
     expect(result.coverage.by_period[0]?.contracted_sources).toBe("0");
+  });
+
+  it("never lets cash go below zero: an exhausted cash opens the next period at zero and the shortfall is carried apart; interest declared for part of the periods gives a per-period basis", () => {
+    const result = diagnoseMaturityWall(camil());
+    const rows = result.coverage.by_period.filter((row) => row.state === "assessed");
+    expect(rows.every((row) => Number(row.opening_cash) >= 0 && Number(row.closing_cash) >= 0)).toBe(true);
+    expect(rows.every((row) => row.coverage === null || Number(row.coverage) >= 0)).toBe(true);
+    expect(rows[1]?.closing_cash).toBe("0");
+    expect(rows[2]?.opening_cash).toBe("0");
+    expect(rows[2]?.coverage).toBe("0");
+    expect(rows[2]?.incremental_deficit).toBe("1228475");
+    expect(rows[2]?.cumulative_deficit).toBe("1804457");
+    expect(result.coverage.cumulative_deficit).toBe(rows.reduce((sum, row) => sum.plus(row.incremental_deficit), new Decimal(0)).toFixed());
+    const partial = diagnoseMaturityWall({...camil(), interestByPeriod: {"2026/27": {value: "100000", anchor: {document: "hipotetico_juros.pdf", note: "juros do primeiro período, hipótese"}}}});
+    expect(partial.coverage.coverage_basis).toBe("principal_only");
+    expect(partial.coverage.by_period[0]?.basis).toBe("full_debt_service");
+    expect(partial.coverage.by_period[0]?.interest_anchor).toEqual({document: "hipotetico_juros.pdf", note: "juros do primeiro período, hipótese"});
+    expect(partial.coverage.by_period[1]?.basis).toBe("principal_only");
+    expect(partial.uncovered_terms.map((term) => term.id)).toContain("interest:2027/28");
+  });
+
+  it("records the acceleration mechanics only from the indenture clause in the base, apart from the contractual schedule, and refuses negative maturity buckets and a threshold above one", () => {
+    const base = camil();
+    const silent = diagnoseMaturityWall(base);
+    expect(silent.acceleration_scenario.state).toBe("not_asserted");
+    expect(silent.notes[0]?.anchor).toBeNull();
+    expect(silent.notes[0]?.text).toMatch(/the mechanism is not asserted/);
+    const clause = {document: "escritura_13a_emissao.pdf", clause: "7.1.2", note: "vencimento antecipado não automático; assembleia delibera a não declaração"};
+    const recorded = diagnoseMaturityWall({...base, acceleration: {clause: {text: "assembleia geral de debenturistas poderá deliberar pela não declaração do vencimento antecipado", anchor: clause}, defaultOutcome: "declared_unless_assembly_waives", accelerableBalance: {value: "306038", anchor: itr(39, "15, 13ª emissão 1ª série")}}});
+    expect(recorded.acceleration_scenario.state).toBe("recorded");
+    expect(recorded.acceleration_scenario.accelerable_balance?.value).toBe("306038");
+    expect(recorded.acceleration_scenario.note).toMatch(/recorded apart from the contractual schedule, never added to it/);
+    expect(recorded.notes[0]?.anchor).toEqual(clause);
+    expect(recorded.notes[0]?.text).toMatch(/declared unless the assembly of holders, duly installed with quorum, resolves not to declare it/);
+    expect(recorded.walls.map((wall) => wall.amount)).toEqual(silent.walls.map((wall) => wall.amount));
+    expect(() => diagnoseMaturityWall({...base, periods: base.periods.map((period, index) => (index === 0 ? {...period, amount: "-100"} : period))})).toThrow(/only a typed adjustment row may/);
+    expect(() => diagnoseMaturityWall({...base, periods: base.periods.map((period) => (period.period === "debenture costs" ? {...period, endsAt: "2027-05-31"} : period))})).toThrow(/cannot end on a date/);
+    expect(() => diagnoseMaturityWall({...base, wallThreshold: {...threshold, share: "1.5"}})).toThrow(/between 0 and 1/);
   });
 });

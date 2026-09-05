@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
 import {contractMismatch} from "./contract";
@@ -189,7 +190,7 @@ describe("build-debt-ledger executor (v10)", () => {
     expect(() => buildDebtLedger(otherOnly)).toThrow(/without the anchor that includes it/);
     const positiveContra = camil();
     (positiveContra.rows[4] as Row).balance = "9099";
-    expect(() => buildDebtLedger(positiveContra)).toThrow(/must carry a negative balance/);
+    expect(() => buildDebtLedger(positiveContra)).toThrow(/non-positive balance/);
     const duplicate = camil();
     duplicate.rows.push({...(duplicate.rows[0] as Row)});
     expect(() => buildDebtLedger(duplicate)).toThrow(/duplicate row id/);
@@ -407,5 +408,21 @@ describe("build-debt-ledger executor (v10)", () => {
     const bare = buildDebtLedger({...base, rows: base.rows.map((row) => (row.contra ? row : {...row, remuneration: null, maturity: null, guarantee: null, classification: null}))});
     const first = bare.ledger_rows.find((row) => !row.contra)!;
     expect(bare.uncovered_terms.filter((term) => term.rowId === first.id).map((term) => term.field)).toEqual(expect.arrayContaining(["remuneration", "maturity", "guarantee", "classification"]));
+  });
+
+  it("mutation: a definition that adds dividends is refused as a foreign operand, a lease inside a view whose text never names leases is refused even with an anchor, and a fully amortized contra line at zero is accepted", () => {
+    const base = camil();
+    const withDividends = buildDebtLedger({...base, definitions: {...base.definitions, release: {...base.definitions!.release!, text: "dívida bruta mais dividendos a pagar menos caixa e aplicações financeiras"}}});
+    expect(withDividends.state).toBe("blocked");
+    expect(withDividends.block_reasons.some((reason) => /names a component that is not debt nor cash \(dividend/.test(reason))).toBe(true);
+    const leaseRow = base.rows.find((row) => row.obligation?.kind === "lease");
+    if (leaseRow) {
+      const silentText = buildDebtLedger({...base, definitions: {...base.definitions, contractual: {...base.definitions!.contractual!, text: "empréstimos e financiamentos mais debêntures mais instrumentos financeiros derivativos passivos menos caixa e equivalentes menos aplicações financeiras menos instrumentos financeiros derivativos ativos"}}});
+      expect(silentText.block_reasons.some((reason) => /never names lease rows nor a residual of other onerous debt, yet/.test(reason))).toBe(true);
+    }
+    const contra = base.rows.find((row) => row.contra)!;
+    const zeroContra = buildDebtLedger({...base, rows: base.rows.map((row) => (row.id === contra.id ? {...row, balance: "0"} : row)), balanceSheet: base.balanceSheet ? {...base.balanceSheet, nonCurrent: new Decimal(base.balanceSheet.nonCurrent).minus(contra.balance).toFixed()} : base.balanceSheet, schedule: base.schedule ? {...base.schedule, periods: base.schedule.periods.map((period) => (period.period === "debenture costs" ? {...period, amount: "0"} : period))} : base.schedule});
+    expect(zeroContra.ledger_rows.find((row) => row.id === contra.id)?.balance).toBe("0");
+    expect(() => buildDebtLedger({...base, rows: base.rows.map((row) => (row.id === contra.id ? {...row, balance: "10"} : row))})).toThrow(/non-positive balance/);
   });
 });

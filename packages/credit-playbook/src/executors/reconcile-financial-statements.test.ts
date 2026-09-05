@@ -11,6 +11,8 @@ const asOf = "2026-05-31";
 const policy = (value: string) => ({value, policyKey: "policy.reconciliation.tolerance", policyVersion: referenceDataRegistryVersion});
 type Source = ReconciliationInput["pairedAccounts"] extends Array<infer A> | undefined ? (A extends {sources: Array<infer S>} ? S : never) : never;
 const source = (name: string, value: string, definition: string, definitionKey: string, components: string[], anchor: Source["anchor"], definitionAnchor: Source["anchor"] = anchor): Source => ({source: name, value, definition, definitionKey, definitionAnchor, components, asOf, anchor});
+/** A release figure published in R$ million with one decimal, converted to R$ thousand with its rounding band recorded. */
+const million = (statedValue: string) => ({stated: {value: statedValue, unit: "BRL million" as const, decimals: 1}});
 /** Camil 1T26: the dividend divergence (four amounts), the three inventory presentations plus the balance sheet, the two net debt definitions, the roll-forwards and the interest bridge. R$ thousand. */
 const camil = (): ReconciliationInput => ({
   referenceDate: asOf,
@@ -18,15 +20,15 @@ const camil = (): ReconciliationInput => ({
   tolerance: {working_capital: policy("1000"), net_debt: policy("1000"), interest: policy("2000")},
   pairedAccounts: [
     {id: "dividends", label: "Dividendos a pagar", family: "dividends", sources: [
-      source("nota 18 nominal", "395000", "dividendos declarados: valor nominal das onze parcelas remanescentes na nota 18(e), depois da primeira parcela de 25.000 já paga", "dividends.nominal_remaining", ["dividends_declared", "nominal", "remaining_installments"], itr(46, "18e, parcelas remanescentes")),
-      source("balanço (valor presente)", "338565", "dividendos declarados: valor contábil consolidado, nominal menos ajuste a valor presente", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(46, "18e")),
+      {...source("nota 18 nominal", "395000", "dividendos declarados: valor nominal das onze parcelas remanescentes na nota 18(e), depois da primeira parcela de 25.000 já paga", "dividends.nominal_remaining", ["dividends_declared", "nominal", "remaining_installments"], itr(46, "18e, parcelas remanescentes")), derivation: {formula: "difference", operands: [{label: "dividendos aprovados", value: "420000", anchor: itr(46, "18e, total aprovado")}, {label: "primeira parcela paga", value: "25000", anchor: itr(46, "18e, parcela paga")}]}},
+      {...source("balanço (valor presente)", "338565", "dividendos declarados: valor contábil consolidado, nominal menos ajuste a valor presente", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(46, "18e")), derivation: {formula: "difference", operands: [{label: "nominal remanescente", value: "395000", anchor: itr(46, "18e")}, {label: "ajuste a valor presente", value: "56435", anchor: itr(46, "18e, ajuste a valor presente")}]}},
       source("nota 25 contábil", "322498", "dividendos declarados: valor contábil consolidado na tabela de instrumentos financeiros", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(51, "25")),
       source("nota 25 valor justo", "420000", "dividendos declarados: valor justo na tabela de instrumentos financeiros", "dividends.fair_value", ["dividends_declared", "fair_value"], itr(51, "25")),
     ]},
     {id: "inventories", label: "Estoques", family: "working_capital", sources: [
       source("nota 5", "3088478", "estoques incluindo adiantamentos a fornecedores de 643.241", "inventories.note5", ["inventories", "advances_to_suppliers"], itr(21, "5")),
-      source("release, capital de giro", "2445200", "estoques sem adiantamentos a fornecedores", "inventories.release_wc", ["inventories"], release(13, "Capital de giro")),
-      source("release, balanço gerencial", "2437100", "estoques no balanço gerencial, sem os adiantamentos a produtores de 576.000, que ficam em linha própria", "inventories.release_management", ["inventories_management_view"], release(15, "Balanço gerencial")),
+      {...source("release, capital de giro", "2445200", "estoques sem adiantamentos a fornecedores", "inventories.release_wc", ["inventories"], release(13, "Capital de giro")), ...million("2445.2")},
+      {...source("release, balanço gerencial", "2437100", "estoques no balanço gerencial, sem os adiantamentos a produtores de 576.000, que ficam em linha própria", "inventories.release_management", ["inventories_management_view"], release(15, "Balanço gerencial")), ...million("2437.1")},
       source("balanço patrimonial, circulante", "3013060", "estoques no ativo circulante do balanço consolidado, incluindo os adiantamentos a produtores", "inventories.balance_sheet_current", ["inventories", "advances_to_producers"], itr(11)),
     ], explanations: [
       {fromSource: "release, capital de giro", toSource: "nota 5", adjustment: "643241", description: "adiantamentos a fornecedores incluídos na nota 5 e apresentados à parte no release", anchor: itr(21, "5")},
@@ -34,37 +36,50 @@ const camil = (): ReconciliationInput => ({
       {fromSource: "nota 5", toSource: "balanço patrimonial, circulante", adjustment: "-75418", description: "parcela não circulante dos estoques e adiantamentos da nota 5 fora do ativo circulante (3.088.478 - 75.418 = 3.013.060)", anchor: itr(21, "5, abertura circulante e não circulante")},
     ]},
     {id: "net_debt_release", label: "Dívida líquida (definição do release)", family: "net_debt", sources: [
-      source("release", "4214400", "dívida bruta menos caixa e aplicações, em R$ milhões arredondados", "net_debt.release", ["gross_debt", "cash", "investments"], release(12, "Endividamento e Caixa")),
+      {...source("release", "4214400", "dívida bruta menos caixa e aplicações, em R$ milhões arredondados", "net_debt.release", ["gross_debt", "cash", "investments"], release(12, "Endividamento e Caixa")), ...million("4214.4")},
       {...source("recalculado das notas", "4214377", "dívida bruta da nota 15 menos caixa e equivalentes da nota 3 menos aplicações financeiras do balanço", "net_debt.release", ["gross_debt", "cash", "investments"], itr(40, "15"), release(12, "Endividamento e Caixa")), derivation: {formula: "difference", operands: [{label: "dívida bruta", value: "5670186", anchor: itr(39, "15")}, {label: "caixa e equivalentes", value: "1430714", anchor: itr(20, "3")}, {label: "aplicações financeiras", value: "25095", anchor: itr(11)}]}},
     ]},
     {id: "net_debt_release_vs_contractual", label: "Dívida líquida do release contra a contratual", family: "net_debt", sources: [
-      source("release", "4214400", "dívida bruta menos caixa e aplicações", "net_debt.release", ["gross_debt", "cash", "investments"], release(12, "Endividamento e Caixa")),
-      source("contratual (nota 15)", "4228477", "dívida bruta mais derivativos passivos menos derivativos ativos, caixa e aplicações financeiras", "net_debt.contractual", ["gross_debt", "derivative_liabilities", "derivative_assets", "cash", "investments"], itr(40, "15"), {document: "escritura_13a_emissao.pdf", clause: "1.1, Dívida Líquida", page: 7}),
+      {...source("release", "4214400", "dívida bruta menos caixa e aplicações", "net_debt.release", ["gross_debt", "cash", "investments"], release(12, "Endividamento e Caixa")), ...million("4214.4")},
+      {...source("contratual (nota 15)", "4228477", "dívida bruta mais derivativos passivos menos derivativos ativos, caixa e aplicações financeiras", "net_debt.contractual", ["gross_debt", "derivative_liabilities", "derivative_assets", "cash", "investments"], itr(40, "15"), {document: "escritura_13a_emissao.pdf", clause: "1.1, Dívida Líquida", page: 7}), derivation: {formula: "difference", operands: [{label: "dívida bruta mais derivativos passivos", value: "5684521", anchor: itr(40, "15: 5.670.186 + 14.335")}, {label: "derivativos ativos", value: "235", anchor: itr(51, "25")}, {label: "caixa e equivalentes", value: "1430714", anchor: itr(20, "3")}, {label: "aplicações financeiras", value: "25095", anchor: itr(11)}]}},
     ]},
     {id: "leases", label: "Passivo de arrendamento", family: "leases", sources: [
       source("balanço", "276768", "passivo de arrendamento circulante 67.399 mais não circulante 209.369, consolidado", "leases.balance_sheet", ["lease_liabilities"], itr(12)),
     ]},
   ],
   balanceSheet: {assets: {value: "12021830", anchor: itr(11)}, liabilities: {value: "9032723", anchor: itr(12)}, equity: {value: "2989107", anchor: itr(12)}},
-  debtBridge: {opening: "4988383", lines: [
-    {id: "captacoes", label: "Captações", value: "2046140", category: "drawdowns"},
-    {id: "juros_e_variacoes", label: "Juros e variações monetárias", value: "172359", category: "accruedInterest"},
-    {id: "apropriacao_custos", label: "Apropriação de custos de transação", value: "-4741", category: "otherAdditions"},
-    {id: "amortizacao_principal", label: "Amortização de principal", value: "1285146", category: "amortizations"},
-    {id: "amortizacao_juros", label: "Amortização de juros", value: "229611", category: "amortizations"},
-    {id: "variacao_cambial", label: "Variação cambial", value: "60", category: "foreignExchange"},
-    {id: "ajuste_conversao", label: "Ajuste de conversão", value: "-17258", category: "foreignExchange"},
-  ], closing: "5670186", anchor: itr(40, "15")},
+  debtBridge: {opening: {value: "4988383", anchor: itr(40, "15, saldo em 28/02/2026")}, lines: [
+    {id: "captacoes", label: "Captações", value: "2046140", category: "drawdowns", anchor: itr(40, "15, captações")},
+    {id: "juros_e_variacoes", label: "Juros e variações monetárias", value: "172359", category: "accruedInterest", anchor: itr(40, "15, juros e variações monetárias")},
+    {id: "apropriacao_custos", label: "Apropriação de custos de transação", value: "-4741", category: "otherAdditions", anchor: itr(40, "15, apropriação de custos")},
+    {id: "amortizacao_principal", label: "Amortização de principal", value: "1285146", category: "amortizations", anchor: itr(40, "15, amortização de principal (publicada entre parênteses, lida como magnitude da redução)")},
+    {id: "amortizacao_juros", label: "Amortização de juros", value: "229611", category: "amortizations", anchor: itr(40, "15, amortização de juros (publicada entre parênteses)")},
+    {id: "variacao_cambial", label: "Variação cambial", value: "60", category: "foreignExchange", anchor: itr(40, "15, variação cambial")},
+    {id: "ajuste_conversao", label: "Ajuste de conversão", value: "-17258", category: "foreignExchange", anchor: itr(40, "15, ajuste de conversão")},
+  ], closing: {value: "5670186", anchor: itr(40, "15, saldo em 31/05/2026")}, anchor: itr(40, "15")},
   cashBridge: {opening: {value: "1997608", anchor: itr(20, "3")}, netChange: {value: "-566894", anchor: itr(16, "demonstração dos fluxos de caixa consolidada")}, closing: {value: "1430714", anchor: itr(20, "3")}},
-  interestBridge: {fromDebtMovement: {value: "172359", components: ["interest", "monetary_variation"], anchor: itr(40, "15")}, fromIncomeStatement: {value: "170548", components: ["interest"], anchor: itr(48, "22")}},
+  interestBridge: {fromDebtMovement: {value: "172359", sign: "as_published", components: ["interest", "monetary_variation"], anchor: itr(40, "15")}, fromIncomeStatement: {value: "-170548", sign: "absolute", components: ["interest"], anchor: itr(48, "22, despesa publicada entre parênteses")}},
 });
 const by = (result: ReturnType<typeof reconcileFinancialStatements>, id: string) => result.reconciliations.find((entry) => entry.id === id)!;
 
-describe("reconcile-financial-statements executor (v5)", () => {
+describe("reconcile-financial-statements executor (v6)", () => {
   it("gold: the roll-forwards close, the four inventory presentations connect through the stated bridges, the two carrying amounts of dividends stay open inside a non-comparable account, and the two net debt definitions are not comparable", () => {
     const result = reconcileFinancialStatements(camil());
     expect(result.identities.map((identity) => [identity.id, identity.state])).toEqual([["balance_sheet", "holds"], ["debt_bridge", "holds"], ["cash_bridge", "holds"], ["interest_bridge", "not_comparable"]]);
     expect(result.identities.find((identity) => identity.id === "interest_bridge")?.difference).toBe("1811");
+    // The income statement prints the expense in parentheses; the magnitude reading is declared and traced.
+    const interestTrace = result.trace.calculations.find((calculation) => calculation.id === "financial.interest_expense_bridge")!;
+    expect(interestTrace.operands.fromIncomeStatementPublished).toBe("-170548");
+    expect(interestTrace.operands.fromIncomeStatementRead).toBe("170548");
+    expect(interestTrace.operands.fromIncomeStatementSign).toBe("absolute");
+    const bridgeTrace = result.trace.calculations.find((calculation) => calculation.id === "financial.debt_balance_bridge")!;
+    expect(bridgeTrace.anchors.captacoes).toEqual(itr(40, "15, captações"));
+    expect(bridgeTrace.anchors.opening).toEqual(itr(40, "15, saldo em 28/02/2026"));
+    // Release figures enter with their published scale and a rounding half band of 50 thousand; the recomputed net debt closes within the tolerance, not "exactly".
+    expect(by(result, "net_debt_release").values.find((value) => value.source === "release")?.stated).toEqual({value: "4214.4", unit: "BRL million", decimals: 1, roundingHalfBand: "50"});
+    expect(by(result, "net_debt_release").rounding_half_band).toBe("50");
+    expect(by(result, "net_debt_release").closes_within).toBe("tolerance");
+    expect(result.trace.calculations.find((calculation) => calculation.id === "financial.accounting_identity:dividends:balanço (valor presente):derivation")?.operands["ajuste a valor presente"]).toBe("56435");
     expect(Object.keys(result.identities.find((identity) => identity.id === "balance_sheet")!.anchors)).toEqual(["assets", "liabilities", "equity"]);
     expect(result.identities.find((identity) => identity.id === "cash_bridge")?.anchors.netChange?.page).toBe(16);
     expect(result.trace.calculations.find((calculation) => calculation.id === "financial.accounting_identity:net_debt_release:recalculado das notas:derivation")?.operands["dívida bruta"]).toBe("5670186");
@@ -181,5 +196,16 @@ describe("reconcile-financial-statements executor (v5)", () => {
 
   it("emits exactly the top-level outputs the method declares", () => {
     expect(contractMismatch(reconcileFinancialStatements(camil()) as unknown as Record<string, unknown>, "financial/reconcile-financial-statements.md")).toEqual([]);
+  });
+
+  it("closes within the published rounding when the spread is inside the coarser rounding band and no tolerance policy applies, and refuses a stated value that does not convert", () => {
+    const anchor = itr(4);
+    const within = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "r", label: "r", family: "x", sources: [{...source("release", "4214400", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor), stated: {value: "4214.4", unit: "BRL million", decimals: 1}}, source("notas", "4214377", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor)]}]});
+    expect(by(within, "r").state).toBe("closes");
+    expect(by(within, "r").closes_within).toBe("published_rounding");
+    expect(by(within, "r").spread).toBe("23");
+    const beyond = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "r", label: "r", family: "x", sources: [{...source("release", "4214400", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor), stated: {value: "4214.4", unit: "BRL million", decimals: 1}}, source("notas", "4214300", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor)]}]});
+    expect(by(beyond, "r").state).toBe("open");
+    expect(() => reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "r", label: "r", family: "x", sources: [{...source("release", "4214400", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor), stated: {value: "4214.5", unit: "BRL million", decimals: 1}}, source("notas", "4214377", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor)]}]})).toThrow(/converts to 4214500 BRL thousand, not 4214400/);
   });
 });

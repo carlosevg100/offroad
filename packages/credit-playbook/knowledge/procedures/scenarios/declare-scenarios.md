@@ -1,6 +1,6 @@
 ---
 id: declare-scenarios
-version: 2026.09.05-v3
+version: 2026.09.05-v4
 maturity: implemented
 title_pt: Declarar cenários com racional e sem inventar premissa
 title_en: Declare scenarios with a rationale and without inventing assumptions
@@ -10,7 +10,7 @@ owner_role: Head de Modelagem
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/declare-scenarios
 implementation_export: declareScenarios
-result_contract: method.declare-scenarios.v3
+result_contract: method.declare-scenarios.v4
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -64,7 +64,8 @@ parâmetro e a frase de ressalva que acompanha qualquer número derivado deles.
 - Toda âncora nomeia um documento do registro da base; cada origem só cita documentos da sua classe (dado gerencial em documento gerencial, anúncio em anúncio, histórico em ITR ou ledger, benchmark versionado, intervalo do usuário em declaração do usuário).
 - Alavanca declarada sem premissa registrada (choque, haircut, refinanciamento, rolagem) bloqueia o cenário; nada vira zero.
 - CFADS é declarado por período do cronograma do ledger; o executor nunca divide nem repete; haircut de CFADS é premissa própria, nunca derivada do haircut de EBITDA.
-- Juros entram no serviço só quando o ledger os declara por período; senão a cobertura é só de principal e o delta do choque é reportado à parte.
+- Juros entram no serviço só quando o ledger os declara para aquele período; o período sem juros é só de principal e o delta do choque é reportado à parte, nunca rateado.
+- Choque ou haircut de zero não é estresse e é recusado; EBITDA de doze meses é declarado por datas, não por rótulo; documentos entram com o hash do manifesto.
 - Headroom só contra limite resolvido, degrau aplicável e comparação comparável com EBITDA comparável; caso contrário a diferença aritmética é mostrada como condicionada.
 
 # Julgamentos permitidos
@@ -82,13 +83,13 @@ parâmetro e a frase de ressalva que acompanha qualquer número derivado deles.
 - Nenhuma origem disponível para um parâmetro material e o usuário não deu faixa.
 
 # Outputs
-- schema_version (string, required): `method.declare-scenarios.v3`
+- schema_version (string, required): `method.declare-scenarios.v4`
 - reference_date (date, required): data-base da posição
 - unit (enum, required): unidade de todos os valores monetários, ancorada na fonte que a declara (escala re-rotulada é recusada)
 - state (enum, required): declared, partial (algum cenário com lacuna: CFADS ausente em período, juros não declarados, EBITDA ausente) ou blocked (um cenário do conjunto mínimo tem alavanca declarada sem premissa registrada) | values: declared, partial, blocked
 - block_reasons (array, required): cenários do conjunto mínimo bloqueados e por quê
-- assumption_register (array, required): cada premissa com papel, período, valor, unidade, origem e sua posição na ordem de preferência, racional, data, âncora (num documento da classe que a origem exige), confiança e se foi selecionada
-- scenarios (array, required): por cenário: estado (declared, partial, blocked com motivos), parâmetros usados com racional e âncora, pró forma (dívida bruta, caixa dedutível, dívida líquida contratual, alavancagem com definição, base e comparabilidade do EBITDA), headroom só contra limite resolvido, aplicável e comparável com EBITDA comparável (senão nota com a diferença aritmética condicionada), juros com choque, liquidez (base só principal ou serviço integral; por período: principal, juros ou nulo, CFADS declarado e usado, haircut de CFADS próprio, fontes contratadas, principal rolado, cobertura, caixa final, déficit) ou nula quando falta CFADS em algum período, ressalva com os racionais de cada premissa, termos não cobertos; cada número com as premissas e âncoras de que depende
+- assumption_register (array, required): cada premissa com papel, período, valor, unidade, origem e sua posição na ordem de preferência, racional, data, âncora (num documento da classe que a origem exige, ligado ao corpus pelo hash), contrato e desembolso quando é fonte contratada, confiança e se foi selecionada
+- scenarios (array, required): por cenário: estado (declared, partial, blocked com motivos), parâmetros usados com racional e âncora, pró forma (dívida bruta, caixa dedutível, dívida líquida contratual, alavancagem com definição, base e comparabilidade do EBITDA), headroom só contra limite resolvido, degrau aplicável (não condicional nem inaplicável) e comparável com EBITDA comparável (senão nota com a diferença aritmética condicionada), juros com choque reportado à parte e nunca rateado pelos períodos, liquidez (base só principal, serviço integral ou mista; por período: base do período, principal, juros ou nulo, CFADS declarado e usado, haircut de CFADS próprio, fontes contratadas, principal rolado, cobertura, caixa final, déficit) ou nula quando falta CFADS em algum período, ressalva com os racionais de cada premissa, termos não cobertos; cada número com as premissas e âncoras de que depende, inclusive o caixa inicial e os períodos anteriores
 - trace (object, required): cálculos do financial-core com cenário, operandos, unidade e origens; fingerprints canônicos de entrada e saída, com o trace dentro
 
 # Exemplos

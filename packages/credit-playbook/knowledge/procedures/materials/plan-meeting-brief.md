@@ -1,6 +1,6 @@
 ---
 id: plan-meeting-brief
-version: 2026.09.05-v3
+version: 2026.09.05-v4
 maturity: implemented
 title_pt: Planejar a devolutiva e o material de reunião
 title_en: Plan the first deliverable and the meeting material
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/plan-meeting-brief
 implementation_export: planMeetingBrief
-result_contract: method.plan-meeting-brief.v3
+result_contract: method.plan-meeting-brief.v4
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -53,7 +53,7 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 1. [deterministic] Montar a devolutiva :: Preencher cada bloco só com objetos aprovados, citando ids ; Bloco sem objeto vira lacuna nomeada | evidence: objetos aprovados
 2. [model_assisted] Propor o plano de páginas :: A partir do pedido (audiência, forma, número de páginas), propor o plano e as três perguntas de alinhamento que mudam o material ; Não perguntar o que está nos documentos
 3. [human_judgment] Confirmar o plano :: A pessoa confirma ou corrige o plano antes de qualquer produção
-4. [model_assisted] Redigir as páginas :: Prosa gerada dos objetos, cada número com referência ; Mudança de premissa entre versões vira nota de mudança
+4. [model_assisted] Redigir as páginas :: Etapa posterior ao plano confirmado, fora deste executor: prosa gerada dos objetos, cada número com referência ; Mudança de premissa entre versões vira nota de mudança
 
 # Cálculos determinísticos
 - Nenhum cálculo próprio; todo número vem dos objetos aprovados por referência.
@@ -63,7 +63,8 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 - Cada fato citado carrega o fingerprint do objeto; fato ligado a outro fingerprint é recusado; fato com valor em milhares carrega a unidade.
 - Um bloco só é preenchido com fatos; objeto utilizável sem fatos vira lacuna nomeada.
 - Sem audiência ou forma, a devolutiva sai e o plano de páginas espera.
-- Pontos a favor e contra a tese vêm da posição que cada objeto declarou em cada fato, nunca do tipo do objeto.
+- Pontos a favor e contra a tese vêm da posição que qualquer objeto utilizável declarou em cada fato, nunca do tipo do objeto.
+- Uma pergunta só é feita depois de uma busca declarada na base (documentos consultados) que não achou resposta; fato com unidade que contradiz as próprias palavras é recusado; fato cita o campo do objeto que reproduz.
 - O plano honra o número de páginas pedido (funde o final quando são menos, divide a página mais cheia quando são mais); mais páginas do que blocos é unsupported e volta como pergunta.
 - Pergunta que a base já responde é recusada com a âncora da resposta, seja qual for a prioridade; pergunta cujo motivo é "nenhuma" não é feita.
 - Versão anterior informada gera nota de mudança; nunca reescrita silenciosa.
@@ -84,14 +85,15 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 - Plano de páginas não confirmado e o pedido é produção de arquivo.
 
 # Outputs
-- schema_version (string, required): method.plan-meeting-brief.v3
+- schema_version (string, required): method.plan-meeting-brief.v4
 - case_id (string, required): caso a que a devolutiva pertence
 - turn (number, required): turno do pedido
 - state (enum, required): planned, ou awaiting_confirmation enquanto um plano proposto espera a confirmação da pessoa
-- deliverable (object, required): blocos da devolutiva (cada um preenchido só por objetos em estado utilizável, com cada fato ligado ao fingerprint do objeto que cita, ou lacuna nomeada com os objetos pendentes), objetos usados, objetos pendentes (condicionados, parciais, incompletos, com divergências abertas) e objetos excluídos (bloqueados)
+- deliverable (object, required): blocos da devolutiva (cada um preenchido só por objetos em estado utilizável, com cada fato ligado ao fingerprint do objeto que cita, ou lacuna nomeada com os objetos pendentes), objetos usados (só os citados por um bloco preenchido), objetos utilizáveis sem citação, objetos pendentes (condicionados, parciais, incompletos, com divergências abertas) e objetos excluídos (bloqueados)
 - page_plan (object, required): estado (not_requested, awaiting_audience_and_form, proposed, confirmed, unsupported), id, forma, audiência (principal e demais), páginas ajustadas ao número pedido, discriminador da audiência principal, permissão de produção e motivo
 - alignment_questions (array, required): no máximo três, cada uma com o motivo de mudar o material
-- refused_questions (array, required): perguntas recusadas com o motivo: a base já responde (com a âncora da resposta), a resposta não muda o trabalho, ou além das três que mais mudam
+- refused_questions (array, required): perguntas recusadas com o motivo: a base já responde (com a âncora da resposta), nenhuma busca da base foi declarada, a resposta não muda o trabalho, ou além das três que mais mudam
+- not_produced_here (array, required): o que este executor não produz: a prosa das páginas é etapa assistida por modelo depois do plano confirmado
 - ambiguity_named (string, optional): o que a instrução do patrocinador deixou indefinido, declarado pelo chamador e nomeado na devolutiva
 - change_note (object, optional): contra a versão anterior: blocos que mudaram de estado ou de objetos e objetos cujo fingerprint mudou, entraram ou saíram
 - uncovered_terms (array, required): blocos em lacuna e objetos pendentes (condicionados, parciais, com divergências), como insufficient_evidence, cada um com o motivo e os achados carregados como condição
