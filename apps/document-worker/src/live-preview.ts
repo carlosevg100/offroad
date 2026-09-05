@@ -44,40 +44,48 @@ const CDI_REFERENCE = 0.1325;
 const previewObjectKinds = ["debt_ledger", "financial_statements", "covenants", "maturity_wall", "interest_schedule", "exit_cost", "scenarios", "alternatives", "meeting_brief"] as const;
 const materialForms = ["pitch_pages", "internal_briefing", "analysis_with_scenarios", "board_deck", "memo"] as const;
 
+// Prompted JSON is not grammar-bound: a model may write null for an object it has nothing to say
+// about, or omit an optional field. The schema accepts those forms and normalises them, so the
+// derivation after the call sees one shape.
+const nullableDefault = <T extends z.ZodTypeAny>(schema: T, fallback: z.infer<T>) => schema.nullable().optional().transform((value) => (value ?? fallback) as z.infer<T>);
+const noPremiseChanges = {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null};
+const noMaterial = {requested: false, form: null, pages: null};
+const noScopeChanges = {audience: null, depth: null, form: null};
+
 export const previewTurnSchema = z.object({
-  companies: z.array(z.object({
+  companies: nullableDefault(z.array(z.object({
     mention: z.string().min(1).max(120),
-    role: z.enum(["subject", "counterparty", "comparable", "other"]),
-  })).max(8),
-  premiseChanges: z.object({
-    newDebtAnnualRate: z.number().min(0).max(1).nullable(),
-    cdiSpreadBps: z.number().min(-2_000).max(5_000).nullable(),
-    newDebtTermMonths: z.number().int().positive().max(600).nullable(),
-    newDebtGraceMonths: z.number().int().nonnegative().max(240).nullable(),
-  }),
+    role: z.enum(["subject", "counterparty", "comparable", "other"]).nullable().optional().transform((value) => value ?? "other"),
+  })).max(8), []),
+  premiseChanges: nullableDefault(z.object({
+    newDebtAnnualRate: z.number().min(0).max(1).nullable().optional().transform((value) => value ?? null),
+    cdiSpreadBps: z.number().min(-2_000).max(5_000).nullable().optional().transform((value) => value ?? null),
+    newDebtTermMonths: z.number().int().positive().max(600).nullable().optional().transform((value) => value ?? null),
+    newDebtGraceMonths: z.number().int().nonnegative().max(240).nullable().optional().transform((value) => value ?? null),
+  }), noPremiseChanges),
   numberQuestion: z.object({
-    mentioned: z.string().max(80).nullable(),
-    objects: z.array(z.enum(previewObjectKinds)).max(9),
-  }).nullable(),
-  material: z.object({
-    requested: z.boolean(),
-    form: z.enum(materialForms).nullable(),
-    pages: z.number().int().positive().max(60).nullable(),
-  }),
-  answers: z.array(z.object({
+    mentioned: z.string().max(80).nullable().optional().transform((value) => value ?? null),
+    objects: nullableDefault(z.array(z.enum(previewObjectKinds)).max(9), []),
+  }).nullable().optional().transform((value) => value ?? null),
+  material: nullableDefault(z.object({
+    requested: z.boolean().nullable().optional().transform((value) => value ?? false),
+    form: z.enum(materialForms).nullable().optional().transform((value) => value ?? null),
+    pages: z.number().int().positive().max(60).nullable().optional().transform((value) => value ?? null),
+  }), noMaterial),
+  answers: nullableDefault(z.array(z.object({
     questionId: z.string().min(1).max(60),
     answer: z.string().min(1).max(400),
-    effect: z.object({
-      audience: z.string().max(80).nullable(),
-      depth: intentDepthSchema.nullable(),
-      scope: z.string().max(200).nullable(),
-    }),
-  })).max(6),
-  scopeChanges: z.object({
-    audience: z.string().max(80).nullable(),
-    depth: intentDepthSchema.nullable(),
-    form: z.enum(materialForms).nullable(),
-  }),
+    effect: nullableDefault(z.object({
+      audience: z.string().max(80).nullable().optional().transform((value) => value ?? null),
+      depth: intentDepthSchema.nullable().optional().transform((value) => value ?? null),
+      scope: z.string().max(200).nullable().optional().transform((value) => value ?? null),
+    }), {audience: null, depth: null, scope: null}),
+  })).max(6), []),
+  scopeChanges: nullableDefault(z.object({
+    audience: z.string().max(80).nullable().optional().transform((value) => value ?? null),
+    depth: intentDepthSchema.nullable().optional().transform((value) => value ?? null),
+    form: z.enum(materialForms).nullable().optional().transform((value) => value ?? null),
+  }), noScopeChanges),
 });
 export type PreviewTurn = z.infer<typeof previewTurnSchema>;
 
@@ -89,7 +97,8 @@ export const LIVE_ROUTING_SYSTEM = `${SHADOW_ROUTING_SYSTEM}
 You are also the reader of an internal validation desk that analyses one company at a time from a
 frozen evidence base. Besides the envelope, fill "turn":
 - companies: every company the person names or clearly refers to, the mention as written, with its
-  role (subject of the work, counterparty, comparable, other). Never invent one.
+  role (subject of the work, counterparty, comparable, other). A company written in the message is
+  always listed; never invent one.
 - premiseChanges: only numbers the person states for the new debt: annual rate as a decimal (15.5%
   is 0.155), or a spread over CDI in basis points (CDI + 1.5% is 150), term in months, grace in
   months. Leave the rest null.
@@ -98,7 +107,8 @@ frozen evidence base. Besides the envelope, fill "turn":
 - material: whether the person asks for a deliverable, its form and page count when stated.
 - answers: when the person answers one of the openQuestions listed in the input, the question id,
   the answer as stated and its effect on audience, depth or scope.
-- scopeChanges: audience, depth or form the person changes in this turn; null otherwise.`;
+- scopeChanges: an object with audience, depth and form, each null unless the person changes it in
+  this turn.`;
 
 export type LiveUnderstanding = {
   envelope: IntentEnvelope;
@@ -305,7 +315,12 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     ...output.turn.companies.map((company) => company.mention),
     ...core.object.value.filter((object) => object.kind === "company" && object.reference).map((object) => object.reference as string),
   ];
-  const resolution = preview.resolvePreviewCorpus(mentions);
+  // The classifier sometimes leaves a named company out of its list; the registry's aliases are
+  // matched against the message itself as well, as whole words, so a company the person wrote
+  // is never "not identified" because of the model.
+  const fromClassifier = preview.resolvePreviewCorpus(mentions);
+  const fromText = preview.resolvePreviewCorpus([input.message]);
+  const resolution = fromClassifier.kind === "resolved" ? fromClassifier : fromText.kind === "resolved" ? fromText : fromClassifier;
   const priorCorpus = input.priorCaseId ? preview.corpusByCaseId(input.priorCaseId) : null;
   const corpusRecord = (corpus: preview.PreviewCorpus | null) => corpus ? {caseId: corpus.caseId, sourcePackId: corpus.sourcePackId, company: corpus.company.legalName} : null;
   const audience = normalizeAudience(output.turn.scopeChanges.audience) ?? normalizeAudience(core.audience.value[0]) ?? "vp";
