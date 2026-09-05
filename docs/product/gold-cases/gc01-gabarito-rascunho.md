@@ -1,6 +1,6 @@
-# Caso 01: gabarito econômico, rascunho v0.5 para revisão independente
+# Caso 01: gabarito econômico, rascunho v0.6 para nova revisão independente
 
-Status: **rascunho v0.5**. A v0.4 acrescentou a seção 13, lida nas escrituras arquivadas na CVM, que resolve o covenant e descreve o custo de saída por família de série; a v0.5 fecha as taxas de referência do make-whole e registra onde os termos de securitização dos CRA não estão. A v0.2 passou pela auditoria número a número do fundador em 4 de
+Status: **rascunho v0.6**. A revisão independente por IA (Codex, GPT-5.6 Sol, run `gc01-answer-key-2026-09-05-00-57-01`, registro em `reviews/gc01/`) resultou em `fail`: 78 itens confirmados, 10 corrigidos, 5 limitações e 2 não verificáveis. Esta versão incorpora as correções (seção 14), condiciona as limitações e amplia o corpus com os índices da CVM; volta à revisão antes de qualquer congelamento. A v0.4 acrescentou a seção 13, lida nas escrituras arquivadas na CVM, que resolve o covenant e descreve o custo de saída por família de série; a v0.5 fecha as taxas de referência do make-whole e registra onde os termos de securitização dos CRA não estão. A v0.2 passou pela auditoria número a número do fundador em 4 de
 setembro de 2026; os números principais conferiram e onze correções materiais foram incorporadas
 aqui (seção 12 lista cada uma). A próxima revisão deve ser independente, não do fundador. Seções
 1 a 10 extraídas por leitura direta do ITR de 31 de maio de 2026 da
@@ -99,9 +99,10 @@ segundo cresceu 342.288 em um trimestre. O ano 2026/27 concentra 21,7% da dívid
 O caixa caiu 566.894 no trimestre enquanto a dívida bruta subiu 681.803.
 
 Divergência aberta sobre dividendos: a nota 18 e o balanço dão 395.000 nominais e 338.565 a valor
-presente; a nota 25 dá 322.498 de valor contábil e 420.000 de valor justo, acima do nominal. Os
-três valores não fecham entre si e o ITR não explica a diferença. O sistema deve carregar a
-divergência como tal, com as três âncoras, e nunca escolher um valor em silêncio.
+presente; a nota 25 dá 322.498 de valor contábil e 420.000 de valor justo, acima do nominal. São
+quatro montantes distintos que não fecham entre si, e o ITR não explica a diferença. O sistema
+deve carregar a divergência como tal, com as quatro âncoras, e nunca escolher um valor em
+silêncio; só a conciliação da companhia encerra o ponto (condição registrada).
 
 Caixa e equivalentes não é liquidez em D0: a nota 3 define equivalentes como aplicações
 resgatáveis em até 90 dias. O valor serve à definição contábil e à contratual de dívida líquida,
@@ -130,6 +131,11 @@ com a medição anual a oito meses. A conclusão não é "covenant rompido" (a m
 companhia estava adimplente em fevereiro), e sim que a tese de refinanciamento ou de qualquer nova
 dívida precisa partir do headroom negativo interino e do que a administração fará até fevereiro
 de 2027. Quem afirmar rompimento erra; quem ignorar o 4,72x erra mais.
+
+Arrendamento: o passivo de arrendamento (276.768) fica fora de empréstimos e financiamentos no
+ITR e fora da dívida líquida contratual calculada acima. A escritura inclui "qualquer outra
+rubrica que se refira à dívida onerosa"; se essa expressão alcança arrendamento é interpretação
+jurídica que o corpus não resolve: item condicionado, registrado como limitação.
 
 Para a revisão: o EBITDA implícito é derivado, não lido. O EBITDA de covenant pode ter ajustes
 próprios; a companhia não abre o cálculo no ITR. O gold deve registrar o valor como derivação com
@@ -170,7 +176,7 @@ reconhecimento fiscal, não da operação. Isso é um achado, não um número a 
 | Contingências possíveis de 1.264.059, das quais 1.007.977 tributárias, sem provisão | nota 17b, página 44 | alerta de dimensão: perdas classificadas como possíveis, não provisionadas; a comparação com o EBITDA anual implícito situa a ordem de grandeza e não equivale a dívida provável |
 | Controladora garante as dívidas das controladas no exterior | nota 15, página 40 | garantia cruzada relevante para qualquer estrutura nova |
 | Free float de 27,51%; Camil Investimentos com 51,43% | nota 18a, página 44 | governança e liquidez do papel |
-| Dividendos de 395.000 nominais a pagar até 2027 | nota 18e, página 46 | uso de caixa comprometido que concorre com o serviço da dívida |
+| Dividendos de 395.000 nominais remanescentes das doze parcelas aprovadas em 16/12/2025, a pagar até 8 de dezembro de 2028 (a primeira foi paga em março de 2026) | nota 18e, página 46; proposta da AGOE, cronograma das parcelas | uso de caixa comprometido que concorre com o serviço da dívida até 2028 |
 | Contas a receber com 335.679 em USD, 158.346 em CLP e 35.266 em PEN | nota 4, página 21 | potencial offset da dívida em moeda estrangeira; não prova hedge natural, porque faltam entidade, moeda, prazo, disponibilidade e correlação dos fluxos |
 | Estoques de 3.088.478 na nota 5, incluindo 643.241 de adiantamentos a fornecedores; 2.445.237 sem os adiantamentos, que é o valor do release (2.445,2 milhões) | nota 5, página 21; release, tabela de capital de giro | duas definições de estoque que fecham entre si e precisam ser conciliadas explicitamente; a sazonalidade da safra pressiona o capital de giro no trimestre |
 | Volume consolidado subiu 17,9% e preço no Brasil caiu 3,5% no alto giro | release, página 2 | a margem depende de preço, não de volume |
@@ -195,13 +201,14 @@ reconhecimento fiscal, não da operação. Isso é um achado, não um número a 
 5. Contingências possíveis sem provisão maiores que o EBITDA anual implícito.
 6. Um quinto da dívida bruta em moeda estrangeira, com recebíveis em moeda que representam um
    potencial offset, não um hedge demonstrado.
-7. O covenant tem dois degraus com a mesma definição em todas as escrituras: 3,50x enquanto
-   viviam os CRA antigos da Eco Securitizadora (vencidos em 2025) e 4,00x no exercício
-   encerrado depois da quitação deles. O limite aplicável às medições de fevereiro de 2026 e
-   fevereiro de 2027 é 4,00x, condicionado à quitação ordinária desses CRA; o sistema deve ler
-   isso nas escrituras, não nos relatórios fiduciários de 2025 (seção 13).
-8. O conselho aprovou, em 27 de maio de 2026, R$ 251 milhões em notas comerciais de 4 anos e até
-   R$ 535 milhões em CPR de até 3 anos. Aprovação não é desembolso: o sistema deve registrar as
+7. O covenant tem dois degraus com a mesma definição-base de dívida líquida e de EBITDA nas
+   quatro escrituras (só a 11ª acrescenta o pro forma de aquisições): 3,50x enquanto viviam os
+   CRA de referência da Eco Securitizadora (vencidos em 2025) e 4,00x no exercício encerrado
+   depois da quitação deles. O limite aplicável às medições de fevereiro de 2026 e fevereiro de
+   2027 é 4,00x, condicionado à quitação ordinária desses CRA, ainda não comprovada; o sistema
+   deve ler isso nas escrituras, não nos relatórios fiduciários de 2025 (seção 13).
+8. O conselho aprovou, em reuniões de 18 de maio de 2026 (atas arquivadas na CVM em 27 de maio),
+   R$ 251 milhões em notas comerciais de 4 anos e até R$ 535 milhões em CPR de até 3 anos. Aprovação não é desembolso: o sistema deve registrar as
    operações como autorizadas, com data, valor e prazo aprovados, e marcar emissão, valor
    efetivamente captado e inclusão na posição de 31/05 como não demonstrados (seção 11).
 
@@ -214,15 +221,16 @@ declarar; tratar o pro forma da companhia como cálculo próprio.
 ## 11. O que o source pack público acrescenta (congelado em 04/09/2026)
 
 Fontes: relatórios anuais do agente fiduciário (exercício 2025) das 11ª, 13ª, 14ª e 15ª emissões,
-atas do conselho de 27/05/2026 e 14/07/2026, release e apresentação 1T26 arquivados na CVM em
-14/07/2026, calendário de eventos v2, índice IPE 2026, curva ANBIMA e séries do Banco Central.
+atas do conselho de 18/05/2026 (arquivadas em 27/05) e de 14/07/2026, release e apresentação 1T26
+arquivados na CVM em 14/07/2026, calendário de eventos v2, índice IPE 2026, curva ANBIMA e séries
+do Banco Central.
 Cada item tem URL, hash e licença em `source-pack.json`.
 
 ### 11.1 Termos por série (relatórios do agente fiduciário)
 
 | Emissão e série | Vencimento | Remuneração vigente | Observação |
 | --- | --- | --- | --- |
-| 11ª, 1ª e 2ª séries | 30/10/2028 | 100% do CDI + 1,55% a.a. | debênture verde; R$ 150 milhões emitidos em novembro de 2021; covenant ≤ 4,0x, apurado 3,240 no exercício 2025/2026 |
+| 11ª, 1ª e 2ª séries | 30/10/2028 | 100% do CDI + 1,55% a.a. | data de emissão 30/10/2021 (escritura, cláusula 4.1.1); oferta de R$ 650 milhões concluída em novembro de 2021 (comunicado ao mercado de 18/11/2021); o relatório da debênture verde cobre os R$ 150 milhões da 1ª série destinados ao projeto; covenant ≤ 4,0x, apurado 3,240 no exercício 2025/2026 |
 | 13ª, 1ª série | 16/11/2028 | 100% da Taxa DI + 0,65% a.a. | lastro da 292ª emissão de CRA |
 | 13ª, 2ª série | 18/11/2030 | IPCA + 6,3416% a.a. | lastro de CRA |
 | 13ª, 3ª série | 16/11/2033 | IPCA + 6,5264% a.a. | lastro de CRA |
@@ -260,7 +268,7 @@ gabarito registra a apuração de 2,97 como de fevereiro de 2025 (o relatório d
 mostra as medições trimestrais seguintes como N/A); o valor de fevereiro de 2026 para esses
 instrumentos não está no pack e fica `insufficient_evidence`.
 
-### 11.3 Captações nomeadas no trimestre (atas do conselho de 27/05/2026)
+### 11.3 Captações autorizadas no trimestre (atas do conselho de 18/05/2026, arquivadas em 27/05/2026)
 
 | Instrumento | Valor | Prazo | Contraparte |
 | --- | --- | --- | --- |
@@ -290,8 +298,9 @@ e covenant); o sistema deve usar a contratual para covenant e dizer qual está u
 
 ### 11.5 Outros fatos do pack
 
-- Nenhum Fato Relevante arquivado pela Camil em 2026 até 04/09/2026 (índice IPE). A ausência é um
-  dado: eventos de 2026 aparecem como atas, comunicados e relatórios, não como fato relevante.
+- Nenhum Fato Relevante arquivado pela Camil em 2026 até 04/09/2026 (índice IPE 2026, extrato
+  `cvm_ipe_2026_camil.csv` no corpus: 58 linhas, nenhuma na categoria Fato Relevante). A ausência
+  é um dado: eventos de 2026 aparecem como atas, comunicados e relatórios.
 - Calendário v2: a divulgação do ITR do 1º trimestre foi adiada de 07/07 para 14/07/2026, e a
   apresentação pública de 08/07 para 15/07/2026.
 - Ata de 14/07/2026: nova diretoria e reestruturação dos comitês do conselho, com a criação do
@@ -300,8 +309,9 @@ e covenant); o sistema deve usar a contratual para covenant e dizer qual está u
 - Curva ANBIMA em 04/09/2026: prefixada a 13,43% em 252 dias úteis e 14,04% em 756; IPCA real a
   6,96% em 252 e 7,92% em 756; inflação implícita de 6,05% em um ano. CDI diário de 0,05166% em
   1 a 3 de setembro de 2026; meta Selic de 14,00% (Banco Central, SGS 12 e 432).
-- Índices ITR e IPE da CVM: a Camil tem código CVM 024228 e CNPJ 64.904.295/0001-03; o ITR 1T26
-  foi recebido pela CVM em 14/07/2026, versão 1.
+- Índices ITR e IPE da CVM (extratos das linhas da Camil no corpus de revisão,
+  `cvm_itr_2026_camil.csv` e `cvm_ipe_2026_camil.csv`): a Camil tem código CVM 024228 e CNPJ
+  64.904.295/0001-03; o ITR 1T26 foi recebido pela CVM em 14/07/2026, versão 1.
 
 ### 11.6 Mutações adversariais adicionais
 
@@ -309,7 +319,7 @@ Citar 4,0x como único covenant; comparar 4,72x a 3,5x como se fossem a mesma de
 a dívida líquida do release como a contratual; somar as notas comerciais e a CPR à dívida bruta de
 31/05/2026 ou alocá-las no cronograma sem prova de desembolso; chamar a securitizadora de credor
 econômico; citar a curva de 04/09/2026 como se fosse a curva da data-base do ITR; escolher um dos
-três valores de dividendos sem carregar a divergência; chamar os recebíveis em moeda de hedge;
+quatro valores de dividendos sem carregar a divergência; chamar os recebíveis em moeda de hedge;
 promover 1,23x a cobertura de juros contratual; tratar contingências possíveis como dívida.
 
 ## 12. Correções da auditoria do fundador (4 de setembro de 2026), incorporadas nesta v0.3
@@ -317,7 +327,7 @@ promover 1,23x a cobertura de juros contratual; tratar contingências possíveis
 | # | Correção | Onde entrou |
 | --- | --- | --- |
 | 1 | Seis séries indexadas ao IPCA, não sete; saldo de 743.955, 13,1% da dívida bruta | seção 11.1 |
-| 2 | Dividendos com divergência interna (395.000 nominal e 338.565 a valor presente na nota 18 e no balanço; 322.498 contábil e 420.000 valor justo na nota 25); a divergência fica aberta | seção 4 |
+| 2 | Dividendos com divergência interna em quatro montantes (395.000 nominal e 338.565 a valor presente na nota 18 e no balanço; 322.498 contábil e 420.000 valor justo na nota 25); a divergência fica aberta | seção 4 |
 | 3 | 4,72x não se compara automaticamente ao limite de 3,5x; limites distintos a reconciliar com as escrituras | seções 9 e 11.2 |
 | 4 | Regras e custos de pré-pagamento não cobertos pelos relatórios fiduciários; escrituras e aditivos entram no pack | seção 8 |
 | 5 | Notas comerciais e CPR aprovadas, não demonstradas desembolsadas nem incluídas na posição de 31/05 | seções 9 e 11.3 |
@@ -340,13 +350,13 @@ Fontes: escrituras da 11ª (27/10/2021, com aditamento de 18/11/2021), 13ª (08/
 (03/06/2024) e 15ª (15/10/2025) emissões, arquivadas na CVM na categoria "Escrituras e
 aditamentos de debêntures", agora no source pack com hash.
 
-### 13.1 Covenant: uma definição, dois degraus
+### 13.1 Covenant: uma definição-base, dois degraus
 
 | Elemento | Texto das escrituras (11ª, cláusula 4.22; 13ª, 7.24; 15ª, 7.26) |
 | --- | --- |
 | Índice | Dívida Líquida sobre EBITDA, apurado e revisado anualmente com base nas demonstrações consolidadas auditadas do exercício encerrado em fevereiro, mais informações complementares da emissora |
 | Dívida Líquida | empréstimos, financiamentos e debêntures (circulante e não circulante) mais derivativos passivos e qualquer outra dívida onerosa, menos caixa e equivalentes, aplicações financeiras (circulante e não circulante) e derivativos ativos, pelo balanço consolidado |
-| EBITDA | lucro antes das receitas e despesas financeiras mais depreciação e amortização dos últimos doze meses, conforme reportado; aquisições nos doze meses anteriores entram pro forma, com o sellers finance |
+| EBITDA | lucro antes das receitas e despesas financeiras mais depreciação e amortização dos últimos doze meses, conforme reportado, nas quatro escrituras; só a 11ª acrescenta o EBITDA dos últimos doze meses de sociedade adquirida nos doze meses anteriores e o sellers finance (cláusula 4.22.3); as 13ª, 14ª e 15ª trazem apenas a definição-base |
 | Degrau (a) | 3,50x até o vencimento ou a liquidação integral dos CRA da Eco Securitizadora tomados como referência (8ª emissão, 15/04/2025, na 11ª; 5ª emissão, 16/04/2025, e 257ª emissão, 29/12/2025, na 13ª; 257ª emissão na 15ª) |
 | Degrau (b) | 4,00x no exercício social encerrado após a quitação integral desses CRA, salvo se a liquidação decorrer de vencimento antecipado, caso em que 3,50x permanece |
 
@@ -354,37 +364,75 @@ Leitura: a definição de dívida líquida é a mesma que a nota 15 do ITR usa (
 31/05/2026); os 3,50x dos relatórios fiduciários de 2025 eram o degrau (a), medido em fevereiro
 de 2025 em 2,97x; o relatório da 11ª para 2025/2026 já aplica 4,00x (3,240 apurado). Com os CRA de
 referência vencidos em abril e dezembro de 2025, o limite das medições de fevereiro de 2026 e
-fevereiro de 2027 é 4,00x para as quatro emissões, condicionado à quitação ordinária desses CRA
-(a escritura exige comunicação ao agente fiduciário em cinco dias úteis; a comprovação pública
-fica `insufficient_evidence` até ser localizada). O pro forma de 4,72x compara-se, portanto, a
-4,00x, com medição em 28/02/2027; a leitura da v0.1 volta a valer, agora ancorada na escritura e
-não no ITR.
+fevereiro de 2027 seria 4,00x para as quatro emissões, condicionado à quitação ordinária desses
+CRA. Essa quitação ainda não está comprovada: o relatório mensal da 257ª emissão de 4T25 mostra
+saldo devedor até novembro de 2025 e vencimento em 29/12/2025, e nenhum documento do pack registra
+a liquidação; a única confirmação, indireta, é o limite de 4,000 aplicado pelo relatório fiduciário
+da 11ª no exercício 2025/2026. Estado: `insufficient_evidence`, condicionado. O pro forma de 4,72x
+do ITR usa a definição contratual de dívida líquida, mas a companhia não abre o EBITDA nem as
+informações complementares, e a 11ª tem o ajuste de aquisições que as demais não têm; a
+comparabilidade integral com cada escritura é, portanto, condicionada e não plena. A leitura
+correta: acima de 4,00x pela definição contratual em 31/05/2026, com medição anual em 28/02/2027.
 
 ### 13.2 Custo de saída por família de série
 
 | Família | Regra | Âncora |
 | --- | --- | --- |
-| Séries em Taxa DI (13ª 1ª, 14ª 1ª, 15ª 1ª) | amortização extraordinária ou resgate total facultativo, a partir de 14/05/2026 (13ª) e 15/06/2026 (14ª), pelo valor nominal mais remuneração pro rata mais prêmio de 0,40% ao ano, base 252, sobre os dias úteis restantes até o vencimento | 13ª 7.18.1; 14ª 7.18.1; 15ª 7.16.1.2 |
+| Séries em Taxa DI (13ª 1ª, 14ª 1ª, 15ª 1ª) | amortização extraordinária ou resgate total facultativo, a partir de 14/05/2026 (13ª), 15/06/2026 (14ª) e só a partir de 15/11/2027 (15ª), pelo valor nominal mais remuneração pro rata mais prêmio de 0,40% ao ano, base 252, sobre os dias úteis restantes até o vencimento | 13ª 7.18.1; 14ª 7.18.1; 15ª 7.16.1.1, 7.16.1.2 e 7.18.1 |
 | Séries em IPCA (13ª 2ª e 3ª, 14ª 2ª e 3ª) | amortização extraordinária só a partir de 14/05/2027 e 15/05/2028 (13ª) e 15/06/2027 e 15/06/2028 (14ª); valor igual ao maior entre (A) valor nominal atualizado mais remuneração pro rata e (B) valor presente das parcelas remanescentes descontadas à taxa interna de retorno da NTN-B com duration mais próxima da duration remanescente, pela cotação indicativa da ANBIMA do segundo dia útil anterior; a diferença é o prêmio (make-whole) | 13ª 7.18.2 e 7.18.2.1; 14ª 7.18.2 |
-| Série prefixada (15ª 2ª) | resgate total facultativo pelo maior entre (A) nominal mais remuneração pro rata e (B) valor presente das parcelas remanescentes descontadas à taxa DI de 252 dias úteis da curva Pré x DI da B3, no vértice de dias corridos mais próximo da duration remanescente, apurada no segundo dia útil anterior | 15ª 7.16.2.2 |
-| 11ª emissão (CDI + 1,55%) | aquisição facultativa e oferta de resgate antecipado à totalidade, com prêmio fixado no edital, que não pode ser negativo; adesão em no mínimo quinze dias | 11ª 4.13 e 4.14 |
+| Séries em IPCA da 15ª (3ª e 4ª) | carências próprias: só a partir de 15/11/2028 (3ª) e 15/11/2029 (4ª); mesmo make-whole pelo maior entre valor atualizado e valor presente descontado à TIR da NTN-B de duration mais próxima | 15ª 7.16.3.1, 7.16.3.2 e 7.18.3 |
+| Série prefixada (15ª 2ª) | resgate total facultativo só a partir de 15/11/2028 (amortização extraordinária na mesma data), pelo maior entre (A) nominal mais remuneração pro rata e (B) valor presente das parcelas remanescentes descontadas à taxa DI de 252 dias úteis da curva Pré x DI da B3, no vértice de dias corridos mais próximo da duration remanescente, apurada no segundo dia útil anterior | 15ª 7.16.2.1, 7.16.2.2 e 7.18.2 |
+| 11ª emissão (CDI + 1,55%) | aquisição facultativa e oferta de resgate antecipado à totalidade, com prêmio fixado no edital, que não pode ser negativo, adesão em no mínimo quinze dias, e o resgate só ocorre se aderirem titulares de 100% das debêntures ou de 100% da série abrangida | 11ª 4.13 e 4.14.1 |
 
-Leitura: trocar as séries em DI custa pouco a partir de 2026 (prêmio de 0,40% ao ano sobre o
-prazo remanescente); trocar as séries em IPCA antes de 2027 e 2028 não é permitido e, depois,
-custa o make-whole; a 11ª só sai por oferta com prêmio negociado. Isso define o desenho de
-qualquer refinanciamento: o degrau de 2028/29 é majoritariamente DI e prefixado, e é onde a saída
-é barata.
+Leitura: trocar as séries em DI da 13ª e da 14ª custa pouco a partir de 2026 (prêmio de 0,40% ao
+ano sobre o prazo remanescente), mas a série DI da 15ª só sai a partir de novembro de 2027; trocar
+as séries em IPCA antes das carências (2027 e 2028 na 13ª e na 14ª; 2028 e 2029 na 15ª) não é
+permitido e, depois, custa o make-whole; a prefixada da 15ª só sai a partir de novembro de 2028; a
+11ª só sai por oferta com prêmio negociado e adesão integral. Isso define o desenho de qualquer
+refinanciamento: o que pode ser retirado barato em 2026 e 2027 são as séries DI da 13ª e da 14ª.
 
 ### 13.3 Estados de cobertura que mudam com o pack v2
 
 | Chave | Antes | Agora |
 | --- | --- | --- |
-| covenants e headroom | limites distintos a reconciliar | covered: uma definição, dois degraus, 4,00x aplicável, comprovação da quitação dos CRA de referência `insufficient_evidence` |
-| custo de saída e prepayment | insufficient_evidence | covered por família e por taxa de referência (NTN-B pela ANBIMA para IPCA; curva Pré x DI da B3 para a prefixada; 0,40% ao ano para DI); o cálculo do prêmio em uma data exige a cotação daquele dia |
-| EBITDA de covenant | insufficient_evidence | definição covered; valor apurado pela companhia `insufficient_evidence` |
+| covenants e headroom | limites distintos a reconciliar | covered quanto à definição-base e aos degraus; 4,00x aplicável condicionado à quitação dos CRA de referência, ainda `insufficient_evidence`; comparabilidade plena do pro forma condicionada |
+| custo de saída e prepayment | insufficient_evidence | covered por série (janela, mecanismo, fórmula e taxa de referência: NTN-B pela ANBIMA para IPCA; curva Pré x DI da B3 para a prefixada; 0,40% ao ano para DI; adesão integral na 11ª); o valor monetário do prêmio em uma data exige a cotação daquele dia, condicionado |
+| EBITDA de covenant | insufficient_evidence | definição-base covered nas quatro escrituras, com o ajuste de aquisições só na 11ª; valor apurado pela companhia e informações complementares `insufficient_evidence` |
 
 ### 13.4 Mutações adversariais adicionais
 
 Aplicar 3,50x a fevereiro de 2027 sem ler o degrau; aplicar 4,00x sem condicionar à quitação dos
 CRA de referência; tratar o prêmio de 0,40% ao ano como prêmio flat; supor resgate das séries IPCA
 antes das datas de carência; usar a dívida líquida do release no covenant.
+
+### 13.5 Credor econômico e governança dos CRA (termo de securitização da 292ª emissão, pack v3)
+
+O termo de securitização da 292ª emissão (lastro da 13ª emissão de debêntures) fixa que a
+securitizadora exerce os seus direitos no âmbito das debêntures conforme orientação dos titulares
+de CRA reunidos em assembleia especial, com quórum de deliberação de 50% mais um dos CRA em
+circulação em primeira convocação e 50% mais um dos presentes em segunda (cláusulas 17.8 e
+seguintes). O credor econômico e a parte que decide um reperfilamento são, portanto, os titulares
+dos CRA em assembleia; a securitizadora é a titular formal que vota conforme essa orientação. Os
+termos das 329ª e 389ª emissões estão no pack e devem ser lidos para confirmar a mesma estrutura;
+a qualificação jurídica final fica condicionada a revisão especializada.
+
+## 14. Correções da revisão independente por IA (run gc01-answer-key-2026-09-05-00-57-01), incorporadas nesta v0.6
+
+| # | Correção do revisor | Onde entrou |
+| --- | --- | --- |
+| 12 | Dividendos têm quatro montantes distintos, não três | seções 4, 11.6 e 12 |
+| 13 | Os 395.000 remanescentes de dividendos vão até 8 de dezembro de 2028, não até 2027 | seção 7 |
+| 14 | A data de emissão da 11ª é 30/10/2021; novembro de 2021 é a conclusão da oferta | seção 11.1 |
+| 15 | As reuniões do conselho foram em 18/05/2026; 27/05 é a data de arquivamento | seções 9, 11 e 11.3 |
+| 16 | Só a 11ª acrescenta o pro forma de aquisições e o sellers finance ao EBITDA; as demais têm a definição-base | seções 9 e 13.1 |
+| 17 | A série DI da 15ª só sai a partir de 15/11/2027 | seção 13.2 |
+| 18 | As séries IPCA da 15ª têm carências de 15/11/2028 e 15/11/2029, com o mesmo make-whole | seção 13.2 |
+| 19 | A prefixada da 15ª só sai a partir de 15/11/2028 | seção 13.2 |
+| 20 | A oferta de resgate da 11ª exige adesão de 100% dos titulares | seção 13.2 |
+| 21 | As afirmações sobre os índices da CVM agora apontam para os extratos no corpus | seção 11.5 |
+
+Limitações registradas como condições, sem bloquear o restante: quitação ordinária dos CRA de
+referência (seção 13.1); comparabilidade plena do pro forma de 4,72x (seção 13.1); arrendamento na
+dívida onerosa contratual (seção 5); qualificação jurídica do credor econômico (seção 13.5);
+conciliação dos dividendos pela companhia (seção 4); valor monetário do make-whole na data
+(seção 13.2).
