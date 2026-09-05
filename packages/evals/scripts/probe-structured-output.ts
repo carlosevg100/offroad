@@ -41,6 +41,41 @@ const nested = z.object({
   abstainReason: z.string().max(300).nullable(),
 });
 
+
+// The routing schema at its real size: the envelope's eight core fields and eight inferable
+// context fields, each an object of four keys, plus the works and the abstention. Sixty-odd
+// properties: the probe tells whether size, not shape, is what the provider rejects.
+const objectKinds = ["organization", "user", "company", "project", "operation", "instrument", "document", "claim", "model", "asset_or_pool", "scenario", "alternative", "material", "market", "provider", "mandate", "process", "decision"] as const;
+const works = ["find_and_organize", "extract_and_reconcile", "understand", "analyze", "model", "capital_strategy", "read_documents", "market", "capital_match"] as const;
+const responsibilities = ["producer", "coordinator", "reviewer", "decision_maker", "sponsor", "recipient", "external_authorizer"] as const;
+const fullSize = z.object({
+  routingCore: z.object({
+    action: inferred(z.array(z.string().min(1).max(60)).min(1).max(8)),
+    object: inferred(z.array(z.object({kind: z.enum(objectKinds), reference: z.string().max(200).optional()})).min(1).max(12)),
+    desiredOutcome: inferred(z.string().min(1).max(300)),
+    decision: inferred(z.string().max(300).nullable()),
+    audience: inferred(z.array(z.string().min(1).max(80)).min(1).max(6)),
+    depth: inferred(z.enum(["point", "preliminary", "institutional"])),
+    continuity: inferred(z.enum(["new", "refresh", "monitor", "comparison", "resume"])),
+    workResponsibility: inferred(z.array(z.enum(responsibilities)).min(1).max(4)),
+  }),
+  inferableContext: z.object({
+    jurisdiction: inferred(z.array(z.string().min(2).max(8)).max(4)),
+    asOfDate: inferred(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()),
+    currency: inferred(z.string().length(3).nullable()),
+    deadline: inferred(z.string().max(80).nullable()),
+    sponsorInstruction: inferred(z.string().max(500).nullable()),
+    constraints: inferred(z.array(z.string().max(200)).max(20)),
+    urgency: inferred(z.enum(["now", "today", "this_week", "ongoing"]).nullable()),
+    availableInputs: inferred(z.array(z.string().max(120)).max(40)),
+  }),
+  primaryWorks: z.array(z.object({work: z.enum(works), confidence: z.number().min(0).max(1)})).min(1).max(3),
+  composition: z.string().max(60).nullable(),
+  firstQuestion: z.string().max(300).nullable(),
+  abstain: z.boolean(),
+  abstainReason: z.string().max(300).nullable(),
+});
+
 const system = "You classify one sentence into the requested JSON. Return the requested JSON only.";
 const input: AdapterRequest["input"] = [{type: "text", text: JSON.stringify({latestUserMessage: "Preciso preparar uma reunião com a Companhia Fictícia sobre refinanciamento das debêntures."})}];
 
@@ -49,7 +84,7 @@ async function main() {
   const variants: Array<{label: string; request: AdapterRequest}> = [];
   for (const effort of ["low", "medium"] as const) {
     for (const thinking of ["off", "adaptive"] as const) {
-      for (const [schemaName, schema] of [["flat", flat], ["nested", nested]] as const) {
+      for (const [schemaName, schema] of [["flat", flat], ["nested", nested], ["full", fullSize]] as const) {
         variants.push({
           label: `effort=${effort} thinking=${thinking} schema=${schemaName}`,
           request: {
