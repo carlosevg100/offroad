@@ -7,12 +7,12 @@ const netDebt = "somatória da rubrica de empréstimos, financiamentos e debênt
 const ebitda = "lucro antes das receitas e despesas financeiras acrescidos da amortização e depreciação ao longo dos últimos 12 meses, conforme reportado nas demonstrações financeiras";
 const contractual = ["loans_and_financings", "debentures", "derivative_liabilities", "other_onerous_debt", "cash_and_equivalents", "financial_investments", "derivative_assets"] as const;
 type Instrument = Extract<CovenantReconciliationInput["instruments"][number], {source: "indenture"}>;
-const indenture = (id: string, document: string, definitions: {clause: string; netDebtPage: number; ebitdaPage: number}, tierPages: [number, number], references: string[], adjustments: Instrument["ebitdaAdjustments"] = []): Instrument => ({
+const indenture = (id: string, document: string, definitions: {clause: string; netDebtPage: number; ebitdaPage: number}, tierPages: [number, number], references: string[], adjustments: Instrument["ebitdaAdjustments"] = [], tierClause = "7.24.3(VIII)"): Instrument => ({
   source: "indenture", id, indexName: "Dívida Líquida/EBITDA", netDebtDefinition: netDebt, netDebtComponents: [...contractual], ebitdaDefinition: ebitda, ebitdaAdjustments: adjustments,
   measurement: {frequency: "annual", basis: "demonstrações consolidadas auditadas do exercício encerrado em fevereiro", fiscalYearEnd: "02-28"},
   tiers: [
-    {limit: "3.50", condition: {type: "until_reference_settled", referenceInstruments: references}, anchor: {document, clause: "índice financeiro, degrau 3,50x", page: tierPages[0]}},
-    {limit: "4.00", condition: {type: "after_reference_settled", referenceInstruments: references}, anchor: {document, clause: "índice financeiro, degrau 4,00x", page: tierPages[1]}},
+    {limit: "3.50", condition: {type: "until_reference_settled", referenceInstruments: references}, anchor: {document, clause: `${tierClause}(a)`, page: tierPages[0]}},
+    {limit: "4.00", condition: {type: "after_reference_settled", referenceInstruments: references}, anchor: {document, clause: `${tierClause}(b)`, page: tierPages[1]}},
   ],
   definitionAnchors: {netDebt: {document, clause: definitions.clause, page: definitions.netDebtPage}, ebitda: {document, clause: definitions.clause, page: definitions.ebitdaPage}},
 });
@@ -39,11 +39,12 @@ const settlement = (state: "ordinary" | "unknown" | "outstanding" | "accelerated
 ];
 const camil = (state: "ordinary" | "unknown" | "outstanding" | "accelerated"): CovenantReconciliationInput => ({
   asOfDate: asOf,
+  unit,
   instruments: [
-    indenture("deb-11", "escritura_11a_emissao.pdf", {clause: "4.22.3(j)", netDebtPage: 35, ebitdaPage: 35}, [34, 34], ["cra-eco-8"], adjustments11),
-    indenture("deb-13", "escritura_13a_emissao.pdf", {clause: "1.1", netDebtPage: 7, ebitdaPage: 8}, [54, 55], ["cra-eco-5", "cra-eco-257"]),
-    indenture("deb-14", "escritura_14a_emissao.pdf", {clause: "1.1", netDebtPage: 7, ebitdaPage: 8}, [54, 54], ["cra-eco-5", "cra-eco-257"]),
-    indenture("deb-15", "escritura_15a_emissao.pdf", {clause: "1.1", netDebtPage: 7, ebitdaPage: 8}, [56, 56], ["cra-eco-257"]),
+    indenture("deb-11", "escritura_11a_emissao.pdf", {clause: "4.22.3(j)", netDebtPage: 35, ebitdaPage: 35}, [34, 34], ["cra-eco-8"], adjustments11, "4.22.3(j)"),
+    indenture("deb-13", "escritura_13a_emissao.pdf", {clause: "1.1", netDebtPage: 7, ebitdaPage: 8}, [54, 55], ["cra-eco-5", "cra-eco-257"], [], "7.24.3(VIII)"),
+    indenture("deb-14", "escritura_14a_emissao.pdf", {clause: "1.1", netDebtPage: 7, ebitdaPage: 8}, [54, 54], ["cra-eco-5", "cra-eco-257"], [], "7.26.3(VIII)"),
+    indenture("deb-15", "escritura_15a_emissao.pdf", {clause: "1.1", netDebtPage: 7, ebitdaPage: 8}, [56, 56], ["cra-eco-257"], [], "7.26.3(VIII)"),
   ],
   referenceSettlements: settlement(state),
   componentValues,
@@ -66,7 +67,7 @@ const permute = <T>(items: readonly T[], seed: number): T[] => {
 const by = (result: ReturnType<typeof reconcileCovenantDefinitions>, id: string) => result.covenants.find((covenant) => covenant.instrument === id)!;
 const withoutLeases = (input: CovenantReconciliationInput): CovenantReconciliationInput => ({...input, componentValues: [...input.componentValues!.filter((line) => line.component !== "leases"), {component: "other_onerous_debt", covers: ["other_onerous_debt"], value: "0", unit, asOf, anchor: itr(39, "hipotético: nenhuma outra dívida onerosa enumerada")}]});
 
-describe("reconcile-covenant-definitions executor (v7)", () => {
+describe("reconcile-covenant-definitions executor (v8)", () => {
   it("gold: net debt by each indenture's own definition is 4.228.477 through financial-core, one anchor per operand, implied EBITDA traced", () => {
     const result = reconcileCovenantDefinitions(camil("unknown"));
     for (const covenant of result.covenants) {
@@ -75,8 +76,8 @@ describe("reconcile-covenant-definitions executor (v7)", () => {
       expect(covenant.netDebtByDefinition?.anchors.financial_investments?.page).toBe(11);
       expect(covenant.netDebtByDefinition?.anchors.derivative_assets?.page).toBe(51);
       expect(covenant.index?.basis).toBe("reported");
-      expect(covenant.index?.ebitda.basis).toBe("implied_from_reported");
-      expect(covenant.index?.ebitda.value.startsWith("895863.77")).toBe(true);
+      expect(covenant.index?.ebitda?.basis).toBe("implied_from_reported");
+      expect(covenant.index?.ebitda?.value.startsWith("895863.77")).toBe(true);
       expect(covenant.definitions?.anchors.netDebt.page).not.toBe(covenant.definitions?.anchors.ebitda.page === 8 ? 8 : -1);
     }
     expect(result.trace.calculations.filter((calculation) => calculation.id.startsWith("financial.debt_views"))).toHaveLength(4);
@@ -232,7 +233,7 @@ describe("reconcile-covenant-definitions executor (v7)", () => {
     const base = withoutLeases(camil("ordinary"));
     const minimum: CovenantReconciliationInput = {
       ...base,
-      instruments: [{...(base.instruments[1] as Instrument), id: "deb-min", direction: "minimum", tiers: [{limit: "6.00", condition: {type: "unconditional"}, anchor: {document: "hipotetico.pdf", clause: "1", page: 1}}]}],
+      instruments: [{...(base.instruments[1] as Instrument), id: "deb-min", direction: "minimum", tiers: [{limit: "6.00", condition: {type: "unconditional"}, anchor: {document: "hipotetico.pdf", clause: "7.24.3(VIII)(c)", page: 1}}]}],
       reported: {...base.reported!, netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40)}},
     };
     const result = reconcileCovenantDefinitions(minimum);
@@ -241,7 +242,7 @@ describe("reconcile-covenant-definitions executor (v7)", () => {
   });
 
   it("a trustee report without the indenture keeps its limit and measurement, without headroom", () => {
-    const result = reconcileCovenantDefinitions({asOfDate: asOf, instruments: [{source: "trustee_report", id: "af-12", indexName: "Dívida Líquida/EBITDA", reportedLimit: "4.00", reportedMeasurement: {value: "4.08", asOf: "2026-02-28"}, anchor: {document: "af_12a_emissao.pdf", page: 3}}], componentValues, reported: camil("unknown").reported});
+    const result = reconcileCovenantDefinitions({asOfDate: asOf, unit, instruments: [{source: "trustee_report", id: "af-12", indexName: "Dívida Líquida/EBITDA", reportedLimit: "4.00", reportedMeasurement: {value: "4.08", asOf: "2026-02-28"}, anchor: {document: "af_12a_emissao.pdf", page: 3}}], componentValues, reported: camil("unknown").reported});
     const covenant = result.covenants[0]!;
     expect(covenant.limitState).toBe("reported_by_trustee");
     expect(covenant.reportedMeasurement).toEqual({value: "4.08", asOf: "2026-02-28"});
@@ -252,7 +253,7 @@ describe("reconcile-covenant-definitions executor (v7)", () => {
   it("mutation: a uniform relabel of the scale changes the output fingerprint, and the unit travels with every calculation", () => {
     const base = camil("unknown");
     const first = reconcileCovenantDefinitions(base);
-    const relabeled = reconcileCovenantDefinitions({...base, componentValues: base.componentValues!.map((line) => ({...line, unit: "BRL million" as const}))});
+    const relabeled = reconcileCovenantDefinitions({...base, unit: "BRL million", componentValues: base.componentValues!.map((line) => ({...line, unit: "BRL million" as const}))});
     expect(first.unit).toBe("BRL thousand");
     expect(relabeled.unit).toBe("BRL million");
     expect(relabeled.trace.outputFingerprint).not.toBe(first.trace.outputFingerprint);
@@ -314,10 +315,25 @@ describe("reconcile-covenant-definitions executor (v7)", () => {
     expect(() => reconcileCovenantDefinitions({...base, componentValues: [...base.componentValues!.filter((line) => line.component !== "financial_investments"), {component: "financial_investments", covers: ["financial_investments", "debentures"], value: "500", unit, asOf, anchor: itr(11)}]})).toThrow(/aggregates debt and deductions|covered twice/);
   });
 
-  it("blocks on an empty base", () => {
-    const result = reconcileCovenantDefinitions({asOfDate: asOf, instruments: []});
+  it("blocks on an empty base and still carries the declared unit", () => {
+    const result = reconcileCovenantDefinitions({asOfDate: asOf, unit, instruments: []});
     expect(result.state).toBe("blocked");
     expect(result.block_reasons[0]).toMatch(/nothing to reconcile/);
+    expect(result.unit).toBe("BRL thousand");
+  });
+
+  it("names a proven acceleration as a note, never as an unproven condition; refuses a tier anchor without a numbered clause; puts the input fingerprint inside the output fingerprint", () => {
+    const accelerated = reconcileCovenantDefinitions(camil("accelerated"));
+    expect(accelerated.unproven_conditions).toHaveLength(0);
+    expect(by(accelerated, "deb-13").notes.some((note) => note.includes("settled by acceleration on a proven date"))).toBe(true);
+    const base = camil("unknown");
+    expect(() => reconcileCovenantDefinitions({...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-13" ? {...instrument, tiers: instrument.tiers.map((tier) => ({...tier, anchor: {...tier.anchor, clause: "índice financeiro, degrau"}}))} : instrument)})).toThrow(/numbered clause/);
+    const first = reconcileCovenantDefinitions(base);
+    const unusedAnchor = reconcileCovenantDefinitions({...base, referenceSettlements: base.referenceSettlements!.map((fact) => fact.instrument === "cra-eco-8" ? {...fact, anchor: {document: "outro_documento.pdf"}} : fact)});
+    expect(unusedAnchor.trace.inputFingerprint).not.toBe(first.trace.inputFingerprint);
+    expect(unusedAnchor.trace.outputFingerprint).not.toBe(first.trace.outputFingerprint);
+    const standalone = reconcileCovenantDefinitions({...base, componentValues: []});
+    expect(by(standalone, "deb-13").index?.ebitda).toBeNull();
   });
 
   it("is consistent under twenty permutations, with the trace inside the output fingerprint", () => {

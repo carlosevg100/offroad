@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `reconcile-covenant-definitions` (v7, after the sixth independent review).
+ * Executor of the method `reconcile-covenant-definitions` (v8, after the seventh independent review).
  * It never writes "breached". Each indenture carries the anchor of its definitions and one anchor per
  * tier; EBITDA adjustments are typed (denominator additions versus numerator obligations) and never
  * folded together; the net debt of each instrument is computed from that instrument's own component
@@ -23,7 +23,8 @@ const money = z.string().regex(/^-?\d+(\.\d+)?$/);
 const nonNegative = z.string().regex(/^\d+(\.\d+)?$/);
 const unitSchema = z.enum(["BRL", "BRL thousand", "BRL million", "USD", "USD thousand"]);
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const indentureAnchorSchema = z.object({document: z.string().min(1), clause: z.string().min(1), page: z.number().int().positive()}).strict();
+/** An indenture anchor cites a numbered clause (4.22.3(j), 7.24.3(VIII)); a label such as "índice financeiro" is not a clause. */
+const indentureAnchorSchema = z.object({document: z.string().min(1), clause: z.string().regex(/\d+(\.\d+)+/, "an indenture anchor needs a numbered clause"), page: z.number().int().positive()}).strict();
 const anchorSchema = z.object({document: z.string().min(1), clause: z.string().optional(), page: z.number().int().positive().optional(), note: z.string().optional()}).strict();
 type Anchor = z.infer<typeof anchorSchema>;
 
@@ -97,6 +98,8 @@ export const componentValueSchema = z.object({
 
 export const covenantReconciliationInputSchema = z.object({
   asOfDate: isoDate,
+  /** The unit of every monetary value in the base; lines, EBITDA and openings must state the same. */
+  unit: unitSchema,
   instruments: z.array(covenantInstrumentSchema),
   referenceSettlements: z.array(z.object({
     instrument: z.string().min(1),
@@ -152,7 +155,7 @@ export const covenantReconciliationInputSchema = z.object({
   });
   if (input.ltmEbitda && input.ltmEbitda.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["ltmEbitda", "asOf"], message: "the opened EBITDA must be dated at the as-of date"});
   if (input.reported?.ebitdaOpening && input.reported.ebitdaOpening.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["reported", "ebitdaOpening", "asOf"], message: "the EBITDA opening behind the reported index must be dated at the as-of date"});
-  const units = new Set<string>([...input.componentValues.map((line) => line.unit), ...(input.ltmEbitda ? [input.ltmEbitda.unit] : []), ...(input.reported?.ebitdaOpening ? [input.reported.ebitdaOpening.unit] : [])]);
+  const units = new Set<string>([input.unit, ...input.componentValues.map((line) => line.unit), ...(input.ltmEbitda ? [input.ltmEbitda.unit] : []), ...(input.reported?.ebitdaOpening ? [input.reported.ebitdaOpening.unit] : [])]);
   if (units.size > 1) context.addIssue({code: "custom", path: ["componentValues"], message: `one unit per base: ${[...units].sort().join(", ")} were given`});
   input.instruments.forEach((instrument, index) => {
     if (instrument.source !== "indenture") return;
@@ -166,13 +169,13 @@ export const covenantReconciliationInputSchema = z.object({
 export type CovenantReconciliationInput = z.input<typeof covenantReconciliationInputSchema>;
 
 type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index";
-type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string | null};
+type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type CovenantReconciliationOutput = {
-  schema_version: "method.reconcile-covenant-definitions.v7";
+  schema_version: "method.reconcile-covenant-definitions.v8";
   as_of_date: string;
   /** The unit every value below is expressed in; part of the output and of its fingerprint. */
-  unit: string | null;
+  unit: string;
   state: "resolved" | "conditioned" | "blocked";
   block_reasons: string[];
   covenants: Array<{
@@ -189,7 +192,9 @@ export type CovenantReconciliationOutput = {
     reportedMeasurement: {value: string; asOf: string} | null;
     netDebtByDefinition: {value: string; formula: string; operands: Record<string, string>; anchors: Record<string, Anchor>; residualAssumedZero: boolean; numeratorObligations: string | null} | null;
     legalConditions: string[];
-    index: {value: string; basis: "computed_from_components" | "reported"; ebitda: {value: string; basis: "opened" | "implied_from_reported"}; anchor: Anchor} | null;
+    index: {value: string; basis: "computed_from_components" | "reported"; ebitda: {value: string; basis: "opened" | "implied_from_reported"} | null; anchor: Anchor} | null;
+    /** Facts that explain the tier resolution without being conditions: a proven acceleration, for instance. */
+    notes: string[];
     comparability: Comparability;
     comparabilityReasons: string[];
     headroom: {absolute: string; relative: string | null; basis: string} | null;
@@ -245,7 +250,7 @@ function canonical(input: z.infer<typeof covenantReconciliationInputSchema>) {
 
 export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): CovenantReconciliationOutput {
   const input = canonical(covenantReconciliationInputSchema.parse(raw));
-  const unit = input.componentValues[0]?.unit ?? input.ltmEbitda?.unit ?? input.reported?.ebitdaOpening?.unit ?? null;
+  const unit = input.unit;
   const calculations: Calculation[] = [];
   /** Monetary calculations carry the base unit; leverage and headroom are ratios, written as "x". */
   const record = (calculation: Omit<Calculation, "unit">) => calculations.push({...calculation, unit: /net_leverage|covenant_headroom/.test(calculation.id) ? "x" : unit});
@@ -263,7 +268,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     if (instrument.source === "trustee_report") {
       return {
         instrument: instrument.id, source: "trustee_report", indexName: instrument.indexName, direction: null, definitions: null, measurement: null,
-        tiers: [{index: 0, limit: instrument.reportedLimit, condition: "as reported by the trustee; the indenture is not in the base", state: "n/a", anchor: instrument.anchor}],
+        tiers: [{index: 0, limit: instrument.reportedLimit, condition: "as reported by the trustee; the indenture is not in the base", state: "n/a", anchor: instrument.anchor}], notes: [],
         applicableLimit: instrument.reportedLimit, limitState: "reported_by_trustee",
         limitConditions: ["the indenture is not in the base: the limit is the trustee's report and no headroom is asserted"],
         reportedMeasurement: instrument.reportedMeasurement,
@@ -275,6 +280,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
     // 1. Which tier applies, from dated facts only.
     const conditions: string[] = [];
+    const notes: string[] = [];
     const tiers: CovenantReconciliationOutput["covenants"][number]["tiers"] = [];
     let applicable: {limit: string; tier: number} | null = null;
     instrument.tiers.forEach((tier, index) => {
@@ -299,7 +305,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
       if (condition.type === "until_reference_settled") {
         // "Whichever comes first" across the references: the tier ends at the first maturity or dated ordinary settlement.
         if (over.some((state) => state === "accelerated") && !over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
-          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily; an accelerated settlement keeps this tier`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; conditions.push(`a reference instrument (${label}) was settled by acceleration, so the ${tier.limit}x tier remains`); return;
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily; an accelerated settlement keeps this tier`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; notes.push(`a reference instrument (${label}) was settled by acceleration on a proven date, so the ${tier.limit}x tier remains`); return;
         }
         if (over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
           tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "ended", anchor: tier.anchor});
@@ -318,7 +324,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
       if (over.some((state) => state === "alive")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "not_yet", anchor: tier.anchor}); return; }
       tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "unproven", anchor: tier.anchor});
       if (over.some((state) => state === "outstanding_after_maturity")) conditions.push(`${label} matured and is recorded as outstanding; the ${tier.limit}x tier does not apply until ordinary settlement is proven`);
-      else if (over.some((state) => state === "accelerated")) conditions.push(`${label} was settled by acceleration; the ${tier.limit}x tier does not apply`);
+      else if (over.some((state) => state === "accelerated")) notes.push(`${label} was settled by acceleration on a proven date; the ${tier.limit}x tier does not apply`);
       else conditions.push(`the ${tier.limit}x tier requires proof of ordinary settlement of ${label}; the base does not prove it`);
     });
     for (const condition of conditions) unproven.add(`${instrument.id}: ${condition}`);
@@ -427,7 +433,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
         ebitda = {value: implied.value, basis: "implied_from_reported"};
       }
       if (ebitda) index = {value: reported.value, basis: "reported", ebitda, anchor: reported.anchor};
-      else { index = {value: reported.value, basis: "reported", ebitda: {value: "", basis: "implied_from_reported"}, anchor: reported.anchor}; if (comparability !== "not_comparable") comparability = "conditional"; reasons.push("no net debt by definition and no opened EBITDA: the reported index stands alone"); }
+      else { index = {value: reported.value, basis: "reported", ebitda: null, anchor: reported.anchor}; if (comparability !== "not_comparable") comparability = "conditional"; reasons.push("no net debt by definition and no opened EBITDA: the reported index stands alone, its EBITDA unknown"); }
     }
     if (comparability === "comparable" && legalHere.length > 0) { comparability = "conditional"; reasons.push("a legal condition touches the numerator of this covenant; no headroom until it is resolved"); }
     if (comparability !== "no_index" && instrument.measurement.frequency !== "annual") reasons.push(`measurement is ${instrument.measurement.frequency}; the next measurement is ${measurement.nextMeasurementDate}`);
@@ -445,7 +451,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     return {
       instrument: instrument.id, source: "indenture", indexName: instrument.indexName, direction: instrument.direction,
       definitions: {netDebt: instrument.netDebtDefinition, netDebtComponents: instrument.netDebtComponents, ebitda: instrument.ebitdaDefinition, ebitdaAdjustments: instrument.ebitdaAdjustments, anchors: instrument.definitionAnchors},
-      measurement, tiers,
+      measurement, tiers, notes: sortStrings(notes),
       applicableLimit: applicable ? (applicable as {limit: string}).limit : null,
       limitState: applicable ? "resolved" : "insufficient_evidence",
       limitConditions: sortStrings(conditions),
@@ -458,7 +464,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schema_version: "method.reconcile-covenant-definitions.v7" as const,
+    schema_version: "method.reconcile-covenant-definitions.v8" as const,
     as_of_date: input.asOfDate,
     unit,
     state,
@@ -467,5 +473,6 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     unproven_conditions: sortStrings([...unproven]),
     legal_conditions: sortStrings([...legal]),
   };
-  return {...body, trace: {calculations, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint({...body, calculations})}};
+  const inputFingerprint = fingerprint(input);
+  return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }
