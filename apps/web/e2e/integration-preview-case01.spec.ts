@@ -90,6 +90,18 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.locator('input[name="primary_objectives"][value="prepare_meetings"]').check();
     await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
     await expect(page.locator(".intake-start")).toBeVisible();
+    // Account onboarding ends with the one-time confidentiality acceptance and the first private
+    // project. Only after that gate does the organization enter the conversational workspace.
+    await page.goto("/pt-BR/onboarding?setup=terms&job=capital_planning");
+    await expect(page.locator(".private-project-gate--terms h2")).toHaveText("Antes de começar, protegemos suas informações.");
+    await page.locator('input[name="signatory_title"]').fill("Analista de Investment Banking");
+    await page.locator('input[name="terms_agreed"]').check();
+    await page.locator('input[name="information_rights_declared"]').check();
+    await page.locator('.private-project-gate__form button[type="submit"]').click();
+    await expect(page.locator(".private-project-gate--project")).toBeVisible();
+    await page.locator('input[name="project_name"]').fill("Onboarding (validação interna)");
+    await page.locator('.private-project-gate__form button[type="submit"]').click();
+    await expect(page.locator(".intake-collect")).toBeVisible();
     await page.goto("/pt-BR/app");
     await expect(page.locator(".advisor-start")).toBeVisible();
     await page.screenshot({path: join(outputDirectory, "01-workspace.png"), fullPage: true});
