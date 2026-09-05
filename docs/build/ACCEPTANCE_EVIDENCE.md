@@ -1165,3 +1165,11 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | --- | --- | --- | --- |
 | Execução oficial | workflow `Gold case baseline`, run 33928973469 | sucesso; artefato `gold-baseline-gc01` baixado e commitado com `run.json` (hash da base `be203ddf…`, hash por documento e fonte, modelo, custo, tokens) | 2026-09-04 |
 | Reprodutibilidade | `baseline:gold --dry-run` local | mesma base, mesmo hash `be203ddf04397c0b…` que a run em CI registrou | 2026-09-04 |
+
+## Biblioteca de métodos e gate de promoção, 05/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Compilação dos métodos | `procedure-markdown.test.ts` | três métodos compilam para `canonicalProcedureSchema`; seção ausente e passo sem modo são rejeitados; referências verificadas contra o registro de tasks, o playbook e os parâmetros; credit-playbook 173 testes | 2026-09-05 |
+| Gate de promoção | `task-promotion.test.ts` | produção recusada sem vínculo, com método desconhecido, com método candidate ou sem evidência de implementação; work-plan 39 testes | 2026-09-05 |
+| Inventário | script de inspeção sobre os registros | 224/0 implementação, 252 ids, 80 specified, 17 packs/0 revisados, 71 required_missing | 2026-09-04 |

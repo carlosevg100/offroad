@@ -44,7 +44,29 @@ export type OffroadTaskSpec = {
   maturity: OffroadTaskMaturity;
   /** Never empty. Selective reading is a declared choice, not a default nobody wrote down. */
   readingStrategies: readonly ReadingStrategy[];
+  /**
+   * The method this task executes, by id and version, once one is bound. A task without a bound
+   * method can be specified and even implemented, but it cannot be promoted: an executor may not
+   * improvise a procedure the library does not hold.
+   */
+  procedure?: {id: string; version: string};
 };
+
+export type MethodMaturityLookup = (procedureId: string, version: string) => {maturity: "draft" | "candidate" | "production"; hasImplementation: boolean} | null;
+
+/**
+ * The promotion gate for a TaskSpec. Production needs a bound method that is itself in production
+ * with implementation evidence; anything less stays where it is, with the reason spelled out.
+ */
+export function assertTaskPromotable(task: OffroadTaskSpec, target: OffroadTaskMaturity, lookup: MethodMaturityLookup): void {
+  if (target !== "production") return;
+  if (!task.procedure) throw new Error(`task ${task.id} cannot reach production without a bound method`);
+  const method = lookup(task.procedure.id, task.procedure.version);
+  if (!method) throw new Error(`task ${task.id} is bound to ${task.procedure.id}@${task.procedure.version}, which the method library does not hold`);
+  if (method.maturity !== "production" || !method.hasImplementation) {
+    throw new Error(`task ${task.id} is bound to ${task.procedure.id}@${task.procedure.version} (${method.maturity}${method.hasImplementation ? "" : ", no implementation evidence"}); only a production method with implementation evidence promotes a task`);
+  }
+}
 
 /** The reading a class of work needs when the task does not say otherwise. */
 export function defaultReadingStrategies(executionClass: OffroadExecutionClass): readonly ReadingStrategy[] {
