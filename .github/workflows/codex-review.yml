@@ -108,11 +108,20 @@ jobs:
           printenv OPENAI_API_KEY | codex login --with-api-key
           codex login status
 
-          ARGS=(--case "$CASE" --subject "$SUBJECT" --model "$MODEL" --effort "$EFFORT")
+          # The hosted runner is ephemeral and is itself the sandbox: Codex's own bubblewrap sandbox cannot
+          # create its loopback interface here ("bwrap: loopback: Failed RTM_NEWADDR"), which left the
+          # reviewer unable to read a single file on the first dispatch. Full access inside the runner it is.
+          ARGS=(--case "$CASE" --subject "$SUBJECT" --model "$MODEL" --effort "$EFFORT" --sandbox danger-full-access)
           if [ -n "$METHOD" ]; then ARGS+=(--method "$METHOD"); fi
           pnpm --filter @offroad/evals review:codex -- "${ARGS[@]}" 2>&1 | tee /tmp/review.log
 
           RUN_DIR=$(git status --porcelain --untracked-files=all | awk '{print $2}' | grep -E '(reviews/gc0[0-9]/|knowledge/reviews/runs/)' | grep -v codex-events | head -1 | xargs dirname)
+          # A review that could not read the workspace is void, whatever result the model wrote.
+          node -e '
+            const r = JSON.parse(require("fs").readFileSync(process.argv[1] + "/review.json", "utf8"));
+            const c = r.checks || {};
+            if (!c.sourcesRevisited || !c.numbersRecalculated) { console.error("void review: sources not revisited or numbers not recalculated", JSON.stringify(c)); process.exit(1); }
+          ' "$RUN_DIR"
           echo "RUN_DIR=$RUN_DIR" >> "$GITHUB_ENV"
           {
             echo "## Independent AI review: $SUBJECT ${METHOD:-} of $CASE"
