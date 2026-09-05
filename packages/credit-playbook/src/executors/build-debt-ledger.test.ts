@@ -2,22 +2,34 @@ import {describe, expect, it} from "vitest";
 
 import {buildDebtLedger, type DebtLedgerInput} from "./build-debt-ledger";
 
-/** Camil, ITR 31/05/2026 and 28/02/2026, consolidated, R$ thousand (answer key sections 1, 3, 5 and 11.1). */
+/** Camil, ITR 31/05/2026 and 28/02/2026, consolidated, R$ thousand (answer key sections 1, 3, 5, 11.1 and 13.5). */
 const itr = (page: number, note?: string, table?: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, ...(note ? {note} : {}), ...(table ? {table} : {})});
 const trustee = (document: string, page: number) => ({document, page, table: "características das séries"});
-const indenture = (document: string, clause: string, page: number) => ({document, clause, page});
-const eco = {formalHolder: "Eco Securitizadora de Direitos Creditórios do Agronegócio S.A. (debenturista)", economicCreditors: "titulares dos CRA, que orientam a securitizadora em assembleia"};
 type Row = DebtLedgerInput["rows"][number];
 const loan = (id: string, instrument: string, balance: string, prior: string, currency: string): Row =>
   ({id, instrument, obligation: {kind: "loan", disbursed: true, views: ["release", "contractual"]}, balance, priorBalance: prior, currency, anchors: {balance: itr(39, "15")}});
-const deb = (id: string, issue: string, series: string, balance: string, prior: string, remuneration: Row["remuneration"], maturity: string, report: string, page: number, escritura: string, holderClause: string, holderPage: number): Row => ({
+const contra = (id: string, instrument: string, balance: string, prior: string): Row => ({id, instrument, balance, priorBalance: prior, currency: "BRL", contra: true, anchors: {balance: itr(39, "15")}});
+/** The securitizadora holds the debentures formally (indenture preamble) and votes as the CRA holders instruct (securitization term). */
+const eco = (escritura: string, craTerm: {document: string; clause: string; page?: number}) => ({
+  lender: {formalHolder: "Eco Securitizadora de Direitos Creditórios do Agronegócio S.A. (debenturista)", economicCreditors: "titulares dos CRA, que orientam a securitizadora em assembleia"},
+  anchors: {lenderFormalHolder: {document: escritura, clause: "preâmbulo, considerando D", page: 3}, lenderEconomicCreditors: craTerm},
+});
+const publicHolders = (escritura: string) => ({
+  lender: {formalHolder: "debenturistas (oferta pública), representados pelo agente fiduciário", economicCreditors: "debenturistas"},
+  anchors: {lenderFormalHolder: {document: escritura, clause: "preâmbulo", page: 1}, lenderEconomicCreditors: {document: escritura, clause: "preâmbulo", page: 1}},
+});
+const deb = (id: string, issue: string, series: string, balance: string, prior: string, remuneration: Row["remuneration"], maturity: string, report: string, page: number, holder: ReturnType<typeof eco>): Row => ({
   id, instrument: `Debêntures ${issue}`, series, obligation: {kind: "debenture", disbursed: true, views: ["release", "contractual"]}, balance, priorBalance: prior, currency: "BRL",
-  remuneration, maturity, guarantee: "quirografária", lender: issue === "11ª emissão" ? {formalHolder: "debenturistas (oferta pública)", economicCreditors: "debenturistas"} : eco,
-  anchors: {balance: itr(39, "15"), remuneration: trustee(report, page), maturity: trustee(report, page), guarantee: itr(39, "15"), lender: indenture(escritura, holderClause, holderPage)},
+  remuneration, maturity, guarantee: "quirografária", lender: holder.lender,
+  anchors: {balance: itr(39, "15"), remuneration: trustee(report, page), maturity: trustee(report, page), guarantee: itr(39, "15"), ...holder.anchors},
 });
 const cdi = (spread: string): Row["remuneration"] => ({type: "spread_over_index", index: "CDI", spreadPercentPerYear: spread});
 const pct = (percent: string): Row["remuneration"] => ({type: "percent_of_index", index: "CDI", percentOfIndex: percent});
 const ipca = (spread: string): Row["remuneration"] => ({type: "spread_over_index", index: "IPCA", spreadPercentPerYear: spread});
+const h11 = publicHolders("escritura_11a_emissao.pdf");
+const h13 = eco("escritura_13a_emissao.pdf", {document: "cra_292_termo_securitizacao.pdf", clause: "17.8: orientação dos titulares dos CRA em assembleia especial"});
+const h14 = eco("escritura_14a_emissao.pdf", {document: "af_14a_emissao.pdf", clause: "características: debêntures vinculadas à emissão de CRA", page: 2});
+const h15 = eco("escritura_15a_emissao.pdf", {document: "af_15a_emissao.pdf", clause: "características: debêntures vinculadas à emissão de CRA", page: 2});
 const camil = (): DebtLedgerInput => ({
   referenceDate: "2026-05-31",
   priorDate: "2026-02-28",
@@ -28,38 +40,37 @@ const camil = (): DebtLedgerInput => ({
     loan("loan-usd", "Capital de giro, USD", "867244", "492857", "USD"),
     loan("loan-clp", "Capital de giro, CLP", "54180", "43397", "CLP"),
     loan("loan-pen", "Capital de giro, PEN", "181158", "199398", "PEN"),
-    {id: "loan-costs", instrument: "Custo de transação (empréstimos)", obligation: {kind: "other", disbursed: true, views: ["release", "contractual"]}, balance: "-9099", priorBalance: "-1123", currency: "BRL", contra: true, anchors: {balance: itr(39, "15")}},
-    deb("deb-11-1", "11ª emissão", "1ª", "151795", "157626", cdi("1.55"), "2028-10-30", "af_11a_emissao.pdf", 2, "escritura_11a_emissao.pdf", "4.1", 12),
-    deb("deb-11-2", "11ª emissão", "2ª", "505984", "525419", cdi("1.55"), "2028-10-30", "af_11a_emissao.pdf", 2, "escritura_11a_emissao.pdf", "4.1", 12),
-    deb("deb-13-1", "13ª emissão", "1ª", "306038", "316694", cdi("0.65"), "2028-11-16", "af_13a_emissao.pdf", 3, "escritura_13a_emissao.pdf", "1.1", 6),
-    deb("deb-13-2", "13ª emissão", "2ª", "282357", "279335", ipca("6.3416"), "2030-11-18", "af_13a_emissao.pdf", 3, "escritura_13a_emissao.pdf", "1.1", 6),
-    deb("deb-13-3", "13ª emissão", "3ª", "110321", "109185", ipca("6.5264"), "2033-11-16", "af_13a_emissao.pdf", 3, "escritura_13a_emissao.pdf", "1.1", 6),
-    deb("deb-14-1", "14ª emissão", "1ª", "438918", "423854", pct("104"), "2029-06-15", "af_14a_emissao.pdf", 3, "escritura_14a_emissao.pdf", "1.1", 6),
-    deb("deb-14-2", "14ª emissão", "2ª", "204059", "195876", ipca("6.8286"), "2031-06-16", "af_14a_emissao.pdf", 3, "escritura_14a_emissao.pdf", "1.1", 6),
-    deb("deb-14-3", "14ª emissão", "3ª", "66024", "63457", ipca("6.9982"), "2034-06-15", "af_14a_emissao.pdf", 3, "escritura_14a_emissao.pdf", "1.1", 6),
-    deb("deb-15-1", "15ª emissão", "1ª", "770123", "795649", pct("105"), "2030-11-18", "af_15a_emissao.pdf", 3, "escritura_15a_emissao.pdf", "1.1", 6),
-    deb("deb-15-2", "15ª emissão", "2ª", "408703", "420902", {type: "fixed", ratePercentPerYear: "14.15"}, "2032-11-16", "af_15a_emissao.pdf", 3, "escritura_15a_emissao.pdf", "1.1", 6),
-    deb("deb-15-3", "15ª emissão", "3ª", "50401", "50020", ipca("8.20"), "2032-11-16", "af_15a_emissao.pdf", 3, "escritura_15a_emissao.pdf", "1.1", 6),
-    deb("deb-15-4", "15ª emissão", "4ª", "30793", "30591", ipca("8.70"), "2035-11-16", "af_15a_emissao.pdf", 3, "escritura_15a_emissao.pdf", "1.1", 6),
-    {id: "deb-costs", instrument: "Custo de transação (debêntures)", obligation: {kind: "other", disbursed: true, views: ["release", "contractual"]}, balance: "-63225", priorBalance: "-66347", currency: "BRL", contra: true, anchors: {balance: itr(39, "15")}},
+    contra("loan-costs", "Custo de transação (empréstimos)", "-9099", "-1123"),
+    deb("deb-11-1", "11ª emissão", "1ª", "151795", "157626", cdi("1.55"), "2028-10-30", "af_11a_emissao.pdf", 2, h11),
+    deb("deb-11-2", "11ª emissão", "2ª", "505984", "525419", cdi("1.55"), "2028-10-30", "af_11a_emissao.pdf", 2, h11),
+    deb("deb-13-1", "13ª emissão", "1ª", "306038", "316694", cdi("0.65"), "2028-11-16", "af_13a_emissao.pdf", 2, h13),
+    deb("deb-13-2", "13ª emissão", "2ª", "282357", "279335", ipca("6.3416"), "2030-11-18", "af_13a_emissao.pdf", 3, h13),
+    deb("deb-13-3", "13ª emissão", "3ª", "110321", "109185", ipca("6.5264"), "2033-11-16", "af_13a_emissao.pdf", 4, h13),
+    deb("deb-14-1", "14ª emissão", "1ª", "438918", "423854", pct("104"), "2029-06-15", "af_14a_emissao.pdf", 2, h14),
+    deb("deb-14-2", "14ª emissão", "2ª", "204059", "195876", ipca("6.8286"), "2031-06-16", "af_14a_emissao.pdf", 3, h14),
+    deb("deb-14-3", "14ª emissão", "3ª", "66024", "63457", ipca("6.9982"), "2034-06-15", "af_14a_emissao.pdf", 4, h14),
+    deb("deb-15-1", "15ª emissão", "1ª", "770123", "795649", pct("105"), "2030-11-18", "af_15a_emissao.pdf", 2, h15),
+    deb("deb-15-2", "15ª emissão", "2ª", "408703", "420902", {type: "fixed", ratePercentPerYear: "14.15"}, "2032-11-16", "af_15a_emissao.pdf", 3, h15),
+    deb("deb-15-3", "15ª emissão", "3ª", "50401", "50020", ipca("8.20"), "2032-11-16", "af_15a_emissao.pdf", 4, h15),
+    deb("deb-15-4", "15ª emissão", "4ª", "30793", "30591", ipca("8.70"), "2035-11-16", "af_15a_emissao.pdf", 5, h15),
+    contra("deb-costs", "Custo de transação (debêntures)", "-63225", "-66347"),
   ],
   balanceSheet: {current: "1229828", nonCurrent: "4440358", anchor: itr(12, undefined, "Balanço patrimonial consolidado, empréstimos, financiamentos e debêntures")},
   schedule: {periods: [
     {period: "2026/27", amount: "1229828"}, {period: "2027/28", amount: "776868"}, {period: "2028/29", amount: "1228475"},
     {period: "2029/30", amount: "694497"}, {period: "2030/31", amount: "994544"}, {period: "after 2031", amount: "809198"}, {period: "debenture costs", amount: "-63224"},
-  ], anchor: itr(40, "15")},
+  ], currentPeriod: "2026/27", anchor: itr(40, "15")},
   cash: {
     cashAndEquivalents: {value: "1430714", anchor: itr(20, "3")},
-    financialInvestments: {value: "25095", anchor: itr(51, "25")},
+    financialInvestments: {value: "25095", anchor: itr(11, undefined, "Balanço patrimonial consolidado, aplicações financeiras")},
     derivativeAssets: {value: "235", anchor: itr(51, "25")},
     derivativeLiabilities: {value: "14335", anchor: itr(51, "25")},
   },
   definitions: {
     release: {text: "dívida bruta menos caixa e aplicações financeiras", anchor: {document: "ri_release_1t26.pdf", page: 12, table: "Endividamento e Caixa"}},
-    contractual: {text: "empréstimos, financiamentos e debêntures mais derivativos passivos, menos caixa e equivalentes, aplicações financeiras e derivativos ativos", anchor: itr(40, "15")},
+    contractual: {text: "empréstimos, financiamentos e debêntures mais derivativos passivos e qualquer outra dívida onerosa, menos caixa e equivalentes, aplicações financeiras e derivativos ativos", anchor: itr(40, "15")},
   },
   releaseReportedNetDebt: {value: "4214400", anchor: {document: "ri_release_1t26.pdf", page: 12, table: "Endividamento e Caixa"}},
-  tolerance: "0",
 });
 
 /** Deterministic permutation, different at every step. */
@@ -73,84 +84,151 @@ const permute = <T>(items: T[], seed: number): T[] => {
   }
   return copy;
 };
+const sumShares = (entries: Array<{shareOfGrossBeforeContra: string}>) => entries.reduce((sum, entry) => sum + Number(entry.shareOfGrossBeforeContra), 0);
 
-describe("build-debt-ledger executor", () => {
-  it("gold: gross debt of both dates, reconciliation with the balance sheet page, both views with their definitions and sources", () => {
+describe("build-debt-ledger executor (v4)", () => {
+  it("gold: gross debt of both dates, total reconciliation, first period against current liabilities, both views with their definitions and per-operand anchors", () => {
     const ledger = buildDebtLedger(camil());
     expect(ledger.state).toBe("complete");
     expect(ledger.grossDebt).toBe("5670186");
     expect(ledger.grossDebtPrior).toBe("4988383");
     expect(ledger.grossDebtBeforeContra).toBe("5742510");
-    expect(ledger.reconciliation.state).toBe("reconciled");
+    expect(ledger.reconciliation.total.state).toBe("reconciled");
+    expect(ledger.reconciliation.split.state).toBe("not_possible");
     expect(ledger.reconciliation.anchor?.page).toBe(12);
     expect(ledger.schedule?.matchesGross).toBe(true);
+    expect(ledger.schedule?.currentPeriod).toEqual({period: "2026/27", amount: "1229828", balanceSheetCurrent: "1229828", difference: "0", matches: true});
     expect(ledger.netDebtViews.contractual?.value).toBe("4228477");
+    expect(ledger.netDebtViews.contractual?.residualAssumedZero).toBe(true);
     expect(ledger.netDebtViews.contractual?.definitionSource).toEqual(itr(40, "15"));
-    expect(ledger.netDebtViews.contractual?.componentAnchors.financialInvestments).toEqual(itr(51, "25"));
+    expect(ledger.netDebtViews.contractual?.componentAnchors.financialInvestments?.page).toBe(11);
     expect(ledger.netDebtViews.release?.value).toBe("4214377");
+    expect(ledger.netDebtViews.release?.residualAssumedZero).toBe(false);
     expect(ledger.netDebtViews.releaseReported?.differenceToRelease).toBe("23");
-    expect(ledger.netDebtViews.releaseReported?.anchor.page).toBe(12);
     expect(ledger.byIndexer.find((entry) => entry.indexer === "IPCA")?.balance).toBe("743955");
     expect(ledger.byIndexer.find((entry) => entry.indexer === "unknown")?.balance).toBe("2416994");
     expect(ledger.byIndexer.find((entry) => entry.indexer === "fixed")?.balance).toBe("408703");
     const foreign = ledger.byCurrency.filter((entry) => entry.currency !== "BRL").reduce((sum, entry) => sum + Number(entry.balance), 0);
     expect(foreign).toBe(1102582);
-    const sumShares = (entries: Array<{shareOfGrossBeforeContra: string}>) => entries.reduce((sum, entry) => sum + Number(entry.shareOfGrossBeforeContra), 0);
     expect(Math.abs(sumShares(ledger.byIndexer) - 1)).toBeLessThan(1e-6);
+    expect(Math.abs(sumShares(ledger.byCurrency) - 1)).toBeLessThan(1e-6);
   });
 
-  it("gold: remuneration is typed, the formal holder and the economic creditors are distinct, and every term carries its own anchor", () => {
+  it("gold: the trace lists the operands of every number: each row in the total, each group, the reported difference", () => {
     const ledger = buildDebtLedger(camil());
-    const row = ledger.ledgerRows.find((entry) => entry.id === "deb-14-1")!;
-    expect(row.remuneration).toEqual({type: "percent_of_index", index: "CDI", percentOfIndex: "104"});
-    expect(row.lender?.formalHolder).toMatch(/Eco Securitizadora/);
-    expect(row.lender?.economicCreditors).toMatch(/titulares dos CRA/);
-    expect(row.anchors.remuneration?.document).toBe("af_14a_emissao.pdf");
-    expect(row.anchors.lender?.document).toBe("escritura_14a_emissao.pdf");
-    expect(row.anchors.guarantee).toEqual(itr(39, "15"));
+    const ids = ledger.trace.calculations.map((calculation) => calculation.id);
+    expect(ledger.trace.calculations.find((calculation) => calculation.id === "financial.debt_ledger_balance")?.operands["deb-15-1"]).toBe("770123");
+    expect(ids).toContain("financial.debt_ledger_group:indexer:IPCA");
+    expect(ids).toContain("financial.debt_ledger_group:currency:USD");
+    expect(ids).toContain("financial.debt_views:release:reported_difference");
+    expect(ids).toContain("financial.maturity_buckets:current");
+    const ipcaGroup = ledger.byIndexer.find((entry) => entry.indexer === "IPCA")!;
+    expect(ledger.trace.calculations.find((calculation) => calculation.id === "financial.debt_ledger_group:indexer:IPCA")?.result).toBe(`${ipcaGroup.balance};${ipcaGroup.shareOfGrossBeforeContra}`);
+    expect(Number(ipcaGroup.shareOfGrossBeforeContra) * 5742510).toBeCloseTo(743955, 0);
   });
 
-  it("names what the base does not support, field by field; loans lack remuneration, maturity, guarantee and holder; every row lacks the split", () => {
+  it("gold: remuneration is typed, the formal holder and the economic creditors carry their own anchors, terms point at the right pages", () => {
+    const ledger = buildDebtLedger(camil());
+    const row = ledger.ledgerRows.find((entry) => entry.id === "deb-14-3")!;
+    expect(row.remuneration).toEqual({type: "spread_over_index", index: "IPCA", spreadPercentPerYear: "6.9982"});
+    expect(row.lender?.formalHolder).toMatch(/Eco Securitizadora/);
+    expect(row.anchors.lenderFormalHolder).toEqual({document: "escritura_14a_emissao.pdf", clause: "preâmbulo, considerando D", page: 3});
+    expect(row.anchors.lenderEconomicCreditors?.document).toBe("af_14a_emissao.pdf");
+    expect(row.anchors.remuneration?.page).toBe(4);
+    expect(ledger.ledgerRows.find((entry) => entry.id === "deb-15-4")!.anchors.maturity?.page).toBe(5);
+    expect(ledger.ledgerRows.find((entry) => entry.id === "deb-11-1")!.anchors.lenderFormalHolder?.clause).toBe("preâmbulo");
+    expect(ledger.ledgerRows.find((entry) => entry.id === "deb-13-1")!.anchors.lenderEconomicCreditors?.document).toBe("cra_292_termo_securitizacao.pdf");
+    expect(ledger.ledgerRows.find((entry) => entry.id === "loan-costs")!.obligation).toBeNull();
+  });
+
+  it("names what the base does not support, field by field, with the two facts of a lender apart", () => {
     const ledger = buildDebtLedger(camil());
     const loanFields = ledger.uncoveredTerms.filter((entry) => entry.rowId === "loan-usd").map((entry) => entry.field);
-    expect(loanFields).toEqual(["remuneration", "maturity", "guarantee", "lender", "classification"]);
+    expect(loanFields).toEqual(["remuneration", "maturity", "guarantee", "lender_formal_holder", "lender_economic_creditors", "classification"]);
     expect(ledger.uncoveredTerms.find((entry) => entry.rowId === "loan-usd" && entry.field === "remuneration")?.reason).toMatch(/currency is not an indexer/);
     const debentureFields = new Set(ledger.uncoveredTerms.filter((entry) => entry.rowId.startsWith("deb-1")).map((entry) => entry.field));
     expect([...debentureFields]).toEqual(["classification"]);
+    const half = camil();
+    (half.rows[7] as Row).lender = {formalHolder: "Eco Securitizadora", economicCreditors: null};
+    expect(buildDebtLedger(half).uncoveredTerms.some((entry) => entry.rowId === "deb-13-1" && entry.field === "lender_economic_creditors")).toBe(true);
   });
 
-  it("refuses a term without an anchor, an empty string, a positive contra line, a duplicate id and a negative tolerance", () => {
+  it("refuses a term without an anchor, a lender fact without its anchor, an obligation on a contra line, an undisbursed row, a lease without inclusion anchor, a duplicate id and a tolerance without policy", () => {
     const unanchored = camil();
     (unanchored.rows[5] as Row).anchors = {balance: itr(39, "15")};
     expect(() => buildDebtLedger(unanchored)).toThrow(/without an anchor/);
-    const empty = camil();
-    (empty.rows[5] as Row).guarantee = " ";
-    expect(() => buildDebtLedger(empty)).toThrow();
+    const halfAnchored = camil();
+    delete (halfAnchored.rows[7] as Row).anchors.lenderEconomicCreditors;
+    expect(() => buildDebtLedger(halfAnchored)).toThrow(/economic creditors of deb-13-1 are stated without an anchor/);
+    const contraObligation = camil();
+    (contraObligation.rows[4] as Row).obligation = {kind: "other", disbursed: true, views: ["release"]};
+    expect(() => buildDebtLedger(contraObligation)).toThrow(/not an obligation to a lender/);
+    const authorizedOnly = camil();
+    authorizedOnly.rows.push({id: "notes-2026", instrument: "Notas comerciais (autorizadas)", obligation: {kind: "commercial_note", disbursed: false as unknown as true, views: ["release"]}, balance: "251000", currency: "BRL", anchors: {balance: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 1}}});
+    expect(() => buildDebtLedger(authorizedOnly)).toThrow();
+    const lease = camil();
+    lease.rows.push({id: "lease-1", instrument: "Arrendamentos", obligation: {kind: "lease", disbursed: true, views: ["contractual"]}, balance: "1", currency: "BRL", anchors: {balance: itr(12)}});
+    expect(() => buildDebtLedger(lease)).toThrow(/without the anchor that includes it/);
     const positiveContra = camil();
     (positiveContra.rows[4] as Row).balance = "9099";
     expect(() => buildDebtLedger(positiveContra)).toThrow(/must carry a negative balance/);
     const duplicate = camil();
     duplicate.rows.push({...(duplicate.rows[0] as Row)});
     expect(() => buildDebtLedger(duplicate)).toThrow(/duplicate row id/);
-    const negative = camil();
-    negative.tolerance = "-1";
-    expect(() => buildDebtLedger(negative)).toThrow();
+    expect(() => buildDebtLedger({...camil(), tolerance: {value: "-1"}})).toThrow();
+    expect(() => buildDebtLedger({...camil(), tolerance: {value: "1000000"}})).toThrow(/needs policyKey and policyVersion/);
   });
 
-  it("blocks a scale mutation, blocks silence, blocks contradictory no-debt evidence, and keeps an empty ledger only on evidence", () => {
+  it("blocks a definition that contradicts the formula, a scale mutation, silence, no-debt evidence next to rows, and keeps an empty ledger only on hypothetical evidence", () => {
+    const contradicting = camil();
+    contradicting.definitions = {...contradicting.definitions, contractual: {text: "empréstimos e debêntures menos caixa", anchor: itr(40, "15")}};
+    const blocked = buildDebtLedger(contradicting);
+    expect(blocked.state).toBe("blocked");
+    expect(blocked.blockReasons[0]).toMatch(/never mentions derivatives/);
+    expect(blocked.netDebtViews.contractual).toBeNull();
     const mutated = camil();
     (mutated.rows[0] as Row).balance = "1314412000";
     expect(buildDebtLedger(mutated).state).toBe("blocked");
     const silent = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: []});
     expect(silent.state).toBe("blocked");
     expect(silent.blockReasons[0]).toMatch(/silence is not an empty ledger/);
-    const contradictory = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: [], noDebtEvidence: itr(39, "15"), balanceSheet: {current: "10", nonCurrent: "0", anchor: itr(12)}});
+    const rowsAndNoDebt = buildDebtLedger({...camil(), noDebtEvidence: {document: "hipotetico_sem_divida.pdf", note: "hipótese sintética, não Camil"}});
+    expect(rowsAndNoDebt.blockReasons.some((reason) => /claims no onerous debt and the note carries rows/.test(reason))).toBe(true);
+    const synthetic = {document: "hipotetico_sem_divida.pdf", page: 1, note: "hipótese sintética: companhia sem dívida onerosa, não Camil"};
+    const contradictory = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: [], noDebtEvidence: synthetic, balanceSheet: {current: "10", nonCurrent: "0", anchor: synthetic}});
     expect(contradictory.state).toBe("blocked");
-    const proven = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: [], noDebtEvidence: itr(39, "15"), balanceSheet: {current: "0", nonCurrent: "0", anchor: itr(12)}});
+    const proven = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: [], noDebtEvidence: synthetic, balanceSheet: {current: "0", nonCurrent: "0", anchor: synthetic}});
     expect(proven.state).toBe("empty");
   });
 
-  it("is incomplete, never complete, when a required output cannot be produced from the base", () => {
+  it("hypothetical: reconciles current and non-current apart when the rows carry the split, and catches a compensating swap", () => {
+    const anchor = {document: "hipotetico_split.pdf", page: 1, note: "hipótese sintética, não Camil"};
+    const rows: DebtLedgerInput["rows"] = [
+      {id: "a", instrument: "A", obligation: {kind: "loan", disbursed: true, views: ["release", "contractual"]}, balance: "100", currency: "BRL", classification: {current: "40", nonCurrent: "60"}, anchors: {balance: anchor, classification: anchor}},
+      {id: "b", instrument: "B", obligation: {kind: "loan", disbursed: true, views: ["release", "contractual"]}, balance: "50", currency: "BRL", classification: {current: "10", nonCurrent: "40"}, anchors: {balance: anchor, classification: anchor}},
+    ];
+    const good = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows, balanceSheet: {current: "50", nonCurrent: "100", anchor}});
+    expect(good.reconciliation.split).toEqual({state: "reconciled", currentDifference: "0", nonCurrentDifference: "0", reason: null});
+    const swapped = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows, balanceSheet: {current: "60", nonCurrent: "90", anchor}});
+    expect(swapped.reconciliation.total.state).toBe("reconciled");
+    expect(swapped.reconciliation.split.state).toBe("difference");
+    expect(swapped.state).toBe("blocked");
+    expect(swapped.blockReasons[0]).toMatch(/compensating error/);
+  });
+
+  it("catches a compensating error between the first period of the schedule and a later one", () => {
+    const shifted = camil();
+    shifted.schedule = {...shifted.schedule!, periods: shifted.schedule!.periods.map((period) => period.period === "2026/27" ? {...period, amount: "1229828"} : period)};
+    const moved = camil();
+    moved.schedule = {...moved.schedule!, periods: moved.schedule!.periods.map((period) => period.period === "2026/27" ? {...period, amount: "1129828"} : period.period === "2027/28" ? {...period, amount: "876868"} : period)};
+    expect(buildDebtLedger(shifted).state).toBe("complete");
+    const result = buildDebtLedger(moved);
+    expect(result.schedule?.matchesGross).toBe(true);
+    expect(result.schedule?.currentPeriod?.matches).toBe(false);
+    expect(result.state).toBe("blocked");
+  });
+
+  it("is incomplete, never complete, when a required output cannot be produced from the base; release only blocks", () => {
     const noSchedule = camil();
     delete noSchedule.schedule;
     expect(buildDebtLedger(noSchedule).state).toBe("incomplete");
@@ -160,7 +238,9 @@ describe("build-debt-ledger executor", () => {
     expect(result.state).toBe("incomplete");
     expect(result.netDebtViews.contractual).toBeNull();
     expect(result.incompleteReasons.some((reason) => /contractual definition/.test(reason))).toBe(true);
-    expect(buildDebtLedger({...camil(), source: "release_only"}).ledgerRows).toHaveLength(0);
+    const releaseOnly = buildDebtLedger({...camil(), source: "release_only"});
+    expect(releaseOnly.ledgerRows).toHaveLength(0);
+    expect(releaseOnly.state).toBe("blocked");
   });
 
   it("is consistent: twenty deterministic permutations of rows and periods keep both fingerprints", () => {

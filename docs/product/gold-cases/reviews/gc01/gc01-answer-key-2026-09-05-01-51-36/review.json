@@ -1,0 +1,607 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "gc01-answer-key-2026-09-05-01-51-36",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "tool": "codex-cli 0.153.4"
+  },
+  "subject": {
+    "kind": "answer_key",
+    "id": "gc01-analista-ib-camil",
+    "version": "0.7",
+    "fingerprint": "610e2c16dca5e3a18210475c62c3a32271e4b634007583db59867284f53672ce"
+  },
+  "run": {
+    "id": "gc01-answer-key-2026-09-05-01-51-36",
+    "startedAt": "2026-09-05T01:51:36.369Z",
+    "finishedAt": "2026-09-05T01:58:00.842Z",
+    "commit": "66beeebb1aa60448cfc9b53dac115045f497430a"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "E01 — Integridade do corpus: os 43 arquivos listados têm os hashes declarados no manifesto.",
+      "source": "manifest.json",
+      "anchor": "entries; verificação SHA-256 de todas as entradas",
+      "result": "confirmed",
+      "note": "Todos os arquivos retornaram OK na comparação entre o SHA-256 recalculado e o manifesto."
+    },
+    {
+      "claim": "E02 — §1: capital de giro por moeda, custos de transação e totais de empréstimos em 31/05/2026 e 28/02/2026.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.39, linhas 2038-2044",
+      "result": "confirmed",
+      "note": "1.314.412 + 867.244 + 54.180 + 181.158 − 9.099 = 2.407.895; comparativo: 951.593 + 492.857 + 43.397 + 199.398 − 1.123 = 1.686.122."
+    },
+    {
+      "claim": "E03 — §1: saldos das doze séries de debêntures e respectivos custos de transação nas duas datas.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.39, linhas 2045-2059",
+      "result": "confirmed",
+      "note": "Todos os saldos por emissão/série coincidem; a soma líquida é 3.262.291 em 31/05/2026 e 3.302.261 em 28/02/2026."
+    },
+    {
+      "claim": "E04 — §1: dívida bruta, circulante e não circulante.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.39, linhas 2060-2065",
+      "result": "confirmed",
+      "note": "2.407.895 + 3.262.291 = 5.670.186; 1.229.828 + 4.440.358 = 5.670.186. O comparativo também fecha em 4.988.383."
+    },
+    {
+      "claim": "E05 — §1: dívida em moeda estrangeira de 1.102.582, equivalente a 45,8% dos empréstimos e 19,4% da dívida bruta.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.39, linhas 2040-2044 e 2060; notas de moeda, linhas 2067-2069",
+      "result": "confirmed",
+      "note": "867.244 + 54.180 + 181.158 = 1.102.582; 1.102.582/2.407.895 = 45,7903%; 1.102.582/5.670.186 = 19,4453%."
+    },
+    {
+      "claim": "E06 — §2: todas as linhas da movimentação trimestral.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2080-2094",
+      "result": "confirmed",
+      "note": "Saldo inicial 4.988.383; captações 2.046.140; juros e variações 172.359; custos −4.741; principal −1.285.146; juros −229.611; câmbio 60; conversão −17.258; saldo final 5.670.186."
+    },
+    {
+      "claim": "E07 — §2: conciliação da movimentação, aumento absoluto e percentual da dívida.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2085-2094",
+      "result": "confirmed",
+      "note": "4.988.383 + 2.046.140 + 172.359 − 4.741 − 1.285.146 − 229.611 + 60 − 17.258 = 5.670.186. Aumento = 681.803; 681.803/4.988.383 = 13,6678%, arredondado para 13,7%."
+    },
+    {
+      "claim": "E08 — §3: cronograma de amortização nas seis faixas e custo de debêntures, nas duas datas.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2097-2109",
+      "result": "confirmed",
+      "note": "Todos os valores coincidem com a tabela do gabarito."
+    },
+    {
+      "claim": "E09 — §3: soma do cronograma, crescimento do pico 2028/29 e concentração de 2026/27.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2102-2109",
+      "result": "confirmed",
+      "note": "1.229.828 + 776.868 + 1.228.475 + 694.497 + 994.544 + 809.198 − 63.224 = 5.670.186. O segundo pico cresceu 1.228.475 − 886.187 = 342.288. A primeira faixa representa 21,6894%, arredondada para 21,7%."
+    },
+    {
+      "claim": "E10 — §4: disponibilidades, aplicações equivalentes e caixa e equivalentes nas duas datas.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 3, PDF p.20, linhas 971-978",
+      "result": "confirmed",
+      "note": "349.791 + 1.080.923 = 1.430.714; comparativo: 171.272 + 1.826.336 = 1.997.608."
+    },
+    {
+      "claim": "E11 — §4: aplicações não equivalentes, derivativos, arrendamento e valores da nota 25.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 25, PDF p.51, linhas 2764-2786",
+      "result": "confirmed",
+      "note": "Aplicações 25.095; derivativo ativo 235/0; passivo 14.335/16.184; arrendamento 276.768/282.563; dividendos contábil/justo 322.498/420.000 e 346.957/420.000."
+    },
+    {
+      "claim": "E12 — §4: quatro montantes distintos de dividendos em 31/05/2026.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 18(e), PDF p.46, linhas 2476-2487; nota 25, PDF p.51, linhas 2781-2782",
+      "result": "confirmed",
+      "note": "Nominal 395.000; valor presente no balanço 338.565; valor contábil da nota 25, 322.498; valor justo da nota 25, 420.000. A ressalva correta é de quatro valores, não três."
+    },
+    {
+      "claim": "E13 — §4: valor presente contábil dos dividendos em 31/05/2026 e 28/02/2026.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 18(e), PDF p.46, linhas 2479-2487",
+      "result": "confirmed",
+      "note": "31/05: 140.000 − 6.911 + 255.000 − 49.524 = 338.565. 28/02: 140.000 − 10.522 + 280.000 − 62.521 = 346.957."
+    },
+    {
+      "claim": "E14 — §4: queda de caixa de 566.894 e aumento da dívida de 681.803.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "notas 3 e 15, PDF pp.20 e 39-40, linhas 976-978 e 2060/2085-2094",
+      "result": "confirmed",
+      "note": "1.430.714 − 1.997.608 = −566.894; 5.670.186 − 4.988.383 = 681.803."
+    },
+    {
+      "claim": "E15 — §4: equivalentes de caixa podem ser resgatados em até 90 dias e não provam liquidez D0.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 3, PDF p.20, linhas 980-986",
+      "result": "confirmed",
+      "note": "A ressalva é correta e suficiente: a nota informa prazo de até 90 dias, não disponibilidade imediata."
+    },
+    {
+      "claim": "E16 — §5: composição da dívida líquida divulgada no ITR.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2117-2119",
+      "result": "confirmed",
+      "note": "O ITR enumera empréstimos e financiamentos, instrumentos financeiros ativos e passivos, caixa e equivalentes e aplicações financeiras."
+    },
+    {
+      "claim": "E17 — §5 e §13.1: definição contratual de dívida líquida.",
+      "source": "escritura_13a_emissao.txt",
+      "anchor": "definição de “Dívida Líquida”, PDF p.7, linhas 324-331",
+      "result": "confirmed",
+      "note": "A escritura inclui empréstimos, financiamentos e debêntures, derivativos passivos e outras dívidas onerosas, menos caixa/equivalentes, aplicações e derivativos ativos; a mesma definição-base aparece nas escrituras da 11ª, 14ª e 15ª."
+    },
+    {
+      "claim": "E18 — §5: dívida líquida contratual de 4.228.477.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "notas 3, 15 e 25, PDF pp.20, 39 e 51, linhas 976-978, 2060 e 2769-2785",
+      "result": "confirmed",
+      "note": "5.670.186 + 14.335 − 235 − 1.430.714 − 25.095 = 4.228.477."
+    },
+    {
+      "claim": "E19 — §5: covenant de 4,0x, medição anual, adimplência em fevereiro de 2026 e pro forma de 4,72x/4,08x.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2111-2124",
+      "result": "confirmed",
+      "note": "A próxima medição indicada é 28/02/2027; o texto não sustenta afirmar rompimento em 31/05/2026."
+    },
+    {
+      "claim": "E20 — §5: EBITDA implícito e diferença para 4,0x.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2121-2124; componentes nas notas 3, 15 e 25",
+      "result": "confirmed",
+      "note": "4.228.477/4,72 = 895.863,77, compatível com “cerca de 895.900”. Diferença do índice para 4,0x = 0,72x. De 31/05/2026 a 28/02/2027 são nove meses-calendário."
+    },
+    {
+      "claim": "E21 — §5: tratamento do arrendamento como possível “outra dívida onerosa”.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "definição de “Dívida Líquida”, PDF p.7, linhas 334-340",
+      "result": "limitation",
+      "note": "A escritura usa a expressão ampla “qualquer outra rubrica que se refira à dívida onerosa”, mas não menciona arrendamento. A inclusão exige interpretação jurídica."
+    },
+    {
+      "claim": "E22 — §5 e §13.1: comparabilidade do pro forma de 4,72x com o covenant das escrituras.",
+      "source": "escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.22.3, PDF pp.33-34, linhas 1293-1337",
+      "result": "limitation",
+      "note": "A dívida líquida é comparável na base; o EBITDA e as informações complementares do cálculo de 4,72x não são abertos. A 11ª ainda prevê EBITDA de sociedade adquirida e sellers finance, ajuste ausente das demais escrituras."
+    },
+    {
+      "claim": "E23 — §6: receita bruta, receita líquida e custos de vendas nos dois trimestres.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "notas 19 e 20, PDF pp.46-47, linhas 2498-2517",
+      "result": "confirmed",
+      "note": "Os seis valores da tabela coincidem com o consolidado do ITR."
+    },
+    {
+      "claim": "E24 — §6: EBITDA, margem e lucro líquido do release.",
+      "source": "ri_release_1t26.txt",
+      "anchor": "release p.1, linhas 60-85; reconciliação, linhas 650-673",
+      "result": "confirmed",
+      "note": "EBITDA 210,0 milhões e margem 7,9%; 1T25, 233,1 milhões; lucro líquido 28,0 milhões e 66,0 milhões no comparativo."
+    },
+    {
+      "claim": "E25 — §6: depreciação, direito de uso, juros, arrendamento, receitas financeiras, derivativos, câmbio e resultado financeiro.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "notas 20 e 22, PDF pp.47-48, linhas 2529-2530 e 2558-2578",
+      "result": "confirmed",
+      "note": "Todos os valores dos dois períodos coincidem."
+    },
+    {
+      "claim": "E26 — §6: proxies de cobertura de 1,23x e 1,48x.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 22, PDF p.48, linhas 2562-2578; EBITDA em ri_release_1t26.txt, p.1, linhas 60-62",
+      "result": "confirmed",
+      "note": "210.000/170.548 = 1,2313x; 210.000/141.971 = 1,4792x. A ressalva de que não são cobertura contratual, cobertura caixa nem DSCR é suficiente."
+    },
+    {
+      "claim": "E27 — §6: resultado antes dos impostos, crédito fiscal e alíquota efetiva divulgada.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "demonstração de resultado e nota 23, PDF pp.12 e 48, linhas 663-668 e 2582-2603",
+      "result": "confirmed",
+      "note": "Prejuízo antes dos impostos de 2.450 mais crédito de IR/CSLL de 30.421 produz lucro consolidado de 27.971, arredondado pelo release para 28,0 milhões. A magnitude 30.421/2.450 = 1.241,67% coincide com a alíquota apresentada pela companhia."
+    },
+    {
+      "claim": "E28 — §7: contingências possíveis de 1.264.059, sendo 1.007.977 tributárias, sem provisão.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 17(b), PDF p.44, linhas 2308-2344",
+      "result": "confirmed",
+      "note": "A ressalva é suficiente: são perdas possíveis não provisionadas e não devem ser tratadas como dívida provável."
+    },
+    {
+      "claim": "E29 — §7: garantia das dívidas externas, participação da controladora e free float.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linha 2126; nota 18(a), PDF p.44, linhas 2350-2359",
+      "result": "confirmed",
+      "note": "A controladora garante as dívidas das controladas no exterior; Camil Investimentos tem 51,43% e o free float é 27,51%."
+    },
+    {
+      "claim": "E30 — §7: dividendos nominais remanescentes de 395.000 até 08/12/2028.",
+      "source": "02_Proposta_Administracao_AGOE_2026.txt",
+      "anchor": "RCA de 16/12/2025, linhas 1540-1685 e resumo das parcelas, linhas 1751-1765",
+      "result": "confirmed",
+      "note": "Após a primeira parcela de 25.000 paga em março, restam oito parcelas de 25.000 e três de 65.000: 8×25.000 + 3×65.000 = 395.000."
+    },
+    {
+      "claim": "E31 — §7: recebíveis em USD, CLP e PEN como potencial offset, não hedge demonstrado.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 4, PDF p.21, linhas 1039-1048",
+      "result": "confirmed",
+      "note": "A fonte traz 335.679 em USD, 158.346 em CLP e 35.266 em PEN, mas não os vincula por entidade, prazo ou disponibilidade às dívidas. A ressalva é correta e suficiente."
+    },
+    {
+      "claim": "E32 — §7: conciliação das três apresentações de estoque.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 5, PDF p.21, linhas 1052-1080",
+      "result": "confirmed",
+      "note": "3.088.478 − 643.241 = 2.445.237, igual à tabela de capital de giro arredondada. Além disso, 643.241 − 67.254 não circulantes = 575.987 correntes; 3.013.060 − 575.987 = 2.437.073, igual a 2.437,1 milhões no balanço gerencial."
+    },
+    {
+      "claim": "E33 — §7: apresentações gerenciais de estoque de 2.445,2 e 2.437,1 milhões, com 576,0 milhões de adiantamentos a produtores.",
+      "source": "ri_release_1t26.txt",
+      "anchor": "release pp.12 e 14, linhas 1305-1311 e 1432-1444",
+      "result": "confirmed",
+      "note": "As três apresentações se conciliam após separar adiantamentos e a parcela não circulante."
+    },
+    {
+      "claim": "E34 — §7: volume consolidado +17,9% e preço de alto giro no Brasil −3,5%.",
+      "source": "ri_release_1t26.txt",
+      "anchor": "release p.1, linhas 48-51 e 87-97",
+      "result": "confirmed"
+    },
+    {
+      "claim": "E35 — §11.1: termos da 11ª emissão.",
+      "source": "af_11a_emissao.txt",
+      "anchor": "características da emissão e séries, linhas 20-60; indicadores, linhas 108-115",
+      "result": "confirmed",
+      "note": "Emissão em 30/10/2021; vencimento 30/10/2028; 100% do CDI + 1,55% a.a.; volume 650 milhões, sendo 150 milhões na primeira série; índice 3,240 ante limite 4,000."
+    },
+    {
+      "claim": "E36 — §11.1: vencimentos e remunerações das três séries da 13ª emissão.",
+      "source": "af_13a_emissao.txt",
+      "anchor": "características das séries, linhas 35-158",
+      "result": "confirmed",
+      "note": "16/11/2028 a DI + 0,65%; 18/11/2030 a IPCA + 6,3416%; 16/11/2033 a IPCA + 6,5264%."
+    },
+    {
+      "claim": "E37 — §11.1: vencimentos e remunerações das três séries da 14ª emissão.",
+      "source": "af_14a_emissao.txt",
+      "anchor": "características das séries, linhas 36-156",
+      "result": "confirmed",
+      "note": "15/06/2029 a 104% DI; 16/06/2031 a IPCA + 6,8286%; 15/06/2034 a IPCA + 6,9982%."
+    },
+    {
+      "claim": "E38 — §11.1: vencimentos e remunerações das quatro séries da 15ª emissão.",
+      "source": "af_15a_emissao.txt",
+      "anchor": "características das séries, linhas 36-206",
+      "result": "confirmed",
+      "note": "18/11/2030 a 105% DI; 16/11/2032 prefixada a 14,15%; 16/11/2032 a IPCA + 8,20%; 16/11/2035 a IPCA + 8,70%."
+    },
+    {
+      "claim": "E39 — §11.1: seis séries IPCA, saldo de 743.955 e 13,1% da dívida bruta.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.39, linhas 2048-2057; indexadores nos relatórios fiduciários das 13ª, 14ª e 15ª",
+      "result": "confirmed",
+      "note": "282.357 + 110.321 + 204.059 + 66.024 + 50.401 + 30.793 = 743.955; 743.955/5.670.186 = 13,1205%."
+    },
+    {
+      "claim": "E40 — §11.2: apurações dos relatórios fiduciários.",
+      "source": "af_13a_emissao.txt",
+      "anchor": "indicadores, linhas 281-294",
+      "result": "confirmed",
+      "note": "A 13ª informa limite 3,50 e apurado 2,97 em fevereiro de 2025; maio, agosto e novembro aparecem como N/A. A 14ª repete 2,97; a 11ª informa 3,240/4,000; a 15ª mostra N/A."
+    },
+    {
+      "claim": "E41 — §11.3: notas comerciais autorizadas por 251 milhões, 251 mil títulos de R$1.000 e prazo de quatro anos.",
+      "source": "ca_notas_comerciais_2026-05-27.txt",
+      "anchor": "ata de 18/05/2026, PDF pp.1-2, linhas 25-34 e 45-90",
+      "result": "confirmed",
+      "note": "A data de emissão e o cronograma de amortização ficaram remetidos ao termo de emissão."
+    },
+    {
+      "claim": "E42 — §11.3: contraparte da operação de CPR.",
+      "source": "ca_operacao_estruturada_2026-05-27.txt",
+      "anchor": "ata de 18/05/2026, PDF pp.1-2, linhas 25-31 e 45-58",
+      "result": "corrected",
+      "note": "A coluna “Contraparte” traz incorretamente “contrato de abertura de crédito”. A contraparte é Banco do Brasil S.A.; o instrumento é Contrato de Abertura de Teto–CPR. Valor e prazo — até 535 milhões, até três anos, amortizações anuais — estão corretos. Correção não material para o cálculo econômico."
+    },
+    {
+      "claim": "E43 — §11.3: aprovações não demonstram desembolso ou inclusão na dívida de 31/05/2026.",
+      "source": "ca_operacao_estruturada_2026-05-27.txt",
+      "anchor": "ata de 18/05/2026, linhas 25-34 e 51-58",
+      "result": "confirmed",
+      "note": "O swap seria contratado na data e no volume dos desembolsos futuros. A ressalva do gabarito é correta e suficiente."
+    },
+    {
+      "claim": "E44 — §11.4: dívida líquida gerencial de 4.214,4 milhões e alavancagem de 4,7x.",
+      "source": "ri_release_1t26.txt",
+      "anchor": "release p.11, linhas 1166-1192",
+      "result": "confirmed",
+      "note": "5.670.186 − 1.430.714 − 25.095 = 4.214.377, arredondado para 4.214,4 milhões. Essa métrica exclui derivativos e difere em 14.100 da contratual."
+    },
+    {
+      "claim": "E45 — §11.4: capex de 77,5 milhões e conclusão das obras no 4T25.",
+      "source": "ri_release_1t26.txt",
+      "anchor": "release p.11, linhas 1204-1207",
+      "result": "confirmed",
+      "note": "Queda anual divulgada de 35,3%."
+    },
+    {
+      "claim": "E46 — §11.5: curva ANBIMA, CDI diário e Selic.",
+      "source": "anbima_ettj_2026-09-04.csv",
+      "anchor": "ETTJ em 04/09/2026, vértices 252 e 756",
+      "result": "confirmed",
+      "note": "Prefixada 13,4307%/14,0413%; IPCA real 6,9576%/7,9164%; inflação implícita de um ano 6,0520%. Os JSON do BCB confirmam CDI diário 0,051660% e Selic 14,00%."
+    },
+    {
+      "claim": "E47 — §13.1: definição-base de EBITDA nas 13ª, 14ª e 15ª emissões.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "definição de “EBITDA”, PDF p.7, linhas 363-365",
+      "result": "confirmed",
+      "note": "Lucro antes das receitas e despesas financeiras acrescido de amortização e depreciação dos últimos doze meses, conforme reportado."
+    },
+    {
+      "claim": "E48 — §13.1: degraus de 3,50x e 4,00x e condição de quitação dos CRA de referência.",
+      "source": "escritura_13a_emissao.txt",
+      "anchor": "cláusula 7.24.3(VIII), PDF pp.53-54, linhas 2650-2683",
+      "result": "confirmed",
+      "note": "3,50x vale até vencimento/liquidação dos CRA de referência; 4,00x vale no exercício encerrado após a quitação integral, exceto liquidação decorrente de vencimento antecipado."
+    },
+    {
+      "claim": "E49 — §13.1: comprovação da quitação ordinária da 257ª emissão.",
+      "source": "cra_257_relatorio_mensal_4t25.txt",
+      "anchor": "características e estrutura de capital, linhas 47-71; saldo devedor até novembro, linhas 77-89",
+      "result": "unverifiable",
+      "note": "O relatório mostra vencimento em 29/12/2025 e saldo devedor até novembro, mas não documenta a liquidação. A aplicação de 4,00x às 13ª, 14ª e 15ª permanece condicionada."
+    },
+    {
+      "claim": "E50 — §13.2: janelas e prêmio anualizado das séries DI.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "cláusulas 7.16.1.1-7.16.1.2 e 7.18.1, PDF pp.37-43, linhas 1935-1971 e 2200-2222",
+      "result": "confirmed",
+      "note": "A 15ª só admite mecanismo unilateral DI a partir de 15/11/2027; o prêmio é 0,40% a.a. pelos dias úteis remanescentes, não 0,40% flat. As datas de 14/05/2026 e 15/06/2026 das 13ª e 14ª também conferem."
+    },
+    {
+      "claim": "E51 — §13.2: janelas e make-whole das séries IPCA.",
+      "source": "escritura_13a_emissao.txt",
+      "anchor": "cláusulas 7.16.2 e 7.18.2, PDF pp.39-45, linhas 1966-2057 e 2149-2247",
+      "result": "confirmed",
+      "note": "Carências de 14/05/2027 e 15/05/2028; maior entre valor atualizado acrescido da remuneração e valor presente descontado à TIR da NTN-B de duration próxima, com cotação ANBIMA do segundo dia útil anterior. As datas equivalentes da 14ª e da 15ª também conferem."
+    },
+    {
+      "claim": "E52 — §13.2: série prefixada da 15ª e referência Pré x DI.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "cláusulas 7.16.2.1-7.16.2.2 e 7.18.2, PDF pp.38-45, linhas 1973-2054 e 2253-2321",
+      "result": "confirmed",
+      "note": "Mecanismo unilateral somente a partir de 15/11/2028; desconto pela taxa DI de 252 dias úteis baseada na interpolação da curva Pré x DI do segundo dia útil anterior."
+    },
+    {
+      "claim": "E53 — §13.2: aquisição e oferta de resgate da 11ª emissão.",
+      "source": "escritura_11a_emissao.txt",
+      "anchor": "cláusulas 4.13 e 4.14.1, PDF pp.22-24, linhas 855-941",
+      "result": "confirmed",
+      "note": "Aquisição a qualquer tempo depende do aceite do vendedor; a oferta exige prazo de adesão mínimo de quinze dias e adesão de 100% da emissão ou da série abrangida."
+    },
+    {
+      "claim": "E54 — §13.2: afirmação de que uma saída negociada antes das carências tem preço “nunca estimável a partir da escritura”.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "cláusulas 7.14.1-7.14.6, PDF pp.36-37, linhas 1846-1907",
+      "result": "corrected",
+      "note": "A oferta negociada é permitida desde a emissão, mas a escritura já define a base econômica: valor nominal/atualizado + remuneração pro rata + encargos, acrescido de prêmio se houver. O que não é determinável previamente é o prêmio eventualmente ofertado e a adesão, não todo o preço. Correção material para custo de saída."
+    },
+    {
+      "claim": "E55 — §13.5: quórum indicado para decidir um reperfilamento na 292ª emissão.",
+      "source": "cra_292_termo_securitizacao.txt",
+      "anchor": "cláusulas 17.8-17.8.2, linhas 4811-4849",
+      "result": "corrected",
+      "note": "50%+1 em primeira convocação e 50%+1 dos presentes em segunda é o quórum geral, sujeito a exceções. Alterações de remuneração, amortização, pagamentos/datas, vencimento e eventos de vencimento antecipado exigem 70% dos CRA em circulação em qualquer convocação. Waivers usam 50%+1, mas a segunda convocação exige presença mínima de 30%. A formulação genérica do gabarito para “reperfilamento” é materialmente insuficiente."
+    },
+    {
+      "claim": "E56 — §13.5: a securitizadora manifesta-se como titular formal das debêntures segundo orientação dos CRA.",
+      "source": "cra_292_termo_securitizacao.txt",
+      "anchor": "cláusula 17.1, linhas 4645-4651; cláusulas 17.8-17.8.3, linhas 4811-4855",
+      "result": "limitation",
+      "note": "A estrutura de orientação e assembleia está documentada, mas a qualificação jurídica final de “credor econômico” requer especialista e deve observar os quóruns especiais."
+    },
+    {
+      "claim": "E57 — §13.5: termos das 329ª e 389ª emissões apresentam governança assemblear semelhante, também com quóruns especiais.",
+      "source": "cra_329_termo_securitizacao.txt",
+      "anchor": "cláusulas 17.9-17.9.3, linhas 5411-5458",
+      "result": "confirmed",
+      "note": "O termo da 389ª repete a lógica geral e a exigência de 70% para alterações econômicas materiais em suas cláusulas 17.9-17.9.3, linhas 5175-5209."
+    },
+    {
+      "claim": "E58 — Recálculo do valor presente econômico dos dividendos a partir dos fluxos.",
+      "source": "02_Proposta_Administracao_AGOE_2026.txt",
+      "anchor": "cronograma, linhas 1540-1685 e 1751-1765",
+      "result": "limitation",
+      "note": "Os fluxos e datas estão disponíveis, mas o corpus não informa a taxa e a convenção usadas no ajuste a valor presente. Só é possível confirmar a conciliação contábil de 338.565, não reproduzir independentemente o desconto econômico."
+    },
+    {
+      "claim": "E59 — Separação entre IPCA capitalizado e IPCA pago.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF pp.39-40, linhas 2034-2124",
+      "result": "unverifiable",
+      "note": "O ITR agrega juros e variações monetárias e não abre a atualização IPCA capitalizada versus paga por série."
+    },
+    {
+      "claim": "E60 — Segunda verificação independente dos cinco números mais materiais.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "notas 3, 15 e 25, PDF pp.20, 39-40 e 51",
+      "result": "confirmed",
+      "note": "Refeito em AWK, independentemente do primeiro cálculo em Node.js: dívida bruta 5.670.186; saldo final pela movimentação 5.670.186; soma do cronograma 5.670.186; dívida líquida contratual 4.228.477; séries IPCA 743.955. Os cinco resultados coincidem."
+    },
+    {
+      "claim": "E61 — Mutação §10: trocar milhares por milhões.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "base de apresentação, PDF p.19, linhas 940-957",
+      "result": "confirmed",
+      "note": "O gabarito resiste: declara unidade R$ mil; release e apresentação identificam separadamente valores em R$ milhões."
+    },
+    {
+      "claim": "E62 — Mutação §10: afirmar “covenant rompido”.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2111-2124",
+      "result": "confirmed",
+      "note": "O gabarito resiste: distingue monitoramento pro forma de 4,72x da medição anual e registra adimplência em 28/02/2026."
+    },
+    {
+      "claim": "E63 — Mutação §10: usar EBITDA trimestral anualizado como EBITDA de covenant.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "definição de EBITDA, PDF p.7, linhas 363-365",
+      "result": "confirmed",
+      "note": "O gabarito resiste: usa EBITDA implícito UDM derivado do pro forma e trata EBITDA trimestral apenas nos proxies declarados."
+    },
+    {
+      "claim": "E64 — Mutação §10: somar arrendamento à dívida bruta sem declarar.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.39, linhas 2034-2065; nota 25, PDF p.51, linha 2780",
+      "result": "confirmed",
+      "note": "O gabarito resiste: mantém arrendamento fora da dívida bruta reportada e explicita a limitação jurídica."
+    },
+    {
+      "claim": "E65 — Mutação §10: tratar o pro forma da companhia como cálculo próprio.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2121-2124",
+      "result": "confirmed",
+      "note": "O gabarito resiste: identifica 4,72x como informado pela administração e o EBITDA de 895,9 milhões como derivação."
+    },
+    {
+      "claim": "E66 — Mutação §11.6: citar 4,0x como único covenant.",
+      "source": "escritura_13a_emissao.txt",
+      "anchor": "cláusula 7.24.3(VIII), linhas 2650-2683",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao apresentar os degraus 3,50x e 4,00x."
+    },
+    {
+      "claim": "E67 — Mutação §11.6: comparar 4,72x a 3,50x como definições plenamente idênticas.",
+      "source": "escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.22.3, linhas 1293-1337",
+      "result": "confirmed",
+      "note": "O gabarito resiste e condiciona a comparabilidade integral."
+    },
+    {
+      "claim": "E68 — Mutação §11.6: usar a dívida líquida do release no covenant.",
+      "source": "ri_release_1t26.txt",
+      "anchor": "release p.11, linhas 1166-1178",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao separar 4.214,4 milhões da dívida líquida contratual de 4.228.477."
+    },
+    {
+      "claim": "E69 — Mutação §11.6: somar notas comerciais e CPR à dívida de 31/05 ou ao cronograma.",
+      "source": "ca_notas_comerciais_2026-05-27.txt",
+      "anchor": "ata de 18/05/2026, linhas 25-34 e 45-90",
+      "result": "confirmed",
+      "note": "O gabarito resiste: classifica as operações como autorizadas e não demonstradas como desembolsadas."
+    },
+    {
+      "claim": "E70 — Mutação §11.6: chamar a securitizadora de credor econômico.",
+      "source": "cra_292_termo_securitizacao.txt",
+      "anchor": "cláusula 17.1, linhas 4645-4651; cláusulas 17.8-17.8.3",
+      "result": "confirmed",
+      "note": "O gabarito resiste no ponto formal/econômico, condicionado à revisão jurídica; deve, porém, incorporar a correção de quórum da E55."
+    },
+    {
+      "claim": "E71 — Mutação §11.6: tratar a curva de 04/09/2026 como curva da data-base do ITR.",
+      "source": "anbima_ettj_2026-09-04.csv",
+      "anchor": "cabeçalho “04/09/2026”",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao datar expressamente a curva."
+    },
+    {
+      "claim": "E72 — Mutação §11.6: escolher silenciosamente um valor de dividendos.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 18(e), linhas 2476-2487; nota 25, linhas 2781-2782",
+      "result": "confirmed",
+      "note": "O gabarito resiste e mantém os quatro valores e a divergência aberta."
+    },
+    {
+      "claim": "E73 — Mutação §11.6: chamar recebíveis em moeda de hedge.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 4, PDF p.21, linhas 1039-1048",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao classificá-los apenas como potencial offset."
+    },
+    {
+      "claim": "E74 — Mutação §11.6: promover 1,23x a cobertura contratual.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 22, PDF p.48, linhas 2562-2578",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao nomear 1,23x e 1,48x como proxies simples."
+    },
+    {
+      "claim": "E75 — Mutação §11.6: tratar contingências possíveis como dívida.",
+      "source": "01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 17(b), PDF p.44, linhas 2308-2344",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao tratá-las como alerta de dimensão, sem equipará-las a dívida provável."
+    },
+    {
+      "claim": "E76 — Mutação §13.4: aplicar 3,50x a fevereiro de 2027 sem ler o degrau.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "cláusula 7.26.3, linhas 2866-2879",
+      "result": "confirmed",
+      "note": "O gabarito resiste e condiciona o limite de 4,00x à quitação não decorrente de vencimento antecipado."
+    },
+    {
+      "claim": "E77 — Mutação §13.4: aplicar 4,00x sem condicionar à quitação dos CRA.",
+      "source": "escritura_13a_emissao.txt",
+      "anchor": "cláusula 7.24.3(VIII)(b), linhas 2677-2683",
+      "result": "confirmed",
+      "note": "O gabarito resiste e mantém a condição como insufficient_evidence."
+    },
+    {
+      "claim": "E78 — Mutação §13.4: tratar o prêmio DI de 0,40% a.a. como flat.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "cláusula 7.16.1.2, linhas 1943-1971",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao aplicar base 252 sobre os dias úteis remanescentes."
+    },
+    {
+      "claim": "E79 — Mutação §13.4: supor resgate unilateral IPCA antes da carência ou negar saída negociada.",
+      "source": "escritura_15a_emissao.txt",
+      "anchor": "cláusulas 7.14.1-7.14.6 e 7.16.3, linhas 1846-1907 e 2059-2162",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao distinguir oferta negociada desde a emissão de mecanismo unilateral após a carência; permanece necessária a correção sobre a estimabilidade do preço indicada na E54."
+    },
+    {
+      "claim": "E80 — Mutação §13.4: usar dívida líquida do release no covenant.",
+      "source": "escritura_13a_emissao.txt",
+      "anchor": "definição de Dívida Líquida, linhas 324-331",
+      "result": "confirmed",
+      "note": "O gabarito resiste ao usar 4.228.477 na definição contratual."
+    }
+  ],
+  "result": "fail",
+  "conditions": [
+    "A aplicação de 4,00x às 13ª, 14ª e 15ª emissões depende de prova da quitação integral dos CRA de referência sem vencimento antecipado; o corpus só mostra saldo da 257ª até novembro e vencimento em 29/12/2025 (cra_257_relatorio_mensal_4t25.txt, linhas 47-89).",
+    "A comparabilidade integral do pro forma de 4,72x depende da memória de cálculo do EBITDA e das informações complementares da companhia; a 11ª escritura contém ajuste adicional de aquisições e sellers finance (escritura_11a_emissao.txt, cláusula 4.22.3, linhas 1293-1337).",
+    "A inclusão de arrendamentos em “qualquer outra dívida onerosa” requer interpretação jurídica especializada (escritura_15a_emissao.txt, definição de Dívida Líquida, linhas 334-340).",
+    "A qualificação jurídica de credor econômico e a governança de um reperfilamento requerem revisão especializada e aplicação dos quóruns especiais de 70% quando houver alteração econômica material (cra_292_termo_securitizacao.txt, cláusulas 17.8-17.8.2, linhas 4811-4849).",
+    "A divergência entre 395.000, 338.565, 322.498 e 420.000 só pode ser encerrada por conciliação da companhia (01_ITR_1T26_31mai2026.txt, nota 18(e), linhas 2476-2487; nota 25, linhas 2781-2782).",
+    "O valor presente econômico dos dividendos não pode ser reproduzido sem a taxa e a convenção do desconto (02_Proposta_Administracao_AGOE_2026.txt, cronograma nas linhas 1540-1685; 01_ITR_1T26_31mai2026.txt, nota 18(e), linhas 2479-2487).",
+    "O valor monetário de qualquer make-whole depende da cotação aplicável no segundo dia útil anterior à operação (escritura_13a_emissao.txt, cláusula 7.18.2.1, linhas 2183-2197).",
+    "A separação entre IPCA capitalizado e pago permanece não verificável porque a nota 15 agrega juros e variações monetárias (01_ITR_1T26_31mai2026.txt, nota 15, linhas 2085-2094).",
+    "Emissão, desembolso e amortização efetivos das notas comerciais e da CPR permanecem não demonstrados (ca_notas_comerciais_2026-05-27.txt, linhas 52-90; ca_operacao_estruturada_2026-05-27.txt, linhas 25-58)."
+  ],
+  "notes": "Codex (GPT-5), revisão independente por modelo com leitura local do corpus e recálculos em Node.js e AWK.\n\nFalha por duas correções materiais: o custo de saída negociada não é totalmente “nunca estimável” porque as escrituras definem sua base econômica; e o quórum genérico de 50%+1 não basta para um reperfilamento que altere termos econômicos, hipótese em que a 292ª emissão exige 70% dos CRA em circulação. Há ainda uma correção não material na contraparte da CPR. As demais tabelas, derivações, ressalvas e mutações adversariais conferem dentro das limitações registradas."
+}

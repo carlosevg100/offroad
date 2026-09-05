@@ -1,6 +1,6 @@
 ---
 id: build-debt-ledger
-version: 2026.09.05-v1
+version: 2026.09.05-v4
 maturity: implemented
 title_pt: Construir o ledger de dívida
 title_en: Build the debt ledger
@@ -10,13 +10,13 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-debt-ledger
 implementation_export: buildDebtLedger
-result_contract: method.build-debt-ledger.v3
+result_contract: method.build-debt-ledger.v4
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
 unit_test_files: [packages/credit-playbook/src/executors/build-debt-ledger.test.ts]
 gold_case_ids: [gc01-analista-ib-camil]
-adversarial_case_ids: [adversarial:gc01:scale-mutation-blocks-ledger]
+adversarial_case_ids: [adversarial:gc01:scale-mutation-blocks-ledger, adversarial:gc01:compensating-split-swap-blocks-ledger, adversarial:gc01:definition-text-contradicts-formula]
 e2e_scenario_ids: [pending:case01-frozen-run]
 cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-01, D-03, D-24]
@@ -44,7 +44,7 @@ sustenta.
 
 # Quando não ativar
 - A companhia não tem dívida onerosa e o balanço prova isso; o produto vira uma linha dizendo que o ledger é vazio, com âncora.
-- Só existe um release sem notas: o ledger nasce marcado como incompleto e não recebe números que a nota não confirma.
+- Só existe um release sem notas: o ledger bloqueia com motivo estruturado e não recebe números que a nota não confirma; um release não é ledger.
 
 # Inputs mínimos e substitutos
 - Nota de empréstimos, financiamentos e debêntures da demonstração mais recente; substituto aceitável: DFP anterior mais movimentação do trimestre, com a diferença declarada.
@@ -53,10 +53,10 @@ sustenta.
 
 # Sequência operacional
 1. [deterministic] Inventariar instrumentos :: Listar cada instrumento e série da nota com saldo por período, moeda e classificação de prazo ; Registrar página e nota de cada linha | evidence: nota de dívida, balanço
-2. [deterministic] Conciliar com o balanço :: Somar circulante e não circulante do ledger e comparar com as rubricas do balanço ; Diferença acima da tolerância versionada bloqueia o ledger e vira lacuna nomeada | tools: financial.debt_views | evidence: balanço
-3. [deterministic] Montar o cronograma :: Alocar cada saldo nos períodos do cronograma da nota, em ano civil e em ano safra quando a companhia usa exercício deslocado ; Conferir que a soma dos períodos é o total da nota | tools: financial.maturity_buckets | evidence: nota de dívida
-4. [deterministic] Completar termos por série :: Preencher indexador, spread, vencimento, garantia e credor a partir de escrituras e relatórios fiduciários, com a âncora dos termos separada da âncora do saldo ; Deixar `insufficient_evidence`, campo a campo e com o motivo, o que nenhuma fonte do pack sustenta; moeda não é indexador ; Regras e custo de saída ficam com o método estimate-exit-cost-by-series | evidence: escrituras, relatórios de agente fiduciário
-5. [deterministic] Fechar as visões de dívida líquida :: Recalcular a visão do release e a visão contratual com as definições literais, cada uma com a fonte da definição e a âncora de cada componente ; Registrar o valor reportado pelo release à parte, com a diferença para o recalculado ; Nunca misturar as visões | tools: financial.debt_views | evidence: escritura, release, nota de dívida
+2. [deterministic] Conciliar com o balanço :: Comparar o total do ledger com circulante mais não circulante do balanço e, quando cada linha traz a sua classificação de prazo, conciliar circulante e não circulante separadamente, porque uma troca compensatória entre os dois não é conciliação ; Diferença acima da tolerância bloqueia o ledger e vira lacuna nomeada; tolerância acima de zero só existe sob política versionada (chave e versão registradas no resultado) | tools: financial.debt_views | evidence: balanço
+3. [deterministic] Montar o cronograma :: Alocar cada saldo nos períodos do cronograma da nota, em ano civil e em ano safra quando a companhia usa exercício deslocado ; Conferir que a soma dos períodos é o total da nota e que o primeiro período (os doze meses seguintes) é igual ao circulante do balanço, para que um erro compensatório entre períodos não passe pela soma | tools: financial.maturity_buckets | evidence: nota de dívida, balanço
+4. [deterministic] Completar termos por série :: Preencher indexador, spread, vencimento, garantia e credor a partir de escrituras e relatórios fiduciários, com a âncora dos termos separada da âncora do saldo e uma âncora por página de série ; O credor tem dois fatos com âncoras próprias: o titular formal (preâmbulo da escritura) e os credores econômicos (termo de securitização ou relatório fiduciário que vincula as debêntures aos CRA); cada fato ausente vira lacuna própria ; Deixar `insufficient_evidence`, campo a campo e com o motivo, o que nenhuma fonte do pack sustenta; moeda não é indexador ; Linha contra (custos de transação) não é obrigação e não carrega natureza de obrigação ; Arrendamento só entra na visão contratual com a âncora da inclusão ; Regras e custo de saída ficam com o método estimate-exit-cost-by-series | evidence: escrituras, termos de securitização, relatórios de agente fiduciário
+5. [deterministic] Fechar as visões de dívida líquida :: Recalcular a visão do release e a visão contratual com as definições literais, cada uma com a fonte da definição e a âncora de cada componente ; Conferir que o texto da definição concorda com a fórmula executada (a do release não cita derivativos, a contratual cita derivativos e caixa); um texto que contradiz a fórmula bloqueia a visão, e um texto com `qualquer outra dívida onerosa` marca o residual assumido zero ; Registrar o valor reportado pelo release à parte, com a diferença para o recalculado ; Nunca misturar as visões | tools: financial.debt_views | evidence: escritura, release, nota de dívida
 6. [model_assisted] Redigir a leitura :: Descrever concentração por período, por moeda e por indexador a partir das linhas do ledger ; Toda frase com número cita a linha e a âncora
 
 # Cálculos determinísticos
@@ -82,25 +82,26 @@ sustenta.
 - Nota de dívida ausente no período mais recente disponível.
 
 # Outputs
-- ledger_rows (array, required): linhas por instrumento e série com saldo na data-base e na anterior, moeda, natureza da obrigação (só desembolsadas) e visões a que pertence, remuneração tipada (spread sobre índice, percentual do índice ou prefixada), vencimento, garantia, titular formal e credores econômicos, classificação de prazo quando a fonte a dá, âncora do saldo e uma âncora por termo
-- schedule (object, required): cronograma por período com a soma conferida contra o total da nota
+- ledger_rows (array, required): linhas por instrumento e série com saldo na data-base e na anterior, moeda, natureza da obrigação (só desembolsadas; ausente nas linhas contra) e visões a que pertence, remuneração tipada (spread sobre índice, percentual do índice ou prefixada), vencimento, garantia, titular formal e credores econômicos com uma âncora cada, classificação de prazo quando a fonte a dá, âncora do saldo e uma âncora por termo
+- reconciliation (object, required): total contra o balanço e, quando possível, circulante e não circulante separadamente, com tolerância (valor, chave e versão da política) e âncora do balanço
+- schedule (object, required): cronograma por período com a soma conferida contra o total da nota e o primeiro período conferido contra o circulante do balanço
 - net_debt_views (object, required): visão do release e visão contratual, cada uma calculada só quando a definição literal e a sua fonte estão na base, com fórmula, operandos, âncora por componente e linhas incluídas; valor reportado pelo release à parte com a diferença
 - uncovered_terms (array, required): por linha e campo, estado `insufficient_evidence` e o motivo
-- state (enum, required): complete só com conciliação, cronograma e as duas visões; incomplete quando falta saída obrigatória, com o motivo; blocked em diferença de conciliação, silêncio documental ou contradição; empty só com evidência de ausência de dívida | values: complete, blocked, empty, incomplete
+- state (enum, required): complete só com conciliação, cronograma conferido e as duas visões; incomplete quando falta saída obrigatória, com o motivo; blocked em diferença de conciliação (total, por prazo ou do primeiro período), definição que contradiz a fórmula, release sem nota, silêncio documental ou contradição; empty só com evidência de ausência de dívida | values: complete, blocked, empty, incomplete
 
 # Exemplos
 ## Bom
-- Camil 31/05/2026: 5.670.186 de dívida bruta (4.988.383 em 28/02/2026) conciliados com o balanço da página 12; 4.228.477 de dívida líquida contratual pela definição da nota 15 (p. 40), com derivativos e aplicações ancorados na nota 25 (p. 51); 4.214.377 pela definição do release contra 4.214,4 milhões reportados (release, p. 12); seis séries IPCA somando 743.955; remuneração tipada (CDI + 0,65%, 104% do DI, prefixada 14,15%); Eco Securitizadora como titular formal das 13ª, 14ª e 15ª com os titulares dos CRA como credores econômicos; os quatro empréstimos com remuneração, vencimento, garantia e titular `insufficient_evidence`, porque o ITR prova a moeda e não os termos.
+- Camil 31/05/2026: 5.670.186 de dívida bruta (4.988.383 em 28/02/2026) conciliados com o balanço da página 12, primeiro período do cronograma (1.229.828) igual ao circulante; 4.228.477 de dívida líquida contratual pela definição da nota 15 (p. 40), com derivativos ancorados na nota 25 (p. 51) e aplicações no balanço (p. 11), residual `outra dívida onerosa` assumido zero de forma declarada; 4.214.377 pela definição do release contra 4.214,4 milhões reportados (release, p. 12); seis séries IPCA somando 743.955; remuneração tipada (CDI + 0,65%, 104% do DI, prefixada 14,15%); Eco Securitizadora como titular formal das 13ª, 14ª e 15ª (preâmbulo das escrituras) com os titulares dos CRA como credores econômicos (termo de securitização da 292ª; relatórios fiduciários da 14ª e da 15ª), páginas de série 2 a 5 nos relatórios fiduciários; os quatro empréstimos com remuneração, vencimento, garantia e titular `insufficient_evidence`, porque o ITR prova a moeda e não os termos.
 ## Ruim
 - Usar 4.214,4 do release para o covenant; somar arrendamento à dívida bruta sem dizer; alocar operações aprovadas em ata no cronograma sem prova de desembolso.
 
 # Testes
 ## Unit
-- soma do cronograma igual ao total da nota; visões contratual e do release recalculadas reproduzem os valores do gabarito do caso 01; participações por indexador e por moeda somam um sobre a dívida bruta antes dos custos
+- soma do cronograma igual ao total da nota e primeiro período igual ao circulante; visões contratual e do release recalculadas reproduzem os valores do gabarito do caso 01; participações por indexador e por moeda somam um sobre a dívida bruta antes dos custos; trace com os operandos de cada linha no total, de cada grupo e da diferença para o release
 ## Gold
 - gc01-analista-ib-camil: ledger reproduz a seção 1, o cronograma da seção 3 e as visões de dívida líquida da seção 5 do gabarito, com âncora de saldo e de termos por linha; headroom e covenant ficam com reconcile-covenant-definitions
 ## Adversarial
-- escala trocada (milhares por milhões) é detectada pela conciliação com o balanço, que tem âncora própria na página do balanço e não na nota; release sem nota não gera linhas; silêncio documental bloqueia e ledger vazio só existe com evidência, contradita pelo balanço quando ele não é zero; termo sem âncora, string vazia, linha contra positiva, id duplicado e tolerância negativa são recusados; moeda de empréstimo não vira indexador; operação apenas autorizada não é linha
+- escala trocada (milhares por milhões) é detectada pela conciliação com o balanço, que tem âncora própria na página do balanço e não na nota; troca compensatória entre circulante e não circulante bloqueia quando as linhas trazem a classificação; erro compensatório entre o primeiro período e um posterior bloqueia pela conferência com o circulante; definição cujo texto contradiz a fórmula bloqueia a visão; release sem nota bloqueia sem linhas; silêncio documental bloqueia; evidência de ausência de dívida ao lado de linhas bloqueia; ledger vazio só existe com evidência (em teste, sintética e rotulada), contradita pelo balanço quando ele não é zero; termo sem âncora, fato de credor sem âncora, obrigação em linha contra, linha não desembolsada, arrendamento na visão contratual sem âncora de inclusão, string vazia, linha contra positiva, id duplicado, tolerância negativa e tolerância sem política são recusados; moeda de empréstimo não vira indexador
 ## Aceitação
 - resultado reproduzível sob permutação de linhas e períodos, com fingerprints de entrada e saída iguais e ordenação por código de caractere; toda linha com âncora por termo; lacunas nomeadas campo a campo em vez de zeros; trace com fórmula e operandos de cada cálculo
 

@@ -1,0 +1,197 @@
+                                                                                                        Power BI Desktop
+
+
+
+
+                                                                                                      10/02/2026
+Este Relatório de Monitoramento é emitido pela Moody’s
+Local BR Agência de Classificação de Risco Ltda.
+                                                         Eco Securitizadora de Direitos Creditórios do Agronegócio S.A. –
+Esta publicação não anuncia uma Ação de Rating e,        1ª, 2ª e 3ª Séries da 292ª Emissão de CRAs (Risco Camil)
+portanto, não deve ser considerada um Relatório          Eco Securitizadora de Direitos Creditórios do Agronegócio S.A. – 1ª, 2ª e 3ª Séries da 292ª Emissão de CRAs (Risco Camil)
+de Classificação de Risco de Crédito, nos termos do
+disposto no artigo 16 da Resolução CVM no 9/2020.
+Consulte a página https://www.moodyslocal.com.br/ para
+                                                         Relatório     Trimestral | 31/12/2025
+visualizar os Comunicados de Ações de Rating.            Resumo da Operação
+Esta publicação não deve ser considerada como            Resumo da Operação
+publicidade, propaganda, divulgação ou recomendação
+                                                         Os ratings das 1ª, 2ª e 3ª Séries da 292ª Emissão de CRAs emitidos pela Eco Securitizadora de Direitos Creditórios do Agronegócio
+                                                         
+
+de compra, venda, ou negociação dos instrumentos ora
+referidos.                                               S.A. (“Eco Securitizadora”) refletem a qualidade de crédito das 1ª, 2ª e 3ª Séries da 13ª Emissão de Debêntures da Camil Alimentos
+                                                         S.A. (“Camil”, AA+.br estável). Portanto, qualquer alteração nos ratings das debêntures poderá levar a uma mudança nos ratings
+CONTATOS                                                 dos CRAs. Os recursos são utilizados exclusivamente para a aquisição de produtos agropecuários, considerados agropecuários in
+                                                         natura, ou transformados, no âmbito de relações comerciais mantidas pela Camil com produtores rurais.
+Lucas Correia
+Senior Credit Analyst ML
+lucas.correia@moodys.com                                 Participantes da Operação e Informações Adicionais
+Jean Machado
+ Associate ML                                            Securitizadora         Eco Securitizadora de Direitos Creditórios do Agronegócio S.A.
+jean.machado@moodys.com
+                                                         Devedor                Camil Alimentos S.A.
+                                                         Fiador/Avalista        Não Aplicável (NA)
+                                                         Data de Emissão        15/11/2023
+                                                         Custodiante            Vórtx Distribuidora de Títulos e Valores Mobiliários Ltda. ("Vórtx")
+SERVIÇO AO CLIENTE                                       Agente Fiduciário      Pentágono S.A. Distribuidora de Títulos e Valores Mobiliários ("Pentágono")
+Brasil                                                   Domicílio Bancário da Banco Bradesco S.A. (AAA.br estável)
++55.11.3043.7300                                         Conta da Operação
+                                                         Detalhamento do Lastro CRAs lastreados por debêntures simples, não conversíveis em ações, em três séries, de espécie
+                                                                                quirografária emitidas pela Camil.
+                                                                                                                       Power BI Desktop
+
+
+
+
+Características das Séries
+
+
+ Série                Emissão                  Vencimento Rentabilidade                                                   Regime de Amortização                                          Ativo Subjacente
+1ª Série 292ª Emissão de CRAs 19/11/2028 CDI + 0,6500 % a.a Juros: Semestrais; Principal: Parcela única no vencimento                                                     1ª Série da 13ª Emissão de Debêntures da Camil
+2ª Série 292ª Emissão de CRAs 18/11/2030 IPCA +6,3416% a.a Juros: Semestrais; Principal: Parcela anual em novembro de                                                     2ª Série da 13ª Emissão de Debêntures da Camil
+                                                            2029 e 2030
+3ª Série 292ª Emissão de CRAs 16/11/2033 IPCA +6,5264% a.a Juros: Semestrais; Principal: Parcela anual em novembro de                                                     3ª Série da 13ª Emissão de Debêntures da Camil
+                                                            2031, 2032 e 2033
+Informações de Rating
+
+
+ Série                Emissão                      Rating Inicial                     Data de Atribuição                       Rating Atual Data da Última Ação de Rating                      Em Revisão
+1ª Série 292ª Emissão de CRAs                         AA+.br (sf)                           02/05/2024                           AA+.br (sf)                 12/05/2025                            Não
+2ª Série 292ª Emissão de CRAs                         AA+.br (sf)                           02/05/2024                           AA+.br (sf)                 12/05/2025                            Não
+3ª Série 292ª Emissão de CRAs                         AA+.br (sf)                           02/05/2024                           AA+.br (sf)                 12/05/2025                            Não
+
+Estrutura de Capital
+
+
+ Série                 Emissão                          Valor Inicial                                      (%)                                 Valor Atual                         (%)                      PU
+1ª Série 292ª Emissão de CRAs                              304.160                                       46,8%                                  309.470                           44,7%                   1.017,5
+2ª Série 292ª Emissão de CRAs                              248.683                                       38,3%                                  275.294                           39,8%                   1.107,0
+3ª Série 292ª Emissão de CRAs                               97.157                                       14,9%                                   107.576                          15,5%                    1.107,2
+Total 292ª Emissão de CRAs                                 650.000                                      100,0%                                  692.339                          100,0%                   1.107,2
+
+Nota: Valores iniciais e Valores atuais em R$ '000; Fonte: Comissão de Valores Mobiliários (CVM) e Agente Fiduciário
+                                                                                                                        Power BI Desktop
+
+
+
+
+                                                                                                                    Saldo Devedor
+
+                                681 Mi                 689 Mi           698 Mi           705 Mi          682 Mi            688 Mi           695 Mi       701 Mi         708 Mi            716 Mi                685 Mi           692 Mi
+                                104 Mi                 105 Mi           107 Mi           108 Mi          106 Mi            106 Mi           107 Mi       108 Mi         109 Mi            110 Mi                107 Mi           108 Mi
+       600 Mi
+
+                                266 Mi                 269 Mi           273 Mi           276 Mi          270 Mi            272 Mi           274 Mi       276 Mi         278 Mi           280 Mi                 273 Mi           275 Mi
+)$R(   400 Mi
+
+       200 Mi
+                                312 Mi                 315 Mi           318 Mi           321 Mi          306 Mi            310 Mi           314 Mi       318 Mi         322 Mi           326 Mi                 306 Mi           309 Mi
+
+             0 Mi             janeiro 2025       fevereiro 2025       março 2025        abril 2025      maio 2025          junho 2025     julho 2025   agosto 2025   setembro 2025     outubro 2025          novembro 2025 dezembro 2025
+                                                                                                                    1ª Série 2ª Série 3ª Série
+                                                                                                                              PU
+
+
+                                                                                                                                                          1.109,5         1.117,9                  1.128,3
+                                                                                    1.108,7                                                1.103,1                                           1.127,4                                      1.107,0
+       1.100                                                      1.097,8                                                1.093,7                                          1.118,6                                   1.098,1
+                                             1.082,8                                1.109,5           1.086,2                              1.103,5         1.110,1                                                                        1.107,2
+                                                                  1.098,5                                                1.094,0                                                             1.071,4                1.098,1
+seõhlim $R
+                    1.070,1                  1.083,3                                                  1.086,1
+                    1.069,7                                                         1.056,8                                                                               1.057,3
+      1.050                                                       1.045,2                                                                                1.044,0
+                                             1.034,8                                                                                       1.031,4
+                                                                                                                         1.017,8                                                                                                          1.017,5
+                1.024,2                                                                               1.006,3                                                                                                       1.004,6
+     1.000 janeiro 2025          fevereiro 2025        março 2025                  abril 2025        maio 2025          junho 2025       julho 2025    agosto 2025     setembro 2025      outubro 2025           novembro 2025     dezembro 2025
+    Fonte: Comissão de Valores Mobiliários (CVM) e Agente Fiduciário                                                1ª Série 2ª Série 3ª Série
+                                                                             Power BI Desktop
+
+
+
+
+Comentários Adicionais:
+Os ratings AA+.br (sf) atribuídos aos CRAs estão baseados principalmente na qualidade de crédito da 13ª Emissão de Debêntures da Camil. Quando da data de publicação
+deste relatório, as debêntures carregavam rating 'AA+.br'
+
+
+
+
+Glossário:
+   » WR: Rating Retirado
+   » NR: Sem Rating
+   » DNG: Em revisão para rebaixamento
+   » UPG: Em revisão para elevação
+   » NA: Não Aplicável
+                                                                                                                        Power BI Desktop
+
+
+
+
+© 2026 Moody’s Corporation, Moody’s Investors Service, Inc., Moody’s Analytics, Inc. e/ou suas licenciadas e afiliadas (em conjunto, “MOODY’S”). Todos os direitos reservados.
+OS RATINGS DE CRÉDITO ATRIBUÍDOS PELAS AFILIADAS DE RATINGS DE CRÉDITO DA MOODY’S SÃO AS OPINIÕES ATUAIS DA MOODY’S SOBRE O RISCO FUTURO RELATIVO DE CRÉDITO DE ENTIDADES, COMPROMISSOS DE CRÉDITO, DÍVIDA OU
+VALORES MOBILIÁRIOS EQUIVALENTES À DÍVIDA, DE MODO QUE OS MATERIAIS, PRODUTOS, SERVIÇOS E AS INFORMAÇÕES PUBLICADAS, OU DE ALGUMA FORMA DISPONIBILIZADAS, PELA MOODY’S (COLETIVAMENTE “MATERIAIS”) PODEM
+INCLUIR TAIS OPINIÕES ATUAIS. A MOODY’S DEFINE RISCO DE CRÉDITO COMO O RISCO DE UMA ENTIDADE NÃO CUMPRIR COM AS SUAS OBRIGAÇÕES CONTRATUAIS E FINANCEIRAS NA DEVIDA DATA DE VENCIMENTO E QUAISQUER PERDAS
+FINANCEIRAS ESTIMADAS EM CASO DE INADIMPLEMENTO (“DEFAULT”). VER A PUBLICAÇÃO APLICÁVEL DA MOODY’S RELACIONADA AOS SÍMBOLOS E DEFINIÇÕES DE RATINGS DE CRÉDITO PARA MAIS INFORMAÇÕES SOBRE OS TIPOS DE
+OBRIGAÇÕES CONTRATUAIS E FINANCEIRAS ENDEREÇADAS PELOS RATINGS DE CRÉDITO DA MOODY’S INVESTORS SERVICE. OS RATINGS DE CRÉDITO NÃO TRATAM DE QUALQUER OUTRO RISCO, INCLUINDO, MAS NÃO SE LIMITANDO A: RISCO
+DE LIQUIDEZ, RISCO DE VALOR DE MERCADO OU VOLATILIDADE DE PREÇOS. OS RATINGS DE CRÉDITO, AS AVALIAÇÕES E OUTRAS OPINIÕES CONTIDAS NOS MATERIAIS DA MOODY’S NÃO SÃO DECLARAÇÕES SOBRE FATOS ATUAIS OU
+HISTÓRICOS. OS MATERIAIS DA MOODY´S PODERÃO TAMBÉM INCLUIR ESTIMATIVAS DO RISCO DE CRÉDITO BASEADAS EM MODELOS QUANTITATIVOS E OPINIÕES RELACIONADAS OU COMENTÁRIOS PUBLICADOS PELA MOODY´S ANALYTICS,
+INC. E/OU SUAS AFILIADAS. OS RATINGS DE CRÉDITO, AVALIAÇÕES, OUTRAS OPINIÕES E MATERIAIS DA MOODY’S NÃO CONSTITUEM OU FORNECEM ACONSELHAMENTO LEGAL, DE CONFORMIDADE, FINANCEIRO, DE INVESTIMENTO OU OUTRO
+ACONSELHAMENTO PROFISSIONAL. OS RATINGS DE CRÉDITO DA MOODY’S, AS AVALIAÇÕES, OUTRAS OPINIÕES E MATERIAIS NÃO CONFIGURAM E NÃO PRESTAM RECOMENDAÇÕES PARA A COMPRA, VENDA OU DETENÇÃO DE UM
+DETERMINADO VALOR MOBILIÁRIO. OS RATINGS DE CRÉDITO DA MOODY’S, AS AVALIAÇÕES, OUTRAS OPINIÕES E MATERIAIS NÃO CONSTITUEM RECOMENDAÇÕES SOBRE A ADEQUAÇÃO DE UM INVESTIMENTO PARA UM DETERMINADO
+INVESTIDOR. A MOODY’S ATRIBUI SEUS RATINGS DE CRÉDITO, SUAS AVALIAÇÕES E OUTRAS OPINIÕES, E DIVULGA, OU DE ALGUMA FORMA DISPONIBILIZA, OS SEUS MATERIAIS ASSUMINDO E PRESSUPONDO QUE CADA INVESTIDOR FARÁ O
+SEU PRÓPRIO ESTUDO, COM A DEVIDA DILIGÊNCIA, E PROCEDERÁ À AVALIAÇÃO DE CADA VALOR MOBILIÁRIO QUE TENHA A INTENÇÃO DE COMPRAR, DETER OU VENDER.
+OS RATINGS DE CRÉDITO DA MOODY´S, SUAS AVALIAÇÕES, OUTRAS OPINIÕES E MATERIAIS NÃO SÃO DESTINADOS PARA O USO DE INVESTIDORES DE VAREJO E SERIA IMPRUDENTE E INADEQUADO AOS INVESTIDORES DE VAREJO USAR OS RATINGS
+DE CRÉDITO, AS AVALIAÇÕES, OUTRAS OPINIÕES OU MATERIAIS DA MOODY´S AO TOMAR UMA DECISÃO DE INVESTIMENTO. EM CASO DE DÚVIDA, O INVESTIDOR DEVERÁ ENTRAR EM CONTATO COM UM CONSULTOR FINANCEIRO OU OUTRO
+CONSULTOR PROFISSIONAL.
+TODAS AS INFORMAÇÕES CONTIDAS NESTE DOCUMENTO ESTÃO PROTEGIDAS POR LEI, INCLUINDO, ENTRE OUTROS, OS DIREITOS DE AUTOR, E NÃO PODEM SER COPIADAS, REPRODUZIDAS, ALTERADAS, RETRANSMITIDAS, TRANSMITIDAS,
+DIVULGADAS, REDISTRIBUÍDAS OU REVENDIDAS OU ARMAZENADAS PARA USO SUBSEQUENTE PARA QUALQUER UM DESTES FINS, NO TODO OU EM PARTE, POR QUALQUER FORMA OU MEIO, POR QUALQUER PESSOA, SEM O CONSENTIMENTO PRÉVIO,
+POR ESCRITO, DA MOODY’S. PARA FINS DE CLAREZA, NENHUMA INFORMAÇÃO CONTIDA AQUI PODE SER UTILIZADA PARA DESENVOLVER, APERFEIÇOAR, TREINAR OU RETREINAR QUALQUER PROGRAMA DE SOFTWARE OU BANCO DE DADOS,
+INCLUINDO, MAS NÃO SE LIMITANDO A, QUALQUER SOFTWARE DE INTELIGÊNCIA ARTIFICIAL, APRENDIZADO DE MÁQUINA OU PROCESSAMENTO DE LINGUAGEM NATURAL, ALGORITMO, METODOLOGIA E/OU MODELO.
+OS RATINGS DE CRÉDITO, AS AVALIAÇÕES, OUTRAS OPINIÕES E MATERIAIS DA MOODY´S NÃO SÃO DESTINADOS PARA O USO, POR QUALQUER PESSOA, COMO UMA REFERÊNCIA (“BENCHMARK”), JÁ QUE ESTE TERMO É DEFINIDO APENAS PARA FINS
+REGULATÓRIOS E, PORTANTO, NÃO DEVEM SER UTILIZADOS DE QUALQUER MODO QUE POSSA RESULTAR QUE SEJAM CONSIDERADOS REFERÊNCIAS (BENCHMARK).
+Todas as informações contidas neste documento foram obtidas pela MOODY’S junto de fontes que esta considera precisas e confiáveis. Contudo, devido à possibilidade de erro humano ou mecânico, bem como outros fatores, a informação contida neste
+documento é fornecida no estado em que se encontra (“AS IS”), sem qualquer tipo de garantia, seja de que espécie for. A MOODY’S adota todas as medidas necessárias para que a informação utilizada para a atribuição de um rating de crédito ou avaliação seja de
+suficiente qualidade e provenha de fontes que a MOODY’S considera confiáveis, incluindo, quando apropriado, terceiros independentes. Contudo, a MOODY’S não presta serviços de auditoria e não pode, em todos os casos, verificar ou confirmar, de forma
+independente, as informações recebidas nos processos de rating de crédito ou de avaliação ou na preparação de seus Materiais.
+Na medida do permitido por lei, a MOODY’S e seus diretores, executivos, empregados, agentes, representantes, titulares de licenças e fornecedores não aceitam qualquer responsabilidade perante qualquer pessoa ou entidade relativamente a quaisquer danos ou
+perdas, indiretos, especiais, consequenciais ou incidentais, decorrentes ou relacionados com a informação aqui incluída ou pelo uso, ou pela incapacidade de usar tal informação, mesmo que a MOODY’S ou os seus diretores, executivos, empregados, agentes,
+representantes, titulares de licenças ou fornecedores sejam informados com antecedência da possibilidade de ocorrência de tais perdas ou danos, incluindo, mas não se limitando a: (a) qualquer perda de lucros presentes ou futuros; ou (b) qualquer perda ou dano
+que ocorra em que o instrumento financeiro relevante não seja objeto de um rating de crédito ou avaliação específica atribuída pela MOODY’S.
+Na medida do permitido por lei, a MOODY’S e seus administradores, membros dos órgãos sociais, empregados, agentes, representantes, titulares de licenças e fornecedores não se responsabilizam por quaisquer perdas ou danos, diretos ou compensatórios,
+causados a qualquer pessoa ou entidade, incluindo, entre outros, por negligência (exceto em casos de fraude, conduta dolosa ou qualquer outro tipo de responsabilidade que, para que não subsistam dúvidas, por lei, não possa ser excluída) por parte de, ou
+qualquer contingência dentro ou fora do controle da, MOODY’S ou de seus administradores, membros de órgão sociais, empregados, agentes, representantes, titulares de licenças ou fornecedores, decorrentes ou relacionadas com a informação aqui incluída, ou
+pelo uso, ou pela inaptidão de usar tal informação.
+                                                                                                                           Power BI Desktop
+
+
+
+
+A MOODY’S NÃO OFERECE GARANTIAS, EXPRESSAS OU IMPLÍCITAS, SOBRE A PRECISÃO, ATUALIDADE, COMPLETUDE, VALOR COMERCIAL OU ADEQUAÇÃO A QUALQUER FIM ESPECÍFICO DE QUALQUER RATING DE CRÉDITO, AVALIAÇÃO, OUTRA
+OPINIÃO OU INFORMAÇÕES DADAS OU PRESTADAS, POR QUALQUER MEIO OU FORMA, PELA MOODY´S.
+A Moody’s Investors Service, Inc., uma agência de rating de crédito, subsidiária integral da Moody’s Corporation (“MCO”), pelo presente, informa que a maioria dos emissores de títulos de dívida (incluindo obrigações emitidas por entidades privadas e por entidades
+públicas locais, outros títulos de dívida, notas promissórias e papel comercial) e de ações preferenciais classificadas pela Moody’s Investors Service, Inc., concordaram, antes da atribuição de qualquer rating de crédito, em pagar à Moody’s Investors Service, Inc.,
+por opiniões de ratings de crédito e serviços prestados por esta agência. A MCO e todas as entidades da MCO que emitem ratings sob a marca “Moody’s Ratings” (“Moody’s Ratings”) também mantêm políticas e procedimentos destinados a preservar a
+independência dos ratings de crédito e processos de ratings de crédito da Moody’s Ratings. São incluídas anualmente no website ir.moodys.com, sob o título “Investor Relations — Corporate Governance — Charter Documents – Director and Shareholder Affiliation
+Policy” informações acerca de certas relações que possam existir entre diretores da MCO e entidades classificadas com ratings de crédito e entre entidades que possuem ratings da Moody’s Investors Sevice, Inc. e que também informaram publicamente à SEC
+(Security and Exchange Commission – EUA) que detêm participação societária maior que 5% na MCO.
+Moody's SF Japan K.K., Moody's Local AR Agente de Calificación de Riesgo S.A., Moody’s Local BR Agência de Classificação de Risco LTDA, Moody’s Local MX S.A. de C.V, I.C.V., Moody's Local PE Clasificadora de Riesgo S.A., Moody's Local PA Calificadora de
+Riesgo S.A., Moody’s Local CR Calificadora de Riesgo S.A., Moody’s Local ES S.A. de CV Clasificadora de Riesgo, Moody’s Local RD Sociedad Calificadora de Riesgo S.R.L. e Moody’s Local GT S.A. (coletivamente, as "Moody’s Non-NRSRO CRAs") são todas
+subsidiárias de agências de classificação de risco integralmente detidas de forma indireta pela MCO. Nenhuma das Moody’s Non-NRSRO CRAs é uma Organização de Classificação de Risco Estatístico Nacionalmente Reconhecida (NRSRO).
+Termos adicionais apenas para a Austrália: qualquer publicação deste documento na Austrália será feita nos termos da Licença para Serviços Financeiros Australiana da afiliada da MOODY’s, a Moody’s Investors Service Pty Limited ABN 61 003 399 657AFSL
+336969 e/ou pela Moody’s Analytics Australia Pty Ltd ABN 94 105 136 972 AFSL 383569 (conforme aplicável). Este documento deve ser fornecido apenas a distribuidores (“wholesale clients”), de acordo com o estabelecido pelo artigo 761G da Lei Societária
+Australiana de 2001. Ao continuar a acessar esse documento a partir da Austrália, o usuário declara e garante à MOODY’S que é um distribuidor ou um representante de um distribuidor, e que não irá, nem a entidade que representa irá, direta ou indiretamente,
+divulgar este documento ou o seu conteúdo a clientes de varejo, de acordo com o significado estabelecido pelo artigo 761G da Lei Societária Australiana de 2001. O rating de crédito da Moody’s é uma opinião em relação à idoneidade creditícia de uma obrigação de
+dívida do emissor e não diz respeito às ações do emissor ou qualquer outro tipo de valores mobiliários disponíveis para investidores de varejo.
+Termos adicionais apenas para a Índia: os ratings de crédito da Moody's, avaliações, outras opiniões e Materiais não têm a intenção de ser, e não devem ser, utilizados ou considerados, por usuários localizados na Índia em relação a valores mobiliários listados ou
+propostos para listagem em bolsas de valores indianas.
+Termos adicionais referentes a Second Party Opinions (”SPO”) e Avaliações Net Zero (“NZA”) (conforme definido nos Símbolos e Definições de Rating da Moody’s Ratings): observe que as SPOs e as NZAs não são um “rating de crédito”. A emissão de SPOs e NZAs
+não é uma atividade regulamentada em muitas jurisdições, incluindo Singapura. UE: Na União Europeia, Moody’s Deutschland GmbH e Moody’s France SAS prestam serviços como revisores externos em conformidade com os requisitos aplicáveis do EU Green
+Bond Regulation. JAPÃO: no Japão, o desenvolvimento e a oferta de SPOs se enquadram na categoria de “Negócios Auxiliares”, não em “Negócios de Rating de Crédito”, e não estão sujeitos às regulamentações aplicáveis aos “Negócios de Rating de Crédito” sob a
+Lei de Instrumentos Financeiros e Câmbio do Japão e suas regulamentações relevantes. RPC: qualquer SPO: (1) não constitui uma Avaliação de Bônus Verde da RPC conforme definido por quaisquer leis ou regulamentos relevantes da RPC; (2) não pode ser incluído
+em nenhum documento de declaração de registro, circular de oferta, prospecto ou qualquer outro documento enviado às autoridades reguladoras da RPC ou utilizado de outra forma para atender a qualquer requisito de divulgação regulatória da RPC; e (3) não pode
+ser utilizado na RPC para qualquer fim regulatório ou para qualquer outro fim que não seja permitido pelas leis ou regulamentos relevantes da RPC. Para os fins deste aviso legal, "RPC" refere-se ao continente da República Popular da China, excluindo Hong Kong,
+Macau e Taiwan.
+

@@ -53,7 +53,7 @@ export const exitCostInputSchema = z.object({
 export type ExitCostInput = z.input<typeof exitCostInputSchema>;
 
 export type ExitCostOutput = {
-  schemaVersion: "method.estimate-exit-cost-by-series.v1";
+  schemaVersion: "method.estimate-exit-cost-by-series.v2";
   exitDate: string;
   unit: string;
   exitCosts: Array<{
@@ -62,9 +62,11 @@ export type ExitCostOutput = {
     permittedOnDate: boolean;
     availableFrom: string | null;
     mechanism: string;
+    /** What the indenture already prices: nominal (updated where indexed) plus accrued remuneration and charges. */
+    basePayable: string;
     premium: string | null;
     totalPayable: string | null;
-    state: "estimated" | "insufficient_evidence" | "not_permitted";
+    state: "estimated" | "base_priced_premium_open" | "insufficient_evidence" | "not_permitted";
     reason: string | null;
     anchor: z.infer<typeof anchorSchema>;
   }>;
@@ -83,7 +85,7 @@ export function estimateExitCostBySeries(raw: ExitCostInput): ExitCostOutput {
     const base = d(series.principal).plus(series.accruedInterest);
     const availableFrom = rule.mechanism === "redemption_offer" ? rule.availableFrom : rule.availableFrom;
     const permitted = availableFrom === null ? true : input.exitDate >= availableFrom;
-    const common = {seriesId: series.id, label: series.label, permittedOnDate: permitted, availableFrom, mechanism: rule.mechanism, anchor: series.anchor};
+    const common = {seriesId: series.id, label: series.label, permittedOnDate: permitted, availableFrom, mechanism: rule.mechanism, basePayable: out(base), anchor: series.anchor};
     if (!permitted) return {...common, premium: null, totalPayable: null, state: "not_permitted" as const, reason: `exit is only permitted from ${availableFrom}`};
     if (rule.mechanism === "flat_premium_pro_rata") {
       const premium = base.mul(d(rule.premiumPerYearPercent).div(100)).mul(d(rule.businessDaysRemaining).div(252));
@@ -96,13 +98,15 @@ export function estimateExitCostBySeries(raw: ExitCostInput): ExitCostOutput {
       const payable = Decimal.max(accrued, present);
       return {...common, premium: out(payable.minus(accrued)), totalPayable: out(payable), state: "estimated" as const, reason: null};
     }
-    if (rule.premiumPercent === null) return {...common, premium: null, totalPayable: null, state: "insufficient_evidence" as const, reason: `redemption offer premium is negotiated in the notice${rule.requiresFullAdherence ? " and requires adherence of all holders" : ""}; no offer exists in the base`};
+    // A negotiated offer is not unpriced: the indenture fixes the base (nominal, updated where indexed, plus pro rata
+    // remuneration and charges); only the premium offered and the adherence stay open until a notice exists.
+    if (rule.premiumPercent === null) return {...common, premium: null, totalPayable: null, state: "base_priced_premium_open" as const, reason: `the indenture prices the base (${out(base)}); the premium is negotiated in the offer notice${rule.requiresFullAdherence ? " and requires adherence of all holders" : ""}; no offer exists in the base, so the premium and the adherence are the open items`};
     const premium = base.mul(d(rule.premiumPercent).div(100));
     return {...common, premium: out(premium), totalPayable: out(base.plus(premium)), state: "estimated" as const, reason: rule.requiresFullAdherence ? "requires adherence of all holders of the series" : null};
   });
   const estimated = exitCosts.filter((entry) => entry.state === "estimated");
   const body = {
-    schemaVersion: "method.estimate-exit-cost-by-series.v1" as const,
+    schemaVersion: "method.estimate-exit-cost-by-series.v2" as const,
     exitDate: input.exitDate,
     unit: input.unit,
     exitCosts,

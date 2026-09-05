@@ -1,6 +1,6 @@
 ---
 id: estimate-exit-cost-by-series
-version: 2026.09.05-v1
+version: 2026.09.05-v2
 maturity: implemented
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/estimate-exit-cost-by-series
 implementation_export: estimateExitCostBySeries
-result_contract: method.estimate-exit-cost-by-series.v1
+result_contract: method.estimate-exit-cost-by-series.v2
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -79,7 +79,7 @@ na data-base, custo estimado e o que falta para fechar o número.
 
 # Exemplos
 ## Bom
-- Camil: séries DI da 13ª e da 14ª a partir de maio e junho de 2026 com prêmio de 0,40% ao ano sobre os dias úteis remanescentes; séries IPCA só de 2027 e 2028 por make-whole à TIR da NTN-B; prefixada da 15ª pelo maior entre atualizado e valor presente à curva Pré x DI; 11ª por oferta com prêmio negociado.
+- Camil: séries DI da 13ª e da 14ª a partir de maio e junho de 2026 com prêmio de 0,40% ao ano sobre os dias úteis remanescentes; séries IPCA só de 2027 e 2028 por make-whole à TIR da NTN-B; prefixada da 15ª pelo maior entre atualizado e valor presente à curva Pré x DI; 11ª por oferta com prêmio negociado: a base (nominal mais remuneração pro rata e encargos) é precificada pela escritura e o prêmio e a adesão ficam como incógnitas declaradas, nunca como preço inteiro desconhecido.
 ## Ruim
 - Assumir que a 13ª 2ª série pode ser pré-paga em 2026; aplicar 0,40% flat.
 

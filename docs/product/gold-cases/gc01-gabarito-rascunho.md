@@ -1,6 +1,6 @@
-# Caso 01: gabarito econômico, rascunho v0.7 para nova revisão independente
+# Caso 01: gabarito econômico, rascunho v0.8 para nova revisão independente
 
-Status: **rascunho v0.7**. A segunda revisão independente por IA (run `gc01-answer-key-2026-09-05-01-11-06`) resultou em `fail` com 70 confirmados, 6 corrigidos, 4 limitações e 1 não verificável; esta versão incorpora as seis correções (seção 15) e o corpus passa a conter os termos de securitização dos CRA (pack v3). A revisão independente por IA (Codex, GPT-5.6 Sol, run `gc01-answer-key-2026-09-05-00-57-01`, registro em `reviews/gc01/`) resultou em `fail`: 78 itens confirmados, 10 corrigidos, 5 limitações e 2 não verificáveis. Esta versão incorpora as correções (seção 14), condiciona as limitações e amplia o corpus com os índices da CVM; volta à revisão antes de qualquer congelamento. A v0.4 acrescentou a seção 13, lida nas escrituras arquivadas na CVM, que resolve o covenant e descreve o custo de saída por família de série; a v0.5 fecha as taxas de referência do make-whole e registra onde os termos de securitização dos CRA não estão. A v0.2 passou pela auditoria número a número do fundador em 4 de
+Status: **rascunho v0.8**. A terceira revisão independente por IA (run `gc01-answer-key-2026-09-05-01-51-36`) resultou em `fail` com 71 confirmados, 3 corrigidos, 4 limitações e 2 não verificáveis; esta versão incorpora as três correções (seção 16) e mantém as limitações como condições. A segunda revisão independente por IA (run `gc01-answer-key-2026-09-05-01-11-06`) resultou em `fail` com 70 confirmados, 6 corrigidos, 4 limitações e 1 não verificável; esta versão incorpora as seis correções (seção 15) e o corpus passa a conter os termos de securitização dos CRA (pack v3). A revisão independente por IA (Codex, GPT-5.6 Sol, run `gc01-answer-key-2026-09-05-00-57-01`, registro em `reviews/gc01/`) resultou em `fail`: 78 itens confirmados, 10 corrigidos, 5 limitações e 2 não verificáveis. Esta versão incorpora as correções (seção 14), condiciona as limitações e amplia o corpus com os índices da CVM; volta à revisão antes de qualquer congelamento. A v0.4 acrescentou a seção 13, lida nas escrituras arquivadas na CVM, que resolve o covenant e descreve o custo de saída por família de série; a v0.5 fecha as taxas de referência do make-whole e registra onde os termos de securitização dos CRA não estão. A v0.2 passou pela auditoria número a número do fundador em 4 de
 setembro de 2026; os números principais conferiram e onze correções materiais foram incorporadas
 aqui (seção 12 lista cada uma). A próxima revisão deve ser independente, não do fundador. Seções
 1 a 10 extraídas por leitura direta do ITR de 31 de maio de 2026 da
@@ -273,7 +273,7 @@ instrumentos não está no pack e fica `insufficient_evidence`.
 | Instrumento | Valor | Prazo | Contraparte |
 | --- | --- | --- | --- |
 | 1ª emissão de notas comerciais escriturais, série única, colocação privada | R$ 251.000.000 (251.000 notas de R$ 1.000) | 4 anos da data de emissão | Bank of China (Brasil) |
-| Operação estruturada com CPR (Cédula de Produto Rural) | até R$ 535.000.000 | até 3 anos, amortizações anuais | contrato de abertura de crédito |
+| Operação estruturada com CPR (Cédula de Produto Rural) | até R$ 535.000.000 | até 3 anos, amortizações anuais | Banco do Brasil S.A., por Contrato de Abertura de Teto de CPR |
 
 Leitura esperada: as atas provam autorização, com valor, prazo e contraparte, e nada além
 disso. Não provam data de emissão, valor efetivamente captado nem inclusão na posição de 31/05;
@@ -394,8 +394,11 @@ Portanto: retirar unilateralmente as séries DI da 13ª e da 14ª custa pouco a 
 (prêmio de 0,40% ao ano sobre o prazo remanescente); a série DI da 15ª só unilateralmente a partir
 de novembro de 2027; as séries em IPCA só unilateralmente após as carências (2027 e 2028 na 13ª e
 na 14ª; 2028 e 2029 na 15ª), pelo make-whole; a prefixada da 15ª só unilateralmente a partir de
-novembro de 2028. Qualquer saída antes disso é negociada, depende dos titulares dos CRA e tem
-preço a combinar, nunca estimável a partir da escritura.
+novembro de 2028. Qualquer saída antes disso é negociada e depende dos titulares dos CRA, mas a
+sua base econômica está na escritura: valor nominal (atualizado, nas séries em IPCA) mais a
+remuneração pro rata e os encargos devidos, acrescidos do prêmio que a companhia venha a oferecer.
+O que não se estima antes da negociação é o prêmio e a adesão, não o preço inteiro; o executor de
+custo de saída deve calcular a base e deixar o prêmio como incógnita declarada.
 
 ### 13.3 Estados de cobertura que mudam com o pack v2
 
@@ -416,9 +419,11 @@ dívida líquida do release no covenant.
 
 O termo de securitização da 292ª emissão (lastro da 13ª emissão de debêntures) fixa que a
 securitizadora exerce os seus direitos no âmbito das debêntures conforme orientação dos titulares
-de CRA reunidos em assembleia especial, com quórum de deliberação de 50% mais um dos CRA em
-circulação em primeira convocação e 50% mais um dos presentes em segunda (cláusulas 17.8 e
-seguintes). O credor econômico e a parte que decide um reperfilamento são, portanto, os titulares
+de CRA reunidos em assembleia especial. O quórum geral é de 50% mais um dos CRA em circulação em
+primeira convocação e 50% mais um dos presentes em segunda; um reperfilamento que altere
+remuneração, amortização, datas de pagamento, vencimento ou eventos de vencimento antecipado exige
+70% dos CRA em circulação em qualquer convocação, e um waiver decide-se por 50% mais um com
+presença mínima de 30% em segunda convocação (cláusulas 17.8 a 17.8.2). O credor econômico e a parte que decide um reperfilamento são, portanto, os titulares
 dos CRA em assembleia; a securitizadora é a titular formal que vota conforme essa orientação. Os
 termos de securitização, aditamentos e relatórios mensais das 257ª, 292ª, 329ª e 389ª emissões
 estão no pack v3 e no corpus de revisão (`cra_*.txt`); os das 329ª e 389ª devem ser lidos para
@@ -456,3 +461,13 @@ conciliação dos dividendos pela companhia (seção 4); valor monetário do mak
 | 25 | As carências regem só os mecanismos unilaterais; oferta facultativa negociada é permitida desde a emissão nas 13ª, 14ª e 15ª | seções 13.2 e 13.4 |
 | 26 | A 11ª admite aquisição facultativa a qualquer tempo, além da oferta com adesão integral | seção 13.2 |
 | 27 | Os termos de securitização dos CRA passam a constar do corpus de revisão | seção 13.5 |
+
+## 16. Correções da terceira revisão independente por IA (run gc01-answer-key-2026-09-05-01-51-36), incorporadas nesta v0.8
+
+| # | Correção do revisor | Onde entrou |
+| --- | --- | --- |
+| 28 | A contraparte da operação com CPR é o Banco do Brasil S.A.; o instrumento é o Contrato de Abertura de Teto de CPR | seção 11.3 |
+| 29 | A saída negociada antes das carências tem base econômica definida na escritura (nominal atualizado, remuneração pro rata, encargos); só o prêmio e a adesão ficam em aberto | seção 13.2 |
+| 30 | Um reperfilamento que altere termos econômicos dos CRA da 292ª exige 70% dos CRA em circulação; o quórum de 50% mais um vale para o geral e para waivers, com presença mínima de 30% em segunda convocação | seção 13.5 |
+
+As quatro limitações (arrendamento como outra dívida onerosa; comparabilidade integral do 4,72x; qualificação jurídica do credor econômico; valor presente dos dividendos sem taxa) e os dois itens não verificáveis (quitação ordinária da 257ª; IPCA capitalizado versus pago) permanecem condições registradas, não bloqueios: o executor de covenant trata o arrendamento como condição jurídica e assume o residual zero de forma declarada, e nenhum número derivado deles entra no gabarito como fato.

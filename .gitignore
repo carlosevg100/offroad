@@ -36,9 +36,8 @@ packages/evals/out/
 packages/testing-fixtures/assets/fakeco/.html/
 packages/testing-fixtures/assets/fakeco/.build.json
 
-# Text corpus derived from the frozen packs for AI reviews; only its manifest is committed
-docs/product/gold-cases/runs/*/ai-review-corpus/*
-!docs/product/gold-cases/runs/*/ai-review-corpus/manifest.json
+# Text corpus derived from the frozen packs for AI reviews: committed with its manifest of hashes so the
+# review workflow in GitHub Actions reads the same bytes the local reviews read.
 
 # Raw reviewer event streams are large and derived; the review record and response are what count
 docs/product/gold-cases/reviews/**/codex-events.jsonl
