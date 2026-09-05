@@ -87,12 +87,15 @@ export function previewBatches(): string[][] {
  * The `capital-project-plan.v1` snapshot the activation persists as the preview plan. The entry
  * job stays the project's own; the targets and the first work product come from the composition.
  */
-export function compileIntegrationPreviewPlan(input: {composition: PreviewComposition; entryJob: string; locale: "pt-BR" | "en-US"; registryVersion: string}) {
+export function compileIntegrationPreviewPlan(input: {composition: PreviewComposition; entryJob: string; locale: "pt-BR" | "en-US"; registryVersion: string; turn?: {messageId: string}}) {
   const batches = previewBatches();
   const batchOf = new Map(batches.flatMap((batch, index) => batch.map((taskId) => [taskId, index] as const)));
   return {
     schemaVersion: "capital-project-plan.v1",
     compilerVersion: previewCompilerVersion,
+    // One plan per turn: a plan that already holds task runs is never reactivated, and unchanged
+    // steps replay their artifacts across plans by input fingerprint instead.
+    ...(input.turn ? {turn: {messageId: input.turn.messageId}} : {}),
     registryVersion: input.registryVersion,
     job: {
       id: input.entryJob,

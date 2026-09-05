@@ -91,6 +91,10 @@ describe("integration_preview turn router", () => {
     expect(decision.activation?.composition).toBe("prepare_meeting");
     expect(decision.activation?.plan.taskSpecs).toHaveLength(9);
     expect(decision.activation?.plan.taskSpecs.every((task) => task.maturity === "implemented")).toBe(true);
+    // Every turn compiles its own plan: a plan that already holds runs is never reactivated.
+    const later = routeIntegrationPreviewTurn({...base, message: "Vamos preparar a reunião com a Camil: refinanciamento.", artifactTypes: [], messageId: "10000000-0000-4000-8000-000000000077"});
+    expect(later.activation?.plan.turn).toEqual({messageId: "10000000-0000-4000-8000-000000000077"});
+    expect(decision.activation?.plan.turn).toBeUndefined();
     expect(decision.reply).toContain("[Validação interna, integration_preview]");
     expect(decision.reply).toMatch(/\(1\) leitura de refinanciamento/);
   });

@@ -380,13 +380,20 @@ begin
 end;
 $$;
 
--- A later conversational turn may read the signed preview objects, and a stage event carries its own summary.
+-- A later conversational turn may read the signed preview objects, and a new activation compiles
+-- its own plan while the artifacts of the earlier plan stay visible to the worker for replay.
 do $$
 declare
   project_id uuid;
   message_id constant uuid := '50000000-0000-4000-8000-000000000252';
+  assistant_id constant uuid := '50000000-0000-4000-8000-000000000253';
   claim jsonb;
   artifacts jsonb;
+  later_activation jsonb;
+  recorded jsonb;
+  preview_claim jsonb;
+  context jsonb;
+  first_plan_id uuid;
 begin
   select session.capital_project_id into strict project_id
   from public.document_intake_sessions session
@@ -402,12 +409,57 @@ begin
   if jsonb_array_length(artifacts) <> 1 or artifacts #>> '{0,task_id}' <> 'C05' or artifacts #>> '{0,artifact_type}' <> 'preview_debt_ledger' then
     raise exception 'the preview artifacts are not readable by the follow-up turn: %', artifacts;
   end if;
-  perform public.worker_record_agent_failure((claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview_test_closed');
+  -- The same composition on a later turn: the plan snapshot carries the turn, so a plan that
+  -- already holds task runs is never reactivated.
+  select artifact.plan_id into strict first_plan_id
+  from public.capital_project_artifacts artifact
+  where artifact.id = (artifacts #>> '{0,id}')::uuid;
+  later_activation := jsonb_build_object(
+    'job', 'integration_preview',
+    'composition', 'prepare_meeting',
+    'caseId', 'gc01-analista-ib-camil',
+    'workflow', jsonb_build_object('id', 'case01.prepare_meeting', 'version', '2026.09.05-v1', 'fingerprint', repeat('a', 64)),
+    'brief', jsonb_build_object('sponsorInstruction', 'refinanciamento', 'premises', '{}'::jsonb),
+    'plan', jsonb_build_object(
+      'schemaVersion', 'capital-project-plan.v1',
+      'compilerVersion', 'integration-preview-2026.09.05-v1',
+      'registryVersion', '2026.09.01-v3',
+      'turn', jsonb_build_object('messageId', message_id),
+      'job', jsonb_build_object('id', 'origination_thesis', 'targetTaskIds', jsonb_build_array('A03'), 'firstWorkProduct', 'preview_meeting_brief', 'confirmationGate', 'preliminary_understanding', 'inputPolicy', '{}'::jsonb),
+      'taskSpecs', jsonb_build_array(
+        jsonb_build_object('id', 'C05', 'label', 'Mapear dívida econômica', 'graph', 'case', 'dependencies', '[]'::jsonb, 'executionClass', 'deterministic', 'effect', 'propose_state', 'maturity', 'implemented', 'ordinal', 0, 'batch', 0),
+        jsonb_build_object('id', 'A03', 'label', 'Planejar a devolutiva', 'graph', 'case', 'dependencies', jsonb_build_array('C05'), 'executionClass', 'compilation', 'effect', 'propose_state', 'maturity', 'implemented', 'ordinal', 1, 'batch', 1)
+      ),
+      'parallelBatches', jsonb_build_array(jsonb_build_array('C05'), jsonb_build_array('A03'))
+    )
+  );
+  recorded := public.worker_record_agent_response_and_activate_v3(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', assistant_id,
+    jsonb_build_object('state', 'idle', 'reply', 'Validação interna: vou reexecutar a análise.'),
+    null, later_activation
+  );
+  if (recorded #>> '{activation,replayed}')::boolean
+    or (recorded #>> '{activation,plan_id}')::uuid = first_plan_id then
+    raise exception 'the later turn reused the plan that already holds task runs: %', recorded;
+  end if;
+  preview_claim := public.worker_claim_job(repeat('p', 64), 600);
+  if preview_claim ->> 'kind' <> 'capital_project_analysis'
+    or preview_claim #>> '{payload,analysis_scope}' <> 'integration_preview'
+    or (preview_claim #>> '{payload,capital_project_plan_id}')::uuid = first_plan_id then
+    raise exception 'the later preview run was not claimed on its own plan: %', preview_claim;
+  end if;
+  context := public.worker_load_capital_project_context_v6((preview_claim ->> 'job_id')::uuid, preview_claim ->> 'capability_token');
+  if (context #>> '{plan,id}')::uuid = first_plan_id
+    or jsonb_array_length(context -> 'prior_artifacts') <> 1
+    or context #>> '{prior_artifacts,0,task_id}' <> 'C05'
+    or context #>> '{prior_artifacts,0,input_fingerprint}' <> repeat('1', 64) then
+    raise exception 'the later plan does not see the artifact of the earlier plan for replay: %', context -> 'prior_artifacts';
+  end if;
   perform public.worker_fail_job(
-    (claim ->> 'job_id')::uuid, claim ->> 'capability_token',
+    (preview_claim ->> 'job_id')::uuid, preview_claim ->> 'capability_token',
     jsonb_build_object(
-      'code', 'integration_preview_test_closed', 'stage', 'agent_operation_brief', 'retryable', false,
-      'cause', jsonb_build_object('name', 'Error', 'class', 'worker_error', 'message', 'test closes the follow-up turn')
+      'code', 'integration_preview_test_closed', 'stage', 'integration_preview', 'retryable', false,
+      'cause', jsonb_build_object('name', 'Error', 'class', 'worker_error', 'message', 'test closes the later preview run')
     ),
     false
   );

@@ -229,6 +229,7 @@ export async function processAgentOperationBriefJob(
         runActive: context.tasks.some((task) => ["queued", "running", "started"].includes(task.status)),
         priorOutputs,
         entryJob: context.project?.entryJob ?? "origination_thesis",
+        messageId: job.payload.message_id,
       });
       const previewMessageId = randomUUID();
       const previewResponse = {state: "idle" as const, reply: decision.reply};

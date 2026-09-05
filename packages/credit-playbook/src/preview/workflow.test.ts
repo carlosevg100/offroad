@@ -43,4 +43,12 @@ describe("integration_preview workflow of Case 01", () => {
     expect(previewWorkflowIdentity("prepare_meeting").fingerprint).toBe(identity.fingerprint);
     expect(previewWorkflowIdentity("prepare_material").fingerprint).not.toBe(identity.fingerprint);
   });
+  it("compiles one plan per turn: the same composition on a later turn is a different plan", () => {
+    const base = {composition: "change_premise" as const, entryJob: "origination_thesis", locale: "pt-BR" as const, registryVersion: "2026.09.01-v3"};
+    const first = compileIntegrationPreviewPlan({...base, turn: {messageId: "10000000-0000-4000-8000-000000000001"}});
+    const second = compileIntegrationPreviewPlan({...base, turn: {messageId: "10000000-0000-4000-8000-000000000002"}});
+    expect(first.turn).toEqual({messageId: "10000000-0000-4000-8000-000000000001"});
+    expect(JSON.stringify(first)).not.toBe(JSON.stringify(second));
+    expect(compileIntegrationPreviewPlan(base).turn).toBeUndefined();
+  });
 });

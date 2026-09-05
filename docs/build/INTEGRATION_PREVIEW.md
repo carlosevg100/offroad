@@ -94,6 +94,19 @@ Estado honesto que a prévia mostra hoje para o Caso 01: ledger, demonstrações
 corpus); antes/depois `compared`; devolutiva `planned` com alternativas e pontos a favor preenchidos
 e o resto declarado como lacuna. É isso que o produto deve mostrar enquanto a evidência não fecha.
 
+**Um plano por turno, replay entre planos (5 de setembro, tarde).** O primeiro E2E com worker
+mostrou que a ativação reaproveitava um plano com o mesmo fingerprint (a composição
+`change_premise` compila as mesmas nove tarefas de `prepare_meeting`); um plano que já tinha task
+runs era reativado, o início da tarefa replicava um run concluído e o registro do artefato exigia
+um run em execução (`capital_task_run_not_available` na primeira etapa). Agora o snapshot do
+plano carrega o turno (`turn.messageId`), cada ativação compila o seu plano, e o loader v6 lê os
+artefatos anteriores em qualquer plano de prévia do projeto (mesmo compilador), para o worker
+replicar por fingerprint de entrada o que não mudou. Migration
+`integration_preview_prior_artifacts_across_plans`; teste SQL cobre a segunda ativação. O mesmo
+log revelou um P1 fora da prévia: desde o PR #329 o worker recusava na claim todo `case_analysis`
+enfileirado sem `analysis_scope` (confirmação de intake, replay, análise incremental); o escopo
+agora assume `full_case` pelo tipo do job.
+
 ### Como ligar para uma organização (operador, conexão de gestão)
 
 ```sql

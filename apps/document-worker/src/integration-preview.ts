@@ -59,6 +59,8 @@ export type PreviewTurnInput = {
   priorOutputs: Map<string, PreviewStepOutput>;
   entryJob: string;
   registryVersion?: string;
+  /** The user message that opened this turn: every activation compiles its own plan. */
+  messageId?: string;
 };
 
 export type PreviewActivation = {
@@ -172,7 +174,7 @@ function activation(composition: PreviewComposition, request: PreviewRequest, pr
       request,
       evidence: {caseId: case01.case01EvidenceManifest.caseId, basis: case01.case01EvidenceManifest.basis, version: case01.case01EvidenceManifest.version},
     },
-    plan: compileIntegrationPreviewPlan({composition, entryJob: input.entryJob, locale: input.locale, registryVersion: input.registryVersion ?? offroadTaskRegistryVersion}),
+    plan: compileIntegrationPreviewPlan({composition, entryJob: input.entryJob, locale: input.locale, registryVersion: input.registryVersion ?? offroadTaskRegistryVersion, ...(input.messageId ? {turn: {messageId: input.messageId}} : {})}),
   };
 }
 
