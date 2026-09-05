@@ -423,4 +423,19 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     expect(deb13.comparabilityReasons.some((reason) => /no EBITDA is implied from a reported index that is not comparable/.test(reason))).toBe(true);
     expect(result.trace.calculations.some((calculation) => calculation.id.startsWith("financial.implied_ebitda:"))).toBe(false);
   });
+
+  it("mutation: a reported definition that names a component the structured list omits, derivatives without their side, and a candidate in another unit or date are refused", () => {
+    const omitted = camil("unknown");
+    omitted.reported = {...omitted.reported!, netDebtComponents: ["loans_and_financings", "debentures", "derivative_liabilities", "derivative_assets", "cash_and_equivalents"]};
+    expect(() => reconcileCovenantDefinitions(omitted)).toThrow(/names financial_investments and the structured components omit it/);
+    const sideless = camil("unknown");
+    sideless.reported = {...sideless.reported!, definition: "dívida líquida da nota 15 (empréstimos e financiamentos, debêntures, derivativos, caixa e equivalentes e aplicações financeiras) sobre EBITDA"};
+    expect(() => reconcileCovenantDefinitions(sideless)).toThrow(/mentions derivatives without their side/);
+    const otherUnit = camil("unknown");
+    otherUnit.candidateObligations = [{id: "c", description: "candidata em outra escala", value: "27", unit: "BRL million", asOf, relatedAdjustmentId: "sellers-finance", anchor: itr(41, "nota 16")}];
+    expect(() => reconcileCovenantDefinitions(otherUnit)).toThrow(/stated in BRL million, not the base unit/);
+    const otherDate = camil("unknown");
+    otherDate.candidateObligations = [{id: "c", description: "candidata de outra data", value: "27119", unit, asOf: "2026-02-28", relatedAdjustmentId: "sellers-finance", anchor: itr(41, "nota 16")}];
+    expect(() => reconcileCovenantDefinitions(otherDate)).toThrow(/dated 2026-02-28, not the as-of date/);
+  });
 });

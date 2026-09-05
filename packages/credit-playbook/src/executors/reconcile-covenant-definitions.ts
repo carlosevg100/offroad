@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `reconcile-covenant-definitions` (v11, after the tenth independent review).
+ * Executor of the method `reconcile-covenant-definitions` (v12, after the eleventh independent review).
  * It never writes "breached". Each indenture carries the anchor of its definitions and one anchor per
  * tier; EBITDA adjustments are typed (denominator additions versus numerator obligations) and never
  * folded together; the net debt of each instrument is computed from that instrument's own component
@@ -173,6 +173,10 @@ export const covenantReconciliationInputSchema = z.object({
     }
   });
   if (input.ltmEbitda && input.ltmEbitda.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["ltmEbitda", "asOf"], message: "the opened EBITDA must be dated at the as-of date"});
+  input.candidateObligations.forEach((candidate, index) => {
+    if (candidate.unit !== input.unit) context.addIssue({code: "custom", path: ["candidateObligations", index, "unit"], message: `candidate ${candidate.id} is stated in ${candidate.unit}, not the base unit ${input.unit}`});
+    if (candidate.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["candidateObligations", index, "asOf"], message: `candidate ${candidate.id} is dated ${candidate.asOf}, not the as-of date ${input.asOfDate}`});
+  });
   if (input.reported?.ebitdaOpening && input.reported.ebitdaOpening.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["reported", "ebitdaOpening", "asOf"], message: "the EBITDA opening behind the reported index must be dated at the as-of date"});
   const units = new Set<string>([input.unit, ...input.componentValues.map((line) => line.unit), ...(input.ltmEbitda ? [input.ltmEbitda.unit] : []), ...(input.reported?.ebitdaOpening ? [input.reported.ebitdaOpening.unit] : [])]);
   if (units.size > 1) context.addIssue({code: "custom", path: ["componentValues"], message: `one unit per base: ${[...units].sort().join(", ")} were given`});
@@ -190,6 +194,19 @@ export const covenantReconciliationInputSchema = z.object({
       const words = COMPONENT_WORDS[component];
       if (words && !words.test(text)) context.addIssue({code: "custom", path: ["reported", "definition"], message: `the reported definition text never names the component ${component} it claims to count; the literal definition and the structured components disagree`});
     }
+    // The other direction: a component the text names must be in the structured list, with derivatives on the side the text gives them.
+    const listed = new Set<string>(input.reported.netDebtComponents);
+    for (const [component, words] of Object.entries(COMPONENT_WORDS)) {
+      if (component === "derivative_liabilities" || component === "derivative_assets" || component === "other_onerous_debt") continue;
+      if (words.test(text) && !listed.has(component)) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: `the reported definition text names ${component} and the structured components omit it; the literal definition and the structured components disagree`});
+    }
+    if (/derivativ/.test(text)) {
+      const mentionsLiabilities = /derivativ[^.;]{0,40}passiv|passiv[^.;]{0,40}derivativ|derivative liabilit/.test(text);
+      const mentionsAssets = /derivativ[^.;]{0,40}ativ(?!o? ?e)|ativ[^.;]{0,40}derivativ|derivative asset/.test(text);
+      if (mentionsLiabilities && !listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the reported definition text adds derivative liabilities and the structured components omit them"});
+      if (mentionsAssets && !listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the reported definition text deducts derivative assets and the structured components omit them"});
+      if (!mentionsLiabilities && !mentionsAssets && (listed.has("derivative_liabilities") || listed.has("derivative_assets"))) context.addIssue({code: "custom", path: ["reported", "definition"], message: "the reported definition text mentions derivatives without their side (liabilities added, assets deducted); the polarity must be readable"});
+    }
     if (/somente|apenas|only/.test(text) && input.reported.netDebtComponents.length > 2) context.addIssue({code: "custom", path: ["reported", "definition"], message: "the reported definition text restricts itself (somente/apenas/only) while the structured components list several; the literal definition and the structured components disagree"});
   }
 });
@@ -199,7 +216,7 @@ type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type CovenantReconciliationOutput = {
-  schema_version: "method.reconcile-covenant-definitions.v11";
+  schema_version: "method.reconcile-covenant-definitions.v12";
   as_of_date: string;
   /** The unit every value below is expressed in; part of the output and of its fingerprint. */
   unit: string;
@@ -508,7 +525,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schema_version: "method.reconcile-covenant-definitions.v11" as const,
+    schema_version: "method.reconcile-covenant-definitions.v12" as const,
     as_of_date: input.asOfDate,
     unit,
     state,

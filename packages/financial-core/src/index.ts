@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.05-v10";
+export const financialCoreVersion = "2026.09.05-v11";
 
 export * from "./financial-truth";
 export * from "./indexed-debt";
@@ -269,4 +269,25 @@ export function macaulayDurationBusinessDays(flows: Array<{id: string; amount: s
   const weighted = present.discounted.reduce((sum, flow) => sum.plus(new Decimal(flow.presentValue).times(flow.businessDays)), new Decimal(0));
   const value = weighted.div(total).toDecimalPlaces(8).toFixed();
   return {value, trace: {id: "financial.macaulay_duration_business_days", formula: "sum(businessDays * presentValue) / sum(presentValue)", operands: {annualRate, flows: String(flows.length), presentValue: present.value}, result: value}};
+}
+
+/**
+ * Accrual factor over business days of a 252-day year kept at the precision an indenture writes:
+ * (1 + annualRate)^(businessDays / 252) - 1, or, with a percentage of the index, the daily rate
+ * times the percentage compounded over the days. `decimals` and `mode` are the layer the indenture
+ * states (a DI factor at eight decimals rounded, a daily accumulation at sixteen truncated).
+ */
+export function accrualFactorAtPrecision(input: {annualRate: DecimalInput; businessDays: number; percentOfIndex?: DecimalInput; decimals: number; mode: "round" | "truncate"}): {value: string; trace: CalculationTrace} {
+  if (!Number.isInteger(input.businessDays) || input.businessDays < 0) throw new Error("businessDays must be a non-negative integer");
+  if (!Number.isInteger(input.decimals) || input.decimals < 0 || input.decimals > 20) throw new Error("decimals must be an integer between 0 and 20");
+  const rounding = input.mode === "truncate" ? Decimal.ROUND_DOWN : Decimal.ROUND_HALF_UP;
+  let factor: Decimal;
+  if (input.percentOfIndex === undefined) {
+    factor = new Decimal(input.annualRate).plus(1).pow(new Decimal(input.businessDays).div(252)).minus(1);
+  } else {
+    const daily = new Decimal(input.annualRate).plus(1).pow(new Decimal(1).div(252)).minus(1).times(input.percentOfIndex);
+    factor = daily.plus(1).pow(input.businessDays).minus(1);
+  }
+  const value = factor.toDecimalPlaces(input.decimals, rounding).toFixed();
+  return {value, trace: {id: "financial.accrual_factor_at_precision", formula: input.percentOfIndex === undefined ? "(1 + annualRate)^(businessDays/252) - 1, at the stated layer" : "(1 + ((1 + annualRate)^(1/252) - 1) * percent)^businessDays - 1, at the stated layer", operands: {annualRate: new Decimal(input.annualRate).toFixed(), businessDays: String(input.businessDays), percentOfIndex: input.percentOfIndex === undefined ? "n/a" : new Decimal(input.percentOfIndex).toFixed(), decimals: String(input.decimals), mode: input.mode}, result: value}};
 }

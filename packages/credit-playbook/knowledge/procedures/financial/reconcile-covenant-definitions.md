@@ -1,6 +1,6 @@
 ---
 id: reconcile-covenant-definitions
-version: 2026.09.05-v11
+version: 2026.09.05-v12
 maturity: implemented
 title_pt: Reconciliar as definições de covenant com as escrituras
 title_en: Reconcile covenant definitions against the indentures
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-covenant-definitions
 implementation_export: reconcileCovenantDefinitions
-result_contract: method.reconcile-covenant-definitions.v11
+result_contract: method.reconcile-covenant-definitions.v12
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -51,7 +51,7 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - Demonstração da data de medição e, para leituras interinas, o pro forma divulgado com a sua definição.
 
 # Sequência operacional
-1. [deterministic] Extrair a cláusula :: Localizar na escritura a cláusula de índices financeiros e copiar definição de dívida líquida, definição de EBITDA, periodicidade, base de apuração, limites e condições de cada degrau ; Registrar cláusula numerada e página da definição de dívida líquida, da definição de EBITDA (páginas distintas) e, separadamente, de cada degrau (4.22.3(j); 7.24.3(VIII); 7.26.3(VIII)); um rótulo sem número não é âncora ; Tipar cada ajuste de EBITDA pelo lado do índice que toca (adição ao denominador, como o EBITDA de adquirida; obrigação no numerador, como o sellers finance), nunca fundidos numa lista única; uma obrigação do numerador entra na dívida líquida com valor datado e âncora quando a base o dá, fica registrada como desconhecida (nunca zero) quando a base não o dá, e vira condição jurídica em qualquer caso | evidence: escrituras
+1. [deterministic] Extrair a cláusula :: Localizar na escritura a cláusula de índices financeiros e copiar definição de dívida líquida, definição de EBITDA, periodicidade, base de apuração, limites e condições de cada degrau ; Registrar cláusula numerada e página da definição de dívida líquida, da definição de EBITDA (âncoras separadas, ainda que na mesma página) e, separadamente, de cada degrau (4.22.3(j); 7.24.3(VIII); 7.26.3(VIII)); um rótulo sem número não é âncora ; Tipar cada ajuste de EBITDA pelo lado do índice que toca (adição ao denominador, como o EBITDA de adquirida; obrigação no numerador, como o sellers finance), nunca fundidos numa lista única; uma obrigação do numerador entra na dívida líquida com valor datado e âncora quando a base o dá, fica registrada como desconhecida (nunca zero) quando a base não o dá, e vira condição jurídica em qualquer caso | evidence: escrituras
 2. [deterministic] Resolver o degrau aplicável :: Verificar a condição de cada degrau (vencimento ou quitação de instrumento de referência, exercício encerrado, evento) contra fatos datados; uma quitação (ordinária ou acelerada) sem data é fato desconhecido; o vencimento é fato datado e encerra o degrau `until` no primeiro vencimento ou quitação ordinária datada entre as referências (o que ocorrer primeiro), mesmo sem prova de quitação, enquanto o degrau `after` só se aplica com todas quitadas; uma quitação datada depois da data-base ainda não é fato ; Marcar como `insufficient_evidence` a condição que a base não prova e deixar uma condição escrita para cada degrau não provado, inclusive um degrau `until` isolado ; Derivar a próxima medição da periodicidade declarada (anual, semestral ou trimestral) a partir do fim do exercício | evidence: escrituras, comunicados, relatórios fiduciários
 3. [deterministic] Comparar definições :: Recalcular a dívida líquida de cada instrumento a partir da lista de componentes da sua própria definição, sobre linhas datadas na data-base, do mesmo perímetro da escritura e com âncora própria por operando (uma linha agregada declara o que cobre e entra no trace com o nome de tudo o que cobre, nunca como um só componente); o texto literal da definição tem de nomear cada componente estruturado; uma definição que acrescenta arrendamento ou retira derivativos muda o número ou recusa a comparação ; Tratar `qualquer outra dívida onerosa` como residual: sem linha na base, assumir zero de forma declarada e condicionar; arrendamento presente na base sem estar na definição vira condição jurídica, não dívida ; Quando a companhia abre o EBITDA de covenant com valor, unidade, perímetro, período de doze meses e data, calcular o índice pelo `financial-core` (`aggregateDebtViews`, `calculateLeverage`); uma adição ao denominador que o EBITDA aberto não declara incorporar condiciona a comparação; uma obrigação do numerador nunca é incorporada por declaração; um ajuste sem lado econômico tipado condiciona sempre ; Uma linha agregada da base só cobre componentes do mesmo lado (dívida ou dedução); misturar os dois é recusado até a base decompor ; Uma abertura de EBITDA junto do índice reportado precisa reproduzir esse índice (tolerância de 0,005x) e estar datada na data-base; senão a comparação é `not_comparable` ; Toda condição jurídica que toque o numerador (arrendamento na base fora da definição, sellers finance) limita a comparação a `conditional` e impede headroom ; Senão, usar o índice reportado só se datado na data-base, com os componentes que a base de fato enumera e com o EBITDA aberto em valor (um sinalizador não é abertura); derivar o EBITDA implícito pelo `financial-core` (`calculateImpliedEbitda`) sobre a dívida líquida antes das obrigações do numerador que o índice reportado não declara, e marcá-lo como derivado ; Decidir a comparabilidade confrontando componentes e perímetro (consolidado ou controladora), instrumento a instrumento, nunca por declaração de quem chama; sem dívida líquida computável pela definição, com residual sem linha na base, ou com abertura de EBITDA nula ou negativa, nunca há comparação plena nem headroom ; Só medir headroom, pelo financial-core, quando o limite está resolvido e a comparação é plena; comparação condicionada registra o índice e o limite lado a lado sem headroom | tools: financial.debt_views, financial.net_leverage, structure.covenant_headroom | evidence: ledger de dívida, ITR ou DFP
 4. [model_assisted] Redigir a leitura :: Dizer qual limite se aplica em qual data, o que o pro forma significa e o que falta provar ; Nunca escrever "rompido" para uma medição que ainda não ocorreu
@@ -61,7 +61,8 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - financial.debt_views: visão contratual reproduzida a partir do ledger.
 
 # Regras de comparação do índice reportado
-- O texto literal da definição reportada precisa nomear cada componente estruturado que o chamador declara; texto e componentes em desacordo são recusados.
+- O texto literal da definição reportada e os componentes estruturados têm de concordar nos dois sentidos: cada componente declarado aparece no texto, cada componente que o texto nomeia está na lista, e os derivativos vêm com o seu lado (passivos somados, ativos deduzidos).
+- Linhas candidatas do numerador levam a unidade e a data da base; outra escala ou outra data é recusada.
 - Índice reportado de outra data, outro perímetro ou outros componentes é não comparável e não gera EBITDA implícito; o índice fica sozinho.
 
 # Julgamentos permitidos
@@ -80,7 +81,7 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - Nenhuma escritura no pack e o trabalho exige afirmar headroom.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v11`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v12`
 - as_of_date (date, required): data-base da comparação
 - unit (string, required): unidade declarada pelo chamador para toda a base (linhas, EBITDA e aberturas têm de coincidir), presente mesmo no resultado bloqueado; entra no fingerprint, para que uma troca uniforme de escala mude o resultado
 - block_reasons (array, required): motivos estruturados de bloqueio, vazio quando não há
