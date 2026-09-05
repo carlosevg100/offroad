@@ -1,7 +1,8 @@
 import type {ModelGateway} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
+import {z} from "zod";
 
-import {decideLiveTurn, liveRoutingOutputSchema, premisesFromTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn, type LiveRoutingOutput, type LiveTurnContext} from "./live-preview";
+import {decideLiveTurn, liveRoutingOutputSchema, normalizePreviewTurn, premisesFromTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn, type LiveRoutingOutput, type LiveTurnContext} from "./live-preview";
 import type {PreviewStepOutput} from "./integration-preview";
 
 const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({value, state, confidence: state === "explicit" ? 1 : 0.7});
@@ -44,7 +45,8 @@ function classifierOutput(overrides: Omit<Partial<LiveRoutingOutput>, "turn"> & 
     },
   };
   const {turn, ...rest} = overrides;
-  return liveRoutingOutputSchema.parse({...base, ...rest, turn: {...base.turn, ...(turn ?? {})}});
+  const parsed = liveRoutingOutputSchema.parse({...base, ...rest, turn: {...base.turn, ...(turn ?? {})}});
+  return {...parsed, turn: normalizePreviewTurn(parsed.turn)};
 }
 
 function fakeGateway(output: LiveRoutingOutput, costUsd = 0.0021): ModelGateway {
@@ -240,10 +242,13 @@ describe("live_intelligence_preview router", () => {
       turn: {companies: null, premiseChanges: null, numberQuestion: null, material: null, answers: null, scopeChanges: null},
     };
     const parsed = liveRoutingOutputSchema.parse(loose);
-    expect(parsed.turn.scopeChanges).toEqual({audience: null, depth: null, form: null});
-    expect(parsed.turn.material).toEqual({requested: false, form: null, pages: null});
-    expect(parsed.turn.companies).toEqual([]);
-    expect(parsed.turn.answers).toEqual([]);
-    expect(parsed.routingCore.depth.confidence).toBeNull();
+    const turn = normalizePreviewTurn(parsed.turn);
+    expect(turn.scopeChanges).toEqual({audience: null, depth: null, form: null});
+    expect(turn.material).toEqual({requested: false, form: null, pages: null});
+    expect(turn.companies).toEqual([]);
+    expect(turn.answers).toEqual([]);
+    expect(parsed.routingCore.depth.confidence ?? null).toBeNull();
+    // The schema the gateway fingerprints and sends in the prompt must stay representable.
+    expect(() => z.toJSONSchema(liveRoutingOutputSchema)).not.toThrow();
   });
 });
