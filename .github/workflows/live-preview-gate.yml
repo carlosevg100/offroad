@@ -9,10 +9,10 @@ on:
     inputs:
       max_cost_usd_per_job:
         description: Hard cost cap per worker job
-        default: "0.25"
+        default: "0.60"
       max_calls_per_job:
         description: Hard call cap per worker job
-        default: "3"
+        default: "4"
 
 permissions:
   contents: read
@@ -101,8 +101,8 @@ jobs:
 
       - name: Start the worker with the model key and a hard budget
         env:
-          MAX_COST: ${{ inputs.max_cost_usd_per_job || '0.25' }}
-          MAX_CALLS: ${{ inputs.max_calls_per_job || '3' }}
+          MAX_COST: ${{ inputs.max_cost_usd_per_job || '0.60' }}
+          MAX_CALLS: ${{ inputs.max_calls_per_job || '4' }}
         run: |
           set -euo pipefail
           ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
