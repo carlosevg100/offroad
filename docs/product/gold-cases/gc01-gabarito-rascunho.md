@@ -1,6 +1,6 @@
-# Caso 01: gabarito econômico, rascunho v0.6 para nova revisão independente
+# Caso 01: gabarito econômico, rascunho v0.7 para nova revisão independente
 
-Status: **rascunho v0.6**. A revisão independente por IA (Codex, GPT-5.6 Sol, run `gc01-answer-key-2026-09-05-00-57-01`, registro em `reviews/gc01/`) resultou em `fail`: 78 itens confirmados, 10 corrigidos, 5 limitações e 2 não verificáveis. Esta versão incorpora as correções (seção 14), condiciona as limitações e amplia o corpus com os índices da CVM; volta à revisão antes de qualquer congelamento. A v0.4 acrescentou a seção 13, lida nas escrituras arquivadas na CVM, que resolve o covenant e descreve o custo de saída por família de série; a v0.5 fecha as taxas de referência do make-whole e registra onde os termos de securitização dos CRA não estão. A v0.2 passou pela auditoria número a número do fundador em 4 de
+Status: **rascunho v0.7**. A segunda revisão independente por IA (run `gc01-answer-key-2026-09-05-01-11-06`) resultou em `fail` com 70 confirmados, 6 corrigidos, 4 limitações e 1 não verificável; esta versão incorpora as seis correções (seção 15) e o corpus passa a conter os termos de securitização dos CRA (pack v3). A revisão independente por IA (Codex, GPT-5.6 Sol, run `gc01-answer-key-2026-09-05-00-57-01`, registro em `reviews/gc01/`) resultou em `fail`: 78 itens confirmados, 10 corrigidos, 5 limitações e 2 não verificáveis. Esta versão incorpora as correções (seção 14), condiciona as limitações e amplia o corpus com os índices da CVM; volta à revisão antes de qualquer congelamento. A v0.4 acrescentou a seção 13, lida nas escrituras arquivadas na CVM, que resolve o covenant e descreve o custo de saída por família de série; a v0.5 fecha as taxas de referência do make-whole e registra onde os termos de securitização dos CRA não estão. A v0.2 passou pela auditoria número a número do fundador em 4 de
 setembro de 2026; os números principais conferiram e onze correções materiais foram incorporadas
 aqui (seção 12 lista cada uma). A próxima revisão deve ser independente, não do fundador. Seções
 1 a 10 extraídas por leitura direta do ITR de 31 de maio de 2026 da
@@ -127,7 +127,7 @@ instrumentos financeiros ativos, menos caixa e equivalentes, menos aplicações 
 | EBITDA dos últimos doze meses implícito no pro forma | cerca de 895.900 (4.228.477 dividido por 4,72) |
 
 Achado esperado de maior materialidade: o índice pro forma está 0,72x acima do limite contratual,
-com a medição anual a oito meses. A conclusão não é "covenant rompido" (a medição é anual e a
+com a medição anual a nove meses (31/05/2026 a 28/02/2027). A conclusão não é "covenant rompido" (a medição é anual e a
 companhia estava adimplente em fevereiro), e sim que a tese de refinanciamento ou de qualquer nova
 dívida precisa partir do headroom negativo interino e do que a administração fará até fevereiro
 de 2027. Quem afirmar rompimento erra; quem ignorar o 4,72x erra mais.
@@ -178,7 +178,7 @@ reconhecimento fiscal, não da operação. Isso é um achado, não um número a 
 | Free float de 27,51%; Camil Investimentos com 51,43% | nota 18a, página 44 | governança e liquidez do papel |
 | Dividendos de 395.000 nominais remanescentes das doze parcelas aprovadas em 16/12/2025, a pagar até 8 de dezembro de 2028 (a primeira foi paga em março de 2026) | nota 18e, página 46; proposta da AGOE, cronograma das parcelas | uso de caixa comprometido que concorre com o serviço da dívida até 2028 |
 | Contas a receber com 335.679 em USD, 158.346 em CLP e 35.266 em PEN | nota 4, página 21 | potencial offset da dívida em moeda estrangeira; não prova hedge natural, porque faltam entidade, moeda, prazo, disponibilidade e correlação dos fluxos |
-| Estoques de 3.088.478 na nota 5, incluindo 643.241 de adiantamentos a fornecedores; 2.445.237 sem os adiantamentos, que é o valor do release (2.445,2 milhões) | nota 5, página 21; release, tabela de capital de giro | duas definições de estoque que fecham entre si e precisam ser conciliadas explicitamente; a sazonalidade da safra pressiona o capital de giro no trimestre |
+| Estoques de 3.088.478 na nota 5, incluindo 643.241 de adiantamentos a fornecedores; 2.445.237 sem esses adiantamentos, que é o valor da tabela de capital de giro do release (2.445,2 milhões); e 2.437,1 milhões de estoques no balanço gerencial do release, com 576,0 milhões de adiantamentos a produtores em linha própria | nota 5, página 21; release, tabela de capital de giro (p. 12) e balanço (p. 14) | três apresentações de estoque que precisam ser conciliadas explicitamente; a sazonalidade da safra pressiona o capital de giro no trimestre |
 | Volume consolidado subiu 17,9% e preço no Brasil caiu 3,5% no alto giro | release, página 2 | a margem depende de preço, não de volume |
 
 ## 8. O que a base pública não sustenta (estados de cobertura esperados)
@@ -334,7 +334,7 @@ promover 1,23x a cobertura de juros contratual; tratar contingências possíveis
 | 6 | Amortizações futuras dessas operações não alocáveis ao cronograma a partir da autorização | seção 11.3 |
 | 7 | Recebíveis em moeda estrangeira são potencial offset, não hedge natural | seções 7 e 9 |
 | 8 | 1,23x e 1,48x são proxies simples, não cobertura contratual, caixa ou DSCR | seção 6 |
-| 9 | Duas definições de estoque (3.088.478 com adiantamentos; 2.445.237 sem, igual ao release) conciliadas explicitamente | seção 7 |
+| 9 | Três apresentações de estoque (3.088.478 com adiantamentos na nota; 2.445.237 na tabela de capital de giro do release; 2.437,1 milhões no balanço do release, com adiantamentos a produtores em linha própria) conciliadas explicitamente | seção 7 |
 | 10 | Caixa equivalente não é liquidez em D0 (resgate em até 90 dias, nota 3) | seção 4 |
 | 11 | Contingências maiores que o EBITDA são alerta de dimensão, não dívida provável | seção 7 |
 
@@ -352,12 +352,12 @@ aditamentos de debêntures", agora no source pack com hash.
 
 ### 13.1 Covenant: uma definição-base, dois degraus
 
-| Elemento | Texto das escrituras (11ª, cláusula 4.22; 13ª, 7.24; 15ª, 7.26) |
+| Elemento | Texto das escrituras (11ª, cláusula 4.22.3; 13ª, 7.24.3; 14ª, 7.26.3; 15ª, 7.26.3) |
 | --- | --- |
 | Índice | Dívida Líquida sobre EBITDA, apurado e revisado anualmente com base nas demonstrações consolidadas auditadas do exercício encerrado em fevereiro, mais informações complementares da emissora |
 | Dívida Líquida | empréstimos, financiamentos e debêntures (circulante e não circulante) mais derivativos passivos e qualquer outra dívida onerosa, menos caixa e equivalentes, aplicações financeiras (circulante e não circulante) e derivativos ativos, pelo balanço consolidado |
 | EBITDA | lucro antes das receitas e despesas financeiras mais depreciação e amortização dos últimos doze meses, conforme reportado, nas quatro escrituras; só a 11ª acrescenta o EBITDA dos últimos doze meses de sociedade adquirida nos doze meses anteriores e o sellers finance (cláusula 4.22.3); as 13ª, 14ª e 15ª trazem apenas a definição-base |
-| Degrau (a) | 3,50x até o vencimento ou a liquidação integral dos CRA da Eco Securitizadora tomados como referência (8ª emissão, 15/04/2025, na 11ª; 5ª emissão, 16/04/2025, e 257ª emissão, 29/12/2025, na 13ª; 257ª emissão na 15ª) |
+| Degrau (a) | 3,50x até o vencimento ou a liquidação integral dos CRA da Eco Securitizadora tomados como referência (8ª emissão, 15/04/2025, na 11ª; 5ª emissão, 16/04/2025, e 257ª emissão, 29/12/2025, na 13ª e na 14ª; 257ª emissão na 15ª) |
 | Degrau (b) | 4,00x no exercício social encerrado após a quitação integral desses CRA, salvo se a liquidação decorrer de vencimento antecipado, caso em que 3,50x permanece |
 
 Leitura: a definição de dívida líquida é a mesma que a nota 15 do ITR usa (4.228.477 em
@@ -382,14 +382,20 @@ correta: acima de 4,00x pela definição contratual em 31/05/2026, com medição
 | Séries em IPCA (13ª 2ª e 3ª, 14ª 2ª e 3ª) | amortização extraordinária só a partir de 14/05/2027 e 15/05/2028 (13ª) e 15/06/2027 e 15/06/2028 (14ª); valor igual ao maior entre (A) valor nominal atualizado mais remuneração pro rata e (B) valor presente das parcelas remanescentes descontadas à taxa interna de retorno da NTN-B com duration mais próxima da duration remanescente, pela cotação indicativa da ANBIMA do segundo dia útil anterior; a diferença é o prêmio (make-whole) | 13ª 7.18.2 e 7.18.2.1; 14ª 7.18.2 |
 | Séries em IPCA da 15ª (3ª e 4ª) | carências próprias: só a partir de 15/11/2028 (3ª) e 15/11/2029 (4ª); mesmo make-whole pelo maior entre valor atualizado e valor presente descontado à TIR da NTN-B de duration mais próxima | 15ª 7.16.3.1, 7.16.3.2 e 7.18.3 |
 | Série prefixada (15ª 2ª) | resgate total facultativo só a partir de 15/11/2028 (amortização extraordinária na mesma data), pelo maior entre (A) nominal mais remuneração pro rata e (B) valor presente das parcelas remanescentes descontadas à taxa DI de 252 dias úteis da curva Pré x DI da B3, no vértice de dias corridos mais próximo da duration remanescente, apurada no segundo dia útil anterior | 15ª 7.16.2.1, 7.16.2.2 e 7.18.2 |
-| 11ª emissão (CDI + 1,55%) | aquisição facultativa e oferta de resgate antecipado à totalidade, com prêmio fixado no edital, que não pode ser negativo, adesão em no mínimo quinze dias, e o resgate só ocorre se aderirem titulares de 100% das debêntures ou de 100% da série abrangida | 11ª 4.13 e 4.14.1 |
+| 11ª emissão (CDI + 1,55%) | aquisição facultativa a qualquer tempo, sujeita ao aceite do debenturista vendedor, com cancelamento, tesouraria ou recolocação (4.13); e oferta de resgate antecipado à totalidade, com prêmio fixado no edital, que não pode ser negativo, adesão em no mínimo quinze dias, e resgate só se aderirem titulares de 100% das debêntures ou de 100% da série abrangida (4.14.1) | 11ª 4.13 e 4.14.1 |
 
-Leitura: trocar as séries em DI da 13ª e da 14ª custa pouco a partir de 2026 (prêmio de 0,40% ao
-ano sobre o prazo remanescente), mas a série DI da 15ª só sai a partir de novembro de 2027; trocar
-as séries em IPCA antes das carências (2027 e 2028 na 13ª e na 14ª; 2028 e 2029 na 15ª) não é
-permitido e, depois, custa o make-whole; a prefixada da 15ª só sai a partir de novembro de 2028; a
-11ª só sai por oferta com prêmio negociado e adesão integral. Isso define o desenho de qualquer
-refinanciamento: o que pode ser retirado barato em 2026 e 2027 são as séries DI da 13ª e da 14ª.
+Leitura: as carências e os prêmios acima regem os mecanismos unilaterais (amortização
+extraordinária e resgate facultativo total, cláusulas 7.16 e 7.18). Fora deles, as escrituras da
+13ª, 14ª e 15ª permitem, a qualquer momento desde a data de emissão, uma oferta facultativa de
+resgate antecipado negociada, sujeita à adesão dos titulares dos CRA e a prêmio opcional
+(cláusula 7.14); a 11ª permite aquisição facultativa a qualquer tempo, sujeita ao aceite do
+vendedor, além da oferta que exige adesão integral para resgate total (cláusulas 4.13 e 4.14).
+Portanto: retirar unilateralmente as séries DI da 13ª e da 14ª custa pouco a partir de 2026
+(prêmio de 0,40% ao ano sobre o prazo remanescente); a série DI da 15ª só unilateralmente a partir
+de novembro de 2027; as séries em IPCA só unilateralmente após as carências (2027 e 2028 na 13ª e
+na 14ª; 2028 e 2029 na 15ª), pelo make-whole; a prefixada da 15ª só unilateralmente a partir de
+novembro de 2028. Qualquer saída antes disso é negociada, depende dos titulares dos CRA e tem
+preço a combinar, nunca estimável a partir da escritura.
 
 ### 13.3 Estados de cobertura que mudam com o pack v2
 
@@ -402,8 +408,9 @@ refinanciamento: o que pode ser retirado barato em 2026 e 2027 são as séries D
 ### 13.4 Mutações adversariais adicionais
 
 Aplicar 3,50x a fevereiro de 2027 sem ler o degrau; aplicar 4,00x sem condicionar à quitação dos
-CRA de referência; tratar o prêmio de 0,40% ao ano como prêmio flat; supor resgate das séries IPCA
-antes das datas de carência; usar a dívida líquida do release no covenant.
+CRA de referência; tratar o prêmio de 0,40% ao ano como prêmio flat; supor resgate unilateral das
+séries IPCA antes das datas de carência, ou negar qualquer saída negociada antes delas; usar a
+dívida líquida do release no covenant.
 
 ### 13.5 Credor econômico e governança dos CRA (termo de securitização da 292ª emissão, pack v3)
 
@@ -413,8 +420,10 @@ de CRA reunidos em assembleia especial, com quórum de deliberação de 50% mais
 circulação em primeira convocação e 50% mais um dos presentes em segunda (cláusulas 17.8 e
 seguintes). O credor econômico e a parte que decide um reperfilamento são, portanto, os titulares
 dos CRA em assembleia; a securitizadora é a titular formal que vota conforme essa orientação. Os
-termos das 329ª e 389ª emissões estão no pack e devem ser lidos para confirmar a mesma estrutura;
-a qualificação jurídica final fica condicionada a revisão especializada.
+termos de securitização, aditamentos e relatórios mensais das 257ª, 292ª, 329ª e 389ª emissões
+estão no pack v3 e no corpus de revisão (`cra_*.txt`); os das 329ª e 389ª devem ser lidos para
+confirmar a mesma estrutura; a qualificação jurídica final fica condicionada a revisão
+especializada.
 
 ## 14. Correções da revisão independente por IA (run gc01-answer-key-2026-09-05-00-57-01), incorporadas nesta v0.6
 
@@ -436,3 +445,14 @@ referência (seção 13.1); comparabilidade plena do pro forma de 4,72x (seção
 dívida onerosa contratual (seção 5); qualificação jurídica do credor econômico (seção 13.5);
 conciliação dos dividendos pela companhia (seção 4); valor monetário do make-whole na data
 (seção 13.2).
+
+## 15. Correções da segunda revisão independente por IA (run gc01-answer-key-2026-09-05-01-11-06), incorporadas nesta v0.7
+
+| # | Correção do revisor | Onde entrou |
+| --- | --- | --- |
+| 22 | A medição anual está a nove meses da data-base, não oito | seção 5 |
+| 23 | O release traz uma terceira apresentação de estoques (2.437,1 milhões no balanço, com adiantamentos a produtores em linha própria) | seções 7 e 12 |
+| 24 | A 14ª emissão entra no cabeçalho da tabela de covenant, com a cláusula 7.26.3 e os mesmos CRA de referência da 13ª | seção 13.1 |
+| 25 | As carências regem só os mecanismos unilaterais; oferta facultativa negociada é permitida desde a emissão nas 13ª, 14ª e 15ª | seções 13.2 e 13.4 |
+| 26 | A 11ª admite aquisição facultativa a qualquer tempo, além da oferta com adesão integral | seção 13.2 |
+| 27 | Os termos de securitização dos CRA passam a constar do corpus de revisão | seção 13.5 |

@@ -1,13 +1,24 @@
 ---
 id: diagnose-maturity-wall
 version: 2026.09.05-v1
-maturity: candidate
+maturity: implemented
 title_pt: Diagnosticar a parede de vencimentos
 title_en: Diagnose the maturity wall
 role: financial_analysis
 blueprint_stage: 5
 owner_role: Head de DCM
 effective_date: 2026-09-05
+implementation_module: @offroad/credit-playbook/executors/diagnose-maturity-wall
+implementation_export: diagnoseMaturityWall
+result_contract: method.diagnose-maturity-wall.v1
+connected_states: [understanding_in_progress]
+persistence_mode: derived_on_demand
+persistence_target: method_results
+unit_test_files: [packages/credit-playbook/src/executors/diagnose-maturity-wall.test.ts]
+gold_case_ids: [gc01-analista-ib-camil]
+adversarial_case_ids: [adversarial:gc01:board-approvals-are-not-sources]
+e2e_scenario_ids: [pending:case01-frozen-run]
+cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-03, D-05, D-28]
 authorities: [CASA, MERCADO]
 reference_data_keys: [policy.seasonality.materiality]

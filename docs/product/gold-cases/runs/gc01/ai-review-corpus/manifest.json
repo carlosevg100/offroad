@@ -1,7 +1,7 @@
 {
   "schemaVersion": "ai-review-corpus.v1",
   "caseId": "gc01-analista-ib-camil",
-  "extractor": "pdftotext -layout (poppler); índices da CVM filtrados às linhas da Camil",
+  "extractor": "pdftotext -layout (poppler); índices da CVM filtrados às linhas da Camil; termos de securitização dos CRA do pack v3",
   "entries": [
     {
       "file": "01_ITR_1T26_31mai2026.txt",
@@ -102,6 +102,71 @@
       "file": "cm_conclusao_15a.txt",
       "bytes": 3554,
       "sha256": "72d055d9a69a93189c79596ea0bbca637e77b0f99bd68deafbf8bea00ae17fb9"
+    },
+    {
+      "file": "cra_257_aditamento_1.txt",
+      "bytes": 427351,
+      "sha256": "a67c67974a9b8bc24e27c8198b66f20da904ec11d9f4e5a6895e4521ae099dbe"
+    },
+    {
+      "file": "cra_257_relatorio_mensal_4t25.txt",
+      "bytes": 21370,
+      "sha256": "5e9494ae097b6a8e28c2edde694477627efc7293793c85b8bb4602b0333c161e"
+    },
+    {
+      "file": "cra_257_termo_securitizacao.txt",
+      "bytes": 408992,
+      "sha256": "3dce06fcb7cc7c7e558f8360df729b559c03e40d6263dca8eb2e49802c4135eb"
+    },
+    {
+      "file": "cra_292_aditamento_1.txt",
+      "bytes": 579465,
+      "sha256": "ed4034dd48d3efd5c05484181f3e202248be9fb6118e8b50e13f46c0ce4c6101"
+    },
+    {
+      "file": "cra_292_aditamento_2.txt",
+      "bytes": 67379,
+      "sha256": "6f0d0ba669ac1c2faf8f458083834d4746b513a548974c067809b08fa6ee6254"
+    },
+    {
+      "file": "cra_292_relatorio_mensal_4t25.txt",
+      "bytes": 24824,
+      "sha256": "a0831fd00643deca6d334f3c5225056905dc5618b9a38d430387a958fbe41c5f"
+    },
+    {
+      "file": "cra_292_termo_securitizacao.txt",
+      "bytes": 540844,
+      "sha256": "7e62b0be50f133cb0dce4e387f737ad24519d840dd7523d48102e03f1e566e09"
+    },
+    {
+      "file": "cra_329_aditamento_1.txt",
+      "bytes": 623348,
+      "sha256": "6e5a7399912a88b62c7b31ccd1abbb60f51d723b031b3244cbdcc97267b00caf"
+    },
+    {
+      "file": "cra_329_relatorio_mensal_4t25.txt",
+      "bytes": 24938,
+      "sha256": "87c71ba502d49f32ddb8c514a9f7fdf0241216aa066953cc2343d7f14b1a5a75"
+    },
+    {
+      "file": "cra_329_termo_securitizacao.txt",
+      "bytes": 561289,
+      "sha256": "65aa044ce0371a63f9e9d8f05d1ae646c6c56ba47fb7fa88502fd50365155f0f"
+    },
+    {
+      "file": "cra_389_aditamento_1.txt",
+      "bytes": 619514,
+      "sha256": "660069c575544dbc7c21fa3c544d3e010914788d13ee2e57409508f30158f921"
+    },
+    {
+      "file": "cra_389_anuncio_encerramento.txt",
+      "bytes": 27747,
+      "sha256": "b308ff1bc36a013726d5757e6429aaa2623b8d879ad707ec9b466984198e516c"
+    },
+    {
+      "file": "cra_389_termo_securitizacao.txt",
+      "bytes": 594069,
+      "sha256": "3051bd3041f0170d77b836e7816df4582bbff8116632b9baebb11a55be1124fc"
     },
     {
       "file": "cvm_dfp_2025.txt",

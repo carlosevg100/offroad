@@ -9,7 +9,7 @@
  */
 import {createHash} from "node:crypto";
 import {execFileSync} from "node:child_process";
-import {mkdirSync, readFileSync, writeFileSync} from "node:fs";
+import {mkdirSync, readFileSync, readdirSync, writeFileSync} from "node:fs";
 import {dirname, join, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -23,6 +23,8 @@ const option = (name: string, fallback: string): string => {
   return index >= 0 && args[index + 1] ? String(args[index + 1]) : fallback;
 };
 const caseKey = option("case", "gc01");
+const subjectKind = option("subject", "answer_key") as "answer_key" | "method";
+const methodId = option("method", "");
 const model = option("model", "gpt-5.6-sol");
 const effort = option("effort", "high");
 const sha256 = (value: string | Uint8Array): string => createHash("sha256").update(value).digest("hex");
@@ -46,17 +48,45 @@ function main(): void {
   const versionMatch = /rascunho v(\d+\.\d+)|versão (\d+\.\d+)/.exec(answerKeyText);
   const answerKeyVersion = versionMatch?.[1] ?? versionMatch?.[2] ?? "unknown";
   const corpusManifest = readFileSync(join(repo, spec.corpusDir, "manifest.json"), "utf8");
-  const fingerprint = sha256(`${sha256(answerKeyText)}:${sha256(corpusManifest)}`);
   const startedAt = new Date();
-  const runId = `${caseKey}-answer-key-${startedAt.toISOString().slice(0, 19).replace(/[:T]/g, "-")}`;
-  const runDir = join(repo, spec.reviewsDir, runId);
-  mkdirSync(runDir, {recursive: true});
+  const stamp = startedAt.toISOString().slice(0, 19).replace(/[:T]/g, "-");
 
-  const prompt = readFileSync(join(here, "..", "review", "answer-key-review.prompt.md"), "utf8")
-    .replaceAll("{{ANSWER_KEY_PATH}}", spec.answerKey)
-    .replaceAll("{{CASE_ID}}", spec.caseId)
-    .replaceAll("{{ANSWER_KEY_VERSION}}", answerKeyVersion)
-    .replaceAll("{{CORPUS_DIR}}", spec.corpusDir);
+  // A method review reads the method, its executor and its tests beside the case's sources.
+  let subject: {kind: "answer_key" | "method"; id: string; version: string; fingerprint: string};
+  let prompt: string;
+  let runId: string;
+  let runDir: string;
+  if (subjectKind === "method") {
+    if (!methodId) {
+      console.error("--method <id> is required for a method review");
+      process.exit(2);
+    }
+    const methodPath = findMethodPath(methodId);
+    const methodText = readFileSync(join(repo, methodPath), "utf8");
+    const methodVersion = /^version:\s*(\S+)/m.exec(methodText)?.[1] ?? "unknown";
+    const executorPath = `packages/credit-playbook/src/executors/${methodId}.ts`;
+    const testPath = `packages/credit-playbook/src/executors/${methodId}.test.ts`;
+    const executorText = readFileSync(join(repo, executorPath), "utf8");
+    const testText = readFileSync(join(repo, testPath), "utf8");
+    subject = {kind: "method", id: methodId, version: methodVersion, fingerprint: sha256(`${sha256(methodText)}:${sha256(executorText)}:${sha256(testText)}:${sha256(answerKeyText)}:${sha256(corpusManifest)}`)};
+    runId = `${caseKey}-method-${methodId}-${stamp}`;
+    runDir = join(repo, "packages", "credit-playbook", "knowledge", "reviews", "runs", runId);
+    prompt = readFileSync(join(here, "..", "review", "method-review.prompt.md"), "utf8")
+      .replaceAll("{{METHOD_ID}}", methodId).replaceAll("{{METHOD_VERSION}}", methodVersion).replaceAll("{{METHOD_PATH}}", methodPath)
+      .replaceAll("{{EXECUTOR_PATH}}", executorPath).replaceAll("{{TEST_PATH}}", testPath)
+      .replaceAll("{{ANSWER_KEY_PATH}}", spec.answerKey).replaceAll("{{CORPUS_DIR}}", spec.corpusDir);
+  } else {
+    subject = {kind: "answer_key", id: spec.caseId, version: answerKeyVersion, fingerprint: sha256(`${sha256(answerKeyText)}:${sha256(corpusManifest)}`)};
+    runId = `${caseKey}-answer-key-${stamp}`;
+    runDir = join(repo, spec.reviewsDir, runId);
+    prompt = readFileSync(join(here, "..", "review", "answer-key-review.prompt.md"), "utf8")
+      .replaceAll("{{ANSWER_KEY_PATH}}", spec.answerKey)
+      .replaceAll("{{CASE_ID}}", spec.caseId)
+      .replaceAll("{{ANSWER_KEY_VERSION}}", answerKeyVersion)
+      .replaceAll("{{CORPUS_DIR}}", spec.corpusDir);
+  }
+  const fingerprint = subject.fingerprint;
+  mkdirSync(runDir, {recursive: true});
   writeFileSync(join(runDir, "prompt.md"), prompt, "utf8");
   const schemaPath = join(here, "..", "review", "answer-key-review.schema.json");
   const lastMessagePath = join(runDir, "reviewer-response.json");
@@ -93,7 +123,7 @@ function main(): void {
     kind: "ai_independent_review",
     humanApproval: false,
     reviewer: {provider: "openai", model, effort, tool: `codex-cli ${codexVersion()}`},
-    subject: {kind: "answer_key", id: spec.caseId, version: answerKeyVersion, fingerprint},
+    subject,
     run: {id: runId, startedAt: startedAt.toISOString(), finishedAt: finishedAt.toISOString(), ...(commit ? {commit} : {})},
     checks: {
       sourcesRevisited: Boolean(response.checks.sourcesRevisited),
@@ -116,7 +146,7 @@ function main(): void {
   writeFileSync(join(runDir, "review.json"), `${JSON.stringify(record, null, 2)}\n`, "utf8");
   const counts = record.evidence.reduce<Record<string, number>>((acc, item) => ((acc[item.result] = (acc[item.result] ?? 0) + 1), acc), {});
   const markdown = [
-    `# Revisão independente por IA: gabarito ${spec.caseId} v${answerKeyVersion}`,
+    `# Revisão independente por IA: ${subject.kind === "method" ? `método ${subject.id} v${subject.version}` : `gabarito ${spec.caseId} v${answerKeyVersion}`}`,
     "",
     `Registro \`ai_independent_review\`, nunca aprovação humana. Revisor: ${record.reviewer.provider}/${record.reviewer.model} (${record.reviewer.effort}) via ${record.reviewer.tool}. Run ${record.run.id}${commit ? `, commit ${commit.slice(0, 7)}` : ""}. Fingerprint ${fingerprint}.`,
     "",
@@ -140,6 +170,20 @@ function main(): void {
   ].join("\n");
   writeFileSync(join(runDir, "review.md"), markdown, "utf8");
   console.log(`result ${record.result}; ${record.evidence.length} evidence items; written to ${runDir}`);
+}
+
+function findMethodPath(id: string): string {
+  const root = join(repo, "packages", "credit-playbook", "knowledge", "procedures");
+  const stack = [root];
+  while (stack.length > 0) {
+    const directory = stack.pop()!;
+    for (const entry of readdirSync(directory, {withFileTypes: true})) {
+      const full = join(directory, entry.name);
+      if (entry.isDirectory()) stack.push(full);
+      else if (entry.name === `${id}.md`) return full.slice(repo.length + 1);
+    }
+  }
+  throw new Error(`method ${id} not found under knowledge/procedures`);
 }
 
 function codexVersion(): string {

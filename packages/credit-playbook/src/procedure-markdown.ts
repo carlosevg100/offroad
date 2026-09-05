@@ -38,6 +38,22 @@ const frontmatterSchema = z.object({
   gold_cases: z.array(z.string().min(1)).default([]),
   dependencies: z.array(z.string().regex(/^[a-z][a-z0-9-]{2,79}$/)).default([]),
   templates: z.array(z.string().regex(/^[a-z][a-z0-9-]{2,79}$/)).default([]),
+  /**
+   * Executable evidence, required from `implemented` up: the executor module and export, the
+   * result contract, the product states it connects to, how results persist and the evaluation
+   * ids that back it. Prose never substitutes for these.
+   */
+  implementation_module: z.string().min(1).optional(),
+  implementation_export: z.string().regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/).optional(),
+  result_contract: z.string().min(1).optional(),
+  connected_states: z.array(z.string().regex(/^[a-z][a-z0-9_]*$/)).default([]),
+  persistence_mode: z.enum(["persisted", "derived_on_demand"]).optional(),
+  persistence_target: z.string().min(1).optional(),
+  unit_test_files: z.array(z.string().min(1)).default([]),
+  gold_case_ids: z.array(z.string().min(1)).default([]),
+  adversarial_case_ids: z.array(z.string().min(1)).default([]),
+  e2e_scenario_ids: z.array(z.string().min(1)).default([]),
+  cost_eval_ids: z.array(z.string().min(1)).default([]),
   /** Ids of independent reviews on record under `knowledge/reviews/<id>.json`. */
   review_ids: z.array(z.string().regex(/^[a-z0-9][a-z0-9_.-]{2,120}$/)).default([]),
   gold_run_ids: z.array(z.string().min(1)).default([]),
@@ -214,6 +230,24 @@ export function compileMethodDocument(text: string, sourcePath: string, lookupRe
   const examples = sections.get(SECTIONS.examples);
   const owner: CanonicalProcedure["owner"] = {role: frontmatter.owner_role};
   if (frontmatter.approved_by) owner.approvedBy = frontmatter.approved_by;
+  const implementationFields = [frontmatter.implementation_module, frontmatter.implementation_export, frontmatter.result_contract, frontmatter.persistence_mode, frontmatter.persistence_target];
+  const hasImplementation = implementationFields.some((field) => field !== undefined);
+  if (hasImplementation && implementationFields.some((field) => field === undefined)) {
+    throw new MethodCompileError(sourcePath, "implementation evidence needs module, export, result contract, persistence mode and target together");
+  }
+  const implementation = hasImplementation ? {
+    executor: {module: frontmatter.implementation_module!, exportName: frontmatter.implementation_export!},
+    resultContract: frontmatter.result_contract!,
+    connectedProductStates: frontmatter.connected_states,
+    persistence: {mode: frontmatter.persistence_mode!, target: frontmatter.persistence_target!},
+    evaluation: {
+      unitTestFiles: frontmatter.unit_test_files,
+      goldCaseIds: frontmatter.gold_case_ids,
+      adversarialCaseIds: frontmatter.adversarial_case_ids,
+      e2eScenarioIds: frontmatter.e2e_scenario_ids,
+      costEvalIds: frontmatter.cost_eval_ids,
+    },
+  } : undefined;
 
   const candidate = {
     id: frontmatter.id,
@@ -265,6 +299,7 @@ export function compileMethodDocument(text: string, sourcePath: string, lookupRe
     },
     reviews,
     testRuns: {gold: frontmatter.gold_run_ids, adversarial: frontmatter.adversarial_run_ids, consistency: frontmatter.consistency_run_ids},
+    ...(implementation ? {implementation} : {}),
   };
   const parsed = canonicalProcedureSchema.safeParse(candidate);
   if (!parsed.success) throw new MethodCompileError(sourcePath, `contract invalid: ${parsed.error.issues.map((issue) => `${issue.path.join(".")} ${issue.message}`).join("; ")}`);
