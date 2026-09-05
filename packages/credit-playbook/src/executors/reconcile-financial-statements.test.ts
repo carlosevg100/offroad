@@ -242,9 +242,10 @@ describe("reconcile-financial-statements executor (v9)", () => {
     const read = reconcileFinancialStatements(negated);
     expect(read.reconciliations.find((entry) => entry.id === leases.id)?.state).toBe(reconcileFinancialStatements(base).reconciliations.find((entry) => entry.id === leases.id)?.state);
     expect(read.trace.calculations.find((calculation) => calculation.id === `financial.accounting_identity:${leases.id}:sign`)?.operands[`${leases.sources[0]!.source}:read`]).toBe(leases.sources[0]!.value);
-    if (base.debtBridge) {
-      const reduction = base.debtBridge.lines.find((line) => line.category === "amortizations" || line.category === "prepayments")!;
-      expect(() => reconcileFinancialStatements({...base, debtBridge: {...base.debtBridge, lines: base.debtBridge.lines.map((line) => (line === reduction ? {...line, published: `-${line.published.replace(/^-/, "")}`, sign: "as_published" as const} : line))}})).toThrow(/would be added back by the bridge/);
+    const debtBridge = base.debtBridge;
+    if (debtBridge) {
+      const reduction = debtBridge.lines.find((line) => line.category === "amortizations" || line.category === "prepayments")!;
+      expect(() => reconcileFinancialStatements({...base, debtBridge: {...debtBridge, lines: debtBridge.lines.map((line) => (line === reduction ? {...line, published: `-${line.published.replace(/^-/, "")}`, sign: "as_published" as const} : line))}})).toThrow(/would be added back by the bridge/);
     }
     if (base.interestBridge) {
       // The gold itself: the note's accrued interest counts interest and monetary variation, the income statement's line counts interest only.
