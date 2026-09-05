@@ -27,6 +27,7 @@ const labels: Record<string, [string, string]> = {
   preview_scenarios: ["Cenários declarados", "Declared scenarios"],
   preview_alternatives: ["Alternativas antes e depois", "Alternatives before and after"],
   preview_meeting_brief: ["Plano da devolutiva e do material", "Readout and material plan"],
+  preview_material: ["Síntese e material", "Synthesis and material"],
 };
 const order = Object.keys(labels);
 
@@ -66,6 +67,7 @@ const tableKeys: Record<string, string[]> = {
   preview_scenarios: ["scenarios", "assumption_register"],
   preview_alternatives: ["alternatives"],
   preview_meeting_brief: [],
+  preview_material: [],
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
