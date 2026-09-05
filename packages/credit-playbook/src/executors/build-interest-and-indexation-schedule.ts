@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `build-interest-and-indexation-schedule` (v5, after the fourth independent
+ * Executor of the method `build-interest-and-indexation-schedule` (v6, after the fifth independent
  * review). Projects each series period by period with the factors its indenture writes: an annual
  * rate accrues exponentially over business days of a 252-day year; a DI series compounds the DI
  * factor with the spread factor; a "p% of DI" series compounds p times the daily DI; an IPCA series
@@ -21,9 +21,12 @@ import {z} from "zod";
  * base does not say whether the IPCA update is capitalized or paid, both treatments are projected as
  * scenarios. Nothing missing becomes zero: an absent amortization schedule leaves the principal
  * projection insufficient in every aggregate, and the projected total is compared to the ledger's
- * control so omitted series are named. The unit is anchored to the source that states it; coupon
- * and amortization positions inside a period must advance, and an amortization reduces the
- * interest base from its own date. Every factor is computed by financial-core at the precision the
+ * control so omitted series are named; that coverage compares a nominal with a carrying amount and
+ * says so. The unit is anchored to the source that states it; coupon, amortization and IPCA
+ * anniversary positions inside a period must advance, and each event applies at its own date:
+ * an anniversary updates the nominal from its date, an amortization reduces the interest base
+ * from its date, a coupon pays what accrued to its date. A series without an amortization
+ * schedule has no closing balance, never an unchanged one. Every factor is computed by financial-core at the precision the
  * indenture writes. When the IPCA treatment is unknown the two scenarios are shown side by side and
  * neither enters the aggregate. Anniversary dates come from the base when it lists them
  * (business-day adjusted); otherwise calendar-day anniversaries are declared as an approximation.
@@ -91,8 +94,8 @@ export const seriesInputSchema = z.object({
   amortization: z.array(z.object({date: isoDate, amount: nonNegative, businessDaysFromPeriodStart: z.number().int().nonnegative()}).strict()).nullable(),
   /** IPCA only: how the update is treated (capitalized or paid); null when the indenture is not in the base, in which case both are projected. */
   indexationTreatment: z.enum(["capitalized_principal", "cash_paid"]).nullable(),
-  /** IPCA only: the anniversary day and the lag in months the indenture writes for the index number, and, per period, the business days elapsed since the last anniversary (dup) over the business days of that anniversary month (dut) for the pro rata at the period end; null when the base does not give the counts. */
-  indexation: z.object({anniversaryDay: z.number().int().min(1).max(31), lagMonths: z.number().int().min(0).max(3), /** The anniversary dates the base lists (the business day before the calendar anniversary, as the indenture writes); null when not in the base, in which case calendar days are used and declared. */ anniversaryDates: z.array(isoDate).nullable(), proRataByPeriod: z.record(nonEmpty, z.object({dup: z.number().int().nonnegative(), dut: z.number().int().positive()}).strict()).nullable(), anchor: anchorSchema}).strict().nullable(),
+  /** IPCA only: the anniversary day and the lag in months the indenture writes for the index number; the anniversary dates the base lists with their business-day position inside their period, so updates interleave with coupons and amortizations; and, per period, dup/dut for the pro rata at the period end. */
+  indexation: z.object({anniversaryDay: z.number().int().min(1).max(31), lagMonths: z.number().int().min(0).max(3), /** The anniversary dates the base lists (the business day before the calendar anniversary) with their position; null when not in the base, in which case calendar days are used, applied at the period start, and declared. */ anniversaryDates: z.array(z.object({date: isoDate, businessDaysFromPeriodStart: z.number().int().nonnegative()}).strict()).nullable(), proRataByPeriod: z.record(nonEmpty, z.object({dup: z.number().int().nonnegative(), dut: z.number().int().positive()}).strict()).nullable(), anchor: anchorSchema}).strict().nullable(),
   rounding: roundingSchema.nullable(),
   curveId: nonEmpty.nullable(),
   anchors: z.object({balance: anchorSchema, terms: anchorSchema.nullable(), payments: anchorSchema.nullable(), amortization: anchorSchema.nullable()}).strict(),
@@ -108,8 +111,8 @@ export const interestScheduleInputSchema = z.object({
   periods: z.array(projectionPeriodSchema).min(1),
   curves: z.array(curveSchema).default([]),
   series: z.array(seriesInputSchema).min(1),
-  /** The ledger's control: the series it holds and their nominal total, so omitted series are named and the projection's coverage is measured. */
-  ledgerControl: z.object({seriesIds: z.array(nonEmpty), grossDebt: nonNegative, anchor: anchorSchema}).strict().nullable().default(null),
+  /** The ledger's control: the series it holds and its gross debt (a carrying amount), so omitted series are named; the coverage of a nominal over a carrying amount is reported as such, never as a nominal share. */
+  ledgerControl: z.object({seriesIds: z.array(nonEmpty), grossDebt: nonNegative, grossDebtBasis: z.enum(["carrying_amount", "nominal"]), anchor: anchorSchema}).strict().nullable().default(null),
   /** The finance expense of the last closed period, to bridge against; null when not in the base. */
   accountingInterestLastPeriod: z.object({value: z.string().regex(/^-?\d+(\.\d+)?$/), periodId: nonEmpty, anchor: anchorSchema}).strict().nullable().default(null),
 }).strict().superRefine((input, context) => {
@@ -162,7 +165,7 @@ export type InterestScheduleInput = z.input<typeof interestScheduleInputSchema>;
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 type Row = {
   period: string; opening_principal: string; indexation_factor: string; indexation_accrued: string; indexation_capitalized: string; indexation_paid: string;
-  coupon_factor: string; coupon_accrued: string; coupon_paid: string; coupon_carried: string; principal_paid: string | null; closing_principal: string; calendar_anchor: Anchor;
+  coupon_factor: string; coupon_accrued: string; coupon_paid: string; coupon_carried: string; principal_paid: string | null; closing_principal: string | null; calendar_anchor: Anchor;
 };
 type Totals = {cash_interest: string; cash_indexation: string; indexation_capitalized: string; principal_paid: string | null};
 type SeriesSchedule = {
@@ -183,7 +186,7 @@ type SeriesSchedule = {
 };
 
 export type InterestScheduleOutput = {
-  schema_version: "method.build-interest-and-indexation-schedule.v5";
+  schema_version: "method.build-interest-and-indexation-schedule.v6";
   reference_date: string;
   unit: string;
   state: "complete" | "partial" | "blocked";
@@ -197,7 +200,7 @@ export type InterestScheduleOutput = {
     principal_projection_complete: boolean;
     treatment_scenarios_pending: string[];
   } | null;
-  ledger_coverage: {projected: string; ledger: string; share: string; series_omitted: string[]; anchor: Anchor} | null;
+  ledger_coverage: {projected_nominal: string; ledger: string; ledger_basis: string; share: string; share_note: string; series_projected: number; series_in_ledger: number; series_omitted: string[]; anchor: Anchor} | null;
   accounting_bridge: {projected: string | null; accounting: string; difference: string | null; period: string; anchor: Anchor; state: "compared" | "insufficient_evidence"; reason: string | null} | null;
   uncovered_series: Array<{series_id: string; reason: string; state: "insufficient_evidence"}>;
   trace: {calculations: Calculation[]; inputFingerprint: string; outputFingerprint: string};
@@ -214,7 +217,7 @@ function canonical(input: z.infer<typeof interestScheduleInputSchema>) {
     ...input,
     periods: [...input.periods].sort((a, b) => compare(a.start, b.start)),
     curves: [...input.curves].sort((a, b) => compare(a.id, b.id)).map((curve) => ({...curve, annualRateByPeriod: sortRecord(curve.annualRateByPeriod), dailyRateByPeriod: sortRecord(curve.dailyRateByPeriod), monthlyRateByMonth: sortRecord(curve.monthlyRateByMonth)})),
-    series: [...input.series].sort((a, b) => compare(a.id, b.id)).map((series) => ({...series, couponDates: series.couponDates ? [...series.couponDates].sort((a, b) => compare(a.date, b.date)) : null, amortization: series.amortization ? [...series.amortization].sort((a, b) => compare(a.date, b.date) || compare(a.amount, b.amount)) : null, indexation: series.indexation ? {...series.indexation, anniversaryDates: series.indexation.anniversaryDates ? [...series.indexation.anniversaryDates].sort(compare) : null, proRataByPeriod: sortRecord(series.indexation.proRataByPeriod)} : null})),
+    series: [...input.series].sort((a, b) => compare(a.id, b.id)).map((series) => ({...series, couponDates: series.couponDates ? [...series.couponDates].sort((a, b) => compare(a.date, b.date)) : null, amortization: series.amortization ? [...series.amortization].sort((a, b) => compare(a.date, b.date) || compare(a.amount, b.amount)) : null, indexation: series.indexation ? {...series.indexation, anniversaryDates: series.indexation.anniversaryDates ? [...series.indexation.anniversaryDates].sort((a, b) => compare(a.date, b.date)) : null, proRataByPeriod: sortRecord(series.indexation.proRataByPeriod)} : null})),
     ledgerControl: input.ledgerControl ? {...input.ledgerControl, seriesIds: [...input.ledgerControl.seriesIds].sort(compare)} : null,
   };
 }
@@ -279,18 +282,19 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
     if (series.indexer === "IPCA") {
       if (!series.indexation) { uncovered.push({series_id: series.id, reason: `the anniversary day and the index lag of ${series.label} are not in the base; the monthly update cannot be placed`, state: "insufficient_evidence"}); continue; }
       if (!curve!.monthlyRateByMonth) { uncovered.push({series_id: series.id, reason: `curve ${curve!.id} carries no monthly index variations; the IPCA update of ${series.label} needs them`, state: "insufficient_evidence"}); continue; }
-      const anniversariesOf = (period: {start: string; end: string}) => series.indexation!.anniversaryDates ? series.indexation!.anniversaryDates.filter((date) => date > period.start && date <= period.end) : anniversaries(period.start, period.end, series.indexation!.anniversaryDay);
+      const anniversariesOf = (period: {start: string; end: string}) => series.indexation!.anniversaryDates ? series.indexation!.anniversaryDates.map((entry) => entry.date).filter((date) => date > period.start && date <= period.end) : anniversaries(period.start, period.end, series.indexation!.anniversaryDay);
       const needed = input.periods.flatMap((period) => anniversariesOf(period)).map((date) => addMonths(date.slice(0, 7), -series.indexation!.lagMonths));
       const proRataMonths = input.periods.filter((period) => (series.indexation!.proRataByPeriod?.[period.id]?.dup ?? 0) > 0).map((period) => addMonths(period.end.slice(0, 7), -series.indexation!.lagMonths));
       const missing = [...needed, ...proRataMonths].filter((month) => curve!.monthlyRateByMonth![month] === undefined);
       if (missing.length > 0) { uncovered.push({series_id: series.id, reason: `curve ${curve!.id} lacks the monthly variation of ${[...new Set(missing)].join(", ")} that the anniversaries or the pro rata of ${series.label} need; nothing is filled from another month`, state: "insufficient_evidence"}); continue; }
-      if (!series.indexation.anniversaryDates) assumptions.add(`${series.id}: the base lists no anniversary dates; calendar-day anniversaries are used, without the prior-business-day adjustment the indenture writes (declared approximation)`);
+      if (!series.indexation.anniversaryDates) assumptions.add(`${series.id}: the base lists no anniversary dates; calendar-day anniversaries are used, applied at the start of the period rather than at their own date, without the prior-business-day adjustment the indenture writes (declared approximation)`);
       if (!series.indexation.proRataByPeriod) assumptions.add(`${series.id}: IPCA updates are applied at each anniversary with the monthly variation of the lagged month; the pro rata between the last anniversary and the period end (dup/dut) is not projected because the base gives no business-day counts (declared approximation)`);
       else if (input.periods.some((period) => series.indexation!.proRataByPeriod![period.id] === undefined)) { uncovered.push({series_id: series.id, reason: `the pro rata counts (dup/dut) of ${series.label} are missing for ${input.periods.filter((period) => series.indexation!.proRataByPeriod![period.id] === undefined).map((period) => period.id).join(", ")}`, state: "insufficient_evidence"}); continue; }
       if (series.indexationTreatment === null) assumptions.add(`${series.id}: the base does not say whether the IPCA update is capitalized or paid; both treatments are projected as scenarios and neither is chosen`);
     }
     if (!series.openingAccrued) assumptions.add(`${series.id}: the remuneration accrued at ${input.referenceDate} is not in the base; the first coupon is declared incomplete and carries only what accrues from the reference date`);
     const principalProjection: "scheduled" | "insufficient_evidence" = series.amortization && series.anchors.amortization ? "scheduled" : "insufficient_evidence";
+    if (principalProjection === "insufficient_evidence") assumptions.add(`${series.id}: no amortization schedule in the base; the interest accrues on the opening nominal and the closing balance is not stated (declared approximation, not a projection of the principal)`);
     const rounding = series.rounding;
     const layer = (value: Decimal, which: "indexFactor" | "spreadFactor" | "interestFactor" | "dailyAccumulation" | "amount") => (rounding ? value.toDecimalPlaces(rounding[which].decimals, rounding[which].mode === "truncate" ? Decimal.ROUND_DOWN : Decimal.ROUND_HALF_UP) : value.toDecimalPlaces(8));
     const roundFactor = (value: Decimal) => layer(value, "interestFactor");
@@ -333,7 +337,7 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
       const cached = indexationFactors.get(period.id);
       if (cached) return cached;
       let factor = d(1);
-      const dates = series.indexation!.anniversaryDates ? series.indexation!.anniversaryDates.filter((date) => date > period.start && date <= period.end) : anniversaries(period.start, period.end, series.indexation!.anniversaryDay);
+      const dates = series.indexation!.anniversaryDates ? series.indexation!.anniversaryDates.map((entry) => entry.date).filter((date) => date > period.start && date <= period.end) : anniversaries(period.start, period.end, series.indexation!.anniversaryDay);
       for (const date of dates) {
         const month = addMonths(date.slice(0, 7), -series.indexation!.lagMonths);
         const monthly = curve!.monthlyRateByMonth![month]!;
@@ -365,14 +369,17 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
       for (const period of input.periods) {
         const opening = principal;
         // 1. IPCA: the nominal is updated at each anniversary inside the period by the monthly variation of the lagged month.
+        // With listed anniversaries the update applies at each anniversary's own date, between the other events; without them the whole period's factor applies at the start (declared).
+        const positioned = series.indexer === "IPCA" && series.indexation!.anniversaryDates !== null;
         const indexationFactor = indexationFactorFor(period);
-        const indexationAccrued = roundAmount(principal.times(indexationFactor));
-        const indexationCapitalized = treatment === "capitalized_principal" ? indexationAccrued : d(0);
-        const indexationPaid = treatment === "cash_paid" ? indexationAccrued : d(0);
+        let indexationAccrued = positioned ? d(0) : roundAmount(principal.times(indexationFactor));
+        let indexationCapitalized = treatment === "capitalized_principal" ? indexationAccrued : d(0);
+        let indexationPaid = treatment === "cash_paid" ? indexationAccrued : d(0);
         principal = principal.plus(indexationCapitalized);
         // 2. Coupons and amortizations in date order inside the period: accrual runs segment by segment, a coupon pays what is carried, an amortization reduces the interest base from its own date.
-        type Event = {kind: "coupon" | "amortization"; date: string; days: number; amount: Decimal | null};
+        type Event = {kind: "anniversary" | "coupon" | "amortization"; date: string; days: number; amount: Decimal | null};
         const events: Event[] = [
+          ...(positioned ? series.indexation!.anniversaryDates!.filter((entry) => entry.date > period.start && entry.date <= period.end).map((entry): Event => ({kind: "anniversary", date: entry.date, days: entry.businessDaysFromPeriodStart, amount: null})) : []),
           ...series.couponDates!.filter((coupon) => coupon.date > period.start && coupon.date <= period.end).map((coupon): Event => ({kind: "coupon", date: coupon.date, days: coupon.businessDaysFromPeriodStart, amount: null})),
           ...(principalProjection === "scheduled" ? series.amortization!.filter((entry) => entry.date > period.start && entry.date <= period.end).map((entry): Event => ({kind: "amortization", date: entry.date, days: entry.businessDaysFromPeriodStart, amount: d(entry.amount)})) : []),
         ].sort((a, b) => a.days - b.days || compare(a.date, b.date) || compare(a.kind, b.kind));
@@ -389,7 +396,16 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
           carried = carried.plus(accrued);
           periodFactor = periodFactor.times(factor.plus(1));
           daysUsed = event.days;
-          if (event.kind === "coupon") {
+          if (event.kind === "anniversary") {
+            // The nominal is updated at this date by the lagged month's variation (and the period-end pro rata rides on the last one).
+            const month = addMonths(event.date.slice(0, 7), -series.indexation!.lagMonths);
+            const monthly = curve!.monthlyRateByMonth![month]!;
+            const stepFactor = layer(d(monthly), "indexFactor");
+            const stepAccrued = roundAmount(principal.times(stepFactor));
+            indexationAccrued = indexationAccrued.plus(stepAccrued);
+            if (treatment === "capitalized_principal") { indexationCapitalized = indexationCapitalized.plus(stepAccrued); principal = principal.plus(stepAccrued); } else indexationPaid = indexationPaid.plus(stepAccrued);
+            record({id: `financial.ipca_anniversary_applied:${series.id}:${period.id}:${event.date}`, formula: "nominal * monthlyVariation[lagged month] at the anniversary's own date", operands: {anniversary: event.date, businessDays: String(event.days), laggedMonth: month, monthlyVariation: monthly, principalBefore: out(principal.minus(treatment === "capitalized_principal" ? stepAccrued : 0))}, result: out(stepAccrued)});
+          } else if (event.kind === "coupon") {
             couponPaid = couponPaid.plus(carried);
             record({id: `financial.coupon_payment:${series.id}:${period.id}:${event.date}`, formula: "paid = carried + (principal + carried) * factor(businessDays to the payment date)", operands: {date: event.date, businessDays: String(days), factor: out(factor), carriedBefore: out(carried.minus(accrued)), principal: out(principal)}, result: out(carried)});
             carried = d(0);
@@ -398,6 +414,17 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
             principal = principal.minus(amount);
             paid = paid!.plus(amount);
             record({id: `financial.amortization:${series.id}:${period.id}:${event.date}`, formula: "principal after = principal before - amortization; the interest base falls from this date", operands: {date: event.date, businessDays: String(days), amortization: out(amount)}, result: out(principal)});
+          }
+        }
+        if (positioned) {
+          const proRata = series.indexation!.proRataByPeriod?.[period.id];
+          if (proRata && proRata.dup > 0) {
+            const nextMonth = addMonths(period.end.slice(0, 7), -series.indexation!.lagMonths);
+            const monthly = curve!.monthlyRateByMonth![nextMonth]!;
+            const partial = layer(d(monthly).plus(1).pow(d(proRata.dup).div(proRata.dut)).minus(1), "indexFactor");
+            const partialAccrued = roundAmount(principal.times(partial));
+            indexationAccrued = indexationAccrued.plus(partialAccrued);
+            if (treatment === "capitalized_principal") { indexationCapitalized = indexationCapitalized.plus(partialAccrued); principal = principal.plus(partialAccrued); } else indexationPaid = indexationPaid.plus(partialAccrued);
           }
         }
         const rest = couponFactorFor(period.businessDays - daysUsed, period.id, events.length > 0 ? `after-${events[events.length - 1]!.date}` : "coupon");
@@ -410,7 +437,8 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
         cashInterest = cashInterest.plus(couponPaid);
         cashIndexation = cashIndexation.plus(indexationPaid);
         capitalized = capitalized.plus(indexationCapitalized);
-        rows.push({period: period.id, opening_principal: out(opening), indexation_factor: out(indexationFactor), indexation_accrued: out(indexationAccrued), indexation_capitalized: out(indexationCapitalized), indexation_paid: out(indexationPaid), coupon_factor: out(periodFactor.minus(1)), coupon_accrued: out(couponAccrued), coupon_paid: out(couponPaid), coupon_carried: out(carried), principal_paid: paid ? out(paid) : null, closing_principal: out(principal), calendar_anchor: period.anchor});
+        // Without an amortization schedule the closing balance is unknown, not unchanged: the interest accrues on the opening nominal as a declared approximation and the balance stays null.
+        rows.push({period: period.id, opening_principal: out(opening), indexation_factor: out(positioned ? (opening.isZero() ? d(0) : indexationAccrued.div(opening)) : indexationFactor), indexation_accrued: out(indexationAccrued), indexation_capitalized: out(indexationCapitalized), indexation_paid: out(indexationPaid), coupon_factor: out(periodFactor.minus(1)), coupon_accrued: out(couponAccrued), coupon_paid: out(couponPaid), coupon_carried: out(carried), principal_paid: paid ? out(paid) : null, closing_principal: principalProjection === "scheduled" ? out(principal) : null, calendar_anchor: period.anchor});
       }
       return {rows, totals: {cash_interest: out(cashInterest), cash_indexation: out(cashIndexation), indexation_capitalized: out(capitalized), principal_paid: principalPaid ? out(principalPaid) : null}};
     };
@@ -437,13 +465,13 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
   if (schedules.length > 0) {
     // Series whose IPCA treatment is unknown stand outside every sum: no scenario is chosen for them.
     const settled = schedules.filter((schedule) => schedule.rows !== null);
-    const complete = settled.length === schedules.length && settled.every((schedule) => schedule.principal_projection === "scheduled");
+    const complete = uncovered.length === 0 && settled.length === schedules.length && settled.every((schedule) => schedule.principal_projection === "scheduled");
     const pending = schedules.filter((schedule) => schedule.treatment_scenarios !== null).map((schedule) => schedule.series_id);
     const sum = (subset: SeriesSchedule[], key: "coupon_paid" | "indexation_paid" | "indexation_capitalized" | "principal_paid", period?: string) => out(subset.reduce((total, schedule) => total.plus((schedule.rows ?? []).filter((row) => !period || row.period === period).reduce((inner, row) => inner.plus(row[key] ?? 0), d(0))), d(0)));
     const closing = (subset: SeriesSchedule[], period?: string) => (subset.length > 0 && subset.every((schedule) => schedule.rows !== null && schedule.principal_projection === "scheduled") ? out(subset.reduce((total, schedule) => total.plus((period ? schedule.rows!.find((row) => row.period === period) : schedule.rows![schedule.rows!.length - 1])?.closing_principal ?? 0), d(0))) : null);
     aggregate = {
       by_period: input.periods.map((period) => ({period: period.id, cash_interest: sum(settled, "coupon_paid", period.id), cash_indexation: sum(settled, "indexation_paid", period.id), indexation_capitalized: sum(settled, "indexation_capitalized", period.id), principal_paid: complete ? sum(settled, "principal_paid", period.id) : null, closing_principal: complete ? closing(settled, period.id) : null})),
-      by_indexer: [...new Set(schedules.map((schedule) => schedule.indexer))].sort(compare).map((indexer) => { const subset = settled.filter((schedule) => schedule.indexer === indexer); const all = schedules.filter((schedule) => schedule.indexer === indexer); return {indexer, cash_interest: sum(subset, "coupon_paid"), cash_indexation: sum(subset, "indexation_paid"), indexation_capitalized: sum(subset, "indexation_capitalized"), closing_principal: subset.length === all.length ? closing(subset) : null, series: all.map((schedule) => schedule.series_id)}; }),
+      by_indexer: [...new Set(schedules.map((schedule) => schedule.indexer))].sort(compare).map((indexer) => { const subset = settled.filter((schedule) => schedule.indexer === indexer); const all = schedules.filter((schedule) => schedule.indexer === indexer); const uncoveredOfIndexer = input.series.filter((series) => series.indexer === indexer && uncovered.some((entry) => entry.series_id === series.id)); return {indexer, cash_interest: sum(subset, "coupon_paid"), cash_indexation: sum(subset, "indexation_paid"), indexation_capitalized: sum(subset, "indexation_capitalized"), closing_principal: subset.length === all.length && uncoveredOfIndexer.length === 0 ? closing(subset) : null, series: all.map((schedule) => schedule.series_id)}; }),
       opening_principal_projected: out(schedules.reduce((total, schedule) => total.plus(schedule.opening_principal.value), d(0))),
       principal_projection_complete: complete,
       treatment_scenarios_pending: pending,
@@ -460,7 +488,8 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
     const known = new Set(input.series.map((series) => series.id));
     const omitted = input.ledgerControl.seriesIds.filter((id) => !known.has(id));
     record({id: "financial.ledger_coverage", formula: "opening principal projected / ledger gross debt", operands: {projected: out(projected), ledger: input.ledgerControl.grossDebt, seriesOmitted: String(omitted.length)}, result: out(share)}, "x");
-    ledgerCoverage = {projected: out(projected), ledger: out(d(input.ledgerControl.grossDebt)), share: out(share), series_omitted: omitted, anchor: input.ledgerControl.anchor};
+    const projectedCount = schedules.length;
+    ledgerCoverage = {projected_nominal: out(projected), ledger: out(d(input.ledgerControl.grossDebt)), ledger_basis: input.ledgerControl.grossDebtBasis, share: out(share), share_note: input.ledgerControl.grossDebtBasis === "nominal" ? "nominal over nominal" : "nominal projected over the ledger's carrying amount (interest, monetary variation and transaction costs included); an arithmetic share, not a nominal cover", series_projected: projectedCount, series_in_ledger: input.ledgerControl.seriesIds.length, series_omitted: omitted, anchor: input.ledgerControl.anchor};
     for (const id of omitted) uncovered.push({series_id: id, reason: `the ledger holds ${id} and the projection received no series for it`, state: "insufficient_evidence"});
   }
 
@@ -485,7 +514,7 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
   uncovered.sort((a, b) => compare(a.series_id, b.series_id));
   const state: InterestScheduleOutput["state"] = blockReasons.length > 0 ? "blocked" : uncovered.length > 0 || schedules.some((schedule) => schedule.principal_projection === "insufficient_evidence" || schedule.treatment_scenarios !== null || !schedule.first_coupon_complete) ? "partial" : "complete";
   const body = {
-    schema_version: "method.build-interest-and-indexation-schedule.v5" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons,
+    schema_version: "method.build-interest-and-indexation-schedule.v6" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons,
     assumptions: [...assumptions].sort(compare), schedule_by_series: schedules, schedule_aggregate: aggregate, ledger_coverage: ledgerCoverage, accounting_bridge: bridge, uncovered_series: uncovered,
   };
   const inputFingerprint = fingerprint(input);

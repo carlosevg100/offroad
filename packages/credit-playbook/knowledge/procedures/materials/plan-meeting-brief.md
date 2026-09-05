@@ -1,6 +1,6 @@
 ---
 id: plan-meeting-brief
-version: 2026.09.05-v5
+version: 2026.09.05-v6
 maturity: implemented
 title_pt: Planejar a devolutiva e o material de reunião
 title_en: Plan the first deliverable and the meeting material
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/plan-meeting-brief
 implementation_export: planMeetingBrief
-result_contract: method.plan-meeting-brief.v5
+result_contract: method.plan-meeting-brief.v6
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -65,7 +65,8 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 - Sem audiência ou forma, a devolutiva sai e o plano de páginas espera.
 - Pontos a favor e contra a tese vêm da posição que qualquer objeto utilizável declarou em cada fato, nunca do tipo do objeto.
 - Uma pergunta só é feita depois de uma busca declarada na base (documentos consultados) que não achou resposta; fato com unidade que contradiz as próprias palavras ou a unidade do objeto é recusado; todo fato cita o campo do objeto que reproduz; fato que afirma rompimento ou inadimplemento é recusado (nenhum objeto afirma evento jurídico).
-- Mais páginas do que blocos volta como pergunta de alinhamento emitida, não só anunciada; a produção só é permitida com plano confirmado, e lacunas (insufficient_evidence) não a impedem: elas ficam nomeadas no material.
+- Quando o conteúdo do objeto é dado, o fingerprint é recalculado desse conteúdo e o caminho de cada fato tem de resolver dentro dele; a unidade declarada tem de bater com a do conteúdo. Fato que afirma rompimento, violação ou vencimento antecipado declarado é recusado.
+- Mais páginas do que blocos volta como pergunta de alinhamento emitida dentro do limite de três (a de menor prioridade cede), não só anunciada; a produção só é permitida com plano confirmado, e lacunas (insufficient_evidence) não a impedem: elas ficam nomeadas no material.
 - O plano honra o número de páginas pedido (funde o final quando são menos, divide a página mais cheia quando são mais); mais páginas do que blocos é unsupported e volta como pergunta.
 - Pergunta que a base já responde é recusada com a âncora da resposta, seja qual for a prioridade; pergunta cujo motivo é "nenhuma" não é feita.
 - Versão anterior informada gera nota de mudança; nunca reescrita silenciosa.
@@ -86,7 +87,7 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 - Plano de páginas não confirmado e o pedido é produção de arquivo.
 
 # Outputs
-- schema_version (string, required): method.plan-meeting-brief.v5
+- schema_version (string, required): method.plan-meeting-brief.v6
 - case_id (string, required): caso a que a devolutiva pertence
 - turn (number, required): turno do pedido
 - state (enum, required): planned, ou awaiting_confirmation enquanto um plano proposto espera a confirmação da pessoa

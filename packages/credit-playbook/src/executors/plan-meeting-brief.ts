@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 
 /**
- * Executor of the method `plan-meeting-brief` (v5, after the fourth independent review). Assembles
+ * Executor of the method `plan-meeting-brief` (v6, after the fifth independent review). Assembles
  * the first deliverable only from objects in a usable state, each fact bound to the fingerprint of
  * the object it cites; a conditioned, partial or open object names a gap instead of filling a block.
  * Points for and against the thesis come from the stance each object declared on its facts. The
@@ -19,8 +19,10 @@ import {z} from "zod";
  * that found no answer. A fact's unit cannot contradict the fact's own words nor the unit of the
  * object it quotes; every fact names the field of the object it reproduces; a fact that asserts a
  * legal event (a breach) is refused, since no object asserts one. A plan that cannot hold the pages
- * asked emits the question. Every gap, open questions included, is an uncovered term. This executor
- * plans; the prose of the pages is a model step downstream, never produced here.
+ * asked emits the question inside the cap of three. Every gap, open questions included, is an
+ * uncovered term. When an object's content is given, its fingerprint is recomputed from that
+ * content and every fact's path must resolve inside it. This executor plans; the prose of the
+ * pages is a model step downstream, never produced here.
  */
 const nonEmpty = z.string().trim().min(1);
 const identifier = z.string().regex(/^[a-z][a-z0-9_.-]*$/);
@@ -38,6 +40,8 @@ export const approvedObjectSchema = z.object({
   kind: z.enum(objectKinds),
   state: z.enum(["complete", "resolved", "closes", "declared", "compared", "diagnosed", "conditioned", "incomplete", "partial", "open_divergences", "identity_failed", "blocked"]),
   fingerprint: sha256,
+  /** The object's own content, as the executor that produced it emitted it; when given, the fingerprint must be the hash of this content and every fact's path must resolve inside it. */
+  content: z.record(z.string(), z.unknown()).nullable().default(null),
   /** The monetary unit the object's figures are stated in, when it has any; a fact quoting a figure must carry the same unit. */
   unit: nonEmpty.nullable().default(null),
   /** Facts the deliverable may cite; each one is bound to the object's fingerprint, names the field it reproduces and declares its stance on the thesis. */
@@ -86,10 +90,16 @@ export const briefInputSchema = z.object({
   input.objects.forEach((object, index) => {
     if (objectIds.has(object.id)) context.addIssue({code: "custom", path: ["objects", index], message: `duplicate object ${object.id}`});
     objectIds.add(object.id);
+    if (object.content !== null) {
+      const recomputed = createHash("sha256").update(stableStringify(object.content)).digest("hex");
+      if (recomputed !== object.fingerprint) context.addIssue({code: "custom", path: ["objects", index, "fingerprint"], message: `${object.id}: the fingerprint is not the hash of the object's content; the content or the fingerprint was altered`});
+      if (object.unit !== null && typeof object.content.unit === "string" && object.content.unit !== object.unit) context.addIssue({code: "custom", path: ["objects", index, "unit"], message: `${object.id}: the declared unit ${object.unit} differs from the unit inside the object's content (${object.content.unit})`});
+    }
     object.headlines.forEach((headline, position) => {
       if (headline.objectFingerprint !== object.fingerprint) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the headline is bound to another fingerprint than the object's`});
       if (headline.unit === null && /\d{1,3}(\.\d{3})+/.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact with a figure needs its unit`});
-      if (/rompid|rompiment|breach|descumpr|inadimpl|default declar/i.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact asserts a breach or a default; no object asserts a legal event, only an interim reading against a limit`});
+      if (/rompid|rompiment|violad|violac|breach|descumpr|inadimpl|default declar|vencimento antecipado declar|acelerad/i.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact asserts a breach, a violation or a declared default; no object asserts a legal event, only an interim reading against a limit`});
+      if (object.content !== null && resolvePath(object.content, headline.objectPath) === undefined) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the path ${headline.objectPath} does not resolve inside the object's content`});
       if (headline.unit !== null && object.unit !== null && /\d{1,3}(\.\d{3})+/.test(headline.text) && headline.unit.toLowerCase() !== object.unit.toLowerCase()) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the fact quotes a figure in ${headline.unit} and the object states its figures in ${object.unit}`});
       if (headline.unit !== null) {
         const words = headline.text.toLowerCase();
@@ -146,7 +156,7 @@ const PAGE_PLANS: Record<"pitch_pages" | "internal_briefing" | "analysis_with_sc
 type Block = {id: string; label: string; state: "filled" | "gap"; object_ids: string[]; pending_object_ids: string[]; headlines: Array<{text: string; unit: string | null; object_id: string; object_fingerprint: string; object_path: string | null}>; gap: string | null};
 type Page = {number: number; title: string; blocks: string[]};
 export type BriefOutput = {
-  schema_version: "method.plan-meeting-brief.v5";
+  schema_version: "method.plan-meeting-brief.v6";
   case_id: string;
   turn: number;
   state: "planned" | "awaiting_confirmation";
@@ -165,6 +175,16 @@ export type BriefOutput = {
 
 const stableStringify = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => compare(a, b))) : inner));
 const fingerprint = (value: unknown) => createHash("sha256").update(stableStringify(value)).digest("hex");
+/** Resolves a dotted path with optional indexes ("coverage.by_period[0].coverage") inside an object; undefined when any step is missing. */
+export function resolvePath(content: unknown, path: string): unknown {
+  let current: unknown = content;
+  for (const step of path.split(".").flatMap((part) => part.split(/[[\]]/).filter((piece) => piece.length > 0))) {
+    if (current === null || typeof current !== "object") return undefined;
+    current = (current as Record<string, unknown>)[step];
+    if (current === undefined) return undefined;
+  }
+  return current;
+}
 const TRIVIAL_REASON = /^(nenhuma|nenhum|none|n\/?a|nada|-)$/i;
 
 /** Fits the base layout to the pages asked: merges the tail when fewer, splits the fullest page when more. */
@@ -243,7 +263,8 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
     const layout = fitPages(PAGE_PLANS[input.request.form], input.request.pages);
     if (!layout) {
       pagePlan = {state: "unsupported", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: `${input.request.pages} pages exceed the blocks the form ${input.request.form} carries; the question goes back to the person`};
-      // The question the method promises: it is asked, not only announced.
+      // The question the method promises: it is asked, not only announced, and inside the cap of three; the lowest-priority question gives way.
+      if (asked.length === 3) { const dropped = asked.pop()!; refused.push({id: dropped.id, reason: "gave way to the page plan question; three questions at most; kept for a later turn", answered_by: null}); }
       asked.push({id: "q-pages-exceed-blocks", text: `Foram pedidas ${input.request.pages} páginas e a forma ${input.request.form} tem ${PAGE_PLANS[input.request.form].reduce((sum, page) => sum + page.blocks.length, 0)} blocos; que conteúdo as páginas extras devem receber?`, changes_the_work: "define o plano de páginas, sem o qual nada é produzido"});
     }
     else {
@@ -282,7 +303,7 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
     ...pending.map((object) => ({id: `object:${object.id}`, state: "insufficient_evidence" as const, reason: `${object.id} (${object.kind}) is ${object.state}; its findings are carried as conditions and not written into the deliverable: ${object.headlines.map((headline) => headline.text).join("; ") || "no facts declared"}`})),
   ];
   const body = {
-    schema_version: "method.plan-meeting-brief.v5" as const,
+    schema_version: "method.plan-meeting-brief.v6" as const,
     case_id: input.caseId,
     turn: input.request.turn,
     state: pagePlan.state === "proposed" ? "awaiting_confirmation" as const : "planned" as const,
