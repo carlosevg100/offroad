@@ -1,0 +1,92 @@
+---
+id: estimate-exit-cost-by-series
+version: 2026.09.05-v1
+maturity: candidate
+title_pt: Estimar o custo de saída por série
+title_en: Estimate the exit cost by series
+role: credit_structuring
+blueprint_stage: 6
+owner_role: Head de DCM
+effective_date: 2026-09-05
+house_procedure_ids: [D-26, ES-02, ES-03]
+authorities: [LEI, DEF, MERCADO]
+legal_review_required: true
+reference_data_keys: [policy.structure.covenant_headroom]
+task_specs: [S07, S10]
+calculation_ids: [structure.debt_service_schedule, financial.weighted_average_life]
+gold_cases: [gc01-analista-ib-camil]
+dependencies: [build-debt-ledger, reconcile-covenant-definitions]
+---
+
+# Objetivo
+Para cada série que uma alternativa de refinanciamento pretende retirar, dizer se a saída é
+permitida na data, por qual mecanismo (amortização extraordinária, resgate total, oferta de
+resgate, aquisição), quanto custa (prêmio flat, make-whole a taxa de referência, prêmio negociado)
+e com que cotação da data-base, citando a cláusula.
+
+# Produto
+Tabela por série com janela de saída, mecanismo, fórmula do prêmio, taxa de referência e sua fonte
+na data-base, custo estimado e o que falta para fechar o número.
+
+# Quando ativar
+- Uma alternativa prevê pré-pagar, trocar ou recomprar uma série existente.
+
+# Quando não ativar
+- A alternativa só adiciona dívida sem retirar nenhuma; o método registra custo de saída zero com a razão.
+
+# Inputs mínimos e substitutos
+- Escritura ou contrato de cada série; substituto: relatório fiduciário só para dizer que a regra não está coberta.
+- Cronograma de juros e amortização por série; curvas da data-base (NTN-B pela ANBIMA, Pré x DI da B3).
+
+# Sequência operacional
+1. [deterministic] Ler a cláusula de saída :: Para cada série, extrair janela (data a partir da qual é permitido), mecanismo e fórmula do prêmio ; Registrar cláusula e página | evidence: escrituras
+2. [deterministic] Montar os fluxos remanescentes :: Fluxos de amortização e remuneração da série até o vencimento a partir do cronograma ; Calcular duration remanescente | tools: structure.debt_service_schedule, financial.weighted_average_life | evidence: cronograma por série
+3. [deterministic] Aplicar a fórmula :: Prêmio flat pro rata sobre dias úteis remanescentes; make-whole pelo maior entre valor atualizado e valor presente à taxa de referência da duration mais próxima ; Registrar a cotação usada, sua fonte e data | evidence: curvas ANBIMA e B3
+4. [model_assisted] Redigir :: Dizer por série o que é possível, quando e a que custo, e o que continua sem cotação
+
+# Cálculos determinísticos
+- structure.debt_service_schedule: fluxos remanescentes por série.
+- financial.weighted_average_life: duration remanescente para escolher o vértice ou o título de referência.
+
+# Julgamentos permitidos
+- Escolher o título NTN-B de duration mais próxima entre dois candidatos: a escritura manda a mais próxima; empate é registrado.
+
+# Perguntas que mudam o trabalho
+- A data pretendida de saída cai antes da janela de alguma série? Então a alternativa muda.
+- Existe cotação indicativa da data-base para o título de referência no pack?
+
+# Red flags
+- Prêmio percentual tratado como flat quando a escritura o define pro rata sobre o prazo remanescente.
+- Série IPCA "pré-pagável" antes da data de carência da escritura.
+
+# Stop conditions
+- Nenhuma escritura da série no pack e a alternativa depende dela.
+
+# Outputs
+- exit_costs (array, required): por série, janela, mecanismo, fórmula, taxa de referência com fonte e data, custo estimado e cláusula
+- blocked_series (array, required): séries cuja saída não é permitida na data ou cuja cotação falta
+
+# Exemplos
+## Bom
+- Camil: séries DI da 13ª e da 14ª a partir de maio e junho de 2026 com prêmio de 0,40% ao ano sobre os dias úteis remanescentes; séries IPCA só de 2027 e 2028 por make-whole à TIR da NTN-B; prefixada da 15ª pelo maior entre atualizado e valor presente à curva Pré x DI; 11ª por oferta com prêmio negociado.
+## Ruim
+- Assumir que a 13ª 2ª série pode ser pré-paga em 2026; aplicar 0,40% flat.
+
+# Testes
+## Unit
+- prêmio pro rata e make-whole reproduzem valores calculados à mão sobre um fluxo de teste
+## Gold
+- gc01-analista-ib-camil: seção 13.2 do gabarito reproduzida por família
+## Adversarial
+- série sem escritura fica bloqueada; data antes da janela é recusada
+## Aceitação
+- toda regra com cláusula; toda cotação com fonte e data
+
+# Evidência
+## Hierarquia
+- Escritura e aditamentos
+- Cronograma por série do ledger
+- Curvas de referência com fonte e data
+## Regras
+- Sem cláusula, não há custo de saída afirmável.
+- Cotação sem fonte e data não entra.
