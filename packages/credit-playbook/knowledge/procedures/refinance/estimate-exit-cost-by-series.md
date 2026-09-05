@@ -1,13 +1,24 @@
 ---
 id: estimate-exit-cost-by-series
 version: 2026.09.05-v1
-maturity: candidate
+maturity: implemented
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
 role: credit_structuring
 blueprint_stage: 6
 owner_role: Head de DCM
 effective_date: 2026-09-05
+implementation_module: @offroad/credit-playbook/executors/estimate-exit-cost-by-series
+implementation_export: estimateExitCostBySeries
+result_contract: method.estimate-exit-cost-by-series.v1
+connected_states: [understanding_in_progress]
+persistence_mode: derived_on_demand
+persistence_target: method_results
+unit_test_files: [packages/credit-playbook/src/executors/estimate-exit-cost-by-series.test.ts]
+gold_case_ids: [gc01-analista-ib-camil]
+adversarial_case_ids: [adversarial:gc01:make-whole-without-quote-is-insufficient]
+e2e_scenario_ids: [pending:case01-frozen-run]
+cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-26, ES-02, ES-03]
 authorities: [LEI, DEF, MERCADO]
 legal_review_required: true

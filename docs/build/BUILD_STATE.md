@@ -2397,3 +2397,26 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   (C07, C08), custo de saída por série (S07, S10), antes e depois de refinanciamento (S05, S10,
   S11) e plano de devolutiva e material (M05, M07). Com os três anteriores, nove métodos cobrem o
   Caso 01. Todos `candidate`, com exemplos bons e ruins vindos da auditoria e das escrituras.
+
+## Executores determinísticos dos métodos do Caso 01, candidate, 05/09/2026
+
+- `packages/credit-playbook/src/executors/`: quatro executores puros, um por método, com Decimal,
+  âncora por componente e fingerprint de entrada e saída: ledger de dívida (v2, depois da revisão
+  independente), reconciliação de covenant (degrau só resolvido com quitação provada; nunca escreve
+  "rompido"), parede de vencimentos (cobertura com a definição de caixa declarada; aprovações de
+  conselho não viram fonte) e custo de saída por série (janela, mecanismo, prêmio pro rata;
+  make-whole sem cotação fica `insufficient_evidence`). Os testes reproduzem os números do gabarito
+  do Caso 01, aplicam as mutações adversariais e provam consistência sob vinte permutações.
+- O compilador de métodos lê a evidência de implementação do frontmatter (módulo, export,
+  contrato de resultado, estados, persistência, ids de avaliação); `build-debt-ledger`,
+  `reconcile-covenant-definitions`, `diagnose-maturity-wall` e `estimate-exit-cost-by-series`
+  sobem a `implemented`.
+- Revisões independentes por IA dos métodos ficam em `packages/credit-playbook/knowledge/reviews/`
+  (registro completo em `runs/`), com o runner `review:codex --subject method --method <id>`. A
+  primeira revisão do ledger deu `fail` com 17 correções, todas incorporadas na v2 do executor e
+  no texto do método; a revisão é refeita antes de `ai_reviewed`.
+- Gabarito 01 em v0.7: a segunda revisão independente por IA (`fail`, seis correções) foi
+  incorporada; a revisão do método de covenant também deu `fail` com 17 correções, todas
+  incorporadas na v2 do executor (comparabilidade por componentes, headroom só quando plena,
+  liquidação antecipada ordinária ativa o degrau, vencimento antecipado mantém o degrau inferior,
+  base vazia bloqueia com motivo, fatos duplicados recusados, trace com fórmula e operandos).

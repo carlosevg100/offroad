@@ -1,0 +1,355 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "gc01-method-build-debt-ledger-2026-09-05-01-16-41",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "tool": "codex-cli 0.153.4"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "build-debt-ledger",
+    "version": "2026.09.05-v1",
+    "fingerprint": "aa47dd99485618c7af06689dd5464b5f1db728e9a8a5f3157730c9549ae20a27"
+  },
+  "run": {
+    "id": "gc01-method-build-debt-ledger-2026-09-05-01-16-41",
+    "startedAt": "2026-09-05T01:16:41.368Z",
+    "finishedAt": "2026-09-05T01:22:38.425Z",
+    "commit": "2b20bb62bfddc94c564f2626173bb130c3d7c0ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "1.0 — Integridade do corpus: as 43 entradas correspondem aos bytes e hashes SHA-256 declarados.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "anchor": "entries",
+      "result": "confirmed",
+      "note": "Recálculo local de SHA-256 e tamanho confirmou todas as 43 entradas, sem divergências."
+    },
+    {
+      "claim": "1.1 — Saldos dos empréstimos: BRL 1.314.412; USD 867.244; CLP 54.180; PEN 181.158; custo (9.099); subtotal 2.407.895.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.39, nota 15, linhas 2034-2044",
+      "result": "confirmed",
+      "note": "Todos os cinco componentes e o subtotal constam da coluna Consolidado de 31/05/2026."
+    },
+    {
+      "claim": "1.2 — Saldos das séries: 151.795; 505.984; 306.038; 282.357; 110.321; 438.918; 204.059; 66.024; 770.123; 408.703; 50.401; 30.793; custo (63.225); subtotal 3.262.291.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.39, nota 15, linhas 2045-2059",
+      "result": "confirmed",
+      "note": "Os doze saldos, o custo de transação e o subtotal constam da coluna Consolidado de 31/05/2026."
+    },
+    {
+      "claim": "1.3 — Balanço: dívida circulante 1.229.828 e não circulante 4.440.358.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.39, nota 15, linhas 2060-2065; balanço, linhas 596-614",
+      "result": "confirmed",
+      "note": "As duas apresentações trazem os mesmos valores."
+    },
+    {
+      "claim": "1.4 — Cronograma: 1.229.828; 776.868; 1.228.475; 694.497; 994.544; 809.198; custo (63.224); total 5.670.186.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.40, nota 15, linhas 2097-2109",
+      "result": "confirmed",
+      "note": "Os períodos são anos-safra, não anos civis."
+    },
+    {
+      "claim": "1.5 — Caixa e equivalentes 1.430.714 e aplicações financeiras 25.095.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.20, nota 3, linhas 973-984; balanço, linhas 554-566",
+      "result": "confirmed"
+    },
+    {
+      "claim": "1.6 — Derivativos: ativo 235 e passivo 14.335.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.51, nota 25, linhas 2764-2786",
+      "result": "corrected",
+      "note": "Os números conferem, mas o teste os ancora em p.20, “notas 3 e 25” (build-debt-ledger.test.ts, linha 36). A âncora correta dos derivativos é p.51, nota 25."
+    },
+    {
+      "claim": "1.7 — Dívida líquida divulgada no release: R$ 4.214,4 milhões.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt",
+      "anchor": "tabela “Endividamento e Caixa”, página impressa 11, linhas 1166-1178",
+      "result": "corrected",
+      "note": "O valor confere, mas o teste atribui página 8 (build-debt-ledger.test.ts, linha 37); a tabela está na página impressa 11 do release."
+    },
+    {
+      "claim": "1.8 — Termos da 11ª emissão: duas séries, vencimento 30/10/2028, 100% CDI + 1,55% a.a.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_11a_emissao.txt",
+      "anchor": "CARACTERÍSTICAS DA(S) SÉRIE(S), linhas 40-64",
+      "result": "confirmed",
+      "note": "A garantia quirografária é sustentada separadamente pelo cabeçalho da nota 15, PDF p.39."
+    },
+    {
+      "claim": "1.9 — Termos da 13ª emissão: DI + 0,65% até 16/11/2028; IPCA + 6,3416% até 18/11/2030; IPCA + 6,5264% até 16/11/2033.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_13a_emissao.txt",
+      "anchor": "CARACTERÍSTICAS DA EMISSÃO, linhas 35-54, 89-106 e 141-158",
+      "result": "confirmed"
+    },
+    {
+      "claim": "1.10 — Termos da 14ª emissão: 104% DI até 15/06/2029; IPCA + 6,8286% até 16/06/2031; IPCA + 6,9982% até 15/06/2034.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_14a_emissao.txt",
+      "anchor": "CARACTERÍSTICAS DA EMISSÃO, linhas 36-55, 89-106 e 139-156",
+      "result": "confirmed"
+    },
+    {
+      "claim": "1.11 — Termos da 15ª emissão: 105% DI até 18/11/2030; prefixada 14,15% até 16/11/2032; IPCA + 8,20% até 16/11/2032; IPCA + 8,70% até 16/11/2035.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_15a_emissao.txt",
+      "anchor": "CARACTERÍSTICAS DA EMISSÃO, linhas 36-55, 89-106, 139-156 e 189-206",
+      "result": "confirmed"
+    },
+    {
+      "claim": "1.12 — O teste trata os indexadores dos quatro empréstimos como cobertos: CDI, USD, CLP e PEN.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§1, observação para a revisão; §8, estados de cobertura",
+      "result": "corrected",
+      "note": "O ITR prova as moedas, mas não os indexadores dos empréstimos. “USD”, “CLP” e “PEN” são moedas, não definições de remuneração; “CDI” para o empréstimo BRL também não está sustentado. As quatro linhas deveriam carregar indexer=unknown e incluir indexer em uncoveredTerms."
+    },
+    {
+      "claim": "2.1 — Dívida bruta 5.670.186, balanço total 5.670.186 e diferença zero.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 73-79 e 123-125",
+      "result": "confirmed",
+      "note": "Recálculo: empréstimos 1.314.412 + 867.244 + 54.180 + 181.158 − 9.099 = 2.407.895; debêntures 151.795 + 505.984 + 306.038 + 282.357 + 110.321 + 438.918 + 204.059 + 66.024 + 770.123 + 408.703 + 50.401 + 30.793 − 63.225 = 3.262.291; total = 5.670.186. Balanço: 1.229.828 + 4.440.358 = 5.670.186."
+    },
+    {
+      "claim": "2.2 — Cronograma soma 5.670.186 e o primeiro período representa 0,21689377 da dívida.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 67-68, 78-79 e 125",
+      "result": "confirmed",
+      "note": "Recálculo: 1.229.828 + 776.868 + 1.228.475 + 694.497 + 994.544 + 809.198 − 63.224 = 5.670.186. Shares: 0,21689377; 0,13700926; 0,21665515; 0,12248223; 0,17539883; 0,14271102; −0,01115025."
+    },
+    {
+      "claim": "2.3 — Dívida líquida contratual 4.228.477 e visão reconstruída sem derivativos 4.214.377.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 85-90 e 126-129",
+      "result": "confirmed",
+      "note": "Recálculo contratual: 5.670.186 + 14.335 − 235 − 1.430.714 − 25.095 = 4.228.477. Sem derivativos: 5.670.186 − 1.430.714 − 25.095 = 4.214.377."
+    },
+    {
+      "claim": "2.4 — Diferença de 23 entre o release arredondado e a visão reconstruída.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linha 129",
+      "result": "confirmed",
+      "note": "Recálculo: 4.214.400 − 4.214.377 = 23, em R$ mil."
+    },
+    {
+      "claim": "2.5 — Seis séries IPCA somam 743.955, equivalentes a 0,13120469 da dívida bruta.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§11.1, leitura esperada",
+      "result": "confirmed",
+      "note": "Recálculo: 282.357 + 110.321 + 204.059 + 66.024 + 50.401 + 30.793 = 743.955; 743.955 / 5.670.186 = 0,13120469."
+    },
+    {
+      "claim": "2.6 — Dívida em moeda estrangeira soma 1.102.582.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.39, nota 15, linhas 2039-2043 e 2067-2069",
+      "result": "confirmed",
+      "note": "Recálculo: 867.244 + 54.180 + 181.158 = 1.102.582; representa 19,44525277% de 5.670.186 e 45,79028571% dos empréstimos de 2.407.895."
+    },
+    {
+      "claim": "2.7 — Agrupamentos produzidos pelo executor: CDI 3.487.270; IPCA 743.955; fixed 408.703; USD 867.244; CLP 54.180; PEN 181.158; BRL 4.639.928.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 92-102 e 131-132",
+      "result": "corrected",
+      "note": "Os saldos recalculam para 5.742.510 porque linhas contra são excluídas, mas os shares usam como denominador 5.670.186, que inclui custos contra. Os shares por indexador/moeda somam 1,01275514, não 1; portanto o mapa de concentração é internamente inconsistente."
+    },
+    {
+      "claim": "2.8 — Headroom do caso: 4,72x − 4,00x = 0,72x negativo; EBITDA implícito aproximado 895.863,77.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§5 e §13.1",
+      "result": "corrected",
+      "note": "Recálculo: 4.228.477 / 4,72 = 895.863,77118644. O executor não produz EBITDA, covenant, degrau, data de medição ou headroom, embora o teste gold do método prometa reproduzir a §5 (build-debt-ledger.md, linhas 96-100). A comparação permanece sujeita às condições de comparabilidade e quitação dos CRA."
+    },
+    {
+      "claim": "3.1 — A fórmula contratual-base corresponde às escrituras.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.22, linhas 1317-1337",
+      "result": "confirmed",
+      "note": "A escritura inclui empréstimos, financiamentos, debêntures, derivativos passivos e outras dívidas onerosas, menos caixa, aplicações e derivativos ativos; também define EBITDA de doze meses e, na 11ª, ajustes de aquisição."
+    },
+    {
+      "claim": "3.2 — O executor registra a definição literal e a âncora de cada visão de dívida líquida.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 55-59 e 126-130",
+      "result": "corrected",
+      "note": "reported e contractual contêm paráfrases fixas em inglês e nenhum campo de âncora; a âncora de cash também não é propagada. Isso diverge de build-debt-ledger.md, linhas 59, 63 e 87, e do requisito de suporte material em procedure-contract.ts, linhas 52-60 e 122-126."
+    },
+    {
+      "claim": "3.3 — A visão denominada reported é o valor efetivamente reportado no release.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt",
+      "anchor": "tabela “Endividamento e Caixa”, página impressa 11, linhas 1167-1178",
+      "result": "corrected",
+      "note": "O release reporta 4.214,4 milhões. O campo reported contém 4.214.377, reconstruído com componentes do ITR, enquanto o valor reportado aparece separadamente em release. A nomenclatura mistura “reportado” com “recalculado pela definição do release”."
+    },
+    {
+      "claim": "3.4 — O executor implementa EBITDA, degraus 3,50x/4,00x, medição anual e comparabilidade do pro forma.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "DebtLedgerOutput, linhas 45-63; netDebtViews, linhas 126-130",
+      "result": "corrected",
+      "note": "Nenhum desses campos ou cálculos existe. As definições e degraus constam das escrituras: escritura_13a_emissao.txt, linhas 324-357 e 2650-2683; escritura_14a_emissao.txt, linhas 329-360 e 2653-2675; escritura_15a_emissao.txt, linhas 334-365 e 2866-2879."
+    },
+    {
+      "claim": "3.5 — Cada linha de debênture tem âncora que sustenta saldo, indexador, remuneração e vencimento.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 16-27",
+      "result": "corrected",
+      "note": "Todas apontam apenas para ITR p.39, que sustenta saldo e garantia, mas não indexador, remuneração ou vencimento. O schema aceita apenas uma âncora por linha (build-debt-ledger.ts, linhas 12-29), impossibilitando preservar a proveniência distinta dos termos lidos nos relatórios fiduciários."
+    },
+    {
+      "claim": "3.6 — Linhas contra são custos de transação que integram o total contábil da nota, mas não representam dívida com credor.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.39, nota 15, linhas 2043-2060; PDF p.40, linhas 2102-2109",
+      "result": "confirmed",
+      "note": "A classificação contra é coerente com os rótulos e sinais da fonte; a divergência está no denominador dos agrupamentos descrita no claim 2.7."
+    },
+    {
+      "claim": "3.7 — O executor cobre regras e custo de saída por série.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "schemas de entrada e saída, linhas 14-63",
+      "result": "corrected",
+      "note": "Não há campo para janela, prepayment, fórmula de make-whole ou regra de resgate. Isso diverge da etapa 4 do método (build-debt-ledger.md, linha 58) e dos termos por família em gc01-gabarito-rascunho.md, §13.2."
+    },
+    {
+      "claim": "4.1 — Ausências nunca viram zero: indexer unknown, spread, maturity e guarantee ausentes são listados.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 104-111 e 119-133",
+      "result": "confirmed",
+      "note": "Para esses quatro campos, o executor preserva null/unknown e gera missing; não fabrica zero."
+    },
+    {
+      "claim": "4.2 — uncoveredTerms cobre todas as colunas não sustentadas e registra o motivo.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 25, 62 e 104-111",
+      "result": "corrected",
+      "note": "lender pode ser null, mas nunca entra em missing; todas as linhas gold têm lender null. Não existe reason nem estado literal insufficient_evidence, apenas nomes de quatro campos. Regras de saída nem fazem parte do schema."
+    },
+    {
+      "claim": "4.3 — O caso sem dívida comprovada e o caso release sem nota produzem ledger vazio/incompleto, sem números inventados.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "input schema, linhas 31-42",
+      "result": "corrected",
+      "note": "rows e schedule exigem pelo menos um item; balanceSheet, scheduleAnchor e cash são obrigatórios. Uma mutação rows=[] falha na validação, e um release isolado também falha, em vez de retornar o estado prometido por build-debt-ledger.md, linhas 45-47 e 101-104."
+    },
+    {
+      "claim": "4.4 — Divergências de reconciliação ou cronograma bloqueiam o ledger.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 74-83 e 117-125",
+      "result": "confirmed",
+      "note": "Ambas geram blockReasons e blocked=true."
+    },
+    {
+      "claim": "4.5 — tolerance é uma tolerância absoluta válida.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 11, 40-41 e 77",
+      "result": "corrected",
+      "note": "O schema aceita tolerância negativa. Mutação tolerance=-1 bloqueou até diferença zero, pois abs(0) <= -1 é falso. A tolerância deveria ser não negativa."
+    },
+    {
+      "claim": "5.1 — A mutação de escala coberta pelo teste é detectada.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 65-72",
+      "result": "confirmed",
+      "note": "Multiplicar apenas loan-brl por 1.000 rompe simultaneamente a reconciliação com o balanço e a igualdade do cronograma."
+    },
+    {
+      "claim": "5.2 — O executor resiste às demais mutações do método e do gabarito.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§10, §11.6 e §13.4",
+      "result": "corrected",
+      "note": "Não há testes nem campos para covenant rompido, EBITDA trimestral anualizado, arrendamento, pro forma, degraus, quitação dos CRA, prepayment ou credor econômico. Se uma obrigação não comprovada for inserida junto com balanço e cronograma igualmente ajustados, o executor aceita-a: ele valida consistência aritmética, não suficiência/classificação da evidência."
+    },
+    {
+      "claim": "5.3 — A suíte adversarial declarada cobre release sem nota.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 41-81",
+      "result": "corrected",
+      "note": "A suíte contém apenas a mutação de escala. Não existe teste de release sem nota, apesar da promessa em build-debt-ledger.md, linha 102."
+    },
+    {
+      "claim": "6.1 — O corpo de saída é determinístico sob reversão da ordem de rows.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 69, 73, 92-102 e 137",
+      "result": "confirmed",
+      "note": "As rows são ordenadas por id antes do corpo e dos agrupamentos. Mutação executada confirmou o mesmo outputFingerprint após reversão."
+    },
+    {
+      "claim": "6.2 — inputFingerprint e outputFingerprint são independentes de toda ordem de entrada.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 69, 73, 125-137",
+      "result": "corrected",
+      "note": "Mutação executada: inverter rows preservou outputFingerprint, mas alterou inputFingerprint. Inverter schedule alterou ambos, pois schedule não é normalizado antes da saída. Portanto a consistência semântica por ordem de entrada não é geral."
+    },
+    {
+      "claim": "6.3 — Vinte execuções do teste provam independência ampla de ordem.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 74-80",
+      "result": "corrected",
+      "note": "As vinte iterações repetem exatamente a mesma reversão de rows; não embaralham aleatoriamente, não verificam inputFingerprint e não permutam schedule. Provam somente um caso de outputFingerprint sob reversão das linhas."
+    },
+    {
+      "claim": "7.1 — A revisão independente é registro por modelo, não aprovação humana.",
+      "source": "packages/credit-playbook/src/procedure-contract.ts",
+      "anchor": "linhas 158-168 e 223-224",
+      "result": "confirmed",
+      "note": "O contrato separa ai_independent_review da aprovação do fundador exigida apenas para production."
+    },
+    {
+      "claim": "7.2 — Aplicabilidade de 4,00x às medições de fevereiro de 2026/2027.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§13.1 e §14, limitações",
+      "result": "limitation",
+      "note": "Depende da comprovação da quitação ordinária dos CRA de referência; o corpus não contém prova completa."
+    },
+    {
+      "claim": "7.3 — Comparabilidade integral do pro forma de 4,72x com cada escritura.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§13.1 e §14, limitações",
+      "result": "limitation",
+      "note": "A companhia não abre o EBITDA nem as informações complementares, e a 11ª possui ajuste de aquisições que as demais não possuem."
+    },
+    {
+      "claim": "7.4 — Inclusão do arrendamento como “outra dívida onerosa”.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§5, Arrendamento; §14, limitações",
+      "result": "limitation",
+      "note": "A interpretação jurídica não é resolvida pelo corpus e requer especialista."
+    },
+    {
+      "claim": "7.5 — Qualificação jurídica do credor econômico dos CRA.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§13.5 e §14, limitações",
+      "result": "limitation",
+      "note": "O corpus distingue titulares econômicos e securitizadora formal, mas condiciona a qualificação jurídica final a revisão especializada."
+    },
+    {
+      "claim": "7.6 — Valor monetário do make-whole.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§13.2, §13.3 e §14, limitações",
+      "result": "limitation",
+      "note": "A fórmula é coberta, mas o valor em uma data depende da cotação de referência daquele dia."
+    }
+  ],
+  "result": "fail",
+  "conditions": [
+    "A aplicação do degrau de 4,00x permanece condicionada à prova da quitação ordinária dos CRA de referência (gc01-gabarito-rascunho.md, §13.1 e §14).",
+    "A comparação integral do pro forma de 4,72x com cada escritura depende do cálculo de EBITDA e das informações complementares não abertos pela companhia (gc01-gabarito-rascunho.md, §13.1).",
+    "A inclusão de arrendamentos em “outra dívida onerosa” exige interpretação jurídica especializada (gc01-gabarito-rascunho.md, §5).",
+    "A qualificação jurídica final do credor econômico dos CRA exige revisão especializada (gc01-gabarito-rascunho.md, §13.5).",
+    "O valor monetário do make-whole exige a cotação aplicável na data de cálculo (gc01-gabarito-rascunho.md, §13.2-13.3)."
+  ],
+  "notes": "Codex (GPT-5), revisão independente por modelo com leitura local, verificação SHA-256, recálculo próprio e mutações executadas via Node; não constitui aprovação humana.\n\nA aritmética principal do caso gold confere, mas há correções materiais de definição, evidência e comportamento: indexadores de empréstimos inventados/conflados com moeda; âncoras incorretas ou insuficientes; ausência de credor e motivo em uncoveredTerms; impossibilidade de representar ledger vazio ou release sem nota; omissão de covenant, EBITDA, degraus, headroom e saída; shares de concentração que somam 101,275514%; tolerância negativa; e fingerprints sensíveis à ordem do cronograma. Por esses motivos, o resultado é fail."
+}
