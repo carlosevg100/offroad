@@ -545,6 +545,9 @@ begin
   if claim ->> 'kind' <> 'agent_operation_brief' or (claim ->> 'integration_preview')::boolean then
     raise exception 'an unlisted project was claimed as integration_preview: %', claim;
   end if;
+  if claim ->> 'integration_preview_mode' is not null then
+    raise exception 'an unlisted project carries a router mode: %', claim;
+  end if;
   perform public.worker_record_agent_failure((claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview_test_closed');
   perform public.worker_fail_job(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token',
@@ -592,6 +595,9 @@ begin
   claim := public.worker_claim_job(repeat('p', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief' or not (claim ->> 'integration_preview')::boolean then
     raise exception 'the listed project was not claimed as integration_preview: %', claim;
+  end if;
+  if claim ->> 'integration_preview_mode' <> 'deterministic' or status ->> 'mode' <> 'deterministic' then
+    raise exception 'the claim or the status does not name the router mode: % / %', claim ->> 'integration_preview_mode', status ->> 'mode';
   end if;
   perform public.worker_record_agent_failure((claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview_test_closed');
   perform public.worker_fail_job(

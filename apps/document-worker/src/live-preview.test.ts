@@ -1,0 +1,179 @@
+import type {ModelGateway} from "@offroad/model-gateway";
+import {describe, expect, it} from "vitest";
+
+import {decideLiveTurn, liveRoutingOutputSchema, premisesFromTurn, understandLiveTurn, type LiveRoutingOutput, type LiveTurnContext} from "./live-preview";
+import type {PreviewStepOutput} from "./integration-preview";
+
+const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({value, state, confidence: state === "explicit" ? 1 : 0.7});
+
+/** A classifier output the way the model returns it, with the preview-desk fields. */
+function classifierOutput(overrides: Omit<Partial<LiveRoutingOutput>, "turn"> & {turn?: Partial<LiveRoutingOutput["turn"]>} = {}): LiveRoutingOutput {
+  const base: LiveRoutingOutput = {
+    routingCore: {
+      action: field(["preparar material para reunião"]),
+      object: field([{kind: "company" as const, reference: "Camil"}, {kind: "material" as const}]),
+      desiredOutcome: field("material para a reunião com a Camil sobre refinanciamento"),
+      decision: field(null),
+      audience: field(["VP"]),
+      depth: field("preliminary" as const, "inferred"),
+      continuity: field("new" as const),
+      workResponsibility: field(["producer" as const]),
+    },
+    inferableContext: {
+      jurisdiction: field(["BR"], "inferred"),
+      asOfDate: field(null, "unknown"),
+      currency: field("BRL", "inferred"),
+      deadline: field("segunda", "inferred"),
+      sponsorInstruction: field("Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera."),
+      constraints: field([]),
+      urgency: field("this_week" as const, "inferred"),
+      availableInputs: field([]),
+    },
+    primaryWorks: [{work: "capital_strategy", confidence: 0.8}, {work: "understand", confidence: 0.6}],
+    composition: "prepare_meeting",
+    firstQuestion: "Leitura de refinanciamento ou alternativas mais amplas?",
+    abstain: false,
+    abstainReason: null,
+    turn: {
+      companies: [{mention: "Camil", role: "subject"}],
+      premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null},
+      numberQuestion: null,
+      material: {requested: false, form: null, pages: null},
+      answers: [],
+      scopeChanges: {audience: null, depth: null, form: null},
+    },
+  };
+  const {turn, ...rest} = overrides;
+  return liveRoutingOutputSchema.parse({...base, ...rest, turn: {...base.turn, ...(turn ?? {})}});
+}
+
+function fakeGateway(output: LiveRoutingOutput, costUsd = 0.0021): ModelGateway {
+  let spent = 0;
+  return {
+    complete: async () => {
+      spent += costUsd;
+      return {output, model: "claude-sonnet-5", provider: "anthropic"} as never;
+    },
+    spent: () => ({costUsd: spent, calls: spent > 0 ? 1 : 0}),
+  } as unknown as ModelGateway;
+}
+
+const context: LiveTurnContext = {
+  locale: "pt-BR",
+  message: "Sou analista no time de Investment Banking. Meu VP me pediu para preparar material para uma reunião com a Camil na segunda.",
+  recentMessages: [],
+  organizationId: "20000000-0000-4000-8000-000000000001",
+  projectId: "30000000-0000-4000-8000-000000000001",
+  entryJob: "origination_thesis",
+  accessBasis: "public_information",
+  documentIds: [],
+  professionalContext: {useForms: ["institutional_work"], professionalRoles: ["banker"], practiceAreas: ["investment_banking", "dcm"], primaryObjectives: ["prepare_meetings"]},
+  openQuestions: [],
+  priorObjectKinds: [],
+};
+
+async function decide(output: LiveRoutingOutput, overrides: Partial<Parameters<typeof decideLiveTurn>[0]> = {}) {
+  const understanding = await understandLiveTurn({gateway: fakeGateway(output), context: {...context, message: overrides.message ?? context.message}});
+  return decideLiveTurn({
+    locale: "pt-BR", message: context.message, recentMessages: [], understanding, priorCaseId: null, artifactTypes: [], runActive: false,
+    priorOutputs: new Map<string, PreviewStepOutput>(), entryJob: "origination_thesis", messageId: "10000000-0000-4000-8000-000000000077",
+    ...overrides,
+  });
+}
+
+describe("live_intelligence_preview router", () => {
+  it("stamps the envelope with system fields and reports the one call it made", async () => {
+    const understanding = await understandLiveTurn({gateway: fakeGateway(classifierOutput()), context});
+    expect(understanding.envelope.executionContext.organizationId).toEqual({value: context.organizationId, state: "system"});
+    expect(understanding.envelope.routingCore.audience.value).toEqual(["VP"]);
+    expect(understanding.model).toBe("claude-sonnet-5");
+    expect(understanding.costUsd).toBeCloseTo(0.0021, 6);
+  });
+
+  it("routes paraphrases of the analyst's request to the same composition and the same frozen corpus", async () => {
+    const paraphrases: Array<Partial<LiveRoutingOutput>> = [
+      {},
+      {composition: "understand_company_sector_asset", primaryWorks: [{work: "understand", confidence: 0.7}, {work: "capital_strategy", confidence: 0.6}]},
+      {composition: null, primaryWorks: [{work: "capital_strategy", confidence: 0.9}]},
+      {composition: "diagnose_capital_structure"},
+      {composition: "develop_alternatives", primaryWorks: [{work: "capital_strategy", confidence: 0.8}]},
+    ];
+    for (const overrides of paraphrases) {
+      const decision = await decide(classifierOutput(overrides));
+      expect(decision.kind).toBe("activate");
+      expect(decision.composition).toBe("prepare_meeting");
+      expect(decision.record.corpus?.caseId).toBe("gc01-analista-ib-camil");
+      expect(decision.reply).toMatch(/^\[Validação interna, live_intelligence_preview\] composição=prepare_meeting · companhia=Camil Alimentos S\.A\. · corpus=gc01-analista-ib-camil/);
+      expect(decision.reply).toContain("modelo=claude-sonnet-5");
+      expect(decision.reply).toContain("chamadas=1");
+      expect(decision.activation?.caseId).toBe("gc01-analista-ib-camil");
+      expect(decision.activation?.plan.turn).toEqual({messageId: "10000000-0000-4000-8000-000000000077"});
+    }
+  });
+
+  it("abstains for a company without a frozen corpus and never lends it the Camil objects", async () => {
+    const decision = await decide(classifierOutput({
+      routingCore: {...classifierOutput().routingCore, object: field([{kind: "company", reference: "Magazine Luiza"}])},
+      turn: {companies: [{mention: "Magazine Luiza", role: "subject"}]},
+    }), {message: "Preciso preparar uma reunião com a Magazine Luiza sobre refinanciamento."});
+    expect(decision.kind).toBe("abstain");
+    expect(decision.activation).toBeNull();
+    expect(decision.record.abstainReason).toBe("company_without_corpus");
+    expect(decision.reply).toContain("corpus=nenhum");
+    expect(decision.reply).toContain("Magazine Luiza");
+    expect(decision.reply).not.toMatch(/4,72x|5\.670\.186/);
+  });
+
+  it("routes a CFO preparing a board discussion to prepare_decision with the board as audience", async () => {
+    const output = classifierOutput({
+      routingCore: {...classifierOutput().routingCore, audience: field(["conselho de administração"]), workResponsibility: field(["producer", "decision_maker"])},
+      composition: "prepare_decision",
+    });
+    const decision = await decide(output, {message: "Sou CFO da Camil e preciso levar ao conselho a decisão sobre refinanciar as debêntures."});
+    expect(decision.kind).toBe("activate");
+    expect(decision.composition).toBe("prepare_decision");
+    expect(decision.record.audience).toBe("board");
+    expect(decision.activation?.brief.request.form).toBe("board_deck");
+    expect(decision.reply).toContain("audiência=board");
+  });
+
+  it("recognises a premise change once the analysis exists, converting a CDI spread into a rate", async () => {
+    const output = classifierOutput({composition: null, turn: {companies: [], premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: 150, newDebtTermMonths: 84, newDebtGraceMonths: 24}}});
+    expect(premisesFromTurn(output.turn)).toEqual({newDebtAnnualRate: "0.1475", newDebtTermMonths: 84, newDebtGraceMonths: 24});
+    const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_debt_ledger", "preview_alternatives"], message: "Considere CDI + 1,50%, 7 anos com 2 de carência."});
+    expect(decision.kind).toBe("activate");
+    expect(decision.composition).toBe("change_premise");
+    expect(decision.activation?.brief.premises).toEqual({newDebtAnnualRate: "0.1475", newDebtTermMonths: 84, newDebtGraceMonths: 24});
+  });
+
+  it("answers a question about a number from the signed objects, without another call", async () => {
+    const covenants = {
+      state: "conditioned",
+      covenants: [{id: "deb-11", ratio: "4.72", definitionText: "dívida líquida pela escritura sobre EBITDA", asOfDate: "2026-05-31"}],
+    } as unknown as PreviewStepOutput;
+    const output = classifierOutput({composition: "answer_a_question", turn: {companies: [], numberQuestion: {mentioned: "4,7x", objects: ["covenants"]}}});
+    const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives", "preview_covenants"], priorOutputs: new Map([["C09", covenants]]), message: "De onde saiu essa alavancagem de 4,7x?"});
+    expect(decision.kind).toBe("answer");
+    expect(decision.activation).toBeNull();
+    expect(decision.record.calls).toBe(1);
+  });
+
+  it("plans the material from the objects when the person asks for a deliverable", async () => {
+    const output = classifierOutput({composition: "prepare_material", turn: {companies: [], material: {requested: true, form: "pitch_pages", pages: 3}}});
+    const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], message: "Vamos preparar o material: três páginas de pitch."});
+    expect(decision.kind).toBe("activate");
+    expect(decision.composition).toBe("prepare_material");
+    expect(decision.activation?.brief.request.pages).toBe(3);
+    expect(decision.activation?.brief.request.form).toBe("pitch_pages");
+  });
+
+  it("abstains when the classifier abstains, and redirects a request outside the desk", async () => {
+    const abstained = await decide(classifierOutput({abstain: true, abstainReason: "two readings remain", composition: null, firstQuestion: "É para a Camil ou para outra companhia?"}));
+    expect(abstained.kind).toBe("abstain");
+    expect(abstained.reply).toContain("É para a Camil ou para outra companhia?");
+    const outside = await decide(classifierOutput({composition: "introduce", primaryWorks: [{work: "capital_match", confidence: 0.9}]}), {message: "Apresente a Camil para três fundos de crédito."});
+    expect(outside.kind).toBe("abstain");
+    expect(outside.record.abstainReason).toBe("out_of_scope:introduce");
+    expect(outside.activation).toBeNull();
+  });
+});

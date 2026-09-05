@@ -139,8 +139,10 @@ on conflict (organization_id, capital_project_id) do update
 ```
 
 O banner no layout aparece só no escopo `organization`; no escopo `projects`, aparece na página
-do projeto listado. `get_integration_preview_status_v1` devolve `enabled`, `scope`, `projectIds` e
-`note`.
+do projeto listado. `get_integration_preview_status_v1` devolve `enabled`, `scope`, `mode`,
+`projectIds` e `note`. O `mode` da concessão escolhe o roteador: `deterministic` (regex, zero
+chamadas de modelo, o esqueleto) ou `live` (roteador semântico, uma chamada por turno sob
+orçamento; ver `LIVE_INTELLIGENCE_PREVIEW.md`).
 
 ### Ordem de rollout em produção
 

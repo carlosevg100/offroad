@@ -45,6 +45,8 @@ const claimedJobBase = z.object({
   source_pack_id: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,79}$/).nullable().optional(),
   /** The organization runs the internal integration_preview mode: methods in the implemented rung may execute, marked as preview. */
   integration_preview: z.boolean().nullable().optional(),
+  /** deterministic: the regex router of the skeleton. live: the semantic router decides, with a model call per turn under budget. */
+  integration_preview_mode: z.enum(["deterministic", "live"]).nullable().optional(),
 });
 export const documentJobSchema = claimedJobBase.extend({
   kind: z.literal("document_pipeline"),

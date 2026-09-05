@@ -140,7 +140,7 @@ export default async function ApplicationLayout({children, params}: Props) {
             body: t("integrationPreview.body"),
             note: t("integrationPreview.note"),
           }}
-          note={integrationPreview.note}
+          note={[integrationPreview.mode === "live" ? (locale === "en-US" ? "Live mode: the semantic router decides, one model call per turn under budget." : "Modo vivo: o roteador semântico decide, uma chamada de modelo por turno sob orçamento.") : null, integrationPreview.note].filter((part): part is string => Boolean(part)).join(" ") || null}
         /> : null}
         {children}
       </div>
