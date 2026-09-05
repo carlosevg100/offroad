@@ -1,6 +1,6 @@
 ---
 id: estimate-exit-cost-by-series
-version: 2026.09.05-v1
+version: 2026.09.05-v2
 maturity: implemented
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
