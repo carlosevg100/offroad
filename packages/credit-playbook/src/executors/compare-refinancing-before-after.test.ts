@@ -101,7 +101,9 @@ describe("compare-refinancing-before-after executor", () => {
     expect(consolidated.toDecimalPlaces(2).toFixed()).toBe(beforeTotal.minus(retired).plus(extendInput.newDebt!.amount).toDecimalPlaces(2).toFixed());
     expect(result.ranking?.discriminator).toBe("peak_amount");
     expect(result.ranking?.order[0]?.reason).toBe("best peak_amount");
-    const tie = compareRefinancingBeforeAfter({...base, alternatives: [base.alternatives[2]!, {...base.alternatives[2]!, id: "status-quo-twin", label: "Manter, de novo"}], ranking: {discriminator: "peak_amount", rationale: "empate"}});
+    const statusQuo = base.alternatives.find((alternative) => alternative.id === "status-quo")!;
+    const tie = compareRefinancingBeforeAfter({...base, alternatives: [statusQuo, {...statusQuo, id: "status-quo-twin", label: "Manter, de novo"}], ranking: {discriminator: "peak_amount", rationale: "empate"}});
+    expect(tie.ranking?.order).toHaveLength(2);
     expect(tie.ranking?.order[1]?.reason).toMatch(/tied with the best/);
   });
 });
