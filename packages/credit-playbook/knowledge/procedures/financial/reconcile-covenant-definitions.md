@@ -1,6 +1,6 @@
 ---
 id: reconcile-covenant-definitions
-version: 2026.09.05-v1
+version: 2026.09.05-v3
 maturity: implemented
 title_pt: Reconciliar as definições de covenant com as escrituras
 title_en: Reconcile covenant definitions against the indentures
@@ -10,13 +10,13 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-covenant-definitions
 implementation_export: reconcileCovenantDefinitions
-result_contract: method.reconcile-covenant-definitions.v2
+result_contract: method.reconcile-covenant-definitions.v3
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
 unit_test_files: [packages/credit-playbook/src/executors/reconcile-covenant-definitions.test.ts]
 gold_case_ids: [gc01-analista-ib-camil]
-adversarial_case_ids: [adversarial:gc01:different-net-debt-definition-not-comparable]
+adversarial_case_ids: [adversarial:gc01:different-net-debt-definition-not-comparable, adversarial:gc01:leases-in-other-onerous-debt-changes-net-debt, adversarial:gc01:ebitda-flag-is-not-an-opening]
 e2e_scenario_ids: [pending:case01-frozen-run]
 cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-24, D-26, ES-40]
@@ -51,9 +51,9 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - Demonstração da data de medição e, para leituras interinas, o pro forma divulgado com a sua definição.
 
 # Sequência operacional
-1. [deterministic] Extrair a cláusula :: Localizar na escritura a cláusula de índices financeiros e copiar definição de dívida líquida, definição de EBITDA, periodicidade, base de apuração, limites e condições de cada degrau ; Registrar cláusula e página | evidence: escrituras
-2. [deterministic] Resolver o degrau aplicável :: Verificar a condição de cada degrau (vencimento ou quitação de instrumento de referência, exercício encerrado, evento) contra fatos datados ; Marcar como `insufficient_evidence` a condição que a base não prova | evidence: escrituras, comunicados, relatórios fiduciários
-3. [deterministic] Comparar definições :: Recalcular a dívida líquida contratual a partir dos componentes do ledger e, quando a companhia abre o EBITDA de covenant, o índice; senão, derivar o EBITDA implícito do índice reportado e marcá-lo como derivado ; Decidir a comparabilidade confrontando os componentes da definição contratual com os da definição reportada, instrumento a instrumento, nunca por declaração de quem chama ; Só medir headroom quando a comparação for plena; comparação condicionada registra o índice e o limite lado a lado sem headroom | tools: financial.debt_views, financial.net_leverage, structure.covenant_headroom | evidence: ledger de dívida, ITR ou DFP
+1. [deterministic] Extrair a cláusula :: Localizar na escritura a cláusula de índices financeiros e copiar definição de dívida líquida, definição de EBITDA, periodicidade, base de apuração, limites e condições de cada degrau ; Registrar cláusula e página das definições e, separadamente, de cada degrau ; Tipar cada ajuste de EBITDA pelo lado do índice que toca (adição ao denominador, como o EBITDA de adquirida; obrigação no numerador, como o sellers finance), nunca fundidos numa lista única | evidence: escrituras
+2. [deterministic] Resolver o degrau aplicável :: Verificar a condição de cada degrau (vencimento ou quitação de instrumento de referência, exercício encerrado, evento) contra fatos datados; uma quitação ordinária sem data é fato desconhecido, não quitação ; Marcar como `insufficient_evidence` a condição que a base não prova e deixar uma condição escrita para cada degrau não provado, inclusive um degrau `until` isolado ; Derivar a próxima medição da periodicidade declarada (anual, semestral ou trimestral) a partir do fim do exercício | evidence: escrituras, comunicados, relatórios fiduciários
+3. [deterministic] Comparar definições :: Recalcular a dívida líquida de cada instrumento a partir da lista de componentes da sua própria definição, sobre linhas datadas na data-base e com âncora própria por operando (uma linha agregada declara o que cobre); uma definição que acrescenta arrendamento ou retira derivativos muda o número ou recusa a comparação ; Tratar `qualquer outra dívida onerosa` como residual: sem linha na base, assumir zero de forma declarada e condicionar; arrendamento presente na base sem estar na definição vira condição jurídica, não dívida ; Quando a companhia abre o EBITDA de covenant com valor e data, calcular o índice; um ajuste da escritura que o EBITDA aberto não declara incorporar condiciona a comparação também nessa via ; Senão, usar o índice reportado só se datado na data-base, com os componentes que a base de fato enumera e com o EBITDA aberto em valor (um sinalizador não é abertura); derivar o EBITDA implícito e marcá-lo como derivado ; Decidir a comparabilidade confrontando componentes, instrumento a instrumento, nunca por declaração de quem chama ; Só medir headroom, pelo financial-core, quando o limite está resolvido e a comparação é plena; comparação condicionada registra o índice e o limite lado a lado sem headroom | tools: financial.debt_views, financial.net_leverage, structure.covenant_headroom | evidence: ledger de dívida, ITR ou DFP
 4. [model_assisted] Redigir a leitura :: Dizer qual limite se aplica em qual data, o que o pro forma significa e o que falta provar ; Nunca escrever "rompido" para uma medição que ainda não ocorreu
 
 # Cálculos determinísticos
@@ -76,9 +76,9 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - Nenhuma escritura no pack e o trabalho exige afirmar headroom.
 
 # Outputs
-- covenants (array, required): por instrumento, fonte (escritura ou relatório fiduciário), definições literais e componentes, ajustes de EBITDA, degraus com condição e estado, periodicidade, base, fim do exercício, próxima medição derivada, limite aplicável com estado, comparabilidade com motivos, headroom só quando comparável, status nunca igual a rompido, âncora com cláusula e página
-- comparable_index (object, required): índice comparado, com base (calculado dos componentes ou reportado), definição, dívida líquida com fórmula, operandos e âncoras, EBITDA aberto ou implícito e âncora
-- unproven_conditions (array, required): condições de degrau ou quitações não provadas pela base, uma por instrumento
+- covenants (array, required): por instrumento, fonte (escritura ou relatório fiduciário), definições literais com componentes e âncora própria, ajustes de EBITDA tipados com âncora, degraus com condição, estado e âncora própria, periodicidade, base, fim do exercício, próxima medição derivada da periodicidade, limite aplicável com estado, apuração reportada pelo agente quando a fonte é relatório fiduciário, dívida líquida pela própria definição (fórmula, operandos, âncora por operando, residual assumido zero ou não), índice comparado (calculado ou reportado, EBITDA aberto ou implícito), comparabilidade com motivos, headroom só quando comparável, status nunca igual a rompido
+- unproven_conditions (array, required): condições de degrau ou quitações não provadas pela base, uma por degrau não provado
+- legal_conditions (array, required): qualificações que exigem revisão jurídica (arrendamento como outra dívida onerosa, sellers finance no numerador), uma por instrumento
 - state (enum, required): resolved, conditioned ou blocked | values: resolved, conditioned, blocked
 
 # Exemplos
@@ -89,13 +89,13 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 
 # Testes
 ## Unit
-- degrau aplicável resolvido a partir de vencimento ou liquidação ordinária, o que ocorrer primeiro; liquidação por vencimento antecipado mantém o degrau inferior; próxima medição derivada do fim do exercício; direção mínimo e máximo
+- degrau aplicável resolvido a partir de vencimento ou liquidação ordinária datada, o que ocorrer primeiro; liquidação por vencimento antecipado mantém o degrau inferior; próxima medição derivada do fim do exercício e da periodicidade (anual, semestral, trimestral); direção mínimo e máximo; dívida líquida por definição com um operando e uma âncora por componente
 ## Gold
-- gc01-analista-ib-camil: quatro escrituras (11ª, 13ª, 14ª e 15ª); dívida líquida contratual 4.228.477 recalculada dos componentes; EBITDA implícito 895.863,77 marcado como derivado; 4,00x fica `insufficient_evidence` enquanto a quitação dos CRA de referência não está provada; nenhum headroom emitido
+- gc01-analista-ib-camil: quatro escrituras (11ª, 13ª, 14ª e 15ª) com âncora das definições e de cada degrau; dívida líquida 4.228.477 recalculada pela definição de cada escritura a partir de cinco linhas datadas do ITR (nota 15 cobrindo empréstimos, financiamentos e debêntures; nota 25 para derivativos; nota 3 para caixa; balanço para aplicações), residual `outra dívida onerosa` assumido zero de forma declarada; EBITDA implícito 895.863,77 marcado como derivado; 4,00x fica `insufficient_evidence` com uma condição escrita por degrau (oito ao todo) enquanto a quitação dos CRA de referência não está provada; comparação condicionada (residual não enumerado, EBITDA não aberto, ajustes tipados da 11ª); nenhum headroom emitido
 ## Adversarial
-- relatório fiduciário sem escritura não produz headroom; definição reportada com componentes diferentes é `not_comparable` por instrumento; EBITDA não aberto deixa a comparação condicionada sem headroom; base vazia bloqueia com motivo estruturado; fatos de quitação duplicados são recusados; índice reportado datado depois da data-base é recusado
+- relatório fiduciário sem escritura não produz headroom e carrega a apuração reportada; definição reportada com componentes diferentes é `not_comparable` por instrumento; definição que acrescenta arrendamento muda a dívida líquida daquele instrumento e gera condição jurídica nos demais; definição que retira derivativos muda o número no outro sentido; EBITDA não aberto deixa a comparação condicionada sem headroom; na via calculada, a 11ª fica condicionada até o EBITDA aberto declarar os ajustes que incorpora; índice reportado datado antes da data-base é `not_comparable`; linha de componente datada fora da data-base, quitação ordinária sem data, fatos de quitação duplicados, instrumentos e ajustes duplicados e índice reportado posterior à data-base são recusados; periodicidade trimestral muda a próxima medição; degrau `until` isolado sem fatos deixa condição escrita; base vazia bloqueia com motivo estruturado
 ## Aceitação
-- toda afirmação de limite com cláusula e página; condições não provadas nomeadas; trace com fórmula e operandos de cada cálculo; fingerprints iguais sob permutação de instrumentos e fatos
+- toda afirmação de limite com cláusula e página do próprio degrau; condições não provadas nomeadas, uma por degrau; trace com fórmula e operandos de cada cálculo executado, e nada nomeado sem executar; fingerprints iguais sob vinte permutações de instrumentos, fatos, linhas de componente, ajustes, referências e componentes reportados
 
 # Evidência
 ## Hierarquia
