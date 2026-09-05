@@ -347,7 +347,10 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const resolution = fromClassifier.kind === "resolved" ? fromClassifier : fromText.kind === "resolved" ? fromText : fromClassifier;
   const priorCorpus = input.priorCaseId ? preview.corpusByCaseId(input.priorCaseId) : null;
   const corpusRecord = (corpus: preview.PreviewCorpus | null) => corpus ? {caseId: corpus.caseId, sourcePackId: corpus.sourcePackId, company: corpus.company.legalName} : null;
-  const audience = normalizeAudience(output.turn.scopeChanges.audience) ?? normalizeAudience(core.audience.value[0]) ?? "vp";
+  // The audience the model names, else the first audience of the envelope; a decision body written
+  // in the message (board, committee) wins, because it defines the form of the work.
+  const decisionBodyInText = /\b(conselho|board|comit[eê]|committee)\b/i.test(input.message) ? (/\bcomit[eê]|committee\b/i.test(input.message) ? "committee" : "board") : null;
+  const audience = normalizeAudience(output.turn.scopeChanges.audience) ?? (core.audience.value.map((item) => normalizeAudience(item)).find((item) => item === "board" || item === "committee") ?? null) ?? decisionBodyInText ?? normalizeAudience(core.audience.value[0]) ?? "vp";
   const depth = output.turn.scopeChanges.depth ?? core.depth.value;
   const base = (composition: Composition | null, corpus: preview.PreviewCorpus | null, abstained: boolean, abstainReason: string | null) => ({
     composition,
@@ -400,6 +403,8 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   }
 
   const scope = compositionFromEnvelope(output, hasAnalysis);
+  // A board or a committee decides: the same analysis chain, the decision form of the brief.
+  if (scope.composition && !scope.outOfScope && (audience === "board" || audience === "committee")) scope.composition = "prepare_decision";
   if (scope.outOfScope) {
     return {
       kind: "abstain", composition: null, activation: null,

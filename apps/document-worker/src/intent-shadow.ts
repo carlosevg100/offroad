@@ -28,33 +28,36 @@ const inferred = <T extends z.ZodTypeAny>(value: T) => z.object({
   basis: z.string().max(200).nullish(),
 });
 
+// A prompted model is not grammar-bound: it writes longer strings and longer lists than the
+// envelope contract allows. The classifier accepts them here and `stampIntentEnvelope` clamps
+// every value to the contract's limits, so a long phrase never sinks the turn.
 export const shadowRoutingOutputSchema = z.object({
   routingCore: z.object({
-    action: inferred(z.array(z.string().min(1).max(60)).min(1).max(8)),
-    object: inferred(z.array(z.object({kind: intentObjectKindSchema, reference: z.string().max(200).optional()})).min(1).max(12)),
-    desiredOutcome: inferred(z.string().min(1).max(300)),
-    decision: inferred(z.string().max(300).nullable()),
-    audience: inferred(z.array(z.string().min(1).max(80)).min(1).max(6)),
+    action: inferred(z.array(z.string().min(1).max(400)).min(1).max(16)),
+    object: inferred(z.array(z.object({kind: intentObjectKindSchema, reference: z.string().max(400).nullish()})).min(1).max(24)),
+    desiredOutcome: inferred(z.string().min(1).max(1_200)),
+    decision: inferred(z.string().max(1_200).nullable()),
+    audience: inferred(z.array(z.string().min(1).max(200)).min(1).max(12)),
     depth: inferred(intentDepthSchema),
     continuity: inferred(intentContinuitySchema),
-    workResponsibility: inferred(z.array(workResponsibilitySchema).min(1).max(4)),
+    workResponsibility: inferred(z.array(workResponsibilitySchema).min(1).max(8)),
   }),
   inferableContext: z.object({
-    jurisdiction: inferred(z.array(z.string().min(2).max(8)).max(4)),
-    asOfDate: inferred(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()),
-    currency: inferred(z.string().length(3).nullable()),
-    deadline: inferred(z.string().max(80).nullable()),
-    sponsorInstruction: inferred(z.string().max(500).nullable()),
-    constraints: inferred(z.array(z.string().max(200)).max(20)),
+    jurisdiction: inferred(z.array(z.string().min(1).max(40)).max(8)),
+    asOfDate: inferred(z.string().max(40).nullable()),
+    currency: inferred(z.string().max(12).nullable()),
+    deadline: inferred(z.string().max(300).nullable()),
+    sponsorInstruction: inferred(z.string().max(2_000).nullable()),
+    constraints: inferred(z.array(z.string().max(600)).max(40)),
     urgency: inferred(z.enum(["now", "today", "this_week", "ongoing"]).nullable()),
-    availableInputs: inferred(z.array(z.string().max(120)).max(40)),
+    availableInputs: inferred(z.array(z.string().max(400)).max(80)),
   }),
-  primaryWorks: z.array(z.object({work: primaryWorkSchema, confidence: z.number().min(0).max(1)})).min(1).max(3),
-  composition: z.string().max(60).nullable(),
+  primaryWorks: z.array(z.object({work: primaryWorkSchema, confidence: z.number().min(0).max(1)})).min(1).max(6),
+  composition: z.string().max(120).nullable(),
   /** The one question the classifier would ask first, if it were allowed to ask. Recorded, never asked. */
-  firstQuestion: z.string().max(300).nullable(),
+  firstQuestion: z.string().max(600).nullable(),
   abstain: z.boolean(),
-  abstainReason: z.string().max(300).nullable(),
+  abstainReason: z.string().max(600).nullable(),
 });
 export type ShadowRoutingOutput = z.infer<typeof shadowRoutingOutputSchema>;
 
@@ -103,19 +106,26 @@ const asSystemOrInferred = <T>(field: {value: T; state: string; confidence?: num
 });
 
 /** Stamps the system fields around a classifier output: the model never writes them. */
+const clampText = (value: string, max: number) => value.trim().slice(0, max);
+const clampList = <T>(values: T[], max: number) => values.slice(0, max);
+const clampField = <T, U>(field: {value: T; state: string; confidence?: number | null | undefined; basis?: string | null | undefined}, map: (value: T) => U) => ({...field, value: map(field.value), ...(field.basis ? {basis: clampText(field.basis, 300)} : {})});
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Stamps the system fields around a classifier output and clamps every value to the envelope contract; the model never writes the system fields. */
 export function stampIntentEnvelope(output: ShadowRoutingOutput, context: ShadowRoutingContext, now: () => Date = () => new Date()): IntentEnvelope {
   const core = output.routingCore;
+  const ctx = output.inferableContext;
   return intentEnvelopeSchema.parse({
     schemaVersion: "intent-envelope.v1",
     routingCore: {
-      action: asSystemOrInferred(core.action),
-      object: asSystemOrInferred(core.object),
-      desiredOutcome: asSystemOrInferred(core.desiredOutcome),
-      decision: asSystemOrInferred(core.decision),
-      audience: asSystemOrInferred(core.audience),
+      action: asSystemOrInferred(clampField(core.action, (items) => clampList(items.map((item) => clampText(item, 60)).filter(Boolean), 8))),
+      object: asSystemOrInferred(clampField(core.object, (items) => clampList(items.map((item) => ({kind: item.kind, ...(item.reference ? {reference: clampText(item.reference, 200)} : {})})), 12))),
+      desiredOutcome: asSystemOrInferred(clampField(core.desiredOutcome, (value) => clampText(value, 300))),
+      decision: asSystemOrInferred(clampField(core.decision, (value) => (value === null ? null : clampText(value, 300)))),
+      audience: asSystemOrInferred(clampField(core.audience, (items) => clampList(items.map((item) => clampText(item, 80)).filter(Boolean), 6))),
       depth: asSystemOrInferred(core.depth),
       continuity: asSystemOrInferred(core.continuity),
-      workResponsibility: asSystemOrInferred(core.workResponsibility),
+      workResponsibility: asSystemOrInferred(clampField(core.workResponsibility, (items) => clampList([...new Set(items)], 4))),
     },
     executionContext: {
       evidenceRegime: {value: evidenceRegime(context.accessBasis, context.documentIds.length), state: "system"},
@@ -123,18 +133,19 @@ export function stampIntentEnvelope(output: ShadowRoutingOutput, context: Shadow
       organizationId: {value: context.organizationId, state: "system"},
       projectId: {value: context.projectId, state: "system"},
       availableDocumentIds: {value: context.documentIds.slice(0, 500), state: "system"},
-      jurisdiction: asSystemOrInferred(output.inferableContext.jurisdiction),
-      asOfDate: asSystemOrInferred(output.inferableContext.asOfDate),
-      currency: asSystemOrInferred(output.inferableContext.currency),
-      deadline: asSystemOrInferred(output.inferableContext.deadline),
-      sponsorInstruction: asSystemOrInferred(output.inferableContext.sponsorInstruction),
-      constraints: asSystemOrInferred(output.inferableContext.constraints),
+      jurisdiction: asSystemOrInferred(clampField(ctx.jurisdiction, (items) => clampList(items.map((item) => clampText(item, 8)).filter((item) => item.length >= 2), 4))),
+      // A date the model wrote in another form is unknown, never a guess.
+      asOfDate: asSystemOrInferred(ctx.asOfDate.value && ISO_DATE.test(ctx.asOfDate.value) ? ctx.asOfDate : {...ctx.asOfDate, value: null, state: "unknown"}),
+      currency: asSystemOrInferred(ctx.currency.value && /^[A-Z]{3}$/.test(ctx.currency.value.trim().toUpperCase()) ? {...ctx.currency, value: ctx.currency.value.trim().toUpperCase()} : {...ctx.currency, value: null, state: "unknown"}),
+      deadline: asSystemOrInferred(clampField(ctx.deadline, (value) => (value === null ? null : clampText(value, 80)))),
+      sponsorInstruction: asSystemOrInferred(clampField(ctx.sponsorInstruction, (value) => (value === null ? null : clampText(value, 500)))),
+      constraints: asSystemOrInferred(clampField(ctx.constraints, (items) => clampList(items.map((item) => clampText(item, 200)).filter(Boolean), 20))),
       language: {value: context.locale, state: "system"},
-      urgency: asSystemOrInferred(output.inferableContext.urgency),
-      availableInputs: asSystemOrInferred(output.inferableContext.availableInputs),
+      urgency: asSystemOrInferred(ctx.urgency),
+      availableInputs: asSystemOrInferred(clampField(ctx.availableInputs, (items) => clampList(items.map((item) => clampText(item, 120)).filter(Boolean), 40))),
     },
-    primaryWorks: output.primaryWorks,
-    composition: output.composition,
+    primaryWorks: clampList(output.primaryWorks, 3),
+    composition: output.composition === null ? null : clampText(output.composition, 60),
     effect: "none",
     createdAt: now().toISOString(),
   });
