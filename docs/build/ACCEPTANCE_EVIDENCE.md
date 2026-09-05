@@ -1173,3 +1173,10 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Compilação dos métodos | `procedure-markdown.test.ts` | três métodos compilam para `canonicalProcedureSchema`; seção ausente e passo sem modo são rejeitados; referências verificadas contra o registro de tasks, o playbook e os parâmetros; credit-playbook 173 testes | 2026-09-05 |
 | Gate de promoção | `task-promotion.test.ts` | produção recusada sem vínculo, com método desconhecido, com método candidate ou sem evidência de implementação; work-plan 39 testes | 2026-09-05 |
 | Inventário | script de inspeção sobre os registros | 224/0 implementação, 252 ids, 80 specified, 17 packs/0 revisados, 71 required_missing | 2026-09-04 |
+
+## Escada de maturidade e registro de revisão por IA, 05/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Degraus com evidência própria | `procedure-contract.test.ts` | implemented sem implementação, ai_reviewed sem revisão, tested sem runs e production sem aprovação do fundador são recusados; revisão com resultado fail não conta; credit-playbook 174 testes | 2026-09-05 |
+| Task nunca acima do método | `task-promotion.test.ts` | implemented exige método implementado; ai_reviewed sobre método implemented é recusado; production só sobre método production; work-plan 38 testes | 2026-09-05 |

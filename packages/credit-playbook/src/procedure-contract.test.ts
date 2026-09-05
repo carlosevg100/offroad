@@ -46,7 +46,7 @@ describe("canonical procedure contract", () => {
 
   it("requires an approver and examples before production", () => {
     const candidate = growthCapexProcedures[0]!;
-    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "production", owner: {role: candidate.owner.role}})).toThrow(/approver|examples/i);
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "production", owner: {role: candidate.owner.role}})).toThrow(/approval|examples/i);
   });
 
   it("does not promote a documented candidate without an executor, persistence and evaluation evidence", () => {
@@ -77,8 +77,32 @@ describe("canonical procedure contract", () => {
           costEvalIds: ["cost:understanding"],
         },
       },
+      reviews: [{reviewId: "review.test.pass", kind: "ai_independent_review", result: "pass", recordPath: "knowledge/reviews/review.test.pass.json"}],
+      testRuns: {gold: ["gold:clean"], adversarial: ["adversarial:conflict"], consistency: ["consistency:20x"]},
     });
     expect(compileProcedure(production).implementation).toEqual(production.implementation);
+    expect(compileProcedure(production).reviews).toHaveLength(1);
+  });
+
+  it("climbs one rung at a time: every rung above implemented needs its own evidence", () => {
+    const candidate = growthCapexProcedures[0]!;
+    const implementation = {
+      executor: {module: "@offroad/case-engine", exportName: "runProcedure"},
+      resultContract: "offroad.test.result.v1",
+      connectedProductStates: ["understanding_in_progress"],
+      persistence: {mode: "persisted", target: "case_procedure_results"},
+      evaluation: {unitTestFiles: ["x.test.ts"], goldCaseIds: ["gold:clean"], adversarialCaseIds: ["adversarial:conflict"], e2eScenarioIds: ["e2e:x"], costEvalIds: ["cost:x"]},
+    };
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "implemented"})).toThrow(/implementation evidence/);
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "implemented", implementation})).not.toThrow();
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "ai_reviewed", implementation})).toThrow(/independent review/);
+    const review = {reviewId: "review.test.pass", kind: "ai_independent_review", result: "conditional", recordPath: "knowledge/reviews/review.test.pass.json"};
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "ai_reviewed", implementation, reviews: [review]})).not.toThrow();
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "ai_reviewed", implementation, reviews: [{...review, result: "fail"}]})).toThrow(/independent review/);
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "tested", implementation, reviews: [review]})).toThrow(/recorded gold runs/);
+    const testRuns = {gold: ["g"], adversarial: ["a"], consistency: ["c"]};
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "tested", implementation, reviews: [review], testRuns})).not.toThrow();
+    expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "production", implementation, reviews: [review], testRuns})).toThrow(/founder's approval/);
   });
 
   it("compiles reproducibly and changes the source hash when knowledge changes", () => {
