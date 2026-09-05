@@ -63,7 +63,8 @@ const analysisJobPayloadSchema = z.object({
   });
 export const caseAnalysisJobSchema = claimedJobBase.extend({
   kind: z.literal("case_analysis"),
-  payload: analysisJobPayloadSchema.extend({analysis_scope: z.literal("full_case")}),
+  // Older enqueue paths write no scope for this kind; the kind already fixes it as the full case.
+  payload: analysisJobPayloadSchema.extend({analysis_scope: z.literal("full_case").default("full_case")}),
 });
 export const preliminaryAnalysisJobSchema = claimedJobBase.extend({
   kind: z.literal("preliminary_analysis"),
