@@ -219,7 +219,7 @@ export function meetingBriefInput(context: PreviewRunContext): BriefInput {
       headlines: headlinesFor(step, output, fingerprint),
     }];
   });
-  const documents = [...new Set(case01Evidence()["declare-scenarios"].documents.map((document) => document.name))].sort(compare);
+  const documents = previewBaseDocuments();
   const previous = context.previousBrief;
   const previousOutput = previous?.output;
   const previousVersion = previous && previousOutput && typeof previousOutput.trace === "object" && previousOutput.trace && typeof previousOutput.trace.outputFingerprint === "string" && previousOutput.deliverable && typeof previousOutput.deliverable === "object"
@@ -266,3 +266,8 @@ export function previewArtifactContent(step: PreviewWorkflowStep, output: Previe
 }
 
 export {previewStepByTask};
+
+/** The documents of the frozen base every candidate question's coverage declares as searched, whatever the composition. */
+export function previewBaseDocuments(): string[] {
+  return [...new Set(case01Evidence()["declare-scenarios"].documents.map((document) => document.name))].sort(compare);
+}

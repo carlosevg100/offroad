@@ -198,6 +198,51 @@ describe("live_intelligence_preview router", () => {
     expect(decision.reply).toContain("Respostas aplicadas");
   });
 
+  it("reads an answer that quotes the desk's question when the classifier returns no id, and does not mistake the board for a deck request", async () => {
+    const output = classifierOutput({composition: null, turn: {companies: [], answers: [], material: {requested: true, form: "board_deck", pages: null}, scopeChanges: {audience: "conselho", depth: "institutional", form: null}}});
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"],
+      openQuestions: [{id: "q-tese-refinanciamento", text: "Qual tese de refinanciamento o VP quer levar à Camil, e em que formato ele espera o material?"}],
+      priorRequest: {form: "first_deliverable", undefinedAspects: ["thesis", "format", "depth"], pages: null}, priorAnswers: [],
+      message: 'Sobre a sua pergunta "Qual tese de refinanciamento o VP quer levar à Camil, e em que formato ele espera o material?": leitura ampla de alternativas, é para o conselho e precisa ser institucional.',
+    });
+    expect(decision.kind).toBe("activate");
+    expect(decision.composition).toBe("deepen");
+    expect(decision.record.audience).toBe("board");
+    expect(decision.activation?.brief.answers).toEqual([{questionId: "q-tese-refinanciamento", answer: "leitura ampla de alternativas, é para o conselho e precisa ser institucional."}]);
+    expect(decision.reply).toContain("Respostas aplicadas");
+  });
+
+  it("prepares the material when the person asks for pages, even when the classifier files the request as an answer to the format question", async () => {
+    const output = classifierOutput({composition: "prepare_material", turn: {companies: [], material: {requested: true, form: "pitch_pages", pages: 3}, answers: [{questionId: "q-format", answer: "três páginas de pitch", effect: {audience: null, depth: null, scope: null}}]}});
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], openQuestions: [{id: "q-format", text: "Briefing interno, páginas de pitch ou análise com cenários?"}], priorAnswers: [],
+      message: "Vamos preparar o material: meu VP quer três páginas de pitch, situação atual, alternativas e impacto nos indicadores.",
+    });
+    expect(decision.composition).toBe("prepare_material");
+    expect(decision.activation?.brief.request.pages).toBe(3);
+    expect(decision.activation?.brief.answers).toEqual([{questionId: "q-format", answer: "três páginas de pitch"}]);
+    expect(decision.reply).toContain("Respostas aplicadas");
+  });
+
+  it("reads the page count from the words when the classifier drops the deliverable, and keeps a deliverable out of a message that names none", async () => {
+    const missed = await decide(classifierOutput({composition: "deepen", turn: {companies: [], material: {requested: false, form: null, pages: null}}}), {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], message: "Monte o material: cinco páginas para o VP.",
+    });
+    expect(missed.composition).toBe("prepare_material");
+    expect(missed.activation?.brief.request.pages).toBe(5);
+    const invented = await decide(classifierOutput({composition: "deepen", turn: {companies: [], material: {requested: true, form: "board_deck", pages: null}}}), {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], message: "Aprofunde a leitura das alternativas para o conselho.",
+    });
+    expect(invented.composition).not.toBe("prepare_material");
+  });
+
+  it("does not carry a premise from an earlier turn into a message that states no number", async () => {
+    const output = classifierOutput({composition: "prepare_meeting", turn: {companies: [], premiseChanges: {newDebtAnnualRate: 0.155, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null}}});
+    const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], message: "Aprofunde a leitura das alternativas com o mesmo estado."});
+    expect(decision.composition).not.toBe("change_premise");
+  });
+
   it("ignores an answer to a question the desk never asked", async () => {
     const output = classifierOutput({composition: "answer_a_question", turn: {companies: [], answers: [{questionId: "q-unknown", answer: "x", effect: {audience: null, depth: null, scope: null}}]}});
     const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], openQuestions: [{id: "q-angle", text: "?"}]});
