@@ -32,15 +32,17 @@ const camil = (): MaturityWallInput => ({
     {id: "cpr-2026", label: "operação estruturada com CPR, até R$ 535 milhões, aprovada em 18/05/2026", amount: "535000", claimedPeriod: "2026/27", evidence: {approval: {document: "ca_operacao_estruturada_2026-05-27.pdf", page: 2}, contract: null, disbursement: null}},
   ],
   wallThreshold: threshold,
+  // The 13th's indenture writes the mechanics: the covenant is a non-automatic event (7.24.3(VIII)) and the acceleration is declared unless the assembly resolves otherwise (7.24.5); the accelerable balance is not asserted here.
+  acceleration: {clause: {text: "descumprimento do índice financeiro é evento de vencimento antecipado não automático; a assembleia geral de debenturistas poderá deliberar pela não declaração do vencimento antecipado", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII) e 7.24.5", page: 55, note: "páginas 54-55"}}, defaultOutcome: "declared_unless_assembly_waives", accelerableBalance: null},
 });
 
-describe("diagnose-maturity-wall executor (v6)", () => {
+describe("diagnose-maturity-wall executor (v7)", () => {
   it("gold: names the two walls of the case 01 answer key against the versioned threshold, the growth of the second, and the peak", () => {
     const result = diagnoseMaturityWall(camil());
     expect(result.walls.filter((wall) => wall.is_wall).map((wall) => wall.period)).toEqual(["2026/27", "2028/29"]);
     expect(result.walls.find((wall) => wall.period === "2028/29")?.change_from_prior).toEqual({amount: "342288", prior_as_of: "2026-02-28", anchor: itr(40, "15, coluna 28/02/2026")});
     expect(result.walls[0]?.prior_comparability).toBe("earlier date, same unit and perimeter");
-    expect(result.schema_version).toBe("method.diagnose-maturity-wall.v6");
+    expect(result.schema_version).toBe("method.diagnose-maturity-wall.v7");
     expect(result.schedule_adjustments).toEqual([{id: "debenture costs", amount: "-63224"}]);
     expect(result.walls.map((wall) => wall.period)).not.toContain("debenture costs");
     expect(result.walls[0]?.share_of_gross.startsWith("0.2168")).toBe(true);
@@ -190,7 +192,11 @@ describe("diagnose-maturity-wall executor (v6)", () => {
     expect(rows[2]?.coverage).toBe("0");
     expect(rows[2]?.incremental_deficit).toBe("1228475");
     expect(rows[2]?.cumulative_deficit).toBe("1804457");
-    expect(result.coverage.cumulative_deficit).toBe(rows.reduce((sum, row) => sum.plus(row.incremental_deficit), new Decimal(0)).toFixed());
+    expect(result.coverage.cumulative_deficit).toBe(rows.reduce((sum, row) => sum.plus(row.incremental_deficit!), new Decimal(0)).toFixed());
+    // The open-ended bucket is not assessed: no zeros where nothing was computed.
+    const open = result.coverage.by_period.find((row) => row.state === "not_assessed")!;
+    expect(open.period).toBe("after 2031");
+    expect([open.opening_cash, open.sources, open.contracted_sources, open.closing_cash, open.incremental_deficit, open.cumulative_deficit, open.coverage]).toEqual([null, null, null, null, null, null, null]);
     const partial = diagnoseMaturityWall({...camil(), interestByPeriod: {"2026/27": {value: "100000", anchor: {document: "hipotetico_juros.pdf", note: "juros do primeiro período, hipótese"}}}});
     expect(partial.coverage.coverage_basis).toBe("principal_only");
     expect(partial.coverage.by_period[0]?.basis).toBe("full_debt_service");
@@ -201,7 +207,13 @@ describe("diagnose-maturity-wall executor (v6)", () => {
 
   it("records the acceleration mechanics only from the indenture clause in the base, apart from the contractual schedule, and refuses negative maturity buckets and a threshold above one", () => {
     const base = camil();
-    const silent = diagnoseMaturityWall(base);
+    // The gold records the clause the corpus holds; removing it is the mutation that leaves nothing asserted.
+    const gold = diagnoseMaturityWall(base);
+    expect(gold.acceleration_scenario.state).toBe("recorded");
+    expect(gold.acceleration_scenario.accelerable_balance).toBeNull();
+    expect(gold.acceleration_scenario.note).toMatch(/accelerable balance is not in the base/);
+    expect(gold.notes[0]?.anchor?.clause).toBe("7.24.3(VIII) e 7.24.5");
+    const silent = diagnoseMaturityWall({...base, acceleration: null});
     expect(silent.acceleration_scenario.state).toBe("not_asserted");
     expect(silent.notes[0]?.anchor).toBeNull();
     expect(silent.notes[0]?.text).toMatch(/nothing is asserted about what a covenant breach triggers/);

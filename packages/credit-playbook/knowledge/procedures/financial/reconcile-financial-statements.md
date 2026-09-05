@@ -1,6 +1,6 @@
 ---
 id: reconcile-financial-statements
-version: 2026.09.05-v7
+version: 2026.09.05-v8
 maturity: implemented
 title_pt: Conciliar as demonstrações entre si e com o release
 title_en: Reconcile the financial statements with each other and with the release
@@ -10,7 +10,7 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-financial-statements
 implementation_export: reconcileFinancialStatements
-result_contract: method.reconcile-financial-statements.v7
+result_contract: method.reconcile-financial-statements.v8
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -64,9 +64,11 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 - Dentro de uma conta não comparável no todo, fontes com a mesma definição, componentes e data são comparadas entre si; a divergência entre dois valores contábeis nunca some atrás de um nominal ou de um valor justo.
 
 # Escala, sinal e âncoras
-- Valor publicado em outra escala (release em R$ milhões com uma casa) entra com o valor, a unidade e as casas publicadas; o executor converte, registra a meia banda de arredondamento e um par cuja diferença cabe nela fecha "dentro do arredondamento publicado", nunca "exatamente"; a banda vale antes da tolerância da política e também para as explicações direcionais e os subconjuntos; um par que fecha no todo não deixa subconjunto aberto.
+- Valor publicado em outra escala (release em R$ milhões com uma casa) entra com o valor, a unidade e as casas publicadas; o executor converte, registra a meia banda de arredondamento e um par cuja diferença cabe nela fecha "dentro do arredondamento publicado", nunca "dentro do arredondamento publicado"; a banda vale antes da tolerância da política e também para as explicações direcionais e os subconjuntos; um par que fecha no todo não deixa subconjunto aberto.
 - Cada fonte declara os meses que cobre (12, 3, 0 para saldo em data); fontes de períodos diferentes nunca são comparáveis, seja qual for a chave.
-- Sinal publicado (despesa entre parênteses) é declarado como leitura literal ou de magnitude; a normalização fica no trace.
+- Sinal publicado (despesa ou amortização entre parênteses) é declarado como leitura literal ou de magnitude, linha a linha, inclusive na ponte de dívida; o valor publicado e o valor lido ficam no trace.
+- Uma explicação liga apresentações, nunca datas nem períodos: fontes de datas ou de meses diferentes ficam não comparáveis mesmo com ajuste que feche.
+- Limitação declarada: o executor não tem catálogo semântico das definições; chave, componentes, data e período vêm do chamador e o texto é conferido contra as tags. Uma dívida do release relabelada integralmente como contratual só é pega quando o texto ou os componentes a denunciam.
 - Cada linha da ponte de dívida, a abertura e o fechamento carregam âncora própria; derivações (nominal remanescente, valor contábil, dívida líquida contratual) entram com operandos ancorados e são recalculadas.
 
 # Julgamentos permitidos
@@ -84,7 +86,7 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 
 # Outputs
 - state (enum, required): closes, differences_explained, open_divergences, incomplete, identity_failed ou blocked, nesta precedência inversa: bloqueio antes de identidade falha, antes de incompleto, antes de divergências abertas, antes de diferenças explicadas, antes de fecha | values: closes, differences_explained, open_divergences, incomplete, identity_failed, blocked
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v7`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v8`
 - reference_date (date, required): data-base
 - unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
 - block_reasons (array, required): motivos estruturados de bloqueio (base vazia)
@@ -97,7 +99,7 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 
 # Exemplos
 ## Bom
-- Camil 1T26: estoques da nota 5 (3.088.478, com 643.241 de adiantamentos) e do release (2.445,2) conciliam exatamente; dividendos com 395.000 nominais e 338.565 a valor presente na nota 18 e no balanço contra 322.498 e 420.000 na nota 25 ficam como divergência aberta.
+- Camil 1T26: estoques da nota 5 (3.088.478, com 643.241 de adiantamentos) e do release (2.445,2) conciliam dentro do arredondamento publicado; dividendos com 395.000 nominais e 338.565 a valor presente na nota 18 e no balanço contra 322.498 e 420.000 na nota 25 ficam como divergência aberta.
 ## Ruim
 - Escolher 322.498 como "o" valor de dividendos; dizer que dívida líquida do release e contratual são "praticamente iguais".
 

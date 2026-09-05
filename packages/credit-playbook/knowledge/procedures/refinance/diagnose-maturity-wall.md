@@ -1,6 +1,6 @@
 ---
 id: diagnose-maturity-wall
-version: 2026.09.05-v6
+version: 2026.09.05-v7
 maturity: implemented
 title_pt: Diagnosticar a parede de vencimentos
 title_en: Diagnose the maturity wall
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/diagnose-maturity-wall
 implementation_export: diagnoseMaturityWall
-result_contract: method.diagnose-maturity-wall.v6
+result_contract: method.diagnose-maturity-wall.v7
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -74,7 +74,7 @@ a lista das fontes de pagamento que a base não prova.
 - Ledger sem cronograma conciliado.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.diagnose-maturity-wall.v6`
+- schema_version (string, required): identificador do contrato de resultado, `method.diagnose-maturity-wall.v7`
 - reference_date (date, required): data-base
 - unit (enum, required): unidade dos valores monetários, igual à unidade em que o ledger reporta a dívida bruta e ancorada na fonte que a declara (uma reescala coerente sob outro rótulo é recusada); participações e coberturas levam a unidade `x`
 - state (enum, required): complete, incomplete (sem CFADS declarado, cobertura só de caixa) ou blocked (o diagnóstico para, sem paredes nem cobertura) | values: complete, incomplete, blocked
@@ -83,7 +83,7 @@ a lista das fontes de pagamento que a base não prova.
 - wall_threshold (object, required): participação limite com chave e versão da política; parede é participação estritamente acima do limiar, comparada nas oito casas em que é escrita
 - walls (array, required): períodos com valor, participação sobre a dívida bruta, variação contra a data anterior (só quando a data anterior é mesmo anterior, na mesma unidade e perímetro; caso contrário nula com o motivo em prior_comparability), classificação de parede e âncora do cronograma; vazio quando o ledger está bloqueado, porque o diagnóstico para
 - peak (object, required): o período de maior concentração pelo `financial-core`, ou nulo
-- coverage (object, required): definição de caixa com âncora, geração de caixa para o serviço da dívida (CFADS, LTM ou projeção declarada, por período; um valor único nunca é repetido pelos anos; EBITDA não serve) com âncora e os períodos declarados, base da cobertura (só principal quando a base não traz juros por período, serviço integral quando traz), cobertura sequencial por período pelo `financial-core`, com o caixa nunca abaixo de zero (caixa esgotado abre o período seguinte em zero e o déficit é carregado à parte) (principal, juros ou nulo com âncora e base do período, serviço, caixa carregado, geração ou nulo com o sinal de declarada, fontes contratadas, cobertura, caixa final, déficit incremental do período, déficit acumulado carregado e a dependência de rolagem em palavras), períodos em aberto marcados como não avaliados, déficit carregado ao fim do horizonte e ressalva sobre a liquidez
+- coverage (object, required): definição de caixa com âncora, geração de caixa para o serviço da dívida (CFADS, LTM ou projeção declarada, por período; um valor único nunca é repetido pelos anos; EBITDA não serve) com âncora e os períodos declarados, base da cobertura (só principal quando a base não traz juros por período, serviço integral quando traz), cobertura sequencial por período pelo `financial-core`, com o caixa nunca abaixo de zero (caixa esgotado abre o período seguinte em zero e o déficit é carregado à parte) (principal, juros ou nulo com âncora e base do período, serviço, caixa carregado, geração ou nulo com o sinal de declarada, fontes contratadas, cobertura, caixa final, déficit incremental do período, déficit acumulado carregado e a dependência de rolagem em palavras), períodos em aberto marcados como não avaliados, com caixa, fontes, cobertura e déficits nulos, nunca zeros, déficit carregado ao fim do horizonte e ressalva sobre a liquidez
 - sources (array, required): cada fonte de pagamento citada com id, valor reivindicado, valor e período provados (o valor é o do comprovante de desembolso e o período é o da data do desembolso; o que o arquivo reivindica fica em claimed_amount e claimed_period e não é usado), estado provado ou não provado (provada só com um contrato e uma prova de desembolso datados na base, em dois documentos distintos, cada um da sua classe, desembolso depois da data-base para não contar duas vezes o caixa; uma ata não é contrato; nunca por sinalizador), motivo e as três âncoras com datas (aprovação, contrato, desembolso)
 - schedule_adjustments (array, required): linhas do cronograma que não pertencem a período (custos de transação), tipadas como ajuste; conciliam o total e nunca entram na concentração, na cobertura, nos juros, na geração nem nas fontes
 - acceleration_scenario (object, required): leitura de aceleração só a partir da cláusula da escritura na base (com o default contratual: declarado salvo deliberação da assembleia, ou só por deliberação) e do saldo acelerável, registrada à parte do cronograma contratual e nunca somada; sem cláusula na base, não afirmada

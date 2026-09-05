@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `diagnose-maturity-wall` (v6, after the fifth independent review). Reads
+ * Executor of the method `diagnose-maturity-wall` (v7, after the sixth independent review). Reads
  * the ledger's schedule, names the walls against a versioned threshold (a share strictly above it),
  * measures each period's cover sequentially through financial-core (cash carried forward, the
  * generation declared for that period and nothing for a period without one, contracted sources),
@@ -111,7 +111,7 @@ export type MaturityWallInput = z.input<typeof maturityWallInputSchema>;
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type MaturityWallOutput = {
-  schema_version: "method.diagnose-maturity-wall.v6";
+  schema_version: "method.diagnose-maturity-wall.v7";
   reference_date: string;
   unit: string;
   state: "complete" | "incomplete" | "blocked";
@@ -126,7 +126,8 @@ export type MaturityWallOutput = {
     operating_generation: {basis: string; anchor: Anchor; periods_declared: string[]} | null;
     /** principal_only when the base states no interest per period; full_debt_service when it does. */
     coverage_basis: "principal_only" | "full_debt_service";
-    by_period: Array<{period: string; principal: string; interest: string | null; interest_anchor: Anchor | null; basis: "principal_only" | "full_debt_service"; debt_service: string; opening_cash: string; generation: string | null; generation_declared: boolean; contracted_sources: string; sources: string; coverage: string | null; closing_cash: string; incremental_deficit: string; cumulative_deficit: string; rollover_dependency: string; state: "assessed" | "not_assessed"}>;
+    /** An open-ended bucket is not assessed: its cash, sources, cover and deficits are null, never zeros. */
+    by_period: Array<{period: string; principal: string; interest: string | null; interest_anchor: Anchor | null; basis: "principal_only" | "full_debt_service"; debt_service: string; opening_cash: string | null; generation: string | null; generation_declared: boolean; contracted_sources: string | null; sources: string | null; coverage: string | null; closing_cash: string | null; incremental_deficit: string | null; cumulative_deficit: string | null; rollover_dependency: string; state: "assessed" | "not_assessed"}>;
     /** The shortfall carried to the end of the assessed horizon: what rollover or new debt must provide in total. */
     cumulative_deficit: string;
     caveat: string;
@@ -177,7 +178,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
   if (blockReasons.length > 0) {
     // A blocked ledger stops the diagnosis: no wall, no peak, no cover is computed on numbers that do not reconcile.
     const body = {
-      schema_version: "method.diagnose-maturity-wall.v6" as const, reference_date: input.referenceDate, unit: input.unit, state: "blocked" as const, block_reasons: blockReasons, incomplete_reasons: [],
+      schema_version: "method.diagnose-maturity-wall.v7" as const, reference_date: input.referenceDate, unit: input.unit, state: "blocked" as const, block_reasons: blockReasons, incomplete_reasons: [],
       wall_threshold: input.wallThreshold, walls: [], peak: null,
       coverage: {cash_definition: input.cash.definition, cash: {value: out(d(input.cash.value)), anchor: input.cash.anchor}, operating_generation: null, coverage_basis: input.interestByPeriod ? "full_debt_service" as const : "principal_only" as const, by_period: [], cumulative_deficit: "0", caveat: "diagnosis stopped: the ledger is blocked"},
       sources: [], schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), acceleration_scenario: accelerationScenario, uncovered_terms: [], notes,
@@ -226,7 +227,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
   let carriedCash = cash;
   let cumulative = d(0);
   const byPeriod = maturities.map((period) => {
-    if (period.endsAt === null) return {period: period.period, principal: out(d(period.amount)), interest: null, interest_anchor: null, basis: "principal_only" as const, debt_service: out(d(period.amount)), opening_cash: "0", generation: null, generation_declared: false, contracted_sources: "0", sources: "0", coverage: null, closing_cash: "0", incremental_deficit: "0", cumulative_deficit: "0", rollover_dependency: "not assessed: open-ended bucket", state: "not_assessed" as const};
+    if (period.endsAt === null) return {period: period.period, principal: out(d(period.amount)), interest: null, interest_anchor: null, basis: "principal_only" as const, debt_service: out(d(period.amount)), opening_cash: null, generation: null, generation_declared: false, contracted_sources: null, sources: null, coverage: null, closing_cash: null, incremental_deficit: null, cumulative_deficit: null, rollover_dependency: "not assessed: open-ended bucket, no cover computed", state: "not_assessed" as const};
     const generation = generationFor(period.period);
     const interest = interestFor(period.period);
     const contracted = sources.filter((source) => source.state === "proven" && source.period === period.period).reduce((sum, source) => sum.plus(source.amount!), d(0));
@@ -248,7 +249,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
       : "cash follows the contractual net debt definition; availability for payment is not asserted";
   const state: MaturityWallOutput["state"] = blockReasons.length > 0 ? "blocked" : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.diagnose-maturity-wall.v6" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
+    schema_version: "method.diagnose-maturity-wall.v7" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     wall_threshold: input.wallThreshold, walls, peak,
     coverage: {cash_definition: input.cash.definition, cash: {value: out(cash), anchor: input.cash.anchor}, operating_generation: input.operatingGeneration ? {basis: input.operatingGeneration.basis, anchor: input.operatingGeneration.anchor, periods_declared: Object.keys(input.operatingGeneration.byPeriod).sort(compare)} : null, coverage_basis: interestComplete ? "full_debt_service" as const : "principal_only" as const, by_period: byPeriod, cumulative_deficit: out(cumulative), caveat},
     sources, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), acceleration_scenario: accelerationScenario, uncovered_terms: uncovered, notes,

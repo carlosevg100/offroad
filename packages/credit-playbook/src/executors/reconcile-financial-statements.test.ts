@@ -20,7 +20,7 @@ const camil = (): ReconciliationInput => ({
   tolerance: {working_capital: policy("1000"), net_debt: policy("1000"), interest: policy("2000")},
   pairedAccounts: [
     {id: "dividends", label: "Dividendos a pagar", family: "dividends", sources: [
-      {...source("nota 18 nominal", "395000", "dividendos declarados: valor nominal das onze parcelas remanescentes na nota 18(e), depois da primeira parcela de 25.000 já paga", "dividends.nominal_remaining", ["dividends_declared", "nominal", "remaining_installments"], itr(46, "18e, parcelas remanescentes")), derivation: {formula: "difference", operands: [{label: "dividendos aprovados", value: "420000", anchor: itr(46, "18e, total aprovado")}, {label: "primeira parcela paga", value: "25000", anchor: itr(46, "18e, parcela paga")}]}},
+      {...source("nota 18 nominal", "395000", "dividendos declarados: valor nominal das onze parcelas remanescentes na nota 18(e), depois da primeira parcela de 25.000 já paga", "dividends.nominal_remaining", ["dividends_declared", "nominal", "remaining_installments"], itr(46, "18e, parcelas remanescentes")), derivation: {formula: "difference", operands: [{label: "dividendos aprovados", value: "420000", anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 46, note: "18e: a página mostra pagamento e saldos; o total aprovado de 420.000 em doze parcelas consta da proposta da administração à AGO, que não está no corpus; o operando fica condicionado a ela"}}, {label: "primeira parcela paga", value: "25000", anchor: itr(46, "18e, parcela paga")}]}},
       {...source("balanço (valor presente)", "338565", "dividendos declarados: valor contábil consolidado, nominal menos ajuste a valor presente", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(46, "18e")), derivation: {formula: "difference", operands: [{label: "nominal remanescente", value: "395000", anchor: itr(46, "18e")}, {label: "ajuste a valor presente", value: "56435", anchor: itr(46, "18e, ajuste a valor presente")}]}},
       source("nota 25 contábil", "322498", "dividendos declarados: valor contábil consolidado na tabela de instrumentos financeiros", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(51, "25")),
       source("nota 25 valor justo", "420000", "dividendos declarados: valor justo na tabela de instrumentos financeiros", "dividends.fair_value", ["dividends_declared", "fair_value"], itr(51, "25")),
@@ -49,20 +49,20 @@ const camil = (): ReconciliationInput => ({
   ],
   balanceSheet: {assets: {value: "12021830", anchor: itr(11)}, liabilities: {value: "9032723", anchor: itr(12)}, equity: {value: "2989107", anchor: itr(12)}},
   debtBridge: {opening: {value: "4988383", anchor: itr(40, "15, saldo em 28/02/2026")}, lines: [
-    {id: "captacoes", label: "Captações", value: "2046140", category: "drawdowns", anchor: itr(40, "15, captações")},
-    {id: "juros_e_variacoes", label: "Juros e variações monetárias", value: "172359", category: "accruedInterest", anchor: itr(40, "15, juros e variações monetárias")},
-    {id: "apropriacao_custos", label: "Apropriação de custos de transação", value: "-4741", category: "otherAdditions", anchor: itr(40, "15, apropriação de custos")},
-    {id: "amortizacao_principal", label: "Amortização de principal", value: "1285146", category: "amortizations", anchor: itr(40, "15, amortização de principal (publicada entre parênteses, lida como magnitude da redução)")},
-    {id: "amortizacao_juros", label: "Amortização de juros", value: "229611", category: "amortizations", anchor: itr(40, "15, amortização de juros (publicada entre parênteses)")},
-    {id: "variacao_cambial", label: "Variação cambial", value: "60", category: "foreignExchange", anchor: itr(40, "15, variação cambial")},
-    {id: "ajuste_conversao", label: "Ajuste de conversão", value: "-17258", category: "foreignExchange", anchor: itr(40, "15, ajuste de conversão")},
+    {id: "captacoes", label: "Captações", published: "2046140", category: "drawdowns", anchor: itr(40, "15, captações")},
+    {id: "juros_e_variacoes", label: "Juros e variações monetárias", published: "172359", category: "accruedInterest", anchor: itr(40, "15, juros e variações monetárias")},
+    {id: "apropriacao_custos", label: "Apropriação de custos de transação", published: "-4741", category: "otherAdditions", anchor: itr(40, "15, apropriação de custos")},
+    {id: "amortizacao_principal", label: "Amortização de principal", published: "-1285146", sign: "absolute", category: "amortizations", anchor: itr(40, "15, amortização de principal, publicada entre parênteses")},
+    {id: "amortizacao_juros", label: "Amortização de juros", published: "-229611", sign: "absolute", category: "amortizations", anchor: itr(40, "15, amortização de juros, publicada entre parênteses")},
+    {id: "variacao_cambial", label: "Variação cambial", published: "60", category: "foreignExchange", anchor: itr(40, "15, variação cambial")},
+    {id: "ajuste_conversao", label: "Ajuste de conversão", published: "-17258", category: "foreignExchange", anchor: itr(40, "15, ajuste de conversão")},
   ], closing: {value: "5670186", anchor: itr(40, "15, saldo em 31/05/2026")}, anchor: itr(40, "15")},
   cashBridge: {opening: {value: "1997608", anchor: itr(20, "3")}, netChange: {value: "-566894", anchor: itr(16, "demonstração dos fluxos de caixa consolidada")}, closing: {value: "1430714", anchor: itr(20, "3")}},
   interestBridge: {fromDebtMovement: {value: "172359", sign: "as_published", components: ["interest", "monetary_variation"], anchor: itr(40, "15")}, fromIncomeStatement: {value: "-170548", sign: "absolute", components: ["interest"], anchor: itr(48, "22, despesa publicada entre parênteses")}},
 });
 const by = (result: ReturnType<typeof reconcileFinancialStatements>, id: string) => result.reconciliations.find((entry) => entry.id === id)!;
 
-describe("reconcile-financial-statements executor (v7)", () => {
+describe("reconcile-financial-statements executor (v8)", () => {
   it("gold: the roll-forwards close, the four inventory presentations connect through the stated bridges, the two carrying amounts of dividends stay open inside a non-comparable account, and the two net debt definitions are not comparable", () => {
     const result = reconcileFinancialStatements(camil());
     expect(result.identities.map((identity) => [identity.id, identity.state])).toEqual([["balance_sheet", "holds"], ["debt_bridge", "holds"], ["cash_bridge", "holds"], ["interest_bridge", "not_comparable"]]);
@@ -74,6 +74,10 @@ describe("reconcile-financial-statements executor (v7)", () => {
     expect(interestTrace.operands.fromIncomeStatementSign).toBe("absolute");
     const bridgeTrace = result.trace.calculations.find((calculation) => calculation.id === "financial.debt_balance_bridge")!;
     expect(bridgeTrace.anchors.captacoes).toEqual(itr(40, "15, captações"));
+    // The amortizations are published in parentheses; the magnitude reading is declared per line and both values sit in the trace.
+    expect(bridgeTrace.operands["amortizacao_principal:published"]).toBe("-1285146");
+    expect(bridgeTrace.operands["amortizacao_principal:read"]).toBe("1285146");
+    expect(bridgeTrace.operands["amortizacao_principal:sign"]).toBe("absolute");
     expect(bridgeTrace.anchors.opening).toEqual(itr(40, "15, saldo em 28/02/2026"));
     // Release figures enter with their published scale and a rounding half band of 50 thousand; the recomputed net debt closes within the tolerance, not "exactly".
     expect(by(result, "net_debt_release").values.find((value) => value.source === "release")?.stated).toEqual({value: "4214.4", unit: "BRL million", decimals: 1, roundingHalfBand: "50"});
@@ -109,7 +113,7 @@ describe("reconcile-financial-statements executor (v7)", () => {
 
   it("adversarial: a scale mutation breaks the roll-forward identity; a mutated source opens the pair; a reversed adjustment leaves a residual; a partial explanation never hides a third source", () => {
     const mutated = camil();
-    mutated.debtBridge!.lines[0]!.value = "2046140000";
+    mutated.debtBridge!.lines[0]!.published = "2046140000";
     expect(reconcileFinancialStatements(mutated).state).toBe("identity_failed");
     const valueMutation = camil();
     valueMutation.pairedAccounts![2]!.sources[1]!.value = "4213000";
@@ -143,6 +147,9 @@ describe("reconcile-financial-statements executor (v7)", () => {
     const relabelled = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "w", label: "w", family: "ebitda", sources: [source("trimestre rotulado", "840000", "EBITDA dos últimos doze meses", "ebitda.ltm", ["ebitda", "ltm"], anchor, anchor, 3), source("doze meses", "895864", "EBITDA dos últimos doze meses", "ebitda.ltm", ["ebitda", "ltm"], anchor, anchor, 12)]}]});
     expect(by(relabelled, "w").state).toBe("not_comparable");
     expect(by(relabelled, "w").comparability.reasons[0]).toMatch(/cover different spans/);
+    // An explanation never bridges spans: a quarter against twelve months stays not comparable even with an adjustment that closes.
+    const spansWithExplanation = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "v", label: "v", family: "ebitda", sources: [source("trimestre", "210000", "EBITDA do trimestre", "ebitda.q", ["ebitda"], anchor, anchor, 3), source("doze meses", "895864", "EBITDA dos últimos doze meses", "ebitda.ltm", ["ebitda"], anchor, anchor, 12)], explanations: [{fromSource: "trimestre", toSource: "doze meses", adjustment: "685864", description: "os outros três trimestres", anchor}]}]});
+    expect(by(spansWithExplanation, "v").state).toBe("not_comparable");
   });
 
   it("refuses duplicates, an explanation naming an unknown source, a tolerance without a registered policy at its current version, and blocks an empty base", () => {
