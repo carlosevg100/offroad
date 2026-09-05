@@ -26,6 +26,10 @@ const turns = events.filter((event) => event.event === "live_preview.turn_routed
 const runs = events.filter((event) => event.event === "integration_preview.run_completed" || event.event === "integration_preview.run_failed").map((event) => ({
   at: event.at, job: event.job, status: event.event.endsWith("completed") ? "completed" : "failed", composition: event.composition ?? null, replayed: event.replayed ?? null, message: event.message ?? null,
 }));
+const research = events.filter((event) => event.event === "live_preview.research").map((event) => ({
+  at: event.at, job: event.job ?? null, status: event.status ?? null, queries: Number(event.queries ?? 0) || 0, sources: Number(event.sources ?? 0) || 0,
+  cacheHits: Number(event.cacheHits ?? 0) || 0, providerCalls: Number(event.providerCalls ?? 0) || 0, maxCostExposureUsd: Number(event.maxCostExposureUsd ?? 0) || 0, reason: event.reason ?? null, latencyMs: Number(event.latencyMs ?? 0) || 0,
+}));
 const jobs = events.filter((event) => event.event === "job.finished").map((event) => ({job: event.job, status: event.status, ms: event.ms, modelCalls: event.modelCalls ?? 0, costUsd: Number(event.costUsd ?? 0) || 0}));
 const report = {
   generatedAt: new Date().toISOString(),
@@ -37,6 +41,8 @@ const report = {
     abstentions: turns.filter((turn) => turn.abstained).length,
     previewRuns: runs.length,
     previewRunsFailed: runs.filter((run) => run.status === "failed").length,
+    publicResearch: research.length,
+    publicResearchSources: research.reduce((total, item) => total + item.sources, 0),
   },
   byModel: Object.fromEntries(Object.entries(calls.reduce((acc, call) => {
     const key = `${call.provider ?? "?"}/${call.model ?? "?"}`;
@@ -45,7 +51,7 @@ const report = {
     acc[key].outcomes[call.outcome ?? "?"] = (acc[key].outcomes[call.outcome ?? "?"] ?? 0) + 1;
     return acc;
   }, {}))),
-  turns, runs, jobs, calls,
+  turns, runs, jobs, calls, research,
 };
 mkdirSync(dirname(outPath), {recursive: true});
 writeFileSync(outPath, JSON.stringify(report, null, 2));
@@ -56,6 +62,7 @@ const summary = [
   `- Total cost (job ledgers): US$ ${report.totals.costUsd.toFixed(4)}`,
   `- Turns routed by the live router: ${report.totals.turnsRouted}, abstentions ${report.totals.abstentions}`,
   `- Preview runs: ${report.totals.previewRuns}, failed ${report.totals.previewRunsFailed}`,
+  `- Public research for companies without a corpus: ${report.totals.publicResearch} (${report.totals.publicResearchSources} sources; ${research.map((item) => item.status).join(", ") || "none"})`,
   "",
   "| turn | decision | composition | corpus | abstained | model | cost | latency ms |",
   "|---|---|---|---|---|---|---|---|",
