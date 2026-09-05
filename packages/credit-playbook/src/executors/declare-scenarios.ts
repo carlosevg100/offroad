@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `declare-scenarios` (v4, after the third independent review). When
+ * Executor of the method `declare-scenarios` (v5, after the fourth independent review). When
  * management data is missing, the work goes on with declared scenarios: every parameter carries its
  * origin, its rationale and an anchor in a document of the class that origin requires; the executor
  * picks, per role and period, the best origin the register offers. A scenario that declares a lever
@@ -18,7 +18,11 @@ import {z} from "zod";
  * bare boolean. Interest enters the service only when the ledger states it for that period, and the
  * rate shock is reported apart, never spread over periods. Every derived number carries every
  * assumption and anchor it rests on, the previous periods' included; a contracted source keeps its
- * contract and disbursement in the output; documents are bound to the corpus by their hash.
+ * contract and disbursement in the output; documents are bound to the corpus by their hash, checked
+ * against the manifest the caller passes. An implied EBITDA is an approximation and the leverage
+ * on it is shown to two decimals; the adverse scenario shocks the rate and haircuts the EBITDA, both;
+ * a full rollover of future maturities is never taken from history; the EBITDA's comparability is
+ * carried per instrument and the headroom follows the instrument of the covenant.
  */
 const nonNegative = z.string().regex(/^\d+(\.\d+)?$/);
 const nonEmpty = z.string().trim().min(1);
@@ -63,6 +67,8 @@ export const scenarioInputSchema = z.object({
   unit: moneyUnit,
   /** Where the source states the unit; its note must name it, so a relabelled scale is refused. */
   unitAnchor: anchorSchema.extend({note: nonEmpty}),
+  /** The corpus manifest (name and SHA-256 of every file), against which the documents below are checked; a document absent from it or with another hash is refused. */
+  manifest: z.array(z.object({name: nonEmpty, sha256: z.string().regex(/^[a-f0-9]{64}$/)}).strict()).min(1),
   /** The documents of the base with their class and the SHA-256 the corpus manifest records; every anchor must name one, and an origin may cite only the classes it is allowed. */
   documents: z.array(z.object({name: nonEmpty, kind: documentKindSchema, sha256: z.string().regex(/^[a-f0-9]{64}$/)}).strict()).min(1),
   assumptions: z.array(assumptionSchema).min(1),
@@ -77,7 +83,7 @@ export const scenarioInputSchema = z.object({
       financialInvestments: z.object({value: nonNegative, anchor: anchorSchema}).strict(),
     }).strict(),
     /** The EBITDA the leverage is measured on: twelve months, its definition, how it was derived, and how comparable it is with the covenant definitions. */
-    ltmEbitda: z.object({value: nonNegative, /** The twelve months the figure covers, as dates: an annualized quarter cannot claim them. */ periodStart: isoDate, periodEnd: isoDate, definitionKey: nonEmpty, basis: z.enum(["company_opened", "implied_from_reported_index", "derived_proxy"]), comparability: z.enum(["comparable", "conditional", "not_comparable"]), comparabilityReasons: z.array(nonEmpty).default([]), anchor: anchorSchema}).strict().nullable(),
+    ltmEbitda: z.object({value: nonNegative, /** The twelve months the figure covers, as dates: an annualized quarter cannot claim them. */ periodStart: isoDate, periodEnd: isoDate, definitionKey: nonEmpty, basis: z.enum(["company_opened", "implied_from_reported_index", "derived_proxy"]), /** Comparability with each instrument's own EBITDA definition, from the covenant executor: the base definition and the adjustments each indenture adds. */ comparabilityByInstrument: z.array(z.object({instrument: nonEmpty, comparability: z.enum(["comparable", "conditional", "not_comparable"]), reasons: z.array(nonEmpty).default([])}).strict()).min(1), anchor: anchorSchema}).strict().nullable(),
     averageDebtBalance: z.object({value: nonNegative, basis: nonEmpty, anchor: anchorSchema}).strict(),
     baseAnnualRate: z.object({value: nonNegative, basis: nonEmpty, anchor: anchorSchema}).strict(),
   }).strict(),
@@ -97,8 +103,15 @@ export const scenarioInputSchema = z.object({
 }).strict().superRefine((input, context) => {
   if (!UNIT_WORDS[input.unit].test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
   const documents = new Map(input.documents.map((document) => [document.name, document.kind]));
+  const manifest = new Map(input.manifest.map((entry) => [entry.name, entry.sha256]));
   const names = new Set<string>();
-  input.documents.forEach((document, index) => { if (names.has(document.name)) context.addIssue({code: "custom", path: ["documents", index], message: `duplicate document ${document.name}`}); names.add(document.name); });
+  input.documents.forEach((document, index) => {
+    if (names.has(document.name)) context.addIssue({code: "custom", path: ["documents", index], message: `duplicate document ${document.name}`});
+    names.add(document.name);
+    const recorded = manifest.get(document.name);
+    if (recorded === undefined) context.addIssue({code: "custom", path: ["documents", index], message: `${document.name} is not in the corpus manifest; a document outside the manifest is not evidence`});
+    else if (recorded !== document.sha256) context.addIssue({code: "custom", path: ["documents", index], message: `${document.name} carries a hash the manifest does not record; the file is not the one the corpus froze`});
+  });
   const checkAnchor = (anchor: Anchor, path: (string | number)[]) => { if (!documents.has(anchor.document)) context.addIssue({code: "custom", path, message: `anchor names ${anchor.document}, which is not a document of the base`}); };
   checkAnchor(input.unitAnchor, ["unitAnchor"]);
   for (const [name, component] of Object.entries(input.position.components)) checkAnchor(component.anchor, ["position", "components", name]);
@@ -142,12 +155,13 @@ export const scenarioInputSchema = z.object({
     if ((assumption.role === "rate_shock" || assumption.role === "ebitda_haircut" || assumption.role === "cfads_haircut") && new Decimal(assumption.value).isZero()) context.addIssue({code: "custom", path: ["assumptions", index, "value"], message: `${assumption.key}: a ${assumption.role} of zero is not a stress; register a positive value or leave the lever out`});
     if (!RATIO_ROLES.has(assumption.role) && assumption.unit !== input.unit) context.addIssue({code: "custom", path: ["assumptions", index, "unit"], message: `${assumption.key}: a monetary assumption must be in ${input.unit}`});
     if (assumption.period !== null && !periodIds.has(assumption.period)) context.addIssue({code: "custom", path: ["assumptions", index, "period"], message: `${assumption.key} names a period that is not projected`});
+    if (assumption.role === "rollover" && assumption.origin === "company_history") context.addIssue({code: "custom", path: ["assumptions", index, "origin"], message: `${assumption.key}: past rollovers in the cash flow statement are history, not a policy for future maturities; a rollover share must be declared as management data or as a user range`});
   });
   const ids = new Set<string>();
   input.scenarios.forEach((scenario, index) => {
     if (ids.has(scenario.id)) context.addIssue({code: "custom", path: ["scenarios", index], message: `duplicate scenario ${scenario.id}`});
     ids.add(scenario.id);
-    if (scenario.id === "adverse" && !scenario.usesRateShock && !scenario.usesEbitdaHaircut && !scenario.usesCfadsHaircut) context.addIssue({code: "custom", path: ["scenarios", index], message: "the adverse scenario must shock the rate or haircut the EBITDA or the CFADS; an adverse scenario with nothing adverse is a label"});
+    if (scenario.id === "adverse" && (!scenario.usesRateShock || !scenario.usesEbitdaHaircut)) context.addIssue({code: "custom", path: ["scenarios", index], message: "the adverse scenario of the minimum set shocks the rate and haircuts the EBITDA, both; an adverse scenario with less is a label"});
     if (scenario.id === "no_rollover" && scenario.rolloverAllowed) context.addIssue({code: "custom", path: ["scenarios", index], message: "the no-rollover scenario cannot allow rollover"});
   });
   for (const required of ["base", "adverse", "no_rollover"]) if (!ids.has(required)) context.addIssue({code: "custom", path: ["scenarios"], message: `the minimum set needs a ${required} scenario`});
@@ -159,7 +173,7 @@ type Calculation = {id: string; scenario: string; formula: string; operands: Rec
 type Assumption = z.infer<typeof assumptionSchema>;
 
 export type ScenarioOutput = {
-  schema_version: "method.declare-scenarios.v4";
+  schema_version: "method.declare-scenarios.v5";
   reference_date: string;
   unit: string;
   state: "declared" | "partial" | "blocked";
@@ -171,7 +185,7 @@ export type ScenarioOutput = {
     block_reasons: string[];
     parameters: Array<{role: string; period: string | null; key: string; value: string; origin: string; rationale: string; anchor: Anchor; evidence: {contract: Anchor; disbursement: Anchor} | null}>;
     results: {
-      pro_forma: {gross_debt: string; deductible_cash: string; contractual_net_debt: string; leverage: {value: string; ebitda_definition: string; ebitda_basis: string; comparability: string; comparability_reasons: string[]} | null; origins: Origin[]};
+      pro_forma: {gross_debt: string; deductible_cash: string; contractual_net_debt: string; leverage: {value: string; precision: "exact" | "approximate_two_decimals"; precision_note: string | null; ebitda_definition: string; ebitda_basis: string; comparability_by_instrument: Array<{instrument: string; comparability: string; reasons: string[]}>} | null; origins: Origin[]};
       headroom: {absolute: string; within_limit: boolean; limit: string; instrument: string; note: string} | null;
       headroom_note: string;
       interest: {base: string; stressed: string; delta: string; origins: Origin[]} | null;
@@ -195,7 +209,8 @@ function canonical(input: z.infer<typeof scenarioInputSchema>) {
     assumptions: [...input.assumptions].sort((a, b) => compare(a.key, b.key)),
     scenarios: [...input.scenarios].sort((a, b) => compare(a.id, b.id)),
     periods: [...input.periods].sort((a, b) => compare(a.endsAt, b.endsAt) || compare(a.period, b.period)),
-    position: {...input.position, ltmEbitda: input.position.ltmEbitda ? {...input.position.ltmEbitda, comparabilityReasons: [...input.position.ltmEbitda.comparabilityReasons].sort(compare)} : null},
+    manifest: [...input.manifest].sort((a, b) => compare(a.name, b.name)),
+    position: {...input.position, ltmEbitda: input.position.ltmEbitda ? {...input.position.ltmEbitda, comparabilityByInstrument: [...input.position.ltmEbitda.comparabilityByInstrument].sort((a, b) => compare(a.instrument, b.instrument)).map((entry) => ({...entry, reasons: [...entry.reasons].sort(compare)}))} : null},
   };
 }
 
@@ -255,7 +270,9 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
       if (input.covenant.tier.applicability === "conditional") reasons.push(`the ${input.covenant.limit}x tier is conditional (${input.covenant.tier.condition})`);
       if (input.covenant.tier.applicability === "not_applicable") reasons.push(`the ${input.covenant.limit}x tier is not applicable (${input.covenant.tier.condition})`);
       if (input.covenant.comparability !== "comparable") reasons.push(`the covenant comparison is ${input.covenant.comparability}`);
-      if (input.position.ltmEbitda && input.position.ltmEbitda.comparability !== "comparable") reasons.push(`the EBITDA is ${input.position.ltmEbitda.comparability} with the covenant definition`);
+      const forInstrument = input.position.ltmEbitda?.comparabilityByInstrument.find((entry) => entry.instrument === input.covenant!.instrument);
+      if (input.position.ltmEbitda && !forInstrument) reasons.push(`the EBITDA carries no comparability reading for ${input.covenant.instrument}`);
+      if (forInstrument && forInstrument.comparability !== "comparable") reasons.push(`the EBITDA is ${forInstrument.comparability} with the definition of ${input.covenant.instrument}${forInstrument.reasons.length > 0 ? ` (${forInstrument.reasons.join("; ")})` : ""}`);
       if (reasons.length === 0) return `headroom measured against the ${input.covenant.limit}x tier of ${input.covenant.instrument}, as a scenario reading before the measurement of ${input.covenant.measurement.nextDate}`;
       const arithmetic = input.covenant.direction === "maximum" ? d(input.covenant.limit).minus(leverage) : d(leverage).minus(input.covenant.limit);
       return `no headroom: ${reasons.join("; ")}. The arithmetic difference against ${input.covenant.limit}x is ${out(arithmetic)}x and is conditioned, not a headroom`;
@@ -270,7 +287,10 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
     const ebitdaBase = ebitda ? d(ebitda.value).times(d(1).minus(haircut ? haircut.value : 0)) : null;
     const proForma = calculateProFormaPosition({grossDebt: components.grossDebt.value, unrestrictedCash: deductibleCash.toFixed(), newDebt: newDebt ? newDebt.value : "0", refinancedDebt: refinanced ? refinanced.value : "0", feesPaidFromCash: "0", cashContribution: "0"});
     const contractualNetDebt = d(proForma.grossDebt).plus(components.derivativeLiabilities.value).minus(components.derivativeAssets.value).minus(proForma.unrestrictedCash);
-    const leverageValue = ebitdaBase && ebitdaBase.gt(0) ? calculateLeverage(out(contractualNetDebt), out(ebitdaBase)).value : null;
+    // An EBITDA implied from a two-decimal reported index carries that precision: the leverage on it is shown to two decimals, as an approximation.
+    const exactLeverage = ebitdaBase && ebitdaBase.gt(0) ? calculateLeverage(out(contractualNetDebt), out(ebitdaBase)).value : null;
+    const approximate = ebitda?.basis === "implied_from_reported_index";
+    const leverageValue = exactLeverage === null ? null : approximate ? d(exactLeverage).toDecimalPlaces(2).toFixed() : exactLeverage;
     const proFormaOrigins = [...baseOrigins, ...(ebitda ? [{origin: "base pública", key: "position.ltmEbitda", anchor: ebitda.anchor}] : []), ...originsOf(newDebt, refinanced, haircut)];
     calculations.push({id: "operation.pro_forma_position", scenario: scenario.id, formula: "grossDebt + newDebt - refinancedDebt ; contractual net debt with derivatives less deductible cash ; leverage = net debt / (EBITDA * (1 - ebitdaHaircut))", operands: {grossDebt: components.grossDebt.value, newDebt: newDebt ? newDebt.value : "0", refinancedDebt: refinanced ? refinanced.value : "0", ebitda: ebitdaBase ? out(ebitdaBase) : "insufficient_evidence", ebitdaHaircut: haircut ? haircut.value : "0"}, result: out(contractualNetDebt), unit: input.unit, origins: proFormaOrigins});
     if (!ebitda) uncovered.push({id: "leverage", state: "insufficient_evidence", reason: "no EBITDA with a definition in the base; leverage is not measured"});
@@ -324,7 +344,7 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
     return {
       id: scenario.id, label: scenario.label, state, block_reasons: [], parameters,
       results: {
-        pro_forma: {gross_debt: proForma.grossDebt, deductible_cash: proForma.unrestrictedCash, contractual_net_debt: out(contractualNetDebt), leverage: leverageValue && ebitda ? {value: leverageValue, ebitda_definition: ebitda.definitionKey, ebitda_basis: ebitda.basis, comparability: ebitda.comparability, comparability_reasons: ebitda.comparabilityReasons} : null, origins: proFormaOrigins},
+        pro_forma: {gross_debt: proForma.grossDebt, deductible_cash: proForma.unrestrictedCash, contractual_net_debt: out(contractualNetDebt), leverage: leverageValue && ebitda ? {value: leverageValue, precision: approximate ? "approximate_two_decimals" : "exact", precision_note: approximate ? `the EBITDA is implied from a reported index of two decimals; the leverage is about ${leverageValue}x, not a figure to eight decimals` : null, ebitda_definition: ebitda.definitionKey, ebitda_basis: ebitda.basis, comparability_by_instrument: ebitda.comparabilityByInstrument} : null, origins: proFormaOrigins},
         headroom, headroom_note: note, interest, liquidity,
       },
       caveat: caveatFor(state), uncovered_terms: uncovered,
@@ -334,7 +354,7 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
   const minimum = scenarios.filter((scenario) => ["base", "adverse", "no_rollover"].includes(scenario.id));
   const blockReasons = minimum.filter((scenario) => scenario.state === "blocked").map((scenario) => `${scenario.id}: ${scenario.block_reasons.join("; ")}`);
   const state: ScenarioOutput["state"] = blockReasons.length > 0 ? "blocked" : scenarios.some((scenario) => scenario.state === "partial") ? "partial" : "declared";
-  const body = {schema_version: "method.declare-scenarios.v4" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, assumption_register: register, scenarios};
+  const body = {schema_version: "method.declare-scenarios.v5" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, assumption_register: register, scenarios};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }

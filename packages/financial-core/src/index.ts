@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.05-v11";
+export const financialCoreVersion = "2026.09.05-v12";
 
 export * from "./financial-truth";
 export * from "./indexed-debt";
@@ -246,19 +246,21 @@ export type CalculationTrace = {id: string; formula: string; operands: Record<st
  * 252-day year: PV = sum(amount / (1 + rate)^(businessDays / 252)). Used by the exit-cost method
  * for the make-whole prices the indentures define at a quoted rate.
  */
-export function presentValueByBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string): {value: string; discounted: Array<{id: string; amount: string; businessDays: number; factor: string; presentValue: string}>; trace: CalculationTrace} {
+export function presentValueByBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string, options: {factorDecimals?: number; presentValueDecimals?: number} = {}): {value: string; discounted: Array<{id: string; amount: string; businessDays: number; factor: string; presentValue: string}>; trace: CalculationTrace} {
   if (!/^\d+(\.\d+)?$/.test(annualRate)) throw new Error("annualRate must be a non-negative decimal string");
   const rate = new Decimal(annualRate);
   let total = new Decimal(0);
   const discounted = flows.map((flow) => {
     if (!Number.isInteger(flow.businessDays) || flow.businessDays < 0) throw new Error(`flow ${flow.id}: businessDays must be a non-negative integer`);
-    const factor = rate.plus(1).pow(new Decimal(flow.businessDays).div(252));
-    const presentValue = new Decimal(flow.amount).div(factor);
+    // An indenture may round the discount factor of each flow (FVPk at nine decimals) before dividing; the option keeps that layer.
+    const rawFactor = rate.plus(1).pow(new Decimal(flow.businessDays).div(252));
+    const factor = options.factorDecimals === undefined ? rawFactor : rawFactor.toDecimalPlaces(options.factorDecimals, Decimal.ROUND_HALF_UP);
+    const presentValue = options.presentValueDecimals === undefined ? new Decimal(flow.amount).div(factor) : new Decimal(flow.amount).div(factor).toDecimalPlaces(options.presentValueDecimals, Decimal.ROUND_HALF_UP);
     total = total.plus(presentValue);
     return {id: flow.id, amount: new Decimal(flow.amount).toFixed(), businessDays: flow.businessDays, factor: factor.toDecimalPlaces(12).toFixed(), presentValue: presentValue.toDecimalPlaces(8).toFixed()};
   });
   const value = total.toDecimalPlaces(8).toFixed();
-  return {value, discounted, trace: {id: "financial.present_value_by_business_days", formula: "sum(amount / (1 + annualRate)^(businessDays/252))", operands: {annualRate, flows: String(flows.length)}, result: value}};
+  return {value, discounted, trace: {id: "financial.present_value_by_business_days", formula: "sum(amount / (1 + annualRate)^(businessDays/252))", operands: {annualRate, flows: String(flows.length), factorDecimals: options.factorDecimals === undefined ? "none" : String(options.factorDecimals), presentValueDecimals: options.presentValueDecimals === undefined ? "none" : String(options.presentValueDecimals)}, result: value}};
 }
 
 /** Macaulay duration in business days of dated flows at an annual effective rate: sum(DU * PV) / sum(PV). */

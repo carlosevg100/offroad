@@ -1,0 +1,302 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "gc01-method-reconcile-financial-statements-2026-09-05-05-28-43",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "tool": "codex-cli 0.153.4"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "reconcile-financial-statements",
+    "version": "2026.09.05-v7",
+    "fingerprint": "835aeda5d09336507d4c6125f70c3bc854267b12c00a84a2908bcf9f54767e4f"
+  },
+  "run": {
+    "id": "gc01-method-reconcile-financial-statements-2026-09-05-05-28-43",
+    "startedAt": "2026-09-05T05:28:43.397Z",
+    "finishedAt": "2026-09-05T05:32:12.235Z",
+    "commit": "d564708b7e1add35e8cc436bca5d9bfd00a1979f"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "[1.1] O corpus gold está íntegro.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "anchor": "43 entries com bytes e sha256",
+      "result": "confirmed",
+      "note": "Os SHA-256 dos 43 arquivos foram recalculados; nenhum divergiu."
+    },
+    {
+      "claim": "[1.2] Ativo 12.021.830, passivo 9.032.723 e patrimônio líquido 2.989.107 sustentam a identidade do balanço.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "páginas 11-12, balanço consolidado",
+      "result": "confirmed",
+      "note": "Passivo recalculado: 3.630.260 + 5.402.463 = 9.032.723; 9.032.723 + 2.989.107 = 12.021.830."
+    },
+    {
+      "claim": "[1.3] Os números da ponte de dívida do teste reproduzem a nota 15.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "página 40, nota 15, movimentação dos empréstimos e financiamentos",
+      "result": "confirmed",
+      "note": "Abertura 4.988.383; captações 2.046.140; juros e variações 172.359; custos (4.741); principal (1.285.146); juros (229.611); câmbio 60; conversão (17.258); fechamento 5.670.186."
+    },
+    {
+      "claim": "[1.4] A ponte de caixa usa 1.997.608, variação (566.894) e fechamento 1.430.714.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "página 16, demonstração dos fluxos de caixa consolidada",
+      "result": "confirmed",
+      "note": "1.997.608 - 566.894 = 1.430.714."
+    },
+    {
+      "claim": "[1.5] A nota de dívida traz 172.359 de juros e variações; o resultado traz despesa de juros de 170.548.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, página 40; nota 22, página 48",
+      "result": "confirmed",
+      "note": "A diferença de magnitudes é 172.359 - 170.548 = 1.811; as rubricas não têm os mesmos componentes."
+    },
+    {
+      "claim": "[1.6] Os quatro montantes de dividendos são 395.000, 338.565, 322.498 e 420.000.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 18(e), página 46; nota 25, página 51",
+      "result": "confirmed",
+      "note": "395.000 = 140.000 + 255.000; 338.565 = 395.000 - 6.911 - 49.524; a nota 25 publica 322.498 contábil e 420.000 justo."
+    },
+    {
+      "claim": "[1.7] O teste ancora os 420.000 aprovados na página 46 do ITR.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/02_Proposta_Administracao_AGOE_2026.txt",
+      "anchor": "linhas 1540-1544, RCA de 16/12/2025",
+      "result": "corrected",
+      "note": "O montante aprovado de 420.000 e as doze parcelas estão na proposta. A página 46 do ITR mostra pagamento e saldos, mas não identifica 420.000 como total aprovado; o trace usa a âncora errada."
+    },
+    {
+      "claim": "[1.8] Estoques: nota 5 com 3.088.478 e adiantamentos de 643.241; balanço circulante com 3.013.060 e não circulante com 75.418.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 5, página 21; balanço, página 11",
+      "result": "confirmed",
+      "note": "3.088.478 - 643.241 = 2.445.237; 3.088.478 - 75.418 = 3.013.060."
+    },
+    {
+      "claim": "[1.9] O release publica estoques de 2.445,2 milhões e a visão gerencial de 2.437,1 milhões com 576,0 milhões de adiantamentos a produtores.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt",
+      "anchor": "páginas impressas 13 e 15, Capital de Giro e Balanço Patrimonial Consolidado",
+      "result": "corrected",
+      "note": "Os números conferem e os anchors do teste, 13 e 15, estão corretos. O gabarito, seção 7, cita páginas 12 e 14, deslocadas em uma página."
+    },
+    {
+      "claim": "[1.10] Dívida líquida do release é 4.214,4 milhões.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt",
+      "anchor": "página impressa 12, Endividamento e Caixa",
+      "result": "confirmed",
+      "note": "Das notas: 5.670.186 - 1.430.714 - 25.095 = 4.214.377; spread para 4.214.400 = 23. Meia banda de uma casa em R$ milhões = 50 em R$ mil."
+    },
+    {
+      "claim": "[1.11] A visão contratual usada no gold resulta em dívida líquida de 4.228.477.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, páginas 39-40; notas 3 e 25, páginas 20 e 51",
+      "result": "confirmed",
+      "note": "5.670.186 + 14.335 - 235 - 1.430.714 - 25.095 = 4.228.477; diferença para o release = 14.077."
+    },
+    {
+      "claim": "[1.12] O passivo de arrendamento é 276.768.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "balanço, página 12; nota 12, página 34",
+      "result": "confirmed",
+      "note": "67.399 + 209.369 = 276.768."
+    },
+    {
+      "claim": "[2.1] A ponte de dívida fecha em 5.670.186.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 51-59",
+      "result": "confirmed",
+      "note": "4.988.383 + 2.046.140 + 172.359 - 4.741 - 1.285.146 - 229.611 + 60 - 17.258 = 5.670.186."
+    },
+    {
+      "claim": "[2.2] Os resultados numéricos da conciliação de estoques são 0, -40 e 37.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 28-36 e 89-94",
+      "result": "confirmed",
+      "note": "3.013.060-(3.088.478-75.418)=0; 3.013.060-(2.437.100+576.000)=-40; 3.088.478-(2.445.200+643.241)=37. Spread total = 651.378."
+    },
+    {
+      "claim": "[2.3] O método afirma que a conciliação de estoques com 2.445,2 é exata.",
+      "source": "packages/credit-playbook/knowledge/procedures/financial/reconcile-financial-statements.md",
+      "anchor": "linha 100, Exemplo bom",
+      "result": "corrected",
+      "note": "Com o valor publicado arredondado, o resíduo é 37, não zero. A classificação correta é dentro do arredondamento publicado, coerente com a própria regra da linha 67."
+    },
+    {
+      "claim": "[2.4] Os resultados dos dividendos são spread 97.502 e divergência de 16.067 entre os dois valores contábeis.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 95-106",
+      "result": "confirmed",
+      "note": "420.000 - 322.498 = 97.502; 338.565 - 322.498 = 16.067."
+    },
+    {
+      "claim": "[2.5] O executor produz 23 de spread na dívida líquida do release e fecha por arredondamento publicado.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 78-83 e 207-220",
+      "result": "confirmed",
+      "note": "23 ≤ 50; o teste também confirma que 100 excede a meia banda e abre a divergência."
+    },
+    {
+      "claim": "[2.6] O caso gold termina em open_divergences, com dividendos, comparação das duas dívidas líquidas e subconjunto contábil de dividendos abertos.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 96-107",
+      "result": "confirmed",
+      "note": "Nenhum dos quatro valores de dividendos é escolhido silenciosamente."
+    },
+    {
+      "claim": "[2.7] Percentuais e headroom foram recalculados pelo executor.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "linhas 186-213, contrato de saída",
+      "result": "limitation",
+      "note": "Esse executor não produz percentuais, EBITDA, covenant ou headroom; não há resultados dessas classes para recalcular nesta revisão."
+    },
+    {
+      "claim": "[3.1] Dívida líquida do release e dívida líquida contratual não são comparáveis.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "seções 5, 11.4 e 13.1; linhas 124-155, 299-310 e 366-388",
+      "result": "confirmed",
+      "note": "O release exclui derivativos; a escritura inclui derivativos e qualquer outra dívida onerosa. O executor preserva duas definitionKey e retorna not_comparable."
+    },
+    {
+      "claim": "[3.2] A dívida contratual pode excluir arrendamentos sem condição.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "página 7, definição de Dívida Líquida",
+      "result": "limitation",
+      "note": "A escritura inclui qualquer outra rubrica de dívida onerosa. Determinar se arrendamentos entram exige interpretação jurídica; o gold também registra essa condição."
+    },
+    {
+      "claim": "[3.3] As definições de EBITDA e os degraus 3,50x/4,00x estão implementados neste executor.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.22.3, páginas 33-34, linhas 1293-1337",
+      "result": "limitation",
+      "note": "A escritura define EBITDA LTM e os dois degraus, mas o método e o executor revisados não os codificam nem calculam. Sua aplicação não é verificável por estes testes."
+    },
+    {
+      "claim": "[3.4] Comparabilidade exige definição, componentes, data e período iguais; subconjuntos equivalentes continuam testados.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "linhas 254-273",
+      "result": "confirmed",
+      "note": "O gold detecta o subconjunto contábil de dividendos e não compara nominal, valor contábil e valor justo como se fossem a mesma medida."
+    },
+    {
+      "claim": "[3.5] Fontes de períodos diferentes nunca deixam de ser not_comparable, mesmo com explicação.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "linhas 259 e 291-302",
+      "result": "corrected",
+      "note": "O executor bloqueia explicações apenas quando as datas diferem. Com periodMonths diferentes e uma explicação que feche, cai em state=explained, contrariando a regra explícita do método, linha 68."
+    },
+    {
+      "claim": "[3.6] A mutação “dívida do release rotulada como contratual” é efetivamente recusada.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 131-145",
+      "result": "corrected",
+      "note": "O teste mantém definitionKey diferentes; não relabela integralmente a fonte. O executor aceita chaves e componentes declarados pelo chamador e não possui catálogo que vincule net_debt.contractual à definição da escritura."
+    },
+    {
+      "claim": "[3.7] Todo sinal publicado é preservado e sua leitura literal ou por magnitude fica no trace.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "schema da debtBridge, linhas 124-129; cálculo, linhas 316-321",
+      "result": "corrected",
+      "note": "As linhas da ponte de dívida não têm campo sign. As amortizações publicadas como negativas entram no fixture como magnitudes positivas; o trace não preserva os valores publicados nem registra formalmente essa normalização."
+    },
+    {
+      "claim": "[3.8] A ponte de juros não compara juros mais variações monetárias contra juros puros.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "linhas 325-340",
+      "result": "confirmed",
+      "note": "Registra diferença 1.811, state=not_comparable e uncovered_terms=insufficient_evidence."
+    },
+    {
+      "claim": "[4.1] Base vazia bloqueia; pontes ausentes geram uncoveredTerms e insufficient_evidence; falta de balanço gera incomplete.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 168-183",
+      "result": "confirmed",
+      "note": "A base vazia lista balance_sheet, debt_bridge, cash_bridge e interest_bridge; ausência parcial não é preenchida."
+    },
+    {
+      "claim": "[4.2] Identidade comparável que falha derruba o estado global.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 176-177",
+      "result": "confirmed",
+      "note": "A mutação 100.000 contra 90.000 produz identity_failed."
+    },
+    {
+      "claim": "[4.3] O valor presente econômico dos dividendos pode ser refeito pelo executor.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "condição 5 e seção 4, linhas 11 e 108-118",
+      "result": "limitation",
+      "note": "O executor apenas reconcilia os ajustes contábeis publicados. Taxa e metodologia econômica não constam da base."
+    },
+    {
+      "claim": "[5.1] Mutações de escala, valor, sentido da explicação e explicação parcial são cobertas.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 110-129 e 207-220",
+      "result": "confirmed",
+      "note": "A escala quebra a identidade, a fonte alterada abre a conta, o sentido invertido deixa resíduo -1.286.519 e a terceira fonte permanece exposta."
+    },
+    {
+      "claim": "[5.2] Duplicatas, fonte inexistente, política inválida, componente desconhecido, derivação errada e unidade inválida são recusados.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 148-167",
+      "result": "confirmed",
+      "note": "Os testes exercitam todas essas validações."
+    },
+    {
+      "claim": "[5.3] Todas as mutações adversariais prometidas estão cobertas.",
+      "source": "packages/credit-playbook/knowledge/procedures/financial/reconcile-financial-statements.md",
+      "anchor": "linhas 109-112",
+      "result": "corrected",
+      "note": "Faltam pelo menos: período diferente com explicação; relabel completo da dívida do release; sinais publicados das linhas da dívida. As duas primeiras também revelam comportamento incorreto, não só falta de teste."
+    },
+    {
+      "claim": "[6.1] Resultado e fingerprints são invariantes à ordem das entradas exercitadas.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 179-200",
+      "result": "confirmed",
+      "note": "Vinte sementes permutam contas, fontes, explicações, linhas, componentes, tolerâncias e chaves; resultado e fingerprints permanecem iguais."
+    },
+    {
+      "claim": "[6.2] O outputFingerprint inclui os cálculos do trace.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "linhas 361-366",
+      "result": "confirmed",
+      "note": "A implementação calcula o fingerprint sobre body, calculations e inputFingerprint."
+    },
+    {
+      "claim": "[6.3] O teste isoladamente prova que o trace participa do fingerprint.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 186-200",
+      "result": "limitation",
+      "note": "A alteração usada também muda inputFingerprint e body; portanto não isolaria a presença de calculations. A leitura da implementação confirma a propriedade."
+    },
+    {
+      "claim": "[6.4] O executor emite exatamente os campos superiores declarados pelo método.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts",
+      "anchor": "linhas 203-205",
+      "result": "confirmed",
+      "note": "O teste contractMismatch passou."
+    }
+  ],
+  "result": "fail",
+  "conditions": [
+    "A inclusão de arrendamentos em “outra dívida onerosa” depende de interpretação jurídica especializada: escritura_13a_emissao.txt, página 7; gc01-gabarito-rascunho.md, linhas 148-155.",
+    "A aplicação dos degraus 3,50x/4,00x e a comparabilidade integral do EBITDA pro forma ficam fora deste executor e dependem das escrituras e informações complementares: escritura_11a_emissao.txt, cláusula 4.22.3; gc01-gabarito-rascunho.md, linhas 366-388.",
+    "A conciliação definitiva dos quatro valores de dividendos requer explicação da companhia: 01_ITR_1T26_31mai2026.txt, notas 18(e) e 25, páginas 46 e 51.",
+    "O valor presente econômico dos dividendos permanece não recalculável sem taxa e metodologia: gc01-gabarito-rascunho.md, condição 5."
+  ],
+  "notes": "OpenAI Codex (GPT-5), com inspeção local, SHA-256 e Vitest 4.1.10.\n\nFalha material: o executor pode tratar períodos diferentes como explained quando há ajuste, não resiste ao relabel completo da dívida do release e não preserva formalmente os sinais publicados da ponte de dívida. Há ainda anchors incorretos para o total aprovado de dividendos e no gabarito das páginas de estoque do release, além do exemplo indevido de conciliação “exata”."
+}

@@ -1,6 +1,6 @@
 ---
 id: declare-scenarios
-version: 2026.09.05-v4
+version: 2026.09.05-v5
 maturity: implemented
 title_pt: Declarar cenários com racional e sem inventar premissa
 title_en: Declare scenarios with a rationale and without inventing assumptions
@@ -10,7 +10,7 @@ owner_role: Head de Modelagem
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/declare-scenarios
 implementation_export: declareScenarios
-result_contract: method.declare-scenarios.v4
+result_contract: method.declare-scenarios.v5
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -65,7 +65,8 @@ parâmetro e a frase de ressalva que acompanha qualquer número derivado deles.
 - Alavanca declarada sem premissa registrada (choque, haircut, refinanciamento, rolagem) bloqueia o cenário; nada vira zero.
 - CFADS é declarado por período do cronograma do ledger; o executor nunca divide nem repete; haircut de CFADS é premissa própria, nunca derivada do haircut de EBITDA.
 - Juros entram no serviço só quando o ledger os declara para aquele período; o período sem juros é só de principal e o delta do choque é reportado à parte, nunca rateado.
-- Choque ou haircut de zero não é estresse e é recusado; EBITDA de doze meses é declarado por datas, não por rótulo; documentos entram com o hash do manifesto.
+- Choque ou haircut de zero não é estresse e é recusado; EBITDA de doze meses é declarado por datas, não por rótulo; documentos entram com nome e hash conferidos contra o manifesto do corpus.
+- O cenário adverso do conjunto mínimo choca a taxa e corta o EBITDA, os dois; rolagem futura nunca vem do histórico, só de dado gerencial ou intervalo declarado; EBITDA implícito de índice com duas casas é aproximado e a alavancagem sobre ele sai com duas casas; a comparabilidade do EBITDA é por instrumento e o headroom segue o instrumento do covenant.
 - Headroom só contra limite resolvido, degrau aplicável e comparação comparável com EBITDA comparável; caso contrário a diferença aritmética é mostrada como condicionada.
 
 # Julgamentos permitidos
@@ -83,7 +84,7 @@ parâmetro e a frase de ressalva que acompanha qualquer número derivado deles.
 - Nenhuma origem disponível para um parâmetro material e o usuário não deu faixa.
 
 # Outputs
-- schema_version (string, required): `method.declare-scenarios.v4`
+- schema_version (string, required): `method.declare-scenarios.v5`
 - reference_date (date, required): data-base da posição
 - unit (enum, required): unidade de todos os valores monetários, ancorada na fonte que a declara (escala re-rotulada é recusada)
 - state (enum, required): declared, partial (algum cenário com lacuna: CFADS ausente em período, juros não declarados, EBITDA ausente) ou blocked (um cenário do conjunto mínimo tem alavanca declarada sem premissa registrada) | values: declared, partial, blocked

@@ -98,8 +98,8 @@ export const debtLedgerInputSchema = z.object({
   referenceDate: calendarDate,
   priorDate: calendarDate.nullable().default(null),
   unit: z.enum(["BRL", "BRL thousand", "BRL million", "USD", "USD thousand"]),
-  /** Where the statements declare the unit ("em milhares de reais"); a unit without its declaration is a label. */
-  unitAnchor: anchorSchema,
+  /** Where the statements declare the unit ("em milhares de reais"); its note must name that unit, so a relabelled scale is refused. */
+  unitAnchor: anchorSchema.extend({note: nonEmpty}),
   /** `note` when the debt note of the statements is in the base; `release_only` blocks: a release is not a ledger. */
   source: z.enum(["note", "release_only"]),
   rows: z.array(debtLedgerRowInputSchema),
@@ -127,10 +127,14 @@ export const debtLedgerInputSchema = z.object({
   releaseReportedNetDebt: z.object({value: money, anchor: anchorSchema}).strict().optional(),
   tolerance: toleranceSchema.default({value: "0"}),
 }).strict().superRefine((input, context) => {
+  const UNIT_WORDS: Record<string, RegExp> = {"BRL": /\b(R\$|reais|BRL)\b(?!\s*(mil|milh))/i, "BRL thousand": /\b(mil|milhares|thousand)\b/i, "BRL million": /\b(milh[õo]es|million)\b/i, "USD": /\bUSD\b(?!\s*(mil|thousand))/i, "USD thousand": /\bUSD\b.*\b(mil|thousand)\b/i};
+  if (!UNIT_WORDS[input.unit]!.test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
   const ids = new Set<string>();
   for (const row of input.rows) {
     if (ids.has(row.id)) context.addIssue({code: "custom", path: ["rows"], message: `duplicate row id ${row.id}`});
     ids.add(row.id);
+    // A securitizer is a formal holder; the economic creditors are the holders of the certificates it issued, never the securitizer itself.
+    if (row.lender?.formalHolder && row.lender.economicCreditors && /securitiz/i.test(row.lender.formalHolder) && /securitiz/i.test(row.lender.economicCreditors) && !/titular|holder|investidor|investor|cra|cri/i.test(row.lender.economicCreditors)) context.addIssue({code: "custom", path: ["rows"], message: `${row.id}: a securitizer (${row.lender.formalHolder}) is the formal holder; the economic creditors are the holders of the certificates, not the securitizer`});
   }
   const periods = new Set<string>();
   for (const period of input.schedule?.periods ?? []) {
@@ -145,7 +149,7 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schema_version: "method.build-debt-ledger.v12";
+  schema_version: "method.build-debt-ledger.v13";
   reference_date: string;
   prior_date: string | null;
   unit: string;
@@ -194,6 +198,31 @@ const DEBT = /emprestim|financiament|debenture|divida bruta|gross debt|loan|borr
 const DEBT_BASE_OK = /divida bruta|gross debt|(?=[^.;]*emprestim)(?=[^.;]*financiament)(?=[^.;]*debenture)/;
 /** Components that never belong to a net debt definition; their presence on the added side is a contradiction, not a nuance. */
 const FOREIGN = /fornecedor|supplier|payable|estoque|inventor|receb|receivable|imobilizado|fixed asset|salario|tributo|tax|dividend|provis|contingen|arrendamento a pagar|juros sobre capital/;
+/** The operands a net debt definition may name; any other phrase between the connectors is a foreign operand. */
+const KNOWN_OPERAND = /^(?:(?:a|as|o|os|the|de|do|da|dos|das)\s+)?(emprestim|financiament|debenture|divida bruta|gross debt|loan|borrowing|nota[s]? comercia|cpr|instrumento[s]? financeiro[s]? derivativ|operac(?:oes|ao)?(?: com derivativ)?|derivativ|caixa|equivalente|disponibilidade|cash|aplicac|investment|arrendament|lease|outra[s]?( divida[s]?)? onerosa|other onerous|onerous|passiv|ativ|dividas?|debt|obrigac|subordinad)/;
+const CONNECTORS = /\s*(?:\bmais\b|\bplus\b|\be\b|\band\b|,|;|\+|\bmenos\b|\bless\b|\bminus\b|\(\s*[-\u2212]\s*\)|\bdeduzid[oa]s?(?: de)?\b|\bde\b|\bdo\b|\bda\b|\bdos\b|\bdas\b|\bof\b|\bthe\b|\bcom\b|\bwith\b|\bincluindo\b|\bincluidos?\b|\bincluding\b|\bnet\b|\bliquida\b)\s*/;
+/** Every operand phrase of a definition must be a known operand; a phrase the catalogue does not know is foreign, whatever word it uses. */
+const NOISE: RegExp[] = [
+  /=.*$/, // the result side of an equation ("= dívida líquida")
+  /\((?:[^()]*(?:linha|tabela|rotulad|balanco|balance|extraid|nota|note|conforme)[^()]*)\)/g, // parentheticals that name the source, not an operand
+  /\(\s*[a-z]\s*\)/g, // list markers (a), (b)
+  /\bcom base em valores extraidos d[oa] .*?(?=\bmenos\b|\bmais\b|,|;|$)/g,
+  /\b(?:no|na|nos|nas|do|da|dos|das|em seu|em sua|de seu|de sua)\s+(?:passivo|ativo|balanco patrimonial|balanco)\b[^,;]*?(?=\bmais\b|\bmenos\b|\be\b|,|;|\bcom\b|$)/g,
+  /\bbem como qualquer outra rubrica que se refira a\b/g,
+  /\bque venha a ser criada\b/g,
+  /\bsomatoria d[ao]s?\b|\ba soma\b|\brubricas?\s+de\b|\brubrica\b|\blinhas?\s+de\b/g,
+  /\bdivida liquida\b|\bnet debt\b|\bpro forma\b|\bconsolidad[oa]s?\b|\bcirculante\b|\bnao circulante\b|\bcurrent\b|\bnon-current\b|\bd[ao] emissora\b|\bof the issuer\b/g,
+];
+/** Every operand phrase of a definition must be a known operand; descriptive noise (where a line sits, which table it comes from) is stripped first, and a phrase the catalogue does not know is foreign whatever word it uses. */
+export function foreignOperand(text: string): string | null {
+  let plain = normalize(text);
+  for (const noise of NOISE) plain = plain.replace(noise, " ");
+  plain = plain.replace(/[()]/g, " ");
+  for (const phrase of plain.split(CONNECTORS).map((part) => part.trim()).filter((part) => part.length > 2)) {
+    if (!KNOWN_OPERAND.test(phrase)) return phrase;
+  }
+  return null;
+}
 const normalize = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** What a definition adds and what it deducts: the text before the first "menos"/"less"/"minus" and the text after it. */
@@ -227,13 +256,17 @@ function definitionDisagreement(name: "release" | "contractual", text: string): 
   if (CASH.test(parsed.added) || INVESTMENTS.test(parsed.added)) return `the ${name} definition adds cash or investments; the view deducts them`;
   if (name === "release") {
     if (DERIVATIVES.test(plainText(text))) return "the release definition mentions derivatives; the release view executed excludes them";
-    return null;
+    return foreignCheck(name, text);
   }
   if (!DERIVATIVE_LIABILITIES.test(parsed.added)) return "the contractual definition does not add derivative liabilities; the contractual view executed adds them";
   if (!DERIVATIVE_ASSETS.test(parsed.deducted)) return "the contractual definition does not deduct derivative assets; the contractual view executed deducts them";
   if (DERIVATIVE_ASSETS.test(parsed.added)) return "the contractual definition adds derivative assets; the view deducts them";
   if (DERIVATIVE_LIABILITIES.test(parsed.deducted)) return "the contractual definition deducts derivative liabilities; the view adds them";
-  return null;
+  return foreignCheck(name, text);
+}
+function foreignCheck(name: "release" | "contractual", text: string): string | null {
+  const foreign = foreignOperand(text);
+  return foreign ? `the ${name} definition names an operand the view does not know ("${foreign}"); every operand must be debt, derivatives, cash, investments, leases or a residual of other onerous debt` : null;
 }
 const plainText = (text: string) => normalize(text);
 
@@ -429,7 +462,7 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.build-debt-ledger.v12" as const,
+    schema_version: "method.build-debt-ledger.v13" as const,
     reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, unit_anchor: input.unitAnchor, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),

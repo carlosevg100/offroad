@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `compare-refinancing-before-after` (v5, after the third independent
+ * Executor of the method `compare-refinancing-before-after` (v6, after the fourth independent
  * review). Every alternative is shown before and after with the same objects: gross and net debt by
  * the contractual components, leverage on a declared EBITDA, headroom only against a resolved and
  * comparable limit, concentration by the schedule's own periods (safra years with their end dates,
@@ -28,8 +28,12 @@ export const alternativeSchema = z.object({
   id: z.string().regex(/^[a-z][a-z0-9_-]*$/),
   label: nonEmpty,
   newDebt: z.object({amount: nonNegative, annualRate: rate, termMonths: z.number().int().positive(), graceMonths: z.number().int().nonnegative(), format: z.enum(["sac", "price", "bullet", "balloon"]), upfrontFeeRate: rate, disbursementDate: isoDate, origin: nonEmpty, anchor: anchorSchema}).strict().nullable(),
-  /** Series retired, each with its principal anchored to the ledger, its priced exit (from the exit-cost executor) and the anchor of its maturity; a null price blocks the alternative. */
-  retired: z.array(z.object({seriesId: nonEmpty, principal: z.object({value: nonNegative, anchor: anchorSchema}).strict(), exitPremium: z.object({value: nonNegative, anchor: anchorSchema}).strict().nullable(), maturityPeriod: nonEmpty, maturityAnchor: anchorSchema}).strict()).default([]),
+  /** Series retired: each instalment leaves its own period with its anchored principal; the priced exit comes from the exit-cost executor with the mechanism and its permission on the date, or a null price blocks the alternative. */
+  retired: z.array(z.object({
+    seriesId: nonEmpty,
+    instalments: z.array(z.object({period: nonEmpty, principal: z.object({value: nonNegative, anchor: anchorSchema}).strict(), maturityAnchor: anchorSchema}).strict()).min(1),
+    exitPremium: z.object({value: nonNegative, mechanism: nonEmpty, permittedOnDate: z.boolean(), anchor: anchorSchema}).strict().nullable(),
+  }).strict()).default([]),
   /** Other cash costs of the alternative (advisory, registry), an explicit zero included; null means the base does not state them and the all-in is not computed. */
   feesPaidFromCash: z.object({value: nonNegative, anchor: anchorSchema}).strict().nullable().default(null),
   /** Terms the alternative still lacks; carried, never filled. */
@@ -50,8 +54,8 @@ export const beforeAfterInputSchema = z.object({
     derivativeAssets: z.object({value: nonNegative, anchor: anchorSchema}).strict(),
     /** Twelve months by dates, so an annualized quarter cannot pose as LTM. */
     ltmEbitda: z.object({value: nonNegative, periodStart: isoDate, periodEnd: isoDate, definitionKey: nonEmpty, basis: z.enum(["company_opened", "implied_from_reported_index", "derived_proxy"]), anchor: anchorSchema}).strict().nullable(),
-    /** The schedule in the ledger's own periods; `endsAt` places new principal by date, null marks the open-ended bucket. */
-    schedule: z.array(z.object({period: nonEmpty, amount: z.string().regex(/^-?\d+(\.\d+)?$/), endsAt: isoDate.nullable(), kind: z.enum(["maturity", "adjustment"]).default("maturity")}).strict()).min(1),
+    /** The schedule in the ledger's own periods, each row anchored; `endsAt` places new principal by date, null marks the open-ended bucket. */
+    schedule: z.array(z.object({period: nonEmpty, amount: z.string().regex(/^-?\d+(\.\d+)?$/), endsAt: isoDate.nullable(), kind: z.enum(["maturity", "adjustment"]).default("maturity"), anchor: anchorSchema}).strict()).min(1),
     /** Cost of the existing debt, on its own basis; never the same basis as a new debt's all-in. */
     costOfExistingDebt: z.object({weightedAverageRate: rate, basis: nonEmpty, anchor: anchorSchema}).strict(),
     /** Cash generation per period when the base declares it; without it the cover per period is insufficient evidence. */
@@ -69,13 +73,14 @@ export const beforeAfterInputSchema = z.object({
     comparability: z.enum(["comparable", "conditional", "not_comparable"]),
     anchor: anchorSchema,
   }).strict(),
-  alternatives: z.array(alternativeSchema).min(1),
+  /** At least two alternatives, the status quo counting as one: a comparison with a single alternative compares nothing. */
+  alternatives: z.array(alternativeSchema).min(2),
   /** The declared discriminator; without one there is no ranking. all_in_cost ranks only the new debts among themselves. */
   ranking: z.object({discriminator: z.enum(["headroom", "all_in_cost", "peak_concentration", "peak_amount", "net_debt"]), rationale: nonEmpty}).strict().nullable().default(null),
   wallThreshold: z.object({share: nonNegative, policyKey: nonEmpty, policyVersion: nonEmpty}).strict(),
 }).strict().superRefine((input, context) => {
   if (!UNIT_WORDS[input.unit].test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
-  if (input.covenant.measurement.nextDate <= input.referenceDate) context.addIssue({code: "custom", path: ["covenant", "measurement"], message: "the next measurement date must follow the reference date"});
+  if (input.covenant.measurement.nextDate < input.referenceDate) context.addIssue({code: "custom", path: ["covenant", "measurement"], message: "the next measurement date cannot precede the reference date"});
   if (new Decimal(input.wallThreshold.share).gt(1)) context.addIssue({code: "custom", path: ["wallThreshold", "share"], message: "a wall threshold is a share of gross debt between 0 and 1"});
   if (input.before.ltmEbitda) {
     const start = new Date(`${input.before.ltmEbitda.periodStart}T00:00:00Z`); start.setUTCMonth(start.getUTCMonth() + 12);
@@ -100,7 +105,14 @@ export const beforeAfterInputSchema = z.object({
     alternative.retired.forEach((entry, position) => {
       if (series.has(entry.seriesId)) context.addIssue({code: "custom", path: ["alternatives", index, "retired", position], message: `${alternative.id}: series ${entry.seriesId} retired twice`});
       series.add(entry.seriesId);
-      if (!periods.has(entry.maturityPeriod) || input.before.schedule.find((row) => row.period === entry.maturityPeriod)?.kind === "adjustment") context.addIssue({code: "custom", path: ["alternatives", index, "retired", position], message: `${alternative.id}: ${entry.seriesId} matures in ${entry.maturityPeriod}, which is not a period of the schedule`});
+      const seen = new Set<string>();
+      entry.instalments.forEach((instalment, slot) => {
+        if (seen.has(instalment.period)) context.addIssue({code: "custom", path: ["alternatives", index, "retired", position, "instalments", slot], message: `${alternative.id}: ${entry.seriesId} names ${instalment.period} twice`});
+        seen.add(instalment.period);
+        if (!periods.has(instalment.period) || input.before.schedule.find((row) => row.period === instalment.period)?.kind === "adjustment") context.addIssue({code: "custom", path: ["alternatives", index, "retired", position, "instalments", slot], message: `${alternative.id}: ${entry.seriesId} matures in ${instalment.period}, which is not a period of the schedule`});
+      });
+      if (entry.exitPremium && !entry.exitPremium.permittedOnDate) context.addIssue({code: "custom", path: ["alternatives", index, "retired", position, "exitPremium"], message: `${alternative.id}: the exit of ${entry.seriesId} by ${entry.exitPremium.mechanism} is not permitted on the date; a price without a permitted mechanism is not a price`});
+      if (entry.exitPremium && alternative.uncoveredTerms.some((term) => /exit|quote|saida|cotac/i.test(term))) context.addIssue({code: "custom", path: ["alternatives", index, "retired", position, "exitPremium"], message: `${alternative.id}: ${entry.seriesId} carries a price and the alternative still lists an exit gap (${alternative.uncoveredTerms.filter((term) => /exit|quote|saida|cotac/i.test(term)).join(", ")}); one or the other`});
     });
     if (alternative.newDebt && alternative.newDebt.disbursementDate < input.referenceDate) context.addIssue({code: "custom", path: ["alternatives", index, "newDebt", "disbursementDate"], message: `${alternative.id}: the new debt is disbursed before the reference date`});
     if (alternative.newDebt && alternative.newDebt.graceMonths >= alternative.newDebt.termMonths) context.addIssue({code: "custom", path: ["alternatives", index, "newDebt", "graceMonths"], message: `${alternative.id}: grace must be shorter than the term`});
@@ -119,7 +131,7 @@ type Snapshot = {
 };
 
 export type BeforeAfterOutput = {
-  schema_version: "method.compare-refinancing-before-after.v5";
+  schema_version: "method.compare-refinancing-before-after.v6";
   reference_date: string;
   unit: string;
   state: "compared" | "blocked";
@@ -133,7 +145,7 @@ export type BeforeAfterOutput = {
     after: Snapshot | null;
     effective_date: string | null;
     temporal_note: string | null;
-    exit_cost: {value: string; anchors: Anchor[]} | null;
+    exit_cost: {value: string; anchors: Anchor[]; mechanisms: Array<{seriesId: string; mechanism: string}>} | null;
     concentration: Array<{period: string; existing: string; proposed: string; consolidated: string; share_of_gross: string; is_wall: boolean; principal_coverage: string | null}> | null;
     new_debt_service: {peak_debt_service: string; total_interest: string; weighted_average_life_months: string; all_in_cost: string | null; anchor: Anchor} | null;
     uncovered_terms: Array<{id: string; state: "insufficient_evidence"; reason: string}>;
@@ -155,7 +167,7 @@ function canonical(input: z.infer<typeof beforeAfterInputSchema>) {
   return {
     ...input,
     before: {...input.before, schedule: [...input.before.schedule].sort(scheduleOrder)},
-    alternatives: [...input.alternatives].sort((a, b) => compare(a.id, b.id)).map((alternative) => ({...alternative, retired: [...alternative.retired].sort((a, b) => compare(a.seriesId, b.seriesId)), uncoveredTerms: [...alternative.uncoveredTerms].sort(compare)})),
+    alternatives: [...input.alternatives].sort((a, b) => compare(a.id, b.id)).map((alternative) => ({...alternative, retired: [...alternative.retired].sort((a, b) => compare(a.seriesId, b.seriesId)).map((series) => ({...series, instalments: [...series.instalments].sort((a, b) => compare(a.period, b.period))})), uncoveredTerms: [...alternative.uncoveredTerms].sort(compare)})),
   };
 }
 
@@ -166,10 +178,11 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   const unsupported: string[] = [];
   const blockReasons: string[] = [];
   const threshold = d(input.wallThreshold.share);
-  const tierApplicable = input.covenant.tier === null || input.covenant.tier.applicability === "applicable";
+  const tierApplicable = input.covenant.tier !== null && input.covenant.tier.applicability === "applicable";
   const canMeasureHeadroom = input.covenant.state === "resolved" && input.covenant.comparability === "comparable" && tierApplicable;
   if (!canMeasureHeadroom) unsupported.push(`headroom is not measured: covenant limit ${input.covenant.state}, comparability ${input.covenant.comparability}${input.covenant.tier && input.covenant.tier.applicability !== "applicable" ? `, tier ${input.covenant.tier.applicability} (${input.covenant.tier.condition})` : ""}`);
   const ebitda = input.before.ltmEbitda;
+  if (input.covenant.tier === null) unsupported.push("headroom is not measured: the tier evidence of the covenant is absent (insufficient evidence), not applicable by default");
   if (!ebitda) unsupported.push("leverage is not measured: no EBITDA with a definition in the base");
   else if (d(ebitda.value).lte(0)) unsupported.push("leverage is not measured: the EBITDA in the base is zero or negative");
   if (!input.before.cfadsByPeriod) unsupported.push("principal cover per period is not measured: no cash generation per period in the base");
@@ -209,30 +222,34 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   };
 
   const beforeSchedule = Object.fromEntries(maturities.map((entry) => [entry.period, entry.amount]));
-  const before = snapshot("before", d(input.before.grossDebt.value), d(input.before.unrestrictedCash.value), {value: input.before.costOfExistingDebt.weightedAverageRate, basis: input.before.costOfExistingDebt.basis, comparable_with_new_debt: false}, beforeSchedule, {grossDebt: input.before.grossDebt.anchor, unrestrictedCash: input.before.unrestrictedCash.anchor, derivativeLiabilities: input.before.derivativeLiabilities.anchor, derivativeAssets: input.before.derivativeAssets.anchor, ...(ebitda ? {ltmEbitda: ebitda.anchor} : {}), cost: input.before.costOfExistingDebt.anchor});
+  const before = snapshot("before", d(input.before.grossDebt.value), d(input.before.unrestrictedCash.value), {value: input.before.costOfExistingDebt.weightedAverageRate, basis: input.before.costOfExistingDebt.basis, comparable_with_new_debt: false}, beforeSchedule, {grossDebt: input.before.grossDebt.anchor, unrestrictedCash: input.before.unrestrictedCash.anchor, derivativeLiabilities: input.before.derivativeLiabilities.anchor, derivativeAssets: input.before.derivativeAssets.anchor, ...(ebitda ? {ltmEbitda: ebitda.anchor} : {}), cost: input.before.costOfExistingDebt.anchor, ...Object.fromEntries(input.before.schedule.map((row) => [`schedule:${row.period}`, row.anchor]))});
 
   const alternatives = input.alternatives.map((alternative): BeforeAfterOutput["alternatives"][number] => {
     const reasons: string[] = [];
     const uncovered: BeforeAfterOutput["alternatives"][number]["uncovered_terms"] = alternative.uncoveredTerms.map((term) => ({id: term, state: "insufficient_evidence" as const, reason: `the alternative lacks ${term}; carried as a gap, not filled`}));
     const unpriced = alternative.retired.filter((series) => series.exitPremium === null);
+    const transacts = alternative.newDebt !== null || alternative.retired.length > 0;
     if (unpriced.length > 0) reasons.push(`exit cost is not priced for ${unpriced.map((series) => series.seriesId).join(", ")}; the alternative cannot be compared`);
     if (reasons.length > 0 || blockReasons.length > 0) return {id: alternative.id, label: alternative.label, state: "blocked", block_reasons: [...blockReasons, ...reasons], after: null, effective_date: null, temporal_note: null, exit_cost: null, concentration: null, new_debt_service: null, uncovered_terms: uncovered};
 
-    const retiredPrincipal = alternative.retired.reduce((sum, series) => sum.plus(series.principal.value), d(0));
+    const retiredPrincipal = alternative.retired.reduce((sum, series) => sum.plus(series.instalments.reduce((inner, instalment) => inner.plus(instalment.principal.value), d(0))), d(0));
     const exitCost = alternative.retired.reduce((sum, series) => sum.plus(series.exitPremium!.value), d(0));
-    // Fees the base does not state are unknown, not zero: the position is computed without them and the all-in is not.
+    // Fees the base does not state are unknown, not zero, when the alternative transacts: the position is computed without them and the all-in is not. The status quo has no fees to state.
     const fees = alternative.feesPaidFromCash ? d(alternative.feesPaidFromCash.value) : d(0);
-    if (!alternative.feesPaidFromCash) uncovered.push({id: "fees_paid_from_cash", state: "insufficient_evidence", reason: "the cash fees of the alternative are not in the base; an explicit zero must be stated; the all-in cost is not computed and the cash after excludes them"});
+    if (!alternative.feesPaidFromCash && transacts) uncovered.push({id: "fees_paid_from_cash", state: "insufficient_evidence", reason: "the cash fees of the alternative are not in the base; an explicit zero must be stated; the all-in cost is not computed and the cash after excludes them"});
     const newAmount = alternative.newDebt ? d(alternative.newDebt.amount) : d(0);
     const upfrontFees = alternative.newDebt ? newAmount.times(alternative.newDebt.upfrontFeeRate) : d(0);
-    const proForma = calculateProFormaPosition({grossDebt: input.before.grossDebt.value, unrestrictedCash: input.before.unrestrictedCash.value, newDebt: out(newAmount), refinancedDebt: out(retiredPrincipal), feesPaidFromCash: out(fees.plus(exitCost).plus(upfrontFees)), cashContribution: "0"});
-    record({id: "operation.pro_forma_position", alternative: alternative.id, formula: "grossDebt + newDebt - retired ; cash - exitCost - upfrontFees - feesPaidFromCash", operands: {newDebt: out(newAmount), refinancedDebt: out(retiredPrincipal), exitCost: out(exitCost), upfrontFees: out(upfrontFees), feesPaidFromCash: out(fees)}, result: proForma.grossDebt});
+    // What the new debt raises beyond the principal it retires stays in cash; what it falls short of comes out of cash.
+    const net = newAmount.minus(retiredPrincipal);
+    // The engine reads cashContribution as cash put into the deal: a negative contribution is the surplus the new debt leaves in cash.
+    const proForma = calculateProFormaPosition({grossDebt: input.before.grossDebt.value, unrestrictedCash: input.before.unrestrictedCash.value, newDebt: out(newAmount), refinancedDebt: out(retiredPrincipal), feesPaidFromCash: out(fees.plus(exitCost).plus(upfrontFees)), cashContribution: out(net.negated())});
+    record({id: "operation.pro_forma_position", alternative: alternative.id, formula: "grossDebt + newDebt - retired ; cash + (newDebt - retired) - exitCost - upfrontFees - feesPaidFromCash", operands: {newDebt: out(newAmount), refinancedDebt: out(retiredPrincipal), netProceeds: out(net), exitCost: out(exitCost), upfrontFees: out(upfrontFees), feesPaidFromCash: out(fees)}, result: proForma.grossDebt});
 
     // Schedule after: retired series leave their periods; the new principal lands in the period that holds its payment date.
     const existing: Record<string, Decimal> = Object.fromEntries(maturities.map((entry) => [entry.period, d(entry.amount)]));
-    for (const series of alternative.retired) {
-      if (existing[series.maturityPeriod]!.lt(series.principal.value)) reasons.push(`${series.seriesId}: the period ${series.maturityPeriod} holds ${out(existing[series.maturityPeriod]!)} and cannot lose ${series.principal.value}`);
-      existing[series.maturityPeriod] = existing[series.maturityPeriod]!.minus(series.principal.value);
+    for (const series of alternative.retired) for (const instalment of series.instalments) {
+      if (existing[instalment.period]!.lt(instalment.principal.value)) reasons.push(`${series.seriesId}: the period ${instalment.period} holds ${out(existing[instalment.period]!)} and cannot lose ${instalment.principal.value}`);
+      existing[instalment.period] = existing[instalment.period]!.minus(instalment.principal.value);
     }
     if (reasons.length > 0) return {id: alternative.id, label: alternative.label, state: "blocked", block_reasons: reasons, after: null, effective_date: null, temporal_note: null, exit_cost: null, concentration: null, new_debt_service: null, uncovered_terms: uncovered};
     const proposed: Record<string, Decimal> = {};
@@ -289,13 +306,14 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
     record({id: "financial.debt_ledger_balance:after", alternative: alternative.id, formula: "sum(consolidated periods) + adjustments - grossDebtAfter", operands: {schedule: out(afterTotal), grossDebtAfter: out(grossAfter)}, result: out(afterTotal.minus(grossAfter))});
     if (!afterTotal.eq(grossAfter)) reasons.push(`the schedule after sums to ${out(afterTotal)} and the gross debt after is ${out(grossAfter)}; the alternative does not reconcile`);
     if (reasons.length > 0) return {id: alternative.id, label: alternative.label, state: "blocked", block_reasons: reasons, after: null, effective_date: null, temporal_note: null, exit_cost: null, concentration: null, new_debt_service: null, uncovered_terms: uncovered};
-    const after = snapshot(alternative.id, grossAfter, d(proForma.unrestrictedCash), cost, Object.fromEntries(rows.map((row) => [row.period, row.consolidated])), {...before.anchors, ...(alternative.newDebt ? {newDebt: alternative.newDebt.anchor} : {}), ...Object.fromEntries(alternative.retired.flatMap((series) => [[`retired:${series.seriesId}:principal`, series.principal.anchor], [`retired:${series.seriesId}:maturity`, series.maturityAnchor]]))});
+    const afterAnchors: Record<string, Anchor> = {...before.anchors, ...(alternative.newDebt ? {newDebt: alternative.newDebt.anchor, cost: alternative.newDebt.anchor} : {}), ...(alternative.feesPaidFromCash ? {feesPaidFromCash: alternative.feesPaidFromCash.anchor} : {}), ...Object.fromEntries(alternative.retired.flatMap((series) => [[`retired:${series.seriesId}:exit`, series.exitPremium!.anchor], ...series.instalments.flatMap((instalment) => [[`retired:${series.seriesId}:${instalment.period}:principal`, instalment.principal.anchor], [`retired:${series.seriesId}:${instalment.period}:maturity`, instalment.maturityAnchor]])])), ...Object.fromEntries(input.before.schedule.map((row) => [`schedule:${row.period}`, row.anchor]))};
+    const after = snapshot(alternative.id, grossAfter, d(proForma.unrestrictedCash), cost, Object.fromEntries(rows.map((row) => [row.period, row.consolidated])), afterAnchors);
     const effectiveDate = alternative.newDebt ? alternative.newDebt.disbursementDate : input.referenceDate;
     return {
       id: alternative.id, label: alternative.label, state: "compared", block_reasons: [], after,
       effective_date: effectiveDate,
       temporal_note: effectiveDate === input.referenceDate ? `before and after are both stated at ${input.referenceDate}` : `the before and the retired balances are stated at ${input.referenceDate}; the new debt is dated ${effectiveDate}; the balances between the two dates are not rolled forward, so the after is a pro forma at ${input.referenceDate} with a transaction dated ${effectiveDate} (declared)`,
-      exit_cost: {value: out(exitCost), anchors: alternative.retired.map((series) => series.exitPremium!.anchor)},
+      exit_cost: {value: out(exitCost), anchors: alternative.retired.map((series) => series.exitPremium!.anchor), mechanisms: alternative.retired.map((series) => ({seriesId: series.seriesId, mechanism: series.exitPremium!.mechanism}))},
       concentration: rows, new_debt_service: newDebtService, uncovered_terms: uncovered,
     };
   });
@@ -323,7 +341,7 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   } else unsupported.push("no ranking: the discriminator was not declared");
   for (const alternative of alternatives) if (alternative.state === "blocked") unsupported.push(`${alternative.id}: ${alternative.block_reasons.join("; ")}`);
 
-  const body = {schema_version: "method.compare-refinancing-before-after.v5" as const, reference_date: input.referenceDate, unit: input.unit, state: blockReasons.length > 0 ? "blocked" as const : "compared" as const, block_reasons: blockReasons, wall_threshold: input.wallThreshold, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), before, alternatives, ranking, unsupported: [...unsupported].sort(compare)};
+  const body = {schema_version: "method.compare-refinancing-before-after.v6" as const, reference_date: input.referenceDate, unit: input.unit, state: blockReasons.length > 0 ? "blocked" as const : "compared" as const, block_reasons: blockReasons, wall_threshold: input.wallThreshold, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), before, alternatives, ranking, unsupported: [...unsupported].sort(compare)};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }

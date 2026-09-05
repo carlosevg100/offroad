@@ -10,6 +10,10 @@ const itr = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.
 const user = (note?: string) => ({document: "declaracao_do_usuario.md", ...(note ? {note} : {})});
 const asOf = "2026-05-31";
 const sha = (seed: string) => seed.padEnd(64, "0");
+const manifest: ScenarioInput["manifest"] = [
+  {name: "01_ITR_1T26_31mai2026.pdf", sha256: sha("a1")}, {name: "declaracao_do_usuario.md", sha256: sha("b2")}, {name: "reference-data.ts", sha256: sha("c3")}, {name: "gc02-gabarito-rascunho.md", sha256: sha("d4")},
+  {name: "escritura_13a_emissao.pdf", sha256: sha("e5")}, {name: "ca_notas_comerciais_2026-05-27.pdf", sha256: sha("f6")}, {name: "contrato_hipotetico.pdf", sha256: sha("a7")}, {name: "extrato_hipotetico.pdf", sha256: sha("b8")}, {name: "orcamento_gerencial_hipotetico.xlsx", sha256: sha("c9")},
+];
 const documents: ScenarioInput["documents"] = [
   {name: "01_ITR_1T26_31mai2026.pdf", kind: "itr", sha256: sha("a1")}, {name: "declaracao_do_usuario.md", kind: "user", sha256: sha("b2")}, {name: "reference-data.ts", kind: "benchmark", sha256: sha("c3")},
   {name: "gc02-gabarito-rascunho.md", kind: "other", sha256: sha("d4")}, {name: "escritura_13a_emissao.pdf", kind: "indenture", sha256: sha("e5")}, {name: "ca_notas_comerciais_2026-05-27.pdf", kind: "announcement", sha256: sha("f6")},
@@ -25,6 +29,7 @@ const camil = (): ScenarioInput => ({
   referenceDate: asOf,
   unit: "BRL thousand",
   unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"},
+  manifest,
   documents,
   assumptions: [
     {key: "cfads.2026-27.range", role: "cfads", period: "2026/27", value: "200000", unit: "BRL thousand", origin: "user_range", rationale: "intervalo declarado para testar capacidade; a base pública não traz geração de caixa para o serviço da dívida", asOf, anchor: user("intervalo, não estimativa da companhia"), confidence: "low"},
@@ -32,16 +37,16 @@ const camil = (): ScenarioInput => ({
     {key: "shock.rate.parallel", role: "rate_shock", period: null, value: "0.02", unit: "ratio", origin: "versioned_benchmark", rationale: "choque paralelo de 200 pontos-base do parâmetro scenario.interest_rate.parallel_shock (draft)", asOf: "2026-09-05", anchor: {document: "reference-data.ts", note: "scenario.interest_rate.parallel_shock"}, confidence: "medium"},
     {key: "haircut.ebitda.adverse", role: "ebitda_haircut", period: null, value: "0.15", unit: "ratio", origin: "user_range", rationale: "queda de 15% no EBITDA, intervalo declarado", asOf, anchor: user(), confidence: "low"},
     {key: "haircut.cfads.adverse", role: "cfads_haircut", period: null, value: "0.10", unit: "ratio", origin: "user_range", rationale: "queda de 10% na geração de caixa, declarada à parte do EBITDA", asOf, anchor: user(), confidence: "low"},
-    {key: "rollover.bank_lines", role: "rollover", period: null, value: "1", unit: "ratio", origin: "company_history", rationale: "a companhia rolou as linhas bancárias nos exercícios recentes (captações e liquidações da DFC)", asOf, anchor: itr(16, "demonstração dos fluxos de caixa"), confidence: "medium"},
+    {key: "rollover.bank_lines", role: "rollover", period: null, value: "1", unit: "ratio", origin: "user_range", rationale: "rolagem integral das linhas bancárias como intervalo declarado para o teste de capacidade; o histórico (captações de 2.046.140 e liquidações de 1.285.146 no trimestre) mostra rolagens passadas, não uma política", asOf, anchor: user("premissa declarada de rolagem"), confidence: "low"},
   ],
   position: {
     perimeter: "consolidated",
     components: {grossDebt: {value: "5670186", anchor: itr(39, "15")}, derivativeLiabilities: {value: "14335", anchor: itr(51, "25")}, derivativeAssets: {value: "235", anchor: itr(51, "25")}, cashAndEquivalents: {value: "1430714", anchor: itr(20, "3")}, financialInvestments: {value: "25095", anchor: itr(11)}},
-    ltmEbitda: {value: "895864", periodStart: "2025-05-31", periodEnd: "2026-05-31", definitionKey: "ebitda.covenant_ltm", basis: "implied_from_reported_index", comparability: "conditional", comparabilityReasons: ["a companhia não abre o EBITDA; o valor é implícito de 4,72x sobre 4.228.477", "a 11ª carrega ajuste pro forma de aquisições que o índice reportado não mostra"], anchor: itr(40, "15: 4.228.477 / 4,72, derivado")},
+    ltmEbitda: {value: "895864", periodStart: "2025-05-31", periodEnd: "2026-05-31", definitionKey: "ebitda.covenant_ltm", basis: "implied_from_reported_index", comparabilityByInstrument: [{instrument: "13ª emissão", comparability: "conditional", reasons: ["a companhia não abre o EBITDA; o valor é implícito de 4,72x sobre 4.228.477 (cerca de 895.900)"]}, {instrument: "11ª emissão", comparability: "conditional", reasons: ["a 11ª carrega ajuste pro forma de aquisições e a obrigação de sellers finance que o índice reportado não mostra"]}], anchor: itr(40, "15: 4.228.477 / 4,72, derivado, aproximado")},
     averageDebtBalance: {value: "5329284.5", basis: "média simples dos saldos de 28/02/2026 e 31/05/2026", anchor: itr(39, "15")},
     baseAnnualRate: {value: "0.1246", basis: "serviço base do caso 02 sobre a dívida bruta", anchor: {document: "gc02-gabarito-rascunho.md", note: "seção 3"}},
   },
-  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", tier: {applicability: "conditional", condition: "4,00x condicionado à prova da quitação ordinária dos CRA de referência; até a prova, 3,50x é o degrau vigente"}, state: "insufficient_evidence", comparability: "conditional", measurement: {frequency: "annual", nextDate: "2027-02-28"}, anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
+  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", tier: {applicability: "conditional", condition: "4,00x aplicável no exercício encerrado depois da quitação integral dos CRA de referência, condicionado à prova da quitação; 3,50x até o vencimento ou a liquidação deles, também sem prova na base"}, state: "insufficient_evidence", comparability: "conditional", measurement: {frequency: "annual", nextDate: "2027-02-28"}, anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 55, note: "páginas 54-55"}},
   periods: [
     {period: "2026/27", endsAt: "2027-05-31", principal: {value: "1229828", anchor: itr(40, "15, cronograma")}, interest: null},
     {period: "2027/28", endsAt: "2028-05-31", principal: {value: "776868", anchor: itr(40, "15, cronograma")}, interest: null},
@@ -57,7 +62,7 @@ const by = (result: ReturnType<typeof declareScenarios>, id: string) => result.s
 describe("declare-scenarios executor (v3)", () => {
   it("gold: net debt follows the contractual components, leverage carries the EBITDA's comparability, no headroom against an inapplicable unresolved tier, and every number carries origins with anchors", () => {
     const result = declareScenarios(camil());
-    expect(result.schema_version).toBe("method.declare-scenarios.v4");
+    expect(result.schema_version).toBe("method.declare-scenarios.v5");
     expect(result.state).toBe("partial");
     for (const scenario of result.scenarios) {
       expect(scenario.caveat).toMatch(/não é guidance da companhia/);
@@ -65,15 +70,18 @@ describe("declare-scenarios executor (v3)", () => {
       expect(scenario.results.pro_forma.deductible_cash).toBe("1455809");
       expect(scenario.results.pro_forma.origins.map((origin) => origin.key)).toEqual(expect.arrayContaining(["position.grossDebt", "position.cashAndEquivalents", "position.ltmEbitda"]));
       expect(scenario.results.headroom).toBeNull();
-      expect(scenario.results.headroom_note).toMatch(/no headroom: the limit of 13ª emissão is insufficient_evidence; the 4.00x tier is conditional \(4,00x condicionado/);
+      expect(scenario.results.headroom_note).toMatch(/no headroom: the limit of 13ª emissão is insufficient_evidence; the 4.00x tier is conditional \(4,00x aplicável/);
       expect(scenario.uncovered_terms.some((term) => term.id === "interest:2026/27")).toBe(true);
     }
     const base = by(result, "base");
-    expect(base.results.pro_forma.leverage?.value).toBe(d("4228477").div("895864").toDecimalPlaces(8).toFixed());
-    expect(base.results.pro_forma.leverage?.comparability).toBe("conditional");
-    expect(base.results.headroom_note).toMatch(/arithmetic difference against 4.00x is -0.71999879x and is conditioned/);
+    // The EBITDA is implied from a two-decimal index: the leverage is an approximation shown to two decimals.
+    expect(base.results.pro_forma.leverage?.value).toBe("4.72");
+    expect(base.results.pro_forma.leverage?.precision).toBe("approximate_two_decimals");
+    expect(base.results.pro_forma.leverage?.comparability_by_instrument.find((entry) => entry.instrument === "13ª emissão")?.comparability).toBe("conditional");
+    expect(base.results.headroom_note).toMatch(/arithmetic difference against 4.00x is -0.72x and is conditioned/);
+    expect(base.results.headroom_note).toMatch(/the EBITDA is conditional with the definition of 13ª emissão/);
     expect(base.parameters.map((parameter) => parameter.role)).toEqual(["rollover", "cfads", "cfads"]);
-    expect(base.caveat).toMatch(/histórico da companhia \(rollover.bank_lines: a companhia rolou as linhas bancárias/);
+    expect(base.caveat).toMatch(/intervalo declarado pelo usuário \(rollover.bank_lines: rolagem integral/);
     expect(base.results.liquidity?.basis).toBe("principal_only");
     expect(base.results.liquidity?.rows[0]?.origins.map((origin) => origin.key)).toEqual(["position.cashAndEquivalents", "position.financialInvestments", "periods.2026/27.principal", "cfads.2026-27.range", "rollover.bank_lines"]);
     // The second period rests on everything before it: the opening cash and the first period's inputs.
@@ -88,7 +96,7 @@ describe("declare-scenarios executor (v3)", () => {
     // The shock delta stands apart: the service of a period never carries a share of it.
     expect(adverse.results.liquidity?.rows[0]?.coverage).toBe(by(result, "base").results.liquidity?.rows[0]?.coverage === null ? null : adverse.results.liquidity?.rows[0]?.coverage);
     expect(result.trace.calculations.find((calculation) => calculation.id === "financial.liquidity_coverage:2026/27" && calculation.scenario === "adverse")?.operands.debtService).toBe("1229828");
-    expect(adverse.results.pro_forma.leverage?.value).toBe(d("4228477").div(d("895864").times("0.85")).toDecimalPlaces(8).toFixed());
+    expect(adverse.results.pro_forma.leverage?.value).toBe(d("4228477").div(d("895864").times("0.85")).toDecimalPlaces(2).toFixed());
     expect(adverse.results.liquidity?.rows[0]?.cfads_declared).toBe("200000");
     expect(adverse.results.liquidity?.rows[0]?.cfads_used).toBe("180000");
     expect(adverse.results.liquidity?.rows[0]?.cfads_haircut).toBe("0.10");
@@ -130,7 +138,7 @@ describe("declare-scenarios executor (v3)", () => {
 
   it("measures headroom only against an applicable, resolved and comparable limit with a comparable EBITDA", () => {
     const base = camil();
-    const resolved: ScenarioInput = {...base, covenant: {...base.covenant!, state: "resolved", comparability: "comparable", tier: {applicability: "applicable", condition: "quitação ordinária dos CRA provada (hipótese de teste)"}}, position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, comparability: "comparable", comparabilityReasons: []}}};
+    const resolved: ScenarioInput = {...base, covenant: {...base.covenant!, state: "resolved", comparability: "comparable", tier: {applicability: "applicable", condition: "quitação ordinária dos CRA provada (hipótese de teste)"}}, position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, basis: "company_opened", comparabilityByInstrument: [{instrument: "13ª emissão", comparability: "comparable", reasons: []}, {instrument: "11ª emissão", comparability: "conditional", reasons: ["ajuste de aquisições"]}]}}};
     const result = declareScenarios(resolved);
     expect(by(result, "base").results.headroom?.absolute).toBe(d("4").minus(d("4228477").div("895864").toDecimalPlaces(8)).toDecimalPlaces(8).toFixed());
     expect(by(result, "base").results.headroom?.within_limit).toBe(false);
@@ -141,14 +149,26 @@ describe("declare-scenarios executor (v3)", () => {
     const conditional = declareScenarios({...resolved, covenant: {...resolved.covenant!, tier: {applicability: "conditional", condition: "quitação a provar"}}});
     expect(by(conditional, "base").results.headroom).toBeNull();
     expect(by(conditional, "base").results.headroom_note).toMatch(/is conditional \(quitação a provar\)/);
-    const conditionalEbitda = declareScenarios({...resolved, position: {...resolved.position, ltmEbitda: {...resolved.position.ltmEbitda!, comparability: "conditional"}}});
-    expect(by(conditionalEbitda, "base").results.headroom_note).toMatch(/the EBITDA is conditional with the covenant definition/);
+    const conditionalEbitda = declareScenarios({...resolved, position: {...resolved.position, ltmEbitda: {...resolved.position.ltmEbitda!, comparabilityByInstrument: [{instrument: "13ª emissão", comparability: "conditional", reasons: ["sem abertura"]}]}}});
+    expect(by(conditionalEbitda, "base").results.headroom_note).toMatch(/the EBITDA is conditional with the definition of 13ª emissão \(sem abertura\)/);
+    // The headroom follows the covenant's instrument: a reading for another instrument only is no reading.
+    const otherInstrument = declareScenarios({...resolved, position: {...resolved.position, ltmEbitda: {...resolved.position.ltmEbitda!, comparabilityByInstrument: [{instrument: "11ª emissão", comparability: "comparable", reasons: []}]}}});
+    expect(by(otherInstrument, "base").results.headroom).toBeNull();
+    expect(by(otherInstrument, "base").results.headroom_note).toMatch(/carries no comparability reading for 13ª emissão/);
   });
 
   it("refuses an origin on a document of the wrong class, an announcement posing as a contracted source, a relabelled scale, an annualized quarterly EBITDA, out-of-range ratios and negative money", () => {
     const base = camil();
-    const disguised = {...base, assumptions: base.assumptions.map((assumption) => assumption.key === "rollover.bank_lines" ? {...assumption, origin: "authorized_management_data" as const} : assumption)};
-    expect(() => declareScenarios(disguised)).toThrow(/cannot rest on a itr document; it needs management/);
+    const disguised = {...base, assumptions: base.assumptions.map((assumption) => assumption.key === "cfads.2026-27.range" ? {...assumption, origin: "authorized_management_data" as const} : assumption)};
+    expect(() => declareScenarios(disguised)).toThrow(/cannot rest on a user document; it needs management/);
+    // History proves past rollovers, never a policy for future maturities.
+    const historicRollover = {...base, assumptions: base.assumptions.map((assumption) => assumption.role === "rollover" ? {...assumption, origin: "company_history" as const, anchor: itr(16, "DFC")} : assumption)};
+    expect(() => declareScenarios(historicRollover)).toThrow(/history, not a policy for future maturities/);
+    // Documents are checked against the manifest by name and hash.
+    expect(() => declareScenarios({...base, documents: base.documents.map((document) => (document.name === "reference-data.ts" ? {...document, sha256: sha("ff")} : document))})).toThrow(/carries a hash the manifest does not record/);
+    expect(() => declareScenarios({...base, documents: [...base.documents, {name: "documento_fora_do_manifesto.pdf", kind: "other", sha256: sha("ee")}]})).toThrow(/not in the corpus manifest/);
+    // The adverse scenario of the minimum set needs the rate shock and the EBITDA haircut, both.
+    expect(() => declareScenarios({...base, scenarios: base.scenarios.map((scenario) => (scenario.id === "adverse" ? {...scenario, usesRateShock: false} : scenario))})).toThrow(/shocks the rate and haircuts the EBITDA, both/);
     const announcement = {...base, assumptions: [...base.assumptions, {key: "source.notas", role: "contracted_source" as const, period: "2026/27", value: "251000", unit: "BRL thousand" as const, origin: "public_announcement" as const, rationale: "notas comerciais aprovadas", asOf, anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, confidence: "medium" as const, evidence: {contract: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, disbursement: null}}]};
     expect(() => declareScenarios(announcement)).toThrow(/needs its contract and its disbursement/);
     const contracted = {...base, assumptions: [...base.assumptions, {key: "source.notas", role: "contracted_source" as const, period: "2026/27", value: "251000", unit: "BRL thousand" as const, origin: "public_announcement" as const, rationale: "notas comerciais contratadas e desembolsadas (hipótese)", asOf, anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, confidence: "medium" as const, evidence: {contract: {document: "contrato_hipotetico.pdf"}, disbursement: {document: "extrato_hipotetico.pdf"}}}]};
@@ -178,7 +198,7 @@ describe("declare-scenarios executor (v3)", () => {
     const reversedKeys = <T,>(value: T): T => (Array.isArray(value) ? value.map(reversedKeys) as T : value && typeof value === "object" ? Object.fromEntries(Object.entries(value as Record<string, unknown>).reverse().map(([key, inner]) => [key, reversedKeys(inner)])) as T : value);
     for (let seed = 1; seed <= 20; seed += 1) {
       const base = camil();
-      const shuffled: ScenarioInput = {...base, assumptions: permute(base.assumptions, seed), documents: permute(base.documents, seed + 1), periods: permute(base.periods, seed + 2), scenarios: permute(base.scenarios, seed + 3), position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, comparabilityReasons: permute(base.position.ltmEbitda!.comparabilityReasons!, seed + 4)}}};
+      const shuffled: ScenarioInput = {...base, assumptions: permute(base.assumptions, seed), documents: permute(base.documents, seed + 1), manifest: permute(base.manifest, seed + 5), periods: permute(base.periods, seed + 2), scenarios: permute(base.scenarios, seed + 3), position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, comparabilityByInstrument: permute(base.position.ltmEbitda!.comparabilityByInstrument, seed + 4)}}};
       const again = declareScenarios(seed % 2 ? reversedKeys(shuffled) : shuffled);
       expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);

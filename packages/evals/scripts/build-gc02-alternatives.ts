@@ -39,7 +39,7 @@ const exit = executors.estimateExitCostBySeries({
 });
 const premium = (id: string) => {
   const entry = exit.exit_costs.find((cost) => cost.series_id === id)!;
-  return entry.cheapest_full_exit ? {value: d(entry.cheapest_full_exit.total_payable).minus(entry.base.payable ?? 0).toFixed(), anchor: {document: "exit-costs-gc02.json", note: `route ${entry.cheapest_full_exit.mechanism}`}} : null;
+  return entry.cheapest_full_exit ? {value: d(entry.cheapest_full_exit.total_payable).minus(entry.base.payable ?? 0).toFixed(), mechanism: entry.cheapest_full_exit.mechanism, permittedOnDate: true, anchor: {document: "exit-costs-gc02.json", note: `route ${entry.cheapest_full_exit.mechanism}`}} : null;
 };
 const cdiPlus125 = d(marketAssumptions.cdiAnnualPercent).plus(1.25).div(100).toFixed(4);
 const newDebt = (amount: string) => ({amount, annualRate: cdiPlus125, termMonths: 84, graceMonths: 24, format: "sac" as const, upfrontFeeRate: "0.005", disbursementDate: exitDate, origin: "custo de referência do pedido simulado do pack (CDI + 1,25%) e taxa de estruturação sintética de 0,50%", anchor: {document: "03_Pedido_Simulado_CRA_2026.docx", page: 1}});
@@ -55,10 +55,10 @@ const result = executors.compareRefinancingBeforeAfter({
     derivativeAssets: {value: "235", anchor: itr(8, "derivativos, ativo")},
     ltmEbitda: {value: "895864", periodStart: "2025-05-31", periodEnd: "2026-05-31", definitionKey: "ebitda.contractual.13a", basis: "implied_from_reported_index", anchor: itr(40, "nota 15: 4.228.477 / 4,72, derivado, não aberto pela companhia")},
     schedule: [
-      {period: "2026/27", amount: "1229828", endsAt: "2027-05-31"}, {period: "2027/28", amount: "776868", endsAt: "2028-05-31"},
-      {period: "2028/29", amount: "1228475", endsAt: "2029-05-31"}, {period: "2029/30", amount: "694497", endsAt: "2030-05-31"},
-      {period: "2030/31", amount: "994544", endsAt: "2031-05-31"}, {period: "after 2031", amount: "809198", endsAt: null},
-      {period: "debenture costs", amount: "-63224", endsAt: null, kind: "adjustment"},
+      {period: "2026/27", amount: "1229828", endsAt: "2027-05-31", anchor: itr(40, "nota 15, cronograma")}, {period: "2027/28", amount: "776868", endsAt: "2028-05-31", anchor: itr(40, "nota 15, cronograma")},
+      {period: "2028/29", amount: "1228475", endsAt: "2029-05-31", anchor: itr(40, "nota 15, cronograma")}, {period: "2029/30", amount: "694497", endsAt: "2030-05-31", anchor: itr(40, "nota 15, cronograma")},
+      {period: "2030/31", amount: "994544", endsAt: "2031-05-31", anchor: itr(40, "nota 15, cronograma")}, {period: "after 2031", amount: "809198", endsAt: null, anchor: itr(40, "nota 15, cronograma")},
+      {period: "debenture costs", amount: "-63224", endsAt: null, kind: "adjustment", anchor: itr(40, "nota 15, cronograma")},
     ],
     costOfExistingDebt: {weightedAverageRate: "0.1246", basis: "juros do serviço base do caso 02 sobre a dívida bruta (706.751 / 5.670.186); custo contábil, não all-in", anchor: itr(40, "nota 15")},
     cfadsByPeriod: null,
@@ -66,16 +66,16 @@ const result = executors.compareRefinancingBeforeAfter({
   covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tier: {applicability: "conditional", condition: "4,00x condicionado à prova da quitação ordinária dos CRA de referência; até a prova, 3,50x é o degrau vigente"}, state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
   alternatives: [
     {id: "status-quo", label: "Manter a estrutura e rolar as linhas bancárias", newDebt: null, retired: []},
-    {id: "extend-di-2028", label: "Alongar o pico de 2028/29: nova dívida de sete anos (CDI + 1,25%, dois de carência, SAC) retirando a 13ª 1ª série pelo prêmio da escritura", newDebt: newDebt("306038"), retired: [{seriesId: "deb-13-1", principal: {value: "306038", anchor: itr(39, "nota 15, saldo contábil de deb-13-1")}, exitPremium: premium("deb-13-1"), maturityPeriod: "2028/29", maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "4.1", note: "vencimento 14/11/2028"}}]},
+    {id: "extend-di-2028", label: "Alongar o pico de 2028/29: nova dívida de sete anos (CDI + 1,25%, dois de carência, SAC) retirando a 13ª 1ª série pelo prêmio da escritura", newDebt: newDebt("306038"), retired: [{seriesId: "deb-13-1", instalments: [{period: "2028/29", principal: {value: "306038", anchor: itr(39, "nota 15, saldo contábil de deb-13-1")}, maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "4.1", note: "vencimento 14/11/2028"}}], exitPremium: premium("deb-13-1")}]},
     {id: "extend-di-2028-and-2029", label: "Alongar os dois picos: nova dívida de sete anos retirando a 13ª 1ª série e a 14ª 1ª série pelo prêmio da escritura", newDebt: newDebt("744956"), retired: [
-      {seriesId: "deb-13-1", principal: {value: "306038", anchor: itr(39, "nota 15, saldo contábil de deb-13-1")}, exitPremium: premium("deb-13-1"), maturityPeriod: "2028/29", maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "4.1", note: "vencimento 14/11/2028"}},
-      {seriesId: "deb-14-1", principal: {value: "438918", anchor: itr(39, "nota 15, saldo contábil de deb-14-1")}, exitPremium: premium("deb-14-1"), maturityPeriod: "2029/30", maturityAnchor: {document: "escritura_14a_emissao.pdf", clause: "4.1", note: "vencimento 14/06/2029"}},
+      {seriesId: "deb-13-1", instalments: [{period: "2028/29", principal: {value: "306038", anchor: itr(39, "nota 15, saldo contábil de deb-13-1")}, maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "4.1", note: "vencimento 14/11/2028"}}], exitPremium: premium("deb-13-1")},
+      {seriesId: "deb-14-1", instalments: [{period: "2029/30", principal: {value: "438918", anchor: itr(39, "nota 15, saldo contábil de deb-14-1")}, maturityAnchor: {document: "escritura_14a_emissao.pdf", clause: "4.1", note: "vencimento 14/06/2029"}}], exitPremium: premium("deb-14-1")},
     ]},
     {id: "offer-11th", label: "Retirar a 11ª emissão por oferta de resgate (prêmio a negociar)", newDebt: null, retired: [
-      {seriesId: "deb-11-1", principal: {value: "151795", anchor: itr(39, "nota 15, saldo contábil de deb-11-1")}, exitPremium: premium("deb-11-1"), maturityPeriod: "2028/29", maturityAnchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}},
-      {seriesId: "deb-11-2", principal: {value: "505984", anchor: itr(39, "nota 15, saldo contábil de deb-11-2")}, exitPremium: premium("deb-11-2"), maturityPeriod: "2028/29", maturityAnchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}},
+      {seriesId: "deb-11-1", instalments: [{period: "2028/29", principal: {value: "151795", anchor: itr(39, "nota 15, saldo contábil de deb-11-1")}, maturityAnchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}}], exitPremium: premium("deb-11-1")},
+      {seriesId: "deb-11-2", instalments: [{period: "2028/29", principal: {value: "505984", anchor: itr(39, "nota 15, saldo contábil de deb-11-2")}, maturityAnchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}}], exitPremium: premium("deb-11-2")},
     ]},
-    {id: "cash-paydown", label: "Abater 300.000 das linhas bancárias de 2026/27 com caixa, ao par", newDebt: null, retired: [{seriesId: "loan-brl", principal: {value: "300000", anchor: itr(40, "nota 15, linhas bancárias")}, exitPremium: {value: "0", anchor: itr(40, "nota 15, linhas bancárias pré-pagáveis ao par")}, maturityPeriod: "2026/27", maturityAnchor: itr(40, "nota 15")}]},
+    {id: "cash-paydown", label: "Abater 300.000 das linhas bancárias de 2026/27 com caixa, ao par", newDebt: null, retired: [{seriesId: "loan-brl", principal: {value: "300000", anchor: itr(40, "nota 15, linhas bancárias")}, exitPremium: {value: "0", mechanism: "prepayment_at_par", permittedOnDate: true, anchor: itr(40, "nota 15, linhas bancárias pré-pagáveis ao par")}, maturityPeriod: "2026/27", maturityAnchor: itr(40, "nota 15")}]},
   ],
   ranking: {discriminator: "peak_amount", rationale: "o conselho pediu se a estrutura aguenta os próximos anos; o pico de amortização em valor é o que a rolagem integral precisa vencer, e o custo all-in é a segunda leitura"},
   wallThreshold: {share: "0.20", policyKey: "policy.structure.maturity_wall", policyVersion: "2026.09.05-v8"},

@@ -1,6 +1,6 @@
 ---
 id: compare-refinancing-before-after
-version: 2026.09.05-v5
+version: 2026.09.05-v6
 maturity: implemented
 title_pt: Comparar antes e depois de cada alternativa de refinanciamento
 title_en: Compare before and after for each refinancing alternative
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/compare-refinancing-before-after
 implementation_export: compareRefinancingBeforeAfter
-result_contract: method.compare-refinancing-before-after.v5
+result_contract: method.compare-refinancing-before-after.v6
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -56,7 +56,8 @@ e descarte de cada alternativa, e a lista do que a base não sustenta.
 
 # Cálculos determinísticos
 - O cronograma vem do ledger nos períodos dele, cada um com a data em que termina; o principal novo cai no período que contém a data de cada parcela, e o que passa do último período datado cai no bucket aberto.
-- A série retirada sai do período em que vence; se o período não existe ou não comporta o principal, a alternativa bloqueia; principal novo depois do último período datado sem bucket aberto também bloqueia.
+- A série retirada sai, parcela a parcela, do período em que cada parcela vence; se o período não existe ou não comporta o principal, a alternativa bloqueia; principal novo depois do último período datado sem bucket aberto também bloqueia.
+- O que a dívida nova levanta além do principal retirado fica no caixa; o que falta sai do caixa. Preço de saída só com mecanismo permitido na data, vindo do executor de custo de saída; preço ao lado de uma lacuna de saída é recusado. Sem evidência de degrau não há headroom; a leitura na própria data de medição é medição. Só o status quo dispensa custos declarados. Duas alternativas no mínimo. Toda linha do cronograma, todo custo e toda saída com âncora própria.
 - Participação de cada período sobre a dívida bruta (antes: reportada; depois: pró forma).
 - Cobertura de principal por período só com geração de caixa declarada por período; um valor único nunca é repetido pelos anos.
 - All-in da dívida nova: cupom mais taxa de estruturação, prêmios de saída e custos pagos com caixa, amortizados pelo prazo; o custo da dívida existente é outra base e nunca é ordenado contra ele.
@@ -84,7 +85,7 @@ e descarte de cada alternativa, e a lista do que a base não sustenta.
 - Custo de saída indisponível para uma série que a alternativa retira.
 
 # Outputs
-- schema_version (string, required): method.compare-refinancing-before-after.v5
+- schema_version (string, required): method.compare-refinancing-before-after.v6
 - reference_date (date, required): data-base do ledger que a comparação usa
 - unit (enum, required): unidade declarada e única de todos os valores monetários (BRL, BRL thousand, BRL million, USD, USD thousand), ancorada na fonte que a declara; escala re-rotulada é recusada
 - state (enum, required): compared quando o cronograma concilia com a dívida bruta; blocked quando não concilia

@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
 import {macaulayDurationBusinessDays, presentValueByBusinessDays} from "./index";
@@ -15,6 +16,15 @@ describe("presentValueByBusinessDays", () => {
     expect(presentValueByBusinessDays([{id: "a", amount: "50", businessDays: 10}], "0").value).toBe("50");
     expect(() => presentValueByBusinessDays([{id: "a", amount: "50", businessDays: 10}], "-0.1")).toThrow();
     expect(() => presentValueByBusinessDays([{id: "a", amount: "50", businessDays: 1.5}], "0.1")).toThrow();
+  });
+});
+
+describe("presentValueByBusinessDays with rounded factors", () => {
+  it("rounds each discount factor at the stated layer before dividing, as an indenture's FVPk", () => {
+    const rounded = presentValueByBusinessDays([{id: "a", amount: "100", businessDays: 125}], "0.07", {factorDecimals: 9, presentValueDecimals: 8});
+    expect(rounded.discounted[0]?.factor).toBe(new Decimal("1.07").pow(new Decimal(125).div(252)).toDecimalPlaces(9).toFixed());
+    expect(rounded.value).toBe(new Decimal("100").div(rounded.discounted[0]!.factor).toDecimalPlaces(8).toFixed());
+    expect(rounded.trace.operands.factorDecimals).toBe("9");
   });
 });
 

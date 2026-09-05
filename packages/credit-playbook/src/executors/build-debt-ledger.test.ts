@@ -202,9 +202,8 @@ describe("build-debt-ledger executor (v10)", () => {
     (negativePriorLoan.rows[0] as Row).priorBalance = "-951593";
     expect(() => buildDebtLedger(negativePriorLoan)).toThrow(/negative prior balance/);
     expect(() => buildDebtLedger({...camil(), unitAnchor: undefined as unknown as {document: string}})).toThrow();
-    const relabeled = buildDebtLedger({...camil(), unit: "BRL million"});
-    expect(relabeled.unit).toBe("BRL million");
-    expect(relabeled.trace.outputFingerprint).not.toBe(buildDebtLedger(camil()).trace.outputFingerprint);
+    // A relabelled unit against an anchor that says thousands is refused outright (v13).
+    expect(() => buildDebtLedger({...camil(), unit: "BRL million"})).toThrow(/does not name the unit BRL million/);
     expect(() => buildDebtLedger({...camil(), tolerance: {value: "1000000"}})).toThrow(/needs policyKey and policyVersion/);
   });
 
@@ -424,5 +423,17 @@ describe("build-debt-ledger executor (v10)", () => {
     const zeroContra = buildDebtLedger({...base, rows: base.rows.map((row) => (row.id === contra.id ? {...row, balance: "0"} : row)), balanceSheet: base.balanceSheet ? {...base.balanceSheet, nonCurrent: new Decimal(base.balanceSheet.nonCurrent).minus(contra.balance).toFixed()} : base.balanceSheet, schedule: base.schedule ? {...base.schedule, periods: base.schedule.periods.map((period) => (period.period === "debenture costs" ? {...period, amount: "0"} : period))} : base.schedule});
     expect(zeroContra.ledger_rows.find((row) => row.id === contra.id)?.balance).toBe("0");
     expect(() => buildDebtLedger({...base, rows: base.rows.map((row) => (row.id === contra.id ? {...row, balance: "10"} : row))})).toThrow(/non-positive balance/);
+  });
+
+  it("mutation: an operand the catalogue does not know (royalties) is refused, a relabelled unit against the anchor's note is refused, and a securitizer named as economic creditor is refused", () => {
+    const base = camil();
+    const royalties = buildDebtLedger({...base, definitions: {...base.definitions, release: {...base.definitions!.release!, text: "dívida bruta mais royalties menos caixa e aplicações financeiras"}}});
+    expect(royalties.state).toBe("blocked");
+    expect(royalties.block_reasons.some((reason) => /names an operand the view does not know \("royalties"\)/.test(reason))).toBe(true);
+    expect(() => buildDebtLedger({...base, unit: "BRL million"})).toThrow(/does not name the unit BRL million/);
+    const holder = base.rows.find((row) => row.lender?.formalHolder && /securitiz/i.test(row.lender.formalHolder));
+    if (holder) {
+      expect(() => buildDebtLedger({...base, rows: base.rows.map((row) => (row.id === holder.id ? {...row, lender: {...row.lender!, economicCreditors: row.lender!.formalHolder}} : row))})).toThrow(/economic creditors are the holders of the certificates/);
+    }
   });
 });
