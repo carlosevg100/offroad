@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import {z} from "zod";
 import type {AdapterRequest, AdapterResponse, ProviderAdapter, StopReason, Usage} from "../types";
-import {safeJsonParse} from "./anthropic";
+import {extractJsonText, promptedJsonInstruction, safeJsonParse} from "./anthropic";
 
 export type OpenAIAdapterOptions = {
   /** Reads OPENAI_API_KEY when omitted. */
@@ -119,12 +119,14 @@ export function buildOpenAIParams(request: AdapterRequest): OpenAI.Responses.Res
     if (part.type === "image") return {type: "input_image", image_url: `data:${part.mediaType};base64,${part.base64}`, detail: "high"};
     return {type: "input_file", filename: part.title ?? "document.pdf", file_data: `data:application/pdf;base64,${part.base64}`};
   });
+  const prompted = request.outputMode === "prompted_json";
   const params: OpenAI.Responses.ResponseCreateParamsNonStreaming = {
     model: request.model,
-    instructions: request.system,
+    instructions: prompted ? `${request.system}\n\n${promptedJsonInstruction(request)}` : request.system,
     input: [{role: "user", content}],
     reasoning: {effort: request.effort},
-    text: {format: {type: "json_schema", name: request.schemaName, schema, strict: true}},
+    // A schema too large for a strict grammar travels in the instructions; the text is parsed and validated by the gateway.
+    text: prompted ? {format: {type: "text"}} : {format: {type: "json_schema", name: request.schemaName, schema, strict: true}},
     max_output_tokens: request.maxOutputTokens,
     // never keep provider-side copies of client documents
     store: false,
@@ -163,7 +165,7 @@ export function createOpenAIAdapter(options: OpenAIAdapterOptions = {}): Provide
       const rawText = response.output_text ?? "";
       const originalSchema = z.toJSONSchema(request.schema) as JsonSchema;
       const adapterResponse: AdapterResponse = {
-        output: stripOpenAIOptionalNulls(safeJsonParse(rawText), originalSchema),
+        output: stripOpenAIOptionalNulls(safeJsonParse(request.outputMode === "prompted_json" ? extractJsonText(rawText) : rawText), originalSchema),
         rawText,
         usage: mapOpenAIUsage(response.usage),
         model: response.model,

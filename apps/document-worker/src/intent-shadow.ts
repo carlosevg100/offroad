@@ -162,6 +162,8 @@ export async function shadowIntentEnvelope(input: {
     }],
     schema: shadowRoutingOutputSchema,
     schemaName: "shadow_routing_output",
+    // The envelope schema is too large for the provider's compiled grammar; the schema travels in the prompt.
+    outputMode: "prompted_json",
     thinking: "off",
     metadata: {surface: "shadow_router"},
   });
