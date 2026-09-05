@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.05-v9";
+export const financialCoreVersion = "2026.09.05-v10";
 
 export * from "./financial-truth";
 export * from "./indexed-debt";
@@ -236,4 +236,37 @@ export type FinancialCalculationId = keyof typeof financialCalculationRegistry;
 
 export function isFinancialCalculationId(value: string): value is FinancialCalculationId {
   return Object.hasOwn(financialCalculationRegistry, value);
+}
+
+/** A single traced calculation with its formula and operands, for functions that return more than one figure. */
+export type CalculationTrace = {id: string; formula: string; operands: Record<string, string>; result: string};
+
+/**
+ * Present value of dated flows discounted at an annual effective rate over business days of a
+ * 252-day year: PV = sum(amount / (1 + rate)^(businessDays / 252)). Used by the exit-cost method
+ * for the make-whole prices the indentures define at a quoted rate.
+ */
+export function presentValueByBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string): {value: string; discounted: Array<{id: string; amount: string; businessDays: number; factor: string; presentValue: string}>; trace: CalculationTrace} {
+  if (!/^\d+(\.\d+)?$/.test(annualRate)) throw new Error("annualRate must be a non-negative decimal string");
+  const rate = new Decimal(annualRate);
+  let total = new Decimal(0);
+  const discounted = flows.map((flow) => {
+    if (!Number.isInteger(flow.businessDays) || flow.businessDays < 0) throw new Error(`flow ${flow.id}: businessDays must be a non-negative integer`);
+    const factor = rate.plus(1).pow(new Decimal(flow.businessDays).div(252));
+    const presentValue = new Decimal(flow.amount).div(factor);
+    total = total.plus(presentValue);
+    return {id: flow.id, amount: new Decimal(flow.amount).toFixed(), businessDays: flow.businessDays, factor: factor.toDecimalPlaces(12).toFixed(), presentValue: presentValue.toDecimalPlaces(8).toFixed()};
+  });
+  const value = total.toDecimalPlaces(8).toFixed();
+  return {value, discounted, trace: {id: "financial.present_value_by_business_days", formula: "sum(amount / (1 + annualRate)^(businessDays/252))", operands: {annualRate, flows: String(flows.length)}, result: value}};
+}
+
+/** Macaulay duration in business days of dated flows at an annual effective rate: sum(DU * PV) / sum(PV). */
+export function macaulayDurationBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string): {value: string; trace: CalculationTrace} {
+  const present = presentValueByBusinessDays(flows, annualRate);
+  const total = new Decimal(present.value);
+  if (total.isZero()) throw new Error("duration is undefined for flows with zero present value");
+  const weighted = present.discounted.reduce((sum, flow) => sum.plus(new Decimal(flow.presentValue).times(flow.businessDays)), new Decimal(0));
+  const value = weighted.div(total).toDecimalPlaces(8).toFixed();
+  return {value, trace: {id: "financial.macaulay_duration_business_days", formula: "sum(businessDays * presentValue) / sum(presentValue)", operands: {annualRate, flows: String(flows.length), presentValue: present.value}, result: value}};
 }

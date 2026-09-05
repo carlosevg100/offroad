@@ -1,6 +1,6 @@
 ---
 id: build-interest-and-indexation-schedule
-version: 2026.09.05-v2
+version: 2026.09.05-v3
 maturity: implemented
 title_pt: Construir o cronograma de juros e separar IPCA capitalizado do pago
 title_en: Build the interest schedule and separate capitalized from paid indexation
@@ -10,7 +10,7 @@ owner_role: Head de Modelagem
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-interest-and-indexation-schedule
 implementation_export: buildInterestAndIndexationSchedule
-result_contract: method.build-interest-and-indexation-schedule.v2
+result_contract: method.build-interest-and-indexation-schedule.v3
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -23,7 +23,7 @@ house_procedure_ids: [D-17, D-18, D-24]
 authorities: [DEF, CASA]
 reference_data_keys: [policy.debt.views]
 task_specs: [C05, C07]
-calculation_ids: [financial.indexed_debt_schedule, financial.indexed_debt_aggregation, financial.interest_expense_bridge]
+calculation_ids: [financial.indexed_debt_schedule, financial.indexed_debt_aggregation, financial.interest_expense_bridge, financial.daily_rate_annualized, financial.ipca_anniversary_update, financial.coupon_payment, financial.ledger_coverage]
 gold_cases: [gc01-analista-ib-camil]
 dependencies: [build-debt-ledger]
 ---
@@ -76,17 +76,18 @@ período, e a ponte entre o serviço projetado e a despesa contábil do último 
 - Ledger sem termos por série e sem escrituras no pack.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.build-interest-and-indexation-schedule.v2`
+- schema_version (string, required): identificador do contrato de resultado, `method.build-interest-and-indexation-schedule.v3`
 - reference_date (date, required): data-base da projeção (início do primeiro período)
-- unit (string, required): unidade dos valores monetários; fatores e taxas levam a unidade `x`
+- unit (enum, required): unidade dos valores monetários (BRL, BRL thousand, BRL million, USD, USD thousand); fatores e taxas levam a unidade `x`
+- state (enum, required): complete, partial (série não projetada, principal sem cronograma, tratamento IPCA em cenários ou primeiro cupom incompleto) ou blocked | values: complete, partial, blocked
 - block_reasons (array, required): motivos estruturados de bloqueio (nenhuma série projetável)
-- assumptions (array, required): premissas declaradas (curva datada fora da data-base usada como cenário base; atualização IPCA pro rata por dias úteis sem a defasagem mensal)
-- schedule_by_series (array, required): por série e período: saldo inicial, fator e valor da atualização (capitalizada ou paga), fator do cupom, cupom acumulado, cupom pago só no período que contém uma data de pagamento, cupom carregado, principal pago (ou `insufficient_evidence` quando o cronograma de amortização não está na base) e saldo final; remuneração descrita, curva com data, âncoras de saldo, termos, pagamentos e amortização
-- schedule_aggregate (object, required): por período (juros caixa, atualização capitalizada, principal pago, saldo) e por indexador, com o saldo inicial projetado; nulo quando nada se projeta
-- accounting_bridge (object, required): despesa projetada (juros caixa mais atualização capitalizada) contra a despesa contábil do último período fechado; `insufficient_evidence` com projetado nulo e motivo quando o período não está na projeção ou alguma série não foi projetada; nunca zeros inventados
-- uncovered_series (array, required): séries sem termos, sem âncora de termos, sem datas de pagamento, sem curva do indexador certo, sem tratamento da atualização ou com remuneração incompatível com o indexador, cada uma com o motivo
-- state (enum, required): complete, partial (alguma série não projetada ou principal sem cronograma) ou blocked | values: complete, partial, blocked
-- trace (object, required): cada fator e cada linha com fórmula, operandos (taxa anual, dias úteis), resultado e unidade; fingerprints de entrada e saída, com o trace dentro do de saída
+- assumptions (array, required): premissas declaradas (curva datada fora da data-base usada como cenário; atualização IPCA por aniversário sem o pro rata intramês; juros corridos na data-base ausentes; arredondamento não informado; tratamento IPCA projetado nos dois cenários)
+- schedule_by_series (array, required): por série: nominal de abertura com base e âncora (saldo contábil com juros nunca é nominal), juros corridos de abertura, indicação de primeiro cupom completo, curva com título e âncora, arredondamento da escritura, projeção de principal, tratamento, cenários de tratamento quando a base não diz, e por período: saldo inicial, fator e valor da atualização (capitalizada ou paga), fator do cupom, cupom acumulado, cupom pago na data de pagamento (acumulado até a data), cupom carregado depois da data, principal pago (nulo sem cronograma), saldo final e âncora do calendário
+- schedule_aggregate (object, required): por período e por indexador: juros caixa, atualização paga em caixa, atualização capitalizada, principal pago e saldo (nulos quando alguma série não tem cronograma), saldo inicial projetado, completude da projeção de principal e séries com tratamento IPCA pendente; nulo quando nada se projeta
+- ledger_coverage (object, optional): nominal projetado contra a dívida bruta do ledger, com a participação e as séries do ledger que a projeção não recebeu
+- accounting_bridge (object, optional): despesa projetada (juros caixa mais atualização paga e capitalizada) contra a despesa contábil do último período fechado; insufficient_evidence com projetado nulo e motivo quando o período não está na projeção, alguma série não foi projetada ou o tratamento IPCA não está resolvido; nunca zeros inventados
+- uncovered_series (array, required): séries sem nominal, sem termos, sem âncora de termos, sem datas de pagamento, sem curva do indexador certo, sem variação mensal ou aniversário, com remuneração incompatível, ou presentes no ledger e ausentes da entrada, cada uma com o motivo
+- trace (object, required): cada fator, aniversário, pagamento e linha com fórmula, operandos e unidade; fingerprints canônicos de entrada e saída, com o trace e o fingerprint de entrada dentro do de saída
 
 # Exemplos
 ## Bom
