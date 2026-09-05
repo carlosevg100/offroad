@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `compare-refinancing-before-after` (v6, after the fourth independent
+ * Executor of the method `compare-refinancing-before-after` (v7, after the fifth independent
  * review). Every alternative is shown before and after with the same objects: gross and net debt by
  * the contractual components, leverage on a declared EBITDA, headroom only against a resolved and
  * comparable limit, concentration by the schedule's own periods (safra years with their end dates,
@@ -27,11 +27,13 @@ const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 export const alternativeSchema = z.object({
   id: z.string().regex(/^[a-z][a-z0-9_-]*$/),
   label: nonEmpty,
-  newDebt: z.object({amount: nonNegative, annualRate: rate, termMonths: z.number().int().positive(), graceMonths: z.number().int().nonnegative(), format: z.enum(["sac", "price", "bullet", "balloon"]), upfrontFeeRate: rate, disbursementDate: isoDate, origin: nonEmpty, anchor: anchorSchema}).strict().nullable(),
+  /** The new debt's terms with the class of their source: a term sheet or a proposal in the base verifies them; indicative terms are a declared scenario, never a verified cost. A merely authorized funding is not a source of principal. */
+  newDebt: z.object({amount: nonNegative, annualRate: rate, termMonths: z.number().int().positive(), graceMonths: z.number().int().nonnegative(), format: z.enum(["sac", "price", "bullet", "balloon"]), upfrontFeeRate: rate, disbursementDate: isoDate, origin: nonEmpty, termsSource: z.enum(["term_sheet", "proposal", "contract", "indicative_unverified", "authorized_only"]), anchor: anchorSchema}).strict().nullable(),
   /** Series retired: each instalment leaves its own period with its anchored principal; the priced exit comes from the exit-cost executor with the mechanism and its permission on the date, or a null price blocks the alternative. */
   retired: z.array(z.object({
     seriesId: nonEmpty,
-    instalments: z.array(z.object({period: nonEmpty, principal: z.object({value: nonNegative, anchor: anchorSchema}).strict(), maturityAnchor: anchorSchema}).strict()).min(1),
+    /** The principal retired is the contractual nominal of the instalment; a carrying amount (balance with accrued interest and costs) is not a principal and is refused. */
+    instalments: z.array(z.object({period: nonEmpty, principal: z.object({value: nonNegative, basis: z.enum(["contractual_nominal", "carrying_amount"]), anchor: anchorSchema}).strict(), maturityAnchor: anchorSchema}).strict()).min(1),
     exitPremium: z.object({value: nonNegative, mechanism: nonEmpty, permittedOnDate: z.boolean(), anchor: anchorSchema}).strict().nullable(),
   }).strict()).default([]),
   /** Other cash costs of the alternative (advisory, registry), an explicit zero included; null means the base does not state them and the all-in is not computed. */
@@ -58,21 +60,22 @@ export const beforeAfterInputSchema = z.object({
     schedule: z.array(z.object({period: nonEmpty, amount: z.string().regex(/^-?\d+(\.\d+)?$/), endsAt: isoDate.nullable(), kind: z.enum(["maturity", "adjustment"]).default("maturity"), anchor: anchorSchema}).strict()).min(1),
     /** Cost of the existing debt, on its own basis; never the same basis as a new debt's all-in. */
     costOfExistingDebt: z.object({weightedAverageRate: rate, basis: nonEmpty, anchor: anchorSchema}).strict(),
-    /** Cash generation per period when the base declares it; without it the cover per period is insufficient evidence. */
-    cfadsByPeriod: z.record(nonEmpty, nonNegative).nullable().default(null),
+    /** Cash generation per period when the base declares it, each figure anchored; without it the cover per period is insufficient evidence. */
+    cfadsByPeriod: z.record(nonEmpty, z.object({value: nonNegative, anchor: anchorSchema}).strict()).nullable().default(null),
   }).strict(),
-  covenant: z.object({
+  /** Every covenant the base holds, one per instrument, each with its tiers; the headroom shown is the tightest among the measurable ones, and each instrument keeps its own reading. */
+  covenants: z.array(z.object({
     instrument: nonEmpty,
     limit: rate,
     direction: z.enum(["maximum", "minimum"]),
     /** When the indenture measures the index; a reading at the reference date is interim unless it is a measurement date. */
     measurement: z.object({frequency: z.enum(["annual", "semiannual", "quarterly"]), nextDate: isoDate}).strict(),
-    /** The tier the limit belongs to: applicable when its condition is proven, conditional while the proof is missing, not applicable when ruled out. */
-    tier: z.object({applicability: z.enum(["applicable", "conditional", "not_applicable"]), condition: nonEmpty}).strict().nullable(),
+    /** Every tier the indenture writes, in order, each with its applicability: applicable when its condition is proven, conditional while the proof is missing, not applicable when ruled out. */
+    tiers: z.array(z.object({limit: rate, applicability: z.enum(["applicable", "conditional", "not_applicable"]), condition: nonEmpty}).strict()).min(1).nullable(),
     state: z.enum(["resolved", "insufficient_evidence"]),
     comparability: z.enum(["comparable", "conditional", "not_comparable"]),
     anchor: anchorSchema,
-  }).strict(),
+  }).strict()).min(1),
   /** At least two alternatives, the status quo counting as one: a comparison with a single alternative compares nothing. */
   alternatives: z.array(alternativeSchema).min(2),
   /** The declared discriminator; without one there is no ranking. all_in_cost ranks only the new debts among themselves. */
@@ -80,7 +83,15 @@ export const beforeAfterInputSchema = z.object({
   wallThreshold: z.object({share: nonNegative, policyKey: nonEmpty, policyVersion: nonEmpty}).strict(),
 }).strict().superRefine((input, context) => {
   if (!UNIT_WORDS[input.unit].test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
-  if (input.covenant.measurement.nextDate < input.referenceDate) context.addIssue({code: "custom", path: ["covenant", "measurement"], message: "the next measurement date cannot precede the reference date"});
+  const instruments = new Set<string>();
+  input.covenants.forEach((covenant, index) => {
+    if (instruments.has(covenant.instrument)) context.addIssue({code: "custom", path: ["covenants", index], message: `duplicate covenant for ${covenant.instrument}`});
+    instruments.add(covenant.instrument);
+    if (covenant.measurement.nextDate < input.referenceDate) context.addIssue({code: "custom", path: ["covenants", index, "measurement"], message: `${covenant.instrument}: the next measurement date cannot precede the reference date`});
+    if (covenant.tiers && !covenant.tiers.some((tier) => tier.limit === covenant.limit)) context.addIssue({code: "custom", path: ["covenants", index, "tiers"], message: `${covenant.instrument}: the limit ${covenant.limit} is not one of the tiers listed`});
+  });
+  const ends = new Map<string, string>();
+  input.before.schedule.filter((row) => row.kind === "maturity" && row.endsAt !== null).forEach((row) => { const other = ends.get(row.endsAt!); if (other) context.addIssue({code: "custom", path: ["before", "schedule"], message: `periods ${other} and ${row.period} share the end date ${row.endsAt}; a payment on that date could not be placed without an arbitrary choice`}); ends.set(row.endsAt!, row.period); });
   if (new Decimal(input.wallThreshold.share).gt(1)) context.addIssue({code: "custom", path: ["wallThreshold", "share"], message: "a wall threshold is a share of gross debt between 0 and 1"});
   if (input.before.ltmEbitda) {
     const start = new Date(`${input.before.ltmEbitda.periodStart}T00:00:00Z`); start.setUTCMonth(start.getUTCMonth() + 12);
@@ -116,6 +127,8 @@ export const beforeAfterInputSchema = z.object({
     });
     if (alternative.newDebt && alternative.newDebt.disbursementDate < input.referenceDate) context.addIssue({code: "custom", path: ["alternatives", index, "newDebt", "disbursementDate"], message: `${alternative.id}: the new debt is disbursed before the reference date`});
     if (alternative.newDebt && alternative.newDebt.graceMonths >= alternative.newDebt.termMonths) context.addIssue({code: "custom", path: ["alternatives", index, "newDebt", "graceMonths"], message: `${alternative.id}: grace must be shorter than the term`});
+    if (alternative.newDebt && alternative.newDebt.termsSource === "authorized_only") context.addIssue({code: "custom", path: ["alternatives", index, "newDebt", "termsSource"], message: `${alternative.id}: a funding that is only authorized is not a source of principal; a term sheet, a proposal or a contract is`});
+    alternative.retired.forEach((entry, position) => entry.instalments.forEach((instalment, slot) => { if (instalment.principal.basis === "carrying_amount") context.addIssue({code: "custom", path: ["alternatives", index, "retired", position, "instalments", slot, "principal"], message: `${alternative.id}: ${entry.seriesId} retires a carrying amount (${instalment.principal.value}); the principal retired is the contractual nominal, reconciled by the exit-cost executor`}); }));
   });
 });
 export type BeforeAfterInput = z.input<typeof beforeAfterInputSchema>;
@@ -124,14 +137,16 @@ type Calculation = {id: string; alternative: string; formula: string; operands: 
 type Snapshot = {
   gross_debt: string; deductible_cash: string; net_debt: string; contractual_net_debt: string;
   leverage: {value: string; ebitda_definition: string; ebitda_basis: string} | null;
-  headroom: {absolute: string; within_limit: boolean; reading: "interim" | "measurement_date"; note: string} | null;
+  /** The tightest measurable headroom among the covenants, with every instrument's own reading beside it. */
+  headroom: {instrument: string; absolute: string; within_limit: boolean; reading: "interim" | "measurement_date"; note: string} | null;
+  headroom_by_instrument: Array<{instrument: string; limit: string; state: "measured" | "not_measured"; absolute: string | null; reason: string | null}>;
   peak: {period: string; amount: string; share_of_gross: string} | null;
   cost: {value: string; basis: string; comparable_with_new_debt: boolean};
   anchors: Record<string, Anchor>;
 };
 
 export type BeforeAfterOutput = {
-  schema_version: "method.compare-refinancing-before-after.v6";
+  schema_version: "method.compare-refinancing-before-after.v7";
   reference_date: string;
   unit: string;
   state: "compared" | "blocked";
@@ -167,6 +182,7 @@ function canonical(input: z.infer<typeof beforeAfterInputSchema>) {
   return {
     ...input,
     before: {...input.before, schedule: [...input.before.schedule].sort(scheduleOrder)},
+    covenants: [...input.covenants].sort((a, b) => compare(a.instrument, b.instrument)),
     alternatives: [...input.alternatives].sort((a, b) => compare(a.id, b.id)).map((alternative) => ({...alternative, retired: [...alternative.retired].sort((a, b) => compare(a.seriesId, b.seriesId)).map((series) => ({...series, instalments: [...series.instalments].sort((a, b) => compare(a.period, b.period))})), uncoveredTerms: [...alternative.uncoveredTerms].sort(compare)})),
   };
 }
@@ -178,11 +194,18 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   const unsupported: string[] = [];
   const blockReasons: string[] = [];
   const threshold = d(input.wallThreshold.share);
-  const tierApplicable = input.covenant.tier !== null && input.covenant.tier.applicability === "applicable";
-  const canMeasureHeadroom = input.covenant.state === "resolved" && input.covenant.comparability === "comparable" && tierApplicable;
-  if (!canMeasureHeadroom) unsupported.push(`headroom is not measured: covenant limit ${input.covenant.state}, comparability ${input.covenant.comparability}${input.covenant.tier && input.covenant.tier.applicability !== "applicable" ? `, tier ${input.covenant.tier.applicability} (${input.covenant.tier.condition})` : ""}`);
+  const measurable = input.covenants.map((covenant) => {
+    const tier = covenant.tiers?.find((entry) => entry.limit === covenant.limit) ?? null;
+    const reasons: string[] = [];
+    if (covenant.state !== "resolved") reasons.push(`limit ${covenant.state}`);
+    if (covenant.comparability !== "comparable") reasons.push(`comparability ${covenant.comparability}`);
+    if (covenant.tiers === null) reasons.push("tier evidence absent (insufficient evidence), not applicable by default");
+    else if (!tier || tier.applicability !== "applicable") reasons.push(`tier ${tier?.applicability ?? "unknown"}${tier ? ` (${tier.condition})` : ""}`);
+    return {covenant, reasons};
+  });
+  for (const entry of measurable.filter((item) => item.reasons.length > 0)) unsupported.push(`headroom is not measured for ${entry.covenant.instrument}: ${entry.reasons.join(", ")}`);
+  const canMeasureHeadroom = measurable.some((entry) => entry.reasons.length === 0);
   const ebitda = input.before.ltmEbitda;
-  if (input.covenant.tier === null) unsupported.push("headroom is not measured: the tier evidence of the covenant is absent (insufficient evidence), not applicable by default");
   if (!ebitda) unsupported.push("leverage is not measured: no EBITDA with a definition in the base");
   else if (d(ebitda.value).lte(0)) unsupported.push("leverage is not measured: the EBITDA in the base is zero or negative");
   if (!input.before.cfadsByPeriod) unsupported.push("principal cover per period is not measured: no cash generation per period in the base");
@@ -209,16 +232,22 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
       leverage = {value: result.value, ebitda_definition: ebitda.definitionKey, ebitda_basis: ebitda.basis};
     }
     let headroom: Snapshot["headroom"] = null;
-    if (leverage && canMeasureHeadroom) {
-      const result = calculateCovenantHeadroom({actual: leverage.value, limit: input.covenant.limit, direction: input.covenant.direction});
-      record({id: "structure.covenant_headroom", alternative: label, formula: input.covenant.direction === "maximum" ? "limit - actual" : "actual - limit", operands: {actual: leverage.value, limit: input.covenant.limit}, result: result.absolute}, "x");
-      const onDate = input.covenant.measurement.nextDate === input.referenceDate;
-      headroom = {absolute: result.absolute, within_limit: result.passes, reading: onDate ? "measurement_date" : "interim", note: onDate ? `measured on the measurement date of ${input.covenant.instrument}` : `interim reading at ${input.referenceDate}; ${input.covenant.instrument} measures ${input.covenant.measurement.frequency}ly, next on ${input.covenant.measurement.nextDate}; neither a breach nor a compliance`};
-    }
+    const byInstrument: Snapshot["headroom_by_instrument"] = [];
+    if (leverage) {
+      for (const {covenant, reasons} of measurable) {
+        if (reasons.length > 0) { byInstrument.push({instrument: covenant.instrument, limit: covenant.limit, state: "not_measured", absolute: null, reason: reasons.join(", ")}); continue; }
+        const result = calculateCovenantHeadroom({actual: leverage.value, limit: covenant.limit, direction: covenant.direction});
+        record({id: `structure.covenant_headroom:${covenant.instrument}`, alternative: label, formula: covenant.direction === "maximum" ? "limit - actual" : "actual - limit", operands: {actual: leverage.value, limit: covenant.limit}, result: result.absolute}, "x");
+        byInstrument.push({instrument: covenant.instrument, limit: covenant.limit, state: "measured", absolute: result.absolute, reason: null});
+        const onDate = covenant.measurement.nextDate === input.referenceDate;
+        const candidate = {instrument: covenant.instrument, absolute: result.absolute, within_limit: result.passes, reading: onDate ? "measurement_date" as const : "interim" as const, note: onDate ? `measured on the measurement date of ${covenant.instrument}` : `interim reading at ${input.referenceDate}; ${covenant.instrument} measures ${covenant.measurement.frequency}ly, next on ${covenant.measurement.nextDate}; neither a breach nor a compliance`};
+        if (headroom === null || d(candidate.absolute).lt(headroom.absolute)) headroom = candidate;
+      }
+    } else if (canMeasureHeadroom) for (const {covenant} of measurable) byInstrument.push({instrument: covenant.instrument, limit: covenant.limit, state: "not_measured", absolute: null, reason: "no leverage measured"});
     const concentration = maturityConcentration({existing: consolidated, proposed: {}});
     const peak = concentration.peak && grossDebt.gt(0) ? {period: concentration.peak.period, amount: concentration.peak.consolidated, share_of_gross: out(d(concentration.peak.consolidated).div(grossDebt))} : null;
     if (peak) record({id: "structure.maturity_concentration:peak", alternative: label, formula: "peak / grossDebt", operands: {peak: peak.amount, grossDebt: out(grossDebt)}, result: peak.share_of_gross}, "x");
-    return {gross_debt: out(grossDebt), deductible_cash: out(cash), net_debt: out(grossDebt.minus(cash)), contractual_net_debt: out(contractual), leverage, headroom, peak, cost, anchors};
+    return {gross_debt: out(grossDebt), deductible_cash: out(cash), net_debt: out(grossDebt.minus(cash)), contractual_net_debt: out(contractual), leverage, headroom, headroom_by_instrument: byInstrument, peak, cost, anchors};
   };
 
   const beforeSchedule = Object.fromEntries(maturities.map((entry) => [entry.period, entry.amount]));
@@ -227,6 +256,7 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   const alternatives = input.alternatives.map((alternative): BeforeAfterOutput["alternatives"][number] => {
     const reasons: string[] = [];
     const uncovered: BeforeAfterOutput["alternatives"][number]["uncovered_terms"] = alternative.uncoveredTerms.map((term) => ({id: term, state: "insufficient_evidence" as const, reason: `the alternative lacks ${term}; carried as a gap, not filled`}));
+    if (alternative.newDebt?.termsSource === "indicative_unverified") uncovered.push({id: "new_debt_terms", state: "insufficient_evidence", reason: `the terms of the new debt (${alternative.newDebt.origin}) are indicative and not verified by a term sheet, a proposal or a contract in the base; the after is a declared scenario, not a verified cost`});
     const unpriced = alternative.retired.filter((series) => series.exitPremium === null);
     const transacts = alternative.newDebt !== null || alternative.retired.length > 0;
     if (unpriced.length > 0) reasons.push(`exit cost is not priced for ${unpriced.map((series) => series.seriesId).join(", ")}; the alternative cannot be compared`);
@@ -295,8 +325,8 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
       const cfads = input.before.cfadsByPeriod?.[entry.period];
       let coverage: string | null = null;
       if (cfads !== undefined && total.gt(0)) {
-        const cover = calculateLiquidityCoverage([{period: entry.period, openingCash: d(0), cfads, contractedSources: d(0), principal: out(total), interest: 0}])[0]!;
-        record({id: `financial.liquidity_coverage:${entry.period}`, alternative: alternative.id, formula: "cfads / principal (no opening cash, no interest)", operands: {cfads, principal: out(total)}, result: cover.coverage ?? "n/a"}, "x");
+        const cover = calculateLiquidityCoverage([{period: entry.period, openingCash: d(0), cfads: cfads.value, contractedSources: d(0), principal: out(total), interest: 0}])[0]!;
+        record({id: `financial.liquidity_coverage:${entry.period}`, alternative: alternative.id, formula: "cfads / principal (no opening cash, no interest)", operands: {cfads: cfads.value, principal: out(total), cfadsAnchor: `${cfads.anchor.document}${cfads.anchor.page ? ` p. ${cfads.anchor.page}` : ""}`}, result: cover.coverage ?? "n/a"}, "x");
         coverage = cover.coverage;
       } else if (input.before.cfadsByPeriod && cfads === undefined) uncovered.push({id: `principal_coverage:${entry.period}`, state: "insufficient_evidence", reason: `no cash generation declared for ${entry.period}; its principal cover is not measured and no figure is repeated from another period`});
       return {period: entry.period, existing: out(existing[entry.period]!), proposed: out(proposed[entry.period] ?? d(0)), consolidated: out(total), share_of_gross: out(share), is_wall: d(out(share)).gt(threshold), principal_coverage: coverage};
@@ -306,7 +336,7 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
     record({id: "financial.debt_ledger_balance:after", alternative: alternative.id, formula: "sum(consolidated periods) + adjustments - grossDebtAfter", operands: {schedule: out(afterTotal), grossDebtAfter: out(grossAfter)}, result: out(afterTotal.minus(grossAfter))});
     if (!afterTotal.eq(grossAfter)) reasons.push(`the schedule after sums to ${out(afterTotal)} and the gross debt after is ${out(grossAfter)}; the alternative does not reconcile`);
     if (reasons.length > 0) return {id: alternative.id, label: alternative.label, state: "blocked", block_reasons: reasons, after: null, effective_date: null, temporal_note: null, exit_cost: null, concentration: null, new_debt_service: null, uncovered_terms: uncovered};
-    const afterAnchors: Record<string, Anchor> = {...before.anchors, ...(alternative.newDebt ? {newDebt: alternative.newDebt.anchor, cost: alternative.newDebt.anchor} : {}), ...(alternative.feesPaidFromCash ? {feesPaidFromCash: alternative.feesPaidFromCash.anchor} : {}), ...Object.fromEntries(alternative.retired.flatMap((series) => [[`retired:${series.seriesId}:exit`, series.exitPremium!.anchor], ...series.instalments.flatMap((instalment) => [[`retired:${series.seriesId}:${instalment.period}:principal`, instalment.principal.anchor], [`retired:${series.seriesId}:${instalment.period}:maturity`, instalment.maturityAnchor]])])), ...Object.fromEntries(input.before.schedule.map((row) => [`schedule:${row.period}`, row.anchor]))};
+    const afterAnchors: Record<string, Anchor> = {...before.anchors, ...(alternative.newDebt ? {newDebt: alternative.newDebt.anchor, cost: alternative.newDebt.anchor} : {}), ...(alternative.feesPaidFromCash ? {feesPaidFromCash: alternative.feesPaidFromCash.anchor} : {}), ...Object.fromEntries(alternative.retired.flatMap((series) => [[`retired:${series.seriesId}:exit`, series.exitPremium!.anchor], ...series.instalments.flatMap((instalment) => [[`retired:${series.seriesId}:${instalment.period}:principal`, instalment.principal.anchor], [`retired:${series.seriesId}:${instalment.period}:maturity`, instalment.maturityAnchor]])])), ...Object.fromEntries(input.before.schedule.map((row) => [`schedule:${row.period}`, row.anchor])), ...Object.fromEntries(Object.entries(input.before.cfadsByPeriod ?? {}).map(([period, entry]) => [`cfads:${period}`, entry.anchor]))};
     const after = snapshot(alternative.id, grossAfter, d(proForma.unrestrictedCash), cost, Object.fromEntries(rows.map((row) => [row.period, row.consolidated])), afterAnchors);
     const effectiveDate = alternative.newDebt ? alternative.newDebt.disbursementDate : input.referenceDate;
     return {
@@ -341,7 +371,7 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   } else unsupported.push("no ranking: the discriminator was not declared");
   for (const alternative of alternatives) if (alternative.state === "blocked") unsupported.push(`${alternative.id}: ${alternative.block_reasons.join("; ")}`);
 
-  const body = {schema_version: "method.compare-refinancing-before-after.v6" as const, reference_date: input.referenceDate, unit: input.unit, state: blockReasons.length > 0 ? "blocked" as const : "compared" as const, block_reasons: blockReasons, wall_threshold: input.wallThreshold, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), before, alternatives, ranking, unsupported: [...unsupported].sort(compare)};
+  const body = {schema_version: "method.compare-refinancing-before-after.v7" as const, reference_date: input.referenceDate, unit: input.unit, state: blockReasons.length > 0 ? "blocked" as const : "compared" as const, block_reasons: blockReasons, wall_threshold: input.wallThreshold, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), before, alternatives, ranking, unsupported: [...unsupported].sort(compare)};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }

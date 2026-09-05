@@ -1,6 +1,6 @@
 ---
 id: reconcile-covenant-definitions
-version: 2026.09.05-v13
+version: 2026.09.05-v14
 maturity: implemented
 title_pt: Reconciliar as definições de covenant com as escrituras
 title_en: Reconcile covenant definitions against the indentures
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-covenant-definitions
 implementation_export: reconcileCovenantDefinitions
-result_contract: method.reconcile-covenant-definitions.v13
+result_contract: method.reconcile-covenant-definitions.v14
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -67,7 +67,9 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 
 # Veto jurídico
 - O veto jurídico é consolidado: enquanto qualquer instrumento da base carregar condição jurídica (arrendamento sob o residual, obrigação do numerador sem classificação), nenhum instrumento mede headroom; a comparabilidade fica condicionada com o motivo.
-- A unidade da base é ancorada na fonte que a declara; escala re-rotulada é recusada.
+- A unidade da base é ancorada na fonte que a declara; escala re-rotulada é recusada; a obrigação do numerador leva a sua unidade e candidatos duplicados são recusados.
+- Regra do primeiro vencimento: uma referência vencida ou liquidada ordinariamente encerra o degrau "até", ainda que outra referência não tenha fato; sem nenhum fato desse tipo, a referência sem fato deixa o degrau não provado; aceleração sozinha mantém o degrau.
+- Derivativos entram só no lado que o texto nomeia, nos dois sentidos: lista com derivativos que o texto não nomeia é recusada.
 
 # Julgamentos permitidos
 - Decidir se um pro forma divulgado pela companhia usa a mesma definição da escritura exige comparar componentes, não aceitar o nome.
@@ -85,7 +87,7 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - Nenhuma escritura no pack e o trabalho exige afirmar headroom.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v13`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v14`
 - as_of_date (date, required): data-base da comparação
 - unit (string, required): unidade declarada pelo chamador para toda a base (linhas, EBITDA e aberturas têm de coincidir), presente mesmo no resultado bloqueado; entra no fingerprint, para que uma troca uniforme de escala mude o resultado
 - block_reasons (array, required): motivos estruturados de bloqueio, vazio quando não há

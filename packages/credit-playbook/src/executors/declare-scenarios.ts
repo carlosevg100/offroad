@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `declare-scenarios` (v5, after the fourth independent review). When
+ * Executor of the method `declare-scenarios` (v6, after the fifth independent review). When
  * management data is missing, the work goes on with declared scenarios: every parameter carries its
  * origin, its rationale and an anchor in a document of the class that origin requires; the executor
  * picks, per role and period, the best origin the register offers. A scenario that declares a lever
@@ -103,6 +103,8 @@ export const scenarioInputSchema = z.object({
 }).strict().superRefine((input, context) => {
   if (!UNIT_WORDS[input.unit].test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
   const documents = new Map(input.documents.map((document) => [document.name, document.kind]));
+  const manifestNames = new Set<string>();
+  input.manifest.forEach((entry, index) => { if (manifestNames.has(entry.name)) context.addIssue({code: "custom", path: ["manifest", index], message: `duplicate manifest entry ${entry.name}; a name with two hashes binds nothing`}); manifestNames.add(entry.name); });
   const manifest = new Map(input.manifest.map((entry) => [entry.name, entry.sha256]));
   const names = new Set<string>();
   input.documents.forEach((document, index) => {
@@ -117,6 +119,8 @@ export const scenarioInputSchema = z.object({
   for (const [name, component] of Object.entries(input.position.components)) checkAnchor(component.anchor, ["position", "components", name]);
   if (input.position.ltmEbitda) {
     checkAnchor(input.position.ltmEbitda.anchor, ["position", "ltmEbitda"]);
+    const seenInstruments = new Set<string>();
+    input.position.ltmEbitda.comparabilityByInstrument.forEach((entry, index) => { if (seenInstruments.has(entry.instrument)) context.addIssue({code: "custom", path: ["position", "ltmEbitda", "comparabilityByInstrument", index], message: `duplicate comparability reading for ${entry.instrument}`}); seenInstruments.add(entry.instrument); });
     const start = new Date(`${input.position.ltmEbitda.periodStart}T00:00:00Z`); start.setUTCMonth(start.getUTCMonth() + 12);
     if (start.toISOString().slice(0, 10) !== input.position.ltmEbitda.periodEnd) context.addIssue({code: "custom", path: ["position", "ltmEbitda"], message: `the EBITDA covers ${input.position.ltmEbitda.periodStart} to ${input.position.ltmEbitda.periodEnd}, not twelve months; an annualized shorter period is not an LTM figure`});
     if (input.position.ltmEbitda.periodEnd > input.referenceDate) context.addIssue({code: "custom", path: ["position", "ltmEbitda"], message: "the EBITDA period ends after the reference date"});
@@ -173,7 +177,7 @@ type Calculation = {id: string; scenario: string; formula: string; operands: Rec
 type Assumption = z.infer<typeof assumptionSchema>;
 
 export type ScenarioOutput = {
-  schema_version: "method.declare-scenarios.v5";
+  schema_version: "method.declare-scenarios.v6";
   reference_date: string;
   unit: string;
   state: "declared" | "partial" | "blocked";
@@ -354,7 +358,7 @@ export function declareScenarios(raw: ScenarioInput): ScenarioOutput {
   const minimum = scenarios.filter((scenario) => ["base", "adverse", "no_rollover"].includes(scenario.id));
   const blockReasons = minimum.filter((scenario) => scenario.state === "blocked").map((scenario) => `${scenario.id}: ${scenario.block_reasons.join("; ")}`);
   const state: ScenarioOutput["state"] = blockReasons.length > 0 ? "blocked" : scenarios.some((scenario) => scenario.state === "partial") ? "partial" : "declared";
-  const body = {schema_version: "method.declare-scenarios.v5" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, assumption_register: register, scenarios};
+  const body = {schema_version: "method.declare-scenarios.v6" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, assumption_register: register, scenarios};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }

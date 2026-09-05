@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `reconcile-covenant-definitions` (v12, after the eleventh independent review).
+ * Executor of the method `reconcile-covenant-definitions` (v14, after the thirteenth independent review).
  * It never writes "breached". Each indenture carries the anchor of its definitions and one anchor per
  * tier; EBITDA adjustments are typed (denominator additions versus numerator obligations) and never
  * folded together; the net debt of each instrument is computed from that instrument's own component
@@ -66,8 +66,8 @@ export const ebitdaAdjustmentSchema = z.object({
   kind: z.enum(["denominator_addition", "numerator_obligation", "other"]),
   description: z.string().min(1),
   anchor: indentureAnchorSchema,
-  /** For a numerator obligation: its dated value in the base, or null when the base does not state it. */
-  obligation: z.object({value: nonNegative, asOf: isoDate, anchor: anchorSchema}).strict().nullable().default(null),
+  /** For a numerator obligation: its dated value in the base with its unit, or null when the base does not state it. */
+  obligation: z.object({value: nonNegative, unit: unitSchema, asOf: isoDate, anchor: anchorSchema}).strict().nullable().default(null),
 }).strict();
 
 export const covenantInstrumentSchema = z.discriminatedUnion("source", [
@@ -170,7 +170,9 @@ export const covenantReconciliationInputSchema = z.object({
           const assets = /derivativ[^.;]{0,40}ativ(?!o? ?e)|ativ[^.;]{0,40}derivativ|derivative asset/.test(text);
           if (liabilities && !listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the clause adds derivative liabilities and the structured components omit them`});
           if (assets && !listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the clause deducts derivative assets and the structured components omit them`});
-        }
+          if (!liabilities && listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the structured components add derivative liabilities and the clause never names them`});
+          if (!assets && listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the structured components deduct derivative assets and the clause never names them`});
+        } else if (listed.has("derivative_liabilities") || listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the structured components carry derivatives and the clause never mentions them`});
       }
       const adjustmentIds = new Set<string>();
       instrument.ebitdaAdjustments.forEach((adjustment, position) => {
@@ -191,7 +193,10 @@ export const covenantReconciliationInputSchema = z.object({
     }
   });
   if (input.ltmEbitda && input.ltmEbitda.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["ltmEbitda", "asOf"], message: "the opened EBITDA must be dated at the as-of date"});
+  const candidateIds = new Set<string>();
   input.candidateObligations.forEach((candidate, index) => {
+    if (candidateIds.has(candidate.id)) context.addIssue({code: "custom", path: ["candidateObligations", index], message: `duplicate candidate ${candidate.id}`});
+    candidateIds.add(candidate.id);
     if (candidate.unit !== input.unit) context.addIssue({code: "custom", path: ["candidateObligations", index, "unit"], message: `candidate ${candidate.id} is stated in ${candidate.unit}, not the base unit ${input.unit}`});
     if (candidate.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["candidateObligations", index, "asOf"], message: `candidate ${candidate.id} is dated ${candidate.asOf}, not the as-of date ${input.asOfDate}`});
   });
@@ -203,6 +208,7 @@ export const covenantReconciliationInputSchema = z.object({
     instrument.ebitdaAdjustments.forEach((adjustment, position) => {
       if (adjustment.obligation && adjustment.kind !== "numerator_obligation") context.addIssue({code: "custom", path: ["instruments", index, "ebitdaAdjustments", position, "obligation"], message: "only a numerator obligation carries an obligation value"});
       if (adjustment.obligation && adjustment.obligation.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["instruments", index, "ebitdaAdjustments", position, "obligation", "asOf"], message: "an obligation value must be dated at the as-of date"});
+      if (adjustment.obligation && adjustment.obligation.unit !== input.unit) context.addIssue({code: "custom", path: ["instruments", index, "ebitdaAdjustments", position, "obligation", "unit"], message: `the obligation "${adjustment.id}" is stated in ${adjustment.obligation.unit}, not the base unit ${input.unit}`});
     });
   });
   if (input.reported && input.reported.asOf > input.asOfDate) context.addIssue({code: "custom", path: ["reported", "asOf"], message: "the reported index is dated after the as-of date"});
@@ -223,6 +229,8 @@ export const covenantReconciliationInputSchema = z.object({
       const mentionsAssets = /derivativ[^.;]{0,40}ativ(?!o? ?e)|ativ[^.;]{0,40}derivativ|derivative asset/.test(text);
       if (mentionsLiabilities && !listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the reported definition text adds derivative liabilities and the structured components omit them"});
       if (mentionsAssets && !listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the reported definition text deducts derivative assets and the structured components omit them"});
+      if (!mentionsLiabilities && mentionsAssets && listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the structured components add derivative liabilities and the reported definition text names only derivative assets"});
+      if (mentionsLiabilities && !mentionsAssets && listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the structured components deduct derivative assets and the reported definition text names only derivative liabilities"});
       if (!mentionsLiabilities && !mentionsAssets && (listed.has("derivative_liabilities") || listed.has("derivative_assets"))) context.addIssue({code: "custom", path: ["reported", "definition"], message: "the reported definition text mentions derivatives without their side (liabilities added, assets deducted); the polarity must be readable"});
     }
     if (/somente|apenas|only/.test(text) && input.reported.netDebtComponents.length > 2) context.addIssue({code: "custom", path: ["reported", "definition"], message: "the reported definition text restricts itself (somente/apenas/only) while the structured components list several; the literal definition and the structured components disagree"});
@@ -234,7 +242,7 @@ type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type CovenantReconciliationOutput = {
-  schema_version: "method.reconcile-covenant-definitions.v13";
+  schema_version: "method.reconcile-covenant-definitions.v14";
   as_of_date: string;
   /** The unit every value below is expressed in; part of the output and of its fingerprint. */
   unit: string;
@@ -375,6 +383,11 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
       const label = condition.referenceInstruments.join(", ");
       if (condition.type === "until_reference_settled") {
         // "Whichever comes first" across the references: the tier ends at the first maturity or dated ordinary settlement.
+        // "Whichever comes first": one reference that matured or was settled ordinarily ends the tier, whatever the facts of the others; without any such fact, a missing fact keeps it unproven, and an acceleration alone keeps it.
+        if (over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "ended", anchor: tier.anchor});
+          return;
+        }
         if (over.some((state) => state === "unknown")) {
           tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "unproven", anchor: tier.anchor});
           conditions.push(`the end of the ${tier.limit}x tier requires the maturity or settlement facts of every reference (${label}); the base lacks them for ${condition.referenceInstruments.filter((_reference, position) => over[position] === "unknown").join(", ")}${over.some((state) => state === "accelerated") ? "; an accelerated settlement of another reference does not settle the question" : ""}`);
@@ -550,7 +563,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schema_version: "method.reconcile-covenant-definitions.v13" as const,
+    schema_version: "method.reconcile-covenant-definitions.v14" as const,
     as_of_date: input.asOfDate,
     unit,
     state,

@@ -146,7 +146,13 @@ export const debtLedgerInputSchema = z.object({
     if (ids.has(row.id)) context.addIssue({code: "custom", path: ["rows"], message: `duplicate row id ${row.id}`});
     ids.add(row.id);
     // A securitizer is a formal holder; the economic creditors are the holders of the certificates it issued, never the securitizer itself.
-    if (row.lender?.formalHolder && row.lender.economicCreditors && /securitiz/i.test(row.lender.formalHolder) && /securitiz/i.test(row.lender.economicCreditors) && !/titular|holder|investidor|investor|cra|cri/i.test(row.lender.economicCreditors)) context.addIssue({code: "custom", path: ["rows"], message: `${row.id}: a securitizer (${row.lender.formalHolder}) is the formal holder; the economic creditors are the holders of the certificates, not the securitizer`});
+    if (row.lender?.formalHolder && row.lender.economicCreditors && /securitiz/i.test(row.lender.formalHolder)) {
+      const creditors = row.lender.economicCreditors;
+      const holders = /titular|holder|investidor|investor/i.exec(creditors);
+      const securitizer = /securitiz/i.exec(creditors);
+      // The holders of the certificates come first and the securitizer, when named, only after them as the issuer of the certificates; a phrase that names the securitizer as titular, creditor or co-creditor is refused whatever else it mentions.
+      if (!holders || (securitizer && securitizer.index < holders.index)) context.addIssue({code: "custom", path: ["rows"], message: `${row.id}: a securitizer (${row.lender.formalHolder}) is the formal holder; the economic creditors are the holders of the certificates, not the securitizer, and the phrase "${creditors}" names the securitizer ${holders ? "before" : "without"} the holders`});
+    }
   }
   const periods = new Set<string>();
   // Instrument-by-instrument check when the note allocates the buckets: every allocation names a row, each period's allocations sum to its amount, and each row's balance is fully placed.
@@ -157,8 +163,11 @@ export const debtLedgerInputSchema = z.object({
     input.schedule.periods.forEach((period, index) => {
       const total = (period.allocations ?? []).reduce((sum, allocation) => sum.plus(allocation.amount), new Decimal(0));
       if (!total.eq(period.amount)) context.addIssue({code: "custom", path: ["schedule", "periods", index], message: `period ${period.period}: the allocations sum to ${total.toFixed()}, not ${period.amount}`});
+      const seen = new Set<string>();
       for (const allocation of period.allocations ?? []) {
         if (!rowIds.has(allocation.rowId)) context.addIssue({code: "custom", path: ["schedule", "periods", index], message: `period ${period.period} allocates ${allocation.rowId}, which is not a row of the ledger`});
+        if (seen.has(allocation.rowId)) context.addIssue({code: "custom", path: ["schedule", "periods", index], message: `period ${period.period} allocates ${allocation.rowId} twice; one allocation per row and period, so the canonical order is total`});
+        seen.add(allocation.rowId);
         placed.set(allocation.rowId, (placed.get(allocation.rowId) ?? new Decimal(0)).plus(allocation.amount));
       }
     });
@@ -179,7 +188,7 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schema_version: "method.build-debt-ledger.v14";
+  schema_version: "method.build-debt-ledger.v15";
   reference_date: string;
   prior_date: string | null;
   unit: string;
@@ -495,7 +504,7 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.build-debt-ledger.v14" as const,
+    schema_version: "method.build-debt-ledger.v15" as const,
     reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, unit_anchor: input.unitAnchor, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),

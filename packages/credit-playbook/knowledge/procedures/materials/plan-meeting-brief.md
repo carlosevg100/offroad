@@ -97,7 +97,7 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 - refused_questions (array, required): perguntas recusadas com o motivo: a base já responde (com a âncora da resposta), nenhuma busca da base foi declarada, a resposta não muda o trabalho, ou além das três que mais mudam
 - not_produced_here (array, required): o que este executor não produz: a prosa das páginas é etapa assistida por modelo depois do plano confirmado
 - ambiguity_named (string, optional): o que a instrução do patrocinador deixou indefinido, declarado pelo chamador e nomeado na devolutiva
-- change_note (object, optional): contra a versão anterior: blocos que mudaram de estado ou de objetos e objetos cujo fingerprint mudou, entraram ou saíram
+- change_note (object, optional): null na primeira versão (sem versão anterior); contra a versão anterior: blocos que mudaram de estado ou de objetos e objetos cujo fingerprint mudou, entraram ou saíram
 - uncovered_terms (array, required): todos os blocos em lacuna (perguntas pendentes incluídas) e objetos pendentes (condicionados, parciais, com divergências), como insufficient_evidence, cada um com o motivo e os achados carregados como condição
 - trace (object, required): fingerprint canônico da entrada e da saída
 

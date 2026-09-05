@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `estimate-exit-cost-by-series` (v7, after the fifth independent review).
+ * Executor of the method `estimate-exit-cost-by-series` (v8, after the sixth independent review).
  * For each series an alternative wants to retire on a date: which mechanisms its indenture offers on
  * that date, each with its own formula, scope and quote day, and what each costs with what the base
  * holds. The base of any price is the nominal at the exit date (updated where indexed, with the
@@ -217,12 +217,12 @@ export const exitCostInputSchema = z.object({
 });
 export type ExitCostInput = z.input<typeof exitCostInputSchema>;
 
-/** Weekdays strictly after `from` up to and including `to`, the ceiling of any business-day count. */
+/** Weekdays from `from` inclusive to `to` exclusive, as the indentures count business days (exit date included, maturity excluded); the ceiling of any business-day count. */
 export function weekdaysBetween(from: string, to: string): number {
   const start = new Date(`${from}T00:00:00Z`);
   const end = new Date(`${to}T00:00:00Z`);
   let count = 0;
-  for (let day = new Date(start.getTime() + 86_400_000); day <= end; day = new Date(day.getTime() + 86_400_000)) {
+  for (let day = start; day < end; day = new Date(day.getTime() + 86_400_000)) {
     const weekday = day.getUTCDay();
     if (weekday !== 0 && weekday !== 6) count += 1;
   }
@@ -242,7 +242,7 @@ type Route = {
 };
 
 export type ExitCostOutput = {
-  schema_version: "method.estimate-exit-cost-by-series.v7";
+  schema_version: "method.estimate-exit-cost-by-series.v8";
   exit_date: string;
   unit: string;
   state: "complete" | "partial" | "empty";
@@ -341,11 +341,12 @@ export function estimateExitCostBySeries(raw: ExitCostInput): ExitCostOutput {
         const flows = series.remainingFlows.map((flow) => ({id: flow.id, amount: flow.amount, businessDays: flow.businessDaysFromExit}));
         // The indentures round each discount factor (FVPk, FVPd) at nine decimals before discounting.
         const present = presentValueByBusinessDays(flows, mechanism.quote.rate, {factorDecimals: 9});
-        const duration = macaulayDurationBusinessDays(flows, series.remunerationRate.value);
+        // The duration that selects the security uses the same nine-decimal factors the indenture writes for FVPd.
+        const duration = macaulayDurationBusinessDays(flows, series.remunerationRate.value, {factorDecimals: 9});
         calculations.push({...present.trace, id: `${present.trace.id}:${series.id}:${mechanism.mechanism}`, unit: input.unit});
         calculations.push({...duration.trace, id: `${duration.trace.id}:${series.id}:${mechanism.mechanism}`, formula: `${duration.trace.formula}, discounted at the series' remuneration`, unit: "business days"});
         // The same weights over calendar days give the duration a Pre x DI vertex is chosen by.
-        const weighted = presentValueByBusinessDays(flows, series.remunerationRate.value);
+        const weighted = presentValueByBusinessDays(flows, series.remunerationRate.value, {factorDecimals: 9});
         const calendarDuration = weighted.discounted.reduce((sum, flow) => sum.plus(d(flow.presentValue).times(series.remainingFlows!.find((entry) => entry.id === flow.id)!.calendarDaysFromExit)), d(0)).div(weighted.value);
         record({id: `financial.duration_calendar_days:${series.id}:${mechanism.mechanism}`, formula: "sum(calendarDays * presentValue at remuneration) / sum(presentValue at remuneration)", operands: {remunerationRate: series.remunerationRate.value, flows: String(flows.length)}, result: out(calendarDuration)}, "calendar days");
         // The reference security must be the candidate nearest to the series' duration on the count the indenture uses; ties are recorded, never broken by name in silence.
@@ -394,7 +395,7 @@ export function estimateExitCostBySeries(raw: ExitCostInput): ExitCostOutput {
   };
   if (input.series.length === 0) record({id: "structure.exit_cost:none", formula: "no series to retire", operands: {}, result: "0"});
   const state: ExitCostOutput["state"] = input.series.length === 0 ? "empty" : totals.series_open > 0 ? "partial" : "complete";
-  const body = {schema_version: "method.estimate-exit-cost-by-series.v7" as const, exit_date: input.exitDate, unit: input.unit, state, exit_costs: exitCosts, uncovered_terms: uncovered, totals};
+  const body = {schema_version: "method.estimate-exit-cost-by-series.v8" as const, exit_date: input.exitDate, unit: input.unit, state, exit_costs: exitCosts, uncovered_terms: uncovered, totals};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }

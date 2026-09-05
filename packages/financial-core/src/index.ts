@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.05-v12";
+export const financialCoreVersion = "2026.09.05-v13";
 
 export * from "./financial-truth";
 export * from "./indexed-debt";
@@ -264,13 +264,13 @@ export function presentValueByBusinessDays(flows: Array<{id: string; amount: str
 }
 
 /** Macaulay duration in business days of dated flows at an annual effective rate: sum(DU * PV) / sum(PV). */
-export function macaulayDurationBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string): {value: string; trace: CalculationTrace} {
-  const present = presentValueByBusinessDays(flows, annualRate);
+export function macaulayDurationBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string, options: {factorDecimals?: number; presentValueDecimals?: number} = {}): {value: string; trace: CalculationTrace} {
+  const present = presentValueByBusinessDays(flows, annualRate, options);
   const total = new Decimal(present.value);
   if (total.isZero()) throw new Error("duration is undefined for flows with zero present value");
   const weighted = present.discounted.reduce((sum, flow) => sum.plus(new Decimal(flow.presentValue).times(flow.businessDays)), new Decimal(0));
   const value = weighted.div(total).toDecimalPlaces(8).toFixed();
-  return {value, trace: {id: "financial.macaulay_duration_business_days", formula: "sum(businessDays * presentValue) / sum(presentValue)", operands: {annualRate, flows: String(flows.length), presentValue: present.value}, result: value}};
+  return {value, trace: {id: "financial.macaulay_duration_business_days", formula: "sum(businessDays * presentValue) / sum(presentValue)", operands: {annualRate, flows: String(flows.length), presentValue: present.value, factorDecimals: options.factorDecimals === undefined ? "none" : String(options.factorDecimals)}, result: value}};
 }
 
 /**

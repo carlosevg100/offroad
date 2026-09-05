@@ -1,6 +1,6 @@
 ---
 id: build-debt-ledger
-version: 2026.09.05-v14
+version: 2026.09.05-v15
 maturity: implemented
 title_pt: Construir o ledger de dívida
 title_en: Build the debt ledger
@@ -10,7 +10,7 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-debt-ledger
 implementation_export: buildDebtLedger
-result_contract: method.build-debt-ledger.v14
+result_contract: method.build-debt-ledger.v15
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -82,7 +82,7 @@ sustenta.
 - Nota de dívida ausente no período mais recente disponível.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.build-debt-ledger.v14`
+- schema_version (string, required): identificador do contrato de resultado, `method.build-debt-ledger.v15`
 - reference_date (date, required): data-base do ledger
 - prior_date (date, optional): data-base anterior; ausente quando a base não a traz
 - unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
@@ -129,3 +129,6 @@ sustenta.
 ## Regras
 - Conflito entre fontes não é média: registrar as duas com a diferença.
 - Ausência não é zero: vira `insufficient_evidence` com o motivo.
+- Credor econômico de série detida por securitizadora: os titulares dos certificados vêm primeiro e a securitizadora, se nomeada, só depois deles como emissora dos certificados; frase que a nomeia como titular, credora ou co-credora é recusada mesmo citando titulares e CRA.
+- Alocação por instrumento: um lançamento por linha e período (linha repetida no mesmo período é recusada), ordem canônica total, fingerprints estáveis sob permutação das alocações.
+- Condições registradas, não bloqueios: a inclusão de arrendamento na dívida bruta contratual e a expressão "credores econômicos" ficam condicionadas a revisão jurídica especializada (condição jurídica sem fonte na base).

@@ -1,6 +1,6 @@
 ---
 id: estimate-exit-cost-by-series
-version: 2026.09.05-v7
+version: 2026.09.05-v8
 maturity: implemented
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/estimate-exit-cost-by-series
 implementation_export: estimateExitCostBySeries
-result_contract: method.estimate-exit-cost-by-series.v7
+result_contract: method.estimate-exit-cost-by-series.v8
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -69,7 +69,7 @@ na data-base, custo estimado e o que falta para fechar o número.
 - Prêmio DI: P = [(1 + p)^(DU/252) − 1] sobre o preço unitário, truncado em oito casas, vezes a quantidade de debêntures; sem quantidade na base, truncado uma vez sobre o agregado e declarado como aproximação.
 - Make-whole IPCA e prefixado: fluxos remanescentes descontados na cotação do dia contratual (o dia útil anterior ou o segundo anterior, como a série escreve; a distância é conferida contra o calendário), comparados com o valor atualizado quando a série tem piso, mais os encargos que a escritura soma depois; a duration que escolhe o título de referência é descontada pela remuneração da própria série; cotação de outro dia, fluxos ou remuneração ausentes são insufficient_evidence; valor presente e duration calculados no financial-core.
 - Oferta negociada é permitida desde a emissão; o prêmio é o que o edital diz (taxa, valor por debênture ou total) e o que se retira é o que aderiu (parcial ou integral, nunca acima de 100%); prêmio conhecido sem adesão não retira nada ainda; aquisição facultativa tem preço no vendedor.
-- Dias úteis são os dias de semana menos os feriados do calendário da base, no prêmio DI como na distância da cotação; o título ou vértice de referência tem de ser o mais próximo entre os candidatos que a fonte lista (NTN-B por duration em dias úteis, vértice Pré x DI por dias corridos), empates registrados; a curva de referência corresponde à família do mecanismo; fatores de desconto arredondados em nove casas; mecanismos que a escritura oferece e a entrada não representa viram lacunas nomeadas; datas civis reais.
+- Dias úteis são os dias de semana menos os feriados do calendário da base, no prêmio DI como na distância da cotação; o título ou vértice de referência tem de ser o mais próximo entre os candidatos que a fonte lista (NTN-B por duration em dias úteis, vértice Pré x DI por dias corridos), empates registrados; a curva de referência corresponde à família do mecanismo; fatores de desconto arredondados em nove casas, também na duration que escolhe o título ou vértice; dias úteis contados da saída inclusive ao vencimento exclusive, como as escrituras (7.16.1.2); mecanismos que a escritura oferece e a entrada não representa viram lacunas nomeadas; datas civis reais.
 - Saída integral mais barata escolhida por comparação numérica.
 
 # Julgamentos permitidos
@@ -87,7 +87,7 @@ na data-base, custo estimado e o que falta para fechar o número.
 - Nenhuma escritura da série no pack e a alternativa depende dela.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.estimate-exit-cost-by-series.v7`
+- schema_version (string, required): identificador do contrato de resultado, `method.estimate-exit-cost-by-series.v8`
 - exit_date (date, required): data de saída para a qual cada preço é medido
 - unit (enum, required): unidade de todos os valores (BRL, BRL thousand, BRL million, USD, USD thousand)
 - state (enum, required): complete quando toda série tem uma saída integral estimada, partial quando alguma fica aberta, empty sem séries | values: complete, partial, empty

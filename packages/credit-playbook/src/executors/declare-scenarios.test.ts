@@ -9,7 +9,26 @@ const d = (value: Decimal.Value) => new Decimal(value);
 const itr = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, ...(note ? {note} : {})});
 const user = (note?: string) => ({document: "declaracao_do_usuario.md", ...(note ? {note} : {})});
 const asOf = "2026-05-31";
+/**
+ * The frozen gold corpus (docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json): real names and SHA-256.
+ * The corpus holds no user declaration, no versioned benchmark file and no management data, so the gold run cannot
+ * source CFADS, shocks or a rollover: it is blocked, honestly. The mechanics are exercised on a synthetic manifest
+ * labelled as such below.
+ */
+const goldManifest: ScenarioInput["manifest"] = [
+  {name: "01_ITR_1T26_31mai2026.txt", sha256: "05c8f9e9f8243b907036953e297873fc20870d3478086ad783393b79b0393c79"},
+  {name: "escritura_13a_emissao.txt", sha256: "063f59f6892d919df3355b9ed6050f35d76c3261c5c6ec5f6e73327fdb474e23"},
+  {name: "escritura_11a_emissao.txt", sha256: "478fb2cd6d7f07965b5365cfbf3ae83f1b332a25ca9e536be0507d74431e8c96"},
+  {name: "ca_notas_comerciais_2026-05-27.txt", sha256: "1bd55c5140c81cf51a79daece6f7027aa6b3911c7995da42b65729df71879ebe"},
+  {name: "anbima_ettj_2026-09-04.csv", sha256: "531e97d7ead363068fc801156d29043024390ee9bc5bc105fb85917c607c9129"},
+];
+const goldDocuments: ScenarioInput["documents"] = [
+  {name: "01_ITR_1T26_31mai2026.txt", kind: "itr", sha256: "05c8f9e9f8243b907036953e297873fc20870d3478086ad783393b79b0393c79"},
+  {name: "escritura_13a_emissao.txt", kind: "indenture", sha256: "063f59f6892d919df3355b9ed6050f35d76c3261c5c6ec5f6e73327fdb474e23"},
+  {name: "ca_notas_comerciais_2026-05-27.txt", kind: "announcement", sha256: "1bd55c5140c81cf51a79daece6f7027aa6b3911c7995da42b65729df71879ebe"},
+];
 const sha = (seed: string) => seed.padEnd(64, "0");
+/** Synthetic manifest for the mechanics tests, not the gold corpus: every name below is hypothetical and declared so. */
 const manifest: ScenarioInput["manifest"] = [
   {name: "01_ITR_1T26_31mai2026.pdf", sha256: sha("a1")}, {name: "declaracao_do_usuario.md", sha256: sha("b2")}, {name: "reference-data.ts", sha256: sha("c3")}, {name: "gc02-gabarito-rascunho.md", sha256: sha("d4")},
   {name: "escritura_13a_emissao.pdf", sha256: sha("e5")}, {name: "ca_notas_comerciais_2026-05-27.pdf", sha256: sha("f6")}, {name: "contrato_hipotetico.pdf", sha256: sha("a7")}, {name: "extrato_hipotetico.pdf", sha256: sha("b8")}, {name: "orcamento_gerencial_hipotetico.xlsx", sha256: sha("c9")},
@@ -19,11 +38,39 @@ const documents: ScenarioInput["documents"] = [
   {name: "gc02-gabarito-rascunho.md", kind: "other", sha256: sha("d4")}, {name: "escritura_13a_emissao.pdf", kind: "indenture", sha256: sha("e5")}, {name: "ca_notas_comerciais_2026-05-27.pdf", kind: "announcement", sha256: sha("f6")},
   {name: "contrato_hipotetico.pdf", kind: "contract", sha256: sha("a7")}, {name: "extrato_hipotetico.pdf", kind: "disbursement_proof", sha256: sha("b8")}, {name: "orcamento_gerencial_hipotetico.xlsx", kind: "management", sha256: sha("c9")},
 ];
+const itrTxt = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.txt", page, ...(note ? {note} : {})});
+/** Camil on the frozen corpus: the base holds the position, the periods and the covenant, and no assumption can be sourced; the minimum set is blocked. */
+const gold = (): ScenarioInput => ({
+  referenceDate: asOf,
+  unit: "BRL thousand",
+  unitAnchor: {document: "01_ITR_1T26_31mai2026.txt", page: 39, note: "nota 15, valores em R$ mil"},
+  manifest: goldManifest,
+  documents: goldDocuments,
+  assumptions: [
+    {key: "rollover.announced", role: "rollover", period: null, value: "1", unit: "ratio", origin: "public_announcement", rationale: "a ata de 27/05/2026 aprova novas captações; não é uma política de rolagem, entra só para que o registro não fique vazio e é a única premissa que o corpus permite citar", asOf, anchor: {document: "ca_notas_comerciais_2026-05-27.txt", page: 2}, confidence: "low"},
+  ],
+  position: {
+    perimeter: "consolidated",
+    components: {grossDebt: {value: "5670186", anchor: itrTxt(39, "15")}, derivativeLiabilities: {value: "14335", anchor: itrTxt(51, "25")}, derivativeAssets: {value: "235", anchor: itrTxt(51, "25")}, cashAndEquivalents: {value: "1430714", anchor: itrTxt(20, "3")}, financialInvestments: {value: "25095", anchor: itrTxt(11)}},
+    ltmEbitda: {value: "895864", periodStart: "2025-05-31", periodEnd: "2026-05-31", definitionKey: "ebitda.covenant_ltm", basis: "implied_from_reported_index", comparabilityByInstrument: [{instrument: "13ª emissão", comparability: "conditional", reasons: ["a companhia não abre o EBITDA; o valor é implícito de 4,72x sobre 4.228.477 (cerca de 895.900)"]}], anchor: itrTxt(40, "15: 4.228.477 / 4,72, derivado, aproximado")},
+    averageDebtBalance: {value: "5329284.5", basis: "média simples dos saldos de 28/02/2026 e 31/05/2026", anchor: itrTxt(39, "15")},
+    baseAnnualRate: {value: "0.1246", basis: "juros e variações da nota 15 sobre o saldo médio, trimestre anualizado (aproximação)", anchor: itrTxt(40, "15")},
+  },
+  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", tier: {applicability: "conditional", condition: "4,00x aplicável no exercício encerrado depois da quitação integral dos CRA de referência, condicionado à prova; 3,50x até o vencimento ou a liquidação deles"}, state: "insufficient_evidence", comparability: "conditional", measurement: {frequency: "annual", nextDate: "2027-02-28"}, anchor: {document: "escritura_13a_emissao.txt", clause: "7.24.3(VIII)", page: 55}},
+  periods: [
+    {period: "2026/27", endsAt: "2027-05-31", principal: {value: "1229828", anchor: itrTxt(40, "15, cronograma")}, interest: null},
+    {period: "2027/28", endsAt: "2028-05-31", principal: {value: "776868", anchor: itrTxt(40, "15, cronograma")}, interest: null},
+  ],
+  scenarios: [
+    {id: "base", label: "Base", rolloverAllowed: true},
+    {id: "adverse", label: "Adverso", rolloverAllowed: true, usesRateShock: true, usesEbitdaHaircut: true},
+    {id: "no_rollover", label: "Sem rolagem", rolloverAllowed: false},
+  ],
+});
 /**
- * Camil without management data, R$ thousand: CFADS is a declared range per window of the ledger's
- * schedule (the base holds no cash generation for debt service), rollover is a declared assumption
- * from the company's history, the approved operations are not sources, interest per period is not
- * in the base (the cover is principal-only), and the covenant limit is not resolved.
+ * Hypothetical fixture on the synthetic manifest (not the gold corpus): the position of Camil with declared
+ * ranges for CFADS, shock, haircuts and rollover, so the mechanics of the executor are exercised; every
+ * declared document is hypothetical and labelled so.
  */
 const camil = (): ScenarioInput => ({
   referenceDate: asOf,
@@ -59,10 +106,26 @@ const camil = (): ScenarioInput => ({
 });
 const by = (result: ReturnType<typeof declareScenarios>, id: string) => result.scenarios.find((scenario) => scenario.id === id)!;
 
-describe("declare-scenarios executor (v3)", () => {
+describe("declare-scenarios executor (v6)", () => {
+  it("gold on the frozen corpus: no CFADS, shock or haircut can be sourced, so the minimum set is blocked and nothing is filled", () => {
+    const result = declareScenarios(gold());
+    expect(result.schema_version).toBe("method.declare-scenarios.v6");
+    expect(result.state).toBe("blocked");
+    expect(result.block_reasons.some((reason) => /^adverse:/.test(reason))).toBe(true);
+    expect(by(result, "adverse").state).toBe("blocked");
+    expect(by(result, "base").state).toBe("partial");
+    expect(by(result, "base").results.liquidity).toBeNull();
+    expect(by(result, "base").uncovered_terms.map((term) => term.id)).toEqual(expect.arrayContaining(["cfads:2026/27", "cfads:2027/28"]));
+    expect(by(result, "base").results.pro_forma.contractual_net_debt).toBe("4228477");
+    expect(by(result, "base").results.pro_forma.leverage?.value).toBe("4.72");
+    // A document outside the frozen manifest, or with another hash, is refused.
+    expect(() => declareScenarios({...gold(), documents: [...goldDocuments, {name: "declaracao_do_usuario.md", kind: "user", sha256: sha("b2")}]})).toThrow(/not in the corpus manifest/);
+    expect(() => declareScenarios({...gold(), documents: goldDocuments.map((document) => (document.kind === "itr" ? {...document, sha256: sha("a1")} : document))})).toThrow(/carries a hash the manifest does not record/);
+  });
+
   it("gold: net debt follows the contractual components, leverage carries the EBITDA's comparability, no headroom against an inapplicable unresolved tier, and every number carries origins with anchors", () => {
     const result = declareScenarios(camil());
-    expect(result.schema_version).toBe("method.declare-scenarios.v5");
+    expect(result.schema_version).toBe("method.declare-scenarios.v6");
     expect(result.state).toBe("partial");
     for (const scenario of result.scenarios) {
       expect(scenario.caveat).toMatch(/não é guidance da companhia/);
@@ -167,6 +230,8 @@ describe("declare-scenarios executor (v3)", () => {
     // Documents are checked against the manifest by name and hash.
     expect(() => declareScenarios({...base, documents: base.documents.map((document) => (document.name === "reference-data.ts" ? {...document, sha256: sha("ff")} : document))})).toThrow(/carries a hash the manifest does not record/);
     expect(() => declareScenarios({...base, documents: [...base.documents, {name: "documento_fora_do_manifesto.pdf", kind: "other", sha256: sha("ee")}]})).toThrow(/not in the corpus manifest/);
+    expect(() => declareScenarios({...base, manifest: [...base.manifest, {name: "reference-data.ts", sha256: sha("dd")}]})).toThrow(/duplicate manifest entry reference-data.ts/);
+    expect(() => declareScenarios({...base, position: {...base.position, ltmEbitda: {...base.position.ltmEbitda!, comparabilityByInstrument: [...base.position.ltmEbitda!.comparabilityByInstrument, {instrument: "13ª emissão", comparability: "comparable", reasons: []}]}}})).toThrow(/duplicate comparability reading for 13ª emissão/);
     // The adverse scenario of the minimum set needs the rate shock and the EBITDA haircut, both.
     expect(() => declareScenarios({...base, scenarios: base.scenarios.map((scenario) => (scenario.id === "adverse" ? {...scenario, usesRateShock: false} : scenario))})).toThrow(/shocks the rate and haircuts the EBITDA, both/);
     const announcement = {...base, assumptions: [...base.assumptions, {key: "source.notas", role: "contracted_source" as const, period: "2026/27", value: "251000", unit: "BRL thousand" as const, origin: "public_announcement" as const, rationale: "notas comerciais aprovadas", asOf, anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, confidence: "medium" as const, evidence: {contract: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, disbursement: null}}]};

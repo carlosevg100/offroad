@@ -151,7 +151,7 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     const deb11 = by(result, "deb-11");
     expect(deb11.comparability).toBe("conditional");
     expect(deb11.headroom).toBeNull();
-    const priced: CovenantReconciliationInput = {...opened, instruments: opened.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: [adjustments11[0]!, {...adjustments11[1]!, obligation: {value: "100000", asOf, anchor: itr(47, "hipotético: obrigação por aquisição")}}]} : instrument)};
+    const priced: CovenantReconciliationInput = {...opened, instruments: opened.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: [adjustments11[0]!, {...adjustments11[1]!, obligation: {value: "100000", unit, asOf, anchor: itr(47, "hipotético: obrigação por aquisição")}}]} : instrument)};
     const pricedResult = reconcileCovenantDefinitions(priced);
     expect(by(pricedResult, "deb-11").netDebtByDefinition?.value).toBe("4328477");
     expect(by(pricedResult, "deb-11").comparability).toBe("conditional");
@@ -333,7 +333,7 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     expect(by(parentLines, "deb-13").comparabilityReasons.some((reason) => reason.includes("parent perimeter"))).toBe(true);
     const parentEbitda = reconcileCovenantDefinitions({...base, reported: null, ltmEbitda: {value: "895864", unit, perimeter: "parent", asOf, months: 12, incorporatesAdjustments: [], anchor: itr(40)}});
     expect(by(parentEbitda, "deb-13").comparability).toBe("not_comparable");
-    const valued = reconcileCovenantDefinitions({...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: [adjustments11[0]!, {...adjustments11[1]!, obligation: {value: "100000", asOf, anchor: itr(47, "hipotético")}}]} : instrument)});
+    const valued = reconcileCovenantDefinitions({...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: [adjustments11[0]!, {...adjustments11[1]!, obligation: {value: "100000", unit, asOf, anchor: itr(47, "hipotético")}}]} : instrument)});
     expect(by(valued, "deb-11").netDebtByDefinition?.value).toBe("4328477");
     expect(by(valued, "deb-11").index?.ebitda?.value.startsWith("895863.77")).toBe(true);
   });
@@ -444,5 +444,22 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     const otherDate = camil("unknown");
     otherDate.candidateObligations = [{id: "c", description: "candidata de outra data", value: "27119", unit, asOf: "2026-02-28", relatedAdjustmentId: "sellers-finance", anchor: itr(41, "nota 16")}];
     expect(() => reconcileCovenantDefinitions(otherDate)).toThrow(/dated 2026-02-28, not the as-of date/);
+  });
+
+  it("mutation: derivatives listed on a side the clause never names are refused, a known maturity ends the until tier whatever the other reference's facts, an obligation in another unit and duplicate candidates are refused", () => {
+    const onlyLiabilities = camil("unknown");
+    onlyLiabilities.instruments = onlyLiabilities.instruments.map((instrument) => (instrument.source === "indenture" && instrument.id === "deb-13" ? {...instrument, netDebtDefinition: "empréstimos e financiamentos, debêntures e instrumentos financeiros derivativos passivos, menos caixa e equivalentes e aplicações financeiras", netDebtComponents: ["loans_and_financings", "debentures", "derivative_liabilities", "derivative_assets", "cash_and_equivalents", "financial_investments"]} : instrument));
+    expect(() => reconcileCovenantDefinitions(onlyLiabilities)).toThrow(/deduct derivative assets and the clause never names them/);
+    // cra-eco-5 matured on 16/04/2025 (facts known); cra-eco-257 loses its facts: the 13th's until tier still ends at the first maturity.
+    const firstMaturity = camil("ordinary");
+    firstMaturity.referenceSettlements = firstMaturity.referenceSettlements!.filter((fact) => fact.instrument !== "cra-eco-257");
+    const result = reconcileCovenantDefinitions(firstMaturity);
+    expect(by(result, "deb-13").tiers.map((tier) => tier.state)).toEqual(["ended", "unproven"]);
+    const otherUnit = camil("unknown");
+    otherUnit.instruments = otherUnit.instruments.map((instrument) => (instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: instrument.ebitdaAdjustments!.map((adjustment) => (adjustment.kind === "numerator_obligation" ? {...adjustment, obligation: {value: "78", unit: "BRL million" as const, asOf, anchor: itr(41, "nota 16")}} : adjustment))} : instrument));
+    expect(() => reconcileCovenantDefinitions(otherUnit)).toThrow(/stated in BRL million, not the base unit/);
+    const duplicates = camil("unknown");
+    duplicates.candidateObligations = [{id: "c", description: "a", value: "1", unit, asOf, relatedAdjustmentId: null, anchor: itr(41)}, {id: "c", description: "b", value: "2", unit, asOf, relatedAdjustmentId: null, anchor: itr(41)}];
+    expect(() => reconcileCovenantDefinitions(duplicates)).toThrow(/duplicate candidate c/);
   });
 });

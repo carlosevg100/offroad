@@ -1,4 +1,4 @@
-import {presentValueByBusinessDays} from "@offroad/financial-core";
+import {macaulayDurationBusinessDays, presentValueByBusinessDays} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
@@ -120,10 +120,10 @@ const priced = (): ExitCostInput => ({
 const series = (result: ReturnType<typeof estimateExitCostBySeries>, id: string) => result.exit_costs.find((entry) => entry.series_id === id)!;
 const route = (result: ReturnType<typeof estimateExitCostBySeries>, id: string, mechanism: string) => series(result, id).routes.find((entry) => entry.mechanism === mechanism)!;
 
-describe("estimate-exit-cost-by-series executor (v7)", () => {
+describe("estimate-exit-cost-by-series executor (v8)", () => {
   it("gold: without the nominal, accrued and charges at the exit date every base is insufficient evidence, and the routes keep their availability on the date", () => {
     const result = estimateExitCostBySeries(camil());
-    expect(result.schema_version).toBe("method.estimate-exit-cost-by-series.v7");
+    expect(result.schema_version).toBe("method.estimate-exit-cost-by-series.v8");
     expect(result.state).toBe("partial");
     expect(result.exit_costs).toHaveLength(12);
     expect(result.exit_costs.every((entry) => entry.base.state === "insufficient_evidence" && entry.cheapest_full_exit === null)).toBe(true);
@@ -348,5 +348,16 @@ describe("estimate-exit-cost-by-series executor (v7)", () => {
 
   it("emits exactly the top-level outputs the method declares", () => {
     expect(contractMismatch(estimateExitCostBySeries(camil()) as unknown as Record<string, unknown>, "refinance/estimate-exit-cost-by-series.md")).toEqual([]);
+  });
+
+  it("counts business days from the exit inclusive to the maturity exclusive, and selects the security with nine-decimal factors at the boundary", () => {
+    // Friday 04/09/2026 to Monday 07/09/2026: the exit Friday counts, the maturity Monday does not.
+    expect(weekdaysBetween("2026-09-04", "2026-09-07")).toBe(1);
+    expect(weekdaysBetween("2026-09-04", "2026-09-11")).toBe(5);
+    expect(weekdaysBetween("2026-09-05", "2026-09-07")).toBe(0);
+    const duration = macaulayDurationBusinessDays([{id: "a", amount: "1", businessDays: 125}, {id: "b", amount: "1.509708412493", businessDays: 252}], "0.06", {factorDecimals: 9});
+    expect(duration.trace.operands.factorDecimals).toBe("9");
+    const result = estimateExitCostBySeries(priced());
+    expect(result.trace.calculations.find((calculation) => calculation.id === "financial.macaulay_duration_business_days:h-ipca-14:total_redemption_ipca")?.operands.factorDecimals).toBe("9");
   });
 });

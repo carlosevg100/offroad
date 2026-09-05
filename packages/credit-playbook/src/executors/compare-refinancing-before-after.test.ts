@@ -34,15 +34,22 @@ const camil = (): BeforeAfterInput => ({
     costOfExistingDebt: {weightedAverageRate: "0.1246", basis: "juros do serviço base do caso 02 sobre a dívida bruta (706.751 / 5.670.186), custo contábil, não all-in", anchor: itr(40, "nota 15")},
     cfadsByPeriod: null,
   },
-  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tier: {applicability: "conditional", condition: "4,00x condicionado à prova da quitação ordinária dos CRA de referência; até a prova, 3,50x é o degrau vigente"}, state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
+  // The four indentures carry the same two-tier covenant; the 11th adds its own definition. Every one of them is listed, none resolved.
+  covenants: [
+    {instrument: "11ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tiers: [{limit: "3.50", applicability: "conditional", condition: "até o vencimento ou a liquidação dos CRA de referência, sem fato na base"}, {limit: "4.00", applicability: "conditional", condition: "no exercício encerrado depois da quitação integral dos CRA de referência, condicionado à prova"}], state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_11a_emissao.pdf", clause: "4.22.3(j)", page: 35}},
+    {instrument: "13ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tiers: [{limit: "3.50", applicability: "conditional", condition: "até o vencimento ou a liquidação dos CRA de referência, sem fato na base"}, {limit: "4.00", applicability: "conditional", condition: "4,00x condicionado à prova da quitação ordinária dos CRA de referência"}], state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
+    {instrument: "14ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tiers: [{limit: "3.50", applicability: "conditional", condition: "até o vencimento ou a liquidação dos CRA de referência"}, {limit: "4.00", applicability: "conditional", condition: "condicionado à prova da quitação"}], state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_14a_emissao.pdf", clause: "7.26.3(VIII)", page: 54}},
+    {instrument: "15ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tiers: [{limit: "3.50", applicability: "conditional", condition: "até o vencimento ou a liquidação dos CRA de referência"}, {limit: "4.00", applicability: "conditional", condition: "condicionado à prova da quitação"}], state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_15a_emissao.pdf", clause: "7.26.3(VIII)", page: 56}},
+  ],
   alternatives: [
-    {id: "extend-di", label: "Alongar as séries DI da 13ª e da 14ª com nova debênture de cinco anos", newDebt: {amount: "745000", annualRate: "0.145", termMonths: 60, graceMonths: 24, format: "sac", upfrontFeeRate: "0.01", disbursementDate: "2026-09-04", origin: "termos indicativos, curva de 04/09/2026", anchor: {document: "anbima_ettj_2026-09-04.csv"}}, retired: [
-      {seriesId: "deb-13-1", instalments: [{period: "2028/29", principal: {value: "306038", anchor: itr(39, "nota 15, 13ª emissão 1ª série, saldo contábil")}, maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "7.7.1", note: "vencimento 14/11/2028"}}], exitPremium: {value: "2448", mechanism: "total_redemption_di", permittedOnDate: true, anchor: {document: "exit-costs-gc01.json", note: "route total_redemption_di, 0,40% a.a. pro rata"}}},
-      {seriesId: "deb-14-1", instalments: [{period: "2029/30", principal: {value: "438918", anchor: itr(39, "nota 15, 14ª emissão 1ª série, saldo contábil")}, maturityAnchor: {document: "escritura_14a_emissao.pdf", clause: "7.7.1", note: "vencimento 14/06/2029"}}], exitPremium: {value: "5266", mechanism: "total_redemption_di", permittedOnDate: true, anchor: {document: "exit-costs-gc01.json", note: "route total_redemption_di"}}},
+    // The principal retired is the contractual nominal of each series (304.160 and 411.643 debentures of R$ 1.000), never the ITR's carrying amount; the new debt's terms are indicative and declared as such.
+    {id: "extend-di", label: "Alongar as séries DI da 13ª e da 14ª com nova debênture de cinco anos", newDebt: {amount: "745000", annualRate: "0.145", termMonths: 60, graceMonths: 24, format: "sac", upfrontFeeRate: "0.01", disbursementDate: "2026-09-04", origin: "termos indicativos, curva de 04/09/2026; não há proposta nem term sheet no corpus", termsSource: "indicative_unverified", anchor: {document: "anbima_ettj_2026-09-04.csv"}}, retired: [
+      {seriesId: "deb-13-1", instalments: [{period: "2028/29", principal: {value: "304160", basis: "contractual_nominal", anchor: {document: "escritura_13a_emissao.pdf", clause: "4.1", note: "304.160 debêntures de R$ 1.000"}}, maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "7.7.1", note: "vencimento 14/11/2028"}}], exitPremium: {value: "2448", mechanism: "total_redemption_di", permittedOnDate: true, anchor: {document: "exit-costs-gc01.json", note: "route total_redemption_di, 0,40% a.a. pro rata"}}},
+      {seriesId: "deb-14-1", instalments: [{period: "2029/30", principal: {value: "411643", basis: "contractual_nominal", anchor: {document: "escritura_14a_emissao.pdf", clause: "4.1", note: "411.643 debêntures de R$ 1.000"}}, maturityAnchor: {document: "escritura_14a_emissao.pdf", clause: "7.7.1", note: "vencimento 14/06/2029"}}], exitPremium: {value: "5266", mechanism: "total_redemption_di", permittedOnDate: true, anchor: {document: "exit-costs-gc01.json", note: "route total_redemption_di"}}},
     ], feesPaidFromCash: {value: "1500", anchor: {document: "03_Pedido_Simulado_CRA_2026.docx", page: 1, note: "custos de estruturação sintéticos"}}},
     {id: "status-quo", label: "Manter a estrutura", newDebt: null, retired: []},
-    // The 13th's second series amortizes in two instalments, 14/11/2029 and 14/11/2030 (clause 7.7.2): each leaves its own window.
-    {id: "retire-ipca", label: "Retirar as séries IPCA antes da carência", newDebt: null, retired: [{seriesId: "deb-13-2", instalments: [{period: "2029/30", principal: {value: "141178.5", anchor: itr(39, "nota 15, metade do saldo")}, maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "7.7.2", note: "primeira parcela em 14/11/2029"}}, {period: "2030/31", principal: {value: "141178.5", anchor: itr(39, "nota 15, metade do saldo")}, maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "7.7.2", note: "segunda parcela em 14/11/2030"}}], exitPremium: null}], uncoveredTerms: ["ipca_exit_quote"]},
+    // The 13th's second series amortizes in two instalments, 14/11/2029 (clause 7.8.2) and at maturity 14/11/2030 (clause 7.7.2): each leaves its own window; the nominal split is the indenture's, not half of a carrying amount.
+    {id: "retire-ipca", label: "Retirar as séries IPCA antes da carência", newDebt: null, retired: [{seriesId: "deb-13-2", instalments: [{period: "2029/30", principal: {value: "125000", basis: "contractual_nominal", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.8.2", note: "50% do valor nominal atualizado em 14/11/2029 (nominal hipotético de 250.000 para o teste)"}}, maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "7.8.2", note: "primeira parcela em 14/11/2029"}}, {period: "2030/31", principal: {value: "125000", basis: "contractual_nominal", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.7.2", note: "saldo no vencimento"}}, maturityAnchor: {document: "escritura_13a_emissao.pdf", clause: "7.7.2", note: "vencimento em 14/11/2030"}}], exitPremium: null}], uncoveredTerms: ["ipca_exit_quote"]},
   ],
   ranking: {discriminator: "peak_concentration", rationale: "a tese é suavizar o degrau de 2028/29; custo e headroom entram como restrição, não como discriminador"},
   wallThreshold: {share: "0.20", policyKey: "policy.structure.maturity_wall", policyVersion: "2026.09.05-v8"},
@@ -54,7 +61,7 @@ const find = (result: ReturnType<typeof compareRefinancingBeforeAfter>, id: stri
 describe("compare-refinancing-before-after executor", () => {
   it("gold: before and after share the same objects, retired series leave their own windows, the new principal lands by date, and the exit cost and fees leave the cash", () => {
     const result = compareRefinancingBeforeAfter(camil());
-    expect(result.schema_version).toBe("method.compare-refinancing-before-after.v6");
+    expect(result.schema_version).toBe("method.compare-refinancing-before-after.v7");
     expect(result.state).toBe("compared");
     expect(result.before.gross_debt).toBe("5670186");
     expect(result.before.contractual_net_debt).toBe("4228477");
@@ -67,18 +74,18 @@ describe("compare-refinancing-before-after executor", () => {
     const extend = find(result, "extend-di");
     expect(extend.state).toBe("compared");
     expect(extend.exit_cost?.value).toBe("7714");
-    expect(extend.after?.gross_debt).toBe(d("5670186").plus("745000").minus("744956").toFixed());
-    // cash after = cash + (new debt - retired principal, the 44 the new debt raises beyond what it retires) - exit premiums - upfront fee (1% of 745.000) - fees paid from cash
-    expect(extend.after?.deductible_cash).toBe(d("1455809").plus("44").minus("7714").minus("7450").minus("1500").toFixed());
-    expect(extend.after?.deductible_cash).toBe("1439189");
-    expect(extend.after?.contractual_net_debt).toBe("4245141");
+    expect(extend.after?.gross_debt).toBe(d("5670186").plus("745000").minus("715803").toFixed());
+    expect(extend.uncovered_terms.some((term) => term.id === "new_debt_terms" && /indicative and not verified/.test(term.reason))).toBe(true);
+    // cash after = cash + (new debt - nominal retired: 745.000 - 715.803 = 29.197 stays in cash) - exit premiums - upfront fee (1% of 745.000) - fees paid from cash
+    expect(extend.after?.deductible_cash).toBe(d("1455809").plus("29197").minus("7714").minus("7450").minus("1500").toFixed());
+    expect(extend.after?.contractual_net_debt).toBe(d("5699383").plus("14335").minus("235").minus(extend.after!.deductible_cash).toFixed());
     expect(extend.exit_cost?.mechanisms).toEqual([{seriesId: "deb-13-1", mechanism: "total_redemption_di"}, {seriesId: "deb-14-1", mechanism: "total_redemption_di"}]);
     expect(extend.effective_date).toBe("2026-09-04");
     expect(extend.temporal_note).toMatch(/stated at 2026-05-31; the new debt is dated 2026-09-04; the balances between the two dates are not rolled forward/);
     const rows = extend.concentration!;
     expect(rows.map((row) => row.period)).toEqual(["2026/27", "2027/28", "2028/29", "2029/30", "2030/31", "after 2031"]);
-    expect(rows.find((row) => row.period === "2028/29")?.existing).toBe(d("1228475").minus("306038").toFixed());
-    expect(rows.find((row) => row.period === "2029/30")?.existing).toBe(d("694497").minus("438918").toFixed());
+    expect(rows.find((row) => row.period === "2028/29")?.existing).toBe(d("1228475").minus("304160").toFixed());
+    expect(rows.find((row) => row.period === "2029/30")?.existing).toBe(d("694497").minus("411643").toFixed());
     expect(rows.find((row) => row.period === "2030/31")?.existing).toBe("994544");
     // SAC, 60 months, 24 of grace, disbursed 04/09/2026: 36 principal payments of 745.000/36 from 04/10/2028; 8 fall before 31/05/2029.
     const instalment = d("745000").div(36);
@@ -88,6 +95,7 @@ describe("compare-refinancing-before-after executor", () => {
     // The schedule after reconciles exactly: the rounding residual of the instalments sits with the last one.
     const consolidated = rows.reduce((sum, row) => sum.plus(row.consolidated), d(0));
     expect(consolidated.minus("63224").toFixed()).toBe(extend.after!.gross_debt);
+    expect(extend.after?.anchors["retired:deb-13-1:2028/29:principal"]).toEqual({document: "escritura_13a_emissao.pdf", clause: "4.1", note: "304.160 debêntures de R$ 1.000"});
     // The retire-ipca alternative (blocked, unpriced) would leave two windows, one per instalment.
     expect(find(result, "retire-ipca").block_reasons[0]).toMatch(/exit cost is not priced for deb-13-2/);
     expect(result.trace.calculations.some((calculation) => calculation.id === "structure.debt_service_schedule:rounding_residual" && calculation.alternative === "extend-di")).toBe(true);
@@ -97,7 +105,8 @@ describe("compare-refinancing-before-after executor", () => {
     expect(extend.after?.cost.comparable_with_new_debt).toBe(true);
     expect(extend.new_debt_service?.all_in_cost).not.toBe("0.145");
     expect(extend.after?.anchors["retired:deb-13-1:2028/29:maturity"]).toEqual({document: "escritura_13a_emissao.pdf", clause: "7.7.1", note: "vencimento 14/11/2028"});
-    expect(extend.after?.anchors["retired:deb-13-1:2028/29:principal"]).toEqual(itr(39, "nota 15, 13ª emissão 1ª série, saldo contábil"));
+    expect(extend.after?.headroom_by_instrument.map((entry) => entry.instrument)).toEqual(["11ª emissão", "13ª emissão", "14ª emissão", "15ª emissão"]);
+    expect(extend.after?.headroom_by_instrument.every((entry) => entry.state === "not_measured")).toBe(true);
     expect(extend.after?.anchors["schedule:2028/29"]).toEqual(itr(40, "nota 15, cronograma"));
     expect(extend.after?.anchors.feesPaidFromCash).toEqual({document: "03_Pedido_Simulado_CRA_2026.docx", page: 1, note: "custos de estruturação sintéticos"});
     expect(extend.after?.anchors.cost).toEqual({document: "anbima_ettj_2026-09-04.csv"});
@@ -107,25 +116,31 @@ describe("compare-refinancing-before-after executor", () => {
   it("does not measure headroom while the limit is unresolved or the comparison is conditional, and measures it against the contractual net debt once both hold", () => {
     const result = compareRefinancingBeforeAfter(camil());
     expect(result.before.headroom).toBeNull();
-    expect(result.unsupported.some((entry) => /headroom is not measured/.test(entry))).toBe(true);
+    expect(result.unsupported.some((entry) => /headroom is not measured for 13ª emissão/.test(entry))).toBe(true);
+    const resolve = (covenant: BeforeAfterInput["covenants"][number]) => ({...covenant, state: "resolved" as const, comparability: "comparable" as const, tiers: covenant.tiers!.map((tier) => (tier.limit === "4.00" ? {...tier, applicability: "applicable" as const, condition: "quitação ordinária provada (hipótese de teste)"} : tier))});
     const resolved = camil();
-    resolved.covenant = {...resolved.covenant, state: "resolved", comparability: "comparable", tier: {applicability: "applicable", condition: "quitação ordinária provada (hipótese de teste)"}};
+    resolved.covenants = resolved.covenants.map(resolve);
     // A resolved and comparable limit whose tier is still conditional yields no headroom.
     const conditionalTier = camil();
-    conditionalTier.covenant = {...conditionalTier.covenant, state: "resolved", comparability: "comparable"};
+    conditionalTier.covenants = conditionalTier.covenants.map((covenant) => ({...covenant, state: "resolved" as const, comparability: "comparable" as const}));
     expect(compareRefinancingBeforeAfter(conditionalTier).before.headroom).toBeNull();
     expect(compareRefinancingBeforeAfter(conditionalTier).unsupported.some((entry) => /tier conditional/.test(entry))).toBe(true);
     const measured = compareRefinancingBeforeAfter(resolved);
     expect(measured.before.headroom?.within_limit).toBe(false);
     expect(measured.before.headroom?.reading).toBe("interim");
-    // On the measurement date itself the reading is the measurement, and without any tier evidence there is no headroom at all.
-    const onDate = {...resolved, referenceDate: "2027-02-28", covenant: {...resolved.covenant, measurement: {frequency: "annual" as const, nextDate: "2027-02-28"}}, before: {...resolved.before, ltmEbitda: {...resolved.before.ltmEbitda!, periodStart: "2026-02-28", periodEnd: "2027-02-28"}}, alternatives: resolved.alternatives.map((alternative) => (alternative.newDebt ? {...alternative, newDebt: {...alternative.newDebt, disbursementDate: "2027-03-04"}} : alternative))};
-    expect(compareRefinancingBeforeAfter(onDate).before.headroom?.reading).toBe("measurement_date");
-    const noTier = {...resolved, covenant: {...resolved.covenant, tier: null}};
-    expect(compareRefinancingBeforeAfter(noTier).before.headroom).toBeNull();
-    expect(compareRefinancingBeforeAfter(noTier).unsupported.some((entry) => /tier evidence of the covenant is absent/.test(entry))).toBe(true);
-    expect(measured.before.headroom?.note).toMatch(/13ª emissão measures annually, next on 2027-02-28; neither a breach nor a compliance/);
+    expect(measured.before.headroom?.note).toMatch(/measures annually, next on 2027-02-28; neither a breach nor a compliance/);
     expect(measured.before.headroom?.absolute).toBe(d("4").minus(d("4228477").div("895864").toDecimalPlaces(8)).toDecimalPlaces(8).toFixed());
+    // Every instrument keeps its own reading; the tightest one is the headroom shown.
+    expect(measured.before.headroom_by_instrument.filter((entry) => entry.state === "measured")).toHaveLength(4);
+    const tighter = camil();
+    tighter.covenants = tighter.covenants.map(resolve).map((covenant) => (covenant.instrument === "15ª emissão" ? {...covenant, limit: "3.50", tiers: [{limit: "3.50", applicability: "applicable" as const, condition: "hipótese: degrau de 3,50x ainda vigente"}]} : covenant));
+    expect(compareRefinancingBeforeAfter(tighter).before.headroom?.instrument).toBe("15ª emissão");
+    // On the measurement date itself the reading is the measurement, and without any tier evidence there is no headroom at all.
+    const onDate = {...resolved, referenceDate: "2027-02-28", covenants: resolved.covenants.map((covenant) => ({...covenant, measurement: {frequency: "annual" as const, nextDate: "2027-02-28"}})), before: {...resolved.before, ltmEbitda: {...resolved.before.ltmEbitda!, periodStart: "2026-02-28", periodEnd: "2027-02-28"}}, alternatives: resolved.alternatives.map((alternative) => (alternative.newDebt ? {...alternative, newDebt: {...alternative.newDebt, disbursementDate: "2027-03-04"}} : alternative))};
+    expect(compareRefinancingBeforeAfter(onDate).before.headroom?.reading).toBe("measurement_date");
+    const noTier = {...resolved, covenants: resolved.covenants.map((covenant) => ({...covenant, tiers: null}))};
+    expect(compareRefinancingBeforeAfter(noTier).before.headroom).toBeNull();
+    expect(compareRefinancingBeforeAfter(noTier).unsupported.some((entry) => /tier evidence absent/.test(entry))).toBe(true);
   });
 
   it("blocks an alternative without a priced exit, carries its uncovered terms, and ranks the rest by the declared discriminator", () => {
@@ -157,7 +172,7 @@ describe("compare-refinancing-before-after executor", () => {
 
   it("measures principal cover per period only when the base declares cash generation per period, and never repeats one figure", () => {
     const base = camil();
-    base.before.cfadsByPeriod = {"2026/27": "700000", "2028/29": "650000"};
+    base.before.cfadsByPeriod = {"2026/27": {value: "700000", anchor: {document: "fixture_hipotetico.md", note: "geração declarada, hipótese"}}, "2028/29": {value: "650000", anchor: {document: "fixture_hipotetico.md", note: "geração declarada, hipótese"}}};
     const result = compareRefinancingBeforeAfter(base);
     const rows = find(result, "status-quo").concentration!;
     expect(rows.find((row) => row.period === "2026/27")?.principal_coverage).toBe(d("700000").div("1229828").toDecimalPlaces(8).toFixed());
@@ -178,7 +193,17 @@ describe("compare-refinancing-before-after executor", () => {
     wrongWindow.alternatives[0]!.retired![1]!.instalments[0]!.period = "2032/33";
     expect(() => compareRefinancingBeforeAfter(wrongWindow)).toThrow(/not a period of the schedule/);
     const tooLarge = camil();
-    tooLarge.alternatives[0]!.retired![0]!.instalments[0]!.principal = {value: "1300000", anchor: itr(39)};
+    tooLarge.alternatives[0]!.retired![0]!.instalments[0]!.principal = {value: "1300000", basis: "contractual_nominal", anchor: itr(39)};
+    // A carrying amount is not a principal, and a merely authorized funding is not a source.
+    const carrying = camil();
+    carrying.alternatives[0]!.retired![0]!.instalments[0]!.principal = {value: "306038", basis: "carrying_amount", anchor: itr(39, "saldo contábil")};
+    expect(() => compareRefinancingBeforeAfter(carrying)).toThrow(/retires a carrying amount/);
+    const authorized = camil();
+    authorized.alternatives[0]!.newDebt!.termsSource = "authorized_only";
+    expect(() => compareRefinancingBeforeAfter(authorized)).toThrow(/only authorized is not a source of principal/);
+    const twins = camil();
+    twins.before.schedule = twins.before.schedule.flatMap((row) => (row.period === "2027/28" ? [{...row, period: "2027/28 a", amount: "400000"}, {...row, period: "2027/28 b", amount: "376868"}] : [row]));
+    expect(() => compareRefinancingBeforeAfter(twins)).toThrow(/share the end date/);
     // A price whose mechanism is not permitted on the date, or a price next to an exit gap, is not a price.
     const notPermitted = camil();
     notPermitted.alternatives[0]!.retired![0]!.exitPremium = {value: "2448", mechanism: "extraordinary_amortization_ipca", permittedOnDate: false, anchor: itr(40)};
@@ -219,7 +244,7 @@ describe("compare-refinancing-before-after executor", () => {
     relabelled.unit = "BRL million";
     expect(() => compareRefinancingBeforeAfter(relabelled)).toThrow(/does not name the unit BRL million/);
     const tiered = camil();
-    tiered.covenant = {...tiered.covenant, measurement: {frequency: "annual", nextDate: "2026-02-28"}};
+    tiered.covenants = tiered.covenants.map((covenant) => ({...covenant, measurement: {frequency: "annual" as const, nextDate: "2026-02-28"}}));
     expect(() => compareRefinancingBeforeAfter(tiered)).toThrow(/cannot precede the reference date/);
     const impossibleDate = camil();
     impossibleDate.referenceDate = "2026-02-30";
@@ -247,15 +272,6 @@ describe("compare-refinancing-before-after executor", () => {
     const tie = compareRefinancingBeforeAfter({...base, alternatives: [statusQuo, {...statusQuo, id: "status-quo-twin", label: "Manter, de novo"}], ranking: {discriminator: "peak_amount", rationale: "empate"}});
     expect(tie.ranking?.order.map((entry) => entry.id)).toEqual(["status-quo", "status-quo-twin"]);
     expect(tie.ranking?.order[1]?.reason).toMatch(/tied with the best on peak_amount; ordered by id/);
-  });
-
-  it("is deterministic when two periods share the same end date", () => {
-    const twins = camil();
-    twins.before.schedule = twins.before.schedule.flatMap((row) => (row.period === "2027/28" ? [{...row, period: "2027/28 a", amount: "400000"}, {...row, period: "2027/28 b", amount: "376868"}] : [row]));
-    const first = compareRefinancingBeforeAfter(twins);
-    const reversed = {...twins, before: {...twins.before, schedule: [...twins.before.schedule].reverse()}};
-    expect(compareRefinancingBeforeAfter(reversed).trace.inputFingerprint).toBe(first.trace.inputFingerprint);
-    expect(compareRefinancingBeforeAfter(reversed).trace.outputFingerprint).toBe(first.trace.outputFingerprint);
   });
 
   it("is consistent under twenty permutations of alternatives, retired series, schedule rows and key order", () => {

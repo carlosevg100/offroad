@@ -452,4 +452,33 @@ describe("build-debt-ledger executor (v10)", () => {
     const wrongSum = {...base, schedule: {...base.schedule!, periods: base.schedule!.periods.map((period) => ({...period, allocations: [{rowId: base.rows[0]!.id, amount: "1"}]}))}};
     expect(() => buildDebtLedger(wrongSum)).toThrow(/allocations sum to 1, not/);
   });
+
+  it("mutation: the securitizer named as titular, creditor or co-creditor of the certificates is refused even when holders and CRA are mentioned; named after the holders as their issuer it is accepted", () => {
+    const base = camil();
+    const holder = base.rows.find((row) => row.lender?.formalHolder && /securitiz/i.test(row.lender.formalHolder))!;
+    const withCreditors = (economicCreditors: string) => ({...base, rows: base.rows.map((row) => (row.id === holder.id ? {...row, lender: {...row.lender!, economicCreditors}} : row))});
+    for (const phrase of ["Eco Securitizadora, titular dos CRA", "Eco Securitizadora e os titulares dos CRA", "a securitizadora decide pelos titulares dos CRA", "Eco Securitizadora (CRA)"]) expect(() => buildDebtLedger(withCreditors(phrase))).toThrow(/names the securitizer (before|without) the holders/);
+    expect(() => buildDebtLedger(withCreditors("titulares dos CRA emitidos pela Eco Securitizadora, que a orientam em assembleia"))).not.toThrow();
+  });
+  it("consistency: a fully allocated schedule keeps both fingerprints under permutations of the allocations, and a row allocated twice in one period is refused", () => {
+    // Labelled hypothetical ledger: two loans placed in full across two windows, so the checks instrument by instrument hold by construction.
+    const anchor = {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "hipótese de teste: dois empréstimos alocados por janela"};
+    const rows: DebtLedgerInput["rows"] = [
+      {id: "loan-a", instrument: "Empréstimo A", obligation: {kind: "loan", disbursed: true, views: ["release", "contractual"]}, balance: "70", currency: "BRL", anchors: {balance: anchor}},
+      {id: "loan-b", instrument: "Empréstimo B", obligation: {kind: "loan", disbursed: true, views: ["release", "contractual"]}, balance: "30", currency: "BRL", anchors: {balance: anchor}},
+    ];
+    const cash = {cashAndEquivalents: {value: "20", anchor}, financialInvestments: {value: "5", anchor}, derivativeAssets: {value: "0", anchor}, derivativeLiabilities: {value: "0", anchor}};
+    const definitions = {release: {text: "dívida bruta menos caixa e aplicações financeiras", anchor}, contractual: {text: "empréstimos, financiamentos e debêntures, mais operações com derivativos do passivo, menos caixa, aplicações financeiras e operações com derivativos do ativo", anchor}};
+    const allocated: DebtLedgerInput = {referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {basis: "twelve_month_windows", periods: [{period: "y1", amount: "40", endsAt: "2027-05-31", allocations: [{rowId: "loan-a", amount: "40"}]}, {period: "y2", amount: "60", endsAt: "2028-05-31", allocations: [{rowId: "loan-b", amount: "30"}, {rowId: "loan-a", amount: "30"}]}], anchor}, cash, definitions};
+    const reference = buildDebtLedger(allocated);
+    expect(reference.schedule?.by_instrument).toEqual([{rowId: "loan-a", byPeriod: [{period: "y1", amount: "40"}, {period: "y2", amount: "30"}]}, {rowId: "loan-b", byPeriod: [{period: "y2", amount: "30"}]}]);
+    for (let seed = 1; seed <= 12; seed += 1) {
+      const shuffled: DebtLedgerInput = {...allocated, rows: permute(rows, seed), schedule: {...allocated.schedule!, periods: permute(allocated.schedule!.periods.map((period) => ({...period, allocations: permute(period.allocations!, seed * 3)})), seed)}};
+      const result = buildDebtLedger(shuffled);
+      expect(result.trace.inputFingerprint).toBe(reference.trace.inputFingerprint);
+      expect(result.trace.outputFingerprint).toBe(reference.trace.outputFingerprint);
+    }
+    const twice: DebtLedgerInput = {...allocated, schedule: {...allocated.schedule!, periods: allocated.schedule!.periods.map((period) => (period.period === "y1" ? {...period, allocations: [{rowId: "loan-a", amount: "40"}, {rowId: "loan-a", amount: "0"}]} : period))}};
+    expect(() => buildDebtLedger(twice)).toThrow(/allocates loan-a twice/);
+  });
 });
