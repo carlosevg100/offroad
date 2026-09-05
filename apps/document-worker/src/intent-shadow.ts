@@ -20,11 +20,12 @@ import {z} from "zod";
  * authority, organization, project and documents come from the job's context and are stamped
  * as system fields after the model has answered.
  */
+// Prompted JSON is not grammar-bound: a null basis or an omitted confidence must not sink the turn.
 const inferred = <T extends z.ZodTypeAny>(value: T) => z.object({
   value,
   state: z.enum(["explicit", "inferred", "ambiguous", "unknown", "not_applicable"]),
-  confidence: z.number().min(0).max(1),
-  basis: z.string().max(200).optional(),
+  confidence: z.number().min(0).max(1).nullable().optional().transform((confidence) => confidence ?? null),
+  basis: z.string().max(200).nullable().optional(),
 });
 
 export const shadowRoutingOutputSchema = z.object({
@@ -93,10 +94,11 @@ function evidenceRegime(accessBasis: string | null, documentCount: number): "pub
   return "public";
 }
 
-const asSystemOrInferred = <T>(field: {value: T; state: string; confidence: number; basis?: string | undefined}) => ({
+const asSystemOrInferred = <T>(field: {value: T; state: string; confidence: number | null; basis?: string | null | undefined}) => ({
   value: field.value,
   state: field.state as "explicit" | "inferred" | "ambiguous" | "unknown" | "not_applicable",
-  ...(field.state === "inferred" || field.state === "ambiguous" ? {confidence: field.confidence} : {}),
+  // An inferred field the model left without a confidence is recorded at even odds, never as certain.
+  ...(field.state === "inferred" || field.state === "ambiguous" ? {confidence: field.confidence ?? 0.5} : {}),
   ...(field.basis ? {basis: field.basis} : {}),
 });
 

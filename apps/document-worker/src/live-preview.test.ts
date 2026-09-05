@@ -220,4 +220,30 @@ describe("live_intelligence_preview router", () => {
     expect(none.status).toBe("unavailable");
     expect(researchReplyLine("pt-BR", none)).toContain("Pesquisa pública indisponível");
   });
+
+  it("resolves the company from the message text when the classifier leaves it out", async () => {
+    const output = classifierOutput({
+      routingCore: {...classifierOutput().routingCore, object: field([{kind: "material"}])},
+      turn: {companies: []},
+    });
+    const decision = await decide(output, {message: "Reunião com a Camil segunda-feira: o VP quer algo sobre refinanciamento das debêntures, mas não fechou o ângulo nem o entregável."});
+    expect(decision.kind).toBe("activate");
+    expect(decision.record.corpus?.caseId).toBe("gc01-analista-ib-camil");
+    expect(decision.record.companiesMentioned).toEqual([]);
+  });
+
+  it("accepts the looser shapes a prompted model writes: null objects, null lists, a null basis, a missing confidence", () => {
+    const raw = classifierOutput() as unknown as Record<string, unknown>;
+    const loose = {
+      ...raw,
+      routingCore: {...(raw.routingCore as Record<string, unknown>), depth: {value: "preliminary", state: "inferred", basis: null}},
+      turn: {companies: null, premiseChanges: null, numberQuestion: null, material: null, answers: null, scopeChanges: null},
+    };
+    const parsed = liveRoutingOutputSchema.parse(loose);
+    expect(parsed.turn.scopeChanges).toEqual({audience: null, depth: null, form: null});
+    expect(parsed.turn.material).toEqual({requested: false, form: null, pages: null});
+    expect(parsed.turn.companies).toEqual([]);
+    expect(parsed.turn.answers).toEqual([]);
+    expect(parsed.routingCore.depth.confidence).toBeNull();
+  });
 });
