@@ -1,6 +1,6 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 4 September 2026. The universal advisor foundation, persistent project memory,
+> Current as of 5 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are
 > implemented but not yet homologated as top-tier expertise. The first human gold case remains the
@@ -25,6 +25,14 @@ manual source; ANBIMA Feed remains a contracted source and is not active. A deve
 Sandbox access with fixed fictional responses, not official production data. See
 `docs/build/ANBIMA_SOURCE_DECISION.md`. No ANBIMA credential was stored or used; rotate the Client
 Secret exposed in the screenshot before any future integration.
+
+### Engineering update: Case 01 round 5 merged, 5 September 2026
+
+Os nove executores do Caso 01 saíram de mais uma rodada de revisão independente e estão na `main`
+(PR #441): ledger v15, covenants v14, demonstrações v9, muralha v8, juros v7, saída v8, antes/depois
+v7, cenários v6, devolutiva v7; financial-core v14. Nenhum método está em `ai_reviewed`: a revisão
+seguinte está bloqueada porque a conta da OpenAI ficou sem créditos. Detalhes, fatos verificados e
+como retomar em `docs/build/HANDOFF_2026-09-05.md`.
 
 ### Engineering update: gold cases measured for real, 4 September 2026
 

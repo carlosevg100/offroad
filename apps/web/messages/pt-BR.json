@@ -1289,6 +1289,12 @@
         "low": "baixa"
       }
     },
+    "integrationPreview": {
+      "kicker": "Validação interna",
+      "title": "Modo integration_preview ativo neste workspace",
+      "body": "Os métodos em estágio implemented rodam aqui só para validação interna. Nada do que aparece é liberação a clientes, aprovação ou parecer; cada resultado leva a marca de prévia e a maturidade do método que o produziu.",
+      "note": "Nota do operador: {note}."
+    },
     "privateCase": {
       "processingTitle": "A Offroad está trabalhando neste projeto",
       "processingBody": "Os documentos, as evidências e o contexto público estão sendo organizados antes da próxima devolutiva.",

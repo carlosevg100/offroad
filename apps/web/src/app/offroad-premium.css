@@ -13203,3 +13203,40 @@ button[disabled].workspace-search,
 .auth-panel--form {
   padding-top: 96px;
 }
+
+/* Internal validation banner (integration_preview). Deliberately loud and impossible to mistake
+   for product chrome: a warm amber band across the top of every workspace screen. */
+.integration-preview-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d9a441;
+  border-left-width: 4px;
+  border-radius: 0.5rem;
+  background: #fff6e0;
+  color: #4a3410;
+}
+.integration-preview-banner > svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: #a86f0c;
+}
+.integration-preview-banner__kicker {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a86f0c;
+}
+.integration-preview-banner strong {
+  display: block;
+  font-size: 0.9rem;
+}
+.integration-preview-banner p {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}

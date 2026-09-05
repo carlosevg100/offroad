@@ -300,7 +300,10 @@ async function main(): Promise<void> {
           log,
         })
       : job.kind === "capital_project_analysis"
-        ? job.payload.analysis_scope === "company_debt_view"
+        ? job.payload.analysis_scope === "integration_preview"
+          // The preview runtime lands in its own slice; until then a preview job fails closed with its cause.
+          ? queue.fail(job, describeJobFailure(new Error("integration_preview runtime is not installed in this worker"), {code: "integration_preview_runtime_not_installed", stage: "integration_preview", retryable: false}), {retryable: false}).then(() => ({status: "failed" as const}))
+          : job.payload.analysis_scope === "company_debt_view"
           ? processCompanyDebtViewJob(job, {
               queue,
               gateway: gatewayRun.gateway,

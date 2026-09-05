@@ -43,6 +43,8 @@ const claimedJobBase = z.object({
   processing_run_id: z.uuid(),
   /** Present when the job's project is bound to a frozen source pack: the worker reads that pack and nothing else. */
   source_pack_id: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,79}$/).nullable().optional(),
+  /** The organization runs the internal integration_preview mode: methods in the implemented rung may execute, marked as preview. */
+  integration_preview: z.boolean().nullable().optional(),
 });
 export const documentJobSchema = claimedJobBase.extend({
   kind: z.literal("document_pipeline"),
@@ -77,7 +79,7 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
 export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
   kind: z.literal("capital_project_analysis"),
   payload: z.object({
-    analysis_scope: z.enum(["origination_thesis", "company_debt_view", "capital_planning"]),
+    analysis_scope: z.enum(["origination_thesis", "company_debt_view", "capital_planning", "integration_preview"]),
     locale: z.enum(["pt-BR", "en-US"]),
     capital_project_id: z.uuid(),
     capital_project_plan_id: z.uuid(),
@@ -91,6 +93,14 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
       max_cost_usd: z.number().positive(),
       max_calls: z.number().int().positive(),
     }),
+    /** integration_preview only: the composition, case and workflow the activation compiled, plus the premises of the turn. */
+    preview: z.object({
+      mode: z.literal("integration_preview"),
+      composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen"]),
+      caseId: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,79}$/),
+      workflow: z.object({id: z.string().min(1), version: z.string().min(3), fingerprint: z.string().regex(/^[a-f0-9]{64}$/)}),
+      premises: z.record(z.string(), z.unknown()).default({}),
+    }).optional(),
   }).refine((payload) => Boolean(payload.revision_of_artifact_id) === Boolean(payload.correction_decision_id), {
     message: "revision artifact and decision must be supplied together",
   }),
@@ -228,6 +238,14 @@ export type QueueClient = {
     content: string;
     result: unknown;
   }): Promise<void>;
+  /** integration_preview only: publishes the preview-tagged completion and finishes the job in one transaction. */
+  completeIntegrationPreviewRun?(job: CapitalProjectAnalysisJob, input: {
+    completionMessageId: string;
+    artifactId: string;
+    artifactFingerprint: string;
+    content: string;
+    result: unknown;
+  }): Promise<{replayed: boolean}>;
   complete(job: ClaimedJob, result: unknown): Promise<void>;
   fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
 };
@@ -584,7 +602,7 @@ export function createQueueClient(
     },
 
     async loadCapitalProjectContext(job) {
-      return call("worker_load_capital_project_context_v5", {
+      return call("worker_load_capital_project_context_v6", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
@@ -627,7 +645,7 @@ export function createQueueClient(
     },
 
     async recordAgentResponse(job, assistantMessageId, response, proposal, activation) {
-      return call("worker_record_agent_response_and_activate_v2", {
+      return call("worker_record_agent_response_and_activate_v3", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_assistant_message_id: assistantMessageId,
@@ -666,6 +684,19 @@ export function createQueueClient(
         p_content: input.content,
         p_result: input.result ?? {},
       });
+    },
+
+    async completeIntegrationPreviewRun(job, input) {
+      const data = await call("worker_complete_integration_preview_run_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_completion_message_id: input.completionMessageId,
+        p_artifact_id: input.artifactId,
+        p_artifact_fingerprint: input.artifactFingerprint,
+        p_content: input.content,
+        p_result: input.result ?? {},
+      });
+      return {replayed: z.object({replayed: z.boolean()}).parse(data).replayed};
     },
 
     async complete(job, result) {

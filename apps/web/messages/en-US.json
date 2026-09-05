@@ -1289,6 +1289,12 @@
         "low": "low"
       }
     },
+    "integrationPreview": {
+      "kicker": "Internal validation",
+      "title": "integration_preview mode is on in this workspace",
+      "body": "Methods in the implemented rung run here for internal validation only. Nothing shown is a client release, an approval or an opinion; every result carries the preview mark and the maturity of the method that produced it.",
+      "note": "Operator note: {note}."
+    },
     "privateCase": {
       "processingTitle": "Offroad is working on this project",
       "processingBody": "Documents, evidence, and public context are being organized before the next work product.",
