@@ -210,5 +210,13 @@ profundidade; e a execução inteira é reprodutível a partir dos inputs congel
 | 4 | `04-analista-investimentos-prisma.md` | lado provedor, operação recebida, mandato nunca inventado |
 | 5 | `05-banker-expansao-camil.md` | expansão com capex, cenários declarados, produção de material e propagação de premissa |
 
+### 9.1 Estado dos gabaritos (5 de setembro de 2026)
+
+| Caso | Gabarito | Estado |
+| --- | --- | --- |
+| 1 | `gc01-gabarito-rascunho.md` v0.8 | três rodadas de revisão independente por IA (registros em `reviews/gc01/`); congela como v1.0 com o primeiro registro `pass` ou `conditional` |
+| 2 | `gc02-gabarito-rascunho.md` v0.1 | verdade pública herdada do Caso 01 por referência; dados gerenciais sintéticos gerados por `packages/testing-fixtures/scripts/build-camil-management.ts`; tabelas calculadas pelo `financial-core`; sem revisão |
+| 3 a 5 | não existem | próximos, na ordem |
+
 Os quinze casos catalogados do Atlas §10 recebem este contrato progressivamente, e enquanto não
 têm executor servem como regressão do roteador e do mapa de cobertura em sombra.
