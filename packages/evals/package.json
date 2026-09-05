@@ -33,7 +33,10 @@
     "test": "vitest run --exclude 'dist/**'",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "verify:case": "tsx scripts/verify-fakeco.ts",
-    "gc02:alternatives": "tsx scripts/build-gc02-alternatives.ts"
+    "gc02:alternatives": "tsx scripts/build-gc02-alternatives.ts",
+    "gc03:tables": "tsx scripts/build-gc03-tables.ts",
+    "gc04:tables": "tsx scripts/build-gc04-tables.ts",
+    "gc05:tables": "tsx scripts/build-gc05-tables.ts"
   },
   "dependencies": {
     "@offroad/agent-contracts": "workspace:*",

@@ -33,9 +33,12 @@ export * from "./document-intake";
 export * from "./m0-governance";
 export * from "./m0-closeout";
 export * from "./camil-management/truth";
+export * from "./camil-management/projection";
+export * as camilManagement from "./camil-management/truth";
 
 // The Aurora case: one declared truth, from which both the data room and its answer key are
 // generated. Exported so the evals package can build the key without testing-fixtures needing
 // to depend on the ontology, which would close a cycle with credit-ontology.
 export * as fakeco from "./fakeco/truth";
+export * as fakecoReceivables from "./fakeco/receivables";
 export * as nimbus from "./nimbus/truth";

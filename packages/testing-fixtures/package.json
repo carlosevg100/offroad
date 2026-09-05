@@ -22,7 +22,8 @@
     "vertentes:benchmark": "tsx scripts/benchmark-vertentes.ts",
     "test": "vitest run --exclude 'dist/**' --passWithNoTests",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "camil-management": "tsx scripts/build-camil-management.ts"
+    "camil-management": "tsx scripts/build-camil-management.ts",
+    "fakeco:receivables": "tsx scripts/build-fakeco-receivables.ts"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"
