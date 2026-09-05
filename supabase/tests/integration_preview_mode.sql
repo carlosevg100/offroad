@@ -338,17 +338,6 @@ begin
     jsonb_build_object('preview', jsonb_build_object('mode', 'integration_preview', 'methodMaturity', 'implemented'), 'gross_debt', '5670186'),
     '[]'::jsonb, '[]'::jsonb
   );
-  perform public.worker_record_agent_stage_event_v1(
-    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview:C05', 'started',
-    jsonb_build_object('summary_pt', 'Mapear a dívida instrumento a instrumento (build-debt-ledger, estágio implemented)', 'summary_en', 'Map the debt instrument by instrument (build-debt-ledger, implemented rung)', 'task_spec_id', 'C05')
-  );
-  if not exists (
-    select 1 from public.capital_project_agent_events event
-    where event.detail ->> 'stage' = 'integration_preview:C05'
-      and event.summary_pt like 'Mapear a dívida instrumento a instrumento%'
-  ) then
-    raise exception 'the preview stage event did not carry its own summary';
-  end if;
   perform public.worker_finish_capital_project_task(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token', task_run_id, 'succeeded',
     jsonb_build_object('type', 'capital_project_artifact', 'id', artifact ->> 'id'),

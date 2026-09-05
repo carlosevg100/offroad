@@ -190,8 +190,15 @@ jobs:
             -c "update auth.users set email_confirmed_at = coalesce(email_confirmed_at, now()) where email = 'local-worker@offroad.invalid';"
           psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f apps/web/e2e/support/integration-preview-local.sql
 
-      - name: Build the worker
-        run: pnpm --filter document-worker build
+      # The worker ships as a bundle of first-party code with third-party packages external, so it
+      # runs from a deployed tree with a hoisted node_modules, exactly as the image does.
+      - name: Build and deploy the worker
+        run: |
+          set -euo pipefail
+          pnpm --filter @offroad/document-worker... build
+          pnpm deploy --legacy --filter @offroad/document-worker --prod --config.node-linker=hoisted "$RUNNER_TEMP/worker"
+          out=$(cd "$RUNNER_TEMP/worker" && env -i PATH="$PATH" HOME=/tmp node dist/main.js 2>&1 || true)
+          printf '%s' "$out" | grep -q 'worker configuration is invalid or incomplete' || { printf '%s\n' "$out" | head -5; echo 'the deployed worker bundle does not boot'; exit 1; }
 
       - name: Start the worker
         run: |
@@ -205,7 +212,7 @@ jobs:
           export REQUIRE_VIRUS_SCAN=false
           export IDLE_POLL_SECONDS=2
           export LOG_LEVEL=info
-          nohup node apps/document-worker/dist/main.js > worker.log 2>&1 &
+          nohup node "$RUNNER_TEMP/worker/dist/main.js" > worker.log 2>&1 &
           echo $! > worker.pid
           sleep 5
           if ! kill -0 "$(cat worker.pid)" 2>/dev/null; then cat worker.log; exit 1; fi
