@@ -151,6 +151,65 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
   pequenos). O probe confirma: o esquema completo passa em modo `prompted_json` com esforço
   baixo ou médio, com ou sem thinking.
 
+## 3.6 Segunda rodada do gate vivo: roteamento provado, orçamento e leitura corrigidos (5 de setembro, noite)
+
+- Execução 33981814108 com chave real: vinte e quatro chamadas de modelo, todas respondidas. As
+  cinco paráfrases do analista de banco caíram na mesma composição (`prepare_meeting`, corpus
+  `gc01`); a mensagem sobre outra companhia foi recusada com `company_without_corpus` e nada da
+  Camil vazou; o CFO preparando conselho foi para `prepare_decision`. Dez runs de prévia geraram
+  perguntas do modelo (quatro por run, nenhuma descartada, cerca de US$ 0,04 cada). Em produção o
+  projeto dedicado da Cedro respondeu um turno de pergunta ao vivo (US$ 0,0225) e gravou o
+  primeiro envelope de intenção.
+- O que parou a rodada: a leitura esperava nove seções e a síntese faz dez; e a chamada de síntese
+  foi recusada pela reserva prévia de orçamento (`0.0423 + 0.2079 > 0.1`). O run carregava dez
+  centavos; as perguntas já tinham gasto quatro e a reserva da síntese era dimensionada pelo teto
+  de seis mil tokens de saída.
+- Correção (PR #455): a ativação dá ao run cinquenta centavos e quatro chamadas, no orçamento do
+  run e no `model_budget` do job; o teto de saída da síntese cai para quatro mil tokens; o gate
+  passa a 0,60 por job e quatro chamadas. Migração `20260905175807` aplicada em staging e
+  produção. A distinção que importa: o teto por job do worker limita o gasto; o orçamento do run
+  precisa caber a soma das reservas prévias, que são calculadas pelo teto de saída, não pelo
+  gasto real.
+- Terceira rodada (run 33983187468, PR #455 na main): o roteamento segurou (dez turnos, todos na mesma
+  composição e corpus) e a síntese passou a rodar, mas metade das chamadas de síntese truncou no teto
+  de quatro mil tokens (chamada perdida de cerca de quarenta segundos e US$ 0,23, seguida de um
+  fallback a um provedor sem créditos). Cada run de prévia levou cerca de cinquenta e sete segundos
+  e US$ 0,27; as cinco paráfrases em sequência, cada uma esperando o run do projeto anterior num
+  worker que pega um job por vez, estouraram os quatro minutos do teste. Correção (PR #457): o
+  modelo escreve contra um esquema próprio (três parágrafos de até setecentos caracteres por seção,
+  seis referências por parágrafo) e um orçamento explícito no prompt (noventa palavras por
+  parágrafo, mil no total); o teto sobe a seis mil tokens como folga, para uma resposta longa virar
+  chamada mais longa e não chamada truncada; o teste das paráfrases ganha quinze minutos.
+- Quarta rodada (run 33984926921, PR #457 na main): oito dos dez passos passaram com modelo na
+  primeira tentativa (paráfrases em 4,3 minutos, outra companhia recusada, CFO em
+  `prepare_decision`, devolutiva com dez seções, pergunta respondida pelo objeto de covenants,
+  material planejado em três páginas, premissa com sete de dez etapas replicadas); a síntese fez
+  treze chamadas, treze boas, entre US$ 0,20 e 0,25 e entre vinte e cinco e cinquenta e um segundos.
+  Os envelopes exportados (PR #456) mostraram os dois defeitos restantes: no turno de resposta o
+  classificador não devolveu o id da pergunta e leu "conselho" como pedido de board deck (o turno
+  virou material; o teste ainda casou uma resposta antiga da página); no retry, o pedido de três
+  páginas de pitch voltou do classificador como resposta à pergunta de formato, o ramo de respostas
+  venceu e o turno virou `deepen`, cujo run falhou porque as perguntas geradas para deepen e
+  prepare_decision não declaravam documentos pesquisados (o planner recusa). Correção (PR #458):
+  pedido de material em palavras (fora de aspas; com a marca do classificador, um imperativo ou uma
+  contagem de páginas) vence a leitura de resposta e leva as respostas no brief; resposta que cita a
+  pergunta é lida sem id; premissa só entra quando a mensagem traz um número; toda composição
+  declara os documentos da base; o teste só aceita respostas posteriores ao envio.
+- Quinta rodada (run 33986987338, PR #458 na main): nove dos dez passos com modelo na primeira
+  tentativa; material e premissa, que falhavam, passaram. Catorze runs de prévia, nenhum falhou;
+  treze sínteses boas (27 a 54 segundos, US$ 0,20 a 0,25), uma inválida aos 67 segundos que caiu
+  para o esqueleto; duas leituras do roteador malformadas refeitas na hora pelo próprio modelo.
+  O passo de resposta falhou por uma causa estrutural que a transcrição mostra: a devolutiva
+  recalculada depois da mudança de premissa saiu sem perguntas abertas (mudança de premissa e
+  pedido de material não geram perguntas novas e o planner não perguntava nada), então no turno
+  de resposta o roteador não tinha pergunta para casar, nem por id nem por citação, e planejou
+  uma decisão de conselho. Correção (PR #459): sem perguntas novas, o planner mantém abertas as
+  perguntas não respondidas do brief anterior; perguntas novas do modelo substituem; a respondida
+  sai. No mesmo PR o artefato do gate deixou de pesar 1,6 GB: vídeo e trace só quando um passo
+  falha, em pacote separado; o artefato principal leva transcrição, jornada, telas, arquivos
+  gerados, relatório, exportações do banco e log do worker.
+- Resultado da sexta rodada: Sexta rodada (run 33989224138, PR #459 na main): verde, mas na segunda tentativa. Os dez passos passaram com modelo (resposta à pergunta em `deepen`, audiência conselho, respostas aplicadas; Word e planilha gerados dos objetos, versão 4, vinte e seis números verificados, duas frases removidas). A tentativa que passou fez vinte e cinco chamadas (onze de roteamento, seis de perguntas, oito de síntese) e custou US$ 2,19; a primeira tentativa falhou no passo de resposta porque a jornada enviou a citação vazia (a expressão do teste não extraía uma pergunta com parêntese), corrigido no PR #460 junto com a preferência por papel conhecido na audiência. Pesquisa pública: indisponível no gate (sem chave de busca), como o roteador declarou; em produção o worker tem a chave.
+
 ## 4. O que continua fora
 
 Liberação a clientes, aprovação ou parecer. A trilha de revisão independente segue em paralelo,
