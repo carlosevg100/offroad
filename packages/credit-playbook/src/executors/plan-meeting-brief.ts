@@ -1,9 +1,10 @@
+import Decimal from "decimal.js";
 import {createHash} from "node:crypto";
 
 import {z} from "zod";
 
 /**
- * Executor of the method `plan-meeting-brief` (v6, after the fifth independent review). Assembles
+ * Executor of the method `plan-meeting-brief` (v7, after the sixth independent review). Assembles
  * the first deliverable only from objects in a usable state, each fact bound to the fingerprint of
  * the object it cites; a conditioned, partial or open object names a gap instead of filling a block.
  * Points for and against the thesis come from the stance each object declared on its facts. The
@@ -45,7 +46,7 @@ export const approvedObjectSchema = z.object({
   /** The monetary unit the object's figures are stated in, when it has any; a fact quoting a figure must carry the same unit. */
   unit: nonEmpty.nullable().default(null),
   /** Facts the deliverable may cite; each one is bound to the object's fingerprint, names the field it reproduces and declares its stance on the thesis. */
-  headlines: z.array(z.object({text: nonEmpty, stance: z.enum(["for", "against", "neutral"]), objectFingerprint: sha256, /** Unit of any figure the text carries (R$ mil, x, %); required when the text carries a thousands-separated number. */ unit: nonEmpty.nullable().default(null), /** The field of the object the fact reproduces, so a fact can be audited against the object it is bound to. */ objectPath: nonEmpty}).strict()).max(12).default([]),
+  headlines: z.array(z.object({text: nonEmpty, stance: z.enum(["for", "against", "neutral"]), objectFingerprint: sha256, /** The figure the text carries, structured: its amount (decimal string) and unit; required whenever the text carries a figure, and it must be found in the signed field the path names. */ value: z.object({amount: z.string().regex(/^-?\d+(\.\d+)?$/), unit: nonEmpty}).strict().nullable().default(null), /** For a headline for or against the thesis: the signed field and the test that supports the stance; the executor evaluates it on the signed content and refuses a stance it does not support. */ stanceBasis: z.object({path: nonEmpty, comparator: z.enum(["nonempty", "empty", "truthy", "falsy", "lt", "lte", "gt", "gte", "eq", "ne"]), threshold: z.string().regex(/^-?\d+(\.\d+)?$/).nullable().default(null), whenTrue: z.enum(["for", "against"])}).strict().nullable().default(null), /** Unit of any figure the text carries (R$ mil, x, %); required when the text carries a thousands-separated number. */ unit: nonEmpty.nullable().default(null), /** The field of the object the fact reproduces, so a fact can be audited against the object it is bound to. */ objectPath: nonEmpty}).strict()).max(12).default([]),
 }).strict();
 
 export const briefRequestSchema = z.object({
@@ -80,6 +81,8 @@ export const previousVersionSchema = z.object({
 }).strict();
 
 export const briefInputSchema = z.object({
+  /** The documents of the base the coverage searches may name; a search of a document that is not in the base is not a search. */
+  documents: z.array(nonEmpty).min(1),
   caseId: nonEmpty,
   request: briefRequestSchema,
   objects: z.array(approvedObjectSchema),
@@ -98,7 +101,19 @@ export const briefInputSchema = z.object({
     object.headlines.forEach((headline, position) => {
       if (headline.objectFingerprint !== object.fingerprint) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the headline is bound to another fingerprint than the object's`});
       if (headline.unit === null && /\d{1,3}(\.\d{3})+/.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact with a figure needs its unit`});
-      if (/rompid|rompiment|violad|violac|breach|descumpr|inadimpl|default declar|vencimento antecipado declar|acelerad/i.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact asserts a breach, a violation or a declared default; no object asserts a legal event, only an interim reading against a limit`});
+      if (/rompid|rompiment|quebr|violad|violac|breach|descumpr|inadimpl|default declar|event of default|cross[- ]default|vencimento antecipado declar|acelerad|waiver|cumprid|em conformidade|compliance/i.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact asserts a breach, a violation or a declared default; no object asserts a legal event, only an interim reading against a limit`});
+      if (/\d{1,3}(\.\d{3})+|\d+,\d+/.test(headline.text) && headline.value === null) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the fact carries a figure and no structured value; the amount and its unit travel with the text`});
+      if (headline.value !== null) {
+        if (headline.unit !== null && headline.unit.toLowerCase() !== headline.value.unit.toLowerCase()) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the fact's unit (${headline.unit}) and its value's unit (${headline.value.unit}) differ`});
+        if (!textCarriesAmount(headline.text, headline.value.amount)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the text does not carry the amount ${headline.value.amount} its value declares`});
+        if (object.content !== null && !leavesCarryAmount(resolvePath(object.content, headline.objectPath), headline.value.amount)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the amount ${headline.value.amount} is not in the signed field ${headline.objectPath}; a figure is reproduced from the object, never restated`});
+      }
+      if (headline.stance !== "neutral" && headline.stanceBasis === null) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact ${headline.stance} the thesis names the signed field and the test that supports the stance`});
+      if (headline.stanceBasis !== null && object.content !== null) {
+        const supported = evaluateBasis(resolvePath(object.content, headline.stanceBasis.path), headline.stanceBasis.comparator, headline.stanceBasis.threshold);
+        if (supported === null) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the stance basis ${headline.stanceBasis.path} does not resolve to a value the comparator ${headline.stanceBasis.comparator} can test`});
+        else if (!supported || headline.stanceBasis.whenTrue !== headline.stance) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the signed content does not support the stance ${headline.stance} (${headline.stanceBasis.path} ${headline.stanceBasis.comparator}${headline.stanceBasis.threshold ? ` ${headline.stanceBasis.threshold}` : ""} is ${supported ? "true" : "false"}, declared ${headline.stanceBasis.whenTrue})`});
+      }
       if (object.content !== null && resolvePath(object.content, headline.objectPath) === undefined) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the path ${headline.objectPath} does not resolve inside the object's content`});
       if (headline.unit !== null && object.unit !== null && /\d{1,3}(\.\d{3})+/.test(headline.text) && headline.unit.toLowerCase() !== object.unit.toLowerCase()) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the fact quotes a figure in ${headline.unit} and the object states its figures in ${object.unit}`});
       if (headline.unit !== null) {
@@ -115,6 +130,8 @@ export const briefInputSchema = z.object({
   input.candidateQuestions.forEach((question, index) => {
     if (questionIds.has(question.id)) context.addIssue({code: "custom", path: ["candidateQuestions", index], message: `duplicate question ${question.id}`});
     questionIds.add(question.id);
+    for (const searched of question.coverage?.searched ?? []) if (!input.documents.includes(searched)) context.addIssue({code: "custom", path: ["candidateQuestions", index, "coverage"], message: `${question.id}: the search names ${searched}, which is not a document of the base; a search of the base names its documents`});
+    if (question.coverage?.answeredBy && !input.documents.includes(question.coverage.answeredBy.document)) context.addIssue({code: "custom", path: ["candidateQuestions", index, "coverage"], message: `${question.id}: the answer is anchored to ${question.coverage.answeredBy.document}, which is not a document of the base`});
     if (question.coverage && (question.coverage.answeredBy === null) !== (question.coverage.answer === null)) context.addIssue({code: "custom", path: ["candidateQuestions", index, "coverage"], message: `${question.id}: an answer and its anchor come together`});
   });
   const blockIds = new Set<string>();
@@ -153,10 +170,10 @@ const PAGE_PLANS: Record<"pitch_pages" | "internal_briefing" | "analysis_with_sc
   board_deck: [{title: "Contexto", blocks: ["company_view", "performance_outlook"]}, {title: "Estrutura de capital", blocks: ["debt_by_instrument", "maturity_schedule", "liquidity_coverage"]}, {title: "Alternativas e decisão", blocks: ["initial_alternatives", "points_for_thesis", "points_against_thesis"]}],
 };
 
-type Block = {id: string; label: string; state: "filled" | "gap"; object_ids: string[]; pending_object_ids: string[]; headlines: Array<{text: string; unit: string | null; object_id: string; object_fingerprint: string; object_path: string | null}>; gap: string | null};
+type Block = {id: string; label: string; state: "filled" | "gap"; object_ids: string[]; pending_object_ids: string[]; headlines: Array<{text: string; unit: string | null; value: {amount: string; unit: string} | null; object_id: string; object_fingerprint: string; object_path: string | null}>; gap: string | null};
 type Page = {number: number; title: string; blocks: string[]};
 export type BriefOutput = {
-  schema_version: "method.plan-meeting-brief.v6";
+  schema_version: "method.plan-meeting-brief.v7";
   case_id: string;
   turn: number;
   state: "planned" | "awaiting_confirmation";
@@ -175,6 +192,45 @@ export type BriefOutput = {
 
 const stableStringify = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => compare(a, b))) : inner));
 const fingerprint = (value: unknown) => createHash("sha256").update(stableStringify(value)).digest("hex");
+/** Whether the text carries the amount (pt-BR or plain digits: 5.670.186, 4,72, 1.18375). */
+function textCarriesAmount(text: string, amount: string): boolean {
+  const normalized = new Decimal(amount).toFixed();
+  const [integer, fraction] = normalized.replace(/^-/, "").split(".") as [string, string | undefined];
+  const digits = fraction && fraction.replace(/0+$/, "").length > 0 ? `${integer}.${fraction.replace(/0+$/, "")}` : integer;
+  const candidates = new Set<string>();
+  for (const token of text.match(/-?\d[\d.,]*/g) ?? []) {
+    const plain = token.replace(/^-/, "");
+    candidates.add(plain.replace(/\./g, "").replace(/,/g, "."));
+    candidates.add(plain.replace(/,/g, ""));
+    candidates.add(plain);
+  }
+  return [...candidates].some((candidate) => { try { return new Decimal(candidate).toFixed() === new Decimal(digits).toFixed(); } catch { return false; } });
+}
+/** Whether any leaf under the value equals the amount. */
+function leavesCarryAmount(value: unknown, amount: string): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string" || typeof value === "number") { try { return new Decimal(value).eq(amount); } catch { return false; } }
+  if (Array.isArray(value)) return value.some((entry) => leavesCarryAmount(entry, amount));
+  if (typeof value === "object") return Object.values(value as Record<string, unknown>).some((entry) => leavesCarryAmount(entry, amount));
+  return false;
+}
+/** Evaluates a stance basis on a resolved signed value; null when the comparator cannot test the value. */
+function evaluateBasis(value: unknown, comparator: string, threshold: string | null): boolean | null {
+  const size = Array.isArray(value) ? value.length : typeof value === "string" ? value.length : value && typeof value === "object" ? Object.keys(value as object).length : null;
+  switch (comparator) {
+    case "nonempty": return size === null ? null : size > 0;
+    case "empty": return size === null ? null : size === 0;
+    case "truthy": return value === undefined ? null : Boolean(value);
+    case "falsy": return value === undefined ? null : !value;
+    default: {
+      if (threshold === null || (typeof value !== "string" && typeof value !== "number")) return null;
+      let left: Decimal;
+      try { left = new Decimal(value); } catch { return null; }
+      const right = new Decimal(threshold);
+      return comparator === "lt" ? left.lt(right) : comparator === "lte" ? left.lte(right) : comparator === "gt" ? left.gt(right) : comparator === "gte" ? left.gte(right) : comparator === "eq" ? left.eq(right) : !left.eq(right);
+    }
+  }
+}
 /** Resolves a dotted path with optional indexes ("coverage.by_period[0].coverage") inside an object; undefined when any step is missing. */
 export function resolvePath(content: unknown, path: string): unknown {
   let current: unknown = content;
@@ -214,7 +270,7 @@ function fitPages(base: Array<{title: string; blocks: string[]}>, pages: number 
 
 export function planMeetingBrief(raw: BriefInput): BriefOutput {
   const parsed = briefInputSchema.parse(raw);
-  const input = {...parsed, request: {...parsed.request, audience: parsed.request.audience ? {primary: parsed.request.audience.primary, others: [...parsed.request.audience.others].sort(compare)} : null, undefinedAspects: [...parsed.request.undefinedAspects].sort(compare)}, objects: [...parsed.objects].sort((a, b) => compare(a.id, b.id)).map((object) => ({...object, headlines: [...object.headlines].sort((a, b) => compare(a.text, b.text) || compare(a.stance, b.stance) || compare(a.unit ?? "", b.unit ?? "") || compare(a.objectPath, b.objectPath))})), candidateQuestions: [...parsed.candidateQuestions].sort((a, b) => a.priority - b.priority || compare(a.id, b.id)).map((question) => ({...question, coverage: question.coverage ? {...question.coverage, searched: [...question.coverage.searched].sort(compare)} : null})), previousVersion: parsed.previousVersion ? {...parsed.previousVersion, blocks: [...parsed.previousVersion.blocks].sort((a, b) => compare(a.id, b.id)).map((block) => ({...block, objectIds: [...block.objectIds].sort(compare)}))} : null};
+  const input = {...parsed, request: {...parsed.request, audience: parsed.request.audience ? {primary: parsed.request.audience.primary, others: [...parsed.request.audience.others].sort(compare)} : null, undefinedAspects: [...parsed.request.undefinedAspects].sort(compare)}, objects: [...parsed.objects].sort((a, b) => compare(a.id, b.id)).map((object) => ({...object, headlines: [...object.headlines].sort((a, b) => compare(a.text, b.text) || compare(a.stance, b.stance) || compare(a.unit ?? "", b.unit ?? "") || compare(a.objectPath, b.objectPath) || compare(a.value?.amount ?? "", b.value?.amount ?? "") || compare(a.stanceBasis?.path ?? "", b.stanceBasis?.path ?? "") || compare(a.stanceBasis?.comparator ?? "", b.stanceBasis?.comparator ?? ""))})), candidateQuestions: [...parsed.candidateQuestions].sort((a, b) => a.priority - b.priority || compare(a.id, b.id)).map((question) => ({...question, coverage: question.coverage ? {...question.coverage, searched: [...question.coverage.searched].sort(compare)} : null})), previousVersion: parsed.previousVersion ? {...parsed.previousVersion, blocks: [...parsed.previousVersion.blocks].sort((a, b) => compare(a.id, b.id)).map((block) => ({...block, objectIds: [...block.objectIds].sort(compare)}))} : null};
   const usable = input.objects.filter((object) => USABLE_STATES.has(object.state));
   const pending = input.objects.filter((object) => !USABLE_STATES.has(object.state) && object.state !== "blocked");
   const excluded = input.objects.filter((object) => object.state === "blocked");
@@ -236,12 +292,12 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
 
   const blocks: Block[] = BLOCKS.map((block) => {
     if (block.id === "open_questions") {
-      return {id: block.id, label: block.label, state: asked.length > 0 ? "filled" : "gap", object_ids: [], pending_object_ids: [], headlines: asked.map((question) => ({text: question.text, unit: null, object_id: `question:${question.id}`, object_fingerprint: fingerprint(question), object_path: null})), gap: asked.length > 0 ? null : "no question that changes the work remains"};
+      return {id: block.id, label: block.label, state: asked.length > 0 ? "filled" : "gap", object_ids: [], pending_object_ids: [], headlines: asked.map((question) => ({text: question.text, unit: null, value: null, object_id: `question:${question.id}`, object_fingerprint: fingerprint(question), object_path: null})), gap: asked.length > 0 ? null : "no question that changes the work remains"};
     }
     // A stance block draws on every usable object that declared the stance; a kind never decides the side.
     const found = block.stance !== null ? usable : block.needs.flatMap((kind) => byKind.get(kind) ?? []);
     const waiting = block.stance !== null ? pending.filter((object) => object.headlines.some((headline) => headline.stance === block.stance)) : block.needs.flatMap((kind) => pendingByKind.get(kind) ?? []);
-    const headlines = found.flatMap((object) => object.headlines.filter((headline) => block.stance === null || headline.stance === block.stance).map((headline) => ({text: headline.text, unit: headline.unit, object_id: object.id, object_fingerprint: headline.objectFingerprint, object_path: headline.objectPath})));
+    const headlines = found.flatMap((object) => object.headlines.filter((headline) => block.stance === null || headline.stance === block.stance).map((headline) => ({text: headline.text, unit: headline.unit, value: headline.value, object_id: object.id, object_fingerprint: headline.objectFingerprint, object_path: headline.objectPath})));
     if (block.stance !== null) {
       if (headlines.length === 0) return {id: block.id, label: block.label, state: "gap", object_ids: [], pending_object_ids: waiting.map((object) => object.id), headlines: [], gap: `no usable object states a point ${block.stance} the thesis${waiting.length > 0 ? `; ${waiting.map((object) => `${object.id} is ${object.state}`).join(", ")}` : ""}`};
       return {id: block.id, label: block.label, state: "filled", object_ids: found.filter((object) => object.headlines.some((headline) => headline.stance === block.stance)).map((object) => object.id), pending_object_ids: waiting.map((object) => object.id), headlines, gap: null};
@@ -256,7 +312,7 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
   });
 
   const audience = input.request.audience;
-  const refreshOpenQuestions = () => { const block = blocks.find((entry) => entry.id === "open_questions")!; block.state = asked.length > 0 ? "filled" : "gap"; block.headlines = asked.map((question) => ({text: question.text, unit: null, object_id: `question:${question.id}`, object_fingerprint: fingerprint(question), object_path: null})); block.gap = asked.length > 0 ? null : "no question that changes the work remains"; };
+  const refreshOpenQuestions = () => { const block = blocks.find((entry) => entry.id === "open_questions")!; block.state = asked.length > 0 ? "filled" : "gap"; block.headlines = asked.map((question) => ({text: question.text, unit: null, value: null, object_id: `question:${question.id}`, object_fingerprint: fingerprint(question), object_path: null})); block.gap = asked.length > 0 ? null : "no question that changes the work remains"; };
   let pagePlan: BriefOutput["page_plan"] = {state: "not_requested", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: "the first deliverable is not a material; the page plan waits for the audience and the form"};
   if (audience === null || input.request.form === null) pagePlan = {state: "awaiting_audience_and_form", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: `the deliverable goes out; the page plan waits for ${[audience === null ? "the audience" : null, input.request.form === null ? "the form" : null].filter(Boolean).join(" and ")}`};
   else if (input.request.form !== "first_deliverable") {
@@ -303,7 +359,7 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
     ...pending.map((object) => ({id: `object:${object.id}`, state: "insufficient_evidence" as const, reason: `${object.id} (${object.kind}) is ${object.state}; its findings are carried as conditions and not written into the deliverable: ${object.headlines.map((headline) => headline.text).join("; ") || "no facts declared"}`})),
   ];
   const body = {
-    schema_version: "method.plan-meeting-brief.v6" as const,
+    schema_version: "method.plan-meeting-brief.v7" as const,
     case_id: input.caseId,
     turn: input.request.turn,
     state: pagePlan.state === "proposed" ? "awaiting_confirmation" as const : "planned" as const,

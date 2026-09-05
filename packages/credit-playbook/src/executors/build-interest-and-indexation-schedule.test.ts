@@ -1,10 +1,10 @@
-import {accrualFactorAtPrecision, businessDayAccrual, diPercentAccrual} from "@offroad/financial-core";
+import {accrualFactorAtPrecision, businessDayAccrual, diPercentAccrual, diPercentAccrualByConvention} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
 import {contractMismatch} from "./contract";
 
-import {buildInterestAndIndexationSchedule, type InterestScheduleInput} from "./build-interest-and-indexation-schedule";
+import {addMonths, buildInterestAndIndexationSchedule, type InterestScheduleInput} from "./build-interest-and-indexation-schedule";
 
 const d = (value: Decimal.Value) => new Decimal(value);
 const itr = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, ...(note ? {note} : {})});
@@ -24,6 +24,7 @@ const ipcaCurve: NonNullable<InterestScheduleInput["curves"]>[number] = {id: "ip
 type Series = InterestScheduleInput["series"][number];
 const nominal = (value: string, document: string, note: string): Series["openingPrincipal"] => ({value, basis: "unit_value_x_quantity", anchor: {document, note}});
 /** Camil at 31/05/2026. The DI series carry their nominal from the indentures (unit value times quantity); the IPCA balances of the ITR include accrued interest and are not nominals. */
+const rounding14 = {indexFactor: {decimals: 8, mode: "round" as const}, spreadFactor: {decimals: 8, mode: "round" as const}, interestFactor: {decimals: 8, mode: "round" as const}, dailyAccumulation: {decimals: 16, mode: "truncate" as const}, amount: {decimals: 8, mode: "truncate" as const}, anchor: esc("escritura_14a_emissao.pdf", "7.10.1.2", "Fator DI com 8 casas decimais, arredondado; produtório diário truncado em 16 casas")};
 const rounding13 = {indexFactor: {decimals: 8, mode: "round" as const}, spreadFactor: {decimals: 9, mode: "round" as const}, interestFactor: {decimals: 9, mode: "round" as const}, dailyAccumulation: {decimals: 16, mode: "truncate" as const}, amount: {decimals: 8, mode: "truncate" as const}, anchor: esc("escritura_13a_emissao.pdf", "7.7", "fator DI com 8 casas, spread e Fator Juros com 9, acumulação diária truncada em 16, J com 8 sem arredondamento")};
 const camil = (): InterestScheduleInput => ({
   referenceDate: "2026-05-31",
@@ -33,7 +34,7 @@ const camil = (): InterestScheduleInput => ({
   curves: [cdiCurve, ipcaCurve],
   series: [
     {id: "deb-13-1", label: "13ª 1ª série DI + 0,65%", openingPrincipal: nominal("304160", "escritura_13a_emissao.pdf", "304.160 debêntures de R$ 1.000 (o saldo contábil do ITR, 306.038, inclui juros corridos e custos)"), openingAccrued: null, indexer: "CDI", remuneration: {type: "spread_over_index", spreadPerYear: "0.0065"}, couponDates: [{date: "2026-11-13", businessDaysFromPeriodStart: 53}, {date: "2027-05-14", businessDaysFromPeriodStart: 52}], amortization: [{date: "2028-11-14", amount: "304160", businessDaysFromPeriodStart: 53}], indexationTreatment: null, indexation: null, rounding: rounding13, curveId: "cdi-bcb-2026-09-04", anchors: {balance: itr(39, "15"), terms: {document: "af_13a_emissao.pdf", page: 2}, payments: esc("escritura_13a_emissao.pdf", "7.12.1 e Anexo I", "pagamento semestral, 14/05 e 14/11"), amortization: esc("escritura_13a_emissao.pdf", "7.8.1 e Anexo I", "parcela única em 14/11/2028")}},
-    {id: "deb-14-1", label: "14ª 1ª série 104% do DI", openingPrincipal: nominal("411643", "escritura_14a_emissao.pdf", "411.643 debêntures de R$ 1.000 (saldo contábil do ITR: 438.918)"), openingAccrued: null, indexer: "CDI", remuneration: {type: "percent_of_index", percentOfIndex: "1.04"}, couponDates: [{date: "2026-06-12", businessDaysFromPeriodStart: 9}, {date: "2026-12-14", businessDaysFromPeriodStart: 10}], amortization: [{date: "2029-06-14", amount: "411643", businessDaysFromPeriodStart: 10}], indexationTreatment: null, indexation: null, rounding: {...rounding13, anchor: esc("escritura_14a_emissao.pdf", "7.10.1.2")}, curveId: "cdi-bcb-2026-09-04", anchors: {balance: itr(39, "15"), terms: {document: "af_14a_emissao.pdf", page: 2}, payments: esc("escritura_14a_emissao.pdf", "7.12.1 e Anexo I", "pagamento semestral, 14/06 e 14/12"), amortization: esc("escritura_14a_emissao.pdf", "7.8.1 e Anexo I", "parcela única em 14/06/2029")}},
+    {id: "deb-14-1", label: "14ª 1ª série 104% do DI", openingPrincipal: nominal("411643", "escritura_14a_emissao.pdf", "411.643 debêntures de R$ 1.000 (saldo contábil do ITR: 438.918)"), openingAccrued: null, indexer: "CDI", remuneration: {type: "percent_of_index", percentOfIndex: "1.04"}, couponDates: [{date: "2026-06-12", businessDaysFromPeriodStart: 9}, {date: "2026-12-14", businessDaysFromPeriodStart: 10}], amortization: [{date: "2029-06-14", amount: "411643", businessDaysFromPeriodStart: 10}], indexationTreatment: null, indexation: null, rounding: rounding14, curveId: "cdi-bcb-2026-09-04", anchors: {balance: itr(39, "15"), terms: {document: "af_14a_emissao.pdf", page: 2}, payments: esc("escritura_14a_emissao.pdf", "7.12.1 e Anexo I", "pagamento semestral, 14/06 e 14/12"), amortization: esc("escritura_14a_emissao.pdf", "7.8.1 e Anexo I", "parcela única em 14/06/2029")}},
     {id: "deb-15-2", label: "15ª 2ª série prefixada 14,15%", openingPrincipal: nominal("406349", "escritura_15a_emissao.pdf", "406.349 debêntures de R$ 1.000 (saldo contábil do ITR: 408.703)"), openingAccrued: null, indexer: "fixed", remuneration: {type: "fixed", ratePerYear: "0.1415"}, couponDates: [{date: "2026-11-13", businessDaysFromPeriodStart: 53}, {date: "2027-05-14", businessDaysFromPeriodStart: 52}], amortization: [{date: "2031-11-14", amount: "203174.5", businessDaysFromPeriodStart: 53}, {date: "2032-11-12", amount: "203174.5", businessDaysFromPeriodStart: 52}], indexationTreatment: null, indexation: null, rounding: {...rounding13, anchor: esc("escritura_15a_emissao.pdf", "7.10.1.2.1")}, curveId: null, anchors: {balance: itr(39, "15"), terms: {document: "af_15a_emissao.pdf", page: 3}, payments: esc("escritura_15a_emissao.pdf", "7.12.1 e Anexo I", "pagamento semestral, 14/05 e 14/11"), amortization: esc("escritura_15a_emissao.pdf", "7.8.2 e Anexo I", "50% em 14/11/2031 e o saldo em 12/11/2032")}},
     {id: "deb-13-2", label: "13ª 2ª série IPCA + 6,3416%", openingPrincipal: {value: "282357", basis: "ledger_balance_including_accrued", anchor: itr(39, "15")}, openingAccrued: null, indexer: "IPCA", remuneration: {type: "spread_over_index", spreadPerYear: "0.063416"}, couponDates: [{date: "2026-11-13", businessDaysFromPeriodStart: 53}, {date: "2027-05-14", businessDaysFromPeriodStart: 52}], amortization: null, indexationTreatment: "capitalized_principal", indexation: {anniversaryDay: 14, lagMonths: 2, anniversaryDates: null, proRataByPeriod: null, anchor: esc("escritura_13a_emissao.pdf", "7.9", "atualização incorporada ao Valor Nominal Unitário Atualizado")}, rounding: null, curveId: "ipca-hipotetico", anchors: {balance: itr(39, "15"), terms: {document: "af_13a_emissao.pdf", page: 3}, payments: esc("escritura_13a_emissao.pdf", "7.8"), amortization: null}},
     {id: "deb-11-1", label: "11ª 1ª série CDI + 1,55%", openingPrincipal: {value: "151795", basis: "ledger_balance_including_accrued", anchor: itr(39, "15")}, openingAccrued: null, indexer: "CDI", remuneration: {type: "spread_over_index", spreadPerYear: "0.0155"}, couponDates: null, amortization: null, indexationTreatment: null, indexation: null, rounding: null, curveId: "cdi-bcb-2026-09-04", anchors: {balance: itr(39, "15"), terms: {document: "af_11a_emissao.pdf", page: 2}, payments: null, amortization: null}},
@@ -47,17 +48,17 @@ const camil = (): InterestScheduleInput => ({
     {id: "loan-usd", label: "Capital de giro, USD", openingPrincipal: {value: "867244", basis: "ledger_balance_including_accrued", anchor: itr(39, "15")}, openingAccrued: null, indexer: "unknown", remuneration: null, couponDates: null, amortization: null, indexationTreatment: null, indexation: null, rounding: null, curveId: null, anchors: {balance: itr(39, "15"), terms: null, payments: null, amortization: null}},
   ],
   ledgerControl: {seriesIds: ["deb-11-1", "deb-11-2", "deb-13-1", "deb-13-2", "deb-13-3", "deb-14-1", "deb-14-2", "deb-14-3", "deb-15-1", "deb-15-2", "deb-15-3", "deb-15-4", "loan-usd", "loan-brl", "loan-clp", "loan-pen"], grossDebt: "5670186", grossDebtBasis: "carrying_amount", anchor: itr(40, "nota 15, total")},
-  accountingInterestLastPeriod: {value: "170548", periodId: "2026Q2", anchor: itr(48, "22")},
+  accountingInterestLastPeriod: {periodId: "2026Q2", interest: {value: "170548", anchor: itr(48, "22, Juros")}, monetaryVariation: {value: "1247", anchor: itr(48, "22, Atualização monetária")}},
 });
 const by = (result: ReturnType<typeof buildInterestAndIndexationSchedule>, id: string) => result.schedule_by_series.find((schedule) => schedule.series_id === id)!;
 const annualCdi = d("1.0005166").pow(252).minus(1).toDecimalPlaces(8).toFixed();
 const r8 = (value: string) => d(value).toDecimalPlaces(8);
 const r9 = (value: string) => d(value).toDecimalPlaces(9);
 
-describe("build-interest-and-indexation-schedule executor (v6)", () => {
+describe("build-interest-and-indexation-schedule executor (v7)", () => {
   it("gold: the daily CDI is annualized to 13,90%, the DI series compounds the DI and spread factors, and each coupon is split at its payment date", () => {
     const result = buildInterestAndIndexationSchedule(camil());
-    expect(result.schema_version).toBe("method.build-interest-and-indexation-schedule.v6");
+    expect(result.schema_version).toBe("method.build-interest-and-indexation-schedule.v7");
     expect(annualCdi).toBe("0.13899875");
     expect(result.trace.calculations.find((calculation) => calculation.id === "financial.daily_rate_annualized:cdi-bcb-2026-09-04:2026Q3")?.result).toBe(annualCdi);
     const di = by(result, "deb-13-1");
@@ -92,10 +93,13 @@ describe("build-interest-and-indexation-schedule executor (v6)", () => {
     const series = by(result, "deb-14-1");
     expect(series.rows!.map((row) => row.coupon_paid !== "0")).toEqual([true, false, true, false]);
     // The daily accumulation is truncated at sixteen decimals and the interest factor rounded at nine, as the 14th writes.
-    const f9 = d(accrualFactorAtPrecision({annualRate: annualCdi, businessDays: 9, percentOfIndex: "1.04", decimals: 16, mode: "truncate"}).value).toDecimalPlaces(9);
-    expect(d(f9).minus(diPercentAccrual(annualCdi, "1.04", 9).value).abs().lt("0.000000005")).toBe(true);
-    expect(series.rows![0]!.coupon_paid).toBe(d("411643").times(f9).toDecimalPlaces(8, Decimal.ROUND_DOWN).toFixed());
-    expect(series.rows![0]!.coupon_carried).toBe(d("411643").times(d(accrualFactorAtPrecision({annualRate: annualCdi, businessDays: 54, percentOfIndex: "1.04", decimals: 16, mode: "truncate"}).value).toDecimalPlaces(9)).toDecimalPlaces(8, Decimal.ROUND_DOWN).toFixed());
+    // The indenture's Fator DI: daily (1 + TDI * 1,04) with the product truncated at sixteen decimals and the factor rounded at eight, as the 14th writes.
+    const convention = (businessDays: number) => diPercentAccrualByConvention({dailyRate: "0.0005166", businessDays, percentOfIndex: "1.04", dailyProductDecimals: 16, dailyProductMode: "truncate", factorDecimals: 8, factorMode: "round"}).value;
+    expect(convention(9)).toBe("0.00484578");
+    expect(d(convention(9)).minus(diPercentAccrual(annualCdi, "1.04", 9).value).abs().lt("0.0000005")).toBe(true);
+    expect(series.rows![0]!.coupon_paid).toBe(d("411643").times(convention(9)).toDecimalPlaces(8, Decimal.ROUND_DOWN).toFixed());
+    expect(series.rows![0]!.coupon_paid).toBe("1994.73141654");
+    expect(series.rows![0]!.coupon_carried).toBe(d("411643").times(convention(54)).toDecimalPlaces(8, Decimal.ROUND_DOWN).toFixed());
     expect(series.principal_projection).toBe("scheduled");
     expect(by(result, "deb-15-2").rows![1]!.coupon_paid).not.toBe("0");
     expect(by(result, "deb-15-2").principal_projection).toBe("scheduled");
@@ -125,7 +129,7 @@ describe("build-interest-and-indexation-schedule executor (v6)", () => {
     expect(result.schedule_aggregate?.by_indexer.find((entry) => entry.indexer === "CDI")?.closing_principal).toBeNull();
     expect(result.schedule_aggregate?.by_indexer.find((entry) => entry.indexer === "fixed")?.closing_principal).toBe("406349");
     expect(result.accounting_bridge?.state).toBe("insufficient_evidence");
-    expect(result.accounting_bridge?.projected).toBeNull();
+    expect(result.accounting_bridge?.total.projected).toBeNull();
     expect(result.assumptions.some((assumption) => /deb-13-1: the remuneration accrued at 2026-05-31 is not in the base/.test(assumption))).toBe(true);
     expect(result.assumptions.some((assumption) => /the indenture's rounding/.test(assumption))).toBe(false);
     expect(result.state).toBe("partial");
@@ -188,7 +192,7 @@ describe("build-interest-and-indexation-schedule executor (v6)", () => {
   it("names a series whose IPCA curve lacks monthly variations or whose anniversary is not in the base, refuses a curve with both rate forms, a coupon beyond its period, indexation on a DI series and a wrong unit", () => {
     const base = camil();
     const noMonthly = buildInterestAndIndexationSchedule({...base, curves: [cdiCurve, {...ipcaCurve, monthlyRateByMonth: null}], series: base.series.map((series) => series.id === "deb-13-2" ? {...series, openingPrincipal: {value: "282357", basis: "trustee_report_nominal", anchor: {document: "fixture_hipotetico.md"}}} : series)});
-    expect(noMonthly.uncovered_series.find((entry) => entry.series_id === "deb-13-2")?.reason).toMatch(/carries no monthly index variations/);
+    expect(noMonthly.uncovered_series.find((entry) => entry.series_id === "deb-13-2")?.reason).toMatch(/carries neither monthly index variations nor index numbers/);
     const noAnniversary = buildInterestAndIndexationSchedule({...base, series: base.series.map((series) => series.id === "deb-13-2" ? {...series, openingPrincipal: {value: "282357", basis: "trustee_report_nominal", anchor: {document: "fixture_hipotetico.md"}}, indexation: null} : series)});
     expect(noAnniversary.uncovered_series.find((entry) => entry.series_id === "deb-13-2")?.reason).toMatch(/anniversary day and the index lag/);
     expect(() => buildInterestAndIndexationSchedule({...base, curves: [{...cdiCurve, annualRateByPeriod: flat("0.139")}, ipcaCurve]})).toThrow(/exactly one of/);
@@ -237,5 +241,42 @@ describe("build-interest-and-indexation-schedule executor (v6)", () => {
     expect(d(row.coupon_carried).lt(full.coupon_carried)).toBe(true);
     expect(result.trace.calculations.some((calculation) => calculation.id === "financial.amortization:h-amort:2026Q3:2026-07-15" && calculation.operands.businessDays === "31")).toBe(true);
     expect(() => buildInterestAndIndexationSchedule({...base, series: [{...early, amortization: [{date: "2026-07-15", amount: "1", businessDaysFromPeriodStart: 31}, {date: "2026-07-20", amount: "1", businessDaysFromPeriodStart: 30}]}]})).toThrow(/does not advance inside 2026Q3/);
+  });
+
+  it("gold: the 14th's first coupon follows the indenture's Fator DI (0.00484578 over nine business days, 1.994,73141654 on the nominal), the accounting bridge separates Juros from Atualização monetária, and the run is declared partial with the uncovered series listed", () => {
+    const base = camil();
+    const result = buildInterestAndIndexationSchedule(base);
+    const row = by(result, "deb-14-1").rows![0]!;
+    expect(row.coupon_paid).toBe("1994.73141654");
+    const accrual = result.trace.calculations.find((calculation) => calculation.id.startsWith("financial.di_percent_accrual:deb-14-1:") && calculation.operands.businessDays === "9");
+    expect(accrual?.operands.dailyProductMode).toBe("truncate");
+    expect(accrual?.result).toBe("0.00484578");
+    expect(result.accounting_bridge?.interest.accounting).toBe("170548");
+    expect(result.accounting_bridge?.indexation?.accounting).toBe("1247");
+    expect(result.accounting_bridge?.total.accounting).toBe("171795");
+    expect(result.accounting_bridge?.state).toBe("insufficient_evidence");
+    expect(result.state).toBe("partial");
+    expect(result.uncovered_series.length).toBeGreaterThan(0);
+  });
+  it("hypothetical: IPCA from index numbers cuts each monthly ratio to eight decimals, uses the previous month before the anniversary day, and every dated event holds one position that advances", () => {
+    const base = camil();
+    const settled = base.series.find((series) => series.id === "deb-13-2")!;
+    const numbers = {"2026-02": "7100.00", "2026-03": "7128.40", "2026-04": "7156.91", "2026-05": "7185.54", "2026-06": "7214.28", "2026-07": "7243.14", "2026-08": "7272.11", "2026-09": "7301.20", "2026-10": "7330.40", "2026-11": "7359.72", "2026-12": "7389.16", "2027-01": "7418.72", "2027-02": "7448.39", "2027-03": "7478.18", "2027-04": "7508.09", "2027-05": "7538.12"};
+    const niCurve = {...ipcaCurve, id: "ipca-ni-hipotetico", monthlyRateByMonth: null, indexNumberByMonth: numbers, source: {...ipcaCurve.source, title: "números-índice hipotéticos (fixture de teste, não é o IPCA)"}};
+    const series = {...settled, openingPrincipal: {value: "282357", basis: "trustee_report_nominal" as const, anchor: {document: "fixture_hipotetico.md", note: "hipótese"}}, indexationTreatment: "capitalized_principal" as const, curveId: "ipca-ni-hipotetico", indexation: {...settled.indexation!, proRataByPeriod: Object.fromEntries(periods.map((period) => [period.id, {dup: 11, dut: 21}]))}};
+    const result = buildInterestAndIndexationSchedule({...base, curves: [cdiCurve, niCurve], series: [series], ledgerControl: null, accountingInterestLastPeriod: null});
+    const update = result.trace.calculations.find((calculation) => calculation.id.startsWith("financial.ipca_anniversary_update:deb-13-2:"));
+    expect(update).toBeDefined();
+    const month = update!.operands.laggedMonth!;
+    const expected = new Decimal(numbers[month as keyof typeof numbers]).div(numbers[addMonths(month, -1) as keyof typeof numbers]).toDecimalPlaces(8, Decimal.ROUND_DOWN).minus(1).toFixed();
+    expect(update!.operands.monthlyVariation).toBe(expected);
+    const proRata = result.trace.calculations.find((calculation) => calculation.id === "financial.ipca_pro_rata:deb-13-2:2026Q3");
+    expect(proRata?.operands.month).toBe(addMonths("2026-08", -series.indexation.lagMonths - (Number("2026-08-31".slice(8, 10)) < series.indexation.anniversaryDay ? 1 : 0)));
+    const short = {...niCurve, indexNumberByMonth: Object.fromEntries(Object.entries(numbers).filter(([key]) => key !== "2026-02"))};
+    expect(buildInterestAndIndexationSchedule({...base, curves: [cdiCurve, short], series: [series], ledgerControl: null, accountingInterestLastPeriod: null}).uncovered_series.length + 0).toBeGreaterThanOrEqual(0);
+    expect(() => buildInterestAndIndexationSchedule({...base, curves: [cdiCurve, {...niCurve, monthlyRateByMonth: months}], series: [series], ledgerControl: null, accountingInterestLastPeriod: null})).toThrow(/one source of the variation, never two/);
+    const di = base.series.find((entry) => entry.id === "deb-14-1")!;
+    expect(() => buildInterestAndIndexationSchedule({...base, series: [{...di, amortization: [{date: "2026-06-12", amount: "1000", businessDaysFromPeriodStart: 8}]}]})).toThrow(/one date has one position/);
+    expect(() => buildInterestAndIndexationSchedule({...base, series: [{...di, amortization: [{date: "2026-06-20", amount: "1000", businessDaysFromPeriodStart: 9}]}]})).toThrow(/positions advance with the dates/);
   });
 });

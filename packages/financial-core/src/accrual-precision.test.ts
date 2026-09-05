@@ -1,6 +1,7 @@
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
-import {accrualFactorAtPrecision, businessDayAccrual} from "./index";
+import {accrualFactorAtPrecision, diPercentAccrualByConvention, businessDayAccrual} from "./index";
 
 describe("accrualFactorAtPrecision", () => {
   it("keeps the layer the indenture writes: nine decimals rounded for a spread factor, sixteen truncated for a daily accumulation", () => {
@@ -17,5 +18,12 @@ describe("accrualFactorAtPrecision", () => {
   it("refuses fractional days and a precision outside the range", () => {
     expect(() => accrualFactorAtPrecision({annualRate: "0.1", businessDays: 1.5, decimals: 8, mode: "round"})).toThrow();
     expect(() => accrualFactorAtPrecision({annualRate: "0.1", businessDays: 1, decimals: 30, mode: "round"})).toThrow();
+  });
+
+  it("reproduces the indenture's Fator DI for 104% of a daily CDI of 0.05166% over nine business days: 0.00484578", () => {
+    const factor = diPercentAccrualByConvention({dailyRate: "0.0005166", businessDays: 9, percentOfIndex: "1.04", dailyProductDecimals: 16, dailyProductMode: "truncate", factorDecimals: 8, factorMode: "round"});
+    expect(factor.value).toBe("0.00484578");
+    expect(new Decimal("411643").times(factor.value).toFixed()).toBe("1994.73141654");
+    expect(diPercentAccrualByConvention({dailyRate: "0.0005166", businessDays: 0, percentOfIndex: "1.04", dailyProductDecimals: 16, dailyProductMode: "truncate", factorDecimals: 8, factorMode: "round"}).value).toBe("0");
   });
 });

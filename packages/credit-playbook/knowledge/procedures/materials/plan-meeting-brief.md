@@ -1,6 +1,6 @@
 ---
 id: plan-meeting-brief
-version: 2026.09.05-v6
+version: 2026.09.05-v7
 maturity: implemented
 title_pt: Planejar a devolutiva e o material de reunião
 title_en: Plan the first deliverable and the meeting material
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/plan-meeting-brief
 implementation_export: planMeetingBrief
-result_contract: method.plan-meeting-brief.v6
+result_contract: method.plan-meeting-brief.v7
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -87,7 +87,7 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 - Plano de páginas não confirmado e o pedido é produção de arquivo.
 
 # Outputs
-- schema_version (string, required): method.plan-meeting-brief.v6
+- schema_version (string, required): method.plan-meeting-brief.v7
 - case_id (string, required): caso a que a devolutiva pertence
 - turn (number, required): turno do pedido
 - state (enum, required): planned, ou awaiting_confirmation enquanto um plano proposto espera a confirmação da pessoa
@@ -124,3 +124,6 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 ## Regras
 - Nenhum número sem objeto de origem.
 - Nada é produzido antes da confirmação do plano.
+- Todo fato com número leva valor estruturado (montante e unidade); o montante tem de estar no campo assinado que o caminho nomeia e no próprio texto; fato a favor ou contra a tese nomeia a base da posição (campo assinado, comparador e limiar), avaliada sobre o conteúdo assinado pelo fingerprint: posição que o conteúdo não sustenta é recusada.
+- A busca declarada numa pergunta só vale sobre documentos da base (`documents`); busca de documento que não está na base não é busca, e silêncio não é resposta.
+- Afirmações de evento jurídico enumeradas e recusadas no fato: rompido, quebrado, violado, descumprimento, inadimplência, default, cross-default, vencimento antecipado declarado, acelerado, waiver, cumprido, conformidade; nenhum objeto afirma isso.

@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.05-v13";
+export const financialCoreVersion = "2026.09.05-v14";
 
 export * from "./financial-truth";
 export * from "./indexed-debt";
@@ -279,6 +279,22 @@ export function macaulayDurationBusinessDays(flows: Array<{id: string; amount: s
  * times the percentage compounded over the days. `decimals` and `mode` are the layer the indenture
  * states (a DI factor at eight decimals rounded, a daily accumulation at sixteen truncated).
  */
+/**
+ * DI accrual by the indenture convention (B3 caderno de fórmulas): each day's factor is (1 + TDI * p),
+ * the running product is cut to `dailyProductDecimals` after every day (truncated, as the indentures
+ * write), and the final Fator DI is stated at `factorDecimals` with the stated mode. `dailyRate` is the
+ * TDI already stated as a daily rate (the CDI of the day divided by 100 raised to 1/252, as published).
+ */
+export function diPercentAccrualByConvention(input: {dailyRate: DecimalInput; businessDays: number; percentOfIndex: DecimalInput; dailyProductDecimals: number; dailyProductMode: "round" | "truncate"; factorDecimals: number; factorMode: "round" | "truncate"}): {value: string; trace: CalculationTrace} {
+  if (!Number.isInteger(input.businessDays) || input.businessDays < 0) throw new Error("businessDays must be a non-negative integer");
+  const modeOf = (mode: "round" | "truncate") => (mode === "truncate" ? Decimal.ROUND_DOWN : Decimal.ROUND_HALF_UP);
+  const daily = new Decimal(1).plus(new Decimal(input.dailyRate).times(input.percentOfIndex)).toDecimalPlaces(input.dailyProductDecimals, modeOf(input.dailyProductMode));
+  let product = new Decimal(1);
+  for (let day = 0; day < input.businessDays; day += 1) product = product.times(daily).toDecimalPlaces(input.dailyProductDecimals, modeOf(input.dailyProductMode));
+  const value = product.minus(1).toDecimalPlaces(input.factorDecimals, modeOf(input.factorMode)).toFixed();
+  return {value, trace: {id: "financial.di_percent_accrual_by_convention", formula: "product over days of (1 + TDI * p), cut to the daily-product layer after each day; Fator DI - 1 at the factor layer", operands: {dailyRate: new Decimal(input.dailyRate).toFixed(), percentOfIndex: new Decimal(input.percentOfIndex).toFixed(), businessDays: String(input.businessDays), dailyFactor: daily.toFixed(), dailyProductDecimals: String(input.dailyProductDecimals), dailyProductMode: input.dailyProductMode, factorDecimals: String(input.factorDecimals), factorMode: input.factorMode}, result: value}};
+}
+
 export function accrualFactorAtPrecision(input: {annualRate: DecimalInput; businessDays: number; percentOfIndex?: DecimalInput; decimals: number; mode: "round" | "truncate"}): {value: string; trace: CalculationTrace} {
   if (!Number.isInteger(input.businessDays) || input.businessDays < 0) throw new Error("businessDays must be a non-negative integer");
   if (!Number.isInteger(input.decimals) || input.decimals < 0 || input.decimals > 20) throw new Error("decimals must be an integer between 0 and 20");

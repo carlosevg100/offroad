@@ -19,22 +19,24 @@ const contents: Record<string, Record<string, unknown>> = {
   b8: {unit: "R$ mil", rows: []},
 };
 const fp = (seed: string) => createHash("sha256").update(stableStringify(contents[seed] ?? {object: seed})).digest("hex");
-const headline = (text: string, stance: "for" | "against" | "neutral", seed: string, unit: string | null = null, objectPath = "headline") => ({text, stance, objectFingerprint: fp(seed), unit, objectPath});
+type Extra = {value?: {amount: string; unit: string} | null; stanceBasis?: {path: string; comparator: "nonempty" | "empty" | "truthy" | "falsy" | "lt" | "lte" | "gt" | "gte" | "eq" | "ne"; threshold?: string | null; whenTrue: "for" | "against"} | null};
+const headline = (text: string, stance: "for" | "against" | "neutral", seed: string, unit: string | null = null, objectPath = "headline", extra: Extra = {}) => ({text, stance, objectFingerprint: fp(seed), unit, objectPath, ...extra});
 const objects = (): BriefInput["objects"] => [
-  {id: "ledger-01", kind: "debt_ledger", state: "complete", fingerprint: fp("a1"), content: contents.a1!, unit: "R$ mil", headlines: [headline("Dívida bruta de 5.670.186 em 31/05/2026", "neutral", "a1", "R$ mil", "gross_debt"), headline("Dívida líquida contratual de 4.228.477 em 31/05/2026", "neutral", "a1", "R$ mil", "contractual_net_debt")]},
-  {id: "wall-01", kind: "maturity_wall", state: "diagnosed", fingerprint: fp("b2"), content: contents.b2!, unit: "R$ mil", headlines: [headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil", "walls"), headline("Caixa e equivalentes mais aplicações financeiras de 1.455.809 excedem em 225.981 o principal de 2026/27; cobertura aritmética, não disponibilidade em D0", "for", "b2", "R$ mil", "coverage.by_period[0].coverage")]},
-  {id: "cov-01", kind: "covenants", state: "conditioned", fingerprint: fp("c3"), content: contents.c3!, unit: null, headlines: [headline("4,72x pró forma contra os degraus de 3,50x (enquanto os CRA de referência vivem) e 4,00x (condicionado à prova da quitação ordinária); medição em 28/02/2027; comparabilidade condicionada à abertura do EBITDA e às informações complementares da companhia", "against", "c3", "x", "covenants[0].index")]},
-  {id: "rec-01", kind: "reconciliation", state: "open_divergences", fingerprint: fp("d4"), content: contents.d4!, unit: "R$ mil", headlines: [headline("Dividendos com quatro valores; estoques em três apresentações", "against", "d4", null, "open_divergences")]},
+  {id: "ledger-01", kind: "debt_ledger", state: "complete", fingerprint: fp("a1"), content: contents.a1!, unit: "R$ mil", headlines: [headline("Dívida bruta de 5.670.186 em 31/05/2026", "neutral", "a1", "R$ mil", "gross_debt", {value: {amount: "5670186", unit: "R$ mil"}}), headline("Dívida líquida contratual de 4.228.477 em 31/05/2026", "neutral", "a1", "R$ mil", "contractual_net_debt", {value: {amount: "4228477", unit: "R$ mil"}})]},
+  {id: "wall-01", kind: "maturity_wall", state: "diagnosed", fingerprint: fp("b2"), content: contents.b2!, unit: "R$ mil", headlines: [headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil", "walls", {value: {amount: "1229828", unit: "R$ mil"}, stanceBasis: {path: "walls", comparator: "nonempty", whenTrue: "against"}}), headline("Cobertura de 1,18375x do principal de 2026/27 pelo caixa e aplicações; cobertura aritmética, não disponibilidade em D0", "for", "b2", "x", "coverage.by_period[0].coverage", {value: {amount: "1.18375", unit: "x"}, stanceBasis: {path: "coverage.by_period[0].coverage", comparator: "gte", threshold: "1", whenTrue: "for"}})]},
+  {id: "cov-01", kind: "covenants", state: "conditioned", fingerprint: fp("c3"), content: contents.c3!, unit: null, headlines: [headline("4,72x pró forma contra os degraus de 3,50x (enquanto os CRA de referência vivem) e 4,00x (condicionado à prova da quitação ordinária); medição em 28/02/2027; comparabilidade condicionada à abertura do EBITDA e às informações complementares da companhia", "against", "c3", "x", "covenants[0].index", {value: {amount: "4.72", unit: "x"}, stanceBasis: {path: "covenants[0].index.value", comparator: "gt", threshold: "4.00", whenTrue: "against"}})]},
+  {id: "rec-01", kind: "reconciliation", state: "open_divergences", fingerprint: fp("d4"), content: contents.d4!, unit: "R$ mil", headlines: [headline("Dividendos com quatro valores; estoques em três apresentações", "against", "d4", null, "open_divergences", {stanceBasis: {path: "open_divergences", comparator: "nonempty", whenTrue: "against"}})]},
   {id: "exit-01", kind: "exit_costs", state: "complete", fingerprint: fp("e5"), content: contents.e5!, unit: "R$ mil", headlines: []},
-  {id: "ba-01", kind: "before_after", state: "compared", fingerprint: fp("f6"), content: contents.f6!, unit: "R$ mil", headlines: [headline("Alongar as séries DI suaviza 2028/29", "for", "f6", null, "ranking")]},
+  {id: "ba-01", kind: "before_after", state: "compared", fingerprint: fp("f6"), content: contents.f6!, unit: "R$ mil", headlines: [headline("Alongar as séries DI suaviza 2028/29", "for", "f6", null, "ranking", {stanceBasis: {path: "ranking.order", comparator: "nonempty", whenTrue: "for"}})]},
   {id: "sc-01", kind: "scenarios", state: "declared", fingerprint: fp("a7"), content: contents.a7!, unit: "R$ mil", headlines: []},
-  {id: "blocked-01", kind: "interest_schedule", state: "blocked", fingerprint: fp("b8"), content: contents.b8!, unit: "R$ mil", headlines: [headline("must not appear", "for", "b8", null, "rows")]},
+  {id: "blocked-01", kind: "interest_schedule", state: "blocked", fingerprint: fp("b8"), content: contents.b8!, unit: "R$ mil", headlines: [headline("must not appear", "for", "b8", null, "rows", {stanceBasis: {path: "rows", comparator: "empty", whenTrue: "for"}})]},
 ];
 const itr = {document: "01_ITR_1T26_31mai2026.pdf", page: 1};
 const turn1 = (): BriefInput => ({
   caseId: "gc01-analista-ib-camil",
   request: {turn: 1, audience: {primary: "vp"}, form: "first_deliverable", sponsorInstruction: "Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera.", undefinedAspects: ["thesis", "format"]},
   objects: objects(),
+  documents: ["01_ITR_1T26_31mai2026.pdf", "release_1T26.pdf"],
   candidateQuestions: [
     {id: "q-angle", text: "Leitura de refinanciamento ou alternativas mais amplas?", changesTheWork: "define o universo de alternativas", coverage: {searched: ["01_ITR_1T26_31mai2026.pdf", "release_1T26.pdf"], answeredBy: null, answer: null}, priority: 0},
     {id: "q-meeting", text: "Reunião exploratória ou produto a testar?", changesTheWork: "define profundidade e forma", coverage: {searched: ["01_ITR_1T26_31mai2026.pdf"], answeredBy: null, answer: null}, priority: 1},
@@ -50,7 +52,7 @@ const block = (result: ReturnType<typeof planMeetingBrief>, id: string) => resul
 describe("plan-meeting-brief executor", () => {
   it("turn 1: fills blocks only from usable objects, names conditioned objects as gaps, and asks at most three questions the base does not answer", () => {
     const result = planMeetingBrief(turn1());
-    expect(result.schema_version).toBe("method.plan-meeting-brief.v6");
+    expect(result.schema_version).toBe("method.plan-meeting-brief.v7");
     expect(result.ambiguity_named).toMatch(/which format is expected; which thesis to carry/);
     expect(result.deliverable.objects_used).not.toContain("blocked-01");
     expect(result.deliverable.objects_pending).toEqual([{id: "cov-01", state: "conditioned"}, {id: "rec-01", state: "open_divergences"}]);
@@ -134,7 +136,7 @@ describe("plan-meeting-brief executor", () => {
     expect(against.headlines.some((entry) => /4,72x/.test(entry.text))).toBe(false);
     // A usable object of any kind with an against stance enters the against block: kinds never decide the side.
     const withScenario = turn1();
-    withScenario.objects = withScenario.objects.map((object) => (object.id === "sc-01" ? {...object, headlines: [headline("No cenário sem rolagem, 2027/28 abre déficit de 150.887", "against", "a7", "R$ mil", "scenarios")]} : object));
+    withScenario.objects = withScenario.objects.map((object) => (object.id === "sc-01" ? {...object, headlines: [headline("No cenário sem rolagem, 2027/28 abre déficit", "against", "a7", null, "scenarios", {stanceBasis: {path: "scenarios", comparator: "empty", whenTrue: "against"}})]} : object));
     expect(block(planMeetingBrief(withScenario), "points_against_thesis").headlines.map((entry) => entry.object_id)).toEqual(["sc-01", "wall-01"]);
   });
 
@@ -201,7 +203,7 @@ describe("plan-meeting-brief executor", () => {
     const base = (): BriefInput => {
       const input = turn1();
       input.request = {...input.request, audience: {primary: "vp", others: ["companhia", "md", "associado"]}};
-      input.objects = input.objects.map((object) => (object.id === "wall-01" ? {...object, headlines: [...object.headlines!, headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil", "peak"), headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "neutral", "b2", "R$ mil", "walls")]} : object));
+      input.objects = input.objects.map((object) => (object.id === "wall-01" ? {...object, headlines: [...object.headlines!, headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil", "walls", {value: {amount: "1228475", unit: "R$ mil"}, stanceBasis: {path: "walls", comparator: "nonempty", whenTrue: "against"}}), headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "neutral", "b2", "R$ mil", "walls", {value: {amount: "1229828", unit: "R$ mil"}})]} : object));
       input.previousVersion = {outputFingerprint: fp("ff"), blocks: [{id: "debt_by_instrument", state: "filled", objectIds: ["ledger-01"]}, {id: "company_view", state: "gap", objectIds: []}], objectFingerprints: {"ledger-01": fp("a1"), "wall-01": fp("b0")}};
       return input;
     };
@@ -222,5 +224,25 @@ describe("plan-meeting-brief executor", () => {
 
   it("emits exactly the top-level outputs the method declares", () => {
     expect(contractMismatch(planMeetingBrief(turn1()) as unknown as Record<string, unknown>, "materials/plan-meeting-brief.md")).toEqual([]);
+  });
+
+  it("mutation: a stance the signed content does not support, a figure not in the signed field, a text that disagrees with its value, a search naming a document outside the base, and legal wording (quebrado, waiver) are refused", () => {
+    const base = turn1();
+    const wall = base.objects.find((object) => object.id === "wall-01")!;
+    const withHeadline = (entry: ReturnType<typeof headline>) => ({...base, objects: base.objects.map((object) => (object.id === "wall-01" ? {...object, headlines: [entry]} : object))});
+    expect(() => planMeetingBrief(withHeadline(headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "for", "b2", "R$ mil", "walls", {value: {amount: "1229828", unit: "R$ mil"}, stanceBasis: {path: "walls", comparator: "nonempty", whenTrue: "against"}})))).toThrow(/does not support the stance for/);
+    expect(() => planMeetingBrief(withHeadline(headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil", "walls", {value: {amount: "1229828", unit: "R$ mil"}, stanceBasis: {path: "walls", comparator: "empty", whenTrue: "against"}})))).toThrow(/does not support the stance against/);
+    expect(() => planMeetingBrief(withHeadline(headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil", "walls")))).toThrow(/names the signed field and the test that supports the stance/);
+    expect(() => planMeetingBrief(withHeadline(headline("Pico de 1.229.829 em 2026/27", "neutral", "b2", "R$ mil", "walls", {value: {amount: "1229829", unit: "R$ mil"}})))).toThrow(/is not in the signed field walls/);
+    expect(() => planMeetingBrief(withHeadline(headline("Pico de 1.229.829 em 2026/27", "neutral", "b2", "R$ mil", "walls", {value: {amount: "1229828", unit: "R$ mil"}})))).toThrow(/does not carry the amount 1229828/);
+    expect(() => planMeetingBrief(withHeadline(headline("Pico de 1.229.828 em 2026/27", "neutral", "b2", "R$ mil", "walls")))).toThrow(/carries a figure and no structured value/);
+    expect(() => planMeetingBrief({...base, candidateQuestions: [{...base.candidateQuestions![0]!, coverage: {searched: ["documento_inexistente.pdf"], answeredBy: null, answer: null}}]})).toThrow(/not a document of the base/);
+    const covenant = base.objects.find((object) => object.id === "cov-01")!;
+    const legal = (text: string) => ({...base, objects: base.objects.map((object) => (object.id === "cov-01" ? {...object, headlines: [headline(text, "against", "c3", "x", "covenants[0].index", {value: {amount: "4.72", unit: "x"}, stanceBasis: {path: "covenants[0].index.value", comparator: "gt", threshold: "4.00", whenTrue: "against"}})]} : object))});
+    expect(() => planMeetingBrief(legal("Covenant quebrado: 4,72x contra 4,00x"))).toThrow(/legal event/i);
+    expect(() => planMeetingBrief(legal("Waiver obtido para 4,72x"))).toThrow(/legal event/i);
+    expect(wall.headlines!.length).toBe(2);
+    expect(covenant.headlines!.length).toBe(1);
+    expect(planMeetingBrief(base).deliverable.blocks.find((block) => block.id === "maturity_schedule")?.headlines.find((entry) => entry.text.startsWith("Dois picos"))?.value).toEqual({amount: "1229828", unit: "R$ mil"});
   });
 });
