@@ -222,7 +222,16 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       // Provider adapters normalize only quirks they introduced. The gateway must
       // preserve semantic nulls because absence and an explicit negative answer
       // are different states in governed financial work.
-      const parsed = request.schema.safeParse(response.output);
+      // A prompted model sometimes wraps the object in one named key ({"answer": {...}}); the
+      // wrapper carries nothing, so validation is retried on the inner object before giving up.
+      let parsed = request.schema.safeParse(response.output);
+      if (!parsed.success && request.outputMode === "prompted_json") {
+        const inner = singleWrappedObject(response.output);
+        if (inner !== undefined) {
+          const unwrapped = request.schema.safeParse(inner);
+          if (unwrapped.success) parsed = unwrapped;
+        }
+      }
       if (!parsed.success) {
         const truncated = response.stopReason === "max_tokens";
         const validationIssues: ValidationIssueDiagnostic[] = truncated
@@ -338,6 +347,15 @@ function providerErrorDiagnostic(error: unknown): ProviderErrorDiagnostic {
   if (code) diagnostic.code = code;
   if (type) diagnostic.type = type;
   return diagnostic;
+}
+
+/** The inner object of a one-key wrapper, or undefined when the value is not shaped that way. */
+function singleWrappedObject(value: unknown): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const entries = Object.entries(value as Record<string, unknown>);
+  if (entries.length !== 1) return undefined;
+  const inner = entries[0]![1];
+  return inner && typeof inner === "object" && !Array.isArray(inner) ? inner : undefined;
 }
 
 function firstShortString(...values: unknown[]): string | undefined {

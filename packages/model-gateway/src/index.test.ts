@@ -579,4 +579,15 @@ describe("file cassette store", () => {
     expect(extractJsonText("Here it is:\n```json\n{\"intent\": \"analyze\", \"confidence\": 0.9}\n```\nDone.")).toBe('{"intent": "analyze", "confidence": 0.9}');
     expect(extractJsonText('{"a":1}')).toBe('{"a":1}');
   });
+
+  it("unwraps a prompted answer that arrived under one named key before validating it", async () => {
+    const schema = z.object({intent: z.string(), confidence: z.number()});
+    const adapter = {
+      provider: "anthropic" as const,
+      complete: async () => ({output: {live_preview_routing_output: {intent: "analyze", confidence: 0.9}}, rawText: "", usage: {inputTokens: 10, outputTokens: 10, cachedInputTokens: 0}, model: "claude-sonnet-5", stopReason: "end" as const}),
+    };
+    const gateway = createModelGateway({adapters: {anthropic: adapter}, providerDataPolicy: {enforce: false, assurances: {}}, budget: {maxCostUsd: 1, maxCalls: 3}});
+    const result = await gateway.complete({task: "route_intent", system: "s", input: [{type: "text", text: "x"}], schema, schemaName: "probe", thinking: "off", outputMode: "prompted_json"});
+    expect(result.output).toEqual({intent: "analyze", confidence: 0.9});
+  });
 });
