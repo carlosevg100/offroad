@@ -134,6 +134,10 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
   });
 
   test("five paraphrases of the analyst's request reach the same composition and the same frozen corpus", async () => {
+    // The gate worker is one process claiming one job at a time: each paraphrase's router turn waits
+    // behind the previous project's preview run (questions, ten objects, synthesis: about ninety seconds
+    // with the model). Five in sequence do not fit the default four minutes.
+    test.setTimeout(900_000);
     for (const [index, prompt] of paraphrases.entries()) {
       const url = await startProject(page, prompt);
       if (index === 0) firstProjectUrl = url;
@@ -176,6 +180,7 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
   });
 
   test("the first project completes its readout from the ten deterministic objects", async () => {
+    test.setTimeout(420_000);
     await page.goto(firstProjectUrl);
     const readout = await waitForAssistant(page, /Primeira devolutiva do Caso 01/, 300_000);
     transcript.push(`\n**Offroad (primeira devolutiva, projeto 1):** ${readout}\n`);
