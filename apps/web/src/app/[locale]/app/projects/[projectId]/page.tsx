@@ -613,6 +613,7 @@ function customerArtifactLabel(type: string, locale: string): string | null {
     preview_scenarios: ["Prévia: cenários", "Preview: scenarios"],
     preview_alternatives: ["Prévia: alternativas", "Preview: alternatives"],
     preview_meeting_brief: ["Prévia: plano da devolutiva", "Preview: readout plan"],
+    preview_material: ["Prévia: síntese e material", "Preview: synthesis and material"],
     meeting_brief: ["Leitura para a reunião", "Meeting readout"],
     company_debt_diagnostic: ["Análise da companhia", "Company analysis"],
     capital_planning_map: ["Alternativas de financiamento", "Financing alternatives"],
