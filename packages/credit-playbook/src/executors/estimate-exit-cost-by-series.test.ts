@@ -33,10 +33,13 @@ describe("estimate-exit-cost-by-series executor", () => {
     expect(ipca.reason).toMatch(/NTN-B/);
   });
 
-  it("treats the 11th's redemption offer as negotiated and conditioned on full adherence", () => {
+  it("prices the base of the 11th's negotiated offer and leaves the premium and the adherence open", () => {
     const result = estimateExitCostBySeries(camil("2026-09-04"));
     const eleventh = result.exitCosts.find((entry) => entry.seriesId === "deb-11")!;
-    expect(eleventh.state).toBe("insufficient_evidence");
+    expect(eleventh.state).toBe("base_priced_premium_open");
+    expect(eleventh.basePayable).toBe("657779");
+    expect(eleventh.premium).toBeNull();
+    expect(eleventh.reason).toMatch(/premium and the adherence are the open items/);
     expect(eleventh.reason).toMatch(/adherence of all holders/);
     expect(result.totals.seriesBlocked).toBe(3);
   });
