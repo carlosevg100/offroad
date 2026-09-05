@@ -28,6 +28,7 @@
     "measure:local": "tsx --env-file=../../.env.local scripts/measure-extraction.ts",
     "nimbus:gold": "tsx scripts/build-nimbus-gold.ts",
     "rescore": "tsx scripts/rescore.ts",
+    "review:codex": "tsx scripts/run-codex-review.ts",
     "source-pack:build": "tsx scripts/build-source-pack.ts",
     "test": "vitest run --exclude 'dist/**'",
     "typecheck": "tsc -p tsconfig.json --noEmit",

@@ -35,3 +35,7 @@ packages/evals/out/
 # Intermediários da FakeCo: o gerador os reproduz, o renderizador os consome.
 packages/testing-fixtures/assets/fakeco/.html/
 packages/testing-fixtures/assets/fakeco/.build.json
+
+# Text corpus derived from the frozen packs for AI reviews; only its manifest is committed
+docs/product/gold-cases/runs/*/ai-review-corpus/*
+!docs/product/gold-cases/runs/*/ai-review-corpus/manifest.json
