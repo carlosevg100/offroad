@@ -4,7 +4,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `build-debt-ledger`, ninth version after eight independent reviews.
+ * Executor of the method `build-debt-ledger`, tenth version after nine independent reviews.
  * Deterministic: the same rows, the same numbers, whatever their order; duplicate ids are refused.
  * Every row carries the anchor of its balance and, field by field, the anchor of each term it
  * states; the two facts of a lender (formal holder, economic creditors) each carry their own anchor.
@@ -69,6 +69,8 @@ export const debtLedgerRowInputSchema = z.object({
 }).strict().superRefine((row, context) => {
   const balance = new Decimal(row.balance);
   if (row.contra && balance.gte(0)) context.addIssue({code: "custom", path: ["contra"], message: `contra line ${row.id} must carry a negative balance`});
+  if (row.priorBalance !== null && row.contra && new Decimal(row.priorBalance).gt(0)) context.addIssue({code: "custom", path: ["priorBalance"], message: `contra line ${row.id} cannot carry a positive prior balance`});
+  if (row.priorBalance !== null && !row.contra && new Decimal(row.priorBalance).lt(0)) context.addIssue({code: "custom", path: ["priorBalance"], message: `row ${row.id} has a negative prior balance and is not a contra line`});
   if (!row.contra && balance.lt(0)) context.addIssue({code: "custom", path: ["balance"], message: `row ${row.id} has a negative balance and is not a contra line`});
   if (row.contra && row.obligation) context.addIssue({code: "custom", path: ["obligation"], message: `contra line ${row.id} is not an obligation to a lender; drop its obligation`});
   if (!row.contra && !row.obligation) context.addIssue({code: "custom", path: ["obligation"], message: `row ${row.id} needs its obligation (kind, disbursed, views)`});
@@ -96,6 +98,8 @@ export const debtLedgerInputSchema = z.object({
   referenceDate: calendarDate,
   priorDate: calendarDate.nullable().default(null),
   unit: z.enum(["BRL", "BRL thousand", "BRL million", "USD", "USD thousand"]),
+  /** Where the statements declare the unit ("em milhares de reais"); a unit without its declaration is a label. */
+  unitAnchor: anchorSchema,
   /** `note` when the debt note of the statements is in the base; `release_only` blocks: a release is not a ledger. */
   source: z.enum(["note", "release_only"]),
   rows: z.array(debtLedgerRowInputSchema),
@@ -141,10 +145,11 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schema_version: "method.build-debt-ledger.v9";
+  schema_version: "method.build-debt-ledger.v10";
   reference_date: string;
   prior_date: string | null;
   unit: string;
+  unit_anchor: Anchor;
   source: "note" | "release_only";
   state: "complete" | "blocked" | "empty" | "incomplete";
   block_reasons: string[];
@@ -186,7 +191,7 @@ const CASH = /caixa|disponibilidade|cash/;
 const RESIDUAL = /outra rubrica que se refira a divida onerosa|outra divida onerosa|outras dividas onerosas|other onerous debt|divida onerosa/;
 
 const DEBT = /emprestim|financiament|debenture|divida bruta|gross debt|loan|borrowing/;
-const DEBT_BASE_OK = /divida bruta|gross debt|(emprestim|financiament)[^.;]{0,60}debenture|debenture[^.;]{0,60}(emprestim|financiament)/;
+const DEBT_BASE_OK = /divida bruta|gross debt|(?=[^.;]*emprestim)(?=[^.;]*financiament)(?=[^.;]*debenture)/;
 /** Components that never belong to a net debt definition; their presence on the added side is a contradiction, not a nuance. */
 const FOREIGN = /fornecedor|supplier|payable|estoque|inventor|receb|receivable|imobilizado|fixed asset|salario|tributo|tax/;
 const normalize = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -418,8 +423,8 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.build-debt-ledger.v9" as const,
-    reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
+    schema_version: "method.build-debt-ledger.v10" as const,
+    reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, unit_anchor: input.unitAnchor, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),
       currency: row.currency, remuneration: row.remuneration, maturity: row.maturity, guarantee: row.guarantee, lender: row.lender, classification: row.classification, contra: row.contra, anchors: row.anchors,
