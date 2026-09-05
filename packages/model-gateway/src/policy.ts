@@ -94,10 +94,10 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   audit_evidence: {primary: openai("gpt-5.6-sol", "high"), fallback: anthropic("claude-opus-5", "high"), maxOutputTokens: 16_000, timeoutMs: 300_000},
   localize: {primary: anthropic("claude-opus-5", "medium"), fallback: openai("gpt-5.6-sol", "medium"), maxOutputTokens: 16_000, timeoutMs: 300_000},
   // Shadow classification of a turn into an Intent Envelope. Cheap, structured, never on the answer path.
-  // Effort medium: every "low" attempt on this model answered 400 invalid_request_error in the live gate and in production (no envelope was ever recorded).
-  route_intent: {primary: anthropic("claude-sonnet-5", "medium"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 4_000, timeoutMs: 60_000},
+  // The envelope schema is too large for the provider's compiled grammar; the router asks for prompted JSON (see the gateway's output mode). Low effort suffices, the probe showed.
+  route_intent: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 4_000, timeoutMs: 60_000},
   // Questions to the person from the gaps the signed objects declare: short, cheap, bounded to four.
-  preview_questions: {primary: anthropic("claude-sonnet-5", "medium"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
+  preview_questions: {primary: anthropic("claude-sonnet-5", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
   // The banker's synthesis of the signed objects: prose whose numbers are checked against the objects afterwards.
   preview_synthesis: {primary: anthropic("claude-sonnet-5", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 6_000, timeoutMs: 120_000},
   // Fair baseline for the gold cases: the strongest generalist, the whole information base, long output.
