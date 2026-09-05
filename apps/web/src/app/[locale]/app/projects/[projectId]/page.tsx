@@ -217,7 +217,7 @@ async function ConversationalCapitalProject({
   const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}] = await Promise.all([
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, processing_status").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
-    supabase.from("capital_project_plans").select("id").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
+    supabase.from("capital_project_plans").select("id, compiler_version").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
     supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
   ]);
@@ -399,7 +399,17 @@ async function ConversationalCapitalProject({
     market: t("activities.market"),
     readout: t("activities.readout"),
   });
-  const visibleActivities = project.entry_job === "origination_thesis"
+  // A preview plan lists its own steps, each bound to a method; the grouped activities of the
+  // released journeys would hide them.
+  const previewPlan = typeof plan?.compiler_version === "string" && plan.compiler_version.startsWith("integration-preview");
+  const previewTasks = (tasks ?? []).map((task) => ({
+    id: task.id,
+    label: task.label,
+    status: (latestRunByTask.get(task.id)?.status ?? "waiting") as "waiting" | "queued" | "running" | "succeeded" | "failed" | "blocked" | "cancelled",
+  }));
+  const visibleActivities = previewPlan
+    ? previewTasks
+    : project.entry_job === "origination_thesis"
     ? compiledActivities
     : agentWorkItems?.length
     ? agentWorkItems.map((item) => ({
