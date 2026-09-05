@@ -269,11 +269,144 @@
         "note": "Dados abertos do governo federal; reuso público"
       },
       "country": "BR"
+    },
+    {
+      "id": "escritura_11a_emissao",
+      "topic": "identity",
+      "title": "Escritura da 11ª emissão de debêntures (27/10/2021)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=910618&numSequencia=435352&numVersao=1",
+      "asOfDate": "2021-10-27",
+      "version": "entregue em 2021-10-27",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "aditamento_11a_emissao",
+      "topic": "identity",
+      "title": "Aditamento à escritura da 11ª emissão de debêntures (18/11/2021)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=918589&numSequencia=443323&numVersao=1",
+      "asOfDate": "2021-11-18",
+      "version": "entregue em 2021-11-18",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "escritura_12a_emissao",
+      "topic": "identity",
+      "title": "Escritura da 12ª emissão de debêntures, lastro de CRA (25/05/2023)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1106358&numSequencia=631087&numVersao=1",
+      "asOfDate": "2023-05-25",
+      "version": "entregue em 2023-05-25",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR",
+      "note": "a 12ª emissão não aparece na nota 15 do ITR de 31/05/2026; incluída para conciliar o histórico de emissões"
+    },
+    {
+      "id": "escritura_13a_emissao",
+      "topic": "identity",
+      "title": "Escritura da 13ª emissão de debêntures, lastro da 292ª emissão de CRA (08/11/2023)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1159188&numSequencia=683914&numVersao=1",
+      "asOfDate": "2023-11-08",
+      "version": "entregue em 2023-11-08",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR",
+      "note": "arquivado sem título no índice IPE; a data e a categoria batem com a aprovação da 13ª emissão em 07/11/2023"
+    },
+    {
+      "id": "escritura_14a_emissao",
+      "topic": "identity",
+      "title": "Escritura da 14ª emissão de debêntures, lastro da 329ª emissão de CRA (03/06/2024)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1245077&numSequencia=769803&numVersao=1",
+      "asOfDate": "2024-06-03",
+      "version": "entregue em 2024-06-03",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "escritura_15a_emissao",
+      "topic": "identity",
+      "title": "Escritura da 15ª emissão de debêntures, lastro da 389ª emissão de CRA (15/10/2025)",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1433033&numSequencia=957745&numVersao=1",
+      "asOfDate": "2025-10-15",
+      "version": "entregue em 2025-10-15",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cm_conclusao_13a_cra",
+      "topic": "identity",
+      "title": "Comunicado ao mercado: conclusão da 13ª emissão (CRA), 01/12/2023",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1168449&numSequencia=693175&numVersao=1",
+      "asOfDate": "2023-12-01",
+      "version": "entregue em 2023-12-01",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cm_conclusao_14a",
+      "topic": "identity",
+      "title": "Comunicado ao mercado: conclusão da 14ª emissão, 18/06/2024",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1251064&numSequencia=775790&numVersao=1",
+      "asOfDate": "2024-06-18",
+      "version": "entregue em 2024-06-18",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cm_conclusao_15a",
+      "topic": "identity",
+      "title": "Comunicado ao mercado: conclusão da 15ª emissão, 21/11/2025",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=1448073&numSequencia=972785&numVersao=1",
+      "asOfDate": "2025-11-21",
+      "version": "entregue em 2025-11-21",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cm_conclusao_11a",
+      "topic": "identity",
+      "title": "Comunicado ao mercado: conclusão da 11ª emissão de R$ 650 milhões, 18/11/2021",
+      "url": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=918587&numSequencia=443321&numVersao=1",
+      "asOfDate": "2021-11-18",
+      "version": "entregue em 2021-11-18",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
+      },
+      "country": "BR"
     }
   ],
   "notes": [
     "Índice ITR da CVM (itr_cia_aberta_2026.zip, 19,5 MB) consultado em 2026-09-04 só para obter o link direto do ITR; não retido por tamanho.",
     "O site de RI (ri.camil.com.br) carrega os documentos por JavaScript; os mesmos arquivos estão arquivados na CVM e foram congelados por lá.",
-    "Nenhum Fato Relevante foi arquivado pela Camil em 2026 até 2026-09-04 no índice IPE."
+    "Nenhum Fato Relevante foi arquivado pela Camil em 2026 até 2026-09-04 no índice IPE.",
+    "Escrituras e aditamentos localizados nos índices IPE de 2021, 2023, 2024 e 2025 (categoria 'Escrituras e aditamentos de debêntures'); os termos de securitização dos CRA (292ª, 329ª e 389ª emissões) não estão no IPE da Camil porque o emissor é a securitizadora; a localizar na CVM ou na B3."
   ]
 }
