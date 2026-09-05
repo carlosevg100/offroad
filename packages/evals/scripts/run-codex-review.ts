@@ -1,7 +1,7 @@
 /**
  * `pnpm --filter @offroad/evals review:codex -- --case gc01 --subject answer_key [--model gpt-5.6-sol]`
  *
- * Runs an independent review by a model, through the Codex CLI in a read-only sandbox, and
+ * Runs an independent review by a model, through the Codex CLI in a sandbox (read-only by default), and
  * records it as `ai-independent-review.v1`: reviewer, run, fingerprint of the exact bytes
  * reviewed, evidence item by item, result and conditions. It is never a human approval, and the
  * record says so. The reviewer reads the answer key and the text corpus derived from the frozen
@@ -27,6 +27,8 @@ const subjectKind = option("subject", "answer_key") as "answer_key" | "method";
 const methodId = option("method", "");
 const model = option("model", "gpt-5.6-sol");
 const effort = option("effort", "high");
+/** Codex sandbox. `read-only` locally; `danger-full-access` only where the host is itself the sandbox (a GitHub-hosted runner), because bubblewrap cannot create its loopback there. */
+const sandbox = option("sandbox", "read-only");
 const sha256 = (value: string | Uint8Array): string => createHash("sha256").update(value).digest("hex");
 
 const cases: Record<string, {caseId: string; answerKey: string; corpusDir: string; reviewsDir: string}> = {
@@ -101,7 +103,7 @@ function main(): void {
   }
   const events = execFileSync("codex", [
     "exec", "--skip-git-repo-check", "--ephemeral", "--json",
-    "-C", repo, "-s", "read-only", "-m", model,
+    "-C", repo, "-s", sandbox, "-m", model,
     "-c", `model_reasoning_effort="${effort}"`,
     "--output-schema", schemaPath, "-o", lastMessagePath,
     prompt,

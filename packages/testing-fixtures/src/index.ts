@@ -32,6 +32,7 @@ export const supermarketFixture = {
 export * from "./document-intake";
 export * from "./m0-governance";
 export * from "./m0-closeout";
+export * from "./camil-management/truth";
 
 // The Aurora case: one declared truth, from which both the data room and its answer key are
 // generated. Exported so the evals package can build the key without testing-fixtures needing

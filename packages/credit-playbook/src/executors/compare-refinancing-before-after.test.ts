@@ -1,5 +1,7 @@
 import {describe, expect, it} from "vitest";
 
+import Decimal from "decimal.js";
+
 import {compareRefinancingBeforeAfter, type BeforeAfterInput} from "./compare-refinancing-before-after";
 
 const itr = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, ...(note ? {note} : {})});
@@ -25,6 +27,8 @@ const camil = (): BeforeAfterInput => ({
   ],
   ranking: {discriminator: "peak_concentration", rationale: "a tese é suavizar o degrau de 2028/29; custo e headroom entram como restrição, não como discriminador"},
 });
+
+const d = (value: string) => new Decimal(value);
 
 describe("compare-refinancing-before-after executor", () => {
   it("gold: the before and after use the same objects, the exit cost enters the after, and the peak moves", () => {
@@ -78,5 +82,28 @@ describe("compare-refinancing-before-after executor", () => {
       expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
     }
+  });
+
+  it("lands new-debt principal beyond the open-ended bucket in that bucket, ranks by peak amount when asked, and names ties", () => {
+    const base = camil();
+    const result = compareRefinancingBeforeAfter({...base, ranking: {discriminator: "peak_amount", rationale: "o pico em valor é o que a rolagem precisa vencer"}});
+    for (const alternative of result.alternatives) {
+      if (!alternative.concentration) continue;
+      expect(alternative.concentration.some((row) => /^203[3-9]$/.test(row.period))).toBe(false);
+    }
+    const extend = result.alternatives.find((alternative) => alternative.id === "extend-di")!;
+    expect(extend.concentration!.map((row) => row.period)).toEqual(["2027", "2028", "2029", "2030", "2031", "2032+"]);
+    // Schedule identity: after = before - retired principal + new principal (the schedule excludes the transaction-cost line, so it is not the gross debt).
+    const consolidated = extend.concentration!.reduce((sum, row) => sum.plus(row.consolidated), d("0"));
+    const beforeTotal = Object.values(base.before.schedule).reduce((sum, value) => sum.plus(value), d("0"));
+    const extendInput = base.alternatives.find((alternative) => alternative.id === "extend-di")!;
+    const retired = extendInput.retired!.reduce((sum, series) => sum.plus(series.principal), d("0"));
+    expect(consolidated.toDecimalPlaces(2).toFixed()).toBe(beforeTotal.minus(retired).plus(extendInput.newDebt!.amount).toDecimalPlaces(2).toFixed());
+    expect(result.ranking?.discriminator).toBe("peak_amount");
+    expect(result.ranking?.order[0]?.reason).toBe("best peak_amount");
+    const statusQuo = base.alternatives.find((alternative) => alternative.id === "status-quo")!;
+    const tie = compareRefinancingBeforeAfter({...base, alternatives: [statusQuo, {...statusQuo, id: "status-quo-twin", label: "Manter, de novo"}], ranking: {discriminator: "peak_amount", rationale: "empate"}});
+    expect(tie.ranking?.order).toHaveLength(2);
+    expect(tie.ranking?.order[1]?.reason).toMatch(/tied with the best/);
   });
 });

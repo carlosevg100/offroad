@@ -38,7 +38,8 @@ export const beforeAfterInputSchema = z.object({
   covenant: z.object({limit: rate, direction: z.enum(["maximum", "minimum"]), state: z.enum(["resolved", "insufficient_evidence"]), comparability: z.enum(["comparable", "conditional", "not_comparable"]), anchor: anchorSchema}).strict(),
   alternatives: z.array(alternativeSchema).min(1),
   /** The declared discriminator; without one there is no ranking. */
-  ranking: z.object({discriminator: z.enum(["headroom", "all_in_cost", "peak_concentration", "net_debt"]), rationale: z.string().min(1)}).strict().nullable().default(null),
+  /** peak_concentration ranks by the share of the peak in gross debt; peak_amount by the peak itself, in the unit. */
+  ranking: z.object({discriminator: z.enum(["headroom", "all_in_cost", "peak_concentration", "peak_amount", "net_debt"]), rationale: z.string().min(1)}).strict().nullable().default(null),
   /** Concentration above this share of gross debt in one period is a wall. */
   wallThresholdShare: rate.default("0.20"),
 }).strict();
@@ -47,7 +48,7 @@ export type BeforeAfterInput = z.input<typeof beforeAfterInputSchema>;
 type Snapshot = {grossDebt: string; unrestrictedCash: string; netDebt: string; contractualNetDebt: string; leverage: string | null; headroom: {absolute: string; passes: boolean} | null; peak: {period: string; amount: string; share: string} | null; allInCost: string | null};
 
 export type BeforeAfterOutput = {
-  schemaVersion: "method.compare-refinancing-before-after.v1";
+  schemaVersion: "method.compare-refinancing-before-after.v2";
   referenceDate: string;
   unit: string;
   before: Snapshot;
@@ -118,8 +119,13 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
       calculations.push({id: "structure.debt_service_schedule", alternative: alternative.id, operands: {amount: alternative.newDebt.amount, annualRate: alternative.newDebt.annualRate, termMonths: String(alternative.newDebt.termMonths)}, result: schedule.totalDebtService});
       newDebtService = {peakDebtService: schedule.peakDebtService, totalInterest: schedule.totalInterest, weightedAverageLifeMonths: schedule.weightedAverageLifeMonths};
       const yearsFromReference = (period: number) => `${Number(input.referenceDate.slice(0, 4)) + Math.floor((Number(input.referenceDate.slice(5, 7)) - 1 + period) / 12)}`;
+      // A year at or beyond the schedule's open-ended bucket ("2032+") lands in that bucket, never in a key of its own.
+      const openEnded = Object.keys(existing).find((key) => key.endsWith("+"));
+      const openEndedFrom = openEnded ? Number(openEnded.slice(0, -1)) : null;
       for (const row of schedule.rows) {
-        const key = yearsFromReference(row.period);
+        if (d(row.principal).isZero()) continue; // grace months add no period of their own
+        const year = yearsFromReference(row.period);
+        const key = openEnded && openEndedFrom !== null && Number(year) >= openEndedFrom ? openEnded : year;
         proposed[key] = out(d(proposed[key] ?? 0).plus(row.principal));
       }
       const termYears = d(alternative.newDebt.termMonths).div(12);
@@ -145,6 +151,7 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
         case "headroom": return after.headroom ? d(after.headroom.absolute) : null;
         case "all_in_cost": return after.allInCost ? d(after.allInCost).negated() : null;
         case "peak_concentration": return after.peak ? d(after.peak.share).negated() : null;
+        case "peak_amount": return after.peak ? d(after.peak.amount).negated() : null;
         case "net_debt": return d(after.contractualNetDebt).negated();
       }
     };
@@ -153,7 +160,14 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
     else {
       ranking = {
         discriminator: input.ranking.discriminator, rationale: input.ranking.rationale,
-        order: scored.sort((a, b) => b.score!.comparedTo(a.score!) || a.alternative.id.localeCompare(b.alternative.id)).map((entry, index) => ({id: entry.alternative.id, value: out(entry.score!), reason: index === 0 ? `best ${input.ranking!.discriminator}` : `ranks below by ${input.ranking!.discriminator}`})),
+        order: (() => {
+          const sorted = scored.sort((a, b) => b.score!.comparedTo(a.score!) || a.alternative.id.localeCompare(b.alternative.id));
+          return sorted.map((entry, index) => {
+            const tiedWithBest = index > 0 && entry.score!.eq(sorted[0]!.score!);
+            const reason = index === 0 ? `best ${input.ranking!.discriminator}` : tiedWithBest ? `tied with the best on ${input.ranking!.discriminator}; ordered by id, not by merit` : `ranks below by ${input.ranking!.discriminator}`;
+            return {id: entry.alternative.id, value: out(entry.score!), reason};
+          });
+        })(),
       };
     }
   } else {
@@ -161,6 +175,6 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   }
   for (const alternative of alternatives) if (alternative.state === "blocked") unsupported.push(`${alternative.id}: ${alternative.blockReasons.join("; ")}`);
 
-  const body = {schemaVersion: "method.compare-refinancing-before-after.v1" as const, referenceDate: input.referenceDate, unit: input.unit, before, alternatives, ranking, unsupported: [...unsupported].sort()};
+  const body = {schemaVersion: "method.compare-refinancing-before-after.v2" as const, referenceDate: input.referenceDate, unit: input.unit, before, alternatives, ranking, unsupported: [...unsupported].sort()};
   return {...body, trace: {calculations, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint(body)}};
 }

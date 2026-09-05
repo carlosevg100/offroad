@@ -21,7 +21,8 @@
     "vertentes:structure-cost-oracle": "python3 scripts/oracle-vertentes-structure-cost.py",
     "vertentes:benchmark": "tsx scripts/benchmark-vertentes.ts",
     "test": "vitest run --exclude 'dist/**' --passWithNoTests",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "camil-management": "tsx scripts/build-camil-management.ts"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"
@@ -29,6 +30,7 @@
   "dependencies": {
     "@offroad/financial-core": "workspace:*",
     "@offroad/receivables-analysis": "workspace:*",
+    "decimal.js": "10.6.0",
     "jszip": "3.10.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
