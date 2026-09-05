@@ -69,6 +69,11 @@ jobs:
           echo "NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000" >> "$GITHUB_ENV"
           echo "E2E_MAIL_URL=${MAILPIT_URL:-${INBUCKET_URL:-http://127.0.0.1:54324}}" >> "$GITHUB_ENV"
 
+      # NEXT_PUBLIC_* values are inlined at build time, so the build must run after the export above;
+      # Playwright starts the production server from this build.
+      - name: Build the web app against the local stack
+        run: pnpm --filter web build
+
       - name: Provision the local worker and the live preview grant
         run: |
           set -euo pipefail
