@@ -1,3 +1,4 @@
+import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -16,7 +17,7 @@ import {waitForOneTimeCode} from "./support/mail";
  * The run is recorded (video on) and its transcript is written next to the test results.
  */
 const here = dirname(fileURLToPath(import.meta.url));
-const runId = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
+const runId = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
 const account = {email: `e2e-preview-${runId}@example.com`, password: `Offroad-E2E-${runId}!`, fullName: "Analista Preview"};
 const outputDirectory = join(here, "..", "test-results", "integration-preview-case01");
 const transcript: string[] = [];
