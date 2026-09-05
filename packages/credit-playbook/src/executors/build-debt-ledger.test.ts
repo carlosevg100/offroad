@@ -40,7 +40,7 @@ const camil = (): DebtLedgerInput => ({
   referenceDate: "2026-05-31",
   priorDate: "2026-02-28",
   unit: "BRL thousand",
-  unitAnchor: itr(11, "cabeçalho das demonstrações: em milhares de reais"),
+  unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "cabeçalho das demonstrações: em milhares de reais"},
   source: "note",
   rows: [
     loan("loan-brl", "Capital de giro, moeda nacional", "1314412", "951593", "BRL"),
@@ -201,7 +201,7 @@ describe("build-debt-ledger executor (v10)", () => {
     const negativePriorLoan = camil();
     (negativePriorLoan.rows[0] as Row).priorBalance = "-951593";
     expect(() => buildDebtLedger(negativePriorLoan)).toThrow(/negative prior balance/);
-    expect(() => buildDebtLedger({...camil(), unitAnchor: undefined as unknown as {document: string}})).toThrow();
+    expect(() => buildDebtLedger({...camil(), unitAnchor: undefined as unknown as {document: string; note: string}})).toThrow();
     // A relabelled unit against an anchor that says thousands is refused outright (v13).
     expect(() => buildDebtLedger({...camil(), unit: "BRL million"})).toThrow(/does not name the unit BRL million/);
     expect(() => buildDebtLedger({...camil(), tolerance: {value: "1000000"}})).toThrow(/needs policyKey and policyVersion/);
@@ -217,17 +217,17 @@ describe("build-debt-ledger executor (v10)", () => {
     const mutated = camil();
     (mutated.rows[0] as Row).balance = "1314412000";
     expect(buildDebtLedger(mutated).state).toBe("blocked");
-    const silent = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows: []});
+    const silent = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows: []});
     expect(silent.state).toBe("blocked");
     expect(silent.block_reasons[0]).toMatch(/silence is not an empty ledger/);
     const rowsAndNoDebt = buildDebtLedger({...camil(), noDebtEvidence: {document: "hipotetico_sem_divida.pdf", note: "hipótese sintética, não Camil"}});
     expect(rowsAndNoDebt.block_reasons.some((reason) => /claims no onerous debt and the note carries rows/.test(reason))).toBe(true);
     const synthetic = {document: "hipotetico_sem_divida.pdf", page: 1, note: "hipótese sintética: companhia sem dívida onerosa, não Camil"};
-    const contradictory = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows: [], noDebtEvidence: synthetic, balanceSheet: {current: "10", nonCurrent: "0", anchor: synthetic}});
+    const contradictory = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows: [], noDebtEvidence: synthetic, balanceSheet: {current: "10", nonCurrent: "0", anchor: synthetic}});
     expect(contradictory.state).toBe("blocked");
-    const proven = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows: [], noDebtEvidence: synthetic, balanceSheet: {current: "0", nonCurrent: "0", anchor: synthetic}});
+    const proven = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows: [], noDebtEvidence: synthetic, balanceSheet: {current: "0", nonCurrent: "0", anchor: synthetic}});
     expect(proven.state).toBe("empty");
-    const unproven = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows: [], noDebtEvidence: synthetic});
+    const unproven = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows: [], noDebtEvidence: synthetic});
     expect(unproven.state).toBe("blocked");
     expect(unproven.block_reasons.some((reason) => /no balance sheet proves a zero balance/.test(reason))).toBe(true);
   });
@@ -239,15 +239,15 @@ describe("build-debt-ledger executor (v10)", () => {
       {id: "b", instrument: "B", obligation: {kind: "loan", disbursed: true, views: ["release", "contractual"]}, balance: "50", currency: "BRL", classification: {current: "10", nonCurrent: "40"}, anchors: {balance: anchor, classification: anchor}},
     ];
     const inconsistentRows: DebtLedgerInput["rows"] = [{...rows[0]!, classification: {current: "50", nonCurrent: "100"}}, {...rows[1]!, classification: {current: "50", nonCurrent: "0"}}];
-    expect(() => buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows: inconsistentRows, balanceSheet: {current: "100", nonCurrent: "100", anchor}})).toThrow(/does not add up to its balance/);
+    expect(() => buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows: inconsistentRows, balanceSheet: {current: "100", nonCurrent: "100", anchor}})).toThrow(/does not add up to its balance/);
     // A contra line carries a signed split and reconciles with the rest.
     const withContra: DebtLedgerInput["rows"] = [...rows, {id: "costs", instrument: "Custos de transação", balance: "-10", currency: "BRL", contra: true, classification: {current: "-4", nonCurrent: "-6"}, anchors: {balance: anchor, classification: anchor}}];
-    const contraSplit = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows: withContra, balanceSheet: {current: "46", nonCurrent: "94", anchor}});
+    const contraSplit = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows: withContra, balanceSheet: {current: "46", nonCurrent: "94", anchor}});
     expect(contraSplit.reconciliation.split.state).toBe("reconciled");
-    expect(() => buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows: [...rows, {id: "costs", instrument: "Custos", balance: "-10", currency: "BRL", contra: true, classification: {current: "4", nonCurrent: "-14"}, anchors: {balance: anchor, classification: anchor}}]})).toThrow(/positive part/);
-    const good = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows, balanceSheet: {current: "50", nonCurrent: "100", anchor}});
+    expect(() => buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows: [...rows, {id: "costs", instrument: "Custos", balance: "-10", currency: "BRL", contra: true, classification: {current: "4", nonCurrent: "-14"}, anchors: {balance: anchor, classification: anchor}}]})).toThrow(/positive part/);
+    const good = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "50", nonCurrent: "100", anchor}});
     expect(good.reconciliation.split).toEqual({state: "reconciled", currentDifference: "0", nonCurrentDifference: "0", reason: null});
-    const swapped = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows, balanceSheet: {current: "60", nonCurrent: "90", anchor}});
+    const swapped = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "60", nonCurrent: "90", anchor}});
     expect(swapped.reconciliation.total.state).toBe("reconciled");
     expect(swapped.reconciliation.split.state).toBe("difference");
     expect(swapped.state).toBe("blocked");
@@ -336,7 +336,7 @@ describe("build-debt-ledger executor (v10)", () => {
     ];
     const cash = {cashAndEquivalents: {value: "20", anchor}, financialInvestments: {value: "5", anchor}, derivativeAssets: {value: "0", anchor}, derivativeLiabilities: {value: "0", anchor}};
     const definitions = {release: {text: "dívida bruta menos caixa e aplicações financeiras", anchor}, contractual: {text: "empréstimos, financiamentos e debêntures mais arrendamentos, mais operações com derivativos do passivo, menos caixa, aplicações financeiras e operações com derivativos do ativo", anchor}};
-    const result = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
+    const result = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
     expect(result.gross_debt).toBe("110");
     expect(result.gross_debt_reported).toBe("100");
     expect(result.by_indexer[0]?.shareOfReportedGrossDebt).toBe("1.1");
@@ -345,12 +345,12 @@ describe("build-debt-ledger executor (v10)", () => {
     expect(result.net_debt_views.release?.value).toBe("75");
     expect(result.net_debt_views.contractual?.value).toBe("85");
     expect(result.state).toBe("complete");
-    const partial = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash: {...cash, derivativeAssets: null}, definitions});
+    const partial = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash: {...cash, derivativeAssets: null}, definitions});
     expect(partial.state).toBe("incomplete");
     expect(partial.net_debt_views.release?.value).toBe("75");
     expect(partial.net_debt_views.contractual).toBeNull();
     expect(partial.incomplete_reasons.some((reason) => reason.includes("derivativeAssets absent"))).toBe(true);
-    const past = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: itr(11, "em milhares de reais"), source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y0", amount: "0", endsAt: "2025-05-31"}, {period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
+    const past = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y0", amount: "0", endsAt: "2025-05-31"}, {period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
     expect(past.state).toBe("blocked");
     expect(past.block_reasons[0]).toMatch(/ended on or before the reference date/);
   });
