@@ -131,7 +131,7 @@ describe("build-debt-ledger executor (v7)", () => {
     expect(ids).toContain("financial.debt_views:release:reported_difference");
     expect(ids).toContain("financial.maturity_buckets:current");
     const ipcaGroup = ledger.by_indexer.find((entry) => entry.indexer === "IPCA")!;
-    expect(ledger.trace.calculations.find((calculation) => calculation.id === "financial.debt_ledger_group:indexer:IPCA")?.result).toBe(`${ipcaGroup.balance};${ipcaGroup.shareOfGrossBeforeContra}`);
+    expect(ledger.trace.calculations.find((calculation) => calculation.id === "financial.debt_ledger_group:indexer:IPCA")?.result).toBe(`${ipcaGroup.balance};${ipcaGroup.shareOfGrossBeforeContra};${ipcaGroup.shareOfGrossDebt}`);
     expect(Number(ipcaGroup.shareOfGrossBeforeContra) * 5742510).toBeCloseTo(743955, 0);
   });
 
@@ -257,7 +257,7 @@ describe("build-debt-ledger executor (v7)", () => {
     const mutations: Array<[string, RegExp]> = [
       ["dívida bruta mais caixa e aplicações financeiras", /never deducts anything/],
       ["caixa e aplicações menos dívida bruta", /adds no debt line|adds cash/],
-      ["empréstimos e debêntures menos fornecedores", /does not deduct cash/],
+      ["empréstimos e debêntures menos fornecedores", /does not deduct cash|not debt nor cash/],
       ["empréstimos e debêntures mais derivativos menos caixa e aplicações", /release definition mentions derivatives/],
       ["dívida bruta mais fornecedores menos caixa e aplicações", /not debt nor cash/],
       ["debêntures menos caixa e aplicações", /whole debt base/],
