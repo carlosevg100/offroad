@@ -16,33 +16,33 @@ const camil = (): ReconciliationInput => ({
   tolerance: {working_capital: policy("1000"), net_debt: policy("1000"), interest: policy("2000")},
   pairedAccounts: [
     {id: "dividends", label: "Dividendos a pagar", family: "dividends", sources: [
-      source("nota 18 nominal", "395000", "valor nominal das onze parcelas remanescentes (a primeira, de 25.000, já paga; total aprovado 420.000)", "dividends.nominal_remaining", ["dividends_declared", "nominal", "remaining_installments"], itr(46, "18e")),
-      source("balanço (valor presente)", "338565", "nominal menos ajuste a valor presente", "dividends.present_value", ["dividends_declared", "present_value", "remaining_installments"], itr(46, "18e")),
-      source("nota 25 contábil", "322498", "valor contábil na tabela de instrumentos financeiros", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(51, "25")),
-      source("nota 25 valor justo", "420000", "valor justo na tabela de instrumentos financeiros", "dividends.fair_value", ["dividends_declared", "fair_value"], itr(51, "25")),
+      source("nota 18 nominal", "395000", "dividendos declarados: valor nominal das onze parcelas remanescentes (a primeira, de 25.000, já paga; total aprovado 420.000)", "dividends.nominal_remaining", ["dividends_declared", "nominal", "remaining_installments"], itr(46, "18e")),
+      source("balanço (valor presente)", "338565", "dividendos declarados: nominal menos ajuste a valor presente", "dividends.present_value", ["dividends_declared", "present_value", "remaining_installments"], itr(46, "18e")),
+      source("nota 25 contábil", "322498", "dividendos declarados: valor contábil na tabela de instrumentos financeiros", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(51, "25")),
+      source("nota 25 valor justo", "420000", "dividendos declarados: valor justo na tabela de instrumentos financeiros", "dividends.fair_value", ["dividends_declared", "fair_value"], itr(51, "25")),
     ]},
     {id: "inventories", label: "Estoques", family: "working_capital", sources: [
       source("nota 5", "3088478", "estoques incluindo adiantamentos a fornecedores de 643.241", "inventories.note5", ["inventories", "advances_to_suppliers"], itr(21, "5")),
       source("release, capital de giro", "2445200", "estoques sem adiantamentos a fornecedores", "inventories.release_wc", ["inventories"], release(12, "Capital de giro")),
-      source("release, balanço gerencial", "2437100", "estoques no balanço gerencial, com adiantamentos a produtores de 576.000 em linha própria", "inventories.release_management", ["inventories_management_view"], release(14, "Balanço gerencial")),
-      source("balanço patrimonial, circulante", "3013060", "estoques no ativo circulante do balanço consolidado", "inventories.balance_sheet_current", ["inventories", "advances_to_producers"], itr(11)),
+      source("release, balanço gerencial", "2437100", "estoques no balanço gerencial, sem os adiantamentos a produtores de 576.000, que ficam em linha própria", "inventories.release_management", ["inventories_management_view"], release(14, "Balanço gerencial")),
+      source("balanço patrimonial, circulante", "3013060", "estoques no ativo circulante do balanço consolidado, incluindo os adiantamentos a produtores", "inventories.balance_sheet_current", ["inventories", "advances_to_producers"], itr(11)),
     ], explanations: [
       {fromSource: "release, capital de giro", toSource: "nota 5", adjustment: "643241", description: "adiantamentos a fornecedores incluídos na nota 5 e apresentados à parte no release", anchor: itr(21, "5")},
       {fromSource: "release, balanço gerencial", toSource: "balanço patrimonial, circulante", adjustment: "576000", description: "adiantamentos a produtores em linha própria do balanço gerencial, dentro dos estoques do balanço", anchor: release(14, "Balanço gerencial")},
     ]},
     {id: "net_debt_release", label: "Dívida líquida (definição do release)", family: "net_debt", sources: [
       source("release", "4214400", "dívida bruta menos caixa e aplicações, em R$ milhões arredondados", "net_debt.release", ["gross_debt", "cash", "investments"], release(11, "Endividamento e Caixa")),
-      source("recalculado das notas", "4214377", "5.670.186 menos 1.430.714 menos 25.095", "net_debt.release", ["gross_debt", "cash", "investments"], itr(40, "15"), release(11, "Endividamento e Caixa")),
+      {...source("recalculado das notas", "4214377", "dívida bruta da nota 15 menos caixa e equivalentes da nota 3 menos aplicações financeiras do balanço", "net_debt.release", ["gross_debt", "cash", "investments"], itr(40, "15"), release(11, "Endividamento e Caixa")), derivation: {formula: "difference", operands: [{label: "dívida bruta", value: "5670186", anchor: itr(39, "15")}, {label: "caixa e equivalentes", value: "1430714", anchor: itr(20, "3")}, {label: "aplicações financeiras", value: "25095", anchor: itr(11)}]}},
     ]},
     {id: "net_debt_release_vs_contractual", label: "Dívida líquida do release contra a contratual", family: "net_debt", sources: [
       source("release", "4214400", "dívida bruta menos caixa e aplicações", "net_debt.release", ["gross_debt", "cash", "investments"], release(11, "Endividamento e Caixa")),
-      source("contratual (nota 15)", "4228477", "dívida bruta mais derivativos passivos menos derivativos ativos, caixa e aplicações", "net_debt.contractual", ["gross_debt", "derivative_liabilities", "derivative_assets", "cash", "investments"], itr(40, "15"), {document: "escritura_13a_emissao.pdf", clause: "1.1, Dívida Líquida", page: 7}),
+      source("contratual (nota 15)", "4228477", "dívida bruta mais derivativos passivos menos derivativos ativos, caixa e aplicações financeiras", "net_debt.contractual", ["gross_debt", "derivative_liabilities", "derivative_assets", "cash", "investments"], itr(40, "15"), {document: "escritura_13a_emissao.pdf", clause: "1.1, Dívida Líquida", page: 7}),
     ]},
     {id: "leases", label: "Passivo de arrendamento", family: "leases", sources: [
       source("balanço", "276768", "passivo de arrendamento circulante 67.399 mais não circulante 209.369, consolidado", "leases.balance_sheet", ["lease_liabilities"], itr(12)),
     ]},
   ],
-  balanceSheet: {assets: "12021830", liabilities: "9032723", equity: "2989107", anchor: itr(12)},
+  balanceSheet: {assets: {value: "12021830", anchor: itr(11)}, liabilities: {value: "9032723", anchor: itr(12)}, equity: {value: "2989107", anchor: itr(12)}},
   debtBridge: {opening: "4988383", lines: [
     {id: "captacoes", label: "Captações", value: "2046140", category: "drawdowns"},
     {id: "juros_e_variacoes", label: "Juros e variações monetárias", value: "172359", category: "accruedInterest"},
@@ -57,11 +57,14 @@ const camil = (): ReconciliationInput => ({
 });
 const by = (result: ReturnType<typeof reconcileFinancialStatements>, id: string) => result.reconciliations.find((entry) => entry.id === id)!;
 
-describe("reconcile-financial-statements executor (v3)", () => {
+describe("reconcile-financial-statements executor (v4)", () => {
   it("gold: the roll-forwards close, the inventory presentations connect in two groups that do not meet, dividends stay open, and the two net debt definitions are not comparable", () => {
     const result = reconcileFinancialStatements(camil());
     expect(result.identities.map((identity) => [identity.id, identity.state])).toEqual([["balance_sheet", "holds"], ["debt_bridge", "holds"], ["cash_bridge", "holds"], ["interest_bridge", "not_comparable"]]);
     expect(result.identities.find((identity) => identity.id === "interest_bridge")?.difference).toBe("1811");
+    expect(Object.keys(result.identities.find((identity) => identity.id === "balance_sheet")!.anchors)).toEqual(["assets", "liabilities", "equity"]);
+    expect(result.identities.find((identity) => identity.id === "cash_bridge")?.anchors.netChange?.page).toBe(16);
+    expect(result.trace.calculations.find((calculation) => calculation.id === "financial.accounting_identity:net_debt_release:recalculado das notas:derivation")?.operands["dívida bruta"]).toBe("5670186");
     expect(result.uncovered_terms.find((term) => term.id === "interest_bridge")?.reason).toMatch(/monetary_variation/);
     const inventories = by(result, "inventories");
     expect(inventories.explanations.map((explanation) => [explanation.residual, explanation.holds])).toEqual([["-40", true], ["37", true]]);
@@ -86,6 +89,7 @@ describe("reconcile-financial-statements executor (v3)", () => {
     expect(reconcileFinancialStatements(mutated).state).toBe("identity_failed");
     const valueMutation = camil();
     valueMutation.pairedAccounts![2]!.sources[1]!.value = "4213000";
+    valueMutation.pairedAccounts![2]!.sources[1]!.derivation = null;
     expect(by(reconcileFinancialStatements(valueMutation), "net_debt_release").state).toBe("open");
     const reversed = camil();
     reversed.pairedAccounts![1]!.explanations = [{fromSource: "nota 5", toSource: "release, capital de giro", adjustment: "643241", description: "sentido trocado", anchor: itr(21, "5")}];
@@ -102,7 +106,7 @@ describe("reconcile-financial-statements executor (v3)", () => {
 
   it("adversarial: different definition keys, dated-elsewhere sources and a quarterly figure against an annual one are not comparable", () => {
     const anchor = itr(4);
-    const keys = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "x", label: "x", family: "net_debt", sources: [source("release", "4214400", "release", "net_debt.release", ["gross_debt", "cash", "investments"], anchor), source("contratual", "4214400", "rotulada como contratual", "net_debt.contractual", ["gross_debt", "cash", "investments"], anchor)]}]});
+    const keys = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "x", label: "x", family: "net_debt", sources: [source("release", "4214400", "dívida bruta menos caixa e aplicações", "net_debt.release", ["gross_debt", "cash", "investments"], anchor), source("contratual", "4214400", "dívida bruta menos caixa e aplicações, rotulada como contratual", "net_debt.contractual", ["gross_debt", "cash", "investments"], anchor)]}]});
     expect(by(keys, "x").state).toBe("not_comparable");
     expect(by(keys, "x").comparability.reasons[0]).toMatch(/different definitions/);
     const dated = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "y", label: "y", family: "ebitda", sources: [source("a", "100", "a", "e", ["ebitda"], anchor), {...source("b", "100", "b", "e", ["ebitda"], anchor), asOf: "2026-02-28"}]}]});
@@ -119,16 +123,30 @@ describe("reconcile-financial-statements executor (v3)", () => {
     expect(() => reconcileFinancialStatements({...base, tolerance: {net_debt: {value: "1000"}}})).toThrow(/needs policyKey and policyVersion/);
     expect(() => reconcileFinancialStatements({...base, tolerance: {net_debt: {value: "1000", policyKey: "policy.does.not.exist", policyVersion: "1"}}})).toThrow(/not in the reference-data registry/);
     expect(() => reconcileFinancialStatements({...base, tolerance: {net_debt: {value: "1000", policyKey: "policy.reconciliation.tolerance", policyVersion: "2020.01.01-v1"}}})).toThrow(/is at version/);
+    expect(() => reconcileFinancialStatements({...base, tolerance: {net_debt: policy("5000")}})).toThrow(/states 1000, not 5000/);
+    expect(() => reconcileFinancialStatements({...base, tolerance: {contingencies: policy("1000")}})).toThrow(/states no tolerance for this family/);
+    expect(() => reconcileFinancialStatements({...base, pairedAccounts: [{...base.pairedAccounts![1]!, explanations: [base.pairedAccounts![1]!.explanations![0]!, base.pairedAccounts![1]!.explanations![0]!]}]})).toThrow(/one adjustment per pair/);
+    expect(() => reconcileFinancialStatements({...base, pairedAccounts: [{id: "tag", label: "tag", family: "net_debt", sources: [source("a", "1", "texto sem os componentes", "k", ["gross_debt", "cash"], itr(1)), source("b", "1", "texto sem os componentes", "k", ["gross_debt", "cash"], itr(1))]}]})).toThrow(/never names the component/);
+    expect(() => reconcileFinancialStatements({...base, pairedAccounts: [{...base.pairedAccounts![2]!, sources: [base.pairedAccounts![2]!.sources[0]!, {...base.pairedAccounts![2]!.sources[1]!, derivation: {formula: "difference", operands: [{label: "a", value: "10", anchor: itr(1)}, {label: "b", value: "1", anchor: itr(1)}]}}]}]})).toThrow(/the derivation gives 9/);
     expect(() => reconcileFinancialStatements({...base, unit: "R$ mil" as unknown as "BRL"})).toThrow();
     const empty = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand"});
     expect(empty.state).toBe("blocked");
+    expect(empty.uncovered_terms.map((term) => term.id)).toEqual(["balance_sheet", "debt_bridge", "cash_bridge", "interest_bridge"]);
     const noBridges = reconcileFinancialStatements({...base, balanceSheet: null, cashBridge: null, debtBridge: null, interestBridge: null, pairedAccounts: [base.pairedAccounts![2]!]});
     expect(noBridges.state).toBe("incomplete");
+    const incompleteWithDivergence = reconcileFinancialStatements({...base, balanceSheet: null});
+    expect(incompleteWithDivergence.state).toBe("incomplete");
+    expect(incompleteWithDivergence.open_divergences.length).toBeGreaterThan(0);
+    const comparableFailingBridge = reconcileFinancialStatements({...base, interestBridge: {fromDebtMovement: {value: "100000", components: ["interest"], anchor: itr(40)}, fromIncomeStatement: {value: "90000", components: ["interest"], anchor: itr(48)}}});
+    expect(comparableFailingBridge.state).toBe("identity_failed");
+    const datedWithExplanation = reconcileFinancialStatements({...base, pairedAccounts: [{id: "d", label: "d", family: "ebitda", sources: [source("a", "100", "ebitda", "e", ["ebitda"], itr(4)), {...source("b", "90", "ebitda", "e", ["ebitda"], itr(4)), asOf: "2026-02-28"}], explanations: [{fromSource: "b", toSource: "a", adjustment: "10", description: "liga as duas", anchor: itr(4)}]}]});
+    expect(by(datedWithExplanation, "d").state).toBe("not_comparable");
     expect(noBridges.uncovered_terms.map((term) => term.id)).toEqual(["balance_sheet", "debt_bridge", "cash_bridge", "interest_bridge"]);
   });
 
   it("is consistent under twenty distinct permutations of accounts, sources, explanations, bridge lines, components, tolerance keys and object keys, with the trace in the fingerprint", () => {
     const first = reconcileFinancialStatements(camil());
+    expect(first.trace.outputFingerprint).not.toBe(reconcileFinancialStatements({...camil(), pairedAccounts: camil().pairedAccounts!.map((account) => ({...account, explanations: account.explanations?.map((explanation) => ({...explanation, description: `${explanation.description} (outra)`}))}))}).trace.outputFingerprint);
     const permute = <T>(items: readonly T[], seed: number): T[] => { const copy = [...items]; let state = seed; for (let index = copy.length - 1; index > 0; index -= 1) { state = (state * 1103515245 + 12345) % 2147483648; const swap = state % (index + 1); [copy[index], copy[swap]] = [copy[swap]!, copy[index]!]; } return copy; };
     const reorderKeys = <T extends object>(value: T): T => Object.fromEntries(Object.entries(value).reverse()) as T;
     for (let seed = 1; seed <= 20; seed += 1) {
@@ -139,6 +157,7 @@ describe("reconcile-financial-statements executor (v3)", () => {
       const again = reconcileFinancialStatements(seed % 2 ? reorderKeys(shuffled) : shuffled);
       expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
+      expect(again).toEqual(first);
     }
   });
 });
