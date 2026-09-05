@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@offroad/credit-ontology": "workspace:*",
+    "@offroad/work-plan": "workspace:*",
     "zod": "4.4.3"
   },
   "devDependencies": {

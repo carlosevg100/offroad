@@ -2356,3 +2356,18 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   emissões, as contingências possíveis sem provisão e o lucro do trimestre sustentado por crédito
   fiscal. Também recusou projetar EBITDA sem guidance, o que é a postura esperada.
 - O painel de revisão mede as duas execuções pela mesma rubrica; nada aqui substitui isso.
+
+## Biblioteca de métodos em Markdown e gate de promoção, candidate, 05/09/2026
+
+- `packages/credit-playbook/knowledge/procedures/`: um arquivo por método, frontmatter estruturado
+  e seções fixas, compilado por `procedure-markdown.ts` para o contrato canônico. Três métodos do
+  Caso 01 como `candidate`: construir o ledger de dívida (C05), diagnosticar a parede de
+  vencimentos (C05, C08) e reconciliar as definições de covenant com as escrituras (C05, S08). O
+  teste prova que cada referência a TaskSpec, procedimento da casa, chave de parâmetro e
+  dependência existe, e que uma task não roda sobre método `candidate`.
+- `packages/work-plan`: a TaskSpec aceita `procedure` (id e versão) e `assertTaskPromotable`
+  recusa produção sem método em produção com evidência de implementação. Nenhuma task está
+  vinculada ainda; o registro continua todo `specified`, e o teste diz isso em voz alta.
+- `docs/build/WORKFLOW_SYSTEM_PLAN.md`: os nove passos do fundador com o inventário medido no
+  código (224 procedimentos candidate, 80 TaskSpecs specified, 17 packs sem revisão, 71 parâmetros
+  ausentes), os gates do teste real e a próxima onda.
