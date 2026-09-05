@@ -90,7 +90,7 @@ const permute = <T>(items: T[], seed: number): T[] => {
 };
 const sumShares = (entries: Array<{shareOfGrossBeforeContra: string}>) => entries.reduce((sum, entry) => sum + Number(entry.shareOfGrossBeforeContra), 0);
 
-describe("build-debt-ledger executor (v7)", () => {
+describe("build-debt-ledger executor (v8)", () => {
   it("gold: gross debt of both dates, total reconciliation, first period against current liabilities, both views with their definitions and per-operand anchors", () => {
     const ledger = buildDebtLedger(camil());
     expect(ledger.state).toBe("complete");
@@ -214,6 +214,9 @@ describe("build-debt-ledger executor (v7)", () => {
     expect(contradictory.state).toBe("blocked");
     const proven = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: [], noDebtEvidence: synthetic, balanceSheet: {current: "0", nonCurrent: "0", anchor: synthetic}});
     expect(proven.state).toBe("empty");
+    const unproven = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: [], noDebtEvidence: synthetic});
+    expect(unproven.state).toBe("blocked");
+    expect(unproven.block_reasons.some((reason) => /no balance sheet proves a zero balance/.test(reason))).toBe(true);
   });
 
   it("hypothetical: reconciles current and non-current apart when the rows carry the split, and catches a compensating swap", () => {
@@ -261,6 +264,7 @@ describe("build-debt-ledger executor (v7)", () => {
       ["empréstimos e debêntures mais derivativos menos caixa e aplicações", /release definition mentions derivatives/],
       ["dívida bruta mais fornecedores menos caixa e aplicações", /not debt nor cash/],
       ["debêntures menos caixa e aplicações", /whole debt base/],
+      ["dívida bruta menos caixa, aplicações e dívida subordinada", /deducts a debt operand/],
     ];
     for (const [text, expected] of mutations) {
       const mutated = camil();
@@ -281,6 +285,21 @@ describe("build-debt-ledger executor (v7)", () => {
     const noInvestments = camil();
     noInvestments.definitions = {...noInvestments.definitions, release: {text: "dívida bruta menos caixa", anchor: {document: "ri_release_1t26.pdf", page: 12}}};
     expect(buildDebtLedger(noInvestments).block_reasons[0]).toMatch(/does not deduct financial investments/);
+  });
+
+  it("blocks a row kept out of a view whose definition counts its kind, and refuses impossible dates and negative splits", () => {
+    const tampered = camil();
+    (tampered.rows[0] as Row).obligation = {kind: "loan", disbursed: true, views: ["release"]};
+    const result = buildDebtLedger(tampered);
+    expect(result.state).toBe("blocked");
+    expect(result.block_reasons.some((reason) => /counts loan rows, yet loan-brl is kept out of that view/.test(reason))).toBe(true);
+    const badDate = camil();
+    (badDate.rows[5] as Row).maturity = "2028-02-30";
+    expect(() => buildDebtLedger(badDate)).toThrow(/not a calendar date/);
+    const negativeSplit = camil();
+    (negativeSplit.rows[0] as Row).classification = {current: "-1", nonCurrent: "1314413"};
+    (negativeSplit.rows[0] as Row).anchors = {balance: itr(39, "15"), classification: itr(39, "15")};
+    expect(() => buildDebtLedger(negativeSplit)).toThrow();
   });
 
   it("keeps a contractual-only inclusion out of the identity with the balance sheet, and names an absent cash component instead of failing", () => {

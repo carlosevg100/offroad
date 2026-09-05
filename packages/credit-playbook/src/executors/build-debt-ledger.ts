@@ -4,7 +4,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `build-debt-ledger`, seventh version after six independent reviews.
+ * Executor of the method `build-debt-ledger`, eighth version after seven independent reviews.
  * Deterministic: the same rows, the same numbers, whatever their order; duplicate ids are refused.
  * Every row carries the anchor of its balance and, field by field, the anchor of each term it
  * states; the two facts of a lender (formal holder, economic creditors) each carry their own anchor.
@@ -19,6 +19,8 @@ import {z} from "zod";
  */
 const money = z.string().regex(/^-?\d+(\.\d+)?$/);
 const nonNegativeMoney = z.string().regex(/^\d+(\.\d+)?$/);
+/** A calendar date that exists: 2026-02-30 is refused, not silently rolled over. */
+const calendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => { const date = new Date(`${value}T00:00:00Z`); return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value; }, {message: "not a calendar date"});
 const nonEmpty = z.string().trim().min(1);
 const anchorSchema = z.object({document: nonEmpty, page: z.number().int().positive().optional(), note: nonEmpty.optional(), clause: nonEmpty.optional(), table: nonEmpty.optional()}).strict();
 type Anchor = z.infer<typeof anchorSchema>;
@@ -46,10 +48,10 @@ export const debtLedgerRowInputSchema = z.object({
   priorBalance: money.nullable().default(null),
   currency: z.string().regex(/^[A-Z]{3}$/),
   remuneration: remunerationSchema.nullable().default(null),
-  maturity: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null),
+  maturity: calendarDate.nullable().default(null),
   guarantee: nonEmpty.nullable().default(null),
   lender: z.object({formalHolder: nonEmpty.nullable(), economicCreditors: nonEmpty.nullable()}).strict().nullable().default(null),
-  classification: z.object({current: money, nonCurrent: money}).strict().nullable().default(null),
+  classification: z.object({current: nonNegativeMoney, nonCurrent: nonNegativeMoney}).strict().nullable().default(null),
   /** Transaction costs and similar contra lines are part of the note's total but are not debt to a lender; they must be negative. */
   contra: z.boolean().default(false),
   anchors: z.object({
@@ -88,8 +90,8 @@ export const toleranceSchema = z.object({
 });
 
 export const debtLedgerInputSchema = z.object({
-  referenceDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  priorDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null),
+  referenceDate: calendarDate,
+  priorDate: calendarDate.nullable().default(null),
   unit: z.enum(["BRL", "BRL thousand", "BRL million", "USD", "USD thousand"]),
   /** `note` when the debt note of the statements is in the base; `release_only` blocks: a release is not a ledger. */
   source: z.enum(["note", "release_only"]),
@@ -100,7 +102,7 @@ export const debtLedgerInputSchema = z.object({
   balanceSheet: z.object({current: money, nonCurrent: money, anchor: anchorSchema}).strict().optional(),
   schedule: z.object({
     /** `endsAt` is the calendar end of the period; null for open-ended buckets and adjustment lines. */
-    periods: z.array(z.object({period: nonEmpty, amount: money, endsAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()}).strict()).min(1),
+    periods: z.array(z.object({period: nonEmpty, amount: money, endsAt: calendarDate.nullable()}).strict()).min(1),
     anchor: anchorSchema,
   }).strict().optional(),
   /** Each component may be absent from the base; a view that needs it is then not computed, with the gap named. */
@@ -136,7 +138,7 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schema_version: "method.build-debt-ledger.v7";
+  schema_version: "method.build-debt-ledger.v8";
   reference_date: string;
   prior_date: string | null;
   unit: string;
@@ -210,6 +212,8 @@ function definitionDisagreement(name: "release" | "contractual", text: string): 
   if (!DEBT.test(parsed.added)) return `the ${name} definition adds no debt line; the view sums loans, financings and debentures`;
   if (!DEBT_BASE_OK.test(parsed.added)) return `the ${name} definition does not add the whole debt base (loans, financings and debentures, or gross debt); the view sums all three`;
   if (FOREIGN.test(parsed.added) || FOREIGN.test(parsed.deducted)) return `the ${name} definition names a component that is not debt nor cash (${(FOREIGN.exec(parsed.added) ?? FOREIGN.exec(parsed.deducted))![0]}); the view has no such operand`;
+  const deductedDebt = /emprestim|financiament|debenture|subordinad|divida bruta|gross debt|loan|borrowing/.exec(parsed.deducted.replace(/divida liquida|net debt/g, ""));
+  if (deductedDebt) return `the ${name} definition deducts a debt operand (${deductedDebt[0]}); the view deducts only cash, investments and derivative assets`;
   if (!CASH.test(parsed.deducted)) return `the ${name} definition does not deduct cash; the view deducts cash and equivalents`;
   if (!INVESTMENTS.test(parsed.deducted)) return `the ${name} definition does not deduct financial investments; the view deducts them`;
   if (CASH.test(parsed.added) || INVESTMENTS.test(parsed.added)) return `the ${name} definition adds cash or investments; the view deducts them`;
@@ -262,6 +266,7 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
 
   if (input.source === "release_only") blockReasons.push("only a release is in the base; a ledger needs the debt note of the financial statements, so no row is produced");
   if (input.source === "note" && rows.length === 0 && !input.noDebtEvidence) blockReasons.push("no rows and no evidence that the company has no onerous debt: silence is not an empty ledger");
+  if (input.source === "note" && rows.length === 0 && input.noDebtEvidence && !input.balanceSheet) blockReasons.push("the base claims no onerous debt but no balance sheet proves a zero balance; an empty ledger needs the balance sheet");
   if (input.noDebtEvidence && rows.length > 0) blockReasons.push("the base claims no onerous debt and the note carries rows; the contradiction blocks the ledger");
   if (rows.length === 0 && input.noDebtEvidence && input.balanceSheet && !d(input.balanceSheet.current).plus(input.balanceSheet.nonCurrent).isZero()) {
     blockReasons.push("the base claims no onerous debt but the balance sheet carries debt totals; the contradiction blocks the ledger");
@@ -341,6 +346,15 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
     return {value: out(value), definition: definition.text, definitionSource: definition.anchor, components: operands, componentAnchors: anchors, rowsIncluded: included.map((row) => row.id), residualAssumedZero: name === "contractual" && RESIDUAL.test(normalize(definition.text))};
   };
   const netDebtViews: DebtLedgerOutput["net_debt_views"] = {release: null, contractual: null, releaseReported: null};
+  // A definition that counts loans, financings and debentures counts every such row: a row left out of a view whose text includes its kind is a tampered membership.
+  for (const name of ["release", "contractual"] as const) {
+    const definition = input.definitions[name];
+    if (!definition) continue;
+    const text = normalize(definition.text);
+    const counted = (row: Row) => row.obligation !== undefined && ((row.obligation.kind === "loan" && /emprestim|financiament|divida bruta|gross debt|loan/.test(text)) || (row.obligation.kind === "debenture" && /debenture|divida bruta|gross debt/.test(text)) || ((row.obligation.kind === "commercial_note" || row.obligation.kind === "cpr") && /emprestim|financiament|divida bruta|gross debt|nota comercial|cpr/.test(text)));
+    const excluded = rows.filter((row) => !row.contra && counted(row) && !row.obligation!.views.includes(name));
+    if (excluded.length > 0) blockReasons.push(`the ${name} definition counts ${excluded.map((row) => row.obligation!.kind).filter((kind, index, all) => all.indexOf(kind) === index).join(" and ")} rows, yet ${excluded.map((row) => row.id).join(", ")} ${excluded.length === 1 ? "is" : "are"} kept out of that view`);
+  }
   if (rows.length > 0) {
     if (!input.cash) incompleteReasons.push("no cash, investments and derivatives in the base: net debt views are not computed");
     else {
@@ -395,7 +409,7 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.build-debt-ledger.v7" as const,
+    schema_version: "method.build-debt-ledger.v8" as const,
     reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),

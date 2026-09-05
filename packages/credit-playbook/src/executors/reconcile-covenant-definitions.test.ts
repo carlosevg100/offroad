@@ -66,7 +66,7 @@ const permute = <T>(items: readonly T[], seed: number): T[] => {
 const by = (result: ReturnType<typeof reconcileCovenantDefinitions>, id: string) => result.covenants.find((covenant) => covenant.instrument === id)!;
 const withoutLeases = (input: CovenantReconciliationInput): CovenantReconciliationInput => ({...input, componentValues: [...input.componentValues!.filter((line) => line.component !== "leases"), {component: "other_onerous_debt", covers: ["other_onerous_debt"], value: "0", unit, asOf, anchor: itr(39, "hipotético: nenhuma outra dívida onerosa enumerada")}]});
 
-describe("reconcile-covenant-definitions executor (v6)", () => {
+describe("reconcile-covenant-definitions executor (v7)", () => {
   it("gold: net debt by each indenture's own definition is 4.228.477 through financial-core, one anchor per operand, implied EBITDA traced", () => {
     const result = reconcileCovenantDefinitions(camil("unknown"));
     for (const covenant of result.covenants) {
@@ -302,6 +302,16 @@ describe("reconcile-covenant-definitions executor (v6)", () => {
     const parent = reconcileCovenantDefinitions({...opened, reported: {...opened.reported!, perimeter: "parent"}});
     expect(by(parent, "deb-13").comparability).toBe("not_comparable");
     expect(by(parent, "deb-13").comparabilityReasons.some((reason) => reason.includes("perimeter"))).toBe(true);
+  });
+
+  it("mutation: an adjustment without a typed side never resolves comparability, and a line mixing debt and deductions is refused", () => {
+    const base = withoutLeases(camil("ordinary"));
+    const opened: CovenantReconciliationInput = {...base, reported: null, ltmEbitda: {value: "895864", unit, asOf, months: 12, incorporatesAdjustments: ["untyped"], anchor: itr(40)}, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-13" ? {...instrument, ebitdaAdjustments: [{id: "untyped", kind: "other", description: "ajuste sem lado definido", anchor: {document: "escritura_13a_emissao.pdf", clause: "1.1", page: 8}}]} : instrument)};
+    const result = reconcileCovenantDefinitions(opened);
+    expect(by(result, "deb-13").comparability).toBe("conditional");
+    expect(by(result, "deb-13").headroom).toBeNull();
+    expect(by(result, "deb-13").comparabilityReasons.some((reason) => reason.includes("no typed economic side"))).toBe(true);
+    expect(() => reconcileCovenantDefinitions({...base, componentValues: [...base.componentValues!.filter((line) => line.component !== "financial_investments"), {component: "financial_investments", covers: ["financial_investments", "debentures"], value: "500", unit, asOf, anchor: itr(11)}]})).toThrow(/aggregates debt and deductions|covered twice/);
   });
 
   it("blocks on an empty base", () => {

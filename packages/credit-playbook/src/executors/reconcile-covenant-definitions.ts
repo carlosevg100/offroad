@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `reconcile-covenant-definitions` (v6, after the fifth independent review).
+ * Executor of the method `reconcile-covenant-definitions` (v7, after the sixth independent review).
  * It never writes "breached". Each indenture carries the anchor of its definitions and one anchor per
  * tier; EBITDA adjustments are typed (denominator additions versus numerator obligations) and never
  * folded together; the net debt of each instrument is computed from that instrument's own component
@@ -142,6 +142,8 @@ export const covenantReconciliationInputSchema = z.object({
   const covered = new Set<string>();
   input.componentValues.forEach((line, index) => {
     if (!line.covers.includes(line.component)) context.addIssue({code: "custom", path: ["componentValues", index, "covers"], message: "a line must cover its own component"});
+    const sides = new Set(line.covers.map((component) => (DEDUCTIONS.has(component) ? "deduction" : "debt")));
+    if (sides.size > 1) context.addIssue({code: "custom", path: ["componentValues", index, "covers"], message: `line ${line.component} aggregates debt and deductions; the base must decompose it before it enters a net debt`});
     if (line.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["componentValues", index, "asOf"], message: `component ${line.component} is dated ${line.asOf}, not the as-of date ${input.asOfDate}`});
     for (const component of line.covers) {
       if (covered.has(component)) context.addIssue({code: "custom", path: ["componentValues", index], message: `component ${component} is covered twice`});
@@ -167,7 +169,7 @@ type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string | null};
 
 export type CovenantReconciliationOutput = {
-  schema_version: "method.reconcile-covenant-definitions.v6";
+  schema_version: "method.reconcile-covenant-definitions.v7";
   as_of_date: string;
   /** The unit every value below is expressed in; part of the output and of its fingerprint. */
   unit: string | null;
@@ -385,6 +387,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
         comparability = residualOpen ? "conditional" : "comparable";
         const incorporated = new Set(input.ltmEbitda.incorporatesAdjustments);
         for (const adjustment of denominatorAdjustments) {
+          if (adjustment.kind === "other") { comparability = "conditional"; reasons.push(`the adjustment "${adjustment.id}" (${adjustment.description}) has no typed economic side; it cannot be incorporated by declaration`); continue; }
           if (incorporated.has(adjustment.id)) continue;
           comparability = "conditional";
           reasons.push(`the opened EBITDA does not state whether it incorporates "${adjustment.id}" (${adjustment.description})`);
@@ -455,7 +458,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schema_version: "method.reconcile-covenant-definitions.v6" as const,
+    schema_version: "method.reconcile-covenant-definitions.v7" as const,
     as_of_date: input.asOfDate,
     unit,
     state,
