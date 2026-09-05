@@ -175,11 +175,11 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     await page.screenshot({path: join(outputDirectory, "03-cfo-board.png"), fullPage: true});
   });
 
-  test("the first project completes its readout from the nine deterministic objects", async () => {
+  test("the first project completes its readout from the ten deterministic objects", async () => {
     await page.goto(firstProjectUrl);
     const readout = await waitForAssistant(page, /Primeira devolutiva do Caso 01/, 300_000);
     transcript.push(`\n**Offroad (primeira devolutiva, projeto 1):** ${readout}\n`);
-    await expect(page.locator('[data-testid="integration-preview-work"] .preview-work__section')).toHaveCount(9);
+    await expect(page.locator('[data-testid="integration-preview-work"] .preview-work__section')).toHaveCount(10);
     await page.screenshot({path: join(outputDirectory, "04-readout.png"), fullPage: true});
   });
 
