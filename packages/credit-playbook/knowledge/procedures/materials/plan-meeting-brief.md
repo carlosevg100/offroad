@@ -1,6 +1,6 @@
 ---
 id: plan-meeting-brief
-version: 2026.09.05-v1
+version: 2026.09.05-v2
 maturity: implemented
 title_pt: Planejar a devolutiva e o material de reunião
 title_en: Plan the first deliverable and the meeting material
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/plan-meeting-brief
 implementation_export: planMeetingBrief
-result_contract: method.plan-meeting-brief.v1
+result_contract: method.plan-meeting-brief.v2
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -58,6 +58,14 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 # Cálculos determinísticos
 - Nenhum cálculo próprio; todo número vem dos objetos aprovados por referência.
 
+# Regras de montagem
+- Só objetos em estado utilizável (complete, resolved, closes, declared, compared, diagnosed) preenchem blocos; condicionado, parcial, incompleto ou com divergências abertas vira lacuna nomeada com o objeto pendente; bloqueado é excluído.
+- Cada fato citado carrega o fingerprint do objeto; fato ligado a outro fingerprint é recusado.
+- Pontos a favor e contra a tese vêm da posição que cada objeto declarou em cada fato, nunca do tipo do objeto.
+- O plano honra o número de páginas pedido (funde o final quando são menos, divide a página mais cheia quando são mais); mais páginas do que blocos é unsupported e volta como pergunta.
+- Pergunta que a base já responde é recusada com a âncora da resposta, seja qual for a prioridade; pergunta cujo motivo é "nenhuma" não é feita.
+- Versão anterior informada gera nota de mudança; nunca reescrita silenciosa.
+
 # Julgamentos permitidos
 - Escolher o que entra em três páginas exige o discriminador da audiência, escrito no plano.
 
@@ -74,9 +82,18 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 - Plano de páginas não confirmado e o pedido é produção de arquivo.
 
 # Outputs
-- deliverable (object, required): blocos da devolutiva com referências aos objetos
-- page_plan (object, required): páginas, conteúdo e discriminador da audiência, com estado de confirmação
+- schema_version (string, required): method.plan-meeting-brief.v2
+- case_id (string, required): caso a que a devolutiva pertence
+- turn (number, required): turno do pedido
+- state (enum, required): planned, ou awaiting_confirmation enquanto um plano proposto espera a confirmação da pessoa
+- deliverable (object, required): blocos da devolutiva (cada um preenchido só por objetos em estado utilizável, com cada fato ligado ao fingerprint do objeto que cita, ou lacuna nomeada com os objetos pendentes), objetos usados, objetos pendentes (condicionados, parciais, incompletos, com divergências abertas) e objetos excluídos (bloqueados)
+- page_plan (object, required): estado (not_requested, proposed, confirmed, unsupported), id, forma, audiência (principal e demais), páginas ajustadas ao número pedido, discriminador da audiência principal, permissão de produção e motivo
 - alignment_questions (array, required): no máximo três, cada uma com o motivo de mudar o material
+- refused_questions (array, required): perguntas recusadas com o motivo: a base já responde (com a âncora da resposta), a resposta não muda o trabalho, ou além das três que mais mudam
+- ambiguity_named (string, optional): o que a instrução do patrocinador deixou indefinido, declarado pelo chamador e nomeado na devolutiva
+- change_note (object, optional): contra a versão anterior: blocos que mudaram de estado ou de objetos e objetos cujo fingerprint mudou, entraram ou saíram
+- uncovered_terms (array, required): blocos em lacuna, como insufficient_evidence, com o motivo
+- trace (object, required): fingerprint canônico da entrada e da saída
 
 # Exemplos
 ## Bom
