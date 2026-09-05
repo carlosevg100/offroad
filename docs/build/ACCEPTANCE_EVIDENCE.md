@@ -1180,3 +1180,9 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | --- | --- | --- | --- |
 | Degraus com evidência própria | `procedure-contract.test.ts` | implemented sem implementação, ai_reviewed sem revisão, tested sem runs e production sem aprovação do fundador são recusados; revisão com resultado fail não conta; credit-playbook 174 testes | 2026-09-05 |
 | Task nunca acima do método | `task-promotion.test.ts` | implemented exige método implementado; ai_reviewed sobre método implemented é recusado; production só sobre método production; work-plan 38 testes | 2026-09-05 |
+
+## Nove métodos do Caso 01 compilam, 05/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Compilação e referências | `procedure-markdown.test.ts` | nove métodos compilam; TaskSpecs, procedimentos da casa, parâmetros e dependências existem; credit-playbook 174 testes | 2026-09-05 |

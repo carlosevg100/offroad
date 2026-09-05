@@ -2389,3 +2389,11 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - O compilador de métodos lê `review_ids` e ids de runs do frontmatter, exige o registro em
   `knowledge/reviews/<id>.json` e confere que ele é sobre aquele método. A TaskSpec nunca sobe
   acima do método vinculado, e nada sobe sem evidência de implementação.
+
+## Métodos restantes do Caso 01 na biblioteca, candidate, 05/09/2026
+
+- Seis métodos novos em `packages/credit-playbook/knowledge/procedures/`: conciliar demonstrações
+  (D06, C03), cronograma de juros e IPCA capitalizado versus pago (C05, C07), cenários declarados
+  (C07, C08), custo de saída por série (S07, S10), antes e depois de refinanciamento (S05, S10,
+  S11) e plano de devolutiva e material (M05, M07). Com os três anteriores, nove métodos cobrem o
+  Caso 01. Todos `candidate`, com exemplos bons e ruins vindos da auditoria e das escrituras.
