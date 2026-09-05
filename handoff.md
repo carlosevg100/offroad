@@ -52,6 +52,31 @@ Dali saíram, no mesmo dia:
 Contrato e estado por fatia em `docs/build/LIVE_INTELLIGENCE_PREVIEW.md`. O que ainda não foi
 provado com chave real fica escrito lá, fatia por fatia.
 
+Lições do gate vivo com chave real (5 de setembro, tarde e noite), todas corrigidas no mesmo
+dia: o esquema do envelope não cabe na gramática da saída estruturada da Anthropic ("compiled
+grammar is too large"), o que mantinha o classificador de sombra mudo em produção desde 4 de
+setembro; o gateway ganhou o modo `prompted_json` (PR #450). Em modo prompted o modelo escreve
+`null` para objetos vazios, às vezes embrulha a resposta numa chave com o nome do esquema e cita
+mais lacunas do que o limite; um transform no esquema zod não é representável em JSON Schema e
+derruba a chamada antes do provedor (PRs #451, #452, #453). Textos longos do classificador
+estouravam o contrato do envelope e o CFO preparando conselho caía em `prepare_meeting`; agora
+a carimbagem recorta ao contrato e conselho ou comitê roteia para `prepare_decision` (PR #454).
+O orçamento do run de prévia subiu para quatro chamadas e US$ 0,50 porque a reserva prévia da
+síntese é dimensionada pelo teto de saída, não pelo gasto real (PR #455). O probe
+`probe-structured-output.yml` mede o veredito do provedor por forma de pedido antes de confiar
+num contrato novo. Em saída estruturada, truncar no teto é chamada perdida com custo cheio: a síntese passou a
+ter esquema próprio e orçamento no prompt, com folga no teto (PR #457). A ordem dos ramos
+determinísticos depois do classificador importa mais que o classificador: pedido de material
+em palavras vence a leitura de resposta, resposta que cita a pergunta é lida sem id, premissa
+exige número na mensagem (PR #458); os envelopes, briefs, planos e runs exportados pelo gate
+(PR #456) são a ferramenta de diagnóstico. Provado com chave real na quarta rodada: cinco
+paráfrases na mesma composição, outra companhia recusada sem dados da Camil, CFO em
+`prepare_decision`, devolutiva com dez seções, pergunta respondida pelo objeto, material
+planejado, premissa com sete de dez etapas replicadas. Na quinta rodada faltou só a resposta à
+pergunta aberta, por causa estrutural: a devolutiva recalculada perdia as perguntas abertas;
+agora o planner as mantém até serem respondidas (PR #459), e o artefato do gate carrega o
+entregável e não 1,6 GB de vídeo. Sexta rodada (run 33989224138, PR #459 na main): verde, mas na segunda tentativa. Os dez passos passaram com modelo (resposta à pergunta em `deepen`, audiência conselho, respostas aplicadas; Word e planilha gerados dos objetos, versão 4, vinte e seis números verificados, duas frases removidas). A tentativa que passou fez vinte e cinco chamadas (onze de roteamento, seis de perguntas, oito de síntese) e custou US$ 2,19; a primeira tentativa falhou no passo de resposta porque a jornada enviou a citação vazia (a expressão do teste não extraía uma pergunta com parêntese), corrigido no PR #460 junto com a preferência por papel conhecido na audiência. Pesquisa pública: indisponível no gate (sem chave de busca), como o roteador declarou; em produção o worker tem a chave.
+
 ### Engineering update: integration_preview and the Case 01 endgame, 5 September 2026
 
 Decisão do fundador na tarde de 5 de setembro: o fluxo completo do Caso 01 roda no produto antes
