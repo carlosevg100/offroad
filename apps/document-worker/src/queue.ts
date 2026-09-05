@@ -86,7 +86,8 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
     capital_project_plan_id: z.uuid(),
     capital_project_brief_id: z.uuid(),
     capital_task_ids: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)).min(1).max(80),
-    capital_artifact_required: z.literal(true),
+    /** Every production DAG requires an artifact per succeeded run; the preview run carries false so a replayed step may point at the object of an earlier plan. */
+    capital_artifact_required: z.boolean(),
     revision_of_artifact_id: z.uuid().optional(),
     correction_decision_id: z.uuid().optional(),
     trigger_event: z.record(z.string(), z.unknown()).default({}),
@@ -104,6 +105,10 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
     }).optional(),
   }).refine((payload) => Boolean(payload.revision_of_artifact_id) === Boolean(payload.correction_decision_id), {
     message: "revision artifact and decision must be supplied together",
+  }).superRefine((payload, ctx) => {
+    if (payload.analysis_scope !== "integration_preview" && payload.capital_artifact_required !== true) {
+      ctx.addIssue({code: "custom", path: ["capital_artifact_required"], message: "a production capital project run requires an artifact per task run"});
+    }
   }),
 });
 export const claimedJobSchema = z.discriminatedUnion("kind", [

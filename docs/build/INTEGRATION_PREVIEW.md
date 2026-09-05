@@ -104,7 +104,9 @@ artefatos anteriores em qualquer plano de prévia do projeto (mesmo compilador),
 replicar por fingerprint de entrada o que não mudou. Uma etapa replicada também registra um
 run no plano do turno (a trava de dependências do `worker_start_capital_project_task` lê os
 runs do próprio plano, e a tela mostra a etapa concluída), com a saída apontando para o
-artefato replicado, sem gravar artefato novo. O loader de objetos das perguntas
+artefato replicado, sem gravar artefato novo (o job de prévia carrega
+`capital_artifact_required = false`; as etapas calculadas continuam gravando o seu artefato, e o
+gatilho do run só cobra artefato quando o job exige). O loader de objetos das perguntas
 (`worker_load_integration_preview_artifacts_v1`) também lê entre planos. Migrations
 `integration_preview_prior_artifacts_across_plans` e `integration_preview_artifacts_across_plans`;
 o teste SQL cobre a segunda ativação e a pergunta seguinte. O mesmo

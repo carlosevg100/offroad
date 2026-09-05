@@ -397,6 +397,7 @@ declare
   later_message_id constant uuid := '50000000-0000-4000-8000-000000000254';
   later_claim jsonb;
   later_artifacts jsonb;
+  replay_run_id uuid;
 begin
   select session.capital_project_id into strict project_id
   from public.document_intake_sessions session
@@ -458,6 +459,26 @@ begin
     or context #>> '{prior_artifacts,0,input_fingerprint}' <> repeat('1', 64) then
     raise exception 'the later plan does not see the artifact of the earlier plan for replay: %', context -> 'prior_artifacts';
   end if;
+  -- The replay of an unchanged step is a run of this plan whose output points at the earlier
+  -- object: the preview run does not require an artifact per run, and the plan's dependency gate
+  -- then lets the step after it start.
+  if (preview_claim #>> '{payload,capital_artifact_required}')::boolean then
+    raise exception 'the preview run still requires an artifact per task run';
+  end if;
+  replay_run_id := public.worker_start_capital_project_task(
+    (preview_claim ->> 'job_id')::uuid, preview_claim ->> 'capability_token', 'C05',
+    'integration-preview.build-debt-ledger', '2026.09.05-v15', repeat('1', 64), jsonb_build_object('replayOf', artifacts #>> '{0,id}')
+  );
+  perform public.worker_finish_capital_project_task(
+    (preview_claim ->> 'job_id')::uuid, preview_claim ->> 'capability_token', replay_run_id, 'succeeded',
+    jsonb_build_object('type', 'capital_project_artifact', 'id', artifacts #>> '{0,id}', 'replayed', true),
+    artifacts #>> '{0,artifact_fingerprint}',
+    '[{"id":"replayed_by_fingerprint","passed":true,"detail":"input fingerprint unchanged; the object was replayed, not recomputed"}]'::jsonb, '{}'::jsonb, null
+  );
+  perform public.worker_start_capital_project_task(
+    (preview_claim ->> 'job_id')::uuid, preview_claim ->> 'capability_token', 'A03',
+    'integration-preview.plan-meeting-brief', '2026.09.05-v2', repeat('2', 64), '{}'::jsonb
+  );
   perform public.worker_fail_job(
     (preview_claim ->> 'job_id')::uuid, preview_claim ->> 'capability_token',
     jsonb_build_object(

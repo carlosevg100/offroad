@@ -377,6 +377,8 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
               replayOf: prior.id, sourceClasses: ["prior_preview_artifacts"], excludedContext: ["live_extraction", "public_research", "private_documents", "model_calls"],
             },
           });
+          // No artifact is written for a replay: the run's output points at the object it replayed
+          // (the preview job does not require an artifact per run; computed steps still write theirs).
           await queue.finishCapitalTask(job, {
             taskRunId: replayRunId, status: "succeeded",
             outputReference: {type: "capital_project_artifact", id: prior.id, replayed: true},
@@ -385,7 +387,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
             usage: {modelCalls: 0, costUsd: 0},
           });
           await queue.writeStage(job, `${stage}:${step.taskId}`, "succeeded", {summary_pt: `${step.label.pt}: replicada por fingerprint (sem recálculo)`, summary_en: `${step.label.en}: replayed by fingerprint (no recomputation)`, task_spec_id: step.taskId, replayed: true});
-          log("integration_preview.step_replayed", {job: job.job_id, task: step.taskId, method: step.methodId});
+          log("integration_preview.step_replayed", {job: job.job_id, task: step.taskId, method: step.methodId, replayOf: prior.id});
           continue;
         }
       }
