@@ -1,6 +1,6 @@
 ---
 id: estimate-exit-cost-by-series
-version: 2026.09.05-v5
+version: 2026.09.05-v6
 maturity: implemented
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/estimate-exit-cost-by-series
 implementation_export: estimateExitCostBySeries
-result_contract: method.estimate-exit-cost-by-series.v5
+result_contract: method.estimate-exit-cost-by-series.v6
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -68,7 +68,8 @@ na data-base, custo estimado e o que falta para fechar o número.
 - Amortização extraordinária retira uma fração limitada pela escritura abaixo de 100% (98% nas 13ª, 14ª e 15ª) e nunca concorre como saída integral; resgate total é a saída integral; aquisição facultativa pode ser parcial ou integral, ao preço que o vendedor aceitar.
 - Prêmio DI: [(1 + p)^(DU/252) − 1] sobre o valor retirado, truncado em oito casas.
 - Make-whole IPCA e prefixado: fluxos remanescentes descontados na cotação do dia contratual (o dia útil anterior ou o segundo anterior, como a série escreve; a distância é conferida contra o calendário), comparados com o valor atualizado quando a série tem piso, mais os encargos que a escritura soma depois; a duration que escolhe o título de referência é descontada pela remuneração da própria série; cotação de outro dia, fluxos ou remuneração ausentes são insufficient_evidence; valor presente e duration calculados no financial-core.
-- Oferta negociada é permitida desde a emissão e o prêmio só existe com o aviso; aquisição facultativa tem preço no vendedor.
+- Oferta negociada é permitida desde a emissão, o prêmio só existe com o aviso e o que se retira é o que aderiu (parcial ou integral); aquisição facultativa tem preço no vendedor.
+- Dias úteis são os dias de semana menos os feriados do calendário da base, no prêmio DI como na distância da cotação; o título ou vértice de referência tem de ser o de duration mais próxima entre os candidatos que a fonte lista, e a curva de referência corresponde à família do mecanismo (NTN-B para IPCA, Pré x DI para prefixada).
 - Saída integral mais barata escolhida por comparação numérica.
 
 # Julgamentos permitidos
@@ -86,7 +87,7 @@ na data-base, custo estimado e o que falta para fechar o número.
 - Nenhuma escritura da série no pack e a alternativa depende dela.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.estimate-exit-cost-by-series.v5`
+- schema_version (string, required): identificador do contrato de resultado, `method.estimate-exit-cost-by-series.v6`
 - exit_date (date, required): data de saída para a qual cada preço é medido
 - unit (enum, required): unidade de todos os valores (BRL, BRL thousand, BRL million, USD, USD thousand)
 - state (enum, required): complete quando toda série tem uma saída integral estimada, partial quando alguma fica aberta, empty sem séries | values: complete, partial, empty

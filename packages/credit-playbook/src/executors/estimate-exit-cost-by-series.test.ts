@@ -14,6 +14,9 @@ const documents: ExitCostInput["documents"] = [
 ];
 const calendar = (maturity: string) => ({document: "calendario_anbima_2026.csv", note: `weekday count to ${maturity}; the ANBIMA holidays reduce it, so the count is an upper bound until the calendar file enters the corpus`});
 const holidays = (count: number) => ({count, anchor: {document: "calendario_anbima_2026.csv", note: "feriados entre a cotação e a saída"}});
+/** Business days to a maturity by the calendar: weekdays less the holidays the calendar lists (zero declared until the calendar file enters the corpus). */
+const days = (maturity: string) => ({count: weekdaysBetween(exitDate, maturity), maturity, holidays: {count: 0, anchor: {document: "calendario_anbima_2026.csv", note: "feriados não listados: zero declarado até o arquivo entrar no corpus, contagem é teto"}}, anchor: calendar(maturity)});
+const r710 = (document: string, rate: string) => ({value: rate, anchor: {document, clause: "7.10", note: "remuneração da série"}});
 const esc = (document: string, clause: string) => ({document, clause});
 /**
  * Camil at 04/09/2026: the ITR holds the 31/05/2026 balances, not the nominal, accrued remuneration
@@ -29,35 +32,49 @@ const camil = (): ExitCostInput => ({
       {mechanism: "negotiated_offer", availableFrom: "2021-10-30", premium: null, requiresFullAdherence: true, anchor: esc("escritura_11a_emissao.pdf", "4.14")},
       {mechanism: "acquisition", availableFrom: null, anchor: esc("escritura_11a_emissao.pdf", "4.13")},
     ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
-    {id: "deb-13-1", label: "13ª emissão, 1ª série (DI + 0,65%)", indenture: esc("escritura_13a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: null, mechanisms: [
-      {mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-05-14", maxFraction: "0.98", fraction: "0.98", businessDays: {count: weekdaysBetween(exitDate, "2028-11-14"), maturity: "2028-11-14", anchor: calendar("2028-11-14")}, anchor: esc("escritura_13a_emissao.pdf", "7.18")},
-      {mechanism: "total_redemption_di", premiumPerYear: "0.004", availableFrom: "2026-05-14", businessDays: {count: weekdaysBetween(exitDate, "2028-11-14"), maturity: "2028-11-14", anchor: calendar("2028-11-14")}, anchor: esc("escritura_13a_emissao.pdf", "7.16")},
-      {mechanism: "negotiated_offer", availableFrom: "2023-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_13a_emissao.pdf", "7.21")},
+    {id: "deb-11-2", label: "11ª emissão, 2ª série", indenture: esc("escritura_11a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: null, mechanisms: [
+      {mechanism: "negotiated_offer", availableFrom: "2021-10-30", premium: null, requiresFullAdherence: true, anchor: esc("escritura_11a_emissao.pdf", "4.14")},
+      {mechanism: "acquisition", availableFrom: null, anchor: esc("escritura_11a_emissao.pdf", "4.13")},
     ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
-    {id: "deb-13-2", label: "13ª emissão, 2ª série (IPCA + 6,3416%)", indenture: esc("escritura_13a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: {value: "0.063416", anchor: {document: "escritura_13a_emissao.pdf", clause: "4.1", note: "IPCA + 6,3416% a.a."}}, mechanisms: [
+    {id: "deb-13-1", label: "13ª emissão, 1ª série (DI + 0,65%)", indenture: esc("escritura_13a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: null, mechanisms: [
+      {mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-05-14", maxFraction: "0.98", fraction: "0.98", businessDays: days("2028-11-14"), anchor: esc("escritura_13a_emissao.pdf", "7.18")},
+      {mechanism: "total_redemption_di", premiumPerYear: "0.004", availableFrom: "2026-05-14", businessDays: days("2028-11-14"), anchor: esc("escritura_13a_emissao.pdf", "7.16")},
+      {mechanism: "negotiated_offer", availableFrom: "2023-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_13a_emissao.pdf", "7.14")},
+    ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
+    {id: "deb-13-2", label: "13ª emissão, 2ª série (IPCA + 6,3416%)", indenture: esc("escritura_13a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: r710("escritura_13a_emissao.pdf", "0.063416"), mechanisms: [
       {mechanism: "extraordinary_amortization_ipca", availableFrom: "2027-05-14", maxFraction: "0.98", fraction: "0.98", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: null, anchor: esc("escritura_13a_emissao.pdf", "7.18")},
       {mechanism: "total_redemption_ipca", availableFrom: "2027-05-14", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "present_value_only", quoteDay: "prior_business_day", quote: null, anchor: esc("escritura_13a_emissao.pdf", "7.16")},
-      {mechanism: "negotiated_offer", availableFrom: "2023-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_13a_emissao.pdf", "7.21")},
+      {mechanism: "negotiated_offer", availableFrom: "2023-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_13a_emissao.pdf", "7.14")},
+    ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
+    {id: "deb-13-3", label: "13ª emissão, 3ª série (IPCA + 6,5264%); a janela unilateral não está na base", indenture: esc("escritura_13a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: r710("escritura_13a_emissao.pdf", "0.065264"), mechanisms: [
+      {mechanism: "negotiated_offer", availableFrom: "2023-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_13a_emissao.pdf", "7.14")},
     ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
     {id: "deb-14-1", label: "14ª emissão, 1ª série (104% do DI)", indenture: esc("escritura_14a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: null, mechanisms: [
-      {mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-06-15", maxFraction: "0.98", fraction: "0.98", businessDays: {count: weekdaysBetween(exitDate, "2029-06-14"), maturity: "2029-06-14", anchor: calendar("2029-06-14")}, anchor: esc("escritura_14a_emissao.pdf", "7.18")},
-      {mechanism: "total_redemption_di", premiumPerYear: "0.004", availableFrom: "2026-06-15", businessDays: {count: weekdaysBetween(exitDate, "2029-06-14"), maturity: "2029-06-14", anchor: calendar("2029-06-14")}, anchor: esc("escritura_14a_emissao.pdf", "7.19")},
-      {mechanism: "negotiated_offer", availableFrom: "2024-06-14", premium: null, requiresFullAdherence: false, anchor: esc("escritura_14a_emissao.pdf", "7.21")},
+      {mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-06-15", maxFraction: "0.98", fraction: "0.98", businessDays: days("2029-06-14"), anchor: esc("escritura_14a_emissao.pdf", "7.18")},
+      {mechanism: "total_redemption_di", premiumPerYear: "0.004", availableFrom: "2026-06-15", businessDays: days("2029-06-14"), anchor: esc("escritura_14a_emissao.pdf", "7.16")},
+      {mechanism: "negotiated_offer", availableFrom: "2024-06-14", premium: null, requiresFullAdherence: false, anchor: esc("escritura_14a_emissao.pdf", "7.14")},
     ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
-    {id: "deb-14-2", label: "14ª emissão, 2ª série (IPCA + 6,8286%)", indenture: esc("escritura_14a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: {value: "0.068286", anchor: {document: "escritura_14a_emissao.pdf", clause: "4.1", note: "IPCA + 6,8286% a.a."}}, mechanisms: [
-      {mechanism: "total_redemption_ipca", availableFrom: "2027-06-15", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: null, anchor: esc("escritura_14a_emissao.pdf", "7.19")},
-      {mechanism: "negotiated_offer", availableFrom: "2024-06-14", premium: null, requiresFullAdherence: false, anchor: esc("escritura_14a_emissao.pdf", "7.21")},
+    {id: "deb-14-2", label: "14ª emissão, 2ª série (IPCA + 6,8286%)", indenture: esc("escritura_14a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: r710("escritura_14a_emissao.pdf", "0.068286"), mechanisms: [
+      {mechanism: "total_redemption_ipca", availableFrom: "2027-06-15", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: null, anchor: esc("escritura_14a_emissao.pdf", "7.16")},
+      {mechanism: "negotiated_offer", availableFrom: "2024-06-14", premium: null, requiresFullAdherence: false, anchor: esc("escritura_14a_emissao.pdf", "7.14")},
+    ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
+    {id: "deb-14-3", label: "14ª emissão, 3ª série (IPCA + 6,9982%); a janela unilateral não está na base", indenture: esc("escritura_14a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: r710("escritura_14a_emissao.pdf", "0.069982"), mechanisms: [
+      {mechanism: "negotiated_offer", availableFrom: "2024-06-14", premium: null, requiresFullAdherence: false, anchor: esc("escritura_14a_emissao.pdf", "7.14")},
     ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
     {id: "deb-15-1", label: "15ª emissão, 1ª série (DI)", indenture: esc("escritura_15a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: null, mechanisms: [
-      {mechanism: "total_redemption_di", premiumPerYear: "0.004", availableFrom: "2027-11-15", businessDays: {count: weekdaysBetween(exitDate, "2030-11-14"), maturity: "2030-11-14", anchor: calendar("2030-11-14")}, anchor: esc("escritura_15a_emissao.pdf", "7.16")},
+      {mechanism: "total_redemption_di", premiumPerYear: "0.004", availableFrom: "2027-11-15", businessDays: days("2030-11-14"), anchor: esc("escritura_15a_emissao.pdf", "7.16")},
       {mechanism: "negotiated_offer", availableFrom: "2025-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_15a_emissao.pdf", "7.14.1")},
     ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
-    {id: "deb-15-2", label: "15ª emissão, 2ª série (prefixada 14,15%)", indenture: esc("escritura_15a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: {value: "0.1415", anchor: {document: "escritura_15a_emissao.pdf", clause: "4.1", note: "prefixada 14,15% a.a."}}, mechanisms: [
-      {mechanism: "total_redemption_pre", availableFrom: "2027-11-15", referenceRate: "B3 Pre x DI curve (nearest vertex to remaining duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: null, anchor: esc("escritura_15a_emissao.pdf", "7.16")},
+    {id: "deb-15-2", label: "15ª emissão, 2ª série (prefixada 14,15%)", indenture: esc("escritura_15a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: r710("escritura_15a_emissao.pdf", "0.1415"), mechanisms: [
+      {mechanism: "total_redemption_pre", availableFrom: "2028-11-15", referenceRate: "B3 Pre x DI curve (nearest vertex to remaining duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: null, anchor: esc("escritura_15a_emissao.pdf", "7.16")},
       {mechanism: "negotiated_offer", availableFrom: "2025-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_15a_emissao.pdf", "7.14.1")},
     ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
-    {id: "deb-15-3", label: "15ª emissão, 3ª série (IPCA + 8,20%)", indenture: esc("escritura_15a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: {value: "0.082", anchor: {document: "escritura_15a_emissao.pdf", clause: "4.1", note: "IPCA + 8,20% a.a."}}, mechanisms: [
-      {mechanism: "total_redemption_ipca", availableFrom: "2027-11-15", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: null, anchor: esc("escritura_15a_emissao.pdf", "7.16")},
+    {id: "deb-15-3", label: "15ª emissão, 3ª série (IPCA + 8,20%)", indenture: esc("escritura_15a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: r710("escritura_15a_emissao.pdf", "0.082"), mechanisms: [
+      {mechanism: "total_redemption_ipca", availableFrom: "2028-11-15", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: null, anchor: esc("escritura_15a_emissao.pdf", "7.16")},
+      {mechanism: "negotiated_offer", availableFrom: "2025-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_15a_emissao.pdf", "7.14.1")},
+    ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
+    {id: "deb-15-4", label: "15ª emissão, 4ª série (IPCA + 8,70%)", indenture: esc("escritura_15a_emissao.pdf", "4.1"), nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, remunerationRate: r710("escritura_15a_emissao.pdf", "0.087"), mechanisms: [
+      {mechanism: "total_redemption_ipca", availableFrom: "2029-11-15", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: null, anchor: esc("escritura_15a_emissao.pdf", "7.16")},
       {mechanism: "negotiated_offer", availableFrom: "2025-11-15", premium: null, requiresFullAdherence: false, anchor: esc("escritura_15a_emissao.pdf", "7.14.1")},
     ], anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 40, note: "nota 15"}},
   ],
@@ -69,14 +86,14 @@ const flows = [
   {id: "coupon-2027", date: "2027-03-04", amount: "6", businessDaysFromExit: 125, anchor: hypo()},
   {id: "principal-2027", date: "2027-09-06", amount: "106", businessDaysFromExit: 252, anchor: hypo()},
 ];
-const ntnb = (quoteDate: string, days: number) => ({rate: "0.07", quoteDate, businessDaysBeforeExit: days, holidaysBetween: holidays(0), security: "NTN-B 2027-08-15", securityDurationBusinessDays: 240, anchor: hypo("anbima_ntnb_2026-09-02.csv")});
+const ntnb = (quoteDate: string, before: number) => ({rate: "0.07", quoteDate, businessDaysBeforeExit: before, holidaysBetween: holidays(0), security: "NTN-B 2027-08-15", securityDurationBusinessDays: 240, candidates: [{security: "NTN-B 2027-08-15", durationBusinessDays: 240}, {security: "NTN-B 2028-08-15", durationBusinessDays: 480}], anchor: hypo("anbima_ntnb_2026-09-02.csv")});
 const priced = (): ExitCostInput => ({
   exitDate, unit: "BRL thousand", documents,
   series: [
     {id: "h-di", label: "hipotética DI", indenture: esc("escritura_13a_emissao.pdf", "4.1"), nominalAtExit: {value: "100", asOf: exitDate, derivation: "unit_value_x_quantity", anchor: hypo()}, accruedAtExit: dated("1.5"), chargesAtExit: dated("0"), remainingFlows: null, remunerationRate: null, mechanisms: [
-      {mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-01-01", maxFraction: "0.98", fraction: "0.98", businessDays: {count: 504, maturity: "2028-09-04", anchor: calendar("2028-09-04")}, anchor: esc("escritura_13a_emissao.pdf", "7.18")},
-      {mechanism: "total_redemption_di", premiumPerYear: "0.004", availableFrom: "2026-01-01", businessDays: {count: 504, maturity: "2028-09-04", anchor: calendar("2028-09-04")}, anchor: esc("escritura_13a_emissao.pdf", "7.16")},
-      {mechanism: "negotiated_offer", availableFrom: "2023-11-15", premium: {rate: "0.01", anchor: hypo()}, requiresFullAdherence: false, anchor: esc("escritura_13a_emissao.pdf", "7.21")},
+      {mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-01-01", maxFraction: "0.98", fraction: "0.98", businessDays: {count: 504, maturity: "2028-09-04", holidays: {count: weekdaysBetween(exitDate, "2028-09-04") - 504, anchor: calendar("2028-09-04")}, anchor: calendar("2028-09-04")}, anchor: esc("escritura_13a_emissao.pdf", "7.18")},
+      {mechanism: "total_redemption_di", premiumPerYear: "0.004", availableFrom: "2026-01-01", businessDays: {count: 504, maturity: "2028-09-04", holidays: {count: weekdaysBetween(exitDate, "2028-09-04") - 504, anchor: calendar("2028-09-04")}, anchor: calendar("2028-09-04")}, anchor: esc("escritura_13a_emissao.pdf", "7.16")},
+      {mechanism: "negotiated_offer", availableFrom: "2023-11-15", premium: {rate: "0.01", anchor: hypo()}, requiresFullAdherence: false, adhesion: {fraction: "0.6", anchor: hypo()}, anchor: esc("escritura_13a_emissao.pdf", "7.14")},
     ], anchor: hypo()},
     {id: "h-ipca-13", label: "hipotética IPCA, regra da 13ª", indenture: esc("escritura_13a_emissao.pdf", "4.1"), nominalAtExit: {value: "100", asOf: exitDate, derivation: "unit_value_x_quantity_updated", anchor: hypo()}, accruedAtExit: dated("1"), chargesAtExit: dated("0"), remainingFlows: flows, remunerationRate: {value: "0.06", anchor: hypo()}, mechanisms: [
       {mechanism: "extraordinary_amortization_ipca", availableFrom: "2026-01-01", maxFraction: "0.98", fraction: "0.50", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: ntnb("2026-09-02", 2), anchor: esc("escritura_13a_emissao.pdf", "7.18")},
@@ -86,20 +103,26 @@ const priced = (): ExitCostInput => ({
       {mechanism: "total_redemption_ipca", availableFrom: "2026-01-01", referenceRate: "NTN-B (ANBIMA indicative, nearest duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: ntnb("2026-09-02", 2), anchor: esc("escritura_14a_emissao.pdf", "7.19")},
     ], anchor: hypo()},
     {id: "h-pre", label: "hipotética prefixada, regra da 15ª", indenture: esc("escritura_15a_emissao.pdf", "4.1"), nominalAtExit: {value: "100", asOf: exitDate, derivation: "unit_value_x_quantity", anchor: hypo()}, accruedAtExit: dated("2"), chargesAtExit: dated("0.1"), remainingFlows: flows, remunerationRate: {value: "0.1415", anchor: hypo()}, mechanisms: [
-      {mechanism: "total_redemption_pre", availableFrom: "2026-01-01", referenceRate: "B3 Pre x DI curve (nearest vertex to remaining duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: {rate: "0.02", quoteDate: "2026-09-02", businessDaysBeforeExit: 2, holidaysBetween: holidays(0), security: "Pre x DI, vértice 252", securityDurationBusinessDays: 252, anchor: hypo("b3_pre_di_2026-09-03.csv")}, anchor: esc("escritura_15a_emissao.pdf", "7.16")},
+      {mechanism: "total_redemption_pre", availableFrom: "2026-01-01", referenceRate: "B3 Pre x DI curve (nearest vertex to remaining duration)", floor: "max_with_base", quoteDay: "second_prior_business_day", quote: {rate: "0.02", quoteDate: "2026-09-02", businessDaysBeforeExit: 2, holidaysBetween: holidays(0), security: "Pre x DI, vértice 252", securityDurationBusinessDays: 252, candidates: [{security: "Pre x DI, vértice 126", durationBusinessDays: 126}, {security: "Pre x DI, vértice 252", durationBusinessDays: 252}, {security: "Pre x DI, vértice 504", durationBusinessDays: 504}], anchor: hypo("b3_pre_di_2026-09-03.csv")}, anchor: esc("escritura_15a_emissao.pdf", "7.16")},
     ], anchor: hypo()},
   ],
 });
 const series = (result: ReturnType<typeof estimateExitCostBySeries>, id: string) => result.exit_costs.find((entry) => entry.series_id === id)!;
 const route = (result: ReturnType<typeof estimateExitCostBySeries>, id: string, mechanism: string) => series(result, id).routes.find((entry) => entry.mechanism === mechanism)!;
 
-describe("estimate-exit-cost-by-series executor (v5)", () => {
+describe("estimate-exit-cost-by-series executor (v6)", () => {
   it("gold: without the nominal, accrued and charges at the exit date every base is insufficient evidence, and the routes keep their availability on the date", () => {
     const result = estimateExitCostBySeries(camil());
-    expect(result.schema_version).toBe("method.estimate-exit-cost-by-series.v5");
+    expect(result.schema_version).toBe("method.estimate-exit-cost-by-series.v6");
     expect(result.state).toBe("partial");
+    expect(result.exit_costs).toHaveLength(12);
     expect(result.exit_costs.every((entry) => entry.base.state === "insufficient_evidence" && entry.cheapest_full_exit === null)).toBe(true);
-    expect(result.uncovered_terms.map((term) => term.id)).toEqual(["base:deb-11-1", "base:deb-13-1", "base:deb-13-2", "base:deb-14-1", "base:deb-14-2", "base:deb-15-1", "base:deb-15-2", "base:deb-15-3"]);
+    expect(result.uncovered_terms.map((term) => term.id)).toEqual(["base:deb-11-1", "base:deb-11-2", "base:deb-13-1", "base:deb-13-2", "base:deb-13-3", "base:deb-14-1", "base:deb-14-2", "base:deb-14-3", "base:deb-15-1", "base:deb-15-2", "base:deb-15-3", "base:deb-15-4"]);
+    expect(route(result, "deb-15-2", "total_redemption_pre").available_from).toBe("2028-11-15");
+    expect(route(result, "deb-15-4", "total_redemption_ipca").available_from).toBe("2029-11-15");
+    expect(route(result, "deb-13-1", "negotiated_offer").anchor.clause).toBe("7.14");
+    expect(route(result, "deb-14-2", "total_redemption_ipca").anchor.clause).toBe("7.16");
+    expect(route(result, "deb-13-1", "negotiated_offer").scope).toBe("partial_or_full");
     expect(route(result, "deb-11-1", "negotiated_offer").available_from).toBe("2021-10-30");
     expect(route(result, "deb-11-1", "acquisition").scope).toBe("partial_or_full");
     expect(route(result, "deb-14-1", "extraordinary_amortization_di").permitted_on_date).toBe(true);
@@ -113,7 +136,7 @@ describe("estimate-exit-cost-by-series executor (v5)", () => {
     expect(route(result, "deb-15-1", "total_redemption_di").state).toBe("not_permitted");
     expect(route(result, "deb-15-1", "negotiated_offer").available_from).toBe("2025-11-15");
     expect(route(result, "deb-11-1", "acquisition").state).toBe("price_at_counterparty");
-    expect(result.totals).toEqual({estimated_premium: "0", estimated_payable: "0", series_estimated: 0, series_open: 8});
+    expect(result.totals).toEqual({estimated_premium: "0", estimated_payable: "0", series_estimated: 0, series_open: 12});
   });
 
   it("hypothetical DI: the premium is [(1 + p)^(DU/252) - 1] over the amount retired, truncated at eight decimals; the 98% amortization never competes as a full exit", () => {
@@ -130,7 +153,10 @@ describe("estimate-exit-cost-by-series executor (v5)", () => {
     expect(partial.premium).toBe(base.times("0.98").times(factor).toDecimalPlaces(8, Decimal.ROUND_DOWN).toFixed());
     expect(d(partial.total_payable!).lt(total.total_payable!)).toBe(true);
     expect(series(result, "h-di").cheapest_full_exit).toEqual({mechanism: "total_redemption_di", total_payable: total.total_payable});
-    expect(route(result, "h-di", "negotiated_offer").premium).toBe("1.015");
+    // The offer retires what adhered: 60% of the base at the notice's premium.
+    expect(route(result, "h-di", "negotiated_offer").amount_retired).toBe(base.times("0.6").toFixed());
+    expect(route(result, "h-di", "negotiated_offer").premium).toBe(base.times("0.6").times("0.01").toFixed());
+    expect(route(result, "h-di", "negotiated_offer").fraction).toBe("0.6");
   });
 
   it("hypothetical IPCA: the 13th's amortization pays max(updated value, present value) at the second prior day's quote and its redemption pays the present value only at the prior day's quote; the 14th's redemption keeps the floor and adds the charges; the duration is discounted at the series' remuneration", () => {
@@ -155,6 +181,15 @@ describe("estimate-exit-cost-by-series executor (v5)", () => {
     const pre = route(result, "h-pre", "total_redemption_pre");
     expect(pre.state).toBe("estimated");
     expect(pre.quote?.security).toBe("Pre x DI, vértice 252");
+    expect(pre.quote?.nearestCandidate).toBe("Pre x DI, vértice 252");
+    // A quote at a security that is not the nearest in duration prices nothing.
+    const farVertex = priced();
+    (farVertex.series[3]!.mechanisms[0] as {quote: {security: string; securityDurationBusinessDays: number}}).quote.security = "Pre x DI, vértice 504";
+    (farVertex.series[3]!.mechanisms[0] as {quote: {security: string; securityDurationBusinessDays: number}}).quote.securityDurationBusinessDays = 504;
+    expect(route(estimateExitCostBySeries(farVertex), "h-pre", "total_redemption_pre").reason).toMatch(/is not the nearest to the series' duration/);
+    const wrongCurve = priced();
+    (wrongCurve.series[3]!.mechanisms[0] as {referenceRate: string}).referenceRate = "NTN-B (ANBIMA indicative, nearest duration)";
+    expect(() => estimateExitCostBySeries(wrongCurve)).toThrow(/a pre-fixed mechanism discounts at the Pre x DI curve/);
   });
 
   it("refuses a quote of the wrong contractual day, a make-whole without flows or remuneration, a base without explicit charges, and a series without an indenture", () => {
@@ -195,8 +230,21 @@ describe("estimate-exit-cost-by-series executor (v5)", () => {
     (farQuote.series[2]!.mechanisms[0] as {quote: {quoteDate: string}}).quote.quoteDate = "2026-09-01";
     expect(() => estimateExitCostBySeries(farQuote)).toThrow(/is 3 business days before 2026-09-04 by the calendar .* not 2/);
     const zeroDays = priced();
-    (zeroDays.series[0]!.mechanisms[1] as {businessDays: {count: number}}).businessDays.count = 0;
+    (zeroDays.series[0]!.mechanisms[1] as {businessDays: {count: number; holidays: {count: number}}}).businessDays.count = 0;
+    (zeroDays.series[0]!.mechanisms[1] as {businessDays: {count: number; holidays: {count: number}}}).businessDays.holidays.count = weekdaysBetween(exitDate, "2028-09-04");
     expect(() => estimateExitCostBySeries(zeroDays)).toThrow(/a count of zero prices a premium of zero/);
+    const wrongHolidays = priced();
+    (wrongHolidays.series[0]!.mechanisms[1] as {businessDays: {holidays: {count: number}}}).businessDays.holidays.count = 3;
+    expect(() => estimateExitCostBySeries(wrongHolidays)).toThrow(/weekdays less 3 holidays give/);
+    const duplicateMechanism = priced();
+    duplicateMechanism.series[0]!.mechanisms.push({...duplicateMechanism.series[0]!.mechanisms[1]!});
+    expect(() => estimateExitCostBySeries(duplicateMechanism)).toThrow(/listed twice/);
+    const duplicateFlow = priced();
+    duplicateFlow.series[1]!.remainingFlows = [...flows, {...flows[0]!}];
+    expect(() => estimateExitCostBySeries(duplicateFlow)).toThrow(/duplicate flow/);
+    const duplicateDocument = priced();
+    duplicateDocument.documents = [...documents, {...documents[0]!}];
+    expect(() => estimateExitCostBySeries(duplicateDocument)).toThrow(/duplicate document/);
     const fullCap = priced();
     (fullCap.series[0]!.mechanisms[0] as {maxFraction: string; fraction: string}).maxFraction = "1";
     (fullCap.series[0]!.mechanisms[0] as {maxFraction: string; fraction: string}).fraction = "1";
@@ -212,7 +260,7 @@ describe("estimate-exit-cost-by-series executor (v5)", () => {
     expect(() => estimateExitCostBySeries(stale)).toThrow(/not the base at the exit date/);
     const impossible = priced();
     (impossible.series[0]!.mechanisms[1] as {businessDays: {count: number}}).businessDays.count = 600;
-    expect(() => estimateExitCostBySeries(impossible)).toThrow(/cannot fit/);
+    expect(() => estimateExitCostBySeries(impossible)).toThrow(/give 504 business days .* not 600/);
     const duplicate = priced();
     duplicate.series = [...duplicate.series, {...duplicate.series[0]!}];
     expect(() => estimateExitCostBySeries(duplicate)).toThrow(/duplicate series/);
