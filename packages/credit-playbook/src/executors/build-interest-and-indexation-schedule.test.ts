@@ -279,4 +279,19 @@ describe("build-interest-and-indexation-schedule executor (v7)", () => {
     expect(() => buildInterestAndIndexationSchedule({...base, series: [{...di, amortization: [{date: "2026-06-12", amount: "1000", businessDaysFromPeriodStart: 8}]}]})).toThrow(/one date has one position/);
     expect(() => buildInterestAndIndexationSchedule({...base, series: [{...di, amortization: [{date: "2026-06-20", amount: "1000", businessDaysFromPeriodStart: 9}]}]})).toThrow(/positions advance with the dates/);
   });
+
+  it("hypothetical: a period that ends before the anniversary day of the month runs its pro rata on the previous month's index number", () => {
+    const base = camil();
+    const settled = base.series.find((series) => series.id === "deb-13-2")!;
+    const numbers = {"2025-11": "7043.60", "2025-12": "7071.77", "2026-01": "7100.00", "2026-02": "7128.40", "2026-03": "7156.91", "2026-04": "7185.54", "2026-05": "7214.28", "2026-06": "7243.14", "2026-07": "7272.11", "2026-08": "7301.20", "2026-09": "7330.40", "2026-10": "7359.72", "2026-11": "7389.16", "2026-12": "7418.72", "2027-01": "7448.39", "2027-02": "7478.18", "2027-03": "7508.09", "2027-04": "7538.12", "2027-05": "7568.27"};
+    const niCurve = {...ipcaCurve, id: "ipca-ni-hipotetico", monthlyRateByMonth: null, indexNumberByMonth: numbers, source: {...ipcaCurve.source, title: "números-índice hipotéticos (fixture de teste, não é o IPCA)"}};
+    // Anniversary on the 31st: February's end (28) and November's end (30) fall before the anniversary day, August's end (31) does not.
+    const series = {...settled, openingPrincipal: {value: "282357", basis: "trustee_report_nominal" as const, anchor: {document: "fixture_hipotetico.md", note: "hipótese"}}, indexationTreatment: "capitalized_principal" as const, curveId: "ipca-ni-hipotetico", indexation: {...settled.indexation!, anniversaryDay: 31, anniversaryDates: null, proRataByPeriod: Object.fromEntries(periods.map((period) => [period.id, {dup: 11, dut: 21}]))}};
+    const result = buildInterestAndIndexationSchedule({...base, curves: [cdiCurve, niCurve], series: [series], ledgerControl: null, accountingInterestLastPeriod: null});
+    const monthOf = (periodId: string) => result.trace.calculations.find((calculation) => calculation.id === `financial.ipca_pro_rata:deb-13-2:${periodId}`)?.operands.month;
+    const lag = series.indexation.lagMonths;
+    expect(monthOf("2026Q3")).toBe(addMonths("2026-08", -lag));
+    expect(monthOf("2026Q4")).toBe(addMonths("2026-11", -lag - 1));
+    expect(monthOf("2027Q1")).toBe(addMonths("2027-02", -lag - 1));
+  });
 });
