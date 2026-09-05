@@ -21,13 +21,13 @@ const effectAspects = ["thesis", "meeting_type", "format", "audience", "depth", 
 
 export const previewQuestionsOutputSchema = z.object({
   questions: z.array(z.object({
-    id: z.string().regex(/^q-[a-z0-9-]{2,30}$/),
-    text: z.string().min(8).max(300),
+    id: z.string().min(1).max(80),
+    text: z.string().min(8).max(600),
     gapIds: z.array(z.string().min(1).max(160)).min(1).max(16),
-    changesTheWork: z.string().min(8).max(200),
-    effect: z.enum(effectAspects),
-    priority: z.number().int().min(1).max(4),
-  })).max(6),
+    changesTheWork: z.string().min(4).max(400),
+    effect: z.enum(effectAspects).nullish(),
+    priority: z.number().min(1).max(9).nullish(),
+  })).max(8),
   abstain: z.boolean(),
   abstainReason: z.string().max(300).nullable(),
 });
@@ -109,12 +109,14 @@ export async function generatePreviewQuestions(input: PreviewQuestionsInput): Pr
     const citations: Record<string, string[]> = {};
     let dropped = 0;
     const seen = new Set<string>();
-    for (const question of [...completion.output.questions].sort((a, b) => a.priority - b.priority)) {
+    const slug = (value: string) => `q-${value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/^q[-_]?/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "x"}`;
+    for (const question of [...completion.output.questions].sort((a, b) => (a.priority ?? 9) - (b.priority ?? 9))) {
       const cited = question.gapIds.filter((id) => gapIds.has(id));
-      if (cited.length === 0 || seen.has(question.id) || answeredIds.has(question.id)) { dropped += 1; continue; }
-      seen.add(question.id);
-      kept.push({id: question.id, text: question.text, changesTheWork: question.changesTheWork, coverage: {searched: input.documents, answeredBy: null, answer: null}, priority: kept.length + 1});
-      citations[question.id] = cited;
+      const id = slug(question.id);
+      if (cited.length === 0 || seen.has(id) || answeredIds.has(id)) { dropped += 1; continue; }
+      seen.add(id);
+      kept.push({id, text: question.text.slice(0, 300), changesTheWork: question.changesTheWork.slice(0, 200), coverage: {searched: input.documents, answeredBy: null, answer: null}, priority: kept.length + 1});
+      citations[id] = cited;
       if (kept.length === 4) break;
     }
     if (kept.length === 0) {

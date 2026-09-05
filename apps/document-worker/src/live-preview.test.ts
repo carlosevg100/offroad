@@ -251,4 +251,19 @@ describe("live_intelligence_preview router", () => {
     // The schema the gateway fingerprints and sends in the prompt must stay representable.
     expect(() => z.toJSONSchema(liveRoutingOutputSchema)).not.toThrow();
   });
+
+  it("routes a decision body written in the message to prepare_decision even when the classifier names another composition", async () => {
+    const output = classifierOutput({composition: "develop_alternatives", routingCore: {...classifierOutput().routingCore, audience: field(["CFO"])}});
+    const decision = await decide(output, {message: "Sou CFO da Camil e preciso levar ao conselho a decisão de refinanciar as debêntures."});
+    expect(decision.composition).toBe("prepare_decision");
+    expect(decision.record.audience).toBe("board");
+  });
+
+  it("clamps long classifier strings to the envelope contract instead of failing the turn", async () => {
+    const long = "a".repeat(300);
+    const output = classifierOutput({routingCore: {...classifierOutput().routingCore, action: field([long, "b"]), desiredOutcome: field(long)}});
+    const understanding = await understandLiveTurn({gateway: fakeGateway(output), context});
+    expect(understanding.envelope.routingCore.action.value[0]).toHaveLength(60);
+    expect(understanding.envelope.routingCore.desiredOutcome.value).toHaveLength(300);
+  });
 });

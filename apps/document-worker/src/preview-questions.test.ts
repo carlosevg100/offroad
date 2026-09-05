@@ -47,4 +47,12 @@ describe("preview questions from gaps", () => {
     expect(none.source).toBe("fixed");
     expect(none.reason).toBe("no model gateway for this run");
   });
+
+  it("normalises free-form question ids and tolerates a missing priority", async () => {
+    const result = await generatePreviewQuestions({...base, gateway: gateway({
+      questions: [{id: "Q 1: Liquidação", text: "A companhia comprova a liquidação ordinária que a escritura exige?", gapIds: ["C09.unproven_conditions[0]"], changesTheWork: "define o tier", effect: null, priority: null}],
+      abstain: false, abstainReason: null,
+    })});
+    expect(result.questions.map((question) => question.id)).toEqual(["q-1-liquidacao"]);
+  });
 });
