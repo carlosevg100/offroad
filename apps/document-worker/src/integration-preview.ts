@@ -366,6 +366,25 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           outputs.set(step.taskId, output);
           artifactByTask.set(step.taskId, {id: prior.id, artifactFingerprint: prior.artifact_fingerprint, replayed: true});
           replayedCount += 1;
+          // The replay is a run of this plan too: the plan's dependency gate reads the runs of its
+          // own plan, and the screen shows the step as done. No artifact is written; the run's
+          // output points at the object it replayed.
+          const replayRunId = await queue.startCapitalTask(job, {
+            taskId: step.taskId, executorKey: step.executorKey, executorVersion: step.methodVersion, inputFingerprint,
+            contextManifest: {
+              schemaVersion: "capital-context-manifest.v1", projectId: context.project.id, planId: context.plan.id, briefId: context.brief.id,
+              mode: "integration_preview", methodId: step.methodId, methodVersion: step.methodVersion, methodMaturity: "implemented",
+              replayOf: prior.id, sourceClasses: ["prior_preview_artifacts"], excludedContext: ["live_extraction", "public_research", "private_documents", "model_calls"],
+            },
+          });
+          await queue.finishCapitalTask(job, {
+            taskRunId: replayRunId, status: "succeeded",
+            outputReference: {type: "capital_project_artifact", id: prior.id, replayed: true},
+            outputFingerprint: prior.artifact_fingerprint,
+            qualityResults: [{id: "replayed_by_fingerprint", passed: true, detail: `input fingerprint unchanged since artifact ${prior.id}; the object was replayed, not recomputed`}],
+            usage: {modelCalls: 0, costUsd: 0},
+          });
+          await queue.writeStage(job, `${stage}:${step.taskId}`, "succeeded", {summary_pt: `${step.label.pt}: replicada por fingerprint (sem recálculo)`, summary_en: `${step.label.en}: replayed by fingerprint (no recomputation)`, task_spec_id: step.taskId, replayed: true});
           log("integration_preview.step_replayed", {job: job.job_id, task: step.taskId, method: step.methodId});
           continue;
         }

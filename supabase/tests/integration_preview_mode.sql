@@ -394,6 +394,9 @@ declare
   preview_claim jsonb;
   context jsonb;
   first_plan_id uuid;
+  later_message_id constant uuid := '50000000-0000-4000-8000-000000000254';
+  later_claim jsonb;
+  later_artifacts jsonb;
 begin
   select session.capital_project_id into strict project_id
   from public.document_intake_sessions session
@@ -460,6 +463,25 @@ begin
     jsonb_build_object(
       'code', 'integration_preview_test_closed', 'stage', 'integration_preview', 'retryable', false,
       'cause', jsonb_build_object('name', 'Error', 'class', 'worker_error', 'message', 'test closes the later preview run')
+    ),
+    false
+  );
+  -- A question on the next turn still finds the object although its plan is no longer active.
+  perform public.submit_advisor_turn_v1(project_id, later_message_id, 'pt-BR', 'De onde saiu a dívida bruta?');
+  later_claim := public.worker_claim_job(repeat('p', 64), 600);
+  if later_claim ->> 'kind' <> 'agent_operation_brief' then
+    raise exception 'the question turn was not claimed: %', later_claim;
+  end if;
+  later_artifacts := public.worker_load_integration_preview_artifacts_v1((later_claim ->> 'job_id')::uuid, later_claim ->> 'capability_token');
+  if jsonb_array_length(later_artifacts) <> 1 or later_artifacts #>> '{0,task_id}' <> 'C05' then
+    raise exception 'the objects of a superseded preview plan are not readable by a later question: %', later_artifacts;
+  end if;
+  perform public.worker_record_agent_failure((later_claim ->> 'job_id')::uuid, later_claim ->> 'capability_token', 'integration_preview_test_closed');
+  perform public.worker_fail_job(
+    (later_claim ->> 'job_id')::uuid, later_claim ->> 'capability_token',
+    jsonb_build_object(
+      'code', 'integration_preview_test_closed', 'stage', 'agent_operation_brief', 'retryable', false,
+      'cause', jsonb_build_object('name', 'Error', 'class', 'worker_error', 'message', 'test closes the question turn')
     ),
     false
   );

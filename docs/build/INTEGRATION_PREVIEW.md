@@ -101,8 +101,13 @@ runs era reativado, o início da tarefa replicava um run concluído e o registro
 um run em execução (`capital_task_run_not_available` na primeira etapa). Agora o snapshot do
 plano carrega o turno (`turn.messageId`), cada ativação compila o seu plano, e o loader v6 lê os
 artefatos anteriores em qualquer plano de prévia do projeto (mesmo compilador), para o worker
-replicar por fingerprint de entrada o que não mudou. Migration
-`integration_preview_prior_artifacts_across_plans`; teste SQL cobre a segunda ativação. O mesmo
+replicar por fingerprint de entrada o que não mudou. Uma etapa replicada também registra um
+run no plano do turno (a trava de dependências do `worker_start_capital_project_task` lê os
+runs do próprio plano, e a tela mostra a etapa concluída), com a saída apontando para o
+artefato replicado, sem gravar artefato novo. O loader de objetos das perguntas
+(`worker_load_integration_preview_artifacts_v1`) também lê entre planos. Migrations
+`integration_preview_prior_artifacts_across_plans` e `integration_preview_artifacts_across_plans`;
+o teste SQL cobre a segunda ativação e a pergunta seguinte. O mesmo
 log revelou um P1 fora da prévia: desde o PR #329 o worker recusava na claim todo `case_analysis`
 enfileirado sem `analysis_scope` (confirmação de intake, replay, análise incremental); o escopo
 agora assume `full_case` pelo tipo do job.

@@ -157,13 +157,15 @@ describe("integration_preview run processor", () => {
     const outcome = await processIntegrationPreviewRunJob(previewJob("deepen"), {queue: repeat.queue});
     expect(repeat.failure()).toBeNull();
     expect(outcome.status).toBe("succeeded");
-    expect(repeat.started).toEqual([]);
+    // A replayed step is still a run of this turn's plan (the plan's dependency gate reads its own runs); no artifact is written.
+    expect(repeat.started).toEqual(steps);
     expect(repeat.recorded).toEqual([]);
     expect(repeat.completion()?.content).toContain("[Validação interna, integration_preview]");
     const changed = fakeQueue({composition: "change_premise", premises: {newDebtAnnualRate: "0.155"}, prior: first.recorded});
     const changedOutcome = await processIntegrationPreviewRunJob(previewJob("change_premise", {newDebtAnnualRate: "0.155"}), {queue: changed.queue});
     expect(changedOutcome.status).toBe("succeeded");
-    expect(changed.started).toEqual(["S10", "A01"]);
+    expect(changed.started).toEqual(steps);
+    expect(changed.recorded.map((artifact) => artifact.taskId)).toEqual(["S10", "A01"]);
     expect(changed.completion()?.content).toContain("7 de 9 etapas replicaram");
     const alternatives = changed.recorded.find((artifact) => artifact.taskId === "S10")!;
     expect((alternatives.content.preview as {premisesApplied: unknown}).premisesApplied).toEqual({newDebtAnnualRate: "0.155"});
@@ -175,7 +177,8 @@ describe("integration_preview run processor", () => {
     const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_material"), {queue: material.queue});
     expect(material.failure()).toBeNull();
     expect(outcome.status).toBe("succeeded");
-    expect(material.started).toEqual(["A01"]);
+    expect(material.started).toEqual(steps);
+    expect(material.recorded.map((artifact) => artifact.taskId)).toEqual(["A01"]);
     expect(material.completion()?.content).toContain("Plano do material");
     const brief = material.recorded[0]!.content.output as {page_plan: {state: string; pages: unknown[]}};
     expect(brief.page_plan.state).toBe("proposed");
