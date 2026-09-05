@@ -1,0 +1,50 @@
+name: Probe structured output
+
+# Diagnoses a provider rejection of a routing request: synthetic input, the real key read by OIDC
+# and masked, one call per request shape, the provider's verdict printed. Manual only.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  probe:
+    name: Call the provider once per request shape
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
+          aws-region: sa-east-1
+
+      - name: Run the probe
+        run: |
+          set -euo pipefail
+          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
+          echo "::add-mask::$ANTHROPIC_API_KEY"
+          export ANTHROPIC_API_KEY
+          pnpm --filter @offroad/evals exec tsx scripts/probe-structured-output.ts
