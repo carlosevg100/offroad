@@ -83,6 +83,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     const inputFingerprint = fingerprint(input);
     const attempts: GatewayResult<unknown>["attempts"] = [];
     const candidates: ModelRef[] = fallback ? [primary, fallback] : [primary];
+    // Prompted JSON is parsed from text: one malformed answer is worth a second try on the same model before the fallback.
+    if (request.outputMode === "prompted_json") candidates.splice(1, 0, primary);
     let policyRejected = 0;
     let lastFailureWasTruncation = false;
 
@@ -140,6 +142,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       };
       if (request.cacheKey) adapterRequest.cacheKey = request.cacheKey;
       if (request.thinking) adapterRequest.thinking = request.thinking;
+      if (request.outputMode) adapterRequest.outputMode = request.outputMode;
       if (request.metadata) adapterRequest.metadata = request.metadata;
 
       // Refuse before the provider call, not after it. The old check only looked at already

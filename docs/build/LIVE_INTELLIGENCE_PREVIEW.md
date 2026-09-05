@@ -136,6 +136,21 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
   extração, que segue medido à parte) nem usar cache de companhia entre projetos (a memória de
   companhia da pesquisa de originação fica para uma fatia posterior).
 
+## 3.5 O que o gate vivo achou e a correção (5 de setembro, fim da tarde)
+
+- Primeira execução com chave real: toda chamada de roteamento respondia `400 invalid_request_error`
+  na Anthropic. O probe `probe-structured-output.yml` (entrada sintética, chave por OIDC) deu o
+  motivo: "the compiled grammar is too large", o esquema do envelope (dezesseis campos, cada um
+  com valor, estado, confiança e base) não cabe na gramática que a saída estruturada compila.
+  Consequência que ninguém tinha visto: o classificador de sombra, em produção desde 4 de
+  setembro, nunca gravou um envelope (`public.intent_envelopes` vazia).
+- Correção: o gateway ganhou um modo de saída `prompted_json`; o JSON Schema vai no prompt, o
+  texto é lido (cercas removidas) e validado pelo mesmo zod, e uma resposta malformada ganha
+  uma segunda tentativa no modelo primário antes do fallback. O classificador de sombra e o
+  roteador vivo usam esse modo; perguntas e síntese continuam em saída estruturada (esquemas
+  pequenos). O probe confirma: o esquema completo passa em modo `prompted_json` com esforço
+  baixo ou médio, com ou sem thinking.
+
 ## 4. O que continua fora
 
 Liberação a clientes, aprovação ou parecer. A trilha de revisão independente segue em paralelo,

@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import {zodOutputFormat} from "@anthropic-ai/sdk/helpers/zod";
+import {z} from "zod";
 import type {AdapterRequest, AdapterResponse, ProviderAdapter, StopReason, Usage} from "../types";
 
 export type AnthropicAdapterOptions = {
@@ -24,12 +25,16 @@ export function buildAnthropicParams(request: AdapterRequest): Anthropic.Message
     if (part.title) document.title = part.title;
     return document;
   });
+  // A schema the provider refuses to compile into a grammar ("compiled grammar is too large")
+  // travels in the prompt instead; the gateway validates the parsed text exactly as before.
+  const prompted = request.outputMode === "prompted_json";
+  const system = prompted ? `${request.system}\n\n${promptedJsonInstruction(request)}` : request.system;
   const params: Anthropic.MessageCreateParamsNonStreaming = {
     model: request.model,
     max_tokens: request.maxOutputTokens,
-    system: [{type: "text", text: request.system, cache_control: {type: "ephemeral"}}],
+    system: [{type: "text", text: system, cache_control: {type: "ephemeral"}}],
     messages: [{role: "user", content}],
-    output_config: {effort: request.effort, format: zodOutputFormat(request.schema)},
+    output_config: prompted ? {effort: request.effort} : {effort: request.effort, format: zodOutputFormat(request.schema)},
   };
   if (request.thinking !== "off" && !request.model.startsWith("claude-fable") && !request.model.startsWith("claude-mythos")) {
     params.thinking = {type: "adaptive"};
@@ -74,7 +79,7 @@ export function createAnthropicAdapter(options: AnthropicAdapterOptions = {}): P
         .map((block) => block.text)
         .join("");
       const stopReason = mapAnthropicStopReason(message.stop_reason);
-      const output = safeJsonParse(rawText);
+      const output = safeJsonParse(request.outputMode === "prompted_json" ? extractJsonText(rawText) : rawText);
       const response: AdapterResponse = {output, rawText, usage: mapAnthropicUsage(message.usage), model: message.model, stopReason};
       const requestId = (message as {_request_id?: string | null})._request_id;
       if (requestId) response.requestId = requestId;
@@ -89,4 +94,18 @@ export function safeJsonParse(text: string): unknown {
   } catch {
     return undefined;
   }
+}
+
+/** The instruction that replaces the grammar: the JSON Schema, and nothing but JSON in the answer. */
+export function promptedJsonInstruction(request: Pick<AdapterRequest, "schema" | "schemaName">): string {
+  const schema = JSON.stringify(z.toJSONSchema(request.schema, {target: "draft-7", io: "output", unrepresentable: "any"}));
+  return `Answer with one JSON object only, no prose and no code fence, named "${request.schemaName}", that validates against this JSON Schema:\n${schema}`;
+}
+
+/** The JSON object inside a text answer: fences and surrounding prose stripped, the outermost braces kept. */
+export function extractJsonText(text: string): string {
+  const unfenced = text.replace(/```(?:json)?/gi, "").trim();
+  const start = unfenced.indexOf("{");
+  const end = unfenced.lastIndexOf("}");
+  return start >= 0 && end > start ? unfenced.slice(start, end + 1) : unfenced;
 }

@@ -138,6 +138,8 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
     }],
     schema: liveRoutingOutputSchema,
     schemaName: "live_preview_routing_output",
+    // The envelope schema is too large for the provider's compiled grammar; the schema travels in the prompt.
+    outputMode: "prompted_json",
     thinking: "off",
     metadata: {surface: "live_preview_router"},
   });

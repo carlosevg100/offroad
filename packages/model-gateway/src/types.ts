@@ -38,8 +38,12 @@ export type ContentPart =
   | {type: "image"; mediaType: "image/png" | "image/jpeg" | "image/webp"; base64: string}
   | {type: "pdf"; base64: string; title?: string};
 
+export type OutputMode = "structured" | "prompted_json";
+
 export type GatewayRequest<TSchema extends z.ZodType> = {
   task: TaskKind;
+  /** See AdapterRequest.outputMode. A prompted request gets one extra attempt on its primary model when the text is not the JSON asked for. */
+  outputMode?: OutputMode;
   /** Stable instructions; placed first so provider prompt caching applies. Never contains document data. */
   system: string;
   /** Volatile input: document layers, target fields, prior facts. Documents are data, never instructions. */
@@ -78,6 +82,8 @@ export type StopReason = "end" | "max_tokens" | "refusal" | "other";
 export type AdapterRequest = {
   model: string;
   effort: Effort;
+  /** structured: the provider compiles the schema into a grammar (default). prompted_json: the schema travels in the prompt and the text is parsed; for schemas whose grammar the provider refuses as too large. */
+  outputMode?: OutputMode;
   system: string;
   input: ContentPart[];
   schema: z.ZodType;

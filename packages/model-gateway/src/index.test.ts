@@ -9,6 +9,8 @@ import {
   ModelGatewayError,
   assertModelAllowed,
   buildAnthropicParams,
+  extractJsonText,
+  promptedJsonInstruction,
   buildOpenAIParams,
   createModelGateway,
   defaultTaskPolicies,
@@ -561,5 +563,20 @@ describe("file cassette store", () => {
     store.set("abc", response, {provider: "anthropic", model: "claude-sonnet-5", schemaName: "document_profile"});
     expect(store.get("abc")).toEqual(response);
     expect(store.get("missing")).toBeUndefined();
+  });
+
+  it("carries the schema in the prompt and no grammar when the output mode is prompted JSON", () => {
+    const request = {
+      model: "claude-sonnet-5", effort: "low" as const, system: "Classify.", input: [{type: "text" as const, text: "x"}],
+      schema: z.object({intent: z.string(), confidence: z.number().min(0).max(1)}), schemaName: "probe", maxOutputTokens: 500, timeoutMs: 1_000,
+      outputMode: "prompted_json" as const,
+    };
+    const params = buildAnthropicParams(request);
+    expect(params.output_config).toEqual({effort: "low"});
+    const system = Array.isArray(params.system) ? params.system.map((block) => (block as {text: string}).text).join("") : String(params.system);
+    expect(system).toContain(promptedJsonInstruction(request));
+    expect(system).toContain('"intent"');
+    expect(extractJsonText("Here it is:\n```json\n{\"intent\": \"analyze\", \"confidence\": 0.9}\n```\nDone.")).toBe('{"intent": "analyze", "confidence": 0.9}');
+    expect(extractJsonText('{"a":1}')).toBe('{"a":1}');
   });
 });
