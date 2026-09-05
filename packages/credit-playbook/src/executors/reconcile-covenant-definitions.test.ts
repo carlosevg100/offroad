@@ -67,7 +67,7 @@ const permute = <T>(items: readonly T[], seed: number): T[] => {
 const by = (result: ReturnType<typeof reconcileCovenantDefinitions>, id: string) => result.covenants.find((covenant) => covenant.instrument === id)!;
 const withoutLeases = (input: CovenantReconciliationInput): CovenantReconciliationInput => ({...input, componentValues: [...input.componentValues!.filter((line) => line.component !== "leases"), {component: "other_onerous_debt", covers: ["other_onerous_debt"], value: "0", unit, asOf, anchor: itr(39, "hipotético: nenhuma outra dívida onerosa enumerada")}]});
 
-describe("reconcile-covenant-definitions executor (v8)", () => {
+describe("reconcile-covenant-definitions executor (v9)", () => {
   it("gold: net debt by each indenture's own definition is 4.228.477 through financial-core, one anchor per operand, implied EBITDA traced", () => {
     const result = reconcileCovenantDefinitions(camil("unknown"));
     for (const covenant of result.covenants) {
@@ -81,7 +81,8 @@ describe("reconcile-covenant-definitions executor (v8)", () => {
       expect(covenant.definitions?.anchors.netDebt.page).not.toBe(covenant.definitions?.anchors.ebitda.page === 8 ? 8 : -1);
     }
     expect(result.trace.calculations.filter((calculation) => calculation.id.startsWith("financial.debt_views"))).toHaveLength(4);
-    expect(result.trace.calculations.find((calculation) => calculation.id === "financial.debt_views:deb-13")?.operands.loans_and_financings).toBe("5670186");
+    expect(result.trace.calculations.find((calculation) => calculation.id === "financial.debt_views:deb-13")?.operands["debentures+loans_and_financings"]).toBe("5670186");
+    expect(by(result, "deb-13").netDebtByDefinition?.formula).toMatch(/^debentures\+loans_and_financings \+ derivative_liabilities/);
     expect(by(result, "deb-13").definitions?.anchors).toEqual({netDebt: {document: "escritura_13a_emissao.pdf", clause: "1.1", page: 7}, ebitda: {document: "escritura_13a_emissao.pdf", clause: "1.1", page: 8}});
     expect(by(result, "deb-11").definitions?.anchors.netDebt.page).toBe(35);
   });
@@ -164,7 +165,7 @@ describe("reconcile-covenant-definitions executor (v8)", () => {
 
   it("mutation: a definition that adds leases changes the computed net debt, and one that drops derivatives changes it the other way", () => {
     const base = camil("unknown");
-    const withLeases: CovenantReconciliationInput = {...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-15" ? {...instrument, netDebtComponents: [...contractual, "leases"]} : instrument)};
+    const withLeases: CovenantReconciliationInput = {...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-15" ? {...instrument, netDebtDefinition: `${instrument.netDebtDefinition}, mais os passivos de arrendamento`, netDebtComponents: [...contractual, "leases"]} : instrument)};
     const result = reconcileCovenantDefinitions(withLeases);
     expect(by(result, "deb-15").netDebtByDefinition?.value).toBe("4505245");
     expect(by(result, "deb-13").netDebtByDefinition?.value).toBe("4228477");
@@ -313,6 +314,19 @@ describe("reconcile-covenant-definitions executor (v8)", () => {
     expect(by(result, "deb-13").headroom).toBeNull();
     expect(by(result, "deb-13").comparabilityReasons.some((reason) => reason.includes("no typed economic side"))).toBe(true);
     expect(() => reconcileCovenantDefinitions({...base, componentValues: [...base.componentValues!.filter((line) => line.component !== "financial_investments"), {component: "financial_investments", covers: ["financial_investments", "debentures"], value: "500", unit, asOf, anchor: itr(11)}]})).toThrow(/aggregates debt and deductions|covered twice/);
+  });
+
+  it("mutation: a definition text that never names a structured component is refused; lines or an opened EBITDA of another perimeter are not comparable; the implied EBITDA ignores numerator obligations", () => {
+    const base = withoutLeases(camil("ordinary"));
+    expect(() => reconcileCovenantDefinitions({...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-13" ? {...instrument, netDebtComponents: [...contractual, "leases"]} : instrument)})).toThrow(/never names the component leases/);
+    const parentLines = reconcileCovenantDefinitions({...base, reported: null, ltmEbitda: {value: "895864", unit, asOf, months: 12, incorporatesAdjustments: [], anchor: itr(40)}, componentValues: base.componentValues!.map((line) => line.component === "cash_and_equivalents" ? {...line, perimeter: "parent" as const} : line)});
+    expect(by(parentLines, "deb-13").netDebtByDefinition).toBeNull();
+    expect(by(parentLines, "deb-13").comparabilityReasons.some((reason) => reason.includes("parent perimeter"))).toBe(true);
+    const parentEbitda = reconcileCovenantDefinitions({...base, reported: null, ltmEbitda: {value: "895864", unit, perimeter: "parent", asOf, months: 12, incorporatesAdjustments: [], anchor: itr(40)}});
+    expect(by(parentEbitda, "deb-13").comparability).toBe("not_comparable");
+    const valued = reconcileCovenantDefinitions({...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: [adjustments11[0]!, {...adjustments11[1]!, obligation: {value: "100000", asOf, anchor: itr(47, "hipotético")}}]} : instrument)});
+    expect(by(valued, "deb-11").netDebtByDefinition?.value).toBe("4328477");
+    expect(by(valued, "deb-11").index?.ebitda?.value.startsWith("895863.77")).toBe(true);
   });
 
   it("blocks on an empty base and still carries the declared unit", () => {
