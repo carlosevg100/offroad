@@ -108,8 +108,10 @@ export const debtLedgerInputSchema = z.object({
   /** Independent totals from the balance sheet itself, never from the debt note. */
   balanceSheet: z.object({current: money, nonCurrent: money, anchor: anchorSchema}).strict().optional(),
   schedule: z.object({
-    /** `endsAt` is the calendar end of the period; null for open-ended buckets and adjustment lines. */
-    periods: z.array(z.object({period: nonEmpty, amount: money, endsAt: calendarDate.nullable()}).strict()).min(1),
+    /** The basis of the buckets: the company's fiscal (safra) year, the calendar year, or twelve-month windows from the reference date. */
+    basis: z.enum(["fiscal_year", "calendar_year", "twelve_month_windows"]),
+    /** `endsAt` is the calendar end of the period; null for open-ended buckets and adjustment lines. `allocations`, when the note gives them, split the period among the rows, so the schedule is checked instrument by instrument. */
+    periods: z.array(z.object({period: nonEmpty, amount: money, endsAt: calendarDate.nullable(), allocations: z.array(z.object({rowId: nonEmpty, amount: money}).strict()).nullable().default(null)}).strict()).min(1),
     anchor: anchorSchema,
   }).strict().optional(),
   /** Each component may be absent from the base; a view that needs it is then not computed, with the gap named. */
@@ -127,8 +129,18 @@ export const debtLedgerInputSchema = z.object({
   releaseReportedNetDebt: z.object({value: money, anchor: anchorSchema}).strict().optional(),
   tolerance: toleranceSchema.default({value: "0"}),
 }).strict().superRefine((input, context) => {
-  const UNIT_WORDS: Record<string, RegExp> = {"BRL": /\b(R\$|reais|BRL)\b(?!\s*(mil|milh))/i, "BRL thousand": /\b(mil|milhares|thousand)\b/i, "BRL million": /\b(milh[õo]es|million)\b/i, "USD": /\bUSD\b(?!\s*(mil|thousand))/i, "USD thousand": /\bUSD\b.*\b(mil|thousand)\b/i};
-  if (!UNIT_WORDS[input.unit]!.test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
+  // The note must name the scale of the unit and no other: "em milhares de reais" names thousands, so it never supports BRL without scale.
+  const note = input.unitAnchor.note;
+  const saysThousand = /\b(mil|milhares|thousand)\b/i.test(note);
+  const saysMillion = /\b(milh[õo]es|million)\b/i.test(note);
+  const namesUnit: Record<string, boolean> = {
+    "BRL": /R\$|reais|BRL/i.test(note) && !saysThousand && !saysMillion,
+    "BRL thousand": saysThousand && !saysMillion,
+    "BRL million": saysMillion && !saysThousand,
+    "USD": /USD|d[oó]lar/i.test(note) && !saysThousand && !saysMillion,
+    "USD thousand": /USD|d[oó]lar/i.test(note) && saysThousand && !saysMillion,
+  };
+  if (!namesUnit[input.unit]) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note ("${note}") does not name the unit ${input.unit} and no other scale; a relabelled scale is refused`});
   const ids = new Set<string>();
   for (const row of input.rows) {
     if (ids.has(row.id)) context.addIssue({code: "custom", path: ["rows"], message: `duplicate row id ${row.id}`});
@@ -137,6 +149,24 @@ export const debtLedgerInputSchema = z.object({
     if (row.lender?.formalHolder && row.lender.economicCreditors && /securitiz/i.test(row.lender.formalHolder) && /securitiz/i.test(row.lender.economicCreditors) && !/titular|holder|investidor|investor|cra|cri/i.test(row.lender.economicCreditors)) context.addIssue({code: "custom", path: ["rows"], message: `${row.id}: a securitizer (${row.lender.formalHolder}) is the formal holder; the economic creditors are the holders of the certificates, not the securitizer`});
   }
   const periods = new Set<string>();
+  // Instrument-by-instrument check when the note allocates the buckets: every allocation names a row, each period's allocations sum to its amount, and each row's balance is fully placed.
+  if (input.schedule && input.schedule.periods.some((period) => period.allocations !== null)) {
+    if (input.schedule.periods.some((period) => period.allocations === null)) context.addIssue({code: "custom", path: ["schedule", "periods"], message: "either every period carries its allocations by row or none does; a half-allocated schedule cannot be checked instrument by instrument"});
+    const rowIds = new Set(input.rows.map((row) => row.id));
+    const placed = new Map<string, Decimal>();
+    input.schedule.periods.forEach((period, index) => {
+      const total = (period.allocations ?? []).reduce((sum, allocation) => sum.plus(allocation.amount), new Decimal(0));
+      if (!total.eq(period.amount)) context.addIssue({code: "custom", path: ["schedule", "periods", index], message: `period ${period.period}: the allocations sum to ${total.toFixed()}, not ${period.amount}`});
+      for (const allocation of period.allocations ?? []) {
+        if (!rowIds.has(allocation.rowId)) context.addIssue({code: "custom", path: ["schedule", "periods", index], message: `period ${period.period} allocates ${allocation.rowId}, which is not a row of the ledger`});
+        placed.set(allocation.rowId, (placed.get(allocation.rowId) ?? new Decimal(0)).plus(allocation.amount));
+      }
+    });
+    for (const row of input.rows) {
+      const sum = placed.get(row.id) ?? new Decimal(0);
+      if (!sum.eq(row.balance)) context.addIssue({code: "custom", path: ["schedule"], message: `row ${row.id} carries ${row.balance} and the schedule places ${sum.toFixed()} of it; every balance is placed in full, instrument by instrument`});
+    }
+  }
   for (const period of input.schedule?.periods ?? []) {
     if (periods.has(period.period)) context.addIssue({code: "custom", path: ["schedule", "periods"], message: `duplicate period ${period.period}`});
     periods.add(period.period);
@@ -149,7 +179,7 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schema_version: "method.build-debt-ledger.v13";
+  schema_version: "method.build-debt-ledger.v14";
   reference_date: string;
   prior_date: string | null;
   unit: string;
@@ -176,7 +206,7 @@ export type DebtLedgerOutput = {
     tolerance: {value: string; policyKey: string | null; policyVersion: string | null};
     anchor: Anchor | null;
   };
-  schedule: {periods: Array<{period: string; amount: string; endsAt: string | null; shareOfGross: string}>; total: string; matchesGross: boolean; currentPeriod: {period: string; amount: string; balanceSheetCurrent: string; difference: string; matches: boolean} | null; anchor: Anchor} | null;
+  schedule: {basis: string; periods: Array<{period: string; amount: string; endsAt: string | null; shareOfGross: string; allocations: Array<{rowId: string; amount: string}> | null}>; by_instrument: Array<{rowId: string; byPeriod: Array<{period: string; amount: string}>}> | null; total: string; matchesGross: boolean; currentPeriod: {period: string; amount: string; balanceSheetCurrent: string; difference: string; matches: boolean} | null; anchor: Anchor} | null;
   net_debt_views: {release: View | null; contractual: View | null; releaseReported: {value: string; differenceToRelease: string | null; anchor: Anchor} | null};
   /** Two denominators, both named: before contra lines (the ledger's own base) and the reported gross debt of the note (the answer key's 13,1% and 19,4%); contractual-only inclusions never enter the second. */
   by_indexer: Array<{indexer: string; balance: string; shareOfGrossBeforeContra: string; shareOfReportedGrossDebt: string; rows: string[]}>;
@@ -274,7 +304,7 @@ function canonical(input: z.infer<typeof debtLedgerInputSchema>) {
   return {
     ...input,
     rows: [...input.rows].sort((a, b) => compare(a.id, b.id)).map((row) => (row.obligation ? {...row, obligation: {...row.obligation, views: [...row.obligation.views].sort(compare)}} : row)),
-    schedule: input.schedule ? {...input.schedule, periods: [...input.schedule.periods].sort((a, b) => compare(a.period, b.period))} : undefined,
+    schedule: input.schedule ? {...input.schedule, periods: [...input.schedule.periods].sort((a, b) => compare(a.period, b.period)).map((period) => ({...period, allocations: period.allocations ? [...period.allocations].sort((a, b) => compare(a.rowId, b.rowId)) : null}))} : undefined,
   };
 }
 
@@ -361,7 +391,10 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
     } else if (rows.length > 0) {
       incompleteReasons.push(first ? "the schedule's first period is not checked against the current liabilities (no period ends within twelve months, or no balance sheet)" : "the schedule's periods carry no end dates; the first period is not checked against the current liabilities");
     }
-    schedule = {periods: input.schedule.periods.map((period) => ({period: period.period, amount: out(d(period.amount)), endsAt: period.endsAt, shareOfGross: share(d(period.amount), grossReported)})), total: out(total), matchesGross, currentPeriod, anchor: input.schedule.anchor};
+    const allocated = input.schedule.periods.every((period) => period.allocations !== null);
+    const byInstrument = allocated ? rows.filter((row) => !row.contra).map((row) => ({rowId: row.id, byPeriod: input.schedule!.periods.map((period) => ({period: period.period, amount: out((period.allocations ?? []).filter((allocation) => allocation.rowId === row.id).reduce((sum, allocation) => sum.plus(allocation.amount), d(0)))})).filter((entry) => !d(entry.amount).isZero())})) : null;
+    if (!allocated) incompleteReasons.push("the schedule is aggregated by period; the note does not allocate the buckets by instrument, so the schedule is checked in total and by its first period, not row by row");
+    schedule = {basis: input.schedule.basis, periods: input.schedule.periods.map((period) => ({period: period.period, amount: out(d(period.amount)), endsAt: period.endsAt, shareOfGross: share(d(period.amount), grossReported), allocations: period.allocations ? period.allocations.map((allocation) => ({rowId: allocation.rowId, amount: out(d(allocation.amount))})) : null})), by_instrument: byInstrument, total: out(total), matchesGross, currentPeriod, anchor: input.schedule.anchor};
   } else if (rows.length > 0) {
     incompleteReasons.push("no maturity schedule with an anchor in the base");
   }
@@ -462,7 +495,7 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.build-debt-ledger.v13" as const,
+    schema_version: "method.build-debt-ledger.v14" as const,
     reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, unit_anchor: input.unitAnchor, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),

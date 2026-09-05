@@ -63,7 +63,7 @@ const camil = (): DebtLedgerInput => ({
     contra("deb-costs", "Custo de transação (debêntures)", "-63225", "-66347"),
   ],
   balanceSheet: {current: "1229828", nonCurrent: "4440358", anchor: itr(12, undefined, "Balanço patrimonial consolidado, empréstimos, financiamentos e debêntures")},
-  schedule: {periods: [
+  schedule: {basis: "twelve_month_windows", periods: [
     {period: "2026/27", amount: "1229828", endsAt: "2027-05-31"}, {period: "2027/28", amount: "776868", endsAt: "2028-05-31"}, {period: "2028/29", amount: "1228475", endsAt: "2029-05-31"},
     {period: "2029/30", amount: "694497", endsAt: "2030-05-31"}, {period: "2030/31", amount: "994544", endsAt: "2031-05-31"}, {period: "after 2031", amount: "809198", endsAt: null}, {period: "debenture costs", amount: "-63224", endsAt: null},
   ], anchor: itr(40, "15")},
@@ -97,7 +97,9 @@ const sumShares = (entries: Array<{shareOfGrossBeforeContra: string}>) => entrie
 describe("build-debt-ledger executor (v10)", () => {
   it("gold: gross debt of both dates, total reconciliation, first period against current liabilities, both views with their definitions and per-operand anchors", () => {
     const ledger = buildDebtLedger(camil());
-    expect(ledger.state).toBe("complete");
+    // The note gives the buckets in aggregate, not by instrument: the ledger is honest about it and stays incomplete.
+    expect(ledger.state).toBe("incomplete");
+    expect(ledger.incomplete_reasons.some((reason) => /does not allocate the buckets by instrument/.test(reason))).toBe(true);
     expect(ledger.gross_debt).toBe("5670186");
     expect(ledger.gross_debt_prior).toBe("4988383");
     expect(ledger.gross_debt_before_contra).toBe("5742510");
@@ -336,7 +338,7 @@ describe("build-debt-ledger executor (v10)", () => {
     ];
     const cash = {cashAndEquivalents: {value: "20", anchor}, financialInvestments: {value: "5", anchor}, derivativeAssets: {value: "0", anchor}, derivativeLiabilities: {value: "0", anchor}};
     const definitions = {release: {text: "dívida bruta menos caixa e aplicações financeiras", anchor}, contractual: {text: "empréstimos, financiamentos e debêntures mais arrendamentos, mais operações com derivativos do passivo, menos caixa, aplicações financeiras e operações com derivativos do ativo", anchor}};
-    const result = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
+    const result = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {basis: "twelve_month_windows", periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
     expect(result.gross_debt).toBe("110");
     expect(result.gross_debt_reported).toBe("100");
     expect(result.by_indexer[0]?.shareOfReportedGrossDebt).toBe("1.1");
@@ -344,13 +346,14 @@ describe("build-debt-ledger executor (v10)", () => {
     expect(result.contractual_only_inclusions).toEqual([{rowId: "lease", balance: "10", anchor: {document: "escritura_hipotetica.pdf", clause: "1.1", page: 7}}]);
     expect(result.net_debt_views.release?.value).toBe("75");
     expect(result.net_debt_views.contractual?.value).toBe("85");
-    expect(result.state).toBe("complete");
-    const partial = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash: {...cash, derivativeAssets: null}, definitions});
+    // Aggregated buckets: incomplete by design, even when everything else reconciles.
+    expect(result.state).toBe("incomplete");
+    const partial = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {basis: "twelve_month_windows", periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash: {...cash, derivativeAssets: null}, definitions});
     expect(partial.state).toBe("incomplete");
     expect(partial.net_debt_views.release?.value).toBe("75");
     expect(partial.net_debt_views.contractual).toBeNull();
     expect(partial.incomplete_reasons.some((reason) => reason.includes("derivativeAssets absent"))).toBe(true);
-    const past = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y0", amount: "0", endsAt: "2025-05-31"}, {period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
+    const past = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 11, note: "em milhares de reais"}, source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {basis: "twelve_month_windows", periods: [{period: "y0", amount: "0", endsAt: "2025-05-31"}, {period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
     expect(past.state).toBe("blocked");
     expect(past.block_reasons[0]).toMatch(/ended on or before the reference date/);
   });
@@ -435,5 +438,18 @@ describe("build-debt-ledger executor (v10)", () => {
     if (holder) {
       expect(() => buildDebtLedger({...base, rows: base.rows.map((row) => (row.id === holder.id ? {...row, lender: {...row.lender!, economicCreditors: row.lender!.formalHolder}} : row))})).toThrow(/economic creditors are the holders of the certificates/);
     }
+  });
+
+  it("mutation: a unit without scale against a note that says thousands is refused, and an allocated schedule is checked instrument by instrument", () => {
+    const base = camil();
+    expect(() => buildDebtLedger({...base, unit: "BRL"})).toThrow(/does not name the unit BRL and no other scale/);
+    const aggregated = buildDebtLedger(base);
+    expect(aggregated.schedule?.basis).toBe("twelve_month_windows");
+    expect(aggregated.schedule?.by_instrument).toBeNull();
+    expect(aggregated.incomplete_reasons.some((reason) => /aggregated by period; the note does not allocate the buckets by instrument/.test(reason))).toBe(true);
+    const half = {...base, schedule: {...base.schedule!, periods: base.schedule!.periods.map((period, index) => (index === 0 ? {...period, allocations: [{rowId: base.rows[0]!.id, amount: period.amount}]} : period))}};
+    expect(() => buildDebtLedger(half)).toThrow(/either every period carries its allocations by row or none does/);
+    const wrongSum = {...base, schedule: {...base.schedule!, periods: base.schedule!.periods.map((period) => ({...period, allocations: [{rowId: base.rows[0]!.id, amount: "1"}]}))}};
+    expect(() => buildDebtLedger(wrongSum)).toThrow(/allocations sum to 1, not/);
   });
 });
