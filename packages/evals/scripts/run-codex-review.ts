@@ -82,7 +82,7 @@ function main(): void {
   const response = JSON.parse(readFileSync(lastMessagePath, "utf8")) as {
     reviewerSelfDescription: string;
     checks: Record<string, boolean>;
-    evidence: Array<{claim: string; source: string; anchor?: string; result: string; note?: string}>;
+    evidence: Array<{claim: string; source: string; anchor: string | null; result: string; note: string | null}>;
     result: "pass" | "conditional" | "fail";
     conditions: string[];
     notes: string;
