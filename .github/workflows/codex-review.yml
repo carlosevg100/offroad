@@ -1,0 +1,130 @@
+name: Independent AI review (Codex)
+
+# Runs the independent review of an answer key or of a method of a gold case with the Codex CLI,
+# billed through the OpenAI API key that lives only in Secrets Manager (readable by
+# `offroadGitHubEvalsRole`). Same runner as the local reviews (`pnpm --filter @offroad/evals
+# review:codex`), same prompts, same corpus (its hashes are verified against the manifest before
+# the reviewer starts). The run directory is uploaded as an artifact and committed beside the
+# subject by whoever dispatched the run. Manual only: it spends real money with the provider.
+
+on:
+  workflow_dispatch:
+    inputs:
+      case:
+        description: "Gold case (gc01 … gc05)"
+        required: false
+        default: "gc01"
+      subject:
+        description: "answer_key or method"
+        required: false
+        default: "answer_key"
+      method:
+        description: "Method id when subject is method (e.g. reconcile-covenant-definitions)"
+        required: false
+        default: ""
+      model:
+        description: "Codex model"
+        required: false
+        default: "gpt-5.6-sol"
+      effort:
+        description: "Reasoning effort"
+        required: false
+        default: "high"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: codex-review-${{ inputs.case || 'gc01' }}-${{ inputs.subject || 'answer_key' }}-${{ inputs.method || 'none' }}
+  cancel-in-progress: false
+
+jobs:
+  review:
+    name: Review ${{ inputs.subject || 'answer_key' }} ${{ inputs.method || '' }} of ${{ inputs.case || 'gc01' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install the Codex CLI
+        run: npm install -g @openai/codex@0.153.4 && codex --version
+
+      - name: Verify the review corpus against its manifest
+        env:
+          CASE: ${{ inputs.case || 'gc01' }}
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("fs"), path = require("path"), crypto = require("crypto");
+            const dir = path.join("docs/product/gold-cases/runs", process.env.CASE, "ai-review-corpus");
+            const manifest = JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8"));
+            let bad = 0;
+            for (const entry of manifest.entries) {
+              const bytes = fs.readFileSync(path.join(dir, entry.file));
+              const sha = crypto.createHash("sha256").update(bytes).digest("hex");
+              if (sha !== entry.sha256 || bytes.length !== entry.bytes) { bad += 1; console.error("mismatch", entry.file); }
+            }
+            console.log(`${manifest.entries.length} corpus files, ${bad} mismatches`);
+            if (bad > 0) process.exit(1);
+          '
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
+          aws-region: sa-east-1
+
+      - name: Run the review
+        env:
+          CASE: ${{ inputs.case || 'gc01' }}
+          SUBJECT: ${{ inputs.subject || 'answer_key' }}
+          METHOD: ${{ inputs.method || '' }}
+          MODEL: ${{ inputs.model || 'gpt-5.6-sol' }}
+          EFFORT: ${{ inputs.effort || 'high' }}
+        run: |
+          set -euo pipefail
+          # Masked the moment it exists, so a stray echo or a crash dump cannot print it.
+          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
+          echo "::add-mask::$OPENAI_API_KEY"
+          export OPENAI_API_KEY
+          printenv OPENAI_API_KEY | codex login --with-api-key
+          codex login status
+
+          ARGS=(--case "$CASE" --subject "$SUBJECT" --model "$MODEL" --effort "$EFFORT")
+          if [ -n "$METHOD" ]; then ARGS+=(--method "$METHOD"); fi
+          pnpm --filter @offroad/evals review:codex -- "${ARGS[@]}" 2>&1 | tee /tmp/review.log
+
+          RUN_DIR=$(git status --porcelain --untracked-files=all | awk '{print $2}' | grep -E '(reviews/gc0[0-9]/|knowledge/reviews/runs/)' | grep -v codex-events | head -1 | xargs dirname)
+          echo "RUN_DIR=$RUN_DIR" >> "$GITHUB_ENV"
+          {
+            echo "## Independent AI review: $SUBJECT ${METHOD:-} of $CASE"
+            echo
+            grep -E '^(review|result)' /tmp/review.log | sed 's/^/- /'
+            echo "- run directory: $RUN_DIR"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the run
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: codex-review-${{ inputs.case || 'gc01' }}-${{ inputs.subject || 'answer_key' }}-${{ inputs.method || 'none' }}
+          path: ${{ env.RUN_DIR }}
+          if-no-files-found: error
+          retention-days: 90

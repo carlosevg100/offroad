@@ -1,0 +1,67 @@
+Reporte Anual de Título Verde
+   11ª Emissão de Debêntures da Camil Alimentos S.A.
+
+                        2026
+                                   Sobre o Projeto
+Em novembro de 2021, a Camil concluiu sua primeira emissão de debêntures com
+selo verde. Maiores informações aqui.
+A Central de Cogeração a Biomassa (CCB) terá como combustível a própria casca de
+arroz gerada na fábrica da Camil, podendo gerar até 12MW de energia (geração
+bruta máxima) e uma produção de 52t/h de vapor a 45 bar e 460°C para acionamento
+do turbogerador (TGV), vapor esse proveniente da caldeira aquatubular a biomassa
+(GV).
+O projeto da CCB é uma atualização de uma UTE antiga da empresa, de maneira
+que o novo projeto atenderá 100% da necessidade energética da unidade de Itaqui
+(RS) no sistema de geração pura e na entressafra. A energia elétrica excedente será
+direcionada para a rede elétrica.
+
+
+
+
+                                                  Modelo 3D do Projeto - Build Projetos e Consultoria
+
+
+
+
+                     Contribuição direta aos ODS:
+
+
+
+
+            7 - Energia Acessível e Limpa
+            9 - Industria, Inovação e Infraestrutura.
+            12 - Consumo e Produção Responsáveis
+                      Benefícios ambientais esperados:
+     Os benefícios ambientais esperados com a entrada da operação da Central de
+     Cogeração a Biomassa (CCB) são o aumento da geração de energia renovável e
+     destinação sustentável da casca do arroz, evitando sua disposição diretamente
+     em aterros.
+     Para cálculo das emissões de GEE evitadas, considerando que, com a energia gerada
+     a partir do projeto, a Companhia deixa de adquirir energia da rede local, considerou-
+     se que a cada MWh de energia gerado adicional a UTE já existente (em
+     desativação), a Companhia deixa de emitir 0,0617 tCO2e (fator de emissões por
+     MWh do Sistema Interligado Nacional em 2020). O cálculo de emissões evitadas
+     a partir da casca de arroz, que deixará de ser enviada para aterros sanitários foi
+     realizado pela Veolia, utilizando dados do IPCC15.
+
+
+                      Status de progresso do projeto
+                       Cronograma de implementação da CCB
+                    Atividade                                  Período
+Período Conclusão do projeto básico                             abr/21
+Entrada do Licenciamento ambiental (LP)                         nov/22
+Emissão do Licenciamento ambiental (LI)                         nov/23
+Obras de terraplanagem                                     fev/24 ~ abr/24
+Obras Civis                                                 abr/24 ~ nov/25
+Montagem do Gerador                                        nov/24 ~ out/25
+Montagem da Turbina                                        nov/24 ~ out/25
+Montagem da Caldeira                                       jan/25 ~ out25
+Sistemas Auxiliares                                        jun/25 ~ out/25
+Comissionamento                                            out/25 ~ jan/26
+Inicio da operação                                              jan/26
+
+
+                                 Indicador Financeiro
+1. Volume financeiro investido no projeto (em R$)          R$166.500.000,00
+2. Valor total da emissão                                  R$150.000.000,00
+
