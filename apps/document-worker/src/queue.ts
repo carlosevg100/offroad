@@ -238,6 +238,8 @@ export type QueueClient = {
     content: string;
     result: unknown;
   }): Promise<void>;
+  /** integration_preview only: the latest preview artifacts of the project, so a conversational turn can answer from the signed objects. */
+  loadIntegrationPreviewArtifacts?(job: AgentOperationBriefJob): Promise<unknown>;
   /** integration_preview only: publishes the preview-tagged completion and finishes the job in one transaction. */
   completeIntegrationPreviewRun?(job: CapitalProjectAnalysisJob, input: {
     completionMessageId: string;
@@ -683,6 +685,13 @@ export function createQueueClient(
         p_artifact_fingerprint: input.artifactFingerprint,
         p_content: input.content,
         p_result: input.result ?? {},
+      });
+    },
+
+    async loadIntegrationPreviewArtifacts(job) {
+      return call("worker_load_integration_preview_artifacts_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
       });
     },
 

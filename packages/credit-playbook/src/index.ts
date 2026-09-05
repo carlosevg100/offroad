@@ -37,3 +37,5 @@ export * from "./review-record";
 export * as executors from "./executors";
 /** The frozen evidence of the gold cases, as the executors consume it; Case 01 first. */
 export * as case01 from "./cases/gc01";
+/** The integration_preview workflow of Case 01 and the bindings that run its methods inside the product. */
+export * as preview from "./preview";

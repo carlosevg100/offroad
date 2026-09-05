@@ -338,6 +338,17 @@ begin
     jsonb_build_object('preview', jsonb_build_object('mode', 'integration_preview', 'methodMaturity', 'implemented'), 'gross_debt', '5670186'),
     '[]'::jsonb, '[]'::jsonb
   );
+  perform public.worker_record_agent_stage_event_v1(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview:C05', 'started',
+    jsonb_build_object('summary_pt', 'Mapear a dívida instrumento a instrumento (build-debt-ledger, estágio implemented)', 'summary_en', 'Map the debt instrument by instrument (build-debt-ledger, implemented rung)', 'task_spec_id', 'C05')
+  );
+  if not exists (
+    select 1 from public.capital_project_agent_events event
+    where event.detail ->> 'stage' = 'integration_preview:C05'
+      and event.summary_pt like 'Mapear a dívida instrumento a instrumento%'
+  ) then
+    raise exception 'the preview stage event did not carry its own summary';
+  end if;
   perform public.worker_finish_capital_project_task(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token', task_run_id, 'succeeded',
     jsonb_build_object('type', 'capital_project_artifact', 'id', artifact ->> 'id'),
@@ -377,6 +388,40 @@ begin
   if (select job.status from public.processing_jobs job where job.id = (claim ->> 'job_id')::uuid) <> 'succeeded' then
     raise exception 'the preview job did not finish with its completion';
   end if;
+end;
+$$;
+
+-- A later conversational turn may read the signed preview objects, and a stage event carries its own summary.
+do $$
+declare
+  project_id uuid;
+  message_id constant uuid := '50000000-0000-4000-8000-000000000252';
+  claim jsonb;
+  artifacts jsonb;
+begin
+  select session.capital_project_id into strict project_id
+  from public.document_intake_sessions session
+  join public.capital_projects project on project.id = session.capital_project_id
+  where project.organization_id = '20000000-0000-4000-8000-000000000251'
+  limit 1;
+  perform public.submit_advisor_turn_v1(project_id, message_id, 'pt-BR', 'De onde saiu a alavancagem?');
+  claim := public.worker_claim_job(repeat('p', 64), 600);
+  if claim ->> 'kind' <> 'agent_operation_brief' then
+    raise exception 'the follow-up turn was not claimed: %', claim;
+  end if;
+  artifacts := public.worker_load_integration_preview_artifacts_v1((claim ->> 'job_id')::uuid, claim ->> 'capability_token');
+  if jsonb_array_length(artifacts) <> 1 or artifacts #>> '{0,task_id}' <> 'C05' or artifacts #>> '{0,artifact_type}' <> 'preview_debt_ledger' then
+    raise exception 'the preview artifacts are not readable by the follow-up turn: %', artifacts;
+  end if;
+  perform public.worker_record_agent_failure((claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview_test_closed');
+  perform public.worker_fail_job(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token',
+    jsonb_build_object(
+      'code', 'integration_preview_test_closed', 'stage', 'agent_operation_brief', 'retryable', false,
+      'cause', jsonb_build_object('name', 'Error', 'class', 'worker_error', 'message', 'test closes the follow-up turn')
+    ),
+    false
+  );
 end;
 $$;
 
