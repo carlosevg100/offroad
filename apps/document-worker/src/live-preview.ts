@@ -234,6 +234,8 @@ type Composition = PreviewComposition;
 
 const t = (locale: "pt-BR" | "en-US", pt: string, en: string) => (locale === "en-US" ? en : pt);
 
+const knownAudiences = new Set(["vp", "board", "committee", "cfo", "ceo", "companhia", "investors"]);
+
 function normalizeAudience(value: string | null | undefined): string | null {
   if (!value) return null;
   const lower = value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -384,7 +386,10 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   // The audience the model names, else the first audience of the envelope; a decision body written
   // in the message (board, committee) wins, because it defines the form of the work.
   const decisionBodyInText = /\b(conselho|board|comit[eê]|committee)\b/i.test(input.message) ? (/\bcomit[eê]|committee\b/i.test(input.message) ? "committee" : "board") : null;
-  const audience = normalizeAudience(output.turn.scopeChanges.audience) ?? (core.audience.value.map((item) => normalizeAudience(item)).find((item) => item === "board" || item === "committee") ?? null) ?? decisionBodyInText ?? normalizeAudience(core.audience.value[0]) ?? "vp";
+  // Among the audiences the classifier lists, a known role wins over free text ("banker (self)"),
+  // so the headline names the reader of the work, not the person writing the request.
+  const listedAudiences = core.audience.value.map((item) => normalizeAudience(item));
+  const audience = normalizeAudience(output.turn.scopeChanges.audience) ?? listedAudiences.find((item) => item === "board" || item === "committee") ?? decisionBodyInText ?? listedAudiences.find((item) => item !== null && knownAudiences.has(item)) ?? listedAudiences[0] ?? "vp";
   const depth = output.turn.scopeChanges.depth ?? core.depth.value;
   // Three readings of the message itself, for what the classifier got wrong in the gate: it filed
   // "para o conselho" as a board deck request, filed a request for pages as an answer to the format
