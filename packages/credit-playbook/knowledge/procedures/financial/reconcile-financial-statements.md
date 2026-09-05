@@ -1,13 +1,24 @@
 ---
 id: reconcile-financial-statements
 version: 2026.09.05-v1
-maturity: candidate
+maturity: implemented
 title_pt: Conciliar as demonstrações entre si e com o release
 title_en: Reconcile the financial statements with each other and with the release
 role: financial_analysis
 blueprint_stage: 4
 owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
+implementation_module: @offroad/credit-playbook/executors/reconcile-financial-statements
+implementation_export: reconcileFinancialStatements
+result_contract: method.reconcile-financial-statements.v1
+connected_states: [understanding_in_progress]
+persistence_mode: derived_on_demand
+persistence_target: method_results
+unit_test_files: [packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts]
+gold_case_ids: [gc01-analista-ib-camil]
+adversarial_case_ids: [adversarial:gc01:scale-mutation-breaks-roll-forward]
+e2e_scenario_ids: [pending:case01-frozen-run]
+cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [Q-01, Q-02, D-24]
 authorities: [DEF, CASA]
 reference_data_keys: [policy.reconciliation.tolerance, policy.financial.materiality]

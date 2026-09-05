@@ -1193,3 +1193,10 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | --- | --- | --- | --- |
 | Executores | `src/executors/*.test.ts` | ledger: 5.670.186, contratual 4.228.477, release recalculado 4.214.377 contra 4.214.400 reportado, IPCA 743.955, moeda estrangeira 1.102.582, shares somam um, estados empty/incomplete/blocked, 20 permutações; covenant: 4,00x fica `insufficient_evidence` sem quitação provada, headroom só quando comparável; parede: dois picos e cobertura com ressalva de D0; custo de saída: DI 2.448,304 no exemplo, IPCA sem cotação bloqueado; credit-playbook 195 testes | 2026-09-05 |
 | Revisão independente do ledger | `knowledge/reviews/runs/gc01-method-build-debt-ledger-2026-09-05-01-16-41/` | `fail`, 17 correções incorporadas; segunda rodada pendente | 2026-09-05 |
+
+## Oito executores do Caso 01, 05/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Executores | `src/executors/*.test.ts` | 45 testes: gold, adversariais e vinte permutações por método; credit-playbook 214 testes | 2026-09-05 |
+| Segunda revisão do ledger | `knowledge/reviews/runs/gc01-method-build-debt-ledger-2026-09-05-01-39-24/` | `fail`, 21 correções incorporadas na v3 | 2026-09-05 |

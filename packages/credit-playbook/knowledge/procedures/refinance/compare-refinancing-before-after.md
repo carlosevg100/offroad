@@ -1,13 +1,24 @@
 ---
 id: compare-refinancing-before-after
 version: 2026.09.05-v1
-maturity: candidate
+maturity: implemented
 title_pt: Comparar antes e depois de cada alternativa de refinanciamento
 title_en: Compare before and after for each refinancing alternative
 role: credit_structuring
 blueprint_stage: 7
 owner_role: Head de DCM
 effective_date: 2026-09-05
+implementation_module: @offroad/credit-playbook/executors/compare-refinancing-before-after
+implementation_export: compareRefinancingBeforeAfter
+result_contract: method.compare-refinancing-before-after.v1
+connected_states: [understanding_in_progress]
+persistence_mode: derived_on_demand
+persistence_target: method_results
+unit_test_files: [packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts]
+gold_case_ids: [gc01-analista-ib-camil]
+adversarial_case_ids: [adversarial:gc01:unpriced-exit-blocks-alternative]
+e2e_scenario_ids: [pending:case01-frozen-run]
+cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [ES-10, ES-40, ES-45, PR-01]
 authorities: [CASA, MERCADO]
 reference_data_keys: [policy.structure.covenant_headroom, policy.capacity.minimum_headroom]

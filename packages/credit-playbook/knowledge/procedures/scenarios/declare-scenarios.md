@@ -1,13 +1,24 @@
 ---
 id: declare-scenarios
 version: 2026.09.05-v1
-maturity: candidate
+maturity: implemented
 title_pt: Declarar cenários com racional e sem inventar premissa
 title_en: Declare scenarios with a rationale and without inventing assumptions
 role: financial_analysis
 blueprint_stage: 6
 owner_role: Head de Modelagem
 effective_date: 2026-09-05
+implementation_module: @offroad/credit-playbook/executors/declare-scenarios
+implementation_export: declareScenarios
+result_contract: method.declare-scenarios.v1
+connected_states: [understanding_in_progress]
+persistence_mode: derived_on_demand
+persistence_target: method_results
+unit_test_files: [packages/credit-playbook/src/executors/declare-scenarios.test.ts]
+gold_case_ids: [gc01-analista-ib-camil]
+adversarial_case_ids: [adversarial:gc01:parameter-without-origin-refused]
+e2e_scenario_ids: [pending:case01-frozen-run]
+cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-28, OP-05]
 authorities: [CASA, HEURÍSTICA]
 reference_data_keys: [scenario.interest_rate.parallel_shock, policy.seasonality.materiality]
