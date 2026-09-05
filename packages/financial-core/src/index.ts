@@ -51,6 +51,39 @@ export function calculateLeverage(netDebt: DecimalInput, adjustedEbitda: Decimal
   ]);
 }
 
+/**
+ * Brazilian business-day accrual: the factor an annual effective rate accumulates over `businessDays`
+ * of a 252-day year, as indentures state it ((1 + rate)^(DU/252) - 1). Rates are decimals.
+ */
+export function businessDayAccrual(annualRate: DecimalInput, businessDays: number): CalculationResult {
+  if (!Number.isInteger(businessDays) || businessDays < 0) throw new RangeError("business days must be a non-negative integer");
+  const rate = d(annualRate);
+  if (rate.lte(-1)) throw new RangeError("an annual rate below -100% has no accrual factor");
+  const factor = rate.plus(1).pow(new Decimal(businessDays).div(252)).minus(1);
+  return result(factor, [
+    {label: "annual_rate", value: canonical(rate)},
+    {label: "business_days", value: String(businessDays)},
+  ]);
+}
+
+/**
+ * The DI factor of a "p% of DI" remuneration over `businessDays`, with a flat annual DI: each day accrues
+ * p times the daily DI rate and the days compound ((1 + ((1 + DI)^(1/252) - 1) * p)^DU - 1).
+ */
+export function diPercentAccrual(annualDi: DecimalInput, percentOfDi: DecimalInput, businessDays: number): CalculationResult {
+  if (!Number.isInteger(businessDays) || businessDays < 0) throw new RangeError("business days must be a non-negative integer");
+  const di = d(annualDi);
+  const percent = d(percentOfDi);
+  if (di.lte(-1) || percent.lt(0)) throw new RangeError("the DI must be above -100% and the percentage non-negative");
+  const daily = di.plus(1).pow(new Decimal(1).div(252)).minus(1).times(percent);
+  const factor = daily.plus(1).pow(businessDays).minus(1);
+  return result(factor, [
+    {label: "annual_di", value: canonical(di)},
+    {label: "percent_of_di", value: canonical(percent)},
+    {label: "business_days", value: String(businessDays)},
+  ]);
+}
+
 /** The EBITDA a reported leverage implies for a given net debt: netDebt / index. The caller marks it derived, never a fact. */
 export function calculateImpliedEbitda(netDebt: DecimalInput, reportedIndex: DecimalInput): CalculationResult {
   const debt = d(netDebt);

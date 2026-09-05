@@ -64,9 +64,9 @@ const permute = <T>(items: readonly T[], seed: number): T[] => {
   return copy;
 };
 const by = (result: ReturnType<typeof reconcileCovenantDefinitions>, id: string) => result.covenants.find((covenant) => covenant.instrument === id)!;
-const withoutLeases = (input: CovenantReconciliationInput): CovenantReconciliationInput => ({...input, componentValues: input.componentValues!.filter((line) => line.component !== "leases")});
+const withoutLeases = (input: CovenantReconciliationInput): CovenantReconciliationInput => ({...input, componentValues: [...input.componentValues!.filter((line) => line.component !== "leases"), {component: "other_onerous_debt", covers: ["other_onerous_debt"], value: "0", unit, asOf, anchor: itr(39, "hipotético: nenhuma outra dívida onerosa enumerada")}]});
 
-describe("reconcile-covenant-definitions executor (v5)", () => {
+describe("reconcile-covenant-definitions executor (v6)", () => {
   it("gold: net debt by each indenture's own definition is 4.228.477 through financial-core, one anchor per operand, implied EBITDA traced", () => {
     const result = reconcileCovenantDefinitions(camil("unknown"));
     for (const covenant of result.covenants) {
@@ -145,6 +145,8 @@ describe("reconcile-covenant-definitions executor (v5)", () => {
     expect(by(pricedResult, "deb-11").netDebtByDefinition?.value).toBe("4328477");
     expect(by(pricedResult, "deb-11").comparability).toBe("conditional");
     expect(by(pricedResult, "deb-11").legalConditions.some((condition) => condition.includes("added to net debt at 100000"))).toBe(true);
+    expect(by(pricedResult, "deb-11").netDebtByDefinition?.anchors["obligation:sellers-finance"]?.page).toBe(47);
+    expect(by(pricedResult, "deb-11").netDebtByDefinition?.operands["obligation:sellers-finance"]).toBe("100000");
   });
 
   it("mutation: an opening that does not reproduce the reported index, an opening dated elsewhere, or an EBITDA of zero refuse the comparison", () => {
@@ -179,8 +181,9 @@ describe("reconcile-covenant-definitions executor (v5)", () => {
     const result = reconcileCovenantDefinitions(opened);
     expect(by(result, "deb-11").comparability).toBe("conditional");
     expect(by(result, "deb-11").index?.basis).toBe("computed_from_components");
-    expect(by(result, "deb-13").comparability).toBe("conditional");
-    const stated: CovenantReconciliationInput = {...opened, ltmEbitda: {...opened.ltmEbitda!, incorporatesAdjustments: ["acquired-ebitda", "sellers-finance"]}, componentValues: [...opened.componentValues!, {component: "other_onerous_debt", covers: ["other_onerous_debt"], value: "0", unit, asOf, anchor: itr(39, "hipotético: nenhuma outra dívida onerosa")}]};
+    // The residual is enumerated at zero and no lease sits in the base: the 13th is fully comparable on the computed path.
+    expect(by(result, "deb-13").comparability).toBe("comparable");
+    const stated: CovenantReconciliationInput = {...opened, ltmEbitda: {...opened.ltmEbitda!, incorporatesAdjustments: ["acquired-ebitda", "sellers-finance"]}};
     const stillOpen = reconcileCovenantDefinitions(stated);
     // Declaring the numerator obligation as "incorporated" in the EBITDA changes nothing: it is not a denominator item.
     expect(by(stillOpen, "deb-11").comparability).toBe("conditional");
@@ -253,7 +256,8 @@ describe("reconcile-covenant-definitions executor (v5)", () => {
     expect(first.unit).toBe("BRL thousand");
     expect(relabeled.unit).toBe("BRL million");
     expect(relabeled.trace.outputFingerprint).not.toBe(first.trace.outputFingerprint);
-    expect(first.trace.calculations.every((calculation) => calculation.unit === "BRL thousand")).toBe(true);
+    expect(first.trace.calculations.filter((calculation) => calculation.id.startsWith("financial.debt_views")).every((calculation) => calculation.unit === "BRL thousand")).toBe(true);
+    expect(first.trace.calculations.filter((calculation) => calculation.id.startsWith("financial.net_leverage") || calculation.id.startsWith("structure.covenant_headroom")).every((calculation) => calculation.unit === "x")).toBe(true);
     expect(first.trace.calculations.find((calculation) => calculation.id === "financial.implied_ebitda:deb-13")?.result.startsWith("895863.77")).toBe(true);
   });
 
@@ -280,6 +284,24 @@ describe("reconcile-covenant-definitions executor (v5)", () => {
     expect(() => reconcileCovenantDefinitions({...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: [...adjustments11, adjustments11[0]!]} : instrument)})).toThrow(/duplicate adjustment/);
     expect(() => reconcileCovenantDefinitions({...base, componentValues: [...componentValues, {component: "debentures", covers: ["debentures"], value: "1", unit, asOf, anchor: itr(39)}]})).toThrow(/covered twice/);
     expect(() => reconcileCovenantDefinitions({...base, ltmEbitda: {value: "895864", unit, asOf, months: 3 as unknown as 12, incorporatesAdjustments: [], anchor: itr(40)}})).toThrow();
+  });
+
+  it("mutation: a missing component, a residual without a line, a zero opening or a different perimeter never yield headroom", () => {
+    const base = withoutLeases(camil("ordinary"));
+    const opened: CovenantReconciliationInput = {...base, reported: {...base.reported!, netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40)}}};
+    expect(by(reconcileCovenantDefinitions(opened), "deb-13").headroom).not.toBeNull();
+    const missing = reconcileCovenantDefinitions({...opened, componentValues: opened.componentValues!.filter((line) => line.component !== "derivative_liabilities")});
+    expect(by(missing, "deb-13").comparability).toBe("not_comparable");
+    expect(by(missing, "deb-13").headroom).toBeNull();
+    const residualOpen = reconcileCovenantDefinitions({...opened, componentValues: opened.componentValues!.filter((line) => line.component !== "other_onerous_debt")});
+    expect(by(residualOpen, "deb-13").comparability).toBe("conditional");
+    expect(by(residualOpen, "deb-13").headroom).toBeNull();
+    const zeroOpening = reconcileCovenantDefinitions({...opened, reported: {...opened.reported!, ebitdaOpening: {value: "0", unit, asOf, months: 12, anchor: itr(40)}}});
+    expect(by(zeroOpening, "deb-13").comparability).toBe("not_comparable");
+    expect(by(zeroOpening, "deb-13").headroom).toBeNull();
+    const parent = reconcileCovenantDefinitions({...opened, reported: {...opened.reported!, perimeter: "parent"}});
+    expect(by(parent, "deb-13").comparability).toBe("not_comparable");
+    expect(by(parent, "deb-13").comparabilityReasons.some((reason) => reason.includes("perimeter"))).toBe(true);
   });
 
   it("blocks on an empty base", () => {

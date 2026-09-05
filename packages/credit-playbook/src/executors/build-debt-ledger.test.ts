@@ -30,7 +30,7 @@ const cdi = (spread: string): Row["remuneration"] => ({type: "spread_over_index"
 const pct = (percent: string): Row["remuneration"] => ({type: "percent_of_index", index: "CDI", percentOfIndex: percent});
 const ipca = (spread: string): Row["remuneration"] => ({type: "spread_over_index", index: "IPCA", spreadPercentPerYear: spread});
 const h11 = publicHolders("escritura_11a_emissao.pdf");
-const h13 = eco("escritura_13a_emissao.pdf", {document: "cra_292_termo_securitizacao.pdf", clause: "17.8: orientação dos titulares dos CRA em assembleia especial"});
+const h13 = eco("escritura_13a_emissao.pdf", {document: "cra_292_termo_securitizacao.pdf", clause: "17.8.8: a securitizadora convoca os titulares dos CRA para orientar o exercício dos direitos nas debêntures"});
 const h14 = eco("escritura_14a_emissao.pdf", {document: "escritura_14a_emissao.pdf", clause: "7.26.5: a securitizadora convoca assembleia especial de titulares de CRA e delibera conforme a orientação", page: 55});
 const h15 = eco("escritura_15a_emissao.pdf", {document: "escritura_15a_emissao.pdf", clause: "7.26.5: a securitizadora convoca assembleia especial de titulares de CRA e delibera conforme a orientação", page: 56});
 const camil = (): DebtLedgerInput => ({
@@ -90,7 +90,7 @@ const permute = <T>(items: T[], seed: number): T[] => {
 };
 const sumShares = (entries: Array<{shareOfGrossBeforeContra: string}>) => entries.reduce((sum, entry) => sum + Number(entry.shareOfGrossBeforeContra), 0);
 
-describe("build-debt-ledger executor (v6)", () => {
+describe("build-debt-ledger executor (v7)", () => {
   it("gold: gross debt of both dates, total reconciliation, first period against current liabilities, both views with their definitions and per-operand anchors", () => {
     const ledger = buildDebtLedger(camil());
     expect(ledger.state).toBe("complete");
@@ -116,6 +116,10 @@ describe("build-debt-ledger executor (v6)", () => {
     expect(foreign).toBe(1102582);
     expect(Math.abs(sumShares(ledger.by_indexer) - 1)).toBeLessThan(1e-6);
     expect(Math.abs(sumShares(ledger.by_currency) - 1)).toBeLessThan(1e-6);
+    // The answer key's percentages divide by the gross debt of the note: 13,1% IPCA and 19,4% foreign currency.
+    expect(ledger.by_indexer.find((entry) => entry.indexer === "IPCA")?.shareOfGrossDebt.startsWith("0.1312")).toBe(true);
+    const foreignShare = ledger.by_currency.filter((entry) => entry.currency !== "BRL").reduce((sum, entry) => sum + Number(entry.shareOfGrossDebt), 0);
+    expect(foreignShare).toBeCloseTo(0.1944, 3);
   });
 
   it("gold: the trace lists the operands of every number: each row in the total, each group, the reported difference", () => {
@@ -144,7 +148,7 @@ describe("build-debt-ledger executor (v6)", () => {
     expect(ledger.ledger_rows.find((entry) => entry.id === "deb-11-1")!.anchors.maturity?.page).toBe(1);
     expect(ledger.ledger_rows.find((entry) => entry.id === "deb-11-1")!.anchors.remuneration?.page).toBe(2);
     expect(ledger.ledger_rows.find((entry) => entry.id === "loan-usd")!.anchors.guarantee?.page).toBe(40);
-    expect(ledger.ledger_rows.find((entry) => entry.id === "deb-13-1")!.anchors.lenderEconomicCreditors?.document).toBe("cra_292_termo_securitizacao.pdf");
+    expect(ledger.ledger_rows.find((entry) => entry.id === "deb-13-1")!.anchors.lenderEconomicCreditors?.clause).toMatch(/^17\.8\.8/);
     expect(ledger.ledger_rows.find((entry) => entry.id === "loan-costs")!.obligation).toBeNull();
   });
 
@@ -177,6 +181,9 @@ describe("build-debt-ledger executor (v6)", () => {
     const lease = camil();
     lease.rows.push({id: "lease-1", instrument: "Arrendamentos", obligation: {kind: "lease", disbursed: true, views: ["contractual"]}, balance: "1", currency: "BRL", anchors: {balance: itr(12)}});
     expect(() => buildDebtLedger(lease)).toThrow(/without the anchor that includes it/);
+    const otherOnly = camil();
+    otherOnly.rows.push({id: "other-1", instrument: "Outra obrigação só contratual", obligation: {kind: "other", disbursed: true, views: ["contractual"]}, balance: "1", currency: "BRL", anchors: {balance: itr(12)}});
+    expect(() => buildDebtLedger(otherOnly)).toThrow(/without the anchor that includes it/);
     const positiveContra = camil();
     (positiveContra.rows[4] as Row).balance = "9099";
     expect(() => buildDebtLedger(positiveContra)).toThrow(/must carry a negative balance/);
@@ -252,6 +259,8 @@ describe("build-debt-ledger executor (v6)", () => {
       ["caixa e aplicações menos dívida bruta", /adds no debt line|adds cash/],
       ["empréstimos e debêntures menos fornecedores", /does not deduct cash/],
       ["empréstimos e debêntures mais derivativos menos caixa e aplicações", /release definition mentions derivatives/],
+      ["dívida bruta mais fornecedores menos caixa e aplicações", /not debt nor cash/],
+      ["debêntures menos caixa e aplicações", /whole debt base/],
     ];
     for (const [text, expected] of mutations) {
       const mutated = camil();
@@ -266,6 +275,9 @@ describe("build-debt-ledger executor (v6)", () => {
     const swappedPolarity = camil();
     swappedPolarity.definitions = {...swappedPolarity.definitions, contractual: {text: "empréstimos e debêntures mais operações com derivativos do ativo menos caixa, aplicações financeiras e operações com derivativos do passivo", anchor: itr(40)}};
     expect(buildDebtLedger(swappedPolarity).block_reasons[0]).toMatch(/adds derivative assets|deducts derivative liabilities|does not add derivative liabilities/);
+    const noDebtBase = camil();
+    noDebtBase.definitions = {...noDebtBase.definitions, contractual: {text: "qualquer outra dívida onerosa mais operações com derivativos do passivo menos caixa, aplicações financeiras e operações com derivativos do ativo", anchor: itr(40)}};
+    expect(buildDebtLedger(noDebtBase).block_reasons[0]).toMatch(/adds no debt line|whole debt base/);
     const noInvestments = camil();
     noInvestments.definitions = {...noInvestments.definitions, release: {text: "dívida bruta menos caixa", anchor: {document: "ri_release_1t26.pdf", page: 12}}};
     expect(buildDebtLedger(noInvestments).block_reasons[0]).toMatch(/does not deduct financial investments/);
@@ -278,7 +290,7 @@ describe("build-debt-ledger executor (v6)", () => {
       {id: "lease", instrument: "Arrendamento incluído pela escritura", obligation: {kind: "lease", disbursed: true, views: ["contractual"]}, balance: "10", currency: "BRL", anchors: {balance: anchor, viewInclusion: {document: "escritura_hipotetica.pdf", clause: "1.1", page: 7}}},
     ];
     const cash = {cashAndEquivalents: {value: "20", anchor}, financialInvestments: {value: "5", anchor}, derivativeAssets: {value: "0", anchor}, derivativeLiabilities: {value: "0", anchor}};
-    const definitions = {release: {text: "dívida bruta menos caixa e aplicações financeiras", anchor}, contractual: {text: "empréstimos e financiamentos mais arrendamentos, mais operações com derivativos do passivo, menos caixa, aplicações financeiras e operações com derivativos do ativo", anchor}};
+    const definitions = {release: {text: "dívida bruta menos caixa e aplicações financeiras", anchor}, contractual: {text: "empréstimos, financiamentos e debêntures mais arrendamentos, mais operações com derivativos do passivo, menos caixa, aplicações financeiras e operações com derivativos do ativo", anchor}};
     const result = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
     expect(result.gross_debt).toBe("110");
     expect(result.gross_debt_reported).toBe("100");

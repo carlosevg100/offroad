@@ -4,7 +4,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `build-debt-ledger`, sixth version after five independent reviews.
+ * Executor of the method `build-debt-ledger`, seventh version after six independent reviews.
  * Deterministic: the same rows, the same numbers, whatever their order; duplicate ids are refused.
  * Every row carries the anchor of its balance and, field by field, the anchor of each term it
  * states; the two facts of a lender (formal holder, economic creditors) each carry their own anchor.
@@ -74,7 +74,7 @@ export const debtLedgerRowInputSchema = z.object({
   }
   if (row.lender?.formalHolder && !row.anchors.lenderFormalHolder) context.addIssue({code: "custom", path: ["anchors", "lenderFormalHolder"], message: `the formal holder of ${row.id} is stated without an anchor`});
   if (row.lender?.economicCreditors && !row.anchors.lenderEconomicCreditors) context.addIssue({code: "custom", path: ["anchors", "lenderEconomicCreditors"], message: `the economic creditors of ${row.id} are stated without an anchor`});
-  if (row.obligation?.kind === "lease" && row.obligation.views.includes("contractual") && !row.anchors.viewInclusion) context.addIssue({code: "custom", path: ["anchors", "viewInclusion"], message: `lease ${row.id} sits in the contractual view without the anchor that includes it`});
+  if (row.obligation && !row.obligation.views.includes("release") && !row.anchors.viewInclusion) context.addIssue({code: "custom", path: ["anchors", "viewInclusion"], message: `${row.id} sits only in the contractual view without the anchor that includes it`});
   if (row.classification && !new Decimal(row.classification.current).plus(row.classification.nonCurrent).eq(balance)) context.addIssue({code: "custom", path: ["classification"], message: `the split of ${row.id} (${row.classification.current} + ${row.classification.nonCurrent}) does not add up to its balance ${row.balance}`});
 });
 
@@ -136,7 +136,7 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schema_version: "method.build-debt-ledger.v6";
+  schema_version: "method.build-debt-ledger.v7";
   reference_date: string;
   prior_date: string | null;
   unit: string;
@@ -164,8 +164,9 @@ export type DebtLedgerOutput = {
   };
   schedule: {periods: Array<{period: string; amount: string; endsAt: string | null; shareOfGross: string}>; total: string; matchesGross: boolean; currentPeriod: {period: string; amount: string; balanceSheetCurrent: string; difference: string; matches: boolean} | null; anchor: Anchor} | null;
   net_debt_views: {release: View | null; contractual: View | null; releaseReported: {value: string; differenceToRelease: string | null; anchor: Anchor} | null};
-  by_indexer: Array<{indexer: string; balance: string; shareOfGrossBeforeContra: string; rows: string[]}>;
-  by_currency: Array<{currency: string; balance: string; shareOfGrossBeforeContra: string; rows: string[]}>;
+  /** Two denominators, both named: before contra lines (the ledger's own base) and the gross debt of the note (the answer key's 13,1% and 19,4%). */
+  by_indexer: Array<{indexer: string; balance: string; shareOfGrossBeforeContra: string; shareOfGrossDebt: string; rows: string[]}>;
+  by_currency: Array<{currency: string; balance: string; shareOfGrossBeforeContra: string; shareOfGrossDebt: string; rows: string[]}>;
   uncovered_terms: Array<{rowId: string; field: UncoveredField; state: "insufficient_evidence"; reason: string}>;
   trace: {calculations: Array<{id: string; formula: string; operands: Record<string, string>; result: string; unit: string}>; inputFingerprint: string; outputFingerprint: string};
 };
@@ -179,7 +180,10 @@ const DERIVATIVES = /derivativ|derivative/;
 const CASH = /caixa|disponibilidade|cash/;
 const RESIDUAL = /outra rubrica que se refira a divida onerosa|outra divida onerosa|outras dividas onerosas|other onerous debt|divida onerosa/;
 
-const DEBT = /emprestim|financiament|debenture|divida|debt|loan|borrowing/;
+const DEBT = /emprestim|financiament|debenture|divida bruta|gross debt|loan|borrowing/;
+const DEBT_BASE_OK = /divida bruta|gross debt|(emprestim|financiament)[^.;]{0,60}debenture|debenture[^.;]{0,60}(emprestim|financiament)/;
+/** Components that never belong to a net debt definition; their presence on the added side is a contradiction, not a nuance. */
+const FOREIGN = /fornecedor|supplier|payable|estoque|inventor|receb|receivable|imobilizado|fixed asset|salario|tributo|tax/;
 const normalize = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** What a definition adds and what it deducts: the text before the first "menos"/"less"/"minus" and the text after it. */
@@ -204,6 +208,8 @@ function definitionDisagreement(name: "release" | "contractual", text: string): 
   const parsed = parseDefinition(text);
   if (parsed.deducted === null) return `the ${name} definition never deducts anything; the view deducts cash and investments`;
   if (!DEBT.test(parsed.added)) return `the ${name} definition adds no debt line; the view sums loans, financings and debentures`;
+  if (!DEBT_BASE_OK.test(parsed.added)) return `the ${name} definition does not add the whole debt base (loans, financings and debentures, or gross debt); the view sums all three`;
+  if (FOREIGN.test(parsed.added) || FOREIGN.test(parsed.deducted)) return `the ${name} definition names a component that is not debt nor cash (${(FOREIGN.exec(parsed.added) ?? FOREIGN.exec(parsed.deducted))![0]}); the view has no such operand`;
   if (!CASH.test(parsed.deducted)) return `the ${name} definition does not deduct cash; the view deducts cash and equivalents`;
   if (!INVESTMENTS.test(parsed.deducted)) return `the ${name} definition does not deduct financial investments; the view deducts them`;
   if (CASH.test(parsed.added) || INVESTMENTS.test(parsed.added)) return `the ${name} definition adds cash or investments; the view deducts them`;
@@ -366,8 +372,8 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       map.set(key(row), entry);
     }
     return [...map.entries()].sort(([a], [b]) => compare(a, b)).map(([label, entry]) => {
-      record({id: `financial.debt_ledger_group:${dimension}:${label}`, formula: "sum(rows.balance in group) ; share = group / grossBeforeContra", operands: {...Object.fromEntries(entry.rows.map((row) => [row.id, row.balance])), grossBeforeContra: out(grossBeforeContra)}, result: `${out(entry.balance)};${share(entry.balance, grossBeforeContra)}`});
-      return {label, balance: out(entry.balance), shareOfGrossBeforeContra: share(entry.balance, grossBeforeContra), rows: entry.rows.map((row) => row.id)};
+      record({id: `financial.debt_ledger_group:${dimension}:${label}`, formula: "sum(rows.balance in group) ; shareBeforeContra = group / grossBeforeContra ; shareOfGrossDebt = group / grossDebt", operands: {...Object.fromEntries(entry.rows.map((row) => [row.id, row.balance])), grossBeforeContra: out(grossBeforeContra), grossDebt: out(gross)}, result: `${out(entry.balance)};${share(entry.balance, grossBeforeContra)};${share(entry.balance, gross)}`});
+      return {label, balance: out(entry.balance), shareOfGrossBeforeContra: share(entry.balance, grossBeforeContra), shareOfGrossDebt: share(entry.balance, gross), rows: entry.rows.map((row) => row.id)};
     });
   };
 
@@ -389,7 +395,7 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.build-debt-ledger.v6" as const,
+    schema_version: "method.build-debt-ledger.v7" as const,
     reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),
