@@ -84,12 +84,13 @@ async function main() {
   const variants: Array<{label: string; request: AdapterRequest}> = [];
   for (const effort of ["low", "medium"] as const) {
     for (const thinking of ["off", "adaptive"] as const) {
-      for (const [schemaName, schema] of [["flat", flat], ["nested", nested], ["full", fullSize]] as const) {
+      for (const [schemaName, schema, outputMode] of [["flat", flat, "structured"], ["nested", nested, "structured"], ["full", fullSize, "structured"], ["full-prompted", fullSize, "prompted_json"]] as const) {
         variants.push({
           label: `effort=${effort} thinking=${thinking} schema=${schemaName}`,
           request: {
             model: "claude-sonnet-5", effort, system, input, schema, schemaName: `probe_${schemaName}`, maxOutputTokens: 1_500, timeoutMs: 60_000,
             ...(thinking === "off" ? {thinking: "off" as const} : {}),
+            outputMode,
           },
         });
       }
