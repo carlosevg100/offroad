@@ -1,5 +1,7 @@
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import {nextMeasurement, reconcileCovenantDefinitions, type CovenantReconciliationInput} from "./reconcile-covenant-definitions";
 
 /** Camil, four live indentures (answer key section 13.1). Balances of 31/05/2026 in R$ thousand; anchors per clause and page. */
@@ -368,5 +370,9 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
       expect(again.trace.calculations).toEqual(first.trace.calculations);
     }
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(reconcileCovenantDefinitions(camil("ordinary")) as unknown as Record<string, unknown>, "financial/reconcile-covenant-definitions.md")).toEqual([]);
   });
 });

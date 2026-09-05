@@ -1,5 +1,7 @@
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import {buildDebtLedger, parseDefinition, stableStringify, type DebtLedgerInput} from "./build-debt-ledger";
 
 /** Camil, ITR 31/05/2026 and 28/02/2026, consolidated, R$ thousand (answer key sections 1, 3, 5, 11.1 and 13.5). */
@@ -381,5 +383,9 @@ describe("build-debt-ledger executor (v10)", () => {
       expect(again).toEqual(first);
     }
     expect(stableStringify({b: 1, a: {d: [2, {z: 1, y: 2}], c: 3}})).toBe(stableStringify({a: {c: 3, d: [2, {y: 2, z: 1}]}, b: 1}));
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(buildDebtLedger(camil()) as unknown as Record<string, unknown>, "financial/build-debt-ledger.md")).toEqual([]);
   });
 });

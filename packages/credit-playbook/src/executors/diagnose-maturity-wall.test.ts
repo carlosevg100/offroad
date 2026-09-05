@@ -1,6 +1,8 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import {diagnoseMaturityWall, type MaturityWallInput} from "./diagnose-maturity-wall";
 
 const itr = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, ...(note ? {note} : {})});
@@ -114,5 +116,9 @@ describe("diagnose-maturity-wall executor (v3)", () => {
       expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
     }
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(diagnoseMaturityWall(camil()) as unknown as Record<string, unknown>, "refinance/diagnose-maturity-wall.md")).toEqual([]);
   });
 });

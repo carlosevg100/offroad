@@ -1,5 +1,7 @@
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import {referenceDataRegistryVersion} from "../reference-data";
 import {reconcileFinancialStatements, type ReconciliationInput} from "./reconcile-financial-statements";
 
@@ -159,5 +161,9 @@ describe("reconcile-financial-statements executor (v4)", () => {
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
       expect(again).toEqual(first);
     }
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(reconcileFinancialStatements(camil()) as unknown as Record<string, unknown>, "financial/reconcile-financial-statements.md")).toEqual([]);
   });
 });

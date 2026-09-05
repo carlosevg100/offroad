@@ -18,7 +18,7 @@ const d = (value: Decimal.Value) => new Decimal(value);
 const camil = (): BeforeAfterInput => ({
   referenceDate: "2026-05-31",
   unit: "BRL thousand",
-  unitAnchor: itr(39, "nota 15, valores em R$ mil"),
+  unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"},
   before: {
     grossDebt: {value: "5670186", anchor: itr(40, "nota 15, total de empréstimos, financiamentos e debêntures")},
     unrestrictedCash: {value: "1455809", anchor: itr(51, "caixa e equivalentes (1.430.714) mais aplicações financeiras (25.095), quadro de dívida líquida")},

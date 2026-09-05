@@ -1,5 +1,7 @@
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import {declareScenarios, type ScenarioInput} from "./declare-scenarios";
 
 const itr = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, ...(note ? {note} : {})});
@@ -112,5 +114,9 @@ describe("declare-scenarios executor (v2)", () => {
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
       expect(again).toEqual(first);
     }
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(declareScenarios(camil()) as unknown as Record<string, unknown>, "scenarios/declare-scenarios.md")).toEqual([]);
   });
 });

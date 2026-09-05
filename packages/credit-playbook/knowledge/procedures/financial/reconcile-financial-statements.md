@@ -72,6 +72,7 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 - Identidade material não fecha e a nota não explica.
 
 # Outputs
+- state (enum, required): closes, differences_explained, open_divergences, incomplete, identity_failed ou blocked, nesta precedência inversa: bloqueio antes de identidade falha, antes de incompleto, antes de divergências abertas, antes de diferenças explicadas, antes de fecha | values: closes, differences_explained, open_divergences, incomplete, identity_failed, blocked
 - schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v4`
 - reference_date (date, required): data-base
 - unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
