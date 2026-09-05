@@ -225,7 +225,10 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     // The readout lists questions the model wrote from the objects' gaps; answering the first one
     // with a scope, an audience and a depth must recompile the plan, not restart it.
     const readout = (await assistantMessages(page)).find((message) => /Para alinhar com o VP/.test(message)) ?? "";
-    const firstQuestion = readout.match(/\(1\) ([^(]+?)(?: \(2\)|$)/)?.[1]?.trim() ?? "";
+    // The question may hold parentheses of its own ("(ex.: alongamento de prazo)"); it ends where
+    // the second question starts or where the list ends.
+    const firstQuestion = readout.match(/\(1\) (.+?)(?= \(2\) |\s*$)/s)?.[1]?.trim() ?? "";
+    expect(firstQuestion.length, `first open question in: ${readout.slice(0, 300)}`).toBeGreaterThan(10);
     const prompt = `Sobre a sua pergunta "${firstQuestion.slice(0, 120)}": leitura ampla de alternativas, é para o conselho e precisa ser institucional.`;
     await send(page, prompt);
     const reply = await waitForAssistant(page, /live_intelligence_preview\] composição=(deepen|change_premise)/);

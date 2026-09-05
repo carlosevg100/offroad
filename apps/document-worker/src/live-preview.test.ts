@@ -243,6 +243,13 @@ describe("live_intelligence_preview router", () => {
     expect(decision.composition).not.toBe("change_premise");
   });
 
+  it("names a known role as the audience when the classifier lists the requester's own description first", async () => {
+    const output = classifierOutput({routingCore: {...classifierOutput().routingCore, audience: field(["banker (self), meeting with Camil", "VP"])}});
+    const decision = await decide(output);
+    expect(decision.record.audience).toBe("vp");
+    expect(decision.reply).toContain("audiência=vp");
+  });
+
   it("ignores an answer to a question the desk never asked", async () => {
     const output = classifierOutput({composition: "answer_a_question", turn: {companies: [], answers: [{questionId: "q-unknown", answer: "x", effect: {audience: null, depth: null, scope: null}}]}});
     const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], openQuestions: [{id: "q-angle", text: "?"}]});
