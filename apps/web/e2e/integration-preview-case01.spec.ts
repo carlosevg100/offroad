@@ -1,7 +1,6 @@
 import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
-import {dirname, join} from "node:path";
-import {fileURLToPath} from "node:url";
+import {join} from "node:path";
 
 import {expect, test, type BrowserContext, type Page} from "@playwright/test";
 
@@ -16,7 +15,8 @@ import {waitForOneTimeCode} from "./support/mail";
  *
  * The run is recorded (video on) and its transcript is written next to the test results.
  */
-const here = dirname(fileURLToPath(import.meta.url));
+// Playwright loads specs as CommonJS here, so the directory comes from __dirname, as the other journey does.
+const here = __dirname;
 const runId = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
 const account = {email: `e2e-preview-${runId}@example.com`, password: `Offroad-E2E-${runId}!`, fullName: "Analista Preview"};
 const outputDirectory = join(here, "..", "test-results", "integration-preview-case01");
