@@ -61,7 +61,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-por tesseract-ocr-eng poppler-utils >/dev/null
 
       - name: Configure AWS credentials (OIDC, no stored key)
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
         with:
           role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
           aws-region: sa-east-1
