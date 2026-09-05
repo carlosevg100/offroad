@@ -1,13 +1,15 @@
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import {planMeetingBrief, type BriefInput} from "./plan-meeting-brief";
 
 const fp = (seed: string) => seed.padEnd(64, "0");
-const headline = (text: string, stance: "for" | "against" | "neutral", seed: string) => ({text, stance, objectFingerprint: fp(seed)});
+const headline = (text: string, stance: "for" | "against" | "neutral", seed: string, unit: string | null = null) => ({text, stance, objectFingerprint: fp(seed), unit});
 const objects = (): BriefInput["objects"] => [
-  {id: "ledger-01", kind: "debt_ledger", state: "complete", fingerprint: fp("a1"), headlines: [headline("Dívida bruta de 5.670.186 em 31/05/2026; contratual líquida de 4.228.477", "neutral", "a1")]},
-  {id: "wall-01", kind: "maturity_wall", state: "diagnosed", fingerprint: fp("b2"), headlines: [headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2"), headline("Caixa de 1.455.809 cobre o principal de 2026/27", "for", "b2")]},
-  {id: "cov-01", kind: "covenants", state: "conditioned", fingerprint: fp("c3"), headlines: [headline("4,72x pró forma contra 4,00x, medição em 28/02/2027; degrau condicionado à quitação dos CRA", "against", "c3")]},
+  {id: "ledger-01", kind: "debt_ledger", state: "complete", fingerprint: fp("a1"), headlines: [headline("Dívida bruta de 5.670.186 em 31/05/2026; contratual líquida de 4.228.477", "neutral", "a1", "R$ mil")]},
+  {id: "wall-01", kind: "maturity_wall", state: "diagnosed", fingerprint: fp("b2"), headlines: [headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "against", "b2", "R$ mil"), headline("Caixa e equivalentes mais aplicações financeiras de 1.455.809 excedem em 225.981 o principal de 2026/27; cobertura aritmética, não disponibilidade em D0", "for", "b2", "R$ mil")]},
+  {id: "cov-01", kind: "covenants", state: "conditioned", fingerprint: fp("c3"), headlines: [headline("4,72x pró forma contra 4,00x, medição em 28/02/2027; degrau condicionado à quitação dos CRA", "against", "c3", "x")]},
   {id: "rec-01", kind: "reconciliation", state: "open_divergences", fingerprint: fp("d4"), headlines: [headline("Dividendos com quatro valores; estoques em três apresentações", "against", "d4")]},
   {id: "exit-01", kind: "exit_costs", state: "complete", fingerprint: fp("e5"), headlines: []},
   {id: "ba-01", kind: "before_after", state: "compared", fingerprint: fp("f6"), headlines: [headline("Alongar as séries DI suaviza 2028/29", "for", "f6")]},
@@ -33,7 +35,7 @@ const block = (result: ReturnType<typeof planMeetingBrief>, id: string) => resul
 describe("plan-meeting-brief executor", () => {
   it("turn 1: fills blocks only from usable objects, names conditioned objects as gaps, and asks at most three questions the base does not answer", () => {
     const result = planMeetingBrief(turn1());
-    expect(result.schema_version).toBe("method.plan-meeting-brief.v2");
+    expect(result.schema_version).toBe("method.plan-meeting-brief.v3");
     expect(result.ambiguity_named).toMatch(/which format is expected; which thesis to carry/);
     expect(result.deliverable.objects_used).not.toContain("blocked-01");
     expect(result.deliverable.objects_pending).toEqual([{id: "cov-01", state: "conditioned"}, {id: "rec-01", state: "open_divergences"}]);
@@ -49,6 +51,26 @@ describe("plan-meeting-brief executor", () => {
     expect(result.page_plan.state).toBe("not_requested");
     expect(result.state).toBe("planned");
     expect(result.uncovered_terms.map((term) => term.id)).toContain("company_view");
+    // A usable object without facts does not fill a block, and a conditioned object is carried as an uncovered term with its finding.
+    expect(block(result, "assumptions").state).toBe("gap");
+    expect(block(result, "assumptions").gap).toMatch(/sc-01 usable but without facts/);
+    expect(result.uncovered_terms.find((term) => term.id === "object:cov-01")?.reason).toMatch(/is conditioned; its findings are carried as conditions.*4,72x pró forma contra 4,00x/);
+    expect(block(result, "points_against_thesis").label).toBe("Pontos contra a tese");
+  });
+
+  it("emits the deliverable without audience or form and leaves the page plan waiting", () => {
+    const result = planMeetingBrief({...turn1(), request: {turn: 1, audience: null, form: null}});
+    expect(block(result, "debt_by_instrument").state).toBe("filled");
+    expect(result.page_plan.state).toBe("awaiting_audience_and_form");
+    expect(result.page_plan.reason).toMatch(/waits for the audience and the form/);
+    expect(result.state).toBe("planned");
+    expect(() => planMeetingBrief({...turn1(), request: {turn: 1, audience: null, form: null, pages: 3}})).toThrow(/no page plan/);
+  });
+
+  it("refuses a fact with a thousands figure and no unit", () => {
+    const missingUnit = turn1();
+    missingUnit.objects[0] = {...missingUnit.objects[0]!, headlines: [headline("Dívida bruta de 5.670.186", "neutral", "a1")]};
+    expect(() => planMeetingBrief(missingUnit)).toThrow(/needs its unit/);
   });
 
   it("splits points for and against by the stance each object declared, never by the block a kind belongs to", () => {
@@ -109,16 +131,30 @@ describe("plan-meeting-brief executor", () => {
     expect(planMeetingBrief(turn1()).change_note).toBeNull();
   });
 
-  it("is consistent under permutations of objects, headlines, questions and the other audience members", () => {
-    const first = planMeetingBrief(turn1());
+  it("is consistent under permutations of objects, headlines (ties in text included), questions, audience members, previous-version blocks and key order", () => {
+    const base = (): BriefInput => {
+      const input = turn1();
+      input.request = {...input.request, audience: {primary: "vp", others: ["companhia", "md", "associado"]}};
+      input.objects = input.objects.map((object) => (object.id === "wall-01" ? {...object, headlines: [...object.headlines!, headline("Dois picos: 1.229.828 em 2026/27 e 1.228.475 em 2028/29", "neutral", "b2", "R$ mil")]} : object));
+      input.previousVersion = {outputFingerprint: fp("ff"), blocks: [{id: "debt_by_instrument", state: "filled", objectIds: ["ledger-01"]}, {id: "company_view", state: "gap", objectIds: []}], objectFingerprints: {"ledger-01": fp("a1"), "wall-01": fp("b0")}};
+      return input;
+    };
+    const first = planMeetingBrief(base());
+    const permute = <T>(items: readonly T[], seed: number): T[] => { const copy = [...items]; let state = seed; for (let index = copy.length - 1; index > 0; index -= 1) { state = (state * 1103515245 + 12345) % 2147483648; const swap = state % (index + 1); [copy[index], copy[swap]] = [copy[swap]!, copy[index]!]; } return copy; };
+    const reversedKeys = <T,>(value: T): T => (Array.isArray(value) ? value.map(reversedKeys) as T : value && typeof value === "object" ? Object.fromEntries(Object.entries(value as Record<string, unknown>).reverse().map(([key, inner]) => [key, reversedKeys(inner)])) as T : value);
     for (let seed = 1; seed <= 20; seed += 1) {
-      const shuffled = turn1();
-      shuffled.objects = [...shuffled.objects].reverse().map((object) => ({...object, headlines: [...(object.headlines ?? [])].reverse()}));
-      shuffled.candidateQuestions = seed % 2 ? [...shuffled.candidateQuestions!].reverse() : shuffled.candidateQuestions;
-      shuffled.request = {...shuffled.request, undefinedAspects: ["format", "thesis"]};
-      const again = planMeetingBrief(shuffled);
+      const shuffled = base();
+      shuffled.objects = permute(shuffled.objects, seed).map((object) => ({...object, headlines: permute(object.headlines ?? [], seed + 1)}));
+      shuffled.candidateQuestions = permute(shuffled.candidateQuestions!, seed + 2);
+      shuffled.request = {...shuffled.request, audience: {primary: "vp", others: permute(["companhia", "md", "associado"], seed + 3)}, undefinedAspects: permute(["format", "thesis"], seed + 4)};
+      shuffled.previousVersion = {...shuffled.previousVersion!, blocks: permute(shuffled.previousVersion!.blocks, seed + 5)};
+      const again = planMeetingBrief(seed % 2 ? reversedKeys(shuffled) : shuffled);
       expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
     }
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(planMeetingBrief(turn1()) as unknown as Record<string, unknown>, "materials/plan-meeting-brief.md")).toEqual([]);
   });
 });

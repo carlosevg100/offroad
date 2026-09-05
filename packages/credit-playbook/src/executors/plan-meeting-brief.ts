@@ -3,14 +3,17 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 
 /**
- * Executor of the method `plan-meeting-brief` (v2, after the first independent review). Assembles
+ * Executor of the method `plan-meeting-brief` (v3, after the second independent review). Assembles
  * the first deliverable only from objects in a usable state, each fact bound to the fingerprint of
  * the object it cites; a conditioned, partial or open object names a gap instead of filling a block.
  * Points for and against the thesis come from the stance each object declared on its facts. The
  * page plan honours the number of pages asked, carries the audience's discriminator, and allows
  * production only once the person confirmed that exact plan. Questions the base already answers
  * are refused whatever the caller says; a question that changes nothing is not asked. A previous
- * version yields a change note instead of a silent rewrite.
+ * version yields a change note instead of a silent rewrite. A block is filled only with facts; a
+ * usable object without facts names a gap. A conditioned or open object is carried as an uncovered
+ * term so its finding is never silently dropped. A financial figure in a fact carries its unit.
+ * Without audience or form the deliverable still goes out and the page plan waits.
  */
 const nonEmpty = z.string().trim().min(1);
 const identifier = z.string().regex(/^[a-z][a-z0-9_.-]*$/);
@@ -29,14 +32,15 @@ export const approvedObjectSchema = z.object({
   state: z.enum(["complete", "resolved", "closes", "declared", "compared", "diagnosed", "conditioned", "incomplete", "partial", "open_divergences", "identity_failed", "blocked"]),
   fingerprint: sha256,
   /** Facts the deliverable may cite; each one is bound to the object's fingerprint and declares its stance on the thesis. */
-  headlines: z.array(z.object({text: nonEmpty, stance: z.enum(["for", "against", "neutral"]), objectFingerprint: sha256}).strict()).max(12).default([]),
+  headlines: z.array(z.object({text: nonEmpty, stance: z.enum(["for", "against", "neutral"]), objectFingerprint: sha256, /** Unit of any figure the text carries (R$ mil, x, %); required when the text carries a thousands-separated number. */ unit: nonEmpty.nullable().default(null)}).strict()).max(12).default([]),
 }).strict();
 
 export const briefRequestSchema = z.object({
   turn: z.number().int().positive(),
   /** The person the material is for first; the others do not change the discriminator. */
-  audience: z.object({primary: nonEmpty, others: z.array(nonEmpty).default([])}).strict(),
-  form: z.enum(["first_deliverable", "internal_briefing", "pitch_pages", "analysis_with_scenarios", "board_deck"]),
+  /** Null when the person has not said who the material is for; the deliverable goes out and the plan waits. */
+  audience: z.object({primary: nonEmpty, others: z.array(nonEmpty).default([])}).strict().nullable(),
+  form: z.enum(["first_deliverable", "internal_briefing", "pitch_pages", "analysis_with_scenarios", "board_deck"]).nullable(),
   pages: z.number().int().positive().nullable().default(null),
   /** What the sponsor said, kept verbatim. */
   sponsorInstruction: z.string().nullable().default(null),
@@ -75,6 +79,7 @@ export const briefInputSchema = z.object({
     objectIds.add(object.id);
     object.headlines.forEach((headline, position) => {
       if (headline.objectFingerprint !== object.fingerprint) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: the headline is bound to another fingerprint than the object's`});
+      if (headline.unit === null && /\d{1,3}(\.\d{3})+/.test(headline.text)) context.addIssue({code: "custom", path: ["objects", index, "headlines", position], message: `${object.id}: a fact with a figure needs its unit`});
     });
   });
   const questionIds = new Set<string>();
@@ -82,7 +87,7 @@ export const briefInputSchema = z.object({
     if (questionIds.has(question.id)) context.addIssue({code: "custom", path: ["candidateQuestions", index], message: `duplicate question ${question.id}`});
     questionIds.add(question.id);
   });
-  if (input.request.pages !== null && input.request.form === "first_deliverable") context.addIssue({code: "custom", path: ["request", "pages"], message: "the first deliverable has no page plan; pages belong to a material form"});
+  if (input.request.pages !== null && (input.request.form === "first_deliverable" || input.request.form === null)) context.addIssue({code: "custom", path: ["request", "pages"], message: "the first deliverable has no page plan; pages belong to a material form"});
 });
 export type BriefInput = z.input<typeof briefInputSchema>;
 
@@ -96,13 +101,13 @@ const BLOCKS: Array<{id: string; label: string; needs: Kind[]; stance: Stance | 
   {id: "liquidity_coverage", label: "Liquidez e cobertura", needs: ["maturity_wall", "interest_schedule"], stance: null},
   {id: "assumptions", label: "Premissas preliminares", needs: ["scenarios"], stance: null},
   {id: "points_for_thesis", label: "Pontos que sustentam a tese", needs: ["covenants", "exit_costs", "before_after", "scenarios", "maturity_wall"], stance: "for"},
-  {id: "points_against_thesis", label: "Pontos que derrubam a tese", needs: ["covenants", "reconciliation", "maturity_wall", "before_after"], stance: "against"},
+  {id: "points_against_thesis", label: "Pontos contra a tese", needs: ["covenants", "reconciliation", "maturity_wall", "before_after"], stance: "against"},
   {id: "initial_alternatives", label: "Alternativas iniciais", needs: ["before_after"], stance: null},
   {id: "open_questions", label: "Perguntas pendentes", needs: [], stance: null},
   {id: "exhibits", label: "Exhibits preliminares", needs: ["debt_ledger", "maturity_wall"], stance: null},
 ];
 
-const PAGE_PLANS: Record<Exclude<BriefInput["request"]["form"], "first_deliverable">, Array<{title: string; blocks: string[]}>> = {
+const PAGE_PLANS: Record<"pitch_pages" | "internal_briefing" | "analysis_with_scenarios" | "board_deck", Array<{title: string; blocks: string[]}>> = {
   pitch_pages: [
     {title: "Situação atual", blocks: ["debt_by_instrument", "maturity_schedule", "liquidity_coverage", "points_against_thesis"]},
     {title: "Alternativas", blocks: ["initial_alternatives", "points_for_thesis"]},
@@ -113,15 +118,15 @@ const PAGE_PLANS: Record<Exclude<BriefInput["request"]["form"], "first_deliverab
   board_deck: [{title: "Contexto", blocks: ["company_view", "performance_outlook"]}, {title: "Estrutura de capital", blocks: ["debt_by_instrument", "maturity_schedule", "liquidity_coverage"]}, {title: "Alternativas e decisão", blocks: ["initial_alternatives", "points_for_thesis", "points_against_thesis"]}],
 };
 
-type Block = {id: string; label: string; state: "filled" | "gap"; object_ids: string[]; pending_object_ids: string[]; headlines: Array<{text: string; object_id: string; object_fingerprint: string}>; gap: string | null};
+type Block = {id: string; label: string; state: "filled" | "gap"; object_ids: string[]; pending_object_ids: string[]; headlines: Array<{text: string; unit: string | null; object_id: string; object_fingerprint: string}>; gap: string | null};
 type Page = {number: number; title: string; blocks: string[]};
 export type BriefOutput = {
-  schema_version: "method.plan-meeting-brief.v2";
+  schema_version: "method.plan-meeting-brief.v3";
   case_id: string;
   turn: number;
   state: "planned" | "awaiting_confirmation";
   deliverable: {blocks: Block[]; objects_used: string[]; objects_pending: Array<{id: string; state: string}>; objects_excluded: Array<{id: string; state: string}>};
-  page_plan: {state: "not_requested" | "proposed" | "confirmed" | "unsupported"; id: string | null; form: string; audience: {primary: string; others: string[]}; pages: Page[]; discriminator: string | null; production_allowed: boolean; reason: string | null};
+  page_plan: {state: "not_requested" | "awaiting_audience_and_form" | "proposed" | "confirmed" | "unsupported"; id: string | null; form: string | null; audience: {primary: string; others: string[]} | null; pages: Page[]; discriminator: string | null; production_allowed: boolean; reason: string | null};
   alignment_questions: Array<{id: string; text: string; changes_the_work: string}>;
   refused_questions: Array<{id: string; reason: string; answered_by: Anchor | null}>;
   ambiguity_named: string | null;
@@ -161,7 +166,7 @@ function fitPages(base: Array<{title: string; blocks: string[]}>, pages: number 
 
 export function planMeetingBrief(raw: BriefInput): BriefOutput {
   const parsed = briefInputSchema.parse(raw);
-  const input = {...parsed, request: {...parsed.request, audience: {primary: parsed.request.audience.primary, others: [...parsed.request.audience.others].sort(compare)}, undefinedAspects: [...parsed.request.undefinedAspects].sort(compare)}, objects: [...parsed.objects].sort((a, b) => compare(a.id, b.id)).map((object) => ({...object, headlines: [...object.headlines].sort((a, b) => compare(a.text, b.text))})), candidateQuestions: [...parsed.candidateQuestions].sort((a, b) => a.priority - b.priority || compare(a.id, b.id))};
+  const input = {...parsed, request: {...parsed.request, audience: parsed.request.audience ? {primary: parsed.request.audience.primary, others: [...parsed.request.audience.others].sort(compare)} : null, undefinedAspects: [...parsed.request.undefinedAspects].sort(compare)}, objects: [...parsed.objects].sort((a, b) => compare(a.id, b.id)).map((object) => ({...object, headlines: [...object.headlines].sort((a, b) => compare(a.text, b.text) || compare(a.stance, b.stance) || compare(a.unit ?? "", b.unit ?? ""))})), candidateQuestions: [...parsed.candidateQuestions].sort((a, b) => a.priority - b.priority || compare(a.id, b.id)), previousVersion: parsed.previousVersion ? {...parsed.previousVersion, blocks: [...parsed.previousVersion.blocks].sort((a, b) => compare(a.id, b.id)).map((block) => ({...block, objectIds: [...block.objectIds].sort(compare)}))} : null};
   const usable = input.objects.filter((object) => USABLE_STATES.has(object.state));
   const pending = input.objects.filter((object) => !USABLE_STATES.has(object.state) && object.state !== "blocked");
   const excluded = input.objects.filter((object) => object.state === "blocked");
@@ -182,11 +187,11 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
 
   const blocks: Block[] = BLOCKS.map((block) => {
     if (block.id === "open_questions") {
-      return {id: block.id, label: block.label, state: asked.length > 0 ? "filled" : "gap", object_ids: [], pending_object_ids: [], headlines: asked.map((question) => ({text: question.text, object_id: `question:${question.id}`, object_fingerprint: fingerprint(question)})), gap: asked.length > 0 ? null : "no question that changes the work remains"};
+      return {id: block.id, label: block.label, state: asked.length > 0 ? "filled" : "gap", object_ids: [], pending_object_ids: [], headlines: asked.map((question) => ({text: question.text, unit: null, object_id: `question:${question.id}`, object_fingerprint: fingerprint(question)})), gap: asked.length > 0 ? null : "no question that changes the work remains"};
     }
     const found = block.needs.flatMap((kind) => byKind.get(kind) ?? []);
     const waiting = block.needs.flatMap((kind) => pendingByKind.get(kind) ?? []);
-    const headlines = found.flatMap((object) => object.headlines.filter((headline) => block.stance === null || headline.stance === block.stance).map((headline) => ({text: headline.text, object_id: object.id, object_fingerprint: headline.objectFingerprint})));
+    const headlines = found.flatMap((object) => object.headlines.filter((headline) => block.stance === null || headline.stance === block.stance).map((headline) => ({text: headline.text, unit: headline.unit, object_id: object.id, object_fingerprint: headline.objectFingerprint})));
     if (block.stance !== null) {
       if (headlines.length === 0) return {id: block.id, label: block.label, state: "gap", object_ids: found.map((object) => object.id), pending_object_ids: waiting.map((object) => object.id), headlines: [], gap: `no usable object states a point ${block.stance} the thesis${waiting.length > 0 ? `; ${waiting.map((object) => `${object.id} is ${object.state}`).join(", ")}` : ""}`};
       return {id: block.id, label: block.label, state: "filled", object_ids: found.filter((object) => object.headlines.some((headline) => headline.stance === block.stance)).map((object) => object.id), pending_object_ids: waiting.map((object) => object.id), headlines, gap: null};
@@ -196,12 +201,14 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
       const reasons = missing.map((kind) => { const held = pendingByKind.get(kind) ?? []; return held.length > 0 ? `${kind}: ${held.map((object) => `${object.id} is ${object.state}`).join(", ")}` : `no usable object of kind ${kind}`; });
       return {id: block.id, label: block.label, state: "gap", object_ids: found.map((object) => object.id), pending_object_ids: waiting.map((object) => object.id), headlines: [], gap: `${reasons.join("; ")}; the block is named as a gap, not written`};
     }
+    if (headlines.length === 0) return {id: block.id, label: block.label, state: "gap", object_ids: found.map((object) => object.id), pending_object_ids: waiting.map((object) => object.id), headlines: [], gap: `${found.map((object) => object.id).join(", ")} usable but without facts to cite; a block is filled with facts, not with an object id`};
     return {id: block.id, label: block.label, state: "filled", object_ids: found.map((object) => object.id), pending_object_ids: waiting.map((object) => object.id), headlines, gap: null};
   });
 
   const audience = input.request.audience;
   let pagePlan: BriefOutput["page_plan"] = {state: "not_requested", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: "the first deliverable is not a material; the page plan waits for the audience and the form"};
-  if (input.request.form !== "first_deliverable") {
+  if (audience === null || input.request.form === null) pagePlan = {state: "awaiting_audience_and_form", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: `the deliverable goes out; the page plan waits for ${[audience === null ? "the audience" : null, input.request.form === null ? "the form" : null].filter(Boolean).join(" and ")}`};
+  else if (input.request.form !== "first_deliverable") {
     const layout = fitPages(PAGE_PLANS[input.request.form], input.request.pages);
     if (!layout) pagePlan = {state: "unsupported", id: null, form: input.request.form, audience, pages: [], discriminator: null, production_allowed: false, reason: `${input.request.pages} pages exceed the blocks the form ${input.request.form} carries; ask the person which blocks the extra pages should hold`};
     else {
@@ -234,9 +241,12 @@ export function planMeetingBrief(raw: BriefInput): BriefOutput {
     changeNote = {previous_output_fingerprint: input.previousVersion.outputFingerprint, changes};
   }
 
-  const uncovered = blocks.filter((block) => block.state === "gap" && block.id !== "open_questions").map((block) => ({id: block.id, state: "insufficient_evidence" as const, reason: block.gap!}));
+  const uncovered = [
+    ...blocks.filter((block) => block.state === "gap" && block.id !== "open_questions").map((block) => ({id: block.id, state: "insufficient_evidence" as const, reason: block.gap!})),
+    ...pending.map((object) => ({id: `object:${object.id}`, state: "insufficient_evidence" as const, reason: `${object.id} (${object.kind}) is ${object.state}; its findings are carried as conditions and not written into the deliverable: ${object.headlines.map((headline) => headline.text).join("; ") || "no facts declared"}`})),
+  ];
   const body = {
-    schema_version: "method.plan-meeting-brief.v2" as const,
+    schema_version: "method.plan-meeting-brief.v3" as const,
     case_id: input.caseId,
     turn: input.request.turn,
     state: pagePlan.state === "proposed" ? "awaiting_confirmation" as const : "planned" as const,

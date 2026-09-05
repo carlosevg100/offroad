@@ -18,23 +18,28 @@ const pct = (value: Decimal.Value | null | undefined) => value === null || value
 const ledgerDate = "2026-05-31";
 const exitDate = "2026-09-04";
 const weekdays = (from: string, to: string) => executors.weekdaysBetween(from, to);
-const calendarNote = (maturity: string) => ({document: "escritura_13a_emissao.pdf", clause: "7.18", note: `weekday count from ${exitDate} to ${maturity}; the holiday calendar is not in the base, so the count is an upper bound`});
+const calendarNote = (maturity: string) => ({document: "calendario_dias_uteis_pendente.md", note: `weekday count from ${exitDate} to ${maturity}; the ANBIMA calendar file is not yet in the corpus, so the count is an upper bound declared as such`});
+const exitDocuments = [
+  {name: "escritura_11a_emissao.pdf", kind: "indenture" as const}, {name: "escritura_13a_emissao.pdf", kind: "indenture" as const}, {name: "escritura_14a_emissao.pdf", kind: "indenture" as const}, {name: "escritura_15a_emissao.pdf", kind: "indenture" as const},
+  {name: "01_ITR_1T26_31mai2026.pdf", kind: "itr" as const}, {name: "calendario_dias_uteis_pendente.md", kind: "calendar" as const},
+];
 const itr = (page: number, note: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, note});
 
 // Exit cost of the DI series maturing in the walls, by the indenture mechanisms. The base does not hold the nominal at the exit date.
 const exit = executors.estimateExitCostBySeries({
   exitDate,
   unit: "BRL thousand",
+  documents: exitDocuments,
   series: [
-    {id: "deb-11-1", label: "11ª emissão, 1ª série", nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, mechanisms: [{mechanism: "negotiated_offer", availableFrom: "2021-11-15", premium: null, requiresFullAdherence: true, anchor: {document: "escritura_11a_emissao.pdf", clause: "4.14"}}], anchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}},
-    {id: "deb-11-2", label: "11ª emissão, 2ª série", nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, mechanisms: [{mechanism: "negotiated_offer", availableFrom: "2021-11-15", premium: null, requiresFullAdherence: true, anchor: {document: "escritura_11a_emissao.pdf", clause: "4.14"}}], anchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}},
-    {id: "deb-13-1", label: "13ª emissão, 1ª série", nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, mechanisms: [{mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-05-14", businessDays: {count: weekdays(exitDate, "2028-11-14"), maturity: "2028-11-14", anchor: calendarNote("2028-11-14")}, anchor: {document: "escritura_13a_emissao.pdf", clause: "7.18"}}], anchor: {document: "escritura_13a_emissao.pdf", clause: "4.1"}},
-    {id: "deb-14-1", label: "14ª emissão, 1ª série", nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, mechanisms: [{mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-06-15", businessDays: {count: weekdays(exitDate, "2029-06-14"), maturity: "2029-06-14", anchor: calendarNote("2029-06-14")}, anchor: {document: "escritura_14a_emissao.pdf", clause: "7.20"}}], anchor: {document: "escritura_14a_emissao.pdf", clause: "4.1"}},
+    {id: "deb-11-1", label: "11ª emissão, 1ª série", indenture: {document: "escritura_11a_emissao.pdf", clause: "4.1"}, nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, mechanisms: [{mechanism: "negotiated_offer", availableFrom: "2021-11-15", premium: null, requiresFullAdherence: true, anchor: {document: "escritura_11a_emissao.pdf", clause: "4.14"}}], anchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}},
+    {id: "deb-11-2", label: "11ª emissão, 2ª série", indenture: {document: "escritura_11a_emissao.pdf", clause: "4.1"}, nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, mechanisms: [{mechanism: "negotiated_offer", availableFrom: "2021-11-15", premium: null, requiresFullAdherence: true, anchor: {document: "escritura_11a_emissao.pdf", clause: "4.14"}}], anchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}},
+    {id: "deb-13-1", label: "13ª emissão, 1ª série", indenture: {document: "escritura_13a_emissao.pdf", clause: "4.1"}, nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, mechanisms: [{mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-05-14", maxFraction: "0.98", fraction: "0.98", businessDays: {count: weekdays(exitDate, "2028-11-14"), maturity: "2028-11-14", anchor: calendarNote("2028-11-14")}, anchor: {document: "escritura_13a_emissao.pdf", clause: "7.18"}}], anchor: {document: "escritura_13a_emissao.pdf", clause: "4.1"}},
+    {id: "deb-14-1", label: "14ª emissão, 1ª série", indenture: {document: "escritura_14a_emissao.pdf", clause: "4.1"}, nominalAtExit: null, accruedAtExit: null, chargesAtExit: null, remainingFlows: null, mechanisms: [{mechanism: "extraordinary_amortization_di", premiumPerYear: "0.004", availableFrom: "2026-06-15", maxFraction: "0.98", fraction: "0.98", businessDays: {count: weekdays(exitDate, "2029-06-14"), maturity: "2029-06-14", anchor: calendarNote("2029-06-14")}, anchor: {document: "escritura_14a_emissao.pdf", clause: "7.20"}}], anchor: {document: "escritura_14a_emissao.pdf", clause: "4.1"}},
   ],
 });
 const premium = (id: string) => {
   const entry = exit.exit_costs.find((cost) => cost.series_id === id)!;
-  return entry.cheapest_unilateral ? {value: d(entry.cheapest_unilateral.total_payable).minus(entry.base.payable ?? 0).toFixed(), anchor: {document: "exit-costs-gc02.json", note: `route ${entry.cheapest_unilateral.mechanism}`}} : null;
+  return entry.cheapest_full_exit ? {value: d(entry.cheapest_full_exit.total_payable).minus(entry.base.payable ?? 0).toFixed(), anchor: {document: "exit-costs-gc02.json", note: `route ${entry.cheapest_full_exit.mechanism}`}} : null;
 };
 const cdiPlus125 = d(marketAssumptions.cdiAnnualPercent).plus(1.25).div(100).toFixed(4);
 const newDebt = (amount: string) => ({amount, annualRate: cdiPlus125, termMonths: 84, graceMonths: 24, format: "sac" as const, upfrontFeeRate: "0.005", disbursementDate: exitDate, origin: "custo de referência do pedido simulado do pack (CDI + 1,25%) e taxa de estruturação sintética de 0,50%", anchor: {document: "03_Pedido_Simulado_CRA_2026.docx", page: 1}});
@@ -76,8 +81,8 @@ const result = executors.compareRefinancingBeforeAfter({
 });
 
 const md: string[] = [];
-md.push(`### Custo de saída das séries DI e da 11ª (executor \`estimate-exit-cost-by-series\` v3, em ${exitDate})`, "", "| Série | Base | Estado da base | Rotas | Mais barata unilateral |", "| --- | ---: | --- | --- | ---: |");
-for (const entry of exit.exit_costs) md.push(`| ${entry.label} | ${fmt(entry.base.payable)} | ${entry.base.state}${entry.base.reason ? `: ${entry.base.reason}` : ""} | ${entry.routes.map((route) => `${route.mechanism} (${route.state})`).join("; ")} | ${entry.cheapest_unilateral ? `${entry.cheapest_unilateral.mechanism} ${fmt(entry.cheapest_unilateral.total_payable)}` : "n/a"} |`);
+md.push(`### Custo de saída das séries DI e da 11ª (executor \`estimate-exit-cost-by-series\` v4, em ${exitDate})`, "", "| Série | Base | Estado da base | Rotas | Mais barata unilateral |", "| --- | ---: | --- | --- | ---: |");
+for (const entry of exit.exit_costs) md.push(`| ${entry.label} | ${fmt(entry.base.payable)} | ${entry.base.state}${entry.base.reason ? `: ${entry.base.reason}` : ""} | ${entry.routes.map((route) => `${route.mechanism} (${route.state})`).join("; ")} | ${entry.cheapest_full_exit ? `${entry.cheapest_full_exit.mechanism} ${fmt(entry.cheapest_full_exit.total_payable)}` : "n/a"} |`);
 if (exit.uncovered_terms.length > 0) md.push("", `Termos não cobertos: ${exit.uncovered_terms.map((term) => `${term.id} (${term.reason})`).join("; ")}.`);
 md.push("", "### Antes e depois por alternativa (executor `compare-refinancing-before-after` v3)", "", `Antes: dívida bruta ${fmt(result.before.gross_debt)}, caixa ${fmt(result.before.unrestricted_cash)}, dívida líquida contratual ${fmt(result.before.contractual_net_debt)}, alavancagem ${result.before.leverage ? `${d(result.before.leverage.value).toFixed(2)}x (${result.before.leverage.ebitda_basis})` : "n/a"}, pico ${result.before.peak?.period} com ${fmt(result.before.peak?.amount)} (${pct(result.before.peak?.share_of_gross)} da dívida bruta). Estado ${result.state}. Não medido: ${result.unsupported.join("; ")}.`, "");
 md.push("| Alternativa | Estado | Custo de saída | Dívida bruta depois | Caixa depois | Dívida líquida contratual | Alavancagem | Pico depois | Participação do pico | Custo all-in da nova dívida |", "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |");

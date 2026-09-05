@@ -2,6 +2,8 @@ import {presentValueByBusinessDays} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import {estimateExitCostBySeries, weekdaysBetween, type ExitCostInput} from "./estimate-exit-cost-by-series";
 
 const d = (value: Decimal.Value) => new Decimal(value);
@@ -187,5 +189,9 @@ describe("estimate-exit-cost-by-series executor (v4)", () => {
       expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
     }
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(estimateExitCostBySeries(camil()) as unknown as Record<string, unknown>, "refinance/estimate-exit-cost-by-series.md")).toEqual([]);
   });
 });

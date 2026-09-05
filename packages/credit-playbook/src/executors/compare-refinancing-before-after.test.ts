@@ -1,5 +1,7 @@
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import Decimal from "decimal.js";
 
 import {compareRefinancingBeforeAfter, type BeforeAfterInput} from "./compare-refinancing-before-after";
@@ -10,17 +12,18 @@ const d = (value: Decimal.Value) => new Decimal(value);
  * Camil at 31/05/2026, R$ thousand: the ledger's schedule in the ITR's twelve-month windows from the
  * reference date (each window named by the safra years it spans and dated by its end), the debenture
  * transaction costs as the ledger's adjustment row, and the retirement of the DI series of the 13th
- * (14/11/2028, window 2028/29) and the 14th (14/11/2030, window 2030/31) with a new five-year SAC
+ * (14/11/2028, window 2028/29) and the 14th (14/06/2029, window 2029/30) with a new five-year SAC
  * debenture. The new debt's terms are indicative, not a quote.
  */
 const camil = (): BeforeAfterInput => ({
   referenceDate: "2026-05-31",
   unit: "BRL thousand",
+  unitAnchor: itr(39, "nota 15, valores em R$ mil"),
   before: {
     grossDebt: {value: "5670186", anchor: itr(40, "nota 15, total de empréstimos, financiamentos e debêntures")},
-    unrestrictedCash: {value: "1455809", anchor: itr(8, "caixa e equivalentes")},
-    derivativeLiabilities: {value: "14335", anchor: itr(9, "instrumentos financeiros derivativos, passivo")},
-    derivativeAssets: {value: "235", anchor: itr(8, "instrumentos financeiros derivativos, ativo")},
+    unrestrictedCash: {value: "1455809", anchor: itr(51, "caixa e equivalentes (1.430.714) mais aplicações financeiras (25.095), quadro de dívida líquida")},
+    derivativeLiabilities: {value: "14335", anchor: itr(51, "instrumentos financeiros derivativos, passivo, quadro de dívida líquida")},
+    derivativeAssets: {value: "235", anchor: itr(51, "instrumentos financeiros derivativos, ativo, quadro de dívida líquida")},
     ltmEbitda: {value: "895864", definitionKey: "ebitda.contractual.13a", basis: "implied_from_reported_index", anchor: {document: "release_1T26.pdf", page: 3, note: "4,72x sobre a dívida líquida contratual de 4.228.477"}},
     schedule: [
       {period: "2026/27", amount: "1229828", endsAt: "2027-05-31"}, {period: "2027/28", amount: "776868", endsAt: "2028-05-31"},
@@ -31,11 +34,11 @@ const camil = (): BeforeAfterInput => ({
     costOfExistingDebt: {weightedAverageRate: "0.1246", basis: "juros do serviço base do caso 02 sobre a dívida bruta (706.751 / 5.670.186), custo contábil, não all-in", anchor: itr(40, "nota 15")},
     cfadsByPeriod: null,
   },
-  covenant: {limit: "4.00", direction: "maximum", state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
+  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tier: {applicable: false, condition: "4,00x aplica-se depois da quitação ordinária dos CRA de referência; até a prova, 3,50x é o degrau vigente"}, state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
   alternatives: [
     {id: "extend-di", label: "Alongar as séries DI da 13ª e da 14ª com nova debênture de cinco anos", newDebt: {amount: "745000", annualRate: "0.145", termMonths: 60, graceMonths: 24, format: "sac", upfrontFeeRate: "0.01", disbursementDate: "2026-09-04", origin: "termos indicativos, curva de 04/09/2026", anchor: {document: "anbima_ettj_2026-09-04.csv"}}, retired: [
-      {seriesId: "deb-13-1", principal: "306038", exitPremium: {value: "2448", anchor: {document: "exit-costs-gc01.json", note: "route extraordinary_amortization_di, 0,40% a.a. pro rata"}}, maturityPeriod: "2028/29", anchor: {document: "escritura_13a_emissao.pdf", clause: "4.1", note: "vencimento 14/11/2028"}},
-      {seriesId: "deb-14-1", principal: "438918", exitPremium: {value: "5266", anchor: {document: "exit-costs-gc01.json", note: "route extraordinary_amortization_di"}}, maturityPeriod: "2030/31", anchor: {document: "escritura_14a_emissao.pdf", clause: "4.1", note: "vencimento 14/11/2030"}},
+      {seriesId: "deb-13-1", principal: "306038", exitPremium: {value: "2448", anchor: {document: "exit-costs-gc01.json", note: "route extraordinary_amortization_di, 0,40% a.a. pro rata"}}, maturityPeriod: "2028/29", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.7.1", note: "vencimento 14/11/2028"}},
+      {seriesId: "deb-14-1", principal: "438918", exitPremium: {value: "5266", anchor: {document: "exit-costs-gc01.json", note: "route extraordinary_amortization_di"}}, maturityPeriod: "2029/30", anchor: {document: "escritura_14a_emissao.pdf", clause: "7.7.1", note: "vencimento 14/06/2029"}},
     ], feesPaidFromCash: {value: "1500", anchor: {document: "03_Pedido_Simulado_CRA_2026.docx", page: 1, note: "custos de estruturação sintéticos"}}},
     {id: "status-quo", label: "Manter a estrutura", newDebt: null, retired: []},
     {id: "retire-ipca", label: "Retirar as séries IPCA antes da carência", newDebt: null, retired: [{seriesId: "deb-13-2", principal: "282357", exitPremium: null, maturityPeriod: "2030/31", anchor: {document: "escritura_13a_emissao.pdf", clause: "4.1"}}], uncoveredTerms: ["ipca_exit_quote"]},
@@ -50,7 +53,7 @@ const find = (result: ReturnType<typeof compareRefinancingBeforeAfter>, id: stri
 describe("compare-refinancing-before-after executor", () => {
   it("gold: before and after share the same objects, retired series leave their own windows, the new principal lands by date, and the exit cost and fees leave the cash", () => {
     const result = compareRefinancingBeforeAfter(camil());
-    expect(result.schema_version).toBe("method.compare-refinancing-before-after.v3");
+    expect(result.schema_version).toBe("method.compare-refinancing-before-after.v4");
     expect(result.state).toBe("compared");
     expect(result.before.gross_debt).toBe("5670186");
     expect(result.before.contractual_net_debt).toBe("4228477");
@@ -69,8 +72,8 @@ describe("compare-refinancing-before-after executor", () => {
     const rows = extend.concentration!;
     expect(rows.map((row) => row.period)).toEqual(["2026/27", "2027/28", "2028/29", "2029/30", "2030/31", "after 2031"]);
     expect(rows.find((row) => row.period === "2028/29")?.existing).toBe(d("1228475").minus("306038").toFixed());
-    expect(rows.find((row) => row.period === "2030/31")?.existing).toBe(d("994544").minus("438918").toFixed());
-    expect(rows.find((row) => row.period === "2029/30")?.existing).toBe("694497");
+    expect(rows.find((row) => row.period === "2029/30")?.existing).toBe(d("694497").minus("438918").toFixed());
+    expect(rows.find((row) => row.period === "2030/31")?.existing).toBe("994544");
     // SAC, 60 months, 24 of grace, disbursed 04/09/2026: 36 principal payments of 745.000/36 from 04/10/2028; 8 fall before 31/05/2029.
     const instalment = d("745000").div(36);
     expect(d(rows.find((row) => row.period === "2028/29")!.proposed).toDecimalPlaces(2).toFixed()).toBe(instalment.times(8).toDecimalPlaces(2).toFixed());
@@ -83,7 +86,7 @@ describe("compare-refinancing-before-after executor", () => {
     expect(result.unsupported).toContain("principal cover per period is not measured: no cash generation per period in the base");
     expect(extend.after?.cost.comparable_with_new_debt).toBe(true);
     expect(extend.new_debt_service?.all_in_cost).not.toBe("0.145");
-    expect(extend.after?.anchors["retired:deb-13-1"]).toEqual({document: "escritura_13a_emissao.pdf", clause: "4.1", note: "vencimento 14/11/2028"});
+    expect(extend.after?.anchors["retired:deb-13-1"]).toEqual({document: "escritura_13a_emissao.pdf", clause: "7.7.1", note: "vencimento 14/11/2028"});
   });
 
   it("does not measure headroom while the limit is unresolved or the comparison is conditional, and measures it against the contractual net debt once both hold", () => {
@@ -93,7 +96,9 @@ describe("compare-refinancing-before-after executor", () => {
     const resolved = camil();
     resolved.covenant = {...resolved.covenant, state: "resolved", comparability: "comparable"};
     const measured = compareRefinancingBeforeAfter(resolved);
-    expect(measured.before.headroom?.passes).toBe(false);
+    expect(measured.before.headroom?.within_limit).toBe(false);
+    expect(measured.before.headroom?.reading).toBe("interim");
+    expect(measured.before.headroom?.note).toMatch(/13ª emissão measures annually, next on 2027-02-28; neither a breach nor a compliance/);
     expect(measured.before.headroom?.absolute).toBe(d("4").minus(d("4228477").div("895864").toDecimalPlaces(8)).toDecimalPlaces(8).toFixed());
   });
 
@@ -104,7 +109,12 @@ describe("compare-refinancing-before-after executor", () => {
     expect(ipca.block_reasons[0]).toMatch(/exit cost is not priced for deb-13-2/);
     expect(ipca.uncovered_terms).toEqual([{id: "ipca_exit_quote", state: "insufficient_evidence", reason: "the alternative lacks ipca_exit_quote; carried as a gap, not filled"}]);
     expect(result.ranking?.discriminator).toBe("peak_concentration");
-    expect(result.ranking?.order.map((entry) => entry.id)).toEqual(["extend-di", "status-quo"]);
+    // The SAC principal of the new debt lands twelve instalments in 2030/31, which becomes the peak (1.242.877 over 5.670.230); the status quo keeps 2026/27 at 21,69%.
+    expect(find(result, "extend-di").after?.peak?.period).toBe("2030/31");
+    expect(result.ranking?.order.map((entry) => entry.id)).toEqual(["status-quo", "extend-di"]);
+    // The ranking shows the economic value (the peak share, positive) apart from the ordering score.
+    expect(result.ranking?.order[0]?.value).toBe(find(result, "status-quo").after?.peak?.share_of_gross);
+    expect(result.ranking?.order[0]?.score).toBe(d(find(result, "status-quo").after!.peak!.share_of_gross).negated().toFixed());
     expect(result.unsupported.some((entry) => /^retire-ipca: exit cost is not priced/.test(entry))).toBe(true);
   });
 
@@ -146,6 +156,13 @@ describe("compare-refinancing-before-after executor", () => {
     const early = camil();
     early.alternatives[0]!.newDebt!.disbursementDate = "2026-01-01";
     expect(() => compareRefinancingBeforeAfter(early)).toThrow(/disbursed before the reference date/);
+    // Without an open-ended bucket, principal beyond the last dated period blocks the alternative instead of landing in that period.
+    const closed = camil();
+    closed.before.schedule = closed.before.schedule.map((row) => (row.period === "after 2031" ? {...row, endsAt: "2032-05-31"} : row));
+    expect(find(compareRefinancingBeforeAfter(closed), "extend-di").state).toBe("compared");
+    closed.alternatives[0]!.newDebt!.termMonths = 120;
+    closed.alternatives[0]!.newDebt!.graceMonths = 24;
+    expect(find(compareRefinancingBeforeAfter(closed), "extend-di").block_reasons[0]).toMatch(/beyond the last dated period, and the schedule has no open-ended bucket/);
   });
 
   it("does not measure leverage with a missing or non-positive EBITDA and refuses a mismatched unit", () => {
@@ -160,6 +177,13 @@ describe("compare-refinancing-before-after executor", () => {
     const unit = camil();
     (unit as {unit: string}).unit = "BRL thousands";
     expect(() => compareRefinancingBeforeAfter(unit)).toThrow();
+    // Relabelling the scale while every figure stays the same is refused: the unit anchor names R$ mil.
+    const relabelled = camil();
+    relabelled.unit = "BRL million";
+    expect(() => compareRefinancingBeforeAfter(relabelled)).toThrow(/does not name the unit BRL million/);
+    const tiered = camil();
+    tiered.covenant = {...tiered.covenant, measurement: {frequency: "annual", nextDate: "2026-02-28"}};
+    expect(() => compareRefinancingBeforeAfter(tiered)).toThrow(/next measurement date must follow/);
   });
 
   it("produces no ranking without a declared discriminator, ranks by peak amount when asked, and names ties by id rather than merit", () => {
@@ -171,6 +195,15 @@ describe("compare-refinancing-before-after executor", () => {
     expect(tie.ranking?.order[1]?.reason).toMatch(/tied with the best on peak_amount; ordered by id/);
   });
 
+  it("is deterministic when two periods share the same end date", () => {
+    const twins = camil();
+    twins.before.schedule = twins.before.schedule.flatMap((row) => (row.period === "2027/28" ? [{...row, period: "2027/28 a", amount: "400000"}, {...row, period: "2027/28 b", amount: "376868"}] : [row]));
+    const first = compareRefinancingBeforeAfter(twins);
+    const reversed = {...twins, before: {...twins.before, schedule: [...twins.before.schedule].reverse()}};
+    expect(compareRefinancingBeforeAfter(reversed).trace.inputFingerprint).toBe(first.trace.inputFingerprint);
+    expect(compareRefinancingBeforeAfter(reversed).trace.outputFingerprint).toBe(first.trace.outputFingerprint);
+  });
+
   it("is consistent under twenty permutations of alternatives, retired series, schedule rows and key order", () => {
     const first = compareRefinancingBeforeAfter(camil());
     for (let seed = 1; seed <= 20; seed += 1) {
@@ -178,9 +211,14 @@ describe("compare-refinancing-before-after executor", () => {
       shuffled.alternatives = seed % 2 ? [...shuffled.alternatives].reverse() : [shuffled.alternatives[2]!, shuffled.alternatives[0]!, shuffled.alternatives[1]!];
       shuffled.alternatives.find((alternative) => alternative.id === "extend-di")!.retired!.reverse();
       shuffled.before.schedule = seed % 3 ? [...shuffled.before.schedule].reverse() : shuffled.before.schedule;
+      shuffled.alternatives = shuffled.alternatives.map((alternative) => ({...alternative, uncoveredTerms: alternative.uncoveredTerms ? [...alternative.uncoveredTerms].reverse() : alternative.uncoveredTerms}));
       const again = compareRefinancingBeforeAfter(seed % 4 ? reversedKeys(shuffled) : shuffled);
       expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
     }
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(compareRefinancingBeforeAfter(camil()) as unknown as Record<string, unknown>, "refinance/compare-refinancing-before-after.md")).toEqual([]);
   });
 });

@@ -2,6 +2,8 @@ import {businessDayAccrual, diPercentAccrual} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
+import {contractMismatch} from "./contract";
+
 import {buildInterestAndIndexationSchedule, type InterestScheduleInput} from "./build-interest-and-indexation-schedule";
 
 const d = (value: Decimal.Value) => new Decimal(value);
@@ -17,8 +19,8 @@ const periods: InterestScheduleInput["periods"] = [
 ];
 const flat = (value: string) => Object.fromEntries(periods.map((period) => [period.id, value]));
 const months = Object.fromEntries(["2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03", "2027-04", "2027-05"].map((month) => [month, "0.004"]));
-const cdiCurve: InterestScheduleInput["curves"][number] = {id: "cdi-bcb-2026-09-04", kind: "CDI", dailyRateByPeriod: flat("0.0005166"), source: {title: "Banco Central, SGS 12, CDI diário de 0,05166% em 1 a 3 de setembro de 2026", asOf: "2026-09-04", anchor: {document: "bcb_sgs_cdi_diario.json", note: "taxa diária publicada; o executor anualiza"}}};
-const ipcaCurve: InterestScheduleInput["curves"][number] = {id: "ipca-hipotetico", kind: "IPCA", annualRateByPeriod: flat("0.0490"), monthlyRateByMonth: months, source: {title: "variação mensal hipotética de 0,40% (fixture de teste, não é a curva ANBIMA)", asOf: "2026-05-31", anchor: {document: "fixture_hipotetico.md", note: "curva declarada como hipótese"}}};
+const cdiCurve: NonNullable<InterestScheduleInput["curves"]>[number] = {id: "cdi-bcb-2026-09-04", kind: "CDI", dailyRateByPeriod: flat("0.0005166"), source: {title: "Banco Central, SGS 12, CDI diário de 0,05166% em 1 a 3 de setembro de 2026", asOf: "2026-09-04", anchor: {document: "bcb_sgs_cdi_diario.json", note: "taxa diária publicada; o executor anualiza"}}};
+const ipcaCurve: NonNullable<InterestScheduleInput["curves"]>[number] = {id: "ipca-hipotetico", kind: "IPCA", annualRateByPeriod: flat("0.0490"), monthlyRateByMonth: months, source: {title: "variação mensal hipotética de 0,40% (fixture de teste, não é a curva ANBIMA)", asOf: "2026-05-31", anchor: {document: "fixture_hipotetico.md", note: "curva declarada como hipótese"}}};
 type Series = InterestScheduleInput["series"][number];
 const nominal = (value: string, document: string, note: string): Series["openingPrincipal"] => ({value, basis: "unit_value_x_quantity", anchor: {document, note}});
 /** Camil at 31/05/2026. The DI series carry their nominal from the indentures (unit value times quantity); the IPCA balances of the ITR include accrued interest and are not nominals. */
@@ -158,5 +160,9 @@ describe("build-interest-and-indexation-schedule executor (v3)", () => {
       expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
       expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
     }
+  });
+
+  it("emits exactly the top-level outputs the method declares", () => {
+    expect(contractMismatch(buildInterestAndIndexationSchedule(camil()) as unknown as Record<string, unknown>, "financial/build-interest-and-indexation-schedule.md")).toEqual([]);
   });
 });

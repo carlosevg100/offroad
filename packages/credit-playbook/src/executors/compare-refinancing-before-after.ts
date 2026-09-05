@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `compare-refinancing-before-after` (v3, after the first independent
+ * Executor of the method `compare-refinancing-before-after` (v4, after the second independent
  * review). Every alternative is shown before and after with the same objects: gross and net debt by
  * the contractual components, leverage on a declared EBITDA, headroom only against a resolved and
  * comparable limit, concentration by the schedule's own periods (safra years with their end dates,
@@ -35,9 +35,13 @@ export const alternativeSchema = z.object({
   uncoveredTerms: z.array(nonEmpty).default([]),
 }).strict();
 
+const UNIT_WORDS: Record<z.infer<typeof unitSchema>, RegExp> = {"BRL": /\b(R\$|reais|BRL)\b(?!\s*(mil|milh))/i, "BRL thousand": /\b(mil|thousand)\b/i, "BRL million": /\b(milh[õo]es|million)\b/i, "USD": /\bUSD\b(?!\s*(mil|thousand))/i, "USD thousand": /\bUSD\b.*\b(mil|thousand)\b/i};
+
 export const beforeAfterInputSchema = z.object({
   referenceDate: isoDate,
   unit: unitSchema,
+  /** Where the source states the unit; its note must name that unit, so a relabelled scale is refused. */
+  unitAnchor: anchorSchema.extend({note: nonEmpty}),
   before: z.object({
     grossDebt: z.object({value: nonNegative, anchor: anchorSchema}).strict(),
     unrestrictedCash: z.object({value: nonNegative, anchor: anchorSchema}).strict(),
@@ -51,12 +55,25 @@ export const beforeAfterInputSchema = z.object({
     /** Cash generation per period when the base declares it; without it the cover per period is insufficient evidence. */
     cfadsByPeriod: z.record(nonEmpty, nonNegative).nullable().default(null),
   }).strict(),
-  covenant: z.object({limit: rate, direction: z.enum(["maximum", "minimum"]), state: z.enum(["resolved", "insufficient_evidence"]), comparability: z.enum(["comparable", "conditional", "not_comparable"]), anchor: anchorSchema}).strict(),
+  covenant: z.object({
+    instrument: nonEmpty,
+    limit: rate,
+    direction: z.enum(["maximum", "minimum"]),
+    /** When the indenture measures the index; a reading at the reference date is interim unless it is a measurement date. */
+    measurement: z.object({frequency: z.enum(["annual", "semiannual", "quarterly"]), nextDate: isoDate}).strict(),
+    /** The tier the limit belongs to and the condition that makes it applicable, when the indenture steps the limit. */
+    tier: z.object({applicable: z.boolean(), condition: nonEmpty}).strict().nullable(),
+    state: z.enum(["resolved", "insufficient_evidence"]),
+    comparability: z.enum(["comparable", "conditional", "not_comparable"]),
+    anchor: anchorSchema,
+  }).strict(),
   alternatives: z.array(alternativeSchema).min(1),
   /** The declared discriminator; without one there is no ranking. all_in_cost ranks only the new debts among themselves. */
   ranking: z.object({discriminator: z.enum(["headroom", "all_in_cost", "peak_concentration", "peak_amount", "net_debt"]), rationale: nonEmpty}).strict().nullable().default(null),
   wallThreshold: z.object({share: nonNegative, policyKey: nonEmpty, policyVersion: nonEmpty}).strict(),
 }).strict().superRefine((input, context) => {
+  if (!UNIT_WORDS[input.unit].test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
+  if (input.covenant.measurement.nextDate <= input.referenceDate) context.addIssue({code: "custom", path: ["covenant", "measurement"], message: "the next measurement date must follow the reference date"});
   const periods = new Set<string>();
   const sorted = [...input.before.schedule].sort(scheduleOrder);
   sorted.forEach((entry, index) => {
@@ -87,14 +104,14 @@ type Calculation = {id: string; alternative: string; formula: string; operands: 
 type Snapshot = {
   gross_debt: string; unrestricted_cash: string; net_debt: string; contractual_net_debt: string;
   leverage: {value: string; ebitda_definition: string; ebitda_basis: string} | null;
-  headroom: {absolute: string; passes: boolean} | null;
+  headroom: {absolute: string; within_limit: boolean; reading: "interim" | "measurement_date"; note: string} | null;
   peak: {period: string; amount: string; share_of_gross: string} | null;
   cost: {value: string; basis: string; comparable_with_new_debt: boolean};
   anchors: Record<string, Anchor>;
 };
 
 export type BeforeAfterOutput = {
-  schema_version: "method.compare-refinancing-before-after.v3";
+  schema_version: "method.compare-refinancing-before-after.v4";
   reference_date: string;
   unit: string;
   state: "compared" | "blocked";
@@ -111,7 +128,8 @@ export type BeforeAfterOutput = {
     new_debt_service: {peak_debt_service: string; total_interest: string; weighted_average_life_months: string; all_in_cost: string; anchor: Anchor} | null;
     uncovered_terms: Array<{id: string; state: "insufficient_evidence"; reason: string}>;
   }>;
-  ranking: {discriminator: string; rationale: string; order: Array<{id: string; value: string; reason: string}>} | null;
+  /** `value` is the economic figure of the discriminator (a share, a cost, an amount); `score` is the internal ordering key (higher is better). */
+  ranking: {discriminator: string; rationale: string; order: Array<{id: string; value: string; score: string; reason: string}>} | null;
   unsupported: string[];
   trace: {calculations: Calculation[]; inputFingerprint: string; outputFingerprint: string};
 };
@@ -122,7 +140,7 @@ const stableStringify = (value: unknown): string => JSON.stringify(value, (_key,
 const fingerprint = (value: unknown) => createHash("sha256").update(stableStringify(value)).digest("hex");
 const addMonths = (isoDate: string, months: number) => { const date = new Date(`${isoDate}T00:00:00Z`); date.setUTCMonth(date.getUTCMonth() + months); return date.toISOString().slice(0, 10); };
 
-const scheduleOrder = (a: {period: string; endsAt: string | null; kind: string}, b: {period: string; endsAt: string | null; kind: string}) => (a.kind !== b.kind ? (a.kind === "adjustment" ? 1 : -1) : a.endsAt === null && b.endsAt === null ? compare(a.period, b.period) : a.endsAt === null ? 1 : b.endsAt === null ? -1 : compare(a.endsAt, b.endsAt));
+const scheduleOrder = (a: {period: string; endsAt: string | null; kind: string}, b: {period: string; endsAt: string | null; kind: string}) => (a.kind !== b.kind ? (a.kind === "adjustment" ? 1 : -1) : a.endsAt === null && b.endsAt === null ? compare(a.period, b.period) : a.endsAt === null ? 1 : b.endsAt === null ? -1 : compare(a.endsAt, b.endsAt) || compare(a.period, b.period));
 function canonical(input: z.infer<typeof beforeAfterInputSchema>) {
   return {
     ...input,
@@ -148,12 +166,12 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   if (!scheduleTotal.eq(input.before.grossDebt.value)) blockReasons.push(`the schedule sums to ${out(scheduleTotal)} and the gross debt is ${input.before.grossDebt.value}; the ledger did not reconcile them`);
   const maturities = input.before.schedule.filter((entry) => entry.kind === "maturity");
   const adjustments = input.before.schedule.filter((entry) => entry.kind === "adjustment");
-  const periodOf = (date: string): string => {
+  const periodOf = (date: string): string | null => {
     const dated = maturities.filter((entry) => entry.endsAt !== null);
     const hit = dated.find((entry) => date <= entry.endsAt!);
     if (hit) return hit.period;
     const open = maturities.find((entry) => entry.endsAt === null);
-    return open ? open.period : dated[dated.length - 1]!.period;
+    return open ? open.period : null;
   };
 
   const snapshot = (label: string, grossDebt: Decimal, cash: Decimal, cost: Snapshot["cost"], consolidated: Record<string, Decimal.Value>, anchors: Record<string, Anchor>): Snapshot => {
@@ -169,7 +187,8 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
     if (leverage && canMeasureHeadroom) {
       const result = calculateCovenantHeadroom({actual: leverage.value, limit: input.covenant.limit, direction: input.covenant.direction});
       record({id: "structure.covenant_headroom", alternative: label, formula: input.covenant.direction === "maximum" ? "limit - actual" : "actual - limit", operands: {actual: leverage.value, limit: input.covenant.limit}, result: result.absolute}, "x");
-      headroom = {absolute: result.absolute, passes: result.passes};
+      const onDate = input.covenant.measurement.nextDate === input.referenceDate;
+      headroom = {absolute: result.absolute, within_limit: result.passes, reading: onDate ? "measurement_date" : "interim", note: onDate ? `measured on the measurement date of ${input.covenant.instrument}` : `interim reading at ${input.referenceDate}; ${input.covenant.instrument} measures ${input.covenant.measurement.frequency}ly, next on ${input.covenant.measurement.nextDate}; neither a breach nor a compliance`};
     }
     const concentration = maturityConcentration({existing: consolidated, proposed: {}});
     const peak = concentration.peak && grossDebt.gt(0) ? {period: concentration.peak.period, amount: concentration.peak.consolidated, share_of_gross: out(d(concentration.peak.consolidated).div(grossDebt))} : null;
@@ -210,9 +229,12 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
       record({id: "structure.debt_service_schedule", alternative: alternative.id, formula: `${alternative.newDebt.format}, ${alternative.newDebt.termMonths} months, ${alternative.newDebt.graceMonths} of grace`, operands: {amount: alternative.newDebt.amount, annualRate: alternative.newDebt.annualRate, disbursementDate: alternative.newDebt.disbursementDate}, result: schedule.totalDebtService});
       for (const row of schedule.rows) {
         if (d(row.principal).isZero()) continue;
-        const key = periodOf(addMonths(alternative.newDebt.disbursementDate, row.period));
+        const date = addMonths(alternative.newDebt.disbursementDate, row.period);
+        const key = periodOf(date);
+        if (key === null) { reasons.push(`the new debt pays principal on ${date}, beyond the last dated period, and the schedule has no open-ended bucket to hold it`); break; }
         proposed[key] = (proposed[key] ?? d(0)).plus(row.principal);
       }
+      if (reasons.length > 0) return {id: alternative.id, label: alternative.label, state: "blocked", block_reasons: reasons, after: null, exit_cost: null, concentration: null, new_debt_service: null, uncovered_terms: uncovered};
       const termYears = d(alternative.newDebt.termMonths).div(12);
       const allIn = calculateAllInCost(alternative.newDebt.annualRate, d(alternative.newDebt.upfrontFeeRate).plus(newAmount.gt(0) ? exitCost.plus(fees).div(newAmount) : 0).toFixed(), termYears.toFixed());
       record({id: "financial.all_in_cost", alternative: alternative.id, formula: "annualRate + (upfrontFeeRate + (exitCost + feesPaidFromCash) / amount) / termYears", operands: {annualRate: alternative.newDebt.annualRate, upfrontFeeRate: alternative.newDebt.upfrontFeeRate, exitCost: out(exitCost), feesPaidFromCash: out(fees), amount: out(newAmount), termYears: termYears.toFixed()}, result: allIn.value}, "x");
@@ -253,12 +275,12 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
     else if (scored.some((entry) => entry.score === null)) unsupported.push(input.ranking.discriminator === "all_in_cost" ? "ranking by all_in_cost needs a new debt in every compared alternative; the cost of existing debt is another basis" : `ranking by ${input.ranking.discriminator} needs a value every compared alternative lacks`);
     else {
       const sorted = scored.sort((a, b) => b.score!.comparedTo(a.score!) || compare(a.alternative.id, b.alternative.id));
-      ranking = {discriminator: input.ranking.discriminator, rationale: input.ranking.rationale, order: sorted.map((entry, index) => ({id: entry.alternative.id, value: out(entry.score!), reason: index === 0 ? `best ${input.ranking!.discriminator}` : entry.score!.eq(sorted[0]!.score!) ? `tied with the best on ${input.ranking!.discriminator}; ordered by id, not by merit` : `ranks below by ${input.ranking!.discriminator}`}))};
+      ranking = {discriminator: input.ranking.discriminator, rationale: input.ranking.rationale, order: sorted.map((entry, index) => ({id: entry.alternative.id, value: out(input.ranking!.discriminator === "headroom" ? entry.score! : entry.score!.negated()), score: out(entry.score!), reason: index === 0 ? `best ${input.ranking!.discriminator}` : entry.score!.eq(sorted[0]!.score!) ? `tied with the best on ${input.ranking!.discriminator}; ordered by id, not by merit` : `ranks below by ${input.ranking!.discriminator}`}))};
     }
   } else unsupported.push("no ranking: the discriminator was not declared");
   for (const alternative of alternatives) if (alternative.state === "blocked") unsupported.push(`${alternative.id}: ${alternative.block_reasons.join("; ")}`);
 
-  const body = {schema_version: "method.compare-refinancing-before-after.v3" as const, reference_date: input.referenceDate, unit: input.unit, state: blockReasons.length > 0 ? "blocked" as const : "compared" as const, block_reasons: blockReasons, wall_threshold: input.wallThreshold, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), before, alternatives, ranking, unsupported: [...unsupported].sort(compare)};
+  const body = {schema_version: "method.compare-refinancing-before-after.v4" as const, reference_date: input.referenceDate, unit: input.unit, state: blockReasons.length > 0 ? "blocked" as const : "compared" as const, block_reasons: blockReasons, wall_threshold: input.wallThreshold, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), before, alternatives, ranking, unsupported: [...unsupported].sort(compare)};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }
