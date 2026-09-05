@@ -42,6 +42,7 @@ const settlement = (state: "ordinary" | "unknown" | "outstanding" | "accelerated
 const camil = (state: "ordinary" | "unknown" | "outstanding" | "accelerated"): CovenantReconciliationInput => ({
   asOfDate: asOf,
   unit,
+  unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"},
   instruments: [
     indenture("deb-11", "escritura_11a_emissao.pdf", {clause: "4.22.3(j)", netDebtPage: 35, ebitdaPage: 35}, [34, 34], ["cra-eco-8"], adjustments11, "4.22.3(j)"),
     indenture("deb-13", "escritura_13a_emissao.pdf", {clause: "1.1", netDebtPage: 7, ebitdaPage: 8}, [54, 55], ["cra-eco-5", "cra-eco-257"], [], "7.24.3(VIII)"),
@@ -136,11 +137,17 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     const opened: CovenantReconciliationInput = {...base, reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40, "15, hipotético")}}};
     const result = reconcileCovenantDefinitions(opened);
     const deb13 = by(result, "deb-13");
-    expect(deb13.comparability).toBe("comparable");
-    expect(deb13.headroom?.absolute).toBe("-0.72");
-    expect(deb13.headroom?.relative).toBe("-0.18");
-    expect(deb13.status).toBe("above_limit_interim");
+    // The legal veto is consolidated: the sellers finance of the 11th stays open, so no instrument of the run has a headroom, the 13th included.
+    expect(deb13.comparability).toBe("conditional");
+    expect(deb13.comparabilityReasons.some((reason) => /legal condition stands on another instrument of the same base/.test(reason))).toBe(true);
+    expect(deb13.headroom).toBeNull();
     expect(result.trace.calculations.some((calculation) => calculation.id === "financial.net_leverage:deb-13:check")).toBe(true);
+    // Once no legal condition stands anywhere, the 13th measures its headroom from financial-core.
+    const cleared = reconcileCovenantDefinitions({...opened, instruments: opened.instruments.map((instrument) => (instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: (instrument.ebitdaAdjustments ?? []).filter((adjustment) => adjustment.kind !== "numerator_obligation")} : instrument))});
+    expect(by(cleared, "deb-13").comparability).toBe("comparable");
+    expect(by(cleared, "deb-13").headroom?.absolute).toBe("-0.72");
+    expect(by(cleared, "deb-13").headroom?.relative).toBe("-0.18");
+    expect(by(cleared, "deb-13").status).toBe("above_limit_interim");
     const deb11 = by(result, "deb-11");
     expect(deb11.comparability).toBe("conditional");
     expect(deb11.headroom).toBeNull();
@@ -173,10 +180,9 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     expect(by(result, "deb-13").netDebtByDefinition?.value).toBe("4228477");
     expect(by(result, "deb-15").legalConditions.some((condition) => condition.includes("lease liabilities"))).toBe(false);
     expect(by(result, "deb-15").comparability).toBe("not_comparable");
+    // Dropping the derivatives from the structured list while the clause still names them is a disagreement between clause and list: refused, not silently computed at 4.214.377.
     const noDerivatives: CovenantReconciliationInput = {...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-14" ? {...instrument, netDebtComponents: ["loans_and_financings", "debentures", "cash_and_equivalents", "financial_investments"]} : instrument)};
-    const again = reconcileCovenantDefinitions(noDerivatives);
-    expect(by(again, "deb-14").netDebtByDefinition?.value).toBe("4214377");
-    expect(by(again, "deb-14").comparability).toBe("not_comparable");
+    expect(() => reconcileCovenantDefinitions(noDerivatives)).toThrow(/the clause adds derivative liabilities and the structured components omit them/);
   });
 
   it("mutation: on the computed path the 11th stays conditional until the opened EBITDA states its denominator additions and the obligation is valued", () => {
@@ -185,14 +191,14 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     const result = reconcileCovenantDefinitions(opened);
     expect(by(result, "deb-11").comparability).toBe("conditional");
     expect(by(result, "deb-11").index?.basis).toBe("computed_from_components");
-    // The residual is enumerated at zero and no lease sits in the base: the 13th is fully comparable on the computed path.
-    expect(by(result, "deb-13").comparability).toBe("comparable");
+    // The residual is enumerated at zero and no lease sits in the base, but the 11th's obligation is a legal condition of the whole base: the 13th stays conditional until it is classified.
+    expect(by(result, "deb-13").comparability).toBe("conditional");
     const stated: CovenantReconciliationInput = {...opened, ltmEbitda: {...opened.ltmEbitda!, incorporatesAdjustments: ["acquired-ebitda", "sellers-finance"]}};
     const stillOpen = reconcileCovenantDefinitions(stated);
     // Declaring the numerator obligation as "incorporated" in the EBITDA changes nothing: it is not a denominator item.
     expect(by(stillOpen, "deb-11").comparability).toBe("conditional");
-    expect(by(stillOpen, "deb-13").comparability).toBe("comparable");
-    expect(by(stillOpen, "deb-13").headroom).not.toBeNull();
+    expect(by(stillOpen, "deb-13").comparability).toBe("conditional"); // the obligation, once valued, still needs legal review: the consolidated veto keeps every instrument conditional
+    expect(by(stillOpen, "deb-13").headroom).toBeNull(); // valued or not, the obligation needs legal review: no headroom anywhere while it stands
   });
 
   it("mutation: undated settlements (ordinary or accelerated), an old reported index, a component dated elsewhere and duplicate ids are refused or not comparable", () => {
@@ -245,7 +251,7 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
   });
 
   it("a trustee report without the indenture keeps its limit and measurement, without headroom", () => {
-    const result = reconcileCovenantDefinitions({asOfDate: asOf, unit, instruments: [{source: "trustee_report", id: "af-12", indexName: "Dívida Líquida/EBITDA", reportedLimit: "4.00", reportedMeasurement: {value: "4.08", asOf: "2026-02-28"}, anchor: {document: "af_12a_emissao.pdf", page: 3}}], componentValues, reported: camil("unknown").reported});
+    const result = reconcileCovenantDefinitions({asOfDate: asOf, unit, unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"}, instruments: [{source: "trustee_report", id: "af-12", indexName: "Dívida Líquida/EBITDA", reportedLimit: "4.00", reportedMeasurement: {value: "4.08", asOf: "2026-02-28"}, anchor: {document: "af_12a_emissao.pdf", page: 3}}], componentValues, reported: camil("unknown").reported});
     const covenant = result.covenants[0]!;
     expect(covenant.limitState).toBe("reported_by_trustee");
     expect(covenant.reportedMeasurement).toEqual({value: "4.08", asOf: "2026-02-28"});
@@ -256,10 +262,9 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
   it("mutation: a uniform relabel of the scale changes the output fingerprint, and the unit travels with every calculation", () => {
     const base = camil("unknown");
     const first = reconcileCovenantDefinitions(base);
-    const relabeled = reconcileCovenantDefinitions({...base, unit: "BRL million", componentValues: base.componentValues!.map((line) => ({...line, unit: "BRL million" as const}))});
+    // A uniform relabel against an anchor that says thousands is refused outright.
+    expect(() => reconcileCovenantDefinitions({...base, unit: "BRL million", componentValues: base.componentValues!.map((line) => ({...line, unit: "BRL million" as const}))})).toThrow(/does not name the unit BRL million/);
     expect(first.unit).toBe("BRL thousand");
-    expect(relabeled.unit).toBe("BRL million");
-    expect(relabeled.trace.outputFingerprint).not.toBe(first.trace.outputFingerprint);
     expect(first.trace.calculations.filter((calculation) => calculation.id.startsWith("financial.debt_views")).every((calculation) => calculation.unit === "BRL thousand")).toBe(true);
     expect(first.trace.calculations.filter((calculation) => calculation.id.startsWith("financial.net_leverage") || calculation.id.startsWith("structure.covenant_headroom")).every((calculation) => calculation.unit === "x")).toBe(true);
     expect(first.trace.calculations.find((calculation) => calculation.id === "financial.implied_ebitda:deb-13")?.result.startsWith("895863.77")).toBe(true);
@@ -293,8 +298,10 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
   it("mutation: a missing component, a residual without a line, a zero opening or a different perimeter never yield headroom", () => {
     const base = withoutLeases(camil("ordinary"));
     const opened: CovenantReconciliationInput = {...base, reported: {...base.reported!, definition: "dívida líquida contratual: empréstimos e financiamentos, debêntures, instrumentos financeiros derivativos passivos menos derivativos ativos, qualquer outra dívida onerosa, menos caixa e equivalentes e aplicações financeiras", netDebtComponents: [...contractual], ebitdaOpening: {value: "895864", unit, asOf, months: 12, anchor: itr(40)}}};
-    expect(by(reconcileCovenantDefinitions(opened), "deb-13").headroom).not.toBeNull();
-    const missing = reconcileCovenantDefinitions({...opened, componentValues: opened.componentValues!.filter((line) => line.component !== "derivative_liabilities")});
+    // With the 11th's obligation cleared, the 13th has a headroom; each mutation below takes it away.
+    const clearedOpened: CovenantReconciliationInput = {...opened, instruments: opened.instruments.map((instrument) => (instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: (instrument.ebitdaAdjustments ?? []).filter((adjustment) => adjustment.kind !== "numerator_obligation")} : instrument))};
+    expect(by(reconcileCovenantDefinitions(clearedOpened), "deb-13").headroom).not.toBeNull();
+    const missing = reconcileCovenantDefinitions({...clearedOpened, componentValues: clearedOpened.componentValues!.filter((line) => line.component !== "derivative_liabilities")});
     expect(by(missing, "deb-13").comparability).toBe("not_comparable");
     expect(by(missing, "deb-13").headroom).toBeNull();
     const residualOpen = reconcileCovenantDefinitions({...opened, componentValues: opened.componentValues!.filter((line) => line.component !== "other_onerous_debt")});
@@ -332,7 +339,7 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
   });
 
   it("blocks on an empty base and still carries the declared unit", () => {
-    const result = reconcileCovenantDefinitions({asOfDate: asOf, unit, instruments: []});
+    const result = reconcileCovenantDefinitions({asOfDate: asOf, unit, unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"}, instruments: []});
     expect(result.state).toBe("blocked");
     expect(result.block_reasons[0]).toMatch(/nothing to reconcile/);
     expect(result.unit).toBe("BRL thousand");

@@ -113,6 +113,8 @@ export const covenantReconciliationInputSchema = z.object({
   asOfDate: isoDate,
   /** The unit of every monetary value in the base; lines, EBITDA and openings must state the same. */
   unit: unitSchema,
+  /** Where the source states the unit; its note must name that unit, so a relabelled scale is refused. */
+  unitAnchor: anchorSchema.extend({note: z.string().min(1)}),
   instruments: z.array(covenantInstrumentSchema),
   referenceSettlements: z.array(z.object({
     instrument: z.string().min(1),
@@ -139,6 +141,8 @@ export const covenantReconciliationInputSchema = z.object({
     anchor: anchorSchema,
   }).strict().nullable().default(null),
 }).strict().superRefine((input, context) => {
+  const UNIT_WORDS: Record<string, RegExp> = {"BRL": /\b(R\$|reais|BRL)\b(?!\s*(mil|milh))/i, "BRL thousand": /\b(mil|milhares|thousand)\b/i, "BRL million": /\b(milh[õo]es|million)\b/i, "USD": /\bUSD\b(?!\s*(mil|thousand))/i, "USD thousand": /\bUSD\b.*\b(mil|thousand)\b/i};
+  if (!UNIT_WORDS[input.unit]!.test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
   const seenFacts = new Set<string>();
   input.referenceSettlements.forEach((fact, index) => {
     if (seenFacts.has(fact.instrument)) context.addIssue({code: "custom", path: ["referenceSettlements", index], message: `duplicate settlement fact for ${fact.instrument}`});
@@ -153,6 +157,20 @@ export const covenantReconciliationInputSchema = z.object({
       const text = instrument.netDebtDefinition.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
       for (const component of instrument.netDebtComponents) {
         if (!COMPONENT_WORDS[component].test(text)) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the definition text never names the component ${component}; the structured components must be readable in the clause`});
+      }
+      // The other direction for the indenture too: a component the clause names must be in the structured list, with derivatives on the side the clause gives them.
+      {
+        const listed = new Set<string>(instrument.netDebtComponents);
+        for (const [component, words] of Object.entries(COMPONENT_WORDS)) {
+          if (component === "derivative_liabilities" || component === "derivative_assets" || component === "other_onerous_debt") continue;
+          if (words.test(text) && !listed.has(component)) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the definition text names ${component} and the structured components omit it; the clause and the list disagree`});
+        }
+        if (/derivativ/.test(text)) {
+          const liabilities = /derivativ[^.;]{0,40}passiv|passiv[^.;]{0,40}derivativ|derivative liabilit/.test(text);
+          const assets = /derivativ[^.;]{0,40}ativ(?!o? ?e)|ativ[^.;]{0,40}derivativ|derivative asset/.test(text);
+          if (liabilities && !listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the clause adds derivative liabilities and the structured components omit them`});
+          if (assets && !listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the clause deducts derivative assets and the structured components omit them`});
+        }
       }
       const adjustmentIds = new Set<string>();
       instrument.ebitdaAdjustments.forEach((adjustment, position) => {
@@ -216,7 +234,7 @@ type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type CovenantReconciliationOutput = {
-  schema_version: "method.reconcile-covenant-definitions.v12";
+  schema_version: "method.reconcile-covenant-definitions.v13";
   as_of_date: string;
   /** The unit every value below is expressed in; part of the output and of its fingerprint. */
   unit: string;
@@ -312,6 +330,11 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
   const legal = new Set<string>();
   const leasesLine = lineFor.get("leases");
 
+  // Legal conditions are consolidated: a lease question or an unclassified numerator obligation on any instrument vetoes every headroom of the run.
+  const legalByInstrument = new Map(input.instruments.map((instrument) => [instrument.id, instrument.source === "indenture" ? [
+    ...(instrument.netDebtComponents.includes(RESIDUAL) && !instrument.netDebtComponents.includes("leases") && input.componentValues.some((line) => line.component === "leases") ? [`${instrument.id}: leases under the residual`] : []),
+    ...instrument.ebitdaAdjustments.filter((adjustment) => adjustment.kind === "numerator_obligation").map((adjustment) => `${instrument.id}: ${adjustment.id}`),
+  ] : []]));
   const covenants = input.instruments.map((instrument): CovenantReconciliationOutput["covenants"][number] => {
     if (instrument.source === "trustee_report") {
       return {
@@ -383,6 +406,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     // 2. Net debt by this instrument's own definition, from dated component lines, through financial-core.
     const reasons: string[] = [];
     const legalHere: string[] = [];
+    const legalElsewhere = [...legalByInstrument.entries()].filter(([id]) => id !== instrument.id).flatMap(([, entries]) => entries);
     const wanted = new Set(instrument.netDebtComponents);
     const residualWanted = wanted.has(RESIDUAL);
     const residualOpen = residualWanted && !lineFor.has(RESIDUAL);
@@ -497,6 +521,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
       else { index = {value: reported.value, basis: "reported", ebitda: null, anchor: reported.anchor}; if (comparability !== "not_comparable") { comparability = "conditional"; reasons.push("no net debt by definition and no opened EBITDA: the reported index stands alone, its EBITDA unknown"); } else reasons.push("no EBITDA is implied from a reported index that is not comparable (date, perimeter or components); the index stands alone"); }
     }
     if (comparability === "comparable" && legalHere.length > 0) { comparability = "conditional"; reasons.push("a legal condition touches the numerator of this covenant; no headroom until it is resolved"); }
+    if (comparability === "comparable" && legalElsewhere.length > 0) { comparability = "conditional"; reasons.push(`a legal condition stands on another instrument of the same base (${legalElsewhere.join("; ")}); the method vetoes every headroom while any legal condition is open`); }
     if (comparability !== "no_index" && instrument.measurement.frequency !== "annual") reasons.push(`measurement is ${instrument.measurement.frequency}; the next measurement is ${measurement.nextMeasurementDate}`);
 
     // 4. Headroom only when the limit is resolved and the comparison is full.
@@ -525,7 +550,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schema_version: "method.reconcile-covenant-definitions.v12" as const,
+    schema_version: "method.reconcile-covenant-definitions.v13" as const,
     as_of_date: input.asOfDate,
     unit,
     state,

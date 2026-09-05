@@ -1,6 +1,6 @@
 ---
 id: reconcile-covenant-definitions
-version: 2026.09.05-v12
+version: 2026.09.05-v13
 maturity: implemented
 title_pt: Reconciliar as definições de covenant com as escrituras
 title_en: Reconcile covenant definitions against the indentures
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-covenant-definitions
 implementation_export: reconcileCovenantDefinitions
-result_contract: method.reconcile-covenant-definitions.v12
+result_contract: method.reconcile-covenant-definitions.v13
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -61,9 +61,13 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - financial.debt_views: visão contratual reproduzida a partir do ledger.
 
 # Regras de comparação do índice reportado
-- O texto literal da definição reportada e os componentes estruturados têm de concordar nos dois sentidos: cada componente declarado aparece no texto, cada componente que o texto nomeia está na lista, e os derivativos vêm com o seu lado (passivos somados, ativos deduzidos).
+- O texto literal de cada escritura e o da definição reportada têm de concordar com os componentes estruturados nos dois sentidos: cada componente declarado aparece no texto, cada componente que o texto nomeia está na lista, e os derivativos vêm com o seu lado (passivos somados, ativos deduzidos).
 - Linhas candidatas do numerador levam a unidade e a data da base; outra escala ou outra data é recusada.
 - Índice reportado de outra data, outro perímetro ou outros componentes é não comparável e não gera EBITDA implícito; o índice fica sozinho.
+
+# Veto jurídico
+- O veto jurídico é consolidado: enquanto qualquer instrumento da base carregar condição jurídica (arrendamento sob o residual, obrigação do numerador sem classificação), nenhum instrumento mede headroom; a comparabilidade fica condicionada com o motivo.
+- A unidade da base é ancorada na fonte que a declara; escala re-rotulada é recusada.
 
 # Julgamentos permitidos
 - Decidir se um pro forma divulgado pela companhia usa a mesma definição da escritura exige comparar componentes, não aceitar o nome.
@@ -81,7 +85,7 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - Nenhuma escritura no pack e o trabalho exige afirmar headroom.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v12`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v13`
 - as_of_date (date, required): data-base da comparação
 - unit (string, required): unidade declarada pelo chamador para toda a base (linhas, EBITDA e aberturas têm de coincidir), presente mesmo no resultado bloqueado; entra no fingerprint, para que uma troca uniforme de escala mude o resultado
 - block_reasons (array, required): motivos estruturados de bloqueio, vazio quando não há

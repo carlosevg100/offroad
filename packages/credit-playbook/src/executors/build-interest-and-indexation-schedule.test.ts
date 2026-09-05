@@ -143,7 +143,7 @@ describe("build-interest-and-indexation-schedule executor (v6)", () => {
     expect(result.trace.calculations.filter((calculation) => calculation.id.startsWith("financial.ipca_anniversary_update:h-ipca:2026Q3:")).map((calculation) => calculation.operands.laggedMonth)).toEqual(["2026-04", "2026-05", "2026-06"]);
     const capitalized = series.treatment_scenarios![0]!;
     const paid = series.treatment_scenarios![1]!;
-    expect(d(capitalized.rows[0]!.closing_principal).gt("100000")).toBe(true);
+    expect(d(capitalized.rows[0]!.closing_principal!).gt("100000")).toBe(true);
     expect(paid.rows[0]!.closing_principal).toBe("100000");
     expect(d(paid.rows[0]!.indexation_paid).gt(0)).toBe(true);
     expect(paid.rows[0]!.coupon_paid).toBe("0");
