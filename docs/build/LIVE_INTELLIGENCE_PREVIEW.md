@@ -61,6 +61,32 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
   atualização incremental do arquivo.
 - **E. Pesquisa viva** para companhia sem pack, quando houver provedor com chave.
 
+## 3.1 Estado da fatia B (5 de setembro, noite)
+
+- Modo `live` na concessão (`private.integration_preview_grants.mode`); a claim carrega
+  `integration_preview_mode`; o status e o banner nomeiam o modo.
+- Roteador vivo em `apps/document-worker/src/live-preview.ts`: uma chamada de modelo por turno
+  (`route_intent`, o mesmo contrato do classificador de sombra, mais os campos que a mesa de
+  prévia precisa: companhias citadas, mudanças de premissa, pergunta sobre número, pedido de
+  material, respostas a perguntas abertas, mudanças de escopo). Tudo depois da chamada é
+  determinístico: a companhia resolve a um corpus congelado (`preview/corpora.ts`) ou a nada; a
+  composição sai do envelope (as composições nomeadas do Atlas mapeadas na cadeia do Caso 01,
+  `prepare_decision` para CFO e conselho); o plano é compilado pelo mesmo compilador; a resposta
+  começa com uma linha legível por máquina: composição, companhia, corpus, audiência,
+  profundidade, modelo, chamadas e custo. Falha do modelo vira abstenção com motivo curto, nunca
+  um palpite.
+- Companhia sem corpus: abstenção explícita, sem emprestar os objetos da Camil; pedido fora da
+  mesa (introduzir, monitorar, identificar capital): recusa com o nome do que foi lido.
+- Gate em `.github/workflows/live-preview-gate.yml` (manual): stack local, worker com a chave da
+  Anthropic obtida por OIDC e mascarada, teto por job (`MODEL_MAX_COST_USD_PER_JOB`,
+  `MODEL_MAX_CALLS_PER_JOB`), jornada `apps/web/e2e/live-intelligence-preview.spec.ts` (cinco
+  paráfrases, outra companhia, CFO e conselho, devolutiva, origem do número, material, premissa;
+  as duas últimas do teste do fundador ficam como `fixme` até as fatias C e D), relatório
+  `scripts/live-gate-report.mjs` (chamadas, custo, latência, abstenções por turno) no artefato
+  `live-preview-gate`.
+- O que a fatia B ainda não prova: perguntas a partir de lacunas (C), resposta alterando o plano
+  (C), síntese de banker e arquivo real (D), pesquisa viva para companhia sem pack (E).
+
 ## 4. O que continua fora
 
 Liberação a clientes, aprovação ou parecer. A trilha de revisão independente segue em paralelo,

@@ -41,7 +41,7 @@ import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 
 export const PREVIEW_MARK = "[Validação interna, integration_preview]";
-const PREVIEW_MARK_EN = "[Internal validation, integration_preview]";
+export const PREVIEW_MARK_EN = "[Internal validation, integration_preview]";
 
 // ---------------------------------------------------------------------------------------------
 // 1. The turn router
@@ -162,7 +162,8 @@ const alignmentPoints = {
   ],
 } as const;
 
-function activation(composition: PreviewComposition, request: PreviewRequest, premises: PreviewPremises, input: PreviewTurnInput): PreviewActivation {
+/** The activation of a preview run: the composition, the frozen base, the brief and the plan compiled for this turn. */
+export function buildPreviewActivation(composition: PreviewComposition, request: PreviewRequest, premises: PreviewPremises, input: PreviewTurnInput): PreviewActivation {
   return {
     job: "integration_preview",
     composition,
@@ -208,7 +209,7 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
       reply: `${mark} ${t(locale,
         `Vou planejar o material a partir dos objetos já assinados: ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience.primary}. Números e premissas da devolutiva anterior entram por referência, nunca copiados à mão; o plano das páginas vem antes de qualquer arquivo.`,
         `I will plan the material from the signed objects: ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience.primary}. Numbers and premises of the previous readout enter by reference, never retyped; the page plan comes before any file.`)}`,
-      activation: activation("prepare_material", request, {}, input),
+      activation: buildPreviewActivation("prepare_material", request, {}, input),
     };
   }
 
@@ -223,7 +224,7 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
       reply: `${mark} ${t(locale,
         `Premissa registrada (${describePremises(premises)}). Só os nós cujas entradas mudam recalculam: a comparação antes e depois e o plano da devolutiva; ledger, conciliação, covenants, vencimentos, juros, custo de saída e cenários ficam como estavam, por fingerprint.`,
         `Premise recorded (${describePremises(premises)}). Only the nodes whose inputs change recompute: the before-and-after comparison and the readout plan; ledger, reconciliation, covenants, maturities, interest, exit cost and scenarios stay as they were, by fingerprint.`)}`,
-      activation: activation("change_premise", request, premises, input),
+      activation: buildPreviewActivation("change_premise", request, premises, input),
     };
   }
 
@@ -236,13 +237,13 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
       reply: `${mark} ${t(locale,
         `Entendi: material para a reunião com a Camil, com a instrução do VP em aberto quanto à tese e ao formato. Começo o trabalho de base agora, sobre a evidência congelada do Caso 01 (ITR de 31/05/2026, escrituras, relatórios do agente fiduciário): dívida instrumento a instrumento, conciliação, covenants pelas escrituras, vencimentos e cobertura, juros e correção, custo de saída, cenários e a comparação antes e depois. Em paralelo, três pontos para alinhar com o VP: ${points.map((point, index) => `(${index + 1}) ${point}`).join("; ")}. Não pergunto nada que o ITR já responda.`,
         `Understood: material for the Camil meeting, with the VP's instruction open on thesis and format. I start the groundwork now on the frozen evidence of Case 01 (ITR of 31/05/2026, indentures, trustee reports): debt instrument by instrument, reconciliation, covenants from the indentures, maturities and coverage, interest and indexation, exit cost, scenarios and the before-and-after comparison. In parallel, three points to align with the VP: ${points.map((point, index) => `(${index + 1}) ${point}`).join("; ")}. I ask nothing the ITR already answers.`)}`,
-      activation: activation("prepare_meeting", request, {}, input),
+      activation: buildPreviewActivation("prepare_meeting", request, {}, input),
     };
   }
 
   if (patterns.deepen.test(input.message)) {
     const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "deepen", audience: {primary: "vp", others: []}, form: "first_deliverable", pages: null, sponsorInstruction, undefinedAspects: []};
-    return {kind: "activate", reply: `${mark} ${t(locale, "Vou reexecutar a análise com o mesmo estado; o que não mudou replica por fingerprint e o que estiver bloqueado continua declarado como lacuna.", "I will rerun the analysis on the same state; whatever is unchanged replays by fingerprint and whatever is blocked stays declared as a gap.")}`, activation: activation("deepen", request, {}, input)};
+    return {kind: "activate", reply: `${mark} ${t(locale, "Vou reexecutar a análise com o mesmo estado; o que não mudou replica por fingerprint e o que estiver bloqueado continua declarado como lacuna.", "I will rerun the analysis on the same state; whatever is unchanged replays by fingerprint and whatever is blocked stays declared as a gap.")}`, activation: buildPreviewActivation("deepen", request, {}, input)};
   }
 
   return {kind: "converse", reply: `${mark} ${t(locale,

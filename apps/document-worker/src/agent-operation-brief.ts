@@ -20,6 +20,7 @@ import {institutionCapabilitiesSchema, organizationMethodologySchema, profession
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 import {shadowIntentEnvelope} from "./intent-shadow";
+import {decideLiveTurn, understandLiveTurn} from "./live-preview";
 import {routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
 
 const contextSchema = z.object({
@@ -179,7 +180,8 @@ export async function processAgentOperationBriefJob(
     const route = routeWorkspaceRequest({message: context.message, surface: "case_workspace"});
     // Shadow routing: the envelope is recorded for measurement and never consulted here. A
     // failure in the classifier is logged and the turn proceeds exactly as before.
-    if (dependencies.shadowRouting !== false) {
+    // In the live preview the classifier is the router itself, so the shadow does not run twice.
+    if (dependencies.shadowRouting !== false && !(job.integration_preview === true && job.integration_preview_mode === "live")) {
       try {
         const shadow = await shadowIntentEnvelope({
           gateway,
@@ -220,6 +222,74 @@ export async function processAgentOperationBriefJob(
       for (const artifact of priorArtifacts.success ? priorArtifacts.data : []) {
         const output = artifact.content.output;
         if (output && typeof output === "object" && !Array.isArray(output)) priorOutputs.set(artifact.task_id, output as PreviewStepOutput);
+      }
+      if (job.integration_preview_mode === "live") {
+        // live_intelligence_preview: one model call reads the turn; the derivation after it is
+        // deterministic and the reply states composition, company, corpus, model and cost. A
+        // failed call is an abstention with a content-free reason, never a guess.
+        const liveContext = {
+          locale: context.locale,
+          message: context.message,
+          recentMessages: context.recent_messages.map(({role, content}) => ({role, content})),
+          organizationId: job.organization_id,
+          projectId: context.project?.id ?? null,
+          entryJob: context.project?.entryJob ?? null,
+          accessBasis: context.project?.accessBasis ?? null,
+          documentIds: context.documents.map((document) => document.id),
+          professionalContext: context.professional_context
+            ? {
+                useForms: context.professional_context.useForms,
+                professionalRoles: context.professional_context.professionalRoles,
+                practiceAreas: context.professional_context.practiceAreas,
+                primaryObjectives: context.professional_context.primaryObjectives,
+              }
+            : null,
+          openQuestions: [] as Array<{id: string; text: string}>,
+          priorObjectKinds: [...priorOutputs.keys()],
+        };
+        const priorCaseId = typeof context.brief.caseId === "string" ? context.brief.caseId : null;
+        const startedAt = Date.now();
+        let liveDecision: ReturnType<typeof decideLiveTurn> | null = null;
+        let failure: string | null = null;
+        try {
+          const understanding = await understandLiveTurn({gateway, context: liveContext});
+          await queue.recordIntentEnvelope(job, {
+            envelope: understanding.envelope,
+            classifier: {abstain: understanding.output.abstain, abstainReason: understanding.output.abstainReason, firstQuestion: understanding.output.firstQuestion, surface: "live_preview_router", turn: understanding.output.turn},
+            model: understanding.model,
+            costUsd: understanding.costUsd,
+          }).catch((error) => log("live_preview.envelope_not_recorded", {job: job.job_id, message: error instanceof Error ? error.message.slice(0, 200) : "unknown"}));
+          liveDecision = decideLiveTurn({
+            locale: context.locale,
+            message: context.message,
+            recentMessages: liveContext.recentMessages,
+            understanding,
+            priorCaseId,
+            artifactTypes: context.artifacts.map((artifact) => artifact.type),
+            runActive: context.tasks.some((task) => ["queued", "running", "started"].includes(task.status)),
+            priorOutputs,
+            entryJob: context.project?.entryJob ?? "origination_thesis",
+            messageId: job.payload.message_id,
+          });
+        } catch (error) {
+          failure = error instanceof Error ? error.message.slice(0, 200) : "unknown";
+        }
+        const liveMessageId = randomUUID();
+        if (!liveDecision) {
+          const reply = context.locale === "en-US"
+            ? `[Internal validation, live_intelligence_preview] composition=none · company=not identified · corpus=none · model=none · calls=0 · cost=US$ 0.0000\nThe live router did not answer this turn (${failure ?? "unknown"}). Nothing was assumed; send the request again or name what you need.`
+            : `[Validação interna, live_intelligence_preview] composição=nenhuma · companhia=não identificada · corpus=nenhum · modelo=nenhum · chamadas=0 · custo=US$ 0.0000\nO roteador vivo não respondeu a este turno (${failure ?? "unknown"}). Nada foi assumido; envie o pedido de novo ou diga o que precisa.`;
+          await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply}, undefined, undefined);
+          await queue.writeStage(job, "live_preview:understand", "failed", {messageId: liveMessageId, mode: "live_intelligence_preview", code: "live_router_failed", latencyMs: Date.now() - startedAt});
+          await queue.complete(job, {mode: "live_intelligence_preview", decision: "router_failed", composition: null, assistantMessageId: liveMessageId, spend: gateway.spent()});
+          log("live_preview.router_failed", {job: job.job_id, message: failure});
+          return {status: "succeeded"};
+        }
+        await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply: liveDecision.reply}, undefined, liveDecision.activation ?? undefined);
+        await queue.writeStage(job, "live_preview:understand", "succeeded", {messageId: liveMessageId, mode: "live_intelligence_preview", decision: liveDecision.kind, ...liveDecision.record});
+        await queue.complete(job, {mode: "live_intelligence_preview", decision: liveDecision.kind, composition: liveDecision.composition, assistantMessageId: liveMessageId, spend: gateway.spent()});
+        log("live_preview.turn_routed", {job: job.job_id, decision: liveDecision.kind, composition: liveDecision.composition, corpus: liveDecision.record.corpus?.caseId ?? null, abstained: liveDecision.record.abstained, model: liveDecision.record.model, costUsd: liveDecision.record.costUsd, latencyMs: liveDecision.record.latencyMs});
+        return {status: "succeeded"};
       }
       const decision = routeIntegrationPreviewTurn({
         locale: context.locale,

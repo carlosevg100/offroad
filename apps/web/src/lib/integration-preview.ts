@@ -4,9 +4,11 @@ import type {Database} from "@/types/database";
 
 export type IntegrationPreviewScope = "organization" | "projects";
 
-export type IntegrationPreviewStatus = {enabled: boolean; scope: IntegrationPreviewScope | null; projectIds: string[]; note: string | null};
+export type IntegrationPreviewMode = "deterministic" | "live";
 
-const disabled: IntegrationPreviewStatus = {enabled: false, scope: null, projectIds: [], note: null};
+export type IntegrationPreviewStatus = {enabled: boolean; scope: IntegrationPreviewScope | null; mode: IntegrationPreviewMode | null; projectIds: string[]; note: string | null};
+
+const disabled: IntegrationPreviewStatus = {enabled: false, scope: null, mode: null, projectIds: [], note: null};
 
 /** Whether this project runs in preview: the whole organization does, or the project is listed. */
 export function integrationPreviewCoversProject(status: IntegrationPreviewStatus, projectId: string): boolean {
@@ -35,6 +37,7 @@ export async function loadIntegrationPreviewStatus(
     enabled: record.enabled === true,
     // A status without a scope comes from the organization-wide grant of the first migration.
     scope: record.scope === "projects" ? "projects" : record.enabled === true ? "organization" : null,
+    mode: record.mode === "live" ? "live" : record.enabled === true ? "deterministic" : null,
     projectIds,
     note: typeof record.note === "string" && record.note.trim() ? record.note.trim() : null,
   };

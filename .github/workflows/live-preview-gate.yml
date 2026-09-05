@@ -1,0 +1,165 @@
+name: Live preview gate
+
+# live_intelligence_preview: the Case 01 journey with the semantic router deciding, against a
+# local stack with the worker, under a hard model budget. Model keys are read from AWS Secrets
+# Manager through OIDC inside this job and masked; nothing is stored in GitHub. Manual only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_cost_usd_per_job:
+        description: Hard cost cap per worker job
+        default: "0.25"
+      max_calls_per_job:
+        description: Hard call cap per worker job
+        default: "3"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: live-preview-gate
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Live intelligence preview (local Supabase + worker with model keys)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1 # v1.7.1
+        with:
+          version: 2.114.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Start local Supabase and apply migrations
+        run: |
+          supabase stop --no-backup || true
+          docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
+          supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
+
+      - name: Export local Supabase configuration for the app and the tests
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          echo "NEXT_PUBLIC_SUPABASE_URL=${API_URL}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-${ANON_KEY}}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000" >> "$GITHUB_ENV"
+          echo "E2E_MAIL_URL=${MAILPIT_URL:-${INBUCKET_URL:-http://127.0.0.1:54324}}" >> "$GITHUB_ENV"
+
+      - name: Provision the local worker and the live preview grant
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          DB_URL="$(supabase status -o env | sed -n 's/^DB_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p')"
+          [ -n "$DB_URL" ] || DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          curl -sS -X POST "${API_URL}/auth/v1/signup" \
+            -H "apikey: ${PUBLISHABLE_KEY:-${ANON_KEY}}" -H "Content-Type: application/json" \
+            -d '{"email":"local-worker@offroad.invalid","password":"local-worker-password-2026"}' > /dev/null
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -q \
+            -c "update auth.users set email_confirmed_at = coalesce(email_confirmed_at, now()) where email = 'local-worker@offroad.invalid';"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -v mode=live -q -f apps/web/e2e/support/integration-preview-local.sql
+
+      - name: Build and deploy the worker
+        run: |
+          set -euo pipefail
+          pnpm --filter @offroad/document-worker... build
+          pnpm deploy --legacy --filter @offroad/document-worker --prod --config.node-linker=hoisted "$RUNNER_TEMP/worker"
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
+          aws-region: sa-east-1
+
+      - name: Start the worker with the model key and a hard budget
+        env:
+          MAX_COST: ${{ inputs.max_cost_usd_per_job || '0.25' }}
+          MAX_CALLS: ${{ inputs.max_calls_per_job || '3' }}
+        run: |
+          set -euo pipefail
+          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
+          echo "::add-mask::$ANTHROPIC_API_KEY"
+          export ANTHROPIC_API_KEY
+          eval "$(supabase status -o env)"
+          export SUPABASE_URL="${API_URL}"
+          export SUPABASE_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY}}"
+          export WORKER_ACCOUNT_EMAIL="local-worker@offroad.invalid"
+          export WORKER_ACCOUNT_PASSWORD="local-worker-password-2026"
+          export OFFROAD_WORKER_TOKEN="e2e-worker-token-e2e-worker-token-e2e-worker-token-e2e-worker-token-"
+          export REQUIRE_VIRUS_SCAN=false
+          export IDLE_POLL_SECONDS=2
+          export LOG_LEVEL=info
+          export MODEL_MAX_COST_USD_PER_JOB="$MAX_COST"
+          export MODEL_MAX_CALLS_PER_JOB="$MAX_CALLS"
+          nohup node "$RUNNER_TEMP/worker/dist/main.js" > worker.log 2>&1 &
+          echo $! > worker.pid
+          sleep 5
+          if ! kill -0 "$(cat worker.pid)" 2>/dev/null; then cat worker.log; exit 1; fi
+          grep -q '"event":"worker.signed_in"' worker.log || (sleep 10; grep -q '"event":"worker.signed_in"' worker.log || (cat worker.log; exit 1))
+
+      - name: Cache Playwright browser
+        id: playwright-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter web exec playwright install chromium
+        timeout-minutes: 6
+
+      - name: Run the live gate journey
+        run: pnpm --filter web exec playwright test e2e/live-intelligence-preview.spec.ts
+        env:
+          CI: "true"
+          LIVE_PREVIEW: "1"
+
+      - name: Build the gate report from the worker log
+        if: always()
+        run: node scripts/live-gate-report.mjs worker.log "$RUNNER_TEMP/live-gate/report.json" | tee live-gate-summary.md
+
+      - name: Upload the gate report, the journey and the worker log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: live-preview-gate
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            worker.log
+            ${{ runner.temp }}/live-gate
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Stop the worker
+        if: always()
+        run: |
+          if [ -f worker.pid ]; then kill "$(cat worker.pid)" 2>/dev/null || true; fi
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup || true

@@ -10,7 +10,7 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 
-export const previewCompositionSchema = z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen"]);
+export const previewCompositionSchema = z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen", "prepare_decision"]);
 export type PreviewComposition = z.infer<typeof previewCompositionSchema>;
 
 export const previewWorkflowVersion = "2026.09.05-v1";
@@ -62,6 +62,7 @@ export function previewTargetTaskIds(composition: PreviewComposition): string[] 
   switch (composition) {
     case "prepare_material": return ["A01"];
     case "prepare_meeting":
+    case "prepare_decision":
     case "deepen":
     case "change_premise":
       return case01PreviewSteps.filter((step) => step.stage !== "material").map((step) => step.taskId);
@@ -100,7 +101,7 @@ export function compileIntegrationPreviewPlan(input: {composition: PreviewCompos
     job: {
       id: input.entryJob,
       targetTaskIds: previewTargetTaskIds(input.composition),
-      firstWorkProduct: input.composition === "prepare_material" ? "preview_meeting_brief" : "preview_alternatives",
+      firstWorkProduct: input.composition === "prepare_material" || input.composition === "prepare_decision" ? "preview_meeting_brief" : "preview_alternatives",
       confirmationGate: "preliminary_understanding",
       accessPolicy: "public_or_private",
       inputPolicy: {company: "required", documents: "optional", capitalIntent: "optional", existingTransaction: "not_applicable", publicResearch: "frozen_case_evidence"},

@@ -100,36 +100,10 @@ const asSystemOrInferred = <T>(field: {value: T; state: string; confidence: numb
   ...(field.basis ? {basis: field.basis} : {}),
 });
 
-/** Runs the classifier and stamps the system fields. Throws only on model or schema failure. */
-export async function shadowIntentEnvelope(input: {
-  gateway: ModelGateway;
-  context: ShadowRoutingContext;
-  now?: () => Date;
-}): Promise<{envelope: IntentEnvelope; output: ShadowRoutingOutput; model: string; costUsd: number}> {
-  const {context} = input;
-  const spentBefore = input.gateway.spent().costUsd;
-  const completion = await input.gateway.complete({
-    task: "route_intent",
-    system: SHADOW_ROUTING_SYSTEM,
-    input: [{
-      type: "text",
-      text: JSON.stringify({
-        locale: context.locale,
-        latestUserMessage: context.message,
-        recentConversation: context.recentMessages.slice(-8),
-        entryJob: context.entryJob,
-        documentCount: context.documentIds.length,
-        professionalContext: context.professionalContext,
-      }),
-    }],
-    schema: shadowRoutingOutputSchema,
-    schemaName: "shadow_routing_output",
-    thinking: "off",
-    metadata: {surface: "shadow_router"},
-  });
-  const output = completion.output;
+/** Stamps the system fields around a classifier output: the model never writes them. */
+export function stampIntentEnvelope(output: ShadowRoutingOutput, context: ShadowRoutingContext, now: () => Date = () => new Date()): IntentEnvelope {
   const core = output.routingCore;
-  const envelope = intentEnvelopeSchema.parse({
+  return intentEnvelopeSchema.parse({
     schemaVersion: "intent-envelope.v1",
     routingCore: {
       action: asSystemOrInferred(core.action),
@@ -160,7 +134,38 @@ export async function shadowIntentEnvelope(input: {
     primaryWorks: output.primaryWorks,
     composition: output.composition,
     effect: "none",
-    createdAt: (input.now ?? (() => new Date()))().toISOString(),
+    createdAt: now().toISOString(),
   });
+}
+
+/** Runs the classifier and stamps the system fields. Throws only on model or schema failure. */
+export async function shadowIntentEnvelope(input: {
+  gateway: ModelGateway;
+  context: ShadowRoutingContext;
+  now?: () => Date;
+}): Promise<{envelope: IntentEnvelope; output: ShadowRoutingOutput; model: string; costUsd: number}> {
+  const {context} = input;
+  const spentBefore = input.gateway.spent().costUsd;
+  const completion = await input.gateway.complete({
+    task: "route_intent",
+    system: SHADOW_ROUTING_SYSTEM,
+    input: [{
+      type: "text",
+      text: JSON.stringify({
+        locale: context.locale,
+        latestUserMessage: context.message,
+        recentConversation: context.recentMessages.slice(-8),
+        entryJob: context.entryJob,
+        documentCount: context.documentIds.length,
+        professionalContext: context.professionalContext,
+      }),
+    }],
+    schema: shadowRoutingOutputSchema,
+    schemaName: "shadow_routing_output",
+    thinking: "off",
+    metadata: {surface: "shadow_router"},
+  });
+  const output = completion.output;
+  const envelope = stampIntentEnvelope(output, context, input.now);
   return {envelope, output, model: completion.model, costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore)};
 }
