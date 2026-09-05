@@ -1,20 +1,49 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["reviewerSelfDescription", "checks", "evidence", "result", "conditions", "notes"],
+  "required": [
+    "reviewerSelfDescription",
+    "checks",
+    "evidence",
+    "result",
+    "conditions",
+    "notes"
+  ],
   "properties": {
-    "reviewerSelfDescription": {"type": "string", "description": "Which model and tool produced this review, in one line."},
+    "reviewerSelfDescription": {
+      "type": "string",
+      "description": "Which model and tool produced this review, in one line."
+    },
     "checks": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["sourcesRevisited", "numbersRecalculated", "definitionsTested", "exceptionsTested", "adversarialTested", "consistencyTested"],
+      "required": [
+        "sourcesRevisited",
+        "numbersRecalculated",
+        "definitionsTested",
+        "exceptionsTested",
+        "adversarialTested",
+        "consistencyTested"
+      ],
       "properties": {
-        "sourcesRevisited": {"type": "boolean"},
-        "numbersRecalculated": {"type": "boolean"},
-        "definitionsTested": {"type": "boolean"},
-        "exceptionsTested": {"type": "boolean"},
-        "adversarialTested": {"type": "boolean"},
-        "consistencyTested": {"type": "boolean"}
+        "sourcesRevisited": {
+          "type": "boolean"
+        },
+        "numbersRecalculated": {
+          "type": "boolean"
+        },
+        "definitionsTested": {
+          "type": "boolean"
+        },
+        "exceptionsTested": {
+          "type": "boolean"
+        },
+        "adversarialTested": {
+          "type": "boolean"
+        },
+        "consistencyTested": {
+          "type": "boolean"
+        }
       }
     },
     "evidence": {
@@ -23,18 +52,64 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["claim", "source", "result"],
+        "required": [
+          "claim",
+          "source",
+          "anchor",
+          "result",
+          "note"
+        ],
         "properties": {
-          "claim": {"type": "string", "description": "The claim of the answer key, quoted or paraphrased with its number."},
-          "source": {"type": "string", "description": "The corpus file the reviewer went back to."},
-          "anchor": {"type": "string", "description": "Page, note, clause or line in that source."},
-          "result": {"type": "string", "enum": ["confirmed", "corrected", "unverifiable", "limitation"]},
-          "note": {"type": "string", "description": "Recalculation, the corrected value, or why it cannot be verified."}
+          "claim": {
+            "type": "string",
+            "description": "The claim of the answer key, quoted or paraphrased with its number."
+          },
+          "source": {
+            "type": "string",
+            "description": "The corpus file the reviewer went back to."
+          },
+          "anchor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Page, note, clause or line in that source; null when there is none."
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "corrected",
+              "unverifiable",
+              "limitation"
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Recalculation, the corrected value, or why it cannot be verified; null when nothing to add."
+          }
         }
       }
     },
-    "result": {"type": "string", "enum": ["pass", "conditional", "fail"]},
-    "conditions": {"type": "array", "items": {"type": "string"}},
-    "notes": {"type": "string"}
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "conditional",
+        "fail"
+      ]
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
   }
 }
