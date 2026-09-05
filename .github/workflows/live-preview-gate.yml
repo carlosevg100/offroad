@@ -80,7 +80,8 @@ jobs:
             -d '{"email":"local-worker@offroad.invalid","password":"local-worker-password-2026"}' > /dev/null
           psql "$DB_URL" -v ON_ERROR_STOP=1 -q \
             -c "update auth.users set email_confirmed_at = coalesce(email_confirmed_at, now()) where email = 'local-worker@offroad.invalid';"
-          psql "$DB_URL" -v ON_ERROR_STOP=1 -v mode=live -q -f apps/web/e2e/support/integration-preview-local.sql
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f apps/web/e2e/support/integration-preview-local.sql
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -q -c "alter database postgres set offroad.local_preview_mode = 'live';"
 
       - name: Build and deploy the worker
         run: |
