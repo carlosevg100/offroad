@@ -65,7 +65,11 @@ function fakeQueue(input: {composition: "prepare_meeting" | "prepare_material" |
       recent_messages: [],
     }),
     startCapitalTask: async (_job: unknown, task: {taskId: string}) => { started.push(task.taskId); const id = `run-${task.taskId}`; runsByTask.set(task.taskId, id); return id; },
-    recordCapitalProjectArtifact: async (_job: unknown, artifact: {taskRunId: string; artifactType: string; inputFingerprint: string; content: unknown}) => {
+    recordCapitalProjectArtifact: async (_job: unknown, artifact: {taskRunId: string; artifactType: string; inputFingerprint: string; content: unknown; evidenceRefs?: Array<Record<string, unknown>>}) => {
+      // The database refuses an evidence reference without sourceType and sourceId.
+      for (const reference of artifact.evidenceRefs ?? []) {
+        if (typeof reference.sourceType !== "string" || typeof reference.sourceId !== "string") throw new Error("capital_project_artifact_evidence_invalid");
+      }
       const taskId = artifact.taskRunId.replace("run-", "");
       const artifactFingerprint = createHash("sha256").update(JSON.stringify(artifact.content)).digest("hex");
       const id = `00000000-0000-4000-8000-0000000000${String(steps.indexOf(taskId) + 10)}`;

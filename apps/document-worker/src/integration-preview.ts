@@ -391,7 +391,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       const artifact = await queue.recordCapitalProjectArtifact(job, {
         taskRunId, artifactType: step.artifactType, schemaVersion: `method.${step.methodId}.${step.methodVersion.split("-").at(-1)}`, status: "draft", inputFingerprint,
         content: previewArtifactContent(step, output, premises),
-        evidenceRefs: [{type: "frozen_case_evidence", id: case01.case01EvidenceManifest.caseId, accessBasis: "public", note: case01.case01EvidenceManifest.note}],
+        evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}],
         dependencies: step.dependencies.map((dependency) => ({artifactId: artifactByTask.get(dependency)!.id, artifactFingerprint: artifactByTask.get(dependency)!.artifactFingerprint})),
       });
       await queue.finishCapitalTask(job, {

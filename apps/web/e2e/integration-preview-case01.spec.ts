@@ -91,9 +91,8 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
     await expect(page.locator(".intake-start")).toBeVisible();
     await page.goto("/pt-BR/app");
-    await expect(page.locator('[data-testid="integration-preview-banner"]')).toBeVisible();
-    await expect(page.locator('[data-testid="integration-preview-banner"]')).toContainText("integration_preview");
-    await page.screenshot({path: join(outputDirectory, "01-banner.png"), fullPage: true});
+    await expect(page.locator(".advisor-start")).toBeVisible();
+    await page.screenshot({path: join(outputDirectory, "01-workspace.png"), fullPage: true});
   });
 
   test("prompt: the first turn starts the analysis and names the three points to align with the VP", async () => {
@@ -103,6 +102,9 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.locator(".advisor-composer--start .advisor-composer__send").click();
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
     projectUrl = page.url();
+    // The internal validation banner sits on every workspace screen of a granted organization.
+    await expect(page.locator('[data-testid="integration-preview-banner"]')).toBeVisible();
+    await expect(page.locator('[data-testid="integration-preview-banner"]')).toContainText("integration_preview");
     const alignment = await waitForAssistant(page, /\(1\) leitura de refinanciamento/);
     expect(alignment).toContain(MARK);
     expect(alignment).toMatch(/\(2\) reunião exploratória/);

@@ -15,10 +15,16 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  creator_email text;
 begin
-  insert into private.integration_preview_grants (organization_id, note, granted_by)
-  values (new.id, 'Stack local: Caso 01 em validação interna (E2E)', 'local-e2e')
-  on conflict (organization_id) do nothing;
+  -- Only the workspaces the preview journey signs up; the other journeys keep the released routes.
+  select lower(coalesce(u.email, '')) into creator_email from auth.users u where u.id = new.created_by;
+  if creator_email like 'e2e-preview-%' then
+    insert into private.integration_preview_grants (organization_id, note, granted_by)
+    values (new.id, 'Stack local: Caso 01 em validação interna (E2E)', 'local-e2e')
+    on conflict (organization_id) do nothing;
+  end if;
   return new;
 end;
 $$;
