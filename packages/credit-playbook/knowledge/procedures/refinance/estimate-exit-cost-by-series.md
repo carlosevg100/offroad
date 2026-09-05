@@ -1,6 +1,6 @@
 ---
 id: estimate-exit-cost-by-series
-version: 2026.09.05-v2
+version: 2026.09.05-v3
 maturity: implemented
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/estimate-exit-cost-by-series
 implementation_export: estimateExitCostBySeries
-result_contract: method.estimate-exit-cost-by-series.v2
+result_contract: method.estimate-exit-cost-by-series.v3
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -56,6 +56,9 @@ na data-base, custo estimado e o que falta para fechar o número.
 4. [model_assisted] Redigir :: Dizer por série o que é possível, quando e a que custo, e o que continua sem cotação
 
 # Cálculos determinísticos
+- structure.exit_premium: prêmio DI igual a [(1 + p)^(DU/252) - 1] vezes a base, truncado em oito casas; oferta negociada igual a base vezes a taxa do edital.
+- structure.exit_make_whole: amortização extraordinária IPCA paga o maior entre a base e o valor presente à cotação do segundo dia útil anterior; resgate total IPCA paga o valor presente à cotação do dia útil imediatamente anterior.
+- financial.exit_base: nominal atualizado mais remuneração acumulada mais encargos na data de saída, cada um com âncora.
 - structure.debt_service_schedule: fluxos remanescentes por série.
 - financial.weighted_average_life: duration remanescente para escolher o vértice ou o título de referência.
 
@@ -74,8 +77,14 @@ na data-base, custo estimado e o que falta para fechar o número.
 - Nenhuma escritura da série no pack e a alternativa depende dela.
 
 # Outputs
-- exit_costs (array, required): por série, janela, mecanismo, fórmula, taxa de referência com fonte e data, custo estimado e cláusula
-- blocked_series (array, required): séries cuja saída não é permitida na data ou cuja cotação falta
+- schema_version (string, required): identificador do contrato de resultado, `method.estimate-exit-cost-by-series.v3`
+- exit_date (date, required): data da saída avaliada
+- unit (string, required): unidade dos valores
+- state (enum, required): complete, partial (alguma série sem preço) ou empty (nenhuma série) | values: complete, partial, empty
+- exit_costs (array, required): por série: a base do preço (nominal atualizado, remuneração acumulada e encargos na data de saída, cada um com âncora; `insufficient_evidence` quando a base não os traz, nunca zero), cada mecanismo que a escritura oferece na data (amortização extraordinária DI, resgate total DI, amortização extraordinária IPCA, resgate total IPCA, oferta negociada, aquisição facultativa) com permissão na data, janela, estado, prêmio, total a pagar, motivo, cláusula e a cotação usada (taxa, data, título, fonte), e o mecanismo unilateral mais barato
+- uncovered_terms (array, required): bases de preço que a base não traz, com estado `insufficient_evidence` e motivo
+- totals (object, required): prêmio e total estimados pelos mecanismos unilaterais mais baratos, séries estimadas e séries em aberto
+- trace (object, required): cada base e cada prêmio com fórmula, operandos (prêmio anual, dias úteis, vencimento, base; cotação e data) e resultado, com unidade; fingerprints de entrada e saída com o trace dentro
 
 # Exemplos
 ## Bom
@@ -85,6 +94,7 @@ na data-base, custo estimado e o que falta para fechar o número.
 
 # Testes
 ## Unit
+- dias úteis conferidos contra os dias de semana entre a data de saída e o vencimento (uma contagem que não cabe é recusada); cotação anterior à data de saída; valores datados na data de saída; prêmio negociado nunca negativo; mecanismo listado duas vezes e séries duplicadas recusados; nenhuma série devolve zero com razão; fingerprints iguais sob vinte permutações de séries, mecanismos e ordem de chaves
 - prêmio pro rata e make-whole reproduzem valores calculados à mão sobre um fluxo de teste
 ## Gold
 - gc01-analista-ib-camil: seção 13.2 do gabarito reproduzida por família
