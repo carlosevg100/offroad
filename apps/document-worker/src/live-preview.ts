@@ -15,6 +15,7 @@ import {preview} from "@offroad/credit-playbook";
 
 const {describePremises} = preview;
 import type {ModelGateway} from "@offroad/model-gateway";
+import {buildOriginationResearchPlan, runPublicResearch, type PublicSearchProvider, type ResearchRun} from "@offroad/public-research";
 import {z} from "zod";
 
 import {
@@ -479,4 +480,54 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     activation: buildPreviewActivation(composition, request, {}, turnInput),
     record: base(composition, corpus, false, null),
   };
+}
+
+export type UnknownCompanyResearch = {
+  status: "succeeded" | "partial" | "abstained" | "unavailable";
+  company: string;
+  queries: number;
+  sources: Array<{title: string; url: string; provider: string}>;
+  cacheHits: number;
+  providerCalls: number;
+  maxCostExposureUsd: number;
+  reason: string | null;
+  latencyMs: number;
+};
+
+/**
+ * A company without a frozen corpus gets a bounded public research instead of another company's
+ * objects: the deterministic origination plan, at most three queries, three sources each, through
+ * the providers the worker holds. No model call. Without a provider the result says so.
+ */
+export async function researchUnknownCompany(input: {providers: PublicSearchProvider[]; company: string; maxQueries?: number; maxSourcesPerQuery?: number; now?: () => Date}): Promise<UnknownCompanyResearch> {
+  const startedAt = Date.now();
+  const company = input.company.trim().slice(0, 200);
+  if (input.providers.length === 0) return {status: "unavailable", company, queries: 0, sources: [], cacheHits: 0, providerCalls: 0, maxCostExposureUsd: 0, reason: "no public research provider configured", latencyMs: 0};
+  try {
+    const plan = buildOriginationResearchPlan({legalName: company}).slice(0, input.maxQueries ?? 3);
+    const run: ResearchRun = await runPublicResearch({plan, providers: input.providers, maxSourcesPerQuery: input.maxSourcesPerQuery ?? 3, ...(input.now ? {now: input.now} : {})});
+    const seen = new Set<string>();
+    const sources = run.sources.filter((source) => (seen.has(source.url) ? false : (seen.add(source.url), true))).slice(0, 9).map((source) => ({title: source.title, url: source.url, provider: source.provider}));
+    return {
+      status: run.status, company, queries: run.metrics.queryCount, sources,
+      cacheHits: run.metrics.cacheHits, providerCalls: run.metrics.providerCalls,
+      maxCostExposureUsd: Object.values(run.metrics.maxCostExposureUsdByProvider).reduce((total, value) => total + value, 0),
+      reason: run.failures.length ? run.failures.map((failure) => `${failure.provider}:${failure.code}`).slice(0, 4).join(", ") : null,
+      latencyMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    return {status: "unavailable", company, queries: 0, sources: [], cacheHits: 0, providerCalls: 0, maxCostExposureUsd: 0, reason: `public research failed: ${error instanceof Error ? error.message.slice(0, 160) : "unknown"}`, latencyMs: Date.now() - startedAt};
+  }
+}
+
+/** The line the reply carries about the research: what was found, at what exposure, and what is still needed. */
+export function researchReplyLine(locale: "pt-BR" | "en-US", research: UnknownCompanyResearch): string {
+  const host = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; } };
+  if (research.status === "unavailable") {
+    return t(locale, `Pesquisa pública indisponível para ${research.company} (${research.reason ?? "sem provedor"}).`, `Public research unavailable for ${research.company} (${research.reason ?? "no provider"}).`);
+  }
+  const listed = research.sources.slice(0, 5).map((source) => `${source.title} (${host(source.url)})`).join("; ");
+  return t(locale,
+    `Pesquisa pública feita para ${research.company}: ${research.queries} consultas, ${research.sources.length} fontes${research.cacheHits ? `, ${research.cacheHits} do cache` : ""}, exposição máxima US$ ${research.maxCostExposureUsd.toFixed(3)}${listed ? `: ${listed}` : ""}. Com isso monto um entendimento preliminar; a análise de crédito exige os documentos da companhia (ITR, escrituras, relatórios do agente fiduciário) ou uma base congelada.`,
+    `Public research done for ${research.company}: ${research.queries} queries, ${research.sources.length} sources${research.cacheHits ? `, ${research.cacheHits} from cache` : ""}, maximum exposure US$ ${research.maxCostExposureUsd.toFixed(3)}${listed ? `: ${listed}` : ""}. That supports a preliminary understanding; the credit analysis needs the company's documents (quarterly statements, indentures, trustee reports) or a frozen base.`);
 }

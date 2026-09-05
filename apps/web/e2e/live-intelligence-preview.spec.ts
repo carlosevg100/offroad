@@ -158,6 +158,8 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     expect(headline["corpus"]).toBe("nenhum");
     expect(reply).toContain("Magazine Luiza");
     expect(reply).not.toMatch(/4,72x|5\.670\.186|Camil Alimentos/);
+    // Either a bounded public research ran (sources listed) or the router said it was unavailable; both are honest, neither borrows Camil.
+    expect(reply).toMatch(/Pesquisa pública/);
     await page.screenshot({path: join(outputDirectory, "02-other-company.png"), fullPage: true});
   });
 

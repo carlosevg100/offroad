@@ -1,7 +1,7 @@
 import type {ModelGateway} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
 
-import {decideLiveTurn, liveRoutingOutputSchema, premisesFromTurn, understandLiveTurn, type LiveRoutingOutput, type LiveTurnContext} from "./live-preview";
+import {decideLiveTurn, liveRoutingOutputSchema, premisesFromTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn, type LiveRoutingOutput, type LiveTurnContext} from "./live-preview";
 import type {PreviewStepOutput} from "./integration-preview";
 
 const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({value, state, confidence: state === "explicit" ? 1 : 0.7});
@@ -201,5 +201,23 @@ describe("live_intelligence_preview router", () => {
     const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], openQuestions: [{id: "q-angle", text: "?"}]});
     expect(decision.kind).toBe("converse");
     expect(decision.activation).toBeNull();
+  });
+
+  it("researches a company without a corpus through the providers it holds, bounded, and says when none is available", async () => {
+    const source = {
+      provider: "perplexity" as const, topic: "company_overview" as const, title: "Magazine Luiza: resultados do trimestre", url: "https://ri.magazineluiza.com.br/resultados",
+      snippet: "…", publishedAt: null, retrievedAt: new Date().toISOString(), contentHash: "a".repeat(64),
+    };
+    const calls: string[] = [];
+    const provider = {id: "perplexity" as const, maxCostUsdPerCall: 0.01, search: async (query: {query: string; topic: string}) => { calls.push(query.query); return [{...source, topic: query.topic}]; }};
+    const research = await researchUnknownCompany({providers: [provider as never], company: "Magazine Luiza"});
+    expect(["succeeded", "partial"]).toContain(research.status);
+    expect(research.queries).toBeLessThanOrEqual(3);
+    expect(research.sources.length).toBeGreaterThanOrEqual(1);
+    expect(research.sources[0]!.url).toBe(source.url);
+    expect(researchReplyLine("pt-BR", research)).toContain("Pesquisa pública feita para Magazine Luiza");
+    const none = await researchUnknownCompany({providers: [], company: "Magazine Luiza"});
+    expect(none.status).toBe("unavailable");
+    expect(researchReplyLine("pt-BR", none)).toContain("Pesquisa pública indisponível");
   });
 });

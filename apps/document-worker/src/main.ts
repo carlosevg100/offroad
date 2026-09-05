@@ -334,7 +334,7 @@ async function main(): Promise<void> {
                 log,
               })
       : job.kind === "agent_operation_brief"
-        ? processAgentOperationBriefJob(job, {queue, gateway: gatewayRun.gateway, log})
+        ? processAgentOperationBriefJob(job, {queue, gateway: gatewayRun.gateway, log, research: {providers: research.providers}})
       : processDocumentJob(job, dependenciesFor(gatewayRun))))
       .then((outcome) => {
         const spent = gatewayRun.gateway.spent();

@@ -20,7 +20,9 @@ import {institutionCapabilitiesSchema, organizationMethodologySchema, profession
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 import {shadowIntentEnvelope} from "./intent-shadow";
-import {decideLiveTurn, understandLiveTurn} from "./live-preview";
+import type {PublicSearchProvider} from "@offroad/public-research";
+
+import {decideLiveTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn} from "./live-preview";
 import {routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
 
 const contextSchema = z.object({
@@ -90,6 +92,8 @@ export type AgentOperationBriefDependencies = {
   log: (event: string, detail?: Record<string, unknown>) => void;
   /** Shadow routing records an Intent Envelope per turn for measurement. Off only in tests. */
   shadowRouting?: boolean;
+  /** Public research providers of this job, for a company without a frozen corpus in the live preview. */
+  research?: {providers: PublicSearchProvider[]};
 };
 
 const SYSTEM = `You are the Offroad Agent inside one persistent private-debt advisory project.
@@ -298,8 +302,16 @@ export async function processAgentOperationBriefJob(
           log("live_preview.router_failed", {job: job.job_id, message: failure});
           return {status: "succeeded"};
         }
-        await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply: liveDecision.reply}, undefined, liveDecision.activation ?? undefined);
-        await queue.writeStage(job, "live_preview:understand", "succeeded", {messageId: liveMessageId, mode: "live_intelligence_preview", decision: liveDecision.kind, ...liveDecision.record});
+        let liveReply = liveDecision.reply;
+        let researchRecord: Record<string, unknown> = {};
+        if (liveDecision.kind === "abstain" && liveDecision.record.abstainReason === "company_without_corpus" && liveDecision.record.companiesMentioned[0]) {
+          const research = await researchUnknownCompany({providers: dependencies.research?.providers ?? [], company: liveDecision.record.companiesMentioned[0]});
+          liveReply = `${liveReply}\n${researchReplyLine(context.locale, research)}`;
+          researchRecord = {research: {status: research.status, queries: research.queries, sources: research.sources.length, cacheHits: research.cacheHits, providerCalls: research.providerCalls, maxCostExposureUsd: research.maxCostExposureUsd, reason: research.reason, latencyMs: research.latencyMs}};
+          log("live_preview.research", {job: job.job_id, ...researchRecord.research as Record<string, unknown>});
+        }
+        await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply: liveReply}, undefined, liveDecision.activation ?? undefined);
+        await queue.writeStage(job, "live_preview:understand", "succeeded", {messageId: liveMessageId, mode: "live_intelligence_preview", decision: liveDecision.kind, ...liveDecision.record, ...researchRecord});
         await queue.complete(job, {mode: "live_intelligence_preview", decision: liveDecision.kind, composition: liveDecision.composition, assistantMessageId: liveMessageId, spend: gateway.spent()});
         log("live_preview.turn_routed", {job: job.job_id, decision: liveDecision.kind, composition: liveDecision.composition, corpus: liveDecision.record.corpus?.caseId ?? null, abstained: liveDecision.record.abstained, model: liveDecision.record.model, costUsd: liveDecision.record.costUsd, latencyMs: liveDecision.record.latencyMs});
         return {status: "succeeded"};

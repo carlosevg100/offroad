@@ -122,6 +122,20 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
   nova versão. Cobertura no gate vivo: download do Word e da planilha, versão maior depois da
   premissa.
 
+## 3.4 Estado da fatia E (5 de setembro, noite)
+
+- Companhia sem corpus congelado: além de recusar os objetos da Camil, o roteador vivo roda uma
+  pesquisa pública limitada (plano de originação determinístico, até três consultas, três fontes
+  por consulta) pelos provedores configurados no worker (Perplexity em produção; na CI do gate,
+  a chave é opcional e, sem ela, a resposta diz que a pesquisa está indisponível). A resposta
+  lista as fontes encontradas (título e domínio) e diz o que ainda falta para a análise de
+  crédito: os documentos da companhia ou uma base congelada. A pesquisa não chama modelo; os
+  provedores têm teto por chamada e o evento de estágio registra consultas, fontes, acertos de
+  cache e exposição máxima de custo por provedor.
+- O que a fatia E não faz: extrair objetos de uma companhia nova (isso é o pipeline de
+  extração, que segue medido à parte) nem usar cache de companhia entre projetos (a memória de
+  companhia da pesquisa de originação fica para uma fatia posterior).
+
 ## 4. O que continua fora
 
 Liberação a clientes, aprovação ou parecer. A trilha de revisão independente segue em paralelo,
