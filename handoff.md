@@ -26,6 +26,32 @@ Sandbox access with fixed fictional responses, not official production data. See
 `docs/build/ANBIMA_SOURCE_DECISION.md`. No ANBIMA credential was stored or used; rotate the Client
 Secret exposed in the screenshot before any future integration.
 
+### Engineering update: live_intelligence_preview, 5 September 2026 (afternoon and evening)
+
+O fundador corrigiu a leitura do gate anterior: o PR #443 entregou o esqueleto de ponta a ponta,
+não o endgame (evidência congelada, workflow fixo, roteador por regex, zero chamadas de modelo).
+Dali saíram, no mesmo dia:
+
+- PR #444: concessão com escopo (`organization` ou `projects`); a concessão por organização feita à
+  Cedro foi revogada; o projeto dedicado "Caso 01: Camil (validação interna)"
+  (`c4b0cd17-1d9d-416a-807d-c58c39976cd5`) é o único da Cedro em prévia e já rodou a primeira
+  passada no worker do ECS.
+- PR #445 (fatia B): modo `live` na concessão; o roteador semântico (Intent Router, envelope v1)
+  decide o turno com uma chamada de modelo; a companhia resolve a um corpus congelado ou a nada;
+  composições nomeadas do Atlas mapeadas na cadeia do Caso 01 (`prepare_decision` para CFO e
+  conselho); recusa nomeada fora da mesa; resposta com linha legível por máquina (composição,
+  companhia, corpus, audiência, profundidade, modelo, chamadas, custo). Gate manual
+  `live-preview-gate.yml` com chave por OIDC e teto por job; jornada
+  `live-intelligence-preview.spec.ts`; relatório `scripts/live-gate-report.mjs`.
+- PR #446 (fatias C, D, E): perguntas geradas das lacunas dos objetos (uma chamada, quatro no
+  máximo, cada uma citando lacuna real); resposta a pergunta recompila o plano; décima etapa
+  `A02 write-meeting-synthesis` (esqueleto sem modelo; prosa do modelo verificada número a
+  número); arquivo real Word e planilha em `/app/projects/[id]/preview/material`; pesquisa
+  pública limitada para companhia sem corpus; orçamento do run de prévia 3 chamadas e US$ 0,10.
+
+Contrato e estado por fatia em `docs/build/LIVE_INTELLIGENCE_PREVIEW.md`. O que ainda não foi
+provado com chave real fica escrito lá, fatia por fatia.
+
 ### Engineering update: integration_preview and the Case 01 endgame, 5 September 2026
 
 Decisão do fundador na tarde de 5 de setembro: o fluxo completo do Caso 01 roda no produto antes
