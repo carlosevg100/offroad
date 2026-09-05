@@ -489,6 +489,9 @@ importers:
       '@offroad/credit-ontology':
         specifier: workspace:*
         version: link:../credit-ontology
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       '@offroad/work-plan':
         specifier: workspace:*
         version: link:../work-plan

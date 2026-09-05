@@ -2420,3 +2420,22 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   incorporadas na v2 do executor (comparabilidade por componentes, headroom só quando plena,
   liquidação antecipada ordinária ativa o degrau, vencimento antecipado mantém o degrau inferior,
   base vazia bloqueia com motivo, fatos duplicados recusados, trace com fórmula e operandos).
+
+## Oito métodos do Caso 01 com executor, candidate, 05/09/2026
+
+- Quatro executores novos sobre o `financial-core`: conciliação de demonstrações (`checkIdentity`
+  e `buildDebtBalanceBridge`, com o mapeamento das linhas da nota às categorias do bridge gravado
+  na saída; dividendos ficam divergência aberta em quatro valores; estoques explicados pelos
+  adiantamentos com resíduo de 37), cronograma de juros e IPCA (`buildIndexedDebtSchedule`; seis
+  séries IPCA abrem em 743.955; curva sem fonte não entra; tratamento desconhecido projeta as duas
+  variantes), cenários declarados (`applyRateShock`, `calculateLiquidityCoverage`,
+  `calculateProFormaPosition`; parâmetro sem origem não existe; conjunto mínimo base, adverso e sem
+  rolagem; a frase de ressalva acompanha cada cenário) e antes e depois de refinanciamento
+  (`calculateProFormaPosition`, `maturityConcentration`, `calculateCovenantHeadroom`,
+  `buildDebtServiceSchedule`, `calculateAllInCost`; alternativa que retira série sem custo de saída
+  é bloqueada; sem discriminador não há ranking; headroom só com covenant resolvido e comparável).
+- Ledger de dívida em v3 depois da segunda revisão independente (`fail`, 21 correções):
+  remuneração tipada, uma âncora por termo, definições calculadas só com fonte, saldos da data
+  anterior, titular formal e credores econômicos distintos, silêncio bloqueia, `complete` só com
+  todas as saídas, ids duplicados recusados. Oito dos nove métodos do Caso 01 em `implemented`;
+  45 testes de executores.

@@ -1,13 +1,24 @@
 ---
 id: build-interest-and-indexation-schedule
 version: 2026.09.05-v1
-maturity: candidate
+maturity: implemented
 title_pt: Construir o cronograma de juros e separar IPCA capitalizado do pago
 title_en: Build the interest schedule and separate capitalized from paid indexation
 role: financial_analysis
 blueprint_stage: 4
 owner_role: Head de Modelagem
 effective_date: 2026-09-05
+implementation_module: @offroad/credit-playbook/executors/build-interest-and-indexation-schedule
+implementation_export: buildInterestAndIndexationSchedule
+result_contract: method.build-interest-and-indexation-schedule.v1
+connected_states: [understanding_in_progress]
+persistence_mode: derived_on_demand
+persistence_target: method_results
+unit_test_files: [packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.test.ts]
+gold_case_ids: [gc01-analista-ib-camil]
+adversarial_case_ids: [adversarial:gc01:curve-without-source-refused]
+e2e_scenario_ids: [pending:case01-frozen-run]
+cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-17, D-18, D-24]
 authorities: [DEF, CASA]
 reference_data_keys: [policy.debt.views]

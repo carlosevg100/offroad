@@ -1,13 +1,24 @@
 ---
 id: plan-meeting-brief
 version: 2026.09.05-v1
-maturity: candidate
+maturity: implemented
 title_pt: Planejar a devolutiva e o material de reunião
 title_en: Plan the first deliverable and the meeting material
 role: institutional_materials
 blueprint_stage: 8
 owner_role: Head de DCM
 effective_date: 2026-09-05
+implementation_module: @offroad/credit-playbook/executors/plan-meeting-brief
+implementation_export: planMeetingBrief
+result_contract: method.plan-meeting-brief.v1
+connected_states: [understanding_in_progress]
+persistence_mode: derived_on_demand
+persistence_target: method_results
+unit_test_files: [packages/credit-playbook/src/executors/plan-meeting-brief.test.ts]
+gold_case_ids: [gc01-analista-ib-camil]
+adversarial_case_ids: [adversarial:gc01:question-answered-by-documents-refused]
+e2e_scenario_ids: [pending:case01-frozen-run]
+cost_eval_ids: [deterministic:assembly-only]
 house_procedure_ids: [MA-01, MA-02, LC-01]
 authorities: [CASA]
 task_specs: [M05, M07]
