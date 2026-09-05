@@ -23,15 +23,16 @@ function runAll(premises: PreviewRunContext["premises"] = {}, request?: Partial<
 }
 
 describe("integration_preview run of Case 01", () => {
-  it("runs the nine steps in order on the frozen evidence, every output carrying a state and fingerprints", () => {
+  it("runs the ten steps in order on the frozen evidence, every output carrying a state and fingerprints", () => {
     const {results} = runAll();
-    expect(results).toHaveLength(9);
+    expect(results).toHaveLength(10);
     for (const {taskId, output} of results) {
       expect(typeof output.state, taskId).toBe("string");
       expect(output.trace && typeof output.trace === "object" ? (output.trace as {outputFingerprint?: string}).outputFingerprint : undefined, taskId).toMatch(/^[a-f0-9]{64}$/);
     }
-    const brief = results.at(-1)!.output;
+    const brief = results.at(-2)!.output;
     expect(brief.state).toBe("planned");
+    expect(results.at(-1)!.output.state).toBe("skeleton");
     // The honest state of the case today: the ledger, the statements and the wall are incomplete,
     // the scenarios are blocked on the frozen manifest, so their blocks are gaps naming the
     // pending objects; what is comparable fills the alternatives and the points for the thesis.
@@ -41,7 +42,7 @@ describe("integration_preview run of Case 01", () => {
     expect(filled).toContain("points_for_thesis");
     expect(deliverable.blocks.find((block) => block.id === "debt_by_instrument")?.state).toBe("gap");
     expect(deliverable.objects_pending.map((object) => object.id)).toContain("c05");
-    expect(results.map(({output}) => output.state)).toEqual(["incomplete", "incomplete", "conditioned", "incomplete", "partial", "partial", "blocked", "compared", "planned"]);
+    expect(results.map(({output}) => output.state)).toEqual(["incomplete", "incomplete", "conditioned", "incomplete", "partial", "partial", "blocked", "compared", "planned", "skeleton"]);
   });
   it("is deterministic: the same evidence and premises give the same fingerprints twice", () => {
     const first = runAll().results.map(({output}) => (output.trace as {outputFingerprint: string}).outputFingerprint);
@@ -54,7 +55,7 @@ describe("integration_preview run of Case 01", () => {
     for (const step of case01PreviewSteps) {
       const before = (base.outputs.get(step.taskId)!.trace as {outputFingerprint: string}).outputFingerprint;
       const after = (changed.outputs.get(step.taskId)!.trace as {outputFingerprint: string}).outputFingerprint;
-      if (step.methodId === "compare-refinancing-before-after" || step.methodId === "plan-meeting-brief") expect(after, step.taskId).not.toBe(before);
+      if (step.methodId === "compare-refinancing-before-after" || step.stage === "material") expect(after, step.taskId).not.toBe(before);
       else expect(after, step.taskId).toBe(before);
     }
     const content = previewArtifactContent(case01PreviewSteps.find((step) => step.methodId === "compare-refinancing-before-after")!, changed.outputs.get("S10")!, {newDebtAnnualRate: "0.1550"});
@@ -71,7 +72,7 @@ describe("integration_preview run of Case 01", () => {
     second.context.previousBrief = {output: first.outputs.get("A01")!, objectFingerprints: briefObjectFingerprints(first.outputs)};
     const input = meetingBriefInput(second.context);
     expect(input.previousVersion?.outputFingerprint).toBe((first.outputs.get("A01")!.trace as {outputFingerprint: string}).outputFingerprint);
-    const brief = runPreviewStep(case01PreviewSteps.at(-1)!, second.context).output;
+    const brief = runPreviewStep(case01PreviewSteps.find((step) => step.methodId === "plan-meeting-brief")!, second.context).output;
     expect((brief.page_plan as {state: string}).state).toBe("proposed");
     expect(brief.change_note).not.toBeNull();
   });

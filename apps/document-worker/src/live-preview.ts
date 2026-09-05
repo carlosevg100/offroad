@@ -15,6 +15,7 @@ import {preview} from "@offroad/credit-playbook";
 
 const {describePremises} = preview;
 import type {ModelGateway} from "@offroad/model-gateway";
+import {buildOriginationResearchPlan, runPublicResearch, type PublicSearchProvider, type ResearchRun} from "@offroad/public-research";
 import {z} from "zod";
 
 import {
@@ -157,6 +158,10 @@ export type LiveDecisionInput = {
   understanding: LiveUnderstanding;
   /** The corpus an earlier turn of this project already resolved, if any. */
   priorCaseId: string | null;
+  /** The request of the active preview brief and the answers it already carries, so an answer changes the plan instead of restarting it. */
+  priorRequest: Partial<PreviewRequest> | null;
+  priorAnswers: Array<{questionId: string; answer: string}>;
+  openQuestions: Array<{id: string; text: string}>;
   artifactTypes: string[];
   runActive: boolean;
   priorOutputs: Map<string, PreviewStepOutput>;
@@ -388,6 +393,39 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     };
   }
 
+  // Answers to open questions change scope, audience, depth or form: the plan recompiles and
+  // unchanged objects replay; the answers ride in the brief for the planner and the audit.
+  const knownQuestionIds = new Set(input.openQuestions.map((question) => question.id));
+  const answers = output.turn.answers.filter((answer) => knownQuestionIds.has(answer.questionId));
+  if (answers.length > 0 && hasAnalysis) {
+    const prior = input.priorRequest ?? {};
+    const answeredAspects = new Set<string>();
+    let nextAudience = audience;
+    let nextDepth = depth;
+    let nextForm: PreviewRequest["form"] = (prior.form as PreviewRequest["form"] | undefined) ?? "first_deliverable";
+    for (const answer of answers) {
+      if (answer.effect.audience) { nextAudience = normalizeAudience(answer.effect.audience) ?? nextAudience; answeredAspects.add("audience"); }
+      if (answer.effect.depth) { nextDepth = answer.effect.depth; answeredAspects.add("depth"); }
+      if (answer.effect.scope) { answeredAspects.add("thesis"); }
+    }
+    if (output.turn.scopeChanges.form) { nextForm = output.turn.scopeChanges.form === "memo" ? "internal_briefing" : output.turn.scopeChanges.form; answeredAspects.add("format"); }
+    const undefinedAspects = ((prior.undefinedAspects as PreviewRequest["undefinedAspects"] | undefined) ?? []).filter((aspect) => !answeredAspects.has(aspect));
+    const merged = [...input.priorAnswers.filter((existing) => !answers.some((answer) => answer.questionId === existing.questionId)), ...answers.map((answer) => ({questionId: answer.questionId, answer: answer.answer}))];
+    const answerText = answers.map((answer) => `${answer.questionId}: ${answer.answer}`).join("; ");
+    const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "deepen", audience: {primary: nextAudience, others: []}, form: nextForm, pages: (prior.pages as number | null | undefined) ?? null, sponsorInstruction: `${sponsorInstruction}\n${answerText}`.slice(0, 4_000), undefinedAspects};
+    const premisesAnswered = premisesFromTurn(output.turn);
+    const composition: Composition = Object.keys(premisesAnswered).length > 0 ? "change_premise" : "deepen";
+    if (composition === "change_premise") request.composition = "change_premise";
+    return {
+      kind: "activate", composition,
+      reply: `${headline(input, composition, corpusRecord(corpus), nextAudience, nextDepth)}\n${t(locale,
+        `Respostas aplicadas (${answerText}). Escopo atualizado: audiência ${nextAudience}, profundidade ${nextDepth}, forma ${nextForm}${undefinedAspects.length ? `; ainda em aberto: ${undefinedAspects.join(", ")}` : ""}. O plano recompila; o que não muda replica por fingerprint.`,
+        `Answers applied (${answerText}). Scope updated: audience ${nextAudience}, depth ${nextDepth}, form ${nextForm}${undefinedAspects.length ? `; still open: ${undefinedAspects.join(", ")}` : ""}. The plan recompiles; what does not change replays by fingerprint.`)}`,
+      activation: buildPreviewActivation(composition, request, premisesAnswered, turnInput, {answers: merged}),
+      record: {...base(composition, corpus, false, null), audience: nextAudience, depth: nextDepth},
+    };
+  }
+
   const premises = premisesFromTurn(output.turn);
   const premiseKeys = Object.keys(premises);
   if (premiseKeys.length > 0 && hasAnalysis) {
@@ -442,4 +480,54 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     activation: buildPreviewActivation(composition, request, {}, turnInput),
     record: base(composition, corpus, false, null),
   };
+}
+
+export type UnknownCompanyResearch = {
+  status: "succeeded" | "partial" | "abstained" | "unavailable";
+  company: string;
+  queries: number;
+  sources: Array<{title: string; url: string; provider: string}>;
+  cacheHits: number;
+  providerCalls: number;
+  maxCostExposureUsd: number;
+  reason: string | null;
+  latencyMs: number;
+};
+
+/**
+ * A company without a frozen corpus gets a bounded public research instead of another company's
+ * objects: the deterministic origination plan, at most three queries, three sources each, through
+ * the providers the worker holds. No model call. Without a provider the result says so.
+ */
+export async function researchUnknownCompany(input: {providers: PublicSearchProvider[]; company: string; maxQueries?: number; maxSourcesPerQuery?: number; now?: () => Date}): Promise<UnknownCompanyResearch> {
+  const startedAt = Date.now();
+  const company = input.company.trim().slice(0, 200);
+  if (input.providers.length === 0) return {status: "unavailable", company, queries: 0, sources: [], cacheHits: 0, providerCalls: 0, maxCostExposureUsd: 0, reason: "no public research provider configured", latencyMs: 0};
+  try {
+    const plan = buildOriginationResearchPlan({legalName: company}).slice(0, input.maxQueries ?? 3);
+    const run: ResearchRun = await runPublicResearch({plan, providers: input.providers, maxSourcesPerQuery: input.maxSourcesPerQuery ?? 3, ...(input.now ? {now: input.now} : {})});
+    const seen = new Set<string>();
+    const sources = run.sources.filter((source) => (seen.has(source.url) ? false : (seen.add(source.url), true))).slice(0, 9).map((source) => ({title: source.title, url: source.url, provider: source.provider}));
+    return {
+      status: run.status, company, queries: run.metrics.queryCount, sources,
+      cacheHits: run.metrics.cacheHits, providerCalls: run.metrics.providerCalls,
+      maxCostExposureUsd: Object.values(run.metrics.maxCostExposureUsdByProvider).reduce((total, value) => total + value, 0),
+      reason: run.failures.length ? run.failures.map((failure) => `${failure.provider}:${failure.code}`).slice(0, 4).join(", ") : null,
+      latencyMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    return {status: "unavailable", company, queries: 0, sources: [], cacheHits: 0, providerCalls: 0, maxCostExposureUsd: 0, reason: `public research failed: ${error instanceof Error ? error.message.slice(0, 160) : "unknown"}`, latencyMs: Date.now() - startedAt};
+  }
+}
+
+/** The line the reply carries about the research: what was found, at what exposure, and what is still needed. */
+export function researchReplyLine(locale: "pt-BR" | "en-US", research: UnknownCompanyResearch): string {
+  const host = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; } };
+  if (research.status === "unavailable") {
+    return t(locale, `Pesquisa pública indisponível para ${research.company} (${research.reason ?? "sem provedor"}).`, `Public research unavailable for ${research.company} (${research.reason ?? "no provider"}).`);
+  }
+  const listed = research.sources.slice(0, 5).map((source) => `${source.title} (${host(source.url)})`).join("; ");
+  return t(locale,
+    `Pesquisa pública feita para ${research.company}: ${research.queries} consultas, ${research.sources.length} fontes${research.cacheHits ? `, ${research.cacheHits} do cache` : ""}, exposição máxima US$ ${research.maxCostExposureUsd.toFixed(3)}${listed ? `: ${listed}` : ""}. Com isso monto um entendimento preliminar; a análise de crédito exige os documentos da companhia (ITR, escrituras, relatórios do agente fiduciário) ou uma base congelada.`,
+    `Public research done for ${research.company}: ${research.queries} queries, ${research.sources.length} sources${research.cacheHits ? `, ${research.cacheHits} from cache` : ""}, maximum exposure US$ ${research.maxCostExposureUsd.toFixed(3)}${listed ? `: ${listed}` : ""}. That supports a preliminary understanding; the credit analysis needs the company's documents (quarterly statements, indentures, trustee reports) or a frozen base.`);
 }

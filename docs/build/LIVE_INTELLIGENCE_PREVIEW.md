@@ -87,6 +87,55 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
 - O que a fatia B ainda não prova: perguntas a partir de lacunas (C), resposta alterando o plano
   (C), síntese de banker e arquivo real (D), pesquisa viva para companhia sem pack (E).
 
+## 3.2 Estado da fatia C (5 de setembro, noite)
+
+- Perguntas a partir das lacunas: `preview/gaps.ts` extrai de cada objeto assinado o que ele
+  declara não ter provado, coberto ou conciliado (`block_reasons`, `incomplete_reasons`,
+  `unproven_conditions`, `legal_conditions`, `uncovered_terms`, `uncovered_series`,
+  `assumptions`, `open_divergences`), cada lacuna com um id citável. Em modo `live`, antes do
+  plano da devolutiva, uma chamada (`preview_questions`, sonnet, saída curta) escreve até quatro
+  perguntas; toda pergunta tem de citar pelo menos uma lacuna real, senão é descartada; sem
+  modelo, valem as três perguntas fixas, nomeadas como fixas na devolutiva. A origem, o modelo e
+  o custo ficam no artefato do plano (`preview.questions`) e na devolutiva.
+- Resposta altera o plano: o roteador vivo recebe as perguntas abertas do último plano; uma
+  resposta reconhecida (id conhecido) recompila com a audiência, profundidade e forma que a
+  resposta define, reduz os aspectos indefinidos, guarda as respostas no brief (`answers`) e
+  replica o que não muda; premissa na resposta vira `change_premise`.
+- Orçamento do run de prévia: três chamadas e dez centavos (migration
+  `integration_preview_run_budget`), sob os tetos do worker.
+
+## 3.3 Estado da fatia D (5 de setembro, noite)
+
+- Décima etapa do workflow: `A02` `write-meeting-synthesis` (método registrado na biblioteca,
+  estágio implemented, `knowledge/procedures/materials/write-meeting-synthesis.md`), depois do
+  plano da devolutiva. Sem modelo, esqueleto: as manchetes que o plano assinou para cada objeto,
+  por seção fixa. Em modo `live`, uma chamada (`preview_synthesis`, sonnet) redige a prosa das
+  cinco seções só com o que os objetos afirmam; depois, a verificação determinística remove toda
+  frase cujo número os objetos não sustentam (vocabulário numérico extraído dos próprios objetos,
+  nas formas em que a prosa escreve: 5.670.186, 4,72x, 15,5%) e lista o que removeu. Fonte,
+  modelo, custo, latência, números verificados e frases removidas ficam na saída e na devolutiva.
+- Arquivo real: `/[locale]/app/projects/[projectId]/preview/material?format=docx|xlsx` gera, do
+  último artefato `preview_material` e das tabelas dos objetos, um Word (`case-export`) e uma
+  planilha (SheetJS), com versão e fingerprint do artefato nos cabeçalhos; links no painel.
+- Atualização incremental: a síntese depende dos nove objetos; premissa alterada muda S10, A01 e
+  A02 (7 de 10 replicam), a nova síntese nomeia o que mudou por fingerprint e o arquivo sai em
+  nova versão. Cobertura no gate vivo: download do Word e da planilha, versão maior depois da
+  premissa.
+
+## 3.4 Estado da fatia E (5 de setembro, noite)
+
+- Companhia sem corpus congelado: além de recusar os objetos da Camil, o roteador vivo roda uma
+  pesquisa pública limitada (plano de originação determinístico, até três consultas, três fontes
+  por consulta) pelos provedores configurados no worker (Perplexity em produção; na CI do gate,
+  a chave é opcional e, sem ela, a resposta diz que a pesquisa está indisponível). A resposta
+  lista as fontes encontradas (título e domínio) e diz o que ainda falta para a análise de
+  crédito: os documentos da companhia ou uma base congelada. A pesquisa não chama modelo; os
+  provedores têm teto por chamada e o evento de estágio registra consultas, fontes, acertos de
+  cache e exposição máxima de custo por provedor.
+- O que a fatia E não faz: extrair objetos de uma companhia nova (isso é o pipeline de
+  extração, que segue medido à parte) nem usar cache de companhia entre projetos (a memória de
+  companhia da pesquisa de originação fica para uma fatia posterior).
+
 ## 4. O que continua fora
 
 Liberação a clientes, aprovação ou parecer. A trilha de revisão independente segue em paralelo,

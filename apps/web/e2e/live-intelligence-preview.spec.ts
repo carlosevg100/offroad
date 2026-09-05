@@ -158,6 +158,8 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     expect(headline["corpus"]).toBe("nenhum");
     expect(reply).toContain("Magazine Luiza");
     expect(reply).not.toMatch(/4,72x|5\.670\.186|Camil Alimentos/);
+    // Either a bounded public research ran (sources listed) or the router said it was unavailable; both are honest, neither borrows Camil.
+    expect(reply).toMatch(/Pesquisa pública/);
     await page.screenshot({path: join(outputDirectory, "02-other-company.png"), fullPage: true});
   });
 
@@ -204,11 +206,42 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     await send(page, prompt);
     const reply = await waitForAssistant(page, /live_intelligence_preview\] composição=change_premise/);
     record("premissa", prompt, reply);
-    const update = await waitForAssistant(page, /7 de 9 etapas replicaram sem recálculo/);
+    const update = await waitForAssistant(page, /7 de 10 etapas replicaram sem recálculo/);
     transcript.push(`\n**Offroad (atualização incremental):** ${update}\n`);
     await page.screenshot({path: join(outputDirectory, "05-premise-change.png"), fullPage: true});
   });
 
-  test.fixme("a user's answer to an open question changes scope, audience and depth (slice C)", async () => {});
-  test.fixme("the material file is updated in place after a premise change (slice D)", async () => {});
+  test("an answer to an open question changes scope, audience and depth, and the plan recompiles", async () => {
+    // The readout lists questions the model wrote from the objects' gaps; answering the first one
+    // with a scope, an audience and a depth must recompile the plan, not restart it.
+    const readout = (await assistantMessages(page)).find((message) => /Para alinhar com o VP/.test(message)) ?? "";
+    const firstQuestion = readout.match(/\(1\) ([^(]+?)(?: \(2\)|$)/)?.[1]?.trim() ?? "";
+    const prompt = `Sobre a sua pergunta "${firstQuestion.slice(0, 120)}": leitura ampla de alternativas, é para o conselho e precisa ser institucional.`;
+    await send(page, prompt);
+    const reply = await waitForAssistant(page, /live_intelligence_preview\] composição=(deepen|change_premise)/);
+    record("resposta à pergunta", prompt, reply);
+    expect(reply).toContain("Respostas aplicadas");
+    expect(parseHeadline(reply)["audiência"]).toBe("board");
+    const update = await waitForAssistant(page, /etapas replicaram sem recálculo|Primeira devolutiva do Caso 01/, 300_000);
+    transcript.push(`\n**Offroad (plano recompilado):** ${update}\n`);
+  });
+  test("the material is a real file, regenerated from the objects after the premise change", async () => {
+    // The synthesis artifact is served as a Word file and as a spreadsheet, built from the signed
+    // objects; a later version after the premise change carries a higher artifact version.
+    const projectId = firstProjectUrl.split("/").pop()!;
+    const base = `/pt-BR/app/projects/${projectId}/preview/material`;
+    const docx = await page.request.get(`${base}?format=docx`);
+    expect(docx.status()).toBe(200);
+    expect(docx.headers()["content-type"]).toContain("wordprocessingml");
+    const docxBody = await docx.body();
+    expect(docxBody.byteLength).toBeGreaterThan(2_000);
+    writeFileSync(join(outputDirectory, "material.docx"), docxBody);
+    const xlsx = await page.request.get(`${base}?format=xlsx`);
+    expect(xlsx.status()).toBe(200);
+    expect(xlsx.headers()["content-type"]).toContain("spreadsheetml");
+    writeFileSync(join(outputDirectory, "material.xlsx"), await xlsx.body());
+    const version = Number(docx.headers()["x-preview-artifact-version"]);
+    expect(version).toBeGreaterThanOrEqual(2);
+    transcript.push(`\n**Arquivo:** material.docx (versão ${version}, ${docxBody.byteLength} bytes) e material.xlsx gerados dos objetos assinados.\n`);
+  });
 });

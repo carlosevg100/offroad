@@ -80,8 +80,7 @@ jobs:
             -d '{"email":"local-worker@offroad.invalid","password":"local-worker-password-2026"}' > /dev/null
           psql "$DB_URL" -v ON_ERROR_STOP=1 -q \
             -c "update auth.users set email_confirmed_at = coalesce(email_confirmed_at, now()) where email = 'local-worker@offroad.invalid';"
-          psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f apps/web/e2e/support/integration-preview-local.sql
-          psql "$DB_URL" -v ON_ERROR_STOP=1 -q -c "alter database postgres set offroad.local_preview_mode = 'live';"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -v mode=live -q -f apps/web/e2e/support/integration-preview-local.sql
 
       - name: Build and deploy the worker
         run: |
@@ -104,6 +103,10 @@ jobs:
           ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
           echo "::add-mask::$ANTHROPIC_API_KEY"
           export ANTHROPIC_API_KEY
+          # Public research for a company without a frozen corpus: the search key is optional; without
+          # it the router says the research is unavailable instead of pretending.
+          PERPLEXITY_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/perplexity-api-key --query SecretString --output text 2>/dev/null || true)
+          if [ -n "$PERPLEXITY_API_KEY" ]; then echo "::add-mask::$PERPLEXITY_API_KEY"; export PERPLEXITY_API_KEY; else echo 'no search key available to this workflow'; fi
           eval "$(supabase status -o env)"
           export SUPABASE_URL="${API_URL}"
           export SUPABASE_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY}}"
@@ -141,7 +144,8 @@ jobs:
 
       - name: Build the gate report from the worker log
         if: always()
-        run: node scripts/live-gate-report.mjs worker.log "$RUNNER_TEMP/live-gate/report.json" | tee live-gate-summary.md
+        run: |
+          if [ -f worker.log ]; then node scripts/live-gate-report.mjs worker.log "$RUNNER_TEMP/live-gate/report.json" | tee live-gate-summary.md; else echo 'no worker log: the run stopped before the worker started' | tee live-gate-summary.md; fi
 
       - name: Upload the gate report, the journey and the worker log
         if: always()

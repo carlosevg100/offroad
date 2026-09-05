@@ -2,3 +2,5 @@
 export * from "./workflow";
 export * from "./run";
 export * from "./corpora";
+export * from "./gaps";
+export * from "./synthesis";
