@@ -307,7 +307,7 @@ export type IntegrationPreviewDependencies = {
 
 const requestSchema = z.object({
   turn: z.number().int().positive(),
-  composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen"]),
+  composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen", "prepare_decision"]),
   audience: z.object({primary: z.string(), others: z.array(z.string()).default([])}).nullable(),
   form: z.enum(["first_deliverable", "internal_briefing", "pitch_pages", "analysis_with_scenarios", "board_deck"]).nullable(),
   pages: z.number().int().positive().nullable(),
