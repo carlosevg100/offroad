@@ -90,7 +90,7 @@ const permute = <T>(items: T[], seed: number): T[] => {
 };
 const sumShares = (entries: Array<{shareOfGrossBeforeContra: string}>) => entries.reduce((sum, entry) => sum + Number(entry.shareOfGrossBeforeContra), 0);
 
-describe("build-debt-ledger executor (v8)", () => {
+describe("build-debt-ledger executor (v9)", () => {
   it("gold: gross debt of both dates, total reconciliation, first period against current liabilities, both views with their definitions and per-operand anchors", () => {
     const ledger = buildDebtLedger(camil());
     expect(ledger.state).toBe("complete");
@@ -117,8 +117,8 @@ describe("build-debt-ledger executor (v8)", () => {
     expect(Math.abs(sumShares(ledger.by_indexer) - 1)).toBeLessThan(1e-6);
     expect(Math.abs(sumShares(ledger.by_currency) - 1)).toBeLessThan(1e-6);
     // The answer key's percentages divide by the gross debt of the note: 13,1% IPCA and 19,4% foreign currency.
-    expect(ledger.by_indexer.find((entry) => entry.indexer === "IPCA")?.shareOfGrossDebt.startsWith("0.1312")).toBe(true);
-    const foreignShare = ledger.by_currency.filter((entry) => entry.currency !== "BRL").reduce((sum, entry) => sum + Number(entry.shareOfGrossDebt), 0);
+    expect(ledger.by_indexer.find((entry) => entry.indexer === "IPCA")?.shareOfReportedGrossDebt.startsWith("0.1312")).toBe(true);
+    const foreignShare = ledger.by_currency.filter((entry) => entry.currency !== "BRL").reduce((sum, entry) => sum + Number(entry.shareOfReportedGrossDebt), 0);
     expect(foreignShare).toBeCloseTo(0.1944, 3);
   });
 
@@ -131,7 +131,7 @@ describe("build-debt-ledger executor (v8)", () => {
     expect(ids).toContain("financial.debt_views:release:reported_difference");
     expect(ids).toContain("financial.maturity_buckets:current");
     const ipcaGroup = ledger.by_indexer.find((entry) => entry.indexer === "IPCA")!;
-    expect(ledger.trace.calculations.find((calculation) => calculation.id === "financial.debt_ledger_group:indexer:IPCA")?.result).toBe(`${ipcaGroup.balance};${ipcaGroup.shareOfGrossBeforeContra};${ipcaGroup.shareOfGrossDebt}`);
+    expect(ledger.trace.calculations.find((calculation) => calculation.id === "financial.debt_ledger_group:indexer:IPCA")?.result).toBe(`${ipcaGroup.balance};${ipcaGroup.shareOfGrossBeforeContra};${ipcaGroup.shareOfReportedGrossDebt}`);
     expect(Number(ipcaGroup.shareOfGrossBeforeContra) * 5742510).toBeCloseTo(743955, 0);
   });
 
@@ -227,6 +227,11 @@ describe("build-debt-ledger executor (v8)", () => {
     ];
     const inconsistentRows: DebtLedgerInput["rows"] = [{...rows[0]!, classification: {current: "50", nonCurrent: "100"}}, {...rows[1]!, classification: {current: "50", nonCurrent: "0"}}];
     expect(() => buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: inconsistentRows, balanceSheet: {current: "100", nonCurrent: "100", anchor}})).toThrow(/does not add up to its balance/);
+    // A contra line carries a signed split and reconciles with the rest.
+    const withContra: DebtLedgerInput["rows"] = [...rows, {id: "costs", instrument: "Custos de transação", balance: "-10", currency: "BRL", contra: true, classification: {current: "-4", nonCurrent: "-6"}, anchors: {balance: anchor, classification: anchor}}];
+    const contraSplit = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: withContra, balanceSheet: {current: "46", nonCurrent: "94", anchor}});
+    expect(contraSplit.reconciliation.split.state).toBe("reconciled");
+    expect(() => buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows: [...rows, {id: "costs", instrument: "Custos", balance: "-10", currency: "BRL", contra: true, classification: {current: "4", nonCurrent: "-14"}, anchors: {balance: anchor, classification: anchor}}]})).toThrow(/positive part/);
     const good = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows, balanceSheet: {current: "50", nonCurrent: "100", anchor}});
     expect(good.reconciliation.split).toEqual({state: "reconciled", currentDifference: "0", nonCurrentDifference: "0", reason: null});
     const swapped = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows, balanceSheet: {current: "60", nonCurrent: "90", anchor}});
@@ -299,7 +304,13 @@ describe("build-debt-ledger executor (v8)", () => {
     const negativeSplit = camil();
     (negativeSplit.rows[0] as Row).classification = {current: "-1", nonCurrent: "1314413"};
     (negativeSplit.rows[0] as Row).anchors = {balance: itr(39, "15"), classification: itr(39, "15")};
-    expect(() => buildDebtLedger(negativeSplit)).toThrow();
+    expect(() => buildDebtLedger(negativeSplit)).toThrow(/negative part on an obligation/);
+    const contradictoryWithoutCash = camil();
+    delete contradictoryWithoutCash.cash;
+    contradictoryWithoutCash.definitions = {...contradictoryWithoutCash.definitions, release: {text: "dívida bruta mais caixa e aplicações financeiras", anchor: {document: "ri_release_1t26.pdf", page: 12}}};
+    const blockedAnyway = buildDebtLedger(contradictoryWithoutCash);
+    expect(blockedAnyway.state).toBe("blocked");
+    expect(blockedAnyway.block_reasons[0]).toMatch(/never deducts anything/);
   });
 
   it("keeps a contractual-only inclusion out of the identity with the balance sheet, and names an absent cash component instead of failing", () => {
@@ -313,6 +324,7 @@ describe("build-debt-ledger executor (v8)", () => {
     const result = buildDebtLedger({referenceDate: "2026-05-31", unit: "BRL thousand", source: "note", rows, balanceSheet: {current: "40", nonCurrent: "60", anchor}, schedule: {periods: [{period: "y1", amount: "40", endsAt: "2027-05-31"}, {period: "y2", amount: "60", endsAt: "2028-05-31"}], anchor}, cash, definitions});
     expect(result.gross_debt).toBe("110");
     expect(result.gross_debt_reported).toBe("100");
+    expect(result.by_indexer[0]?.shareOfReportedGrossDebt).toBe("1.1");
     expect(result.reconciliation.total.state).toBe("reconciled");
     expect(result.contractual_only_inclusions).toEqual([{rowId: "lease", balance: "10", anchor: {document: "escritura_hipotetica.pdf", clause: "1.1", page: 7}}]);
     expect(result.net_debt_views.release?.value).toBe("75");
