@@ -229,13 +229,22 @@ export function meetingBriefInput(context: PreviewRunContext): BriefInput {
         objectFingerprints: previous.objectFingerprints,
       }
     : null;
+  const answeredIds = new Set((context.answers ?? []).map((answer) => answer.questionId));
+  const carriedQuestions: BriefInput["candidateQuestions"] = previousOutput && Array.isArray(previousOutput.alignment_questions)
+    ? (previousOutput.alignment_questions as Array<{id?: unknown; text?: unknown; changes_the_work?: unknown}>)
+        .filter((question) => typeof question.id === "string" && typeof question.text === "string" && !answeredIds.has(question.id))
+        .map((question, index) => ({id: question.id as string, text: question.text as string, changesTheWork: typeof question.changes_the_work === "string" ? question.changes_the_work : "define a forma e a profundidade do trabalho", coverage: {searched: documents, answeredBy: null, answer: null}, priority: index}))
+    : [];
   const {turn, audience, form, pages, sponsorInstruction, undefinedAspects} = context.request;
   return {
     documents,
     caseId: case01EvidenceManifest.caseId,
     request: {turn, audience: audience ? {primary: audience.primary, others: audience.others ?? []} : null, form, pages, sponsorInstruction: context.answers?.length ? `${sponsorInstruction ?? ""}\n${context.answers.map((answer) => `Resposta a ${answer.questionId}: ${answer.answer}`).join("\n")}`.trim().slice(0, 4_000) : sponsorInstruction, undefinedAspects, confirmedPlanId: null},
     objects,
-    candidateQuestions: context.candidateQuestions ?? (context.request.composition === "prepare_meeting" ? [
+    // Without new questions for this run, the previous brief's unanswered questions stay open: a
+    // premise change or a material request must not silently drop what the desk asked, or the
+    // person's later answer has nothing to match. New model questions replace them.
+    candidateQuestions: context.candidateQuestions ?? (carriedQuestions.length ? carriedQuestions : context.request.composition === "prepare_meeting" ? [
       {id: "q-angle", text: "Leitura de refinanciamento ou alternativas mais amplas?", changesTheWork: "define o universo de alternativas", coverage: {searched: documents, answeredBy: null, answer: null}, priority: 0},
       {id: "q-meeting", text: "Reunião exploratória ou produto a testar?", changesTheWork: "define profundidade e forma", coverage: {searched: documents, answeredBy: null, answer: null}, priority: 1},
       {id: "q-format", text: "Briefing interno, páginas de pitch ou análise com cenários?", changesTheWork: "define o material", coverage: {searched: documents, answeredBy: null, answer: null}, priority: 2},

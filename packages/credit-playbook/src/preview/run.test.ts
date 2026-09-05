@@ -62,6 +62,18 @@ describe("integration_preview run of Case 01", () => {
     expect((content.preview as {premisesApplied: unknown}).premisesApplied).toEqual({newDebtAnnualRate: "0.1550"});
     expect((content.preview as {methodMaturity: string}).methodMaturity).toBe("implemented");
   });
+  it("keeps the previous brief's unanswered questions open when the run brings no new ones, and drops the answered one", () => {
+    const first = runAll();
+    const asked = (first.outputs.get("A01")!.alignment_questions as Array<{id: string}>).map((question) => question.id);
+    expect(asked.length).toBeGreaterThan(0);
+    const premiseTurn = runAll({newDebtAnnualRate: "0.1550"}, {turn: 2, composition: "change_premise", undefinedAspects: []});
+    premiseTurn.context.previousBrief = {output: first.outputs.get("A01")!, objectFingerprints: briefObjectFingerprints(first.outputs)};
+    expect((meetingBriefInput(premiseTurn.context).candidateQuestions ?? []).map((question) => question.id)).toEqual(asked);
+    const brief = runPreviewStep(case01PreviewSteps.find((step) => step.methodId === "plan-meeting-brief")!, premiseTurn.context).output;
+    expect((brief.alignment_questions as Array<{id: string}>).map((question) => question.id)).toEqual(asked);
+    premiseTurn.context.answers = [{questionId: asked[0]!, answer: "leitura ampla de alternativas, para o conselho"}];
+    expect((meetingBriefInput(premiseTurn.context).candidateQuestions ?? []).map((question) => question.id)).toEqual(asked.slice(1));
+  });
   it("cites facts only from signed fields, and the material plan of turn two carries a change note against turn one", () => {
     const first = runAll();
     const ledger = first.outputs.get("C05")!;

@@ -27,7 +27,6 @@ const journey: Array<{step: string; prompt: string; headline: Record<string, str
 const LIVE_MARK = "[Validação interna, live_intelligence_preview]";
 
 test.skip(!process.env.LIVE_PREVIEW, "live gate only: needs the worker with a model key (LIVE_PREVIEW=1)");
-test.use({video: "on"});
 test.describe.configure({mode: "serial"});
 
 async function assistantMessages(page: Page): Promise<string[]> {
