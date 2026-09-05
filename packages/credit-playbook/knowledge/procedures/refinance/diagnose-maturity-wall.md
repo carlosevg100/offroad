@@ -1,6 +1,6 @@
 ---
 id: diagnose-maturity-wall
-version: 2026.09.05-v2
+version: 2026.09.05-v3
 maturity: implemented
 title_pt: Diagnosticar a parede de vencimentos
 title_en: Diagnose the maturity wall
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/diagnose-maturity-wall
 implementation_export: diagnoseMaturityWall
-result_contract: method.diagnose-maturity-wall.v2
+result_contract: method.diagnose-maturity-wall.v3
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -74,17 +74,17 @@ a lista das fontes de pagamento que a base não prova.
 - Ledger sem cronograma conciliado.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.diagnose-maturity-wall.v2`
+- schema_version (string, required): identificador do contrato de resultado, `method.diagnose-maturity-wall.v3`
 - reference_date (date, required): data-base
-- unit (string, required): unidade dos valores monetários; participações e coberturas levam a unidade `x`
-- state (enum, required): complete, incomplete (sem geração declarada, cobertura só de caixa) ou blocked | values: complete, incomplete, blocked
+- unit (string, required): unidade dos valores monetários, igual à unidade em que o ledger reporta a dívida bruta (uma reescala coerente sob outro rótulo é recusada); participações e coberturas levam a unidade `x`
+- state (enum, required): complete, incomplete (sem CFADS declarado, cobertura só de caixa) ou blocked (o diagnóstico para, sem paredes nem cobertura) | values: complete, incomplete, blocked
 - block_reasons (array, required): motivos estruturados de bloqueio (cronograma vazio, dívida bruta zero, cronograma que não fecha com a dívida bruta)
 - incomplete_reasons (array, required): o que a base não permitiu (geração declarada)
 - wall_threshold (object, required): participação limite com chave e versão da política; parede é participação estritamente acima do limiar, comparada nas oito casas em que é escrita
-- walls (array, required): períodos com valor, participação sobre a dívida bruta, variação contra a data anterior, classificação de parede e âncora do cronograma
+- walls (array, required): períodos com valor, participação sobre a dívida bruta, variação contra a data anterior (com a data e a âncora do comparador), classificação de parede e âncora do cronograma; vazio quando o ledger está bloqueado, porque o diagnóstico para
 - peak (object, required): o período de maior concentração pelo `financial-core`, ou nulo
-- coverage (object, required): definição de caixa com âncora, geração declarada (LTM ou projeção, doze meses) com âncora, cobertura sequencial por período pelo `financial-core` (caixa carregado, geração, fontes contratadas, serviço, cobertura, caixa final, déficit e a dependência de rolagem em palavras), períodos em aberto marcados como não avaliados, déficit carregado ao fim do horizonte e ressalva sobre a liquidez
-- sources (array, required): cada fonte de pagamento citada com valor, período, estado provado ou não provado (provada só com contrato e desembolso na base, nunca por sinalizador), motivo e as três âncoras (aprovação, contrato, desembolso)
+- coverage (object, required): definição de caixa com âncora, geração de caixa para o serviço da dívida (CFADS, LTM ou projeção declarada, doze meses; EBITDA não serve) com âncora, cobertura sequencial por período pelo `financial-core` (caixa carregado, geração, fontes contratadas, serviço, cobertura, caixa final, déficit incremental do período, déficit acumulado carregado e a dependência de rolagem em palavras), períodos em aberto marcados como não avaliados, déficit carregado ao fim do horizonte e ressalva sobre a liquidez
+- sources (array, required): cada fonte de pagamento citada com id, valor, período, estado provado ou não provado (provada só com um contrato e uma prova de desembolso na base, cada um da sua classe documental e em documento próprio; uma ata não é contrato; nunca por sinalizador), motivo e as três âncoras (aprovação, contrato, desembolso)
 - uncovered_terms (array, required): geração ausente, disponibilidade do caixa não provada e fontes não provadas, com estado `insufficient_evidence` e motivo
 - notes (array, required): a quebra de covenant como evento de vencimento antecipado não automático; cronograma contratual e cenário de aceleração nunca somados
 - trace (object, required): concentração por período, cobertura por período (operandos: caixa inicial, geração, fontes contratadas, principal) com unidade; fingerprints de entrada e saída com o trace dentro
