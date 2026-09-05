@@ -23,7 +23,7 @@ const documents: ScenarioInput["documents"] = [
 const camil = (): ScenarioInput => ({
   referenceDate: asOf,
   unit: "BRL thousand",
-  unitAnchor: itr(39, "nota 15, valores em R$ mil"),
+  unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"},
   documents,
   assumptions: [
     {key: "cfads.2026-27.range", role: "cfads", period: "2026/27", value: "200000", unit: "BRL thousand", origin: "user_range", rationale: "intervalo declarado para testar capacidade; a base pública não traz geração de caixa para o serviço da dívida", asOf, anchor: user("intervalo, não estimativa da companhia"), confidence: "low"},
