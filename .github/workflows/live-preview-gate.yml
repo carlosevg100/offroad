@@ -168,18 +168,32 @@ jobs:
           psql "$DB_URL" -At -v ON_ERROR_STOP=1 -c "select coalesce(jsonb_agg(jsonb_build_object('artifactId', id, 'projectId', capital_project_id, 'planId', plan_id, 'taskRunId', task_run_id, 'type', artifact_type, 'version', artifact_version, 'status', status, 'inputFingerprint', input_fingerprint, 'artifactFingerprint', artifact_fingerprint, 'createdAt', created_at) order by created_at), '[]'::jsonb) from public.capital_project_artifacts" > "$RUNNER_TEMP/live-gate/artifacts.json"
           for f in envelopes briefs plans runs artifacts; do printf '%s: %s bytes\n' "$f" "$(wc -c < "$RUNNER_TEMP/live-gate/$f.json")"; done
 
-      - name: Upload the gate report, the journey and the worker log
+      # The deliverable: transcript, journey, screenshots, generated files, the report and the database
+      # exports, with the worker log. A few megabytes. Videos, traces and the Playwright report only
+      # leave the runner when a step failed, in a separate bundle.
+      - name: Upload the gate report, the journey, the exports and the worker log
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: live-preview-gate
           path: |
-            apps/web/playwright-report
-            apps/web/test-results
+            apps/web/test-results/live-intelligence-preview
             worker.log
+            live-gate-summary.md
             ${{ runner.temp }}/live-gate
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Upload the Playwright report, traces and videos of the failed steps
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: live-preview-gate-debug
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Stop the worker
         if: always()
