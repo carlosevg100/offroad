@@ -61,7 +61,9 @@ test.describe("integration_preview: Case 01 end to end", () => {
 
   test.beforeAll(async ({browser}) => {
     mkdirSync(outputDirectory, {recursive: true});
-    context = await browser.newContext();
+    // The video is the gate's recording: a manually created context records only when asked to,
+    // and the file is finalized when the context closes in afterAll.
+    context = await browser.newContext({viewport: {width: 1366, height: 900}, recordVideo: {dir: join(outputDirectory, "video"), size: {width: 1366, height: 900}}});
     page = await context.newPage();
   });
 

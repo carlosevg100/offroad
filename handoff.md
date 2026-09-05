@@ -33,7 +33,13 @@ da homologação profunda de cada componente. O modo interno `integration_previe
 em estágio `implemented` para uma organização concedida, com banner, marcas e restrições; nada é
 liberação. Roteador determinístico de turno, corrida das nove etapas com replay por fingerprint,
 devolutiva compilada dos objetos, painel com os nove artefatos e jornada E2E gravada com o worker
-no stack local. Detalhes e estado em `docs/build/INTEGRATION_PREVIEW.md` (PR #443).
+no stack local. Detalhes e estado em `docs/build/INTEGRATION_PREVIEW.md` (PR #443). O primeiro E2E com
+worker (5 set) ensinou três coisas, todas corrigidas no mesmo PR: a organização nova só chega ao
+compositor depois do aceite de confidencialidade e do primeiro projeto; a ativação reaproveitava
+plano com o mesmo fingerprint, e um plano com runs não pode ser reativado (agora um plano por
+turno, replay de artefatos entre planos, etapa replicada registra run no plano do turno); e o
+worker recusava na claim todo `case_analysis` enfileirado sem `analysis_scope` desde o PR #329
+(P1 fora da prévia, corrigido com default `full_case` pelo tipo do job).
 
 ### Engineering update: Case 01 round 5 merged, 5 September 2026
 
