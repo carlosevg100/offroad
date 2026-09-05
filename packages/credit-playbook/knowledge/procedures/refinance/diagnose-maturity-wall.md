@@ -1,6 +1,6 @@
 ---
 id: diagnose-maturity-wall
-version: 2026.09.05-v7
+version: 2026.09.05-v8
 maturity: implemented
 title_pt: Diagnosticar a parede de vencimentos
 title_en: Diagnose the maturity wall
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/diagnose-maturity-wall
 implementation_export: diagnoseMaturityWall
-result_contract: method.diagnose-maturity-wall.v7
+result_contract: method.diagnose-maturity-wall.v8
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -74,7 +74,7 @@ a lista das fontes de pagamento que a base não prova.
 - Ledger sem cronograma conciliado.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.diagnose-maturity-wall.v7`
+- schema_version (string, required): identificador do contrato de resultado, `method.diagnose-maturity-wall.v8`
 - reference_date (date, required): data-base
 - unit (enum, required): unidade dos valores monetários, igual à unidade em que o ledger reporta a dívida bruta e ancorada na fonte que a declara (uma reescala coerente sob outro rótulo é recusada); participações e coberturas levam a unidade `x`
 - state (enum, required): complete, incomplete (sem CFADS declarado, cobertura só de caixa) ou blocked (o diagnóstico para, sem paredes nem cobertura) | values: complete, incomplete, blocked
@@ -115,3 +115,5 @@ a lista das fontes de pagamento que a base não prova.
 ## Regras
 - Fonte de pagamento sem contrato ou demonstração não conta.
 - Cronograma contratual e cronograma em cenário nunca se somam.
+- Aprovação é fato datado (data da deliberação e âncora); aprovação futura à data de referência não é evidência. O período que a fonte alegada cobre só entra quando o documento o nomeia; a ata que não nomeia período fica com `claimed_period` nulo.
+- O desfecho padrão da aceleração é confrontado com o texto da cláusula: cláusula automática não cabe em nenhum desfecho declarado; "declarado salvo deliberação da assembleia" exige que o texto diga isso; "somente por deliberação da assembleia" idem. Datas são datas reais de calendário; a nota da unidade em reais é lida como escrita (R$, reais, BRL).

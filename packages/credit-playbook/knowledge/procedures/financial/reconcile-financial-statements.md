@@ -1,6 +1,6 @@
 ---
 id: reconcile-financial-statements
-version: 2026.09.05-v8
+version: 2026.09.05-v9
 maturity: implemented
 title_pt: Conciliar as demonstrações entre si e com o release
 title_en: Reconcile the financial statements with each other and with the release
@@ -10,7 +10,7 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-financial-statements
 implementation_export: reconcileFinancialStatements
-result_contract: method.reconcile-financial-statements.v8
+result_contract: method.reconcile-financial-statements.v9
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -86,7 +86,7 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 
 # Outputs
 - state (enum, required): closes, differences_explained, open_divergences, incomplete, identity_failed ou blocked, nesta precedência inversa: bloqueio antes de identidade falha, antes de incompleto, antes de divergências abertas, antes de diferenças explicadas, antes de fecha | values: closes, differences_explained, open_divergences, incomplete, identity_failed, blocked
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v8`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v9`
 - reference_date (date, required): data-base
 - unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
 - block_reasons (array, required): motivos estruturados de bloqueio (base vazia)
@@ -120,3 +120,6 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 ## Regras
 - Duas fontes que discordam ficam registradas como divergência; não se escolhe uma em silêncio.
 - Tolerância só entra quando versionada.
+- Derivação com sinal por operando (`signed_sum`): cada parcela anexa a sua própria âncora (a dívida bruta contratual soma 5.670.186 da nota 15 e 14.335 dos derivativos passivos do balanço, p. 12, e da nota 25, p. 51); os dividendos declarados de 420.000 vêm da proposta da administração à AGOE, p. 36.
+- A definição contratual carrega o residual "outras dívidas onerosas" e a condição dos arrendamentos (só se a escritura os incluir, condição jurídica registrada); componentes que a nota não mede tornam o par não comparável, nunca fechado.
+- O sinal declarado por fonte é aplicado antes da comparação e rastreado; linha redutora da ponte publicada negativa em `as_published` é recusada; ponte de juros não comparável entra em `incomplete_reasons`.

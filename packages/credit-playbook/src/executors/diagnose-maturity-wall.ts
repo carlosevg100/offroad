@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `diagnose-maturity-wall` (v7, after the sixth independent review). Reads
+ * Executor of the method `diagnose-maturity-wall` (v8, after the seventh independent review). Reads
  * the ledger's schedule, names the walls against a versioned threshold (a share strictly above it),
  * measures each period's cover sequentially through financial-core (cash carried forward, the
  * generation declared for that period and nothing for a period without one, contracted sources),
@@ -24,13 +24,18 @@ import {z} from "zod";
 const money = z.string().regex(/^-?\d+(\.\d+)?$/);
 const nonNegative = z.string().regex(/^\d+(\.\d+)?$/);
 const nonEmpty = z.string().trim().min(1);
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const isRealDate = (value: string) => {
+  const [year, month, day] = value.split("-").map(Number) as [number, number, number];
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+};
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(isRealDate, "not a real calendar date");
 const unitSchema = z.enum(["BRL", "BRL thousand", "BRL million", "USD", "USD thousand"]);
 const anchorSchema = z.object({document: nonEmpty, page: z.number().int().positive().optional(), note: nonEmpty.optional(), clause: nonEmpty.optional()}).strict();
 type Anchor = z.infer<typeof anchorSchema>;
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
-const UNIT_WORDS: Record<z.infer<typeof unitSchema>, RegExp> = {"BRL": /\b(R\$|reais|BRL)\b(?!\s*(mil|milh))/i, "BRL thousand": /\b(mil|thousand)\b/i, "BRL million": /\b(milh[õo]es|million)\b/i, "USD": /\bUSD\b(?!\s*(mil|thousand))/i, "USD thousand": /\bUSD\b.*\b(mil|thousand)\b/i};
+const UNIT_WORDS: Record<z.infer<typeof unitSchema>, RegExp> = {"BRL": /(R\$|\breais\b|\bBRL\b)(?!\s*(mil|milh))/i, "BRL thousand": /\b(mil|thousand)\b/i, "BRL million": /\b(milh[õo]es|million)\b/i, "USD": /\bUSD\b(?!\s*(mil|thousand))/i, "USD thousand": /\bUSD\b.*\b(mil|thousand)\b/i};
 const perimeterSchema = z.enum(["consolidated", "parent"]);
 
 export const maturityWallInputSchema = z.object({
@@ -63,7 +68,8 @@ export const maturityWallInputSchema = z.object({
     /** The period the file assigns the source to; it is placed there only once the source is proven. */
     claimedPeriod: nonEmpty.nullable(),
     evidence: z.object({
-      approval: anchorSchema.nullable(),
+      /** The approval is a dated fact: the date of the resolution and its anchor; an undated approval is not evidence. */
+      approval: z.object({date: isoDate, anchor: anchorSchema}).strict().nullable(),
       contract: z.object({kind: z.literal("contract"), date: isoDate, /** The amount the contract states. */ amount: nonNegative, anchor: anchorSchema}).strict().nullable(),
       /** The disbursement must fall after the reference date: an earlier one already sits inside the cash. Its amount and date are what the cover uses, never the claimed figure. */
       disbursement: z.object({kind: z.literal("disbursement_proof"), date: isoDate, amount: nonNegative, anchor: anchorSchema}).strict().nullable(),
@@ -80,6 +86,16 @@ export const maturityWallInputSchema = z.object({
   }).strict().nullable().default(null),
 }).strict().superRefine((input, context) => {
   if (new Decimal(input.wallThreshold.share).gt(1)) context.addIssue({code: "custom", path: ["wallThreshold", "share"], message: "a wall threshold is a share of gross debt between 0 and 1"});
+  if (input.acceleration) {
+    const text = input.acceleration.clause.text;
+    const automatic = /autom[áa]tic/i.test(text) && !/n[ãa]o\s+autom[áa]tic|non-automatic|not automatic/i.test(text);
+    const waivable = /deliberar pela n[ãa]o declara|n[ãa]o declara[çc][ãa]o|salvo (se|delibera)|a menos que|unless|resolve not to declare|waive/i.test(text);
+    const onlyByAssembly = /(somente|apenas|only)[^.;]*(assembleia|assembly)|mediante delibera|upon (a )?resolution|(assembleia|assembly)[^.;]*(dever[áa]|shall) declarar/i.test(text);
+    if (automatic) context.addIssue({code: "custom", path: ["acceleration", "defaultOutcome"], message: "the clause text describes an automatic acceleration; neither declared outcome fits it, and the default outcome is never asserted against the text"});
+    else if (input.acceleration.defaultOutcome === "declared_unless_assembly_waives" && !waivable) context.addIssue({code: "custom", path: ["acceleration", "defaultOutcome"], message: "the clause text does not say that the acceleration is declared unless the assembly resolves otherwise; the default outcome must come from the text"});
+    else if (input.acceleration.defaultOutcome === "declared_only_by_assembly" && (!onlyByAssembly || waivable)) context.addIssue({code: "custom", path: ["acceleration", "defaultOutcome"], message: "the clause text does not say that only the assembly declares the acceleration; the default outcome must come from the text"});
+  }
+  for (const source of input.claimedSources ?? []) if (source.evidence.approval && source.evidence.approval.date > input.referenceDate) context.addIssue({code: "custom", path: ["claimedSources"], message: `source "${source.label}" is approved on ${source.evidence.approval.date}, after the reference date; a future approval is not evidence at the reference date`});
   if (!UNIT_WORDS[input.unit].test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a rescaled schedule under another label is refused`});
   const seen = new Set<string>();
   const maturityIds = new Set(input.periods.filter((period) => period.kind === "maturity").map((period) => period.period));
@@ -103,7 +119,7 @@ export const maturityWallInputSchema = z.object({
     if (source.evidence.contract && source.evidence.disbursement && source.evidence.contract.anchor.document === source.evidence.disbursement.anchor.document) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence"], message: `source "${source.label}": the contract and the disbursement proof must be two documents of the base, not two places of one`});
     if (source.evidence.disbursement && source.evidence.disbursement.date <= input.referenceDate) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence", "disbursement"], message: `source "${source.label}": disbursed on ${source.evidence.disbursement.date}, on or before the reference date; that cash already sits in the balance and counting it again is double counting`});
     if (source.evidence.contract && source.evidence.disbursement && source.evidence.disbursement.date < source.evidence.contract.date) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence"], message: `source "${source.label}": disbursed before it was contracted`});
-    if (source.evidence.approval && source.evidence.contract && source.evidence.approval.document === source.evidence.contract.anchor.document) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence"], message: `source "${source.label}": a board approval is not a contract; the contract needs its own document`});
+    if (source.evidence.approval && source.evidence.contract && source.evidence.approval.anchor.document === source.evidence.contract.anchor.document) context.addIssue({code: "custom", path: ["claimedSources", index, "evidence"], message: `source "${source.label}": a board approval is not a contract; the contract needs its own document`});
   });
 });
 export type MaturityWallInput = z.input<typeof maturityWallInputSchema>;
@@ -111,7 +127,7 @@ export type MaturityWallInput = z.input<typeof maturityWallInputSchema>;
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type MaturityWallOutput = {
-  schema_version: "method.diagnose-maturity-wall.v7";
+  schema_version: "method.diagnose-maturity-wall.v8";
   reference_date: string;
   unit: string;
   state: "complete" | "incomplete" | "blocked";
@@ -134,7 +150,7 @@ export type MaturityWallOutput = {
   };
   /** `period` is set only for a proven source; `claimed_period` keeps what the file says. */
   /** A proven source enters the cover with the amount and the period the disbursement proves, never the claimed figure or the claimed period. */
-  sources: Array<{id: string; label: string; claimed_amount: string; amount: string | null; period: string | null; claimed_period: string | null; state: "proven" | "unproven"; reason: string; evidence: {approval: Anchor | null; contract: {date: string; amount: string; anchor: Anchor} | null; disbursement: {date: string; amount: string; anchor: Anchor} | null}}>;
+  sources: Array<{id: string; label: string; claimed_amount: string; amount: string | null; period: string | null; claimed_period: string | null; state: "proven" | "unproven"; reason: string; evidence: {approval: {date: string; anchor: Anchor} | null; contract: {date: string; amount: string; anchor: Anchor} | null; disbursement: {date: string; amount: string; anchor: Anchor} | null}}>;
   /** Rows of the schedule that belong to no period (transaction costs); they reconcile the schedule to the gross debt and never enter the cover. */
   schedule_adjustments: Array<{id: string; amount: string}>;
   /** The acceleration reading the indenture allows, recorded apart from the contractual schedule and never added to it. */
@@ -178,7 +194,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
   if (blockReasons.length > 0) {
     // A blocked ledger stops the diagnosis: no wall, no peak, no cover is computed on numbers that do not reconcile.
     const body = {
-      schema_version: "method.diagnose-maturity-wall.v7" as const, reference_date: input.referenceDate, unit: input.unit, state: "blocked" as const, block_reasons: blockReasons, incomplete_reasons: [],
+      schema_version: "method.diagnose-maturity-wall.v8" as const, reference_date: input.referenceDate, unit: input.unit, state: "blocked" as const, block_reasons: blockReasons, incomplete_reasons: [],
       wall_threshold: input.wallThreshold, walls: [], peak: null,
       coverage: {cash_definition: input.cash.definition, cash: {value: out(d(input.cash.value)), anchor: input.cash.anchor}, operating_generation: null, coverage_basis: input.interestByPeriod ? "full_debt_service" as const : "principal_only" as const, by_period: [], cumulative_deficit: "0", caveat: "diagnosis stopped: the ledger is blocked"},
       sources: [], schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), acceleration_scenario: accelerationScenario, uncovered_terms: [], notes,
@@ -249,7 +265,7 @@ export function diagnoseMaturityWall(raw: MaturityWallInput): MaturityWallOutput
       : "cash follows the contractual net debt definition; availability for payment is not asserted";
   const state: MaturityWallOutput["state"] = blockReasons.length > 0 ? "blocked" : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.diagnose-maturity-wall.v7" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
+    schema_version: "method.diagnose-maturity-wall.v8" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     wall_threshold: input.wallThreshold, walls, peak,
     coverage: {cash_definition: input.cash.definition, cash: {value: out(cash), anchor: input.cash.anchor}, operating_generation: input.operatingGeneration ? {basis: input.operatingGeneration.basis, anchor: input.operatingGeneration.anchor, periods_declared: Object.keys(input.operatingGeneration.byPeriod).sort(compare)} : null, coverage_basis: interestComplete ? "full_debt_service" as const : "principal_only" as const, by_period: byPeriod, cumulative_deficit: out(cumulative), caveat},
     sources, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), acceleration_scenario: accelerationScenario, uncovered_terms: uncovered, notes,

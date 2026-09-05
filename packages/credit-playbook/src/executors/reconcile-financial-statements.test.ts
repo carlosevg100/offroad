@@ -20,7 +20,7 @@ const camil = (): ReconciliationInput => ({
   tolerance: {working_capital: policy("1000"), net_debt: policy("1000"), interest: policy("2000")},
   pairedAccounts: [
     {id: "dividends", label: "Dividendos a pagar", family: "dividends", sources: [
-      {...source("nota 18 nominal", "395000", "dividendos declarados: valor nominal das onze parcelas remanescentes na nota 18(e), depois da primeira parcela de 25.000 já paga", "dividends.nominal_remaining", ["dividends_declared", "nominal", "remaining_installments"], itr(46, "18e, parcelas remanescentes")), derivation: {formula: "difference", operands: [{label: "dividendos aprovados", value: "420000", anchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 46, note: "18e: a página mostra pagamento e saldos; o total aprovado de 420.000 em doze parcelas consta da proposta da administração à AGO, que não está no corpus; o operando fica condicionado a ela"}}, {label: "primeira parcela paga", value: "25000", anchor: itr(46, "18e, parcela paga")}]}},
+      {...source("nota 18 nominal", "395000", "dividendos declarados: valor nominal das onze parcelas remanescentes na nota 18(e), depois da primeira parcela de 25.000 já paga", "dividends.nominal_remaining", ["dividends_declared", "nominal", "remaining_installments"], itr(46, "18e, parcelas remanescentes")), derivation: {formula: "difference", operands: [{label: "dividendos aprovados", value: "420000", anchor: {document: "02_Proposta_Administracao_AGOE_2026.pdf", page: 36, note: "proposta da administração à AGOE: dividendos declarados de 420.000"}}, {label: "primeira parcela paga", value: "25000", anchor: itr(46, "18e, parcela paga")}]}},
       {...source("balanço (valor presente)", "338565", "dividendos declarados: valor contábil consolidado, nominal menos ajuste a valor presente", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(46, "18e")), derivation: {formula: "difference", operands: [{label: "nominal remanescente", value: "395000", anchor: itr(46, "18e")}, {label: "ajuste a valor presente", value: "56435", anchor: itr(46, "18e, ajuste a valor presente")}]}},
       source("nota 25 contábil", "322498", "dividendos declarados: valor contábil consolidado na tabela de instrumentos financeiros", "dividends.carrying_amount", ["dividends_declared", "carrying_amount"], itr(51, "25")),
       source("nota 25 valor justo", "420000", "dividendos declarados: valor justo na tabela de instrumentos financeiros", "dividends.fair_value", ["dividends_declared", "fair_value"], itr(51, "25")),
@@ -41,7 +41,7 @@ const camil = (): ReconciliationInput => ({
     ]},
     {id: "net_debt_release_vs_contractual", label: "Dívida líquida do release contra a contratual", family: "net_debt", sources: [
       {...source("release", "4214400", "dívida bruta menos caixa e aplicações", "net_debt.release", ["gross_debt", "cash", "investments"], release(12, "Endividamento e Caixa")), ...million("4214.4")},
-      {...source("contratual (nota 15)", "4228477", "dívida bruta mais derivativos passivos menos derivativos ativos, caixa e aplicações financeiras", "net_debt.contractual", ["gross_debt", "derivative_liabilities", "derivative_assets", "cash", "investments"], itr(40, "15"), {document: "escritura_13a_emissao.pdf", clause: "1.1, Dívida Líquida", page: 7}), derivation: {formula: "difference", operands: [{label: "dívida bruta mais derivativos passivos", value: "5684521", anchor: itr(40, "15: 5.670.186 + 14.335")}, {label: "derivativos ativos", value: "235", anchor: itr(51, "25")}, {label: "caixa e equivalentes", value: "1430714", anchor: itr(20, "3")}, {label: "aplicações financeiras", value: "25095", anchor: itr(11)}]}},
+      {...source("contratual (nota 15)", "4228477", "dívida bruta (empréstimos, financiamentos, debêntures e outras dívidas onerosas; arrendamentos só se a escritura os incluir, condição jurídica aberta) mais derivativos passivos menos derivativos ativos, caixa e aplicações financeiras", "net_debt.contractual", ["gross_debt", "other_onerous_debt", "leases_if_included", "derivative_liabilities", "derivative_assets", "cash", "investments"], itr(40, "15"), {document: "escritura_13a_emissao.pdf", clause: "1.1, Dívida Líquida", page: 7}), derivation: {formula: "signed_sum", operands: [{label: "dívida bruta", value: "5670186", sign: "+", anchor: itr(39, "15")}, {label: "derivativos passivos", value: "14335", sign: "+", anchor: itr(12, "balanço patrimonial: instrumentos financeiros derivativos, passivo; também nota 25, p. 51")}, {label: "derivativos ativos", value: "235", sign: "-", anchor: itr(51, "25")}, {label: "caixa e equivalentes", value: "1430714", sign: "-", anchor: itr(20, "3")}, {label: "aplicações financeiras", value: "25095", sign: "-", anchor: itr(11)}]}},
     ]},
     {id: "leases", label: "Passivo de arrendamento", family: "leases", sources: [
       source("balanço", "276768", "passivo de arrendamento circulante 67.399 mais não circulante 209.369, consolidado", "leases.balance_sheet", ["lease_liabilities"], itr(12)),
@@ -62,7 +62,7 @@ const camil = (): ReconciliationInput => ({
 });
 const by = (result: ReturnType<typeof reconcileFinancialStatements>, id: string) => result.reconciliations.find((entry) => entry.id === id)!;
 
-describe("reconcile-financial-statements executor (v8)", () => {
+describe("reconcile-financial-statements executor (v9)", () => {
   it("gold: the roll-forwards close, the four inventory presentations connect through the stated bridges, the two carrying amounts of dividends stay open inside a non-comparable account, and the two net debt definitions are not comparable", () => {
     const result = reconcileFinancialStatements(camil());
     expect(result.identities.map((identity) => [identity.id, identity.state])).toEqual([["balance_sheet", "holds"], ["debt_bridge", "holds"], ["cash_bridge", "holds"], ["interest_bridge", "not_comparable"]]);
@@ -108,7 +108,9 @@ describe("reconcile-financial-statements executor (v8)", () => {
     expect(result.open_divergences.map((entry) => entry.id)).toEqual(["dividends", "net_debt_release_vs_contractual", "dividends:dividends.carrying_amount"]);
     expect(result.open_divergences.find((entry) => entry.id === "dividends")?.reason).toMatch(/among themselves, balanço \(valor presente\) and nota 25 contábil \(dividends.carrying_amount\) differ by 16067 and stay open/);
     expect(result.open_divergences.find((entry) => entry.id === "dividends:dividends.carrying_amount")?.values.map((value) => value.value)).toEqual(["338565", "322498"]);
-    expect(result.state).toBe("open_divergences");
+    // The interest bridge of the gold is not comparable (juros against juros mais atualização monetária): the run is incomplete, and the open divergences stay listed.
+    expect(result.state).toBe("incomplete");
+    expect(result.incomplete_reasons.some((reason) => /interest bridge is not comparable/.test(reason))).toBe(true);
   });
 
   it("adversarial: a scale mutation breaks the roll-forward identity; a mutated source opens the pair; a reversed adjustment leaves a residual; a partial explanation never hides a third source", () => {
@@ -161,7 +163,7 @@ describe("reconcile-financial-statements executor (v8)", () => {
     // Policy metadata is checked even at zero: a fake policy never reaches the output as provenance.
     expect(() => reconcileFinancialStatements({...base, tolerance: {net_debt: {value: "0", policyKey: "fake.policy", policyVersion: "fake.version"}}})).toThrow(/not in the reference-data registry/);
     expect(() => reconcileFinancialStatements({...base, tolerance: {net_debt: {value: "0", policyKey: "policy.reconciliation.tolerance"}}})).toThrow(/both policyKey and policyVersion, or neither/);
-    expect(reconcileFinancialStatements({...base, tolerance: {net_debt: {value: "0", policyKey: "policy.reconciliation.tolerance", policyVersion: referenceDataRegistryVersion}}}).state).toBe("open_divergences");
+    expect(reconcileFinancialStatements({...base, tolerance: {net_debt: {value: "0", policyKey: "policy.reconciliation.tolerance", policyVersion: referenceDataRegistryVersion}}}).state).toBe("incomplete");
     expect(() => reconcileFinancialStatements({...base, pairedAccounts: [{id: "fake", label: "fake", family: "x", sources: [source("a", "1", "algo", "k", ["fake_component"], itr(1)), source("b", "1", "algo", "k", ["fake_component"], itr(1))]}]})).toThrow(/unknown component tag fake_component/);
     expect(() => reconcileFinancialStatements({...base, interestBridge: {...base.interestBridge!, fromDebtMovement: {...base.interestBridge!.fromDebtMovement, components: ["interest", "made_up"]}}})).toThrow(/unknown component tag made_up in the interest bridge/);
     expect(() => reconcileFinancialStatements({...base, tolerance: {net_debt: {value: "1000", policyKey: "policy.does.not.exist", policyVersion: "1"}}})).toThrow(/not in the reference-data registry/);
@@ -225,5 +227,30 @@ describe("reconcile-financial-statements executor (v8)", () => {
     const beyond = reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "r", label: "r", family: "x", sources: [{...source("release", "4214400", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor), stated: {value: "4214.4", unit: "BRL million", decimals: 1}}, source("notas", "4214300", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor)]}]});
     expect(by(beyond, "r").state).toBe("open");
     expect(() => reconcileFinancialStatements({referenceDate: asOf, unit: "BRL thousand", pairedAccounts: [{id: "r", label: "r", family: "x", sources: [{...source("release", "4214400", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor), stated: {value: "4214.5", unit: "BRL million", decimals: 1}}, source("notas", "4214377", "dívida bruta menos caixa e aplicações", "k", ["gross_debt", "cash", "investments"], anchor)]}]})).toThrow(/converts to 4214500 BRL thousand, not 4214400/);
+  });
+
+  it("mutation: a declared magnitude compares as a magnitude, a reduction published negative is refused, a signed derivation is recomputed operand by operand, and a non-comparable interest bridge is an incomplete reason", () => {
+    const base = camil();
+    const contractual = base.pairedAccounts!.find((account) => account.sources.some((source) => source.definitionKey === "net_debt.contractual"))!;
+    const source = contractual.sources.find((entry) => entry.definitionKey === "net_debt.contractual")!;
+    const derivation = reconcileFinancialStatements(base).trace.calculations.find((calculation) => calculation.id === `financial.accounting_identity:${contractual.id}:${source.source}:derivation`);
+    expect(derivation?.operands["derivativos passivos"]).toBe("14335");
+    expect(derivation?.anchors["derivativos passivos"]).toEqual({document: "01_ITR_1T26_31mai2026.pdf", page: 12, note: "balanço patrimonial: instrumentos financeiros derivativos, passivo; também nota 25, p. 51"});
+    expect(() => reconcileFinancialStatements({...base, pairedAccounts: base.pairedAccounts!.map((account) => (account.id === contractual.id ? {...account, sources: account.sources.map((entry) => (entry === source ? {...entry, derivation: {...entry.derivation!, operands: entry.derivation!.operands.map((operand) => (operand.label === "derivativos passivos" ? {...operand, sign: "-" as const} : operand))}} : entry))} : account))})).toThrow(/the derivation gives 4199807, not 4228477/);
+    const leases = base.pairedAccounts!.find((account) => account.sources.length >= 2 && account.sources.every((entry) => !entry.derivation))!;
+    const negated = {...base, pairedAccounts: base.pairedAccounts!.map((account) => (account.id === leases.id ? {...account, sources: account.sources.map((entry, index) => (index === 0 ? {...entry, value: `-${entry.value}`, sign: "absolute" as const} : entry))} : account))};
+    const read = reconcileFinancialStatements(negated);
+    expect(read.reconciliations.find((entry) => entry.id === leases.id)?.state).toBe(reconcileFinancialStatements(base).reconciliations.find((entry) => entry.id === leases.id)?.state);
+    expect(read.trace.calculations.find((calculation) => calculation.id === `financial.accounting_identity:${leases.id}:sign`)?.operands[`${leases.sources[0]!.source}:read`]).toBe(leases.sources[0]!.value);
+    if (base.debtBridge) {
+      const reduction = base.debtBridge.lines.find((line) => line.category === "amortizations" || line.category === "prepayments")!;
+      expect(() => reconcileFinancialStatements({...base, debtBridge: {...base.debtBridge, lines: base.debtBridge.lines.map((line) => (line === reduction ? {...line, published: `-${line.published.replace(/^-/, "")}`, sign: "as_published" as const} : line))}})).toThrow(/would be added back by the bridge/);
+    }
+    if (base.interestBridge) {
+      // The gold itself: the note's accrued interest counts interest and monetary variation, the income statement's line counts interest only.
+      const mixed = reconcileFinancialStatements(base);
+      expect(mixed.identities.find((identity) => identity.id === "interest_bridge")?.state).toBe("not_comparable");
+      expect(mixed.incomplete_reasons.some((reason) => /interest bridge is not comparable/.test(reason))).toBe(true);
+    }
   });
 });
