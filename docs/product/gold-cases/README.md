@@ -218,7 +218,7 @@ profundidade; e a execução inteira é reprodutível a partir dos inputs congel
 | 2 | `gc02-gabarito-rascunho.md` v0.2 | verdade pública herdada do Caso 01 por referência; dados gerenciais sintéticos gerados por `packages/testing-fixtures/scripts/build-camil-management.ts`; tabelas calculadas pelo `financial-core`; sem revisão |
 | 3 | `gc03-gabarito-rascunho.md` v0.1 | Aurora com carteira de recebíveis sintética (`09`/`10`), tabelas pela `receivables-analysis` e pelo `financial-core`; sem revisão |
 | 4 | `gc04-gabarito-rascunho.md` v0.1 | Cogna pelo gold existente mais mandato sintético da Prisma; tabelas pelo `financial-core` e `fund-mandate`; sem revisão |
-| 5 | não existe | próximo |
+| 5 | `gc05-gabarito-rascunho.md` v0.1 | Camil, três turnos; cenários de capex derivados da DFP e do teto contratual (alto não criado); projeção compartilhada com o caso 02; alternativas e bridge do turno 3 pelos executores; sem revisão |
 
 Os quinze casos catalogados do Atlas §10 recebem este contrato progressivamente, e enquanto não
 têm executor servem como regressão do roteador e do mapa de cobertura em sombra.

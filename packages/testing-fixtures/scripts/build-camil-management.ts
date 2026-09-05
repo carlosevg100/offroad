@@ -10,11 +10,11 @@ import {mkdirSync, writeFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {aggregateIndexedDebtSchedules, buildIndexedDebtSchedule, calculateLiquidityCoverage, type IndexedDebtInstrumentInput} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 import * as XLSX from "xlsx";
 
-import {allocateContractualSchedule, budget2026_27, camilManagementLabel, itrDebentureCosts, itrScheduleBuckets, loanTransactionCosts, managementSeries, marketAssumptions, minimumCashPolicy, outerYearsGrowth, outerYearsWorkingCapitalChange} from "../src/camil-management/truth";
+import {projectCamil} from "../src/camil-management/projection";
+import {allocateContractualSchedule, budget2026_27, camilManagementLabel, itrDebentureCosts, itrScheduleBuckets, managementSeries, minimumCashPolicy} from "../src/camil-management/truth";
 import {writeDocx, type DocxBlock} from "../src/fakeco/docx";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -27,70 +27,15 @@ const periods = itrScheduleBuckets.map((bucket) => bucket.period);
 // 1. Contractual amortization schedule, allocated in the truth module and tied to the ITR buckets there.
 const {rows: scheduleRows, partials, totalByPeriod: byPeriod} = allocateContractualSchedule();
 
-// 2. Interest by instrument and safra year through financial-core, base scenario (frozen market assumptions).
-const cdi = d(marketAssumptions.cdiAnnualPercent).div(100);
-const sofr = d(marketAssumptions.sofrAnnualPercent).div(100);
-const ipca = (index: number) => d(marketAssumptions.ipcaImpliedByYearPercent[Math.min(index, marketAssumptions.ipcaImpliedByYearPercent.length - 1)]!).div(100);
-const instruments: IndexedDebtInstrumentInput[] = managementSeries.map((series) => {
-  const principalIn = (period: string) => scheduleRows.filter((row) => row.period === period && row.id === series.id).reduce((sum, row) => sum.plus(row.amount), d(0));
-  const opening = d(series.balance).plus(series.id === "loan-brl" ? loanTransactionCosts : 0);
-  const rate = series.rate;
-  const isIpca = rate.type === "spread_over_index" && rate.index === "IPCA";
-  return {
-    instrumentId: series.id,
-    openingPrincipal: opening,
-    indexer: rate.type === "fixed" ? "fixed" : rate.index,
-    indexationTreatment: isIpca ? "capitalized_principal" : "not_applicable",
-    couponTreatment: "cash_paid",
-    couponBase: "indexed_principal",
-    periods: periods.map((period, index) => ({
-      period,
-      indexationRate: isIpca ? ipca(index) : 0,
-      couponRate: rate.type === "fixed" ? d(rate.rate).div(100)
-        : rate.type === "percent_of_index" ? cdi.times(rate.percent).div(100)
-        : rate.index === "IPCA" ? d(rate.spread).div(100)
-        : (rate.index === "SOFR" ? sofr : cdi).plus(d(rate.spread).div(100)),
-      scheduledPrincipal: principalIn(period),
-    })),
-  };
-});
-const schedules = instruments.map((instrument) => buildIndexedDebtSchedule(instrument));
-const aggregate = aggregateIndexedDebtSchedules(schedules);
-
-// 3. CFADS from the synthetic budget and liquidity coverage per safra year, two scenarios.
+// 2 to 4. Debt service, CFADS, coverage and the leverage path come from the shared projection module.
 const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
 const budgetYear = {
   revenue: sum(budget2026_27.netRevenue), ebitda: sum(budget2026_27.ebitda), taxes: sum(budget2026_27.cashTaxes),
   capex: sum(budget2026_27.maintenanceCapex) + sum(budget2026_27.growthCapex), workingCapital: sum(budget2026_27.changeInWorkingCapital),
   leases: sum(budget2026_27.leasePayments), dividends: sum(budget2026_27.dividends),
 };
-const yearInputs = periods.map((period, index) => {
-  const growth = d(1 + outerYearsGrowth).pow(index);
-  const ebitda = index === 0 ? d(budgetYear.ebitda) : d(budgetYear.ebitda).times(growth);
-  const capex = index === 0 ? d(budgetYear.capex) : d(sum(budget2026_27.maintenanceCapex)).times(growth);
-  const workingCapital = index === 0 ? d(budgetYear.workingCapital) : d(outerYearsWorkingCapitalChange);
-  const taxes = index === 0 ? d(budgetYear.taxes) : d(budgetYear.taxes).times(growth);
-  const cfads = ebitda.minus(taxes).minus(capex).minus(workingCapital);
-  return {period, ebitda, capex, workingCapital, taxes, cfads, leases: d(budgetYear.leases), dividends: index === 0 ? d(budgetYear.dividends) : d(budgetYear.dividends).times(growth)};
-});
-const openingCash = d(1_430_714).plus(25_095);
-const service = (period: string) => aggregate.find((row) => row.period === period)!;
-const coverageFor = (rollover: boolean) => calculateLiquidityCoverage(yearInputs.map((year) => {
-  const row = service(year.period);
-  return {period: year.period, openingCash, cfads: year.cfads, principal: row.scheduledPrincipal, interest: d(row.couponPaid).plus(row.indexationPaid), leases: year.leases, otherObligations: year.dividends, contractedSources: rollover ? row.scheduledPrincipal : 0};
-}));
-const noRollover = coverageFor(false);
-const rollover = coverageFor(true);
-
-// 4. Leverage path (net debt over EBITDA) per safra year, base scenario with rollover of maturing principal.
-let grossDebt = managementSeries.reduce((total, series) => total.plus(series.balance), d(0)).plus(loanTransactionCosts).plus(itrDebentureCosts);
-const leveragePath = yearInputs.map((year, index) => {
-  const row = service(year.period);
-  const closing = rollover[index]!;
-  grossDebt = grossDebt.plus(row.indexationCapitalized); // principal rolled: gross debt stays, indexation capitalizes
-  const netDebt = grossDebt.minus(closing.closingCash);
-  return {period: year.period, ebitda: year.ebitda, grossDebt, cash: d(closing.closingCash), netDebt, leverage: netDebt.div(year.ebitda)};
-});
+const noRollover = projectCamil({rollover: false}).years;
+const rollover = projectCamil({rollover: true}).years;
 
 // 5. Files.
 const written: Array<{name: string; bytes: number; sha256: string}> = [];
@@ -155,12 +100,12 @@ md.push("### Cronograma contratual por série (sintético, totais iguais ao ITR)
 for (const series of managementSeries) md.push(`| ${series.label} | ${periods.map((period) => fmt(scheduleRows.filter((row) => row.period === period && row.id === series.id).reduce((total, row) => total.plus(row.amount), d(0)))).join(" | ")} |`);
 md.push(`| Total | ${periods.map((period) => fmt(byPeriod(period))).join(" | ")} |`, "", `Parciais: ${partials.join("; ")}.`, "");
 md.push("### Serviço da dívida por ano safra (financial-core, cenário base)", "", "| Ano safra | Principal | Juros caixa | IPCA capitalizado | Serviço caixa |", "| --- | ---: | ---: | ---: | ---: |");
-for (const row of aggregate) md.push(`| ${row.period} | ${fmt(row.scheduledPrincipal)} | ${fmt(d(row.couponPaid).plus(row.indexationPaid))} | ${fmt(row.indexationCapitalized)} | ${fmt(d(row.scheduledPrincipal).plus(row.couponPaid).plus(row.indexationPaid))} |`);
+for (const year of noRollover) md.push(`| ${year.period} | ${fmt(year.principal)} | ${fmt(year.interest)} | ${fmt(year.indexationCapitalized)} | ${fmt(d(year.principal).plus(year.interest))} |`);
 md.push("", "### CFADS e cobertura sem rolagem (financial-core)", "", "| Ano safra | EBITDA | CFADS | Caixa inicial | Serviço | Cobertura | Caixa final | Déficit |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
-noRollover.forEach((row, index) => md.push(`| ${row.period} | ${fmt(yearInputs[index]!.ebitda)} | ${fmt(yearInputs[index]!.cfads)} | ${fmt(row.openingCash)} | ${fmt(row.debtService)} | ${row.coverage === null ? "n/a" : d(row.coverage).toFixed(2)} | ${fmt(row.closingCash)} | ${fmt(row.deficit)} |`));
+for (const year of noRollover) md.push(`| ${year.period} | ${fmt(year.ebitda)} | ${fmt(year.cfads)} | ${fmt(year.openingCash)} | ${fmt(year.debtService)} | ${year.coverage === null ? "n/a" : d(year.coverage).toFixed(2)} | ${fmt(year.closingCash)} | ${fmt(year.deficit)} |`);
 md.push("", "### Cobertura com rolagem integral do principal (financial-core)", "", "| Ano safra | Serviço | Cobertura | Caixa final | Piso da política | Folga sobre o piso |", "| --- | ---: | ---: | ---: | ---: | ---: |");
-rollover.forEach((row) => md.push(`| ${row.period} | ${fmt(row.debtService)} | ${row.coverage === null ? "n/a" : d(row.coverage).toFixed(2)} | ${fmt(row.closingCash)} | ${fmt(minimumCashPolicy.floor)} | ${fmt(d(row.closingCash).minus(minimumCashPolicy.floor))} |`));
+for (const year of rollover) md.push(`| ${year.period} | ${fmt(year.debtService)} | ${year.coverage === null ? "n/a" : d(year.coverage).toFixed(2)} | ${fmt(year.closingCash)} | ${fmt(minimumCashPolicy.floor)} | ${fmt(d(year.closingCash).minus(minimumCashPolicy.floor))} |`);
 md.push("", "### Trajetória de alavancagem com rolagem (dívida líquida sobre EBITDA)", "", "| Ano safra | EBITDA | Dívida bruta | Caixa | Dívida líquida | Índice | Contra 4,00x | Contra 3,50x |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
-for (const row of leveragePath) md.push(`| ${row.period} | ${fmt(row.ebitda)} | ${fmt(row.grossDebt)} | ${fmt(row.cash)} | ${fmt(row.netDebt)} | ${row.leverage.toFixed(2)}x | ${d(4).minus(row.leverage).toFixed(2)} | ${d(3.5).minus(row.leverage).toFixed(2)} |`);
+for (const year of rollover) md.push(`| ${year.period} | ${fmt(year.ebitda)} | ${fmt(year.grossDebt)} | ${fmt(year.closingCash)} | ${fmt(year.netDebt)} | ${d(year.leverage).toFixed(2)}x | ${d(4).minus(year.leverage).toFixed(2)} | ${d(3.5).minus(year.leverage).toFixed(2)} |`);
 console.log(md.join("\n"));
 console.log("\nfiles:", written.map((file) => `${file.name} ${file.bytes}B ${file.sha256.slice(0, 12)}`).join("; "));
