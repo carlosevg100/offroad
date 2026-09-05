@@ -324,6 +324,40 @@ function headline(input: LiveDecisionInput, composition: Composition | null, cor
   return `${mark} ${fields.join(" · ")}`;
 }
 
+function normalizeText(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/** The message without what the person quotes: a quoted question is the desk's words, not a request. */
+function unquoted(message: string): string {
+  return message.replace(/["\u201c][^"\u201d]*["\u201d]/g, " ");
+}
+
+/**
+ * An answer that quotes the desk's question (its first words at least) without naming its id: the
+ * classifier leaves `answers` empty in that case, and the turn would otherwise be read as a scope
+ * change or a deliverable. The effect comes from the scope changes the classifier did read.
+ */
+function answersQuotedInText(message: string, openQuestions: Array<{id: string; text: string}>, scope: PreviewTurn["scopeChanges"]): PreviewTurn["answers"] {
+  const normalized = normalizeText(message);
+  return openQuestions.flatMap((question) => {
+    const head = normalizeText(question.text).split(" ").slice(0, 6).join(" ");
+    if (head.split(" ").length < 4 || !normalized.includes(head)) return [];
+    const answer = unquoted(message).replace(/^\s*sobre a (sua|tua|minha|nossa) pergunta\s*:?\s*/i, "").replace(/^\s*:\s*/, "").trim().slice(0, 600) || message.slice(0, 600);
+    return [{questionId: question.id, answer, effect: {audience: scope.audience, depth: scope.depth, scope: null}}];
+  });
+}
+
+const pageWords: Record<string, number> = {uma: 1, um: 1, duas: 2, dois: 2, tres: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10};
+
+/** A page count written in the message ("três páginas", "5 páginas"); null when none is stated. */
+function pagesInText(message: string): number | null {
+  const match = normalizeText(message).match(/\b(\d{1,2}|uma|um|duas|dois|tres|quatro|cinco|seis|sete|oito|nove|dez) paginas?\b/);
+  if (!match) return null;
+  const value = /^\d/.test(match[1]!) ? Number(match[1]) : pageWords[match[1]!] ?? null;
+  return value && value >= 1 && value <= 60 ? value : null;
+}
+
 /**
  * Decides the turn from the understanding. Deterministic: the model spoke once, in
  * `understandLiveTurn`; everything here is derivation the person can audit in the reply.
@@ -352,6 +386,17 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const decisionBodyInText = /\b(conselho|board|comit[eê]|committee)\b/i.test(input.message) ? (/\bcomit[eê]|committee\b/i.test(input.message) ? "committee" : "board") : null;
   const audience = normalizeAudience(output.turn.scopeChanges.audience) ?? (core.audience.value.map((item) => normalizeAudience(item)).find((item) => item === "board" || item === "committee") ?? null) ?? decisionBodyInText ?? normalizeAudience(core.audience.value[0]) ?? "vp";
   const depth = output.turn.scopeChanges.depth ?? core.depth.value;
+  // Three readings of the message itself, for what the classifier got wrong in the gate: it filed
+  // "para o conselho" as a board deck request, filed a request for pages as an answer to the format
+  // question, and carried a rate from an earlier turn into a message with no number. The text adds
+  // what the classifier missed and vetoes what it invented; the reply shows the result.
+  const materialWords = /\b(material|p[a\u00e1]ginas?|pitch|deck|memo|apresenta[c\u00e7][a\u00e3]o|briefing|planilha|relat[o\u00f3]rio)\b/i;
+  // Without the classifier's flag, only an imperative aimed at the deliverable or a stated page
+  // count counts: "meu VP me pediu para preparar material" is the story of the request, not one.
+  const imperativeMaterial = /^\s*(vamos|monte|monta|prepare|prepara|preparem|fa[c\u00e7]a|faz|gere|gera|produza|escreva|redija|quero|precis\w+)\b[^.!?]{0,40}\b(material|p[a\u00e1]ginas?|pitch|deck|memo|apresenta[c\u00e7][a\u00e3]o|briefing)\b/i;
+  const materialExplicit = hasAnalysis && materialWords.test(unquoted(input.message)) && (output.turn.material.requested || imperativeMaterial.test(unquoted(input.message)) || pagesInText(unquoted(input.message)) !== null);
+  const statesNumbers = /\d/.test(unquoted(input.message));
+  const turnPremises = statesNumbers ? premisesFromTurn(output.turn) : premisesFromTurn({...output.turn, premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null}});
   const base = (composition: Composition | null, corpus: preview.PreviewCorpus | null, abstained: boolean, abstainReason: string | null) => ({
     composition,
     corpus: corpusRecord(corpus),
@@ -439,10 +484,32 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     };
   }
 
-  // Answers to open questions change scope, audience, depth or form: the plan recompiles and
-  // unchanged objects replay; the answers ride in the brief for the planner and the audit.
+  // Answers to open questions, from the classifier or quoted in the text; the merged list rides in
+  // the brief for the planner and the audit.
   const knownQuestionIds = new Set(input.openQuestions.map((question) => question.id));
-  const answers = output.turn.answers.filter((answer) => knownQuestionIds.has(answer.questionId));
+  const classifierAnswers = output.turn.answers.filter((answer) => knownQuestionIds.has(answer.questionId));
+  const answers = [...classifierAnswers, ...answersQuotedInText(input.message, input.openQuestions, output.turn.scopeChanges).filter((quoted) => !classifierAnswers.some((answer) => answer.questionId === quoted.questionId))];
+  const mergedAnswers = [...input.priorAnswers.filter((existing) => !answers.some((answer) => answer.questionId === existing.questionId)), ...answers.map((answer) => ({questionId: answer.questionId, answer: answer.answer}))];
+  const answerText = answers.map((answer) => `${answer.questionId}: ${answer.answer}`).join("; ");
+  const answersApplied = answers.length ? t(locale, `Respostas aplicadas (${answerText}). `, `Answers applied (${answerText}). `) : "";
+
+  // A deliverable asked in words wins over the answer reading of the same turn: the person who
+  // asks for three pitch pages also answers the format question, and the material plan carries it.
+  if (materialExplicit) {
+    const form = output.turn.material.form === "memo" ? "internal_briefing" : output.turn.material.form ?? output.turn.scopeChanges.form ?? "pitch_pages";
+    const pages = output.turn.material.pages ?? pagesInText(input.message);
+    const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "prepare_material", audience: {primary: audience, others: []}, form: form === "memo" ? "internal_briefing" : form, pages, sponsorInstruction: answers.length ? `${sponsorInstruction}\n${answerText}`.slice(0, 4_000) : sponsorInstruction, undefinedAspects: pages === null ? ["depth"] : []};
+    return {
+      kind: "activate", composition: "prepare_material",
+      reply: `${headline(input, "prepare_material", corpusRecord(corpus), audience, depth)}\n${answersApplied}${t(locale,
+        `Vou planejar o material a partir dos objetos assinados: forma ${form}, ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience}. Números e premissas entram por referência.`,
+        `I will plan the material from the signed objects: form ${form}, ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience}. Numbers and premises enter by reference.`)}`,
+      activation: buildPreviewActivation("prepare_material", request, {}, turnInput, answers.length ? {answers: mergedAnswers} : {}),
+      record: base("prepare_material", corpus, false, null),
+    };
+  }
+
+  // Answers change scope, audience, depth or form: the plan recompiles and unchanged objects replay.
   if (answers.length > 0 && hasAnalysis) {
     const prior = input.priorRequest ?? {};
     const answeredAspects = new Set<string>();
@@ -456,10 +523,8 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     }
     if (output.turn.scopeChanges.form) { nextForm = output.turn.scopeChanges.form === "memo" ? "internal_briefing" : output.turn.scopeChanges.form; answeredAspects.add("format"); }
     const undefinedAspects = ((prior.undefinedAspects as PreviewRequest["undefinedAspects"] | undefined) ?? []).filter((aspect) => !answeredAspects.has(aspect));
-    const merged = [...input.priorAnswers.filter((existing) => !answers.some((answer) => answer.questionId === existing.questionId)), ...answers.map((answer) => ({questionId: answer.questionId, answer: answer.answer}))];
-    const answerText = answers.map((answer) => `${answer.questionId}: ${answer.answer}`).join("; ");
     const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "deepen", audience: {primary: nextAudience, others: []}, form: nextForm, pages: (prior.pages as number | null | undefined) ?? null, sponsorInstruction: `${sponsorInstruction}\n${answerText}`.slice(0, 4_000), undefinedAspects};
-    const premisesAnswered = premisesFromTurn(output.turn);
+    const premisesAnswered = turnPremises;
     const composition: Composition = Object.keys(premisesAnswered).length > 0 ? "change_premise" : "deepen";
     if (composition === "change_premise") request.composition = "change_premise";
     return {
@@ -467,12 +532,12 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
       reply: `${headline(input, composition, corpusRecord(corpus), nextAudience, nextDepth)}\n${t(locale,
         `Respostas aplicadas (${answerText}). Escopo atualizado: audiência ${nextAudience}, profundidade ${nextDepth}, forma ${nextForm}${undefinedAspects.length ? `; ainda em aberto: ${undefinedAspects.join(", ")}` : ""}. O plano recompila; o que não muda replica por fingerprint.`,
         `Answers applied (${answerText}). Scope updated: audience ${nextAudience}, depth ${nextDepth}, form ${nextForm}${undefinedAspects.length ? `; still open: ${undefinedAspects.join(", ")}` : ""}. The plan recompiles; what does not change replays by fingerprint.`)}`,
-      activation: buildPreviewActivation(composition, request, premisesAnswered, turnInput, {answers: merged}),
+      activation: buildPreviewActivation(composition, request, premisesAnswered, turnInput, {answers: mergedAnswers}),
       record: {...base(composition, corpus, false, null), audience: nextAudience, depth: nextDepth},
     };
   }
 
-  const premises = premisesFromTurn(output.turn);
+  const premises = turnPremises;
   const premiseKeys = Object.keys(premises);
   if (premiseKeys.length > 0 && hasAnalysis) {
     const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "change_premise", audience: {primary: audience, others: []}, form: "first_deliverable", pages: null, sponsorInstruction, undefinedAspects: []};
@@ -483,20 +548,6 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
         `Premise recorded (${describePremises(premises)}). Only the nodes whose inputs change recompute; the rest replays by fingerprint.`)}`,
       activation: buildPreviewActivation("change_premise", request, premises, turnInput),
       record: base("change_premise", corpus, false, null),
-    };
-  }
-
-  if (output.turn.material.requested && hasAnalysis) {
-    const form = output.turn.material.form === "memo" ? "internal_briefing" : output.turn.material.form ?? output.turn.scopeChanges.form ?? "pitch_pages";
-    const pages = output.turn.material.pages;
-    const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "prepare_material", audience: {primary: audience, others: []}, form: form === "memo" ? "internal_briefing" : form, pages, sponsorInstruction, undefinedAspects: pages === null ? ["depth"] : []};
-    return {
-      kind: "activate", composition: "prepare_material",
-      reply: `${headline(input, "prepare_material", corpusRecord(corpus), audience, depth)}\n${t(locale,
-        `Vou planejar o material a partir dos objetos assinados: forma ${form}, ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience}. Números e premissas entram por referência.`,
-        `I will plan the material from the signed objects: form ${form}, ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience}. Numbers and premises enter by reference.`)}`,
-      activation: buildPreviewActivation("prepare_material", request, {}, turnInput),
-      record: base("prepare_material", corpus, false, null),
     };
   }
 

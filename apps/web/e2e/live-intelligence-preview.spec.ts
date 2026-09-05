@@ -34,10 +34,13 @@ async function assistantMessages(page: Page): Promise<string[]> {
   return page.locator(".advisor-thread__message.is-assistant > div > p:first-of-type").allInnerTexts();
 }
 
+/** Assistant messages already on the page when the last message was sent: a reply is only what came after. */
+let assistantFloor = 0;
+
 async function waitForAssistant(page: Page, pattern: RegExp, timeoutMs = 240_000): Promise<string> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const messages = await assistantMessages(page);
+    const messages = (await assistantMessages(page)).slice(assistantFloor);
     const found = messages.find((message) => pattern.test(message));
     if (found) return found;
     await page.waitForTimeout(4_000);
@@ -62,6 +65,7 @@ function record(step: string, prompt: string, reply: string) {
 }
 
 async function startProject(page: Page, prompt: string): Promise<string> {
+  assistantFloor = 0;
   await page.goto("/pt-BR/app");
   await expect(page.locator(".advisor-start")).toBeVisible();
   await page.locator(".advisor-composer--start textarea").fill(prompt);
@@ -71,6 +75,7 @@ async function startProject(page: Page, prompt: string): Promise<string> {
 }
 
 async function send(page: Page, message: string) {
+  assistantFloor = (await assistantMessages(page)).length;
   await page.locator(".advisor-composer textarea").fill(message);
   await page.locator(".advisor-composer__send").click();
   await expect(page.locator(".advisor-thread__message.is-user").last()).toContainText(message.slice(0, 40));
@@ -182,6 +187,7 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
   test("the first project completes its readout from the ten deterministic objects", async () => {
     test.setTimeout(420_000);
     await page.goto(firstProjectUrl);
+    assistantFloor = 0;
     const readout = await waitForAssistant(page, /Primeira devolutiva do Caso 01/, 300_000);
     transcript.push(`\n**Offroad (primeira devolutiva, projeto 1):** ${readout}\n`);
     await expect(page.locator('[data-testid="integration-preview-work"] .preview-work__section')).toHaveCount(10);

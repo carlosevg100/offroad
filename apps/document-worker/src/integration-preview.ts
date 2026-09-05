@@ -381,7 +381,8 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           request: {desiredOutcome: request.sponsorInstruction, audience: request.audience?.primary ?? null, depth: null, form: request.form, undefinedAspects: request.undefinedAspects, sponsorInstruction: request.sponsorInstruction},
           professionalContext: context.professional_context ? {useForms: context.professional_context.useForms, professionalRoles: context.professional_context.professionalRoles, practiceAreas: context.professional_context.practiceAreas, primaryObjectives: context.professional_context.primaryObjectives} : null,
           answered: briefAnswers,
-          documents: fixed[0]?.coverage.searched ?? [],
+          // The base's documents, not the fixed questions' (deepen and prepare_decision have none): the planner refuses a question that searched nothing.
+          documents: preview.previewBaseDocuments(),
           fixed,
         });
         if (questionsResult.source === "model") runContext.candidateQuestions = questionsResult.questions;
