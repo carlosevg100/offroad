@@ -23,7 +23,7 @@ export const previewQuestionsOutputSchema = z.object({
   questions: z.array(z.object({
     id: z.string().regex(/^q-[a-z0-9-]{2,30}$/),
     text: z.string().min(8).max(300),
-    gapIds: z.array(z.string().min(1).max(80)).min(1).max(6),
+    gapIds: z.array(z.string().min(1).max(160)).min(1).max(16),
     changesTheWork: z.string().min(8).max(200),
     effect: z.enum(effectAspects),
     priority: z.number().int().min(1).max(4),

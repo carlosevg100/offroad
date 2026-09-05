@@ -99,7 +99,7 @@ export function safeJsonParse(text: string): unknown {
 /** The instruction that replaces the grammar: the JSON Schema, and nothing but JSON in the answer. */
 export function promptedJsonInstruction(request: Pick<AdapterRequest, "schema" | "schemaName">): string {
   const schema = JSON.stringify(z.toJSONSchema(request.schema, {target: "draft-7", io: "output", unrepresentable: "any"}));
-  return `Answer with one JSON object only, no prose and no code fence, named "${request.schemaName}", that validates against this JSON Schema:\n${schema}`;
+  return `Answer with one JSON object only, no prose, no code fence and no wrapper key (the object's own top-level keys are the schema's), that validates against this JSON Schema (${request.schemaName}):\n${schema}`;
 }
 
 /** The JSON object inside a text answer: fences and surrounding prose stripped, the outermost braces kept. */
