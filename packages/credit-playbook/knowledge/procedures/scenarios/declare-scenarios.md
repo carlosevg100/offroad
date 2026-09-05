@@ -1,6 +1,6 @@
 ---
 id: declare-scenarios
-version: 2026.09.05-v1
+version: 2026.09.05-v2
 maturity: implemented
 title_pt: Declarar cenários com racional e sem inventar premissa
 title_en: Declare scenarios with a rationale and without inventing assumptions
@@ -10,7 +10,7 @@ owner_role: Head de Modelagem
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/declare-scenarios
 implementation_export: declareScenarios
-result_contract: method.declare-scenarios.v1
+result_contract: method.declare-scenarios.v2
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -75,8 +75,14 @@ parâmetro e a frase de ressalva que acompanha qualquer número derivado deles.
 - Nenhuma origem disponível para um parâmetro material e o usuário não deu faixa.
 
 # Outputs
-- scenarios (array, required): por cenário, parâmetros com origem, resultados e a frase de ressalva
-- assumption_register (array, required): cada premissa com origem, data, fonte e confiança
+- schema_version (string, required): identificador do contrato de resultado, `method.declare-scenarios.v2`
+- reference_date (date, required): data-base
+- unit (string, required): unidade dos valores monetários; choques, haircuts e coberturas levam `ratio` ou `x`
+- state (enum, required): declared ou blocked | values: declared, blocked
+- block_reasons (array, required): motivos estruturados de bloqueio
+- scenarios (array, required): por cenário, os parâmetros usados com papel, período, chave, valor, origem e âncora (a origem é escolhida pelo executor: a melhor disponível no registro para cada papel e período, nunca a preferida do chamador); resultados pró-forma sobre a dívida líquida contratual (componentes com âncora) com alavancagem sobre o EBITDA de definição declarada, juros sob choque, liquidez por período com CFADS, fontes contratadas usadas uma vez no seu período e rolagem só sob premissa registrada; cada número com as origens de que depende; a frase de ressalva; e os termos não cobertos (`insufficient_evidence`) que o cenário declarou mas o registro não tem
+- assumption_register (array, required): cada premissa com papel, período, valor, unidade, origem e posto, racional, data, fonte, confiança e se foi selecionada; uma fonte contratada só existe com contrato e desembolso na base; um refinanciamento é dívida nova substituindo dívida antiga, nunca uma subtração
+- trace (object, required): cada cálculo pelo `financial-core` com fórmula, operandos, resultado, unidade e origens; fingerprints de entrada e saída com o trace dentro
 
 # Exemplos
 ## Bom
