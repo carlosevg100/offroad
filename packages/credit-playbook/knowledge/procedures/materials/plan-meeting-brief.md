@@ -1,6 +1,6 @@
 ---
 id: plan-meeting-brief
-version: 2026.09.05-v1
+version: 2026.09.05-v7
 maturity: implemented
 title_pt: Planejar a devolutiva e o material de reunião
 title_en: Plan the first deliverable and the meeting material
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/plan-meeting-brief
 implementation_export: planMeetingBrief
-result_contract: method.plan-meeting-brief.v1
+result_contract: method.plan-meeting-brief.v7
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -53,10 +53,23 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 1. [deterministic] Montar a devolutiva :: Preencher cada bloco só com objetos aprovados, citando ids ; Bloco sem objeto vira lacuna nomeada | evidence: objetos aprovados
 2. [model_assisted] Propor o plano de páginas :: A partir do pedido (audiência, forma, número de páginas), propor o plano e as três perguntas de alinhamento que mudam o material ; Não perguntar o que está nos documentos
 3. [human_judgment] Confirmar o plano :: A pessoa confirma ou corrige o plano antes de qualquer produção
-4. [model_assisted] Redigir as páginas :: Prosa gerada dos objetos, cada número com referência ; Mudança de premissa entre versões vira nota de mudança
+4. [model_assisted] Redigir as páginas :: Etapa posterior ao plano confirmado, fora deste executor: prosa gerada dos objetos, cada número com referência ; Mudança de premissa entre versões vira nota de mudança
 
 # Cálculos determinísticos
 - Nenhum cálculo próprio; todo número vem dos objetos aprovados por referência.
+
+# Regras de montagem
+- Só objetos em estado utilizável (complete, resolved, closes, declared, compared, diagnosed) preenchem blocos; condicionado, parcial, incompleto ou com divergências abertas vira lacuna nomeada com o objeto pendente; bloqueado é excluído.
+- Cada fato citado carrega o fingerprint do objeto; fato ligado a outro fingerprint é recusado; fato com valor em milhares carrega a unidade.
+- Um bloco só é preenchido com fatos; objeto utilizável sem fatos vira lacuna nomeada.
+- Sem audiência ou forma, a devolutiva sai e o plano de páginas espera.
+- Pontos a favor e contra a tese vêm da posição que qualquer objeto utilizável declarou em cada fato, nunca do tipo do objeto.
+- Uma pergunta só é feita depois de uma busca declarada na base (documentos consultados) que não achou resposta; fato com unidade que contradiz as próprias palavras ou a unidade do objeto é recusado; todo fato cita o campo do objeto que reproduz; fato que afirma rompimento ou inadimplemento é recusado (nenhum objeto afirma evento jurídico).
+- Quando o conteúdo do objeto é dado, o fingerprint é recalculado desse conteúdo e o caminho de cada fato tem de resolver dentro dele; a unidade declarada tem de bater com a do conteúdo. Fato que afirma rompimento, violação ou vencimento antecipado declarado é recusado.
+- Mais páginas do que blocos volta como pergunta de alinhamento emitida dentro do limite de três (a de menor prioridade cede), não só anunciada; a produção só é permitida com plano confirmado, e lacunas (insufficient_evidence) não a impedem: elas ficam nomeadas no material.
+- O plano honra o número de páginas pedido (funde o final quando são menos, divide a página mais cheia quando são mais); mais páginas do que blocos é unsupported e volta como pergunta.
+- Pergunta que a base já responde é recusada com a âncora da resposta, seja qual for a prioridade; pergunta cujo motivo é "nenhuma" não é feita.
+- Versão anterior informada gera nota de mudança; nunca reescrita silenciosa.
 
 # Julgamentos permitidos
 - Escolher o que entra em três páginas exige o discriminador da audiência, escrito no plano.
@@ -74,9 +87,19 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 - Plano de páginas não confirmado e o pedido é produção de arquivo.
 
 # Outputs
-- deliverable (object, required): blocos da devolutiva com referências aos objetos
-- page_plan (object, required): páginas, conteúdo e discriminador da audiência, com estado de confirmação
+- schema_version (string, required): method.plan-meeting-brief.v7
+- case_id (string, required): caso a que a devolutiva pertence
+- turn (number, required): turno do pedido
+- state (enum, required): planned, ou awaiting_confirmation enquanto um plano proposto espera a confirmação da pessoa
+- deliverable (object, required): blocos da devolutiva (cada um preenchido só por objetos em estado utilizável, com cada fato ligado ao fingerprint do objeto que cita, ou lacuna nomeada com os objetos pendentes), objetos usados (só os citados por um bloco preenchido), objetos utilizáveis sem citação, objetos pendentes (condicionados, parciais, incompletos, com divergências abertas) e objetos excluídos (bloqueados)
+- page_plan (object, required): estado (not_requested, awaiting_audience_and_form, proposed, confirmed, unsupported), id, forma, audiência (principal e demais), páginas ajustadas ao número pedido, discriminador da audiência principal, permissão de produção e motivo
 - alignment_questions (array, required): no máximo três, cada uma com o motivo de mudar o material
+- refused_questions (array, required): perguntas recusadas com o motivo: a base já responde (com a âncora da resposta), nenhuma busca da base foi declarada, a resposta não muda o trabalho, ou além das três que mais mudam
+- not_produced_here (array, required): o que este executor não produz: a prosa das páginas é etapa assistida por modelo depois do plano confirmado
+- ambiguity_named (string, optional): o que a instrução do patrocinador deixou indefinido, declarado pelo chamador e nomeado na devolutiva
+- change_note (object, optional): null na primeira versão (sem versão anterior); contra a versão anterior: blocos que mudaram de estado ou de objetos e objetos cujo fingerprint mudou, entraram ou saíram
+- uncovered_terms (array, required): todos os blocos em lacuna (perguntas pendentes incluídas) e objetos pendentes (condicionados, parciais, com divergências), como insufficient_evidence, cada um com o motivo e os achados carregados como condição
+- trace (object, required): fingerprint canônico da entrada e da saída
 
 # Exemplos
 ## Bom
@@ -101,3 +124,6 @@ exhibits) e, em seguida, o plano e o material no formato pedido, cada página ci
 ## Regras
 - Nenhum número sem objeto de origem.
 - Nada é produzido antes da confirmação do plano.
+- Todo fato com número leva valor estruturado (montante e unidade); o montante tem de estar no campo assinado que o caminho nomeia e no próprio texto; fato a favor ou contra a tese nomeia a base da posição (campo assinado, comparador e limiar), avaliada sobre o conteúdo assinado pelo fingerprint: posição que o conteúdo não sustenta é recusada.
+- A busca declarada numa pergunta só vale sobre documentos da base (`documents`); busca de documento que não está na base não é busca, e silêncio não é resposta.
+- Afirmações de evento jurídico enumeradas e recusadas no fato: rompido, quebrado, violado, descumprimento, inadimplência, default, cross-default, vencimento antecipado declarado, acelerado, waiver, cumprido, conformidade; nenhum objeto afirma isso.

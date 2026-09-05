@@ -1,11 +1,11 @@
 import {createHash} from "node:crypto";
 
-import {aggregateDebtViews, calculateCovenantHeadroom, calculateLeverage} from "@offroad/financial-core";
+import {aggregateDebtViews, calculateCovenantHeadroom, calculateImpliedEbitda, calculateLeverage} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `reconcile-covenant-definitions` (v4, after the third independent review).
+ * Executor of the method `reconcile-covenant-definitions` (v14, after the thirteenth independent review).
  * It never writes "breached". Each indenture carries the anchor of its definitions and one anchor per
  * tier; EBITDA adjustments are typed (denominator additions versus numerator obligations) and never
  * folded together; the net debt of each instrument is computed from that instrument's own component
@@ -23,7 +23,8 @@ const money = z.string().regex(/^-?\d+(\.\d+)?$/);
 const nonNegative = z.string().regex(/^\d+(\.\d+)?$/);
 const unitSchema = z.enum(["BRL", "BRL thousand", "BRL million", "USD", "USD thousand"]);
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const indentureAnchorSchema = z.object({document: z.string().min(1), clause: z.string().min(1), page: z.number().int().positive()}).strict();
+/** An indenture anchor cites a numbered clause (4.22.3(j), 7.24.3(VIII)); a label such as "índice financeiro" is not a clause. */
+const indentureAnchorSchema = z.object({document: z.string().min(1), clause: z.string().regex(/\d+(\.\d+)+/, "an indenture anchor needs a numbered clause"), page: z.number().int().positive()}).strict();
 const anchorSchema = z.object({document: z.string().min(1), clause: z.string().optional(), page: z.number().int().positive().optional(), note: z.string().optional()}).strict();
 type Anchor = z.infer<typeof anchorSchema>;
 
@@ -34,8 +35,20 @@ export const netDebtComponentSchema = z.enum([
 ]);
 type NetDebtComponent = z.infer<typeof netDebtComponentSchema>;
 const DEDUCTIONS = new Set<NetDebtComponent>(["cash_and_equivalents", "financial_investments", "derivative_assets"]);
+/** The words a clause uses for each component; a structured component the text never names is a tag, not a definition. */
+const COMPONENT_WORDS: Record<NetDebtComponent, RegExp> = {
+  loans_and_financings: /emprestim|financiament|loan|borrowing|divida bruta|gross debt/,
+  debentures: /debenture|divida bruta|gross debt/,
+  derivative_liabilities: /derivativ|derivative/,
+  other_onerous_debt: /outra|other|onerosa|onerous/,
+  leases: /arrendament|lease/,
+  cash_and_equivalents: /caixa|disponibilidade|cash/,
+  financial_investments: /aplicac|investment/,
+  derivative_assets: /derivativ|derivative/,
+};
 /** An open-ended residual ("qualquer outra dívida onerosa"): its absence from the base is a condition, not a mismatch. */
 const RESIDUAL: NetDebtComponent = "other_onerous_debt";
+
 
 export const covenantTierSchema = z.object({
   limit: ratio,
@@ -53,8 +66,8 @@ export const ebitdaAdjustmentSchema = z.object({
   kind: z.enum(["denominator_addition", "numerator_obligation", "other"]),
   description: z.string().min(1),
   anchor: indentureAnchorSchema,
-  /** For a numerator obligation: its dated value in the base, or null when the base does not state it. */
-  obligation: z.object({value: nonNegative, asOf: isoDate, anchor: anchorSchema}).strict().nullable().default(null),
+  /** For a numerator obligation: its dated value in the base with its unit, or null when the base does not state it. */
+  obligation: z.object({value: nonNegative, unit: unitSchema, asOf: isoDate, anchor: anchorSchema}).strict().nullable().default(null),
 }).strict();
 
 export const covenantInstrumentSchema = z.discriminatedUnion("source", [
@@ -64,6 +77,8 @@ export const covenantInstrumentSchema = z.discriminatedUnion("source", [
     indexName: z.string().min(1),
     direction: z.enum(["maximum", "minimum"]).default("maximum"),
     netDebtDefinition: z.string().min(1),
+    /** The perimeter the definition measures; the reported index must match it to be comparable. */
+    perimeter: z.enum(["consolidated", "parent"]).default("consolidated"),
     netDebtComponents: z.array(netDebtComponentSchema).min(1),
     ebitdaDefinition: z.string().min(1),
     ebitdaAdjustments: z.array(ebitdaAdjustmentSchema).default([]),
@@ -89,12 +104,17 @@ export const componentValueSchema = z.object({
   covers: z.array(netDebtComponentSchema).min(1),
   value: nonNegative,
   unit: unitSchema,
+  perimeter: z.enum(["consolidated", "parent"]).default("consolidated"),
   asOf: isoDate,
   anchor: anchorSchema,
 }).strict();
 
 export const covenantReconciliationInputSchema = z.object({
   asOfDate: isoDate,
+  /** The unit of every monetary value in the base; lines, EBITDA and openings must state the same. */
+  unit: unitSchema,
+  /** Where the source states the unit; its note must name that unit, so a relabelled scale is refused. */
+  unitAnchor: anchorSchema.extend({note: z.string().min(1)}),
   instruments: z.array(covenantInstrumentSchema),
   referenceSettlements: z.array(z.object({
     instrument: z.string().min(1),
@@ -105,19 +125,24 @@ export const covenantReconciliationInputSchema = z.object({
     anchor: anchorSchema,
   }).strict()).default([]),
   componentValues: z.array(componentValueSchema).default([]),
+  /** Dated lines of the base that may belong to a numerator obligation (acquisition payables, contingent consideration) but are not yet classified; they are carried as uncovered terms, never added and never called absent. */
+  candidateObligations: z.array(z.object({id: z.string().min(1), description: z.string().min(1), value: nonNegative, unit: unitSchema, asOf: isoDate, relatedAdjustmentId: z.string().min(1).nullable().default(null), anchor: anchorSchema}).strict()).default([]),
   /** LTM EBITDA as the company computes it for the covenant, when it is opened, with the adjustment ids it already incorporates. */
-  ltmEbitda: z.object({value: money, unit: unitSchema, asOf: isoDate, months: z.literal(12), incorporatesAdjustments: z.array(z.string().min(1)).default([]), anchor: anchorSchema}).strict().nullable().default(null),
+  ltmEbitda: z.object({value: money, unit: unitSchema, perimeter: z.enum(["consolidated", "parent"]).default("consolidated"), asOf: isoDate, months: z.literal(12), incorporatesAdjustments: z.array(z.string().min(1)).default([]), anchor: anchorSchema}).strict().nullable().default(null),
   reported: z.object({
     value: ratio,
     asOf: isoDate,
     definition: z.string().min(1),
     /** The components the base actually enumerates for the reported net debt, not the contractual phrase. */
     netDebtComponents: z.array(netDebtComponentSchema).min(1),
+    perimeter: z.enum(["consolidated", "parent"]).default("consolidated"),
     /** The opened EBITDA behind the reported index, when the base shows it; a flag is not an opening. */
     ebitdaOpening: z.object({value: money, unit: unitSchema, asOf: isoDate, months: z.literal(12), anchor: anchorSchema}).strict().nullable().default(null),
     anchor: anchorSchema,
   }).strict().nullable().default(null),
 }).strict().superRefine((input, context) => {
+  const UNIT_WORDS: Record<string, RegExp> = {"BRL": /\b(R\$|reais|BRL)\b(?!\s*(mil|milh))/i, "BRL thousand": /\b(mil|milhares|thousand)\b/i, "BRL million": /\b(milh[õo]es|million)\b/i, "USD": /\bUSD\b(?!\s*(mil|thousand))/i, "USD thousand": /\bUSD\b.*\b(mil|thousand)\b/i};
+  if (!UNIT_WORDS[input.unit]!.test(input.unitAnchor.note)) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note does not name the unit ${input.unit}; a relabelled scale is refused`});
   const seenFacts = new Set<string>();
   input.referenceSettlements.forEach((fact, index) => {
     if (seenFacts.has(fact.instrument)) context.addIssue({code: "custom", path: ["referenceSettlements", index], message: `duplicate settlement fact for ${fact.instrument}`});
@@ -129,6 +154,26 @@ export const covenantReconciliationInputSchema = z.object({
     if (seenInstruments.has(instrument.id)) context.addIssue({code: "custom", path: ["instruments", index], message: `duplicate instrument ${instrument.id}`});
     seenInstruments.add(instrument.id);
     if (instrument.source === "indenture") {
+      const text = instrument.netDebtDefinition.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+      for (const component of instrument.netDebtComponents) {
+        if (!COMPONENT_WORDS[component].test(text)) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the definition text never names the component ${component}; the structured components must be readable in the clause`});
+      }
+      // The other direction for the indenture too: a component the clause names must be in the structured list, with derivatives on the side the clause gives them.
+      {
+        const listed = new Set<string>(instrument.netDebtComponents);
+        for (const [component, words] of Object.entries(COMPONENT_WORDS)) {
+          if (component === "derivative_liabilities" || component === "derivative_assets" || component === "other_onerous_debt") continue;
+          if (words.test(text) && !listed.has(component)) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the definition text names ${component} and the structured components omit it; the clause and the list disagree`});
+        }
+        if (/derivativ/.test(text)) {
+          const liabilities = /derivativ[^.;]{0,40}passiv|passiv[^.;]{0,40}derivativ|derivative liabilit/.test(text);
+          const assets = /derivativ[^.;]{0,40}ativ(?!o? ?e)|ativ[^.;]{0,40}derivativ|derivative asset/.test(text);
+          if (liabilities && !listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the clause adds derivative liabilities and the structured components omit them`});
+          if (assets && !listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the clause deducts derivative assets and the structured components omit them`});
+          if (!liabilities && listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the structured components add derivative liabilities and the clause never names them`});
+          if (!assets && listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the structured components deduct derivative assets and the clause never names them`});
+        } else if (listed.has("derivative_liabilities") || listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["instruments", index, "netDebtComponents"], message: `${instrument.id}: the structured components carry derivatives and the clause never mentions them`});
+      }
       const adjustmentIds = new Set<string>();
       instrument.ebitdaAdjustments.forEach((adjustment, position) => {
         if (adjustmentIds.has(adjustment.id)) context.addIssue({code: "custom", path: ["instruments", index, "ebitdaAdjustments", position], message: `duplicate adjustment ${adjustment.id}`});
@@ -139,6 +184,8 @@ export const covenantReconciliationInputSchema = z.object({
   const covered = new Set<string>();
   input.componentValues.forEach((line, index) => {
     if (!line.covers.includes(line.component)) context.addIssue({code: "custom", path: ["componentValues", index, "covers"], message: "a line must cover its own component"});
+    const sides = new Set(line.covers.map((component) => (DEDUCTIONS.has(component) ? "deduction" : "debt")));
+    if (sides.size > 1) context.addIssue({code: "custom", path: ["componentValues", index, "covers"], message: `line ${line.component} aggregates debt and deductions; the base must decompose it before it enters a net debt`});
     if (line.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["componentValues", index, "asOf"], message: `component ${line.component} is dated ${line.asOf}, not the as-of date ${input.asOfDate}`});
     for (const component of line.covers) {
       if (covered.has(component)) context.addIssue({code: "custom", path: ["componentValues", index], message: `component ${component} is covered twice`});
@@ -146,28 +193,61 @@ export const covenantReconciliationInputSchema = z.object({
     }
   });
   if (input.ltmEbitda && input.ltmEbitda.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["ltmEbitda", "asOf"], message: "the opened EBITDA must be dated at the as-of date"});
+  const candidateIds = new Set<string>();
+  input.candidateObligations.forEach((candidate, index) => {
+    if (candidateIds.has(candidate.id)) context.addIssue({code: "custom", path: ["candidateObligations", index], message: `duplicate candidate ${candidate.id}`});
+    candidateIds.add(candidate.id);
+    if (candidate.unit !== input.unit) context.addIssue({code: "custom", path: ["candidateObligations", index, "unit"], message: `candidate ${candidate.id} is stated in ${candidate.unit}, not the base unit ${input.unit}`});
+    if (candidate.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["candidateObligations", index, "asOf"], message: `candidate ${candidate.id} is dated ${candidate.asOf}, not the as-of date ${input.asOfDate}`});
+  });
   if (input.reported?.ebitdaOpening && input.reported.ebitdaOpening.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["reported", "ebitdaOpening", "asOf"], message: "the EBITDA opening behind the reported index must be dated at the as-of date"});
-  const units = new Set<string>([...input.componentValues.map((line) => line.unit), ...(input.ltmEbitda ? [input.ltmEbitda.unit] : []), ...(input.reported?.ebitdaOpening ? [input.reported.ebitdaOpening.unit] : [])]);
+  const units = new Set<string>([input.unit, ...input.componentValues.map((line) => line.unit), ...(input.ltmEbitda ? [input.ltmEbitda.unit] : []), ...(input.reported?.ebitdaOpening ? [input.reported.ebitdaOpening.unit] : [])]);
   if (units.size > 1) context.addIssue({code: "custom", path: ["componentValues"], message: `one unit per base: ${[...units].sort().join(", ")} were given`});
   input.instruments.forEach((instrument, index) => {
     if (instrument.source !== "indenture") return;
     instrument.ebitdaAdjustments.forEach((adjustment, position) => {
       if (adjustment.obligation && adjustment.kind !== "numerator_obligation") context.addIssue({code: "custom", path: ["instruments", index, "ebitdaAdjustments", position, "obligation"], message: "only a numerator obligation carries an obligation value"});
       if (adjustment.obligation && adjustment.obligation.asOf !== input.asOfDate) context.addIssue({code: "custom", path: ["instruments", index, "ebitdaAdjustments", position, "obligation", "asOf"], message: "an obligation value must be dated at the as-of date"});
+      if (adjustment.obligation && adjustment.obligation.unit !== input.unit) context.addIssue({code: "custom", path: ["instruments", index, "ebitdaAdjustments", position, "obligation", "unit"], message: `the obligation "${adjustment.id}" is stated in ${adjustment.obligation.unit}, not the base unit ${input.unit}`});
     });
   });
   if (input.reported && input.reported.asOf > input.asOfDate) context.addIssue({code: "custom", path: ["reported", "asOf"], message: "the reported index is dated after the as-of date"});
+  if (input.reported) {
+    const text = input.reported.definition.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    for (const component of input.reported.netDebtComponents) {
+      const words = COMPONENT_WORDS[component];
+      if (words && !words.test(text)) context.addIssue({code: "custom", path: ["reported", "definition"], message: `the reported definition text never names the component ${component} it claims to count; the literal definition and the structured components disagree`});
+    }
+    // The other direction: a component the text names must be in the structured list, with derivatives on the side the text gives them.
+    const listed = new Set<string>(input.reported.netDebtComponents);
+    for (const [component, words] of Object.entries(COMPONENT_WORDS)) {
+      if (component === "derivative_liabilities" || component === "derivative_assets" || component === "other_onerous_debt") continue;
+      if (words.test(text) && !listed.has(component)) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: `the reported definition text names ${component} and the structured components omit it; the literal definition and the structured components disagree`});
+    }
+    if (/derivativ/.test(text)) {
+      const mentionsLiabilities = /derivativ[^.;]{0,40}passiv|passiv[^.;]{0,40}derivativ|derivative liabilit/.test(text);
+      const mentionsAssets = /derivativ[^.;]{0,40}ativ(?!o? ?e)|ativ[^.;]{0,40}derivativ|derivative asset/.test(text);
+      if (mentionsLiabilities && !listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the reported definition text adds derivative liabilities and the structured components omit them"});
+      if (mentionsAssets && !listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the reported definition text deducts derivative assets and the structured components omit them"});
+      if (!mentionsLiabilities && mentionsAssets && listed.has("derivative_liabilities")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the structured components add derivative liabilities and the reported definition text names only derivative assets"});
+      if (mentionsLiabilities && !mentionsAssets && listed.has("derivative_assets")) context.addIssue({code: "custom", path: ["reported", "netDebtComponents"], message: "the structured components deduct derivative assets and the reported definition text names only derivative liabilities"});
+      if (!mentionsLiabilities && !mentionsAssets && (listed.has("derivative_liabilities") || listed.has("derivative_assets"))) context.addIssue({code: "custom", path: ["reported", "definition"], message: "the reported definition text mentions derivatives without their side (liabilities added, assets deducted); the polarity must be readable"});
+    }
+    if (/somente|apenas|only/.test(text) && input.reported.netDebtComponents.length > 2) context.addIssue({code: "custom", path: ["reported", "definition"], message: "the reported definition text restricts itself (somente/apenas/only) while the structured components list several; the literal definition and the structured components disagree"});
+  }
 });
 export type CovenantReconciliationInput = z.input<typeof covenantReconciliationInputSchema>;
 
 type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index";
-type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string};
+type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type CovenantReconciliationOutput = {
-  schemaVersion: "method.reconcile-covenant-definitions.v4";
-  asOfDate: string;
+  schema_version: "method.reconcile-covenant-definitions.v14";
+  as_of_date: string;
+  /** The unit every value below is expressed in; part of the output and of its fingerprint. */
+  unit: string;
   state: "resolved" | "conditioned" | "blocked";
-  blockReasons: string[];
+  block_reasons: string[];
   covenants: Array<{
     instrument: string;
     source: "indenture" | "trustee_report";
@@ -180,22 +260,27 @@ export type CovenantReconciliationOutput = {
     limitState: "resolved" | "reported_by_trustee" | "insufficient_evidence";
     limitConditions: string[];
     reportedMeasurement: {value: string; asOf: string} | null;
-    netDebtByDefinition: {value: string; formula: string; operands: Record<string, string>; anchors: Record<string, Anchor>; residualAssumedZero: boolean; numeratorObligations: string} | null;
+    netDebtByDefinition: {value: string; formula: string; operands: Record<string, string>; anchors: Record<string, Anchor>; residualAssumedZero: boolean; numeratorObligations: string | null} | null;
     legalConditions: string[];
-    index: {value: string; basis: "computed_from_components" | "reported"; ebitda: {value: string; basis: "opened" | "implied_from_reported"}; anchor: Anchor} | null;
+    index: {value: string; basis: "computed_from_components" | "reported"; ebitda: {value: string; basis: "opened" | "implied_from_reported"} | null; anchor: Anchor} | null;
+    /** Facts that explain the tier resolution without being conditions: a proven acceleration, for instance. */
+    notes: string[];
     comparability: Comparability;
     comparabilityReasons: string[];
     headroom: {absolute: string; relative: string | null; basis: string} | null;
     status: "within_limit" | "above_limit_interim" | "unresolved";
   }>;
-  unprovenConditions: string[];
-  legalConditions: string[];
+  unproven_conditions: string[];
+  /** Candidate lines and numerator obligations without a classified value, as insufficient_evidence, never added and never called absent. */
+  uncovered_terms: Array<{id: string; state: "insufficient_evidence"; reason: string}>;
+  legal_conditions: string[];
   trace: {calculations: Calculation[]; inputFingerprint: string; outputFingerprint: string};
 };
 
 const d = (value: Decimal.Value) => new Decimal(value);
 const out = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
-const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const stableStringify = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => compare(a, b))) : inner));
+const fingerprint = (value: unknown) => createHash("sha256").update(stableStringify(value)).digest("hex");
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const sortStrings = (values: readonly string[]) => [...values].sort(compare);
 
@@ -221,6 +306,7 @@ export function nextMeasurement(asOf: string, fiscalYearEnd: string, frequency: 
 function canonical(input: z.infer<typeof covenantReconciliationInputSchema>) {
   return {
     ...input,
+    candidateObligations: [...input.candidateObligations].sort((a, b) => compare(a.id, b.id)),
     instruments: [...input.instruments].sort((a, b) => compare(a.id, b.id)).map((instrument) => instrument.source === "indenture"
       ? {
           ...instrument,
@@ -238,7 +324,10 @@ function canonical(input: z.infer<typeof covenantReconciliationInputSchema>) {
 
 export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): CovenantReconciliationOutput {
   const input = canonical(covenantReconciliationInputSchema.parse(raw));
+  const unit = input.unit;
   const calculations: Calculation[] = [];
+  /** Monetary calculations carry the base unit; leverage and headroom are ratios, written as "x". */
+  const record = (calculation: Omit<Calculation, "unit">) => calculations.push({...calculation, unit: /net_leverage|covenant_headroom/.test(calculation.id) ? "x" : unit});
   const blockReasons: string[] = [];
   if (input.instruments.length === 0) blockReasons.push("no indenture and no trustee report in the base: nothing to reconcile");
 
@@ -249,11 +338,16 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
   const legal = new Set<string>();
   const leasesLine = lineFor.get("leases");
 
+  // Legal conditions are consolidated: a lease question or an unclassified numerator obligation on any instrument vetoes every headroom of the run.
+  const legalByInstrument = new Map(input.instruments.map((instrument) => [instrument.id, instrument.source === "indenture" ? [
+    ...(instrument.netDebtComponents.includes(RESIDUAL) && !instrument.netDebtComponents.includes("leases") && input.componentValues.some((line) => line.component === "leases") ? [`${instrument.id}: leases under the residual`] : []),
+    ...instrument.ebitdaAdjustments.filter((adjustment) => adjustment.kind === "numerator_obligation").map((adjustment) => `${instrument.id}: ${adjustment.id}`),
+  ] : []]));
   const covenants = input.instruments.map((instrument): CovenantReconciliationOutput["covenants"][number] => {
     if (instrument.source === "trustee_report") {
       return {
         instrument: instrument.id, source: "trustee_report", indexName: instrument.indexName, direction: null, definitions: null, measurement: null,
-        tiers: [{index: 0, limit: instrument.reportedLimit, condition: "as reported by the trustee; the indenture is not in the base", state: "n/a", anchor: instrument.anchor}],
+        tiers: [{index: 0, limit: instrument.reportedLimit, condition: "as reported by the trustee; the indenture is not in the base", state: "n/a", anchor: instrument.anchor}], notes: [],
         applicableLimit: instrument.reportedLimit, limitState: "reported_by_trustee",
         limitConditions: ["the indenture is not in the base: the limit is the trustee's report and no headroom is asserted"],
         reportedMeasurement: instrument.reportedMeasurement,
@@ -265,6 +359,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
     // 1. Which tier applies, from dated facts only.
     const conditions: string[] = [];
+    const notes: string[] = [];
     const tiers: CovenantReconciliationOutput["covenants"][number]["tiers"] = [];
     let applicable: {limit: string; tier: number} | null = null;
     instrument.tiers.forEach((tier, index) => {
@@ -279,30 +374,42 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
       // settlement keeps the lower tier; a maturity passed without proof of settlement is unproven.
       const over = facts.map((fact) => {
         if (!fact) return "unknown" as const;
-        if (fact.settlement === "ordinary" && fact.settlementDate !== null && fact.settlementDate <= input.asOfDate) return "ordinary" as const;
-        if (fact.settlement === "accelerated" && fact.settlementDate !== null && fact.settlementDate <= input.asOfDate) return "accelerated" as const;
+        const settledOn = fact.settlementDate !== null && fact.settlementDate <= input.asOfDate;
+        if (fact.settlement === "ordinary" && settledOn) return "ordinary" as const;
+        if (fact.settlement === "accelerated" && settledOn) return "accelerated" as const;
         if (fact.maturityDate <= input.asOfDate) return fact.settlement === "outstanding" ? "outstanding_after_maturity" as const : "matured_unproven" as const;
-        return "alive" as const;
+        return "alive" as const; // a settlement dated after the as-of date is not a fact yet
       });
       const label = condition.referenceInstruments.join(", ");
       if (condition.type === "until_reference_settled") {
-        if (over.some((state) => state === "alive" || state === "unknown")) {
-          const unknown = over.some((state) => state === "unknown");
-          tiers.push({index, limit: tier.limit, condition: `until ${label} matures or is settled ordinarily`, state: unknown ? "unproven" : "applies", anchor: tier.anchor});
-          if (unknown) conditions.push(`the end of the ${tier.limit}x tier requires the maturity or settlement facts of ${label}; the base has none`);
-          else applicable ??= {limit: tier.limit, tier: index};
+        // "Whichever comes first" across the references: the tier ends at the first maturity or dated ordinary settlement.
+        // "Whichever comes first": one reference that matured or was settled ordinarily ends the tier, whatever the facts of the others; without any such fact, a missing fact keeps it unproven, and an acceleration alone keeps it.
+        if (over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "ended", anchor: tier.anchor});
           return;
         }
-        if (over.some((state) => state === "accelerated")) { tiers.push({index, limit: tier.limit, condition: `until ${label} matures or is settled ordinarily; an accelerated settlement keeps this tier`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; conditions.push(`a reference instrument (${label}) was settled by acceleration, so the ${tier.limit}x tier remains`); return; }
-        // Maturity is a dated fact: the tier ends at maturity or at a dated ordinary settlement, whichever came first.
-        tiers.push({index, limit: tier.limit, condition: `until ${label} matures or is settled ordinarily`, state: "ended", anchor: tier.anchor});
+        if (over.some((state) => state === "unknown")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "unproven", anchor: tier.anchor});
+          conditions.push(`the end of the ${tier.limit}x tier requires the maturity or settlement facts of every reference (${label}); the base lacks them for ${condition.referenceInstruments.filter((_reference, position) => over[position] === "unknown").join(", ")}${over.some((state) => state === "accelerated") ? "; an accelerated settlement of another reference does not settle the question" : ""}`);
+          return;
+        }
+        if (over.some((state) => state === "accelerated") && !over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily; an accelerated settlement keeps this tier`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; notes.push(`a reference instrument (${label}) was settled by acceleration on a proven date, so the ${tier.limit}x tier remains`); return;
+        }
+        if (over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "ended", anchor: tier.anchor});
+          return;
+        }
+        tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "applies", anchor: tier.anchor});
+        applicable ??= {limit: tier.limit, tier: index};
         return;
       }
       if (over.every((state) => state === "ordinary")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; return; }
+      if (over.some((state) => state === "unknown")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "unproven", anchor: tier.anchor}); conditions.push(`the ${tier.limit}x tier requires proof of ordinary settlement of every reference (${label}); the base lacks the facts of ${condition.referenceInstruments.filter((_reference, position) => over[position] === "unknown").join(", ")}`); return; }
       if (over.some((state) => state === "alive")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "not_yet", anchor: tier.anchor}); return; }
+      if (over.some((state) => state === "accelerated") && !over.some((state) => state === "outstanding_after_maturity" || state === "matured_unproven")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "n/a", anchor: tier.anchor}); notes.push(`${label} was settled by acceleration on a proven date; the ${tier.limit}x tier does not apply (deterministic, no condition to prove)`); return; }
       tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "unproven", anchor: tier.anchor});
       if (over.some((state) => state === "outstanding_after_maturity")) conditions.push(`${label} matured and is recorded as outstanding; the ${tier.limit}x tier does not apply until ordinary settlement is proven`);
-      else if (over.some((state) => state === "accelerated")) conditions.push(`${label} was settled by acceleration; the ${tier.limit}x tier does not apply`);
       else conditions.push(`the ${tier.limit}x tier requires proof of ordinary settlement of ${label}; the base does not prove it`);
     });
     for (const condition of conditions) unproven.add(`${instrument.id}: ${condition}`);
@@ -312,15 +419,19 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     // 2. Net debt by this instrument's own definition, from dated component lines, through financial-core.
     const reasons: string[] = [];
     const legalHere: string[] = [];
+    const legalElsewhere = [...legalByInstrument.entries()].filter(([id]) => id !== instrument.id).flatMap(([, entries]) => entries);
     const wanted = new Set(instrument.netDebtComponents);
     const residualWanted = wanted.has(RESIDUAL);
     const residualOpen = residualWanted && !lineFor.has(RESIDUAL);
     if (residualWanted && !wanted.has("leases") && leasesLine) legalHere.push(`whether lease liabilities (${leasesLine.value}, ${leasesLine.anchor.document}) fall under "${RESIDUAL}" needs legal review; they are excluded from the computed net debt until then`);
     const numeratorObligations = instrument.ebitdaAdjustments.filter((adjustment) => adjustment.kind === "numerator_obligation");
     for (const adjustment of numeratorObligations) {
+      const candidates = input.candidateObligations.filter((candidate) => candidate.relatedAdjustmentId === adjustment.id);
       legalHere.push(adjustment.obligation
         ? `the numerator obligation "${adjustment.id}" (${adjustment.description}) is added to net debt at ${adjustment.obligation.value} (${adjustment.obligation.anchor.document}); its contractual side and amount need legal review`
-        : `the numerator obligation "${adjustment.id}" (${adjustment.description}) has no dated value in the base; it is not folded into the EBITDA declaration`);
+        : candidates.length > 0
+          ? `the numerator obligation "${adjustment.id}" (${adjustment.description}) has no classified value; the base holds ${candidates.map((candidate) => `${candidate.value} ${candidate.unit} (${candidate.description}, ${candidate.anchor.document}${candidate.anchor.page ? ` p. ${candidate.anchor.page}` : ""})`).join(" and ")} as candidate lines that need legal classification before entering the numerator; nothing is added until then`
+          : `the numerator obligation "${adjustment.id}" (${adjustment.description}) has no dated value in the base; its amount is unknown, not zero`);
     }
     for (const condition of legalHere) legal.add(`${instrument.id}: ${condition}`);
     const missing = instrument.netDebtComponents.filter((component) => component !== RESIDUAL && !lineFor.has(component));
@@ -329,23 +440,30 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     if (missing.length === 0 && input.componentValues.length > 0) {
       const lines = [...new Set(instrument.netDebtComponents.map((component) => lineFor.get(component)).filter((line): line is NonNullable<typeof line> => line !== undefined))];
       const foreign = lines.flatMap((line) => line.covers.filter((component) => !wanted.has(component)));
+      const otherPerimeter = lines.filter((line) => line.perimeter !== instrument.perimeter);
       if (foreign.length > 0) {
         reasons.push(`the base aggregates ${foreign.join(", ")} into a line this definition excludes; net debt by this definition is not computable`);
+      } else if (otherPerimeter.length > 0) {
+        reasons.push(`the lines ${otherPerimeter.map((line) => line.component).join(", ")} measure the ${otherPerimeter[0]!.perimeter} perimeter and the indenture the ${instrument.perimeter} one; net debt by this definition is not computable`);
       } else {
         const debtLines = lines.filter((line) => !DEDUCTIONS.has(line.component));
         const deductionLines = lines.filter((line) => DEDUCTIONS.has(line.component));
-        const obligations = numeratorObligations.reduce((total, adjustment) => total.plus(adjustment.obligation?.value ?? 0), d(0));
+        const valued = numeratorObligations.filter((adjustment) => adjustment.obligation !== null);
+        const obligationsKnown = valued.length === numeratorObligations.length;
+        const obligations = valued.reduce((total, adjustment) => total.plus(adjustment.obligation!.value), d(0));
+        // An aggregated line is named by everything it covers: 5.670.186 is loans_and_financings+debentures, never loans alone.
+        const nameOf = (line: (typeof lines)[number]) => (line.covers.length > 1 ? [...line.covers].sort(compare).join("+") : line.component);
         const views = aggregateDebtViews({
-          rows: [...debtLines.map((line) => ({id: line.component, principal: line.value, covenantIncluded: true})), ...(obligations.gt(0) ? [{id: "numerator_obligations", principal: out(obligations), covenantIncluded: true}] : [])],
+          rows: [...debtLines.map((line) => ({id: nameOf(line), principal: line.value, covenantIncluded: true})), ...valued.map((adjustment) => ({id: `obligation:${adjustment.id}`, principal: adjustment.obligation!.value, covenantIncluded: true}))],
           cash: deductionLines.reduce((total, line) => total.plus(line.value), d(0)),
         });
         const operands: Record<string, string> = {};
         const anchors: Record<string, Anchor> = {};
-        for (const line of lines) { operands[line.component] = line.value; anchors[line.component] = line.anchor; }
-        if (obligations.gt(0)) operands.numeratorObligations = out(obligations);
-        const formula = `${debtLines.map((line) => line.component).join(" + ")}${obligations.gt(0) ? " + numeratorObligations" : ""} - (${deductionLines.map((line) => line.component).join(" + ")})`;
-        calculations.push({id: `financial.debt_views:${instrument.id}`, formula, operands, result: views.netFinancialDebt});
-        netDebtByDefinition = {value: views.netFinancialDebt, formula, operands, anchors, residualAssumedZero: residualOpen, numeratorObligations: out(obligations)};
+        for (const line of lines) { operands[nameOf(line)] = line.value; anchors[nameOf(line)] = line.anchor; }
+        for (const adjustment of valued) { operands[`obligation:${adjustment.id}`] = adjustment.obligation!.value; anchors[`obligation:${adjustment.id}`] = adjustment.obligation!.anchor; }
+        const formula = `${debtLines.map(nameOf).join(" + ")}${valued.map((adjustment) => ` + obligation:${adjustment.id}`).join("")} - (${deductionLines.map(nameOf).join(" + ")})`;
+        record({id: `financial.debt_views:${instrument.id}`, formula, operands, result: views.netFinancialDebt});
+        netDebtByDefinition = {value: views.netFinancialDebt, formula, operands, anchors, residualAssumedZero: residualOpen, numeratorObligations: obligationsKnown ? out(obligations) : null};
         baseNetDebt = d(views.netFinancialDebt).minus(obligations);
         if (residualOpen) reasons.push(`"${RESIDUAL}" is not enumerated in the base; the computed net debt assumes none beyond the lines above (condition)`);
       }
@@ -357,18 +475,22 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     let index: CovenantReconciliationOutput["covenants"][number]["index"] = null;
     let comparability: Comparability = "no_index";
     const denominatorAdjustments = instrument.ebitdaAdjustments.filter((adjustment) => adjustment.kind !== "numerator_obligation");
-    if (netDebtByDefinition && input.ltmEbitda) {
+    if (netDebtByDefinition && input.ltmEbitda && input.ltmEbitda.perimeter !== instrument.perimeter) {
+      comparability = "not_comparable";
+      reasons.push(`the opened EBITDA measures the ${input.ltmEbitda.perimeter} perimeter and the indenture the ${instrument.perimeter} one`);
+    } else if (netDebtByDefinition && input.ltmEbitda) {
       const ebitda = d(input.ltmEbitda.value);
       if (ebitda.lte(0)) {
         reasons.push("the opened EBITDA is zero or negative; no index is computed");
         comparability = "not_comparable";
       } else {
         const leverage = calculateLeverage(netDebtByDefinition.value, input.ltmEbitda.value);
-        calculations.push({id: `financial.net_leverage:${instrument.id}`, formula: "netDebtByDefinition / ltmEbitda", operands: {netDebtByDefinition: netDebtByDefinition.value, ltmEbitda: input.ltmEbitda.value}, result: leverage.value});
+        record({id: `financial.net_leverage:${instrument.id}`, formula: "netDebtByDefinition / ltmEbitda", operands: {netDebtByDefinition: netDebtByDefinition.value, ltmEbitda: input.ltmEbitda.value}, result: leverage.value});
         index = {value: leverage.value, basis: "computed_from_components", ebitda: {value: input.ltmEbitda.value, basis: "opened"}, anchor: input.ltmEbitda.anchor};
         comparability = residualOpen ? "conditional" : "comparable";
         const incorporated = new Set(input.ltmEbitda.incorporatesAdjustments);
         for (const adjustment of denominatorAdjustments) {
+          if (adjustment.kind === "other") { comparability = "conditional"; reasons.push(`the adjustment "${adjustment.id}" (${adjustment.description}) has no typed economic side; it cannot be incorporated by declaration`); continue; }
           if (incorporated.has(adjustment.id)) continue;
           comparability = "conditional";
           reasons.push(`the opened EBITDA does not state whether it incorporates "${adjustment.id}" (${adjustment.description})`);
@@ -382,31 +504,37 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     } else if (input.reported) {
       const reported = input.reported;
       comparability = "comparable";
+      if (!netDebtByDefinition) { comparability = "not_comparable"; reasons.push("net debt by this definition is not computable from the base; the reported index cannot be compared to this covenant"); }
+      if (reported.perimeter !== instrument.perimeter) { comparability = "not_comparable"; reasons.push(`the reported index measures the ${reported.perimeter} perimeter and the indenture the ${instrument.perimeter} one`); }
       if (reported.asOf !== input.asOfDate) { comparability = "not_comparable"; reasons.push(`the reported index is dated ${reported.asOf}, not the as-of date ${input.asOfDate}`); }
       const reportedSet = new Set(reported.netDebtComponents);
       const missingInReported = instrument.netDebtComponents.filter((component) => component !== RESIDUAL && !reportedSet.has(component));
       const extraInReported = reported.netDebtComponents.filter((component) => !wanted.has(component));
       if (missingInReported.length > 0 || extraInReported.length > 0) { comparability = "not_comparable"; reasons.push(`the reported net debt differs from the indenture's components (missing: ${missingInReported.join(", ") || "none"}; extra: ${extraInReported.join(", ") || "none"})`); }
       if (residualWanted && !reportedSet.has(RESIDUAL)) { if (comparability !== "not_comparable") comparability = "conditional"; reasons.push(`the base does not state whether the reported net debt includes "${RESIDUAL}" (condition)`); }
+      if (residualOpen) { if (comparability !== "not_comparable") comparability = "conditional"; reasons.push(`"${RESIDUAL}" has no line in the base; the computed net debt assumes zero and the comparison stays conditional`); }
       if (!reported.ebitdaOpening) { if (comparability !== "not_comparable") comparability = "conditional"; reasons.push("the base does not open the EBITDA behind the reported index"); }
       for (const adjustment of instrument.ebitdaAdjustments) { if (comparability !== "not_comparable") comparability = "conditional"; reasons.push(`this indenture carries the adjustment "${adjustment.id}" (${adjustment.kind}) and the reported index does not show it`); }
       let ebitda: {value: string; basis: "opened" | "implied_from_reported"} | null = null;
       if (reported.ebitdaOpening) {
         ebitda = {value: reported.ebitdaOpening.value, basis: "opened"};
+        if (d(reported.ebitdaOpening.value).lte(0)) { comparability = "not_comparable"; reasons.push("the opened EBITDA behind the reported index is zero or negative; the index cannot be reproduced"); }
         if (baseNetDebt && d(reported.ebitdaOpening.value).gt(0)) {
           const recomputed = calculateLeverage(out(baseNetDebt), reported.ebitdaOpening.value);
-          calculations.push({id: `financial.net_leverage:${instrument.id}:check`, formula: "baseNetDebt / ebitdaOpening, compared with the reported index (before numerator obligations)", operands: {baseNetDebt: out(baseNetDebt), ebitdaOpening: reported.ebitdaOpening.value, reportedIndex: reported.value}, result: recomputed.value});
+          record({id: `financial.net_leverage:${instrument.id}:check`, formula: "baseNetDebt / ebitdaOpening, compared with the reported index (before numerator obligations)", operands: {baseNetDebt: out(baseNetDebt), ebitdaOpening: reported.ebitdaOpening.value, reportedIndex: reported.value}, result: recomputed.value});
           if (d(recomputed.value).minus(reported.value).abs().gt("0.005")) { comparability = "not_comparable"; reasons.push(`the opened EBITDA does not reproduce the reported index (${recomputed.value} against ${reported.value}); the opening and the index do not belong together`); }
         }
-      } else if (netDebtByDefinition) {
-        const implied = d(netDebtByDefinition.value).div(reported.value);
-        calculations.push({id: `financial.net_leverage:${instrument.id}`, formula: "impliedEbitda = netDebtByDefinition / reportedIndex", operands: {netDebtByDefinition: netDebtByDefinition.value, reportedIndex: reported.value}, result: out(implied)});
-        ebitda = {value: out(implied), basis: "implied_from_reported"};
+      } else if (baseNetDebt && comparability !== "not_comparable") {
+        // The reported index does not declare the numerator obligations of this indenture: the implied EBITDA rests on the base net debt, and only when the index is dated at the as-of date on the same perimeter and components.
+        const implied = calculateImpliedEbitda(out(baseNetDebt), reported.value);
+        record({id: `financial.implied_ebitda:${instrument.id}`, formula: "baseNetDebt / reportedIndex (before numerator obligations)", operands: {baseNetDebt: out(baseNetDebt), reportedIndex: reported.value}, result: implied.value});
+        ebitda = {value: implied.value, basis: "implied_from_reported"};
       }
       if (ebitda) index = {value: reported.value, basis: "reported", ebitda, anchor: reported.anchor};
-      else { index = {value: reported.value, basis: "reported", ebitda: {value: "", basis: "implied_from_reported"}, anchor: reported.anchor}; if (comparability !== "not_comparable") comparability = "conditional"; reasons.push("no net debt by definition and no opened EBITDA: the reported index stands alone"); }
+      else { index = {value: reported.value, basis: "reported", ebitda: null, anchor: reported.anchor}; if (comparability !== "not_comparable") { comparability = "conditional"; reasons.push("no net debt by definition and no opened EBITDA: the reported index stands alone, its EBITDA unknown"); } else reasons.push("no EBITDA is implied from a reported index that is not comparable (date, perimeter or components); the index stands alone"); }
     }
     if (comparability === "comparable" && legalHere.length > 0) { comparability = "conditional"; reasons.push("a legal condition touches the numerator of this covenant; no headroom until it is resolved"); }
+    if (comparability === "comparable" && legalElsewhere.length > 0) { comparability = "conditional"; reasons.push(`a legal condition stands on another instrument of the same base (${legalElsewhere.join("; ")}); the method vetoes every headroom while any legal condition is open`); }
     if (comparability !== "no_index" && instrument.measurement.frequency !== "annual") reasons.push(`measurement is ${instrument.measurement.frequency}; the next measurement is ${measurement.nextMeasurementDate}`);
 
     // 4. Headroom only when the limit is resolved and the comparison is full.
@@ -415,14 +543,14 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     if (applicable && comparability === "comparable" && index) {
       const limit = (applicable as {limit: string}).limit;
       const result = calculateCovenantHeadroom({actual: index.value, limit, direction: instrument.direction});
-      calculations.push({id: `structure.covenant_headroom:${instrument.id}`, formula: instrument.direction === "maximum" ? "limit - actual" : "actual - limit", operands: {limit, actual: index.value}, result: result.absolute});
+      record({id: `structure.covenant_headroom:${instrument.id}`, formula: instrument.direction === "maximum" ? "limit - actual" : "actual - limit", operands: {limit, actual: index.value}, result: result.absolute});
       headroom = {absolute: result.absolute, relative: result.percentage, basis: `${index.basis} index against the ${limit}x tier, ${instrument.direction}`};
       status = result.passes ? "within_limit" : "above_limit_interim";
     }
     return {
       instrument: instrument.id, source: "indenture", indexName: instrument.indexName, direction: instrument.direction,
       definitions: {netDebt: instrument.netDebtDefinition, netDebtComponents: instrument.netDebtComponents, ebitda: instrument.ebitdaDefinition, ebitdaAdjustments: instrument.ebitdaAdjustments, anchors: instrument.definitionAnchors},
-      measurement, tiers,
+      measurement, tiers, notes: sortStrings(notes),
       applicableLimit: applicable ? (applicable as {limit: string}).limit : null,
       limitState: applicable ? "resolved" : "insufficient_evidence",
       limitConditions: sortStrings(conditions),
@@ -435,13 +563,19 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schemaVersion: "method.reconcile-covenant-definitions.v4" as const,
-    asOfDate: input.asOfDate,
+    schema_version: "method.reconcile-covenant-definitions.v14" as const,
+    as_of_date: input.asOfDate,
+    unit,
     state,
-    blockReasons,
+    block_reasons: blockReasons,
     covenants,
-    unprovenConditions: sortStrings([...unproven]),
-    legalConditions: sortStrings([...legal]),
+    unproven_conditions: sortStrings([...unproven]),
+    legal_conditions: sortStrings([...legal]),
+    uncovered_terms: [
+      ...input.candidateObligations.map((candidate) => ({id: `candidate:${candidate.id}`, state: "insufficient_evidence" as const, reason: `${candidate.description}: ${candidate.value} ${candidate.unit} at ${candidate.asOf} (${candidate.anchor.document}${candidate.anchor.page ? ` p. ${candidate.anchor.page}` : ""}) is a candidate ${candidate.relatedAdjustmentId ? `for the obligation "${candidate.relatedAdjustmentId}"` : "line"} that needs legal classification; not added to any numerator`})),
+      ...input.instruments.flatMap((instrument) => instrument.source === "indenture" ? instrument.ebitdaAdjustments.filter((adjustment) => adjustment.kind === "numerator_obligation" && adjustment.obligation === null).map((adjustment) => ({id: `obligation:${instrument.id}:${adjustment.id}`, state: "insufficient_evidence" as const, reason: input.candidateObligations.some((candidate) => candidate.relatedAdjustmentId === adjustment.id) ? `${instrument.id}: "${adjustment.id}" has candidate lines in the base awaiting classification` : `${instrument.id}: "${adjustment.id}" has no dated value in the base; unknown, not zero`})) : []),
+    ].sort((a, b) => compare(a.id, b.id)),
   };
-  return {...body, trace: {calculations, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint({...body, calculations})}};
+  const inputFingerprint = fingerprint(input);
+  return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }

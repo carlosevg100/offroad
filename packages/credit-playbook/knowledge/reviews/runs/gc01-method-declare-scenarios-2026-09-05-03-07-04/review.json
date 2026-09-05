@@ -1,0 +1,259 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "gc01-method-declare-scenarios-2026-09-05-03-07-04",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "tool": "codex-cli 0.153.4"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "declare-scenarios",
+    "version": "2026.09.05-v1",
+    "fingerprint": "3edc016e5724b792e36627050ae3ffc7bc9815bf3dae507eb366d2cdada6ae50"
+  },
+  "run": {
+    "id": "gc01-method-declare-scenarios-2026-09-05-03-07-04",
+    "startedAt": "2026-09-05T03:07:04.177Z",
+    "finishedAt": "2026-09-05T03:10:43.918Z",
+    "commit": "8bf52d7e659548e383d9f24cbc45bcc7c3e7c865"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 43 arquivos do corpus correspondem ao manifesto.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "anchor": "entries, linhas 5–220",
+      "result": "confirmed",
+      "note": "Bytes e SHA-256 foram recalculados; todos coincidem."
+    },
+    {
+      "claim": "Dívida bruta de 5.670.186 e caixa de 1.430.714.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.39–40, linhas 2034–2065; nota 3, PDF p.20, linhas 971–984",
+      "result": "confirmed",
+      "note": "Os valores conferem, mas o teste atribui um único anchor de p.40 também ao caixa, cuja fonte é p.20."
+    },
+    {
+      "claim": "Dívida líquida contratual de 4.228.477 e EBITDA implícito de 895.864.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§5, linhas 111–142",
+      "result": "confirmed",
+      "note": "5.670.186 + 14.335 - 235 - 1.430.714 - 25.095 = 4.228.477; 4.228.477 / 4,72 = 895.863,771, arredondado a 895.864."
+    },
+    {
+      "claim": "Saldo médio da dívida de 5.329.284.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2085–2094",
+      "result": "corrected",
+      "note": "A fonte não informa saldo médio. A média simples dos saldos inicial e final é (4.988.383 + 5.670.186) / 2 = 5.329.284,5, não 5.329.284."
+    },
+    {
+      "claim": "Taxa-base de 14%, choque de 2% e haircut de EBITDA de 15%.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/bcb_sgs_selic_meta.json",
+      "anchor": "observações de 01/09/2026 a 04/09/2026",
+      "result": "unverifiable",
+      "note": "14% aparece como meta Selic de setembro, não como custo médio da dívida em 31/05. O corpus permitido não contém os valores das chaves reference-data usadas para 2% e 15%."
+    },
+    {
+      "claim": "CFADS de 450.000 em cada semestre, derivado de metade do EBITDA menos capex de manutenção.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§6, linhas 163–167; §8, linhas 184–193",
+      "result": "corrected",
+      "note": "895.864 / 2 = 447.932 antes de qualquer capex; portanto 450.000 não pode ser metade menos capex. O gabarito diz que DSCR depende de CFADS não disponível. Os dois CFADS foram preenchidos sem suporte."
+    },
+    {
+      "claim": "Principal de 614.914 e juros de 340.000 em cada semestre.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, PDF p.40, linhas 2097–2109",
+      "result": "unverifiable",
+      "note": "1.229.828 / 2 = 614.914, mas a fonte só traz o total do ano-safra, sem divisão semestral. Não há projeção de juros de 340.000 por semestre."
+    },
+    {
+      "claim": "Autorizações de 251.000 e até 535.000, total máximo de 786.000.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§11.3, linhas 271–284",
+      "result": "confirmed",
+      "note": "251.000 + 535.000 = 786.000; são autorizações, não desembolsos ou fontes contratadas demonstradas."
+    },
+    {
+      "claim": "Os 786.000 podem ser usados como refinancedDebt e contractedSources.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§11.3, linhas 278–284; §11.6, linhas 318–323",
+      "result": "corrected",
+      "note": "O gabarito proíbe alocar esse máximo no cronograma sem prova de contrato e desembolso. O teste ainda ancora o total somente na ata das notas comerciais, embora 535.000 pertença à ata da CPR."
+    },
+    {
+      "claim": "Delta de juros adverso de 106.585,68.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.test.ts",
+      "anchor": "linhas 17 e 35–39",
+      "result": "confirmed",
+      "note": "Com o input do executor: 5.329.284 × 14% = 746.099,76; × 16% = 852.685,44; delta = 106.585,68. Com a média corrigida de 5.329.284,5, o delta seria 106.585,69."
+    },
+    {
+      "claim": "Pro forma base: dívida bruta 4.884.186, líquida 3.453.472 e leverage 3,85490655; adverso 4,53518417.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linhas 106–117",
+      "result": "confirmed",
+      "note": "Aritmética executada: 5.670.186 - 786.000 = 4.884.186; menos caixa = 3.453.472; 3.453.472 / 895.864 = 3,85490655. EBITDA adverso = 895.864 × 85% = 761.484,4; leverage = 4,53518417."
+    },
+    {
+      "claim": "O pro forma representa economicamente um refinanciamento.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§11.3, linhas 278–284",
+      "result": "corrected",
+      "note": "O executor subtrai 786.000 da dívida sem adicionar dívida substituta e ainda usa o mesmo montante como liquidez. Isso modela perdão/amortização financiada externamente, não refinanciamento demonstrado."
+    },
+    {
+      "claim": "Liquidez base termina em 1.992.886.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linhas 119–124",
+      "result": "confirmed",
+      "note": "P1: (1.430.714 + 450.000 + 786.000) / 954.914 = 2,79262216; fechamento 1.711.800. P2: (1.711.800 + 450.000 + 786.000) / 954.914 = 3,08697956; fechamento 1.992.886."
+    },
+    {
+      "claim": "Liquidez adversa termina em 1.751.300,32.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linhas 114–124",
+      "result": "confirmed",
+      "note": "CFADS = 382.500; juros adicionais por semestre = 53.292,84; serviço = 1.008.206,84. Fechamentos recalculados: 1.591.007,16 e 1.751.300,32."
+    },
+    {
+      "claim": "A fonte de refinanciamento de 786.000 é usada uma única vez.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linha 122",
+      "result": "corrected",
+      "note": "contractedSources recebe 786.000 em cada período; o cenário base contabiliza 1.572.000 no total."
+    },
+    {
+      "claim": "O cenário sem rolagem mostra déficit.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.test.ts",
+      "anchor": "linhas 42–47",
+      "result": "corrected",
+      "note": "O teste verifica apenas caixa inferior ao base. O recálculo produz fechamentos de 925.800 e 420.886, com deficit = 0 nos dois períodos; portanto o título do teste não é provado."
+    },
+    {
+      "claim": "A dívida líquida usada no leverage corresponde à definição contratual.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§5, linhas 111–142; §13.1, linhas 353–375",
+      "result": "corrected",
+      "note": "O executor usa apenas dívida bruta menos caixa, omitindo derivativos e aplicações. Sem a operação de 786.000, daria 4.239.472, contra 4.228.477 contratual; a definição não é identificada na saída."
+    },
+    {
+      "claim": "O EBITDA do executor é comparável ao EBITDA de covenant.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.22.3, linhas 1293–1337",
+      "result": "corrected",
+      "note": "O executor aceita qualquer ltmEbitdaProxy e basis livre. Não valida a definição contratual nem o ajuste de aquisições e sellers finance exclusivo da 11ª emissão."
+    },
+    {
+      "claim": "A hierarquia de origem do método é aplicada pelo executor.",
+      "source": "packages/credit-playbook/knowledge/procedures/scenarios/declare-scenarios.md",
+      "anchor": "linhas 49–55 e 97–105",
+      "result": "corrected",
+      "note": "O executor calcula originRank, mas não escolhe nem exige a origem superior disponível; a classificação é fornecida livremente pelo chamador."
+    },
+    {
+      "claim": "A presença dos IDs garante base, adverso e sem rolagem semanticamente válidos.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linhas 41–64",
+      "result": "corrected",
+      "note": "Adverse passa sem choque ou haircut; no_rollover passa com rolloverAllowed omitido, cujo default é true. Só os IDs são exigidos."
+    },
+    {
+      "claim": "Parâmetro não registrado e conjunto mínimo incompleto são recusados.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.test.ts",
+      "anchor": "linhas 49–56",
+      "result": "confirmed",
+      "note": "As duas mutações geram erro como esperado. A primeira testa referência inexistente, não falsificação da origem declarada."
+    },
+    {
+      "claim": "EBITDA ausente não é inventado.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linhas 110–111",
+      "result": "confirmed",
+      "note": "Com ltmEbitdaProxy nulo, leverage permanece null."
+    },
+    {
+      "claim": "Base insuficiente produz uncoveredTerms, insufficient_evidence e bloqueio explícito.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linhas 67–79 e 92–135",
+      "result": "corrected",
+      "note": "Esses estados não existem no contrato de saída. Ausências de choque, haircut e sem-rolagem recebem defaults silenciosos; apenas referências inexistentes bloqueiam."
+    },
+    {
+      "claim": "A ressalva acompanha cada número derivado e suas fontes.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linhas 125–134",
+      "result": "corrected",
+      "note": "Há uma ressalva por cenário, separada dos números. Ela omite as origens da posição inicial e não acompanha individualmente cada resultado."
+    },
+    {
+      "claim": "Faixa do usuário é rotulada quando corretamente declarada.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.test.ts",
+      "anchor": "linhas 58–66",
+      "result": "confirmed",
+      "note": "A caveat contém 'faixa dada pelo usuário' e originRank = 4."
+    },
+    {
+      "claim": "As mutações adversariais de escala, origem disfarçada, EBITDA impróprio, arrendamento e captação não desembolsada são resistidas.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§10, linhas 215–219; §11.6, linhas 316–323",
+      "result": "corrected",
+      "note": "Unidades são strings sem validação dimensional; origem e basis são livres; não há decomposição de dívida; e o próprio gold usa a autorização não desembolsada como fonte. Os testes não cobrem essas mutações."
+    },
+    {
+      "claim": "Ordem de arrays não altera fingerprints no caso gold.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.test.ts",
+      "anchor": "linhas 68–79",
+      "result": "confirmed",
+      "note": "O teste passa, mas as 20 iterações repetem somente duas ordenações das assumptions e sempre a mesma reversão de scenarios e periods."
+    },
+    {
+      "claim": "O executor é determinístico para toda entrada válida independentemente da ordem.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "linhas 51–64 e 88–95",
+      "result": "corrected",
+      "note": "Chaves duplicadas são aceitas. A ordenação mantém a ordem relativa dos duplicados e Map usa o último valor; inverter dois assumptions com a mesma key alterou cálculo e ambos os fingerprints. IDs e períodos duplicados também não são recusados."
+    },
+    {
+      "claim": "Headroom contratual pode ser afirmado diretamente a partir dos leverages produzidos.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§11.2, linhas 252–269; §13.1, linhas 363–375",
+      "result": "limitation",
+      "note": "O executor não produz headroom nem recebe degrau contratual. Comparações mecânicas contra 4,00x seriam +0,14509345x no base e -0,53518417x no adverso, mas não são headroom contratual verificável."
+    },
+    {
+      "claim": "Arrendamento integra 'qualquer outra dívida onerosa'.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§5, linhas 135–138",
+      "result": "limitation",
+      "note": "O corpus não resolve essa interpretação jurídica."
+    },
+    {
+      "claim": "O degrau de 4,00x e a comparabilidade integral do 4,72x estão definitivamente comprovados.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§13.1, linhas 360–375; §13.3, linhas 403–409",
+      "result": "limitation",
+      "note": "A quitação ordinária dos CRA de referência e o cálculo completo do EBITDA da companhia permanecem insufficient_evidence."
+    }
+  ],
+  "result": "fail",
+  "conditions": [
+    "Revisão jurídica especializada necessária para decidir se arrendamento entra em 'outra dívida onerosa' (§5, linhas 135–138 do gabarito).",
+    "Comprovar a quitação ordinária dos CRA de referência antes de aplicar definitivamente o degrau de 4,00x (§13.1, linhas 360–375).",
+    "Obter o cálculo de EBITDA e as informações complementares da companhia antes de afirmar comparabilidade integral do 4,72x com cada escritura (§13.1, linhas 371–375)."
+  ],
+  "notes": "Codex (GPT-5), com inspeção local, SHA-256, execução via tsx e Vitest; revisão exclusivamente por modelo.\n\nFalha material: o gold inventa CFADS, transforma autorizações não desembolsadas em refinanciamento e liquidez repetida, não demonstra o déficit anunciado, omite estados explícitos de insuficiência e não é determinístico com duplicatas. Os testes locais passam, mas não provam essas propriedades. Este registro é revisão por modelo, não aprovação humana."
+}

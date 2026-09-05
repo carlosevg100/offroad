@@ -1,6 +1,6 @@
 ---
 id: compare-refinancing-before-after
-version: 2026.09.05-v2
+version: 2026.09.05-v7
 maturity: implemented
 title_pt: Comparar antes e depois de cada alternativa de refinanciamento
 title_en: Compare before and after for each refinancing alternative
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/compare-refinancing-before-after
 implementation_export: compareRefinancingBeforeAfter
-result_contract: method.compare-refinancing-before-after.v2
+result_contract: method.compare-refinancing-before-after.v7
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -55,6 +55,15 @@ e descarte de cada alternativa, e a lista do que a base não sustenta.
 4. [model_assisted] Redigir :: Dizer o que cada alternativa muda, o que custa e o que a derruba, com os números da tabela
 
 # Cálculos determinísticos
+- O cronograma vem do ledger nos períodos dele, cada um com a data em que termina; o principal novo cai no período que contém a data de cada parcela, e o que passa do último período datado cai no bucket aberto.
+- A série retirada sai, parcela a parcela, do período em que cada parcela vence; se o período não existe ou não comporta o principal, a alternativa bloqueia; principal novo depois do último período datado sem bucket aberto também bloqueia.
+- O principal retirado é o nominal contratual de cada parcela (saldo contábil é recusado); os termos da dívida nova declaram a classe da fonte (term sheet, proposta, contrato; termos indicativos são cenário declarado e não custo verificado; captação apenas autorizada é recusada); geração por período vem com âncora; dois períodos com a mesma data de fim são recusados. O que a dívida nova levanta além do principal retirado fica no caixa; o que falta sai do caixa. Preço de saída só com mecanismo permitido na data, vindo do executor de custo de saída; preço ao lado de uma lacuna de saída é recusado. Sem evidência de degrau não há headroom; a leitura na própria data de medição é medição. Só o status quo dispensa custos declarados. Duas alternativas no mínimo. Toda linha do cronograma, todo custo e toda saída com âncora própria.
+- Participação de cada período sobre a dívida bruta (antes: reportada; depois: pró forma).
+- Cobertura de principal por período só com geração de caixa declarada por período; um valor único nunca é repetido pelos anos.
+- All-in da dívida nova: cupom mais taxa de estruturação, prêmios de saída e custos pagos com caixa, amortizados pelo prazo; o custo da dívida existente é outra base e nunca é ordenado contra ele.
+- Alavancagem só com EBITDA positivo e definição declarada; headroom só com limite resolvido e comparável.
+- Cronograma que não soma a dívida bruta (com as linhas de ajuste do ledger) bloqueia a comparação inteira; o cronograma depois concilia exatamente com a dívida bruta depois (o resíduo de arredondamento das parcelas fica na última).
+- Dívida líquida contratual e cobertura de principal pelo financial-core; headroom só com degrau aplicável (não condicional nem inaplicável); EBITDA de doze meses declarado por datas; datas civis válidas; limiar de parede entre 0 e 1.
 - operation.pro_forma_position: posição pro forma por alternativa.
 - structure.maturity_concentration: concentração antes e depois.
 - structure.covenant_headroom: headroom pela definição contratual e limite aplicável.
@@ -76,9 +85,18 @@ e descarte de cada alternativa, e a lista do que a base não sustenta.
 - Custo de saída indisponível para uma série que a alternativa retira.
 
 # Outputs
-- before_after (array, required): por alternativa, os mesmos objetos antes e depois
-- ranking (array, required): ordem, discriminador, motivos de inclusão e descarte
-- unsupported (array, required): o que a base não sustenta por alternativa
+- schema_version (string, required): method.compare-refinancing-before-after.v7
+- reference_date (date, required): data-base do ledger que a comparação usa
+- unit (enum, required): unidade declarada e única de todos os valores monetários (BRL, BRL thousand, BRL million, USD, USD thousand), ancorada na fonte que a declara; escala re-rotulada é recusada
+- state (enum, required): compared quando o cronograma concilia com a dívida bruta; blocked quando não concilia
+- block_reasons (array, required): motivos do bloqueio; vazio quando compared
+- wall_threshold (object, required): participação, chave e versão da política de parede usada na concentração
+- schedule_adjustments (array, required): linhas do cronograma do ledger que não pertencem a período (custos de transação); conciliam o cronograma à dívida bruta e nunca entram na concentração
+- before (object, required): posição antes: dívida bruta, caixa dedutível (caixa e aplicações que a definição contratual deduz, não liquidez em D0), dívida líquida, dívida líquida contratual, alavancagem (com definição e base do EBITDA) ou null, headroom por instrumento (todos os covenants da base, cada um com os seus degraus; o headroom mostrado é o mais apertado entre os mensuráveis; leitura interina com a data de medição do instrumento, nunca rompimento nem cumprimento), pico com participação sobre a dívida bruta, custo da dívida existente na sua própria base (nunca comparável ao all-in) e âncora de cada operando
+- alternatives (array, required): por alternativa: estado (compared ou blocked com motivos), posição depois com os mesmos objetos, data efetiva e nota temporal (o antes e os saldos retirados são da data-base; a dívida nova tem a sua data; nada é rolado entre as duas, declarado), custo de saída com as âncoras de cada prêmio, concentração por período do cronograma (existente, proposto, consolidado, participação sobre a dívida bruta depois, parede, cobertura de principal quando a geração por período foi declarada), serviço da nova dívida (pico, juros, prazo médio, all-in com prêmios e custos pagos com caixa, nulo quando os custos não estão na base: zero tem de ser explícito) e termos não cobertos carregados como lacuna
+- ranking (object, optional): discriminador declarado, racional e ordem com o valor econômico do discriminador (participação, custo, valor) separado do score interno de ordenação; empate é nomeado e ordenado por id, não por mérito; all_in_cost só ordena alternativas com dívida nova
+- unsupported (array, required): o que não foi medido e por quê (headroom, alavancagem, cobertura, ranking, alternativas bloqueadas)
+- trace (object, required): cálculos (todos do financial-core, com unidade), fingerprint canônico da entrada e da saída
 
 # Exemplos
 ## Bom

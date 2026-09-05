@@ -1,0 +1,289 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "gc01-method-estimate-exit-cost-by-series-2026-09-05-05-17-56",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "tool": "codex-cli 0.153.4"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "estimate-exit-cost-by-series",
+    "version": "2026.09.05-v6",
+    "fingerprint": "42294e2e16cf09776b28d94880503672f39cdde4ef4193c324dbc7161e4388fe"
+  },
+  "run": {
+    "id": "gc01-method-estimate-exit-cost-by-series-2026-09-05-05-17-56",
+    "startedAt": "2026-09-05T05:17:56.691Z",
+    "finishedAt": "2026-09-05T05:22:14.822Z",
+    "commit": "5ead2bf2a558abf348f1ed7d37906dfb656d21e8"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 43 arquivos do corpus correspondem aos hashes congelados.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "anchor": "entries",
+      "result": "confirmed",
+      "note": "Os 43 SHA-256 foram recalculados e coincidiram."
+    },
+    {
+      "claim": "O teste gold contém as 12 séries existentes no ITR.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, página 39, linhas 2046-2057",
+      "result": "confirmed",
+      "note": "2 séries da 11ª + 3 da 13ª + 3 da 14ª + 4 da 15ª = 12."
+    },
+    {
+      "claim": "Na data-base de 04/09/2026 não há nominal, remuneração acumulada e encargos de saída; as 12 bases ficam abertas.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "condição 6 e seção 13.2",
+      "result": "confirmed",
+      "note": "O ITR só apresenta saldos em 31/05/2026. Recálculo: 0 séries estimadas, 12 abertas; somas vazias de prêmio e pagamento = 0; estado partial."
+    },
+    {
+      "claim": "A 11ª permite aquisição desde qualquer tempo e oferta apenas com adesão integral; emissão em 30/10/2021.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusulas 4.1.1, 4.13 e 4.14.1.4, páginas 22-25",
+      "result": "confirmed",
+      "note": "Confere com available_from 2021-10-30, price_at_counterparty e exigência de 100%."
+    },
+    {
+      "claim": "A 13ª série DI admite amortização e resgate desde 14/05/2026, prêmio de 0,40% a.a., base 252, e limite de amortização de 98%.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "cláusulas 7.16.1 e 7.18.1, páginas 39 e 42-43",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A 14ª série DI admite amortização e resgate desde 15/06/2026, prêmio de 0,40% a.a., base 252, e limite de 98%.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_14a_emissao.txt",
+      "anchor": "cláusulas 7.16.1 e 7.18.1",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As janelas 15/11/2027, 15/11/2028 e 15/11/2029 usadas para a 15ª estão corretas.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_15a_emissao.txt",
+      "anchor": "cláusulas 7.16.1.1, 7.16.2.1 e 7.16.3.1, páginas 37-40",
+      "result": "confirmed",
+      "note": "Em 04/09/2026 essas rotas unilaterais são not_permitted; a oferta da cláusula 7.14 continua disponível desde 15/11/2025."
+    },
+    {
+      "claim": "As remunerações 6,3416% e 6,5264% usadas para as séries IPCA da 13ª estão corretas.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_13a_emissao.txt",
+      "anchor": "quadros REMUNERAÇÃO VIGENTE, linhas 106 e 158",
+      "result": "confirmed",
+      "note": "O teste deveria ancorá-las neste documento; a escritura 7.10 apenas remete ao bookbuilding."
+    },
+    {
+      "claim": "As remunerações 6,8286% e 6,9982% usadas para as séries IPCA da 14ª estão corretas.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_14a_emissao.txt",
+      "anchor": "quadros REMUNERAÇÃO VIGENTE, linhas 106 e 156",
+      "result": "confirmed",
+      "note": "O anchor do teste na escritura 7.10 não contém as taxas finais."
+    },
+    {
+      "claim": "As remunerações 14,15%, 8,20% e 8,70% da 15ª estão corretas.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/cra_389_aditamento_1.txt",
+      "anchor": "cláusulas de remuneração, linhas 312, 351 e 393",
+      "result": "confirmed",
+      "note": "O anchor do teste na escritura 7.10 não contém todas as taxas finais."
+    },
+    {
+      "claim": "A 13ª 3ª série teria apenas oferta negociada porque sua janela unilateral não estaria na base.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "cláusulas 7.16.2.1 e 7.18.2, páginas 40 e 43",
+      "result": "corrected",
+      "note": "A base contém resgate total e amortização extraordinária desde 15/05/2028. O fixture gold omite ambas."
+    },
+    {
+      "claim": "A 14ª 2ª série teria somente resgate total, e a 3ª somente oferta negociada.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_14a_emissao.txt",
+      "anchor": "cláusulas 7.16.2.1 e 7.18.2",
+      "result": "corrected",
+      "note": "A 2ª também tem amortização desde 15/06/2027; a 3ª tem amortização e resgate desde 15/06/2028."
+    },
+    {
+      "claim": "Na 15ª basta representar as rotas de resgate total.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_15a_emissao.txt",
+      "anchor": "cláusulas 7.18.1, 7.18.2 e 7.18.3",
+      "result": "corrected",
+      "note": "O gold omite amortização extraordinária DI, prefixada e IPCA, todas previstas com limite de 98%."
+    },
+    {
+      "claim": "Prêmio DI hipotético sobre base 101,5, taxa 0,004 e 504 DU é 0,813624.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.test.ts",
+      "anchor": "linhas 142-159",
+      "result": "confirmed",
+      "note": "101,5 × [(1,004)^(504/252)−1] = 101,5 × 0,008016 = 0,813624. Parcial: 99,47 retirados e prêmio 0,79735152; oferta: 60,9 retirados e prêmio 0,609."
+    },
+    {
+      "claim": "Os cálculos make-whole do fixture reproduzem a fórmula implementada.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.test.ts",
+      "anchor": "linhas 162-184",
+      "result": "confirmed",
+      "note": "A 7%: PV=6/(1,07)^(125/252)+106/1,07=104,86739704; duration a 6%=245,00484232 DU. Pagamentos: parcial 52,43369852; 13ª total 104,86739704; 14ª total 105,36739704. Prefixada: PV a 2%=109,86292075; mais 0,1=109,96292075."
+    },
+    {
+      "claim": "Os totais do fixture hipotético decorrem das quatro saídas integrais escolhidas.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 326-335",
+      "result": "confirmed",
+      "note": "102,313624 + 104,86739704 + 105,36739704 + 109,96292075 = 422,51133883; prêmio agregado = 16,41133883."
+    },
+    {
+      "claim": "A base é nominal na saída mais remuneração acumulada e encargos explícitos, sem preenchimento automático.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 251-269",
+      "result": "confirmed",
+      "note": "Qualquer componente nulo produz insufficient_evidence e payable nulo."
+    },
+    {
+      "claim": "Make-whole sem cotação, fluxos ou remuneração suficiente fica sem preço.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 289-305",
+      "result": "confirmed",
+      "note": "O executor devolve insufficient_evidence; os testes cobrem fluxos e remuneração, mas não fazem uma mutação dedicada de quote=null."
+    },
+    {
+      "claim": "Série sem escritura é bloqueada e registrada em uncovered_terms.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 256-263 e 278",
+      "result": "confirmed",
+      "note": "Nenhuma rota é precificada."
+    },
+    {
+      "claim": "A seleção do vértice Pré x DI pode usar duration em dias úteis.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_15a_emissao.txt",
+      "anchor": "cláusula 7.16.2.2, páginas 38-39",
+      "result": "corrected",
+      "note": "A escritura exige o vértice com número de dias corridos mais próximo; o executor compara campos durationBusinessDays nas linhas 47-49 e 302."
+    },
+    {
+      "claim": "O make-whole pode usar fatores não arredondados até o total final.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "cláusulas 7.16.2.2 e 7.18.2.1",
+      "result": "corrected",
+      "note": "As escrituras mandam arredondar FVPk e FVPd a 9 casas. O teste calcula a expectativa com o mesmo helper do executor e não prova essa sequência contratual."
+    },
+    {
+      "claim": "A truncagem do prêmio DI sobre uma base agregada é equivalente ao cálculo contratual por debênture.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "cláusula 7.16.1.2, página 39",
+      "result": "corrected",
+      "note": "A escritura define P sobre PU unitário e trunca P a 8 casas. O executor não recebe quantidade e trunca uma única vez sobre a base agregada; o teste de uma base hipotética não cobre a diferença."
+    },
+    {
+      "claim": "Todo prêmio de oferta negociada é necessariamente uma taxa multiplicada pela base.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusulas 4.14.1.2 e 4.14.1.5, páginas 23-24",
+      "result": "corrected",
+      "note": "A escritura exige que o edital informe o valor do prêmio, sem restringi-lo a uma taxa. O schema aceita somente premium.rate e o executor impõe base × taxa."
+    },
+    {
+      "claim": "Uma oferta com prêmio conhecido, mas adesão ausente, permanece sem quantidade retirada.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 315-322",
+      "result": "corrected",
+      "note": "Mutação executada: com requiresFullAdherence=true e adhesion=null, o executor inventou adesão integral e retornou estimated para 101 de principal e 102,01 total."
+    },
+    {
+      "claim": "A fração de adesão nunca pode exceder 100%.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 84-93 e 315-322",
+      "result": "corrected",
+      "note": "Mutação com adhesion=1.2 foi aceita e produziu retirada de 121,2% da série. Não há teste desse limite."
+    },
+    {
+      "claim": "O executor rejeita datas ISO impossíveis.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linha 31",
+      "result": "corrected",
+      "note": "O schema verifica apenas o formato por regex; datas como 2026-99-99 podem passar, especialmente com series vazia."
+    },
+    {
+      "claim": "A lista de mecanismos é comprovadamente completa para cada escritura.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 119 e 146-154",
+      "result": "corrected",
+      "note": "Lista vazia ou incompleta é aceita. As omissões materiais do próprio gold não geram uncovered_terms."
+    },
+    {
+      "claim": "As mutações de prêmio flat, janela prematura, curva errada, base incompleta, anchor inválido, duplicatas e fração acima do limite são resistidas.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.test.ts",
+      "anchor": "linhas 142-267",
+      "result": "confirmed",
+      "note": "Os sete testes locais passaram."
+    },
+    {
+      "claim": "Fingerprints são invariantes às permutações testadas de documentos, séries, mecanismos, fluxos e chaves.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.test.ts",
+      "anchor": "linhas 269-290",
+      "result": "confirmed",
+      "note": "As 20 permutações cobertas mantiveram os dois fingerprints."
+    },
+    {
+      "claim": "Fingerprints são invariantes à ordem dos candidatos de cotação.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 237-242 e 340-341",
+      "result": "corrected",
+      "note": "Mutação executada invertendo quote.candidates: a saída econômica permaneceu igual, mas inputFingerprint e outputFingerprint mudaram. O teste não permuta candidatos."
+    },
+    {
+      "claim": "Empate entre títulos de referência é registrado, como promete o método.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "linhas 301-305",
+      "result": "corrected",
+      "note": "O executor desempata pelo nome e não registra que houve empate; não há teste de empate."
+    },
+    {
+      "claim": "Dívida líquida, EBITDA, degraus, comparabilidade, contra e headroom são resultados deste executor.",
+      "source": "packages/credit-playbook/knowledge/procedures/refinance/estimate-exit-cost-by-series.md",
+      "anchor": "Objetivo, Cálculos determinísticos e Outputs",
+      "result": "confirmed",
+      "note": "Não são definidos nem calculados por este método; o único headroom aparece como reference_data_key sem uso. Não houve número dessas categorias a recalcular."
+    },
+    {
+      "claim": "O valor monetário gold do make-whole é verificável com o corpus atual.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "condição 6",
+      "result": "unverifiable",
+      "note": "Faltam base na saída, fluxos completos e cotações do dia contratual."
+    },
+    {
+      "claim": "A aquisição facultativa pode ser qualificada juridicamente apenas como preço aceito pelo vendedor.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.13.1, página 22",
+      "result": "limitation",
+      "note": "A cláusula também remete à legislação e a restrições regulatórias; a conclusão jurídica final exige especialista."
+    },
+    {
+      "claim": "Os arquivos de calendário e cotações declarados no teste pertencem ao manifesto gold.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "anchor": "entries",
+      "result": "corrected",
+      "note": "calendario_anbima_2026.csv, anbima_ntnb_2026-09-02.csv e b3_pre_di_2026-09-03.csv não constam do manifesto; o teste cria um registro autodeclarado para eles."
+    }
+  ],
+  "result": "fail",
+  "conditions": [
+    "Recompor o gold com todas as rotas das cláusulas 7.16 e 7.18.",
+    "Não estimar oferta sem adesão comprovada; limitar adesão a 100% e representar o prêmio conforme o edital.",
+    "Aplicar dias corridos na seleção Pré x DI e as sequências contratuais de arredondamento/truncagem.",
+    "Canonicalizar candidatos de cotação, registrar empates e validar datas civis reais.",
+    "Substituir documentos autodeclarados por arquivos presentes no manifesto e anchors que contenham os valores.",
+    "Manter o valor monetário do make-whole condicionado até existirem base, fluxos e cotações contratuais.",
+    "Submeter a interpretação jurídica da aquisição facultativa a especialista."
+  ],
+  "notes": "Codex (GPT-5), com inspeção local, aritmética independente e Vitest.\n\nEmbora os 7 testes passem, há omissões gold e comportamentos materiais incorretos. Esta é revisão por modelo, não aprovação humana."
+}

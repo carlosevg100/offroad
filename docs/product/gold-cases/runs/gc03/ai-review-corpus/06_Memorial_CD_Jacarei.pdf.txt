@@ -1,0 +1,25 @@
+# 06_Memorial_CD_Jacarei.pdf (pdf; parsers pdf-1.0.0, 6.2.108)
+
+
+## página 1
+
+Centro de Distribuição Jacareí Memorial descritivo, agosto de 2026
+Objeto
+Implantação de centro de distribuição em Jacareí/SP, com terreno de 18.400 m² e área construída projetada de 9.600 m², destinado ao atendimento das regiões de Campinas e do Alto Tietê.
+Cronograma
+Investimento
+Retorno esperado
+A companhia estima receita incremental de R$ 38.000.000,00 no terceiro ano completo de operação, com margem EBITDA 0,6 ponto percentual acima da margem consolidada atual.
+Licenciamento
+O licenciamento ambiental encontra-se em análise na CETESB sob o protocolo nº 2026/114.882-7, protocolado em 03 de julho de 2026. A licença prévia ainda não foi emitida.
+
+[tabela]
+Início da obra | 2026-11-01
+Entrada em operação | 2027-09-01
+
+[tabela]
+Item | Valor (R$)
+Obra civil do centro de distribuição de Jacareí | 11.400.000,00
+Equipamentos de movimentação e racks | 4.100.000,00
+Sistema de gestão e integração logística | 1.800.000,00
+Investimento total do projeto | 17.300.000,00

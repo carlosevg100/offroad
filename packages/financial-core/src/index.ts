@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.03-v8";
+export const financialCoreVersion = "2026.09.05-v14";
 
 export * from "./financial-truth";
 export * from "./indexed-debt";
@@ -48,6 +48,52 @@ export function calculateLeverage(netDebt: DecimalInput, adjustedEbitda: Decimal
   return result(debt.div(ebitda), [
     {label: "net_debt", value: canonical(debt)},
     {label: "adjusted_ebitda", value: canonical(ebitda)},
+  ]);
+}
+
+/**
+ * Brazilian business-day accrual: the factor an annual effective rate accumulates over `businessDays`
+ * of a 252-day year, as indentures state it ((1 + rate)^(DU/252) - 1). Rates are decimals.
+ */
+export function businessDayAccrual(annualRate: DecimalInput, businessDays: number): CalculationResult {
+  if (!Number.isInteger(businessDays) || businessDays < 0) throw new RangeError("business days must be a non-negative integer");
+  const rate = d(annualRate);
+  if (rate.lte(-1)) throw new RangeError("an annual rate below -100% has no accrual factor");
+  const factor = rate.plus(1).pow(new Decimal(businessDays).div(252)).minus(1);
+  return result(factor, [
+    {label: "annual_rate", value: canonical(rate)},
+    {label: "business_days", value: String(businessDays)},
+  ]);
+}
+
+/**
+ * The DI factor of a "p% of DI" remuneration over `businessDays`, with a flat annual DI: each day accrues
+ * p times the daily DI rate and the days compound ((1 + ((1 + DI)^(1/252) - 1) * p)^DU - 1).
+ */
+export function diPercentAccrual(annualDi: DecimalInput, percentOfDi: DecimalInput, businessDays: number): CalculationResult {
+  if (!Number.isInteger(businessDays) || businessDays < 0) throw new RangeError("business days must be a non-negative integer");
+  const di = d(annualDi);
+  const percent = d(percentOfDi);
+  if (di.lte(-1) || percent.lt(0)) throw new RangeError("the DI must be above -100% and the percentage non-negative");
+  const daily = di.plus(1).pow(new Decimal(1).div(252)).minus(1).times(percent);
+  const factor = daily.plus(1).pow(businessDays).minus(1);
+  return result(factor, [
+    {label: "annual_di", value: canonical(di)},
+    {label: "percent_of_di", value: canonical(percent)},
+    {label: "business_days", value: String(businessDays)},
+  ]);
+}
+
+/** The EBITDA a reported leverage implies for a given net debt: netDebt / index. The caller marks it derived, never a fact. */
+export function calculateImpliedEbitda(netDebt: DecimalInput, reportedIndex: DecimalInput): CalculationResult {
+  const debt = d(netDebt);
+  const index = d(reportedIndex);
+  if (index.lte(0)) {
+    throw new RangeError("a reported index must be positive to imply an EBITDA");
+  }
+  return result(debt.div(index), [
+    {label: "net_debt", value: canonical(debt)},
+    {label: "reported_index", value: canonical(index)},
   ]);
 }
 
@@ -190,4 +236,76 @@ export type FinancialCalculationId = keyof typeof financialCalculationRegistry;
 
 export function isFinancialCalculationId(value: string): value is FinancialCalculationId {
   return Object.hasOwn(financialCalculationRegistry, value);
+}
+
+/** A single traced calculation with its formula and operands, for functions that return more than one figure. */
+export type CalculationTrace = {id: string; formula: string; operands: Record<string, string>; result: string};
+
+/**
+ * Present value of dated flows discounted at an annual effective rate over business days of a
+ * 252-day year: PV = sum(amount / (1 + rate)^(businessDays / 252)). Used by the exit-cost method
+ * for the make-whole prices the indentures define at a quoted rate.
+ */
+export function presentValueByBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string, options: {factorDecimals?: number; presentValueDecimals?: number} = {}): {value: string; discounted: Array<{id: string; amount: string; businessDays: number; factor: string; presentValue: string}>; trace: CalculationTrace} {
+  if (!/^\d+(\.\d+)?$/.test(annualRate)) throw new Error("annualRate must be a non-negative decimal string");
+  const rate = new Decimal(annualRate);
+  let total = new Decimal(0);
+  const discounted = flows.map((flow) => {
+    if (!Number.isInteger(flow.businessDays) || flow.businessDays < 0) throw new Error(`flow ${flow.id}: businessDays must be a non-negative integer`);
+    // An indenture may round the discount factor of each flow (FVPk at nine decimals) before dividing; the option keeps that layer.
+    const rawFactor = rate.plus(1).pow(new Decimal(flow.businessDays).div(252));
+    const factor = options.factorDecimals === undefined ? rawFactor : rawFactor.toDecimalPlaces(options.factorDecimals, Decimal.ROUND_HALF_UP);
+    const presentValue = options.presentValueDecimals === undefined ? new Decimal(flow.amount).div(factor) : new Decimal(flow.amount).div(factor).toDecimalPlaces(options.presentValueDecimals, Decimal.ROUND_HALF_UP);
+    total = total.plus(presentValue);
+    return {id: flow.id, amount: new Decimal(flow.amount).toFixed(), businessDays: flow.businessDays, factor: factor.toDecimalPlaces(12).toFixed(), presentValue: presentValue.toDecimalPlaces(8).toFixed()};
+  });
+  const value = total.toDecimalPlaces(8).toFixed();
+  return {value, discounted, trace: {id: "financial.present_value_by_business_days", formula: "sum(amount / (1 + annualRate)^(businessDays/252))", operands: {annualRate, flows: String(flows.length), factorDecimals: options.factorDecimals === undefined ? "none" : String(options.factorDecimals), presentValueDecimals: options.presentValueDecimals === undefined ? "none" : String(options.presentValueDecimals)}, result: value}};
+}
+
+/** Macaulay duration in business days of dated flows at an annual effective rate: sum(DU * PV) / sum(PV). */
+export function macaulayDurationBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string, options: {factorDecimals?: number; presentValueDecimals?: number} = {}): {value: string; trace: CalculationTrace} {
+  const present = presentValueByBusinessDays(flows, annualRate, options);
+  const total = new Decimal(present.value);
+  if (total.isZero()) throw new Error("duration is undefined for flows with zero present value");
+  const weighted = present.discounted.reduce((sum, flow) => sum.plus(new Decimal(flow.presentValue).times(flow.businessDays)), new Decimal(0));
+  const value = weighted.div(total).toDecimalPlaces(8).toFixed();
+  return {value, trace: {id: "financial.macaulay_duration_business_days", formula: "sum(businessDays * presentValue) / sum(presentValue)", operands: {annualRate, flows: String(flows.length), presentValue: present.value, factorDecimals: options.factorDecimals === undefined ? "none" : String(options.factorDecimals)}, result: value}};
+}
+
+/**
+ * Accrual factor over business days of a 252-day year kept at the precision an indenture writes:
+ * (1 + annualRate)^(businessDays / 252) - 1, or, with a percentage of the index, the daily rate
+ * times the percentage compounded over the days. `decimals` and `mode` are the layer the indenture
+ * states (a DI factor at eight decimals rounded, a daily accumulation at sixteen truncated).
+ */
+/**
+ * DI accrual by the indenture convention (B3 caderno de fórmulas): each day's factor is (1 + TDI * p),
+ * the running product is cut to `dailyProductDecimals` after every day (truncated, as the indentures
+ * write), and the final Fator DI is stated at `factorDecimals` with the stated mode. `dailyRate` is the
+ * TDI already stated as a daily rate (the CDI of the day divided by 100 raised to 1/252, as published).
+ */
+export function diPercentAccrualByConvention(input: {dailyRate: DecimalInput; businessDays: number; percentOfIndex: DecimalInput; dailyProductDecimals: number; dailyProductMode: "round" | "truncate"; factorDecimals: number; factorMode: "round" | "truncate"}): {value: string; trace: CalculationTrace} {
+  if (!Number.isInteger(input.businessDays) || input.businessDays < 0) throw new Error("businessDays must be a non-negative integer");
+  const modeOf = (mode: "round" | "truncate") => (mode === "truncate" ? Decimal.ROUND_DOWN : Decimal.ROUND_HALF_UP);
+  const daily = new Decimal(1).plus(new Decimal(input.dailyRate).times(input.percentOfIndex)).toDecimalPlaces(input.dailyProductDecimals, modeOf(input.dailyProductMode));
+  let product = new Decimal(1);
+  for (let day = 0; day < input.businessDays; day += 1) product = product.times(daily).toDecimalPlaces(input.dailyProductDecimals, modeOf(input.dailyProductMode));
+  const value = product.minus(1).toDecimalPlaces(input.factorDecimals, modeOf(input.factorMode)).toFixed();
+  return {value, trace: {id: "financial.di_percent_accrual_by_convention", formula: "product over days of (1 + TDI * p), cut to the daily-product layer after each day; Fator DI - 1 at the factor layer", operands: {dailyRate: new Decimal(input.dailyRate).toFixed(), percentOfIndex: new Decimal(input.percentOfIndex).toFixed(), businessDays: String(input.businessDays), dailyFactor: daily.toFixed(), dailyProductDecimals: String(input.dailyProductDecimals), dailyProductMode: input.dailyProductMode, factorDecimals: String(input.factorDecimals), factorMode: input.factorMode}, result: value}};
+}
+
+export function accrualFactorAtPrecision(input: {annualRate: DecimalInput; businessDays: number; percentOfIndex?: DecimalInput; decimals: number; mode: "round" | "truncate"}): {value: string; trace: CalculationTrace} {
+  if (!Number.isInteger(input.businessDays) || input.businessDays < 0) throw new Error("businessDays must be a non-negative integer");
+  if (!Number.isInteger(input.decimals) || input.decimals < 0 || input.decimals > 20) throw new Error("decimals must be an integer between 0 and 20");
+  const rounding = input.mode === "truncate" ? Decimal.ROUND_DOWN : Decimal.ROUND_HALF_UP;
+  let factor: Decimal;
+  if (input.percentOfIndex === undefined) {
+    factor = new Decimal(input.annualRate).plus(1).pow(new Decimal(input.businessDays).div(252)).minus(1);
+  } else {
+    const daily = new Decimal(input.annualRate).plus(1).pow(new Decimal(1).div(252)).minus(1).times(input.percentOfIndex);
+    factor = daily.plus(1).pow(input.businessDays).minus(1);
+  }
+  const value = factor.toDecimalPlaces(input.decimals, rounding).toFixed();
+  return {value, trace: {id: "financial.accrual_factor_at_precision", formula: input.percentOfIndex === undefined ? "(1 + annualRate)^(businessDays/252) - 1, at the stated layer" : "(1 + ((1 + annualRate)^(1/252) - 1) * percent)^businessDays - 1, at the stated layer", operands: {annualRate: new Decimal(input.annualRate).toFixed(), businessDays: String(input.businessDays), percentOfIndex: input.percentOfIndex === undefined ? "n/a" : new Decimal(input.percentOfIndex).toFixed(), decimals: String(input.decimals), mode: input.mode}, result: value}};
 }

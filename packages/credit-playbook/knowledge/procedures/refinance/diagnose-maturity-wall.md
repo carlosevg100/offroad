@@ -1,6 +1,6 @@
 ---
 id: diagnose-maturity-wall
-version: 2026.09.05-v1
+version: 2026.09.05-v8
 maturity: implemented
 title_pt: Diagnosticar a parede de vencimentos
 title_en: Diagnose the maturity wall
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/diagnose-maturity-wall
 implementation_export: diagnoseMaturityWall
-result_contract: method.diagnose-maturity-wall.v1
+result_contract: method.diagnose-maturity-wall.v8
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -21,7 +21,7 @@ e2e_scenario_ids: [pending:case01-frozen-run]
 cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-03, D-05, D-28]
 authorities: [CASA, MERCADO]
-reference_data_keys: [policy.seasonality.materiality]
+reference_data_keys: [policy.seasonality.materiality, policy.structure.maturity_wall]
 task_specs: [C05, C08]
 calculation_ids: [financial.maturity_buckets, financial.liquidity_coverage]
 gold_cases: [gc01-analista-ib-camil, gc05-banker-expansao-camil]
@@ -74,9 +74,22 @@ a lista das fontes de pagamento que a base não prova.
 - Ledger sem cronograma conciliado.
 
 # Outputs
-- walls (array, required): períodos com valor, participação, variação e classificação de concentração
-- coverage (object, required): cobertura por período com a definição de caixa e a fonte de geração
-- unproven_sources (array, required): fontes de pagamento citadas sem prova (linhas, aprovações, desembolsos)
+- schema_version (string, required): identificador do contrato de resultado, `method.diagnose-maturity-wall.v8`
+- reference_date (date, required): data-base
+- unit (enum, required): unidade dos valores monetários, igual à unidade em que o ledger reporta a dívida bruta e ancorada na fonte que a declara (uma reescala coerente sob outro rótulo é recusada); participações e coberturas levam a unidade `x`
+- state (enum, required): complete, incomplete (sem CFADS declarado, cobertura só de caixa) ou blocked (o diagnóstico para, sem paredes nem cobertura) | values: complete, incomplete, blocked
+- block_reasons (array, required): motivos estruturados de bloqueio (cronograma vazio, dívida bruta zero, cronograma que não fecha com a dívida bruta)
+- incomplete_reasons (array, required): o que a base não permitiu (geração não declarada em algum período, juros não declarados)
+- wall_threshold (object, required): participação limite com chave e versão da política; parede é participação estritamente acima do limiar, comparada nas oito casas em que é escrita
+- walls (array, required): períodos com valor, participação sobre a dívida bruta, variação contra a data anterior (só quando a data anterior é mesmo anterior, na mesma unidade e perímetro; caso contrário nula com o motivo em prior_comparability), classificação de parede e âncora do cronograma; vazio quando o ledger está bloqueado, porque o diagnóstico para
+- peak (object, required): o período de maior concentração pelo `financial-core`, ou nulo
+- coverage (object, required): definição de caixa com âncora, geração de caixa para o serviço da dívida (CFADS, LTM ou projeção declarada, por período; um valor único nunca é repetido pelos anos; EBITDA não serve) com âncora e os períodos declarados, base da cobertura (só principal quando a base não traz juros por período, serviço integral quando traz), cobertura sequencial por período pelo `financial-core`, com o caixa nunca abaixo de zero (caixa esgotado abre o período seguinte em zero e o déficit é carregado à parte) (principal, juros ou nulo com âncora e base do período, serviço, caixa carregado, geração ou nulo com o sinal de declarada, fontes contratadas, cobertura, caixa final, déficit incremental do período, déficit acumulado carregado e a dependência de rolagem em palavras), períodos em aberto marcados como não avaliados, com caixa, fontes, cobertura e déficits nulos, nunca zeros, déficit carregado ao fim do horizonte e ressalva sobre a liquidez
+- sources (array, required): cada fonte de pagamento citada com id, valor reivindicado, valor e período provados (o valor é o do comprovante de desembolso e o período é o da data do desembolso; o que o arquivo reivindica fica em claimed_amount e claimed_period e não é usado), estado provado ou não provado (provada só com um contrato e uma prova de desembolso datados na base, em dois documentos distintos, cada um da sua classe, desembolso depois da data-base para não contar duas vezes o caixa; uma ata não é contrato; nunca por sinalizador), motivo e as três âncoras com datas (aprovação, contrato, desembolso)
+- schedule_adjustments (array, required): linhas do cronograma que não pertencem a período (custos de transação), tipadas como ajuste; conciliam o total e nunca entram na concentração, na cobertura, nos juros, na geração nem nas fontes
+- acceleration_scenario (object, required): leitura de aceleração só a partir da cláusula da escritura na base (com o default contratual: declarado salvo deliberação da assembleia, ou só por deliberação) e do saldo acelerável, registrada à parte do cronograma contratual e nunca somada; sem cláusula na base, não afirmada
+- uncovered_terms (array, required): geração ausente ou não declarada em períodos, juros ausentes, disponibilidade do caixa não provada e fontes não provadas, com estado `insufficient_evidence` e motivo
+- notes (array, required): notas com âncora (com a cláusula na base: a quebra de covenant como evento de vencimento antecipado não automático com o default da cláusula; sem a cláusula: nada é afirmado sobre o que a quebra dispara; cronograma contratual e cenário de aceleração nunca somados)
+- trace (object, required): concentração por período, cobertura por período (operandos: caixa inicial, geração, fontes contratadas, principal) com unidade; fingerprints de entrada e saída com o trace dentro
 
 # Exemplos
 ## Bom
@@ -102,3 +115,5 @@ a lista das fontes de pagamento que a base não prova.
 ## Regras
 - Fonte de pagamento sem contrato ou demonstração não conta.
 - Cronograma contratual e cronograma em cenário nunca se somam.
+- Aprovação é fato datado (data da deliberação e âncora); aprovação futura à data de referência não é evidência. O período que a fonte alegada cobre só entra quando o documento o nomeia; a ata que não nomeia período fica com `claimed_period` nulo.
+- O desfecho padrão da aceleração é confrontado com o texto da cláusula: cláusula automática não cabe em nenhum desfecho declarado; "declarado salvo deliberação da assembleia" exige que o texto diga isso; "somente por deliberação da assembleia" idem. Datas são datas reais de calendário; a nota da unidade em reais é lida como escrita (R$, reais, BRL).

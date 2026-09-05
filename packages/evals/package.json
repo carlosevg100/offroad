@@ -16,10 +16,15 @@
     "build": "tsc -p tsconfig.json",
     "camil:gold": "tsx scripts/build-camil-gold.ts",
     "cogna:gold": "tsx scripts/build-cogna-gold.ts",
+    "corpus:build": "tsx scripts/build-review-corpus.ts",
     "desk:gold": "tsx scripts/desk-from-gold.ts",
     "fakeco-scan:gold": "tsx scripts/build-fakeco-scan-gold.ts",
     "fakeco:gold": "tsx scripts/build-fakeco-gold.ts",
     "fakeco:verify": "tsx scripts/verify-fakeco.ts",
+    "gc02:alternatives": "tsx scripts/build-gc02-alternatives.ts",
+    "gc03:tables": "tsx scripts/build-gc03-tables.ts",
+    "gc04:tables": "tsx scripts/build-gc04-tables.ts",
+    "gc05:tables": "tsx scripts/build-gc05-tables.ts",
     "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
     "measure": "tsx scripts/measure-extraction.ts",
@@ -32,11 +37,7 @@
     "source-pack:build": "tsx scripts/build-source-pack.ts",
     "test": "vitest run --exclude 'dist/**'",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "verify:case": "tsx scripts/verify-fakeco.ts",
-    "gc02:alternatives": "tsx scripts/build-gc02-alternatives.ts",
-    "gc03:tables": "tsx scripts/build-gc03-tables.ts",
-    "gc04:tables": "tsx scripts/build-gc04-tables.ts",
-    "gc05:tables": "tsx scripts/build-gc05-tables.ts"
+    "verify:case": "tsx scripts/verify-fakeco.ts"
   },
   "dependencies": {
     "@offroad/agent-contracts": "workspace:*",

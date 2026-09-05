@@ -1,0 +1,66 @@
+# 09_Aging_Recebiveis_Jul2026.xlsx (spreadsheet; parsers xlsx-1.0.0, 3.10.1, 5.10.1)
+
+
+## planilha Aging
+
+A1=FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Carteira de recebíveis inventada, calibrada ao balancete de julho de 2026 da Aurora (empresa fictícia).
+A2=Aurora Distribuidora de Materiais de Construção Ltda: aging da carteira de duplicatas em 2026-07-31, em reais
+A4=Sacado ; B4=Setor ; C4=A vencer ; D4=1 a 30 dias ; E4=31 a 60 dias ; F4=61 a 90 dias ; G4=Acima de 90 dias ; H4=Total
+A5=Construtora Vertical Engenharia ; B5=privado ; C5=7332891 ; D5=1128136 ; E5=470057 ; F5=235028 ; G5=235028 ; H5=9401140
+A6=Grupo Habita Empreendimentos ; B6=privado ; C6=4537479 ; D6=698073 ; E6=290864 ; F6=145432 ; G6=145432 ; H6=5817280
+A7=Prefeitura de São José dos Campos ; B7=público ; C7=2306136 ; D7=768712 ; E7=384356 ; F7=192178 ; G7=192178 ; H7=3843560
+A8=Rede Construir (franquias) ; B8=privado ; C8=2471307 ; D8=380200 ; E8=158417 ; F8=79208 ; G8=79208 ; H8=3168340
+A9=Marfim Incorporações ; B9=privado ; C9=1944634 ; D9=299174 ; E9=124656 ; F9=62328 ; G9=62328 ; H9=2493120
+A10=Cliente 06 (revenda regional) ; B10=privado ; C10=1675568 ; D10=257779 ; E10=107408 ; F10=53704 ; G10=53704 ; H10=2148163
+A11=Cliente 07 (revenda regional) ; B11=privado ; C11=1436201 ; D11=220953 ; E11=92064 ; F11=46032 ; G11=46032 ; H11=1841282
+A12=Cliente 08 (revenda regional) ; B12=privado ; C12=1256676 ; D12=193334 ; E12=80556 ; F12=40278 ; G12=40278 ; H12=1611122
+A13=Cliente 09 (revenda regional) ; B13=privado ; C13=1117047 ; D13=171852 ; E13=71605 ; F13=35802 ; G13=35802 ; H13=1432108
+A14=Cliente 10 (revenda regional) ; B14=privado ; C14=1005342 ; D14=154667 ; E14=64444 ; F14=32222 ; G14=32222 ; H14=1288897
+A15=Cliente 11 (revenda regional) ; B15=privado ; C15=913946 ; D15=140607 ; E15=58586 ; F15=29293 ; G15=29293 ; H15=1171725
+A16=Cliente 12 (revenda regional) ; B16=privado ; C16=837784 ; D16=128889 ; E16=53704 ; F16=26852 ; G16=26852 ; H16=1074081
+A17=Cliente 13 (revenda regional) ; B17=privado ; C17=773340 ; D17=118975 ; E17=49572 ; F17=24786 ; G17=24786 ; H17=991459
+A18=Cliente 14 (revenda regional) ; B18=privado ; C18=718101 ; D18=110476 ; E18=46032 ; F18=23016 ; G18=23016 ; H18=920641
+A19=Cliente 15 (revenda regional) ; B19=privado ; C19=670229 ; D19=103111 ; E19=42963 ; F19=21481 ; G19=21481 ; H19=859265
+A20=Cliente 16 (revenda regional) ; B20=privado ; C20=628338 ; D20=96667 ; E20=40278 ; F20=20139 ; G20=20139 ; H20=805561
+A21=Cliente 17 (revenda regional) ; B21=privado ; C21=591378 ; D21=90981 ; E21=37908 ; F21=18954 ; G21=18954 ; H21=758175
+A22=Cliente 18 (revenda regional) ; B22=privado ; C22=558524 ; D22=85926 ; E22=35802 ; F22=17901 ; G22=17901 ; H22=716054
+A23=Cliente 19 (revenda regional) ; B23=privado ; C23=529127 ; D23=81404 ; E23=33918 ; F23=16959 ; G23=16959 ; H23=678367
+A24=Cliente 20 (revenda regional) ; B24=privado ; C24=502671 ; D24=77333 ; E24=32222 ; F24=16111 ; G24=16111 ; H24=644448
+A25=Cliente 21 (revenda regional) ; B25=privado ; C25=478733 ; D25=73651 ; E25=30688 ; F25=15344 ; G25=15344 ; H25=613760
+A26=Cliente 22 (revenda regional) ; B26=privado ; C26=456974 ; D26=70303 ; E26=29293 ; F26=14646 ; G26=14646 ; H26=585862
+A27=Cliente 23 (revenda regional) ; B27=privado ; C27=437107 ; D27=67246 ; E27=28019 ; F27=14009 ; G27=14009 ; H27=560390
+A28=Cliente 24 (revenda regional) ; B28=privado ; C28=418892 ; D28=64444 ; E28=26852 ; F28=13426 ; G28=13426 ; H28=537040
+A29=Cliente 25 (revenda regional) ; B29=privado ; C29=402139 ; D29=61867 ; E29=25777 ; F29=12888 ; G29=12888 ; H29=515559
+A30=Cliente 26 (revenda regional) ; B30=privado ; C30=386670 ; D30=59487 ; E30=24786 ; F30=12393 ; G30=12393 ; H30=495729
+A31=Cliente 27 (revenda regional) ; B31=privado ; C31=372349 ; D31=57284 ; E31=23868 ; F31=11934 ; G31=11934 ; H31=477369
+A32=Cliente 28 (revenda regional) ; B32=privado ; C32=359050 ; D32=55238 ; E32=23016 ; F32=11508 ; G32=11508 ; H32=460320
+A33=Cliente 29 (revenda regional) ; B33=privado ; C33=346670 ; D33=53333 ; E33=22222 ; F33=11111 ; G33=11111 ; H33=444447
+A34=Cliente 30 (revenda regional) ; B34=privado ; C34=335116 ; D34=51555 ; E34=21481 ; F34=10740 ; G34=10740 ; H34=429632
+A35=Cliente 31 (revenda regional) ; B35=privado ; C35=324305 ; D35=49892 ; E35=20788 ; F35=10394 ; G35=10394 ; H35=415773
+A36=Cliente 32 (revenda regional) ; B36=privado ; C36=314170 ; D36=48333 ; E36=20139 ; F36=10069 ; G36=10069 ; H36=402780
+A37=Cliente 33 (revenda regional) ; B37=privado ; C37=304650 ; D37=46869 ; E37=19528 ; F37=9764 ; G37=9764 ; H37=390575
+A38=Cliente 34 (revenda regional) ; B38=privado ; C38=295689 ; D38=45490 ; E38=18954 ; F38=9477 ; G38=9477 ; H38=379087
+A39=Cliente 35 (revenda regional) ; B39=privado ; C39=287242 ; D39=44190 ; E39=18412 ; F39=9206 ; G39=9206 ; H39=368256
+A40=Cliente 36 (revenda regional) ; B40=privado ; C40=279263 ; D40=42963 ; E40=17901 ; F40=8950 ; G40=8950 ; H40=358027
+A41=Cliente 37 (revenda regional) ; B41=privado ; C41=271715 ; D41=41802 ; E41=17417 ; F41=8708 ; G41=8708 ; H41=348350
+A42=Cliente 38 (revenda regional) ; B42=privado ; C42=264565 ; D42=40701 ; E42=16959 ; F42=8479 ; G42=8479 ; H42=339183
+A43=Cliente 39 (revenda regional) ; B43=privado ; C43=257780 ; D43=39658 ; E43=16524 ; F43=8262 ; G43=8262 ; H43=330486
+A44=Cliente 40 (revenda regional) ; B44=privado ; C44=251337 ; D44=38666 ; E44=16111 ; F44=8055 ; G44=8055 ; H44=322224
+A45=Cliente 41 (revenda regional) ; B45=privado ; C45=245206 ; D45=37723 ; E45=15718 ; F45=7859 ; G45=7859 ; H45=314365
+A46=Cliente 42 (revenda regional) ; B46=privado ; C46=239367 ; D46=36825 ; E46=15344 ; F46=7672 ; G46=7672 ; H46=306880
+A47=Cliente 43 (revenda regional) ; B47=privado ; C47=233801 ; D47=35969 ; E47=14987 ; F47=7493 ; G47=7493 ; H47=299743
+A48=Cliente 44 (revenda regional) ; B48=privado ; C48=228488 ; D48=35151 ; E48=14646 ; F48=7323 ; G48=7323 ; H48=292931
+A49=Cliente 45 (revenda regional) ; B49=privado ; C49=223427 ; D49=34373 ; E49=14322 ; F49=7161 ; G49=7161 ; H49=286444
+A50=Total ; C50=39821424 ; D50=6540262 ; E50=2789164 ; F50=1394575 ; G50=1394575 ; H50=51940000
+
+
+## planilha Onus
+
+A1=FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Carteira de recebíveis inventada, calibrada ao balancete de julho de 2026 da Aurora (empresa fictícia).
+A2=Ônus sobre a carteira (mapa de dívida de julho de 2026)
+A4=Contrato ; B4=Natureza ; C4=Valor coberto ; D4=Regra
+A5=Banco Itaú, capital de giro ; B5=duplicatas em garantia ; C5=12792000 ; D5=duplicatas 130% do saldo (mapa de dívida)
+A6=Banco Santander, capital de giro ; B6=duplicatas em garantia ; C6=7825000 ; D6=duplicatas 125% do saldo (mapa de dívida)
+A7=BTG Pactual, antecipação de recebíveis ; B7=recebíveis cedidos ; C7=3780000 ; D7=recebíveis cedidos (mapa de dívida)
+A8=Total onerado ; C8=24397000
+A9=Carteira livre ; C9=27543000

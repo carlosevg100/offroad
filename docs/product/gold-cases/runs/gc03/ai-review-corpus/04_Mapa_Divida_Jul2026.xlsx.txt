@@ -1,0 +1,16 @@
+# 04_Mapa_Divida_Jul2026.xlsx (spreadsheet; parsers xlsx-1.0.0, 3.10.1, 5.10.1)
+
+
+## planilha Dívida
+
+A1=Mapa de dívida bancária
+A2=Posição em 31/07/2026, valores em reais
+A4=Credor ; B4=Modalidade ; C4=Saldo devedor (R$) ; D4=Custo ; E4=Vencimento ; F4=Amortização ; G4=Garantia ; H4=Covenant
+A5=Banco Itaú ; B5=Capital de giro ; C5=9840000 ; D5=CDI + 4,10% a.a. ; E5=2027-11-20 ; F5=Mensal ; G5=Duplicatas 130% ; H5=Dívida líquida/EBITDA &lt;= 3,0x
+A6=Banco Bradesco ; B6=CCB ; C6=7500000 ; D6=CDI + 3,85% a.a. ; E6=2028-04-15 ; F6=Mensal com 6m carência ; G6=Aval dos sócios ; H6=Dívida líquida/EBITDA &lt;= 3,25x
+A7=Banco Santander ; B7=Capital de giro ; C7=6260000 ; D7=CDI + 4,45% a.a. ; E7=2027-03-10 ; F7=Mensal ; G7=Duplicatas 125% ; H7=Não aplicável
+A8=Banco do Brasil ; B8=FINAME ; C8=5180000 ; D8=TLP + 2,90% a.a. ; E8=2030-08-01 ; F8=Mensal ; G8=Alienação fiduciária da frota ; H8=Não aplicável
+A9=Sicredi ; B9=Cédula de crédito bancário ; C9=4120000 ; D9=CDI + 5,20% a.a. ; E9=2027-06-30 ; F9=Mensal ; G9=Aval dos sócios ; H9=Não aplicável
+A10=BTG Pactual ; B10=Antecipação de recebíveis ; C10=3780000 ; D10=1,42% a.m. ; E10=2026-12-20 ; F10=No vencimento ; G10=Recebíveis cedidos ; H10=Não aplicável
+A11=Banco Volkswagen ; B11=Financiamento de frota ; C11=1820000 ; D11=1,18% a.m. ; E11=2029-02-15 ; F11=Mensal ; G11=Alienação fiduciária de 11 veículos ; H11=Não aplicável
+A13=Total ; C13=38500000

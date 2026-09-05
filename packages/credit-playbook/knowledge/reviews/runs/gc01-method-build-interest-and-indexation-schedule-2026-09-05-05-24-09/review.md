@@ -1,0 +1,58 @@
+# Revisão independente por IA: método build-interest-and-indexation-schedule v2026.09.05-v5
+
+Registro `ai_independent_review`, nunca aprovação humana. Revisor: openai/gpt-5.6-sol (high) via codex-cli 0.153.4. Run gc01-method-build-interest-and-indexation-schedule-2026-09-05-05-24-09, commit be91e40. Fingerprint 1e5e4fa6b177872add5c69234071aac6a2da7b6e620695167c3971c8a7b4cf89.
+
+Resultado: **fail**. Evidências: 11 confirmed, 2 unverifiable, 8 corrected, 3 limitation.
+
+| Checagem | Feita |
+| --- | --- |
+| sourcesRevisited | sim |
+| numbersRecalculated | sim |
+| definitionsTested | sim |
+| exceptionsTested | sim |
+| adversarialTested | sim |
+| consistencyTested | sim |
+| baselineAdvantage | n/a |
+
+## Evidências
+
+| Resultado | Afirmação | Fonte | Âncora | Nota |
+| --- | --- | --- | --- | --- |
+| confirmed | 1. Integridade do corpus: os 43 arquivos correspondem ao manifesto. | docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json | entries | Tamanhos e SHA-256 foram recalculados; nenhuma divergência. |
+| confirmed | 2. CDI diário de 0,051660% e anualização para 0,13899875. | docs/product/gold-cases/runs/gc01/ai-review-corpus/bcb_sgs_cdi_diario.json | registros de 01/09/2026 a 03/09/2026 | 0,051660% = 0,0005166; (1,0005166)^252−1 = 0,13899875 após oito casas. |
+| confirmed | 3. Nominais de 304.160, 411.643 e 406.349 e remunerações de CDI+0,65%, 104% do DI e 14,15%. | docs/product/gold-cases/runs/gc01/ai-review-corpus/af_13a_emissao.txt | seção 2, 1ª série; quantidade 304.160 e remuneração CDI + 0,65% | Os correspondentes 411.643/104% e 406.349/14,15% constam das seções 2 de af_14a_emissao.txt e af_15a_emissao.txt. |
+| unverifiable | 4. Esses três nominais seriam posições comprovadas em 31/05/2026. | docs/product/gold-cases/runs/gc01/ai-review-corpus/af_13a_emissao.txt | Relatório anual, exercício de 2025, seção 2 | Os relatórios provam emissão e posição no exercício de 2025; o corpus não traz quantidade em circulação em 31/05/2026. O ITR traz saldos contábeis, não quantidades. |
+| corrected | 5. Datas de cupom e amortização usadas nas três séries. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | cláusula 7.12.1 e Anexo I; cláusula 7.8.1 | As datas estão corretas, mas os testes ancoram pagamentos em 7.8 e amortização em 7.7.1. Os anchors corretos são 7.12.1/Anexo I e 7.8.1/Anexo I; na 15ª série 2, 7.8.2. |
+| unverifiable | 6. Quatro períodos de 63 dias úteis e posições 9, 10, 52, 53 e 54 usadas no gold. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.test.ts | linhas 12-23 e 35-37 | O arquivo citado, calendario_sintetico_teste.md, não existe no corpus. Portanto os valores projetados são reproduzíveis como hipótese, mas não verificáveis como caso gold. |
+| confirmed | 7. Recálculo completo da série 13ª/1ª. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.test.ts | linhas 58-88 | Fatores por 10/11/52/53/63 dias: 0,005436496; 0,005981763; 0,028594380; 0,029152219; 0,034747196. Linhas Q3–Q2: juros pagos 0; 19.743,74733135; 0; 21.328,12633639. Carregados: 10.568,70713536; 1.653,56462336; 12.279,72849278; 1.819,41303408. Total caixa 41.071,87366774; principal final 304.160. |
+| confirmed | 8. Recálculo completo da série 14ª/1ª. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.test.ts | linhas 90-103 | Fatores por 9/10/53/54/63 dias: 0,004845781; 0,005385648; 0,028876413; 0,029429191; 0,034417579. Juros pagos Q3–Q2: 1.994,73182818; 0; 29.059,77735648; 0. Total caixa 31.054,50918466; principal final 411.643. |
+| confirmed | 9. Recálculo completo da série 15ª/2ª prefixada. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.test.ts | linhas 37 e 100-102 | Fatores por 10/11/52/53/63 dias: 0,005265528; 0,005793604; 0,027685218; 0,028225070; 0,033639218. Juros pagos Q3–Q2: 0; 25.524,30745810; 0; 27.570,40680551. Total caixa 53.094,71426361; principal final 406.349. |
+| confirmed | 10. Agregados e cobertura produzidos no gold. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.test.ts | linhas 105-121 | Soma nominal 304.160+411.643+406.349=1.122.152. Juros caixa por período: 1.994,73182818; 45.268,05478945; 29.059,77735648; 48.898,53314190. Totais por indexador: CDI 72.126,38285240; prefixado 53.094,71426361. Share: 1.122.152/5.670.186=0,19790391. Indexação e amortização no horizonte são zero. |
+| confirmed | 11. Dívida de 5.670.186 e despesa de juros de 170.548. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, páginas 39-40; nota 22, página 48 | O bridge corretamente fica insufficient_evidence porque 2026Q2 não integra a projeção e há séries não projetadas. |
+| corrected | 12. A participação de 19,790391% compara grandezas homogêneas. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, página 39 | O numerador é nominal de três séries; 5.670.186 é saldo contábil consolidado com juros, variações e custos de transação. A razão aritmética confere, mas não é cobertura nominal contra nominal. |
+| corrected | 13. A lista gold de séries não cobertas representa integralmente o ledger. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, página 39 | O ledgerControl do teste omite capital de giro CLP 54.180 e PEN 181.158. Além disso, deb-15-1 é ancorada no ITR com 254.118, enquanto o ITR registra 770.123 e o relatório fiduciário registra nominal de 765.389. |
+| corrected | 14. O gold reproduz a seção 11.1 série a série. | packages/credit-playbook/knowledge/procedures/financial/build-interest-and-indexation-schedule.md | linhas 98-109 | O executor produz cronograma para somente 3 séries; seis séries IPCA, as duas séries da 11ª e a 15ª/1ª ficam sem cronograma. A própria asserção espera schedule_by_series com tamanho 3. |
+| corrected | 15. O corpus não determina se a atualização IPCA é incorporada ao principal. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | cláusula 7.9.2 | A escritura determina atualização mensal e incorporação ao Valor Nominal Unitário Atualizado. As cláusulas 7.9.2 das 14ª e 15ª emissões fazem o mesmo; portanto capitalized_principal é suportado contratualmente. |
+| corrected | 16. O executor aplica atualização IPCA e cupom em ordem cronológica. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts | linhas 329-413 | Ele agrega todas as atualizações do período, capitaliza-as antes de qualquer cupom ou amortização e só depois processa eventos. Isso antecipa aniversários posteriores e calcula juros sobre principal ainda não atualizado; o schema tampouco traz a posição em dias úteis de cada aniversário. |
+| corrected | 17. Ausência de cronograma de amortização nunca vira amortização zero ou saldo preservado. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts | linhas 293 e 357-415 | Embora principal_paid seja null, eventos de amortização são omitidos e closing_principal continua não nulo e inalterado. Isso materializa implicitamente um cenário sem amortização que o método diz não preencher. |
+| confirmed | 18. Séries sem nominal válido, termos, pagamentos, curva ou mês IPCA são nomeadas e não projetadas; ausência total bloqueia. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts | linhas 264-298 e 452-486 | O bridge permanece nulo quando incompleto, curvas sem fonte são recusadas pelo schema e meses IPCA ausentes não são substituídos. |
+| corrected | 19. principal_projection_complete=true no gold significa projeção completa do ledger. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts | linhas 436-450 | complete considera apenas schedules aceitos e ignora uncovered_series. Assim o gold marca true apesar de 11 séries não cobertas, e os saldos por indexador parecem completos para subconjuntos. |
+| limitation | 20. As mutações adversariais relevantes estão cobertas. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.test.ts | linhas 124-184 e 210-221 | Há cobertura para escala, curva incompatível, ausência de meses/aniversário, tratamento desconhecido, datas inválidas, ids duplicados e ordem de amortizações. Não há teste eficaz para intercalar aniversários IPCA com cupom/amortização, amortização totalmente ausente, ledgerControl incompleto ou comparabilidade do denominador de cobertura. |
+| confirmed | 21. Ordem de entrada e fingerprints são determinísticos. | packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts | linhas 208-219 e 485-492 | A entrada é ordenada antes do cálculo e objetos são serializados com chaves ordenadas. As 20 permutações das linhas 187-203 do teste confirmam séries, curvas, períodos, cupons, registros e chaves; não constituem prova exaustiva de todas as mutações semânticas. |
+| limitation | 22. Dívida líquida, EBITDA, degraus, comparabilidade, contra e headroom são definições deste executor. | packages/credit-playbook/knowledge/procedures/financial/build-interest-and-indexation-schedule.md | linhas 31-96 | Esses campos não pertencem ao contrato deste método; ele apenas produz serviço, indexação, saldos, cobertura do ledger e bridge contábil. As questões de covenant do gabarito não podem ser aprovadas ou rejeitadas por este executor. |
+| limitation | 23. Inclusão de arrendamentos em outra dívida onerosa. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seções 5 e 13.1; condição 1 | A qualificação depende de interpretação jurídica especializada e não afeta os recálculos deste cronograma. |
+| confirmed | 24. O registro é revisão independente por modelo, não aprovação pessoal. | packages/credit-playbook/src/procedure-contract.ts | linhas 158-167 |  |
+
+## Condições
+
+- Substituir o calendário sintético por contagem de dias úteis ancorada e obter nominais/juros corridos vigentes em 31/05/2026 antes de chamar a execução de gold.
+- Corrigir anchors de pagamentos e amortizações, o valor da 15ª/1ª e a enumeração integral do ledger, incluindo CLP e PEN.
+- Intercalar aniversários IPCA, cupons e amortizações cronologicamente e impedir saldo final não nulo quando falta cronograma de principal.
+- Fazer principal_projection_complete e as visões por indexador refletirem uncovered_series, e comparar cobertura em bases economicamente homogêneas.
+- Se dívida líquida com arrendamentos vier a ser usada em covenant, exigir interpretação jurídica especializada separada.
+
+## Notas do revisor
+
+Codex (GPT-5), com leitura local do repositório e recálculo independente; revisão por modelo, não aprovação humana.
+
+Falha material: a aritmética das três séries calculadas confere, mas o teste não constitui reprodução gold série a série; há base sintética não verificável, cobertura incompleta do ledger, atualização IPCA fora da ordem temporal e preenchimento implícito de principal quando falta amortização.

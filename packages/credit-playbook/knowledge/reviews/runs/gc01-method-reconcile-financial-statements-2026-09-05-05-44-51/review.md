@@ -1,0 +1,70 @@
+# Revisão independente por IA: método reconcile-financial-statements v2026.09.05-v8
+
+Registro `ai_independent_review`, nunca aprovação humana. Revisor: openai/gpt-5.6-sol (high) via codex-cli 0.153.4. Run gc01-method-reconcile-financial-statements-2026-09-05-05-44-51, commit 63dbf95. Fingerprint fcb1ada115f27b72d90b7fa62e985f8e2c34d2c7ef975a6b2209875ec7f18e9d.
+
+Resultado: **fail**. Evidências: 21 confirmed, 7 corrected, 4 limitation, 1 unverifiable.
+
+| Checagem | Feita |
+| --- | --- |
+| sourcesRevisited | sim |
+| numbersRecalculated | sim |
+| definitionsTested | sim |
+| exceptionsTested | sim |
+| adversarialTested | sim |
+| consistencyTested | sim |
+| baselineAdvantage | n/a |
+
+## Evidências
+
+| Resultado | Afirmação | Fonte | Âncora | Nota |
+| --- | --- | --- | --- | --- |
+| confirmed | 1. O corpus utilizado corresponde ao manifesto congelado. | docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json | entries[]: file e sha256 | Todos os hashes SHA-256 foram recalculados e coincidiram. |
+| confirmed | 2. A movimentação da dívida usa 4.988.383; +2.046.140; +172.359; −4.741; −1.285.146; −229.611; +60; −17.258; fechamento 5.670.186. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, p.40, linhas 2085-2094 do extrato | 4.988.383 + 2.046.140 + 172.359 − 4.741 − 1.285.146 − 229.611 + 60 − 17.258 = 5.670.186. |
+| confirmed | 3. A identidade do balanço usa ativo 12.021.830, passivo 9.032.723 e patrimônio líquido 2.989.107. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | balanço consolidado, pp.11-12, linhas 584, 610, 620 e 632-634 | 9.032.723 + 2.989.107 = 12.021.830; diferença zero. |
+| confirmed | 4. A ponte de caixa usa abertura 1.997.608, variação −566.894 e fechamento 1.430.714. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | DFC consolidada, p.16, linhas 782-785; nota 3, p.20 | 1.997.608 − 566.894 = 1.430.714. |
+| confirmed | 5. A ponte de juros compara 172.359 de juros e variações monetárias com magnitude de 170.548 de juros do resultado, produzindo diferença 1.811 e não comparabilidade. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, p.40, linha 2088; nota 22, p.48, linha 2562 | 172.359 − /−170.548/ = 1.811; a primeira rubrica inclui variações monetárias e a segunda é somente juros. |
+| confirmed | 6. Dividendos têm 395.000 nominais e 338.565 a valor presente na nota 18(e). | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 18(e), p.46, linhas 2481-2486 | 395.000 = 140.000 + 255.000; ajuste = 6.911 + 49.524 = 56.435; 395.000 − 56.435 = 338.565. |
+| confirmed | 7. A nota 25 apresenta dividendos a pagar de 322.498 contábeis e 420.000 a valor justo. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 25, p.51, linhas 2776-2782 | Amplitude das quatro apresentações: 420.000 − 322.498 = 97.502; diferença entre valores contábeis: 338.565 − 322.498 = 16.067. |
+| corrected | 8. O operando de 420.000 usado para derivar os 395.000 está ancorado pelo teste no ITR p.46. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linha 23 | O ITR p.46 não mostra o total aprovado de 420.000. A fonte correta é 02_Proposta_Administracao_AGOE_2026.txt, PDF p.36, linhas 1540-1544; o próprio texto da âncora afirma incorretamente que a proposta não está no corpus. |
+| confirmed | 9. Estoques da nota 5 somam 3.088.478, dos quais 643.241 são adiantamentos; 3.013.060 são circulantes e 75.418 não circulantes. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 5, p.21, linhas 1060-1066; balanço, p.11, linhas 562 e 570 | 3.013.060 + 75.418 = 3.088.478; 3.088.478 − 643.241 = 2.445.237. |
+| confirmed | 10. O release publica estoques de 2.445,2 milhões no capital de giro e 2.437,1 milhões no balanço gerencial, com 576,0 milhões de adiantamentos a produtores. | docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt | pp.13 e 15, linhas 1305-1311 e 1437-1443 | Conversões usadas pelo executor: 2.445.200, 2.437.100 e 576.000 em R$ mil. |
+| confirmed | 11. As três explicações de estoques produzem resíduos 37, −40 e zero. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linhas 28-37 e 93-98 | 3.088.478 − (2.445.200 + 643.241) = 37; 3.013.060 − (2.437.100 + 576.000) = −40; 3.013.060 − (3.088.478 − 75.418) = 0. |
+| confirmed | 12. A dívida líquida do release é 4.214,4 milhões, enquanto o recálculo sem derivativos é 4.214.377. | docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt | Endividamento e Caixa, p.12, linhas 1166-1178 | 5.670.186 − 1.430.714 − 25.095 = 4.214.377; diferença para 4.214.400 = 23. |
+| confirmed | 13. A meia banda de arredondamento de 4.214,4 milhões com uma casa é 50 mil. | packages/credit-playbook/src/executors/reconcile-financial-statements.ts | linhas 247-250 e 300-302 | 0,05 milhão = 50 mil; o spread de 23 fecha dentro dessa banda. |
+| confirmed | 14. A dívida líquida contratual recalculada é 4.228.477. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 5, linhas 124-140 | 5.670.186 + 14.335 − 235 − 1.430.714 − 25.095 = 4.228.477; diferença para a visão arredondada do release = 14.077. |
+| corrected | 15. O operando agregado de 5.684.521 é ancorado apenas no ITR p.40 pelo teste. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linha 44 | 5.670.186 está nas pp.39-40, mas 14.335 de derivativos passivos está no balanço p.12 e na nota 25 p.51. Uma única âncora p.40 não sustenta o operando agregado, contrariando a exigência de operandos ancorados. |
+| corrected | 16. A definição contratual inclui empréstimos, financiamentos, debêntures, derivativos passivos e qualquer outra dívida onerosa, deduzidos caixa, aplicações e derivativos ativos. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | definição de Dívida Líquida, p.7, linhas 324-330 | A definição e os componentes do fixture na linha 44 do teste omitem expressamente a rubrica residual de outra dívida onerosa e não carregam condição sobre ela; 4.228.477 não deve ser tratado como contratual incondicional. |
+| limitation | 17. A inclusão de arrendamentos em outra dívida onerosa não é resolvida pelo corpus. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 5, linhas 148-155; condição 1, linha 7 | Exige interpretação jurídica especializada; o passivo de arrendamento confirmado é 67.399 + 209.369 = 276.768. |
+| confirmed | 18. Release e visão contratual são corretamente classificados como não comparáveis quando chaves e componentes diferem. | packages/credit-playbook/src/executors/reconcile-financial-statements.ts | linhas 255-260 e 292-306 | Isso implementa o sentido de “contra”: registrar ambas as visões sem escolher ou comparar como equivalentes. |
+| confirmed | 19. EBITDA trimestral anualizado e EBITDA dos últimos doze meses não são comparáveis. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linhas 140-152 | O executor também impede que uma explicação atravesse períodos de 3 e 12 meses. |
+| limitation | 20. A definição contratual de EBITDA é LTM e a comparabilidade integral do pro forma de 4,72x depende de abertura não presente. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | definição de EBITDA, p.8, linhas 355-357; covenant, pp.54-55 | O executor apenas recebe chaves, componentes e periodMonths do chamador; não verifica ajustes ou informações complementares da companhia. |
+| limitation | 21. Os degraus são 3,50x e 4,00x, sendo o segundo condicionado à quitação integral ordinária dos CRA de referência. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | cláusula 7.24.3, pp.54-55, linhas 2658-2685 | A quitação ordinária não está comprovada no corpus e o executor revisado não calcula degrau ou headroom. |
+| corrected | 22. O campo sign das fontes pareadas promete comparação por magnitude quando absolute. | packages/credit-playbook/src/executors/reconcile-financial-statements.ts | linhas 86-96 e 245-282 | Nas contas pareadas, spread, subconjuntos e explicações usam source.value bruto; source.sign apenas é copiado à saída. Uma fonte −100 com sign=absolute continua comparada como −100 e não há valor lido no trace, contrariando o método, linha 69. |
+| corrected | 23. A leitura literal de amortizações negativas é aceita pelo schema da ponte de dívida. | packages/credit-playbook/src/executors/reconcile-financial-statements.ts | linhas 124-130 e 318-324 | O executor entrega o valor literal negativo a uma categoria descrita pela própria fórmula como redução. Isso inverte o efeito de subtração; deve normalizar/rejeitar a combinação ou somar movimentos literais diretamente. |
+| corrected | 24. Ponte de juros não comparável gera uncovered_terms=insufficient_evidence. | packages/credit-playbook/src/executors/reconcile-financial-statements.ts | linhas 328-343 | Ela não acrescenta incomplete_reason. Assim, uma identidade não testável pode coexistir com estado global closes/open_divergences, embora o método, linhas 88, 93 e 97, dê precedência a incomplete para identidades que a base não permite testar. |
+| confirmed | 25. Base vazia bloqueia e lista balanço, dívida, caixa e juros como insufficient_evidence; ausência das pontes em base não vazia produz incomplete. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linhas 175-190 | Nenhum valor ausente é preenchido. |
+| confirmed | 26. As mutações de escala, valor, sentido de ajuste, explicação parcial, definição, data, período, duplicidade, política, unidade e base vazia estão cobertas. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linhas 114-190 e 214-227 | A execução local do Vitest passou; o pacote reportou 278 testes aprovados. |
+| corrected | 27. Há mutações materiais não cobertas pelos testes. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linhas 114-190 | Faltam testes para sign=absolute em pairedAccounts, amortização negativa com sign=as_published, âncora estruturalmente válida mas sem suporte, e relabel semântico integral com chave/componentes/texto adulterados. |
+| limitation | 28. O executor declara que um relabel semântico integral pode escapar sem catálogo externo. | packages/credit-playbook/knowledge/procedures/financial/reconcile-financial-statements.md | linha 71 | O teste das linhas 135-139 só detecta o relabel porque mantém chaves diferentes. |
+| confirmed | 29. Ordem de contas, fontes, explicações, linhas, componentes, tolerâncias e chaves de objeto não altera resultado ou fingerprints em vinte permutações. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linhas 193-207 | O teste compara inputFingerprint, outputFingerprint e o objeto inteiro; também prova que alterar descrição refletida no trace muda o fingerprint de saída. |
+| confirmed | 30. A implementação canônica ordena entradas e inclui body, cálculos e inputFingerprint no fingerprint de saída. | packages/credit-playbook/src/executors/reconcile-financial-statements.ts | linhas 219-229 e 364-369 | A prova de consistência cobre as ordens declaradas pelo método. |
+| confirmed | 31. O teste de contrato verifica os campos de topo declarados pelo método. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linhas 210-212 | Não prova sozinho a semântica ou a sustentação das âncoras internas. |
+| unverifiable | 32. As tolerâncias gold de 1.000 e 2.000 não podem ser revisitadas independentemente no material autorizado. | packages/credit-playbook/src/executors/reconcile-financial-statements.test.ts | linhas 11 e 17-20 | O registro canônico policy.reconciliation.tolerance é importado de ../reference-data, que não integra o material permitido pelo pedido. |
+| confirmed | 33. O executor não produz percentuais ou headroom. | packages/credit-playbook/knowledge/procedures/financial/reconcile-financial-statements.md | Outputs, linhas 87-98 | Não há percentual/headroom deste executor a recalcular; esses cálculos pertencem a outro método. |
+
+## Condições
+
+- Corrigir a normalização e o trace de sign em pairedAccounts, conforme evidência 22.
+- Definir ou rejeitar combinações de sinal literal negativo com categorias redutoras da ponte de dívida, conforme evidência 23.
+- Fazer interest_bridge not_comparable alimentar incomplete_reasons e respeitar a precedência declarada, conforme evidência 24.
+- Substituir as âncoras incorretas/incompletas dos operandos de 420.000 e 5.684.521, conforme evidências 8 e 15.
+- Carregar explicitamente a rubrica residual de outra dívida onerosa e a condição jurídica de arrendamentos, conforme evidências 16-17.
+- Manter condicionados o degrau de 4,00x e a comparabilidade do EBITDA pro forma até prova documental/especializada, conforme evidências 20-21.
+- Disponibilizar o registro versionado de tolerância no corpus de revisão para verificar 1.000 e 2.000, conforme evidência 32.
+- Adicionar as mutações adversariais ausentes listadas na evidência 27; o relabel semântico integral permanece condicionado a catálogo confiável, conforme evidência 28.
+
+## Notas do revisor
+
+Codex (GPT-5), revisão independente por modelo com leitura local, sha256sum e Vitest.
+
+Os valores centrais e as reconciliações aritméticas do caso gold conferem, mas há erros materiais de comportamento, estado e proveniência nas evidências 8, 15-16 e 22-24; por isso o resultado é fail, não aprovação humana.

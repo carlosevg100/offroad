@@ -1,0 +1,1 @@
+image: not read by this corpus (OCR is never accepted automatically)

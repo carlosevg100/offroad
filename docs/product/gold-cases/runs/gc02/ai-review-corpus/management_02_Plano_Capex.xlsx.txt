@@ -1,0 +1,11 @@
+# management_02_Plano_Capex.xlsx (spreadsheet; parsers xlsx-1.0.0, 3.10.1, 5.10.1)
+
+
+## planilha Capex
+
+A1=FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Dados gerenciais inventados, calibrados às demonstrações públicas da Camil (ITR de 31/05/2026). Não representam informação da companhia.
+A2=Plano de capex 2026/27 a 2028/29, R$ mil
+A4=Projeto ; B4=Classe ; C4=2026/27 ; D4=2027/28 ; E4=2028/29
+A5=Manutenção das plantas de arroz e feijão ; B5=manutenção ; C5=180000 ; D5=183600 ; E5=187272
+A6=Expansão de massas e café ; B6=crescimento ; C6=220000 ; D6=0 ; E6=0
+A7=Total ; C7=400000 ; D7=183600 ; E7=187272

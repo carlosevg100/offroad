@@ -4,7 +4,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `build-debt-ledger`, fifth version after four independent reviews.
+ * Executor of the method `build-debt-ledger`, tenth version after nine independent reviews.
  * Deterministic: the same rows, the same numbers, whatever their order; duplicate ids are refused.
  * Every row carries the anchor of its balance and, field by field, the anchor of each term it
  * states; the two facts of a lender (formal holder, economic creditors) each carry their own anchor.
@@ -19,6 +19,8 @@ import {z} from "zod";
  */
 const money = z.string().regex(/^-?\d+(\.\d+)?$/);
 const nonNegativeMoney = z.string().regex(/^\d+(\.\d+)?$/);
+/** A calendar date that exists: 2026-02-30 is refused, not silently rolled over. */
+const calendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => { const date = new Date(`${value}T00:00:00Z`); return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value; }, {message: "not a calendar date"});
 const nonEmpty = z.string().trim().min(1);
 const anchorSchema = z.object({document: nonEmpty, page: z.number().int().positive().optional(), note: nonEmpty.optional(), clause: nonEmpty.optional(), table: nonEmpty.optional()}).strict();
 type Anchor = z.infer<typeof anchorSchema>;
@@ -46,9 +48,10 @@ export const debtLedgerRowInputSchema = z.object({
   priorBalance: money.nullable().default(null),
   currency: z.string().regex(/^[A-Z]{3}$/),
   remuneration: remunerationSchema.nullable().default(null),
-  maturity: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null),
+  maturity: calendarDate.nullable().default(null),
   guarantee: nonEmpty.nullable().default(null),
   lender: z.object({formalHolder: nonEmpty.nullable(), economicCreditors: nonEmpty.nullable()}).strict().nullable().default(null),
+  /** Current and non-current parts; non-negative on obligations, non-positive on contra lines, and adding up to the balance either way. */
   classification: z.object({current: money, nonCurrent: money}).strict().nullable().default(null),
   /** Transaction costs and similar contra lines are part of the note's total but are not debt to a lender; they must be negative. */
   contra: z.boolean().default(false),
@@ -65,7 +68,9 @@ export const debtLedgerRowInputSchema = z.object({
   }).strict(),
 }).strict().superRefine((row, context) => {
   const balance = new Decimal(row.balance);
-  if (row.contra && balance.gte(0)) context.addIssue({code: "custom", path: ["contra"], message: `contra line ${row.id} must carry a negative balance`});
+  if (row.contra && balance.gt(0)) context.addIssue({code: "custom", path: ["contra"], message: `contra line ${row.id} must carry a non-positive balance (zero when the costs are fully amortized)`});
+  if (row.priorBalance !== null && row.contra && new Decimal(row.priorBalance).gt(0)) context.addIssue({code: "custom", path: ["priorBalance"], message: `contra line ${row.id} cannot carry a positive prior balance`});
+  if (row.priorBalance !== null && !row.contra && new Decimal(row.priorBalance).lt(0)) context.addIssue({code: "custom", path: ["priorBalance"], message: `row ${row.id} has a negative prior balance and is not a contra line`});
   if (!row.contra && balance.lt(0)) context.addIssue({code: "custom", path: ["balance"], message: `row ${row.id} has a negative balance and is not a contra line`});
   if (row.contra && row.obligation) context.addIssue({code: "custom", path: ["obligation"], message: `contra line ${row.id} is not an obligation to a lender; drop its obligation`});
   if (!row.contra && !row.obligation) context.addIssue({code: "custom", path: ["obligation"], message: `row ${row.id} needs its obligation (kind, disbursed, views)`});
@@ -74,8 +79,10 @@ export const debtLedgerRowInputSchema = z.object({
   }
   if (row.lender?.formalHolder && !row.anchors.lenderFormalHolder) context.addIssue({code: "custom", path: ["anchors", "lenderFormalHolder"], message: `the formal holder of ${row.id} is stated without an anchor`});
   if (row.lender?.economicCreditors && !row.anchors.lenderEconomicCreditors) context.addIssue({code: "custom", path: ["anchors", "lenderEconomicCreditors"], message: `the economic creditors of ${row.id} are stated without an anchor`});
-  if (row.obligation?.kind === "lease" && row.obligation.views.includes("contractual") && !row.anchors.viewInclusion) context.addIssue({code: "custom", path: ["anchors", "viewInclusion"], message: `lease ${row.id} sits in the contractual view without the anchor that includes it`});
+  if (row.obligation && !row.obligation.views.includes("release") && !row.anchors.viewInclusion) context.addIssue({code: "custom", path: ["anchors", "viewInclusion"], message: `${row.id} sits only in the contractual view without the anchor that includes it`});
   if (row.classification && !new Decimal(row.classification.current).plus(row.classification.nonCurrent).eq(balance)) context.addIssue({code: "custom", path: ["classification"], message: `the split of ${row.id} (${row.classification.current} + ${row.classification.nonCurrent}) does not add up to its balance ${row.balance}`});
+  if (row.classification && !row.contra && (new Decimal(row.classification.current).lt(0) || new Decimal(row.classification.nonCurrent).lt(0))) context.addIssue({code: "custom", path: ["classification"], message: `the split of ${row.id} has a negative part on an obligation`});
+  if (row.classification && row.contra && (new Decimal(row.classification.current).gt(0) || new Decimal(row.classification.nonCurrent).gt(0))) context.addIssue({code: "custom", path: ["classification"], message: `the split of contra line ${row.id} has a positive part`});
 });
 
 export const toleranceSchema = z.object({
@@ -88,9 +95,11 @@ export const toleranceSchema = z.object({
 });
 
 export const debtLedgerInputSchema = z.object({
-  referenceDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  priorDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null),
+  referenceDate: calendarDate,
+  priorDate: calendarDate.nullable().default(null),
   unit: z.enum(["BRL", "BRL thousand", "BRL million", "USD", "USD thousand"]),
+  /** Where the statements declare the unit ("em milhares de reais"); its note must name that unit, so a relabelled scale is refused. */
+  unitAnchor: anchorSchema.extend({note: nonEmpty}),
   /** `note` when the debt note of the statements is in the base; `release_only` blocks: a release is not a ledger. */
   source: z.enum(["note", "release_only"]),
   rows: z.array(debtLedgerRowInputSchema),
@@ -99,15 +108,18 @@ export const debtLedgerInputSchema = z.object({
   /** Independent totals from the balance sheet itself, never from the debt note. */
   balanceSheet: z.object({current: money, nonCurrent: money, anchor: anchorSchema}).strict().optional(),
   schedule: z.object({
-    /** `endsAt` is the calendar end of the period; null for open-ended buckets and adjustment lines. */
-    periods: z.array(z.object({period: nonEmpty, amount: money, endsAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()}).strict()).min(1),
+    /** The basis of the buckets: the company's fiscal (safra) year, the calendar year, or twelve-month windows from the reference date. */
+    basis: z.enum(["fiscal_year", "calendar_year", "twelve_month_windows"]),
+    /** `endsAt` is the calendar end of the period; null for open-ended buckets and adjustment lines. `allocations`, when the note gives them, split the period among the rows, so the schedule is checked instrument by instrument. */
+    periods: z.array(z.object({period: nonEmpty, amount: money, endsAt: calendarDate.nullable(), allocations: z.array(z.object({rowId: nonEmpty, amount: money}).strict()).nullable().default(null)}).strict()).min(1),
     anchor: anchorSchema,
   }).strict().optional(),
+  /** Each component may be absent from the base; a view that needs it is then not computed, with the gap named. */
   cash: z.object({
-    cashAndEquivalents: z.object({value: money, anchor: anchorSchema}).strict(),
-    financialInvestments: z.object({value: money, anchor: anchorSchema}).strict(),
-    derivativeAssets: z.object({value: money, anchor: anchorSchema}).strict(),
-    derivativeLiabilities: z.object({value: money, anchor: anchorSchema}).strict(),
+    cashAndEquivalents: z.object({value: money, anchor: anchorSchema}).strict().nullable(),
+    financialInvestments: z.object({value: money, anchor: anchorSchema}).strict().nullable(),
+    derivativeAssets: z.object({value: money, anchor: anchorSchema}).strict().nullable(),
+    derivativeLiabilities: z.object({value: money, anchor: anchorSchema}).strict().nullable(),
   }).strict().optional(),
   /** The literal definitions with their sources; a view is computed only when its definition is here and agrees with the formula. */
   definitions: z.object({
@@ -117,12 +129,53 @@ export const debtLedgerInputSchema = z.object({
   releaseReportedNetDebt: z.object({value: money, anchor: anchorSchema}).strict().optional(),
   tolerance: toleranceSchema.default({value: "0"}),
 }).strict().superRefine((input, context) => {
+  // The note must name the scale of the unit and no other: "em milhares de reais" names thousands, so it never supports BRL without scale.
+  const note = input.unitAnchor.note;
+  const saysThousand = /\b(mil|milhares|thousand)\b/i.test(note);
+  const saysMillion = /\b(milh[õo]es|million)\b/i.test(note);
+  const namesUnit: Record<string, boolean> = {
+    "BRL": /R\$|reais|BRL/i.test(note) && !saysThousand && !saysMillion,
+    "BRL thousand": saysThousand && !saysMillion,
+    "BRL million": saysMillion && !saysThousand,
+    "USD": /USD|d[oó]lar/i.test(note) && !saysThousand && !saysMillion,
+    "USD thousand": /USD|d[oó]lar/i.test(note) && saysThousand && !saysMillion,
+  };
+  if (!namesUnit[input.unit]) context.addIssue({code: "custom", path: ["unitAnchor"], message: `the unit anchor's note ("${note}") does not name the unit ${input.unit} and no other scale; a relabelled scale is refused`});
   const ids = new Set<string>();
   for (const row of input.rows) {
     if (ids.has(row.id)) context.addIssue({code: "custom", path: ["rows"], message: `duplicate row id ${row.id}`});
     ids.add(row.id);
+    // A securitizer is a formal holder; the economic creditors are the holders of the certificates it issued, never the securitizer itself.
+    if (row.lender?.formalHolder && row.lender.economicCreditors && /securitiz/i.test(row.lender.formalHolder)) {
+      const creditors = row.lender.economicCreditors;
+      const holders = /titular|holder|investidor|investor/i.exec(creditors);
+      const securitizer = /securitiz/i.exec(creditors);
+      // The holders of the certificates come first and the securitizer, when named, only after them as the issuer of the certificates; a phrase that names the securitizer as titular, creditor or co-creditor is refused whatever else it mentions.
+      if (!holders || (securitizer && securitizer.index < holders.index)) context.addIssue({code: "custom", path: ["rows"], message: `${row.id}: a securitizer (${row.lender.formalHolder}) is the formal holder; the economic creditors are the holders of the certificates, not the securitizer, and the phrase "${creditors}" names the securitizer ${holders ? "before" : "without"} the holders`});
+    }
   }
   const periods = new Set<string>();
+  // Instrument-by-instrument check when the note allocates the buckets: every allocation names a row, each period's allocations sum to its amount, and each row's balance is fully placed.
+  if (input.schedule && input.schedule.periods.some((period) => period.allocations !== null)) {
+    if (input.schedule.periods.some((period) => period.allocations === null)) context.addIssue({code: "custom", path: ["schedule", "periods"], message: "either every period carries its allocations by row or none does; a half-allocated schedule cannot be checked instrument by instrument"});
+    const rowIds = new Set(input.rows.map((row) => row.id));
+    const placed = new Map<string, Decimal>();
+    input.schedule.periods.forEach((period, index) => {
+      const total = (period.allocations ?? []).reduce((sum, allocation) => sum.plus(allocation.amount), new Decimal(0));
+      if (!total.eq(period.amount)) context.addIssue({code: "custom", path: ["schedule", "periods", index], message: `period ${period.period}: the allocations sum to ${total.toFixed()}, not ${period.amount}`});
+      const seen = new Set<string>();
+      for (const allocation of period.allocations ?? []) {
+        if (!rowIds.has(allocation.rowId)) context.addIssue({code: "custom", path: ["schedule", "periods", index], message: `period ${period.period} allocates ${allocation.rowId}, which is not a row of the ledger`});
+        if (seen.has(allocation.rowId)) context.addIssue({code: "custom", path: ["schedule", "periods", index], message: `period ${period.period} allocates ${allocation.rowId} twice; one allocation per row and period, so the canonical order is total`});
+        seen.add(allocation.rowId);
+        placed.set(allocation.rowId, (placed.get(allocation.rowId) ?? new Decimal(0)).plus(allocation.amount));
+      }
+    });
+    for (const row of input.rows) {
+      const sum = placed.get(row.id) ?? new Decimal(0);
+      if (!sum.eq(row.balance)) context.addIssue({code: "custom", path: ["schedule"], message: `row ${row.id} carries ${row.balance} and the schedule places ${sum.toFixed()} of it; every balance is placed in full, instrument by instrument`});
+    }
+  }
   for (const period of input.schedule?.periods ?? []) {
     if (periods.has(period.period)) context.addIssue({code: "custom", path: ["schedule", "periods"], message: `duplicate period ${period.period}`});
     periods.add(period.period);
@@ -135,34 +188,40 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schemaVersion: "method.build-debt-ledger.v5";
-  referenceDate: string;
-  priorDate: string | null;
+  schema_version: "method.build-debt-ledger.v15";
+  reference_date: string;
+  prior_date: string | null;
   unit: string;
+  unit_anchor: Anchor;
   source: "note" | "release_only";
   state: "complete" | "blocked" | "empty" | "incomplete";
-  blockReasons: string[];
-  incompleteReasons: string[];
-  ledgerRows: Array<{
+  block_reasons: string[];
+  incomplete_reasons: string[];
+  ledger_rows: Array<{
     id: string; instrument: string; series: string | null; obligation: Row["obligation"] | null; balance: string; priorBalance: string | null; currency: string;
     remuneration: Row["remuneration"]; maturity: string | null; guarantee: string | null; lender: Row["lender"]; classification: Row["classification"]; contra: boolean;
     anchors: Row["anchors"];
   }>;
-  grossDebt: string;
-  grossDebtPrior: string | null;
-  grossDebtBeforeContra: string;
+  /** Sum of every row, including rows that only the contractual view carries (leases included by an indenture). */
+  gross_debt: string;
+  /** Sum of the rows the statements report as debt (release view and contra lines); this is what reconciles with the balance sheet. */
+  gross_debt_reported: string;
+  gross_debt_prior: string | null;
+  gross_debt_before_contra: string;
+  contractual_only_inclusions: Array<{rowId: string; balance: string; anchor: Anchor}>;
   reconciliation: {
     total: {state: "reconciled" | "difference" | "not_possible"; balanceSheetTotal: string | null; difference: string | null};
     split: {state: "reconciled" | "difference" | "not_possible"; currentDifference: string | null; nonCurrentDifference: string | null; reason: string | null};
     tolerance: {value: string; policyKey: string | null; policyVersion: string | null};
     anchor: Anchor | null;
   };
-  schedule: {periods: Array<{period: string; amount: string; shareOfGross: string}>; total: string; matchesGross: boolean; currentPeriod: {period: string; amount: string; balanceSheetCurrent: string; difference: string; matches: boolean} | null; anchor: Anchor} | null;
-  netDebtViews: {release: View | null; contractual: View | null; releaseReported: {value: string; differenceToRelease: string | null; anchor: Anchor} | null};
-  byIndexer: Array<{indexer: string; balance: string; shareOfGrossBeforeContra: string; rows: string[]}>;
-  byCurrency: Array<{currency: string; balance: string; shareOfGrossBeforeContra: string; rows: string[]}>;
-  uncoveredTerms: Array<{rowId: string; field: UncoveredField; state: "insufficient_evidence"; reason: string}>;
-  trace: {calculations: Array<{id: string; formula: string; operands: Record<string, string>; result: string}>; inputFingerprint: string; outputFingerprint: string};
+  schedule: {basis: string; periods: Array<{period: string; amount: string; endsAt: string | null; shareOfGross: string; allocations: Array<{rowId: string; amount: string}> | null}>; by_instrument: Array<{rowId: string; byPeriod: Array<{period: string; amount: string}>}> | null; total: string; matchesGross: boolean; currentPeriod: {period: string; amount: string; balanceSheetCurrent: string; difference: string; matches: boolean} | null; anchor: Anchor} | null;
+  net_debt_views: {release: View | null; contractual: View | null; releaseReported: {value: string; differenceToRelease: string | null; anchor: Anchor} | null};
+  /** Two denominators, both named: before contra lines (the ledger's own base) and the reported gross debt of the note (the answer key's 13,1% and 19,4%); contractual-only inclusions never enter the second. */
+  by_indexer: Array<{indexer: string; balance: string; shareOfGrossBeforeContra: string; shareOfReportedGrossDebt: string; rows: string[]}>;
+  by_currency: Array<{currency: string; balance: string; shareOfGrossBeforeContra: string; shareOfReportedGrossDebt: string; rows: string[]}>;
+  uncovered_terms: Array<{rowId: string; field: UncoveredField; state: "insufficient_evidence"; reason: string}>;
+  trace: {calculations: Array<{id: string; formula: string; operands: Record<string, string>; result: string; unit: string}>; inputFingerprint: string; outputFingerprint: string};
 };
 
 const d = (value: Decimal.Value) => new Decimal(value);
@@ -174,28 +233,79 @@ const DERIVATIVES = /derivativ|derivative/;
 const CASH = /caixa|disponibilidade|cash/;
 const RESIDUAL = /outra rubrica que se refira a divida onerosa|outra divida onerosa|outras dividas onerosas|other onerous debt|divida onerosa/;
 
-const DEBT = /emprestim|financiament|debenture|divida|debt|loan|borrowing/;
+const DEBT = /emprestim|financiament|debenture|divida bruta|gross debt|loan|borrowing/;
+const DEBT_BASE_OK = /divida bruta|gross debt|(?=[^.;]*emprestim)(?=[^.;]*financiament)(?=[^.;]*debenture)/;
+/** Components that never belong to a net debt definition; their presence on the added side is a contradiction, not a nuance. */
+const FOREIGN = /fornecedor|supplier|payable|estoque|inventor|receb|receivable|imobilizado|fixed asset|salario|tributo|tax|dividend|provis|contingen|arrendamento a pagar|juros sobre capital/;
+/** The operands a net debt definition may name; any other phrase between the connectors is a foreign operand. */
+const KNOWN_OPERAND = /^(?:(?:a|as|o|os|the|de|do|da|dos|das)\s+)?(emprestim|financiament|debenture|divida bruta|gross debt|loan|borrowing|nota[s]? comercia|cpr|instrumento[s]? financeiro[s]? derivativ|operac(?:oes|ao)?(?: com derivativ)?|derivativ|caixa|equivalente|disponibilidade|cash|aplicac|investment|arrendament|lease|outra[s]?( divida[s]?)? onerosa|other onerous|onerous|passiv|ativ|dividas?|debt|obrigac|subordinad)/;
+const CONNECTORS = /\s*(?:\bmais\b|\bplus\b|\be\b|\band\b|,|;|\+|\bmenos\b|\bless\b|\bminus\b|\(\s*[-\u2212]\s*\)|\bdeduzid[oa]s?(?: de)?\b|\bde\b|\bdo\b|\bda\b|\bdos\b|\bdas\b|\bof\b|\bthe\b|\bcom\b|\bwith\b|\bincluindo\b|\bincluidos?\b|\bincluding\b|\bnet\b|\bliquida\b)\s*/;
+/** Every operand phrase of a definition must be a known operand; a phrase the catalogue does not know is foreign, whatever word it uses. */
+const NOISE: RegExp[] = [
+  /=.*$/, // the result side of an equation ("= dívida líquida")
+  /\((?:[^()]*(?:linha|tabela|rotulad|balanco|balance|extraid|nota|note|conforme)[^()]*)\)/g, // parentheticals that name the source, not an operand
+  /\(\s*[a-z]\s*\)/g, // list markers (a), (b)
+  /\bcom base em valores extraidos d[oa] .*?(?=\bmenos\b|\bmais\b|,|;|$)/g,
+  /\b(?:no|na|nos|nas|do|da|dos|das|em seu|em sua|de seu|de sua)\s+(?:passivo|ativo|balanco patrimonial|balanco)\b[^,;]*?(?=\bmais\b|\bmenos\b|\be\b|,|;|\bcom\b|$)/g,
+  /\bbem como qualquer outra rubrica que se refira a\b/g,
+  /\bque venha a ser criada\b/g,
+  /\bsomatoria d[ao]s?\b|\ba soma\b|\brubricas?\s+de\b|\brubrica\b|\blinhas?\s+de\b/g,
+  /\bdivida liquida\b|\bnet debt\b|\bpro forma\b|\bconsolidad[oa]s?\b|\bcirculante\b|\bnao circulante\b|\bcurrent\b|\bnon-current\b|\bd[ao] emissora\b|\bof the issuer\b/g,
+];
+/** Every operand phrase of a definition must be a known operand; descriptive noise (where a line sits, which table it comes from) is stripped first, and a phrase the catalogue does not know is foreign whatever word it uses. */
+export function foreignOperand(text: string): string | null {
+  let plain = normalize(text);
+  for (const noise of NOISE) plain = plain.replace(noise, " ");
+  plain = plain.replace(/[()]/g, " ");
+  for (const phrase of plain.split(CONNECTORS).map((part) => part.trim()).filter((part) => part.length > 2)) {
+    if (!KNOWN_OPERAND.test(phrase)) return phrase;
+  }
+  return null;
+}
 const normalize = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** What a definition adds and what it deducts: the text before the first "menos"/"less"/"minus" and the text after it. */
 export function parseDefinition(text: string): {added: string; deducted: string | null} {
   const plain = normalize(text);
-  const match = /\b(menos|less|minus|deduzid[oa]s?( de)?)\b/.exec(plain);
+  // "(-)" is how a release table writes a deduction; the word forms cover indentures and prose.
+  const match = /\(\s*[-\u2212]\s*\)|\b(menos|less|minus|deduzid[oa]s?( de)?)\b/.exec(plain);
   if (!match) return {added: plain, deducted: null};
   return {added: plain.slice(0, match.index), deducted: plain.slice(match.index + match[0].length)};
 }
 
-/** The text of a definition must agree with the formula the view executes; a contradiction is a block, not a warning. */
+const INVESTMENTS = /aplicac|investment/;
+const DERIVATIVE_LIABILITIES = /derivativ[^.;]{0,40}passiv|passiv[^.;]{0,40}derivativ|derivative liabilit/;
+const DERIVATIVE_ASSETS = /derivativ[^.;]{0,40}ativ(?!o? ?e)|ativ[^.;]{0,40}derivativ|derivative asset/;
+
+/**
+ * The text of a definition must agree, operand by operand and side by side, with the formula the view
+ * executes; a contradiction is a block, not a warning. The release view is debt less cash and investments;
+ * the contractual view adds derivative liabilities and deducts derivative assets as well.
+ */
 function definitionDisagreement(name: "release" | "contractual", text: string): string | null {
   const parsed = parseDefinition(text);
   if (parsed.deducted === null) return `the ${name} definition never deducts anything; the view deducts cash and investments`;
   if (!DEBT.test(parsed.added)) return `the ${name} definition adds no debt line; the view sums loans, financings and debentures`;
+  if (!DEBT_BASE_OK.test(parsed.added)) return `the ${name} definition does not add the whole debt base (loans, financings and debentures, or gross debt); the view sums all three`;
+  if (FOREIGN.test(parsed.added) || FOREIGN.test(parsed.deducted)) return `the ${name} definition names a component that is not debt nor cash (${(FOREIGN.exec(parsed.added) ?? FOREIGN.exec(parsed.deducted))![0]}); the view has no such operand`;
+  const deductedDebt = /emprestim|financiament|debenture|subordinad|divida bruta|gross debt|loan|borrowing/.exec(parsed.deducted.replace(/divida liquida|net debt/g, ""));
+  if (deductedDebt) return `the ${name} definition deducts a debt operand (${deductedDebt[0]}); the view deducts only cash, investments and derivative assets`;
   if (!CASH.test(parsed.deducted)) return `the ${name} definition does not deduct cash; the view deducts cash and equivalents`;
-  if (CASH.test(parsed.added)) return `the ${name} definition adds cash; the view deducts it`;
-  if (name === "release" && DERIVATIVES.test(plainText(text))) return "the release definition mentions derivatives; the release view executed excludes them";
-  if (name === "contractual" && !DERIVATIVES.test(parsed.added)) return "the contractual definition adds no derivative liabilities; the contractual view executed adds them";
-  if (name === "contractual" && !DERIVATIVES.test(parsed.deducted)) return "the contractual definition deducts no derivative assets; the contractual view executed deducts them";
-  return null;
+  if (!INVESTMENTS.test(parsed.deducted)) return `the ${name} definition does not deduct financial investments; the view deducts them`;
+  if (CASH.test(parsed.added) || INVESTMENTS.test(parsed.added)) return `the ${name} definition adds cash or investments; the view deducts them`;
+  if (name === "release") {
+    if (DERIVATIVES.test(plainText(text))) return "the release definition mentions derivatives; the release view executed excludes them";
+    return foreignCheck(name, text);
+  }
+  if (!DERIVATIVE_LIABILITIES.test(parsed.added)) return "the contractual definition does not add derivative liabilities; the contractual view executed adds them";
+  if (!DERIVATIVE_ASSETS.test(parsed.deducted)) return "the contractual definition does not deduct derivative assets; the contractual view executed deducts them";
+  if (DERIVATIVE_ASSETS.test(parsed.added)) return "the contractual definition adds derivative assets; the view deducts them";
+  if (DERIVATIVE_LIABILITIES.test(parsed.deducted)) return "the contractual definition deducts derivative liabilities; the view adds them";
+  return foreignCheck(name, text);
+}
+function foreignCheck(name: "release" | "contractual", text: string): string | null {
+  const foreign = foreignOperand(text);
+  return foreign ? `the ${name} definition names an operand the view does not know ("${foreign}"); every operand must be debt, derivatives, cash, investments, leases or a residual of other onerous debt` : null;
 }
 const plainText = (text: string) => normalize(text);
 
@@ -203,7 +313,7 @@ function canonical(input: z.infer<typeof debtLedgerInputSchema>) {
   return {
     ...input,
     rows: [...input.rows].sort((a, b) => compare(a.id, b.id)).map((row) => (row.obligation ? {...row, obligation: {...row.obligation, views: [...row.obligation.views].sort(compare)}} : row)),
-    schedule: input.schedule ? {...input.schedule, periods: [...input.schedule.periods].sort((a, b) => compare(a.period, b.period))} : undefined,
+    schedule: input.schedule ? {...input.schedule, periods: [...input.schedule.periods].sort((a, b) => compare(a.period, b.period)).map((period) => ({...period, allocations: period.allocations ? [...period.allocations].sort((a, b) => compare(a.rowId, b.rowId)) : null}))} : undefined,
   };
 }
 
@@ -213,6 +323,7 @@ export const stableStringify = (value: unknown): string => JSON.stringify(value,
 export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
   const input = canonical(debtLedgerInputSchema.parse(raw));
   const calculations: DebtLedgerOutput["trace"]["calculations"] = [];
+  const record = (calculation: Omit<DebtLedgerOutput["trace"]["calculations"][number], "unit">) => calculations.push({...calculation, unit: input.unit});
   const rows = input.source === "release_only" ? [] : input.rows;
   const blockReasons: string[] = [];
   const incompleteReasons: string[] = [];
@@ -221,15 +332,21 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
 
   const balances = Object.fromEntries(rows.map((row) => [row.id, row.balance]));
   const gross = rows.reduce((sum, row) => sum.plus(row.balance), d(0));
+  // What the statements report as debt: the release view plus the contra lines; a row only an indenture includes stays out of the identity with the balance sheet.
+  const reportedRows = rows.filter((row) => row.contra || row.obligation!.views.includes("release"));
+  const contractualOnly = rows.filter((row) => !row.contra && !row.obligation!.views.includes("release"));
+  const grossReported = reportedRows.reduce((sum, row) => sum.plus(row.balance), d(0));
   const grossBeforeContra = rows.filter((row) => !row.contra).reduce((sum, row) => sum.plus(row.balance), d(0));
   const priorKnown = rows.length > 0 && rows.every((row) => row.priorBalance !== null);
   const grossPrior = priorKnown ? rows.reduce((sum, row) => sum.plus(row.priorBalance!), d(0)) : null;
-  calculations.push({id: "financial.debt_ledger_balance", formula: "sum(rows.balance)", operands: balances, result: out(gross)});
-  calculations.push({id: "financial.debt_ledger_balance_before_contra", formula: "sum(rows.balance where not contra)", operands: Object.fromEntries(rows.filter((row) => !row.contra).map((row) => [row.id, row.balance])), result: out(grossBeforeContra)});
-  if (grossPrior) calculations.push({id: "financial.debt_ledger_balance_prior", formula: "sum(rows.priorBalance)", operands: Object.fromEntries(rows.map((row) => [row.id, row.priorBalance!])), result: out(grossPrior)});
+  record({id: "financial.debt_ledger_balance", formula: "sum(rows.balance)", operands: balances, result: out(gross)});
+  record({id: "financial.debt_ledger_balance_reported", formula: "sum(rows.balance where row in release view or contra)", operands: Object.fromEntries(reportedRows.map((row) => [row.id, row.balance])), result: out(grossReported)});
+  record({id: "financial.debt_ledger_balance_before_contra", formula: "sum(rows.balance where not contra)", operands: Object.fromEntries(rows.filter((row) => !row.contra).map((row) => [row.id, row.balance])), result: out(grossBeforeContra)});
+  if (grossPrior) record({id: "financial.debt_ledger_balance_prior", formula: "sum(rows.priorBalance)", operands: Object.fromEntries(rows.map((row) => [row.id, row.priorBalance!])), result: out(grossPrior)});
 
   if (input.source === "release_only") blockReasons.push("only a release is in the base; a ledger needs the debt note of the financial statements, so no row is produced");
   if (input.source === "note" && rows.length === 0 && !input.noDebtEvidence) blockReasons.push("no rows and no evidence that the company has no onerous debt: silence is not an empty ledger");
+  if (input.source === "note" && rows.length === 0 && input.noDebtEvidence && !input.balanceSheet) blockReasons.push("the base claims no onerous debt but no balance sheet proves a zero balance; an empty ledger needs the balance sheet");
   if (input.noDebtEvidence && rows.length > 0) blockReasons.push("the base claims no onerous debt and the note carries rows; the contradiction blocks the ledger");
   if (rows.length === 0 && input.noDebtEvidence && input.balanceSheet && !d(input.balanceSheet.current).plus(input.balanceSheet.nonCurrent).isZero()) {
     blockReasons.push("the base claims no onerous debt but the balance sheet carries debt totals; the contradiction blocks the ledger");
@@ -240,17 +357,17 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
     const sheetCurrent = d(input.balanceSheet.current);
     const sheetNonCurrent = d(input.balanceSheet.nonCurrent);
     const total = sheetCurrent.plus(sheetNonCurrent);
-    const difference = gross.minus(total);
+    const difference = grossReported.minus(total);
     const within = difference.abs().lte(tolerance);
-    calculations.push({id: "financial.accounting_identity", formula: "sum(rows.balance) - (balanceSheet.current + balanceSheet.nonCurrent)", operands: {ledger: out(gross), balanceSheetCurrent: out(sheetCurrent), balanceSheetNonCurrent: out(sheetNonCurrent), tolerance: input.tolerance.value}, result: out(difference)});
-    if (!within) blockReasons.push(`ledger total ${out(gross)} differs from the balance sheet ${out(total)} by ${out(difference)}, above the tolerance ${input.tolerance.value}`);
+    record({id: "financial.accounting_identity", formula: "sum(reported rows.balance) - (balanceSheet.current + balanceSheet.nonCurrent)", operands: {ledgerReported: out(grossReported), contractualOnly: out(gross.minus(grossReported)), balanceSheetCurrent: out(sheetCurrent), balanceSheetNonCurrent: out(sheetNonCurrent), tolerance: input.tolerance.value}, result: out(difference)});
+    if (!within) blockReasons.push(`reported ledger total ${out(grossReported)} differs from the balance sheet ${out(total)} by ${out(difference)}, above the tolerance ${input.tolerance.value}`);
     let split: DebtLedgerOutput["reconciliation"]["split"] = {state: "not_possible", currentDifference: null, nonCurrentDifference: null, reason: "not every row carries its current and non-current split"};
-    if (rows.every((row) => row.classification !== null)) {
-      const current = rows.reduce((sum, row) => sum.plus(row.classification!.current), d(0));
-      const nonCurrent = rows.reduce((sum, row) => sum.plus(row.classification!.nonCurrent), d(0));
+    if (reportedRows.every((row) => row.classification !== null)) {
+      const current = reportedRows.reduce((sum, row) => sum.plus(row.classification!.current), d(0));
+      const nonCurrent = reportedRows.reduce((sum, row) => sum.plus(row.classification!.nonCurrent), d(0));
       const currentDifference = current.minus(sheetCurrent);
       const nonCurrentDifference = nonCurrent.minus(sheetNonCurrent);
-      calculations.push({id: "financial.accounting_identity:split", formula: "(sum(rows.current) - balanceSheet.current, sum(rows.nonCurrent) - balanceSheet.nonCurrent)", operands: {rowsCurrent: out(current), rowsNonCurrent: out(nonCurrent), balanceSheetCurrent: out(sheetCurrent), balanceSheetNonCurrent: out(sheetNonCurrent)}, result: `${out(currentDifference)},${out(nonCurrentDifference)}`});
+      record({id: "financial.accounting_identity:split", formula: "(sum(rows.current) - balanceSheet.current, sum(rows.nonCurrent) - balanceSheet.nonCurrent)", operands: {rowsCurrent: out(current), rowsNonCurrent: out(nonCurrent), balanceSheetCurrent: out(sheetCurrent), balanceSheetNonCurrent: out(sheetNonCurrent)}, result: `${out(currentDifference)},${out(nonCurrentDifference)}`});
       const splitWithin = currentDifference.abs().lte(tolerance) && nonCurrentDifference.abs().lte(tolerance);
       split = {state: splitWithin ? "reconciled" : "difference", currentDifference: out(currentDifference), nonCurrentDifference: out(nonCurrentDifference), reason: null};
       if (!splitWithin) blockReasons.push(`the split of the rows differs from the balance sheet (current ${out(currentDifference)}, non-current ${out(nonCurrentDifference)}); a compensating error between the two is not a reconciliation`);
@@ -263,32 +380,44 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
   let schedule: DebtLedgerOutput["schedule"] = null;
   if (input.schedule && rows.length > 0) {
     const total = input.schedule.periods.reduce((sum, period) => sum.plus(period.amount), d(0));
-    const matchesGross = total.eq(gross);
-    calculations.push({id: "financial.maturity_buckets", formula: "sum(schedule.periods.amount) - sum(rows.balance)", operands: {...Object.fromEntries(input.schedule.periods.map((period) => [`period:${period.period}`, period.amount])), ledger: out(gross)}, result: out(total.minus(gross))});
-    if (!matchesGross) blockReasons.push(`schedule total ${out(total)} differs from the ledger total ${out(gross)}`);
+    const matchesGross = total.eq(grossReported);
+    record({id: "financial.maturity_buckets", formula: "sum(schedule.periods.amount) - sum(reported rows.balance)", operands: {...Object.fromEntries(input.schedule.periods.map((period) => [`period:${period.period}`, period.amount])), ledgerReported: out(grossReported)}, result: out(total.minus(grossReported))});
+    if (!matchesGross) blockReasons.push(`schedule total ${out(total)} differs from the reported ledger total ${out(grossReported)}`);
     let currentPeriod: NonNullable<DebtLedgerOutput["schedule"]>["currentPeriod"] = null;
-    const horizon = new Date(`${input.referenceDate}T00:00:00Z`); horizon.setUTCFullYear(horizon.getUTCFullYear() + 1);
-    const dated = input.schedule.periods.filter((entry) => entry.endsAt !== null).sort((a, b) => compare(a.endsAt!, b.endsAt!));
+    // Twelve months ahead by calendar months, clamped to the month's last day: a 29 February reference ends its horizon on 28 February, never on 1 March.
+    const [refYear, refMonth, refDay] = input.referenceDate.split("-").map(Number) as [number, number, number];
+    const lastDay = new Date(Date.UTC(refYear + 1, refMonth, 0)).getUTCDate();
+    const horizonDate = `${refYear + 1}-${String(refMonth).padStart(2, "0")}-${String(Math.min(refDay, lastDay)).padStart(2, "0")}`;
+    const dated = input.schedule.periods.filter((entry) => entry.endsAt !== null && entry.endsAt > input.referenceDate).sort((a, b) => compare(a.endsAt!, b.endsAt!));
+    if (input.schedule.periods.some((entry) => entry.endsAt !== null && entry.endsAt <= input.referenceDate)) blockReasons.push(`the schedule carries a period that ended on or before the reference date (${input.schedule.periods.filter((entry) => entry.endsAt !== null && entry.endsAt <= input.referenceDate).map((entry) => entry.period).join(", ")}); a schedule at the reference date has no past periods`);
     const first = dated[0];
-    if (first && first.endsAt! <= horizon.toISOString().slice(0, 10) && input.balanceSheet) {
+    if (first && first.endsAt! <= horizonDate && input.balanceSheet) {
       const difference = d(first.amount).minus(input.balanceSheet.current);
       const matches = difference.abs().lte(tolerance);
-      calculations.push({id: "financial.maturity_buckets:current", formula: "schedule[earliest endsAt within twelve months].amount - balanceSheet.current", operands: {period: first.period, endsAt: first.endsAt!, amount: first.amount, balanceSheetCurrent: input.balanceSheet.current}, result: out(difference)});
+      record({id: "financial.maturity_buckets:current", formula: "schedule[earliest endsAt within twelve months].amount - balanceSheet.current", operands: {period: first.period, endsAt: first.endsAt!, amount: first.amount, balanceSheetCurrent: input.balanceSheet.current}, result: out(difference)});
       currentPeriod = {period: first.period, amount: out(d(first.amount)), balanceSheetCurrent: out(d(input.balanceSheet.current)), difference: out(difference), matches};
       if (!matches) blockReasons.push(`the first period of the schedule (${first.period}, ending ${first.endsAt}: ${first.amount}) differs from the current liabilities ${input.balanceSheet.current} by ${out(difference)}; a schedule that only matches in total is not checked`);
     } else if (rows.length > 0) {
       incompleteReasons.push(first ? "the schedule's first period is not checked against the current liabilities (no period ends within twelve months, or no balance sheet)" : "the schedule's periods carry no end dates; the first period is not checked against the current liabilities");
     }
-    schedule = {periods: input.schedule.periods.map((period) => ({period: period.period, amount: out(d(period.amount)), shareOfGross: share(d(period.amount), gross)})), total: out(total), matchesGross, currentPeriod, anchor: input.schedule.anchor};
+    const allocated = input.schedule.periods.every((period) => period.allocations !== null);
+    const byInstrument = allocated ? rows.filter((row) => !row.contra).map((row) => ({rowId: row.id, byPeriod: input.schedule!.periods.map((period) => ({period: period.period, amount: out((period.allocations ?? []).filter((allocation) => allocation.rowId === row.id).reduce((sum, allocation) => sum.plus(allocation.amount), d(0)))})).filter((entry) => !d(entry.amount).isZero())})) : null;
+    if (!allocated) incompleteReasons.push("the schedule is aggregated by period; the note does not allocate the buckets by instrument, so the schedule is checked in total and by its first period, not row by row");
+    schedule = {basis: input.schedule.basis, periods: input.schedule.periods.map((period) => ({period: period.period, amount: out(d(period.amount)), endsAt: period.endsAt, shareOfGross: share(d(period.amount), grossReported), allocations: period.allocations ? period.allocations.map((allocation) => ({rowId: allocation.rowId, amount: out(d(allocation.amount))})) : null})), by_instrument: byInstrument, total: out(total), matchesGross, currentPeriod, anchor: input.schedule.anchor};
   } else if (rows.length > 0) {
     incompleteReasons.push("no maturity schedule with an anchor in the base");
   }
 
+  const missingCash = (name: "release" | "contractual") => {
+    const cash = input.cash!;
+    const needed = name === "release" ? ["cashAndEquivalents", "financialInvestments"] as const : ["cashAndEquivalents", "financialInvestments", "derivativeAssets", "derivativeLiabilities"] as const;
+    return needed.filter((component) => cash[component] === null);
+  };
   const view = (name: "release" | "contractual", definition: {text: string; anchor: Anchor}): View => {
     const included = rows.filter((row) => row.contra || row.obligation!.views.includes(name));
     const debt = included.reduce((sum, row) => sum.plus(row.balance), d(0));
-    calculations.push({id: `financial.debt_views:${name}:debt`, formula: "sum(rows.balance where row in view)", operands: Object.fromEntries(included.map((row) => [row.id, row.balance])), result: out(debt)});
-    const cash = input.cash!;
+    record({id: `financial.debt_views:${name}:debt`, formula: "sum(rows.balance where row in view)", operands: Object.fromEntries(included.map((row) => [row.id, row.balance])), result: out(debt)});
+    const cash = input.cash! as {cashAndEquivalents: {value: string; anchor: Anchor}; financialInvestments: {value: string; anchor: Anchor}; derivativeAssets: {value: string; anchor: Anchor}; derivativeLiabilities: {value: string; anchor: Anchor}};
     const operands: Record<string, string> = {debt: out(debt), cashAndEquivalents: cash.cashAndEquivalents.value, financialInvestments: cash.financialInvestments.value};
     const anchors: Record<string, Anchor> = {cashAndEquivalents: cash.cashAndEquivalents.anchor, financialInvestments: cash.financialInvestments.anchor};
     let value = debt.minus(cash.cashAndEquivalents.value).minus(cash.financialInvestments.value);
@@ -299,25 +428,45 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       operands.derivativeLiabilities = cash.derivativeLiabilities.value; operands.derivativeAssets = cash.derivativeAssets.value;
       anchors.derivativeLiabilities = cash.derivativeLiabilities.anchor; anchors.derivativeAssets = cash.derivativeAssets.anchor;
     }
-    calculations.push({id: `financial.debt_views:${name}`, formula, operands, result: out(value)});
+    record({id: `financial.debt_views:${name}`, formula, operands, result: out(value)});
     return {value: out(value), definition: definition.text, definitionSource: definition.anchor, components: operands, componentAnchors: anchors, rowsIncluded: included.map((row) => row.id), residualAssumedZero: name === "contractual" && RESIDUAL.test(normalize(definition.text))};
   };
-  const netDebtViews: DebtLedgerOutput["netDebtViews"] = {release: null, contractual: null, releaseReported: null};
+  const netDebtViews: DebtLedgerOutput["net_debt_views"] = {release: null, contractual: null, releaseReported: null};
+  // A definition that counts loans, financings and debentures counts every such row: a row left out of a view whose text includes its kind is a tampered membership.
+  for (const name of ["release", "contractual"] as const) {
+    const definition = input.definitions[name];
+    if (!definition) continue;
+    const text = normalize(definition.text);
+    const counted = (row: Row) => row.obligation !== undefined && ((row.obligation.kind === "loan" && /emprestim|financiament|divida bruta|gross debt|loan/.test(text)) || (row.obligation.kind === "debenture" && /debenture|divida bruta|gross debt/.test(text)) || ((row.obligation.kind === "commercial_note" || row.obligation.kind === "cpr") && /emprestim|financiament|divida bruta|gross debt|nota comercial|cpr/.test(text)) || (row.obligation.kind === "lease" && /arrendament|lease|outra.{0,25}divida onerosa|other.{0,25}onerous/.test(text)) || (row.obligation.kind === "other" && /outra.{0,25}divida onerosa|other.{0,25}onerous|other debt/.test(text)));
+    const excluded = rows.filter((row) => !row.contra && counted(row) && !row.obligation!.views.includes(name));
+    if (excluded.length > 0) blockReasons.push(`the ${name} definition counts ${excluded.map((row) => row.obligation!.kind).filter((kind, index, all) => all.indexOf(kind) === index).join(" and ")} rows, yet ${excluded.map((row) => row.id).join(", ")} ${excluded.length === 1 ? "is" : "are"} kept out of that view`);
+    // The reverse: a lease or other row placed inside a view whose definition never names leases nor a residual of other onerous debt is not covered by the text, anchor or not.
+    const uncoveredInclusions = rows.filter((row) => !row.contra && (row.obligation!.kind === "lease" || row.obligation!.kind === "other") && row.obligation!.views.includes(name) && !counted(row));
+    if (uncoveredInclusions.length > 0) blockReasons.push(`the ${name} definition never names ${uncoveredInclusions.map((row) => row.obligation!.kind).filter((kind, index, all) => all.indexOf(kind) === index).join(" nor ")} rows nor a residual of other onerous debt, yet ${uncoveredInclusions.map((row) => row.id).join(", ")} ${uncoveredInclusions.length === 1 ? "is" : "are"} placed in that view; an inclusion anchor does not override the literal definition`);
+  }
   if (rows.length > 0) {
+    // A definition that contradicts the formula blocks whether or not the cash components are in the base.
+    for (const name of ["release", "contractual"] as const) {
+      const definition = input.definitions[name];
+      if (!definition) continue;
+      const disagreement = definitionDisagreement(name, definition.text);
+      if (disagreement) blockReasons.push(disagreement);
+    }
     if (!input.cash) incompleteReasons.push("no cash, investments and derivatives in the base: net debt views are not computed");
     else {
       for (const name of ["release", "contractual"] as const) {
         const definition = input.definitions[name];
         if (!definition) { incompleteReasons.push(`no ${name} definition with a source: the ${name} view is not computed`); continue; }
-        const disagreement = definitionDisagreement(name, definition.text);
-        if (disagreement) { blockReasons.push(disagreement); continue; }
+        if (definitionDisagreement(name, definition.text)) continue;
+        const missing = missingCash(name);
+        if (missing.length > 0) { incompleteReasons.push(`the ${name} view is not computed: ${missing.join(", ")} absent from the base (insufficient_evidence)`); continue; }
         netDebtViews[name] = view(name, definition);
       }
     }
     if (input.releaseReportedNetDebt) {
       const reported = d(input.releaseReportedNetDebt.value);
       const differenceToRelease = netDebtViews.release ? reported.minus(netDebtViews.release.value) : null;
-      if (differenceToRelease) calculations.push({id: "financial.debt_views:release:reported_difference", formula: "releaseReportedNetDebt - releaseView", operands: {releaseReportedNetDebt: out(reported), releaseView: netDebtViews.release!.value}, result: out(differenceToRelease)});
+      if (differenceToRelease) record({id: "financial.debt_views:release:reported_difference", formula: "releaseReportedNetDebt - releaseView", operands: {releaseReportedNetDebt: out(reported), releaseView: netDebtViews.release!.value}, result: out(differenceToRelease)});
       netDebtViews.releaseReported = {value: out(reported), differenceToRelease: differenceToRelease ? out(differenceToRelease) : null, anchor: input.releaseReportedNetDebt.anchor};
     }
   }
@@ -332,12 +481,12 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       map.set(key(row), entry);
     }
     return [...map.entries()].sort(([a], [b]) => compare(a, b)).map(([label, entry]) => {
-      calculations.push({id: `financial.debt_ledger_group:${dimension}:${label}`, formula: "sum(rows.balance in group) ; share = group / grossBeforeContra", operands: {...Object.fromEntries(entry.rows.map((row) => [row.id, row.balance])), grossBeforeContra: out(grossBeforeContra)}, result: `${out(entry.balance)};${share(entry.balance, grossBeforeContra)}`});
-      return {label, balance: out(entry.balance), shareOfGrossBeforeContra: share(entry.balance, grossBeforeContra), rows: entry.rows.map((row) => row.id)};
+      record({id: `financial.debt_ledger_group:${dimension}:${label}`, formula: "sum(rows.balance in group) ; shareBeforeContra = group / grossBeforeContra ; shareOfReportedGrossDebt = group / grossDebtReported", operands: {...Object.fromEntries(entry.rows.map((row) => [row.id, row.balance])), grossBeforeContra: out(grossBeforeContra), grossDebtReported: out(grossReported)}, result: `${out(entry.balance)};${share(entry.balance, grossBeforeContra)};${share(entry.balance, grossReported)}`});
+      return {label, balance: out(entry.balance), shareOfGrossBeforeContra: share(entry.balance, grossBeforeContra), shareOfReportedGrossDebt: share(entry.balance, grossReported), rows: entry.rows.map((row) => row.id)};
     });
   };
 
-  const uncoveredTerms: DebtLedgerOutput["uncoveredTerms"] = [];
+  const uncoveredTerms: DebtLedgerOutput["uncovered_terms"] = [];
   for (const row of rows) {
     if (row.contra) continue;
     const label = `${row.instrument}${row.series ? ` ${row.series}` : ""}`;
@@ -355,17 +504,18 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schemaVersion: "method.build-debt-ledger.v5" as const,
-    referenceDate: input.referenceDate, priorDate: input.priorDate, unit: input.unit, source: input.source, state, blockReasons, incompleteReasons,
-    ledgerRows: rows.map((row) => ({
+    schema_version: "method.build-debt-ledger.v15" as const,
+    reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, unit_anchor: input.unitAnchor, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
+    ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),
       currency: row.currency, remuneration: row.remuneration, maturity: row.maturity, guarantee: row.guarantee, lender: row.lender, classification: row.classification, contra: row.contra, anchors: row.anchors,
     })),
-    grossDebt: out(gross), grossDebtPrior: grossPrior ? out(grossPrior) : null, grossDebtBeforeContra: out(grossBeforeContra),
-    reconciliation, schedule, netDebtViews,
-    byIndexer: group("indexer", indexerOf).map(({label, ...rest}) => ({indexer: label, ...rest})),
-    byCurrency: group("currency", (row) => row.currency).map(({label, ...rest}) => ({currency: label, ...rest})),
-    uncoveredTerms,
+    gross_debt: out(gross), gross_debt_reported: out(grossReported), gross_debt_prior: grossPrior ? out(grossPrior) : null, gross_debt_before_contra: out(grossBeforeContra),
+    contractual_only_inclusions: contractualOnly.map((row) => ({rowId: row.id, balance: out(d(row.balance)), anchor: row.anchors.viewInclusion ?? row.anchors.balance})),
+    reconciliation, schedule, net_debt_views: netDebtViews,
+    by_indexer: group("indexer", indexerOf).map(({label, ...rest}) => ({indexer: label, ...rest})),
+    by_currency: group("currency", (row) => row.currency).map(({label, ...rest}) => ({currency: label, ...rest})),
+    uncovered_terms: uncoveredTerms,
   };
   return {...body, trace: {calculations, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint(body)}};
 }

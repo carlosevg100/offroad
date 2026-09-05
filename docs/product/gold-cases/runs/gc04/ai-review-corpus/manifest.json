@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "ai-review-corpus.v1",
+  "caseId": "gc04-analista-investimentos-prisma",
+  "extractor": "packages/evals/scripts/build-review-corpus.ts (parsers do repositório); release e pedido simulado da Cogna renderizados pelos parsers do repositório, mais o mandato sintético da Prisma",
+  "entries": [
+    {
+      "file": "01_Release_Resultados_2T26.pdf.txt",
+      "bytes": 64096,
+      "sha256": "cc643f39d7a24c6e5ebf5049304b09c87dcfd56db79ba87fdf5703a792fadd9b",
+      "note": "rendered from pdf"
+    },
+    {
+      "file": "02_Pedido_Simulado_Debentures_2026.docx.txt",
+      "bytes": 1870,
+      "sha256": "393ae02947a760d341f3bce0e6369fb99034f028ec966c5d3ea4ff4ae2aca73e",
+      "note": "rendered from docx"
+    },
+    {
+      "file": "prisma_mandate.json",
+      "bytes": 2245,
+      "sha256": "c344ff6c76ca1c416d3eb15ea59b7210d5a66b0b32fd42ce3ee88b2e5016c375",
+      "note": "copied"
+    }
+  ]
+}

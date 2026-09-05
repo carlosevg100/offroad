@@ -1,6 +1,6 @@
 ---
 id: estimate-exit-cost-by-series
-version: 2026.09.05-v2
+version: 2026.09.05-v8
 maturity: implemented
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/estimate-exit-cost-by-series
 implementation_export: estimateExitCostBySeries
-result_contract: method.estimate-exit-cost-by-series.v2
+result_contract: method.estimate-exit-cost-by-series.v8
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -56,8 +56,21 @@ na data-base, custo estimado e o que falta para fechar o número.
 4. [model_assisted] Redigir :: Dizer por série o que é possível, quando e a que custo, e o que continua sem cotação
 
 # Cálculos determinísticos
+- structure.exit_premium: prêmio DI igual a [(1 + p)^(DU/252) - 1] vezes a base, truncado em oito casas; oferta negociada igual a base vezes a taxa do edital.
+- structure.exit_make_whole: amortização extraordinária IPCA paga o maior entre a base e o valor presente à cotação do segundo dia útil anterior; resgate total IPCA paga o valor presente à cotação do dia útil imediatamente anterior.
+- financial.exit_base: nominal atualizado mais remuneração acumulada mais encargos na data de saída, cada um com âncora.
 - structure.debt_service_schedule: fluxos remanescentes por série.
 - financial.weighted_average_life: duration remanescente para escolher o vértice ou o título de referência.
+
+# Regras de precificação
+- Toda âncora nomeia um documento do registro da base; todo mecanismo cita a escritura da própria série com a cláusula; dias úteis e feriados citam um calendário da base; cotações citam documento de cotação; série sem escritura não é precificada.
+- A base é o nominal na data de saída (atualizado onde indexado, com a derivação que a fonte permite), mais a remuneração corrida até a data e os encargos que a escritura declara (zero explícito incluído); saldo de 31/05 não é nominal em 04/09.
+- Amortização extraordinária retira uma fração limitada pela escritura abaixo de 100% (98% nas 13ª, 14ª e 15ª) e nunca concorre como saída integral; resgate total é a saída integral; aquisição facultativa pode ser parcial ou integral, ao preço que o vendedor aceitar.
+- Prêmio DI: P = [(1 + p)^(DU/252) − 1] sobre o preço unitário, truncado em oito casas, vezes a quantidade de debêntures; sem quantidade na base, truncado uma vez sobre o agregado e declarado como aproximação.
+- Make-whole IPCA e prefixado: fluxos remanescentes descontados na cotação do dia contratual (o dia útil anterior ou o segundo anterior, como a série escreve; a distância é conferida contra o calendário), comparados com o valor atualizado quando a série tem piso, mais os encargos que a escritura soma depois; a duration que escolhe o título de referência é descontada pela remuneração da própria série; cotação de outro dia, fluxos ou remuneração ausentes são insufficient_evidence; valor presente e duration calculados no financial-core.
+- Oferta negociada é permitida desde a emissão; o prêmio é o que o edital diz (taxa, valor por debênture ou total) e o que se retira é o que aderiu (parcial ou integral, nunca acima de 100%); prêmio conhecido sem adesão não retira nada ainda; aquisição facultativa tem preço no vendedor.
+- Dias úteis são os dias de semana menos os feriados do calendário da base, no prêmio DI como na distância da cotação; o título ou vértice de referência tem de ser o mais próximo entre os candidatos que a fonte lista (NTN-B por duration em dias úteis, vértice Pré x DI por dias corridos), empates registrados; a curva de referência corresponde à família do mecanismo; fatores de desconto arredondados em nove casas, também na duration que escolhe o título ou vértice; dias úteis contados da saída inclusive ao vencimento exclusive, como as escrituras (7.16.1.2); mecanismos que a escritura oferece e a entrada não representa viram lacunas nomeadas; datas civis reais.
+- Saída integral mais barata escolhida por comparação numérica.
 
 # Julgamentos permitidos
 - Escolher o título NTN-B de duration mais próxima entre dois candidatos: a escritura manda a mais próxima; empate é registrado.
@@ -74,8 +87,14 @@ na data-base, custo estimado e o que falta para fechar o número.
 - Nenhuma escritura da série no pack e a alternativa depende dela.
 
 # Outputs
-- exit_costs (array, required): por série, janela, mecanismo, fórmula, taxa de referência com fonte e data, custo estimado e cláusula
-- blocked_series (array, required): séries cuja saída não é permitida na data ou cuja cotação falta
+- schema_version (string, required): identificador do contrato de resultado, `method.estimate-exit-cost-by-series.v8`
+- exit_date (date, required): data de saída para a qual cada preço é medido
+- unit (enum, required): unidade de todos os valores (BRL, BRL thousand, BRL million, USD, USD thousand)
+- state (enum, required): complete quando toda série tem uma saída integral estimada, partial quando alguma fica aberta, empty sem séries | values: complete, partial, empty
+- exit_costs (array, required): por série: escritura citada (sem ela nada é precificado), base na data de saída (nominal com a derivação declarada, remuneração corrida e encargos explícitos, cada um com âncora; qualquer componente ausente é insufficient_evidence, nunca zero), rotas por mecanismo com escopo (integral, parcial com a fração que a escritura permite, ou parcial-ou-integral na aquisição), permissão na data, estado, valor retirado, prêmio, total a pagar, motivo, cotação do dia contratual (anterior ou segundo anterior, com feriados do calendário e duration do título quando a fonte a dá) e valor presente com a duration na remuneração da série, a taxa usada e os encargos somados quando a rota desconta fluxos; saída integral mais barata escolhida numericamente entre as rotas unilaterais integrais
+- uncovered_terms (array, required): base ou escritura ausentes por série, como insufficient_evidence com o motivo
+- totals (object, required): prêmio e total estimados das saídas integrais mais baratas, séries estimadas e séries em aberto
+- trace (object, required): base, prêmios, valores presentes e durations com fórmula, operandos e unidade; fingerprints canônicos de entrada e saída, com o trace e o fingerprint de entrada dentro do de saída
 
 # Exemplos
 ## Bom
@@ -85,6 +104,7 @@ na data-base, custo estimado e o que falta para fechar o número.
 
 # Testes
 ## Unit
+- dias úteis conferidos contra os dias de semana entre a data de saída e o vencimento (uma contagem que não cabe é recusada); cotação anterior à data de saída; valores datados na data de saída; prêmio negociado nunca negativo; mecanismo listado duas vezes e séries duplicadas recusados; nenhuma série devolve zero com razão; fingerprints iguais sob vinte permutações de séries, mecanismos e ordem de chaves
 - prêmio pro rata e make-whole reproduzem valores calculados à mão sobre um fluxo de teste
 ## Gold
 - gc01-analista-ib-camil: seção 13.2 do gabarito reproduzida por família

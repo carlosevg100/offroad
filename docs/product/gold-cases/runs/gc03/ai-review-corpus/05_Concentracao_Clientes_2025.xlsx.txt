@@ -1,0 +1,14 @@
+# 05_Concentracao_Clientes_2025.xlsx (spreadsheet; parsers xlsx-1.0.0, 3.10.1, 5.10.1)
+
+
+## planilha Clientes
+
+A1=Concentração de clientes, exercício de 2025
+A2=Valores em reais
+A4=Cliente ; B4=Receita 2025 (R$) ; C4=% da receita ; D4=Cliente desde ; E4=Prazo médio
+A5=Construtora Vertical Engenharia ; B5=34607000 ; C5=0.181 ; D5=2012 ; E5=45 dias
+A6=Grupo Habita Empreendimentos ; B6=21414000 ; C6=0.112 ; D6=2016 ; E6=60 dias
+A7=Prefeitura de São José dos Campos ; B7=14149000 ; C7=0.074 ; D7=2019 ; E7=90 dias
+A8=Rede Construir (franquias) ; B8=11663000 ; C8=0.061 ; D8=2015 ; E8=30 dias
+A9=Marfim Incorporações ; B9=9178000 ; C9=0.048 ; D9=2021 ; E9=45 dias
+A11=Cinco maiores ; B11=91011000 ; C11=0.476

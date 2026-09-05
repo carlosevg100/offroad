@@ -1,0 +1,27 @@
+# 01_Carta_CFO_Pedido_e_Racional.docx (docx; parsers docx-1.0.0, 3.10.1, 5.10.1)
+
+
+## Carta da diretoria financeira
+
+São José dos Campos, 12 de agosto de 2026.
+Prezados, a Aurora Materiais encerrou 2025 com receita líquida de aproximadamente R$ 190 milhões, crescimento de cerca de 13% sobre 2024, sustentado pela retomada da construção residencial no Vale do Paraíba e pela ampliação da carteira de clientes corporativos.
+Buscamos captação de R$ 40 milhões, em 48 meses, com 6 meses de carência, a um custo que entendemos compatível com o nosso perfil, na ordem de CDI mais 4% ao ano.
+
+
+## Racional da operação
+
+O ciclo de caixa alongou com o crescimento: o prazo médio de recebimento subiu de 54 para 68 dias entre 2023 e 2025, enquanto o prazo de fornecedores permaneceu em 41 dias. O capital de giro passou a ser financiado por linhas curtas e caras, e três delas vencem em 2027.
+Paralelamente, a operação atingiu o limite físico do centro de distribuição de São José dos Campos. O quarto centro, em Jacareí, é condição para atender a demanda contratada da região de Campinas.
+
+
+## Destinação dos recursos
+
+Permanecemos à disposição para esclarecimentos e para o envio de qualquer documento adicional.
+Marcos Tanaka, Diretor financeiro.
+
+[tabela]
+Destinação | Valor (R$)
+Capital de giro (reforço do ciclo de recebíveis) | 25.000.000,00
+Obra civil do centro de distribuição de Jacareí | 11.400.000,00
+Equipamentos de movimentação e racks | 4.100.000,00
+Sistema de gestão e integração logística | 1.800.000,00

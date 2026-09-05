@@ -1,0 +1,66 @@
+# Revisão independente por IA: método compare-refinancing-before-after v2026.09.05-v2
+
+Registro `ai_independent_review`, nunca aprovação humana. Revisor: openai/gpt-5.6-sol (high) via codex-cli 0.153.4. Run gc01-method-compare-refinancing-before-after-2026-09-05-03-06-52, commit 8bf52d7. Fingerprint 1a4bb934a1a46eeaa8cba3d15b4a4f9887f3b2c1f2dc611c19a0311526afd00c.
+
+Resultado: **fail**. Evidências: 15 confirmed, 13 corrected, 2 unverifiable, 1 limitation.
+
+| Checagem | Feita |
+| --- | --- |
+| sourcesRevisited | sim |
+| numbersRecalculated | sim |
+| definitionsTested | sim |
+| exceptionsTested | sim |
+| adversarialTested | sim |
+| consistencyTested | sim |
+| baselineAdvantage | n/a |
+
+## Evidências
+
+| Resultado | Afirmação | Fonte | Âncora | Nota |
+| --- | --- | --- | --- | --- |
+| confirmed | 1. O corpus usado na revisão está íntegro. | docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json | entries, linhas 5-220 | Os 43 arquivos tiveram tamanho e SHA-256 recalculados; nenhum divergiu do manifesto. |
+| confirmed | 2. Data-base, unidade, dívida bruta de 5.670.186 e cronograma 1.229.828, 776.868, 1.228.475, 694.497, 994.544 e 809.198 são números da fonte. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, PDF p.39-40; linhas 2060-2065 e 2097-2109 | Os períodos são anos-safra de junho a maio, não anos-calendário. |
+| confirmed | 3. O input 1.455.809 corresponde a 1.430.714 de caixa e equivalentes mais 25.095 de aplicações; derivativos passivos e ativos são 14.335 e 235. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | notas 3 e 25, PDF p.20 e 51; linhas 971-985 e 2764-2786 | 1.430.714 + 25.095 = 1.455.809. A denominação do executor, unrestrictedCash, é mais forte que a fonte: equivalentes podem levar até 90 dias para resgate. |
+| confirmed | 4. Os saldos usados para retirar as séries — 306.038, 438.918 e 282.357 — aparecem no ITR. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, PDF p.39; linhas 2045-2060 |  |
+| confirmed | 5. A 13ª emissão, 1ª série, vence em 16/11/2028 e pertence ao ano-safra Jun/28–Mai/29, bucket 2029. | docs/product/gold-cases/runs/gc01/ai-review-corpus/af_13a_emissao.txt | Características da 1ª série, linhas 37-54 |  |
+| corrected | 6. A 14ª emissão, 1ª série, vence em 15/06/2029 e pertence ao ano-safra Jun/29–Mai/30, bucket 2030; o teste a coloca incorretamente em 2029. | docs/product/gold-cases/runs/gc01/ai-review-corpus/af_14a_emissao.txt | Características da 1ª série, linhas 38-55 | maturityPeriod deve ser 2030, não 2029. |
+| confirmed | 7. Dívida líquida contratual de 4.228.477 e EBITDA implícito arredondado de 895.864 conferem. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 5, linhas 111-142 | 5.670.186 + 14.335 - 235 - 1.455.809 = 4.228.477; 4.228.477 / 4,72 = 895.863,77, arredondado para 895.864. É derivação, não EBITDA divulgado. |
+| confirmed | 8. O limite 4,00x e a comparabilidade integral permanecem condicionados; suprimir headroom no gold é correto. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 13.1, linhas 353-375 | A quitação ordinária dos CRA de referência não está comprovada e o EBITDA da companhia não foi aberto. |
+| unverifiable | 9. Taxa média anterior de 14,5% e os termos da nova dívida — 745.000, 14,5%, 60 meses, 24 meses de carência, SAC e fee de 1% — não estão nas fontes citadas. | docs/product/gold-cases/runs/gc01/ai-review-corpus/anbima_ettj_2026-09-04.csv | linhas 1-84 | A curva contém taxas por vértice; não contém valor, spread/crédito total de 14,5%, formato, carência ou fee da alternativa. |
+| unverifiable | 10. Os prêmios de saída 2.448 e 5.266, e portanto o total econômico de 7.714, não são verificáveis no corpus. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 13.2, linhas 377-401 | A fórmula exige data efetiva, dias úteis restantes, valor nominal, remuneração pro rata e encargos. O executor não recebe data de saída; em 31/05/2026 a 14ª série ainda não estava na janela unilateral iniciada em 15/06/2026. |
+| confirmed | 11. Os números básicos do snapshot anterior foram recalculados corretamente. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 77-92 | netDebt = 5.670.186 - 1.455.809 = 4.214.377; contractualNetDebt = 4.228.477; leverage = 4.228.477 / 895.864 = 4,71999879; pico nominal = 1.229.828 em 2027. |
+| corrected | 12. A concentração anterior usa denominador diferente daquele declarado pelo executor e pelo gabarito. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 3, linhas 68-82 | O executor retorna 0,21450202 porque divide 1.229.828 por 5.733.410, soma do cronograma antes do custo de transação. Contra dívida bruta, como declarado nas linhas 41-44 do executor e no gabarito, é 1.229.828 / 5.670.186 = 0,21689377, cerca de 21,7%. |
+| confirmed | 13. A posição pro forma retornada para extend-di confere aritmeticamente com os inputs do teste. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 100-109 e 136-140 | retirado = 306.038 + 438.918 = 744.956; fee = 745.000×1%=7.450; dívida bruta = 5.670.186+745.000-744.956=5.670.230; caixa = 1.455.809-7.714-7.450=1.440.645; netDebt=4.229.585; contractualNetDebt=4.243.685; leverage=4,73697459. |
+| confirmed | 14. O serviço da nova dívida foi reproduzido pela fórmula codificada. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 117-133 | Taxa mensal arredondada = 0,01134762; principal SAC mensal = 745.000/36 = 20.694,44444444; pico = 29.148,42134444; juros totais = 359.294,01825; serviço total = 1.104.294,01825; WAL dos pagamentos 25 a 60 = 42,5 meses. |
+| confirmed | 15. O all-in de 0,14907087 confere apenas como aritmética do cenário não verificado. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 131-134 | 0,145 + (0,01 + 7.714/745.000)/5 = 0,14907087248, arredondado a 0,14907087. |
+| corrected | 16. O expected 483.519 para o bucket 2029 está materialmente errado. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 34-45 | Somente a 13ª série sai de 2029: 1.228.475-306.038=922.437. A 14ª sai de 2030: 694.497-438.918=255.579. |
+| corrected | 17. O executor aloca o principal novo por ano-calendário, embora o cronograma-base seja ano-safra junho–maio. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 121-130 | Com data-base 31/05/2026 e carência de 24 meses, os 36 pagamentos de principal caem 12 em 2029, 12 em 2030 e 12 em 2031: 248.333,33333328 em cada bucket. O executor retorna 144.861,11111108 em 2028, 248.333,33333328 em 2029 e 2030 e 103.472,2222222 em 2031. |
+| corrected | 18. Corrigidos os buckets, o ranking gold se inverte. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seções 3 e 11.1, linhas 68-82 e 229-243 | Consolidado correto de extend-di: 2027=1.229.828; 2028=776.868; 2029=1.170.770,33333328; 2030=503.912,33333328; 2031=1.242.877,33333328; 2032+=809.198. O pico passa a 2031; share sobre dívida bruta=0,21919346, pior que status quo=0,21689377. Ordem correta: status-quo, extend-di. |
+| corrected | 19. O método promete cronograma, cobertura por período e os mesmos objetos antes/depois, mas o executor não produz cobertura e não expõe o cronograma completo no snapshot anterior. | packages/credit-playbook/knowledge/procedures/refinance/compare-refinancing-before-after.md | linhas 31-39, 51-62 e 78-81 | Snapshot não contém coverage_series; before contém apenas o pico, enquanto as linhas completas ficam apenas dentro de cada alternativa. |
+| corrected | 20. Dívida líquida e EBITDA são simplificados além do permitido pelas escrituras. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | definições, linhas 324-357 | O schema não representa outras dívidas onerosas; aceita qualquer LTM EBITDA textual e descarta basis da saída/trace. Assim não preserva os ajustes e a natureza derivada necessários à comparação contratual. |
+| confirmed | 21. Para maximum, o headroom forçado no teste seria -0,71999879 e passes=false, mas essa mutação não resolve a evidência econômica. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 48-56 | 4,00-4,71999879=-0,71999879. No gold original, headroom=null e a insuficiência aparece em unsupported. |
+| confirmed | 22. A exceção de custo de saída nulo funciona e não preenche o valor ausente. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 94-101 e 176 | retire-ipca fica blocked, after/exitCost/concentration/newDebtService ficam null, é excluída do ranking e a razão entra em unsupported. |
+| confirmed | 23. Ranking sem discriminador é corretamente recusado. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 145-175 | ranking=null e unsupported registra que o discriminador não foi declarado. |
+| corrected | 24. O executor não possui uncoveredTerms nem estado equivalente por alternativa. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | schemas e output, linhas 19-58 | Uma mutação contendo uncoveredTerms é rejeitada pelo schema estrito com ZodError, em vez de retornar insufficient_evidence/blocked. Termos indicativos incompletos não podem ser carregados explicitamente. |
+| corrected | 25. Outras bases insuficientes não geram o estado prometido. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 69-89 | EBITDA zero ou negativo produz leverage=null sem mensagem em unsupported; cronograma vazio produz peak=null sem unsupported; dinheiro e taxas negativas são aceitos pelo regex. |
+| confirmed | 26. Os testes cobrem custo de saída nulo, discriminador ausente, permutação de alternativas/séries, bucket aberto, peak_amount e empates. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 58-108 | A suíte local passou, mas o teste chamado de vinte permutações repete apenas duas ordens de alternativas. |
+| corrected | 27. As mutações adversariais econômicas do gabarito não são cobertas nem impedidas pelo executor. | docs/product/gold-cases/gc01-gabarito-rascunho.md | linhas 215-219, 316-323 e 411-416 | Não há teste/validação de escala, EBITDA trimestral anualizado, arrendamento incluído silenciosamente, pro forma tratado como cálculo próprio, degrau 3,50x/4,00x, prêmio anual tratado como flat ou dívida líquida do release. |
+| corrected | 28. A consistência está provada somente para ordem de alternatives e retired; o fingerprint não é canônico para todo input permitido. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 63-67 e 178-179 | Alternativas e séries são ordenadas e os fingerprints gold permanecem iguais. Porém schedules semanticamente iguais com chaves não inteiras inseridas em ordens diferentes geraram outputFingerprint igual e inputFingerprint diferente; canonical não ordena o record schedule. |
+| corrected | 29. A rastreabilidade não satisfaz integralmente o contrato de evidência material. | packages/credit-playbook/src/procedure-contract.ts | linhas 52-60 e 122-126 | Séries retiradas não possuem anchor; snapshots e ranking não carregam anchors; basis do EBITDA e origem dos termos não aparecem na saída nem nas linhas de cálculo. |
+| corrected | 30. Despesas adicionais pagas em caixa não entram no all-in e o antes/depois usa métricas de custo não comparáveis. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 92, 103-106 e 131-134 | feesPaidFromCash reduz caixa, mas não entra em calculateAllInCost. before.allInCost é apenas weightedAverageRate, enquanto after inclui fee e prêmio anualizados. |
+| limitation | 31. A interpretação sobre incluir arrendamento em qualquer outra dívida onerosa não é resolvida pelo corpus. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 5, linhas 135-142 | Exige interpretação jurídica especializada; não bloqueia os demais recálculos. |
+
+## Condições
+
+- Corrigir os buckets por ano-safra, recalcular a concentração e inverter o ranking gold para status-quo antes de extend-di.
+- Usar o denominador declarado ou alterar explicitamente a definição; contra dívida bruta, o pico anterior é 0,21689377.
+- Substituir termos e custos de saída não verificáveis por evidência válida ou por estado blocked/insufficient_evidence, com data de saída e uncoveredTerms.
+- Implementar cobertura por período, comparabilidade simétrica, despesas no all-in e rastreabilidade dos anchors/basis.
+- Ampliar adversariais e consistência para as mutações do gabarito e todas as coleções ordenáveis do input.
+- Manter como condição jurídica a possível inclusão do arrendamento em outras dívidas onerosas.
+
+## Notas do revisor
+
+Codex baseado em GPT-5, com shell local, TypeScript e Vitest; sem internet.
+
+Falha material determinada principalmente pelas evidências 6, 12, 16-20, 24-25 e 27-30. A aritmética interna básica confere, mas o calendário econômico, o ranking, a definição de concentração, a suficiência da base e o contrato de evidência não conferem.
