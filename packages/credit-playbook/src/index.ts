@@ -33,3 +33,5 @@ export {commonClosing} from "./closing";
 export * from "./methodology";
 export * from "./procedure-markdown";
 export * from "./review-record";
+
+export * as executors from "./executors";

@@ -32,7 +32,8 @@
     "source-pack:build": "tsx scripts/build-source-pack.ts",
     "test": "vitest run --exclude 'dist/**'",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "verify:case": "tsx scripts/verify-fakeco.ts"
+    "verify:case": "tsx scripts/verify-fakeco.ts",
+    "gc02:alternatives": "tsx scripts/build-gc02-alternatives.ts"
   },
   "dependencies": {
     "@offroad/agent-contracts": "workspace:*",

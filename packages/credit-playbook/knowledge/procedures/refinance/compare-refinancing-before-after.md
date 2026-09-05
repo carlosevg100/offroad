@@ -1,6 +1,6 @@
 ---
 id: compare-refinancing-before-after
-version: 2026.09.05-v1
+version: 2026.09.05-v2
 maturity: implemented
 title_pt: Comparar antes e depois de cada alternativa de refinanciamento
 title_en: Compare before and after for each refinancing alternative
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/compare-refinancing-before-after
 implementation_export: compareRefinancingBeforeAfter
-result_contract: method.compare-refinancing-before-after.v1
+result_contract: method.compare-refinancing-before-after.v2
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results

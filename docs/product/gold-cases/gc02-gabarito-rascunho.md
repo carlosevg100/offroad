@@ -1,6 +1,6 @@
-# Caso 02: gabarito econômico, rascunho v0.1 para revisão independente
+# Caso 02: gabarito econômico, rascunho v0.2 para revisão independente
 
-Status: **rascunho v0.1**, ainda sem revisão. Caso `gc02-cfo-camil-conselho` (definição congelada em
+Status: **rascunho v0.2**, ainda sem revisão. A v0.2 acrescenta a comparação de alternativas (seção 6) calculada pelos executores `estimate-exit-cost-by-series` v2 e `compare-refinancing-before-after` v2 (`pnpm --filter @offroad/evals gc02:alternatives`). Caso `gc02-cfo-camil-conselho` (definição congelada em
 `02-cfo-camil-conselho.md`). Este gabarito tem duas metades com naturezas diferentes e o sistema
 precisa tratá-las de forma diferente:
 
@@ -158,6 +158,53 @@ Parciais: deb-15-2: 61.103 amortizados em 2030/31 (parcial, sintético); deb-15-
 | 2030/31 | 967.694 | 5.910.409 | 1.326.261 | 4.584.148 | 4.74x | -0.74 | -1.24 |
 | after 2031 | 987.048 | 5.950.639 | 1.738.112 | 4.212.527 | 4.27x | -0.27 | -0.77 |
 
+## 6. Alternativas comparadas no mesmo modelo (executores do Caso 01)
+
+Data de referência 04/09/2026 (data do pack); antes = ledger de 31/05/2026 com caixa e aplicações de 1.455.809; taxa média de 12,46% derivada do serviço base da seção 3; covenant `insufficient_evidence` e comparação condicionada, logo sem headroom; discriminador declarado: pico de amortização em valor.
+
+### Custo de saída das séries DI e da 11ª (executor `estimate-exit-cost-by-series` v2, em 04/09/2026)
+
+| Série | Mecanismo | Estado | Base | Prêmio | Total |
+| --- | --- | --- | ---: | ---: | ---: |
+| 11ª emissão, 1ª série | redemption_offer | base_priced_premium_open | 151.795 | n/a | n/a |
+| 11ª emissão, 2ª série | redemption_offer | base_priced_premium_open | 505.984 | n/a | n/a |
+| 13ª emissão, 1ª série | flat_premium_pro_rata | estimated | 306.038 | 2.696 | 308.734 |
+| 14ª emissão, 1ª série | flat_premium_pro_rata | estimated | 438.918 | 4.884 | 443.802 |
+
+### Antes e depois por alternativa (executor `compare-refinancing-before-after` v1)
+
+Antes: dívida bruta 5.670.186, caixa 1.455.809, dívida líquida contratual 4.228.477, alavancagem 4.72x, pico 2027 com 1.229.828 (21.45% da dívida). Headroom não medido: headroom is not measured: covenant limit insufficient_evidence, comparability conditional; offer-11th: exit cost is not priced for deb-11-1, deb-11-2; the alternative cannot be compared.
+
+| Alternativa | Estado | Custo de saída | Dívida bruta depois | Caixa depois | Dívida líquida contratual | Alavancagem | Pico depois | Participação do pico | Custo all-in da nova dívida |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| Abater 300.000 das linhas bancárias de 2026/27 com caixa, ao par | compared | 0 | 5.370.186 | 1.455.809 | 3.928.477 | 4.39x | 2029: 1.228.475 | 22.61% | n/a |
+| Alongar o pico de 2028/29: nova dívida de sete anos (CDI + 1,25%, dois de carência, SAC) retirando a 13ª 1ª série pelo prêmio da escritura | compared | 2.696 | 5.670.186 | 1.451.583 | 4.232.703 | 4.72x | 2027: 1.229.828 | 21.45% | 15.36% |
+| Alongar os dois picos: nova dívida de sete anos retirando a 13ª 1ª série e a 14ª 1ª série pelo prêmio da escritura | compared | 7.580 | 5.670.186 | 1.444.504 | 4.239.782 | 4.73x | 2027: 1.229.828 | 21.45% | 15.38% |
+| Retirar a 11ª emissão por oferta de resgate (prêmio a negociar) | blocked: exit cost is not priced for deb-11-1, deb-11-2; the alternative cannot be compared | | | | | | | | |
+| Manter a estrutura e rolar as linhas bancárias | compared | 0 | 5.670.186 | 1.455.809 | 4.228.477 | 4.72x | 2027: 1.229.828 | 21.45% | n/a |
+
+### Concentração por ano civil de término do ano safra, depois de cada alternativa
+
+| Alternativa | 2027 | 2028 | 2029 | 2030 | 2031 | 2032+ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| cash-paydown | 929.828 | 776.868 | 1.228.475 | 694.497 | 994.544 | 809.198 |
+| extend-di-2028 | 1.229.828 | 792.170 | 983.645 | 755.705 | 1.055.752 | 916.311 |
+| extend-di-2028-and-2029 | 1.229.828 | 814.116 | 1.071.428 | 404.570 | 1.143.535 | 1.069.933 |
+| status-quo | 1.229.828 | 776.868 | 1.228.475 | 694.497 | 994.544 | 809.198 |
+
+### Ordenação pelo discriminador declarado (peak_amount)
+
+Racional: o conselho pediu se a estrutura aguenta os próximos anos; o pico de amortização em valor é o que a rolagem integral precisa vencer, e o custo all-in é a segunda leitura.
+
+| Posição | Alternativa | Valor | Motivo |
+| --- | --- | ---: | --- |
+| 1 | cash-paydown | 1.228.475 | best peak_amount |
+| 2 | extend-di-2028 | 1.229.828 | ranks below by peak_amount |
+| 3 | extend-di-2028-and-2029 | 1.229.828 | ranks below by peak_amount |
+| 4 | status-quo | 1.229.828 | ranks below by peak_amount |
+
+Fingerprints: exit 907ac6ee70942edf; before/after c8e2523fc33fe296.
+
 ## 7. Achados esperados do Caso 02 (além dos do Caso 01)
 
 1. **Em que ano o serviço da dívida pressiona o caixa no cenário base:** em todos, sem rolagem;
@@ -176,9 +223,20 @@ Parciais: deb-15-2: 61.103 amortizados em 2030/31 (parcial, sintético); deb-15-
    dependência: sem desalavancagem (EBITDA acima do orçado, venda de ativos, capital) a trajetória
    não cruza 4,00x dentro do horizonte.
 3. **Qual alternativa reduz o pico de amortização sem elevar o custo total além da tolerância:**
-   `pending` nesta versão; será calculado na v0.2 com o executor `compare-refinancing-before-after`
-   sobre o mesmo modelo (alongamento das séries DI de 2028/29 com custo de saída de 0,40% a.a.,
-   troca de indexador, e sem ação), com a tolerância registrada como parâmetro `draft`.
+   depende do pico que o conselho olha, e o gabarito exige que o sistema diga isso em vez de
+   escolher. Sobre o horizonte inteiro (seção 6), o pico em valor é o de 2026/27 (1.229.828,
+   linhas bancárias que o cenário base assume roladas); só o abatimento com caixa o reduz, e por
+   1.353 apenas, deslocando o pico para 2028/29. Sobre a parede de debêntures de 2028/29, alongar
+   a 1ª série da 13ª (306.038) com dívida nova de sete anos a CDI + 1,25% baixa o ano de 1.228.475
+   para 983.645 ao custo de saída de 2.696 (0,40% a.a. pro rata) e custo all-in de 15,36%; alongar
+   também a 1ª série da 14ª baixa 2029/30 para 404.570 mas devolve 1.071.428 a 2028/29 pela
+   amortização SAC da dívida maior. A retirada da 11ª fica bloqueada: a base precifica só a base da
+   oferta, o prêmio é negociado. Nenhuma alternativa muda a alavancagem de partida (4,72x) além do
+   custo de saída; o headroom não é medido porque o limite continua `insufficient_evidence` e a
+   comparação, condicionada. Tolerância de custo: parâmetro `policy.structure.covenant_headroom`
+   e `policy.capacity.minimum_headroom` em `draft`; o custo all-in de 15,36% contra a taxa média
+   de 12,46% da dívida atual é o preço declarado do alongamento, não um veredito.
+
 4. **Hedge e exposição por indexador** (participações do executor `build-debt-ledger` v4 sobre a
    dívida bruta antes dos custos de transação, 5.742.510): linhas bancárias com indexador não
    provado na base pública 42,1% (2.416.994, das quais 1.102.582 em moeda estrangeira, 19,2%),
