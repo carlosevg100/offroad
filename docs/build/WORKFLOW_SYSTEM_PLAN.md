@@ -94,3 +94,30 @@ homologado em profundidade, composição confiável, abstenção explícita onde
 4. Gabarito 02 (CFO Camil) a partir do 01 mais fixtures gerenciais sintéticas e declaradas.
 5. Parâmetros: os que os métodos do Caso 01 citam recebem valor proposto, fonte, dono e status
    `draft`; aprovação nomeada antes de `approved`.
+
+### 5.1 Estado em 5 de setembro de 2026 (madrugada)
+
+- Item 1: termos de securitização, aditamentos e relatórios mensais das 257ª, 292ª, 329ª e 389ª
+  emissões da Eco Securitizadora estão no pack v3 e no corpus de revisão. A quitação ordinária dos
+  CRA de referência (5ª, 8ª, 257ª) continua sem prova direta: o relatório mensal da 257ª mostra
+  saldo até novembro de 2025 e vencimento em 29/12/2025. Fica como condição registrada em cada
+  revisão; o executor de covenant mantém 4,00x em `insufficient_evidence` até a prova.
+- Itens 2 e 3: os nove métodos do Caso 01 estão em `implemented`, cada um com executor
+  determinístico em `packages/credit-playbook/src/executors/` e testes gold, adversariais e de
+  consistência (20 permutações). Os que envolvem número chamam o `financial-core`
+  (`checkIdentity`, `buildDebtBalanceBridge`, `buildIndexedDebtSchedule`, `applyRateShock`,
+  `calculateLiquidityCoverage`, `calculateProFormaPosition`, `maturityConcentration`,
+  `calculateCovenantHeadroom`, `buildDebtServiceSchedule`, `calculateAllInCost`).
+- Revisão independente por IA (Codex, GPT-5.6 Sol, `ai_independent_review`, nunca aprovação
+  humana): gabarito 01 em três rodadas (v0.5 → v0.6 → v0.7 → v0.8; a terceira falhou por três
+  correções materiais, incorporadas); método `build-debt-ledger` em três rodadas (v1 → v2 → v3 →
+  v4); método `reconcile-covenant-definitions` em duas (v1 → v2 → v3). Nenhum método está em
+  `ai_reviewed`: o degrau só sobe com um registro `pass` ou `conditional` em `review_ids`.
+- A cota do plano ChatGPT por trás do Codex CLI local esgotou em 5 de setembro (volta em 7 de
+  setembro). O workflow `codex-review.yml` roda o mesmo runner no GitHub Actions com a chave da
+  OpenAI lida do Secrets Manager por OIDC; o corpus de revisão (43 arquivos) passou a ser
+  versionado com verificação de hash contra o manifesto.
+- Próximos passos nesta ordem: rodar as revisões pendentes (covenant v3, ledger v4, gabarito
+  v0.8) pelo workflow; promover a `ai_reviewed` o que passar; congelar o gabarito 01 como v1.0
+  com o registro que passar; parâmetros citados pelos métodos do Caso 01 em `draft` com fonte e
+  dono; gabarito 02.

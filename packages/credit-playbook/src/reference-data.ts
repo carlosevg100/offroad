@@ -5,7 +5,7 @@ import {z} from "zod";
  * Market-sensitive numbers and house policy parameters live here, not inside procedure prose.
  * Missing values are explicit blockers. They are never replaced by a model estimate.
  */
-export const referenceDataRegistryVersion = "2026.08.26-v6";
+export const referenceDataRegistryVersion = "2026.09.05-v7";
 
 export const referenceDataStatusSchema = z.enum(["required_missing", "draft", "approved", "expired"]);
 export type ReferenceDataStatus = z.infer<typeof referenceDataStatusSchema>;
@@ -60,6 +60,33 @@ const missing = (
 });
 
 /**
+ * A proposed value derived from the Case 01 evidence and the founder's rules: usable by methods in
+ * staging, never in production until the owner approves it with a dated source and an expiry.
+ */
+const draft = (
+  key: string,
+  category: ReferenceDataEntry["category"],
+  description: string,
+  owner: string,
+  houseProcedureIds: string[],
+  proposal: {value: ReferenceDataEntry["value"]; unit: string | null; source: NonNullable<ReferenceDataEntry["source"]>; asOf: string},
+): ReferenceDataEntry => referenceDataEntrySchema.parse({
+  key,
+  version: referenceDataRegistryVersion,
+  category,
+  status: "draft",
+  description,
+  value: proposal.value,
+  unit: proposal.unit,
+  source: proposal.source,
+  asOf: proposal.asOf,
+  validUntil: null,
+  owner,
+  scope: "Case 01 (Camil) methods; growth_capex vertical and reusable house procedure compilation",
+  houseProcedureIds,
+});
+
+/**
  * This first registry is intentionally honest: it records every value family required by the
  * candidate vertical and keeps it blocked until a dated source and accountable owner exist.
  */
@@ -67,24 +94,24 @@ export const referenceDataRegistry = [
   missing("policy.intake.request_batch.max_items", "house_policy", "Maximum number of active client requests in one intake batch.", "Head de Operações e Evidências", ["IN-13", "IN-14"]),
   missing("policy.intake.archetype-requirements", "house_policy", "Minimum, target and ideal evidence requirements and accepted substitutes by financing archetype.", "Head de Operações e Evidências", ["IN-03", "IN-04", "IN-05", "IN-06", "IN-07", "IN-08", "IN-09", "IN-10", "IN-11", "IN-12"]),
   missing("policy.privacy.permitted-background-sources", "legal_reference", "Permitted sources, purposes, access controls, retention and review requirements for company and controller background checks.", "Responsável de Privacidade e Jurídico", ["EMP-13", "EMP-14", "LC-08"]),
-  missing("policy.reconciliation.tolerance", "methodology_parameter", "Numerical tolerance by statement, currency, scale and period for reconciliation gates.", "Head de Análise Financeira", ["Q-13", "Q-16", "Q-17"]),
-  missing("policy.financial.materiality", "methodology_parameter", "Materiality thresholds by statement, account, currency, scale, period and data quality.", "Head de Análise Financeira", ["Q-01", "Q-04", "Q-05", "Q-07", "Q-09", "Q-12", "Q-15", "D-01"]),
+  draft("policy.reconciliation.tolerance", "methodology_parameter", "Numerical tolerance by statement, currency, scale and period for reconciliation gates.", "Head de Análise Financeira", ["Q-13", "Q-16", "Q-17"], {"value": {"absolute": "0", "rule": "toda diferença é nomeada e explicada; nenhuma tolerância acima de zero sem chave e versão de política no resultado", "roundingExplanation": "diferença igual ao arredondamento da fonte é explicada como arredondamento, não tolerada"}, "unit": "unidade da demonstração", "source": {"title": "Regra do fundador (4 set 2026): nenhuma diferença fica sem nome; executor build-debt-ledger v4, tolerância só sob política versionada", "observedBy": "agente Offroad, proposta a partir do gabarito 01 v0.8 e dos executores do Caso 01"}, "asOf": "2026-09-05"}),
+  draft("policy.financial.materiality", "methodology_parameter", "Materiality thresholds by statement, account, currency, scale, period and data quality.", "Head de Análise Financeira", ["Q-01", "Q-04", "Q-05", "Q-07", "Q-09", "Q-12", "Q-15", "D-01"], {"value": {"relativeToLtmEbitda": "0.01", "relativeToNetRevenueLtm": "0.005", "rule": "abaixo do limiar a divergência é explicada e mantida; acima entra no memo como achado; nunca descartada"}, "unit": "fração", "source": {"title": "Gabarito 01 v0.8, seção 12 (divergências de dividendos e estoques mantidas abertas); proposta de limiar para aprovação", "observedBy": "agente Offroad, proposta a partir do gabarito 01 v0.8 e dos executores do Caso 01"}, "asOf": "2026-09-05"}),
   missing("policy.financial.normalization", "methodology_parameter", "Approved treatment catalogue for reported, reclassified, adjusted and scenario financial views.", "Head de Análise Financeira", ["Q-01", "Q-02", "Q-12"]),
   missing("policy.cash-flow.bridge", "methodology_parameter", "Complete bridge from EBITDA to CFADS and cash available for debt service, including lease convention and restricted cash.", "Head de Análise Financeira", ["Q-02", "D-08", "D-26"]),
   missing("policy.capex.maintenance", "methodology_parameter", "Asset-specific maintenance-capex estimation hierarchy, confidence bands and evidence requirements.", "Head de Análise Financeira", ["Q-03", "EMP-19", "OP-02"]),
   missing("policy.revenue-quality.cutoff", "methodology_parameter", "Sector and seasonality-aware cut-off, returns and end-of-period concentration rules.", "Head de Análise Financeira", ["Q-05", "RF-08"]),
   missing("policy.related-party.materiality", "methodology_parameter", "Materiality and treatment rules for related-party revenue, cost, loans and guarantees.", "Head de Análise Financeira", ["Q-07", "D-10", "D-11", "RF-09"]),
-  missing("policy.seasonality.materiality", "methodology_parameter", "Seasonality windows and amplitude bands used in liquidity, working-capital and debt-service design.", "Head de Análise Financeira", ["Q-04", "Q-11", "ES-08", "ES-24"]),
+  draft("policy.seasonality.materiality", "methodology_parameter", "Seasonality windows and amplitude bands used in liquidity, working-capital and debt-service design.", "Head de Análise Financeira", ["Q-04", "Q-11", "ES-08", "ES-24"], {"value": {"quarterShareDeviation": "0.10", "rule": "companhia com ano safra compara o trimestre com o mesmo trimestre do ano anterior; desvio de participação acima do limiar vira achado de sazonalidade"}, "unit": "fração da receita anual", "source": {"title": "Gabarito 01 v0.8, seções 3 e 6 (ano safra junho a maio; trimestre contra trimestre); proposta de limiar para aprovação", "observedBy": "agente Offroad, proposta a partir do gabarito 01 v0.8 e dos executores do Caso 01"}, "asOf": "2026-09-05"}),
   missing("policy.currency.exposure", "methodology_parameter", "Materiality, mix window and scenario conventions for currency exposure and hedging.", "Head de Análise Financeira", ["Q-12", "D-12", "D-13", "D-27"]),
   missing("policy.receivables.aging", "methodology_parameter", "Aging buckets, renegotiation treatment, provision coverage and eligibility methodology by portfolio.", "Head de Análise Financeira", ["Q-14", "D-07", "ES-11", "ES-12", "RF-02"]),
-  missing("policy.debt.views", "methodology_parameter", "Required reconciled debt views and inclusion rules by analytical purpose.", "Head de Análise Financeira", ["D-01", "D-07", "D-16", "D-24"]),
+  draft("policy.debt.views", "methodology_parameter", "Required reconciled debt views and inclusion rules by analytical purpose.", "Head de Análise Financeira", ["D-01", "D-07", "D-16", "D-24"], {"value": {"views": ["release", "contractual"], "contractual": "definição literal da escritura, componentes por instrumento, residual 'outra dívida onerosa' assumido zero de forma declarada", "release": "definição do release, sem derivativos", "leases": "fora da visão contratual salvo cláusula que os inclua, com âncora", "authorizedNotDisbursed": "operação aprovada não é linha", "contraLines": "custos de transação são linhas contra, não obrigações"}, "unit": null, "source": {"title": "Gabarito 01 v0.8, seções 5 e 13.1; executores build-debt-ledger v4 e reconcile-covenant-definitions v3", "observedBy": "agente Offroad, proposta a partir do gabarito 01 v0.8 e dos executores do Caso 01"}, "asOf": "2026-09-05"}),
   missing("policy.debt.cost-reconciliation", "methodology_parameter", "Cost, balance, period and component conventions for reconciling debt expense.", "Head de Análise Financeira", ["D-02", "D-17", "D-25"]),
   missing("policy.debt.maturity-concentration", "methodology_parameter", "Maturity concentration and refinancing-risk bands by debt type and borrower profile.", "Head de Análise Financeira", ["D-03", "D-18", "ES-10"]),
   missing("policy.debt.renewal-scenarios", "scenario", "Renewal assumptions by facility commitment, tenor, creditor behavior and scenario.", "Head de Análise Financeira", ["D-05", "D-21", "D-28"]),
   missing("policy.concentration.materiality", "methodology_parameter", "Materiality bands for customer, supplier, creditor and revenue concentration findings.", "Head de Análise Financeira", ["EMP-03", "EMP-10", "D-04"]),
   missing("policy.business_plan.scenarios", "house_policy", "Minimum base, downside and sensitivity scenario definitions by archetype.", "Head de DCM e Estruturação", ["EMP-07", "EMP-08", "Q-10", "Q-11"]),
-  missing("policy.capacity.minimum_headroom", "house_policy", "Minimum headroom methodology by metric, business profile and downside.", "Head de DCM e Estruturação", ["D-26", "ES-04", "ES-25", "ES-27"]),
-  missing("scenario.interest_rate.parallel_shock", "scenario", "Versioned interest-rate shock used in debt-service and covenant sensitivities.", "Head de Análise Financeira", ["D-27"]),
+  draft("policy.capacity.minimum_headroom", "house_policy", "Minimum headroom methodology by metric, business profile and downside.", "Head de DCM e Estruturação", ["D-26", "ES-04", "ES-25", "ES-27"], {"value": {"minimumRelativeHeadroomAdverse": "0.10", "rule": "capacidade de nova dívida medida contra o limite aplicável no cenário adverso declarado; abaixo do limiar a estrutura muda antes de apresentar"}, "unit": "fração do limite", "source": {"title": "Executor compare-refinancing-before-after (calculateProFormaPosition, calculateCovenantHeadroom); limiar proposto para aprovação", "observedBy": "agente Offroad, proposta a partir do gabarito 01 v0.8 e dos executores do Caso 01"}, "asOf": "2026-09-05"}),
+  draft("scenario.interest_rate.parallel_shock", "scenario", "Versioned interest-rate shock used in debt-service and covenant sensitivities.", "Head de Análise Financeira", ["D-27"], {"value": {"baseCurve": "curva DI da B3 e ETTJ ANBIMA na data-base do source pack", "shocksBps": [100, 200, 300], "adverseDefault": 200, "horizonMonths": 12, "rule": "choque paralelo sobre a parcela pós-fixada; hedge só quando contratado e documentado"}, "unit": "pontos-base", "source": {"title": "Executor declare-scenarios (applyRateShock do financial-core) e gabarito 01 v0.8, seção 9; magnitudes propostas para aprovação", "observedBy": "agente Offroad, proposta a partir do gabarito 01 v0.8 e dos executores do Caso 01"}, "asOf": "2026-09-05"}),
   missing("scenario.market.multi-factor", "scenario", "Governed base, downside and severe scenarios across rates, inflation, foreign exchange and correlated operating effects.", "Head de Análise Financeira", ["D-27", "OP-04", "MA-13"]),
   missing("scenario.short_term_non_renewal", "scenario", "Versioned assumptions for non-renewal of short-term lines.", "Head de Análise Financeira", ["D-28"]),
   missing("policy.transaction-sizing.materiality", "house_policy", "Materiality for request-to-calculated differences, residual uses, buffers and excess funding.", "Head de DCM e Estruturação", ["OP-01", "OP-02", "OP-07", "ES-45"]),
@@ -96,7 +123,7 @@ export const referenceDataRegistry = [
   missing("policy.mixed-use.general-purpose", "house_policy", "Maximum unidentified general-corporate-purpose use and classification rules for mixed-use operations.", "Head de DCM e Estruturação", ["OP-13"]),
   missing("policy.wait-analysis", "house_policy", "Required comparison of waiting cost, expected structural gain, milestone and client decision.", "Head de DCM e Estruturação", ["OP-12"]),
   missing("policy.structure.collateral_haircuts", "methodology_parameter", "Collateral-specific eligibility, haircut and coverage conventions.", "Head de DCM e Estruturação", ["ES-08", "ES-09", "ES-10", "ES-11", "ES-12", "ES-13", "ES-14", "ES-15", "ES-16", "ES-17", "ES-18", "ES-19"]),
-  missing("policy.structure.covenant_headroom", "methodology_parameter", "Covenant calibration and minimum headroom conventions by metric and downside.", "Head de DCM e Estruturação", ["ES-23", "ES-24", "ES-25", "ES-26", "ES-27", "ES-28", "ES-29", "ES-30", "ES-31", "ES-32"]),
+  draft("policy.structure.covenant_headroom", "methodology_parameter", "Covenant calibration and minimum headroom conventions by metric and downside.", "Head de DCM e Estruturação", ["ES-23", "ES-24", "ES-25", "ES-26", "ES-27", "ES-28", "ES-29", "ES-30", "ES-31", "ES-32"], {"value": {"minimumRelativeHeadroomBase": "0.15", "rule": "folga relativa sobre o limite aplicável no cenário base; abaixo disso, alerta no memo; nunca 'rompido' antes da medição; headroom só com definição, perímetro e data iguais"}, "unit": "fração do limite", "source": {"title": "Gabarito 01 v0.8, seções 5 e 13.1 (4,72x contra 4,00x, medição em 28/02/2027); executor reconcile-covenant-definitions v3; limiar proposto para aprovação", "observedBy": "agente Offroad, proposta a partir do gabarito 01 v0.8 e dos executores do Caso 01"}, "asOf": "2026-09-05"}),
   missing("policy.structure.leverage-bands", "market_observation", "Versioned leverage bands by sector, cyclicality, size, security and risk profile.", "Head de DCM e Estruturação", ["ES-01", "ES-03", "ES-23", "ES-45"]),
   missing("policy.structure.coverage-floors", "house_policy", "Minimum DSCR and auxiliary ICR floors by profile, scenario and amortisation format.", "Head de DCM e Estruturação", ["ES-02", "ES-03", "ES-04", "ES-05", "ES-24"]),
   missing("policy.structure.repayment-design", "methodology_parameter", "Rules for SAC, Price, bullet, balloon, grace, PIK, seasonality and ramp-up design.", "Head de DCM e Estruturação", ["ES-05", "ES-06", "ES-07", "ES-08", "ES-09"]),
