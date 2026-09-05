@@ -1,0 +1,497 @@
+# FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Carteira de recebíveis inventada, calibrada ao balancete de julho de 2026 da Aurora (empresa fictícia).
+duplicata;sacado_id;sacado;setor;valor;dias_atraso;vencimento;onus;contrato
+DUP-000001;D01;Construtora Vertical Engenharia;privado;407.101,00;0;2026-08-16;garantia;Banco Itaú, capital de giro
+DUP-000002;D01;Construtora Vertical Engenharia;privado;416.857,00;0;2026-08-17;garantia;Banco Itaú, capital de giro
+DUP-000003;D01;Construtora Vertical Engenharia;privado;237.233,00;0;2026-08-18;garantia;Banco Itaú, capital de giro
+DUP-000004;D01;Construtora Vertical Engenharia;privado;321.586,00;0;2026-08-19;garantia;Banco Itaú, capital de giro
+DUP-000005;D01;Construtora Vertical Engenharia;privado;183.617,00;0;2026-08-20;garantia;Banco Itaú, capital de giro
+DUP-000006;D01;Construtora Vertical Engenharia;privado;230.000,00;0;2026-08-21;garantia;Banco Itaú, capital de giro
+DUP-000007;D01;Construtora Vertical Engenharia;privado;313.783,00;0;2026-08-22;garantia;Banco Itaú, capital de giro
+DUP-000008;D01;Construtora Vertical Engenharia;privado;350.179,00;0;2026-08-23;garantia;Banco Itaú, capital de giro
+DUP-000009;D01;Construtora Vertical Engenharia;privado;395.761,00;0;2026-08-24;garantia;Banco Itaú, capital de giro
+DUP-000010;D01;Construtora Vertical Engenharia;privado;264.674,00;0;2026-08-25;garantia;Banco Itaú, capital de giro
+DUP-000011;D01;Construtora Vertical Engenharia;privado;419.205,00;0;2026-08-26;garantia;Banco Itaú, capital de giro
+DUP-000012;D01;Construtora Vertical Engenharia;privado;147.812,00;0;2026-08-27;garantia;Banco Itaú, capital de giro
+DUP-000013;D01;Construtora Vertical Engenharia;privado;348.950,00;0;2026-08-28;garantia;Banco Itaú, capital de giro
+DUP-000014;D01;Construtora Vertical Engenharia;privado;260.068,00;0;2026-08-29;garantia;Banco Itaú, capital de giro
+DUP-000015;D01;Construtora Vertical Engenharia;privado;265.646,00;0;2026-08-30;garantia;Banco Itaú, capital de giro
+DUP-000016;D01;Construtora Vertical Engenharia;privado;357.681,00;0;2026-08-31;garantia;Banco Itaú, capital de giro
+DUP-000017;D01;Construtora Vertical Engenharia;privado;140.362,00;0;2026-09-01;garantia;Banco Itaú, capital de giro
+DUP-000018;D01;Construtora Vertical Engenharia;privado;240.733,00;0;2026-09-02;garantia;Banco Itaú, capital de giro
+DUP-000019;D01;Construtora Vertical Engenharia;privado;321.113,00;0;2026-09-03;garantia;Banco Itaú, capital de giro
+DUP-000020;D01;Construtora Vertical Engenharia;privado;327.805,00;0;2026-09-04;garantia;Banco Itaú, capital de giro
+DUP-000021;D01;Construtora Vertical Engenharia;privado;357.579,00;0;2026-09-05;garantia;Banco Itaú, capital de giro
+DUP-000022;D01;Construtora Vertical Engenharia;privado;258.507,00;0;2026-09-06;garantia;Banco Itaú, capital de giro
+DUP-000023;D01;Construtora Vertical Engenharia;privado;312.585,00;0;2026-09-07;garantia;Banco Itaú, capital de giro
+DUP-000024;D01;Construtora Vertical Engenharia;privado;147.791,00;0;2026-09-08;garantia;Banco Itaú, capital de giro
+DUP-000025;D01;Construtora Vertical Engenharia;privado;306.263,00;0;2026-09-09;garantia;Banco Itaú, capital de giro
+DUP-000026;D01;Construtora Vertical Engenharia;privado;173.290,00;15;2026-07-16;livre;
+DUP-000027;D01;Construtora Vertical Engenharia;privado;89.691,00;15;2026-07-16;livre;
+DUP-000028;D01;Construtora Vertical Engenharia;privado;142.132,00;15;2026-07-16;livre;
+DUP-000029;D01;Construtora Vertical Engenharia;privado;160.317,00;15;2026-07-16;livre;
+DUP-000030;D01;Construtora Vertical Engenharia;privado;156.837,00;15;2026-07-16;livre;
+DUP-000031;D01;Construtora Vertical Engenharia;privado;105.067,00;15;2026-07-16;livre;
+DUP-000032;D01;Construtora Vertical Engenharia;privado;158.411,00;15;2026-07-16;livre;
+DUP-000033;D01;Construtora Vertical Engenharia;privado;61.155,00;15;2026-07-16;livre;
+DUP-000034;D01;Construtora Vertical Engenharia;privado;81.236,00;15;2026-07-16;livre;
+DUP-000035;D01;Construtora Vertical Engenharia;privado;138.387,00;45;2026-06-16;livre;
+DUP-000036;D01;Construtora Vertical Engenharia;privado;76.162,00;45;2026-06-16;livre;
+DUP-000037;D01;Construtora Vertical Engenharia;privado;114.615,00;45;2026-06-16;livre;
+DUP-000038;D01;Construtora Vertical Engenharia;privado;140.893,00;45;2026-06-16;livre;
+DUP-000039;D01;Construtora Vertical Engenharia;privado;117.980,00;75;2026-05-17;livre;
+DUP-000040;D01;Construtora Vertical Engenharia;privado;117.048,00;75;2026-05-17;livre;
+DUP-000041;D01;Construtora Vertical Engenharia;privado;98.443,00;120;2026-04-02;livre;
+DUP-000042;D01;Construtora Vertical Engenharia;privado;136.585,00;120;2026-04-02;livre;
+DUP-000043;D02;Grupo Habita Empreendimentos;privado;178.695,00;0;2026-09-27;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000044;D02;Grupo Habita Empreendimentos;privado;118.902,00;0;2026-09-28;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000045;D02;Grupo Habita Empreendimentos;privado;246.899,00;0;2026-08-15;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000046;D02;Grupo Habita Empreendimentos;privado;180.751,00;0;2026-08-16;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000047;D02;Grupo Habita Empreendimentos;privado;150.066,00;0;2026-08-17;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000048;D02;Grupo Habita Empreendimentos;privado;176.853,00;0;2026-08-18;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000049;D02;Grupo Habita Empreendimentos;privado;251.924,00;0;2026-08-19;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000050;D02;Grupo Habita Empreendimentos;privado;239.561,00;0;2026-08-20;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000051;D02;Grupo Habita Empreendimentos;privado;236.061,00;0;2026-08-21;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000052;D02;Grupo Habita Empreendimentos;privado;150.665,00;0;2026-08-22;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000053;D02;Grupo Habita Empreendimentos;privado;123.196,00;0;2026-08-23;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000054;D02;Grupo Habita Empreendimentos;privado;113.867,00;0;2026-08-24;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000055;D02;Grupo Habita Empreendimentos;privado;207.197,00;0;2026-08-25;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000056;D02;Grupo Habita Empreendimentos;privado;183.542,00;0;2026-08-26;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000057;D02;Grupo Habita Empreendimentos;privado;254.646,00;0;2026-08-27;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000058;D02;Grupo Habita Empreendimentos;privado;151.121,00;0;2026-08-28;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000059;D02;Grupo Habita Empreendimentos;privado;205.583,00;0;2026-08-29;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000060;D02;Grupo Habita Empreendimentos;privado;254.702,00;0;2026-08-30;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000061;D02;Grupo Habita Empreendimentos;privado;111.761,00;0;2026-08-31;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000062;D02;Grupo Habita Empreendimentos;privado;112.923,00;0;2026-09-01;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000063;D02;Grupo Habita Empreendimentos;privado;222.582,00;0;2026-09-02;garantia;Banco Itaú, capital de giro
+DUP-000064;D02;Grupo Habita Empreendimentos;privado;127.872,00;0;2026-09-03;cedida;BTG Pactual, antecipação de recebíveis
+DUP-000065;D02;Grupo Habita Empreendimentos;privado;137.643,00;0;2026-09-04;garantia;Banco Itaú, capital de giro
+DUP-000066;D02;Grupo Habita Empreendimentos;privado;172.984,00;0;2026-09-05;garantia;Banco Itaú, capital de giro
+DUP-000067;D02;Grupo Habita Empreendimentos;privado;227.483,00;0;2026-09-06;garantia;Banco Itaú, capital de giro
+DUP-000068;D02;Grupo Habita Empreendimentos;privado;123.822,00;15;2026-07-16;livre;
+DUP-000069;D02;Grupo Habita Empreendimentos;privado;164.522,00;15;2026-07-16;livre;
+DUP-000070;D02;Grupo Habita Empreendimentos;privado;77.105,00;15;2026-07-16;livre;
+DUP-000071;D02;Grupo Habita Empreendimentos;privado;91.523,00;15;2026-07-16;livre;
+DUP-000072;D02;Grupo Habita Empreendimentos;privado;81.876,00;15;2026-07-16;livre;
+DUP-000073;D02;Grupo Habita Empreendimentos;privado;159.225,00;15;2026-07-16;livre;
+DUP-000074;D02;Grupo Habita Empreendimentos;privado;156.395,00;45;2026-06-16;livre;
+DUP-000075;D02;Grupo Habita Empreendimentos;privado;134.469,00;45;2026-06-16;livre;
+DUP-000076;D02;Grupo Habita Empreendimentos;privado;145.432,00;75;2026-05-17;livre;
+DUP-000077;D02;Grupo Habita Empreendimentos;privado;145.432,00;120;2026-04-02;livre;
+DUP-000078;D03;Prefeitura de São José dos Campos;publico;109.560,00;0;2026-09-17;garantia;Banco Itaú, capital de giro
+DUP-000079;D03;Prefeitura de São José dos Campos;publico;179.666,00;0;2026-09-18;garantia;Banco Itaú, capital de giro
+DUP-000080;D03;Prefeitura de São José dos Campos;publico;62.474,00;0;2026-09-19;garantia;Banco Itaú, capital de giro
+DUP-000081;D03;Prefeitura de São José dos Campos;publico;116.209,00;0;2026-09-20;garantia;Banco Itaú, capital de giro
+DUP-000082;D03;Prefeitura de São José dos Campos;publico;155.350,00;0;2026-09-21;garantia;Banco Itaú, capital de giro
+DUP-000083;D03;Prefeitura de São José dos Campos;publico;155.721,00;0;2026-09-22;garantia;Banco Itaú, capital de giro
+DUP-000084;D03;Prefeitura de São José dos Campos;publico;108.034,00;0;2026-09-23;garantia;Banco Itaú, capital de giro
+DUP-000085;D03;Prefeitura de São José dos Campos;publico;159.152,00;0;2026-09-24;garantia;Banco Itaú, capital de giro
+DUP-000086;D03;Prefeitura de São José dos Campos;publico;143.627,00;0;2026-09-25;garantia;Banco Itaú, capital de giro
+DUP-000087;D03;Prefeitura de São José dos Campos;publico;111.799,00;0;2026-09-26;garantia;Banco Itaú, capital de giro
+DUP-000088;D03;Prefeitura de São José dos Campos;publico;150.223,00;0;2026-09-27;garantia;Banco Itaú, capital de giro
+DUP-000089;D03;Prefeitura de São José dos Campos;publico;176.216,00;0;2026-09-28;garantia;Banco Itaú, capital de giro
+DUP-000090;D03;Prefeitura de São José dos Campos;publico;118.091,00;0;2026-08-15;garantia;Banco Itaú, capital de giro
+DUP-000091;D03;Prefeitura de São José dos Campos;publico;100.694,00;0;2026-08-16;garantia;Banco Itaú, capital de giro
+DUP-000092;D03;Prefeitura de São José dos Campos;publico;61.243,00;0;2026-08-17;garantia;Banco Itaú, capital de giro
+DUP-000093;D03;Prefeitura de São José dos Campos;publico;104.724,00;0;2026-08-18;garantia;Banco Itaú, capital de giro
+DUP-000094;D03;Prefeitura de São José dos Campos;publico;100.952,00;0;2026-08-19;garantia;Banco Itaú, capital de giro
+DUP-000095;D03;Prefeitura de São José dos Campos;publico;73.436,00;0;2026-08-20;garantia;Banco Itaú, capital de giro
+DUP-000096;D03;Prefeitura de São José dos Campos;publico;118.965,00;0;2026-08-21;garantia;Banco Itaú, capital de giro
+DUP-000097;D03;Prefeitura de São José dos Campos;publico;178.698,00;15;2026-07-16;livre;
+DUP-000098;D03;Prefeitura de São José dos Campos;publico;126.096,00;15;2026-07-16;livre;
+DUP-000099;D03;Prefeitura de São José dos Campos;publico;152.481,00;15;2026-07-16;livre;
+DUP-000100;D03;Prefeitura de São José dos Campos;publico;73.208,00;15;2026-07-16;livre;
+DUP-000101;D03;Prefeitura de São José dos Campos;publico;80.625,00;15;2026-07-16;livre;
+DUP-000102;D03;Prefeitura de São José dos Campos;publico;157.604,00;15;2026-07-16;livre;
+DUP-000103;D03;Prefeitura de São José dos Campos;publico;98.252,00;45;2026-06-16;livre;
+DUP-000104;D03;Prefeitura de São José dos Campos;publico;117.228,00;45;2026-06-16;livre;
+DUP-000105;D03;Prefeitura de São José dos Campos;publico;168.876,00;45;2026-06-16;livre;
+DUP-000106;D03;Prefeitura de São José dos Campos;publico;102.778,00;75;2026-05-17;livre;
+DUP-000107;D03;Prefeitura de São José dos Campos;publico;89.400,00;75;2026-05-17;livre;
+DUP-000108;D03;Prefeitura de São José dos Campos;publico;100.952,00;120;2026-04-02;livre;
+DUP-000109;D03;Prefeitura de São José dos Campos;publico;91.226,00;120;2026-04-02;livre;
+DUP-000110;D04;Rede Construir (franquias);privado;138.217,00;0;2026-09-04;garantia;Banco Itaú, capital de giro
+DUP-000111;D04;Rede Construir (franquias);privado;131.675,00;0;2026-09-05;garantia;Banco Itaú, capital de giro
+DUP-000112;D04;Rede Construir (franquias);privado;117.215,00;0;2026-09-06;garantia;Banco Itaú, capital de giro
+DUP-000113;D04;Rede Construir (franquias);privado;67.866,00;0;2026-09-07;garantia;Banco Itaú, capital de giro
+DUP-000114;D04;Rede Construir (franquias);privado;175.476,00;0;2026-09-08;garantia;Banco Itaú, capital de giro
+DUP-000115;D04;Rede Construir (franquias);privado;93.075,00;0;2026-09-09;garantia;Banco Itaú, capital de giro
+DUP-000116;D04;Rede Construir (franquias);privado;83.682,00;0;2026-09-10;garantia;Banco Itaú, capital de giro
+DUP-000117;D04;Rede Construir (franquias);privado;113.563,00;0;2026-09-11;garantia;Banco Itaú, capital de giro
+DUP-000118;D04;Rede Construir (franquias);privado;90.788,00;0;2026-09-12;garantia;Banco Itaú, capital de giro
+DUP-000119;D04;Rede Construir (franquias);privado;117.985,00;0;2026-09-13;garantia;Banco Itaú, capital de giro
+DUP-000120;D04;Rede Construir (franquias);privado;156.739,00;0;2026-09-14;garantia;Banco Itaú, capital de giro
+DUP-000121;D04;Rede Construir (franquias);privado;62.188,00;0;2026-09-15;garantia;Banco Itaú, capital de giro
+DUP-000122;D04;Rede Construir (franquias);privado;128.999,00;0;2026-09-16;garantia;Banco Itaú, capital de giro
+DUP-000123;D04;Rede Construir (franquias);privado;124.902,00;0;2026-09-17;garantia;Banco Itaú, capital de giro
+DUP-000124;D04;Rede Construir (franquias);privado;96.899,00;0;2026-09-18;garantia;Banco Itaú, capital de giro
+DUP-000125;D04;Rede Construir (franquias);privado;147.346,00;0;2026-09-19;garantia;Banco Itaú, capital de giro
+DUP-000126;D04;Rede Construir (franquias);privado;86.822,00;0;2026-09-20;garantia;Banco Itaú, capital de giro
+DUP-000127;D04;Rede Construir (franquias);privado;146.022,00;0;2026-09-21;garantia;Banco Itaú, capital de giro
+DUP-000128;D04;Rede Construir (franquias);privado;93.192,00;0;2026-09-22;garantia;Banco Itaú, capital de giro
+DUP-000129;D04;Rede Construir (franquias);privado;167.960,00;0;2026-09-23;garantia;Banco Itaú, capital de giro
+DUP-000130;D04;Rede Construir (franquias);privado;130.696,00;0;2026-09-24;garantia;Banco Santander, capital de giro
+DUP-000131;D04;Rede Construir (franquias);privado;113.301,00;15;2026-07-16;livre;
+DUP-000132;D04;Rede Construir (franquias);privado;159.275,00;15;2026-07-16;livre;
+DUP-000133;D04;Rede Construir (franquias);privado;107.624,00;15;2026-07-16;livre;
+DUP-000134;D04;Rede Construir (franquias);privado;158.417,00;45;2026-06-16;livre;
+DUP-000135;D04;Rede Construir (franquias);privado;79.208,00;75;2026-05-17;livre;
+DUP-000136;D04;Rede Construir (franquias);privado;79.208,00;120;2026-04-02;livre;
+DUP-000137;D05;Marfim Incorporações;privado;137.275,00;0;2026-08-17;garantia;Banco Santander, capital de giro
+DUP-000138;D05;Marfim Incorporações;privado;99.838,00;0;2026-08-18;garantia;Banco Santander, capital de giro
+DUP-000139;D05;Marfim Incorporações;privado;161.851,00;0;2026-08-19;garantia;Banco Santander, capital de giro
+DUP-000140;D05;Marfim Incorporações;privado;126.891,00;0;2026-08-20;garantia;Banco Santander, capital de giro
+DUP-000141;D05;Marfim Incorporações;privado;108.751,00;0;2026-08-21;garantia;Banco Santander, capital de giro
+DUP-000142;D05;Marfim Incorporações;privado;154.637,00;0;2026-08-22;garantia;Banco Santander, capital de giro
+DUP-000143;D05;Marfim Incorporações;privado;119.029,00;0;2026-08-23;garantia;Banco Santander, capital de giro
+DUP-000144;D05;Marfim Incorporações;privado;106.804,00;0;2026-08-24;garantia;Banco Santander, capital de giro
+DUP-000145;D05;Marfim Incorporações;privado;78.899,00;0;2026-08-25;garantia;Banco Santander, capital de giro
+DUP-000146;D05;Marfim Incorporações;privado;95.330,00;0;2026-08-26;garantia;Banco Santander, capital de giro
+DUP-000147;D05;Marfim Incorporações;privado;87.884,00;0;2026-08-27;garantia;Banco Santander, capital de giro
+DUP-000148;D05;Marfim Incorporações;privado;159.339,00;0;2026-08-28;garantia;Banco Santander, capital de giro
+DUP-000149;D05;Marfim Incorporações;privado;127.284,00;0;2026-08-29;garantia;Banco Santander, capital de giro
+DUP-000150;D05;Marfim Incorporações;privado;151.787,00;0;2026-08-30;garantia;Banco Santander, capital de giro
+DUP-000151;D05;Marfim Incorporações;privado;163.028,00;0;2026-08-31;garantia;Banco Santander, capital de giro
+DUP-000152;D05;Marfim Incorporações;privado;66.007,00;0;2026-09-01;garantia;Banco Santander, capital de giro
+DUP-000153;D05;Marfim Incorporações;privado;149.471,00;15;2026-07-16;livre;
+DUP-000154;D05;Marfim Incorporações;privado;149.703,00;15;2026-07-16;livre;
+DUP-000155;D05;Marfim Incorporações;privado;124.656,00;45;2026-06-16;livre;
+DUP-000156;D05;Marfim Incorporações;privado;62.328,00;75;2026-05-17;livre;
+DUP-000157;D05;Marfim Incorporações;privado;62.328,00;120;2026-04-02;livre;
+DUP-000158;D06;Cliente 06 (revenda regional);privado;165.967,00;0;2026-09-07;garantia;Banco Santander, capital de giro
+DUP-000159;D06;Cliente 06 (revenda regional);privado;162.973,00;0;2026-09-08;garantia;Banco Santander, capital de giro
+DUP-000160;D06;Cliente 06 (revenda regional);privado;176.358,00;0;2026-09-09;garantia;Banco Santander, capital de giro
+DUP-000161;D06;Cliente 06 (revenda regional);privado;60.090,00;0;2026-09-10;garantia;Banco Santander, capital de giro
+DUP-000162;D06;Cliente 06 (revenda regional);privado;174.590,00;0;2026-09-11;garantia;Banco Santander, capital de giro
+DUP-000163;D06;Cliente 06 (revenda regional);privado;136.733,00;0;2026-09-12;garantia;Banco Santander, capital de giro
+DUP-000164;D06;Cliente 06 (revenda regional);privado;105.929,00;0;2026-09-13;garantia;Banco Santander, capital de giro
+DUP-000165;D06;Cliente 06 (revenda regional);privado;95.040,00;0;2026-09-14;garantia;Banco Santander, capital de giro
+DUP-000166;D06;Cliente 06 (revenda regional);privado;89.604,00;0;2026-09-15;garantia;Banco Santander, capital de giro
+DUP-000167;D06;Cliente 06 (revenda regional);privado;135.388,00;0;2026-09-16;garantia;Banco Santander, capital de giro
+DUP-000168;D06;Cliente 06 (revenda regional);privado;87.015,00;0;2026-09-17;garantia;Banco Santander, capital de giro
+DUP-000169;D06;Cliente 06 (revenda regional);privado;65.713,00;0;2026-09-18;garantia;Banco Santander, capital de giro
+DUP-000170;D06;Cliente 06 (revenda regional);privado;65.860,00;0;2026-09-19;garantia;Banco Santander, capital de giro
+DUP-000171;D06;Cliente 06 (revenda regional);privado;154.308,00;0;2026-09-20;garantia;Banco Santander, capital de giro
+DUP-000172;D06;Cliente 06 (revenda regional);privado;140.603,00;15;2026-07-16;livre;
+DUP-000173;D06;Cliente 06 (revenda regional);privado;117.176,00;15;2026-07-16;livre;
+DUP-000174;D06;Cliente 06 (revenda regional);privado;107.408,00;45;2026-06-16;livre;
+DUP-000175;D06;Cliente 06 (revenda regional);privado;53.704,00;75;2026-05-17;livre;
+DUP-000176;D06;Cliente 06 (revenda regional);privado;53.704,00;120;2026-04-02;livre;
+DUP-000177;D07;Cliente 07 (revenda regional);privado;122.441,00;0;2026-09-26;garantia;Banco Santander, capital de giro
+DUP-000178;D07;Cliente 07 (revenda regional);privado;146.451,00;0;2026-09-27;garantia;Banco Santander, capital de giro
+DUP-000179;D07;Cliente 07 (revenda regional);privado;85.449,00;0;2026-09-28;garantia;Banco Santander, capital de giro
+DUP-000180;D07;Cliente 07 (revenda regional);privado;134.973,00;0;2026-08-15;garantia;Banco Santander, capital de giro
+DUP-000181;D07;Cliente 07 (revenda regional);privado;110.857,00;0;2026-08-16;garantia;Banco Santander, capital de giro
+DUP-000182;D07;Cliente 07 (revenda regional);privado;145.556,00;0;2026-08-17;garantia;Banco Santander, capital de giro
+DUP-000183;D07;Cliente 07 (revenda regional);privado;67.194,00;0;2026-08-18;garantia;Banco Santander, capital de giro
+DUP-000184;D07;Cliente 07 (revenda regional);privado;125.772,00;0;2026-08-19;garantia;Banco Santander, capital de giro
+DUP-000185;D07;Cliente 07 (revenda regional);privado;86.095,00;0;2026-08-20;garantia;Banco Santander, capital de giro
+DUP-000186;D07;Cliente 07 (revenda regional);privado;120.604,00;0;2026-08-21;garantia;Banco Santander, capital de giro
+DUP-000187;D07;Cliente 07 (revenda regional);privado;128.392,00;0;2026-08-22;garantia;Banco Santander, capital de giro
+DUP-000188;D07;Cliente 07 (revenda regional);privado;162.417,00;0;2026-08-23;garantia;Banco Santander, capital de giro
+DUP-000189;D07;Cliente 07 (revenda regional);privado;82.965,00;15;2026-07-16;livre;
+DUP-000190;D07;Cliente 07 (revenda regional);privado;137.988,00;15;2026-07-16;livre;
+DUP-000191;D07;Cliente 07 (revenda regional);privado;92.064,00;45;2026-06-16;livre;
+DUP-000192;D07;Cliente 07 (revenda regional);privado;46.032,00;75;2026-05-17;livre;
+DUP-000193;D07;Cliente 07 (revenda regional);privado;46.032,00;120;2026-04-02;livre;
+DUP-000194;D08;Cliente 08 (revenda regional);privado;102.100,00;0;2026-08-29;garantia;Banco Santander, capital de giro
+DUP-000195;D08;Cliente 08 (revenda regional);privado;136.875,00;0;2026-08-30;garantia;Banco Santander, capital de giro
+DUP-000196;D08;Cliente 08 (revenda regional);privado;168.528,00;0;2026-08-31;garantia;Banco Santander, capital de giro
+DUP-000197;D08;Cliente 08 (revenda regional);privado;149.208,00;0;2026-09-01;garantia;Banco Santander, capital de giro
+DUP-000198;D08;Cliente 08 (revenda regional);privado;131.920,00;0;2026-09-02;garantia;Banco Santander, capital de giro
+DUP-000199;D08;Cliente 08 (revenda regional);privado;87.252,00;0;2026-09-03;garantia;Banco Santander, capital de giro
+DUP-000200;D08;Cliente 08 (revenda regional);privado;88.568,00;0;2026-09-04;garantia;Banco Santander, capital de giro
+DUP-000201;D08;Cliente 08 (revenda regional);privado;173.746,00;0;2026-09-05;garantia;Banco Santander, capital de giro
+DUP-000202;D08;Cliente 08 (revenda regional);privado;77.817,00;0;2026-09-06;garantia;Banco Santander, capital de giro
+DUP-000203;D08;Cliente 08 (revenda regional);privado;140.662,00;0;2026-09-07;garantia;Banco Santander, capital de giro
+DUP-000204;D08;Cliente 08 (revenda regional);privado;103.948,00;15;2026-07-16;livre;
+DUP-000205;D08;Cliente 08 (revenda regional);privado;89.386,00;15;2026-07-16;livre;
+DUP-000206;D08;Cliente 08 (revenda regional);privado;80.556,00;45;2026-06-16;livre;
+DUP-000207;D08;Cliente 08 (revenda regional);privado;40.278,00;75;2026-05-17;livre;
+DUP-000208;D08;Cliente 08 (revenda regional);privado;40.278,00;120;2026-04-02;livre;
+DUP-000209;D09;Cliente 09 (revenda regional);privado;97.609,00;0;2026-09-13;garantia;Banco Santander, capital de giro
+DUP-000210;D09;Cliente 09 (revenda regional);privado;146.996,00;0;2026-09-14;garantia;Banco Santander, capital de giro
+DUP-000211;D09;Cliente 09 (revenda regional);privado;127.413,00;0;2026-09-15;garantia;Banco Santander, capital de giro
+DUP-000212;D09;Cliente 09 (revenda regional);privado;128.781,00;0;2026-09-16;garantia;Banco Santander, capital de giro
+DUP-000213;D09;Cliente 09 (revenda regional);privado;105.160,00;0;2026-09-17;garantia;Banco Santander, capital de giro
+DUP-000214;D09;Cliente 09 (revenda regional);privado;80.773,00;0;2026-09-18;garantia;Banco Santander, capital de giro
+DUP-000215;D09;Cliente 09 (revenda regional);privado;181.935,00;0;2026-09-19;garantia;Banco Santander, capital de giro
+DUP-000216;D09;Cliente 09 (revenda regional);privado;101.964,00;0;2026-09-20;garantia;Banco Santander, capital de giro
+DUP-000217;D09;Cliente 09 (revenda regional);privado;146.416,00;0;2026-09-21;garantia;Banco Santander, capital de giro
+DUP-000218;D09;Cliente 09 (revenda regional);privado;171.852,00;15;2026-07-16;livre;
+DUP-000219;D09;Cliente 09 (revenda regional);privado;71.605,00;45;2026-06-16;livre;
+DUP-000220;D09;Cliente 09 (revenda regional);privado;35.802,00;75;2026-05-17;livre;
+DUP-000221;D09;Cliente 09 (revenda regional);privado;35.802,00;120;2026-04-02;livre;
+DUP-000222;D10;Cliente 10 (revenda regional);privado;137.243,00;0;2026-09-26;garantia;Banco Santander, capital de giro
+DUP-000223;D10;Cliente 10 (revenda regional);privado;112.329,00;0;2026-09-27;garantia;Banco Santander, capital de giro
+DUP-000224;D10;Cliente 10 (revenda regional);privado;84.298,00;0;2026-09-28;livre;
+DUP-000225;D10;Cliente 10 (revenda regional);privado;92.327,00;0;2026-08-15;livre;
+DUP-000226;D10;Cliente 10 (revenda regional);privado;188.682,00;0;2026-08-16;livre;
+DUP-000227;D10;Cliente 10 (revenda regional);privado;121.501,00;0;2026-08-17;livre;
+DUP-000228;D10;Cliente 10 (revenda regional);privado;145.914,00;0;2026-08-18;livre;
+DUP-000229;D10;Cliente 10 (revenda regional);privado;123.048,00;0;2026-08-19;livre;
+DUP-000230;D10;Cliente 10 (revenda regional);privado;154.667,00;15;2026-07-16;livre;
+DUP-000231;D10;Cliente 10 (revenda regional);privado;64.444,00;45;2026-06-16;livre;
+DUP-000232;D10;Cliente 10 (revenda regional);privado;32.222,00;75;2026-05-17;livre;
+DUP-000233;D10;Cliente 10 (revenda regional);privado;32.222,00;120;2026-04-02;livre;
+DUP-000234;D11;Cliente 11 (revenda regional);privado;109.240,00;0;2026-08-24;livre;
+DUP-000235;D11;Cliente 11 (revenda regional);privado;123.759,00;0;2026-08-25;livre;
+DUP-000236;D11;Cliente 11 (revenda regional);privado;135.494,00;0;2026-08-26;livre;
+DUP-000237;D11;Cliente 11 (revenda regional);privado;79.446,00;0;2026-08-27;livre;
+DUP-000238;D11;Cliente 11 (revenda regional);privado;73.004,00;0;2026-08-28;livre;
+DUP-000239;D11;Cliente 11 (revenda regional);privado;125.012,00;0;2026-08-29;livre;
+DUP-000240;D11;Cliente 11 (revenda regional);privado;141.393,00;0;2026-08-30;livre;
+DUP-000241;D11;Cliente 11 (revenda regional);privado;126.598,00;0;2026-08-31;livre;
+DUP-000242;D11;Cliente 11 (revenda regional);privado;140.607,00;15;2026-07-16;livre;
+DUP-000243;D11;Cliente 11 (revenda regional);privado;58.586,00;45;2026-06-16;livre;
+DUP-000244;D11;Cliente 11 (revenda regional);privado;29.293,00;75;2026-05-17;livre;
+DUP-000245;D11;Cliente 11 (revenda regional);privado;29.293,00;120;2026-04-02;livre;
+DUP-000246;D12;Cliente 12 (revenda regional);privado;132.895,00;0;2026-09-05;livre;
+DUP-000247;D12;Cliente 12 (revenda regional);privado;81.366,00;0;2026-09-06;livre;
+DUP-000248;D12;Cliente 12 (revenda regional);privado;182.764,00;0;2026-09-07;livre;
+DUP-000249;D12;Cliente 12 (revenda regional);privado;126.941,00;0;2026-09-08;livre;
+DUP-000250;D12;Cliente 12 (revenda regional);privado;105.569,00;0;2026-09-09;livre;
+DUP-000251;D12;Cliente 12 (revenda regional);privado;71.975,00;0;2026-09-10;livre;
+DUP-000252;D12;Cliente 12 (revenda regional);privado;136.274,00;0;2026-09-11;livre;
+DUP-000253;D12;Cliente 12 (revenda regional);privado;128.889,00;15;2026-07-16;livre;
+DUP-000254;D12;Cliente 12 (revenda regional);privado;53.704,00;45;2026-06-16;livre;
+DUP-000255;D12;Cliente 12 (revenda regional);privado;26.852,00;75;2026-05-17;livre;
+DUP-000256;D12;Cliente 12 (revenda regional);privado;26.852,00;120;2026-04-02;livre;
+DUP-000257;D13;Cliente 13 (revenda regional);privado;178.314,00;0;2026-09-16;livre;
+DUP-000258;D13;Cliente 13 (revenda regional);privado;102.458,00;0;2026-09-17;livre;
+DUP-000259;D13;Cliente 13 (revenda regional);privado;171.997,00;0;2026-09-18;livre;
+DUP-000260;D13;Cliente 13 (revenda regional);privado;135.837,00;0;2026-09-19;livre;
+DUP-000261;D13;Cliente 13 (revenda regional);privado;102.659,00;0;2026-09-20;livre;
+DUP-000262;D13;Cliente 13 (revenda regional);privado;82.075,00;0;2026-09-21;livre;
+DUP-000263;D13;Cliente 13 (revenda regional);privado;118.975,00;15;2026-07-16;livre;
+DUP-000264;D13;Cliente 13 (revenda regional);privado;49.572,00;45;2026-06-16;livre;
+DUP-000265;D13;Cliente 13 (revenda regional);privado;24.786,00;75;2026-05-17;livre;
+DUP-000266;D13;Cliente 13 (revenda regional);privado;24.786,00;120;2026-04-02;livre;
+DUP-000267;D14;Cliente 14 (revenda regional);privado;157.450,00;0;2026-09-26;livre;
+DUP-000268;D14;Cliente 14 (revenda regional);privado;153.020,00;0;2026-09-27;livre;
+DUP-000269;D14;Cliente 14 (revenda regional);privado;83.306,00;0;2026-09-28;livre;
+DUP-000270;D14;Cliente 14 (revenda regional);privado;124.067,00;0;2026-08-15;livre;
+DUP-000271;D14;Cliente 14 (revenda regional);privado;104.917,00;0;2026-08-16;livre;
+DUP-000272;D14;Cliente 14 (revenda regional);privado;95.341,00;0;2026-08-17;livre;
+DUP-000273;D14;Cliente 14 (revenda regional);privado;110.476,00;15;2026-07-16;livre;
+DUP-000274;D14;Cliente 14 (revenda regional);privado;46.032,00;45;2026-06-16;livre;
+DUP-000275;D14;Cliente 14 (revenda regional);privado;23.016,00;75;2026-05-17;livre;
+DUP-000276;D14;Cliente 14 (revenda regional);privado;23.016,00;120;2026-04-02;livre;
+DUP-000277;D15;Cliente 15 (revenda regional);privado;132.790,00;0;2026-08-22;livre;
+DUP-000278;D15;Cliente 15 (revenda regional);privado;119.834,00;0;2026-08-23;livre;
+DUP-000279;D15;Cliente 15 (revenda regional);privado;62.864,00;0;2026-08-24;livre;
+DUP-000280;D15;Cliente 15 (revenda regional);privado;120.918,00;0;2026-08-25;livre;
+DUP-000281;D15;Cliente 15 (revenda regional);privado;153.469,00;0;2026-08-26;livre;
+DUP-000282;D15;Cliente 15 (revenda regional);privado;80.354,00;0;2026-08-27;livre;
+DUP-000283;D15;Cliente 15 (revenda regional);privado;103.111,00;15;2026-07-16;livre;
+DUP-000284;D15;Cliente 15 (revenda regional);privado;42.963,00;45;2026-06-16;livre;
+DUP-000285;D15;Cliente 15 (revenda regional);privado;21.481,00;75;2026-05-17;livre;
+DUP-000286;D15;Cliente 15 (revenda regional);privado;21.481,00;120;2026-04-02;livre;
+DUP-000287;D16;Cliente 16 (revenda regional);privado;88.569,00;0;2026-09-01;livre;
+DUP-000288;D16;Cliente 16 (revenda regional);privado;128.123,00;0;2026-09-02;livre;
+DUP-000289;D16;Cliente 16 (revenda regional);privado;169.430,00;0;2026-09-03;livre;
+DUP-000290;D16;Cliente 16 (revenda regional);privado;77.765,00;0;2026-09-04;livre;
+DUP-000291;D16;Cliente 16 (revenda regional);privado;164.451,00;0;2026-09-05;livre;
+DUP-000292;D16;Cliente 16 (revenda regional);privado;96.667,00;15;2026-07-16;livre;
+DUP-000293;D16;Cliente 16 (revenda regional);privado;40.278,00;45;2026-06-16;livre;
+DUP-000294;D16;Cliente 16 (revenda regional);privado;20.139,00;75;2026-05-17;livre;
+DUP-000295;D16;Cliente 16 (revenda regional);privado;20.139,00;120;2026-04-02;livre;
+DUP-000296;D17;Cliente 17 (revenda regional);privado;64.785,00;0;2026-09-10;livre;
+DUP-000297;D17;Cliente 17 (revenda regional);privado;141.290,00;0;2026-09-11;livre;
+DUP-000298;D17;Cliente 17 (revenda regional);privado;133.197,00;0;2026-09-12;livre;
+DUP-000299;D17;Cliente 17 (revenda regional);privado;142.430,00;0;2026-09-13;livre;
+DUP-000300;D17;Cliente 17 (revenda regional);privado;109.676,00;0;2026-09-14;livre;
+DUP-000301;D17;Cliente 17 (revenda regional);privado;90.981,00;15;2026-07-16;livre;
+DUP-000302;D17;Cliente 17 (revenda regional);privado;37.908,00;45;2026-06-16;livre;
+DUP-000303;D17;Cliente 17 (revenda regional);privado;18.954,00;75;2026-05-17;livre;
+DUP-000304;D17;Cliente 17 (revenda regional);privado;18.954,00;120;2026-04-02;livre;
+DUP-000305;D18;Cliente 18 (revenda regional);privado;102.277,00;0;2026-09-19;livre;
+DUP-000306;D18;Cliente 18 (revenda regional);privado;73.837,00;0;2026-09-20;livre;
+DUP-000307;D18;Cliente 18 (revenda regional);privado;101.742,00;0;2026-09-21;livre;
+DUP-000308;D18;Cliente 18 (revenda regional);privado;125.537,00;0;2026-09-22;livre;
+DUP-000309;D18;Cliente 18 (revenda regional);privado;155.131,00;0;2026-09-23;livre;
+DUP-000310;D18;Cliente 18 (revenda regional);privado;85.926,00;15;2026-07-16;livre;
+DUP-000311;D18;Cliente 18 (revenda regional);privado;35.802,00;45;2026-06-16;livre;
+DUP-000312;D18;Cliente 18 (revenda regional);privado;17.901,00;75;2026-05-17;livre;
+DUP-000313;D18;Cliente 18 (revenda regional);privado;17.901,00;120;2026-04-02;livre;
+DUP-000314;D19;Cliente 19 (revenda regional);privado;151.645,00;0;2026-09-28;livre;
+DUP-000315;D19;Cliente 19 (revenda regional);privado;150.829,00;0;2026-08-15;livre;
+DUP-000316;D19;Cliente 19 (revenda regional);privado;129.514,00;0;2026-08-16;livre;
+DUP-000317;D19;Cliente 19 (revenda regional);privado;97.139,00;0;2026-08-17;livre;
+DUP-000318;D19;Cliente 19 (revenda regional);privado;81.404,00;15;2026-07-16;livre;
+DUP-000319;D19;Cliente 19 (revenda regional);privado;33.918,00;45;2026-06-16;livre;
+DUP-000320;D19;Cliente 19 (revenda regional);privado;16.959,00;75;2026-05-17;livre;
+DUP-000321;D19;Cliente 19 (revenda regional);privado;16.959,00;120;2026-04-02;livre;
+DUP-000322;D20;Cliente 20 (revenda regional);privado;148.791,00;0;2026-08-22;livre;
+DUP-000323;D20;Cliente 20 (revenda regional);privado;167.564,00;0;2026-08-23;livre;
+DUP-000324;D20;Cliente 20 (revenda regional);privado;72.842,00;0;2026-08-24;livre;
+DUP-000325;D20;Cliente 20 (revenda regional);privado;113.474,00;0;2026-08-25;livre;
+DUP-000326;D20;Cliente 20 (revenda regional);privado;77.333,00;15;2026-07-16;livre;
+DUP-000327;D20;Cliente 20 (revenda regional);privado;32.222,00;45;2026-06-16;livre;
+DUP-000328;D20;Cliente 20 (revenda regional);privado;16.111,00;75;2026-05-17;livre;
+DUP-000329;D20;Cliente 20 (revenda regional);privado;16.111,00;120;2026-04-02;livre;
+DUP-000330;D21;Cliente 21 (revenda regional);privado;116.809,00;0;2026-08-30;livre;
+DUP-000331;D21;Cliente 21 (revenda regional);privado;129.772,00;0;2026-08-31;livre;
+DUP-000332;D21;Cliente 21 (revenda regional);privado;131.116,00;0;2026-09-01;livre;
+DUP-000333;D21;Cliente 21 (revenda regional);privado;101.036,00;0;2026-09-02;livre;
+DUP-000334;D21;Cliente 21 (revenda regional);privado;73.651,00;15;2026-07-16;livre;
+DUP-000335;D21;Cliente 21 (revenda regional);privado;30.688,00;45;2026-06-16;livre;
+DUP-000336;D21;Cliente 21 (revenda regional);privado;15.344,00;75;2026-05-17;livre;
+DUP-000337;D21;Cliente 21 (revenda regional);privado;15.344,00;120;2026-04-02;livre;
+DUP-000338;D22;Cliente 22 (revenda regional);privado;113.410,00;0;2026-09-07;livre;
+DUP-000339;D22;Cliente 22 (revenda regional);privado;123.036,00;0;2026-09-08;livre;
+DUP-000340;D22;Cliente 22 (revenda regional);privado;89.054,00;0;2026-09-09;livre;
+DUP-000341;D22;Cliente 22 (revenda regional);privado;131.474,00;0;2026-09-10;livre;
+DUP-000342;D22;Cliente 22 (revenda regional);privado;70.303,00;15;2026-07-16;livre;
+DUP-000343;D22;Cliente 22 (revenda regional);privado;29.293,00;45;2026-06-16;livre;
+DUP-000344;D22;Cliente 22 (revenda regional);privado;14.646,00;75;2026-05-17;livre;
+DUP-000345;D22;Cliente 22 (revenda regional);privado;14.646,00;120;2026-04-02;livre;
+DUP-000346;D23;Cliente 23 (revenda regional);privado;118.180,00;0;2026-09-15;livre;
+DUP-000347;D23;Cliente 23 (revenda regional);privado;121.022,00;0;2026-09-16;livre;
+DUP-000348;D23;Cliente 23 (revenda regional);privado;55.755,00;0;2026-09-17;livre;
+DUP-000349;D23;Cliente 23 (revenda regional);privado;142.150,00;0;2026-09-18;livre;
+DUP-000350;D23;Cliente 23 (revenda regional);privado;67.246,00;15;2026-07-16;livre;
+DUP-000351;D23;Cliente 23 (revenda regional);privado;28.019,00;45;2026-06-16;livre;
+DUP-000352;D23;Cliente 23 (revenda regional);privado;14.009,00;75;2026-05-17;livre;
+DUP-000353;D23;Cliente 23 (revenda regional);privado;14.009,00;120;2026-04-02;livre;
+DUP-000354;D24;Cliente 24 (revenda regional);privado;91.761,00;0;2026-09-23;livre;
+DUP-000355;D24;Cliente 24 (revenda regional);privado;178.414,00;0;2026-09-24;livre;
+DUP-000356;D24;Cliente 24 (revenda regional);privado;148.717,00;0;2026-09-25;livre;
+DUP-000357;D24;Cliente 24 (revenda regional);privado;64.444,00;15;2026-07-16;livre;
+DUP-000358;D24;Cliente 24 (revenda regional);privado;26.852,00;45;2026-06-16;livre;
+DUP-000359;D24;Cliente 24 (revenda regional);privado;13.426,00;75;2026-05-17;livre;
+DUP-000360;D24;Cliente 24 (revenda regional);privado;13.426,00;120;2026-04-02;livre;
+DUP-000361;D25;Cliente 25 (revenda regional);privado;69.672,00;0;2026-08-16;livre;
+DUP-000362;D25;Cliente 25 (revenda regional);privado;167.515,00;0;2026-08-17;livre;
+DUP-000363;D25;Cliente 25 (revenda regional);privado;164.952,00;0;2026-08-18;livre;
+DUP-000364;D25;Cliente 25 (revenda regional);privado;61.867,00;15;2026-07-16;livre;
+DUP-000365;D25;Cliente 25 (revenda regional);privado;25.777,00;45;2026-06-16;livre;
+DUP-000366;D25;Cliente 25 (revenda regional);privado;12.888,00;75;2026-05-17;livre;
+DUP-000367;D25;Cliente 25 (revenda regional);privado;12.888,00;120;2026-04-02;livre;
+DUP-000368;D26;Cliente 26 (revenda regional);privado;163.656,00;0;2026-08-23;livre;
+DUP-000369;D26;Cliente 26 (revenda regional);privado;159.759,00;0;2026-08-24;livre;
+DUP-000370;D26;Cliente 26 (revenda regional);privado;63.255,00;0;2026-08-25;livre;
+DUP-000371;D26;Cliente 26 (revenda regional);privado;59.487,00;15;2026-07-16;livre;
+DUP-000372;D26;Cliente 26 (revenda regional);privado;24.786,00;45;2026-06-16;livre;
+DUP-000373;D26;Cliente 26 (revenda regional);privado;12.393,00;75;2026-05-17;livre;
+DUP-000374;D26;Cliente 26 (revenda regional);privado;12.393,00;120;2026-04-02;livre;
+DUP-000375;D27;Cliente 27 (revenda regional);privado;121.358,00;0;2026-08-30;livre;
+DUP-000376;D27;Cliente 27 (revenda regional);privado;130.587,00;0;2026-08-31;livre;
+DUP-000377;D27;Cliente 27 (revenda regional);privado;120.404,00;0;2026-09-01;livre;
+DUP-000378;D27;Cliente 27 (revenda regional);privado;57.284,00;15;2026-07-16;livre;
+DUP-000379;D27;Cliente 27 (revenda regional);privado;23.868,00;45;2026-06-16;livre;
+DUP-000380;D27;Cliente 27 (revenda regional);privado;11.934,00;75;2026-05-17;livre;
+DUP-000381;D27;Cliente 27 (revenda regional);privado;11.934,00;120;2026-04-02;livre;
+DUP-000382;D28;Cliente 28 (revenda regional);privado;154.415,00;0;2026-09-06;livre;
+DUP-000383;D28;Cliente 28 (revenda regional);privado;84.153,00;0;2026-09-07;livre;
+DUP-000384;D28;Cliente 28 (revenda regional);privado;120.482,00;0;2026-09-08;livre;
+DUP-000385;D28;Cliente 28 (revenda regional);privado;55.238,00;15;2026-07-16;livre;
+DUP-000386;D28;Cliente 28 (revenda regional);privado;23.016,00;45;2026-06-16;livre;
+DUP-000387;D28;Cliente 28 (revenda regional);privado;11.508,00;75;2026-05-17;livre;
+DUP-000388;D28;Cliente 28 (revenda regional);privado;11.508,00;120;2026-04-02;livre;
+DUP-000389;D29;Cliente 29 (revenda regional);privado;167.598,00;0;2026-09-13;livre;
+DUP-000390;D29;Cliente 29 (revenda regional);privado;111.002,00;0;2026-09-14;livre;
+DUP-000391;D29;Cliente 29 (revenda regional);privado;68.070,00;0;2026-09-15;livre;
+DUP-000392;D29;Cliente 29 (revenda regional);privado;53.333,00;15;2026-07-16;livre;
+DUP-000393;D29;Cliente 29 (revenda regional);privado;22.222,00;45;2026-06-16;livre;
+DUP-000394;D29;Cliente 29 (revenda regional);privado;11.111,00;75;2026-05-17;livre;
+DUP-000395;D29;Cliente 29 (revenda regional);privado;11.111,00;120;2026-04-02;livre;
+DUP-000396;D30;Cliente 30 (revenda regional);privado;153.940,00;0;2026-09-20;livre;
+DUP-000397;D30;Cliente 30 (revenda regional);privado;72.614,00;0;2026-09-21;livre;
+DUP-000398;D30;Cliente 30 (revenda regional);privado;108.562,00;0;2026-09-22;livre;
+DUP-000399;D30;Cliente 30 (revenda regional);privado;51.555,00;15;2026-07-16;livre;
+DUP-000400;D30;Cliente 30 (revenda regional);privado;21.481,00;45;2026-06-16;livre;
+DUP-000401;D30;Cliente 30 (revenda regional);privado;10.740,00;75;2026-05-17;livre;
+DUP-000402;D30;Cliente 30 (revenda regional);privado;10.740,00;120;2026-04-02;livre;
+DUP-000403;D31;Cliente 31 (revenda regional);privado;123.986,00;0;2026-09-27;livre;
+DUP-000404;D31;Cliente 31 (revenda regional);privado;121.746,00;0;2026-09-28;livre;
+DUP-000405;D31;Cliente 31 (revenda regional);privado;78.573,00;0;2026-08-15;livre;
+DUP-000406;D31;Cliente 31 (revenda regional);privado;49.892,00;15;2026-07-16;livre;
+DUP-000407;D31;Cliente 31 (revenda regional);privado;20.788,00;45;2026-06-16;livre;
+DUP-000408;D31;Cliente 31 (revenda regional);privado;10.394,00;75;2026-05-17;livre;
+DUP-000409;D31;Cliente 31 (revenda regional);privado;10.394,00;120;2026-04-02;livre;
+DUP-000410;D32;Cliente 32 (revenda regional);privado;112.433,00;0;2026-08-20;livre;
+DUP-000411;D32;Cliente 32 (revenda regional);privado;77.386,00;0;2026-08-21;livre;
+DUP-000412;D32;Cliente 32 (revenda regional);privado;124.351,00;0;2026-08-22;livre;
+DUP-000413;D32;Cliente 32 (revenda regional);privado;48.333,00;15;2026-07-16;livre;
+DUP-000414;D32;Cliente 32 (revenda regional);privado;20.139,00;45;2026-06-16;livre;
+DUP-000415;D32;Cliente 32 (revenda regional);privado;10.069,00;75;2026-05-17;livre;
+DUP-000416;D32;Cliente 32 (revenda regional);privado;10.069,00;120;2026-04-02;livre;
+DUP-000417;D33;Cliente 33 (revenda regional);privado;106.442,00;0;2026-08-27;livre;
+DUP-000418;D33;Cliente 33 (revenda regional);privado;109.158,00;0;2026-08-28;livre;
+DUP-000419;D33;Cliente 33 (revenda regional);privado;89.050,00;0;2026-08-29;livre;
+DUP-000420;D33;Cliente 33 (revenda regional);privado;46.869,00;15;2026-07-16;livre;
+DUP-000421;D33;Cliente 33 (revenda regional);privado;19.528,00;45;2026-06-16;livre;
+DUP-000422;D33;Cliente 33 (revenda regional);privado;9.764,00;75;2026-05-17;livre;
+DUP-000423;D33;Cliente 33 (revenda regional);privado;9.764,00;120;2026-04-02;livre;
+DUP-000424;D34;Cliente 34 (revenda regional);privado;166.155,00;0;2026-09-03;livre;
+DUP-000425;D34;Cliente 34 (revenda regional);privado;129.534,00;0;2026-09-04;livre;
+DUP-000426;D34;Cliente 34 (revenda regional);privado;45.490,00;15;2026-07-16;livre;
+DUP-000427;D34;Cliente 34 (revenda regional);privado;18.954,00;45;2026-06-16;livre;
+DUP-000428;D34;Cliente 34 (revenda regional);privado;9.477,00;75;2026-05-17;livre;
+DUP-000429;D34;Cliente 34 (revenda regional);privado;9.477,00;120;2026-04-02;livre;
+DUP-000430;D35;Cliente 35 (revenda regional);privado;148.903,00;0;2026-09-09;livre;
+DUP-000431;D35;Cliente 35 (revenda regional);privado;138.339,00;0;2026-09-10;livre;
+DUP-000432;D35;Cliente 35 (revenda regional);privado;44.190,00;15;2026-07-16;livre;
+DUP-000433;D35;Cliente 35 (revenda regional);privado;18.412,00;45;2026-06-16;livre;
+DUP-000434;D35;Cliente 35 (revenda regional);privado;9.206,00;75;2026-05-17;livre;
+DUP-000435;D35;Cliente 35 (revenda regional);privado;9.206,00;120;2026-04-02;livre;
+DUP-000436;D36;Cliente 36 (revenda regional);privado;113.227,00;0;2026-09-15;livre;
+DUP-000437;D36;Cliente 36 (revenda regional);privado;166.036,00;0;2026-09-16;livre;
+DUP-000438;D36;Cliente 36 (revenda regional);privado;42.963,00;15;2026-07-16;livre;
+DUP-000439;D36;Cliente 36 (revenda regional);privado;17.901,00;45;2026-06-16;livre;
+DUP-000440;D36;Cliente 36 (revenda regional);privado;8.950,00;75;2026-05-17;livre;
+DUP-000441;D36;Cliente 36 (revenda regional);privado;8.950,00;120;2026-04-02;livre;
+DUP-000442;D37;Cliente 37 (revenda regional);privado;131.830,00;0;2026-09-21;livre;
+DUP-000443;D37;Cliente 37 (revenda regional);privado;139.885,00;0;2026-09-22;livre;
+DUP-000444;D37;Cliente 37 (revenda regional);privado;41.802,00;15;2026-07-16;livre;
+DUP-000445;D37;Cliente 37 (revenda regional);privado;17.417,00;45;2026-06-16;livre;
+DUP-000446;D37;Cliente 37 (revenda regional);privado;8.708,00;75;2026-05-17;livre;
+DUP-000447;D37;Cliente 37 (revenda regional);privado;8.708,00;120;2026-04-02;livre;
+DUP-000448;D38;Cliente 38 (revenda regional);privado;139.212,00;0;2026-09-27;livre;
+DUP-000449;D38;Cliente 38 (revenda regional);privado;125.353,00;0;2026-09-28;livre;
+DUP-000450;D38;Cliente 38 (revenda regional);privado;40.701,00;15;2026-07-16;livre;
+DUP-000451;D38;Cliente 38 (revenda regional);privado;16.959,00;45;2026-06-16;livre;
+DUP-000452;D38;Cliente 38 (revenda regional);privado;8.479,00;75;2026-05-17;livre;
+DUP-000453;D38;Cliente 38 (revenda regional);privado;8.479,00;120;2026-04-02;livre;
+DUP-000454;D39;Cliente 39 (revenda regional);privado;85.139,00;0;2026-08-19;livre;
+DUP-000455;D39;Cliente 39 (revenda regional);privado;172.641,00;0;2026-08-20;livre;
+DUP-000456;D39;Cliente 39 (revenda regional);privado;39.658,00;15;2026-07-16;livre;
+DUP-000457;D39;Cliente 39 (revenda regional);privado;16.524,00;45;2026-06-16;livre;
+DUP-000458;D39;Cliente 39 (revenda regional);privado;8.262,00;75;2026-05-17;livre;
+DUP-000459;D39;Cliente 39 (revenda regional);privado;8.262,00;120;2026-04-02;livre;
+DUP-000460;D40;Cliente 40 (revenda regional);privado;131.832,00;0;2026-08-25;livre;
+DUP-000461;D40;Cliente 40 (revenda regional);privado;119.505,00;0;2026-08-26;livre;
+DUP-000462;D40;Cliente 40 (revenda regional);privado;38.666,00;15;2026-07-16;livre;
+DUP-000463;D40;Cliente 40 (revenda regional);privado;16.111,00;45;2026-06-16;livre;
+DUP-000464;D40;Cliente 40 (revenda regional);privado;8.055,00;75;2026-05-17;livre;
+DUP-000465;D40;Cliente 40 (revenda regional);privado;8.055,00;120;2026-04-02;livre;
+DUP-000466;D41;Cliente 41 (revenda regional);privado;171.833,00;0;2026-08-31;livre;
+DUP-000467;D41;Cliente 41 (revenda regional);privado;73.373,00;0;2026-09-01;livre;
+DUP-000468;D41;Cliente 41 (revenda regional);privado;37.723,00;15;2026-07-16;livre;
+DUP-000469;D41;Cliente 41 (revenda regional);privado;15.718,00;45;2026-06-16;livre;
+DUP-000470;D41;Cliente 41 (revenda regional);privado;7.859,00;75;2026-05-17;livre;
+DUP-000471;D41;Cliente 41 (revenda regional);privado;7.859,00;120;2026-04-02;livre;
+DUP-000472;D42;Cliente 42 (revenda regional);privado;154.612,00;0;2026-09-06;livre;
+DUP-000473;D42;Cliente 42 (revenda regional);privado;84.755,00;0;2026-09-07;livre;
+DUP-000474;D42;Cliente 42 (revenda regional);privado;36.825,00;15;2026-07-16;livre;
+DUP-000475;D42;Cliente 42 (revenda regional);privado;15.344,00;45;2026-06-16;livre;
+DUP-000476;D42;Cliente 42 (revenda regional);privado;7.672,00;75;2026-05-17;livre;
+DUP-000477;D42;Cliente 42 (revenda regional);privado;7.672,00;120;2026-04-02;livre;
+DUP-000478;D43;Cliente 43 (revenda regional);privado;111.755,00;0;2026-09-12;livre;
+DUP-000479;D43;Cliente 43 (revenda regional);privado;122.046,00;0;2026-09-13;livre;
+DUP-000480;D43;Cliente 43 (revenda regional);privado;35.969,00;15;2026-07-16;livre;
+DUP-000481;D43;Cliente 43 (revenda regional);privado;14.987,00;45;2026-06-16;livre;
+DUP-000482;D43;Cliente 43 (revenda regional);privado;7.493,00;75;2026-05-17;livre;
+DUP-000483;D43;Cliente 43 (revenda regional);privado;7.493,00;120;2026-04-02;livre;
+DUP-000484;D44;Cliente 44 (revenda regional);privado;96.411,00;0;2026-09-18;livre;
+DUP-000485;D44;Cliente 44 (revenda regional);privado;132.077,00;0;2026-09-19;livre;
+DUP-000486;D44;Cliente 44 (revenda regional);privado;35.151,00;15;2026-07-16;livre;
+DUP-000487;D44;Cliente 44 (revenda regional);privado;14.646,00;45;2026-06-16;livre;
+DUP-000488;D44;Cliente 44 (revenda regional);privado;7.323,00;75;2026-05-17;livre;
+DUP-000489;D44;Cliente 44 (revenda regional);privado;7.323,00;120;2026-04-02;livre;
+DUP-000490;D45;Cliente 45 (revenda regional);privado;88.117,00;0;2026-09-24;livre;
+DUP-000491;D45;Cliente 45 (revenda regional);privado;135.310,00;0;2026-09-25;livre;
+DUP-000492;D45;Cliente 45 (revenda regional);privado;34.373,00;15;2026-07-16;livre;
+DUP-000493;D45;Cliente 45 (revenda regional);privado;14.322,00;45;2026-06-16;livre;
+DUP-000494;D45;Cliente 45 (revenda regional);privado;7.161,00;75;2026-05-17;livre;
+DUP-000495;D45;Cliente 45 (revenda regional);privado;7.161,00;120;2026-04-02;livre;

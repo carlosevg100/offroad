@@ -41,6 +41,14 @@
     {
       "name": "08_Projecoes_2026_2030.xlsx",
       "sha256": "29a365fb32c3ff7e30c86265799b29bcd4449d8b1aa47d106d5e2863f193b4f1"
+    },
+    {
+      "name": "09_Aging_Recebiveis_Jul2026.xlsx",
+      "sha256": "278ce037c2b53169d4420b56a7489f98b17a36fa001b95a58603e9164e4918ec"
+    },
+    {
+      "name": "10_Tape_Duplicatas_Jul2026.csv",
+      "sha256": "800ad5c17cb31c32d59300b01520257c929ce8c6392a8a8267b564232919cd69"
     }
   ],
   "provenance": "Gerada por packages/testing-fixtures/scripts/build-fakeco.ts a partir de src/fakeco/truth.ts, e este gabarito por build-fakeco-gold.ts a partir da mesma fonte. Nenhum número descreve empresa real. O gerador vive no repositório de propósito: o do rede-horizonte não vive, e AGENTS.md §9 registra o custo disso.",

@@ -216,7 +216,9 @@ profundidade; e a execução inteira é reprodutível a partir dos inputs congel
 | --- | --- | --- |
 | 1 | `gc01-gabarito-rascunho.md` v0.8 | três rodadas de revisão independente por IA (registros em `reviews/gc01/`); congela como v1.0 com o primeiro registro `pass` ou `conditional` |
 | 2 | `gc02-gabarito-rascunho.md` v0.2 | verdade pública herdada do Caso 01 por referência; dados gerenciais sintéticos gerados por `packages/testing-fixtures/scripts/build-camil-management.ts`; tabelas calculadas pelo `financial-core`; sem revisão |
-| 3 a 5 | não existem | próximos, na ordem |
+| 3 | `gc03-gabarito-rascunho.md` v0.1 | Aurora com carteira de recebíveis sintética (`09`/`10`), tabelas pela `receivables-analysis` e pelo `financial-core`; sem revisão |
+| 4 | `gc04-gabarito-rascunho.md` v0.1 | Cogna pelo gold existente mais mandato sintético da Prisma; tabelas pelo `financial-core` e `fund-mandate`; sem revisão |
+| 5 | não existe | próximo |
 
 Os quinze casos catalogados do Atlas §10 recebem este contrato progressivamente, e enquanto não
 têm executor servem como regressão do roteador e do mapa de cobertura em sombra.

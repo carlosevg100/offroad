@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "prisma-mandate.v1",
+  "label": "FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Mandato inventado de um fundo de crédito fictício (Prisma Capital), no formato Mandate de packages/fund-mandate. Não representa fundo real.",
+  "fundId": "prisma-credito-ii",
+  "fundName": "Prisma Crédito Estruturado II (fictício)",
+  "ticket": [
+    {"value": {"min": "300000000", "max": "1500000000"}, "provenance": "declared", "observedAt": "2026-06-30", "note": "regulamento do fundo, capítulo de política de investimento (sintético)"},
+    {"value": {"min": "250000000", "max": "900000000"}, "provenance": "observed", "observedAt": "2026-08-15", "note": "as quatro últimas operações fechadas ficaram entre 250 e 900 milhões (sintético)"}
+  ],
+  "termMonths": [
+    {"value": {"min": 24, "max": 84}, "provenance": "declared", "observedAt": "2026-06-30", "note": "regulamento (sintético)"}
+  ],
+  "sectors": [
+    {"value": ["educação", "saúde", "serviços", "varejo"], "provenance": "declared", "observedAt": "2026-06-30", "note": "regulamento (sintético)"}
+  ],
+  "instruments": [
+    {"value": ["debenture", "nota_comercial", "cri", "cra"], "provenance": "declared", "observedAt": "2026-06-30", "note": "regulamento (sintético)"}
+  ],
+  "collateral": [
+    {"value": ["quirografario", "cessao_fiduciaria", "aval_fianca"], "provenance": "declared", "observedAt": "2026-06-30", "note": "regulamento (sintético)"}
+  ],
+  "geographies": [
+    {"value": ["BR"], "provenance": "declared", "observedAt": "2026-06-30", "note": "regulamento (sintético)"}
+  ],
+  "leverageCeiling": [
+    {"value": "3.00", "provenance": "declared", "observedAt": "2026-06-30", "note": "regulamento: dívida líquida sobre EBITDA até 3,0x (sintético)"},
+    {"value": "2.50", "provenance": "observed", "observedAt": "2026-08-15", "note": "nenhuma operação fechada acima de 2,5x nos últimos dezoito meses (sintético)"}
+  ],
+  "minimumDscr": [
+    {"value": "1.30", "provenance": "declared", "observedAt": "2026-06-30", "note": "regulamento (sintético)"}
+  ],
+  "active": [
+    {"value": true, "provenance": "conversation", "observedAt": "2026-08-20", "note": "gestora confirmou período de investimento aberto até 2027 (sintético)"}
+  ]
+}
