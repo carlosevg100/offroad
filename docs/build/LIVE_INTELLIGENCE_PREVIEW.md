@@ -209,6 +209,17 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
   falha, em pacote separado; o artefato principal leva transcrição, jornada, telas, arquivos
   gerados, relatório, exportações do banco e log do worker.
 - Resultado da sexta rodada: Sexta rodada (run 33989224138, PR #459 na main): verde, mas na segunda tentativa. Os dez passos passaram com modelo (resposta à pergunta em `deepen`, audiência conselho, respostas aplicadas; Word e planilha gerados dos objetos, versão 4, vinte e seis números verificados, duas frases removidas). A tentativa que passou fez vinte e cinco chamadas (onze de roteamento, seis de perguntas, oito de síntese) e custou US$ 2,19; a primeira tentativa falhou no passo de resposta porque a jornada enviou a citação vazia (a expressão do teste não extraía uma pergunta com parêntese), corrigido no PR #460 junto com a preferência por papel conhecido na audiência. Pesquisa pública: indisponível no gate (sem chave de busca), como o roteador declarou; em produção o worker tem a chave.
+- Sétima rodada (run 33991226510, PR #460 na main, 5 set 17h50): dez de dez em tentativa única,
+  jornada de 8,3 minutos. Onze turnos roteados, uma abstenção (companhia sem corpus), oito runs
+  de prévia sem falha (as cinco paráfrases, material com oito etapas replicadas, premissa com
+  sete, resposta com sete). Vinte e seis chamadas, vinte e quatro boas: onze de roteamento
+  (US$ 0,25), seis de perguntas (US$ 0,24), oito de síntese (US$ 1,73), total US$ 2,23. Uma
+  síntese truncou aos cinquenta e sete segundos e caiu para o esqueleto declarado; o material
+  final foi regenerado com síntese do modelo (trinta números verificados, duas frases
+  removidas, versão quatro). Artefato de 35 MB. O que fica em aberto: pesquisa pública com
+  fontes dentro do gate (sem chave de busca no workflow), uma segunda tentativa mais curta
+  quando a síntese trunca, e a audiência de uma paráfrase ainda como texto livre do
+  classificador quando ele não lista papel conhecido.
 
 ## 4. O que continua fora
 
