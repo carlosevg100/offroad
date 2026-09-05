@@ -1,6 +1,6 @@
 ---
 id: reconcile-financial-statements
-version: 2026.09.05-v4
+version: 2026.09.05-v5
 maturity: implemented
 title_pt: Conciliar as demonstrações entre si e com o release
 title_en: Reconcile the financial statements with each other and with the release
@@ -10,7 +10,7 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-financial-statements
 implementation_export: reconcileFinancialStatements
-result_contract: method.reconcile-financial-statements.v4
+result_contract: method.reconcile-financial-statements.v5
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -58,6 +58,11 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 - financial.debt_balance_bridge: saldo inicial, captações, juros, amortizações, variação cambial, saldo final.
 - financial.interest_expense_bridge: juros calculados versus contabilizados.
 
+# Regras de comparabilidade
+- Tags de componente vêm de um catálogo conhecido e o texto da definição precisa nomear cada uma; tag desconhecida é recusada.
+- Metadados de política (chave e versão) são conferidos mesmo com tolerância zero; nunca entram na saída sem existir no registro.
+- Dentro de uma conta não comparável no todo, fontes com a mesma definição, componentes e data são comparadas entre si; a divergência entre dois valores contábeis nunca some atrás de um nominal ou de um valor justo.
+
 # Julgamentos permitidos
 - Decidir se uma diferença dentro da tolerância é arredondamento exige ver a escala e a nota, não assumir.
 
@@ -73,16 +78,16 @@ Mapa de conciliação por conta material: valor por fonte, diferença, tolerânc
 
 # Outputs
 - state (enum, required): closes, differences_explained, open_divergences, incomplete, identity_failed ou blocked, nesta precedência inversa: bloqueio antes de identidade falha, antes de incompleto, antes de divergências abertas, antes de diferenças explicadas, antes de fecha | values: closes, differences_explained, open_divergences, incomplete, identity_failed, blocked
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v4`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-financial-statements.v5`
 - reference_date (date, required): data-base
 - unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
 - block_reasons (array, required): motivos estruturados de bloqueio (base vazia)
 - incomplete_reasons (array, required): identidades ou pontes que a base não permitiu testar
-- reconciliations (array, required): por conta, valores por fonte (definição, componentes, data, âncora), comparabilidade decidida pela chave de definição (com a âncora de onde a definição está), pelos componentes (que o texto da definição tem de nomear) e pela data, nunca desfeita por uma explicação, diferença, tolerância (valor, chave e versão da política; o valor tem de ser o que a política registrada declara para a família e a unidade, na versão corrente), estado (closes, explained, open, not_comparable, single_source), explicações direcionais (de uma fonte a outra, com sinal, esperado, real, resíduo e se fecha) e os grupos de fontes ligados por explicações que fecham: uma conta com n fontes só fica explicada quando há um único grupo; com mais de um, nenhuma fonte fica escondida e todas constam da divergência aberta
+- reconciliations (array, required): por conta, valores por fonte (definição, componentes, data, âncora), comparabilidade decidida pela chave de definição (com a âncora de onde a definição está), pelos componentes (que o texto da definição tem de nomear) e pela data, nunca desfeita por uma explicação, diferença, tolerância (valor, chave e versão da política; o valor tem de ser o que a política registrada declara para a família e a unidade, na versão corrente), estado (closes, explained, open, not_comparable, single_source), explicações direcionais (de uma fonte a outra, com sinal, esperado, real, resíduo e se fecha) e os grupos de fontes ligados por explicações que fecham: uma conta com n fontes só fica explicada quando há um único grupo; com mais de um, nenhuma fonte fica escondida e todas constam da divergência aberta; dentro de uma conta não comparável no todo, as fontes que compartilham definição, componentes e data são comparadas entre si (comparable_subsets), e um subconjunto aberto vira divergência própria
 - open_divergences (array, required): divergências abertas com as duas âncoras e o motivo
 - identities (array, required): identidades testadas pelo `financial-core` com estado (holds, fails, not_comparable) e uma âncora por operando: balanço (ativo, passivo e patrimônio), ponte de dívida, ponte de caixa (abertura, variação da demonstração de fluxos de caixa, fechamento) e ponte de juros, que só se compara quando as duas rubricas contam os mesmos componentes (juros e variações monetárias da nota contra juros do resultado não se comparam; a diferença fica registrada); uma ponte comparável que falha derruba o estado global
 - uncovered_terms (array, required): contas de fonte única, cada ponte ou identidade ausente da base (também numa base vazia) e a ponte de juros não comparável, com estado `insufficient_evidence` e motivo
-- trace (object, required): cálculos executados pelo `financial-core` (diferenças entre fontes, explicações, identidades, pontes e derivações declaradas de valores recalculados, com operandos ancorados) e fingerprints de entrada e saída com o trace dentro
+- trace (object, required): cálculos executados pelo `financial-core` (diferenças entre fontes, explicações, identidades, pontes e derivações declaradas de valores recalculados, com operandos ancorados) e fingerprints de entrada e saída com o trace dentro; cada cálculo carrega as âncoras dos seus operandos
 
 # Exemplos
 ## Bom

@@ -1,6 +1,6 @@
 ---
 id: build-interest-and-indexation-schedule
-version: 2026.09.05-v3
+version: 2026.09.05-v4
 maturity: implemented
 title_pt: Construir o cronograma de juros e separar IPCA capitalizado do pago
 title_en: Build the interest schedule and separate capitalized from paid indexation
@@ -10,7 +10,7 @@ owner_role: Head de Modelagem
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-interest-and-indexation-schedule
 implementation_export: buildInterestAndIndexationSchedule
-result_contract: method.build-interest-and-indexation-schedule.v3
+result_contract: method.build-interest-and-indexation-schedule.v4
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -76,18 +76,18 @@ período, e a ponte entre o serviço projetado e a despesa contábil do último 
 - Ledger sem termos por série e sem escrituras no pack.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.build-interest-and-indexation-schedule.v3`
+- schema_version (string, required): identificador do contrato de resultado, `method.build-interest-and-indexation-schedule.v4`
 - reference_date (date, required): data-base da projeção (início do primeiro período)
-- unit (enum, required): unidade dos valores monetários (BRL, BRL thousand, BRL million, USD, USD thousand); fatores e taxas levam a unidade `x`
+- unit (enum, required): unidade dos valores monetários (BRL, BRL thousand, BRL million, USD, USD thousand), ancorada na fonte que a declara (escala re-rotulada é recusada); fatores e taxas levam a unidade `x`
 - state (enum, required): complete, partial (série não projetada, principal sem cronograma, tratamento IPCA em cenários ou primeiro cupom incompleto) ou blocked | values: complete, partial, blocked
 - block_reasons (array, required): motivos estruturados de bloqueio (nenhuma série projetável)
-- assumptions (array, required): premissas declaradas (curva datada fora da data-base usada como cenário; atualização IPCA por aniversário sem o pro rata intramês; juros corridos na data-base ausentes; arredondamento não informado; tratamento IPCA projetado nos dois cenários)
-- schedule_by_series (array, required): por série: nominal de abertura com base e âncora (saldo contábil com juros nunca é nominal), juros corridos de abertura, indicação de primeiro cupom completo, curva com título e âncora, arredondamento da escritura, projeção de principal, tratamento, cenários de tratamento quando a base não diz, e por período: saldo inicial, fator e valor da atualização (capitalizada ou paga), fator do cupom, cupom acumulado, cupom pago na data de pagamento (acumulado até a data), cupom carregado depois da data, principal pago (nulo sem cronograma), saldo final e âncora do calendário
+- assumptions (array, required): premissas declaradas (curva datada fora da data-base usada como cenário; atualização IPCA por aniversário sem o pro rata intramês quando a base não dá dup/dut; juros corridos na data-base ausentes; arredondamento não informado; tratamento IPCA projetado nos dois cenários)
+- schedule_by_series (array, required): por série: nominal de abertura com base e âncora (saldo contábil com juros nunca é nominal), juros corridos de abertura, indicação de primeiro cupom completo, curva com título e âncora, arredondamento da escritura em camadas (fator do índice, fator do spread, Fator Juros, acumulação diária, valor), projeção de principal, tratamento, cenários de tratamento quando a base não diz, e por período: saldo inicial, fator e valor da atualização (capitalizada ou paga), fator do cupom, cupom acumulado, cupom pago na data de pagamento (acumulado até a data), cupom carregado depois da data, principal pago (nulo sem cronograma), saldo final e âncora do calendário
 - schedule_aggregate (object, required): por período e por indexador: juros caixa, atualização paga em caixa, atualização capitalizada, principal pago e saldo (nulos quando alguma série não tem cronograma), saldo inicial projetado, completude da projeção de principal e séries com tratamento IPCA pendente; nulo quando nada se projeta
 - ledger_coverage (object, optional): nominal projetado contra a dívida bruta do ledger, com a participação e as séries do ledger que a projeção não recebeu
 - accounting_bridge (object, optional): despesa projetada (juros caixa mais atualização paga e capitalizada) contra a despesa contábil do último período fechado; insufficient_evidence com projetado nulo e motivo quando o período não está na projeção, alguma série não foi projetada ou o tratamento IPCA não está resolvido; nunca zeros inventados
 - uncovered_series (array, required): séries sem nominal, sem termos, sem âncora de termos, sem datas de pagamento, sem curva do indexador certo, sem variação mensal ou aniversário, com remuneração incompatível, ou presentes no ledger e ausentes da entrada, cada uma com o motivo
-- trace (object, required): cada fator, aniversário, pagamento e linha com fórmula, operandos e unidade; fingerprints canônicos de entrada e saída, com o trace e o fingerprint de entrada dentro do de saída
+- trace (object, required): cada fator, aniversário, pro rata, pagamento e linha com fórmula, operandos e unidade; fingerprints canônicos de entrada e saída, com o trace e o fingerprint de entrada dentro do de saída
 
 # Exemplos
 ## Bom

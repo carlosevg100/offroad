@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `estimate-exit-cost-by-series` (v4, after the second independent review).
+ * Executor of the method `estimate-exit-cost-by-series` (v5, after the third independent review).
  * For each series an alternative wants to retire on a date: which mechanisms its indenture offers on
  * that date, each with its own formula, scope and quote day, and what each costs with what the base
  * holds. The base of any price is the nominal at the exit date (updated where indexed, with the
@@ -15,10 +15,13 @@ import {z} from "zod";
  * premium is [(1 + p)^(DU/252) - 1] over the amount retired, truncated at eight decimals; an
  * extraordinary amortization retires a fraction the indenture caps and never competes as a full
  * exit; a make-whole redemption discounts the remaining flows at the quote of the contractual day
- * (the prior or the second prior business day, as the series says) and applies the floor the series
- * says (the updated value, or none); a negotiated offer is open since issuance with a premium to be
- * set; an acquisition depends on the seller. Every anchor names a document of the base's registry
- * and every mechanism cites the series' indenture; a series without an indenture is not priced.
+ * (the prior or the second prior business day, as the series says, and that distance is checked
+ * against the calendar), adds the charges the indenture adds, and applies the floor the series says
+ * (the updated value, or none); the duration that selects the reference security is discounted at
+ * the series' own remuneration; a negotiated offer is open since issuance with a premium to be set;
+ * an acquisition depends on the seller and may be partial. Every anchor names a document of the
+ * base's registry and every mechanism cites the series' indenture with its clause; a series without
+ * an indenture is not priced.
  */
 const nonNegative = z.string().regex(/^\d+(\.\d+)?$/);
 const nonEmpty = z.string().trim().min(1);
@@ -30,7 +33,18 @@ const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 /** A dated amount with its anchor; the base of every price is built from these, never from a default. */
 const datedAmountSchema = z.object({value: nonNegative, asOf: isoDate, anchor: anchorSchema}).strict();
-const quoteSchema = z.object({rate: nonNegative, quoteDate: isoDate, /** Business days between the quote date and the exit date, from the calendar the base cites. */ businessDaysBeforeExit: z.number().int().positive(), security: nonEmpty, anchor: anchorSchema}).strict();
+const quoteSchema = z.object({
+  rate: nonNegative,
+  quoteDate: isoDate,
+  /** Business days between the quote date and the exit date: the weekdays between them less the holidays the calendar lists. */
+  businessDaysBeforeExit: z.number().int().positive(),
+  /** Holidays between the quote date and the exit date, from the calendar the base cites (zero must be stated too). */
+  holidaysBetween: z.object({count: z.number().int().nonnegative(), anchor: anchorSchema}).strict(),
+  security: nonEmpty,
+  /** The reference security's own duration in business days, when the source states it, so the nearest-duration choice is auditable. */
+  securityDurationBusinessDays: z.number().int().positive().nullable().default(null),
+  anchor: anchorSchema,
+}).strict();
 const businessDaysSchema = z.object({count: z.number().int().nonnegative(), maturity: isoDate, anchor: anchorSchema}).strict();
 const referenceRateSchema = z.enum(["NTN-B (ANBIMA indicative, nearest duration)", "B3 Pre x DI curve (nearest vertex to remaining duration)"]);
 const makeWholeFields = {
@@ -93,6 +107,8 @@ export const exitCostInputSchema = z.object({
     chargesAtExit: datedAmountSchema.nullable(),
     /** Remaining flows after the exit date for the make-whole prices, each with its business days from the exit date; null when the base has no schedule. */
     remainingFlows: z.array(z.object({id: nonEmpty, date: isoDate, amount: nonNegative, businessDaysFromExit: z.number().int().positive(), anchor: anchorSchema}).strict()).nullable(),
+    /** The series' own remuneration as an annual rate (the real spread for an IPCA series, the fixed rate for a pre series), which the indenture uses to discount the duration that selects the reference security. */
+    remunerationRate: z.object({value: nonNegative, anchor: anchorSchema}).strict().nullable(),
     mechanisms: z.array(exitMechanismSchema),
     anchor: anchorSchema,
   }).strict()),
@@ -127,21 +143,28 @@ export const exitCostInputSchema = z.object({
       kinds.add(mechanism.mechanism);
       checkAnchor(mechanism.anchor, [...path, "anchor"]);
       if (documents.get(mechanism.anchor.document) !== "indenture") context.addIssue({code: "custom", path: [...path, "anchor"], message: `${series.id}: mechanism ${mechanism.mechanism} must cite an indenture, not ${mechanism.anchor.document}`});
+      if (series.indenture && mechanism.anchor.document !== series.indenture.document) context.addIssue({code: "custom", path: [...path, "anchor"], message: `${series.id}: mechanism ${mechanism.mechanism} cites ${mechanism.anchor.document}, not the series' indenture ${series.indenture.document}`});
+      if (!mechanism.anchor.clause) context.addIssue({code: "custom", path: [...path, "anchor"], message: `${series.id}: mechanism ${mechanism.mechanism} must cite the clause of the indenture that writes it`});
       if ("businessDays" in mechanism) {
         checkAnchor(mechanism.businessDays.anchor, [...path, "businessDays", "anchor"]);
         if (documents.get(mechanism.businessDays.anchor.document) !== "calendar") context.addIssue({code: "custom", path: [...path, "businessDays"], message: `${series.id}: business days must cite a calendar of the base`});
         if (mechanism.businessDays.maturity <= input.exitDate) context.addIssue({code: "custom", path: [...path, "businessDays"], message: `${series.id}: maturity ${mechanism.businessDays.maturity} is not after the exit date`});
+        if (mechanism.businessDays.count === 0) context.addIssue({code: "custom", path: [...path, "businessDays"], message: `${series.id}: a maturity after the exit date has at least one business day; a count of zero prices a premium of zero`});
         const weekdays = weekdaysBetween(input.exitDate, mechanism.businessDays.maturity);
         if (mechanism.businessDays.count > weekdays) context.addIssue({code: "custom", path: [...path, "businessDays"], message: `${series.id}: ${mechanism.businessDays.count} business days cannot fit in the ${weekdays} weekdays between ${input.exitDate} and ${mechanism.businessDays.maturity}`});
       }
       if ("fraction" in mechanism) {
-        if (new Decimal(mechanism.maxFraction).gt(1) || new Decimal(mechanism.maxFraction).lte(0)) context.addIssue({code: "custom", path, message: `${series.id}: maxFraction must be in (0, 1]`});
+        if (new Decimal(mechanism.maxFraction).gte(1) || new Decimal(mechanism.maxFraction).lte(0)) context.addIssue({code: "custom", path, message: `${series.id}: an extraordinary amortization retires a fraction the indenture caps below 100%; maxFraction must be in (0, 1)`});
         if (new Decimal(mechanism.fraction).gt(mechanism.maxFraction) || new Decimal(mechanism.fraction).lte(0)) context.addIssue({code: "custom", path, message: `${series.id}: the fraction ${mechanism.fraction} exceeds the ${mechanism.maxFraction} the indenture allows, or is not positive`});
       }
       if ("quote" in mechanism && mechanism.quote) {
         checkAnchor(mechanism.quote.anchor, [...path, "quote", "anchor"]);
         if (mechanism.quote.quoteDate >= input.exitDate) context.addIssue({code: "custom", path: [...path, "quote"], message: `${series.id}: the quote must precede the exit date`});
-        if (mechanism.quote.businessDaysBeforeExit > weekdaysBetween(mechanism.quote.quoteDate, input.exitDate)) context.addIssue({code: "custom", path: [...path, "quote"], message: `${series.id}: the quote claims ${mechanism.quote.businessDaysBeforeExit} business days before the exit in ${weekdaysBetween(mechanism.quote.quoteDate, input.exitDate)} weekdays`});
+        checkAnchor(mechanism.quote.holidaysBetween.anchor, [...path, "quote", "holidaysBetween"]);
+        if (documents.get(mechanism.quote.holidaysBetween.anchor.document) !== "calendar") context.addIssue({code: "custom", path: [...path, "quote", "holidaysBetween"], message: `${series.id}: the holidays between the quote and the exit must cite a calendar of the base`});
+        const expected = weekdaysBetween(mechanism.quote.quoteDate, input.exitDate) - mechanism.quote.holidaysBetween.count;
+        if (mechanism.quote.businessDaysBeforeExit !== expected) context.addIssue({code: "custom", path: [...path, "quote"], message: `${series.id}: the quote of ${mechanism.quote.quoteDate} is ${expected} business days before ${input.exitDate} by the calendar (${weekdaysBetween(mechanism.quote.quoteDate, input.exitDate)} weekdays less ${mechanism.quote.holidaysBetween.count} holidays), not ${mechanism.quote.businessDaysBeforeExit}`});
+        if (documents.get(mechanism.quote.anchor.document) !== "quote" && documents.get(mechanism.quote.anchor.document) !== "market_data") context.addIssue({code: "custom", path: [...path, "quote", "anchor"], message: `${series.id}: a quote must cite a quote or market data document of the base`});
       }
       if ("premium" in mechanism && mechanism.premium) checkAnchor(mechanism.premium.anchor, [...path, "premium", "anchor"]);
     });
@@ -164,14 +187,15 @@ export function weekdaysBetween(from: string, to: string): number {
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 type RouteState = "estimated" | "base_priced_premium_open" | "price_at_counterparty" | "insufficient_evidence" | "not_permitted";
 type Route = {
-  mechanism: string; scope: "full" | "partial"; fraction: string | null; permitted_on_date: boolean; available_from: string | null; state: RouteState;
+  mechanism: string; scope: "full" | "partial" | "partial_or_full"; fraction: string | null; permitted_on_date: boolean; available_from: string | null; state: RouteState;
   amount_retired: string | null; premium: string | null; total_payable: string | null; reason: string | null; anchor: Anchor;
-  quote: {rate: string; quoteDate: string; businessDaysBeforeExit: number; security: string; anchor: Anchor} | null;
-  present_value: {value: string; duration_business_days: string; flows: number} | null;
+  quote: {rate: string; quoteDate: string; businessDaysBeforeExit: number; security: string; securityDurationBusinessDays: number | null; anchor: Anchor} | null;
+  /** The present value of the remaining flows at the quote, the duration at the series' own remuneration (which selects the security), and the flows counted. */
+  present_value: {value: string; duration_business_days_at_remuneration: string; remuneration_rate: string; flows: number; charges_added: string} | null;
 };
 
 export type ExitCostOutput = {
-  schema_version: "method.estimate-exit-cost-by-series.v4";
+  schema_version: "method.estimate-exit-cost-by-series.v5";
   exit_date: string;
   unit: string;
   state: "complete" | "partial" | "empty";
@@ -234,10 +258,11 @@ export function estimateExitCostBySeries(raw: ExitCostInput): ExitCostOutput {
       const permitted = availableFrom === null ? true : input.exitDate >= availableFrom;
       const partial = PARTIAL.has(mechanism.mechanism);
       const fraction = "fraction" in mechanism ? mechanism.fraction : null;
-      const common = {mechanism: mechanism.mechanism, scope: partial ? "partial" as const : "full" as const, fraction, permitted_on_date: permitted, available_from: availableFrom, anchor: mechanism.anchor, quote: "quote" in mechanism && mechanism.quote ? {rate: mechanism.quote.rate, quoteDate: mechanism.quote.quoteDate, businessDaysBeforeExit: mechanism.quote.businessDaysBeforeExit, security: mechanism.quote.security, anchor: mechanism.quote.anchor} : null, present_value: null, amount_retired: null, premium: null, total_payable: null};
+      const scope = mechanism.mechanism === "acquisition" ? "partial_or_full" as const : partial ? "partial" as const : "full" as const;
+      const common = {mechanism: mechanism.mechanism, scope, fraction, permitted_on_date: permitted, available_from: availableFrom, anchor: mechanism.anchor, quote: "quote" in mechanism && mechanism.quote ? {rate: mechanism.quote.rate, quoteDate: mechanism.quote.quoteDate, businessDaysBeforeExit: mechanism.quote.businessDaysBeforeExit, security: mechanism.quote.security, securityDurationBusinessDays: mechanism.quote.securityDurationBusinessDays, anchor: mechanism.quote.anchor} : null, present_value: null, amount_retired: null, premium: null, total_payable: null};
       if (!indenture) return {...common, state: "insufficient_evidence", reason: base.reason};
       if (!permitted) return {...common, state: "not_permitted", reason: `this mechanism is only available from ${availableFrom}`};
-      if (mechanism.mechanism === "acquisition") return {...common, state: "price_at_counterparty", reason: "facultative acquisition depends on the seller's acceptance; the price is whatever the seller accepts, and the base holds no offer"};
+      if (mechanism.mechanism === "acquisition") return {...common, state: "price_at_counterparty", reason: "facultative acquisition of the debentures a seller accepts, all or part of the series; the price is whatever the seller accepts, and the base holds no offer"};
       if (!basePayable) return {...common, state: "insufficient_evidence", reason: base.reason};
       const retired = fraction ? basePayable.times(fraction) : basePayable;
       if (mechanism.mechanism === "extraordinary_amortization_di" || mechanism.mechanism === "total_redemption_di") {
@@ -252,15 +277,19 @@ export function estimateExitCostBySeries(raw: ExitCostInput): ExitCostOutput {
         if (!mechanism.quote) return {...common, state: "insufficient_evidence", reason: `needs the ${mechanism.referenceRate} quote of ${which}; the base holds none`};
         if (mechanism.quote.businessDaysBeforeExit !== requiredOffset) return {...common, state: "insufficient_evidence", reason: `the quote in the base is ${mechanism.quote.businessDaysBeforeExit} business days before the exit; the series requires ${which}`};
         if (!series.remainingFlows || series.remainingFlows.length === 0) return {...common, state: "insufficient_evidence", reason: `needs the remaining flows of ${series.label} after ${input.exitDate} to discount at the quote; the base holds no schedule`};
+        if (!series.remunerationRate) return {...common, state: "insufficient_evidence", reason: `needs the remuneration rate of ${series.label}: the indenture discounts the duration that selects the reference security at the series' own remuneration, and the base does not state it`};
         const flows = series.remainingFlows.map((flow) => ({id: flow.id, amount: flow.amount, businessDays: flow.businessDaysFromExit}));
         const present = presentValueByBusinessDays(flows, mechanism.quote.rate);
-        const duration = macaulayDurationBusinessDays(flows, mechanism.quote.rate);
+        const duration = macaulayDurationBusinessDays(flows, series.remunerationRate.value);
         calculations.push({...present.trace, id: `${present.trace.id}:${series.id}:${mechanism.mechanism}`, unit: input.unit});
-        calculations.push({...duration.trace, id: `${duration.trace.id}:${series.id}:${mechanism.mechanism}`, unit: "business days"});
+        calculations.push({...duration.trace, id: `${duration.trace.id}:${series.id}:${mechanism.mechanism}`, formula: `${duration.trace.formula}, discounted at the series' remuneration`, unit: "business days"});
+        // The indenture compares the updated value with the present value of the remaining flows, then adds the charges due; the fraction scales both.
+        const chargesRetired = d(series.chargesAtExit!.value).times(fraction ?? 1);
+        const principalAndAccrued = d(series.nominalAtExit!.value).plus(series.accruedAtExit!.value).times(fraction ?? 1);
         const presentValue = d(present.value).times(fraction ?? 1);
-        const payable = mechanism.floor === "max_with_base" ? Decimal.max(retired, presentValue) : presentValue;
-        record({id: `structure.exit_make_whole:${series.id}:${mechanism.mechanism}`, formula: mechanism.floor === "max_with_base" ? "max(amountRetired, presentValueAtQuote * fraction)" : "presentValueAtQuote * fraction", operands: {amountRetired: out(retired), presentValueAtQuote: present.value, fraction: fraction ?? "1", quoteRate: mechanism.quote.rate, quoteDate: mechanism.quote.quoteDate, quoteDay: mechanism.quoteDay, security: mechanism.quote.security, referenceRate: mechanism.referenceRate, durationBusinessDays: duration.value}, result: out(payable)});
-        return {...common, state: "estimated", amount_retired: out(retired), premium: out(payable.minus(retired)), total_payable: out(payable), present_value: {value: out(presentValue), duration_business_days: duration.value, flows: flows.length}, reason: partial ? `retires ${fraction} of the series; not a full exit` : null};
+        const payable = (mechanism.floor === "max_with_base" ? Decimal.max(principalAndAccrued, presentValue) : presentValue).plus(chargesRetired);
+        record({id: `structure.exit_make_whole:${series.id}:${mechanism.mechanism}`, formula: mechanism.floor === "max_with_base" ? "max((nominal + accrued) * fraction, presentValueAtQuote * fraction) + charges * fraction" : "presentValueAtQuote * fraction + charges * fraction", operands: {nominalPlusAccrued: out(principalAndAccrued), presentValueAtQuote: present.value, charges: out(chargesRetired), fraction: fraction ?? "1", quoteRate: mechanism.quote.rate, quoteDate: mechanism.quote.quoteDate, quoteDay: mechanism.quoteDay, security: mechanism.quote.security, referenceRate: mechanism.referenceRate, durationAtRemuneration: duration.value, remunerationRate: series.remunerationRate.value}, result: out(payable)});
+        return {...common, state: "estimated", amount_retired: out(retired), premium: out(payable.minus(retired)), total_payable: out(payable), present_value: {value: out(presentValue), duration_business_days_at_remuneration: duration.value, remuneration_rate: series.remunerationRate.value, flows: flows.length, charges_added: out(chargesRetired)}, reason: partial ? `retires ${fraction} of the series; not a full exit` : null};
       }
       if (mechanism.mechanism === "negotiated_offer") {
         if (mechanism.premium === null) return {...common, state: "base_priced_premium_open", amount_retired: out(basePayable), reason: `the indenture prices the base (${out(basePayable)}); the premium is set in the offer notice${mechanism.requiresFullAdherence ? " and the redemption needs the adherence of every holder" : " and the holders decide"}; no notice exists in the base`};
@@ -283,7 +312,7 @@ export function estimateExitCostBySeries(raw: ExitCostInput): ExitCostOutput {
   };
   if (input.series.length === 0) record({id: "structure.exit_cost:none", formula: "no series to retire", operands: {}, result: "0"});
   const state: ExitCostOutput["state"] = input.series.length === 0 ? "empty" : totals.series_open > 0 ? "partial" : "complete";
-  const body = {schema_version: "method.estimate-exit-cost-by-series.v4" as const, exit_date: input.exitDate, unit: input.unit, state, exit_costs: exitCosts, uncovered_terms: uncovered, totals};
+  const body = {schema_version: "method.estimate-exit-cost-by-series.v5" as const, exit_date: input.exitDate, unit: input.unit, state, exit_costs: exitCosts, uncovered_terms: uncovered, totals};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }

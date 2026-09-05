@@ -1,6 +1,6 @@
 ---
 id: estimate-exit-cost-by-series
-version: 2026.09.05-v4
+version: 2026.09.05-v5
 maturity: implemented
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/estimate-exit-cost-by-series
 implementation_export: estimateExitCostBySeries
-result_contract: method.estimate-exit-cost-by-series.v4
+result_contract: method.estimate-exit-cost-by-series.v5
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -63,11 +63,11 @@ na data-base, custo estimado e o que falta para fechar o número.
 - financial.weighted_average_life: duration remanescente para escolher o vértice ou o título de referência.
 
 # Regras de precificação
-- Toda âncora nomeia um documento do registro da base; todo mecanismo cita a escritura da série; dias úteis citam um calendário da base; série sem escritura não é precificada.
+- Toda âncora nomeia um documento do registro da base; todo mecanismo cita a escritura da própria série com a cláusula; dias úteis e feriados citam um calendário da base; cotações citam documento de cotação; série sem escritura não é precificada.
 - A base é o nominal na data de saída (atualizado onde indexado, com a derivação que a fonte permite), mais a remuneração corrida até a data e os encargos que a escritura declara (zero explícito incluído); saldo de 31/05 não é nominal em 04/09.
-- Amortização extraordinária retira uma fração limitada pela escritura (98% nas 13ª, 14ª e 15ª) e nunca concorre como saída integral; resgate total é a saída integral.
+- Amortização extraordinária retira uma fração limitada pela escritura abaixo de 100% (98% nas 13ª, 14ª e 15ª) e nunca concorre como saída integral; resgate total é a saída integral; aquisição facultativa pode ser parcial ou integral, ao preço que o vendedor aceitar.
 - Prêmio DI: [(1 + p)^(DU/252) − 1] sobre o valor retirado, truncado em oito casas.
-- Make-whole IPCA e prefixado: fluxos remanescentes descontados na cotação do dia contratual (o dia útil anterior ou o segundo anterior, como a série escreve), com o piso que a série escreve (valor atualizado, ou nenhum); cotação de outro dia é insufficient_evidence; fluxos ausentes idem; valor presente e duration calculados no financial-core.
+- Make-whole IPCA e prefixado: fluxos remanescentes descontados na cotação do dia contratual (o dia útil anterior ou o segundo anterior, como a série escreve; a distância é conferida contra o calendário), comparados com o valor atualizado quando a série tem piso, mais os encargos que a escritura soma depois; a duration que escolhe o título de referência é descontada pela remuneração da própria série; cotação de outro dia, fluxos ou remuneração ausentes são insufficient_evidence; valor presente e duration calculados no financial-core.
 - Oferta negociada é permitida desde a emissão e o prêmio só existe com o aviso; aquisição facultativa tem preço no vendedor.
 - Saída integral mais barata escolhida por comparação numérica.
 
@@ -86,11 +86,11 @@ na data-base, custo estimado e o que falta para fechar o número.
 - Nenhuma escritura da série no pack e a alternativa depende dela.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.estimate-exit-cost-by-series.v4`
+- schema_version (string, required): identificador do contrato de resultado, `method.estimate-exit-cost-by-series.v5`
 - exit_date (date, required): data de saída para a qual cada preço é medido
 - unit (enum, required): unidade de todos os valores (BRL, BRL thousand, BRL million, USD, USD thousand)
 - state (enum, required): complete quando toda série tem uma saída integral estimada, partial quando alguma fica aberta, empty sem séries | values: complete, partial, empty
-- exit_costs (array, required): por série: escritura citada (sem ela nada é precificado), base na data de saída (nominal com a derivação declarada, remuneração corrida e encargos explícitos, cada um com âncora; qualquer componente ausente é insufficient_evidence, nunca zero), rotas por mecanismo com escopo (integral ou parcial com a fração que a escritura permite), permissão na data, estado, valor retirado, prêmio, total a pagar, motivo, cotação do dia contratual (anterior ou segundo anterior) e valor presente com duration quando a rota desconta fluxos; saída integral mais barata escolhida numericamente entre as rotas unilaterais integrais
+- exit_costs (array, required): por série: escritura citada (sem ela nada é precificado), base na data de saída (nominal com a derivação declarada, remuneração corrida e encargos explícitos, cada um com âncora; qualquer componente ausente é insufficient_evidence, nunca zero), rotas por mecanismo com escopo (integral, parcial com a fração que a escritura permite, ou parcial-ou-integral na aquisição), permissão na data, estado, valor retirado, prêmio, total a pagar, motivo, cotação do dia contratual (anterior ou segundo anterior, com feriados do calendário e duration do título quando a fonte a dá) e valor presente com a duration na remuneração da série, a taxa usada e os encargos somados quando a rota desconta fluxos; saída integral mais barata escolhida numericamente entre as rotas unilaterais integrais
 - uncovered_terms (array, required): base ou escritura ausentes por série, como insufficient_evidence com o motivo
 - totals (object, required): prêmio e total estimados das saídas integrais mais baratas, séries estimadas e séries em aberto
 - trace (object, required): base, prêmios, valores presentes e durations com fórmula, operandos e unidade; fingerprints canônicos de entrada e saída, com o trace e o fingerprint de entrada dentro do de saída

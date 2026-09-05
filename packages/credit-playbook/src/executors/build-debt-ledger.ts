@@ -145,7 +145,7 @@ type View = {value: string; definition: string; definitionSource: Anchor; compon
 type UncoveredField = "remuneration" | "maturity" | "guarantee" | "lender_formal_holder" | "lender_economic_creditors" | "classification";
 
 export type DebtLedgerOutput = {
-  schema_version: "method.build-debt-ledger.v10";
+  schema_version: "method.build-debt-ledger.v11";
   reference_date: string;
   prior_date: string | null;
   unit: string;
@@ -312,11 +312,14 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
     record({id: "financial.maturity_buckets", formula: "sum(schedule.periods.amount) - sum(reported rows.balance)", operands: {...Object.fromEntries(input.schedule.periods.map((period) => [`period:${period.period}`, period.amount])), ledgerReported: out(grossReported)}, result: out(total.minus(grossReported))});
     if (!matchesGross) blockReasons.push(`schedule total ${out(total)} differs from the reported ledger total ${out(grossReported)}`);
     let currentPeriod: NonNullable<DebtLedgerOutput["schedule"]>["currentPeriod"] = null;
-    const horizon = new Date(`${input.referenceDate}T00:00:00Z`); horizon.setUTCFullYear(horizon.getUTCFullYear() + 1);
+    // Twelve months ahead by calendar months, clamped to the month's last day: a 29 February reference ends its horizon on 28 February, never on 1 March.
+    const [refYear, refMonth, refDay] = input.referenceDate.split("-").map(Number) as [number, number, number];
+    const lastDay = new Date(Date.UTC(refYear + 1, refMonth, 0)).getUTCDate();
+    const horizonDate = `${refYear + 1}-${String(refMonth).padStart(2, "0")}-${String(Math.min(refDay, lastDay)).padStart(2, "0")}`;
     const dated = input.schedule.periods.filter((entry) => entry.endsAt !== null && entry.endsAt > input.referenceDate).sort((a, b) => compare(a.endsAt!, b.endsAt!));
     if (input.schedule.periods.some((entry) => entry.endsAt !== null && entry.endsAt <= input.referenceDate)) blockReasons.push(`the schedule carries a period that ended on or before the reference date (${input.schedule.periods.filter((entry) => entry.endsAt !== null && entry.endsAt <= input.referenceDate).map((entry) => entry.period).join(", ")}); a schedule at the reference date has no past periods`);
     const first = dated[0];
-    if (first && first.endsAt! <= horizon.toISOString().slice(0, 10) && input.balanceSheet) {
+    if (first && first.endsAt! <= horizonDate && input.balanceSheet) {
       const difference = d(first.amount).minus(input.balanceSheet.current);
       const matches = difference.abs().lte(tolerance);
       record({id: "financial.maturity_buckets:current", formula: "schedule[earliest endsAt within twelve months].amount - balanceSheet.current", operands: {period: first.period, endsAt: first.endsAt!, amount: first.amount, balanceSheetCurrent: input.balanceSheet.current}, result: out(difference)});
@@ -423,7 +426,7 @@ export function buildDebtLedger(raw: DebtLedgerInput): DebtLedgerOutput {
       ? "empty"
       : incompleteReasons.length > 0 ? "incomplete" : "complete";
   const body = {
-    schema_version: "method.build-debt-ledger.v10" as const,
+    schema_version: "method.build-debt-ledger.v11" as const,
     reference_date: input.referenceDate, prior_date: input.priorDate, unit: input.unit, unit_anchor: input.unitAnchor, source: input.source, state, block_reasons: blockReasons, incomplete_reasons: incompleteReasons,
     ledger_rows: rows.map((row) => ({
       id: row.id, instrument: row.instrument, series: row.series ?? null, obligation: row.obligation ?? null, balance: out(d(row.balance)), priorBalance: row.priorBalance === null ? null : out(d(row.priorBalance)),

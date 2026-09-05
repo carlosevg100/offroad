@@ -388,4 +388,24 @@ describe("build-debt-ledger executor (v10)", () => {
   it("emits exactly the top-level outputs the method declares", () => {
     expect(contractMismatch(buildDebtLedger(camil()) as unknown as Record<string, unknown>, "financial/build-debt-ledger.md")).toEqual([]);
   });
+
+  it("mutation: a 29 February reference date ends its twelve-month horizon on 28 February, so a period ending 1 March is not the current one", () => {
+    const base = camil();
+    const leap: DebtLedgerInput = {...base, referenceDate: "2024-02-29", priorDate: "2023-11-30", rows: base.rows.map((row) => ({...row, priorBalance: null})), schedule: {...base.schedule!, periods: base.schedule!.periods.map((period) => (period.endsAt === null ? period : {...period, endsAt: period.endsAt.replace(/^2027-05-31$/, "2025-03-01").replace(/^20(28|29|30|31)-05-31$/, "20$1-03-01")}))}};
+    const result = buildDebtLedger(leap);
+    expect(result.schedule?.currentPeriod).toBeNull();
+    expect(result.incomplete_reasons.some((reason) => /no period ends within twelve months/.test(reason))).toBe(true);
+    const within: DebtLedgerInput = {...leap, schedule: {...leap.schedule!, periods: leap.schedule!.periods.map((period) => (period.endsAt === "2025-03-01" ? {...period, endsAt: "2025-02-28"} : period))}};
+    expect(buildDebtLedger(within).schedule?.currentPeriod?.period).toBe("2026/27");
+  });
+
+  it("refuses empty strings, duplicate periods and reports every gap of a row at once", () => {
+    const base = camil();
+    expect(() => buildDebtLedger({...base, unit: "" as unknown as "BRL"})).toThrow();
+    expect(() => buildDebtLedger({...base, rows: base.rows.map((row, index) => (index === 0 ? {...row, instrument: ""} : row))})).toThrow();
+    expect(() => buildDebtLedger({...base, schedule: {...base.schedule!, periods: [...base.schedule!.periods, {...base.schedule!.periods[0]!}]}})).toThrow(/duplicate period/);
+    const bare = buildDebtLedger({...base, rows: base.rows.map((row) => (row.contra ? row : {...row, remuneration: null, maturity: null, guarantee: null, classification: null}))});
+    const first = bare.ledger_rows.find((row) => !row.contra)!;
+    expect(bare.uncovered_terms.filter((term) => term.rowId === first.id).map((term) => term.field)).toEqual(expect.arrayContaining(["remuneration", "maturity", "guarantee", "classification"]));
+  });
 });

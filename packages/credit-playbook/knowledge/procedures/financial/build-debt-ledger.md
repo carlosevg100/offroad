@@ -1,6 +1,6 @@
 ---
 id: build-debt-ledger
-version: 2026.09.05-v10
+version: 2026.09.05-v11
 maturity: implemented
 title_pt: Construir o ledger de dívida
 title_en: Build the debt ledger
@@ -10,7 +10,7 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-debt-ledger
 implementation_export: buildDebtLedger
-result_contract: method.build-debt-ledger.v10
+result_contract: method.build-debt-ledger.v11
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -82,7 +82,7 @@ sustenta.
 - Nota de dívida ausente no período mais recente disponível.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.build-debt-ledger.v10`
+- schema_version (string, required): identificador do contrato de resultado, `method.build-debt-ledger.v11`
 - reference_date (date, required): data-base do ledger
 - prior_date (date, optional): data-base anterior; ausente quando a base não a traz
 - unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
