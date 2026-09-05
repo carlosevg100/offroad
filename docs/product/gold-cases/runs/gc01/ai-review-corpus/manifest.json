@@ -1,7 +1,7 @@
 {
   "schemaVersion": "ai-review-corpus.v1",
   "caseId": "gc01-analista-ib-camil",
-  "extractor": "pdftotext -layout (poppler)",
+  "extractor": "pdftotext -layout (poppler); índices da CVM filtrados às linhas da Camil",
   "entries": [
     {
       "file": "01_ITR_1T26_31mai2026.txt",
@@ -107,6 +107,16 @@
       "file": "cvm_dfp_2025.txt",
       "bytes": 415555,
       "sha256": "12dd31a831c328a3dec62843e805eb449d3b857d0b88f227d3444eaff7d0fc2d"
+    },
+    {
+      "file": "cvm_ipe_2026_camil.csv",
+      "bytes": 26449,
+      "sha256": "3ec46ab5561cebb65e85bc00af9dc2f04a52608329322923b73a2d1e90c05283"
+    },
+    {
+      "file": "cvm_itr_2026_camil.csv",
+      "bytes": 279,
+      "sha256": "efe2579c06f1e2bb390d8a196f02661adc7672b885106c3d01e330c7f38848b2"
     },
     {
       "file": "escritura_11a_emissao.txt",
