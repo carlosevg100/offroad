@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "ai-review-corpus.v1",
+  "caseId": "gc01-analista-ib-camil",
+  "extractor": "pdftotext -layout (poppler)",
+  "entries": [
+    {
+      "file": "01_ITR_1T26_31mai2026.txt",
+      "bytes": 246448,
+      "sha256": "05c8f9e9f8243b907036953e297873fc20870d3478086ad783393b79b0393c79"
+    },
+    {
+      "file": "02_Proposta_Administracao_AGOE_2026.txt",
+      "bytes": 399723,
+      "sha256": "ca96a57352632cfa6e5fc7a0523fd2368adb36638b2ee9d9d80698556405aedb"
+    },
+    {
+      "file": "aditamento_11a_emissao.txt",
+      "bytes": 25664,
+      "sha256": "fbacb335e8a1d77f61f6e3b3bce805b5c2c6f1293986b55d1d0dfd678d27864a"
+    },
+    {
+      "file": "af_11a_emissao.txt",
+      "bytes": 13030,
+      "sha256": "c943c71ec075ba6bec340d9748a73682c36d0073b5ced861da7e4eecba80b06a"
+    },
+    {
+      "file": "af_13a_emissao.txt",
+      "bytes": 55570,
+      "sha256": "8d5e0680970867999ed84303ce96facdc16d2beb06c8e6de384f69a5e97b72a0"
+    },
+    {
+      "file": "af_14a_emissao.txt",
+      "bytes": 55502,
+      "sha256": "4426e92cf59a0dea4f5db2f99e2bfccb730fe249531e0284331677627b77276f"
+    },
+    {
+      "file": "af_15a_emissao.txt",
+      "bytes": 56989,
+      "sha256": "a3f325db199075f753007adeaa1fd75c01e286066f446f88db3a9c31827e109f"
+    },
+    {
+      "file": "af_debenture_verde.txt",
+      "bytes": 3343,
+      "sha256": "8956bfc6464b8cd26b00195b601cec0fcf7661c3d178abebcf0912a5a5a03439"
+    },
+    {
+      "file": "anbima_ettj_2026-09-04.csv",
+      "bytes": 2934,
+      "sha256": "531e97d7ead363068fc801156d29043024390ee9bc5bc105fb85917c607c9129"
+    },
+    {
+      "file": "bcb_sgs_cdi_diario.json",
+      "bytes": 124,
+      "sha256": "bc2c8c0e9b36ba9a1a69d74be03e7ce6cd89bc290481e2320c4c745e73fb22bb"
+    },
+    {
+      "file": "bcb_sgs_selic_meta.json",
+      "bytes": 153,
+      "sha256": "46ab2cf0d0ba1422614a1fa0fe0ebdeb0f185d65db2c48d7abaeea6978e63b93"
+    },
+    {
+      "file": "ca_aprovacao_itr_1t26.txt",
+      "bytes": 4889,
+      "sha256": "8f96c74093c2343fa8afd60fb8937f93f8abda43738af77ba858290bdb5d06a4"
+    },
+    {
+      "file": "ca_governanca_2026-07-14.txt",
+      "bytes": 10194,
+      "sha256": "dbf982d366ecbcc6fd98671c395adda17e7f91578f461f231680d410059b67aa"
+    },
+    {
+      "file": "ca_notas_comerciais_2026-05-27.txt",
+      "bytes": 7546,
+      "sha256": "1bd55c5140c81cf51a79daece6f7027aa6b3911c7995da42b65729df71879ebe"
+    },
+    {
+      "file": "ca_operacao_estruturada_2026-05-27.txt",
+      "bytes": 5647,
+      "sha256": "2ce34d4d08bd978076d72e1ae269a4c4e0aafcccacc7ff57d81eb12ef8cc7487"
+    },
+    {
+      "file": "calendario_eventos_2026.txt",
+      "bytes": 2513,
+      "sha256": "152c0813d6702d57e6218dab0f66a592fd2b8b77ac1a74eb3537ec8a9eae7e78"
+    },
+    {
+      "file": "cm_conclusao_11a.txt",
+      "bytes": 5195,
+      "sha256": "2397d7c387caaec545b4eecfb3db30e7313b6d1ed94c02e1911da476aca8cfba"
+    },
+    {
+      "file": "cm_conclusao_13a_cra.txt",
+      "bytes": 3178,
+      "sha256": "995caf1fe46e4844251136962e0b9dd2626f40f55b246f95819713112d02ce58"
+    },
+    {
+      "file": "cm_conclusao_14a.txt",
+      "bytes": 3020,
+      "sha256": "bea335c9c741ce4e657b1028e6938824f2a72b3d97ce15c5935f46cb8935a8da"
+    },
+    {
+      "file": "cm_conclusao_15a.txt",
+      "bytes": 3554,
+      "sha256": "72d055d9a69a93189c79596ea0bbca637e77b0f99bd68deafbf8bea00ae17fb9"
+    },
+    {
+      "file": "cvm_dfp_2025.txt",
+      "bytes": 415555,
+      "sha256": "12dd31a831c328a3dec62843e805eb449d3b857d0b88f227d3444eaff7d0fc2d"
+    },
+    {
+      "file": "escritura_11a_emissao.txt",
+      "bytes": 174703,
+      "sha256": "478fb2cd6d7f07965b5365cfbf3ae83f1b332a25ca9e536be0507d74431e8c96"
+    },
+    {
+      "file": "escritura_12a_emissao.txt",
+      "bytes": 177593,
+      "sha256": "7f9fc5c196f128ac7f4ddec8d16d09607cd8a2f3ca0c524db16c2f2b7298c738"
+    },
+    {
+      "file": "escritura_13a_emissao.txt",
+      "bytes": 298090,
+      "sha256": "063f59f6892d919df3355b9ed6050f35d76c3261c5c6ec5f6e73327fdb474e23"
+    },
+    {
+      "file": "escritura_14a_emissao.txt",
+      "bytes": 299994,
+      "sha256": "00174dc2087f611d1a8f7884157674f23dc9083f20df2d94090233bbb084fe26"
+    },
+    {
+      "file": "escritura_15a_emissao.txt",
+      "bytes": 334753,
+      "sha256": "acb1f0aaa8ee908fbb496e11b440907d86acaebec72f698c345b426e88acc970"
+    },
+    {
+      "file": "ri_apresentacao_1t26.txt",
+      "bytes": 50647,
+      "sha256": "4cdf0f1bac1e707d55ff1de4d813ba5363f0e7760dc0ce8b2038e12fb42c170d"
+    },
+    {
+      "file": "ri_release_1t26.txt",
+      "bytes": 266247,
+      "sha256": "be553465ea648a2606b37f6715bbb9bd8b0aff435614f1f5b50d6b17d35efa0a"
+    }
+  ]
+}

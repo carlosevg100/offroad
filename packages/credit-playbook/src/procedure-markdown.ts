@@ -5,6 +5,7 @@ import {join, relative} from "node:path";
 import {z} from "zod";
 
 import {canonicalProcedureSchema, type CanonicalProcedure} from "./procedure-contract";
+import {aiIndependentReviewSchema, reviewCountsForPromotion, type AiIndependentReview} from "./review-record";
 
 /**
  * A method is written by a person, in Markdown, one file per method, and compiled into the
@@ -19,7 +20,7 @@ import {canonicalProcedureSchema, type CanonicalProcedure} from "./procedure-con
 const frontmatterSchema = z.object({
   id: z.string().regex(/^[a-z][a-z0-9-]{2,79}$/),
   version: z.string().regex(/^\d{4}\.\d{2}\.\d{2}-v\d+$/),
-  maturity: z.enum(["draft", "candidate", "production"]),
+  maturity: z.enum(["draft", "candidate", "implemented", "ai_reviewed", "tested", "ready_for_founder", "production"]),
   title_pt: z.string().min(1),
   title_en: z.string().min(1),
   role: z.enum(["intake_evidence", "financial_analysis", "credit_structuring", "institutional_materials", "market_distribution", "independent_quality_control"]),
@@ -37,6 +38,11 @@ const frontmatterSchema = z.object({
   gold_cases: z.array(z.string().min(1)).default([]),
   dependencies: z.array(z.string().regex(/^[a-z][a-z0-9-]{2,79}$/)).default([]),
   templates: z.array(z.string().regex(/^[a-z][a-z0-9-]{2,79}$/)).default([]),
+  /** Ids of independent reviews on record under `knowledge/reviews/<id>.json`. */
+  review_ids: z.array(z.string().regex(/^[a-z0-9][a-z0-9_.-]{2,120}$/)).default([]),
+  gold_run_ids: z.array(z.string().min(1)).default([]),
+  adversarial_run_ids: z.array(z.string().min(1)).default([]),
+  consistency_run_ids: z.array(z.string().min(1)).default([]),
   max_model_calls: z.coerce.number().int().min(0).max(3).default(0),
   model_purpose: z.array(z.string().min(1)).default([]),
   allowed_tools: z.array(z.string().min(1)).default([]),
@@ -190,8 +196,16 @@ function parseOutputField(item: string, sourcePath: string): CanonicalProcedure[
   return field;
 }
 
-export function compileMethodDocument(text: string, sourcePath: string): MethodDocument {
+export type ReviewLookup = (reviewId: string) => AiIndependentReview | null;
+
+export function compileMethodDocument(text: string, sourcePath: string, lookupReview: ReviewLookup = () => null): MethodDocument {
   const {frontmatter, body} = parseFrontmatter(text, sourcePath);
+  const reviews = frontmatter.review_ids.map((reviewId) => {
+    const record = lookupReview(reviewId);
+    if (!record) throw new MethodCompileError(sourcePath, `review ${reviewId} is not on record`);
+    if (record.subject.kind !== "method" || record.subject.id !== frontmatter.id) throw new MethodCompileError(sourcePath, `review ${reviewId} is about ${record.subject.kind} ${record.subject.id}, not this method`);
+    return {reviewId, kind: "ai_independent_review" as const, result: reviewCountsForPromotion(record) ? record.result : "fail" as const, recordPath: `knowledge/reviews/${reviewId}.json`};
+  });
   const sections = splitSections(body);
   const sequence = requireItems(requireSection(sections, SECTIONS.sequence, sourcePath), sourcePath).map((item, index) => parseStep(item, index, sourcePath));
   const outputs = requireItems(requireSection(sections, SECTIONS.outputs, sourcePath), sourcePath).map((item) => parseOutputField(item, sourcePath));
@@ -249,6 +263,8 @@ export function compileMethodDocument(text: string, sourcePath: string): MethodD
       modelPurpose: frontmatter.model_purpose,
       allowedTools: frontmatter.allowed_tools,
     },
+    reviews,
+    testRuns: {gold: frontmatter.gold_run_ids, adversarial: frontmatter.adversarial_run_ids, consistency: frontmatter.consistency_run_ids},
   };
   const parsed = canonicalProcedureSchema.safeParse(candidate);
   if (!parsed.success) throw new MethodCompileError(sourcePath, `contract invalid: ${parsed.error.issues.map((issue) => `${issue.path.join(".")} ${issue.message}`).join("; ")}`);
@@ -271,18 +287,40 @@ function walk(directory: string, root: string, out: string[]): void {
 }
 
 /** Compiles every method under a knowledge root, in a stable order, and hashes the library. */
-export function loadMethodLibrary(root: string): {methods: MethodDocument[]; libraryHash: string} {
+export function loadReviewRecords(reviewsRoot: string): Map<string, AiIndependentReview> {
+  const records = new Map<string, AiIndependentReview>();
+  let entries: string[] = [];
+  try {
+    entries = readdirSync(reviewsRoot).filter((name) => name.endsWith(".json")).sort();
+  } catch {
+    return records;
+  }
+  for (const name of entries) {
+    const record = aiIndependentReviewSchema.parse(JSON.parse(readFileSync(join(reviewsRoot, name), "utf8")));
+    if (`${record.reviewId}.json` !== name) throw new Error(`review record ${name} does not match its reviewId ${record.reviewId}`);
+    records.set(record.reviewId, record);
+  }
+  return records;
+}
+
+export function loadMethodLibrary(root: string, reviewsRoot?: string): {methods: MethodDocument[]; reviews: Map<string, AiIndependentReview>; libraryHash: string} {
+  const reviews = loadReviewRecords(reviewsRoot ?? join(root, "..", "reviews"));
   const paths: string[] = [];
   walk(root, root, paths);
   paths.sort();
-  const methods = paths.map((path) => compileMethodDocument(readFileSync(join(root, path), "utf8"), path));
+  const methods = paths.map((path) => compileMethodDocument(readFileSync(join(root, path), "utf8"), path, (reviewId) => reviews.get(reviewId) ?? null));
   const seen = new Set<string>();
   for (const method of methods) {
     if (seen.has(method.procedure.id)) throw new MethodCompileError(method.sourcePath, `duplicate method id ${method.procedure.id}`);
     seen.add(method.procedure.id);
   }
   const libraryHash = createHash("sha256").update(JSON.stringify(methods.map((method) => [method.sourcePath, method.sourceHash]))).digest("hex");
-  return {methods, libraryHash};
+  return {methods, reviews, libraryHash};
+}
+
+/** A method may run in staging from `tested` up; below that it is documentation. */
+export function methodMayRunInStaging(method: MethodDocument): boolean {
+  return ["tested", "ready_for_founder", "production"].includes(method.procedure.maturity);
 }
 
 /** A TaskSpec may only be promoted to production on the back of a production method bound to it. */

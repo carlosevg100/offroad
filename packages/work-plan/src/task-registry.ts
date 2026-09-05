@@ -10,7 +10,8 @@ export const offroadExecutionClassSchema = z.enum([
   "action",
 ]);
 export const offroadTaskEffectSchema = z.enum(["none", "propose_state", "commit", "external"]);
-export const offroadTaskMaturitySchema = z.enum(["specified", "implemented", "tested", "production"]);
+export const offroadTaskMaturitySchema = z.enum(["specified", "implemented", "ai_reviewed", "tested", "ready_for_founder", "production"]);
+export const offroadTaskMaturityOrder: readonly OffroadTaskMaturity[] = ["specified", "implemented", "ai_reviewed", "tested", "ready_for_founder", "production"];
 
 /**
  * How a task reads. Retrieval answers "which passages look relevant"; credit work often has to
@@ -52,19 +53,26 @@ export type OffroadTaskSpec = {
   procedure?: {id: string; version: string};
 };
 
-export type MethodMaturityLookup = (procedureId: string, version: string) => {maturity: "draft" | "candidate" | "production"; hasImplementation: boolean} | null;
+export type MethodMaturity = "draft" | "candidate" | "implemented" | "ai_reviewed" | "tested" | "ready_for_founder" | "production";
+export type MethodMaturityLookup = (procedureId: string, version: string) => {maturity: MethodMaturity; hasImplementation: boolean} | null;
+
+const methodRank: Record<MethodMaturity, number> = {draft: -1, candidate: -1, implemented: 1, ai_reviewed: 2, tested: 3, ready_for_founder: 4, production: 5};
+const taskRank = (maturity: OffroadTaskMaturity): number => offroadTaskMaturityOrder.indexOf(maturity);
 
 /**
- * The promotion gate for a TaskSpec. Production needs a bound method that is itself in production
- * with implementation evidence; anything less stays where it is, with the reason spelled out.
+ * The promotion gate for a TaskSpec. A task never climbs above the method bound to it: from
+ * `implemented` up it needs a bound method with implementation evidence at least on the same
+ * rung, and `production` needs a production method. Anything less stays where it is, with the
+ * reason spelled out.
  */
 export function assertTaskPromotable(task: OffroadTaskSpec, target: OffroadTaskMaturity, lookup: MethodMaturityLookup): void {
-  if (target !== "production") return;
-  if (!task.procedure) throw new Error(`task ${task.id} cannot reach production without a bound method`);
+  if (target === "specified") return;
+  if (!task.procedure) throw new Error(`task ${task.id} cannot reach ${target} without a bound method`);
   const method = lookup(task.procedure.id, task.procedure.version);
   if (!method) throw new Error(`task ${task.id} is bound to ${task.procedure.id}@${task.procedure.version}, which the method library does not hold`);
-  if (method.maturity !== "production" || !method.hasImplementation) {
-    throw new Error(`task ${task.id} is bound to ${task.procedure.id}@${task.procedure.version} (${method.maturity}${method.hasImplementation ? "" : ", no implementation evidence"}); only a production method with implementation evidence promotes a task`);
+  if (!method.hasImplementation) throw new Error(`task ${task.id} is bound to ${task.procedure.id}@${task.procedure.version} (${method.maturity}, no implementation evidence); nothing promotes a task without executable evidence`);
+  if (methodRank[method.maturity] < taskRank(target)) {
+    throw new Error(`task ${task.id} cannot reach ${target}: its method ${task.procedure.id}@${task.procedure.version} is ${method.maturity}; a task never climbs above its method`);
   }
 }
 

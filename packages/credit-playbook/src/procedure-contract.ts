@@ -9,7 +9,15 @@ import {z} from "zod";
 
 export const procedureCompilerVersion = "2026.08.25-v2";
 
-export const procedureMaturitySchema = z.enum(["draft", "candidate", "production"]);
+/**
+ * The ladder a method climbs. Nothing skips a rung: `implemented` needs executable evidence,
+ * `ai_reviewed` needs a recorded independent review by a model that went back to the sources,
+ * `tested` needs the gold, adversarial and consistency runs, `ready_for_founder` is the hand-off
+ * to the founder's integrated evaluation, and `production` needs the founder's approval.
+ */
+export const procedureMaturitySchema = z.enum(["draft", "candidate", "implemented", "ai_reviewed", "tested", "ready_for_founder", "production"]);
+export const procedureMaturityOrder: readonly ProcedureMaturity[] = ["draft", "candidate", "implemented", "ai_reviewed", "tested", "ready_for_founder", "production"];
+export const maturityRank = (maturity: ProcedureMaturity): number => procedureMaturityOrder.indexOf(maturity);
 export type ProcedureMaturity = z.infer<typeof procedureMaturitySchema>;
 
 export const procedureRoleSchema = z.enum([
@@ -143,9 +151,30 @@ export const canonicalProcedureSchema = z.object({
   }),
   /**
    * Evidence that the procedure is connected to executable code and the product rail.
-   * Candidates may omit it while being built. Production procedures may not.
+   * Candidates may omit it while being built. Anything from `implemented` up may not.
    */
   implementation: implementationEvidenceSchema.optional(),
+  /**
+   * Independent reviews on record. `ai_independent_review` is a verification separate from the
+   * implementation (back to the sources, numbers recalculated, definitions and exceptions
+   * tested, adversarial and consistency runs); it is never a human approval and is recorded as
+   * such. A rung above `implemented` needs at least one that passed or passed with conditions.
+   */
+  reviews: z.array(z.object({
+    reviewId: z.string().regex(/^[a-z0-9][a-z0-9_.-]{2,120}$/),
+    kind: z.literal("ai_independent_review"),
+    result: z.enum(["pass", "conditional", "fail"]),
+    recordPath: z.string().trim().min(1),
+  }).strict()).default([]),
+  /**
+   * Evidence of the runs a rung needs: gold, adversarial and consistency. Ids of recorded runs,
+   * never prose. `tested` and above require all three.
+   */
+  testRuns: z.object({
+    gold: z.array(z.string().min(1)).default([]),
+    adversarial: z.array(z.string().min(1)).default([]),
+    consistency: z.array(z.string().min(1)).default([]),
+  }).strict().default({gold: [], adversarial: [], consistency: []}),
 }).strict().superRefine((procedure, context) => {
   duplicateIssues(procedure.procedure.map((step) => step.id), ["procedure"], context);
   duplicateIssues(procedure.output.fields.map((field) => field.id), ["output", "fields"], context);
@@ -176,13 +205,23 @@ export const canonicalProcedureSchema = z.object({
     if (value.length === 0) context.addIssue({code: "custom", path: [field], message: `${procedure.maturity} procedures require ${field}`});
   }
 
-  if (procedure.maturity !== "production") return;
-  if (!procedure.owner.approvedBy) context.addIssue({code: "custom", path: ["owner", "approvedBy"], message: "production procedures require an approver"});
-  if (procedure.examples.positive.length === 0 || procedure.examples.negative.length === 0) {
-    context.addIssue({code: "custom", path: ["examples"], message: "production procedures require positive and negative examples"});
+  const rank = maturityRank(procedure.maturity);
+  if (rank >= maturityRank("implemented") && !procedure.implementation) {
+    context.addIssue({code: "custom", path: ["implementation"], message: `${procedure.maturity} procedures require executable implementation evidence`});
   }
-  if (!procedure.implementation) {
-    context.addIssue({code: "custom", path: ["implementation"], message: "production procedures require executable implementation evidence"});
+  if (rank >= maturityRank("ai_reviewed") && !procedure.reviews.some((review) => review.result !== "fail")) {
+    context.addIssue({code: "custom", path: ["reviews"], message: `${procedure.maturity} procedures require a recorded independent review that passed or passed with conditions`});
+  }
+  if (rank >= maturityRank("tested")) {
+    for (const kind of ["gold", "adversarial", "consistency"] as const) {
+      if (procedure.testRuns[kind].length === 0) context.addIssue({code: "custom", path: ["testRuns", kind], message: `${procedure.maturity} procedures require recorded ${kind} runs`});
+    }
+  }
+  if (rank >= maturityRank("ready_for_founder") && (procedure.examples.positive.length === 0 || procedure.examples.negative.length === 0)) {
+    context.addIssue({code: "custom", path: ["examples"], message: `${procedure.maturity} procedures require positive and negative examples`});
+  }
+  if (procedure.maturity === "production" && !procedure.owner.approvedBy) {
+    context.addIssue({code: "custom", path: ["owner", "approvedBy"], message: "production procedures require the founder's approval on record"});
   }
 });
 export type CanonicalProcedure = z.infer<typeof canonicalProcedureSchema>;
@@ -203,6 +242,8 @@ export type CompiledProcedureSkill = {
   templates: string[];
   dependencies: string[];
   implementation: CanonicalProcedure["implementation"];
+  reviews: CanonicalProcedure["reviews"];
+  testRuns: CanonicalProcedure["testRuns"];
 };
 
 /** Compile a reviewed procedure into the only form the runtime is allowed to execute. */
@@ -225,6 +266,8 @@ export function compileProcedure(raw: CanonicalProcedure): CompiledProcedureSkil
     templates: [...procedure.templates],
     dependencies: [...procedure.dependencies],
     implementation: procedure.implementation,
+    reviews: procedure.reviews,
+    testRuns: procedure.testRuns,
   };
 }
 

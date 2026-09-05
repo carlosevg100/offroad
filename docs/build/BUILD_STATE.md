@@ -2371,3 +2371,21 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - `docs/build/WORKFLOW_SYSTEM_PLAN.md`: os nove passos do fundador com o inventário medido no
   código (224 procedimentos candidate, 80 TaskSpecs specified, 17 packs sem revisão, 71 parâmetros
   ausentes), os gates do teste real e a próxima onda.
+
+## Escada de maturidade e revisão independente por IA, candidate, 05/09/2026
+
+- Decisão do fundador: nesta fase o revisor independente é um modelo, não uma pessoa. A escada
+  passa a ser `candidate → implemented → ai_reviewed → tested → ready_for_founder → production`,
+  e cada degrau exige a sua evidência: implementação executável; revisão independente registrada
+  que passou ou passou com condições; runs gold, adversariais e de consistência registradas;
+  exemplos bons e ruins; aprovação do fundador só no último degrau. Métodos em `tested` ou acima
+  podem rodar em staging.
+- `review-record.ts`: contrato `ai-independent-review.v1` com revisor (provedor, modelo, esforço,
+  ferramenta), sujeito (tipo, id, versão, fingerprint dos bytes revisados), run (id, datas, commit,
+  custo), checagens (fontes revisitadas, números recalculados, definições, exceções, adversariais,
+  consistência, vantagem sobre o baseline), evidências item a item, resultado, condições e
+  `humanApproval: false` fixo no esquema. Um registro que não voltou às fontes ou não recalculou não
+  conta para promoção.
+- O compilador de métodos lê `review_ids` e ids de runs do frontmatter, exige o registro em
+  `knowledge/reviews/<id>.json` e confere que ele é sobre aquele método. A TaskSpec nunca sobe
+  acima do método vinculado, e nada sobe sem evidência de implementação.
