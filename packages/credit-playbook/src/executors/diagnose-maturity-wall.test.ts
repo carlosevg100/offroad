@@ -7,11 +7,13 @@ import {diagnoseMaturityWall, type MaturityWallInput} from "./diagnose-maturity-
 
 const itr = (page: number, note?: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, ...(note ? {note} : {})});
 const threshold = {share: "0.20", policyKey: "policy.structure.maturity_wall", policyVersion: "2026.09.05-v8"};
-const prior = (amount: string) => ({amount, asOf: "2026-02-28", anchor: itr(40, "15, coluna 28/02/2026")});
+const prior = (amount: string) => ({amount, asOf: "2026-02-28", unit: "BRL thousand" as const, perimeter: "consolidated" as const, anchor: itr(40, "15, coluna 28/02/2026")});
 /** Camil at 31/05/2026: the note 15 schedule by safra year, cash of note 3, the two approved operations of the 18/05/2026 board minutes (approved, not contracted, not disbursed). R$ thousand. */
 const camil = (): MaturityWallInput => ({
   referenceDate: "2026-05-31",
   unit: "BRL thousand",
+  unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"},
+  perimeter: "consolidated",
   grossDebt: {value: "5670186", unit: "BRL thousand", anchor: itr(39, "15")},
   periods: [
     {period: "2026/27", amount: "1229828", prior: prior("1074636"), endsAt: "2027-05-31"},
@@ -26,17 +28,19 @@ const camil = (): MaturityWallInput => ({
   cash: {value: "1430714", definition: "accounting_equivalents_up_to_90_days", anchor: itr(20, "3")},
   operatingGeneration: null,
   claimedSources: [
-    {id: "notas-comerciais-2026", label: "1ª emissão de notas comerciais, R$ 251 milhões, aprovada em 18/05/2026", amount: "251000", period: "2026/27", evidence: {approval: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, contract: null, disbursement: null}},
-    {id: "cpr-2026", label: "operação estruturada com CPR, até R$ 535 milhões, aprovada em 18/05/2026", amount: "535000", period: "2026/27", evidence: {approval: {document: "ca_operacao_estruturada_2026-05-27.pdf", page: 2}, contract: null, disbursement: null}},
+    {id: "notas-comerciais-2026", label: "1ª emissão de notas comerciais, R$ 251 milhões, aprovada em 18/05/2026", amount: "251000", claimedPeriod: "2026/27", evidence: {approval: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}, contract: null, disbursement: null}},
+    {id: "cpr-2026", label: "operação estruturada com CPR, até R$ 535 milhões, aprovada em 18/05/2026", amount: "535000", claimedPeriod: "2026/27", evidence: {approval: {document: "ca_operacao_estruturada_2026-05-27.pdf", page: 2}, contract: null, disbursement: null}},
   ],
   wallThreshold: threshold,
 });
 
-describe("diagnose-maturity-wall executor (v3)", () => {
+describe("diagnose-maturity-wall executor (v4)", () => {
   it("gold: names the two walls of the case 01 answer key against the versioned threshold, the growth of the second, and the peak", () => {
     const result = diagnoseMaturityWall(camil());
     expect(result.walls.filter((wall) => wall.is_wall).map((wall) => wall.period)).toEqual(["2026/27", "2028/29"]);
     expect(result.walls.find((wall) => wall.period === "2028/29")?.change_from_prior).toEqual({amount: "342288", prior_as_of: "2026-02-28", anchor: itr(40, "15, coluna 28/02/2026")});
+    expect(result.walls[0]?.prior_comparability).toBe("earlier date, same unit and perimeter");
+    expect(result.schema_version).toBe("method.diagnose-maturity-wall.v4");
     expect(result.walls[0]?.share_of_gross.startsWith("0.2168")).toBe(true);
     expect(result.walls[0]?.anchor).toEqual(itr(40, "15"));
     expect(result.peak).toEqual({period: "2026/27", amount: "1229828", share_of_gross: result.walls[0]!.share_of_gross});
@@ -76,13 +80,28 @@ describe("diagnose-maturity-wall executor (v3)", () => {
     const approvedFlaggedTrue = diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", anchor: {document: "hipotetico_contrato.pdf", page: 1}}, disbursement: null}}]});
     expect(approvedFlaggedTrue.sources[0]?.state).toBe("unproven");
     expect(approvedFlaggedTrue.sources[0]?.reason).toMatch(/approved and contracted only/);
-    expect(() => diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}}, disbursement: {kind: "disbursement_proof", anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}}}}]})).toThrow(/same page of the same document|not a contract/);
-    const withGeneration = diagnoseMaturityWall({...base, operatingGeneration: {value: "500000", basis: "cfads_declared_projection", periodMonths: 12, anchor: {document: "hipotetico_cfads.pdf", note: "hipótese sintética de geração de caixa para o serviço da dívida"}}});
+    expect(() => diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, evidence: {approval: base.claimedSources![0]!.evidence.approval, contract: {kind: "contract", anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}}, disbursement: {kind: "disbursement_proof", anchor: {document: "ca_notas_comerciais_2026-05-27.pdf", page: 2}}}}]})).toThrow(/must be two documents of the base|not a contract/);
+    const declared = Object.fromEntries(["2026/27", "2027/28", "2028/29", "2029/30", "2030/31"].map((period) => [period, "500000"]));
+    const interest = Object.fromEntries(["2026/27", "2027/28", "2028/29", "2029/30", "2030/31"].map((period) => [period, {value: "100000", anchor: {document: "hipotetico_juros.pdf", note: "juros por período, hipótese sintética"}}]));
+    const withGeneration = diagnoseMaturityWall({...base, operatingGeneration: {basis: "cfads_declared_projection", byPeriod: declared, anchor: {document: "hipotetico_cfads.pdf", note: "hipótese sintética de geração de caixa para o serviço da dívida, por período"}}, interestByPeriod: interest});
     expect(withGeneration.state).toBe("complete");
+    expect(withGeneration.coverage.coverage_basis).toBe("full_debt_service");
+    expect(withGeneration.coverage.by_period[0]?.debt_service).toBe("1329828");
     expect(withGeneration.coverage.by_period[0]?.cumulative_deficit).toBe("0");
     expect(withGeneration.coverage.by_period[1]?.incremental_deficit).toBe("0");
-    expect(withGeneration.coverage.by_period[2]?.incremental_deficit).toBe("304457");
-    expect(() => diagnoseMaturityWall({...base, operatingGeneration: {value: "895864", basis: "ltm" as unknown as "cfads_ltm", periodMonths: 12, anchor: itr(40)}})).toThrow();
+    // 2026/27: 1.430.714 + 500.000 against 1.329.828 leaves 600.886; 2027/28: 1.100.886 against 876.868 leaves 224.018; 2028/29: 724.018 against 1.328.475 leaves 604.457 uncovered.
+    expect(withGeneration.coverage.by_period[1]?.closing_cash).toBe("224018");
+    expect(withGeneration.coverage.by_period[2]?.incremental_deficit).toBe("604457");
+    // Generation declared for one period only never repeats: the other periods are cash-only and the state stays incomplete.
+    const partial = diagnoseMaturityWall({...base, operatingGeneration: {basis: "cfads_declared_projection", byPeriod: {"2026/27": "500000"}, anchor: {document: "hipotetico_cfads.pdf", note: "hipótese sintética"}}});
+    expect(partial.state).toBe("incomplete");
+    expect(partial.coverage.by_period[0]?.generation).toBe("500000");
+    expect(partial.coverage.by_period[1]?.generation).toBeNull();
+    expect(partial.coverage.by_period[1]?.generation_declared).toBe(false);
+    expect(partial.incomplete_reasons.some((reason) => /no generation declared for 2027\/28, 2028\/29, 2029\/30, 2030\/31/.test(reason))).toBe(true);
+    expect(partial.coverage.coverage_basis).toBe("principal_only");
+    expect(partial.uncovered_terms.map((term) => term.id)).toContain("interest");
+    expect(() => diagnoseMaturityWall({...base, operatingGeneration: {value: "895864", basis: "ltm" as unknown as "cfads_ltm", periodMonths: 12, anchor: itr(40)} as unknown as MaturityWallInput["operatingGeneration"]})).toThrow();
   });
 
   it("mutation: exactly the threshold is not a wall; a scale or unit mutation is refused or blocked; an unreconciled schedule blocks; a past period is refused", () => {
@@ -98,14 +117,14 @@ describe("diagnose-maturity-wall executor (v3)", () => {
     expect(scaled.coverage.by_period).toHaveLength(0);
     expect(() => diagnoseMaturityWall({...base, unit: "BRL", periods: base.periods.map((period) => ({...period, amount: new Decimal(period.amount).times(1000).toFixed()})), grossDebt: {...base.grossDebt, value: "5670186000"}, cash: {...base.cash, value: "1430714000"}})).toThrow(/reports the gross debt in BRL thousand/);
     expect(() => diagnoseMaturityWall({...base, periods: [...base.periods, {period: "2025/26", amount: "0", prior: null, endsAt: "2026-05-31"}]})).toThrow(/ends on or before the reference date/);
-    expect(() => diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, period: "2099"}]})).toThrow(/not in the schedule/);
+    expect(() => diagnoseMaturityWall({...base, claimedSources: [{...base.claimedSources![0]!, claimedPeriod: "2099"}]})).toThrow(/not in the schedule/);
     expect(() => diagnoseMaturityWall({...base, claimedSources: [base.claimedSources![0]!, {...base.claimedSources![1]!, id: base.claimedSources![0]!.id}]})).toThrow(/duplicate source/);
     const empty = diagnoseMaturityWall({...base, periods: [], claimedSources: [], grossDebt: {value: "0", unit: "BRL thousand", anchor: itr(39)}});
     expect(empty.state).toBe("blocked");
   });
 
   it("is consistent under twenty permutations of periods, sources and object keys, with the trace in the fingerprint", () => {
-    const twins = (): MaturityWallInput => ({...camil(), claimedSources: [...camil().claimedSources!, {...camil().claimedSources![0]!, id: "notas-comerciais-2026-b", period: "2027/28"}]});
+    const twins = (): MaturityWallInput => ({...camil(), claimedSources: [...camil().claimedSources!, {...camil().claimedSources![0]!, id: "notas-comerciais-2026-b", claimedPeriod: "2027/28"}]});
     const first = diagnoseMaturityWall(twins());
     const permute = <T>(items: readonly T[], seed: number): T[] => { const copy = [...items]; let state = seed; for (let index = copy.length - 1; index > 0; index -= 1) { state = (state * 1103515245 + 12345) % 2147483648; const swap = state % (index + 1); [copy[index], copy[swap]] = [copy[swap]!, copy[index]!]; } return copy; };
     const reorderKeys = <T extends object>(value: T): T => Object.fromEntries(Object.entries(value).reverse()) as T;
@@ -120,5 +139,23 @@ describe("diagnose-maturity-wall executor (v3)", () => {
 
   it("emits exactly the top-level outputs the method declares", () => {
     expect(contractMismatch(diagnoseMaturityWall(camil()) as unknown as Record<string, unknown>, "refinance/diagnose-maturity-wall.md")).toEqual([]);
+  });
+
+  it("mutation: a coherent rescale under another label, a prior figure not earlier, a prior in another unit or perimeter, and an unproven source placed in a period", () => {
+    const base = camil();
+    const relabelled = {...base, unit: "BRL million" as const, grossDebt: {...base.grossDebt, unit: "BRL million" as const}};
+    expect(() => diagnoseMaturityWall(relabelled)).toThrow(/does not name the unit BRL million/);
+    const late = {...base, periods: base.periods.map((period, index) => index === 0 ? {...period, prior: {...period.prior!, asOf: "2026-05-31"}} : period)};
+    expect(() => diagnoseMaturityWall(late)).toThrow(/not before the reference date/);
+    const otherUnit = diagnoseMaturityWall({...base, periods: base.periods.map((period, index) => index === 0 ? {...period, prior: {...period.prior!, unit: "BRL" as const}} : period)});
+    expect(otherUnit.walls[0]?.change_from_prior).toBeNull();
+    expect(otherUnit.walls[0]?.prior_comparability).toMatch(/prior figure is in BRL, the schedule in BRL thousand; not compared/);
+    const otherPerimeter = diagnoseMaturityWall({...base, periods: base.periods.map((period, index) => index === 0 ? {...period, prior: {...period.prior!, perimeter: "parent" as const}} : period)});
+    expect(otherPerimeter.walls[0]?.prior_comparability).toMatch(/parent, the schedule consolidated/);
+    const result = diagnoseMaturityWall(base);
+    expect(result.sources[0]?.period).toBeNull();
+    expect(result.sources[0]?.claimed_period).toBe("2026/27");
+    expect(result.sources[0]?.reason).toMatch(/the period the file assigns \(2026\/27\) is not used/);
+    expect(result.coverage.by_period[0]?.contracted_sources).toBe("0");
   });
 });

@@ -225,7 +225,7 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
     expect(by(outstanding, "deb-13").limitConditions[0]).toMatch(/recorded as outstanding/);
     const accelerated = reconcileCovenantDefinitions(camil("accelerated"));
     expect(by(accelerated, "deb-13").applicableLimit).toBe("3.50");
-    expect(by(accelerated, "deb-13").tiers.map((tier) => tier.state)).toEqual(["applies", "unproven"]);
+    expect(by(accelerated, "deb-13").tiers.map((tier) => tier.state)).toEqual(["applies", "n/a"]);
     const base = camil("unknown");
     const isolated = reconcileCovenantDefinitions({...base, referenceSettlements: [], instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-15" ? {...instrument, tiers: [instrument.tiers[0]!]} : instrument)});
     expect(by(isolated, "deb-15").tiers.map((tier) => tier.state)).toEqual(["unproven"]);
@@ -374,5 +374,39 @@ describe("reconcile-covenant-definitions executor (v9)", () => {
 
   it("emits exactly the top-level outputs the method declares", () => {
     expect(contractMismatch(reconcileCovenantDefinitions(camil("ordinary")) as unknown as Record<string, unknown>, "financial/reconcile-covenant-definitions.md")).toEqual([]);
+  });
+
+  it("mutation: an accelerated settlement of one reference with another reference without facts leaves the tier unproven with a written condition, never resolved", () => {
+    const mixed = camil("accelerated");
+    // cra-eco-257 loses its facts: the 13th, 14th and 15th reference it and cannot resolve their tiers.
+    mixed.referenceSettlements = mixed.referenceSettlements!.filter((fact) => fact.instrument !== "cra-eco-257");
+    const result = reconcileCovenantDefinitions(mixed);
+    const deb13 = by(result, "deb-13");
+    expect(deb13.limitState).toBe("insufficient_evidence");
+    expect(deb13.tiers.map((tier) => tier.state)).toEqual(["unproven", "unproven"]);
+    expect(deb13.limitConditions.some((condition) => /lacks them for cra-eco-257; an accelerated settlement of another reference does not settle the question/.test(condition))).toBe(true);
+    expect(result.unproven_conditions.filter((condition) => condition.startsWith("deb-13:")).length).toBe(2);
+    // The 11th references only cra-eco-8, settled by acceleration: 3,50x stays and 4,00x is n/a deterministically, with a note and no condition.
+    const deb11 = by(result, "deb-11");
+    expect(deb11.tiers.map((tier) => tier.state)).toEqual(["applies", "n/a"]);
+    expect(result.unproven_conditions.some((condition) => condition.startsWith("deb-11:"))).toBe(false);
+  });
+
+  it("gold: the acquisition payables of note 16 are carried as a candidate for the sellers finance obligation, never added and never called absent", () => {
+    const input = camil("unknown");
+    input.candidateObligations = [
+      {id: "note16-acquisition-cost", description: "contas a pagar por aquisição de investimentos, custo de aquisição", value: "27119", unit, asOf, relatedAdjustmentId: "sellers-finance", anchor: itr(47, "nota 16")},
+      {id: "note16-contingent", description: "contas a pagar por aquisição de investimentos, passivo contingente", value: "51290", unit, asOf, relatedAdjustmentId: "sellers-finance", anchor: itr(47, "nota 16")},
+    ];
+    const result = reconcileCovenantDefinitions(input);
+    expect(result.uncovered_terms.map((term) => term.id)).toEqual(["candidate:note16-acquisition-cost", "candidate:note16-contingent", "obligation:deb-11:sellers-finance"]);
+    expect(result.uncovered_terms[0]?.reason).toMatch(/27119 BRL thousand at 2026-05-31 .*needs legal classification; not added to any numerator/);
+    const deb11 = by(result, "deb-11");
+    expect(deb11.legalConditions.some((condition) => /has no classified value; the base holds 27119 BRL thousand .* and 51290 BRL thousand/.test(condition))).toBe(true);
+    expect(deb11.legalConditions.some((condition) => /no dated value/.test(condition))).toBe(false);
+    expect(deb11.netDebtByDefinition?.formula.includes("obligation")).toBe(false);
+    const without = reconcileCovenantDefinitions(camil("unknown"));
+    expect(without.uncovered_terms.map((term) => term.id)).toEqual(["obligation:deb-11:sellers-finance"]);
+    expect(without.trace.inputFingerprint).not.toBe(result.trace.inputFingerprint);
   });
 });

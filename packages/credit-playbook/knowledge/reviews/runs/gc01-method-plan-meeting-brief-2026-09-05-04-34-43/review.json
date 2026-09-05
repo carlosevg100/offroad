@@ -1,0 +1,253 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "gc01-method-plan-meeting-brief-2026-09-05-04-34-43",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "tool": "codex-cli 0.153.4"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "plan-meeting-brief",
+    "version": "2026.09.05-v3",
+    "fingerprint": "8dcb717e53bd34760ce9d46f342e3408befaea78f24d2deff11211c49b8aef24"
+  },
+  "run": {
+    "id": "gc01-method-plan-meeting-brief-2026-09-05-04-34-43",
+    "startedAt": "2026-09-05T04:34:43.454Z",
+    "finishedAt": "2026-09-05T04:38:15.473Z",
+    "commit": "d2d346fe14e8b2883a8126b6eb94c5b25e8b42bc"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "1. O corpus usado corresponde ao manifesto congelado.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "anchor": "entries",
+      "result": "confirmed",
+      "note": "43 arquivos verificados; bytes e SHA-256 apresentaram zero divergências."
+    },
+    {
+      "claim": "2. Dívida bruta de R$ 5.670.186 mil e dívida líquida contratual de R$ 4.228.477 mil.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, página 39; notas 15 e 25, páginas 40 e 51",
+      "result": "confirmed",
+      "note": "Recalculo: 2.407.895 + 3.262.291 = 5.670.186. Dívida líquida: 5.670.186 + 14.335 − 235 − 1.430.714 − 25.095 = 4.228.477."
+    },
+    {
+      "claim": "3. Os picos são R$ 1.229.828 mil em 2026/27 e R$ 1.228.475 mil em 2028/29.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, página 40, cronograma de amortizações",
+      "result": "confirmed",
+      "note": "Recalculo do cronograma: 1.229.828 + 776.868 + 1.228.475 + 694.497 + 994.544 + 809.198 − 63.224 = 5.670.186."
+    },
+    {
+      "claim": "4. Caixa e aplicações de R$ 1.455.809 mil excedem o vencimento de 2026/27 em R$ 225.981 mil.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 3, página 20; nota 15, página 40",
+      "result": "confirmed",
+      "note": "Recalculo: 1.430.714 + 25.095 = 1.455.809; 1.455.809 − 1.229.828 = 225.981. Cobertura aritmética = 1,18375x; a nota 3 permite resgate em até 90 dias, portanto não prova liquidez em D0."
+    },
+    {
+      "claim": "5. O pro forma era 4,72x, o indicador divulgado era ≤4,0x e a próxima medição seria em 28/02/2027.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, página 40",
+      "result": "confirmed",
+      "note": "Recalculo: 4,72 − 4,00 = 0,72x. EBITDA implícito: 4.228.477 ÷ 4,72 = 895.863,77, aproximadamente R$ 895.900 mil."
+    },
+    {
+      "claim": "6. A dívida líquida contratual inclui dívida onerosa e derivativos passivos e deduz caixa, aplicações e derivativos ativos.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "definição de Dívida Líquida, página 7",
+      "result": "confirmed",
+      "note": "A definição confere com o cálculo de R$ 4.228.477 mil do gabarito."
+    },
+    {
+      "claim": "7. Incluir arrendamentos em “outra dívida onerosa” não pode ser decidido pelo material disponível.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "definição de Dívida Líquida, página 7",
+      "result": "limitation",
+      "note": "A escritura usa expressão aberta; o ITR apresenta R$ 276.768 mil de arrendamentos separadamente na nota 25, página 51. A qualificação exige interpretação jurídica especializada."
+    },
+    {
+      "claim": "8. EBITDA é lucro antes de receitas e despesas financeiras, acrescido de depreciação e amortização dos últimos doze meses.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "definição de EBITDA, página 7",
+      "result": "confirmed",
+      "note": "A mesma definição-base aparece nas 14ª e 15ª escrituras."
+    },
+    {
+      "claim": "9. Somente a 11ª escritura acrescenta EBITDA de sociedade adquirida e sellers finance.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.22.3, páginas 34–35",
+      "result": "confirmed",
+      "note": "A simplificação de tratar as quatro definições como integralmente idênticas seria indevida."
+    },
+    {
+      "claim": "10. A comparação integral do 4,72x com cada escritura está demonstrada.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "nota 15, página 40",
+      "result": "limitation",
+      "note": "O ITR não abre o EBITDA nem as informações complementares; a 11ª escritura contém ajuste adicional. A comparação permanece condicionada."
+    },
+    {
+      "claim": "11. O degrau de 4,00x sucede a quitação ordinária dos CRA de referência; vencimento antecipado preserva 3,50x.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "cláusula 7.24.3, páginas 54–55",
+      "result": "confirmed",
+      "note": "A mesma mecânica consta nas cláusulas 4.22.3, 7.26.3 e 7.26.3 das 11ª, 14ª e 15ª escrituras."
+    },
+    {
+      "claim": "12. A quitação ordinária dos CRA de referência foi comprovada.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/cra_257_relatorio_mensal_4t25.txt",
+      "anchor": "páginas 2–3, vencimento e evolução do saldo devedor",
+      "result": "unverifiable",
+      "note": "O relatório mostra vencimento em 29/12/2025 e saldo até novembro, mas não comprova a forma da liquidação."
+    },
+    {
+      "claim": "13. Há quatro montantes divergentes de dividendos.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "notas 18(e) e 25, páginas 46 e 51",
+      "result": "confirmed",
+      "note": "140.000 + 255.000 = 395.000 nominal; 133.089 + 205.476 = 338.565 a valor presente; a nota 25 traz 322.498 contábil e 420.000 justo."
+    },
+    {
+      "claim": "14. Há três apresentações de estoques que precisam de conciliação.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt",
+      "anchor": "páginas 12 e 14",
+      "result": "confirmed",
+      "note": "O release apresenta R$ 2.445,2 milhões e R$ 2.437,1 milhões; o ITR, nota 5, página 21, apresenta R$ 3.088.478 mil incluindo R$ 643.241 mil de adiantamentos."
+    },
+    {
+      "claim": "15. Pontos a favor e contra são selecionados exclusivamente pela posição declarada, nunca pelo tipo do objeto.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 96–107 e 192–197",
+      "result": "corrected",
+      "note": "O executor restringe cada bloco a listas de tipos. Mutação executada: um objeto scenarios utilizável com stance=against foi omitido de points_against_thesis. Isso contradiz a regra da linha 66 do método."
+    },
+    {
+      "claim": "16. No gold, o mesmo maturity_wall é corretamente separado entre fatos for e against.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.test.ts",
+      "anchor": "linhas 76–83",
+      "result": "confirmed",
+      "note": "Os dois fatos de wall-01 são separados pela stance; o fato condicionado de cov-01 não preenche o bloco."
+    },
+    {
+      "claim": "17. Objetos condicionados ou com divergências viram pendências e uncoveredTerms; objetos bloqueados são excluídos.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 170–176 e 244–247",
+      "result": "confirmed",
+      "note": "Os testes cobrem conditioned, open_divergences e blocked; ambos os pendentes saem como insufficient_evidence sem preencher fatos."
+    },
+    {
+      "claim": "18. Objeto utilizável sem fatos não preenche bloco nem inventa conteúdo.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.test.ts",
+      "anchor": "linhas 54–57",
+      "result": "confirmed",
+      "note": "sc-01 gera lacuna em assumptions; o executor não sintetiza um fato substituto."
+    },
+    {
+      "claim": "19. objects_used contém apenas objetos efetivamente citados.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 170 e 253",
+      "result": "corrected",
+      "note": "O campo recebe todos os objetos em estado utilizável. No gold, exit-01 e sc-01 não têm fatos e não preenchem blocos, mas ainda são declarados como usados."
+    },
+    {
+      "claim": "20. Toda pergunta já respondida pela base é recusada pelo executor.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 178–186",
+      "result": "corrected",
+      "note": "A recusa depende totalmente de coverage fornecido pelo chamador. Mutação executada: retirar coverage de “Qual é a data do último ITR?” fez o executor perguntar, embora a data conste da capa do ITR."
+    },
+    {
+      "claim": "21. A âncora do teste para a data de 31/05/2026 existe.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "capa, página 1",
+      "result": "confirmed",
+      "note": "A capa identifica as informações intermediárias em 31 de maio de 2026."
+    },
+    {
+      "claim": "22. A mutação de escala milhares/milhões é recusada.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 80–83",
+      "result": "corrected",
+      "note": "O executor exige somente unidade não nula para números com pontos. Mutação executada: “5.670.186” com unidade “R$ milhões” foi aceita. O teste das linhas 70–74 cobre ausência de unidade, não unidade incorreta."
+    },
+    {
+      "claim": "23. As mutações “covenant rompido”, EBITDA trimestral anualizado e arrendamento somado à dívida são impedidas.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 29–36 e 80–83",
+      "result": "corrected",
+      "note": "Headlines são texto opaco; com fingerprint coincidente e unidade preenchida, essas mutações passam. Os testes das linhas 86–92 verificam apenas fingerprint divergente e ID duplicado."
+    },
+    {
+      "claim": "24. O headline “Alongar as séries DI suaviza 2028/29” está demonstrado no corpus permitido.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "seções 3, 9 e 13.2",
+      "result": "unverifiable",
+      "note": "O gabarito demonstra o pico e regras de saída, mas não contém cenário before/after que quantifique ou prove essa suavização."
+    },
+    {
+      "claim": "25. O ajuste de páginas reproduz 3, 2 e 5 páginas e rejeita 9 quando existem 8 blocos.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 110–164",
+      "result": "confirmed",
+      "note": "Recalculo: plano-base 4+2+2=8 blocos; em duas páginas, os dois últimos grupos são fundidos em quatro blocos; cinco páginas preservam os oito blocos; 9>8 resulta unsupported."
+    },
+    {
+      "claim": "26. Produção só é permitida após confirmação do ID exato do plano.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 208–220",
+      "result": "confirmed",
+      "note": "Plano proposto ou confirmação obsoleta mantém production_allowed=false; confirmação do fingerprint atual produz confirmed=true."
+    },
+    {
+      "claim": "27. O executor implementa também a redação das páginas prometida pelo método.",
+      "source": "packages/credit-playbook/knowledge/procedures/materials/plan-meeting-brief.md",
+      "anchor": "linhas 37–40 e 52–56",
+      "result": "corrected",
+      "note": "O contrato de saída, linhas 86–98, e BriefOutput, linhas 123–135 do executor, não possuem material ou páginas redigidas; apenas devolutiva e page_plan são produzidos."
+    },
+    {
+      "claim": "28. A consistência é provada para permutações ordinárias.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.test.ts",
+      "anchor": "linhas 134–155",
+      "result": "confirmed",
+      "note": "Vinte sementes cobrem ordem de objetos, headlines, perguntas, audiência, blocos anteriores e ordem de chaves, comparando fingerprints de entrada e saída."
+    },
+    {
+      "claim": "29. A canonicalização é invariável para toda entrada aceita pelo schema.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "linhas 63–67, 169 e 227–233",
+      "result": "corrected",
+      "note": "previousVersion.blocks aceita IDs duplicados. Permutar dois blocos company_view com estados distintos alterou inputFingerprint, outputFingerprint e change_note. O teste de consistência não cobre essa entrada aceita."
+    },
+    {
+      "claim": "30. A suíte especificada passa sem falhas.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.test.ts",
+      "anchor": "linhas 35–160",
+      "result": "confirmed",
+      "note": "Vitest executado localmente: 1 arquivo, 9 testes aprovados."
+    }
+  ],
+  "result": "fail",
+  "conditions": [
+    "A inclusão de arrendamentos na dívida onerosa exige especialista jurídico; escritura_13a_emissao.txt, definição de Dívida Líquida, página 7, e ITR, nota 25, página 51.",
+    "O degrau definitivo de 4,00x depende de prova da quitação ordinária dos CRA; cra_257_relatorio_mensal_4t25.txt, páginas 2–3, e escrituras, cláusulas de covenant.",
+    "A comparabilidade integral do 4,72x depende da abertura do EBITDA e das informações complementares; ITR, nota 15, página 40, e escritura_11a_emissao.txt, cláusula 4.22.3.",
+    "A suavização de 2028/29 por alongamento das séries DI requer o objeto before_after e seu cálculo, ausentes do material permitido; gc01-gabarito-rascunho.md, seções 3, 9 e 13.2."
+  ],
+  "notes": "Revisão independente por GPT-5 Codex, usando leitura local, Vitest e scripts Node; não constitui aprovação humana.\n\nFalha material: a seleção de for/against ainda depende do tipo do objeto; perguntas documentadas podem ser feitas quando coverage é omitido; mutações econômicas e de escala passam como texto opaco; objects_used é inexato; a redação prometida não está implementada; e há entrada válida cuja permutação altera fingerprints."
+}

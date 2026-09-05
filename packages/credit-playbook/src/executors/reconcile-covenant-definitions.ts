@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `reconcile-covenant-definitions` (v9, after the eighth independent review).
+ * Executor of the method `reconcile-covenant-definitions` (v10, after the ninth independent review).
  * It never writes "breached". Each indenture carries the anchor of its definitions and one anchor per
  * tier; EBITDA adjustments are typed (denominator additions versus numerator obligations) and never
  * folded together; the net debt of each instrument is computed from that instrument's own component
@@ -122,6 +122,8 @@ export const covenantReconciliationInputSchema = z.object({
     anchor: anchorSchema,
   }).strict()).default([]),
   componentValues: z.array(componentValueSchema).default([]),
+  /** Dated lines of the base that may belong to a numerator obligation (acquisition payables, contingent consideration) but are not yet classified; they are carried as uncovered terms, never added and never called absent. */
+  candidateObligations: z.array(z.object({id: z.string().min(1), description: z.string().min(1), value: nonNegative, unit: unitSchema, asOf: isoDate, relatedAdjustmentId: z.string().min(1).nullable().default(null), anchor: anchorSchema}).strict()).default([]),
   /** LTM EBITDA as the company computes it for the covenant, when it is opened, with the adjustment ids it already incorporates. */
   ltmEbitda: z.object({value: money, unit: unitSchema, perimeter: z.enum(["consolidated", "parent"]).default("consolidated"), asOf: isoDate, months: z.literal(12), incorporatesAdjustments: z.array(z.string().min(1)).default([]), anchor: anchorSchema}).strict().nullable().default(null),
   reported: z.object({
@@ -188,7 +190,7 @@ type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
 
 export type CovenantReconciliationOutput = {
-  schema_version: "method.reconcile-covenant-definitions.v9";
+  schema_version: "method.reconcile-covenant-definitions.v10";
   as_of_date: string;
   /** The unit every value below is expressed in; part of the output and of its fingerprint. */
   unit: string;
@@ -217,13 +219,16 @@ export type CovenantReconciliationOutput = {
     status: "within_limit" | "above_limit_interim" | "unresolved";
   }>;
   unproven_conditions: string[];
+  /** Candidate lines and numerator obligations without a classified value, as insufficient_evidence, never added and never called absent. */
+  uncovered_terms: Array<{id: string; state: "insufficient_evidence"; reason: string}>;
   legal_conditions: string[];
   trace: {calculations: Calculation[]; inputFingerprint: string; outputFingerprint: string};
 };
 
 const d = (value: Decimal.Value) => new Decimal(value);
 const out = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
-const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const stableStringify = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => compare(a, b))) : inner));
+const fingerprint = (value: unknown) => createHash("sha256").update(stableStringify(value)).digest("hex");
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const sortStrings = (values: readonly string[]) => [...values].sort(compare);
 
@@ -249,6 +254,7 @@ export function nextMeasurement(asOf: string, fiscalYearEnd: string, frequency: 
 function canonical(input: z.infer<typeof covenantReconciliationInputSchema>) {
   return {
     ...input,
+    candidateObligations: [...input.candidateObligations].sort((a, b) => compare(a.id, b.id)),
     instruments: [...input.instruments].sort((a, b) => compare(a.id, b.id)).map((instrument) => instrument.source === "indenture"
       ? {
           ...instrument,
@@ -320,6 +326,11 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
       const label = condition.referenceInstruments.join(", ");
       if (condition.type === "until_reference_settled") {
         // "Whichever comes first" across the references: the tier ends at the first maturity or dated ordinary settlement.
+        if (over.some((state) => state === "unknown")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "unproven", anchor: tier.anchor});
+          conditions.push(`the end of the ${tier.limit}x tier requires the maturity or settlement facts of every reference (${label}); the base lacks them for ${condition.referenceInstruments.filter((_reference, position) => over[position] === "unknown").join(", ")}${over.some((state) => state === "accelerated") ? "; an accelerated settlement of another reference does not settle the question" : ""}`);
+          return;
+        }
         if (over.some((state) => state === "accelerated") && !over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
           tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily; an accelerated settlement keeps this tier`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; notes.push(`a reference instrument (${label}) was settled by acceleration on a proven date, so the ${tier.limit}x tier remains`); return;
         }
@@ -327,20 +338,16 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
           tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "ended", anchor: tier.anchor});
           return;
         }
-        if (over.some((state) => state === "unknown")) {
-          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "unproven", anchor: tier.anchor});
-          conditions.push(`the end of the ${tier.limit}x tier requires the maturity or settlement facts of ${label}; the base has none`);
-          return;
-        }
         tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "applies", anchor: tier.anchor});
         applicable ??= {limit: tier.limit, tier: index};
         return;
       }
       if (over.every((state) => state === "ordinary")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; return; }
+      if (over.some((state) => state === "unknown")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "unproven", anchor: tier.anchor}); conditions.push(`the ${tier.limit}x tier requires proof of ordinary settlement of every reference (${label}); the base lacks the facts of ${condition.referenceInstruments.filter((_reference, position) => over[position] === "unknown").join(", ")}`); return; }
       if (over.some((state) => state === "alive")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "not_yet", anchor: tier.anchor}); return; }
+      if (over.some((state) => state === "accelerated") && !over.some((state) => state === "outstanding_after_maturity" || state === "matured_unproven")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "n/a", anchor: tier.anchor}); notes.push(`${label} was settled by acceleration on a proven date; the ${tier.limit}x tier does not apply (deterministic, no condition to prove)`); return; }
       tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "unproven", anchor: tier.anchor});
       if (over.some((state) => state === "outstanding_after_maturity")) conditions.push(`${label} matured and is recorded as outstanding; the ${tier.limit}x tier does not apply until ordinary settlement is proven`);
-      else if (over.some((state) => state === "accelerated")) notes.push(`${label} was settled by acceleration on a proven date; the ${tier.limit}x tier does not apply`);
       else conditions.push(`the ${tier.limit}x tier requires proof of ordinary settlement of ${label}; the base does not prove it`);
     });
     for (const condition of conditions) unproven.add(`${instrument.id}: ${condition}`);
@@ -356,9 +363,12 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     if (residualWanted && !wanted.has("leases") && leasesLine) legalHere.push(`whether lease liabilities (${leasesLine.value}, ${leasesLine.anchor.document}) fall under "${RESIDUAL}" needs legal review; they are excluded from the computed net debt until then`);
     const numeratorObligations = instrument.ebitdaAdjustments.filter((adjustment) => adjustment.kind === "numerator_obligation");
     for (const adjustment of numeratorObligations) {
+      const candidates = input.candidateObligations.filter((candidate) => candidate.relatedAdjustmentId === adjustment.id);
       legalHere.push(adjustment.obligation
         ? `the numerator obligation "${adjustment.id}" (${adjustment.description}) is added to net debt at ${adjustment.obligation.value} (${adjustment.obligation.anchor.document}); its contractual side and amount need legal review`
-        : `the numerator obligation "${adjustment.id}" (${adjustment.description}) has no dated value in the base; it is not folded into the EBITDA declaration`);
+        : candidates.length > 0
+          ? `the numerator obligation "${adjustment.id}" (${adjustment.description}) has no classified value; the base holds ${candidates.map((candidate) => `${candidate.value} ${candidate.unit} (${candidate.description}, ${candidate.anchor.document}${candidate.anchor.page ? ` p. ${candidate.anchor.page}` : ""})`).join(" and ")} as candidate lines that need legal classification before entering the numerator; nothing is added until then`
+          : `the numerator obligation "${adjustment.id}" (${adjustment.description}) has no dated value in the base; its amount is unknown, not zero`);
     }
     for (const condition of legalHere) legal.add(`${instrument.id}: ${condition}`);
     const missing = instrument.netDebtComponents.filter((component) => component !== RESIDUAL && !lineFor.has(component));
@@ -489,7 +499,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schema_version: "method.reconcile-covenant-definitions.v9" as const,
+    schema_version: "method.reconcile-covenant-definitions.v10" as const,
     as_of_date: input.asOfDate,
     unit,
     state,
@@ -497,6 +507,10 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     covenants,
     unproven_conditions: sortStrings([...unproven]),
     legal_conditions: sortStrings([...legal]),
+    uncovered_terms: [
+      ...input.candidateObligations.map((candidate) => ({id: `candidate:${candidate.id}`, state: "insufficient_evidence" as const, reason: `${candidate.description}: ${candidate.value} ${candidate.unit} at ${candidate.asOf} (${candidate.anchor.document}${candidate.anchor.page ? ` p. ${candidate.anchor.page}` : ""}) is a candidate ${candidate.relatedAdjustmentId ? `for the obligation "${candidate.relatedAdjustmentId}"` : "line"} that needs legal classification; not added to any numerator`})),
+      ...input.instruments.flatMap((instrument) => instrument.source === "indenture" ? instrument.ebitdaAdjustments.filter((adjustment) => adjustment.kind === "numerator_obligation" && adjustment.obligation === null).map((adjustment) => ({id: `obligation:${instrument.id}:${adjustment.id}`, state: "insufficient_evidence" as const, reason: input.candidateObligations.some((candidate) => candidate.relatedAdjustmentId === adjustment.id) ? `${instrument.id}: "${adjustment.id}" has candidate lines in the base awaiting classification` : `${instrument.id}: "${adjustment.id}" has no dated value in the base; unknown, not zero`})) : []),
+    ].sort((a, b) => compare(a.id, b.id)),
   };
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};

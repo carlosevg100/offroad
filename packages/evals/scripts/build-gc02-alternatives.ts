@@ -47,6 +47,7 @@ const newDebt = (amount: string) => ({amount, annualRate: cdiPlus125, termMonths
 const result = executors.compareRefinancingBeforeAfter({
   referenceDate: ledgerDate,
   unit: "BRL thousand",
+  unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"},
   before: {
     grossDebt: {value: "5670186", anchor: itr(40, "nota 15, total")},
     unrestrictedCash: {value: "1455809", anchor: itr(8, "caixa e equivalentes")},
@@ -62,7 +63,7 @@ const result = executors.compareRefinancingBeforeAfter({
     costOfExistingDebt: {weightedAverageRate: "0.1246", basis: "juros do serviço base do caso 02 sobre a dívida bruta (706.751 / 5.670.186); custo contábil, não all-in", anchor: itr(40, "nota 15")},
     cfadsByPeriod: null,
   },
-  covenant: {limit: "4.00", direction: "maximum", state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
+  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tier: {applicable: false, condition: "4,00x aplica-se depois da quitação ordinária dos CRA de referência; até a prova, 3,50x é o degrau vigente"}, state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
   alternatives: [
     {id: "status-quo", label: "Manter a estrutura e rolar as linhas bancárias", newDebt: null, retired: []},
     {id: "extend-di-2028", label: "Alongar o pico de 2028/29: nova dívida de sete anos (CDI + 1,25%, dois de carência, SAC) retirando a 13ª 1ª série pelo prêmio da escritura", newDebt: newDebt("306038"), retired: [{seriesId: "deb-13-1", principal: "306038", exitPremium: premium("deb-13-1"), maturityPeriod: "2028/29", anchor: {document: "escritura_13a_emissao.pdf", clause: "4.1", note: "vencimento 14/11/2028"}}]},

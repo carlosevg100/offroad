@@ -1,0 +1,82 @@
+# Revisão independente por IA: método compare-refinancing-before-after v2026.09.05-v4
+
+Registro `ai_independent_review`, nunca aprovação humana. Revisor: openai/gpt-5.6-sol (high) via codex-cli 0.153.4. Run gc01-method-compare-refinancing-before-after-2026-09-05-04-34-39, commit d2d346f. Fingerprint d502ec776de50488da253bab37b63c8cdd301cc8e8d0d0ac309d4de4ee793926.
+
+Resultado: **fail**. Evidências: 27 confirmed, 11 corrected, 4 unverifiable, 3 limitation.
+
+| Checagem | Feita |
+| --- | --- |
+| sourcesRevisited | sim |
+| numbersRecalculated | sim |
+| definitionsTested | sim |
+| exceptionsTested | sim |
+| adversarialTested | sim |
+| consistencyTested | sim |
+| baselineAdvantage | n/a |
+
+## Evidências
+
+| Resultado | Afirmação | Fonte | Âncora | Nota |
+| --- | --- | --- | --- | --- |
+| confirmed | 1.1 Integridade do corpus gold. | docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json | entries, linhas 5-220 | Os 43 arquivos foram re-hasheados; bytes e SHA-256 coincidem integralmente com o manifesto. |
+| confirmed | 1.2 Unidade R$ mil e dívida bruta de 5.670.186. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, páginas 39-40; linhas 2034-2077 e 2080-2094 | A unidade e o total usado pelo teste constam da fonte. |
+| confirmed | 1.3 Cronograma 1.229.828; 776.868; 1.228.475; 694.497; 994.544; 809.198 e ajuste de (63.224). | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, página 40; linhas 2097-2109 |  |
+| confirmed | 1.4 Caixa contratualmente dedutível de 1.455.809, derivativos ativo 235 e passivo 14.335. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 25, página 51; linhas 2764-2786 | 1.455.809 = 1.430.714 de caixa/equivalentes + 25.095 de aplicações. |
+| confirmed | 1.5 Saldos de 306.038, 438.918 e 282.357 usados nas séries retiradas. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, página 39; linhas 2048-2052 | São saldos contábeis em 31/05/2026, não principal contratual comprovado para 04/09/2026. |
+| confirmed | 1.6 Vencimentos das debêntures DI da 13ª e 14ª emissões. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | cláusula 7.7.1, linhas 1187-1193 | A debênture da 13ª vence em 14/11/2028; o gabarito, seção 11.1, usa 16/11/2028 para o CRA. |
+| confirmed | 1.7 Vencimento da debênture DI da 14ª emissão. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_14a_emissao.txt | cláusula 7.7.1, linhas 1225-1232 | A debênture vence em 14/06/2029; o CRA citado no gabarito vence em 15/06/2029. |
+| confirmed | 1.8 Pro forma informado de 4,72x, limite divulgado de 4,0x e próxima medição em 28/02/2027. | docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt | nota 15, página 40; linhas 2111-2124 | A própria fonte diz que o cumprimento só é exigido no encerramento anual. |
+| corrected | 1.9 Âncora do EBITDA implícito de 895.864 no release. | docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt | página 3, linhas 68-85 | O release traz 4,7x e outra dívida líquida; não traz 4,72x sobre 4.228.477. O valor 895.864 é derivado da nota 15 do ITR, página 40, e sua âncora no teste está errada. |
+| unverifiable | 1.10 Custo existente de 0,1246 baseado em 706.751 / 5.670.186. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seções 1-17; especialmente linhas 29-155 | O corpus não contém o numerador 706.751 nem o alegado caso 02. A divisão seria 0,12464335, arredondável a 0,1246, mas a base não é verificável. |
+| unverifiable | 1.11 Termos indicativos de 745.000, 14,5%, cinco anos, 24 meses de carência e fee de 1%. | docs/product/gold-cases/runs/gc01/ai-review-corpus/anbima_ettj_2026-09-04.csv | linhas 1-80 | A curva contém vértices de mercado, mas não esses termos, montante ou estrutura. Nenhum outro arquivo do manifesto os contém. |
+| unverifiable | 1.12 Prêmios de saída de 2.448 e 5.266. | docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json | lista exaustiva, linhas 5-220 | O arquivo citado pelo teste, exit-costs-gc01.json, não integra o corpus. As escrituras confirmam a fórmula de 0,40% a.a. pro rata, mas faltam PU, data efetiva e dias úteis para reproduzir os valores. |
+| unverifiable | 1.13 Custo de estruturação de 1.500. | docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json | lista exaustiva, linhas 5-220 | 03_Pedido_Simulado_CRA_2026.docx, citado pelo teste, não integra o corpus. |
+| confirmed | 2.1 Conciliação do cronograma antes. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 28-33 e 140-146 | Soma dos seis períodos = 5.733.410; menos 63.224 = 5.670.186. |
+| confirmed | 2.2 Visões de dívida antes e alavancagem. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 23-27 e 58-63 | Dívida líquida simples = 5.670.186 − 1.455.809 = 4.214.377; contratual = 5.670.186 + 14.335 − 235 − 1.455.809 = 4.228.477; EBITDA implícito arredondado = 4.228.477 / 4,72 = 895.864; alavancagem = 4,71999879x. |
+| confirmed | 2.3 Concentração antes/status quo. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 62-65 e 111-117 | Pico 2026/27: 1.229.828 / 5.670.186 = 0,21689377. O segundo pico é 1.228.475 / 5.670.186 = 0,21665515. |
+| confirmed | 2.4 Principal retirado, custo de saída e posição pro forma. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 39-42 e 68-71 | Condicionado aos inputs não verificáveis: retirado = 306.038 + 438.918 = 744.956; saída = 2.448 + 5.266 = 7.714; dívida bruta depois = 5.670.186 + 745.000 − 744.956 = 5.670.230; caixa depois = 1.455.809 − 7.714 − 7.450 − 1.500 = 1.439.145. |
+| confirmed | 2.5 Dívida e alavancagem depois. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 177-196 e 245-252 | Líquida simples = 5.670.230 − 1.439.145 = 4.231.085; contratual = 4.245.185; alavancagem = 4.245.185 / 895.864 = 4,73864895x. |
+| confirmed | 2.6 Serviço da nova dívida SAC. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 227-241 | Com taxa mensal efetiva arredondada a 0,01134762 e 36 amortizações de 20.694,44444444: pico = 29.148,42134444; juros totais = 359.294,01825; serviço total = 1.104.294,01825; vida média = média dos meses 25 a 60 = 42,5 meses. |
+| confirmed | 2.7 Alocação do principal proposto. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 73-84 | 8 parcelas = 165.555,55555552 em 2028/29; 12 = 248.333,33333328 em 2029/30; 12 em 2030/31; 4 = 82.777,77777776 após 2031. |
+| confirmed | 2.8 Concentração depois e ranking. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 74-84 e 111-117 | Pico depois = 994.544 + 248.333,33333328 = 1.242.877,33333328; participação = 0,21919346. Como 0,21689377 < 0,21919346, status-quo corretamente precede extend-di no discriminador peak_concentration. |
+| confirmed | 2.9 All-in de 0,14947356. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 238-242 | Condicionado aos inputs: 0,145 + [0,01 + (7.714 + 1.500)/745.000]/5 = 0,14947355704698, arredondado a 0,14947356. |
+| confirmed | 2.10 Headroom da mutação resolvida. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 92-103 | Aritmeticamente, 4,00 − 4,71999879 = −0,71999879x; a aplicabilidade econômica desse cálculo está incorreta porque tier.applicable permanece false. |
+| confirmed | 2.11 Cobertura de principal da mutação. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 130-138 | 700.000 / 1.229.828 = 0,56918528; períodos sem CFADS permanecem null. |
+| corrected | 2.12 Conciliação exata do cronograma depois. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 227-250 | As 36 parcelas arredondadas somam 744.999,99999984; cronograma depois mais ajuste resulta em 5.670.229,99999984, não 5.670.230. O executor não reconcilia novamente o cronograma depois, e o teste oculta a diferença ao arredondar para duas casas. |
+| limitation | 3.1 Definição-base de dívida líquida. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | definições, página 7; linhas 324-331 | A fórmula-base confere, mas inclui qualquer outra dívida onerosa. O executor não possui operando para essa rubrica nem registra residual/condição jurídica sobre arrendamentos. |
+| limitation | 3.2 Tratamento do passivo de arrendamento de 276.768. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 5, linhas 148-155 | A inclusão como outra dívida onerosa exige interpretação jurídica especializada. O número 4.228.477 permanece apenas condicionalmente comparável. |
+| corrected | 3.3 Campo unrestricted_cash de 1.455.809. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seção 4, linhas 97-122 | A fonte comprova caixa/equivalentes e aplicações dedutíveis contratualmente, mas não os qualifica como caixa irrestrito ou liquidez D0. O nome do campo excede a evidência. |
+| confirmed | 3.4 Definição e comparabilidade do EBITDA. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seções 5 e 13.1, linhas 153-155 e 366-388 | O valor é derivado e a comparabilidade integral é condicional; o gold corretamente não mede headroom no estado original. |
+| corrected | 3.5 Aplicabilidade dos degraus de covenant. | docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt | cláusula 7.24.3(VIII), páginas 54-55; linhas 2650-2683 | O executor ignora covenant.tier.applicable. O teste muda state/comparability para resolvidos, mantém applicable=false e ainda espera headroom contra 4,00x. Um degrau explicitamente inaplicável não pode produzir headroom. |
+| confirmed | 3.6 Leitura interina não equivale a rompimento ou cumprimento. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 187-191 | No gold original o headroom é null; quando calculado, a nota o classifica como leitura interina e nega conclusão de breach/compliance. |
+| corrected | 3.7 Comparabilidade temporal do antes e depois. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 19, 23-44 | O antes e os saldos retirados são de 31/05/2026, mas a dívida nova é desembolsada em 04/09/2026. O executor não faz roll-forward nem declara uma data efetiva do depois, misturando períodos. |
+| corrected | 3.8 Proveniência do principal retirado. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 209-220 e 252-256 | Os valores 306.038 e 438.918 vêm do ITR, mas a saída só preserva âncoras das escrituras de vencimento; não há âncora própria para o operando principal. |
+| corrected | 3.9 Regra de que todos os cálculos do trace vêm do financial-core. | packages/credit-playbook/knowledge/procedures/refinance/compare-refinancing-before-after.md | Outputs, linha 97 | O executor calcula diretamente com Decimal dívida contratual, dívida líquida, somas, participações e cobertura nas linhas 137-250; portanto a promessa não é verdadeira. |
+| confirmed | 4.1 Série retirada sem custo precificado. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 105-110 | retire-ipca é bloqueada; ipca_exit_quote permanece insufficient_evidence e não é preenchido. |
+| confirmed | 4.2 EBITDA ausente/não positivo, covenant insuficiente e CFADS ausente. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 92-103, 130-138 e 168-176 | Os respectivos indicadores ficam null e entram em unsupported. |
+| corrected | 4.3 CFADS parcialmente informado. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 130-138 | O período sem CFADS fica null, mas o teste exige a remoção de qualquer aviso de cobertura insuficiente. Isso viola o output unsupported prometido para objetos não medidos. |
+| corrected | 4.4 feesPaidFromCash ausente. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 33-35 e 209-214 | null é convertido silenciosamente em zero e o all-in continua sendo calculado; ausência de evidência e zero comprovado não são distinguidos. |
+| confirmed | 4.5 Cronograma antes não conciliado e ranking sem discriminador. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 140-146 e 189-195 | O primeiro bloqueia a comparação inteira; o segundo devolve ranking null com motivo explícito. |
+| confirmed | 5.1 Mutações cobertas pelos testes. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 121-219 | Há cobertura para all-in incomparável, falta de saída, escala relabelled, valor negativo, desembolso anterior, janela errada, principal excessivo, ausência de bucket aberto, empate e permutações. |
+| corrected | 5.2 Mutações do gabarito sobre covenant, EBITDA e arrendamento. | docs/product/gold-cases/gc01-gabarito-rascunho.md | seções 10, 11.6 e 13.4; linhas 228-232, 329-336 e 424-429 | Os testes não cobrem EBITDA trimestral anualizado, inclusão silenciosa de arrendamento, tratamento do pro forma como cálculo próprio ou aplicação de 4,00x com tier inaplicável; esta última mutação é aceita pelo teste. |
+| corrected | 5.3 Datas civis inválidas e wallThreshold fora de [0,1]. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 17-21, 41, 52, 63, 73-99 e 141 | Datas são validadas apenas por regex e podem ser normalizadas por Date; wallThreshold aceita qualquer decimal não negativo. Não há testes adversariais para esses casos. |
+| confirmed | 6.1 Determinismo de ordem e fingerprints. | packages/credit-playbook/src/executors/compare-refinancing-before-after.ts | linhas 139-150 e 260-285 | A entrada é canonizada por período, id, série e termo; objetos são serializados com chaves ordenadas e empates usam id. |
+| confirmed | 6.2 Evidência de consistência executada. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 198-219 | Os 11 testes passaram localmente. Vinte permutações e períodos com a mesma data preservaram os fingerprints; isso prova as permutações exercitadas, não todas as entradas admissíveis. |
+| limitation | 6.3 Conformidade com o contrato de outputs. | packages/credit-playbook/src/executors/compare-refinancing-before-after.test.ts | linhas 221-223 | O teste comprova somente as chaves de topo declaradas pelo método; não valida semântica, evidência ou schema dos objetos internos. |
+
+## Condições
+
+- Substituir a âncora do EBITDA pela nota 15 do ITR, página 40, e identificá-lo como derivação; não atribuir 4,72x ao release (teste, linha 27; gabarito, linhas 153-155).
+- Exigir tier aplicável e condição comprovada antes de calcular headroom; a quitação ordinária dos CRA de referência continua não comprovada (escritura 13ª, cláusula 7.24.3; gabarito, linhas 376-388).
+- Submeter a possível inclusão de arrendamentos em outra dívida onerosa a especialista jurídico e carregar explicitamente a condição (gabarito, linhas 148-155).
+- Fornecer fontes admissíveis para os termos da nova dívida, fee de 1.500, custo existente e prêmios de saída; os arquivos citados pelo teste não constam do manifesto.
+- Alinhar a data do antes, dos saldos retirados e do depois, ou executar roll-forward explícito até 04/09/2026 (teste, linhas 19-44).
+- Distinguir caixa contratualmente dedutível de caixa irrestrito e preservar âncoras separadas para principal, prêmio e fees (método, linhas 88-97).
+- Tratar fees null e CFADS parcial como evidência insuficiente; não assumir zero nem suprimir lacunas (executor, linhas 204-214 e 249-250).
+- Validar datas civis, limitar participação da parede ao intervalo econômico, reconciliar também o cronograma depois e ampliar os testes adversariais (executor, linhas 17-21, 141 e 244-250).
+
+## Notas do revisor
+
+GPT-5 Codex, revisão por modelo com shell local e Vitest 4.1.10; não constitui aprovação humana.
+
+A aritmética do caso, condicionada aos inputs fornecidos, é majoritariamente reproduzível. O resultado é fail por erros materiais de proveniência, aplicabilidade do degrau, comparabilidade temporal e tratamento de lacunas.

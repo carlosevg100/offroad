@@ -70,14 +70,14 @@ const premium = (id: string) => {
 };
 const itr = (page: number, note: string) => ({document: "01_ITR_1T26_31mai2026.pdf", page, note});
 const beforeAfter = (rate: string, termMonths: number) => executors.compareRefinancingBeforeAfter({
-  referenceDate: "2026-05-31", unit: "BRL thousand",
+  referenceDate: "2026-05-31", unit: "BRL thousand", unitAnchor: {document: "01_ITR_1T26_31mai2026.pdf", page: 39, note: "nota 15, valores em R$ mil"},
   before: {
     grossDebt: {value: "5670186", anchor: itr(40, "nota 15, total")}, unrestrictedCash: {value: "1455809", anchor: itr(8, "caixa e equivalentes")}, derivativeLiabilities: {value: "14335", anchor: itr(9, "derivativos, passivo")}, derivativeAssets: {value: "235", anchor: itr(8, "derivativos, ativo")},
     ltmEbitda: {value: "895864", definitionKey: "ebitda.contractual.13a", basis: "implied_from_reported_index", anchor: {document: "release_1T26.pdf", page: 3, note: "4,72x (derivado)"}},
     schedule: [{period: "2026/27", amount: "1229828", endsAt: "2027-05-31"}, {period: "2027/28", amount: "776868", endsAt: "2028-05-31"}, {period: "2028/29", amount: "1228475", endsAt: "2029-05-31"}, {period: "2029/30", amount: "694497", endsAt: "2030-05-31"}, {period: "2030/31", amount: "994544", endsAt: "2031-05-31"}, {period: "after 2031", amount: "809198", endsAt: null}, {period: "debenture costs", amount: "-63224", endsAt: null, kind: "adjustment"}],
     costOfExistingDebt: {weightedAverageRate: "0.1246", basis: "juros do serviço base sobre a dívida bruta; custo contábil, não all-in", anchor: itr(40, "nota 15")}, cfadsByPeriod: null,
   },
-  covenant: {limit: "4.00", direction: "maximum", state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
+  covenant: {instrument: "13ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tier: {applicable: false, condition: "4,00x aplica-se depois da quitação ordinária dos CRA de referência; até a prova, 3,50x é o degrau vigente"}, state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}},
   alternatives: [
     {id: "status-quo", label: "Manter a estrutura e rolar as linhas", newDebt: null, retired: []},
     {id: "x-extend-di-2028", label: "X: alongar a parede de 2028/29 retirando a 13ª 1ª série", newDebt: {amount: "306038", annualRate: rate, termMonths, graceMonths: 24, format: "sac", upfrontFeeRate: "0.005", disbursementDate: exitDate, origin: "custo de referência do pedido simulado (CDI + 1,25%), sintético", anchor: {document: "03_Pedido_Simulado_CRA_2026.docx", page: 1}}, retired: [{seriesId: "deb-13-1", principal: "306038", exitPremium: premium("deb-13-1"), maturityPeriod: "2028/29", anchor: {document: "escritura_13a_emissao.pdf", clause: "4.1"}}]},

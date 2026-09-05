@@ -1,6 +1,6 @@
 ---
 id: reconcile-covenant-definitions
-version: 2026.09.05-v9
+version: 2026.09.05-v10
 maturity: implemented
 title_pt: Reconciliar as definições de covenant com as escrituras
 title_en: Reconcile covenant definitions against the indentures
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-covenant-definitions
 implementation_export: reconcileCovenantDefinitions
-result_contract: method.reconcile-covenant-definitions.v9
+result_contract: method.reconcile-covenant-definitions.v10
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -76,12 +76,13 @@ medição, o limite aplicável e o índice comparável, mais a lista do que cont
 - Nenhuma escritura no pack e o trabalho exige afirmar headroom.
 
 # Outputs
-- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v9`
+- schema_version (string, required): identificador do contrato de resultado, `method.reconcile-covenant-definitions.v10`
 - as_of_date (date, required): data-base da comparação
 - unit (string, required): unidade declarada pelo chamador para toda a base (linhas, EBITDA e aberturas têm de coincidir), presente mesmo no resultado bloqueado; entra no fingerprint, para que uma troca uniforme de escala mude o resultado
 - block_reasons (array, required): motivos estruturados de bloqueio, vazio quando não há
 - covenants (array, required): por instrumento, fonte (escritura ou relatório fiduciário), definições literais com componentes e âncora própria, ajustes de EBITDA tipados com âncora, degraus com condição, estado e âncora própria, periodicidade, base, fim do exercício, próxima medição derivada da periodicidade, limite aplicável com estado, apuração reportada pelo agente quando a fonte é relatório fiduciário, dívida líquida pela própria definição (fórmula, operandos, âncora por operando, residual assumido zero ou não), índice comparado (calculado ou reportado; EBITDA aberto, implícito pelo `financial-core`, ou nulo quando nenhum existe, nunca preenchido), notas explicativas da resolução do degrau, comparabilidade com motivos, headroom só quando comparável, status nunca igual a rompido
-- unproven_conditions (array, required): condições de degrau ou quitações não provadas pela base, uma por degrau não provado; uma liquidação acelerada com data provada é nota do covenant, não condição
+- unproven_conditions (array, required): condições de degrau ou quitações não provadas pela base, uma por degrau não provado; referência sem fato deixa o degrau não provado mesmo quando outra referência foi liquidada por aceleração; uma liquidação acelerada com data provada e sem referência em aberto é nota do covenant e deixa o degrau seguinte como n/a, estado determinístico sem condição
+- uncovered_terms (array, required): linhas candidatas da base (contas a pagar por aquisição, contraprestação contingente) e obrigações do numerador sem valor classificado, como insufficient_evidence com o motivo; nunca somadas e nunca chamadas de ausentes
 - legal_conditions (array, required): qualificações que exigem revisão jurídica (arrendamento como outra dívida onerosa, sellers finance no numerador), por instrumento no covenant e consolidadas no resultado; enquanto existirem, nenhum headroom
 - state (enum, required): resolved, conditioned ou blocked | values: resolved, conditioned, blocked
 - trace (object, required): cálculos executados (id, fórmula, operandos, resultado, unidade: a monetária da base para dívida e EBITDA, `x` para índices e headroom) e fingerprints de entrada e saída
