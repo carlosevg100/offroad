@@ -45,52 +45,76 @@ const previewObjectKinds = ["debt_ledger", "financial_statements", "covenants", 
 const materialForms = ["pitch_pages", "internal_briefing", "analysis_with_scenarios", "board_deck", "memo"] as const;
 
 // Prompted JSON is not grammar-bound: a model may write null for an object it has nothing to say
-// about, or omit an optional field. The schema accepts those forms and normalises them, so the
-// derivation after the call sees one shape.
-const nullableDefault = <T extends z.ZodTypeAny>(schema: T, fallback: z.infer<T>) => schema.nullable().optional().transform((value) => (value ?? fallback) as z.infer<T>);
-const noPremiseChanges = {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null};
-const noMaterial = {requested: false, form: null, pages: null};
-const noScopeChanges = {audience: null, depth: null, form: null};
-
-export const previewTurnSchema = z.object({
-  companies: nullableDefault(z.array(z.object({
+// about, or omit an optional field. The schema accepts those forms (and stays representable as
+// JSON Schema, which a transform is not); `normalizePreviewTurn` gives the derivation one shape.
+const materialFormSchema = z.enum(materialForms);
+const rawPreviewTurnSchema = z.object({
+  companies: z.array(z.object({
     mention: z.string().min(1).max(120),
-    role: z.enum(["subject", "counterparty", "comparable", "other"]).nullable().optional().transform((value) => value ?? "other"),
-  })).max(8), []),
-  premiseChanges: nullableDefault(z.object({
-    newDebtAnnualRate: z.number().min(0).max(1).nullable().optional().transform((value) => value ?? null),
-    cdiSpreadBps: z.number().min(-2_000).max(5_000).nullable().optional().transform((value) => value ?? null),
-    newDebtTermMonths: z.number().int().positive().max(600).nullable().optional().transform((value) => value ?? null),
-    newDebtGraceMonths: z.number().int().nonnegative().max(240).nullable().optional().transform((value) => value ?? null),
-  }), noPremiseChanges),
+    role: z.enum(["subject", "counterparty", "comparable", "other"]).nullish(),
+  })).max(8).nullish(),
+  premiseChanges: z.object({
+    newDebtAnnualRate: z.number().min(0).max(1).nullish(),
+    cdiSpreadBps: z.number().min(-2_000).max(5_000).nullish(),
+    newDebtTermMonths: z.number().int().positive().max(600).nullish(),
+    newDebtGraceMonths: z.number().int().nonnegative().max(240).nullish(),
+  }).nullish(),
   numberQuestion: z.object({
-    mentioned: z.string().max(80).nullable().optional().transform((value) => value ?? null),
-    objects: nullableDefault(z.array(z.enum(previewObjectKinds)).max(9), []),
-  }).nullable().optional().transform((value) => value ?? null),
-  material: nullableDefault(z.object({
-    requested: z.boolean().nullable().optional().transform((value) => value ?? false),
-    form: z.enum(materialForms).nullable().optional().transform((value) => value ?? null),
-    pages: z.number().int().positive().max(60).nullable().optional().transform((value) => value ?? null),
-  }), noMaterial),
-  answers: nullableDefault(z.array(z.object({
+    mentioned: z.string().max(80).nullish(),
+    objects: z.array(z.enum(previewObjectKinds)).max(9).nullish(),
+  }).nullish(),
+  material: z.object({
+    requested: z.boolean().nullish(),
+    form: materialFormSchema.nullish(),
+    pages: z.number().int().positive().max(60).nullish(),
+  }).nullish(),
+  answers: z.array(z.object({
     questionId: z.string().min(1).max(60),
     answer: z.string().min(1).max(400),
-    effect: nullableDefault(z.object({
-      audience: z.string().max(80).nullable().optional().transform((value) => value ?? null),
-      depth: intentDepthSchema.nullable().optional().transform((value) => value ?? null),
-      scope: z.string().max(200).nullable().optional().transform((value) => value ?? null),
-    }), {audience: null, depth: null, scope: null}),
-  })).max(6), []),
-  scopeChanges: nullableDefault(z.object({
-    audience: z.string().max(80).nullable().optional().transform((value) => value ?? null),
-    depth: intentDepthSchema.nullable().optional().transform((value) => value ?? null),
-    form: z.enum(materialForms).nullable().optional().transform((value) => value ?? null),
-  }), noScopeChanges),
+    effect: z.object({
+      audience: z.string().max(80).nullish(),
+      depth: intentDepthSchema.nullish(),
+      scope: z.string().max(200).nullish(),
+    }).nullish(),
+  })).max(6).nullish(),
+  scopeChanges: z.object({
+    audience: z.string().max(80).nullish(),
+    depth: intentDepthSchema.nullish(),
+    form: materialFormSchema.nullish(),
+  }).nullish(),
 });
-export type PreviewTurn = z.infer<typeof previewTurnSchema>;
+export const previewTurnSchema = rawPreviewTurnSchema;
+
+export type PreviewTurn = {
+  companies: Array<{mention: string; role: "subject" | "counterparty" | "comparable" | "other"}>;
+  premiseChanges: {newDebtAnnualRate: number | null; cdiSpreadBps: number | null; newDebtTermMonths: number | null; newDebtGraceMonths: number | null};
+  numberQuestion: {mentioned: string | null; objects: Array<(typeof previewObjectKinds)[number]>} | null;
+  material: {requested: boolean; form: (typeof materialForms)[number] | null; pages: number | null};
+  answers: Array<{questionId: string; answer: string; effect: {audience: string | null; depth: z.infer<typeof intentDepthSchema> | null; scope: string | null}}>;
+  scopeChanges: {audience: string | null; depth: z.infer<typeof intentDepthSchema> | null; form: (typeof materialForms)[number] | null};
+};
+
+/** One shape for the derivation: every null or missing object, list or field becomes its neutral value. */
+export function normalizePreviewTurn(raw: z.infer<typeof rawPreviewTurnSchema>): PreviewTurn {
+  return {
+    companies: (raw.companies ?? []).map((company) => ({mention: company.mention, role: company.role ?? "other"})),
+    premiseChanges: {
+      newDebtAnnualRate: raw.premiseChanges?.newDebtAnnualRate ?? null,
+      cdiSpreadBps: raw.premiseChanges?.cdiSpreadBps ?? null,
+      newDebtTermMonths: raw.premiseChanges?.newDebtTermMonths ?? null,
+      newDebtGraceMonths: raw.premiseChanges?.newDebtGraceMonths ?? null,
+    },
+    numberQuestion: raw.numberQuestion ? {mentioned: raw.numberQuestion.mentioned ?? null, objects: raw.numberQuestion.objects ?? []} : null,
+    material: {requested: raw.material?.requested ?? false, form: raw.material?.form ?? null, pages: raw.material?.pages ?? null},
+    answers: (raw.answers ?? []).map((answer) => ({questionId: answer.questionId, answer: answer.answer, effect: {audience: answer.effect?.audience ?? null, depth: answer.effect?.depth ?? null, scope: answer.effect?.scope ?? null}})),
+    scopeChanges: {audience: raw.scopeChanges?.audience ?? null, depth: raw.scopeChanges?.depth ?? null, form: raw.scopeChanges?.form ?? null},
+  };
+}
+
+
 
 export const liveRoutingOutputSchema = shadowRoutingOutputSchema.extend({turn: previewTurnSchema});
-export type LiveRoutingOutput = z.infer<typeof liveRoutingOutputSchema>;
+export type LiveRoutingOutput = Omit<z.infer<typeof liveRoutingOutputSchema>, "turn"> & {turn: PreviewTurn};
 
 export const LIVE_ROUTING_SYSTEM = `${SHADOW_ROUTING_SYSTEM}
 
@@ -153,9 +177,9 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
     thinking: "off",
     metadata: {surface: "live_preview_router"},
   });
-  const output = completion.output;
+  const output: LiveRoutingOutput = {...completion.output, turn: normalizePreviewTurn(completion.output.turn)};
   return {
-    envelope: stampIntentEnvelope(output, context, input.now),
+    envelope: stampIntentEnvelope(completion.output, context, input.now),
     output,
     model: completion.model,
     costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore),

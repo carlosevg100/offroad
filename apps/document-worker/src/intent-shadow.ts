@@ -24,8 +24,8 @@ import {z} from "zod";
 const inferred = <T extends z.ZodTypeAny>(value: T) => z.object({
   value,
   state: z.enum(["explicit", "inferred", "ambiguous", "unknown", "not_applicable"]),
-  confidence: z.number().min(0).max(1).nullable().optional().transform((confidence) => confidence ?? null),
-  basis: z.string().max(200).nullable().optional(),
+  confidence: z.number().min(0).max(1).nullish(),
+  basis: z.string().max(200).nullish(),
 });
 
 export const shadowRoutingOutputSchema = z.object({
@@ -94,7 +94,7 @@ function evidenceRegime(accessBasis: string | null, documentCount: number): "pub
   return "public";
 }
 
-const asSystemOrInferred = <T>(field: {value: T; state: string; confidence: number | null; basis?: string | null | undefined}) => ({
+const asSystemOrInferred = <T>(field: {value: T; state: string; confidence?: number | null | undefined; basis?: string | null | undefined}) => ({
   value: field.value,
   state: field.state as "explicit" | "inferred" | "ambiguous" | "unknown" | "not_applicable",
   // An inferred field the model left without a confidence is recorded at even odds, never as certain.
