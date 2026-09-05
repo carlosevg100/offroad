@@ -129,6 +129,8 @@ export type ProviderErrorDiagnostic = {
   /** Machine-readable provider code/type only. */
   code?: string;
   type?: string;
+  /** The provider's own message, truncated; names the request problem, never our content. */
+  message?: string;
 };
 
 export type ValidationIssueDiagnostic = {
