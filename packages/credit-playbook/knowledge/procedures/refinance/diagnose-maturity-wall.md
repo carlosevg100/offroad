@@ -1,6 +1,6 @@
 ---
 id: diagnose-maturity-wall
-version: 2026.09.05-v1
+version: 2026.09.05-v2
 maturity: implemented
 title_pt: Diagnosticar a parede de vencimentos
 title_en: Diagnose the maturity wall
@@ -10,7 +10,7 @@ owner_role: Head de DCM
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/diagnose-maturity-wall
 implementation_export: diagnoseMaturityWall
-result_contract: method.diagnose-maturity-wall.v1
+result_contract: method.diagnose-maturity-wall.v2
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -21,7 +21,7 @@ e2e_scenario_ids: [pending:case01-frozen-run]
 cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-03, D-05, D-28]
 authorities: [CASA, MERCADO]
-reference_data_keys: [policy.seasonality.materiality]
+reference_data_keys: [policy.seasonality.materiality, policy.structure.maturity_wall]
 task_specs: [C05, C08]
 calculation_ids: [financial.maturity_buckets, financial.liquidity_coverage]
 gold_cases: [gc01-analista-ib-camil, gc05-banker-expansao-camil]
@@ -74,9 +74,20 @@ a lista das fontes de pagamento que a base não prova.
 - Ledger sem cronograma conciliado.
 
 # Outputs
-- walls (array, required): períodos com valor, participação, variação e classificação de concentração
-- coverage (object, required): cobertura por período com a definição de caixa e a fonte de geração
-- unproven_sources (array, required): fontes de pagamento citadas sem prova (linhas, aprovações, desembolsos)
+- schema_version (string, required): identificador do contrato de resultado, `method.diagnose-maturity-wall.v2`
+- reference_date (date, required): data-base
+- unit (string, required): unidade dos valores monetários; participações e coberturas levam a unidade `x`
+- state (enum, required): complete, incomplete (sem geração declarada, cobertura só de caixa) ou blocked | values: complete, incomplete, blocked
+- block_reasons (array, required): motivos estruturados de bloqueio (cronograma vazio, dívida bruta zero, cronograma que não fecha com a dívida bruta)
+- incomplete_reasons (array, required): o que a base não permitiu (geração declarada)
+- wall_threshold (object, required): participação limite com chave e versão da política; parede é participação estritamente acima do limiar, comparada nas oito casas em que é escrita
+- walls (array, required): períodos com valor, participação sobre a dívida bruta, variação contra a data anterior, classificação de parede e âncora do cronograma
+- peak (object, required): o período de maior concentração pelo `financial-core`, ou nulo
+- coverage (object, required): definição de caixa com âncora, geração declarada (LTM ou projeção, doze meses) com âncora, cobertura sequencial por período pelo `financial-core` (caixa carregado, geração, fontes contratadas, serviço, cobertura, caixa final, déficit e a dependência de rolagem em palavras), períodos em aberto marcados como não avaliados, déficit carregado ao fim do horizonte e ressalva sobre a liquidez
+- sources (array, required): cada fonte de pagamento citada com valor, período, estado provado ou não provado (provada só com contrato e desembolso na base, nunca por sinalizador), motivo e as três âncoras (aprovação, contrato, desembolso)
+- uncovered_terms (array, required): geração ausente, disponibilidade do caixa não provada e fontes não provadas, com estado `insufficient_evidence` e motivo
+- notes (array, required): a quebra de covenant como evento de vencimento antecipado não automático; cronograma contratual e cenário de aceleração nunca somados
+- trace (object, required): concentração por período, cobertura por período (operandos: caixa inicial, geração, fontes contratadas, principal) com unidade; fingerprints de entrada e saída com o trace dentro
 
 # Exemplos
 ## Bom

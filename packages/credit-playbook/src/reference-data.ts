@@ -5,7 +5,7 @@ import {z} from "zod";
  * Market-sensitive numbers and house policy parameters live here, not inside procedure prose.
  * Missing values are explicit blockers. They are never replaced by a model estimate.
  */
-export const referenceDataRegistryVersion = "2026.09.05-v7";
+export const referenceDataRegistryVersion = "2026.09.05-v8";
 
 export const referenceDataStatusSchema = z.enum(["required_missing", "draft", "approved", "expired"]);
 export type ReferenceDataStatus = z.infer<typeof referenceDataStatusSchema>;
@@ -123,6 +123,7 @@ export const referenceDataRegistry = [
   missing("policy.mixed-use.general-purpose", "house_policy", "Maximum unidentified general-corporate-purpose use and classification rules for mixed-use operations.", "Head de DCM e Estruturação", ["OP-13"]),
   missing("policy.wait-analysis", "house_policy", "Required comparison of waiting cost, expected structural gain, milestone and client decision.", "Head de DCM e Estruturação", ["OP-12"]),
   missing("policy.structure.collateral_haircuts", "methodology_parameter", "Collateral-specific eligibility, haircut and coverage conventions.", "Head de DCM e Estruturação", ["ES-08", "ES-09", "ES-10", "ES-11", "ES-12", "ES-13", "ES-14", "ES-15", "ES-16", "ES-17", "ES-18", "ES-19"]),
+  draft("policy.structure.maturity_wall", "methodology_parameter", "Share of gross debt maturing in one period above which the period is a wall, and the rule that the threshold is strict.", "Head de DCM e Estruturação", ["D-16", "D-24"], {"value": {"shareOfGrossDebt": "0.20", "rule": "estritamente acima do limiar; igual ao limiar não é parede; denominador é a dívida bruta da nota"}, "unit": "fração da dívida bruta", "source": {"title": "Gabarito 01 v1.0, seção 3 (dois picos de cerca de 1,23 bilhão, 21,7% da dívida bruta); limiar proposto para aprovação", "observedBy": "agente Offroad, proposta a partir do gabarito 01 e do executor diagnose-maturity-wall v2"}, "asOf": "2026-09-05"}),
   draft("policy.structure.covenant_headroom", "methodology_parameter", "Covenant calibration and minimum headroom conventions by metric and downside.", "Head de DCM e Estruturação", ["ES-23", "ES-24", "ES-25", "ES-26", "ES-27", "ES-28", "ES-29", "ES-30", "ES-31", "ES-32"], {"value": {"minimumRelativeHeadroomBase": "0.15", "rule": "folga relativa sobre o limite aplicável no cenário base; abaixo disso, alerta no memo; nunca 'rompido' antes da medição; headroom só com definição, perímetro e data iguais"}, "unit": "fração do limite", "source": {"title": "Gabarito 01 v0.8, seções 5 e 13.1 (4,72x contra 4,00x, medição em 28/02/2027); executor reconcile-covenant-definitions v3; limiar proposto para aprovação", "observedBy": "agente Offroad, proposta a partir do gabarito 01 v0.8 e dos executores do Caso 01"}, "asOf": "2026-09-05"}),
   missing("policy.structure.leverage-bands", "market_observation", "Versioned leverage bands by sector, cyclicality, size, security and risk profile.", "Head de DCM e Estruturação", ["ES-01", "ES-03", "ES-23", "ES-45"]),
   missing("policy.structure.coverage-floors", "house_policy", "Minimum DSCR and auxiliary ICR floors by profile, scenario and amortisation format.", "Head de DCM e Estruturação", ["ES-02", "ES-03", "ES-04", "ES-05", "ES-24"]),
