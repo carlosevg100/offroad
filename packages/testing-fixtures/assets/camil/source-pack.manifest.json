@@ -401,12 +401,182 @@
         "note": "Escritura ou aditamento arquivado na CVM (categoria Escrituras e aditamentos de debêntures); acesso público pelo ENET"
       },
       "country": "BR"
+    },
+    {
+      "id": "cra_257_termo_securitizacao",
+      "topic": "identity",
+      "title": "CRA 257ª emissão Eco Securitizadora (Camil): termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1685020167CRA Camil - Termo de Securitização.pdf",
+      "asOfDate": "2023-05-24",
+      "version": "termo original 2023",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR",
+      "note": "CRA de referência do degrau de 3,50x do covenant; vencimento 29/12/2025"
+    },
+    {
+      "id": "cra_257_aditamento_1",
+      "topic": "identity",
+      "title": "CRA 257ª emissão: primeiro aditamento ao termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1687390387CRA_Camil___Primeiro_Aditamento_ao_Termo_de_Securitização.pdf",
+      "asOfDate": "2023-06-21",
+      "version": "1º aditamento 2023",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_257_relatorio_mensal_4t25",
+      "topic": "identity",
+      "title": "CRA 257ª emissão: relatório mensal 4T25 (evidência do vencimento em dezembro de 2025)",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1770818456RM_257a_CRA_Camil_4T25.pdf",
+      "asOfDate": "2025-12-31",
+      "version": "RM 4T25",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_292_termo_securitizacao",
+      "topic": "identity",
+      "title": "CRA 292ª emissão (1ª, 2ª e 3ª séries, lastro da 13ª emissão de debêntures): termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1699541583CRA Camil - Termo de Securitização (MF 07.11.2023) (versão assinatura).docx.pdf",
+      "asOfDate": "2023-11-07",
+      "version": "termo original 2023",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_292_aditamento_1",
+      "topic": "identity",
+      "title": "CRA 292ª emissão: primeiro aditamento ao termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1701187155CRA Camil - Primeiro Aditamento ao Termo de Securitização (MF 27.11.2023) [Envio WGL] (versão assina.pdf",
+      "asOfDate": "2023-11-27",
+      "version": "1º aditamento 2023",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_292_aditamento_2",
+      "topic": "identity",
+      "title": "CRA 292ª emissão: segundo aditamento ao termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1701456713CRA Camil - Segundo Aditamento ao Termo de Securitização [assinado](45923837.1).pdf",
+      "asOfDate": "2023-12-01",
+      "version": "2º aditamento 2023",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_292_relatorio_mensal_4t25",
+      "topic": "identity",
+      "title": "CRA 292ª emissão: relatório mensal 4T25",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1770818368RM_292a_CRA_Camil_4T25.pdf",
+      "asOfDate": "2025-12-31",
+      "version": "RM 4T25",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_329_termo_securitizacao",
+      "topic": "identity",
+      "title": "CRA 329ª emissão (1ª, 2ª e 3ª séries, lastro da 14ª emissão de debêntures): termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1716297141CRA_Camil_I_Termo_de_Securitização_(CRA)_(v._final)_(CB).docx.pdf",
+      "asOfDate": "2024-05-20",
+      "version": "termo original 2024",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_329_aditamento_1",
+      "topic": "identity",
+      "title": "CRA 329ª emissão: primeiro aditamento ao termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1718216017CRA_Camil_I_1º_Adto._Termo_de_Securitização_12.06.2024_(vf).docx.pdf",
+      "asOfDate": "2024-06-12",
+      "version": "1º aditamento 2024",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_329_relatorio_mensal_4t25",
+      "topic": "identity",
+      "title": "CRA 329ª emissão: relatório mensal 4T25",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1770818340RM_329a_CRA_Camil_4T25.pdf",
+      "asOfDate": "2025-12-31",
+      "version": "RM 4T25",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_389_termo_securitizacao",
+      "topic": "identity",
+      "title": "CRA 389ª emissão (1ª a 4ª séries, lastro da 15ª emissão de debêntures): termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1760397807CRA Camil - Termo de Securitização.pdf",
+      "asOfDate": "2025-10-13",
+      "version": "termo original 2025",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_389_aditamento_1",
+      "topic": "identity",
+      "title": "CRA 389ª emissão: aditamento ao termo de securitização",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1763555809CRA Camil - Aditamento ao Termo de Securitização.pdf",
+      "asOfDate": "2025-11-19",
+      "version": "aditamento 2025",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
+    },
+    {
+      "id": "cra_389_anuncio_encerramento",
+      "topic": "identity",
+      "title": "CRA 389ª emissão: anúncio de encerramento da oferta",
+      "url": "https://ecoagro.agr.br/public/storage/Arquivo/1764114382CRA Camil - Anúncio de Encerramento (v. divulgação).pdf",
+      "asOfDate": "2025-11-25",
+      "version": "anúncio 2025",
+      "licence": {
+        "policy": "public_reusable",
+        "note": "Documento de oferta pública de CRA (Resolução CVM 160) publicado pela securitizadora; os termos de uso do site restringem reprodução de marcas e sinais distintivos, não dos documentos de oferta. Uso interno de análise; redistribuição fica condicionada a parecer jurídico."
+      },
+      "country": "BR"
     }
   ],
   "notes": [
     "Índice ITR da CVM (itr_cia_aberta_2026.zip, 19,5 MB) consultado em 2026-09-04 só para obter o link direto do ITR; não retido por tamanho.",
     "O site de RI (ri.camil.com.br) carrega os documentos por JavaScript; os mesmos arquivos estão arquivados na CVM e foram congelados por lá.",
     "Nenhum Fato Relevante foi arquivado pela Camil em 2026 até 2026-09-04 no índice IPE.",
-    "Escrituras e aditamentos localizados nos índices IPE de 2021, 2023, 2024 e 2025. Os termos de securitização dos CRA (292ª, 329ª e 389ª emissões da Eco Securitizadora de Direitos Creditórios do Agronegócio) não estão no IPE: a securitizadora só arquiva relatórios de rating na CVM; congelar a partir da B3 ou do site da securitizadora, com licença verificada."
+    "Termos de securitização, aditamentos e relatórios mensais dos CRA da Eco Securitizadora (257ª, 292ª, 329ª e 389ª emissões) localizados nas páginas de emissão do site da securitizadora (ecoagro.agr.br/emissoes-integra/<id>); prospectos não retidos por tamanho, disponíveis no mesmo endereço."
   ]
 }
