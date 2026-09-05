@@ -2,7 +2,16 @@ import type {SupabaseClient} from "@supabase/supabase-js";
 
 import type {Database} from "@/types/database";
 
-export type IntegrationPreviewStatus = {enabled: boolean; note: string | null};
+export type IntegrationPreviewScope = "organization" | "projects";
+
+export type IntegrationPreviewStatus = {enabled: boolean; scope: IntegrationPreviewScope | null; projectIds: string[]; note: string | null};
+
+const disabled: IntegrationPreviewStatus = {enabled: false, scope: null, projectIds: [], note: null};
+
+/** Whether this project runs in preview: the whole organization does, or the project is listed. */
+export function integrationPreviewCoversProject(status: IntegrationPreviewStatus, projectId: string): boolean {
+  return status.enabled && (status.scope === "organization" || status.projectIds.includes(projectId));
+}
 
 /**
  * Whether the organization runs the internal `integration_preview` mode. The grant is an operator
@@ -17,12 +26,16 @@ export async function loadIntegrationPreviewStatus(
   if (error) {
     // Content-free: the code and the message name a function or a privilege, never data.
     console.warn(JSON.stringify({event: "integration_preview.status_unavailable", code: error.code ?? null, message: (error.message ?? "").slice(0, 200)}));
-    return {enabled: false, note: null};
+    return disabled;
   }
-  if (!data || typeof data !== "object" || Array.isArray(data)) return {enabled: false, note: null};
+  if (!data || typeof data !== "object" || Array.isArray(data)) return disabled;
   const record = data as Record<string, unknown>;
+  const projectIds = Array.isArray(record.projectIds) ? record.projectIds.filter((value): value is string => typeof value === "string") : [];
   return {
     enabled: record.enabled === true,
+    // A status without a scope comes from the organization-wide grant of the first migration.
+    scope: record.scope === "projects" ? "projects" : record.enabled === true ? "organization" : null,
+    projectIds,
     note: typeof record.note === "string" && record.note.trim() ? record.note.trim() : null,
   };
 }
