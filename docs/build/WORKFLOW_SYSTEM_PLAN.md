@@ -117,7 +117,22 @@ homologado em profundidade, composição confiável, abstenção explícita onde
   setembro). O workflow `codex-review.yml` roda o mesmo runner no GitHub Actions com a chave da
   OpenAI lida do Secrets Manager por OIDC; o corpus de revisão (43 arquivos) passou a ser
   versionado com verificação de hash contra o manifesto.
-- Próximos passos nesta ordem: rodar as revisões pendentes (covenant v3, ledger v4, gabarito
-  v0.8) pelo workflow; promover a `ai_reviewed` o que passar; congelar o gabarito 01 como v1.0
-  com o registro que passar; parâmetros citados pelos métodos do Caso 01 em `draft` com fonte e
-  dono; gabarito 02.
+- Os sete parâmetros citados pelos métodos do Caso 01 estão em `draft` com valor proposto,
+  fonte e dono (`policy.reconciliation.tolerance`, `policy.financial.materiality`,
+  `policy.seasonality.materiality`, `policy.debt.views`, `scenario.interest_rate.parallel_shock`,
+  `policy.structure.covenant_headroom`, `policy.capacity.minimum_headroom`); `approved` só com
+  aprovação nomeada.
+- Os cinco gabaritos existem: 01 (v0.9, quatro rodadas de revisão), 02 (v0.2, CFO Camil, fixtures
+  gerenciais sintéticas geradas e calculadas pelo `financial-core`), 03 (v0.1, Aurora com carteira
+  de recebíveis sintética), 04 (v0.1, Prisma sobre Cogna com mandato sintético), 05 (v0.1, banker,
+  projeção compartilhada com o 02). Os de 02 a 05 seguem o mesmo método: verdade declarada em
+  código, arquivos gerados com hash e testes de integridade, tabelas impressas por script.
+- Corpus de revisão por caso (`packages/evals/scripts/build-review-corpus.ts`): documentos
+  renderizados pelos parsers do repositório; 02 e 05 apontam para o corpus do 01 em vez de o
+  copiar; o PNG do caso 03 fica registrado como não lido (OCR nunca é aceito automaticamente).
+  O runner de revisão conhece os cinco casos e usa um prompt genérico fora do caso 01.
+- Próximos passos nesta ordem: fechar as rodadas de revisão do covenant (v4), do ledger (v5) e do
+  gabarito 01 (v0.9) até `pass` ou `conditional` real; promover a `ai_reviewed`; congelar o
+  gabarito 01 como v1.0; revisar os gabaritos 02 a 05 pelo workflow; revisar os sete métodos
+  restantes do Caso 01; consistência em 20 runs como `consistency_run_ids`; então `tested` e
+  staging.

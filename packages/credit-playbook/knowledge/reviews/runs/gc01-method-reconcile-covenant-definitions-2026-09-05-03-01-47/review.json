@@ -1,0 +1,252 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "gc01-method-reconcile-covenant-definitions-2026-09-05-03-01-47",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "tool": "codex-cli 0.153.4"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "reconcile-covenant-definitions",
+    "version": "2026.09.05-v4",
+    "fingerprint": "0187a563a1d1d7d32a6110f6502bf899b5ba7d55b23ced835ad46b202e844026"
+  },
+  "run": {
+    "id": "gc01-method-reconcile-covenant-definitions-2026-09-05-03-01-47",
+    "startedAt": "2026-09-05T03:01:47.837Z",
+    "finishedAt": "2026-09-05T03:06:10.013Z",
+    "commit": "8bf52d7e659548e383d9f24cbc45bcc7c3e7c865"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "1. O corpus utilizado corresponde ao manifesto congelado.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "anchor": "entries, linhas 5-220",
+      "result": "confirmed",
+      "note": "Bytes e SHA-256 de todos os arquivos conferem."
+    },
+    {
+      "claim": "2. Dívida bruta consolidada de 5.670.186 em 31/05/2026.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.39, nota 15; linhas 2035-2074",
+      "result": "confirmed"
+    },
+    {
+      "claim": "3. Caixa de 1.430.714 e aplicações financeiras de 25.095.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF pp.11 e 20, nota 3; linhas 550-590 e 971-985",
+      "result": "confirmed"
+    },
+    {
+      "claim": "4. Derivativos passivos de 14.335 e ativos de 235.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.51, nota 25; linhas 2764-2786",
+      "result": "confirmed"
+    },
+    {
+      "claim": "5. Passivo de arrendamento de 276.768, composto por 67.399 circulante e 209.369 não circulante.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.12; linhas 591-620",
+      "result": "confirmed",
+      "note": "67.399 + 209.369 = 276.768."
+    },
+    {
+      "claim": "6. Dívida líquida gold de 4.228.477.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF pp.11, 20, 39, 40 e 51",
+      "result": "confirmed",
+      "note": "Recálculo: 5.670.186 + 14.335 − 235 − 1.430.714 − 25.095 = 4.228.477."
+    },
+    {
+      "claim": "7. Índice pro forma de 4,72x, limite informado de 4,00x e próxima medição em 28/02/2027.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "PDF p.40, nota 15; linhas 2111-2124",
+      "result": "confirmed"
+    },
+    {
+      "claim": "8. EBITDA implícito de 895.863,77.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§5, linhas 127 e 140-142",
+      "result": "confirmed",
+      "note": "Recálculo: 4.228.477 ÷ 4,72 = 895.863,7711864407; é derivação, não valor aberto pela companhia."
+    },
+    {
+      "claim": "9. A 11ª emissão traz limites de 3,50x e 4,00x, definição de dívida líquida, EBITDA adquirido e sellers finance.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.22.3(j), PDF pp.34-35; linhas 1293-1337",
+      "result": "confirmed",
+      "note": "Degraus começam na p.34; ambas as definições e os ajustes estão na p.35."
+    },
+    {
+      "claim": "10. Na 13ª emissão, dívida líquida está na p.7, EBITDA na p.8 e os degraus nas pp.54-55.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "cláusula 1.1, PDF pp.7-8; cláusula 7.24.3(VIII), pp.54-55",
+      "result": "confirmed",
+      "note": "Referências: 5ª emissão, 16/04/2025; 257ª emissão, 29/12/2025."
+    },
+    {
+      "claim": "11. Na 14ª emissão, dívida líquida está na p.7, EBITDA na p.8 e os dois limites começam na p.54.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_14a_emissao.txt",
+      "anchor": "cláusula 1.1, PDF pp.7-8; cláusula 7.26.3(VIII), pp.54-55",
+      "result": "confirmed",
+      "note": "Referências: 5ª emissão, 16/04/2025; 257ª emissão, 29/12/2025."
+    },
+    {
+      "claim": "12. Na 15ª emissão, dívida líquida está na p.7, EBITDA na p.8 e os dois limites na p.56.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_15a_emissao.txt",
+      "anchor": "cláusula 1.1, PDF pp.7-8; cláusula 7.26.3, p.56",
+      "result": "confirmed",
+      "note": "Referência: 257ª emissão, 29/12/2025."
+    },
+    {
+      "claim": "13. O método afirma genericamente que a definição de EBITDA do gold está na p.8.",
+      "source": "packages/credit-playbook/knowledge/procedures/financial/reconcile-covenant-definitions.md",
+      "anchor": "Gold, linha 94",
+      "result": "corrected",
+      "note": "Na 11ª emissão, EBITDA está na p.35, não na p.8. O fixture do executor usa corretamente p.35."
+    },
+    {
+      "claim": "14. A quitação ordinária dos CRA de referência permanece sem comprovação.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/cra_257_relatorio_mensal_4t25.txt",
+      "anchor": "Características e Saldo Devedor, linhas 47-102",
+      "result": "unverifiable",
+      "note": "A fonte confirma vencimento em 29/12/2025 e saldo até novembro, mas não comprova a quitação; `insufficient_evidence` é o estado correto."
+    },
+    {
+      "claim": "15. No gold, os degraus de 3,50x terminam, os de 4,00x ficam não provados, há quatro condições e nenhum headroom.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.test.ts",
+      "anchor": "linhas 88-118",
+      "result": "confirmed",
+      "note": "A execução local passou: 15/15 testes. O resultado gold permanece `conditioned`."
+    },
+    {
+      "claim": "16. O executor atribui valor zero ao sellers finance ausente.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.ts",
+      "anchor": "linhas 319-348",
+      "result": "corrected",
+      "note": "A escritura não fornece valor e o gabarito o classifica como ausente, mas `numeratorObligations` recebe \"0\". Isso preenche numericamente uma lacuna; deveria permanecer nulo/desconhecido, embora a comparabilidade continue condicionada."
+    },
+    {
+      "claim": "17. A classificação de sellers finance como obrigação do numerador.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt",
+      "anchor": "cláusula 4.22.3(j), PDF p.35; linhas 1333-1337",
+      "result": "limitation",
+      "note": "O texto manda considerá-lo no cálculo, mas não explicita algebricamente o lado do índice. A classificação final exige revisão jurídica especializada."
+    },
+    {
+      "claim": "18. O executor resolve corretamente direção máxima e mínima no headroom.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.test.ts",
+      "anchor": "linhas 130-148 e 228-238",
+      "result": "confirmed",
+      "note": "Recálculos: 4,00 − 4,72 = −0,72; −0,72 ÷ 4,00 = −18%; para mínimo, 4,72 − 6,00 = −1,28."
+    },
+    {
+      "claim": "19. As mutações numéricas de arrendamento, retirada de derivativos e obrigação de 100.000 conferem.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.test.ts",
+      "anchor": "linhas 143-173",
+      "result": "confirmed",
+      "note": "4.228.477 + 276.768 = 4.505.245; 5.670.186 − 1.430.714 − 25.095 = 4.214.377; 4.228.477 + 100.000 = 4.328.477."
+    },
+    {
+      "claim": "20. Com duas referências, o degrau `until` respeita “o que ocorrer primeiro”.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "cláusula 7.24.3(VIII)(a), PDF pp.54-55; linhas 2658-2675",
+      "result": "corrected",
+      "note": "Mutação em 01/06/2025: a 5ª já venceu em 16/04/2025 e a 257ª vence em dezembro. O executor manteve 3,50x como `applies`, pois exige que nenhuma referência esteja viva; a cláusula encerra o degrau no primeiro vencimento/liquidação."
+    },
+    {
+      "claim": "21. Uma troca uniforme da escala de milhares para milhões é resistida.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "§10, linhas 215-219",
+      "result": "corrected",
+      "note": "O executor aceitou todos os operandos relabelados de `BRL thousand` para `BRL million`, produziu os mesmos valores e o mesmo output fingerprint. A unidade não aparece na dívida líquida, índice ou trace."
+    },
+    {
+      "claim": "22. O EBITDA implícito gold é executado pelo `financial-core` antes de receber o identificador `financial.net_leverage`.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.ts",
+      "anchor": "linhas 401-405",
+      "result": "corrected",
+      "note": "A divisão é feita diretamente com Decimal e registrada como `financial.net_leverage`; não há chamada ao `financial-core` nesse ramo, contrariando a aceitação do método nas linhas 97-98."
+    },
+    {
+      "claim": "23. Base vazia bloqueia; relatório fiduciário isolado conserva limite e apuração sem headroom; valores ausentes não geram índice.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.ts",
+      "anchor": "linhas 242-264, 326-354 e 436-446",
+      "result": "confirmed",
+      "note": "Os testes correspondentes estão nas linhas 240-253."
+    },
+    {
+      "claim": "24. O contrato fornecido define `uncoveredTerms`.",
+      "source": "packages/credit-playbook/src/procedure-contract.ts",
+      "anchor": "linhas 41-60, 110-177 e 304-316",
+      "result": "limitation",
+      "note": "Esse campo não existe no contrato, método ou executor fornecidos. Lacunas aparecem em `comparabilityReasons`, `unprovenConditions`, `legalConditions` e `blockReasons`; não é possível verificar uma obrigação de `uncoveredTerms` sem contrato adicional."
+    },
+    {
+      "claim": "25. A saída do executor satisfaz os nomes obrigatórios declarados pelo método.",
+      "source": "packages/credit-playbook/knowledge/procedures/financial/reconcile-covenant-definitions.md",
+      "anchor": "Outputs, linhas 78-82",
+      "result": "corrected",
+      "note": "O método declara `unproven_conditions` e `legal_conditions`; o executor emite `unprovenConditions` e `legalConditions`. O contrato preserva os IDs e proíbe propriedades adicionais em `procedure-contract.ts`, linhas 304-316."
+    },
+    {
+      "claim": "26. As mutações declaradas são amplamente cobertas pelos testes.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.test.ts",
+      "anchor": "linhas 150-253",
+      "result": "confirmed",
+      "note": "Cobertos: abertura inconsistente ou em data errada, EBITDA zero, unidade mista, arrendamento, derivativos, ajustes da 11ª, índice antigo/futuro, componente fora da data, liquidação sem data, duplicidades de fato/instrumento, frequências, vencimento antecipado, relatório isolado e base vazia."
+    },
+    {
+      "claim": "27. Todas as mutações relevantes têm teste de regressão.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.test.ts",
+      "anchor": "linhas 150-273",
+      "result": "limitation",
+      "note": "Não há teste para escala uniformemente relabelada, intervalo entre vencimentos de múltiplas referências, ajuste duplicado, cobertura duplicada de componente, mês diferente de 12 ou data de liquidação futura. Algumas duplicidades e `months: 12` são rejeitadas pelo schema, mas isso não é provado pelo arquivo de testes."
+    },
+    {
+      "claim": "28. O executor é invariável às vinte permutações exercitadas.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.test.ts",
+      "anchor": "linhas 255-273",
+      "result": "confirmed",
+      "note": "A execução local confirmou fingerprints e traces iguais nas vinte permutações."
+    },
+    {
+      "claim": "29. O output fingerprint inclui os cálculos do trace.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.ts",
+      "anchor": "linha 446",
+      "result": "confirmed",
+      "note": "O código inclui `calculations`; o teste de permutações, isoladamente, não provaria essa inclusão."
+    },
+    {
+      "claim": "30. O output fingerprint distingue resultados econômicos em escalas diferentes.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.ts",
+      "anchor": "tipos de saída, linhas 166-194; fingerprint, linha 446",
+      "result": "corrected",
+      "note": "Na mutação milhares versus milhões, os input fingerprints diferiram, mas os output fingerprints foram idênticos porque unidade não integra saída nem cálculos."
+    }
+  ],
+  "result": "fail",
+  "conditions": [
+    "Corrigir a semântica de múltiplas referências para encerrar o degrau `until` no primeiro vencimento/liquidação, conforme escritura_13a_emissao.txt, cláusula 7.24.3(VIII)(a), pp.54-55.",
+    "Representar sellers finance sem valor como desconhecido, nunca como zero; reconcile-covenant-definitions.ts, linhas 319-348.",
+    "Alinhar a saída aos nomes obrigatórios do método ou fornecer e validar um contrato concreto distinto; método, linhas 78-82, e procedure-contract.ts, linhas 304-316.",
+    "Carregar unidade na saída, trace e fingerprint e acrescentar regressão para troca uniforme de escala; gabarito §10, linhas 215-219.",
+    "Executar o EBITDA implícito no financial-core ou usar identificação de cálculo que não alegue essa execução; método, linhas 97-98, e executor, linhas 401-405.",
+    "Submeter a classificação algébrica de sellers finance à revisão jurídica especializada; escritura_11a_emissao.txt, cláusula 4.22.3(j), p.35.",
+    "Definir, se necessário, o significado contratual de `uncoveredTerms`; ele não existe em procedure-contract.ts, linhas 41-177."
+  ],
+  "notes": "OpenAI Codex (GPT-5), revisão por modelo com shell local e Vitest, sem internet.\n\nA aritmética principal e os anchors do gold conferem, mas há erros materiais de degrau, preenchimento de valor ausente, contrato de saída, escala/fingerprint e proveniência do cálculo implícito."
+}

@@ -38,6 +38,30 @@ const cases: Record<string, {caseId: string; answerKey: string; corpusDir: strin
     corpusDir: "docs/product/gold-cases/runs/gc01/ai-review-corpus",
     reviewsDir: "docs/product/gold-cases/reviews/gc01",
   },
+  gc02: {
+    caseId: "gc02-cfo-camil-conselho",
+    answerKey: "docs/product/gold-cases/gc02-gabarito-rascunho.md",
+    corpusDir: "docs/product/gold-cases/runs/gc02/ai-review-corpus",
+    reviewsDir: "docs/product/gold-cases/reviews/gc02",
+  },
+  gc03: {
+    caseId: "gc03-assessor-recebiveis",
+    answerKey: "docs/product/gold-cases/gc03-gabarito-rascunho.md",
+    corpusDir: "docs/product/gold-cases/runs/gc03/ai-review-corpus",
+    reviewsDir: "docs/product/gold-cases/reviews/gc03",
+  },
+  gc04: {
+    caseId: "gc04-analista-investimentos-prisma",
+    answerKey: "docs/product/gold-cases/gc04-gabarito-rascunho.md",
+    corpusDir: "docs/product/gold-cases/runs/gc04/ai-review-corpus",
+    reviewsDir: "docs/product/gold-cases/reviews/gc04",
+  },
+  gc05: {
+    caseId: "gc05-banker-expansao-camil",
+    answerKey: "docs/product/gold-cases/gc05-gabarito-rascunho.md",
+    corpusDir: "docs/product/gold-cases/runs/gc05/ai-review-corpus",
+    reviewsDir: "docs/product/gold-cases/reviews/gc05",
+  },
 };
 
 function main(): void {
@@ -81,7 +105,7 @@ function main(): void {
     subject = {kind: "answer_key", id: spec.caseId, version: answerKeyVersion, fingerprint: sha256(`${sha256(answerKeyText)}:${sha256(corpusManifest)}`)};
     runId = `${caseKey}-answer-key-${stamp}`;
     runDir = join(repo, spec.reviewsDir, runId);
-    prompt = readFileSync(join(here, "..", "review", "answer-key-review.prompt.md"), "utf8")
+    prompt = readFileSync(join(here, "..", "review", caseKey === "gc01" ? "answer-key-review.prompt.md" : "answer-key-review.generic.prompt.md"), "utf8")
       .replaceAll("{{ANSWER_KEY_PATH}}", spec.answerKey)
       .replaceAll("{{CASE_ID}}", spec.caseId)
       .replaceAll("{{ANSWER_KEY_VERSION}}", answerKeyVersion)

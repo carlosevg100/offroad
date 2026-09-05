@@ -1,0 +1,19 @@
+# 08_Projecoes_2026_2030.xlsx (spreadsheet; parsers xlsx-1.0.0, 3.10.1, 5.10.1)
+
+
+## planilha Projeções
+
+A1=Projeções 2026 a 2030
+A2=Valores em reais. Base 2025 preliminar, anterior ao fechamento auditado.
+A4=Ano ; B4=Receita líquida (R$) ; C4=EBITDA (R$) ; D4=Margem EBITDA
+A5=2025 (base) ; B5=193500000 ; C5=17020000 ; D5=0.088
+A6=2026 ; B6=208500000 ; C6=18760000 ; D6=0.08997601918465228
+A7=2027 ; B7=236900000 ; C7=22270000 ; D7=0.09400590966652596
+A8=2028 ; B8=271400000 ; C8=26320000 ; D8=0.0969786293294031
+A9=2029 ; B9=298100000 ; C9=29510000 ; D9=0.09899362629989936
+A10=2030 ; B10=321700000 ; C10=32490000 ; D10=0.10099471557351569
+A12=Premissas
+A13=Crescimento de receita 2026 ; B13=0.0774
+A14=Ganho de margem com o CD de Jacareí (p.p.) ; B14=0.006
+A15=Prazo médio de recebimento (dias) ; B15=62
+A16=Investimento total no CD (R$) ; B16=17300000

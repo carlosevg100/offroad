@@ -1,11 +1,11 @@
 import {createHash} from "node:crypto";
 
-import {aggregateDebtViews, calculateCovenantHeadroom, calculateLeverage} from "@offroad/financial-core";
+import {aggregateDebtViews, calculateCovenantHeadroom, calculateImpliedEbitda, calculateLeverage} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `reconcile-covenant-definitions` (v4, after the third independent review).
+ * Executor of the method `reconcile-covenant-definitions` (v5, after the fourth independent review).
  * It never writes "breached". Each indenture carries the anchor of its definitions and one anchor per
  * tier; EBITDA adjustments are typed (denominator additions versus numerator obligations) and never
  * folded together; the net debt of each instrument is computed from that instrument's own component
@@ -161,13 +161,15 @@ export const covenantReconciliationInputSchema = z.object({
 export type CovenantReconciliationInput = z.input<typeof covenantReconciliationInputSchema>;
 
 type Comparability = "comparable" | "conditional" | "not_comparable" | "no_index";
-type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string};
+type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string | null};
 
 export type CovenantReconciliationOutput = {
-  schemaVersion: "method.reconcile-covenant-definitions.v4";
-  asOfDate: string;
+  schema_version: "method.reconcile-covenant-definitions.v5";
+  as_of_date: string;
+  /** The unit every value below is expressed in; part of the output and of its fingerprint. */
+  unit: string | null;
   state: "resolved" | "conditioned" | "blocked";
-  blockReasons: string[];
+  block_reasons: string[];
   covenants: Array<{
     instrument: string;
     source: "indenture" | "trustee_report";
@@ -180,7 +182,7 @@ export type CovenantReconciliationOutput = {
     limitState: "resolved" | "reported_by_trustee" | "insufficient_evidence";
     limitConditions: string[];
     reportedMeasurement: {value: string; asOf: string} | null;
-    netDebtByDefinition: {value: string; formula: string; operands: Record<string, string>; anchors: Record<string, Anchor>; residualAssumedZero: boolean; numeratorObligations: string} | null;
+    netDebtByDefinition: {value: string; formula: string; operands: Record<string, string>; anchors: Record<string, Anchor>; residualAssumedZero: boolean; numeratorObligations: string | null} | null;
     legalConditions: string[];
     index: {value: string; basis: "computed_from_components" | "reported"; ebitda: {value: string; basis: "opened" | "implied_from_reported"}; anchor: Anchor} | null;
     comparability: Comparability;
@@ -188,8 +190,8 @@ export type CovenantReconciliationOutput = {
     headroom: {absolute: string; relative: string | null; basis: string} | null;
     status: "within_limit" | "above_limit_interim" | "unresolved";
   }>;
-  unprovenConditions: string[];
-  legalConditions: string[];
+  unproven_conditions: string[];
+  legal_conditions: string[];
   trace: {calculations: Calculation[]; inputFingerprint: string; outputFingerprint: string};
 };
 
@@ -238,7 +240,9 @@ function canonical(input: z.infer<typeof covenantReconciliationInputSchema>) {
 
 export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): CovenantReconciliationOutput {
   const input = canonical(covenantReconciliationInputSchema.parse(raw));
+  const unit = input.componentValues[0]?.unit ?? input.ltmEbitda?.unit ?? input.reported?.ebitdaOpening?.unit ?? null;
   const calculations: Calculation[] = [];
+  const record = (calculation: Omit<Calculation, "unit">) => calculations.push({...calculation, unit});
   const blockReasons: string[] = [];
   if (input.instruments.length === 0) blockReasons.push("no indenture and no trustee report in the base: nothing to reconcile");
 
@@ -279,23 +283,29 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
       // settlement keeps the lower tier; a maturity passed without proof of settlement is unproven.
       const over = facts.map((fact) => {
         if (!fact) return "unknown" as const;
-        if (fact.settlement === "ordinary" && fact.settlementDate !== null && fact.settlementDate <= input.asOfDate) return "ordinary" as const;
-        if (fact.settlement === "accelerated" && fact.settlementDate !== null && fact.settlementDate <= input.asOfDate) return "accelerated" as const;
+        const settledOn = fact.settlementDate !== null && fact.settlementDate <= input.asOfDate;
+        if (fact.settlement === "ordinary" && settledOn) return "ordinary" as const;
+        if (fact.settlement === "accelerated" && settledOn) return "accelerated" as const;
         if (fact.maturityDate <= input.asOfDate) return fact.settlement === "outstanding" ? "outstanding_after_maturity" as const : "matured_unproven" as const;
-        return "alive" as const;
+        return "alive" as const; // a settlement dated after the as-of date is not a fact yet
       });
       const label = condition.referenceInstruments.join(", ");
       if (condition.type === "until_reference_settled") {
-        if (over.some((state) => state === "alive" || state === "unknown")) {
-          const unknown = over.some((state) => state === "unknown");
-          tiers.push({index, limit: tier.limit, condition: `until ${label} matures or is settled ordinarily`, state: unknown ? "unproven" : "applies", anchor: tier.anchor});
-          if (unknown) conditions.push(`the end of the ${tier.limit}x tier requires the maturity or settlement facts of ${label}; the base has none`);
-          else applicable ??= {limit: tier.limit, tier: index};
+        // "Whichever comes first" across the references: the tier ends at the first maturity or dated ordinary settlement.
+        if (over.some((state) => state === "accelerated") && !over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily; an accelerated settlement keeps this tier`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; conditions.push(`a reference instrument (${label}) was settled by acceleration, so the ${tier.limit}x tier remains`); return;
+        }
+        if (over.some((state) => state === "ordinary" || state === "matured_unproven" || state === "outstanding_after_maturity")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "ended", anchor: tier.anchor});
           return;
         }
-        if (over.some((state) => state === "accelerated")) { tiers.push({index, limit: tier.limit, condition: `until ${label} matures or is settled ordinarily; an accelerated settlement keeps this tier`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; conditions.push(`a reference instrument (${label}) was settled by acceleration, so the ${tier.limit}x tier remains`); return; }
-        // Maturity is a dated fact: the tier ends at maturity or at a dated ordinary settlement, whichever came first.
-        tiers.push({index, limit: tier.limit, condition: `until ${label} matures or is settled ordinarily`, state: "ended", anchor: tier.anchor});
+        if (over.some((state) => state === "unknown")) {
+          tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "unproven", anchor: tier.anchor});
+          conditions.push(`the end of the ${tier.limit}x tier requires the maturity or settlement facts of ${label}; the base has none`);
+          return;
+        }
+        tiers.push({index, limit: tier.limit, condition: `until the first of ${label} matures or is settled ordinarily`, state: "applies", anchor: tier.anchor});
+        applicable ??= {limit: tier.limit, tier: index};
         return;
       }
       if (over.every((state) => state === "ordinary")) { tiers.push({index, limit: tier.limit, condition: `after ordinary settlement of ${label}`, state: "applies", anchor: tier.anchor}); applicable ??= {limit: tier.limit, tier: index}; return; }
@@ -334,7 +344,9 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
       } else {
         const debtLines = lines.filter((line) => !DEDUCTIONS.has(line.component));
         const deductionLines = lines.filter((line) => DEDUCTIONS.has(line.component));
-        const obligations = numeratorObligations.reduce((total, adjustment) => total.plus(adjustment.obligation?.value ?? 0), d(0));
+        const valued = numeratorObligations.filter((adjustment) => adjustment.obligation !== null);
+        const obligationsKnown = valued.length === numeratorObligations.length;
+        const obligations = valued.reduce((total, adjustment) => total.plus(adjustment.obligation!.value), d(0));
         const views = aggregateDebtViews({
           rows: [...debtLines.map((line) => ({id: line.component, principal: line.value, covenantIncluded: true})), ...(obligations.gt(0) ? [{id: "numerator_obligations", principal: out(obligations), covenantIncluded: true}] : [])],
           cash: deductionLines.reduce((total, line) => total.plus(line.value), d(0)),
@@ -344,8 +356,8 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
         for (const line of lines) { operands[line.component] = line.value; anchors[line.component] = line.anchor; }
         if (obligations.gt(0)) operands.numeratorObligations = out(obligations);
         const formula = `${debtLines.map((line) => line.component).join(" + ")}${obligations.gt(0) ? " + numeratorObligations" : ""} - (${deductionLines.map((line) => line.component).join(" + ")})`;
-        calculations.push({id: `financial.debt_views:${instrument.id}`, formula, operands, result: views.netFinancialDebt});
-        netDebtByDefinition = {value: views.netFinancialDebt, formula, operands, anchors, residualAssumedZero: residualOpen, numeratorObligations: out(obligations)};
+        record({id: `financial.debt_views:${instrument.id}`, formula, operands, result: views.netFinancialDebt});
+        netDebtByDefinition = {value: views.netFinancialDebt, formula, operands, anchors, residualAssumedZero: residualOpen, numeratorObligations: obligationsKnown ? out(obligations) : null};
         baseNetDebt = d(views.netFinancialDebt).minus(obligations);
         if (residualOpen) reasons.push(`"${RESIDUAL}" is not enumerated in the base; the computed net debt assumes none beyond the lines above (condition)`);
       }
@@ -364,7 +376,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
         comparability = "not_comparable";
       } else {
         const leverage = calculateLeverage(netDebtByDefinition.value, input.ltmEbitda.value);
-        calculations.push({id: `financial.net_leverage:${instrument.id}`, formula: "netDebtByDefinition / ltmEbitda", operands: {netDebtByDefinition: netDebtByDefinition.value, ltmEbitda: input.ltmEbitda.value}, result: leverage.value});
+        record({id: `financial.net_leverage:${instrument.id}`, formula: "netDebtByDefinition / ltmEbitda", operands: {netDebtByDefinition: netDebtByDefinition.value, ltmEbitda: input.ltmEbitda.value}, result: leverage.value});
         index = {value: leverage.value, basis: "computed_from_components", ebitda: {value: input.ltmEbitda.value, basis: "opened"}, anchor: input.ltmEbitda.anchor};
         comparability = residualOpen ? "conditional" : "comparable";
         const incorporated = new Set(input.ltmEbitda.incorporatesAdjustments);
@@ -395,13 +407,13 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
         ebitda = {value: reported.ebitdaOpening.value, basis: "opened"};
         if (baseNetDebt && d(reported.ebitdaOpening.value).gt(0)) {
           const recomputed = calculateLeverage(out(baseNetDebt), reported.ebitdaOpening.value);
-          calculations.push({id: `financial.net_leverage:${instrument.id}:check`, formula: "baseNetDebt / ebitdaOpening, compared with the reported index (before numerator obligations)", operands: {baseNetDebt: out(baseNetDebt), ebitdaOpening: reported.ebitdaOpening.value, reportedIndex: reported.value}, result: recomputed.value});
+          record({id: `financial.net_leverage:${instrument.id}:check`, formula: "baseNetDebt / ebitdaOpening, compared with the reported index (before numerator obligations)", operands: {baseNetDebt: out(baseNetDebt), ebitdaOpening: reported.ebitdaOpening.value, reportedIndex: reported.value}, result: recomputed.value});
           if (d(recomputed.value).minus(reported.value).abs().gt("0.005")) { comparability = "not_comparable"; reasons.push(`the opened EBITDA does not reproduce the reported index (${recomputed.value} against ${reported.value}); the opening and the index do not belong together`); }
         }
       } else if (netDebtByDefinition) {
-        const implied = d(netDebtByDefinition.value).div(reported.value);
-        calculations.push({id: `financial.net_leverage:${instrument.id}`, formula: "impliedEbitda = netDebtByDefinition / reportedIndex", operands: {netDebtByDefinition: netDebtByDefinition.value, reportedIndex: reported.value}, result: out(implied)});
-        ebitda = {value: out(implied), basis: "implied_from_reported"};
+        const implied = calculateImpliedEbitda(netDebtByDefinition.value, reported.value);
+        record({id: `financial.implied_ebitda:${instrument.id}`, formula: "netDebtByDefinition / reportedIndex", operands: {netDebtByDefinition: netDebtByDefinition.value, reportedIndex: reported.value}, result: implied.value});
+        ebitda = {value: implied.value, basis: "implied_from_reported"};
       }
       if (ebitda) index = {value: reported.value, basis: "reported", ebitda, anchor: reported.anchor};
       else { index = {value: reported.value, basis: "reported", ebitda: {value: "", basis: "implied_from_reported"}, anchor: reported.anchor}; if (comparability !== "not_comparable") comparability = "conditional"; reasons.push("no net debt by definition and no opened EBITDA: the reported index stands alone"); }
@@ -415,7 +427,7 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
     if (applicable && comparability === "comparable" && index) {
       const limit = (applicable as {limit: string}).limit;
       const result = calculateCovenantHeadroom({actual: index.value, limit, direction: instrument.direction});
-      calculations.push({id: `structure.covenant_headroom:${instrument.id}`, formula: instrument.direction === "maximum" ? "limit - actual" : "actual - limit", operands: {limit, actual: index.value}, result: result.absolute});
+      record({id: `structure.covenant_headroom:${instrument.id}`, formula: instrument.direction === "maximum" ? "limit - actual" : "actual - limit", operands: {limit, actual: index.value}, result: result.absolute});
       headroom = {absolute: result.absolute, relative: result.percentage, basis: `${index.basis} index against the ${limit}x tier, ${instrument.direction}`};
       status = result.passes ? "within_limit" : "above_limit_interim";
     }
@@ -435,13 +447,14 @@ export function reconcileCovenantDefinitions(raw: CovenantReconciliationInput): 
 
   const state: CovenantReconciliationOutput["state"] = blockReasons.length > 0 ? "blocked" : covenants.every((covenant) => covenant.status !== "unresolved") ? "resolved" : "conditioned";
   const body = {
-    schemaVersion: "method.reconcile-covenant-definitions.v4" as const,
-    asOfDate: input.asOfDate,
+    schema_version: "method.reconcile-covenant-definitions.v5" as const,
+    as_of_date: input.asOfDate,
+    unit,
     state,
-    blockReasons,
+    block_reasons: blockReasons,
     covenants,
-    unprovenConditions: sortStrings([...unproven]),
-    legalConditions: sortStrings([...legal]),
+    unproven_conditions: sortStrings([...unproven]),
+    legal_conditions: sortStrings([...legal]),
   };
   return {...body, trace: {calculations, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint({...body, calculations})}};
 }

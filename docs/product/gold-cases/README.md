@@ -214,7 +214,7 @@ profundidade; e a execução inteira é reprodutível a partir dos inputs congel
 
 | Caso | Gabarito | Estado |
 | --- | --- | --- |
-| 1 | `gc01-gabarito-rascunho.md` v0.8 | três rodadas de revisão independente por IA (registros em `reviews/gc01/`); congela como v1.0 com o primeiro registro `pass` ou `conditional` |
+| 1 | `gc01-gabarito-rascunho.md` v1.0 | congelado condicionalmente em 5 de setembro de 2026 pela quinta revisão independente por IA (`conditional`, 93 confirmados, 0 corrigidos; oito condições registradas em `reviews/gc01/gc01-answer-key-2026-09-05-03-01-50/`); não é aprovação humana |
 | 2 | `gc02-gabarito-rascunho.md` v0.2 | verdade pública herdada do Caso 01 por referência; dados gerenciais sintéticos gerados por `packages/testing-fixtures/scripts/build-camil-management.ts`; tabelas calculadas pelo `financial-core`; sem revisão |
 | 3 | `gc03-gabarito-rascunho.md` v0.1 | Aurora com carteira de recebíveis sintética (`09`/`10`), tabelas pela `receivables-analysis` e pelo `financial-core`; sem revisão |
 | 4 | `gc04-gabarito-rascunho.md` v0.1 | Cogna pelo gold existente mais mandato sintético da Prisma; tabelas pelo `financial-core` e `fund-mandate`; sem revisão |

@@ -1,0 +1,266 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "gc01-method-build-debt-ledger-2026-09-05-03-02-08",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "tool": "codex-cli 0.153.4"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "build-debt-ledger",
+    "version": "2026.09.05-v5",
+    "fingerprint": "9e1648e5e1aff815be1ab4274eeca661e91d014ea697586fdf2c8b5ed59f7a4f"
+  },
+  "run": {
+    "id": "gc01-method-build-debt-ledger-2026-09-05-03-02-08",
+    "startedAt": "2026-09-05T03:02:08.639Z",
+    "finishedAt": "2026-09-05T03:06:02.160Z",
+    "commit": "8bf52d7e659548e383d9f24cbc45bcc7c3e7c865"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "1. O corpus corresponde ao manifesto congelado.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "anchor": "entries, linhas 5–220",
+      "result": "confirmed",
+      "note": "Todos os arquivos produziram exatamente o SHA-256 registrado."
+    },
+    {
+      "claim": "2. Os 18 saldos correntes e anteriores usados nas linhas do gold estão nas demonstrações.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "p. 39, nota 15, tabela por instrumento e série",
+      "result": "confirmed",
+      "note": "Conferidos individualmente: quatro empréstimos, dois custos contra, duas séries da 11ª, três da 13ª, três da 14ª e quatro da 15ª."
+    },
+    {
+      "claim": "3. Circulante 1.229.828, não circulante 4.440.358 e dívida reportada 5.670.186 em 31/05/2026; dívida anterior 4.988.383.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "p. 12, balanço consolidado; p. 39, nota 15",
+      "result": "confirmed",
+      "note": "1.229.828 + 4.440.358 = 5.670.186."
+    },
+    {
+      "claim": "4. O cronograma gold contém 1.229.828, 776.868, 1.228.475, 694.497, 994.544, 809.198 e custo de (63.224).",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "p. 40, nota 15, cronograma de amortizações",
+      "result": "confirmed",
+      "note": "A soma independente é 5.670.186; o primeiro período coincide com o circulante."
+    },
+    {
+      "claim": "5. Caixa 1.430.714, aplicações 25.095, derivativos ativos 235 e passivos 14.335.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt",
+      "anchor": "pp. 11–12, balanço; p. 20, nota 3; p. 51, nota 25",
+      "result": "confirmed"
+    },
+    {
+      "claim": "6. O release reporta dívida líquida de R$ 4.214,4 milhões.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt",
+      "anchor": "p. 12, tabela Endividamento e Caixa",
+      "result": "confirmed",
+      "note": "A tabela também mostra dívida bruta 5.670,2 e caixa mais aplicações 1.455,8."
+    },
+    {
+      "claim": "7. Vencimento e remuneração da 11ª: 30/10/2028 e 100% do CDI + 1,55% a.a.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_11a_emissao.txt",
+      "anchor": "p. 1, vencimento; p. 2, remuneração das séries",
+      "result": "confirmed"
+    },
+    {
+      "claim": "8. Vencimentos e remunerações das três séries da 13ª usados no gold.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_13a_emissao.txt",
+      "anchor": "pp. 2–4, características das séries",
+      "result": "confirmed",
+      "note": "Confirmados CDI + 0,65%, IPCA + 6,3416% e IPCA + 6,5264%, com os respectivos vencimentos."
+    },
+    {
+      "claim": "9. A 3ª série da 14ª vence em 15/06/2034 e remunera IPCA + 6,9982% a.a.; os demais termos também conferem.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_14a_emissao.txt",
+      "anchor": "pp. 2–4, características das séries",
+      "result": "confirmed",
+      "note": "As páginas usadas pelo teste correspondem às páginas de cada série."
+    },
+    {
+      "claim": "10. Os termos das quatro séries da 15ª, inclusive prefixada 14,15% e 4ª série vencendo em 16/11/2035, conferem.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/af_15a_emissao.txt",
+      "anchor": "pp. 2–5, características das séries",
+      "result": "confirmed"
+    },
+    {
+      "claim": "11. Securitizadora como titular formal, orientação pelos titulares de CRA e garantia da controladora para dívidas externas têm suporte documental.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_14a_emissao.txt",
+      "anchor": "p. 3, considerando D; p. 55, cláusula 7.26.5",
+      "result": "confirmed",
+      "note": "A garantia externa também consta da nota 15, p. 40; a 292ª explicita a orientação na cláusula 17.8.8."
+    },
+    {
+      "claim": "12. A qualificação jurídica final de “credor econômico” não é decidida pelo corpus.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "seção 13.5, linhas 418–431",
+      "result": "limitation",
+      "note": "Os fatos de titularidade e orientação estão documentados; a qualificação jurídica exige revisão especializada."
+    },
+    {
+      "claim": "13. Totais recalculados do ledger.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 41–60 e 93–118",
+      "result": "confirmed",
+      "note": "Atual: 5.670.186; anterior: 4.988.383; antes das linhas contra: 5.742.510. Custos contra: 9.099 + 63.225 = 72.324; 5.742.510 − 72.324 = 5.670.186."
+    },
+    {
+      "claim": "14. Cronograma e percentuais recalculados.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 263–282",
+      "result": "confirmed",
+      "note": "Participações: 21,689377%; 13,700926%; 21,665515%; 12,248223%; 17,539883%; 14,271102%; custo −1,115025%. Diferença do primeiro período para o circulante: zero."
+    },
+    {
+      "claim": "15. As duas visões de dívida líquida e a diferença para o release foram recalculadas.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 287–321",
+      "result": "confirmed",
+      "note": "Release: 5.670.186 − 1.430.714 − 25.095 = 4.214.377. Contratual: 5.670.186 + 14.335 − 235 − 1.430.714 − 25.095 = 4.228.477. Reportado menos recalculado: 4.214.400 − 4.214.377 = 23."
+    },
+    {
+      "claim": "16. Estoques por indexador e participações foram recalculados.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 47–58 e 111–130",
+      "result": "confirmed",
+      "note": "CDI 2.172.858 (37,838123%); IPCA 743.955 (12,955223%); prefixada 408.703 (7,117149%); desconhecido 2.416.994 (42,089504%). Soma arredondada: 99,999999%."
+    },
+    {
+      "claim": "17. Estoques por moeda e participações foram recalculados.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 42–60 e 114–117",
+      "result": "confirmed",
+      "note": "BRL 4.639.928 (80,799650%); CLP 54.180 (0,943490%); PEN 181.158 (3,154683%); USD 867.244 (15,102177%). Moedas estrangeiras: 1.102.582."
+    },
+    {
+      "claim": "18. O texto “dívida bruta menos caixa e aplicações financeiras” é apresentado pelo teste como definição literal do release.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt",
+      "anchor": "p. 12, tabela Endividamento e Caixa",
+      "result": "unverifiable",
+      "note": "A tabela sustenta numericamente a fórmula, mas o texto literal fornecido pelo teste não aparece no documento."
+    },
+    {
+      "claim": "19. O gold retorna estado complete embora o método exija definição literal para cada visão.",
+      "source": "packages/credit-playbook/knowledge/procedures/financial/build-debt-ledger.md",
+      "anchor": "sequência 5 e Outputs, linhas 59 e 88–90",
+      "result": "corrected",
+      "note": "Sem fonte literal para a definição do release, o contrato escrito determina que essa visão não seja produzida e o estado deveria ser incomplete, salvo se o método declarar que a estrutura da tabela vale como definição literal."
+    },
+    {
+      "claim": "20. A definição contratual executada corresponde literalmente à escritura da 13ª.",
+      "source": "docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt",
+      "anchor": "p. 7, definição de Dívida Líquida",
+      "result": "confirmed",
+      "note": "Ela soma empréstimos, financiamentos, debêntures, derivativos passivos e residual oneroso; deduz disponibilidades, aplicações e derivativos ativos."
+    },
+    {
+      "claim": "21. EBITDA, degraus de 3,50x/4,00x e comparabilidade integral não são calculados por este executor.",
+      "source": "packages/credit-playbook/knowledge/procedures/financial/build-debt-ledger.md",
+      "anchor": "Gold, linha 102",
+      "result": "limitation",
+      "note": "O método delega headroom e covenant a reconcile-covenant-definitions. As escrituras confirmam os degraus e a definição-base, mas o ITR não abre o EBITDA pro forma integral."
+    },
+    {
+      "claim": "22. Linhas contra são negativas, não são obrigações e reduzem a visão contábil reportada.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 53–78 e 222–229",
+      "result": "confirmed",
+      "note": "O teste também confirma obligation=null para custos de transação."
+    },
+    {
+      "claim": "23. Termos ausentes ficam em uncoveredTerms como insufficient_evidence e não recebem valores inventados.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 340–350",
+      "result": "confirmed",
+      "note": "Empréstimos permanecem sem remuneração, vencimento e credores; moeda não é convertida em indexador."
+    },
+    {
+      "claim": "24. Ausência integral de cronograma, definição ou caixa gera incomplete; release sem nota, silêncio e contradições geram blocked.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 231–260, 263–315 e 352–356",
+      "result": "confirmed",
+      "note": "Nenhum desses caminhos preenche o dado faltante."
+    },
+    {
+      "claim": "25. Base de caixa parcialmente disponível não possui representação estruturada de insuficiência.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "schema de cash, linhas 106–111",
+      "result": "limitation",
+      "note": "Omitir apenas aplicações ou derivativos causa erro de validação, não incomplete/insufficient_evidence; o contrato precisa definir se entradas parciais são permitidas."
+    },
+    {
+      "claim": "26. As mutações adversariais declaradas e cobertas pelos testes passam.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 163–280",
+      "result": "confirmed",
+      "note": "Incluem escala, split compensatório, primeiro período, definição contraditória simples, silêncio, release-only, âncoras, linha contra, desembolso, duplicidade e tolerância."
+    },
+    {
+      "claim": "27. O verificador de definição não garante concordância integral entre texto e fórmula.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 173–198 e 287–303",
+      "result": "corrected",
+      "note": "Mutações independentes “dívida menos caixa” e “derivativos ativos” somados/“passivos” deduzidos foram aceitas como complete. A fórmula ainda deduziu aplicações e inverteu os derivativos. Os testes não cobrem ausência de aplicações nem troca ativo/passivo."
+    },
+    {
+      "claim": "28. Um arrendamento contratual corretamente ancorado contamina a conciliação contábil reportada.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 223–258 e 287–304",
+      "result": "corrected",
+      "note": "Mutação independente com dívida reportada 100 e lease contratual 10 produziu grossDebt 110 e bloqueio contra balanço 100, embora as visões fossem release 100 e contratual 110. O executor precisa separar o total reportado das inclusões exclusivas da visão contratual."
+    },
+    {
+      "claim": "29. O executor aceita período anterior à data-base como “primeiro período dentro de doze meses”.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "anchor": "linhas 270–280",
+      "result": "corrected",
+      "note": "Mutação com período vencido em 31/05/2025 e período corrente em 31/05/2027 selecionou o vencido e bloqueou. Falta exigir endsAt > referenceDate; o teste cobre rótulos, mas não períodos passados."
+    },
+    {
+      "claim": "30. A determinização declarada é provada para ordem de linhas, períodos, views e chaves de objetos.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 282–294",
+      "result": "confirmed",
+      "note": "Vinte permutações preservam os fingerprints de entrada e saída; ids duplicados são recusados. Isso não cobre todas as mutações semânticas, apenas ordem."
+    },
+    {
+      "claim": "31. A suíte específica executa sem falhas.",
+      "source": "packages/credit-playbook/src/executors/build-debt-ledger.test.ts",
+      "anchor": "linhas 92–295",
+      "result": "confirmed",
+      "note": "Vitest local: 1 arquivo, 11 testes, 11 aprovados."
+    },
+    {
+      "claim": "32. Este registro é revisão independente por modelo, não aprovação humana.",
+      "source": "packages/credit-playbook/src/procedure-contract.ts",
+      "anchor": "linhas 152–168",
+      "result": "confirmed"
+    }
+  ],
+  "result": "fail",
+  "conditions": [
+    "Definir formalmente se a tabela do release constitui uma definição literal; caso contrário, o gold não pode ser complete.",
+    "Substituir a busca lexical da definição por validação completa dos operandos e das polaridades ativo/passivo.",
+    "Separar reconciliação contábil de itens exclusivos da visão contratual, como eventual arrendamento.",
+    "Excluir datas anteriores à data-base da seleção do primeiro período corrente.",
+    "Definir o tratamento estruturado de componentes de caixa parcialmente ausentes.",
+    "A inclusão de arrendamento como outra dívida onerosa e a qualificação jurídica de credor econômico continuam condicionadas a especialista.",
+    "EBITDA, degraus, comparabilidade e headroom devem ser avaliados no executor de covenant; não são produzidos por build-debt-ledger."
+  ],
+  "notes": "Codex (GPT-5), revisão por modelo com shell local, SHA-256, Node e Vitest; sem internet.\n\nOs números do caso gold conferem. A reprovação decorre de comportamentos materiais nas definições, no tratamento de visão contratual exclusiva e na seleção temporal, além da inconsistência sobre a definição literal do release."
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "camil-management.v1",
+  "label": "FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Dados gerenciais inventados, calibrados às demonstrações públicas da Camil (ITR de 31/05/2026). Não representam informação da companhia.",
+  "generatedBy": "packages/testing-fixtures/scripts/build-camil-management.ts",
+  "files": [
+    {
+      "name": "01_Orcamento_2026_2027.xlsx",
+      "bytes": 18258,
+      "sha256": "4a405d7a109316f466d52199db7892ee1663ec02d679c408c03701b9e0d7de41"
+    },
+    {
+      "name": "02_Plano_Capex.xlsx",
+      "bytes": 16856,
+      "sha256": "64586544efb86491147754dd807bc3c9b5f1232ca49fb4588335042cdcb20835"
+    },
+    {
+      "name": "03_Politica_Caixa_Minimo.docx",
+      "bytes": 1624,
+      "sha256": "238d4ab4df9008354a2418ff27b28b5b1e34ddb886d64420e312ad9578e3ecf4"
+    },
+    {
+      "name": "04_Cronograma_Contratual_Amortizacoes.xlsx",
+      "bytes": 25205,
+      "sha256": "51c672f7a8a795b83be8791f19751cf35d17ede9179da6adb3f99d424638985e"
+    }
+  ]
+}

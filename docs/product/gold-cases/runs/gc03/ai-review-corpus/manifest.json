@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "ai-review-corpus.v1",
+  "caseId": "gc03-assessor-recebiveis",
+  "extractor": "packages/evals/scripts/build-review-corpus.ts (parsers do repositório); os onze documentos da Aurora renderizados pelos parsers do repositório; o PNG do contrato social não passa por OCR aqui e fica registrado como não lido",
+  "entries": [
+    {
+      "file": "00_Ficha_Cadastral_Aurora.docx.txt",
+      "bytes": 876,
+      "sha256": "e94fe20cfef99205d6822f45853c08a2ddc7ddd6991ceaacca4ab47cd8152fc9",
+      "note": "rendered from docx"
+    },
+    {
+      "file": "01_Carta_CFO_Pedido_e_Racional.docx.txt",
+      "bytes": 1560,
+      "sha256": "8e22c178fdb4650851d8b014b62bfc317121252ca6c5460962feeeb799ef5792",
+      "note": "rendered from docx"
+    },
+    {
+      "file": "02_Demonstracoes_Auditadas_2023_2025.pdf.txt",
+      "bytes": 1700,
+      "sha256": "f23f3b61b4e7ab5deea2cd30aee0e65f0dc6e1a36fa1c7c6814d65596f9ea4df",
+      "note": "rendered from pdf"
+    },
+    {
+      "file": "03_Balancete_Gerencial_Jul2026.xls.txt",
+      "bytes": 709,
+      "sha256": "b0196ec297eab30582b7107c28d3ec3eb3b94a805486b0c5b9c1a830db41243d",
+      "note": "rendered from spreadsheet"
+    },
+    {
+      "file": "04_Mapa_Divida_Jul2026.xlsx.txt",
+      "bytes": 1452,
+      "sha256": "132a04b4c754b1ccae68141367809cdb7695c334a5ade836e294197000674aac",
+      "note": "rendered from spreadsheet"
+    },
+    {
+      "file": "05_Concentracao_Clientes_2025.xlsx.txt",
+      "bytes": 716,
+      "sha256": "de462901b7d5345976fbb26614f9438fa125782c668a42b311cac87693f0a601",
+      "note": "rendered from spreadsheet"
+    },
+    {
+      "file": "06_Memorial_CD_Jacarei.pdf.txt",
+      "bytes": 1084,
+      "sha256": "e4c1137c1446d86445a8e84808c62e8445be4a1c5abde076608cb7f8cde0bdbe",
+      "note": "rendered from pdf"
+    },
+    {
+      "file": "07_Contrato_Social_Consolidado.png.txt",
+      "bytes": 69,
+      "sha256": "11ef26c0e71e61448a13a7f6bcf74ab771692b512872d251f1e0787e73d47820",
+      "note": "image: not read by this corpus (OCR is never accepted automatically)"
+    },
+    {
+      "file": "08_Projecoes_2026_2030.xlsx.txt",
+      "bytes": 864,
+      "sha256": "147646606215432d25f397c8fea3fe958343b12f2ad63cd028da3319bff42513",
+      "note": "rendered from spreadsheet"
+    },
+    {
+      "file": "09_Aging_Recebiveis_Jul2026.xlsx.txt",
+      "bytes": 6791,
+      "sha256": "b5b4881b3af43aa1cf99e136664ec4092f7172c142a0aa807d500e3cad5d4bef",
+      "note": "rendered from spreadsheet"
+    },
+    {
+      "file": "10_Tape_Duplicatas_Jul2026.csv",
+      "bytes": 47056,
+      "sha256": "800ad5c17cb31c32d59300b01520257c929ce8c6392a8a8267b564232919cd69",
+      "note": "copied"
+    }
+  ]
+}

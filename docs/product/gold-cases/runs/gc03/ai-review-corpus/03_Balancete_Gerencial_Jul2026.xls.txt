@@ -1,0 +1,20 @@
+# 03_Balancete_Gerencial_Jul2026.xls (spreadsheet; parsers legacy-spreadsheet-1.0.0, 0.20.3)
+
+
+## planilha Balancete
+
+A1=Aurora Distribuidora de Materiais de Construção Ltda
+A2=Balancete gerencial consolidado
+A3=Período: 01/01/2026 a 31/07/2026
+A4=Valores em reais
+A6=Conta ; B6=Saldo (R$)
+A7=Receita líquida de vendas ; B7=121640000
+A8=Custo das mercadorias vendidas ; B8=-91230000
+A9=Lucro bruto ; B9=30410000
+A10=Despesas comerciais e administrativas ; B10=-19440000
+A11=EBITDA ; B11=10970000
+A12=Resultado financeiro líquido ; B12=-6140000
+A13=Lucro líquido do período ; B13=1486000
+A15=Caixa e equivalentes ; B15=6180000
+A16=Contas a receber de clientes ; B16=51940000
+A17=Estoques ; B17=42180000

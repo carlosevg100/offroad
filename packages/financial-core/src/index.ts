@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.03-v8";
+export const financialCoreVersion = "2026.09.05-v9";
 
 export * from "./financial-truth";
 export * from "./indexed-debt";
@@ -48,6 +48,19 @@ export function calculateLeverage(netDebt: DecimalInput, adjustedEbitda: Decimal
   return result(debt.div(ebitda), [
     {label: "net_debt", value: canonical(debt)},
     {label: "adjusted_ebitda", value: canonical(ebitda)},
+  ]);
+}
+
+/** The EBITDA a reported leverage implies for a given net debt: netDebt / index. The caller marks it derived, never a fact. */
+export function calculateImpliedEbitda(netDebt: DecimalInput, reportedIndex: DecimalInput): CalculationResult {
+  const debt = d(netDebt);
+  const index = d(reportedIndex);
+  if (index.lte(0)) {
+    throw new RangeError("a reported index must be positive to imply an EBITDA");
+  }
+  return result(debt.div(index), [
+    {label: "net_debt", value: canonical(debt)},
+    {label: "reported_index", value: canonical(index)},
   ]);
 }
 

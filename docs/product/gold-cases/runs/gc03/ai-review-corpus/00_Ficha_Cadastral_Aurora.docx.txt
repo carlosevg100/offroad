@@ -1,0 +1,30 @@
+# 00_Ficha_Cadastral_Aurora.docx (docx; parsers docx-1.0.0, 3.10.1, 5.10.1)
+
+
+## Ficha cadastral
+
+Aurora Distribuidora de Materiais de Construção Ltda (&quot;Aurora Materiais&quot;), inscrita no CNPJ sob o nº 24.518.907/0001-63, sociedade empresária limitada constituída em 2004.
+Sede em São José dos Campos/SP. A companhia opera 4 unidades e emprega 214 colaboradores.
+Atividade: Distribuição de materiais de construção.
+
+
+## Quadro societário
+
+
+
+[tabela]
+Sócio | Participação | Função
+Helena Bastos Corrêa | 52,0% | Sócia administradora
+Rafael Bastos Corrêa | 33,0% | Sócio, diretor comercial
+Participações Vale do Paraíba Ltda | 15,0% | Sócia quotista
+
+
+## Administração
+
+
+
+[tabela]
+Nome | Cargo | Desde
+Helena Bastos Corrêa | Diretora-presidente | 2011
+Marcos Tanaka | Diretor financeiro | 2019
+Rafael Bastos Corrêa | Diretor comercial | 2008

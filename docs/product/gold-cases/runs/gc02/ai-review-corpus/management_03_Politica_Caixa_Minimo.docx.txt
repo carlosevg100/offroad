@@ -1,0 +1,14 @@
+# management_03_Politica_Caixa_Minimo.docx (docx; parsers docx-1.0.0, 3.10.1, 5.10.1)
+
+
+## Camil Alimentos S.A. (simulação): política de caixa mínimo
+
+FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Dados gerenciais inventados, calibrados às demonstrações públicas da Camil (ITR de 31/05/2026). Não representam informação da companhia.
+Regra: caixa mínimo de R$ 900 milhões, cerca de trinta dias de receita líquida, mais cobertura de 1,0x do serviço da dívida dos doze meses seguintes com caixa e linhas comprometidas.
+Caixa elegível: caixa e equivalentes mais aplicações financeiras de liquidez imediata; aplicações com prazo acima de noventa dias não contam para o piso.
+
+[tabela]
+Parâmetro | Valor
+Piso de caixa (R$ mil) | 900.000
+Linhas comprometidas (R$ mil) | 0
+Revisão | anual, no orçamento

@@ -1,0 +1,17 @@
+# management_01_Orcamento_2026_2027.xlsx (spreadsheet; parsers xlsx-1.0.0, 3.10.1, 5.10.1)
+
+
+## planilha Orcamento
+
+A1=FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Dados gerenciais inventados, calibrados às demonstrações públicas da Camil (ITR de 31/05/2026). Não representam informação da companhia.
+A2=Camil Alimentos S.A. (simulação), orçamento do ano safra 2026/27, R$ mil, consolidado
+A4=Linha ; B4=2T26/27 (jun-ago/26) ; C4=3T26/27 (set-nov/26) ; D4=4T26/27 (dez/26-fev/27) ; E4=1T27/28 (mar-mai/27) ; F4=Ano
+A5=Receita líquida ; B5=2740000 ; C5=2860000 ; D5=2560000 ; E5=2740000 ; F5=10900000
+A6=EBITDA ; B6=222000 ; C6=240000 ; D6=205000 ; E6=227000 ; F6=894000
+A7=Impostos caixa ; B7=12000 ; C7=18000 ; D7=15000 ; E7=15000 ; F7=60000
+A8=Capex de manutenção ; B8=45000 ; C8=45000 ; D8=45000 ; E8=45000 ; F8=180000
+A9=Capex de crescimento ; B9=40000 ; C9=70000 ; D9=70000 ; E9=40000 ; F9=220000
+A10=Variação do capital de giro (aumento positivo) ; B10=350000 ; C10=150000 ; D10=-300000 ; E10=-150000 ; F10=50000
+A11=Pagamentos de arrendamento ; B11=15000 ; C11=15000 ; D11=15000 ; E11=15000 ; F11=60000
+A12=Dividendos ; B12=90000 ; C12=0 ; D12=0 ; E12=0 ; F12=90000
+A14=Anos seguintes: crescimento nominal de 2% ao ano, capex só de manutenção, variação de capital de giro de R$ 50 milhões por ano (premissa gerencial sintética)

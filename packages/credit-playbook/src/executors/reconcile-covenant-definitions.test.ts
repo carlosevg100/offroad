@@ -66,7 +66,7 @@ const permute = <T>(items: readonly T[], seed: number): T[] => {
 const by = (result: ReturnType<typeof reconcileCovenantDefinitions>, id: string) => result.covenants.find((covenant) => covenant.instrument === id)!;
 const withoutLeases = (input: CovenantReconciliationInput): CovenantReconciliationInput => ({...input, componentValues: input.componentValues!.filter((line) => line.component !== "leases")});
 
-describe("reconcile-covenant-definitions executor (v4)", () => {
+describe("reconcile-covenant-definitions executor (v5)", () => {
   it("gold: net debt by each indenture's own definition is 4.228.477 through financial-core, one anchor per operand, implied EBITDA traced", () => {
     const result = reconcileCovenantDefinitions(camil("unknown"));
     for (const covenant of result.covenants) {
@@ -97,7 +97,7 @@ describe("reconcile-covenant-definitions executor (v4)", () => {
       expect(covenant.tiers.map((tier) => tier.state)).toEqual(["ended", "unproven"]);
       expect(covenant.limitConditions).toHaveLength(1);
     }
-    expect(result.unprovenConditions).toHaveLength(4);
+    expect(result.unproven_conditions).toHaveLength(4);
     expect(by(result, "deb-13").tiers.map((tier) => tier.anchor.page)).toEqual([54, 55]);
     expect(by(result, "deb-15").tiers.map((tier) => tier.anchor.page)).toEqual([56, 56]);
     expect(JSON.stringify(result)).not.toMatch(/breach|rompid/i);
@@ -112,8 +112,8 @@ describe("reconcile-covenant-definitions executor (v4)", () => {
     const deb11 = by(result, "deb-11");
     expect(deb11.definitions?.ebitdaAdjustments.map((adjustment) => adjustment.kind)).toEqual(["denominator_addition", "numerator_obligation"]);
     expect(deb11.legalConditions.some((condition) => condition.includes("sellers-finance") && condition.includes("no dated value"))).toBe(true);
-    expect(deb11.netDebtByDefinition?.numeratorObligations).toBe("0");
-    expect(result.legalConditions.filter((condition) => condition.startsWith("deb-11:"))).toHaveLength(2);
+    expect(deb11.netDebtByDefinition?.numeratorObligations).toBeNull();
+    expect(result.legal_conditions.filter((condition) => condition.startsWith("deb-11:"))).toHaveLength(2);
     expect(by(result, "deb-13").comparabilityReasons).toEqual(expect.arrayContaining([expect.stringMatching(/other_onerous_debt/), expect.stringMatching(/does not open the EBITDA/)]));
   });
 
@@ -124,7 +124,7 @@ describe("reconcile-covenant-definitions executor (v4)", () => {
     expect(deb13.tiers.map((tier) => tier.state)).toEqual(["ended", "applies"]);
     expect(deb13.comparability).toBe("conditional");
     expect(deb13.headroom).toBeNull();
-    expect(result.unprovenConditions).toHaveLength(0);
+    expect(result.unproven_conditions).toHaveLength(0);
   });
 
   it("hypothetical, not gold: residual enumerated, EBITDA opened and consistent, no lease in the base: headroom from financial-core; the 11th stays conditional on its numerator obligation", () => {
@@ -246,10 +246,46 @@ describe("reconcile-covenant-definitions executor (v4)", () => {
     expect(result.state).toBe("conditioned");
   });
 
+  it("mutation: a uniform relabel of the scale changes the output fingerprint, and the unit travels with every calculation", () => {
+    const base = camil("unknown");
+    const first = reconcileCovenantDefinitions(base);
+    const relabeled = reconcileCovenantDefinitions({...base, componentValues: base.componentValues!.map((line) => ({...line, unit: "BRL million" as const}))});
+    expect(first.unit).toBe("BRL thousand");
+    expect(relabeled.unit).toBe("BRL million");
+    expect(relabeled.trace.outputFingerprint).not.toBe(first.trace.outputFingerprint);
+    expect(first.trace.calculations.every((calculation) => calculation.unit === "BRL thousand")).toBe(true);
+    expect(first.trace.calculations.find((calculation) => calculation.id === "financial.implied_ebitda:deb-13")?.result.startsWith("895863.77")).toBe(true);
+  });
+
+  it("mutation: with two references, the 3.50x tier ends at the first maturity while the other is alive, and a future-dated settlement is not a fact yet", () => {
+    const base = camil("unknown");
+    const between: CovenantReconciliationInput = {
+      ...base, asOfDate: "2025-06-01", reported: null,
+      componentValues: base.componentValues!.map((line) => ({...line, asOf: "2025-06-01"})),
+      referenceSettlements: [
+        {instrument: "cra-eco-8", maturityDate: "2025-04-15", settlement: "unknown", anchor: {document: "x"}},
+        {instrument: "cra-eco-5", maturityDate: "2025-04-16", settlement: "unknown", anchor: {document: "x"}},
+        {instrument: "cra-eco-257", maturityDate: "2025-12-29", settlement: "ordinary", settlementDate: "2025-12-29", anchor: {document: "x"}},
+      ],
+    };
+    const result = reconcileCovenantDefinitions(between);
+    expect(by(result, "deb-13").tiers.map((tier) => tier.state)).toEqual(["ended", "not_yet"]);
+    expect(by(result, "deb-13").applicableLimit).toBeNull();
+    expect(by(result, "deb-15").tiers.map((tier) => tier.state)).toEqual(["applies", "not_yet"]);
+    expect(by(result, "deb-15").applicableLimit).toBe("3.50");
+  });
+
+  it("mutation: duplicate adjustment ids, a component covered twice and a non twelve-month EBITDA are refused", () => {
+    const base = camil("unknown");
+    expect(() => reconcileCovenantDefinitions({...base, instruments: base.instruments.map((instrument) => instrument.source === "indenture" && instrument.id === "deb-11" ? {...instrument, ebitdaAdjustments: [...adjustments11, adjustments11[0]!]} : instrument)})).toThrow(/duplicate adjustment/);
+    expect(() => reconcileCovenantDefinitions({...base, componentValues: [...componentValues, {component: "debentures", covers: ["debentures"], value: "1", unit, asOf, anchor: itr(39)}]})).toThrow(/covered twice/);
+    expect(() => reconcileCovenantDefinitions({...base, ltmEbitda: {value: "895864", unit, asOf, months: 3 as unknown as 12, incorporatesAdjustments: [], anchor: itr(40)}})).toThrow();
+  });
+
   it("blocks on an empty base", () => {
     const result = reconcileCovenantDefinitions({asOfDate: asOf, instruments: []});
     expect(result.state).toBe("blocked");
-    expect(result.blockReasons[0]).toMatch(/nothing to reconcile/);
+    expect(result.block_reasons[0]).toMatch(/nothing to reconcile/);
   });
 
   it("is consistent under twenty permutations, with the trace inside the output fingerprint", () => {

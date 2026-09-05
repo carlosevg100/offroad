@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "ai-review-corpus.v1",
+  "caseId": "gc05-banker-expansao-camil",
+  "extractor": "packages/evals/scripts/build-review-corpus.ts (parsers do repositório); corpus do caso 01 (pdftotext) mais os arquivos gerenciais sintéticos do caso 02, porque a projeção é compartilhada",
+  "entries": [
+    {
+      "file": "00_INHERITED_FROM_GC01.md",
+      "bytes": 310,
+      "sha256": "34fdeaf94cc80f11be3e15ecf54544583ce54febaa1ab2dcbefeca1953365b6b",
+      "note": "copied"
+    },
+    {
+      "file": "management_01_Orcamento_2026_2027.xlsx.txt",
+      "bytes": 1357,
+      "sha256": "8e495379f79b6b9723e6df7d39ca361b3e8b2121a70fd74c2234e3baefae0862",
+      "note": "rendered from spreadsheet"
+    },
+    {
+      "file": "management_04_Cronograma_Contratual_Amortizacoes.xlsx.txt",
+      "bytes": 4217,
+      "sha256": "2ea6148f0aaae3b3f12f0232d28503258573a2720f2da22f97842528526e0acc",
+      "note": "rendered from spreadsheet"
+    },
+    {
+      "file": "management_manifest.json",
+      "bytes": 1005,
+      "sha256": "02de00d0de19f942f06e3785cc6d5d31afb8984340f8c2444b857db832703155",
+      "note": "copied"
+    }
+  ]
+}

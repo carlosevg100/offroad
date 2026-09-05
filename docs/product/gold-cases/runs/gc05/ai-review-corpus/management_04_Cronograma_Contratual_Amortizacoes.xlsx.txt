@@ -1,0 +1,34 @@
+# management_04_Cronograma_Contratual_Amortizacoes.xlsx (spreadsheet; parsers xlsx-1.0.0, 3.10.1, 5.10.1)
+
+
+## planilha Cronograma
+
+A1=FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Dados gerenciais inventados, calibrados às demonstrações públicas da Camil (ITR de 31/05/2026). Não representam informação da companhia.
+A2=Cronograma contratual de amortizações por série, ano safra (junho a maio), R$ mil; totais por ano iguais à nota 15 do ITR de 31/05/2026; alocação por série sintética
+A4=Série ; B4=Vencimento ; C4=Remuneração ; D4=Fonte da taxa ; E4=2026/27 ; F4=2027/28 ; G4=2028/29 ; H4=2029/30 ; I4=2030/31 ; J4=after 2031 ; K4=Total
+A5=Capital de giro, moeda nacional ; B5=linhas rotativas ; C5=CDI + 1.5% a.a. ; D5=gerencial (sintético) ; E5=666686 ; F5=421138 ; G5=143470 ; H5=74018 ; I5=0 ; J5=0 ; K5=1305312
+A6=Capital de giro, USD ; B6=linhas rotativas ; C6=SOFR + 2% a.a. ; D6=gerencial (sintético) ; E6=442943 ; F6=279802 ; G6=95321 ; H6=49177 ; I6=0 ; J6=0 ; K6=867244
+A7=Capital de giro, CLP ; B7=linhas rotativas ; C7=prefixada 7% a.a. ; D7=gerencial (sintético) ; E7=27672 ; F7=17480 ; G7=5955 ; H7=3072 ; I7=0 ; J7=0 ; K7=54180
+A8=Capital de giro, PEN ; B8=linhas rotativas ; C8=prefixada 7.5% a.a. ; D8=gerencial (sintético) ; E8=92526 ; F8=58448 ; G8=19912 ; H8=10273 ; I8=0 ; J8=0 ; K8=181158
+A9=Debêntures 11ª emissão, 1ª série ; B9=2028-10-30 ; C9=CDI + 1.55% a.a. ; D9=relatório do agente fiduciário ; E9=0 ; F9=0 ; G9=151795 ; H9=0 ; I9=0 ; J9=0 ; K9=151795
+A10=Debêntures 11ª emissão, 2ª série ; B10=2028-10-30 ; C10=CDI + 1.55% a.a. ; D10=relatório do agente fiduciário ; E10=0 ; F10=0 ; G10=505984 ; H10=0 ; I10=0 ; J10=0 ; K10=505984
+A11=Debêntures 13ª emissão, 1ª série ; B11=2028-11-16 ; C11=CDI + 0.65% a.a. ; D11=relatório do agente fiduciário ; E11=0 ; F11=0 ; G11=306038 ; H11=0 ; I11=0 ; J11=0 ; K11=306038
+A12=Debêntures 13ª emissão, 2ª série ; B12=2030-11-18 ; C12=IPCA + 6.3416% a.a. ; D12=relatório do agente fiduciário ; E12=0 ; F12=0 ; G12=0 ; H12=0 ; I12=282357 ; J12=0 ; K12=282357
+A13=Debêntures 13ª emissão, 3ª série ; B13=2033-11-16 ; C13=IPCA + 6.5264% a.a. ; D13=relatório do agente fiduciário ; E13=0 ; F13=0 ; G13=0 ; H13=0 ; I13=0 ; J13=110321 ; K13=110321
+A14=Debêntures 14ª emissão, 1ª série ; B14=2029-06-15 ; C14=104% do CDI ; D14=relatório do agente fiduciário ; E14=0 ; F14=0 ; G14=0 ; H14=438918 ; I14=0 ; J14=0 ; K14=438918
+A15=Debêntures 14ª emissão, 2ª série ; B15=2031-06-16 ; C15=IPCA + 6.8286% a.a. ; D15=relatório do agente fiduciário ; E15=0 ; F15=0 ; G15=0 ; H15=0 ; I15=0 ; J15=204059 ; K15=204059
+A16=Debêntures 14ª emissão, 3ª série ; B16=2034-06-15 ; C16=IPCA + 6.9982% a.a. ; D16=relatório do agente fiduciário ; E16=0 ; F16=0 ; G16=0 ; H16=0 ; I16=0 ; J16=66024 ; K16=66024
+A17=Debêntures 15ª emissão, 1ª série ; B17=2030-11-18 ; C17=105% do CDI ; D17=relatório do agente fiduciário ; E17=0 ; F17=0 ; G17=0 ; H17=119039 ; I17=651084 ; J17=0 ; K17=770123
+A18=Debêntures 15ª emissão, 2ª série ; B18=2032-11-16 ; C18=prefixada 14.15% a.a. ; D18=relatório do agente fiduciário ; E18=0 ; F18=0 ; G18=0 ; H18=0 ; I18=61103 ; J18=347600 ; K18=408703
+A19=Debêntures 15ª emissão, 3ª série ; B19=2032-11-16 ; C19=IPCA + 8.2% a.a. ; D19=relatório do agente fiduciário ; E19=0 ; F19=0 ; G19=0 ; H19=0 ; I19=0 ; J19=50401 ; K19=50401
+A20=Debêntures 15ª emissão, 4ª série ; B20=2035-11-16 ; C20=IPCA + 8.7% a.a. ; D20=relatório do agente fiduciário ; E20=0 ; F20=0 ; G20=0 ; H20=0 ; I20=0 ; J20=30793 ; K20=30793
+A21=Custos de transação de debêntures ; D21=ITR nota 15 ; E21=0 ; F21=0 ; G21=0 ; H21=0 ; I21=0 ; J21=0 ; K21=-63224
+A22=Total ; E22=1229828 ; F22=776868 ; G22=1228475 ; H22=694497 ; I22=994544 ; J22=809198 ; K22=5670186
+
+
+## planilha Parciais
+
+A1=FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Dados gerenciais inventados, calibrados às demonstrações públicas da Camil (ITR de 31/05/2026). Não representam informação da companhia.
+A2=Amortizações parciais declaradas para caber nos totais do ITR
+A3=deb-15-2: 61.103 amortizados em 2030/31 (parcial, sintético)
+A4=deb-15-1: 119.039 amortizados em 2029/30 (parcial, sintético)

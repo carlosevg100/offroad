@@ -1,0 +1,31 @@
+# 02_Demonstracoes_Auditadas_2023_2025.pdf (pdf; parsers pdf-1.0.0, 6.2.108)
+
+
+## página 1
+
+Aurora Distribuidora de Materiais de Construção Ltda Demonstrações financeiras dos exercícios findos em 31 de dezembro de 2023, 2024 e 2025 Auditadas por Marcondes & Auditores Independentes S/S. Parecer sem ressalvas emitido em 18 de março de 2026.
+Demonstração do resultado Em milhares de reais
+Balanço patrimonial em 31 de dezembro de 2025 Em milhares de reais
+Nota 14, Empréstimos e financiamentos: o saldo consolidado de empréstimos, financiamentos e arrendamentos mercantis em 31 de dezembro de 2025 totaliza R$ 45.320,00 mil, dos quais R$ 6.820,00 mil referem-se a arrendamentos mercantis reconhecidos conforme o CPC 06 (R2).
+
+[tabela]
+Conta |  | 2023 |  | 2024 |  | 2025
+Receita líquida de vendas | 142.800,00 |  | 168.400,00 |  | 191.200,00 | 
+Custo das mercadorias vendidas | -108.528,00 |  | -127.216,00 |  | -143.400,00 | 
+Lucro bruto | 34.272,00 |  | 41.184,00 |  | 47.800,00 | 
+Despesas comerciais e administrativas | -22.991,00 |  | -26.260,00 |  | -30.952,00 | 
+EBITDA | 11.281,00 |  | 14.924,00 |  | 16.848,00 | 
+Depreciação e amortização | -3.140,00 |  | -3.610,00 |  | -4.020,00 | 
+Resultado financeiro líquido | -6.820,00 |  | -8.190,00 |  | -9.460,00 | 
+Lucro líquido do exercício | 1.004,00 |  | 2.338,00 |  | 2.611,00 | 
+
+[tabela]
+Caixa e equivalentes de caixa | 8.420,00
+Contas a receber de clientes | 47.310,00
+Estoques | 39.880,00
+Imobilizado líquido | 41.260,00
+Total do ativo | 141.870,00
+Fornecedores | 33.540,00
+Empréstimos e financiamentos, circulante | 18.940,00
+Empréstimos e financiamentos, não circulante | 26.380,00
+Patrimônio líquido | 47.120,00

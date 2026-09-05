@@ -1,6 +1,6 @@
 ---
 id: build-debt-ledger
-version: 2026.09.05-v5
+version: 2026.09.05-v6
 maturity: implemented
 title_pt: Construir o ledger de dívida
 title_en: Build the debt ledger
@@ -10,13 +10,13 @@ owner_role: Head de Análise Financeira
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-debt-ledger
 implementation_export: buildDebtLedger
-result_contract: method.build-debt-ledger.v5
+result_contract: method.build-debt-ledger.v6
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
 unit_test_files: [packages/credit-playbook/src/executors/build-debt-ledger.test.ts]
 gold_case_ids: [gc01-analista-ib-camil]
-adversarial_case_ids: [adversarial:gc01:scale-mutation-blocks-ledger, adversarial:gc01:compensating-split-swap-blocks-ledger, adversarial:gc01:definition-text-contradicts-formula, adversarial:gc01:current-period-by-end-date-not-label, adversarial:gc01:row-split-must-add-up]
+adversarial_case_ids: [adversarial:gc01:scale-mutation-blocks-ledger, adversarial:gc01:compensating-split-swap-blocks-ledger, adversarial:gc01:definition-text-contradicts-formula, adversarial:gc01:current-period-by-end-date-not-label, adversarial:gc01:row-split-must-add-up, adversarial:gc01:contractual-only-row-out-of-balance-identity, adversarial:gc01:definition-polarity-swapped]
 e2e_scenario_ids: [pending:case01-frozen-run]
 cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [D-01, D-03, D-24]
@@ -53,10 +53,10 @@ sustenta.
 
 # Sequência operacional
 1. [deterministic] Inventariar instrumentos :: Listar cada instrumento e série da nota com saldo por período, moeda e classificação de prazo ; Registrar página e nota de cada linha | evidence: nota de dívida, balanço
-2. [deterministic] Conciliar com o balanço :: Comparar o total do ledger com circulante mais não circulante do balanço e, quando cada linha traz a sua classificação de prazo, conciliar circulante e não circulante separadamente, porque uma troca compensatória entre os dois não é conciliação; a classificação de cada linha tem de somar o seu saldo, senão a linha é recusada ; Diferença acima da tolerância bloqueia o ledger e vira lacuna nomeada; tolerância acima de zero só existe sob política versionada (chave e versão registradas no resultado) | tools: financial.debt_views | evidence: balanço
-3. [deterministic] Montar o cronograma :: Alocar cada saldo nos períodos do cronograma da nota, em ano civil e em ano safra quando a companhia usa exercício deslocado ; Conferir que a soma dos períodos é o total da nota e que o primeiro período (o que termina dentro de doze meses da data-base, pela data de fim declarada, nunca por rótulo) é igual ao circulante do balanço, para que um erro compensatório entre períodos não passe pela soma; sem datas de fim, a conferência fica em aberto | tools: financial.maturity_buckets | evidence: nota de dívida, balanço
+2. [deterministic] Conciliar com o balanço :: Comparar o total reportado do ledger (linhas da visão do release e linhas contra; uma linha que só a escritura inclui, como arrendamento, fica fora da identidade e é listada à parte) com circulante mais não circulante do balanço e, quando cada linha traz a sua classificação de prazo, conciliar circulante e não circulante separadamente, porque uma troca compensatória entre os dois não é conciliação; a classificação de cada linha tem de somar o seu saldo, senão a linha é recusada ; Diferença acima da tolerância bloqueia o ledger e vira lacuna nomeada; tolerância acima de zero só existe sob política versionada (chave e versão registradas no resultado) | tools: financial.debt_views | evidence: balanço
+3. [deterministic] Montar o cronograma :: Alocar cada saldo nos períodos do cronograma da nota, em ano civil e em ano safra quando a companhia usa exercício deslocado ; Conferir que a soma dos períodos é o total reportado da nota e que o primeiro período (o que termina dentro de doze meses da data-base, pela data de fim declarada, nunca por rótulo; um período terminado na data-base ou antes dela bloqueia) é igual ao circulante do balanço, para que um erro compensatório entre períodos não passe pela soma; sem datas de fim, a conferência fica em aberto | tools: financial.maturity_buckets | evidence: nota de dívida, balanço
 4. [deterministic] Completar termos por série :: Preencher indexador, spread, vencimento, garantia e credor a partir de escrituras e relatórios fiduciários, com a âncora dos termos separada da âncora do saldo e uma âncora por página de série ; O credor tem dois fatos com âncoras próprias: o titular formal (preâmbulo da escritura) e os credores econômicos (a cláusula da escritura que manda a securitizadora deliberar conforme a assembleia de titulares de CRA, ou o termo de securitização; um relatório fiduciário prova o lastro, não a orientação); a garantia da controladora sobre as dívidas das controladas no exterior, declarada no ITR, é garantia com fonte, sem individualização por contrato; cada fato ausente vira lacuna própria ; Deixar `insufficient_evidence`, campo a campo e com o motivo, o que nenhuma fonte do pack sustenta; moeda não é indexador ; Linha contra (custos de transação) não é obrigação e não carrega natureza de obrigação ; Arrendamento só entra na visão contratual com a âncora da inclusão ; Regras e custo de saída ficam com o método estimate-exit-cost-by-series | evidence: escrituras, termos de securitização, relatórios de agente fiduciário
-5. [deterministic] Fechar as visões de dívida líquida :: Recalcular a visão do release e a visão contratual com as definições literais, cada uma com a fonte da definição e a âncora de cada componente ; Conferir que o texto da definição concorda com a fórmula executada, separando o que o texto soma do que ele deduz (antes e depois de `menos`): o que se soma tem dívida, o que se deduz tem caixa, a do release não cita derivativos, a contratual soma derivativos passivos e deduz derivativos ativos; a definição contratual é o texto literal da escritura, com âncora na escritura; um texto que contradiz a fórmula bloqueia a visão, e um texto com `qualquer outra dívida onerosa` marca o residual assumido zero ; Registrar o valor reportado pelo release à parte, com a diferença para o recalculado ; Nunca misturar as visões | tools: financial.debt_views | evidence: escritura, release, nota de dívida
+5. [deterministic] Fechar as visões de dívida líquida :: Recalcular a visão do release e a visão contratual com as definições literais, cada uma com a fonte da definição e a âncora de cada componente; um componente de caixa ausente da base deixa a visão que dele depende sem cálculo, com o motivo em `incomplete_reasons`, nunca em erro ; Conferir que o texto da definição concorda com a fórmula executada, separando o que o texto soma do que ele deduz (antes e depois de `menos`): o que se soma tem dívida, o que se deduz tem caixa, a do release não cita derivativos, a contratual soma derivativos passivos e deduz derivativos ativos; a definição contratual é o texto literal da escritura, com âncora na escritura; a definição do release, quando o release não traz prosa, é a estrutura da sua tabela com linhas rotuladas (dívida bruta, menos caixa e aplicações, dívida líquida), declarada como tal; a validação confere operando a operando e lado a lado (dívida somada; caixa e aplicações deduzidos; derivativos passivos somados e ativos deduzidos na contratual; nenhum operando no lado errado); um texto que contradiz a fórmula bloqueia a visão, e um texto com `qualquer outra dívida onerosa` marca o residual assumido zero ; Registrar o valor reportado pelo release à parte, com a diferença para o recalculado ; Nunca misturar as visões | tools: financial.debt_views | evidence: escritura, release, nota de dívida
 6. [model_assisted] Redigir a leitura :: Descrever concentração por período, por moeda e por indexador a partir das linhas do ledger ; Toda frase com número cita a linha e a âncora
 
 # Cálculos determinísticos
@@ -82,11 +82,26 @@ sustenta.
 - Nota de dívida ausente no período mais recente disponível.
 
 # Outputs
+- schema_version (string, required): identificador do contrato de resultado, `method.build-debt-ledger.v6`
+- reference_date (date, required): data-base do ledger
+- prior_date (date, required): data-base anterior, ou nula
+- unit (string, required): unidade de todos os valores, presente em cada cálculo do trace
+- source (enum, required): note ou release_only | values: note, release_only
+- block_reasons (array, required): motivos estruturados de bloqueio
+- incomplete_reasons (array, required): saídas obrigatórias que a base não permitiu produzir, com o motivo
 - ledger_rows (array, required): linhas por instrumento e série com saldo na data-base e na anterior, moeda, natureza da obrigação (só desembolsadas; ausente nas linhas contra) e visões a que pertence, remuneração tipada (spread sobre índice, percentual do índice ou prefixada), vencimento, garantia, titular formal e credores econômicos com uma âncora cada, classificação de prazo quando a fonte a dá, âncora do saldo e uma âncora por termo
+- gross_debt (decimal_string, required): soma de todas as linhas, inclusive as que só a visão contratual carrega
+- gross_debt_reported (decimal_string, required): soma das linhas que as demonstrações reportam como dívida (visão do release e linhas contra); é o que concilia com o balanço
+- gross_debt_prior (decimal_string, required): total na data anterior, ou nulo
+- gross_debt_before_contra (decimal_string, required): total antes das linhas contra, denominador das participações
+- contractual_only_inclusions (array, required): linhas que só a definição contratual inclui (arrendamento por cláusula), com a âncora da inclusão
 - reconciliation (object, required): total contra o balanço e, quando possível, circulante e não circulante separadamente, com tolerância (valor, chave e versão da política) e âncora do balanço
 - schedule (object, required): cronograma por período com a soma conferida contra o total da nota e o primeiro período conferido contra o circulante do balanço
 - net_debt_views (object, required): visão do release e visão contratual, cada uma calculada só quando a definição literal e a sua fonte estão na base, com fórmula, operandos, âncora por componente e linhas incluídas; valor reportado pelo release à parte com a diferença
+- by_indexer (array, required): saldo e participação por indexador sobre a dívida bruta antes dos custos
+- by_currency (array, required): saldo e participação por moeda
 - uncovered_terms (array, required): por linha e campo, estado `insufficient_evidence` e o motivo
+- trace (object, required): cálculos executados (id, fórmula, operandos, resultado, unidade) e fingerprints de entrada e saída
 - state (enum, required): complete só com conciliação, cronograma conferido e as duas visões; incomplete quando falta saída obrigatória, com o motivo; blocked em diferença de conciliação (total, por prazo ou do primeiro período), definição que contradiz a fórmula, release sem nota, silêncio documental ou contradição; empty só com evidência de ausência de dívida | values: complete, blocked, empty, incomplete
 
 # Exemplos
