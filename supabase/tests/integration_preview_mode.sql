@@ -174,7 +174,10 @@ begin
   perform public.worker_record_agent_failure((claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview_not_granted');
   perform public.worker_fail_job(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token',
-    jsonb_build_object('code', 'integration_preview_not_granted', 'stage', 'agent_operation_brief', 'retryable', false),
+    jsonb_build_object(
+      'code', 'integration_preview_not_granted', 'stage', 'agent_operation_brief', 'retryable', false,
+      'cause', jsonb_build_object('name', 'Error', 'class', 'authorization', 'message', 'integration preview not granted for the organization')
+    ),
     false
   );
 end;
