@@ -152,6 +152,22 @@ jobs:
         run: |
           if [ -f worker.log ]; then node scripts/live-gate-report.mjs worker.log "$RUNNER_TEMP/live-gate/report.json" | tee live-gate-summary.md; else echo 'no worker log: the run stopped before the worker started' | tee live-gate-summary.md; fi
 
+      # The founder's gate asks for the envelope, the compiled workflow and the run budget, not only
+      # the decisions: they live in the local database of this job and leave with the artifact.
+      - name: Export envelopes, compiled workflows and preview runs from the local database
+        if: always()
+        run: |
+          set -euo pipefail
+          DB_URL="$(supabase status -o env | sed -n 's/^DB_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p')"
+          [ -n "$DB_URL" ] || DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          mkdir -p "$RUNNER_TEMP/live-gate"
+          psql "$DB_URL" -At -v ON_ERROR_STOP=1 -c "select coalesce(jsonb_agg(jsonb_build_object('messageId', message_id, 'projectId', capital_project_id, 'jobId', processing_job_id, 'model', model, 'costUsd', cost_usd, 'createdAt', created_at, 'envelope', envelope, 'classifier', classifier) order by created_at), '[]'::jsonb) from public.intent_envelopes" > "$RUNNER_TEMP/live-gate/envelopes.json"
+          psql "$DB_URL" -At -v ON_ERROR_STOP=1 -c "select coalesce(jsonb_agg(jsonb_build_object('briefId', id, 'projectId', capital_project_id, 'version', brief_version, 'status', status, 'requestId', request_id, 'createdAt', created_at, 'content', content) order by created_at), '[]'::jsonb) from public.capital_project_briefs where brief_kind = 'integration_preview'" > "$RUNNER_TEMP/live-gate/briefs.json"
+          psql "$DB_URL" -At -v ON_ERROR_STOP=1 -c "select coalesce(jsonb_agg(jsonb_build_object('planId', plan.id, 'projectId', plan.capital_project_id, 'version', plan.plan_version, 'status', plan.status, 'fingerprint', plan.plan_fingerprint, 'compilerVersion', plan.compiler_version, 'registryVersion', plan.registry_version, 'targetTaskIds', plan.target_task_ids, 'taskCount', plan.task_count, 'createdAt', plan.created_at, 'snapshot', plan.snapshot) order by plan.created_at), '[]'::jsonb) from public.capital_project_plans plan where exists (select 1 from public.capital_project_briefs brief where brief.organization_id = plan.organization_id and brief.capital_project_id = plan.capital_project_id and brief.brief_kind = 'integration_preview')" > "$RUNNER_TEMP/live-gate/plans.json"
+          psql "$DB_URL" -At -v ON_ERROR_STOP=1 -c "select coalesce(jsonb_agg(jsonb_build_object('runId', id, 'sessionId', intake_session_id, 'runNo', run_no, 'status', status, 'pipelineVersion', pipeline_version, 'budget', budget, 'versions', versions, 'error', error, 'stages', stages, 'createdAt', created_at, 'completedAt', completed_at) order by created_at), '[]'::jsonb) from public.processing_runs where pipeline_version like 'integration-preview-%' or stages::text like '%live_preview:understand%'" > "$RUNNER_TEMP/live-gate/runs.json"
+          psql "$DB_URL" -At -v ON_ERROR_STOP=1 -c "select coalesce(jsonb_agg(jsonb_build_object('artifactId', id, 'projectId', capital_project_id, 'planId', plan_id, 'taskRunId', task_run_id, 'type', artifact_type, 'version', artifact_version, 'status', status, 'inputFingerprint', input_fingerprint, 'artifactFingerprint', artifact_fingerprint, 'createdAt', created_at) order by created_at), '[]'::jsonb) from public.capital_project_artifacts" > "$RUNNER_TEMP/live-gate/artifacts.json"
+          for f in envelopes briefs plans runs artifacts; do printf '%s: %s bytes\n' "$f" "$(wc -c < "$RUNNER_TEMP/live-gate/$f.json")"; done
+
       - name: Upload the gate report, the journey and the worker log
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
