@@ -8,10 +8,25 @@ import {preview} from "@offroad/credit-playbook";
 import type {ModelGateway} from "@offroad/model-gateway";
 import {z} from "zod";
 
-const {synthesisSectionSchema, synthesisSectionOrder, validateSynthesisNumbers, numberVocabulary, synthesisChangeNote, synthesisFingerprint} = preview;
+const {synthesisSectionOrder, validateSynthesisNumbers, numberVocabulary, synthesisChangeNote, synthesisFingerprint} = preview;
+
+/**
+ * What the model may write: the shared section shape, bounded tighter than the skeleton's. The gate
+ * measured the unbounded prose at the four-thousand-token cap in half the runs (truncated output,
+ * a wasted call of about forty seconds); three paragraphs of at most seven hundred characters per
+ * section keep the whole synthesis near a thousand words.
+ */
+export const synthesisModelSectionSchema = z.object({
+  id: z.string().regex(/^[a-z][a-z0-9_-]{1,40}$/),
+  title: z.string().min(2).max(120),
+  paragraphs: z.array(z.object({
+    text: z.string().min(1).max(700),
+    references: z.array(z.string().max(120)).max(6).default([]),
+  })).min(1).max(3),
+});
 
 export const synthesisModelOutputSchema = z.object({
-  sections: z.array(synthesisSectionSchema).min(1).max(8),
+  sections: z.array(synthesisModelSectionSchema).min(1).max(8),
   abstain: z.boolean(),
   abstainReason: z.string().max(300).nullable(),
 });
@@ -24,8 +39,9 @@ request's language, from signed objects and a brief plan you receive as JSON. Ru
 - Name states honestly: incomplete, conditioned, partial, blocked objects are described as such,
   with the reason the object gives. Gaps are stated as gaps, never filled.
 - Each paragraph lists in references the object paths it draws on (as given in the input).
-- Keep the section ids and order given; two to four short paragraphs per section; no headings
-  inside paragraphs; no bullet characters.
+- Keep the section ids and order given; two or three paragraphs per section, each at most
+  ninety words (about six hundred characters); the whole synthesis at most a thousand words; at
+  most six references per paragraph; no headings inside paragraphs; no bullet characters.
 - No recommendation to the company, no offer to investors, no legal opinion: this is a desk's
   internal reading for the person's own meeting preparation.
 Return the requested JSON only.`;

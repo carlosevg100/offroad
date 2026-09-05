@@ -99,8 +99,10 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   // Questions to the person from the gaps the signed objects declare: short, cheap, bounded to four.
   preview_questions: {primary: anthropic("claude-sonnet-5", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
   // The banker's synthesis of the signed objects: prose whose numbers are checked against the objects afterwards.
-  // Four thousand output tokens: five short sections; the preflight reservation stays inside the preview run budget.
-  preview_synthesis: {primary: anthropic("claude-sonnet-5", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 4_000, timeoutMs: 120_000},
+  // The prompt and the schema bound the prose near a thousand words; six thousand output tokens is headroom
+  // so a long answer degrades into a longer call rather than a truncated one. The preflight reservation
+  // (about twenty-one cents) fits the preview run budget of fifty cents next to the questions.
+  preview_synthesis: {primary: anthropic("claude-sonnet-5", "medium"), fallback: openai("gpt-5.6-terra", "medium"), maxOutputTokens: 6_000, timeoutMs: 120_000},
   // Fair baseline for the gold cases: the strongest generalist, the whole information base, long output.
   baseline_generalist: {primary: anthropic("claude-opus-5", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 32_000, timeoutMs: 1_500_000},
 };
