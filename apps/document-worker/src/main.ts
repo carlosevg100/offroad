@@ -304,7 +304,7 @@ async function main(): Promise<void> {
         ? job.payload.analysis_scope === "integration_preview"
           // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.
           ? (job.integration_preview === true
-              ? processIntegrationPreviewRunJob(job, {queue, log})
+              ? processIntegrationPreviewRunJob(job, {queue, log, gateway: gatewayRun.gateway})
               : queue.fail(job, describeJobFailure(new Error("integration_preview run claimed without the grant"), {code: "integration_preview_not_granted", stage: "integration_preview", retryable: false}), {retryable: false}).then(() => ({status: "failed" as const})))
           : job.payload.analysis_scope === "company_debt_view"
           ? processCompanyDebtViewJob(job, {

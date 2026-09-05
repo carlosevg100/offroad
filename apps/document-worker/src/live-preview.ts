@@ -157,6 +157,10 @@ export type LiveDecisionInput = {
   understanding: LiveUnderstanding;
   /** The corpus an earlier turn of this project already resolved, if any. */
   priorCaseId: string | null;
+  /** The request of the active preview brief and the answers it already carries, so an answer changes the plan instead of restarting it. */
+  priorRequest: Partial<PreviewRequest> | null;
+  priorAnswers: Array<{questionId: string; answer: string}>;
+  openQuestions: Array<{id: string; text: string}>;
   artifactTypes: string[];
   runActive: boolean;
   priorOutputs: Map<string, PreviewStepOutput>;
@@ -385,6 +389,39 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
       kind: "abstain", composition: null, activation: null,
       reply: `${headline(input, null, null, audience, depth)}\n${t(locale, "Entendi o pedido, mas não a companhia.", "I understood the request, but not the company.")} ${question}`,
       record: base(null, null, true, "company_not_named"),
+    };
+  }
+
+  // Answers to open questions change scope, audience, depth or form: the plan recompiles and
+  // unchanged objects replay; the answers ride in the brief for the planner and the audit.
+  const knownQuestionIds = new Set(input.openQuestions.map((question) => question.id));
+  const answers = output.turn.answers.filter((answer) => knownQuestionIds.has(answer.questionId));
+  if (answers.length > 0 && hasAnalysis) {
+    const prior = input.priorRequest ?? {};
+    const answeredAspects = new Set<string>();
+    let nextAudience = audience;
+    let nextDepth = depth;
+    let nextForm: PreviewRequest["form"] = (prior.form as PreviewRequest["form"] | undefined) ?? "first_deliverable";
+    for (const answer of answers) {
+      if (answer.effect.audience) { nextAudience = normalizeAudience(answer.effect.audience) ?? nextAudience; answeredAspects.add("audience"); }
+      if (answer.effect.depth) { nextDepth = answer.effect.depth; answeredAspects.add("depth"); }
+      if (answer.effect.scope) { answeredAspects.add("thesis"); }
+    }
+    if (output.turn.scopeChanges.form) { nextForm = output.turn.scopeChanges.form === "memo" ? "internal_briefing" : output.turn.scopeChanges.form; answeredAspects.add("format"); }
+    const undefinedAspects = ((prior.undefinedAspects as PreviewRequest["undefinedAspects"] | undefined) ?? []).filter((aspect) => !answeredAspects.has(aspect));
+    const merged = [...input.priorAnswers.filter((existing) => !answers.some((answer) => answer.questionId === existing.questionId)), ...answers.map((answer) => ({questionId: answer.questionId, answer: answer.answer}))];
+    const answerText = answers.map((answer) => `${answer.questionId}: ${answer.answer}`).join("; ");
+    const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "deepen", audience: {primary: nextAudience, others: []}, form: nextForm, pages: (prior.pages as number | null | undefined) ?? null, sponsorInstruction: `${sponsorInstruction}\n${answerText}`.slice(0, 4_000), undefinedAspects};
+    const premisesAnswered = premisesFromTurn(output.turn);
+    const composition: Composition = Object.keys(premisesAnswered).length > 0 ? "change_premise" : "deepen";
+    if (composition === "change_premise") request.composition = "change_premise";
+    return {
+      kind: "activate", composition,
+      reply: `${headline(input, composition, corpusRecord(corpus), nextAudience, nextDepth)}\n${t(locale,
+        `Respostas aplicadas (${answerText}). Escopo atualizado: audiência ${nextAudience}, profundidade ${nextDepth}, forma ${nextForm}${undefinedAspects.length ? `; ainda em aberto: ${undefinedAspects.join(", ")}` : ""}. O plano recompila; o que não muda replica por fingerprint.`,
+        `Answers applied (${answerText}). Scope updated: audience ${nextAudience}, depth ${nextDepth}, form ${nextForm}${undefinedAspects.length ? `; still open: ${undefinedAspects.join(", ")}` : ""}. The plan recompiles; what does not change replays by fingerprint.`)}`,
+      activation: buildPreviewActivation(composition, request, premisesAnswered, turnInput, {answers: merged}),
+      record: {...base(composition, corpus, false, null), audience: nextAudience, depth: nextDepth},
     };
   }
 

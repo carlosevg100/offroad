@@ -14,7 +14,10 @@
 import {randomUUID} from "node:crypto";
 
 import {fingerprintJson} from "@offroad/case-understanding";
+import type {ModelGateway} from "@offroad/model-gateway";
 import {case01, executors, preview} from "@offroad/credit-playbook";
+
+import {generatePreviewQuestions, type CandidateQuestion, type PreviewQuestionsResult} from "./preview-questions";
 
 const {
   briefObjectFingerprints,
@@ -163,13 +166,14 @@ const alignmentPoints = {
 } as const;
 
 /** The activation of a preview run: the composition, the frozen base, the brief and the plan compiled for this turn. */
-export function buildPreviewActivation(composition: PreviewComposition, request: PreviewRequest, premises: PreviewPremises, input: PreviewTurnInput): PreviewActivation {
+export function buildPreviewActivation(composition: PreviewComposition, request: PreviewRequest, premises: PreviewPremises, input: PreviewTurnInput, briefExtras: Record<string, unknown> = {}): PreviewActivation {
   return {
     job: "integration_preview",
     composition,
     caseId: case01.case01EvidenceManifest.caseId,
     workflow: previewWorkflowIdentity(composition),
     brief: {
+      ...briefExtras,
       sponsorInstruction: request.sponsorInstruction,
       premises,
       request,
@@ -284,7 +288,7 @@ const contextSchema = z.object({
   mode: z.literal("integration_preview"),
   preview: z.object({
     mode: z.literal("integration_preview"),
-    composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen"]),
+    composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen", "prepare_decision"]),
     caseId: z.string(),
     workflow: z.object({id: z.string(), version: z.string(), fingerprint: z.string()}),
     premises: z.record(z.string(), z.unknown()).default({}),
@@ -295,12 +299,20 @@ const contextSchema = z.object({
   plan: z.object({id: z.uuid(), version: z.number(), fingerprint: z.string()}),
   tasks: z.array(z.object({id: z.string(), ordinal: z.number(), batch: z.number(), label: z.string(), dependencies: z.array(z.string()), execution_class: z.string(), effect: z.string(), maturity_at_compile: z.string()})),
   prior_artifacts: z.array(z.object({task_id: z.string(), id: z.uuid(), artifact_type: z.string(), artifact_version: z.number(), artifact_fingerprint: z.string(), input_fingerprint: z.string().nullable(), status: z.string(), content: z.record(z.string(), z.unknown())})).default([]),
+  professional_context: z.object({
+    useForms: z.array(z.string()).default([]),
+    professionalRoles: z.array(z.string()).default([]),
+    practiceAreas: z.array(z.string()).default([]),
+    primaryObjectives: z.array(z.string()).default([]),
+  }).nullable().optional(),
   recent_messages: z.array(z.object({id: z.uuid(), role: z.string(), content: z.string(), created_at: z.string()})).default([]),
 });
 export type PreviewRunContextRow = z.infer<typeof contextSchema>;
 
 export type IntegrationPreviewDependencies = {
   queue: QueueClient;
+  /** In live mode the run makes one bounded call for the questions; without it the fixed alignment points are used. */
+  gateway?: ModelGateway;
   log?: (event: string, detail?: Record<string, unknown>) => void;
   now?: () => Date;
 };
@@ -344,12 +356,33 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       previousBrief: previousBriefOutput ? {output: previousBriefOutput, objectFingerprints: Object.fromEntries(context.prior_artifacts.filter((artifact) => artifact.task_id !== "A01").flatMap((artifact) => { const output = outputOf(artifact); return output ? [[artifact.task_id.toLowerCase(), fingerprintOf({...output})]] : []; }))} : null,
     };
     const planTaskIds = new Set(context.tasks.map((task) => task.id));
+    // Answers the person gave to earlier questions ride in the brief and reach the planner.
+    const briefAnswers = Array.isArray(context.brief.content.answers)
+      ? (context.brief.content.answers as Array<Record<string, unknown>>).flatMap((answer) => typeof answer.questionId === "string" && typeof answer.answer === "string" ? [{questionId: answer.questionId, answer: answer.answer}] : [])
+      : [];
+    if (briefAnswers.length) runContext.answers = briefAnswers;
+    let questionsResult: PreviewQuestionsResult | null = null;
     for (const step of case01PreviewSteps) {
       if (!planTaskIds.has(step.taskId)) throw new Error(`the preview plan does not hold TaskSpec ${step.taskId}`);
     }
 
     let replayedCount = 0;
     for (const step of case01PreviewSteps) {
+      if (step.methodId === "plan-meeting-brief" && ["prepare_meeting", "prepare_decision", "deepen"].includes(context.preview.composition)) {
+        const fixed = preview.meetingBriefInput({...runContext, candidateQuestions: undefined}).candidateQuestions as CandidateQuestion[];
+        questionsResult = await generatePreviewQuestions({
+          gateway: job.integration_preview_mode === "live" && dependencies.gateway ? dependencies.gateway : null,
+          locale,
+          gaps: preview.extractPreviewGaps(outputs, locale),
+          request: {desiredOutcome: request.sponsorInstruction, audience: request.audience?.primary ?? null, depth: null, form: request.form, undefinedAspects: request.undefinedAspects, sponsorInstruction: request.sponsorInstruction},
+          professionalContext: context.professional_context ? {useForms: context.professional_context.useForms, professionalRoles: context.professional_context.professionalRoles, practiceAreas: context.professional_context.practiceAreas, primaryObjectives: context.professional_context.primaryObjectives} : null,
+          answered: briefAnswers,
+          documents: fixed[0]?.coverage.searched ?? [],
+          fixed,
+        });
+        if (questionsResult.source === "model") runContext.candidateQuestions = questionsResult.questions;
+        log("integration_preview.questions", {job: job.job_id, source: questionsResult.source, count: questionsResult.questions.length, dropped: questionsResult.dropped, model: questionsResult.model, costUsd: questionsResult.costUsd, latencyMs: questionsResult.latencyMs, reason: questionsResult.reason});
+      }
       const dependencyFingerprints = Object.fromEntries(step.dependencies.map((dependency) => [dependency, artifactByTask.get(dependency)?.artifactFingerprint ?? "missing"]));
       const inputFingerprint = fingerprintJson({
         taskId: step.taskId, executorKey: step.executorKey, methodVersion: step.methodVersion,
@@ -358,7 +391,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
         dependencies: dependencyFingerprints,
         // The plan's identity is its request and the objects it plans over (through the dependency
         // fingerprints); an identical request replays the same plan.
-        ...(step.methodId === "plan-meeting-brief" ? {request: {turn: request.turn, audience: request.audience, form: request.form, pages: request.pages, sponsorInstruction: request.sponsorInstruction, undefinedAspects: request.undefinedAspects}} : {}),
+        ...(step.methodId === "plan-meeting-brief" ? {questions: questionsResult?.source === "model" ? questionsResult.questions.map((question) => ({id: question.id, text: question.text})) : null, answers: briefAnswers.length ? briefAnswers : null, request: {turn: request.turn, audience: request.audience, form: request.form, pages: request.pages, sponsorInstruction: request.sponsorInstruction, undefinedAspects: request.undefinedAspects}} : {}),
       });
       const prior = priorByTask.get(step.taskId);
       if (prior && prior.input_fingerprint === inputFingerprint && prior.status !== "superseded") {
@@ -414,7 +447,9 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       outputs.set(step.taskId, output);
       const artifact = await queue.recordCapitalProjectArtifact(job, {
         taskRunId, artifactType: step.artifactType, schemaVersion: `method.${step.methodId}.${step.methodVersion.split("-").at(-1)}`, status: "draft", inputFingerprint,
-        content: previewArtifactContent(step, output, premises),
+        content: step.methodId === "plan-meeting-brief" && questionsResult
+          ? (() => { const content = previewArtifactContent(step, output, premises); return {...content, preview: {...(content.preview as Record<string, unknown>), questions: {source: questionsResult.source, model: questionsResult.model, costUsd: questionsResult.costUsd, latencyMs: questionsResult.latencyMs, dropped: questionsResult.dropped, reason: questionsResult.reason, citations: questionsResult.citations}}}; })()
+          : previewArtifactContent(step, output, premises),
         evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}],
         dependencies: step.dependencies.map((dependency) => ({artifactId: artifactByTask.get(dependency)!.id, artifactFingerprint: artifactByTask.get(dependency)!.artifactFingerprint})),
       });
@@ -428,7 +463,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     }
 
     const final = artifactByTask.get("A01")!;
-    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, request});
+    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, request, questions: questionsResult});
     const completionMessageId = randomUUID();
     if (!queue.completeIntegrationPreviewRun) throw new Error("the queue cannot complete an integration_preview run");
     await queue.writeStage(job, stage, "succeeded", {summary_pt: "Validação interna concluída: devolutiva publicada na conversa", summary_en: "Internal validation finished: readout published in the conversation", artifactId: final.id});
@@ -458,7 +493,7 @@ export function stateLabel(state: string, locale: "pt-BR" | "en-US"): string {
 }
 
 /** The readout the conversation receives: states, facts and gaps read from the objects, never written by hand. */
-export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; request: PreviewRequest}): string {
+export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null}): string {
   const {locale, outputs} = input;
   const mark = locale === "en-US" ? PREVIEW_MARK_EN : PREVIEW_MARK;
   const lines: string[] = [];
@@ -490,6 +525,8 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
       if (gaps.length) lines.push(t(locale, `Lacunas declaradas: ${gaps.map((block) => `${block.label} (${block.gap})`).join("; ")}.`, `Declared gaps: ${gaps.map((block) => `${block.label} (${block.gap})`).join("; ")}.`));
     }
     const questions = Array.isArray(brief?.alignment_questions) ? (brief!.alignment_questions as Array<{text?: string; question?: string}>) : [];
+    if (input.questions?.source === "model") lines.push(t(locale, `Perguntas geradas das lacunas declaradas pelos objetos (modelo ${input.questions.model}, US$ ${input.questions.costUsd.toFixed(4)}).`, `Questions generated from the gaps the objects declare (model ${input.questions.model}, US$ ${input.questions.costUsd.toFixed(4)}).`));
+    else if (input.questions && input.questions.source === "fixed") lines.push(t(locale, `Perguntas fixas da primeira devolutiva (${input.questions.reason ?? "modelo indisponível"}).`, `Fixed questions of the first readout (${input.questions.reason ?? "model unavailable"}).`));
     if (questions.length) lines.push(t(locale, `Para alinhar com o VP: ${questions.map((question, index) => `(${index + 1}) ${question.text ?? question.question ?? ""}`).join(" ")}`, `To align with the VP: ${questions.map((question, index) => `(${index + 1}) ${question.text ?? question.question ?? ""}`).join(" ")}`));
   }
   lines.push(t(locale, "Os objetos completos, com âncoras, operandos e lacunas, estão no painel de trabalho. Métodos em estágio implemented; validação interna, sem liberação.", "The full objects, with anchors, operands and gaps, are in the work panel. Methods in the implemented rung; internal validation, no release."));

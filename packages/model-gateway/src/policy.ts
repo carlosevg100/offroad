@@ -95,6 +95,8 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   localize: {primary: anthropic("claude-opus-5", "medium"), fallback: openai("gpt-5.6-sol", "medium"), maxOutputTokens: 16_000, timeoutMs: 300_000},
   // Shadow classification of a turn into an Intent Envelope. Cheap, structured, never on the answer path.
   route_intent: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 4_000, timeoutMs: 60_000},
+  // Questions to the person from the gaps the signed objects declare: short, cheap, bounded to four.
+  preview_questions: {primary: anthropic("claude-sonnet-5", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
   // Fair baseline for the gold cases: the strongest generalist, the whole information base, long output.
   baseline_generalist: {primary: anthropic("claude-opus-5", "high"), fallback: openai("gpt-5.6-sol", "high"), maxOutputTokens: 32_000, timeoutMs: 1_500_000},
 };

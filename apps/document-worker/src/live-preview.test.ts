@@ -75,7 +75,7 @@ const context: LiveTurnContext = {
 async function decide(output: LiveRoutingOutput, overrides: Partial<Parameters<typeof decideLiveTurn>[0]> = {}) {
   const understanding = await understandLiveTurn({gateway: fakeGateway(output), context: {...context, message: overrides.message ?? context.message}});
   return decideLiveTurn({
-    locale: "pt-BR", message: context.message, recentMessages: [], understanding, priorCaseId: null, artifactTypes: [], runActive: false,
+    locale: "pt-BR", message: context.message, recentMessages: [], understanding, priorCaseId: null, priorRequest: null, priorAnswers: [], openQuestions: [], artifactTypes: [], runActive: false,
     priorOutputs: new Map<string, PreviewStepOutput>(), entryJob: "origination_thesis", messageId: "10000000-0000-4000-8000-000000000077",
     ...overrides,
   });
@@ -175,5 +175,31 @@ describe("live_intelligence_preview router", () => {
     expect(outside.kind).toBe("abstain");
     expect(outside.record.abstainReason).toBe("out_of_scope:introduce");
     expect(outside.activation).toBeNull();
+  });
+
+  it("applies an answer to an open question: scope, audience and depth change, the plan recompiles as deepen", async () => {
+    const output = classifierOutput({
+      composition: null,
+      turn: {companies: [], answers: [{questionId: "q-angle", answer: "Alternativas mais amplas, para o conselho, análise institucional", effect: {audience: "conselho", depth: "institutional", scope: "alternativas amplas"}}]},
+    });
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], openQuestions: [{id: "q-angle", text: "Leitura de refinanciamento ou alternativas mais amplas?"}],
+      priorRequest: {form: "first_deliverable", undefinedAspects: ["thesis", "format", "depth"], pages: null}, priorAnswers: [],
+      message: "Alternativas mais amplas; é para o conselho e precisa ser institucional.",
+    });
+    expect(decision.kind).toBe("activate");
+    expect(decision.composition).toBe("deepen");
+    expect(decision.record.audience).toBe("board");
+    expect(decision.record.depth).toBe("institutional");
+    expect(decision.activation?.brief.answers).toEqual([{questionId: "q-angle", answer: "Alternativas mais amplas, para o conselho, análise institucional"}]);
+    expect(decision.activation?.brief.request.undefinedAspects).toEqual(["format"]);
+    expect(decision.reply).toContain("Respostas aplicadas");
+  });
+
+  it("ignores an answer to a question the desk never asked", async () => {
+    const output = classifierOutput({composition: "answer_a_question", turn: {companies: [], answers: [{questionId: "q-unknown", answer: "x", effect: {audience: null, depth: null, scope: null}}]}});
+    const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"], openQuestions: [{id: "q-angle", text: "?"}]});
+    expect(decision.kind).toBe("converse");
+    expect(decision.activation).toBeNull();
   });
 });

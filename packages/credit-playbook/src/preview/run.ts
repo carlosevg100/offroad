@@ -46,6 +46,11 @@ export type PreviewRunContext = {
   request: PreviewRequest;
   /** The prior meeting brief, when one was planned before: its output and the fingerprints of the objects it saw, so the new plan names what changed. */
   previousBrief: {output: PreviewStepOutput; objectFingerprints: Record<string, string>} | null;
+
+  /** Questions generated from the objects' gaps for the brief planner; when absent, the fixed alignment points of the first readout. */
+  candidateQuestions?: BriefInput["candidateQuestions"];
+  /** Answers the person gave to earlier questions, carried into the sponsor instruction the planner reads. */
+  answers?: Array<{questionId: string; answer: string}>;
 };
 
 /** Which premises a step consumes: they enter its input fingerprint, so a changed premise recomputes exactly the steps it touches. */
@@ -223,13 +228,13 @@ export function meetingBriefInput(context: PreviewRunContext): BriefInput {
   return {
     documents,
     caseId: case01EvidenceManifest.caseId,
-    request: {turn, audience: audience ? {primary: audience.primary, others: audience.others ?? []} : null, form, pages, sponsorInstruction, undefinedAspects, confirmedPlanId: null},
+    request: {turn, audience: audience ? {primary: audience.primary, others: audience.others ?? []} : null, form, pages, sponsorInstruction: context.answers?.length ? `${sponsorInstruction ?? ""}\n${context.answers.map((answer) => `Resposta a ${answer.questionId}: ${answer.answer}`).join("\n")}`.trim().slice(0, 4_000) : sponsorInstruction, undefinedAspects, confirmedPlanId: null},
     objects,
-    candidateQuestions: context.request.composition === "prepare_meeting" ? [
+    candidateQuestions: context.candidateQuestions ?? (context.request.composition === "prepare_meeting" ? [
       {id: "q-angle", text: "Leitura de refinanciamento ou alternativas mais amplas?", changesTheWork: "define o universo de alternativas", coverage: {searched: documents, answeredBy: null, answer: null}, priority: 0},
       {id: "q-meeting", text: "Reunião exploratória ou produto a testar?", changesTheWork: "define profundidade e forma", coverage: {searched: documents, answeredBy: null, answer: null}, priority: 1},
       {id: "q-format", text: "Briefing interno, páginas de pitch ou análise com cenários?", changesTheWork: "define o material", coverage: {searched: documents, answeredBy: null, answer: null}, priority: 2},
-    ] : [],
+    ] : []),
     previousVersion,
   };
 }

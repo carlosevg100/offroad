@@ -87,6 +87,23 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
 - O que a fatia B ainda não prova: perguntas a partir de lacunas (C), resposta alterando o plano
   (C), síntese de banker e arquivo real (D), pesquisa viva para companhia sem pack (E).
 
+## 3.2 Estado da fatia C (5 de setembro, noite)
+
+- Perguntas a partir das lacunas: `preview/gaps.ts` extrai de cada objeto assinado o que ele
+  declara não ter provado, coberto ou conciliado (`block_reasons`, `incomplete_reasons`,
+  `unproven_conditions`, `legal_conditions`, `uncovered_terms`, `uncovered_series`,
+  `assumptions`, `open_divergences`), cada lacuna com um id citável. Em modo `live`, antes do
+  plano da devolutiva, uma chamada (`preview_questions`, sonnet, saída curta) escreve até quatro
+  perguntas; toda pergunta tem de citar pelo menos uma lacuna real, senão é descartada; sem
+  modelo, valem as três perguntas fixas, nomeadas como fixas na devolutiva. A origem, o modelo e
+  o custo ficam no artefato do plano (`preview.questions`) e na devolutiva.
+- Resposta altera o plano: o roteador vivo recebe as perguntas abertas do último plano; uma
+  resposta reconhecida (id conhecido) recompila com a audiência, profundidade e forma que a
+  resposta define, reduz os aspectos indefinidos, guarda as respostas no brief (`answers`) e
+  replica o que não muda; premissa na resposta vira `change_premise`.
+- Orçamento do run de prévia: três chamadas e dez centavos (migration
+  `integration_preview_run_budget`), sob os tetos do worker.
+
 ## 4. O que continua fora
 
 Liberação a clientes, aprovação ou parecer. A trilha de revisão independente segue em paralelo,
