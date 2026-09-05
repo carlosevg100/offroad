@@ -1,6 +1,6 @@
 ---
 id: build-interest-and-indexation-schedule
-version: 2026.09.05-v1
+version: 2026.09.05-v2
 maturity: implemented
 title_pt: Construir o cronograma de juros e separar IPCA capitalizado do pago
 title_en: Build the interest schedule and separate capitalized from paid indexation
@@ -10,7 +10,7 @@ owner_role: Head de Modelagem
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-interest-and-indexation-schedule
 implementation_export: buildInterestAndIndexationSchedule
-result_contract: method.build-interest-and-indexation-schedule.v1
+result_contract: method.build-interest-and-indexation-schedule.v2
 connected_states: [understanding_in_progress]
 persistence_mode: derived_on_demand
 persistence_target: method_results
@@ -55,6 +55,9 @@ período, e a ponte entre o serviço projetado e a despesa contábil do último 
 4. [model_assisted] Redigir :: Dizer quanto do custo é caixa e quanto é capitalizado, por indexador, e o que a base não sustenta
 
 # Cálculos determinísticos
+- financial.business_day_accrual: (1 + taxa anual)^(dias úteis/252) - 1, o fator que as escrituras escrevem; nunca taxa anual dividida por quatro.
+- financial.di_spread_factor: (1 + fator DI) × (1 + fator spread) - 1, com o termo cruzado.
+- financial.di_percent_accrual: (1 + ((1 + DI)^(1/252) - 1) × p)^dias úteis - 1 para p% do DI.
 - financial.indexed_debt_schedule: cronograma por instrumento com tratamento de indexação e cupom.
 - financial.indexed_debt_aggregation: agregação por período.
 - financial.interest_expense_bridge: ponte com a despesa contábil.
@@ -73,10 +76,17 @@ período, e a ponte entre o serviço projetado e a despesa contábil do último 
 - Ledger sem termos por série e sem escrituras no pack.
 
 # Outputs
-- schedule_by_series (array, required): por série e período, juros caixa, atualização capitalizada, amortização e saldo
-- schedule_aggregate (array, required): por período e indexador
-- accounting_bridge (object, required): serviço projetado versus despesa contábil do último período
-- uncovered_series (array, required): séries sem termos suficientes e o motivo
+- schema_version (string, required): identificador do contrato de resultado, `method.build-interest-and-indexation-schedule.v2`
+- reference_date (date, required): data-base da projeção (início do primeiro período)
+- unit (string, required): unidade dos valores monetários; fatores e taxas levam a unidade `x`
+- block_reasons (array, required): motivos estruturados de bloqueio (nenhuma série projetável)
+- assumptions (array, required): premissas declaradas (curva datada fora da data-base usada como cenário base; atualização IPCA pro rata por dias úteis sem a defasagem mensal)
+- schedule_by_series (array, required): por série e período: saldo inicial, fator e valor da atualização (capitalizada ou paga), fator do cupom, cupom acumulado, cupom pago só no período que contém uma data de pagamento, cupom carregado, principal pago (ou `insufficient_evidence` quando o cronograma de amortização não está na base) e saldo final; remuneração descrita, curva com data, âncoras de saldo, termos, pagamentos e amortização
+- schedule_aggregate (object, required): por período (juros caixa, atualização capitalizada, principal pago, saldo) e por indexador, com o saldo inicial projetado; nulo quando nada se projeta
+- accounting_bridge (object, required): despesa projetada (juros caixa mais atualização capitalizada) contra a despesa contábil do último período fechado; `insufficient_evidence` com projetado nulo e motivo quando o período não está na projeção ou alguma série não foi projetada; nunca zeros inventados
+- uncovered_series (array, required): séries sem termos, sem âncora de termos, sem datas de pagamento, sem curva do indexador certo, sem tratamento da atualização ou com remuneração incompatível com o indexador, cada uma com o motivo
+- state (enum, required): complete, partial (alguma série não projetada ou principal sem cronograma) ou blocked | values: complete, partial, blocked
+- trace (object, required): cada fator e cada linha com fórmula, operandos (taxa anual, dias úteis), resultado e unidade; fingerprints de entrada e saída, com o trace dentro do de saída
 
 # Exemplos
 ## Bom
@@ -86,6 +96,7 @@ período, e a ponte entre o serviço projetado e a despesa contábil do último 
 
 # Testes
 ## Unit
+- fator de atualização e de cupom por período iguais aos do financial-core sobre os dias úteis declarados; cupom pago só no período com data de pagamento e igual ao acumulado desde o pagamento anterior; série a p% do DI e prefixada com os fatores próprios; curva do indexador errado, termos sem âncora, datas de pagamento ausentes e tratamento da atualização ausente viram lacunas nomeadas; unidade fora do catálogo, períodos que não se encadeiam a partir da data-base e ids duplicados são recusados; fingerprints iguais sob vinte permutações de séries, curvas, períodos, datas, chaves de registro e ordem de chaves
 - série IPCA com atualização capitalizada e cupom em caixa reproduz o saldo esperado por período
 ## Gold
 - gc01-analista-ib-camil: seção 11.1 do gabarito reproduzida série a série

@@ -1,171 +1,279 @@
 import {createHash} from "node:crypto";
 
-import {aggregateIndexedDebtSchedules, buildIndexedDebtSchedule, type IndexedDebtSchedule} from "@offroad/financial-core";
+import {businessDayAccrual, diPercentAccrual} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 import {z} from "zod";
 
 /**
- * Executor of the method `build-interest-and-indexation-schedule`. Projects each series with
- * financial-core's indexed-debt engine, separating cash coupons from capitalized indexation, and
- * refuses to project a series whose terms or curve the base does not hold. A curve without a
- * registered source never enters; a series without a payment rule is projected under both
- * treatments and the difference is declared.
+ * Executor of the method `build-interest-and-indexation-schedule` (v2, after the first independent
+ * review). Projects each series period by period with the factors the indentures write: an annual
+ * rate accrues exponentially over the period's business days of a 252-day year; a DI series compounds
+ * the DI factor with the spread factor; a "p% of DI" series compounds p times the daily DI; an IPCA
+ * series updates the nominal by the curve and accrues its spread on the updated nominal. Coupons are
+ * paid in cash only in the period that holds a payment date; until then they accrue. Nothing is
+ * assumed: a series without terms, payment dates or a matching curve is named as a gap; an
+ * amortization schedule that is not in the base leaves the principal projection insufficient; a
+ * curve dated elsewhere than the reference date is declared as an assumption. Every factor and
+ * amount comes from financial-core or from a traced Decimal operation.
  */
 const money = z.string().regex(/^-?\d+(\.\d+)?$/);
+const nonNegative = z.string().regex(/^\d+(\.\d+)?$/);
 const rate = z.string().regex(/^-?\d+(\.\d+)?$/);
-const anchorSchema = z.object({document: z.string().min(1), page: z.number().int().positive().optional(), note: z.string().optional(), clause: z.string().optional()}).strict();
+const nonEmpty = z.string().trim().min(1);
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const unitSchema = z.enum(["BRL", "BRL thousand", "BRL million", "USD", "USD thousand"]);
+const anchorSchema = z.object({document: nonEmpty, page: z.number().int().positive().optional(), note: nonEmpty.optional(), clause: nonEmpty.optional()}).strict();
 type Anchor = z.infer<typeof anchorSchema>;
+const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
-export const curveSchema = z.object({
-  id: z.string().min(1),
-  kind: z.enum(["IPCA", "CDI", "fixed"]),
-  /** Effective rate per period for each period of the projection; the source and date are mandatory. */
-  ratesByPeriod: z.record(z.string(), rate),
-  source: z.object({title: z.string().min(1), url: z.string().optional(), asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)}).strict(),
+export const projectionPeriodSchema = z.object({
+  id: nonEmpty,
+  start: isoDate,
+  end: isoDate,
+  /** Business days of the period, from the calendar the base cites (holidays included). */
+  businessDays: z.number().int().nonnegative(),
+  anchor: anchorSchema,
 }).strict();
 
+export const curveSchema = z.object({
+  id: nonEmpty,
+  kind: z.enum(["CDI", "IPCA"]),
+  /** Annual effective rate applying to each period, as a decimal; the source, its date and anchor are mandatory. */
+  annualRateByPeriod: z.record(nonEmpty, rate),
+  source: z.object({title: nonEmpty, url: z.string().optional(), asOf: isoDate, anchor: anchorSchema}).strict(),
+}).strict();
+
+export const seriesRemunerationSchema = z.discriminatedUnion("type", [
+  z.object({type: z.literal("spread_over_index"), spreadPerYear: rate}).strict(),
+  z.object({type: z.literal("percent_of_index"), percentOfIndex: nonNegative}).strict(),
+  z.object({type: z.literal("fixed"), ratePerYear: rate}).strict(),
+]);
+
 export const seriesInputSchema = z.object({
-  id: z.string().min(1),
-  label: z.string().min(1),
-  openingPrincipal: money,
-  indexer: z.enum(["IPCA", "CDI", "fixed", "unknown"]),
-  /** Coupon per period as a decimal rate (already converted to the period), or null when unknown. */
-  couponRatePerPeriod: rate.nullable(),
-  /** Whether indexation is paid in cash or capitalized; null when the indenture is not in the base. */
-  indexationTreatment: z.enum(["cash_paid", "capitalized_principal"]).nullable(),
-  couponTreatment: z.enum(["cash_paid", "capitalized_principal"]).default("cash_paid"),
-  scheduledPrincipalByPeriod: z.record(z.string(), money).default({}),
-  curveId: z.string().nullable(),
-  anchors: z.object({balance: anchorSchema, terms: anchorSchema.optional()}).strict(),
+  id: nonEmpty,
+  label: nonEmpty,
+  openingPrincipal: nonNegative,
+  indexer: z.enum(["CDI", "IPCA", "fixed", "unknown"]),
+  /** Null when the base does not state the remuneration; the series is then a named gap. */
+  remuneration: seriesRemunerationSchema.nullable(),
+  /** Coupon payment dates inside or beyond the projection; null when the base does not state them. */
+  couponDates: z.array(isoDate).nullable(),
+  /** Scheduled principal payments; null when the base has no amortization schedule for the series. */
+  amortization: z.array(z.object({date: isoDate, amount: nonNegative}).strict()).nullable(),
+  /** How indexation is treated; null when the indenture is not in the base (IPCA only). */
+  indexationTreatment: z.enum(["capitalized_principal", "cash_paid"]).nullable(),
+  curveId: nonEmpty.nullable(),
+  anchors: z.object({balance: anchorSchema, terms: anchorSchema.nullable(), payments: anchorSchema.nullable(), amortization: anchorSchema.nullable()}).strict(),
 }).strict();
 
 export const interestScheduleInputSchema = z.object({
-  referenceDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  unit: z.string().min(1),
-  periods: z.array(z.string().min(1)).min(1),
+  referenceDate: isoDate,
+  unit: unitSchema,
+  periods: z.array(projectionPeriodSchema).min(1),
   curves: z.array(curveSchema).default([]),
   series: z.array(seriesInputSchema).min(1),
   /** The finance expense of the last closed period, to bridge against; null when not in the base. */
-  accountingInterestLastPeriod: z.object({value: money, period: z.string().min(1), anchor: anchorSchema}).strict().nullable().default(null),
+  accountingInterestLastPeriod: z.object({value: money, periodId: nonEmpty, anchor: anchorSchema}).strict().nullable().default(null),
 }).strict().superRefine((input, context) => {
-  const ids = new Set<string>();
+  const periodIds = new Set<string>();
+  const sorted = [...input.periods].sort((a, b) => compare(a.start, b.start));
+  sorted.forEach((period, index) => {
+    if (periodIds.has(period.id)) context.addIssue({code: "custom", path: ["periods"], message: `duplicate period ${period.id}`});
+    periodIds.add(period.id);
+    if (period.end <= period.start) context.addIssue({code: "custom", path: ["periods", index], message: `period ${period.id} ends before it starts`});
+    if (index > 0 && sorted[index - 1]!.end !== period.start) context.addIssue({code: "custom", path: ["periods", index], message: `period ${period.id} does not start where ${sorted[index - 1]!.id} ends`});
+  });
+  if (sorted[0] && sorted[0].start !== input.referenceDate) context.addIssue({code: "custom", path: ["periods", 0], message: "the first period must start at the reference date"});
+  const curveIds = new Set<string>();
   for (const curve of input.curves) {
-    if (ids.has(curve.id)) context.addIssue({code: "custom", path: ["curves"], message: `duplicate curve ${curve.id}`});
-    ids.add(curve.id);
+    if (curveIds.has(curve.id)) context.addIssue({code: "custom", path: ["curves"], message: `duplicate curve ${curve.id}`});
+    curveIds.add(curve.id);
+  }
+  const seriesIds = new Set<string>();
+  for (const series of input.series) {
+    if (seriesIds.has(series.id)) context.addIssue({code: "custom", path: ["series"], message: `duplicate series ${series.id}`});
+    seriesIds.add(series.id);
   }
 });
 export type InterestScheduleInput = z.input<typeof interestScheduleInputSchema>;
 
+type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
+type Row = {
+  period: string; opening_principal: string; indexation_factor: string; indexation_accrued: string; indexation_capitalized: string; indexation_paid: string;
+  coupon_factor: string; coupon_accrued: string; coupon_paid: string; coupon_carried: string; principal_paid: string | null; closing_principal: string;
+};
+
 export type InterestScheduleOutput = {
-  schemaVersion: "method.build-interest-and-indexation-schedule.v1";
-  referenceDate: string;
+  schema_version: "method.build-interest-and-indexation-schedule.v2";
+  reference_date: string;
   unit: string;
   state: "complete" | "partial" | "blocked";
-  scheduleBySeries: Array<{
-    seriesId: string; label: string; indexer: string; treatment: string; curveSource: {title: string; asOf: string} | null;
-    rows: IndexedDebtSchedule["rows"]; totals: {cashDebtService: string; financeExpense: string; indexationCapitalized: string; couponCapitalized: string};
-    variant: "as_contracted" | "if_capitalized" | "if_cash_paid";
-    anchors: {balance: Anchor; terms: Anchor | null};
+  block_reasons: string[];
+  assumptions: string[];
+  schedule_by_series: Array<{
+    series_id: string; label: string; indexer: string; remuneration: string; curve: {id: string; asOf: string} | null;
+    principal_projection: "scheduled" | "insufficient_evidence";
+    rows: Row[];
+    totals: {cash_interest: string; indexation_capitalized: string; principal_paid: string};
+    anchors: {balance: Anchor; terms: Anchor | null; payments: Anchor | null; amortization: Anchor | null};
   }>;
-  scheduleAggregate: {byPeriod: Array<{period: string; cashDebtService: string; financeExpense: string; indexationCapitalized: string; closingPrincipal: string}>; openingPrincipalProjected: string} | null;
-  accountingBridge: {projected: string; accounting: string; difference: string; period: string; anchor: Anchor; state: "compared" | "insufficient_evidence"} | null;
-  uncoveredSeries: Array<{seriesId: string; reason: string; state: "insufficient_evidence"}>;
-  trace: {calculations: Array<{id: string; series: string; note: string}>; inputFingerprint: string; outputFingerprint: string};
+  schedule_aggregate: {
+    by_period: Array<{period: string; cash_interest: string; indexation_capitalized: string; principal_paid: string; closing_principal: string}>;
+    by_indexer: Array<{indexer: string; cash_interest: string; indexation_capitalized: string; closing_principal: string; series: string[]}>;
+    opening_principal_projected: string;
+  } | null;
+  accounting_bridge: {projected: string | null; accounting: string; difference: string | null; period: string; anchor: Anchor; state: "compared" | "insufficient_evidence"; reason: string | null} | null;
+  uncovered_series: Array<{series_id: string; reason: string; state: "insufficient_evidence"}>;
+  trace: {calculations: Calculation[]; inputFingerprint: string; outputFingerprint: string};
 };
 
 const d = (value: Decimal.Value) => new Decimal(value);
 const out = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
-const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const stableStringify = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => compare(a, b))) : inner));
+const fingerprint = (value: unknown) => createHash("sha256").update(stableStringify(value)).digest("hex");
 
 function canonical(input: z.infer<typeof interestScheduleInputSchema>) {
-  return {...input, curves: [...input.curves].sort((a, b) => a.id.localeCompare(b.id)), series: [...input.series].sort((a, b) => a.id.localeCompare(b.id))};
+  return {
+    ...input,
+    periods: [...input.periods].sort((a, b) => compare(a.start, b.start)),
+    curves: [...input.curves].sort((a, b) => compare(a.id, b.id)),
+    series: [...input.series].sort((a, b) => compare(a.id, b.id)).map((series) => ({...series, couponDates: series.couponDates ? [...series.couponDates].sort(compare) : null, amortization: series.amortization ? [...series.amortization].sort((a, b) => compare(a.date, b.date) || compare(a.amount, b.amount)) : null})),
+  };
 }
+
+const describeRemuneration = (series: z.infer<typeof seriesInputSchema>) => {
+  const remuneration = series.remuneration!;
+  if (remuneration.type === "fixed") return `fixed ${remuneration.ratePerYear} per year`;
+  if (remuneration.type === "percent_of_index") return `${remuneration.percentOfIndex} of ${series.indexer}`;
+  return `${series.indexer} + ${remuneration.spreadPerYear} per year`;
+};
 
 export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): InterestScheduleOutput {
   const input = canonical(interestScheduleInputSchema.parse(raw));
+  const calculations: Calculation[] = [];
+  const record = (calculation: Omit<Calculation, "unit">, unit: string = input.unit) => calculations.push({...calculation, unit});
   const curves = new Map(input.curves.map((curve) => [curve.id, curve]));
-  const calculations: InterestScheduleOutput["trace"]["calculations"] = [];
-  const uncovered: InterestScheduleOutput["uncoveredSeries"] = [];
-  const schedules: InterestScheduleOutput["scheduleBySeries"] = [];
-  const coreSchedules: IndexedDebtSchedule[] = [];
+  const uncovered: InterestScheduleOutput["uncovered_series"] = [];
+  const assumptions = new Set<string>();
+  const blockReasons: string[] = [];
+  const schedules: InterestScheduleOutput["schedule_by_series"] = [];
+  const inPeriod = (date: string, period: {start: string; end: string}) => date > period.start && date <= period.end;
 
   for (const series of input.series) {
-    if (series.indexer === "unknown" || series.couponRatePerPeriod === null) {
-      uncovered.push({seriesId: series.id, reason: `no source in the base states the indexer or the coupon of ${series.label}`, state: "insufficient_evidence"});
-      continue;
+    if (series.indexer === "unknown" || series.remuneration === null) { uncovered.push({series_id: series.id, reason: `no source in the base states the indexer or the remuneration of ${series.label}`, state: "insufficient_evidence"}); continue; }
+    if (!series.anchors.terms) { uncovered.push({series_id: series.id, reason: `the terms of ${series.label} carry no anchor; a term without a source is not a term`, state: "insufficient_evidence"}); continue; }
+    if (series.couponDates === null || !series.anchors.payments) { uncovered.push({series_id: series.id, reason: `the payment dates of ${series.label} are not in the base; coupons cannot be placed in time`, state: "insufficient_evidence"}); continue; }
+    if ((series.indexer === "CDI" && series.remuneration.type === "fixed") || (series.indexer === "fixed" && series.remuneration.type !== "fixed") || (series.indexer === "IPCA" && series.remuneration.type !== "spread_over_index")) {
+      uncovered.push({series_id: series.id, reason: `the remuneration type of ${series.label} (${series.remuneration.type}) does not match its indexer (${series.indexer})`, state: "insufficient_evidence"}); continue;
     }
     const curve = series.curveId ? curves.get(series.curveId) ?? null : null;
-    if (series.indexer !== "fixed" && !curve) {
-      uncovered.push({seriesId: series.id, reason: `no registered curve for the ${series.indexer} indexation of ${series.label}; a curve without source and date does not enter`, state: "insufficient_evidence"});
-      continue;
+    if (series.indexer !== "fixed") {
+      if (!curve) { uncovered.push({series_id: series.id, reason: `no registered curve for the ${series.indexer} of ${series.label}; a curve without source and date does not enter`, state: "insufficient_evidence"}); continue; }
+      if (curve.kind !== series.indexer) { uncovered.push({series_id: series.id, reason: `curve ${curve.id} is a ${curve.kind} curve and ${series.label} is indexed to ${series.indexer}`, state: "insufficient_evidence"}); continue; }
+      if (input.periods.some((period) => curve.annualRateByPeriod[period.id] === undefined)) { uncovered.push({series_id: series.id, reason: `curve ${curve.id} does not cover every projected period`, state: "insufficient_evidence"}); continue; }
+      if (curve.source.asOf !== input.referenceDate) assumptions.add(`curve ${curve.id} is dated ${curve.source.asOf}, not the reference date ${input.referenceDate}: the projection uses it as the base scenario and does not call it the curve of the reference date`);
+      if (series.indexer === "IPCA") assumptions.add(`IPCA indexation is accrued pro rata by business days from the annual implied inflation of the curve, without the monthly lag of the indenture (declared approximation)`);
     }
-    if (curve && input.periods.some((period) => curve.ratesByPeriod[period] === undefined)) {
-      uncovered.push({seriesId: series.id, reason: `curve ${curve.id} does not cover every projected period`, state: "insufficient_evidence"});
-      continue;
+    if (series.indexer === "IPCA" && series.indexationTreatment === null) { uncovered.push({series_id: series.id, reason: `the indenture's treatment of the IPCA update (capitalized or paid) is not in the base for ${series.label}`, state: "insufficient_evidence"}); continue; }
+    const principalProjection: "scheduled" | "insufficient_evidence" = series.amortization && series.anchors.amortization ? "scheduled" : "insufficient_evidence";
+
+    let principal = d(series.openingPrincipal);
+    let carried = d(0);
+    let cashInterest = d(0);
+    let capitalized = d(0);
+    let principalPaid = d(0);
+    const rows: Row[] = [];
+    for (const period of input.periods) {
+      const opening = principal;
+      // 1. Indexation of the nominal (IPCA only), from the curve's annual rate over the period's business days.
+      let indexationFactor = d(0);
+      if (series.indexer === "IPCA") {
+        const accrual = businessDayAccrual(curve!.annualRateByPeriod[period.id]!, period.businessDays);
+        indexationFactor = d(accrual.value);
+        record({id: `financial.business_day_accrual:${series.id}:${period.id}:indexation`, formula: "(1 + annualRate)^(businessDays/252) - 1", operands: {annualRate: curve!.annualRateByPeriod[period.id]!, businessDays: String(period.businessDays)}, result: accrual.value}, "x");
+      }
+      const indexationAccrued = principal.times(indexationFactor);
+      const indexationCapitalized = series.indexationTreatment === "cash_paid" ? d(0) : indexationAccrued;
+      const indexationPaid = series.indexationTreatment === "cash_paid" ? indexationAccrued : d(0);
+      principal = principal.plus(indexationCapitalized);
+      // 2. Coupon accrual on the updated nominal plus what is already accrued (the factors compound until the payment date).
+      let couponFactor: Decimal;
+      const remuneration = series.remuneration;
+      if (remuneration.type === "fixed") {
+        const accrual = businessDayAccrual(remuneration.ratePerYear, period.businessDays);
+        couponFactor = d(accrual.value);
+        record({id: `financial.business_day_accrual:${series.id}:${period.id}:coupon`, formula: "(1 + ratePerYear)^(businessDays/252) - 1", operands: {ratePerYear: remuneration.ratePerYear, businessDays: String(period.businessDays)}, result: accrual.value}, "x");
+      } else if (remuneration.type === "percent_of_index") {
+        const accrual = diPercentAccrual(curve!.annualRateByPeriod[period.id]!, remuneration.percentOfIndex, period.businessDays);
+        couponFactor = d(accrual.value);
+        record({id: `financial.di_percent_accrual:${series.id}:${period.id}`, formula: "(1 + ((1 + DI)^(1/252) - 1) * p)^businessDays - 1", operands: {annualDi: curve!.annualRateByPeriod[period.id]!, percentOfIndex: remuneration.percentOfIndex, businessDays: String(period.businessDays)}, result: accrual.value}, "x");
+      } else if (series.indexer === "CDI") {
+        const di = businessDayAccrual(curve!.annualRateByPeriod[period.id]!, period.businessDays);
+        const spread = businessDayAccrual(remuneration.spreadPerYear, period.businessDays);
+        couponFactor = d(di.value).plus(1).times(d(spread.value).plus(1)).minus(1);
+        record({id: `financial.di_spread_factor:${series.id}:${period.id}`, formula: "(1 + fatorDI) * (1 + fatorSpread) - 1", operands: {fatorDI: di.value, fatorSpread: spread.value, annualDi: curve!.annualRateByPeriod[period.id]!, spreadPerYear: remuneration.spreadPerYear, businessDays: String(period.businessDays)}, result: out(couponFactor)}, "x");
+      } else {
+        const spread = businessDayAccrual(remuneration.spreadPerYear, period.businessDays);
+        couponFactor = d(spread.value);
+        record({id: `financial.business_day_accrual:${series.id}:${period.id}:coupon`, formula: "(1 + spreadPerYear)^(businessDays/252) - 1", operands: {spreadPerYear: remuneration.spreadPerYear, businessDays: String(period.businessDays)}, result: spread.value}, "x");
+      }
+      const couponAccrued = principal.plus(carried).times(couponFactor);
+      carried = carried.plus(couponAccrued);
+      // 3. Cash only on a payment date inside the period.
+      const pays = series.couponDates.some((date) => inPeriod(date, period));
+      const couponPaid = pays ? carried.plus(indexationPaid) : indexationPaid;
+      if (pays) carried = d(0);
+      // 4. Scheduled principal on its dates, when the base holds the schedule.
+      let paid: Decimal | null = null;
+      if (principalProjection === "scheduled") {
+        paid = series.amortization!.filter((entry) => inPeriod(entry.date, period)).reduce((sum, entry) => sum.plus(entry.amount), d(0));
+        if (paid.gt(principal)) paid = principal;
+        principal = principal.minus(paid);
+      }
+      record({id: `financial.indexed_debt_schedule:${series.id}:${period.id}`, formula: "closing = opening + indexationCapitalized - principalPaid ; couponPaid = carried accrual on a payment date", operands: {opening: out(opening), indexationCapitalized: out(indexationCapitalized), couponAccrued: out(couponAccrued), couponPaid: out(couponPaid), principalPaid: paid ? out(paid) : "insufficient_evidence"}, result: out(principal)});
+      cashInterest = cashInterest.plus(couponPaid);
+      capitalized = capitalized.plus(indexationCapitalized);
+      principalPaid = principalPaid.plus(paid ?? 0);
+      rows.push({period: period.id, opening_principal: out(opening), indexation_factor: out(indexationFactor), indexation_accrued: out(indexationAccrued), indexation_capitalized: out(indexationCapitalized), indexation_paid: out(indexationPaid), coupon_factor: out(couponFactor), coupon_accrued: out(couponAccrued), coupon_paid: out(couponPaid), coupon_carried: out(carried), principal_paid: paid ? out(paid) : null, closing_principal: out(principal)});
     }
-    const treatments: Array<{treatment: "cash_paid" | "capitalized_principal"; variant: InterestScheduleOutput["scheduleBySeries"][number]["variant"]}> = series.indexer === "fixed"
-      ? [{treatment: "cash_paid", variant: "as_contracted"}]
-      : series.indexationTreatment
-        ? [{treatment: series.indexationTreatment, variant: "as_contracted"}]
-        : [{treatment: "capitalized_principal", variant: "if_capitalized"}, {treatment: "cash_paid", variant: "if_cash_paid"}];
-    for (const {treatment, variant} of treatments) {
-      const schedule = buildIndexedDebtSchedule({
-        instrumentId: variant === "as_contracted" ? series.id : `${series.id}:${variant}`,
-        openingPrincipal: series.openingPrincipal,
-        indexer: series.indexer === "fixed" ? "none" : series.indexer,
-        indexationTreatment: series.indexer === "fixed" ? "not_applicable" : treatment,
-        couponTreatment: series.couponTreatment,
-        couponBase: "indexed_principal",
-        periods: input.periods.map((period) => ({
-          period,
-          indexationRate: series.indexer === "fixed" ? "0" : curve!.ratesByPeriod[period]!,
-          couponRate: series.couponRatePerPeriod!,
-          scheduledPrincipal: series.scheduledPrincipalByPeriod[period] ?? "0",
-        })),
-      });
-      calculations.push({id: "financial.indexed_debt_schedule", series: schedule.instrumentId, note: `${series.indexer} ${treatment}, coupon ${series.couponRatePerPeriod} per period, curve ${curve?.id ?? "none"}`});
-      if (variant !== "if_cash_paid") coreSchedules.push(schedule);
-      schedules.push({
-        seriesId: series.id, label: series.label, indexer: series.indexer, treatment, curveSource: curve ? {title: curve.source.title, asOf: curve.source.asOf} : null,
-        rows: schedule.rows,
-        totals: {cashDebtService: schedule.totalCashDebtService, financeExpense: schedule.totalFinanceExpense, indexationCapitalized: schedule.totalIndexationCapitalized, couponCapitalized: schedule.totalCouponCapitalized},
-        variant, anchors: {balance: series.anchors.balance, terms: series.anchors.terms ?? null},
-      });
-    }
+    schedules.push({series_id: series.id, label: series.label, indexer: series.indexer, remuneration: describeRemuneration(series), curve: curve ? {id: curve.id, asOf: curve.source.asOf} : null, principal_projection: principalProjection, rows, totals: {cash_interest: out(cashInterest), indexation_capitalized: out(capitalized), principal_paid: out(principalPaid)}, anchors: series.anchors});
   }
 
-  let scheduleAggregate: InterestScheduleOutput["scheduleAggregate"] = null;
-  if (coreSchedules.length > 0) {
-    const aggregate = aggregateIndexedDebtSchedules(coreSchedules) as unknown as {byPeriod?: Array<Record<string, string>>; rows?: Array<Record<string, string>>};
-    calculations.push({id: "financial.indexed_debt_aggregation", series: "all", note: `${coreSchedules.length} schedules aggregated`});
-    const rowsByPeriod = (aggregate.byPeriod ?? aggregate.rows ?? []) as Array<Record<string, string>>;
-    const opening = coreSchedules.reduce((sum, schedule) => sum.plus(schedule.rows[0]?.openingPrincipal ?? 0), d(0));
-    scheduleAggregate = {
-      byPeriod: input.periods.map((period) => {
-        const row = rowsByPeriod.find((entry) => entry.period === period);
-        const sum = (key: keyof IndexedDebtSchedule["rows"][number]) => out(coreSchedules.reduce((total, schedule) => total.plus(schedule.rows.find((entry) => entry.period === period)?.[key] ?? 0), d(0)));
-        return {period, cashDebtService: row?.cashDebtService ?? sum("cashDebtService"), financeExpense: row?.financeExpense ?? sum("financeExpense"), indexationCapitalized: row?.indexationCapitalized ?? sum("indexationCapitalized"), closingPrincipal: row?.closingPrincipal ?? sum("closingPrincipal")};
-      }),
-      openingPrincipalProjected: out(opening),
+  let aggregate: InterestScheduleOutput["schedule_aggregate"] = null;
+  if (schedules.length > 0) {
+    const sumRows = (predicate: (schedule: InterestScheduleOutput["schedule_by_series"][number]) => boolean, key: keyof Row, period?: string) => out(schedules.filter(predicate).reduce((total, schedule) => total.plus(schedule.rows.filter((row) => !period || row.period === period).reduce((sum, row) => sum.plus(row[key] ?? 0), d(0))), d(0)));
+    const last = (predicate: (schedule: InterestScheduleOutput["schedule_by_series"][number]) => boolean, period?: string) => out(schedules.filter(predicate).reduce((total, schedule) => total.plus((period ? schedule.rows.find((row) => row.period === period) : schedule.rows[schedule.rows.length - 1])?.closing_principal ?? 0), d(0)));
+    aggregate = {
+      by_period: input.periods.map((period) => ({period: period.id, cash_interest: sumRows(() => true, "coupon_paid", period.id), indexation_capitalized: sumRows(() => true, "indexation_capitalized", period.id), principal_paid: sumRows(() => true, "principal_paid", period.id), closing_principal: last(() => true, period.id)})),
+      by_indexer: [...new Set(schedules.map((schedule) => schedule.indexer))].sort(compare).map((indexer) => ({indexer, cash_interest: sumRows((schedule) => schedule.indexer === indexer, "coupon_paid"), indexation_capitalized: sumRows((schedule) => schedule.indexer === indexer, "indexation_capitalized"), closing_principal: last((schedule) => schedule.indexer === indexer), series: schedules.filter((schedule) => schedule.indexer === indexer).map((schedule) => schedule.series_id)})),
+      opening_principal_projected: out(schedules.reduce((sum, schedule) => sum.plus(schedule.rows[0]?.opening_principal ?? 0), d(0))),
     };
+    record({id: "financial.indexed_debt_aggregation", formula: "sum over series by period and by indexer", operands: {series: String(schedules.length)}, result: aggregate.opening_principal_projected});
+  } else {
+    blockReasons.push("no series could be projected: every series lacks terms, payment dates or a matching curve");
   }
 
-  let accountingBridge: InterestScheduleOutput["accountingBridge"] = null;
+  let bridge: InterestScheduleOutput["accounting_bridge"] = null;
   if (input.accountingInterestLastPeriod) {
-    const projected = scheduleAggregate?.byPeriod.find((row) => row.period === input.accountingInterestLastPeriod!.period)?.financeExpense ?? null;
-    const complete = uncovered.length === 0 && projected !== null;
-    accountingBridge = {
-      projected: projected ?? "0",
-      accounting: out(d(input.accountingInterestLastPeriod.value)),
-      difference: projected ? out(d(projected).minus(input.accountingInterestLastPeriod.value)) : "0",
-      period: input.accountingInterestLastPeriod.period,
-      anchor: input.accountingInterestLastPeriod.anchor,
-      state: complete ? "compared" : "insufficient_evidence",
-    };
-    if (complete) calculations.push({id: "financial.interest_expense_bridge", series: "all", note: "projected finance expense against the accounting expense of the last closed period"});
+    const period = input.accountingInterestLastPeriod.periodId;
+    const projectedRow = aggregate?.by_period.find((row) => row.period === period) ?? null;
+    const reasons: string[] = [];
+    if (!projectedRow) reasons.push(`period ${period} is not in the projection`);
+    if (uncovered.length > 0) reasons.push(`${uncovered.length} series are not projected, so the projected expense is incomplete`);
+    if (reasons.length === 0 && projectedRow) {
+      const projected = d(projectedRow.cash_interest).plus(projectedRow.indexation_capitalized);
+      const difference = projected.minus(input.accountingInterestLastPeriod.value);
+      record({id: "financial.interest_expense_bridge", formula: "projected cash interest + capitalized indexation - accounting expense", operands: {projected: out(projected), accounting: input.accountingInterestLastPeriod.value}, result: out(difference)});
+      bridge = {projected: out(projected), accounting: out(d(input.accountingInterestLastPeriod.value)), difference: out(difference), period, anchor: input.accountingInterestLastPeriod.anchor, state: "compared", reason: null};
+    } else {
+      bridge = {projected: null, accounting: out(d(input.accountingInterestLastPeriod.value)), difference: null, period, anchor: input.accountingInterestLastPeriod.anchor, state: "insufficient_evidence", reason: reasons.join("; ")};
+    }
   }
 
-  const state: InterestScheduleOutput["state"] = schedules.length === 0 ? "blocked" : uncovered.length > 0 ? "partial" : "complete";
-  const body = {schemaVersion: "method.build-interest-and-indexation-schedule.v1" as const, referenceDate: input.referenceDate, unit: input.unit, state, scheduleBySeries: schedules, scheduleAggregate, accountingBridge, uncoveredSeries: uncovered};
-  return {...body, trace: {calculations, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint(body)}};
+  const state: InterestScheduleOutput["state"] = blockReasons.length > 0 ? "blocked" : uncovered.length > 0 || schedules.some((schedule) => schedule.principal_projection === "insufficient_evidence") ? "partial" : "complete";
+  const body = {
+    schema_version: "method.build-interest-and-indexation-schedule.v2" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons,
+    assumptions: [...assumptions].sort(compare), schedule_by_series: schedules, schedule_aggregate: aggregate, accounting_bridge: bridge, uncovered_series: uncovered,
+  };
+  return {...body, trace: {calculations, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint({...body, calculations})}};
 }
