@@ -114,17 +114,33 @@ log revelou um P1 fora da prévia: desde o PR #329 o worker recusava na claim to
 enfileirado sem `analysis_scope` (confirmação de intake, replay, análise incremental); o escopo
 agora assume `full_case` pelo tipo do job.
 
-### Como ligar para uma organização (operador, conexão de gestão)
+### Como ligar (operador, conexão de gestão)
+
+A concessão tem escopo. `organization` liga a prévia para todos os projetos da organização (é o
+que o stack local do E2E usa, por trigger). `projects` liga só para os projetos listados em
+`private.integration_preview_projects`; os demais projetos seguem o comportamento normal. Em 5 de
+setembro a concessão por organização feita à Cedro foi revogada no mesmo dia, porque desviava
+todo turno da organização, inclusive de projetos antigos, para o roteador do Caso 01.
 
 ```sql
-insert into private.integration_preview_grants (organization_id, note, granted_by)
-values ('<organization_id>', 'Caso 01 em validação interna', '<quem concedeu>')
-on conflict (organization_id) do update set enabled = true, note = excluded.note, updated_at = now();
+-- 1. A concessão da organização, com escopo por projeto.
+insert into private.integration_preview_grants (organization_id, scope, note, granted_by)
+values ('<organization_id>', 'projects', 'Caso 01 em validação interna', '<quem>')
+on conflict (organization_id) do update
+  set enabled = true, scope = 'projects', note = excluded.note, updated_at = now();
+
+-- 2. O projeto dedicado à validação.
+insert into private.integration_preview_projects (organization_id, capital_project_id, note, granted_by)
+values ('<organization_id>', '<capital_project_id>', 'Projeto de validação do Caso 01', '<quem>')
+on conflict (organization_id, capital_project_id) do update
+  set enabled = true, note = excluded.note, updated_at = now();
+
+-- Desligar: enabled = false na concessão (tudo) ou no projeto (só ele).
 ```
 
-Desligar: `update private.integration_preview_grants set enabled = false where organization_id = '<id>'`.
-O banner some e as ativações passam a ser recusadas no mesmo instante; o que já foi gravado fica
-marcado como prévia.
+O banner no layout aparece só no escopo `organization`; no escopo `projects`, aparece na página
+do projeto listado. `get_integration_preview_status_v1` devolve `enabled`, `scope`, `projectIds` e
+`note`.
 
 ### Ordem de rollout em produção
 

@@ -16,7 +16,9 @@ import {PrivateDiagnosticWork} from "@/components/advisor/private-diagnostic-wor
 import {PrivateMarketWork} from "@/components/advisor/private-market-work";
 import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work";
 import {PrivateStructureWork} from "@/components/advisor/private-structure-work";
+import {IntegrationPreviewBanner} from "@/components/integration-preview/integration-preview-banner";
 import {IntegrationPreviewWork} from "@/components/integration-preview/integration-preview-work";
+import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
 import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
@@ -38,6 +40,7 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
   const {locale, projectId} = await params;
   const {view} = await searchParams;
   const t = await getTranslations({locale, namespace: "App.origination"});
+  const tApp = await getTranslations({locale, namespace: "App"});
   const {supabase, organization} = await requireWorkspace(locale);
   const {data: project} = await supabase.from("capital_projects")
     .select("id, project_name, entry_job, access_basis, current_phase, status, updated_at")
@@ -106,9 +109,23 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
   const companyName = typeof companyProfile.name === "string" ? companyProfile.name : t("project.unknownCompany");
   const completedTasks = (tasks ?? []).filter((task) => latestRunByTask.get(task.id)?.status === "succeeded").length;
 
+  // A grant scoped to listed projects marks only those projects; the organization-wide banner
+  // in the layout covers the other scope.
+  const integrationPreview = await loadIntegrationPreviewStatus(supabase, organization.id);
+  const projectRunsInPreview = integrationPreview.scope === "projects" && integrationPreviewCoversProject(integrationPreview, project.id);
+
   return (
     <main className="app-canvas origination-project">
       <DealStateRefresh active={active} />
+      {projectRunsInPreview ? <IntegrationPreviewBanner
+        copy={{
+          kicker: tApp("integrationPreview.kicker"),
+          title: tApp("integrationPreview.title"),
+          body: tApp("integrationPreview.body"),
+          note: tApp("integrationPreview.note"),
+        }}
+        note={integrationPreview.note}
+      /> : null}
       <Link className="text-link origination-back" href={`/${locale}/app`}><ArrowLeft aria-hidden="true" size={14} />{t("back")}</Link>
       <header className="origination-project__header">
         <div>

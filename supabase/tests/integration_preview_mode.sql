@@ -511,6 +511,102 @@ $$;
 
 reset role;
 
+-- A grant scoped to listed projects: the claim carries the flag only for the listed project, the
+-- status names the scope and the projects, and every other project keeps the normal behaviour.
+update private.integration_preview_grants
+set scope = 'projects', updated_at = now()
+where organization_id = '20000000-0000-4000-8000-000000000251';
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000251","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  project_id uuid;
+  unlisted_message_id constant uuid := '50000000-0000-4000-8000-000000000255';
+  claim jsonb;
+  status jsonb;
+begin
+  select session.capital_project_id into strict project_id
+  from public.document_intake_sessions session
+  join public.capital_projects project on project.id = session.capital_project_id
+  where project.organization_id = '20000000-0000-4000-8000-000000000251'
+  limit 1;
+  status := public.get_integration_preview_status_v1('20000000-0000-4000-8000-000000000251');
+  if not (status ->> 'enabled')::boolean or status ->> 'scope' <> 'projects' or jsonb_array_length(status -> 'projectIds') <> 0 then
+    raise exception 'the project-scoped status is wrong before any project is listed: %', status;
+  end if;
+  perform public.submit_advisor_turn_v1(project_id, unlisted_message_id, 'pt-BR', 'Vamos preparar a reunião com a Camil.');
+  claim := public.worker_claim_job(repeat('p', 64), 600);
+  if claim ->> 'kind' <> 'agent_operation_brief' or (claim ->> 'integration_preview')::boolean then
+    raise exception 'an unlisted project was claimed as integration_preview: %', claim;
+  end if;
+  perform public.worker_record_agent_failure((claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview_test_closed');
+  perform public.worker_fail_job(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token',
+    jsonb_build_object(
+      'code', 'integration_preview_test_closed', 'stage', 'agent_operation_brief', 'retryable', false,
+      'cause', jsonb_build_object('name', 'Error', 'class', 'worker_error', 'message', 'test closes the unlisted turn')
+    ),
+    false
+  );
+end;
+$$;
+
+reset role;
+
+insert into private.integration_preview_projects (organization_id, capital_project_id, note, granted_by)
+select project.organization_id, project.id, 'listed for the test', 'test'
+from public.capital_projects project
+where project.organization_id = '20000000-0000-4000-8000-000000000251'
+limit 1;
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000251","role":"authenticated","aal":"aal1"}',
+  true
+);
+
+do $$
+declare
+  project_id uuid;
+  listed_message_id constant uuid := '50000000-0000-4000-8000-000000000256';
+  claim jsonb;
+  status jsonb;
+begin
+  select session.capital_project_id into strict project_id
+  from public.document_intake_sessions session
+  join public.capital_projects project on project.id = session.capital_project_id
+  where project.organization_id = '20000000-0000-4000-8000-000000000251'
+  limit 1;
+  status := public.get_integration_preview_status_v1('20000000-0000-4000-8000-000000000251');
+  if status ->> 'scope' <> 'projects' or not (status -> 'projectIds') ? project_id::text then
+    raise exception 'the listed project is not named by the status: %', status;
+  end if;
+  perform public.submit_advisor_turn_v1(project_id, listed_message_id, 'pt-BR', 'Vamos preparar a reunião com a Camil, de novo.');
+  claim := public.worker_claim_job(repeat('p', 64), 600);
+  if claim ->> 'kind' <> 'agent_operation_brief' or not (claim ->> 'integration_preview')::boolean then
+    raise exception 'the listed project was not claimed as integration_preview: %', claim;
+  end if;
+  perform public.worker_record_agent_failure((claim ->> 'job_id')::uuid, claim ->> 'capability_token', 'integration_preview_test_closed');
+  perform public.worker_fail_job(
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token',
+    jsonb_build_object(
+      'code', 'integration_preview_test_closed', 'stage', 'agent_operation_brief', 'retryable', false,
+      'cause', jsonb_build_object('name', 'Error', 'class', 'worker_error', 'message', 'test closes the listed turn')
+    ),
+    false
+  );
+end;
+$$;
+
+reset role;
+
 -- The grant never reaches the Data API: anon and authenticated cannot read the table.
 do $$
 declare
@@ -520,6 +616,8 @@ begin
   if can_read then raise exception 'authenticated can read integration_preview_grants'; end if;
   select has_table_privilege('anon', 'private.integration_preview_grants', 'select') into can_read;
   if can_read then raise exception 'anon can read integration_preview_grants'; end if;
+  select has_table_privilege('authenticated', 'private.integration_preview_projects', 'select') into can_read;
+  if can_read then raise exception 'authenticated can read integration_preview_projects'; end if;
 end;
 $$;
 

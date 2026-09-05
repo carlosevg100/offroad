@@ -133,7 +133,7 @@ export default async function ApplicationLayout({children, params}: Props) {
         signOutAction={signOut}
       />
       <div className="app-main">
-        {integrationPreview.enabled ? <IntegrationPreviewBanner
+        {integrationPreview.enabled && integrationPreview.scope === "organization" ? <IntegrationPreviewBanner
           copy={{
             kicker: t("integrationPreview.kicker"),
             title: t("integrationPreview.title"),
