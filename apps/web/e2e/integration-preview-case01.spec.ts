@@ -127,7 +127,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.screenshot({path: join(outputDirectory, "02-alignment.png"), fullPage: true});
   });
 
-  test("research and analysis: the first readout arrives with the nine objects, their states, gaps and alternatives", async () => {
+  test("research and analysis: the first readout arrives with the ten objects, their states, gaps and alternatives", async () => {
     const readout = await waitForAssistant(page, /Primeira devolutiva do Caso 01/, 240_000);
     expect(readout).toContain(MARK);
     expect(readout).toMatch(/Mapear a dívida instrumento a instrumento: incompleto/);
@@ -141,7 +141,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await expect(work.locator('[data-artifact-type="preview_debt_ledger"] .preview-work__state')).toContainText("incompleto");
     await expect(work.locator('[data-artifact-type="preview_alternatives"] .preview-work__state')).toContainText("comparado");
     await expect(work.locator('[data-artifact-type="preview_covenants"] .preview-work__gaps')).toBeVisible();
-    await expect(page.locator(".advisor-context-section--activity > div small")).toHaveText("9/9");
+    await expect(page.locator(".advisor-context-section--activity > div small")).toHaveText("10/10");
     await page.screenshot({path: join(outputDirectory, "03-readout.png"), fullPage: true});
   });
 
