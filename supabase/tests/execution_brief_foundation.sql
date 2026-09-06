@@ -88,8 +88,8 @@ declare
   definition text;
 begin
   definition := pg_get_functiondef('private.record_capital_project_plan(uuid,jsonb)'::regprocedure);
-  if position('when ''origination_thesis'' then array[''M07'',''S11'',''K04'']' in definition) = 0 then
-    raise exception 'origination thesis target contract was not expanded';
+  if position('target_ids in (array[''M07'',''C02'',''K04''], array[''M07'',''S11'',''K04''])' in definition) = 0 then
+    raise exception 'origination thesis target compatibility contract was not installed';
   end if;
 end;
 $$;

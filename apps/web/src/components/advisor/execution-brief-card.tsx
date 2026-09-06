@@ -15,7 +15,7 @@ export function ExecutionBriefCard({brief, progress, version}: Props) {
       ? (pt ? "Confirmação antes de avançar" : "Confirmation before proceeding")
       : (pt ? "Aprovação antes de qualquer ação externa" : "Approval before any external action");
   return (
-    <article className="execution-brief-card" data-execution-mode={brief.executionMode}>
+    <article className="execution-brief-card" data-execution-mode={brief.executionMode} data-testid="execution-brief">
       <header>
         <div>
           <span>{pt ? "Plano deste trabalho" : "Plan for this work"}</span>
@@ -32,7 +32,7 @@ export function ExecutionBriefCard({brief, progress, version}: Props) {
       <ol className="execution-brief-card__workstreams">
         {brief.workstreams.map((workstream, index) => {
           const workstreamProgress = progress?.workstreams[index];
-          return <li data-progress={workstreamProgress?.status ?? "waiting"} key={`${workstream.label}-${index}`}>
+          return <li data-progress={workstreamProgress?.status ?? "waiting"} data-workstream-position={index} key={`${workstream.label}-${index}`}>
             <span>{String(index + 1).padStart(2, "0")}</span>
             <div>
               <header><strong>{workstream.label}</strong><div>

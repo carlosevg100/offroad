@@ -1,24 +1,29 @@
 -- Immutable Execution Brief history. The brief is a projection of an existing capital plan:
 -- a worker may persist it, project members may read it, and no Data API client may rewrite it.
 
--- The richer meeting route now reaches the financial and structuring conclusion S11. Update the
--- existing plan recorder fail-closed: the migration proceeds only while its prior definition is
--- exactly the version this repository expects.
+-- The richer meeting route now reaches the financial and structuring conclusion S11. Plans
+-- recorded before this migration still carry C02 as the explicit research target, so the recorder
+-- must accept both exact, governed contracts during the transition. It must not accept arbitrary
+-- target combinations.
 do $migration$
 declare
   function_definition text;
-  old_fragment constant text := 'when ''origination_thesis'' then array[''M07'',''C02'',''K04'']';
-  new_fragment constant text := 'when ''origination_thesis'' then array[''M07'',''S11'',''K04'']';
+  old_guard constant text := 'if target_ids is distinct from (case project_row.entry_job';
+  compatible_guard constant text := $guard$if project_row.entry_job = 'origination_thesis'
+    and target_ids in (array['M07','C02','K04'], array['M07','S11','K04']) then
+    null;
+  elsif target_ids is distinct from (case project_row.entry_job$guard$;
 begin
   select pg_get_functiondef('private.record_capital_project_plan(uuid,jsonb)'::regprocedure)
   into function_definition;
-  if position(new_fragment in function_definition) > 0 then
+  if position(compatible_guard in function_definition) > 0 then
     return;
   end if;
-  if position(old_fragment in function_definition) = 0 then
+  if position(old_guard in function_definition) = 0
+    or position('when ''origination_thesis'' then array[''M07'',''C02'',''K04'']' in function_definition) = 0 then
     raise exception 'record_capital_project_plan definition drifted; refusing an unsafe rewrite';
   end if;
-  execute replace(function_definition, old_fragment, new_fragment);
+  execute replace(function_definition, old_guard, compatible_guard);
 end;
 $migration$;
 
