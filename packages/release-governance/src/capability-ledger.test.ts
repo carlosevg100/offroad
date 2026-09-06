@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(26);
+    expect(decision.entryCount).toBe(27);
     expect(decision.blockers).toEqual([]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
     expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
@@ -16,6 +16,7 @@ describe("capability ledger", () => {
     const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
     expect(byId.get("workflow.case01-compiler")).toMatchObject({availability: "live", exposure: "allowlisted", qualityMaturity: "tested"});
     expect(byId.get("workflow.universal-compiler")).toMatchObject({availability: "specified", exposure: "none", qualityMaturity: "specified"});
+    expect(byId.get("workflow.objective-plan-core")).toMatchObject({availability: "live", exposure: "internal", qualityMaturity: "tested"});
   });
 
   it("records the execution brief and safe run-derived progress as live without claiming customer reliance", () => {

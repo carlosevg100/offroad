@@ -31,6 +31,20 @@ describe("capital project job inference", () => {
     })).toEqual({job: "structure_from_documents", reason: "documents_only"});
   });
 
+  it("routes a board capital-structure decision by objective rather than by the user's title", () => {
+    expect(inferCapitalProjectJob({
+      message: "Preciso levar ao conselho uma análise da estrutura de capital e alternativas para decisão.",
+      hasAttachments: false,
+    })).toEqual({job: "capital_planning", reason: "capital_need"});
+  });
+
+  it("routes a document-backed risk matrix to operation review instead of generic document structuring", () => {
+    expect(inferCapitalProjectJob({
+      message: "A partir destes contratos, prepare uma matriz de riscos, covenants e mitigantes.",
+      hasAttachments: true,
+    })).toEqual({job: "review_existing_operation", reason: "existing_transaction"});
+  });
+
   it("uses a clicked starter as the explicit initial assignment", () => {
     expect(inferCapitalProjectJob({
       message: "Quero começar um novo trabalho.",

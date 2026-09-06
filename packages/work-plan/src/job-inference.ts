@@ -1,4 +1,5 @@
 import type {CapitalProjectJob} from "./capital-jobs";
+import {compileObjectiveToPlan} from "./objective-plan";
 
 export type CapitalProjectJobHint = Exclude<CapitalProjectJob, "prepare_materials_and_process">;
 
@@ -32,6 +33,27 @@ export function inferCapitalProjectJob(input: {
   // company view merely because the word "diagnose" appears in the prompt.
   if (input.explicitHint) {
     return {job: input.explicitHint, reason: "explicit_hint"};
+  }
+
+  // The six entry cards remain compatibility labels. The objective compiler owns the semantic
+  // distinction first; this adapter then selects the nearest released project rail. Objectives
+  // that require an existing project (materials and matching) deliberately stay on the legacy
+  // fallback until the continuation router can bind them to an existing snapshot.
+  const objective = compileObjectiveToPlan({message, hasAttachments: input.hasAttachments});
+  if (objective.objectiveKind === "operation_review" || objective.objectiveKind === "risk_matrix") {
+    return {job: "review_existing_operation", reason: "existing_transaction"};
+  }
+  if (objective.objectiveKind === "meeting_preparation") {
+    return {job: "origination_thesis", reason: "meeting_or_origination"};
+  }
+  if (objective.objectiveKind === "board_decision" || objective.objectiveKind === "capital_strategy") {
+    return {job: "capital_planning", reason: "capital_need"};
+  }
+  if (objective.objectiveKind === "company_analysis") {
+    return {job: "company_debt_view", reason: "company_analysis"};
+  }
+  if (objective.objectiveKind === "documents_to_case") {
+    return {job: "structure_from_documents", reason: "documents_only"};
   }
 
   if (patterns.existingTransaction.test(message)) {
