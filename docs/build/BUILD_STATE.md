@@ -17,6 +17,9 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
   Capital Network, atravessados por tenancy, autorização, evidência, auditoria, custo e evals.
 - O programa foi reorganizado em oito streams, oito releases com gates, 59 itens de backlog de
   fundação e oito jornadas gold longitudinais. Case 01 virou regressão, não centro do roadmap.
+- O contrato de interação agora inclui um `ExecutionBrief` antes do trabalho substantivo: fontes e
+  materiais planejados, frentes econômicas, análises/cálculos, dependências, checkpoints e entrega.
+  Ele é derivado do grafo real, editável e não expõe raciocínio privado ou agentes internos.
 - Criado o diagrama autocontido `docs/build/diagrams/offroad-endgame-architecture.html` usando os
   tokens atuais da marca e o símbolo circular como referência de identidade; nenhuma tela do
   produto foi alterada.

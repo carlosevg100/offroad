@@ -1,6 +1,6 @@
 # Offroad Endgame Execution Blueprint
 
-Versão: 1.0 · 6 de setembro de 2026  
+Versão: 1.1 · 6 de setembro de 2026
 Status: fonte canônica proposta para execução do programa; não é evidência de implementação  
 Subordinado a: `OFFROAD_DCM_OPERATING_CONSTITUTION.md` e `CANONICAL_INTENT_WORKFLOW_ATLAS.md`  
 Substitui, para planejamento futuro: a sequência linear e histórica de `MASTER_PLAN.md`
@@ -280,9 +280,10 @@ trabalho; do contrário viram pergunta.
 7. **Remover tarefas** já válidas, irrelevantes ou não autorizadas.
 8. **Identificar gaps** bloqueantes, materiais e melhoradores.
 9. **Perguntar somente o que muda** rota, cálculo, escopo, autorização ou qualidade.
-10. **Executar em paralelo** tarefas independentes dentro do budget.
-11. **Replanejar por evento**, mantendo fingerprints e versões.
-12. **Encerrar o turno**, nunca necessariamente o projeto.
+10. **Apresentar o Execution Brief** derivado do grafo antes do trabalho substantivo.
+11. **Executar em paralelo** tarefas independentes dentro do budget.
+12. **Replanejar por evento**, mantendo fingerprints e versões.
+13. **Encerrar o turno**, nunca necessariamente o projeto.
 
 ### 6.3 Regra de inclusão de tarefa
 
@@ -323,7 +324,133 @@ O plano visível contém no máximo:
 
 Não contém nomes de agentes, IDs, JSON, token budget, confidence bruta ou raciocínio privado.
 
-### 6.5 Exemplos normativos
+### 6.5 Execution Brief: plano de ação antes da execução
+
+Antes da primeira pesquisa, leitura extensa, modelagem ou produção de material, o sistema apresenta
+um **Execution Brief**. Esse é o acordo visível entre pedido e execução.
+
+Ele responde, de maneira concreta:
+
+1. o que a Offroad entendeu que o usuário precisa decidir, compreender ou entregar;
+2. quais fontes e materiais pretende consultar;
+3. quais frentes serão estudadas e por quê;
+4. quais cálculos, conciliações ou análises serão realizados;
+5. quais informações já existem no projeto e serão reaproveitadas;
+6. quais gaps podem alterar o caminho;
+7. qual será o work product ou a primeira devolutiva;
+8. onde haverá checkpoint, escolha ou aprovação.
+
+Contrato interno:
+
+```yaml
+execution_brief:
+  objective: user_outcome_in_plain_language
+  current_context: known_and_authorized_only
+  proposed_deliverable: work_product_or_readout
+  workstreams:
+    - label: user_facing_specific_action
+      purpose: why_this_is_needed
+      sources: planned_source_classes_or_documents
+      analyses: concrete_methods_or_dimensions
+      output: object_or_artifact_created
+      dependency: optional_material_question_or_input
+  assumptions: explicit_only
+  checkpoints: material_choices_or_reviews
+  execution_mode: start_after_display | confirm_before_expensive_work | approve_external_effect
+```
+
+O Execution Brief é uma projeção do grafo compilado. Não é texto inventado separadamente. Se uma
+tarefa não existe no grafo, não aparece no plano. Se o usuário altera o plano, o grafo é recompilado
+e o diff fica visível.
+
+As mesmas frentes viram a estrutura do Live Work. O usuário acompanha `a iniciar`, `em andamento`,
+`concluída`, `aguardando informação`, `não aplicável` ou `replanejada` sem perder a relação com o que
+foi prometido. Se a execução descobrir uma nova frente material, o sistema mostra o motivo e o diff
+antes de incorporá-la; não muda silenciosamente de direção.
+
+#### Regras de qualidade
+
+- aparecer na primeira resposta útil, depois da compreensão e de eventual pergunta realmente
+  bloqueante;
+- anteceder qualquer trabalho substantivo;
+- ter entre três e sete frentes, salvo pedido pontual que exija menos;
+- nomear fontes planejadas com o maior grau de precisão já conhecido;
+- distinguir material já disponível, fonte a pesquisar e informação a solicitar;
+- descrever dimensões econômicas concretas, não verbos genéricos como "analisar a companhia";
+- conectar cada frente ao resultado pedido;
+- indicar premissas e limitações conhecidas;
+- permitir `Ajustar plano`, `Adicionar uma frente`, `Remover` e `Interromper`;
+- atualizar status sem reescrever retroativamente o que foi prometido;
+- nunca expor chain of thought, prompt, nomes de agentes, budget ou topologia interna.
+
+Em trabalho seguro, interno e reversível, o sistema apresenta o plano e começa em seguida, mantendo
+controles de pausa e edição. Confirmação prévia é exigida quando a ambiguidade muda materialmente o
+escopo, o custo é desproporcional ou existe efeito externo. Envio, compartilhamento e introdução
+sempre exigem autorização específica.
+
+#### Exemplo: reunião com companhia pública
+
+```text
+Entendi o objetivo
+Preparar uma visão própria sobre a estrutura de capital da Camil e alternativas que mereçam entrar
+na conversa, sem presumir uma solução antes de entender a companhia e seus planos.
+
+Como vou trabalhar
+1. Base pública e fatos recentes
+   Vou revisar RI, releases, apresentações, demonstrações e notas, além dos documentos regulatórios
+   aplicáveis na CVM e das fontes de mercado relevantes. Isso estabelece a data-base e o que mudou.
+
+2. Companhia e setor
+   Vou entender modelo de negócio, segmentos, drivers de volume/preço/mix, capital de giro,
+   investimentos anunciados e fatores setoriais que afetam geração de caixa.
+
+3. Posição financeira e dívida
+   Vou conciliar caixa, dívida por instrumento, juros, amortizações, indexadores, vencimentos,
+   garantias, covenants, pré-pagamento e flexibilidade financeira.
+
+4. Visão prospectiva
+   Vou construir um cenário preliminar com premissas rastreáveis para receita, margem, capital de
+   giro, capex, impostos, juros e caixa. O orçamento da companhia, se disponível, substitui premissas.
+
+5. Alternativas e material
+   Vou testar alternativas contra o cenário atual e prospectivo, explicando benefício, trade-off,
+   risco de execução e informação faltante. A primeira entrega será um workbench para escolher o
+   caminho antes de preparar o pitch.
+```
+
+#### Exemplo: pedido centrado em materiais
+
+```text
+Entendi o objetivo
+Transformar a análise já desenvolvida em um material de reunião de cinco páginas no template do
+banco, preservando números, fontes e a lógica que já foi aprovada.
+
+Como vou trabalhar
+1. Vou recuperar a versão aprovada do modelo, findings e alternativas deste projeto.
+2. Vou ler o template enviado e mapear layouts, estilos, gráficos, tabelas e disclaimers.
+3. Vou organizar a narrativa para a audiência e o resultado da reunião, sem refazer a análise.
+4. Vou vincular cada número e claim aos objetos do projeto e gerar o arquivo editável.
+5. Vou rodar revisão numérica, de fontes, narrativa e visual antes de liberar a versão.
+
+Preciso confirmar apenas
+Se o material é um pitch para o cliente ou um memo interno. Essa escolha altera a narrativa e o
+nível de disclosure, mas não bloqueia a auditoria dos dados e do template.
+```
+
+#### Exemplo: contrato ou covenant
+
+```text
+1. Confirmar a versão vigente e o período de cálculo.
+2. Ler integralmente as cláusulas, definições, exceções e baskets relacionados.
+3. Conciliar os inputs financeiros à definição contratual.
+4. Calcular headroom e sensibilidades com fórmula reproduzível.
+5. Entregar resposta citada, issue list e dimensões não cobertas.
+```
+
+Não entram pesquisa setorial, projeção completa ou mapa de investidores se não forem dependências da
+pergunta. O nível de detalhe do plano acompanha o trabalho, não um template fixo.
+
+### 6.6 Exemplos normativos
 
 Pedido: "Qual a folga do covenant de dívida líquida/EBITDA no próximo trimestre?"
 
@@ -376,6 +503,7 @@ projeto, não silos independentes.
 
 - Objective;
 - Scope e Context Manifest;
+- ExecutionBrief;
 - Company, sector e market contexts;
 - Document e DocumentVersion;
 - Source e EvidenceAnchor;
@@ -401,6 +529,8 @@ Eventos relevantes incluem:
 ```text
 objective.created
 objective.changed
+execution_brief.presented
+execution_brief.changed
 document.uploaded
 document.versioned
 source.refreshed
@@ -1202,8 +1332,9 @@ nove abas vazias no primeiro turno.
 2. Pergunta material ou premissa explícita
    "O orçamento muda sizing e folga; posso seguir com cenários indicativos se você não o tiver."
 
-3. Plano específico, editável e opcionalmente aprovável
-   frentes, motivo, dependências e output
+3. Execution Brief antes de começar
+   fontes, materiais, análises, cálculos, dependências, checkpoints e output
+   derivado do grafo real e editável pelo usuário
 
 4. Live Work
    pesquisa, documentos, conciliações, modelo, alternativas, material e review
@@ -1221,8 +1352,9 @@ nove abas vazias no primeiro turno.
    decisão, alteração, retorno da reunião, novo documento ou conexão
 ```
 
-O sistema começa tarefas seguras enquanto espera uma resposta. Não pede aprovação burocrática de um
-plano trivial nem executa trabalho caro ou irreversível sem alinhamento adequado.
+O sistema apresenta o Execution Brief antes do trabalho substantivo. Depois de torná-lo visível,
+começa tarefas seguras enquanto espera respostas não bloqueantes. Não pede aprovação burocrática de
+um plano trivial nem executa trabalho caro ou irreversível sem alinhamento adequado.
 
 ### 16.5 Activity design
 
@@ -1525,6 +1657,7 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - Object Resolver sem companhia obrigatória;
 - Output Terminal Resolver;
 - minimal task graph compiler;
+- Execution Brief compiler e card editável antes da execução;
 - justification e pruning de tarefas;
 - Question Engine por materialidade;
 - event stream e projeção para Live Work;
@@ -1539,7 +1672,9 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - paráfrases mantêm identidade do plano;
 - mudança de objetivo explica o diff;
 - ausência de executor gera coverage gap, não improvisação;
-- plano não depende de cargo cadastrado.
+- plano não depende de cargo cadastrado;
+- cada intenção mostra fontes, análises e entrega específicas antes do primeiro trabalho substantivo;
+- nenhum Execution Brief inclui tarefa ausente do grafo compilado.
 
 ### 20.4 Release 2 - Vault-to-Truth
 
@@ -1690,7 +1825,7 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - BP-010 - Intent Envelope v1 em duas camadas.
 - BP-011 - Object Resolver universal.
 - BP-012 - Output Terminal Resolver.
-- BP-013 - Minimal Task Graph Compiler.
+- BP-013 - Minimal Task Graph Compiler e projeção em Execution Brief.
 - BP-014 - Task justification e pruning.
 - BP-015 - Coverage compiler por decisão.
 - BP-016 - Material Question Engine.
@@ -1886,6 +2021,7 @@ O fundador entra no loop amplo de fine-tuning somente quando:
 
 - G1 a G8 funcionam em interface real, sem fixtures ocultas nos inputs;
 - planos são específicos e o sistema explica por que cada frente entrou;
+- o Execution Brief mostra antes da execução o que será pesquisado, estudado, calculado e entregue;
 - perguntas são contextuais, materiais e permitem seguir com premissas;
 - documentos arbitrários são lidos com coverage e âncoras;
 - Workbench e modelo são navegáveis;

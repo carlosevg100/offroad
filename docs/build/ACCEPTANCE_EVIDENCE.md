@@ -9,6 +9,7 @@
 | Referências externas | fontes oficiais de Legora, Harvey, Hebbia, Rogo, Model ML e OpenAI | padrões absorvidos como princípios; nenhuma interface concorrente foi copiada |
 | Arquitetura | diagrama HTML autocontido e `self_check.py` | oito blocos principais, fluxo intenção→execução→work product→capital, controles transversais e feedback governado; self-check verde |
 | Programa | oito streams, releases 0-7, BP-001 a BP-059 e G1-G8 | cada release tem construção e gate; founder gate impede teste amplo antes da base necessária |
+| Plano antes da execução | contrato `ExecutionBrief`, exemplos por intenção e gate de Release 1 | companhia pública, material e covenant mostram fontes e análises diferentes; o plano deriva do grafo e antecede trabalho substantivo |
 | Honestidade | revisão da linguagem de status | documento se declara proposta; não promove runtime, packs, arquivos ou expertise |
 | Gate integral | `pnpm check` em worktree limpa do commit do blueprint | lint, typecheck, testes e build verdes nos 43 alvos; aviso único de Node 25 fora do engine recomendado Node 24 |
 

@@ -30,6 +30,12 @@ produce manual reference work products at the target quality, decompose them int
 and procedures, and only then replace the fixed preview compiler. No broad founder fine-tuning is
 requested before the serious-test gate in section 23 of the blueprint.
 
+The interaction contract also requires an `ExecutionBrief` before substantive work begins. It tells
+the user what Offroad understood, which existing materials and external sources it will use, which
+economic dimensions and calculations it will cover, what may still be needed and what it will
+deliver. It is projected from the compiled task graph, not generated as a generic checklist, and can
+be edited without exposing private reasoning or internal agent topology.
+
 ### Canonical identity: universal debt advisor, 2 September 2026
 
 Offroad is the **AI-native debt advisor** that helps companies and market professionals think,
