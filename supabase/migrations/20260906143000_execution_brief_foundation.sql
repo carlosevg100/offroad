@@ -143,7 +143,7 @@ declare
   projected_task_count integer;
   distinct_projected_task_count integer;
   next_version integer;
-  brief_fingerprint text := lower(coalesce(p_internal_snapshot ->> 'fingerprint', ''));
+  v_brief_fingerprint text := lower(coalesce(p_internal_snapshot ->> 'fingerprint', ''));
   workstream_count integer;
   computed_storage_fingerprint text;
 begin
@@ -176,8 +176,8 @@ begin
     or jsonb_typeof(p_visible_snapshot) is distinct from 'object'
     or p_internal_snapshot ->> 'schemaVersion' is distinct from 'execution-brief.v1'
     or p_visible_snapshot ->> 'schemaVersion' is distinct from 'execution-brief.v1'
-    or brief_fingerprint !~ '^[0-9a-f]{64}$'
-    or p_visible_snapshot ->> 'fingerprint' is distinct from brief_fingerprint
+    or v_brief_fingerprint !~ '^[0-9a-f]{64}$'
+    or p_visible_snapshot ->> 'fingerprint' is distinct from v_brief_fingerprint
     or char_length(trim(coalesce(p_internal_snapshot ->> 'planVersion', ''))) < 3
     or jsonb_typeof(p_internal_snapshot -> 'authority') is distinct from 'object'
     or p_internal_snapshot ->> 'objective' is distinct from p_visible_snapshot ->> 'objective'
@@ -272,7 +272,7 @@ begin
   from public.capital_project_execution_briefs brief
   where brief.organization_id = plan_row.organization_id
     and brief.capital_project_id = session_row.capital_project_id
-    and brief.brief_fingerprint = brief_fingerprint;
+    and brief.brief_fingerprint = v_brief_fingerprint;
   if found then
     return jsonb_build_object('id', existing_row.id, 'version', existing_row.brief_version, 'replayed', true);
   end if;
@@ -301,7 +301,7 @@ begin
     parent_brief_id, change_summary, created_by
   ) values (
     plan_row.organization_id, session_row.capital_project_id, plan_row.id, next_version, 'execution-brief.v1',
-    brief_fingerprint, computed_storage_fingerprint, p_internal_snapshot ->> 'executionMode',
+    v_brief_fingerprint, computed_storage_fingerprint, p_internal_snapshot ->> 'executionMode',
     p_internal_snapshot ->> 'objective', p_internal_snapshot ->> 'proposedDeliverable',
     workstream_count, p_internal_snapshot, p_visible_snapshot, p_parent_brief_id,
     p_change_summary, plan_row.created_by
@@ -311,14 +311,14 @@ begin
     organization_id, capital_project_id, execution_brief_id, event_type, actor_type, event_payload
   ) values (
     plan_row.organization_id, session_row.capital_project_id, inserted_row.id, 'presented', 'system',
-    jsonb_build_object('fingerprint', brief_fingerprint, 'version', next_version)
+    jsonb_build_object('fingerprint', v_brief_fingerprint, 'version', next_version)
   );
   if p_parent_brief_id is not null then
     insert into public.capital_project_execution_brief_events (
       organization_id, capital_project_id, execution_brief_id, event_type, actor_type, event_payload
     ) values (
       plan_row.organization_id, session_row.capital_project_id, p_parent_brief_id, 'superseded', 'system',
-      jsonb_build_object('replaced_by_fingerprint', brief_fingerprint, 'replaced_by_version', next_version)
+      jsonb_build_object('replaced_by_fingerprint', v_brief_fingerprint, 'replaced_by_version', next_version)
     );
   end if;
   return jsonb_build_object('id', inserted_row.id, 'version', inserted_row.brief_version, 'replayed', false);
