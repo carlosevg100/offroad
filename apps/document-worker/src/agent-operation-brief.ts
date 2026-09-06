@@ -13,7 +13,12 @@ import {
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
-import {localizedOffroadTaskLabel} from "@offroad/work-plan";
+import {
+  capitalProjectJobSchema,
+  compileObjectiveToPlan,
+  evaluateObjectivePlanReadiness,
+  localizedOffroadTaskLabel,
+} from "@offroad/work-plan";
 import {z} from "zod";
 
 import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
@@ -492,6 +497,33 @@ export async function processAgentOperationBriefJob(
     const executionBrief = response.activation
       ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), response.activation)
       : undefined;
+    let objectivePreflight: {id: string; status: "ready" | "partial" | "blocked"; terminalReachable: boolean; replayed: boolean} | null = null;
+    if (response.activation && queue.recordObjectivePlanPreflight) {
+      try {
+        const shadow = compileObjectivePreflight(context);
+        objectivePreflight = await queue.recordObjectivePlanPreflight(job, {
+          objectivePlan: shadow.objectivePlan,
+          preflightDecision: shadow.preflightDecision,
+        });
+        log("objective_plan.preflight_recorded", {
+          job: job.job_id,
+          objectiveKind: shadow.objectivePlan.objectiveKind,
+          objectiveEntryJob: shadow.objectivePlan.entryJob,
+          activatedJob: response.activation.job,
+          readiness: objectivePreflight.status,
+          terminalReachable: objectivePreflight.terminalReachable,
+          mode: "shadow",
+        });
+      } catch (preflightError) {
+        // Shadow observation cannot interrupt the released fixed rail. Enforcement begins only
+        // after the dynamic dispatcher and bindings are promoted together.
+        log("objective_plan.preflight_record_failed", {
+          job: job.job_id,
+          message: preflightError instanceof Error ? preflightError.message.slice(0, 200) : "unknown",
+          mode: "shadow",
+        });
+      }
+    }
     await queue.recordAgentResponse(job, assistantMessageId, response, proposal, response.activation, executionBrief);
     await queue.writeStage(job, "agent_operation_brief", "succeeded", {
       messageId: assistantMessageId,
@@ -503,6 +535,8 @@ export async function processAgentOperationBriefJob(
       executionAction: executionRoute.action,
       executionReason: executionRoute.reasonCode,
       activatedJob: response.activation?.job,
+      objectivePreflightId: objectivePreflight?.id,
+      objectivePreflightStatus: objectivePreflight?.status,
     }, completion.usage as unknown as Record<string, number>);
     await queue.complete(job, {
       assistantMessageId,
@@ -511,6 +545,7 @@ export async function processAgentOperationBriefJob(
       request_route: route,
       execution_route: executionRoute,
       activated_job: response.activation?.job,
+      objective_preflight: objectivePreflight,
       spend: gateway.spent(),
     });
     return proposal ? {status: "succeeded", proposalId: proposal.id} : {status: "succeeded"};
@@ -531,6 +566,51 @@ export async function processAgentOperationBriefJob(
 }
 
 type AgentContext = z.infer<typeof contextSchema>;
+
+/**
+ * Compiles the user's objective independently of the six fixed entry rails, then evaluates it
+ * against the current universal task capability inventory. That inventory is intentionally empty:
+ * Case 01 has a separate allowlisted composition, while no general TaskSpec dispatcher has been
+ * promoted. The resulting blocked/partial decision is the migration evidence used to build that
+ * inventory without ever treating catalogue entries as executable methods.
+ */
+function compileObjectivePreflight(context: AgentContext) {
+  const entryJob = context.project ? capitalProjectJobSchema.safeParse(context.project.entryJob) : null;
+  const objectivePlan = compileObjectiveToPlan({
+    message: context.message,
+    hasAttachments: context.documents.length > 0,
+    ...(entryJob?.success ? {existingProject: {
+      entryJob: entryJob.data,
+      hasSignedAnalyticalSnapshot: false,
+      hasCurrentMandates: false,
+    }} : {}),
+  });
+  const confidential = context.documents.length > 0 || context.project?.accessBasis !== "public_information";
+  const preflightDecision = evaluateObjectivePlanReadiness({
+    graph: objectivePlan.taskGraph,
+    capabilities: [],
+    context: {
+      use: "internal_validation",
+      authority: "project_write",
+      evidenceRegime: confidential ? "mixed_governed" : "public_only",
+      tenantId: null,
+      projectId: context.project?.id ?? null,
+      internalActor: true,
+      externalAuthorizationRef: null,
+      resourcesByTaskId: Object.fromEntries(objectivePlan.taskGraph.tasks.map((task) => [task.id, {
+        providerId: null,
+        toolIds: [],
+        sourceClasses: [...objectivePlan.sourcePlan],
+        dataClasses: confidential ? ["project_confidential" as const] : ["public" as const],
+      }])),
+      disabledTaskIds: [],
+      disabledExecutorKeys: [],
+      disabledProviderIds: [],
+      disabledToolIds: [],
+    },
+  });
+  return {objectivePlan, preflightDecision};
+}
 
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {
   return {

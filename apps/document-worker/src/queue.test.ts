@@ -297,6 +297,36 @@ describe("execution-brief activation", () => {
       p_execution_brief_change_summary: [{kind: "turn_activation"}],
     });
   });
+
+  it("records the objective plan and preflight through the exact job capability", async () => {
+    const advisorJob: AgentOperationBriefJob = {
+      ...job,
+      kind: "agent_operation_brief",
+      payload: {message_id: "50000000-0000-4000-8000-000000000001", locale: "pt-BR"},
+    };
+    const objectivePlan = {schemaVersion: "objective-plan.v1", structuralIdentity: "a".repeat(64)};
+    const preflightDecision = {schemaVersion: "objective-plan-readiness.v1", readinessFingerprint: "b".repeat(64)};
+    const rpc = vi.fn(async () => ({data: {
+      id: "80000000-0000-4000-8000-000000000001",
+      status: "blocked",
+      terminal_reachable: false,
+      replayed: false,
+    }, error: null}));
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.recordObjectivePlanPreflight!(advisorJob, {objectivePlan, preflightDecision})).resolves.toEqual({
+      id: "80000000-0000-4000-8000-000000000001",
+      status: "blocked",
+      terminalReachable: false,
+      replayed: false,
+    });
+    expect(rpc).toHaveBeenCalledWith("worker_record_objective_plan_preflight_v1", {
+      p_job_id: advisorJob.job_id,
+      p_capability_token: advisorJob.capability_token,
+      p_objective_plan: objectivePlan,
+      p_preflight_decision: preflightDecision,
+    });
+  });
 });
 
 describe("capital TaskRun lifecycle", () => {
