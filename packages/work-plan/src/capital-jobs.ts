@@ -164,6 +164,10 @@ export type CompiledCapitalJobPlan = {
   executionClassCounts: Readonly<Record<OffroadExecutionClass, number>>;
 };
 
+export type CompiledTaskGraph = Omit<CompiledCapitalJobPlan, "job"> & {
+  targetTaskIds: readonly string[];
+};
+
 export const capitalProjectPlanSchemaVersion = "capital-project-plan.v1";
 export const capitalProjectPlanCompilerVersion = "2026.09.01-v3";
 export const offroadTaskRegistryVersion = "2026.09.01-v3";
@@ -195,15 +199,34 @@ export function capitalProjectJob(job: CapitalProjectJob): CapitalProjectJobDefi
 /** Compile the minimal dependency-closed DAG for the selected starting job. */
 export function compileCapitalProjectJob(jobId: CapitalProjectJob): CompiledCapitalJobPlan {
   const job = capitalProjectJob(jobId);
+  const graph = compileTaskGraph(job.targetTaskIds);
+  return {job, ...graph};
+}
+
+/**
+ * Compiles the smallest dependency-closed graph for an objective's output terminals. Unlike a
+ * CapitalProjectJob, this primitive does not assume that one of the six legacy entry cards is the
+ * complete expression of the assignment. It remains bounded by the canonical TaskSpec allowlist:
+ * callers may select terminals, but they cannot invent work or omit a required dependency.
+ */
+export function compileTaskGraph(targetTaskIds: readonly string[]): CompiledTaskGraph {
+  if (targetTaskIds.length === 0) {
+    return {
+      targetTaskIds: [],
+      tasks: [],
+      parallelBatches: [],
+      executionClassCounts: Object.fromEntries(offroadExecutionClasses.map((value) => [value, 0])) as Record<OffroadExecutionClass, number>,
+    };
+  }
   const included = new Set<string>();
   const include = (taskId: string) => {
     if (included.has(taskId)) return;
     const task = taskById.get(taskId);
-    if (!task) throw new Error(`${jobId} targets unknown TaskSpec ${taskId}`);
+    if (!task) throw new Error(`objective targets unknown TaskSpec ${taskId}`);
     for (const dependency of task.dependencies) include(dependency);
     included.add(taskId);
   };
-  for (const target of job.targetTaskIds) include(target);
+  for (const target of targetTaskIds) include(target);
 
   const tasks = offroadTaskRegistry.filter((task) => included.has(task.id));
   const parallelBatches = compileParallelBatches(tasks);
@@ -213,7 +236,7 @@ export function compileCapitalProjectJob(jobId: CapitalProjectJob): CompiledCapi
       tasks.filter((task) => task.executionClass === executionClass).length,
     ]),
   ) as Record<OffroadExecutionClass, number>;
-  return {job, tasks, parallelBatches, executionClassCounts};
+  return {targetTaskIds: [...targetTaskIds], tasks, parallelBatches, executionClassCounts};
 }
 
 /**

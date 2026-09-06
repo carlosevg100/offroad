@@ -1253,3 +1253,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | --- | --- | --- | --- |
 | Executores | `src/executors/*.test.ts` | 45 testes: gold, adversariais e vinte permutações por método; credit-playbook 214 testes | 2026-09-05 |
 | Segunda revisão do ledger | `knowledge/reviews/runs/gc01-method-build-debt-ledger-2026-09-05-01-39-24/` | `fail`, 21 correções incorporadas na v3 | 2026-09-05 |
+
+## Núcleo Objective-to-Plan, 06/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Compilador semântico-determinístico | `packages/work-plan/src/objective-plan.ts` | dez classes normalizadas escolhem terminal, fontes, análises e o menor grafo fechado por dependências; o compilador não recebe cargo ou persona | 2026-09-06 |
+| Seis intenções do gate | `objective-plan.test.ts` | pergunta factual, matriz de risco, reunião, conselho, documentos privados e matching geram seis identidades e seis grafos distintos; famílias irrelevantes são podadas | 2026-09-06 |
+| Consistência e recusa | `objective-plan.test.ts` | paráfrases preservam identidade; mudança de objetivo troca grafo; matching sem snapshot e mandato gera `coverage_gap`; revisão sem documentos pede o conjunto efetivo | 2026-09-06 |
+| Ligação inicial ao produto | `job-inference.ts` e `job-inference.test.ts` | entradas suportadas passam pelo mesmo contrato antes de serem adaptadas aos trilhos legados; decisão de conselho e matriz de risco não dependem do cargo declarado | 2026-09-06 |
+| Limite declarado | `current-capability-ledger.ts` | núcleo marcado `live/internal/tested`; compiler universal continua `specified` porque persistência de grafo por objetivo, semantic router governante e dispatch geral ainda não existem | 2026-09-06 |
