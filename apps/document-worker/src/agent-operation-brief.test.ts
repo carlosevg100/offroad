@@ -70,6 +70,7 @@ describe("agent operation brief worker", () => {
 
   it("activates capital planning deterministically when company and intent are already explicit", async () => {
     let activation: unknown;
+    let objectivePreflightInput: {objectivePlan: unknown; preflightDecision: unknown} | undefined;
     const queue = {
       writeStage: async () => {},
       loadAgentContext: async () => ({
@@ -91,6 +92,15 @@ describe("agent operation brief worker", () => {
         activation = value;
         return {};
       },
+      recordObjectivePlanPreflight: async (_job: unknown, input: {objectivePlan: unknown; preflightDecision: unknown}) => {
+        objectivePreflightInput = input;
+        return {
+          id: "99999999-9999-4999-8999-999999999999",
+          status: "blocked" as const,
+          terminalReachable: false,
+          replayed: false,
+        };
+      },
       complete: async () => {}, recordAgentFailure: async () => {},
       fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
@@ -103,6 +113,18 @@ describe("agent operation brief worker", () => {
     expect(activation).toMatchObject({
       job: "capital_planning", company: {name: "Camil"},
       brief: {capitalIntent: "Quero comparar alternativas de dívida para financiar a expansão da Camil."},
+    });
+    expect(objectivePreflightInput).toMatchObject({
+      objectivePlan: {
+        schemaVersion: "objective-plan.v1",
+        objectiveKind: "capital_strategy",
+        entryJob: "capital_planning",
+      },
+      preflightDecision: {
+        schemaVersion: "objective-plan-readiness.v1",
+        status: "blocked",
+        terminalReachable: false,
+      },
     });
   });
 

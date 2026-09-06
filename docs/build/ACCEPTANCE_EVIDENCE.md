@@ -1272,3 +1272,14 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Dependências e terminal | `execution-readiness.test.ts` | dependência bloqueada impede o descendente; trabalho independente seguro pode prosseguir como `partial`; o terminal nunca aparece como alcançável enquanto faltar qualquer elo | 2026-09-06 |
 | Fallback e efeitos | `execution-readiness.test.ts` | fallback de provider precisa de novo contrato homologado; tarefa `commit` exige autoridade de escrita; efeito externo exige autorização externa exata | 2026-09-06 |
 | Lacuna honesta | `execution-readiness.test.ts` e `current-capability-ledger.ts` | TaskSpec sem método e executor vinculados falha fechado; o gate está testado internamente, mas ainda não governa a ativação persistida dos executores legados | 2026-09-06 |
+
+## Preflight por objetivo persistido em sombra, 06/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Observação ligada ao turno | `agent-operation-brief.ts` | toda ativação standard com projeto compila o objetivo, avalia o grafo contra o inventário universal real e registra o resultado antes da ativação legada; falha da observação não interrompe o trilho liberado | 2026-09-06 |
+| Persistência imutável | `20260906234054_objective_plan_preflight.sql` | plano, identidade, decisão, fingerprint, partição de tarefas, status e alcançabilidade ficam vinculados a organização, projeto, mensagem e job; somente leitura do tenant é concedida | 2026-09-06 |
+| Comando capability-bound | `worker_record_objective_plan_preflight_v1` | exige o job leased exato, mensagem de usuário ainda em processamento e projeto da sessão; valida esquema, limites, conjunto de targets e partição completa antes de gravar idempotentemente | 2026-09-06 |
+| Testes do worker | Vitest e typecheck de `@offroad/document-worker` | 30 arquivos/178 testes verdes; adapter RPC e ativação determinística comprovam gravação do plano e decisão bloqueada sem promover dispatcher | 2026-09-06 |
+| Segurança SQL | `supabase/tests/objective_plan_preflight.sql` | contrato cobre replay, resultado terminal forjado, partição sobreposta, capability falsa, isolamento entre tenants e proibição de escrita direta; execução local aguarda runtime Docker e permanece gate obrigatório da CI | 2026-09-06 |
+| Limite declarado | `current-capability-ledger.ts` | capacidade marcada `shadow/internal/implemented`; ela observa lacunas, mas não autoriza nem bloqueia o trilho fixo e não declara dispatcher universal | 2026-09-06 |

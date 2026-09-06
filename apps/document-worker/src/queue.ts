@@ -247,6 +247,12 @@ export type QueueClient = {
   ): Promise<{activation?: unknown; executionBrief?: {id: string; version: number; replayed: boolean}}>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
   recordIntentEnvelope(job: AgentOperationBriefJob, input: {envelope: unknown; classifier: unknown; model: string; costUsd: number}): Promise<void>;
+  /** Shadow migration record: the objective-specific graph and its fail-closed capability
+   * decision. It observes the current fixed rail but does not authorize it. */
+  recordObjectivePlanPreflight?(job: AgentOperationBriefJob, input: {
+    objectivePlan: unknown;
+    preflightDecision: unknown;
+  }): Promise<{id: string; status: "ready" | "partial" | "blocked"; terminalReachable: boolean; replayed: boolean}>;
   completeAdvisorSpecializedJob(job: CapitalProjectAnalysisJob, input: {
     completionMessageId: string;
     artifactId: string;
@@ -714,6 +720,27 @@ export function createQueueClient(
         p_model: input.model,
         p_cost_usd: input.costUsd,
       });
+    },
+
+    async recordObjectivePlanPreflight(job, input) {
+      const data = await call("worker_record_objective_plan_preflight_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_objective_plan: input.objectivePlan,
+        p_preflight_decision: input.preflightDecision,
+      });
+      const parsed = z.object({
+        id: z.uuid(),
+        status: z.enum(["ready", "partial", "blocked"]),
+        terminal_reachable: z.boolean(),
+        replayed: z.boolean(),
+      }).parse(data);
+      return {
+        id: parsed.id,
+        status: parsed.status,
+        terminalReachable: parsed.terminal_reachable,
+        replayed: parsed.replayed,
+      };
     },
 
     async recordAgentFailure(job, errorCode) {
