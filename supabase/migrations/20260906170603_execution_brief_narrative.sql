@@ -24,7 +24,7 @@ begin
 
   with workstreams as (
     select
-      workstream.position - 1 as position,
+      internal_workstream.position - 1 as position,
       internal_workstream.value -> 'sourceTaskIds' as source_task_ids,
       visible_workstream.value ->> 'label' as label,
       visible_workstream.value ->> 'purpose' as purpose,
