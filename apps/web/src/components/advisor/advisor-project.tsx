@@ -9,6 +9,7 @@ import {
   appendAdvisorMessage,
   beginAdvisorProjectProcessing,
   prepareAdvisorDocumentUpload,
+  requestAdvisorExecutionBriefEdit,
 } from "@/app/[locale]/app/advisor-actions";
 import {
   AdvisorChangeProposalCard,
@@ -69,7 +70,7 @@ export type AdvisorProjectCopy = {
   ready: string;
   needsAttention: string;
   messageFailed: string;
-  errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; upload: string};
+  errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; stale: string; upload: string};
   proposal: AdvisorChangeProposalCopy;
 };
 
@@ -94,7 +95,7 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
-  executionBrief?: {brief: VisibleExecutionBrief; changes: readonly ExecutionBriefChange[]; createdAt: string; narrative: ExecutionBriefNarrative | null; progress: ExecutionBriefProgress | null; version: number} | null;
+  executionBrief?: {brief: VisibleExecutionBrief; briefId: string; changes: readonly ExecutionBriefChange[]; createdAt: string; narrative: ExecutionBriefNarrative | null; progress: ExecutionBriefProgress | null; version: number} | null;
 };
 
 export function AdvisorProject(props: Props) {
@@ -157,6 +158,33 @@ export function AdvisorProject(props: Props) {
     router.refresh();
   }
 
+  async function requestPlanEdit(message: string): Promise<{ok: true} | {ok: false; error: string}> {
+    const executionBrief = props.executionBrief;
+    if (!executionBrief || pending) return {ok: false, error: props.copy.errors.processing};
+    const messageId = crypto.randomUUID();
+    setError("");
+    setPending(true);
+    setOptimistic((current) => [...current, {id: messageId, role: "user", content: message, status: "completed", createdAt: new Date().toISOString()}]);
+    const result = await requestAdvisorExecutionBriefEdit({
+      locale: props.locale,
+      projectId: props.projectId,
+      executionBriefId: executionBrief.briefId,
+      expectedFingerprint: executionBrief.brief.fingerprint,
+      content: message,
+      messageId,
+    });
+    setPending(false);
+    setOptimistic([]);
+    if (!result.ok) {
+      const error = props.copy.errors[result.error];
+      setError(error);
+      router.refresh();
+      return {ok: false, error};
+    }
+    router.refresh();
+    return {ok: true};
+  }
+
   async function upload(selected: FileList | null) {
     if (!selected?.length || uploading) return;
     setError("");
@@ -203,6 +231,7 @@ export function AdvisorProject(props: Props) {
                 brief={item.executionBrief.brief}
                 changes={item.executionBrief.changes}
                 key={item.id}
+                onRequestEdit={requestPlanEdit}
                 progress={item.executionBrief.progress}
                 version={item.executionBrief.version}
               />;

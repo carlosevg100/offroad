@@ -390,7 +390,7 @@ async function ConversationalCapitalProject({
 
   const copy: AdvisorProjectCopy = {
     advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
-    errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), upload: t("errors.upload")},
+    errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), stale: t("errors.stale"), upload: t("errors.upload")},
     proposal: {
       preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
       errors: {invalid: t("proposal.errors.invalid"), stale: t("proposal.errors.stale"), save: t("proposal.errors.save"), processing: t("proposal.errors.processing")},
@@ -549,6 +549,7 @@ async function ConversationalCapitalProject({
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
     executionBrief={parsedExecutionBrief?.success ? {
       brief: parsedExecutionBrief.data,
+      briefId: executionBriefRow!.id,
       changes: parsedExecutionBriefChanges?.success ? parsedExecutionBriefChanges.data : [],
       createdAt: executionBriefRow!.created_at,
       narrative: executionBriefNarrative,

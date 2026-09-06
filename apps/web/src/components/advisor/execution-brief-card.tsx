@@ -1,15 +1,23 @@
+"use client";
+
 import type {ExecutionBriefChange, ExecutionBriefProgress, ExecutionBriefWorkstreamProgressStatus, VisibleExecutionBrief} from "@offroad/work-plan";
-import {AlertCircle, ArrowDown, Check, Circle, FileOutput, LoaderCircle, Search, ShieldCheck} from "lucide-react";
+import {AlertCircle, ArrowDown, ArrowRight, Check, Circle, FileOutput, LoaderCircle, PencilLine, Search, ShieldCheck, X} from "lucide-react";
+import {useState} from "react";
 
 type Props = {
   brief: VisibleExecutionBrief;
   changes?: readonly ExecutionBriefChange[];
+  onRequestEdit?: (content: string) => Promise<{ok: true} | {ok: false; error: string}>;
   progress?: ExecutionBriefProgress | null;
   version: number;
 };
 
-export function ExecutionBriefCard({brief, changes = [], progress, version}: Props) {
+export function ExecutionBriefCard({brief, changes = [], onRequestEdit, progress, version}: Props) {
   const pt = brief.locale === "pt-BR";
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState("");
+  const [editError, setEditError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const mode = brief.executionMode === "start_after_display"
     ? (pt ? "Início após exibição" : "Starts after display")
     : brief.executionMode === "confirm_before_expensive_work"
@@ -71,6 +79,33 @@ export function ExecutionBriefCard({brief, changes = [], progress, version}: Pro
       {brief.assumptions.length ? <section className="execution-brief-card__assumptions">
         <header><strong>{pt ? "Premissas que você pode alterar" : "Assumptions you can change"}</strong><small>{pt ? "Toda mudança gera uma nova versão" : "Every change creates a new version"}</small></header>
         <dl>{brief.assumptions.map((assumption) => <div key={assumption.label}><dt>{assumption.label}</dt><dd><strong>{assumption.value}</strong><span>{assumption.basis}</span></dd></div>)}</dl>
+      </section> : null}
+
+      {onRequestEdit ? <section className="execution-brief-card__edit" data-editing={editing || undefined}>
+        {!editing ? <button onClick={() => setEditing(true)} type="button">
+          <PencilLine aria-hidden="true" size={13} />
+          <span><strong>{pt ? "Ajustar este plano" : "Adjust this plan"}</strong><small>{pt ? "Inclua, retire ou priorize o que muda a entrega" : "Add, remove or reprioritize what changes the deliverable"}</small></span>
+          <ArrowRight aria-hidden="true" size={13} />
+        </button> : <form onSubmit={async (event) => {
+          event.preventDefault();
+          const content = editContent.trim();
+          if (content.length < 3 || submitting) return;
+          setSubmitting(true);
+          setEditError("");
+          const result = await onRequestEdit(content);
+          setSubmitting(false);
+          if (!result.ok) {
+            setEditError(result.error);
+            return;
+          }
+          setEditContent("");
+          setEditing(false);
+        }}>
+          <header><div><strong>{pt ? "O que deve mudar no plano?" : "What should change in the plan?"}</strong><small>{pt ? `Seu pedido ficará vinculado à versão ${version}.` : `Your request will be bound to version ${version}.`}</small></div><button aria-label={pt ? "Cancelar ajuste" : "Cancel adjustment"} disabled={submitting} onClick={() => { setEditing(false); setEditContent(""); setEditError(""); }} type="button"><X aria-hidden="true" size={13} /></button></header>
+          <textarea autoFocus disabled={submitting} maxLength={8000} onChange={(event) => setEditContent(event.target.value)} placeholder={pt ? "Descreva o que deseja incluir, retirar, aprofundar ou priorizar..." : "Describe what you want to add, remove, deepen or prioritize..."} rows={3} value={editContent} />
+          <footer><small>{pt ? "A Offroad recompilará o plano e mostrará as diferenças antes de seguir." : "Offroad will recompile the plan and show the differences before proceeding."}</small><button disabled={editContent.trim().length < 3 || submitting} type="submit">{submitting ? <LoaderCircle aria-hidden="true" className="spin" size={12} /> : null}{pt ? "Enviar ajuste" : "Submit adjustment"}</button></footer>
+          {editError ? <p role="alert">{editError}</p> : null}
+        </form>}
       </section> : null}
 
       {brief.checkpoints.length ? <footer className="execution-brief-card__checkpoint">

@@ -128,6 +128,17 @@ describe("integration_preview turn router", () => {
     expect(routeIntegrationPreviewTurn({...base, message: "E agora?", artifactTypes: ["preview_alternatives"], runActive: true}).kind).toBe("wait");
     expect(routeIntegrationPreviewTurn({...base, message: "Obrigado.", artifactTypes: ["preview_alternatives"]}).kind).toBe("converse");
   });
+  it("recompiles an explicit plan-control edit even when the prose is not a router keyword", () => {
+    const decision = routeIntegrationPreviewTurn({...base,
+      message: "Quero que a comparação deixe flexibilidade antes de custo e retire o bloco de rating.",
+      artifactTypes: ["preview_alternatives"],
+      planEditRequested: true,
+    });
+    expect(decision.kind).toBe("activate");
+    expect(decision.activation?.composition).toBe("deepen");
+    expect(decision.activation?.brief.request.sponsorInstruction).toContain("retire o bloco de rating");
+    expect(decision.reply).toContain("Ajuste recebido sobre a versão exibida");
+  });
 });
 
 describe("integration_preview run processor", () => {

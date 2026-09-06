@@ -1163,6 +1163,7 @@
         "notFound": "The project is not available.",
         "save": "Could not start the project.",
         "processing": "The documents were received, but the review needs to be started again.",
+        "stale": "The plan changed. Refresh the page before continuing.",
         "upload": "One or more documents could not be received securely."
       },
       "greetings": {
@@ -1279,6 +1280,7 @@
         "notFound": "The project is no longer available.",
         "save": "Could not record the message.",
         "processing": "The review could not be started.",
+        "stale": "The plan changed after you opened it. Review the latest version before adjusting it.",
         "upload": "One or more documents could not be received securely."
       },
       "openRequirements": "What is still open and why it matters",

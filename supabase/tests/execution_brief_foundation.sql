@@ -228,7 +228,10 @@ select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-0000000
 do $$
 declare
   accepted boolean;
+  edit_result jsonb;
+  edit_replay jsonb;
   latest_brief_id uuid;
+  latest_brief_fingerprint text;
   narrative jsonb;
   progress jsonb;
 begin
@@ -252,6 +255,9 @@ begin
   from public.capital_project_execution_briefs
   order by brief_version desc
   limit 1;
+  select brief_fingerprint into latest_brief_fingerprint
+  from public.capital_project_execution_briefs
+  where id = latest_brief_id;
   perform set_config('test.execution_brief_id', latest_brief_id::text, true);
   progress := public.read_capital_project_execution_brief_progress_v1(latest_brief_id);
   if progress #>> '{workstreams,0,status}' <> 'completed'
@@ -280,6 +286,68 @@ begin
     raise exception 'workstream narrative exposed an internal execution binding: %', narrative;
   end if;
 
+  edit_result := public.submit_advisor_execution_brief_edit_v1(
+    '30000000-0000-4000-8000-000000000601', latest_brief_id,
+    latest_brief_fingerprint, '80000000-0000-4000-8000-000000000610',
+    'pt-BR', 'Inclua um comparativo de custo total e flexibilidade antes do material.'
+  );
+  if (edit_result ->> 'replayed')::boolean
+    or edit_result ->> 'expected_version' <> '2'
+    or edit_result ->> 'status' <> 'queued' then
+    raise exception 'governed brief edit was not queued against version two: %', edit_result;
+  end if;
+  if (select count(*) from public.capital_project_execution_brief_events
+      where event_type = 'edit_requested'
+        and event_payload ->> 'messageId' = '80000000-0000-4000-8000-000000000610') <> 1
+    or (select metadata ->> 'kind' from public.agent_messages
+        where id = '80000000-0000-4000-8000-000000000610') <> 'execution_brief_edit'
+    or (select metadata ->> 'expectedBriefFingerprint' from public.agent_messages
+        where id = '80000000-0000-4000-8000-000000000610') <> latest_brief_fingerprint then
+    raise exception 'governed brief edit lost its immutable binding';
+  end if;
+  if exists (
+    select 1 from public.capital_project_execution_brief_events
+    where event_type = 'edit_requested'
+      and event_payload::text like '%comparativo%'
+  ) then
+    raise exception 'brief edit event duplicated raw customer content';
+  end if;
+
+  edit_replay := public.submit_advisor_execution_brief_edit_v1(
+    '30000000-0000-4000-8000-000000000601', latest_brief_id,
+    latest_brief_fingerprint, '80000000-0000-4000-8000-000000000610',
+    'pt-BR', 'Inclua um comparativo de custo total e flexibilidade antes do material.'
+  );
+  if not (edit_replay ->> 'replayed')::boolean
+    or (select count(*) from public.capital_project_execution_brief_events
+        where event_type = 'edit_requested') <> 1
+    or (select count(*) from public.agent_messages
+        where id = '80000000-0000-4000-8000-000000000610') <> 1 then
+    raise exception 'governed brief edit did not replay idempotently: %', edit_replay;
+  end if;
+
+  begin
+    perform public.submit_advisor_execution_brief_edit_v1(
+      '30000000-0000-4000-8000-000000000601', latest_brief_id,
+      repeat('b', 64), '80000000-0000-4000-8000-000000000611',
+      'pt-BR', 'Use uma versão antiga do plano.'
+    );
+    accepted := true;
+  exception when serialization_failure then accepted := false;
+  end;
+  if accepted then raise exception 'stale Execution Brief edit was accepted'; end if;
+
+  begin
+    perform public.submit_advisor_execution_brief_edit_v1(
+      '30000000-0000-4000-8000-000000000601', latest_brief_id,
+      latest_brief_fingerprint, '80000000-0000-4000-8000-000000000610',
+      'pt-BR', 'Conteúdo diferente usando o mesmo identificador.'
+    );
+    accepted := true;
+  exception when unique_violation then accepted := false;
+  end;
+  if accepted then raise exception 'message id was replayed with different plan-edit content'; end if;
+
   begin
     perform internal_snapshot from public.capital_project_execution_briefs limit 1;
     accepted := true;
@@ -306,6 +374,16 @@ begin
   exception when no_data_found then accepted := false;
   end;
   if accepted then raise exception 'workstream narrative crossed the tenant boundary'; end if;
+  begin
+    perform public.submit_advisor_execution_brief_edit_v1(
+      '30000000-0000-4000-8000-000000000601', brief_id,
+      repeat('c', 64), '80000000-0000-4000-8000-000000000612',
+      'pt-BR', 'Tentar alterar o plano de outra organização.'
+    );
+    accepted := true;
+  exception when no_data_found then accepted := false;
+  end;
+  if accepted then raise exception 'governed brief edit crossed the tenant boundary'; end if;
 end;
 $$;
 
@@ -321,6 +399,8 @@ begin
     or not has_function_privilege('authenticated', 'public.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)', 'execute')
     or not has_function_privilege('authenticated', 'public.worker_record_agent_response_and_activate_v4(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
     or not has_function_privilege('authenticated', 'public.read_capital_project_execution_brief_progress_v1(uuid)', 'execute')
+    or has_function_privilege('anon', 'public.submit_advisor_execution_brief_edit_v1(uuid,uuid,text,uuid,text,text)', 'execute')
+    or not has_function_privilege('authenticated', 'public.submit_advisor_execution_brief_edit_v1(uuid,uuid,text,uuid,text,text)', 'execute')
     or has_function_privilege('anon', 'public.read_capital_project_execution_brief_narrative_v1(uuid)', 'execute')
     or not has_function_privilege('authenticated', 'public.read_capital_project_execution_brief_narrative_v1(uuid)', 'execute') then
     raise exception 'Execution Brief grants are wider or narrower than designed';

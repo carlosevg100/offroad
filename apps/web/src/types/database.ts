@@ -8068,6 +8068,17 @@ export type Database = {
         }
         Returns: Json
       }
+      submit_advisor_execution_brief_edit_v1: {
+        Args: {
+          p_content: string
+          p_execution_brief_id: string
+          p_expected_fingerprint: string
+          p_locale: string
+          p_message_id: string
+          p_project_id: string
+        }
+        Returns: Json
+      }
       submit_advisor_turn_v1: {
         Args: {
           p_content: string

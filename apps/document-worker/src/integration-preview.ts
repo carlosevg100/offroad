@@ -65,6 +65,8 @@ export type PreviewTurnInput = {
   registryVersion?: string;
   /** The user message that opened this turn: every activation compiles its own plan. */
   messageId?: string;
+  /** Set only by the governed plan control; this is UI state, never inferred from prose. */
+  planEditRequested?: boolean;
 };
 
 export type PreviewActivation = {
@@ -199,6 +201,19 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
 
   if (input.runActive) {
     return {kind: "wait", reply: `${mark} ${t(locale, "A corrida anterior ainda está em andamento; vou incorporar este pedido assim que ela terminar.", "The previous run is still in progress; I will take this request as soon as it finishes.")}`, activation: null};
+  }
+
+  if (input.planEditRequested) {
+    const audience = audienceFrom(input.message) ?? {primary: "vp", others: []};
+    const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: hasAnalysis ? "deepen" : "prepare_meeting", audience, form: "first_deliverable", pages: null, sponsorInstruction, undefinedAspects: []};
+    const composition = hasAnalysis ? "deepen" : "prepare_meeting";
+    return {
+      kind: "activate",
+      reply: `${mark} ${t(locale,
+        "Ajuste recebido sobre a versão exibida. Vou recompilar o plano, preservar o trabalho que continua válido e mostrar separadamente o que foi incluído, retirado ou repriorizado.",
+        "Adjustment received against the displayed version. I will recompile the plan, preserve the work that remains valid, and separately show what was added, removed or reprioritized.")}`,
+      activation: buildPreviewActivation(composition, request, {}, input),
+    };
   }
 
   if (patterns.question.test(input.message) && hasAnalysis) {
