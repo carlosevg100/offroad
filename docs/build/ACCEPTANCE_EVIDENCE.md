@@ -1263,3 +1263,12 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Consistência e recusa | `objective-plan.test.ts` | paráfrases preservam identidade; mudança de objetivo troca grafo; matching sem snapshot e mandato gera `coverage_gap`; revisão sem documentos pede o conjunto efetivo | 2026-09-06 |
 | Ligação inicial ao produto | `job-inference.ts` e `job-inference.test.ts` | entradas suportadas passam pelo mesmo contrato antes de serem adaptadas aos trilhos legados; decisão de conselho e matriz de risco não dependem do cargo declarado | 2026-09-06 |
 | Limite declarado | `current-capability-ledger.ts` | núcleo marcado `live/internal/tested`; compiler universal continua `specified` porque persistência de grafo por objetivo, semantic router governante e dispatch geral ainda não existem | 2026-09-06 |
+
+## Gate de capacidade antes da execução, 06/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Contrato fail-closed | `packages/work-plan/src/execution-readiness.ts` | cada nó do grafo é avaliado contra procedimento e executor exatos, disponibilidade live, exposição, uso, autoridade, regime de evidência, classes de dado e fonte, provider, ferramentas e kill switches | 2026-09-06 |
+| Dependências e terminal | `execution-readiness.test.ts` | dependência bloqueada impede o descendente; trabalho independente seguro pode prosseguir como `partial`; o terminal nunca aparece como alcançável enquanto faltar qualquer elo | 2026-09-06 |
+| Fallback e efeitos | `execution-readiness.test.ts` | fallback de provider precisa de novo contrato homologado; tarefa `commit` exige autoridade de escrita; efeito externo exige autorização externa exata | 2026-09-06 |
+| Lacuna honesta | `execution-readiness.test.ts` e `current-capability-ledger.ts` | TaskSpec sem método e executor vinculados falha fechado; o gate está testado internamente, mas ainda não governa a ativação persistida dos executores legados | 2026-09-06 |
