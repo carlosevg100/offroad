@@ -158,6 +158,15 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await expect(executionBrief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(4);
     await expect(executionBrief.locator(".execution-brief-card__progress")).toHaveCount(4);
     await expect(executionBrief.locator(".execution-brief-card__progress").first()).toContainText("Concluída");
+    const workstreamNarrative = page.getByTestId("execution-brief-activity");
+    await expect(workstreamNarrative).toHaveCount(8);
+    await expect(page.locator('[data-testid="execution-brief-activity"][data-kind="completed"]')).toHaveCount(4);
+    await expect(workstreamNarrative.filter({hasText: "Conferir balanço, caixa e dívida da Camil"})).toHaveCount(2);
+    const narrativeBeforeRefresh = await workstreamNarrative.allTextContents();
+    expect(narrativeBeforeRefresh.join(" ")).not.toMatch(/TaskSpec|sourceTaskIds|executor|provider|processing_job|\b[CDKMSA][0-9]{2}\b/);
+    await page.reload();
+    await expect(page.getByTestId("execution-brief-activity")).toHaveCount(8);
+    expect(await page.getByTestId("execution-brief-activity").allTextContents()).toEqual(narrativeBeforeRefresh);
     const firstActivity = page.locator(".advisor-thread__activity-event").first();
     await expect(firstActivity).toBeVisible();
     expect(await page.locator('[data-testid="execution-brief"], .advisor-thread__activity-event')

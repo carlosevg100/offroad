@@ -1,6 +1,6 @@
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
 import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
-import {executionBriefChangeSchema, executionBriefProgressSchema, localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
+import {executionBriefChangeSchema, executionBriefNarrativeSchema, executionBriefProgressSchema, localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -251,10 +251,14 @@ async function ConversationalCapitalProject({
   const parsedExecutionBriefChanges = executionBriefRow
     ? executionBriefChangeSchema.array().max(20).safeParse(executionBriefRow.change_summary)
     : null;
-  const {data: executionBriefProgressRaw} = executionBriefRow
-    ? await supabase.rpc("read_capital_project_execution_brief_progress_v1", {p_execution_brief_id: executionBriefRow.id})
-    : {data: null};
+  const [{data: executionBriefProgressRaw}, {data: executionBriefNarrativeRaw}] = executionBriefRow
+    ? await Promise.all([
+        supabase.rpc("read_capital_project_execution_brief_progress_v1", {p_execution_brief_id: executionBriefRow.id}),
+        supabase.rpc("read_capital_project_execution_brief_narrative_v1", {p_execution_brief_id: executionBriefRow.id}),
+      ])
+    : [{data: null}, {data: null}];
   const parsedExecutionBriefProgress = executionBriefProgressSchema.safeParse(executionBriefProgressRaw);
+  const parsedExecutionBriefNarrative = executionBriefNarrativeSchema.safeParse(executionBriefNarrativeRaw);
   const executionBriefProgress = parsedExecutionBrief?.success
     && parsedExecutionBriefProgress.success
     && parsedExecutionBriefProgress.data.briefId === executionBriefRow?.id
@@ -262,6 +266,14 @@ async function ConversationalCapitalProject({
     && parsedExecutionBriefProgress.data.workstreams.every((workstream, index) =>
       workstream.position === index && workstream.label === parsedExecutionBrief.data.workstreams[index]?.label)
     ? parsedExecutionBriefProgress.data
+    : null;
+  const executionBriefNarrative = parsedExecutionBrief?.success
+    && parsedExecutionBriefNarrative.success
+    && parsedExecutionBriefNarrative.data.briefId === executionBriefRow?.id
+    && parsedExecutionBriefNarrative.data.version === executionBriefRow.brief_version
+    && parsedExecutionBriefNarrative.data.events.every((event) =>
+      event.label === parsedExecutionBrief.data.workstreams[event.position]?.label)
+    ? parsedExecutionBriefNarrative.data
     : null;
   const privateCase = ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
   const preliminary = privateCase
@@ -467,7 +479,8 @@ async function ConversationalCapitalProject({
     detail: event.detail,
     summary: locale === "en-US" ? event.summary_en : event.summary_pt,
   })))
-    .filter((event) => project.entry_job !== "origination_thesis" || !eventTaskSpecId(event.detail))
+    .filter((event) => !eventTaskSpecId(event.detail)
+      || (!parsedExecutionBrief?.success && project.entry_job !== "origination_thesis"))
     .map((event) => ({
       id: event.id,
       type: customerEventType(event.type, event.detail),
@@ -538,6 +551,7 @@ async function ConversationalCapitalProject({
       brief: parsedExecutionBrief.data,
       changes: parsedExecutionBriefChanges?.success ? parsedExecutionBriefChanges.data : [],
       createdAt: executionBriefRow!.created_at,
+      narrative: executionBriefNarrative,
       progress: executionBriefProgress,
       version: executionBriefRow!.brief_version,
     } : null}
