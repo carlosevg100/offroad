@@ -1046,6 +1046,7 @@ export type Database = {
           question: string
           redundancy_penalty: number
           requirement_key: string
+          source_namespace: string
           status: string
           updated_at: string
           why_it_matters: string
@@ -1067,6 +1068,7 @@ export type Database = {
           question: string
           redundancy_penalty?: number
           requirement_key: string
+          source_namespace?: string
           status: string
           updated_at?: string
           why_it_matters: string
@@ -1088,6 +1090,7 @@ export type Database = {
           question?: string
           redundancy_penalty?: number
           requirement_key?: string
+          source_namespace?: string
           status?: string
           updated_at?: string
           why_it_matters?: string
@@ -8299,6 +8302,14 @@ export type Database = {
           p_assessment: Json
           p_capability_token: string
           p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_sync_project_information_requests_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_projection: Json
         }
         Returns: Json
       }

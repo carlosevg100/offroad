@@ -356,6 +356,67 @@ export type IntegrationPreviewDependencies = {
   now?: () => Date;
 };
 
+type PreviewAlignmentQuestion = {id: string; text: string; changes_the_work: string};
+
+const governedChoices: Record<string, {pt: string[]; en: string[]}> = {
+  "q-angle": {
+    pt: ["Refinanciamento como foco principal", "Alternativas de estrutura de capital mais amplas"],
+    en: ["Refinancing as the primary focus", "Broader capital-structure alternatives"],
+  },
+  "q-meeting": {
+    pt: ["Conversa exploratória", "Produto ou estrutura específica para testar"],
+    en: ["Exploratory conversation", "A specific product or structure to test"],
+  },
+  "q-format": {
+    pt: ["Briefing interno", "Páginas de pitch", "Análise com cenários"],
+    en: ["Internal briefing", "Pitch pages", "Scenario analysis"],
+  },
+};
+
+/** Turns the questions selected by the brief planner into governed project objects. Stable
+ * requirement keys let a later answer close the exact question and survive every following run. */
+export function buildPreviewInformationRequestProjection(input: {
+  projectId: string;
+  locale: "pt-BR" | "en-US";
+  projectionRef: string;
+  questions: PreviewAlignmentQuestion[];
+}) {
+  const english = input.locale === "en-US";
+  return {
+    schemaVersion: "project-information-request-projection.v1",
+    projectId: input.projectId,
+    sourceNamespace: "integration_preview",
+    projectionRef: input.projectionRef,
+    requests: input.questions.slice(0, 3).map((question, index) => {
+      const choices = governedChoices[question.id]?.[english ? "en" : "pt"] ?? [];
+      return {
+        id: randomUUID(),
+        schemaVersion: "dcm-information-request.v1",
+        projectId: input.projectId,
+        requirementKey: question.id,
+        question: question.text,
+        whyItMatters: english
+          ? `This point is still open because it ${question.changes_the_work}.`
+          : `Este ponto ainda está aberto porque ${question.changes_the_work}.`,
+        decisionImpact: english
+          ? `Your answer changes how I scope and present the next deliverable.`
+          : `Sua resposta altera o escopo e a forma da próxima entrega.`,
+        acceptableEvidence: english
+          ? ["Your direction in this conversation", "An instruction from the work sponsor"]
+          : ["Sua orientação nesta conversa", "Uma instrução do responsável pelo trabalho"],
+        answerKind: choices.length ? "choice" : "text",
+        choices,
+        priority: index === 0 ? "blocking" : "high_value",
+        informationGain: Number((1 - index * 0.15).toFixed(3)),
+        materiality: Number((0.9 - index * 0.1).toFixed(3)),
+        answerability: 0.95,
+        redundancyPenalty: 0,
+        status: "open",
+      };
+    }),
+  };
+}
+
 const requestSchema = z.object({
   turn: z.number().int().positive(),
   composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen", "prepare_decision"]),
@@ -513,6 +574,21 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       artifactByTask.set(step.taskId, {id: artifact.id, artifactFingerprint: artifact.artifactFingerprint, replayed: artifact.replayed});
       await queue.writeStage(job, `${stage}:${step.taskId}`, "succeeded", {summary_pt: `${step.label.pt}: ${stateLabel(String(output.state), "pt-BR")}`, summary_en: `${step.label.en}: ${stateLabel(String(output.state), "en-US")}`, task_spec_id: step.taskId, state: output.state});
     }
+
+    const briefOutput = outputs.get("A01");
+    const alignmentQuestions = Array.isArray(briefOutput?.alignment_questions)
+      ? (briefOutput.alignment_questions as PreviewAlignmentQuestion[])
+      : [];
+    const briefArtifact = artifactByTask.get("A01");
+    if (!briefArtifact) throw new Error("the preview run did not produce or replay the meeting brief");
+    if (!queue.syncProjectInformationRequests) throw new Error("the queue cannot project workflow questions");
+    const questionProjection = await queue.syncProjectInformationRequests(job, buildPreviewInformationRequestProjection({
+      projectId: context.project.id,
+      locale,
+      projectionRef: `preview_meeting_brief:${briefArtifact.artifactFingerprint}`,
+      questions: alignmentQuestions,
+    }));
+    log("integration_preview.questions_projected", {job: job.job_id, ...questionProjection});
 
     const final = artifactByTask.get(case01PreviewSteps.at(-1)!.taskId)!;
     const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, request, questions: questionsResult});

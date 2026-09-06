@@ -230,6 +230,13 @@ export type QueueClient = {
     requestCount: number;
     decisionCount: number;
   }>;
+  /** Projects the workflow's highest-value open questions into the project without requiring an
+   * agent-plan row. Answered and waived questions remain closed across later runs. */
+  syncProjectInformationRequests?(job: CapitalProjectAnalysisJob, projection: unknown): Promise<{
+    openCount: number;
+    preservedClosedCount: number;
+    supersededCount: number;
+  }>;
   recordAgentResponse(
     job: AgentOperationBriefJob,
     assistantMessageId: string,
@@ -655,6 +662,24 @@ export function createQueueClient(
         coverageCount: parsed.coverage_count,
         requestCount: parsed.request_count,
         decisionCount: parsed.decision_count,
+      };
+    },
+
+    async syncProjectInformationRequests(job, projection) {
+      const data = await call("worker_sync_project_information_requests_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_projection: projection,
+      });
+      const parsed = z.object({
+        open_count: z.number().int().min(0).max(3),
+        preserved_closed_count: z.number().int().nonnegative(),
+        superseded_count: z.number().int().nonnegative(),
+      }).parse(data);
+      return {
+        openCount: parsed.open_count,
+        preservedClosedCount: parsed.preserved_closed_count,
+        supersededCount: parsed.superseded_count,
       };
     },
 

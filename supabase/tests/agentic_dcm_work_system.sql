@@ -94,6 +94,12 @@ begin
     raise exception 'agent-assessment command has unsafe or incomplete privileges';
   end if;
 
+  if to_regprocedure('public.worker_sync_project_information_requests_v1(uuid,text,jsonb)') is null
+    or has_function_privilege('anon', 'public.worker_sync_project_information_requests_v1(uuid,text,jsonb)', 'EXECUTE')
+    or not has_function_privilege('authenticated', 'public.worker_sync_project_information_requests_v1(uuid,text,jsonb)', 'EXECUTE') then
+    raise exception 'project information-request projection has unsafe or incomplete privileges';
+  end if;
+
   if not exists (
     select 1 from pg_catalog.pg_indexes
     where schemaname = 'public'
@@ -392,6 +398,118 @@ begin
   exception when serialization_failure then rejected := true;
   end;
   if not rejected then raise exception 'a stale closed question accepted a second answer'; end if;
+end;
+$$;
+
+-- A compiled project workflow can surface questions without an agent-plan row. Replays update the
+-- same open object; after a person answers, a later projection preserves the answer and does not
+-- silently reopen the question.
+reset role;
+update public.capital_project_agent_plans
+set status = 'superseded'
+where id = '30000000-0000-4000-8000-000000000393';
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000393","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+declare
+  ids agent_work_system_ids%rowtype;
+  projection jsonb;
+  first_result jsonb;
+  replay_result jsonb;
+begin
+  select * into ids from agent_work_system_ids;
+  projection := jsonb_build_object(
+    'schemaVersion', 'project-information-request-projection.v1',
+    'projectId', ids.project_id,
+    'sourceNamespace', 'integration_preview',
+    'projectionRef', 'preview_meeting_brief:first',
+    'requests', jsonb_build_array(jsonb_build_object(
+      'schemaVersion', 'dcm-information-request.v1',
+      'id', '71000000-0000-4000-8000-000000000393',
+      'projectId', ids.project_id,
+      'requirementKey', 'q-angle',
+      'question', 'Refinanciamento como foco ou alternativas mais amplas?',
+      'whyItMatters', 'Esse ponto define o universo de alternativas que será aprofundado.',
+      'decisionImpact', 'A resposta altera o escopo e a forma da próxima entrega.',
+      'acceptableEvidence', jsonb_build_array('Orientação nesta conversa'),
+      'answerKind', 'choice',
+      'choices', jsonb_build_array('Refinanciamento como foco principal', 'Alternativas mais amplas'),
+      'priority', 'blocking', 'informationGain', 1, 'materiality', 0.9,
+      'answerability', 0.95, 'redundancyPenalty', 0, 'status', 'open'
+    ))
+  );
+
+  first_result := public.worker_sync_project_information_requests_v1(
+    ids.job_id, repeat('c', 64), projection
+  );
+  replay_result := public.worker_sync_project_information_requests_v1(
+    ids.job_id, repeat('c', 64), projection
+  );
+  if first_result ->> 'open_count' <> '1'
+    or replay_result ->> 'open_count' <> '1'
+    or (select count(*) from public.capital_project_information_requests
+        where capital_project_id = ids.project_id and requirement_key = 'q-angle') <> 1
+    or (select count(*) from public.capital_project_agent_events
+        where capital_project_id = ids.project_id and event_type = 'question_created'
+          and detail ->> 'projection_ref' = 'preview_meeting_brief:first') <> 1 then
+    raise exception 'workflow question projection is not idempotent: %, %', first_result, replay_result;
+  end if;
+end;
+$$;
+
+reset role;
+update public.capital_project_information_requests
+set status = 'answered', answer_ref = jsonb_build_object('test', true)
+where id = '71000000-0000-4000-8000-000000000393';
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000393","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+declare
+  ids agent_work_system_ids%rowtype;
+  projection jsonb;
+  closed_result jsonb;
+begin
+  select * into ids from agent_work_system_ids;
+  projection := jsonb_build_object(
+    'schemaVersion', 'project-information-request-projection.v1',
+    'projectId', ids.project_id,
+    'sourceNamespace', 'integration_preview',
+    'projectionRef', 'preview_meeting_brief:second',
+    'requests', jsonb_build_array(jsonb_build_object(
+      'schemaVersion', 'dcm-information-request.v1',
+      'id', '72000000-0000-4000-8000-000000000393',
+      'projectId', ids.project_id,
+      'requirementKey', 'q-angle',
+      'question', 'Refinanciamento como foco ou alternativas mais amplas?',
+      'whyItMatters', 'Esse ponto define o universo de alternativas que será aprofundado.',
+      'decisionImpact', 'A resposta altera o escopo e a forma da próxima entrega.',
+      'acceptableEvidence', jsonb_build_array('Orientação nesta conversa'),
+      'answerKind', 'choice',
+      'choices', jsonb_build_array('Refinanciamento como foco principal', 'Alternativas mais amplas'),
+      'priority', 'blocking', 'informationGain', 1, 'materiality', 0.9,
+      'answerability', 0.95, 'redundancyPenalty', 0, 'status', 'open'
+    ))
+  );
+
+  closed_result := public.worker_sync_project_information_requests_v1(
+    ids.job_id, repeat('c', 64), projection
+  );
+  if closed_result ->> 'open_count' <> '0'
+    or closed_result ->> 'preserved_closed_count' <> '1'
+    or (select status from public.capital_project_information_requests
+        where id = '71000000-0000-4000-8000-000000000393') <> 'answered'
+    or (select count(*) from public.capital_project_information_requests
+        where capital_project_id = ids.project_id and requirement_key = 'q-angle') <> 1 then
+    raise exception 'a later projection reopened answered project context: %', closed_result;
+  end if;
 end;
 $$;
 

@@ -214,6 +214,48 @@ describe("agent-plan persistence", () => {
       p_assessment: assessment,
     });
   });
+
+  it("projects workflow questions without requiring an agent-plan row", async () => {
+    const projectionJob: CapitalProjectAnalysisJob = {
+      ...job,
+      kind: "capital_project_analysis",
+      payload: {
+        analysis_scope: "integration_preview",
+        locale: "pt-BR",
+        capital_project_id: "50000000-0000-4000-8000-000000000001",
+        capital_project_plan_id: "60000000-0000-4000-8000-000000000001",
+        capital_project_brief_id: "70000000-0000-4000-8000-000000000001",
+        capital_task_ids: ["A01"],
+        capital_artifact_required: false,
+        trigger_event: {},
+        model_budget: {max_cost_usd: 1, max_calls: 1},
+      },
+    };
+    const projection = {
+      schemaVersion: "project-information-request-projection.v1",
+      projectId: "50000000-0000-4000-8000-000000000001",
+      sourceNamespace: "integration_preview",
+      projectionRef: "artifact:A01:abc",
+      requests: [],
+    };
+    const rpc = vi.fn(async () => ({data: {
+      open_count: 0,
+      preserved_closed_count: 1,
+      superseded_count: 0,
+    }, error: null}));
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.syncProjectInformationRequests!(projectionJob, projection)).resolves.toEqual({
+      openCount: 0,
+      preservedClosedCount: 1,
+      supersededCount: 0,
+    });
+    expect(rpc).toHaveBeenCalledWith("worker_sync_project_information_requests_v1", {
+      p_job_id: projectionJob.job_id,
+      p_capability_token: projectionJob.capability_token,
+      p_projection: projection,
+    });
+  });
 });
 
 describe("execution-brief activation", () => {
