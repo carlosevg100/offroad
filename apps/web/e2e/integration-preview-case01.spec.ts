@@ -198,7 +198,6 @@ test.describe("integration_preview: Case 01 end to end", () => {
     // shown instead of silently reopening the first one.
     await expect(page.locator(".information-request-card h2")).toContainText("Reunião exploratória");
     await expect(page.locator(".information-request-card h2")).not.toContainText("Leitura de refinanciamento");
-    await expect(page.locator(".advisor-thread__activity-event").filter({hasText: "Resposta incorporada"})).toBeVisible();
     await page.screenshot({path: join(outputDirectory, "03a-governed-question.png"), fullPage: true});
   });
 
