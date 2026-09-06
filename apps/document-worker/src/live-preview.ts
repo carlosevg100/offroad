@@ -132,7 +132,9 @@ frozen evidence base. Besides the envelope, fill "turn":
 - answers: when the person answers one of the openQuestions listed in the input, the question id,
   the answer as stated and its effect on audience, depth or scope.
 - scopeChanges: an object with audience, depth and form, each null unless the person changes it in
-  this turn.`;
+  this turn.
+- requestKind comes from the product control. When it is execution_brief_edit, read the prose as an
+  instruction to revise the current plan; do not reinterpret it as an unrelated new assignment.`;
 
 export type LiveUnderstanding = {
   envelope: IntentEnvelope;
@@ -147,6 +149,7 @@ export type LiveTurnContext = ShadowRoutingContext & {
   openQuestions: Array<{id: string; text: string}>;
   /** Which signed objects already exist in the project (task ids), so a question can be answered from them. */
   priorObjectKinds: string[];
+  requestKind: "message" | "execution_brief_edit";
 };
 
 /** One model call: the turn read into an envelope and the preview-desk fields. Throws on model or schema failure. */
@@ -168,6 +171,7 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
         professionalContext: context.professionalContext,
         openQuestions: context.openQuestions,
         priorObjects: context.priorObjectKinds,
+        requestKind: context.requestKind,
       }),
     }],
     schema: liveRoutingOutputSchema,
@@ -203,6 +207,7 @@ export type LiveDecisionInput = {
   priorOutputs: Map<string, PreviewStepOutput>;
   entryJob: string;
   messageId: string;
+  planEditRequested?: boolean;
   registryVersion?: string;
 };
 
@@ -428,7 +433,7 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   }
 
   // The classifier abstains: the desk asks instead of guessing.
-  if (output.abstain) {
+  if (output.abstain && !input.planEditRequested) {
     const question = output.firstQuestion ?? t(locale, "O que você precisa que eu faça, para qual companhia e para quem?", "What do you need done, for which company and for whom?");
     return {
       kind: "abstain", composition: null, activation: null,
@@ -452,7 +457,9 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     };
   }
 
-  const scope = compositionFromEnvelope(output, hasAnalysis);
+  const scope = input.planEditRequested
+    ? {composition: hasAnalysis ? "deepen" as const : "prepare_meeting" as const, outOfScope: null}
+    : compositionFromEnvelope(output, hasAnalysis);
   // A board or a committee decides: the same analysis chain, the decision form of the brief.
   if (scope.composition && !scope.outOfScope && (audience === "board" || audience === "committee")) scope.composition = "prepare_decision";
   if (scope.outOfScope) {
@@ -468,6 +475,7 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const turnInput: PreviewTurnInput = {
     locale, message: input.message, recentMessages: input.recentMessages, artifactTypes: input.artifactTypes, runActive: input.runActive,
     priorOutputs: input.priorOutputs, entryJob: input.entryJob, messageId: input.messageId,
+    planEditRequested: input.planEditRequested,
     ...(input.registryVersion ? {registryVersion: input.registryVersion} : {}),
   };
 

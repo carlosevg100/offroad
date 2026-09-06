@@ -1163,6 +1163,7 @@
         "notFound": "O projeto não está disponível.",
         "save": "Não foi possível iniciar o projeto.",
         "processing": "Os documentos foram recebidos, mas a leitura precisa ser iniciada novamente.",
+        "stale": "O plano mudou. Atualize a página antes de continuar.",
         "upload": "Um ou mais documentos não puderam ser recebidos com segurança."
       },
       "greetings": {
@@ -1279,6 +1280,7 @@
         "notFound": "O projeto não está mais disponível.",
         "save": "Não foi possível registrar a mensagem.",
         "processing": "A leitura não pôde ser iniciada.",
+        "stale": "O plano mudou desde que você o abriu. Revise a versão mais recente antes de ajustar.",
         "upload": "Um ou mais documentos não puderam ser recebidos com segurança."
       },
       "openRequirements": "O que ainda falta e por que importa",

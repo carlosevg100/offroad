@@ -29,9 +29,13 @@ const continueSchema = z.object({
   content: z.string().trim().min(1).max(8000),
   messageId: z.string().uuid(),
 });
+const executionBriefEditSchema = continueSchema.extend({
+  executionBriefId: z.string().uuid(),
+  expectedFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+});
 const projectSchema = z.object({locale: localeSchema, projectId: z.string().uuid()});
 
-export type AdvisorActionError = "invalid" | "denied" | "duplicate" | "not_found" | "save" | "processing";
+export type AdvisorActionError = "invalid" | "denied" | "duplicate" | "not_found" | "save" | "processing" | "stale";
 export type StartAdvisorProjectResult =
   | {ok: true; entryJob: CapitalProjectJob; projectId: string; sessionId: string}
   | {ok: false; error: AdvisorActionError};
@@ -46,6 +50,8 @@ function record(value: unknown): Record<string, unknown> | null {
 
 function actionError(error: {code?: string; message?: string} | null): AdvisorActionError {
   const message = error?.message ?? "";
+  if (error?.code === "40001" || message.includes("stale")) return "stale";
+  if (error?.code === "22023" || message.includes("invalid_")) return "invalid";
   if (error?.code === "23505" || message.includes("already_in_use")) return "duplicate";
   if (error?.code === "P0002" || message.includes("not_found")) return "not_found";
   if (error?.code === "55000" || message.includes("in_progress")) return "processing";
@@ -121,6 +127,24 @@ export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessa
   }
   const {error} = await supabase.rpc("submit_advisor_turn_v1", {
     p_project_id: parsed.data.projectId,
+    p_message_id: parsed.data.messageId,
+    p_locale: parsed.data.locale,
+    p_content: parsed.data.content,
+  });
+  return error ? {ok: false, error: actionError(error)} : {ok: true};
+}
+
+/** Records a plan adjustment against the exact immutable brief the person reviewed, then queues
+ * the same advisor runtime used by the conversation. The database owns stale-state detection,
+ * idempotency and the audit binding; the UI never manufactures a replacement plan. */
+export async function requestAdvisorExecutionBriefEdit(input: unknown): Promise<AdvisorMessageResult> {
+  const parsed = executionBriefEditSchema.safeParse(input);
+  if (!parsed.success) return {ok: false, error: "invalid"};
+  const {supabase} = await requireWorkspace(parsed.data.locale);
+  const {error} = await supabase.rpc("submit_advisor_execution_brief_edit_v1", {
+    p_project_id: parsed.data.projectId,
+    p_execution_brief_id: parsed.data.executionBriefId,
+    p_expected_fingerprint: parsed.data.expectedFingerprint,
     p_message_id: parsed.data.messageId,
     p_locale: parsed.data.locale,
     p_content: parsed.data.content,

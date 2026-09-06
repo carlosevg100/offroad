@@ -324,6 +324,27 @@
 .execution-brief-card__assumptions dd {margin: 5px 0 0;}
 .execution-brief-card__assumptions dd strong {display: block; font-size: 10px;}
 .execution-brief-card__assumptions dd span {color: #7b8489; display: block; font-size: 8px; line-height: 1.4; margin-top: 3px;}
+.execution-brief-card__edit {border-top: 1px solid #e7e9e6; padding: 13px 27px;}
+.execution-brief-card__edit > button {align-items: center; background: none; border: 0; color: #4f5c63; cursor: pointer; display: grid; gap: 10px; grid-template-columns: 17px minmax(0, 1fr) 14px; padding: 4px 0; text-align: left; width: 100%;}
+.execution-brief-card__edit > button:hover {color: #20262b;}
+.execution-brief-card__edit > button > svg:first-child {color: #718050;}
+.execution-brief-card__edit > button span {display: grid; gap: 2px;}
+.execution-brief-card__edit > button strong {font-size: 10px; font-weight: 650;}
+.execution-brief-card__edit > button small {color: #8a9296; font-size: 8px; line-height: 1.35;}
+.execution-brief-card__edit form {display: grid; gap: 11px; padding: 5px 0 3px;}
+.execution-brief-card__edit form > header {align-items: start; display: flex; gap: 16px; justify-content: space-between;}
+.execution-brief-card__edit form > header > div {display: grid; gap: 3px;}
+.execution-brief-card__edit form > header strong {font-size: 11px; font-weight: 650;}
+.execution-brief-card__edit form > header small {color: #858e93; font-size: 8px;}
+.execution-brief-card__edit form > header button {background: none; border: 0; color: #838c91; cursor: pointer; padding: 1px;}
+.execution-brief-card__edit textarea {background: #fbfcfa; border: 1px solid #dce1d9; border-radius: 8px; color: #252b30; font: inherit; font-size: 11px; line-height: 1.5; outline: none; padding: 11px 12px; resize: vertical; width: 100%;}
+.execution-brief-card__edit textarea:focus {border-color: #9eae82; box-shadow: 0 0 0 3px rgb(125 148 85 / 8%);}
+.execution-brief-card__edit form > footer {align-items: center; display: flex; gap: 16px; justify-content: space-between;}
+.execution-brief-card__edit form > footer small {color: #858e93; font-size: 8px; line-height: 1.4; max-width: 430px;}
+.execution-brief-card__edit form > footer button {align-items: center; background: #20262b; border: 0; border-radius: 7px; color: #fff; cursor: pointer; display: inline-flex; font-size: 9px; font-weight: 650; gap: 6px; padding: 8px 11px; white-space: nowrap;}
+.execution-brief-card__edit button:disabled,
+.execution-brief-card__edit textarea:disabled {cursor: not-allowed; opacity: .55;}
+.execution-brief-card__edit form > p {color: #a3463f; font-size: 9px; line-height: 1.4; margin: 0;}
 .execution-brief-card__checkpoint {
   align-items: center;
   background: #20262b;
@@ -348,6 +369,8 @@
   .execution-brief-card__changes > header {align-items: flex-start; flex-direction: column; gap: 4px;}
   .execution-brief-card__assumptions {padding: 17px 20px;}
   .execution-brief-card__assumptions dl {grid-template-columns: 1fr;}
+  .execution-brief-card__edit {padding: 13px 20px;}
+  .execution-brief-card__edit form > footer {align-items: flex-start; flex-direction: column;}
   .execution-brief-card__checkpoint {padding: 14px 20px;}
 }
 

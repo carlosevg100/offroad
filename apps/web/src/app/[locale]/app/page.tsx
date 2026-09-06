@@ -121,7 +121,7 @@ export default async function ApplicationHome({params, searchParams}: Props) {
     continueLabel: t("advisor.continueLabel"),
     status: {creating: t("advisor.status.creating"), uploading: t("advisor.status.uploading"), starting: t("advisor.status.starting")},
     errors: {
-      invalid: t("advisor.errors.invalid"), denied: t("advisor.errors.denied"), duplicate: t("advisor.errors.duplicate"), not_found: t("advisor.errors.notFound"), save: t("advisor.errors.save"), processing: t("advisor.errors.processing"), upload: t("advisor.errors.upload"),
+      invalid: t("advisor.errors.invalid"), denied: t("advisor.errors.denied"), duplicate: t("advisor.errors.duplicate"), not_found: t("advisor.errors.notFound"), save: t("advisor.errors.save"), processing: t("advisor.errors.processing"), stale: t("advisor.errors.stale"), upload: t("advisor.errors.upload"),
     },
     groupContext: t("advisor.groupContext"),
   };

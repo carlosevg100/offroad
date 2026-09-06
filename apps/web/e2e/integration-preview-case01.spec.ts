@@ -179,6 +179,28 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.screenshot({path: join(outputDirectory, "03-readout.png"), fullPage: true});
   });
 
+  test("plan control: an adjustment is bound to the displayed version and returns as a visible diff", async () => {
+    const brief = page.getByTestId("execution-brief");
+    const versionBefore = await brief.locator(":scope > header > small").innerText();
+    await brief.getByRole("button", {name: "Ajustar este plano"}).click();
+    await expect(brief.locator(".execution-brief-card__edit form")).toBeVisible();
+    const adjustment = "Na comparação, priorize flexibilidade antes de custo e retire qualquer bloco de rating sem evidência.";
+    await brief.locator(".execution-brief-card__edit textarea").fill(adjustment);
+    await brief.getByRole("button", {name: "Enviar ajuste"}).click();
+    await expect(page.locator(".advisor-thread__message.is-user").last()).toContainText("priorize flexibilidade");
+    const acknowledgement = await waitForAssistant(page, /Ajuste recebido sobre a versão exibida/);
+    record("ajuste governado do plano", acknowledgement);
+    await expect.poll(async () => {
+      await page.reload();
+      return page.getByTestId("execution-brief").locator(":scope > header > small").innerText();
+    }, {timeout: 180_000}).not.toBe(versionBefore);
+    const changes = page.getByTestId("execution-brief-changes");
+    await expect(changes).toBeVisible();
+    await expect(changes).toContainText("O que mudou nesta versão");
+    await expect(page.locator(".advisor-project__header > span")).toContainText("Pronto para continuar", {timeout: 240_000});
+    await page.screenshot({path: join(outputDirectory, "03b-governed-plan-edit.png"), fullPage: true});
+  });
+
   test("material: the transition plans three pitch pages from the signed objects", async () => {
     await send(page, "Vamos preparar o material: meu VP quer três páginas de pitch, situação atual, alternativas e impacto nos indicadores.");
     const acknowledged = await waitForAssistant(page, /Vou planejar o material a partir dos objetos já assinados: 3 páginas/);

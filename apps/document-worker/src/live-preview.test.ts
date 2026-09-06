@@ -72,6 +72,7 @@ const context: LiveTurnContext = {
   professionalContext: {useForms: ["institutional_work"], professionalRoles: ["banker"], practiceAreas: ["investment_banking", "dcm"], primaryObjectives: ["prepare_meetings"]},
   openQuestions: [],
   priorObjectKinds: [],
+  requestKind: "message",
 };
 
 async function decide(output: LiveRoutingOutput, overrides: Partial<Parameters<typeof decideLiveTurn>[0]> = {}) {

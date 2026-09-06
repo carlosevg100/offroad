@@ -25,7 +25,7 @@ export type AdvisorStartCopy = {
   send: string;
   continueLabel: string;
   status: {creating: string; uploading: string; starting: string};
-  errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; upload: string};
+  errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; stale: string; upload: string};
   groupContext: string;
 };
 
