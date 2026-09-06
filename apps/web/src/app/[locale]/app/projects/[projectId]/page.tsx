@@ -1,6 +1,6 @@
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
 import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
-import {localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
+import {executionBriefProgressSchema, localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -247,6 +247,18 @@ async function ConversationalCapitalProject({
   ]);
   const parsedExecutionBrief = executionBriefRow
     ? visibleExecutionBriefSchema.safeParse(executionBriefRow.visible_snapshot)
+    : null;
+  const {data: executionBriefProgressRaw} = executionBriefRow
+    ? await supabase.rpc("read_capital_project_execution_brief_progress_v1", {p_execution_brief_id: executionBriefRow.id})
+    : {data: null};
+  const parsedExecutionBriefProgress = executionBriefProgressSchema.safeParse(executionBriefProgressRaw);
+  const executionBriefProgress = parsedExecutionBrief?.success
+    && parsedExecutionBriefProgress.success
+    && parsedExecutionBriefProgress.data.briefId === executionBriefRow?.id
+    && parsedExecutionBriefProgress.data.version === executionBriefRow.brief_version
+    && parsedExecutionBriefProgress.data.workstreams.every((workstream, index) =>
+      workstream.position === index && workstream.label === parsedExecutionBrief.data.workstreams[index]?.label)
+    ? parsedExecutionBriefProgress.data
     : null;
   const privateCase = ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
   const preliminary = privateCase
@@ -519,7 +531,11 @@ async function ConversationalCapitalProject({
     }))}
     copy={copy}
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
-    executionBrief={parsedExecutionBrief?.success ? {brief: parsedExecutionBrief.data, version: executionBriefRow!.brief_version} : null}
+    executionBrief={parsedExecutionBrief?.success ? {
+      brief: parsedExecutionBrief.data,
+      progress: executionBriefProgress,
+      version: executionBriefRow!.brief_version,
+    } : null}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
     activityEvents={activityEvents}

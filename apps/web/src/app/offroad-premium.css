@@ -263,7 +263,13 @@
 }
 .execution-brief-card__workstreams > li > div > header {align-items: flex-start; display: flex; gap: 14px; justify-content: space-between;}
 .execution-brief-card__workstreams > li > div > header > strong {font-size: 13px; font-weight: 650; line-height: 1.4;}
-.execution-brief-card__workstreams > li > div > header > small {align-items: center; color: #92999d; display: inline-flex; flex: 0 1 auto; font-size: 8px; gap: 4px; line-height: 1.35; text-align: right;}
+.execution-brief-card__workstreams > li > div > header > div {align-items: flex-end; display: flex; flex: 0 0 auto; flex-direction: column; gap: 5px;}
+.execution-brief-card__workstreams > li > div > header small {align-items: center; color: #92999d; display: inline-flex; flex: 0 1 auto; font-size: 8px; gap: 4px; line-height: 1.35; text-align: right;}
+.execution-brief-card__progress {align-items: center; color: #7d8589; display: inline-flex; font-size: 8px; font-weight: 650; gap: 5px; white-space: nowrap;}
+.execution-brief-card__workstreams > li[data-progress="completed"] .execution-brief-card__progress {color: #60773e;}
+.execution-brief-card__workstreams > li[data-progress="running"] .execution-brief-card__progress {color: #50682f;}
+.execution-brief-card__workstreams > li[data-progress="waiting_user"] .execution-brief-card__progress,
+.execution-brief-card__workstreams > li[data-progress="needs_attention"] .execution-brief-card__progress {color: #976744;}
 .execution-brief-card__workstreams > li p {color: #697279; font-size: 11px; line-height: 1.55; margin: 6px 0 0;}
 .execution-brief-card__sources {display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;}
 .execution-brief-card__sources > span {
@@ -313,7 +319,8 @@
   .execution-brief-card__deliverable {padding: 15px 20px;}
   .execution-brief-card__workstreams {padding: 0 20px;}
   .execution-brief-card__workstreams > li > div > header {display: block;}
-  .execution-brief-card__workstreams > li > div > header > small {margin-top: 5px; text-align: left;}
+  .execution-brief-card__workstreams > li > div > header > div {align-items: flex-start; margin-top: 7px;}
+  .execution-brief-card__workstreams > li > div > header small {text-align: left;}
   .execution-brief-card__assumptions {padding: 17px 20px;}
   .execution-brief-card__assumptions dl {grid-template-columns: 1fr;}
   .execution-brief-card__checkpoint {padding: 14px 20px;}

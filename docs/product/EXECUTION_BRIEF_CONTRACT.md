@@ -102,6 +102,8 @@ Na primeira integração vertical:
 - a projeção visível volta do banco sob schema estrito e aparece no projeto real;
 - a interface mostra objetivo, produto esperado, frentes específicas, fontes, análises, premissas e
   próximo checkpoint, sem task IDs, autoridade interna ou mecanismos de agente;
+- o progresso de cada frente é derivado dos últimos task runs por um RPC tenant-bound; o cliente
+  recebe somente estado e contagem e não possui privilégio de leitura sobre o snapshot interno;
 - replay do mesmo fingerprint não cria uma versão falsa.
 
 Essa integração prova o caminho `compiler -> worker -> persistência -> leitura -> card`. Ela ainda
@@ -114,7 +116,7 @@ O contrato está conectado à primeira superfície real, mas permanece sob valid
 1. provar a migration e o RPC atômico numa reconstrução limpa do banco e numa jornada viva;
 2. ligar todos os ramos do router universal ao compiler, sem fallback genérico;
 3. permitir ajustar objetivo, fontes, frentes e premissas por eventos governados e mostrar o diff;
-4. converter cada frente em estados reais de Live Work, com progresso derivado dos runs;
+4. acrescentar eventos narrativos por frente e controles reais de pausa e retomada;
 5. manter o histórico de versões navegável na interface;
 6. provar as seis intenções na interface e seus adversariais de autorização e contaminação;
 7. promover somente os escopos que possuam executores e métodos homologados.

@@ -5,7 +5,15 @@ import {ExecutionBriefCard} from "./execution-brief-card";
 
 describe("ExecutionBriefCard", () => {
   it("shows the user agreement and never leaks internal graph or authority fields", () => {
-    const html = renderToStaticMarkup(<ExecutionBriefCard version={3} brief={{
+    const html = renderToStaticMarkup(<ExecutionBriefCard version={3} progress={{
+      briefId: "10000000-0000-4000-8000-000000000001",
+      version: 3,
+      workstreams: [
+        {position: 0, label: "Conferir balanço, caixa e dívida", status: "completed", completed: 1, total: 1},
+        {position: 1, label: "Testar serviço da dívida e downside", status: "running", completed: 2, total: 4},
+        {position: 2, label: "Comparar os caminhos", status: "waiting_user", completed: 0, total: 2},
+      ],
+    }} brief={{
       schemaVersion: "execution-brief.v1",
       fingerprint: "a".repeat(64),
       locale: "pt-BR",
@@ -26,6 +34,9 @@ describe("ExecutionBriefCard", () => {
     expect(html).toContain("a pesquisar");
     expect(html).toContain("Premissas que você pode alterar");
     expect(html).toContain("Escolher o caminho a aprofundar");
+    expect(html).toContain("Concluída · 1/1");
+    expect(html).toContain("Em andamento · 2/4");
+    expect(html).toContain("Aguardando você · 0/2");
     expect(html).not.toContain("sourceTaskIds");
     expect(html).not.toContain("executionAuthority");
     expect(html).not.toContain("TaskSpec");

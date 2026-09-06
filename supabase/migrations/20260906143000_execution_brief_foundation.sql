@@ -96,7 +96,14 @@ create policy capital_project_execution_brief_events_select
 
 revoke all privileges on public.capital_project_execution_briefs from public, anon, authenticated;
 revoke all privileges on public.capital_project_execution_brief_events from public, anon, authenticated;
-grant select on public.capital_project_execution_briefs to authenticated;
+-- The internal snapshot binds visible workstreams to TaskSpecs and is never a client-readable
+-- column. Authenticated members receive the safe projection and metadata only; dynamic progress is
+-- exposed by a bounded RPC below.
+grant select (
+  id, organization_id, capital_project_id, plan_id, brief_version, schema_version,
+  brief_fingerprint, execution_mode, objective, proposed_deliverable, workstream_count,
+  visible_snapshot, parent_brief_id, change_summary, created_by, created_at
+) on public.capital_project_execution_briefs to authenticated;
 grant select on public.capital_project_execution_brief_events to authenticated;
 
 create trigger capital_project_execution_briefs_audit
@@ -538,3 +545,123 @@ grant execute on function public.worker_record_agent_response_and_activate_v4(
 comment on function public.worker_record_agent_response_and_activate_v4(
   uuid, text, uuid, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb
 ) is 'Atomically records an advisor response, activates its governed plan and stores the paired internal and visible Execution Brief.';
+
+-- Project workstream progress is derived from the latest run of every bound TaskSpec. The caller
+-- receives labels and counts, never TaskSpec IDs, executor names, error payloads or context
+-- manifests. This is the only customer-facing bridge from the internal brief binding to Live Work.
+create or replace function private.read_capital_project_execution_brief_progress_v1(
+  p_execution_brief_id uuid
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  brief_row public.capital_project_execution_briefs;
+  workstream_progress jsonb;
+begin
+  select brief.* into brief_row
+  from public.capital_project_execution_briefs brief
+  where brief.id = p_execution_brief_id
+    and private.can_access_capital_project(brief.organization_id, brief.capital_project_id);
+  if not found then
+    raise exception 'execution_brief_not_found' using errcode = 'P0002';
+  end if;
+
+  with workstreams as (
+    select
+      workstream.position - 1 as position,
+      workstream.value ->> 'label' as label,
+      workstream.value -> 'sourceTaskIds' as source_task_ids
+    from jsonb_array_elements(brief_row.internal_snapshot -> 'workstreams')
+      with ordinality workstream(value, position)
+  ),
+  bound_tasks as (
+    select
+      workstream.position,
+      workstream.label,
+      plan_task.id as plan_task_id
+    from workstreams workstream
+    cross join lateral jsonb_array_elements_text(workstream.source_task_ids) source_task(task_id)
+    join public.capital_project_plan_tasks plan_task
+      on plan_task.organization_id = brief_row.organization_id
+      and plan_task.plan_id = brief_row.plan_id
+      and plan_task.task_id = source_task.task_id
+  ),
+  task_state as (
+    select
+      bound_task.position,
+      bound_task.label,
+      coalesce(latest_run.status, 'waiting') as status
+    from bound_tasks bound_task
+    left join lateral (
+      select run.status
+      from public.capital_project_task_runs run
+      where run.organization_id = brief_row.organization_id
+        and run.plan_id = brief_row.plan_id
+        and run.plan_task_id = bound_task.plan_task_id
+      order by run.attempt_no desc
+      limit 1
+    ) latest_run on true
+  ),
+  summarized as (
+    select
+      task_state.position,
+      task_state.label,
+      count(*)::integer as total,
+      count(*) filter (where task_state.status = 'succeeded')::integer as completed,
+      case
+        when bool_or(task_state.status in ('failed', 'blocked')) then 'needs_attention'
+        when bool_or(task_state.status = 'waiting_user') then 'waiting_user'
+        when bool_and(task_state.status = 'succeeded') then 'completed'
+        when bool_or(task_state.status = 'running') then 'running'
+        when bool_or(task_state.status = 'queued') then 'queued'
+        else 'waiting'
+      end as status
+    from task_state
+    group by task_state.position, task_state.label
+  )
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'position', summarized.position,
+    'label', summarized.label,
+    'status', summarized.status,
+    'completed', summarized.completed,
+    'total', summarized.total
+  ) order by summarized.position), '[]'::jsonb)
+  into workstream_progress
+  from summarized;
+
+  if jsonb_array_length(workstream_progress) <> brief_row.workstream_count then
+    raise exception 'execution_brief_progress_binding_invalid' using errcode = '22023';
+  end if;
+  return jsonb_build_object(
+    'briefId', brief_row.id,
+    'version', brief_row.brief_version,
+    'workstreams', workstream_progress
+  );
+end;
+$$;
+
+create or replace function public.read_capital_project_execution_brief_progress_v1(
+  p_execution_brief_id uuid
+)
+returns jsonb
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.read_capital_project_execution_brief_progress_v1(p_execution_brief_id);
+$$;
+
+revoke all on function private.read_capital_project_execution_brief_progress_v1(uuid)
+  from public, anon;
+revoke all on function public.read_capital_project_execution_brief_progress_v1(uuid)
+  from public, anon;
+grant execute on function private.read_capital_project_execution_brief_progress_v1(uuid)
+  to authenticated;
+grant execute on function public.read_capital_project_execution_brief_progress_v1(uuid)
+  to authenticated;
+
+comment on function public.read_capital_project_execution_brief_progress_v1(uuid) is
+  'Returns tenant-authorized workstream-level progress without exposing TaskSpec bindings or worker internals.';

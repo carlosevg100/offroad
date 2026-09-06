@@ -71,6 +71,17 @@ insert into public.processing_jobs (
   '{"message_id":"80000000-0000-4000-8000-000000000601","locale":"pt-BR"}'::jsonb,
   1, now() + interval '10 minutes', extensions.digest(repeat('q',64), 'sha256')
 );
+insert into public.capital_project_task_runs (
+  organization_id, capital_project_id, plan_id, plan_task_id, attempt_no, status,
+  trigger_event, started_at, completed_at
+)
+select
+  task.organization_id, task.capital_project_id, task.plan_id, task.id, 1, 'succeeded',
+  '{"type":"execution_brief_test"}'::jsonb, now(), now()
+from public.capital_project_plan_tasks task
+where task.organization_id = '20000000-0000-4000-8000-000000000601'
+  and task.plan_id = '40000000-0000-4000-8000-000000000601'
+  and task.task_id = 'M01';
 
 do $$
 declare
@@ -208,7 +219,10 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000601","role":"authenticated","aal":"aal1"}', true);
 
 do $$
-declare accepted boolean;
+declare
+  accepted boolean;
+  latest_brief_id uuid;
+  progress jsonb;
 begin
   if (select count(*) from public.capital_project_execution_briefs) <> 2
     or (select count(*) from public.capital_project_execution_brief_events) <> 2 then
@@ -223,6 +237,28 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'authenticated client wrote an event directly'; end if;
+
+  select id into latest_brief_id
+  from public.capital_project_execution_briefs
+  order by brief_version desc
+  limit 1;
+  progress := public.read_capital_project_execution_brief_progress_v1(latest_brief_id);
+  if progress #>> '{workstreams,0,status}' <> 'completed'
+    or progress #>> '{workstreams,0,completed}' <> '1'
+    or progress #>> '{workstreams,1,status}' <> 'waiting'
+    or progress #>> '{workstreams,2,status}' <> 'waiting' then
+    raise exception 'workstream progress did not reflect real task runs: %', progress;
+  end if;
+  if progress::text ~ 'M0[1-3]' or progress::text ~ 'plan_task' then
+    raise exception 'workstream progress exposed an internal task binding: %', progress;
+  end if;
+
+  begin
+    perform internal_snapshot from public.capital_project_execution_briefs limit 1;
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'authenticated client read the internal brief snapshot'; end if;
 end;
 $$;
 
@@ -243,8 +279,11 @@ begin
     or has_table_privilege('authenticated', 'public.capital_project_execution_brief_events', 'insert')
     or has_function_privilege('anon', 'public.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)', 'execute')
     or has_function_privilege('anon', 'public.worker_record_agent_response_and_activate_v4(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
+    or has_column_privilege('authenticated', 'public.capital_project_execution_briefs', 'internal_snapshot', 'select')
+    or not has_column_privilege('authenticated', 'public.capital_project_execution_briefs', 'visible_snapshot', 'select')
     or not has_function_privilege('authenticated', 'public.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)', 'execute')
-    or not has_function_privilege('authenticated', 'public.worker_record_agent_response_and_activate_v4(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute') then
+    or not has_function_privilege('authenticated', 'public.worker_record_agent_response_and_activate_v4(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
+    or not has_function_privilege('authenticated', 'public.read_capital_project_execution_brief_progress_v1(uuid)', 'execute') then
     raise exception 'Execution Brief grants are wider or narrower than designed';
   end if;
 end;

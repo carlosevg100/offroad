@@ -39,6 +39,7 @@
 | Persistência | migration `20260906143000_execution_brief_foundation.sql` | brief interno e projeção visível imutáveis, versionados, com RLS, eventos e escrita capability-bound |
 | Atomicidade | RPC `worker_record_agent_response_and_activate_v4` + teste de queue | resposta, ativação e brief usam uma única transação; replay retorna a versão existente |
 | Fronteira visível | schema estrito + teste SSR do card | objetivo, produto, fontes, frentes, premissas e checkpoint aparecem; task IDs e autoridade interna não aparecem |
+| Live Work seguro | RPC de progresso + schemas e teste SSR | estado e contagem são derivados do último run de cada tarefa; resposta não contém IDs internos; coluna `internal_snapshot` não é legível pelo cliente |
 | Interface real | página de projeto do advisor | consulta somente o brief mais recente válido e o apresenta entre a conversa e o work product |
 | Worker | Node 24 | 30 arquivos/172 testes, typecheck e lint verdes |
 | Work-plan | Node 24 | 7 arquivos/43 testes, typecheck e lint verdes |

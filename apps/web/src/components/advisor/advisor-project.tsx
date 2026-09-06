@@ -21,7 +21,7 @@ import {createClient} from "@/lib/supabase/client";
 
 import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
 import {ExecutionBriefCard} from "./execution-brief-card";
-import type {VisibleExecutionBrief} from "@offroad/work-plan";
+import type {ExecutionBriefProgress, VisibleExecutionBrief} from "@offroad/work-plan";
 
 export type AdvisorProjectMessage = {
   id: string;
@@ -93,7 +93,7 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
-  executionBrief?: {brief: VisibleExecutionBrief; version: number} | null;
+  executionBrief?: {brief: VisibleExecutionBrief; progress: ExecutionBriefProgress | null; version: number} | null;
 };
 
 export function AdvisorProject(props: Props) {
@@ -208,7 +208,7 @@ export function AdvisorProject(props: Props) {
               </div>
             </article>;
           })}
-          {props.executionBrief ? <ExecutionBriefCard brief={props.executionBrief.brief} version={props.executionBrief.version} /> : null}
+          {props.executionBrief ? <ExecutionBriefCard brief={props.executionBrief.brief} progress={props.executionBrief.progress} version={props.executionBrief.version} /> : null}
           {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
           {props.pendingRequests?.length ? <article className="advisor-thread__message is-assistant advisor-thread__requests">
             <span className="advisor-thread__avatar"><Bot aria-hidden="true" size={15} /></span>

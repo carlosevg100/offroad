@@ -5,6 +5,7 @@ import {
   compileCapitalExecutionBrief,
   compileExecutionBrief,
   evaluateExecutionBriefInput,
+  executionBriefProgressSchema,
   visibleExecutionBriefSchema,
   visibleExecutionBrief,
   type ExecutionBriefCompilerInput,
@@ -113,6 +114,25 @@ describe("execution brief compiler", () => {
       tasks: input.tasks.map((task, index) => index === 2 ? {...task, effect: "external" as const} : task),
     };
     expect(compileExecutionBrief(withExternalEffect).executionMode).toBe("approve_external_effect");
+  });
+
+  it("accepts only safe workstream-level progress without internal task identifiers", () => {
+    const progress = executionBriefProgressSchema.parse({
+      briefId: "10000000-0000-4000-8000-000000000001",
+      version: 2,
+      workstreams: [
+        {position: 0, label: "Fixar a decisão", status: "completed", completed: 2, total: 2},
+        {position: 1, label: "Testar capacidade", status: "running", completed: 1, total: 4},
+        {position: 2, label: "Comparar alternativas", status: "waiting_user", completed: 0, total: 3},
+      ],
+    });
+
+    expect(JSON.stringify(progress)).not.toContain("taskId");
+    expect(() => executionBriefProgressSchema.parse({...progress, workstreams: [
+      {...progress.workstreams[0], sourceTaskIds: ["M01"]},
+      progress.workstreams[1],
+      progress.workstreams[2],
+    ]})).toThrow();
   });
 
   it("blocks generic copy, tasks outside the graph, hidden tasks and unavailable authority", () => {

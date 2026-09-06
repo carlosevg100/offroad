@@ -122,6 +122,29 @@ export type VisibleExecutionBrief = Omit<CompiledExecutionBrief, "planVersion" |
   }[];
 };
 
+export const executionBriefWorkstreamProgressStatusSchema = z.enum([
+  "waiting",
+  "queued",
+  "running",
+  "waiting_user",
+  "completed",
+  "needs_attention",
+]);
+export type ExecutionBriefWorkstreamProgressStatus = z.infer<typeof executionBriefWorkstreamProgressStatusSchema>;
+
+export const executionBriefProgressSchema = z.object({
+  briefId: z.uuid(),
+  version: z.number().int().positive(),
+  workstreams: z.array(z.object({
+    position: z.number().int().nonnegative(),
+    label: z.string().trim().min(1).max(500),
+    status: executionBriefWorkstreamProgressStatusSchema,
+    completed: z.number().int().nonnegative(),
+    total: z.number().int().positive(),
+  }).strict()).min(3).max(7),
+}).strict();
+export type ExecutionBriefProgress = z.infer<typeof executionBriefProgressSchema>;
+
 /** Runtime contract for the customer projection read back from durable storage. */
 export const visibleExecutionBriefSchema: z.ZodType<VisibleExecutionBrief> = z.object({
   schemaVersion: z.literal("execution-brief.v1"),
