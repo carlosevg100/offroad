@@ -475,7 +475,7 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const turnInput: PreviewTurnInput = {
     locale, message: input.message, recentMessages: input.recentMessages, artifactTypes: input.artifactTypes, runActive: input.runActive,
     priorOutputs: input.priorOutputs, entryJob: input.entryJob, messageId: input.messageId,
-    planEditRequested: input.planEditRequested,
+    ...(input.planEditRequested !== undefined ? {planEditRequested: input.planEditRequested} : {}),
     ...(input.registryVersion ? {registryVersion: input.registryVersion} : {}),
   };
 
