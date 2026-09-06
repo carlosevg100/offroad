@@ -98,8 +98,6 @@ revoke all privileges on public.capital_project_execution_briefs from public, an
 revoke all privileges on public.capital_project_execution_brief_events from public, anon, authenticated;
 grant select on public.capital_project_execution_briefs to authenticated;
 grant select on public.capital_project_execution_brief_events to authenticated;
-grant select, insert on public.capital_project_execution_briefs to service_role;
-grant select, insert on public.capital_project_execution_brief_events to service_role;
 
 create trigger capital_project_execution_briefs_audit
   after insert on public.capital_project_execution_briefs
@@ -108,9 +106,9 @@ create trigger capital_project_execution_brief_events_audit
   after insert on public.capital_project_execution_brief_events
   for each row execute function private.capture_audit_event();
 
-create or replace function public.worker_record_capital_project_execution_brief_v1(
-  p_project_id uuid,
-  p_plan_id uuid,
+create or replace function private.worker_record_capital_project_execution_brief_v1(
+  p_job_id uuid,
+  p_capability_token text,
   p_internal_snapshot jsonb,
   p_visible_snapshot jsonb,
   p_parent_brief_id uuid default null,
@@ -122,6 +120,8 @@ security definer
 set search_path = ''
 as $$
 declare
+  job_row public.processing_jobs := private.job_for_capability(p_job_id, p_capability_token);
+  session_row public.document_intake_sessions;
   plan_row public.capital_project_plans;
   existing_row public.capital_project_execution_briefs;
   latest_row public.capital_project_execution_briefs;
@@ -135,11 +135,26 @@ declare
   workstream_count integer;
   computed_storage_fingerprint text;
 begin
+  if job_row.kind not in ('agent_operation_brief', 'capital_project_analysis') then
+    raise exception 'execution_brief_job_invalid' using errcode = '22023';
+  end if;
+  select session.* into session_row
+  from public.document_intake_sessions session
+  where session.organization_id = job_row.organization_id
+    and session.id = job_row.intake_session_id
+    and session.capital_project_id is not null;
+  if not found then
+    raise exception 'execution_brief_project_not_found' using errcode = 'P0002';
+  end if;
   select plan.* into plan_row
   from public.capital_project_plans plan
-  where plan.id = p_plan_id
-    and plan.capital_project_id = p_project_id
+  where plan.organization_id = job_row.organization_id
+    and plan.capital_project_id = session_row.capital_project_id
     and plan.status = 'active'
+    and (
+      job_row.kind <> 'capital_project_analysis'
+      or plan.id::text = job_row.payload ->> 'capital_project_plan_id'
+    )
   for update of plan;
   if not found then
     raise exception 'active_capital_project_plan_not_found' using errcode = 'P0002';
@@ -152,7 +167,7 @@ begin
     or brief_fingerprint !~ '^[0-9a-f]{64}$'
     or p_visible_snapshot ->> 'fingerprint' is distinct from brief_fingerprint
     or char_length(trim(coalesce(p_internal_snapshot ->> 'planVersion', ''))) < 3
-    or jsonb_typeof(p_internal_snapshot -> 'authority') <> 'object'
+    or jsonb_typeof(p_internal_snapshot -> 'authority') is distinct from 'object'
     or p_internal_snapshot ->> 'objective' is distinct from p_visible_snapshot ->> 'objective'
     or p_internal_snapshot ->> 'proposedDeliverable' is distinct from p_visible_snapshot ->> 'proposedDeliverable'
     or p_internal_snapshot ->> 'executionMode' is distinct from p_visible_snapshot ->> 'executionMode'
@@ -192,6 +207,22 @@ begin
         or internal_workstream.value ->> 'purpose' is distinct from visible_workstream.value ->> 'purpose'
         or internal_workstream.value ->> 'output' is distinct from visible_workstream.value ->> 'output'
         or internal_workstream.value -> 'analyses' is distinct from visible_workstream.value -> 'analyses'
+        or visible_workstream.value -> 'sources' is distinct from (
+          select coalesce(jsonb_agg(jsonb_build_object(
+            'label', source.value ->> 'label',
+            'status', source.value ->> 'status',
+            'informationClass', source.value ->> 'informationClass'
+          ) order by source.position), '[]'::jsonb)
+          from jsonb_array_elements(internal_workstream.value -> 'sources')
+            with ordinality source(value, position)
+        )
+        or visible_workstream.value -> 'dependencies' is distinct from (
+          select coalesce(jsonb_agg(to_jsonb(dependency_workstream.value ->> 'label') order by dependency.position), '[]'::jsonb)
+          from jsonb_array_elements_text(internal_workstream.value -> 'dependencies')
+            with ordinality dependency(key, position)
+          join jsonb_array_elements(p_internal_snapshot -> 'workstreams') dependency_workstream(value)
+            on dependency_workstream.value ->> 'key' = dependency.key
+        )
     )
     or exists (
       select 1 from jsonb_array_elements(p_internal_snapshot -> 'workstreams') workstream
@@ -228,7 +259,7 @@ begin
   select brief.* into existing_row
   from public.capital_project_execution_briefs brief
   where brief.organization_id = plan_row.organization_id
-    and brief.capital_project_id = p_project_id
+    and brief.capital_project_id = session_row.capital_project_id
     and brief.brief_fingerprint = brief_fingerprint;
   if found then
     return jsonb_build_object('id', existing_row.id, 'version', existing_row.brief_version, 'replayed', true);
@@ -237,7 +268,7 @@ begin
   select brief.* into latest_row
   from public.capital_project_execution_briefs brief
   where brief.organization_id = plan_row.organization_id
-    and brief.capital_project_id = p_project_id
+    and brief.capital_project_id = session_row.capital_project_id
   order by brief.brief_version desc
   limit 1;
   if found and p_parent_brief_id is distinct from latest_row.id then
@@ -257,7 +288,7 @@ begin
     proposed_deliverable, workstream_count, internal_snapshot, visible_snapshot,
     parent_brief_id, change_summary, created_by
   ) values (
-    plan_row.organization_id, p_project_id, plan_row.id, next_version, 'execution-brief.v1',
+    plan_row.organization_id, session_row.capital_project_id, plan_row.id, next_version, 'execution-brief.v1',
     brief_fingerprint, computed_storage_fingerprint, p_internal_snapshot ->> 'executionMode',
     p_internal_snapshot ->> 'objective', p_internal_snapshot ->> 'proposedDeliverable',
     workstream_count, p_internal_snapshot, p_visible_snapshot, p_parent_brief_id,
@@ -267,7 +298,7 @@ begin
   insert into public.capital_project_execution_brief_events (
     organization_id, capital_project_id, execution_brief_id, event_type, actor_type, event_payload
   ) values (
-    plan_row.organization_id, p_project_id, inserted_row.id, 'presented', 'system',
+    plan_row.organization_id, session_row.capital_project_id, inserted_row.id, 'presented', 'system',
     jsonb_build_object('fingerprint', brief_fingerprint, 'version', next_version)
   );
   return jsonb_build_object('id', inserted_row.id, 'version', inserted_row.brief_version, 'replayed', false);
@@ -277,16 +308,233 @@ exception
 end;
 $$;
 
+create or replace function public.worker_record_capital_project_execution_brief_v1(
+  p_job_id uuid,
+  p_capability_token text,
+  p_internal_snapshot jsonb,
+  p_visible_snapshot jsonb,
+  p_parent_brief_id uuid default null,
+  p_change_summary jsonb default '[]'::jsonb
+)
+returns jsonb
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.worker_record_capital_project_execution_brief_v1(
+    p_job_id, p_capability_token, p_internal_snapshot, p_visible_snapshot,
+    p_parent_brief_id, p_change_summary
+  );
+$$;
+
+revoke all on function private.worker_record_capital_project_execution_brief_v1(
+  uuid, text, jsonb, jsonb, uuid, jsonb
+) from public, anon;
 revoke all on function public.worker_record_capital_project_execution_brief_v1(
-  uuid, uuid, jsonb, jsonb, uuid, jsonb
-) from public, anon, authenticated;
+  uuid, text, jsonb, jsonb, uuid, jsonb
+) from public, anon;
+grant execute on function private.worker_record_capital_project_execution_brief_v1(
+  uuid, text, jsonb, jsonb, uuid, jsonb
+) to authenticated;
 grant execute on function public.worker_record_capital_project_execution_brief_v1(
-  uuid, uuid, jsonb, jsonb, uuid, jsonb
-) to service_role;
+  uuid, text, jsonb, jsonb, uuid, jsonb
+) to authenticated;
 
 comment on table public.capital_project_execution_briefs is
   'Immutable versioned Execution Briefs. Internal task bindings and safe visible projection remain paired.';
 comment on table public.capital_project_execution_brief_events is
   'Append-only user and system decisions over an immutable Execution Brief version.';
-comment on function public.worker_record_capital_project_execution_brief_v1(uuid, uuid, jsonb, jsonb, uuid, jsonb) is
-  'Service-only fail-closed persistence for a brief that exactly covers one active capital plan.';
+comment on function public.worker_record_capital_project_execution_brief_v1(uuid, text, jsonb, jsonb, uuid, jsonb) is
+  'Capability-bound fail-closed persistence for a brief that exactly covers one active capital plan.';
+
+-- Add the immutable active plan and the latest brief identity to the worker's existing context.
+-- The wrapper preserves every context field assembled by the hardened loader and only appends
+-- records already scoped by the claimed job. This lets the worker compile from the plan that is
+-- actually active, including historical projects, rather than silently recompiling from today's
+-- registry.
+alter function private.worker_load_agent_context(uuid, text)
+  rename to worker_load_agent_context_before_execution_brief_v1;
+
+revoke all on function private.worker_load_agent_context_before_execution_brief_v1(uuid, text)
+  from public, anon, authenticated;
+
+create function private.worker_load_agent_context(
+  p_job_id uuid,
+  p_capability_token text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  base_context jsonb := private.worker_load_agent_context_before_execution_brief_v1(
+    p_job_id, p_capability_token
+  );
+  job_row public.processing_jobs := private.job_for_capability(p_job_id, p_capability_token);
+  project_id uuid := nullif(base_context #>> '{project,id}', '')::uuid;
+begin
+  return base_context || jsonb_build_object(
+    'active_plan', (
+      select plan.snapshot
+      from public.capital_project_plans plan
+      where plan.organization_id = job_row.organization_id
+        and plan.capital_project_id = project_id
+        and plan.status = 'active'
+      order by plan.plan_version desc
+      limit 1
+    ),
+    'latest_execution_brief', (
+      select jsonb_build_object(
+        'id', brief.id,
+        'version', brief.brief_version,
+        'fingerprint', brief.brief_fingerprint
+      )
+      from public.capital_project_execution_briefs brief
+      where brief.organization_id = job_row.organization_id
+        and brief.capital_project_id = project_id
+      order by brief.brief_version desc
+      limit 1
+    )
+  );
+exception
+  when invalid_text_representation then
+    raise exception 'invalid_execution_brief_project_context' using errcode = '22023';
+end;
+$$;
+
+revoke all on function private.worker_load_agent_context(uuid, text) from public, anon;
+grant execute on function private.worker_load_agent_context(uuid, text) to authenticated;
+
+create or replace function public.worker_load_agent_context(
+  p_job_id uuid,
+  p_capability_token text
+)
+returns jsonb
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.worker_load_agent_context(p_job_id, p_capability_token);
+$$;
+
+revoke all on function public.worker_load_agent_context(uuid, text) from public, anon;
+grant execute on function public.worker_load_agent_context(uuid, text) to authenticated;
+
+-- Record the assistant response, activate the selected plan and persist the visible agreement in
+-- one transaction. The active-plan row serializes competing turns; the parent is selected only
+-- after that lock, so two workers cannot silently fork the brief history.
+create or replace function private.worker_record_agent_response_and_activate_v4(
+  p_job_id uuid,
+  p_capability_token text,
+  p_assistant_message_id uuid,
+  p_response jsonb,
+  p_proposal jsonb default null,
+  p_activation jsonb default null,
+  p_execution_brief_internal jsonb default null,
+  p_execution_brief_visible jsonb default null,
+  p_execution_brief_change_summary jsonb default '[]'::jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  recorded jsonb;
+  persisted jsonb;
+  job_row public.processing_jobs := private.job_for_capability(p_job_id, p_capability_token);
+  session_row public.document_intake_sessions;
+  plan_row public.capital_project_plans;
+  parent_brief_id uuid;
+begin
+  if (p_execution_brief_internal is null) <> (p_execution_brief_visible is null) then
+    raise exception 'execution_brief_pair_required' using errcode = '22023';
+  end if;
+  if p_execution_brief_internal is not null and p_activation is null then
+    raise exception 'execution_brief_requires_activation' using errcode = '22023';
+  end if;
+
+  recorded := private.worker_record_agent_response_and_activate_v3(
+    p_job_id, p_capability_token, p_assistant_message_id,
+    p_response, p_proposal, p_activation
+  );
+  if p_execution_brief_internal is null then
+    return recorded;
+  end if;
+
+  select session.* into session_row
+  from public.document_intake_sessions session
+  where session.organization_id = job_row.organization_id
+    and session.id = job_row.intake_session_id
+    and session.capital_project_id is not null;
+  if not found then
+    raise exception 'execution_brief_project_not_found' using errcode = 'P0002';
+  end if;
+  select plan.* into plan_row
+  from public.capital_project_plans plan
+  where plan.organization_id = job_row.organization_id
+    and plan.capital_project_id = session_row.capital_project_id
+    and plan.status = 'active'
+  order by plan.plan_version desc
+  limit 1
+  for update;
+  if not found then
+    raise exception 'active_capital_project_plan_not_found' using errcode = 'P0002';
+  end if;
+  select brief.id into parent_brief_id
+  from public.capital_project_execution_briefs brief
+  where brief.organization_id = job_row.organization_id
+    and brief.capital_project_id = session_row.capital_project_id
+  order by brief.brief_version desc
+  limit 1;
+
+  persisted := private.worker_record_capital_project_execution_brief_v1(
+    p_job_id, p_capability_token,
+    p_execution_brief_internal, p_execution_brief_visible,
+    parent_brief_id, p_execution_brief_change_summary
+  );
+  return recorded || jsonb_build_object('execution_brief', persisted);
+end;
+$$;
+
+create or replace function public.worker_record_agent_response_and_activate_v4(
+  p_job_id uuid,
+  p_capability_token text,
+  p_assistant_message_id uuid,
+  p_response jsonb,
+  p_proposal jsonb default null,
+  p_activation jsonb default null,
+  p_execution_brief_internal jsonb default null,
+  p_execution_brief_visible jsonb default null,
+  p_execution_brief_change_summary jsonb default '[]'::jsonb
+)
+returns jsonb
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.worker_record_agent_response_and_activate_v4(
+    p_job_id, p_capability_token, p_assistant_message_id,
+    p_response, p_proposal, p_activation,
+    p_execution_brief_internal, p_execution_brief_visible,
+    p_execution_brief_change_summary
+  );
+$$;
+
+revoke all on function private.worker_record_agent_response_and_activate_v4(
+  uuid, text, uuid, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb
+) from public, anon;
+revoke all on function public.worker_record_agent_response_and_activate_v4(
+  uuid, text, uuid, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb
+) from public, anon;
+grant execute on function private.worker_record_agent_response_and_activate_v4(
+  uuid, text, uuid, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb
+) to authenticated;
+grant execute on function public.worker_record_agent_response_and_activate_v4(
+  uuid, text, uuid, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb
+) to authenticated;
+
+comment on function public.worker_record_agent_response_and_activate_v4(
+  uuid, text, uuid, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb
+) is 'Atomically records an advisor response, activates its governed plan and stores the paired internal and visible Execution Brief.';

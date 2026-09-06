@@ -1,6 +1,6 @@
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
 import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
-import {localizedOffroadTaskLabel} from "@offroad/work-plan";
+import {localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -231,13 +231,23 @@ async function ConversationalCapitalProject({
     .maybeSingle();
   if (!session) notFound();
 
-  const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}] = await Promise.all([
+  const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}, {data: executionBriefRow}] = await Promise.all([
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, processing_status").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
     supabase.from("capital_project_plans").select("id, compiler_version").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
     supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
+    supabase.from("capital_project_execution_briefs")
+      .select("id, brief_version, visible_snapshot")
+      .eq("organization_id", organization.id)
+      .eq("capital_project_id", project.id)
+      .order("brief_version", {ascending: false})
+      .limit(1)
+      .maybeSingle(),
   ]);
+  const parsedExecutionBrief = executionBriefRow
+    ? visibleExecutionBriefSchema.safeParse(executionBriefRow.visible_snapshot)
+    : null;
   const privateCase = ["structure_from_documents", "review_existing_operation"].includes(project.entry_job);
   const preliminary = privateCase
     ? await loadPreliminaryUnderstanding(supabase, organization.id, session.id)
@@ -509,6 +519,7 @@ async function ConversationalCapitalProject({
     }))}
     copy={copy}
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
+    executionBrief={parsedExecutionBrief?.success ? {brief: parsedExecutionBrief.data, version: executionBriefRow!.brief_version} : null}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
     activityEvents={activityEvents}

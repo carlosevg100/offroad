@@ -177,6 +177,148 @@
   width: 100%;
 }
 
+.execution-brief-card {
+  background: #fff;
+  border: 1px solid #dfe3df;
+  border-radius: 14px;
+  box-shadow: 0 16px 42px rgb(28 35 39 / 5%);
+  color: #20262b;
+  overflow: hidden;
+  width: 100%;
+}
+.execution-brief-card > header {
+  align-items: flex-start;
+  border-bottom: 1px solid #e7e9e6;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  padding: 25px 27px 22px;
+}
+.execution-brief-card > header > div > span {
+  color: #718050;
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.execution-brief-card > header h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3vw, 31px);
+  font-weight: 430;
+  letter-spacing: -.025em;
+  line-height: 1.12;
+  margin: 6px 0 0;
+  max-width: 580px;
+}
+.execution-brief-card > header > small {
+  align-items: center;
+  background: #f1f4ed;
+  border-radius: 999px;
+  color: #5f713f;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 8px;
+  font-weight: 690;
+  gap: 5px;
+  letter-spacing: .035em;
+  padding: 6px 9px;
+  text-transform: uppercase;
+}
+.execution-brief-card[data-execution-mode="confirm_before_expensive_work"] > header > small,
+.execution-brief-card[data-execution-mode="approve_external_effect"] > header > small {background: #f5f1e8; color: #80672f;}
+.execution-brief-card__deliverable {
+  align-items: flex-start;
+  background: #f8f9f7;
+  border-bottom: 1px solid #e7e9e6;
+  display: flex;
+  gap: 11px;
+  padding: 16px 27px;
+}
+.execution-brief-card__deliverable > svg {color: #718050; flex: 0 0 auto; margin-top: 2px;}
+.execution-brief-card__deliverable small,
+.execution-brief-card__checkpoint small {
+  color: #848c90;
+  display: block;
+  font-size: 8px;
+  font-weight: 680;
+  letter-spacing: .09em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.execution-brief-card__deliverable strong {font-size: 12px; font-weight: 620; line-height: 1.45;}
+.execution-brief-card__workstreams {list-style: none; margin: 0; padding: 0 27px;}
+.execution-brief-card__workstreams > li {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 25px minmax(0, 1fr);
+  padding: 21px 0 20px;
+}
+.execution-brief-card__workstreams > li + li {border-top: 1px solid #eceeeb;}
+.execution-brief-card__workstreams > li > span {
+  color: #819060;
+  font-family: var(--mono);
+  font-size: 9px;
+  padding-top: 3px;
+}
+.execution-brief-card__workstreams > li > div > header {align-items: flex-start; display: flex; gap: 14px; justify-content: space-between;}
+.execution-brief-card__workstreams > li > div > header > strong {font-size: 13px; font-weight: 650; line-height: 1.4;}
+.execution-brief-card__workstreams > li > div > header > small {align-items: center; color: #92999d; display: inline-flex; flex: 0 1 auto; font-size: 8px; gap: 4px; line-height: 1.35; text-align: right;}
+.execution-brief-card__workstreams > li p {color: #697279; font-size: 11px; line-height: 1.55; margin: 6px 0 0;}
+.execution-brief-card__sources {display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;}
+.execution-brief-card__sources > span {
+  align-items: center;
+  border: 1px solid #e2e5e1;
+  border-radius: 999px;
+  color: #566067;
+  display: inline-flex;
+  font-size: 8px;
+  gap: 5px;
+  line-height: 1.25;
+  padding: 5px 7px;
+}
+.execution-brief-card__sources > span[data-status="available"] {background: #f3f6ef; border-color: #dce4d1; color: #5f713f;}
+.execution-brief-card__sources i {color: #959ca0; font-style: normal;}
+.execution-brief-card__workstreams details {border-top: 1px solid #eceeeb; margin-top: 14px; padding-top: 10px;}
+.execution-brief-card__workstreams summary {color: #626c72; cursor: pointer; font-size: 9px; font-weight: 620; list-style-position: outside; margin-left: 12px;}
+.execution-brief-card__workstreams details > ul {color: #697279; font-size: 10px; line-height: 1.55; margin: 11px 0 0 17px; padding: 0;}
+.execution-brief-card__workstreams details > footer {align-items: baseline; background: #f7f8f6; display: flex; gap: 8px; margin-top: 11px; padding: 9px 11px;}
+.execution-brief-card__workstreams details > footer small {color: #899095; font-size: 8px; font-weight: 680; text-transform: uppercase;}
+.execution-brief-card__workstreams details > footer strong {font-size: 9px; font-weight: 600;}
+.execution-brief-card__assumptions {border-top: 1px solid #e7e9e6; padding: 19px 27px;}
+.execution-brief-card__assumptions > header {align-items: baseline; display: flex; gap: 16px; justify-content: space-between;}
+.execution-brief-card__assumptions > header strong {font-size: 11px;}
+.execution-brief-card__assumptions > header small {color: #858d92; font-size: 8px;}
+.execution-brief-card__assumptions dl {display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 13px 0 0;}
+.execution-brief-card__assumptions dl > div {border: 1px solid #e4e7e2; padding: 11px;}
+.execution-brief-card__assumptions dt {color: #899095; font-size: 8px;}
+.execution-brief-card__assumptions dd {margin: 5px 0 0;}
+.execution-brief-card__assumptions dd strong {display: block; font-size: 10px;}
+.execution-brief-card__assumptions dd span {color: #7b8489; display: block; font-size: 8px; line-height: 1.4; margin-top: 3px;}
+.execution-brief-card__checkpoint {
+  align-items: center;
+  background: #20262b;
+  color: #f2f3f3;
+  display: flex;
+  gap: 10px;
+  padding: 14px 27px;
+}
+.execution-brief-card__checkpoint > svg {color: #afbd89; flex: 0 0 auto;}
+.execution-brief-card__checkpoint small {color: #959ea3;}
+.execution-brief-card__checkpoint strong {font-size: 10px; font-weight: 580;}
+
+@media (max-width: 760px) {
+  .execution-brief-card > header {display: grid; padding: 21px 20px 19px;}
+  .execution-brief-card > header > small {justify-self: start;}
+  .execution-brief-card__deliverable {padding: 15px 20px;}
+  .execution-brief-card__workstreams {padding: 0 20px;}
+  .execution-brief-card__workstreams > li > div > header {display: block;}
+  .execution-brief-card__workstreams > li > div > header > small {margin-top: 5px; text-align: left;}
+  .execution-brief-card__assumptions {padding: 17px 20px;}
+  .execution-brief-card__assumptions dl {grid-template-columns: 1fr;}
+  .execution-brief-card__checkpoint {padding: 14px 20px;}
+}
+
 .advisor-banker-readout {
   background: #fff;
   border: 1px solid #dfe3dd;

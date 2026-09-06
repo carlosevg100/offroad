@@ -5,6 +5,7 @@ import {
   compileCapitalExecutionBrief,
   compileExecutionBrief,
   evaluateExecutionBriefInput,
+  visibleExecutionBriefSchema,
   visibleExecutionBrief,
   type ExecutionBriefCompilerInput,
   type ExecutionBriefSource,
@@ -90,6 +91,8 @@ describe("execution brief compiler", () => {
     });
     const visible = visibleExecutionBrief(compiled);
     const serialized = JSON.stringify(visible);
+
+    expect(visibleExecutionBriefSchema.parse(visible)).toEqual(visible);
 
     expect(serialized).not.toContain("sourceTaskIds");
     expect(serialized).not.toContain("planVersion");

@@ -31,6 +31,24 @@
 | Gate focado de Execution Brief | test + typecheck + lint de `@offroad/work-plan` | 7 arquivos/43 testes verdes; cinco testes novos cobrem especificidade, segurança da projeção e fail-closed |
 | Gate integral deste incremento | `pnpm check` em Node 24.19, numa worktree limpa contendo somente o diff desta entrega | lint, typecheck, testes e build verdes nos 43 alvos; 185 testes web e 19 testes de release governance verdes |
 
+## Execution Brief conectado ao workspace, candidate, 06/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Compilação no runtime | testes de `agent-operation-brief` e novo módulo `execution-brief` | standard usa a versão ativa persistida; preview cobre exatamente as dez tarefas ativadas; mismatch falha fechado |
+| Persistência | migration `20260906143000_execution_brief_foundation.sql` | brief interno e projeção visível imutáveis, versionados, com RLS, eventos e escrita capability-bound |
+| Atomicidade | RPC `worker_record_agent_response_and_activate_v4` + teste de queue | resposta, ativação e brief usam uma única transação; replay retorna a versão existente |
+| Fronteira visível | schema estrito + teste SSR do card | objetivo, produto, fontes, frentes, premissas e checkpoint aparecem; task IDs e autoridade interna não aparecem |
+| Interface real | página de projeto do advisor | consulta somente o brief mais recente válido e o apresenta entre a conversa e o work product |
+| Worker | Node 24 | 30 arquivos/172 testes, typecheck e lint verdes |
+| Work-plan | Node 24 | 7 arquivos/43 testes, typecheck e lint verdes |
+| Web aplicável | Vitest sem o teste textual global afetado por arquivos não versionados + Next build | 31 arquivos/182 testes verdes; 34 páginas compiladas; typecheck e lint verdes |
+| Pendência de banco | reconstrução local indisponível sem Docker | SQL/RLS/RPC precisam passar no CI antes de exposure; nenhuma alegação de produção |
+| Pendência integral externa | `src/i18n/no-em-dash.test.ts` | falha somente porque três arquivos não versionados do fundador contêm travessões; arquivos preservados e fora do commit |
+
+Status: **primeira integração vertical candidate**. O caminho existe de ponta a ponta no código, mas
+continua interno até banco, jornada viva, edição governada e Live Work passarem seus gates.
+
 Status: **candidate architecture; Trust Foundation em implementação**. O aceite comprova o contrato
 e o primeiro gate executável, não readiness de auditoria, certificação, pentest ou endgame.
 

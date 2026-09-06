@@ -1,4 +1,4 @@
--- Execution Briefs are immutable, tenant-bound, service-written and exact projections of plans.
+-- Execution Briefs are immutable, tenant-bound, capability-written and exact projections of plans.
 
 begin;
 
@@ -9,7 +9,9 @@ insert into auth.users (
   ('10000000-0000-4000-8000-000000000601', 'authenticated', 'authenticated',
    'brief-owner@example.invalid', '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now(), false, false),
   ('10000000-0000-4000-8000-000000000602', 'authenticated', 'authenticated',
-   'brief-other@example.invalid', '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now(), false, false);
+   'brief-other@example.invalid', '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now(), false, false),
+  ('10000000-0000-4000-8000-000000000603', 'authenticated', 'authenticated',
+   'brief-worker@example.invalid', '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now(), false, false);
 
 insert into public.organizations (id, organization_type, name, created_by) values
   ('20000000-0000-4000-8000-000000000601', 'originator', 'Brief Tenant A', '10000000-0000-4000-8000-000000000601'),
@@ -45,6 +47,31 @@ insert into public.capital_project_plan_tasks (
   ('20000000-0000-4000-8000-000000000601', '30000000-0000-4000-8000-000000000601', '40000000-0000-4000-8000-000000000601', 'M02', 1, 1, 'Normalizar objetivo', 'case', '{M01}', 'extraction', 'propose_state', 'specified'),
   ('20000000-0000-4000-8000-000000000601', '30000000-0000-4000-8000-000000000601', '40000000-0000-4000-8000-000000000601', 'M03', 2, 2, 'Registrar restrições', 'case', '{M02}', 'extraction', 'propose_state', 'specified');
 
+insert into public.document_intake_sessions (
+  id, organization_id, capital_project_id, started_by, journey, locale
+) values (
+  '50000000-0000-4000-8000-000000000601', '20000000-0000-4000-8000-000000000601',
+  '30000000-0000-4000-8000-000000000601', '10000000-0000-4000-8000-000000000601',
+  'company', 'pt-BR'
+);
+insert into public.processing_runs (
+  id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
+) values (
+  '60000000-0000-4000-8000-000000000601', '20000000-0000-4000-8000-000000000601',
+  '50000000-0000-4000-8000-000000000601', 1, 'manual', 'running', 'execution-brief-test-v1',
+  '10000000-0000-4000-8000-000000000601'
+);
+insert into public.processing_jobs (
+  id, organization_id, processing_run_id, intake_session_id, kind, status, payload,
+  attempts, lease_expires_at, capability_sha256
+) values (
+  '70000000-0000-4000-8000-000000000601', '20000000-0000-4000-8000-000000000601',
+  '60000000-0000-4000-8000-000000000601', '50000000-0000-4000-8000-000000000601',
+  'agent_operation_brief', 'leased',
+  '{"message_id":"80000000-0000-4000-8000-000000000601","locale":"pt-BR"}'::jsonb,
+  1, now() + interval '10 minutes', extensions.digest(repeat('q',64), 'sha256')
+);
+
 do $$
 declare
   definition text;
@@ -56,7 +83,8 @@ begin
 end;
 $$;
 
-set local role service_role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000603","role":"authenticated","aal":"aal1"}', true);
 
 do $$
 declare
@@ -97,7 +125,7 @@ begin
     'executionMode','start_after_display'
   );
   first_result := public.worker_record_capital_project_execution_brief_v1(
-    '30000000-0000-4000-8000-000000000601', '40000000-0000-4000-8000-000000000601',
+    '70000000-0000-4000-8000-000000000601', repeat('q',64),
     internal_v1, visible_v1
   );
   first_id := (first_result ->> 'id')::uuid;
@@ -105,7 +133,7 @@ begin
     raise exception 'first brief was not version one: %', first_result;
   end if;
   replay_result := public.worker_record_capital_project_execution_brief_v1(
-    '30000000-0000-4000-8000-000000000601', '40000000-0000-4000-8000-000000000601',
+    '70000000-0000-4000-8000-000000000601', repeat('q',64),
     internal_v1, visible_v1
   );
   if replay_result ->> 'id' <> first_id::text or not (replay_result ->> 'replayed')::boolean then
@@ -114,13 +142,27 @@ begin
 
   begin
     perform public.worker_record_capital_project_execution_brief_v1(
-      '30000000-0000-4000-8000-000000000601', '40000000-0000-4000-8000-000000000601',
+      '70000000-0000-4000-8000-000000000601', repeat('q',64),
       jsonb_set(internal_v1, '{workstreams,2,sourceTaskIds}', '["NOT_IN_PLAN"]'::jsonb), visible_v1
     );
     accepted := true;
   exception when invalid_parameter_value then accepted := false;
   end;
   if accepted then raise exception 'brief with a task outside the plan was accepted'; end if;
+
+  begin
+    perform public.worker_record_capital_project_execution_brief_v1(
+      '70000000-0000-4000-8000-000000000601', repeat('q',64),
+      jsonb_set(internal_v1, '{fingerprint}', to_jsonb(repeat('d',64))),
+      jsonb_set(
+        jsonb_set(visible_v1, '{fingerprint}', to_jsonb(repeat('d',64))),
+        '{workstreams,0,sources}', '[{"label":"Fonte não presente","status":"available","informationClass":"public"}]'::jsonb
+      )
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'forged visible source projection was accepted'; end if;
 
   internal_v2 := jsonb_set(
     jsonb_set(internal_v1, '{fingerprint}', to_jsonb(repeat('c',64))),
@@ -132,7 +174,7 @@ begin
   );
   begin
     perform public.worker_record_capital_project_execution_brief_v1(
-      '30000000-0000-4000-8000-000000000601', '40000000-0000-4000-8000-000000000601',
+      '70000000-0000-4000-8000-000000000601', repeat('q',64),
       internal_v2, visible_v2, null, '[{"kind":"assumption_added"}]'::jsonb
     );
     accepted := true;
@@ -141,7 +183,7 @@ begin
   if accepted then raise exception 'second brief without the latest parent was accepted'; end if;
 
   second_result := public.worker_record_capital_project_execution_brief_v1(
-    '30000000-0000-4000-8000-000000000601', '40000000-0000-4000-8000-000000000601',
+    '70000000-0000-4000-8000-000000000601', repeat('q',64),
     internal_v2, visible_v2, first_id, '[{"kind":"assumption_added"}]'::jsonb
   );
   if second_result ->> 'version' <> '2' or (second_result ->> 'replayed')::boolean then
@@ -150,6 +192,14 @@ begin
   if (select count(*) from public.capital_project_execution_brief_events) <> 2 then
     raise exception 'presented events did not follow immutable brief versions';
   end if;
+  begin
+    perform public.worker_record_capital_project_execution_brief_v1(
+      '70000000-0000-4000-8000-000000000601', repeat('x',64), internal_v2, visible_v2, first_id
+    );
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'forged job capability recorded a brief'; end if;
 end;
 $$;
 
@@ -191,8 +241,10 @@ do $$
 begin
   if has_table_privilege('authenticated', 'public.capital_project_execution_briefs', 'insert')
     or has_table_privilege('authenticated', 'public.capital_project_execution_brief_events', 'insert')
-    or has_function_privilege('authenticated', 'public.worker_record_capital_project_execution_brief_v1(uuid,uuid,jsonb,jsonb,uuid,jsonb)', 'execute')
-    or not has_function_privilege('service_role', 'public.worker_record_capital_project_execution_brief_v1(uuid,uuid,jsonb,jsonb,uuid,jsonb)', 'execute') then
+    or has_function_privilege('anon', 'public.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)', 'execute')
+    or has_function_privilege('anon', 'public.worker_record_agent_response_and_activate_v4(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
+    or not has_function_privilege('authenticated', 'public.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)', 'execute')
+    or not has_function_privilege('authenticated', 'public.worker_record_agent_response_and_activate_v4(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute') then
     raise exception 'Execution Brief grants are wider or narrower than designed';
   end if;
 end;

@@ -1,6 +1,6 @@
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {describe, expect, it, vi} from "vitest";
-import {claimedJobSchema, createQueueClient, type CapitalProjectAnalysisJob, type CaseAnalysisJob} from "./queue";
+import {claimedJobSchema, createQueueClient, type AgentOperationBriefJob, type CapitalProjectAnalysisJob, type CaseAnalysisJob} from "./queue";
 
 const job: CaseAnalysisJob = {
   claimed: true,
@@ -212,6 +212,47 @@ describe("agent-plan persistence", () => {
       p_job_id: job.job_id,
       p_capability_token: job.capability_token,
       p_assessment: assessment,
+    });
+  });
+});
+
+describe("execution-brief activation", () => {
+  it("records the response, activation and paired brief through one capability-bound transaction", async () => {
+    const advisorJob: AgentOperationBriefJob = {
+      ...job,
+      kind: "agent_operation_brief",
+      payload: {message_id: "50000000-0000-4000-8000-000000000001", locale: "pt-BR"},
+    };
+    const internal = {schemaVersion: "execution-brief.v1", fingerprint: "a".repeat(64)};
+    const visible = {schemaVersion: "execution-brief.v1", fingerprint: "a".repeat(64)};
+    const rpc = vi.fn(async () => ({data: {
+      message_id: "60000000-0000-4000-8000-000000000001",
+      activation: {job_id: "70000000-0000-4000-8000-000000000001"},
+      execution_brief: {id: "80000000-0000-4000-8000-000000000001", version: 2, replayed: false},
+    }, error: null}));
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.recordAgentResponse(
+      advisorJob,
+      "60000000-0000-4000-8000-000000000001",
+      {state: "idle", reply: "Vou começar."},
+      undefined,
+      {job: "company_debt_view"},
+      {internal, visible, changeSummary: [{kind: "turn_activation"}]},
+    )).resolves.toEqual({
+      activation: {job_id: "70000000-0000-4000-8000-000000000001"},
+      executionBrief: {id: "80000000-0000-4000-8000-000000000001", version: 2, replayed: false},
+    });
+    expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v4", {
+      p_job_id: advisorJob.job_id,
+      p_capability_token: advisorJob.capability_token,
+      p_assistant_message_id: "60000000-0000-4000-8000-000000000001",
+      p_response: {state: "idle", reply: "Vou começar."},
+      p_proposal: null,
+      p_activation: {job: "company_debt_view"},
+      p_execution_brief_internal: internal,
+      p_execution_brief_visible: visible,
+      p_execution_brief_change_summary: [{kind: "turn_activation"}],
     });
   });
 });

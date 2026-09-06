@@ -122,6 +122,44 @@ export type VisibleExecutionBrief = Omit<CompiledExecutionBrief, "planVersion" |
   }[];
 };
 
+/** Runtime contract for the customer projection read back from durable storage. */
+export const visibleExecutionBriefSchema: z.ZodType<VisibleExecutionBrief> = z.object({
+  schemaVersion: z.literal("execution-brief.v1"),
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  locale: executionBriefLocaleSchema,
+  objective: z.string().trim().min(1).max(2_000),
+  currentContext: z.array(z.object({
+    label: z.string().trim().min(1).max(500),
+    role: executionBriefSourceRoleSchema,
+    informationClass: executionBriefInformationClassSchema,
+  }).strict()).max(20),
+  proposedDeliverable: z.string().trim().min(1).max(2_000),
+  workstreams: z.array(z.object({
+    label: z.string().trim().min(1).max(500),
+    purpose: z.string().trim().min(1).max(2_000),
+    sources: z.array(z.object({
+      label: z.string().trim().min(1).max(500),
+      status: executionBriefSourceStatusSchema,
+      informationClass: executionBriefInformationClassSchema,
+    }).strict()).max(20),
+    analyses: z.array(z.string().trim().min(1).max(1_000)).min(1).max(20),
+    output: z.string().trim().min(1).max(1_000),
+    dependencies: z.array(z.string().trim().min(1).max(500)).max(7),
+  }).strict()).min(3).max(7),
+  assumptions: z.array(z.object({
+    label: z.string().trim().min(1).max(500),
+    value: z.string().trim().min(1).max(1_000),
+    basis: z.string().trim().min(1).max(1_000),
+    editable: z.literal(true),
+  }).strict()).max(30),
+  checkpoints: z.array(z.object({
+    label: z.string().trim().min(1).max(500),
+    afterWorkstreamKey: z.string().trim().min(1).max(100),
+    kind: z.enum(["review", "choice", "approval"]),
+  }).strict()).max(10),
+  executionMode: executionBriefExecutionModeSchema,
+}).strict();
+
 export type ExecutionBriefEvaluation = {blockers: string[]; warnings: string[]};
 
 const internalLanguage = /\b(agent(?:e)?|taskspec|token(?:s)?|provider|prompt|model id|workflow id|grafo interno|internal graph)\b/i;

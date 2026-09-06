@@ -21,6 +21,7 @@ import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 import {shadowIntentEnvelope} from "./intent-shadow";
 import type {PublicSearchProvider} from "@offroad/public-research";
+import {prepareExecutionBrief} from "./execution-brief";
 
 import {decideLiveTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn} from "./live-preview";
 import {routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
@@ -41,6 +42,10 @@ const contextSchema = z.object({
     accessBasis: z.string(),
     phase: z.string(),
     status: z.string(),
+  }).nullable().optional(),
+  active_plan: z.record(z.string(), z.unknown()).nullable().optional(),
+  latest_execution_brief: z.object({
+    id: z.uuid(), version: z.number().int().positive(), fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   }).nullable().optional(),
   company_profile: z.record(z.string(), z.unknown()).default({}),
   professional_context: professionalContextSchema.nullable().optional(),
@@ -310,7 +315,10 @@ export async function processAgentOperationBriefJob(
           researchRecord = {research: {status: research.status, queries: research.queries, sources: research.sources.length, cacheHits: research.cacheHits, providerCalls: research.providerCalls, maxCostExposureUsd: research.maxCostExposureUsd, reason: research.reason, latencyMs: research.latencyMs}};
           log("live_preview.research", {job: job.job_id, ...researchRecord.research as Record<string, unknown>});
         }
-        await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply: liveReply}, undefined, liveDecision.activation ?? undefined);
+        const executionBrief = liveDecision.activation
+          ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), liveDecision.activation)
+          : undefined;
+        await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply: liveReply}, undefined, liveDecision.activation ?? undefined, executionBrief);
         await queue.writeStage(job, "live_preview:understand", "succeeded", {messageId: liveMessageId, mode: "live_intelligence_preview", decision: liveDecision.kind, ...liveDecision.record, ...researchRecord});
         await queue.complete(job, {mode: "live_intelligence_preview", decision: liveDecision.kind, composition: liveDecision.composition, assistantMessageId: liveMessageId, spend: gateway.spent()});
         log("live_preview.turn_routed", {job: job.job_id, decision: liveDecision.kind, composition: liveDecision.composition, corpus: liveDecision.record.corpus?.caseId ?? null, abstained: liveDecision.record.abstained, model: liveDecision.record.model, costUsd: liveDecision.record.costUsd, latencyMs: liveDecision.record.latencyMs});
@@ -328,7 +336,10 @@ export async function processAgentOperationBriefJob(
       });
       const previewMessageId = randomUUID();
       const previewResponse = {state: "idle" as const, reply: decision.reply};
-      await queue.recordAgentResponse(job, previewMessageId, previewResponse, undefined, decision.activation ?? undefined);
+      const executionBrief = decision.activation
+        ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), decision.activation)
+        : undefined;
+      await queue.recordAgentResponse(job, previewMessageId, previewResponse, undefined, decision.activation ?? undefined, executionBrief);
       await queue.writeStage(job, "agent_operation_brief", "succeeded", {messageId: previewMessageId, state: "idle", mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition, modelCalls: 0});
       await queue.complete(job, {mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition ?? null, assistantMessageId: previewMessageId, spend: gateway.spent()});
       log("integration_preview.turn_routed", {job: job.job_id, decision: decision.kind, composition: decision.activation?.composition ?? null});
@@ -449,7 +460,10 @@ export async function processAgentOperationBriefJob(
       : undefined;
 
     const assistantMessageId = randomUUID();
-    await queue.recordAgentResponse(job, assistantMessageId, response, proposal, response.activation);
+    const executionBrief = response.activation
+      ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), response.activation)
+      : undefined;
+    await queue.recordAgentResponse(job, assistantMessageId, response, proposal, response.activation, executionBrief);
     await queue.writeStage(job, "agent_operation_brief", "succeeded", {
       messageId: assistantMessageId,
       state: response.state,
@@ -488,6 +502,17 @@ export async function processAgentOperationBriefJob(
 }
 
 type AgentContext = z.infer<typeof contextSchema>;
+
+function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {
+  return {
+    locale: context.locale,
+    message: context.message,
+    accessBasis: context.project?.accessBasis ?? "authorized_private",
+    documents: context.documents.map((document) => ({id: document.id, name: document.name})),
+    sourcePackId: sourcePackId ?? null,
+    activePlan: context.active_plan,
+  };
+}
 
 function companyProfileString(profile: Record<string, unknown>, ...keys: string[]): string | null {
   for (const key of keys) {

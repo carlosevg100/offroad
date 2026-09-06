@@ -1,4 +1,5 @@
 import type {ModelGateway} from "@offroad/model-gateway";
+import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
 import {describe, expect, it} from "vitest";
 
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
@@ -36,6 +37,7 @@ describe("agent operation brief worker", () => {
           entryJob: "origination_thesis", accessBasis: "public_information",
           phase: "understand", status: "active",
         },
+        active_plan: capitalProjectPlanSnapshot("origination_thesis"),
         company_profile: {}, documents: [], tasks: [], artifacts: [], recent_messages: [],
       }),
       recordAgentResponse: async (_job: unknown, _id: string, value: unknown, _proposal: unknown, activated: unknown) => {
@@ -82,6 +84,7 @@ describe("agent operation brief worker", () => {
           entryJob: "capital_planning", accessBasis: "public_information",
           phase: "understand", status: "active",
         },
+        active_plan: capitalProjectPlanSnapshot("capital_planning"),
         company_profile: {name: "Camil"}, documents: [], tasks: [], artifacts: [], recent_messages: [],
       }),
       recordAgentResponse: async (_job: unknown, _id: string, _response: unknown, _proposal: unknown, value: unknown) => {
@@ -126,6 +129,7 @@ describe("agent operation brief worker", () => {
           phase: "understand",
           status: "active",
         },
+        active_plan: capitalProjectPlanSnapshot("company_debt_view"),
         company_profile: {name: "Camil", website: "https://ri.camil.com.br"},
         documents: [],
         tasks: [],
@@ -184,6 +188,7 @@ describe("agent operation brief worker", () => {
           phase: "understand",
           status: "active",
         },
+        active_plan: capitalProjectPlanSnapshot("capital_planning"),
         company_profile: {companyName: "Cedro"},
         documents: [],
         tasks: [{taskId: "M01", label: "Resolver companhia, grupo, jurisdição e regime de evidência", ordinal: 0, status: "succeeded"}],
@@ -247,6 +252,7 @@ describe("agent operation brief worker", () => {
           phase: "understand",
           status: "active",
         },
+        active_plan: capitalProjectPlanSnapshot("origination_thesis"),
         company_profile: {},
         documents: [],
         tasks: [],
@@ -298,6 +304,7 @@ describe("agent operation brief worker", () => {
           entryJob: "origination_thesis", accessBasis: "public_information",
           phase: "understand", status: "active",
         },
+        active_plan: capitalProjectPlanSnapshot("origination_thesis"),
         company_profile: {name: "Camil"}, documents: [], tasks: [], artifacts: [],
         recent_messages: [{
           id: "11111111-1111-4111-8111-111111111111",
@@ -409,6 +416,7 @@ describe("agent operation brief worker", () => {
           phase: "understand",
           status: "active",
         },
+        active_plan: capitalProjectPlanSnapshot("origination_thesis"),
         company_profile: {},
         related_project_memory: [{
           projectId: "11111111-1111-4111-8111-111111111111",

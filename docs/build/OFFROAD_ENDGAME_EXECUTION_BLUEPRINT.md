@@ -137,8 +137,8 @@ Esta tabela é o ponto de partida. Nenhum item pode ser reclassificado por lingu
 | Financial core | várias fórmulas determinísticas implementadas | modelo institucional integrado ainda não está homologado |
 | Word/Excel | transporte e geração básica provados | não equivalem a arquivo top-tier nem fidelidade a template |
 | Matching | schemas e lógica inicial | mandato, freshness, exclusões e feedback ainda não formam capital intelligence |
-| Interface | entrada melhorou; projeto ainda expõe linguagem interna | control plane ainda vaza para o usuário |
-| Gold journeys | cinco casos iniciais; Caso 01 mais exercitado | não cobrem continuidade completa do produto |
+| Interface | primeira projeção segura do Execution Brief foi ligada ao projeto; Live Work e edição ainda ausentes | existe um caminho vertical, não a experiência completa |
+| Gold journeys | G1-G8 especificadas; Caso 01 continua mais exercitado | contratos longitudinais ainda não equivalem a execução provada |
 
 Consequência operacional: **não solicitar testes exploratórios amplos ao fundador até o produto
 atingir os gates definidos neste blueprint**. Até lá, engenharia e revisão independente fecham os

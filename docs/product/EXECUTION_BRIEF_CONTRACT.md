@@ -2,7 +2,7 @@
 
 Versão: `execution-brief.v1`
 
-Status: compiler implementado; integração com produto ainda ausente
+Status: primeira integração vertical implementada; acceptance em banco e jornada viva pendente
 
 ## Para que existe
 
@@ -93,17 +93,31 @@ interface por persona.
 - bloqueio de plano genérico, tarefa inventada, tarefa escondida e fonte não autorizada;
 - aprovação obrigatória para efeito externo.
 
+Na primeira integração vertical:
+
+- o worker compila o brief da versão do plano que está realmente ativa no projeto;
+- resposta, ativação do plano e par interno/visível do brief são gravados na mesma transação;
+- brief e eventos são imutáveis, versionados, isolados por organização e escritos somente por uma
+  capability válida do job;
+- a projeção visível volta do banco sob schema estrito e aparece no projeto real;
+- a interface mostra objetivo, produto esperado, frentes específicas, fontes, análises, premissas e
+  próximo checkpoint, sem task IDs, autoridade interna ou mecanismos de agente;
+- replay do mesmo fingerprint não cria uma versão falsa.
+
+Essa integração prova o caminho `compiler -> worker -> persistência -> leitura -> card`. Ela ainda
+não prova que todos os routers, executores, packs ou jornadas produzem conteúdo institucional.
+
 ## O que ainda não está pronto
 
-Este contrato não está em produção. Faltam:
+O contrato está conectado à primeira superfície real, mas permanece sob validação interna. Faltam:
 
-1. persistir versão, fingerprint, edição e diff;
-2. ligar o router universal ao compiler;
-3. renderizar o card premium no projeto real;
-4. permitir editar, remover, adicionar, pausar e replanejar;
-5. converter cada frente em estados de Live Work;
-6. provar seis intenções na interface e os adversariais correspondentes;
+1. provar a migration e o RPC atômico numa reconstrução limpa do banco e numa jornada viva;
+2. ligar todos os ramos do router universal ao compiler, sem fallback genérico;
+3. permitir ajustar objetivo, fontes, frentes e premissas por eventos governados e mostrar o diff;
+4. converter cada frente em estados reais de Live Work, com progresso derivado dos runs;
+5. manter o histórico de versões navegável na interface;
+6. provar as seis intenções na interface e seus adversariais de autorização e contaminação;
 7. promover somente os escopos que possuam executores e métodos homologados.
 
-Até esses itens passarem, a capacidade permanece `specified/none/implemented`: existe como
-implementação testada de domínio, mas não como experiência disponível ao usuário.
+Até esses itens passarem, a capacidade permanece interna: existe como caminho de produto
+integrado e testado localmente, mas não como experiência homologada para confiança do cliente.
