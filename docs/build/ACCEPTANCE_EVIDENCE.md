@@ -17,10 +17,14 @@
 | Vista humana do registro | `docs/security/CONTROL_REGISTER.md` | separa objetivo, atividade, implementação, operação e assurance; expõe mappings provisórios, nove objetivos sem implementation ref e ausência de população operacional |
 | Capability ledger executável | `currentCapabilityLedger` + `evaluateCapabilityLedger` | 26 capacidades classificadas separadamente por availability, exposure e quality; nenhuma analytical capability recebe uso de cliente ou maturity production |
 | Honestidade do ledger | `capability-ledger.test.ts` | recusa specified com runtime, mocked sem fixture, customer reliance sem live+production e preserva Case 01 como allowlisted em vez de universal |
+| Contratos G1-G8 | `longitudinalGoldJourneys` | oito jornadas e 63 estágios com plano específico, superfícies, objetos, outputs, evidência, transições, variantes e adversariais |
+| Gate longitudinal | `evaluateLongitudinalJourneyCatalogue` | exige os oito IDs, 14 gates únicos, terminal válido, transições resolvidas e Execution Brief antes de Live Work/Workbench |
+| Planos não genéricos | `longitudinal-journeys.test.ts` | diferencia explicitamente RI/CVM em G1, receivables em G3, clause graph em G5 e mandate/freshness em G8; oito briefs distintos |
 | Testes de trust e capability | Vitest em quatro arquivos | dezesseis cenários específicos: release/assurance fail-closed, catálogo completo, 124 vínculos, frameworks mínimos, falsa validação externa, gaps de implementação e honestidade de capability; suite do pacote 27/27 verde |
 | Processo de mudança | `AGENTS.md` + PR template | toda mudança registra control IDs, data flow/classes, autorização, fornecedores, abuse cases, negative tests, evidência, containment e rollback |
 | Honestidade | revisão da linguagem de status | documento se declara proposta; não promove runtime, packs, arquivos ou expertise |
 | Gate focado de governance | test + typecheck + lint de `@offroad/release-governance` | 4 arquivos/27 testes verdes; typecheck e lint verdes em Node 24.19 |
+| Gate focado de jornadas | test + typecheck + lint de `@offroad/evals` | 11 arquivos/52 testes verdes; quatro testes novos exercitam catálogo, brief, gate map e transições |
 | Gate integral deste incremento | `pnpm check` em Node 24.19, numa worktree limpa contendo somente o diff desta entrega | lint, typecheck, testes e build verdes nos 43 alvos; 185 testes web e 19 testes de release governance verdes |
 
 Status: **candidate architecture; Trust Foundation em implementação**. O aceite comprova o contrato

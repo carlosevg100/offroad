@@ -54,7 +54,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Live Work stream | specified | none | specified | sem projeção canônica de eventos para a interface |
 | Premium decision workbench | specified | none | specified | UI atual não é a experiência-alvo |
 | Regressão G1/Caso 01 | live | internal | tested | não é aceite longitudinal do fundador |
-| Jornadas G2-G8 | specified | none | specified | contratos e work products ainda incompletos |
+| Jornadas G2-G8 | specified | none | specified | contratos completos; work products e runtime ainda incompletos |
 
 ## Verdade executiva
 

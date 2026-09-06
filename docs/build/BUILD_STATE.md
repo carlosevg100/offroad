@@ -42,6 +42,10 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
   router universal, modelo integrado, Workbench e G2-G8 continuam `specified`; matching live e
   assurance externa aparecem `absent`. Nenhuma capacidade analítica está liberada para trabalho de
   cliente, material externo ou efeito externo.
+- G1-G8 agora possuem contratos executáveis em `@offroad/evals`: 63 estágios no total, Execution
+  Brief específico antes do trabalho substantivo, superfícies, objetos, outputs, evidência,
+  perguntas, transições, variantes, adversariais e 14 gates por jornada. Todos permanecem
+  `specified`; o contrato não substitui reference work product, binding, E2E ou benchmark.
 - O template de PR e a Definition of Done agora exigem control IDs, data flow/classes,
   providers/tools, abuse cases, testes negativos, evidência, containment e rollback.
 

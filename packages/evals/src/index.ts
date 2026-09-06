@@ -5,7 +5,7 @@
  * evaluated through an `ExtractionSnapshot`; metrics follow §14.2 and the
  * Markdown report is the artifact CI and reviewers read.
  */
-export const evalsVersion = "2026.08.18-v1";
+export const evalsVersion = "2026.09.06-longitudinal-journeys-v1";
 
 export * from "./gold";
 export * from "./snapshot";
@@ -17,3 +17,4 @@ export * from "./rede-horizonte-anchor";
 export * from "./accreditation";
 export * from "./receivables-phase-three";
 export * from "./gold-baseline";
+export * from "./longitudinal-journeys";

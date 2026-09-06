@@ -2175,6 +2175,11 @@ reviewer. Ticket sem isso é pesquisa, não implementação.
 
 ## 22. Gold journeys longitudinais
 
+Os contratos executáveis completos vivem em `packages/evals/src/longitudinal-journeys.ts`; a vista
+humana está em `docs/product/LONGITUDINAL_GOLD_JOURNEYS.md`. Eles validam estados, superfícies,
+objetos, outputs, evidência, transições, variantes, adversariais e gates. Permanecem `specified` até
+reference work products, bindings, E2E e benchmark aprovarem o escopo exato.
+
 ### G1 - Banker: ideia vaga até material e continuação
 
 ```text

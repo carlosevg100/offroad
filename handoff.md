@@ -3355,6 +3355,13 @@ apresentados como capacidade real. Nenhuma analytical capability está `producti
 customer reliance. O próximo incremento funcional deve criar as referências G1/G2 e converter o
 compiler fixo em objective-to-plan sem apagar esses limites.
 
+G1-G8 também deixaram de ser apenas diagramas. `packages/evals/src/longitudinal-journeys.ts`
+contém 63 estágios com estado de interface, objetos, outputs, evidência, política de perguntas,
+transições, variantes, trust adversarials e os 14 gates. Um teste garante Execution Brief antes do
+trabalho e briefs economicamente diferentes por intenção. O status continua `specified`: agora é
+possível construir e avaliar contra contratos concretos, mas ainda faltam reference work products,
+bindings, E2E e benchmark.
+
 ## 43. Atlas canônico de intenções e workflows, 04/09/2026
 
 O produto passou a ter uma especificação funcional acima das seis entradas e abaixo da
