@@ -1,6 +1,6 @@
 # Programa de Segurança, Privacidade e Readiness Enterprise
 
-Versão: 1.0 · 6 de setembro de 2026
+Versão: 1.1 · 6 de setembro de 2026
 Status: programa canônico subordinado ao `OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md`
 Data-base da última inspeção: 5 de setembro de 2026
 Baseline técnico inspecionado: `57f296e`; precisa ser atualizado antes de fechar SEC-001 a SEC-015
@@ -171,6 +171,17 @@ not_designed -> designed -> implemented -> operating -> evidenced -> independent
 ```
 
 Nenhum controle pode ser chamado de `operating` apenas porque existe código.
+
+O registro agora possui uma primeira forma executável em duas camadas:
+
+- 24 objetivos mestres `TRUST-*`, com risco, owner funcional, evidência esperada e mappings;
+- 124 atividades abaixo, preservando os IDs detalhados desta seção e vinculadas aos objetivos.
+
+`docs/security/CONTROL_REGISTER.md` é a vista humana. A fonte executável está em
+`packages/release-governance/src/trust-control-catalogue.ts`; o gate está em
+`packages/release-governance/src/control-register.ts`. Todos os mappings continuam marcados como
+`internal_working_map` até validação por assessor/auditor. Estado atual, owner nominal e população
+de evidência ainda precisam ser preenchidos; portanto SEC-001 permanece em execução.
 
 ## 6. Catálogo técnico e operacional de controles
 
@@ -405,7 +416,9 @@ Antes de contratar o pentest:
 
 Gate: nenhum risco crítico conhecido sem owner; nenhum high de código sem triagem; inventário inicial completo.
 
-- [ ] SEC-001 criar o registro mestre de controles com mappings SOC/ISO/NIST/LGPD;
+- [ ] SEC-001 concluir o registro mestre de controles com mappings SOC/ISO/NIST/LGPD; catálogo
+  executável com 24 objetivos e 124 atividades criado, faltando owner nominal, current state,
+  evidência e validação externa dos mappings;
 - [ ] SEC-002 criar charter do ISMS, escopo, RACI e política de exceções;
 - [ ] SEC-003 triagem linha a linha dos 16 alertas CodeQL abertos;
 - [ ] SEC-004 corrigir achados reais e documentar falsos positivos com aprovação;

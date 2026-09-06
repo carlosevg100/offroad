@@ -6,7 +6,7 @@
  * required for a rollout transition exists. The database owns identity and approval; this pure
  * package owns the deterministic decision contract shared by the worker, tests and release tools.
  */
-export const releaseGovernanceVersion = "2026.09.06-trust-foundation-v1";
+export const releaseGovernanceVersion = "2026.09.06-control-register-v1";
 
 export * from "./comparison";
 export * from "./promotion";
@@ -14,3 +14,5 @@ export * from "./operating-controls";
 export * from "./invalidation";
 export * from "./human-intervention";
 export * from "./trust-controls";
+export * from "./control-register";
+export * from "./trust-control-catalogue";

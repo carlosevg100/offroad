@@ -13,10 +13,12 @@
 | Programa de trust | blueprint §18 + `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md` | segurança começa no Release 0; SOC 2, ISO/IEC 27001, privacy e pentest possuem fronteira, controles, owners, evidência, cadência, backlog e gates explícitos |
 | Gate de release | `@offroad/release-governance/trust-controls` | bloqueia controle obrigatório/owner/evidência/ambiente ausente, evidência vencida e finding critical/high; warnings médios/baixos permanecem visíveis |
 | Gate de alegação | `evaluateAssuranceClaim` | separa designed/implemented/operating/independently tested e recusa SOC 2 Type II ou ISO/IEC 27001 sem atestação externa vigente e no scope fingerprint exato |
-| Testes de trust | Vitest em `trust-controls.test.ts` | oito cenários novos: caminho aprovado, fail-closed composto, duplicidade, gate vazio, badge recusada, atestação exata, independent state sem prova e claim ambígua; suite do pacote 19/19 verde |
+| Control Register executável | `masterTrustControlCatalogue` + `evaluateTrustControlCatalogue` | 24 objetivos, 124 atividades, 11 domínios e quatro frameworks mínimos; falha por domínio, mapping, objetivo ou vínculo ausente e não permite chamar mapping interno de validação externa |
+| Vista humana do registro | `docs/security/CONTROL_REGISTER.md` | separa objetivo, atividade, implementação, operação e assurance; expõe mappings provisórios, nove objetivos sem implementation ref e ausência de população operacional |
+| Testes de trust | Vitest em `trust-controls.test.ts` e `control-register.test.ts` | doze cenários: release/assurance fail-closed, catálogo completo, 124 vínculos, frameworks mínimos, domínio ou mapping removido, falsa validação externa e gaps de implementação; suite do pacote 23/23 verde |
 | Processo de mudança | `AGENTS.md` + PR template | toda mudança registra control IDs, data flow/classes, autorização, fornecedores, abuse cases, negative tests, evidência, containment e rollback |
 | Honestidade | revisão da linguagem de status | documento se declara proposta; não promove runtime, packs, arquivos ou expertise |
-| Gate focado de trust | test + typecheck + lint de `@offroad/release-governance` | 2 arquivos/19 testes verdes; typecheck e lint verdes em Node 24 |
+| Gate focado de trust | test + typecheck + lint de `@offroad/release-governance` | 3 arquivos/23 testes verdes; typecheck e lint verdes em Node 24.19 |
 | Gate integral deste incremento | `pnpm check` em Node 24.19, numa worktree limpa contendo somente o diff desta entrega | lint, typecheck, testes e build verdes nos 43 alvos; 185 testes web e 19 testes de release governance verdes |
 
 Status: **candidate architecture; Trust Foundation em implementação**. O aceite comprova o contrato

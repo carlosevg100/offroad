@@ -33,6 +33,10 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 - `@offroad/release-governance` ganhou um gate determinístico de trust: requisito ausente, owner
   ausente, evidência vencida, ambiente não comprovado ou finding critical/high bloqueiam o release.
   Um segundo gate impede alegação SOC 2/ISO sem atestação externa vigente para o escopo exato.
+- O Control Register deixou de ser apenas uma lista no plano. Há 24 objetivos mestres `TRUST-*`,
+  124 atividades vinculadas sem colisão de IDs, mappings provisórios para SOC 2, ISO/IEC 27001,
+  NIST CSF 2.0 e LGPD, fontes normativas oficiais e validação determinística de completude. Estado
+  operacional, owners nominais e população de evidências continuam pendentes e visíveis.
 - O template de PR e a Definition of Done agora exigem control IDs, data flow/classes,
   providers/tools, abuse cases, testes negativos, evidência, containment e rollback.
 

@@ -1575,6 +1575,12 @@ SOC 2 Type II e certificação ISO/IEC 27001 só podem aparecer depois da emiss�
 
 ### 18.3 Control Register e evidência contínua
 
+O registro opera em duas camadas vinculadas: objetivos mestres `TRUST-*`, que concentram resultado,
+risco, framework, owner funcional e evidência esperada; e atividades técnicas/operacionais, que
+preservam a granularidade necessária para implementar, testar e coletar evidência. A vista humana
+está em `docs/security/CONTROL_REGISTER.md`; schema, catálogo e gates ficam em
+`@offroad/release-governance`. Nenhuma das camadas substitui a população de estado live.
+
 Cada controle possui um registro único com:
 
 ```yaml

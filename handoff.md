@@ -3335,6 +3335,19 @@ O próximo responsável deve resistir a duas tentações: expandir a demo antes 
 do primeiro caso e declarar expertise porque o schema ou o teste unitário existe. A prioridade é
 fazer uma decisão real ficar melhor, com um resultado que um profissional exigente aceitaria usar.
 
+### Trust Foundation, 06/09/2026
+
+O blueprint passou a tratar trust como control plane desde o Release 0. A primeira implementação
+executável está em `@offroad/release-governance`: gate de release fail-closed, gate de alegação de
+assurance e Control Register em duas camadas. O registro contém 24 objetivos mestres `TRUST-*` e
+vincula as 124 atividades detalhadas do programa sem reutilizar os mesmos IDs. Todos os mappings
+SOC 2, ISO/IEC 27001, NIST CSF e LGPD estão explicitamente como working map, nunca como validação
+externa. A suite focada tem 23 testes verdes em Node 24.19.
+
+Isso ainda não prova que os controles operam. A próxima fatia precisa popular owner nominal,
+aplicabilidade, current state, implementação, teste, evidência e findings por atividade; depois
+produzir inventários e threat model. Nenhum badge ou alegação audit-ready está autorizado.
+
 ## 43. Atlas canônico de intenções e workflows, 04/09/2026
 
 O produto passou a ter uma especificação funcional acima das seis entradas e abaixo da
