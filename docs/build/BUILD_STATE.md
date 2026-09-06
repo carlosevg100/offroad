@@ -37,12 +37,17 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
   124 atividades vinculadas sem colisão de IDs, mappings provisórios para SOC 2, ISO/IEC 27001,
   NIST CSF 2.0 e LGPD, fontes normativas oficiais e validação determinística de completude. Estado
   operacional, owners nominais e população de evidências continuam pendentes e visíveis.
+- O capability ledger v1 mede 26 capacidades sem usar um status único enganoso. Availability,
+  exposure e quality maturity são independentes. Caso 01 aparece como `live/allowlisted/tested`;
+  router universal, modelo integrado, Workbench e G2-G8 continuam `specified`; matching live e
+  assurance externa aparecem `absent`. Nenhuma capacidade analítica está liberada para trabalho de
+  cliente, material externo ou efeito externo.
 - O template de PR e a Definition of Done agora exigem control IDs, data flow/classes,
   providers/tools, abuse cases, testes negativos, evidência, containment e rollback.
 
-Status: **candidate architecture; Release 0 iniciado**. Nenhuma capacidade de runtime foi promovida
-por este trabalho. O próximo gate é completar a baseline SEC-001 a SEC-015 e os demais work
-products de referência do Release 0.
+Status: **candidate architecture; Release 0 iniciado**. Nenhuma capacidade analítica foi promovida
+por este trabalho. Capability ledger e Control Register agora são executáveis; o próximo gate é
+completar a baseline SEC-001 a SEC-015 e os work products de referência do Release 0.
 
 ## Polimento da entrada e correção do menu, 04/09/2026
 

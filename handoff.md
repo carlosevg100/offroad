@@ -3348,6 +3348,13 @@ Isso ainda não prova que os controles operam. A próxima fatia precisa popular 
 aplicabilidade, current state, implementação, teste, evidência e findings por atividade; depois
 produzir inventários e threat model. Nenhum badge ou alegação audit-ready está autorizado.
 
+O mesmo princípio agora vale para produto. `docs/build/CAPABILITY_LEDGER.md` e
+`@offroad/release-governance/current-capability-ledger` registram 26 capacidades por availability,
+exposure e quality maturity. O evaluator falha quando specification, shadow ou fixture são
+apresentados como capacidade real. Nenhuma analytical capability está `production` ou liberada para
+customer reliance. O próximo incremento funcional deve criar as referências G1/G2 e converter o
+compiler fixo em objective-to-plan sem apagar esses limites.
+
 ## 43. Atlas canônico de intenções e workflows, 04/09/2026
 
 O produto passou a ter uma especificação funcional acima das seis entradas e abaixo da

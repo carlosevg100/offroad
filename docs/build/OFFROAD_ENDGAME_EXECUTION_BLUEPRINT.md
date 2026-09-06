@@ -144,6 +144,10 @@ Consequência operacional: **não solicitar testes exploratórios amplos ao fund
 atingir os gates definidos neste blueprint**. Até lá, engenharia e revisão independente fecham os
 contratos e pedem ao fundador apenas decisões de produto e julgamento que realmente dependem dele.
 
+O inventário executável correspondente está em `docs/build/CAPABILITY_LEDGER.md` e
+`@offroad/release-governance/current-capability-ledger`. Ele separa availability, exposure e quality
+maturity e bloqueia promoção por linguagem. A tabela acima permanece o resumo executivo.
+
 ## 3. Peers e inspirações: princípios, não colagem
 
 Os peers convergem em uma categoria: um sistema persistente de trabalho profissional, com contexto,
@@ -2351,7 +2355,7 @@ permanece visível internamente como roadmap ou coverage ausente; nunca é impro
 Executar Release 0 nesta ordem, mantendo somente correções P0/P1 em paralelo:
 
 1. ratificar este blueprint como fonte de execução;
-2. produzir capability ledger live/shadow/mocked/specified/absent;
+2. manter o capability ledger live/shadow/mocked/specified/absent e fechá-lo contra cada release;
 3. escrever contratos completos de G1-G8;
 4. desenhar IA e estados de interface sobre o produto atual;
 5. produzir manualmente reference Workbench, model, meeting/board materials e review de G1/G2;
