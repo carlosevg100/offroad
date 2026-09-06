@@ -73,7 +73,11 @@ export const capitalProjectJobs: readonly CapitalProjectJobDefinition[] = [
     },
     // C02 and K04 remain explicit public-research outcomes as well as M07 dependencies. This
     // keeps their artifacts inspectable on their own while M07 cannot complete without them.
-    targetTaskIds: ["M07", "C02", "K04"],
+    // A meeting thesis is not just a research brief. It must carry the company analysis and the
+    // tested alternatives that support the conversation. M07 remains the corrigible opening;
+    // S11 closes the prospective credit and structuring path; K04 keeps comparable transactions
+    // inspectable as their own evidence product.
+    targetTaskIds: ["M07", "S11", "K04"],
     firstWorkProduct: "meeting_brief",
     confirmationGate: "preliminary_understanding",
     inputPolicy: {
