@@ -162,6 +162,19 @@
 .advisor-thread__activity-event p {font-size: 11px; line-height: 1.5; margin: 3px 0 0;}
 .advisor-thread__activity-event.is-complete > span {background: #eff3e9; border-color: #d3ddc6; color: #617a3d;}
 .advisor-thread__activity-event.is-failed > span {background: #fff2ef; border-color: #ead4cf; color: #a34839;}
+.advisor-thread__brief-activity {position: relative;}
+.advisor-thread__brief-activity::before {
+  background: #e1e5dc;
+  content: "";
+  height: calc(100% + 16px);
+  left: 12px;
+  position: absolute;
+  top: -16px;
+  width: 1px;
+  z-index: 0;
+}
+.advisor-thread__brief-activity > span {position: relative; z-index: 1;}
+.advisor-thread__brief-activity[data-kind="waiting_user"] > span {background: #f6f1e8; border-color: #e4d8c0; color: #8b6b39;}
 
 .advisor-thread__requests > div {max-width: 700px; width: 100%;}
 .advisor-thread__requests > div > strong {color: #242b30; display: block; font-size: 14px; font-weight: 650; margin-bottom: 4px;}

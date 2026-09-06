@@ -82,7 +82,8 @@ select
   '70000000-0000-4000-8000-000000000601', repeat('1', 64),
   'execution-brief-test', 'fixture-v1',
   '{"type":"fixture","id":"execution-brief-m01"}'::jsonb, repeat('2', 64),
-  '[{"id":"fixture_check","passed":true}]'::jsonb, now(), now()
+  '[{"id":"fixture_check","passed":true}]'::jsonb,
+  now() - interval '1 hour', now() - interval '1 hour'
 from public.capital_project_plan_tasks task
 where task.organization_id = '20000000-0000-4000-8000-000000000601'
   and task.plan_id = '40000000-0000-4000-8000-000000000601'
@@ -228,6 +229,7 @@ do $$
 declare
   accepted boolean;
   latest_brief_id uuid;
+  narrative jsonb;
   progress jsonb;
 begin
   if (select count(*) from public.capital_project_execution_briefs) <> 2
@@ -250,6 +252,7 @@ begin
   from public.capital_project_execution_briefs
   order by brief_version desc
   limit 1;
+  perform set_config('test.execution_brief_id', latest_brief_id::text, true);
   progress := public.read_capital_project_execution_brief_progress_v1(latest_brief_id);
   if progress #>> '{workstreams,0,status}' <> 'completed'
     or progress #>> '{workstreams,0,completed}' <> '1'
@@ -259,6 +262,22 @@ begin
   end if;
   if progress::text ~ 'M0[1-3]' or progress::text ~ 'plan_task' then
     raise exception 'workstream progress exposed an internal task binding: %', progress;
+  end if;
+
+  narrative := public.read_capital_project_execution_brief_narrative_v1(latest_brief_id);
+  if jsonb_array_length(narrative -> 'events') <> 1
+    or narrative #>> '{events,0,label}' <> 'Fixar necessidade e horizonte'
+    or narrative #>> '{events,0,kind}' <> 'completed'
+    or (narrative #>> '{events,0,carriedForward}')::boolean is not true
+    or narrative #>> '{events,0,output}' <> 'Escopo' then
+    raise exception 'workstream narrative did not reflect the persisted run: %', narrative;
+  end if;
+  if narrative::text ~ 'M0[1-3]'
+    or narrative::text ~ 'plan_task'
+    or narrative::text ~ 'executor'
+    or narrative::text ~ 'processing_job'
+    or narrative::text ~ 'fixture-v1' then
+    raise exception 'workstream narrative exposed an internal execution binding: %', narrative;
   end if;
 
   begin
@@ -272,11 +291,21 @@ $$;
 
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000602","role":"authenticated","aal":"aal1"}', true);
 do $$
+declare
+  accepted boolean;
+  brief_id uuid;
 begin
   if (select count(*) from public.capital_project_execution_briefs) <> 0
     or (select count(*) from public.capital_project_execution_brief_events) <> 0 then
     raise exception 'brief history crossed the tenant boundary';
   end if;
+  brief_id := current_setting('test.execution_brief_id')::uuid;
+  begin
+    perform public.read_capital_project_execution_brief_narrative_v1(brief_id);
+    accepted := true;
+  exception when no_data_found then accepted := false;
+  end;
+  if accepted then raise exception 'workstream narrative crossed the tenant boundary'; end if;
 end;
 $$;
 
@@ -291,7 +320,9 @@ begin
     or not has_column_privilege('authenticated', 'public.capital_project_execution_briefs', 'visible_snapshot', 'select')
     or not has_function_privilege('authenticated', 'public.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)', 'execute')
     or not has_function_privilege('authenticated', 'public.worker_record_agent_response_and_activate_v4(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
-    or not has_function_privilege('authenticated', 'public.read_capital_project_execution_brief_progress_v1(uuid)', 'execute') then
+    or not has_function_privilege('authenticated', 'public.read_capital_project_execution_brief_progress_v1(uuid)', 'execute')
+    or has_function_privilege('anon', 'public.read_capital_project_execution_brief_narrative_v1(uuid)', 'execute')
+    or not has_function_privilege('authenticated', 'public.read_capital_project_execution_brief_narrative_v1(uuid)', 'execute') then
     raise exception 'Execution Brief grants are wider or narrower than designed';
   end if;
 end;

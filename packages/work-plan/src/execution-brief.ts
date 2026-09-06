@@ -145,6 +145,36 @@ export const executionBriefProgressSchema = z.object({
 }).strict();
 export type ExecutionBriefProgress = z.infer<typeof executionBriefProgressSchema>;
 
+export const executionBriefNarrativeEventKindSchema = z.enum([
+  "started",
+  "completed",
+  "waiting_user",
+  "needs_attention",
+]);
+export type ExecutionBriefNarrativeEventKind = z.infer<typeof executionBriefNarrativeEventKindSchema>;
+
+/**
+ * Customer-safe execution history derived from the immutable task runs bound to a brief.
+ * It deliberately carries the visible workstream language instead of TaskSpec IDs, executor
+ * names, provider traces or failure payloads. `carriedForward` distinguishes work inherited by a
+ * revised brief from work that actually happened after that version was presented.
+ */
+export const executionBriefNarrativeSchema = z.object({
+  briefId: z.uuid(),
+  version: z.number().int().positive(),
+  events: z.array(z.object({
+    eventKey: z.string().regex(/^[0-9a-f]{64}$/),
+    position: z.number().int().nonnegative(),
+    label: z.string().trim().min(1).max(500),
+    purpose: z.string().trim().min(1).max(1_000),
+    output: z.string().trim().min(1).max(1_000),
+    kind: executionBriefNarrativeEventKindSchema,
+    occurredAt: z.iso.datetime({offset: true}),
+    carriedForward: z.boolean(),
+  }).strict()).max(14),
+}).strict();
+export type ExecutionBriefNarrative = z.infer<typeof executionBriefNarrativeSchema>;
+
 export const executionBriefChangeKindSchema = z.enum([
   "objective_changed",
   "deliverable_changed",

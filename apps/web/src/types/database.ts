@@ -7483,6 +7483,10 @@ export type Database = {
         Args: { p_execution_brief_id: string }
         Returns: Json
       }
+      read_capital_project_execution_brief_narrative_v1: {
+        Args: { p_execution_brief_id: string }
+        Returns: Json
+      }
       record_agent_change_proposal: {
         Args: {
           p_organization_id: string

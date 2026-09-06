@@ -20,8 +20,9 @@ import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake
 import {createClient} from "@/lib/supabase/client";
 
 import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import {ExecutionBriefActivity} from "./execution-brief-activity";
 import {ExecutionBriefCard} from "./execution-brief-card";
-import type {ExecutionBriefChange, ExecutionBriefProgress, VisibleExecutionBrief} from "@offroad/work-plan";
+import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgress, VisibleExecutionBrief} from "@offroad/work-plan";
 
 export type AdvisorProjectMessage = {
   id: string;
@@ -93,7 +94,7 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
-  executionBrief?: {brief: VisibleExecutionBrief; changes: readonly ExecutionBriefChange[]; createdAt: string; progress: ExecutionBriefProgress | null; version: number} | null;
+  executionBrief?: {brief: VisibleExecutionBrief; changes: readonly ExecutionBriefChange[]; createdAt: string; narrative: ExecutionBriefNarrative | null; progress: ExecutionBriefProgress | null; version: number} | null;
 };
 
 export function AdvisorProject(props: Props) {
@@ -132,7 +133,12 @@ export function AdvisorProject(props: Props) {
       id: `execution-brief-${props.executionBrief.version}`,
       createdAt: props.executionBrief.createdAt,
       executionBrief: props.executionBrief,
-    }] : []),
+    }, ...(props.executionBrief.narrative?.events.map((event) => ({
+      kind: "execution_brief_activity" as const,
+      id: event.eventKey,
+      createdAt: event.occurredAt,
+      event,
+    })) ?? [])] : []),
   ].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
   const lastActivityId = props.activityEvents.at(-1)?.id;
 
@@ -209,6 +215,9 @@ export function AdvisorProject(props: Props) {
                 <span>{live ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : terminal ? <Check aria-hidden="true" size={13} /> : failed ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={12} />}</span>
                 <div><small>{failed ? props.copy.needsAttention : terminal ? props.copy.ready : props.copy.activity}</small><p>{item.event.summary}</p></div>
               </article>;
+            }
+            if (item.kind === "execution_brief_activity") {
+              return <ExecutionBriefActivity active={active} event={item.event} key={`execution-brief-activity-${item.id}`} locale={props.locale} />;
             }
             const message = item.message;
             const proposal = message.proposalId ? proposalById.get(message.proposalId) : undefined;

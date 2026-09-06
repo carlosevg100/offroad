@@ -6,6 +6,7 @@ import {
   compileExecutionBrief,
   diffVisibleExecutionBrief,
   evaluateExecutionBriefInput,
+  executionBriefNarrativeSchema,
   executionBriefProgressSchema,
   visibleExecutionBriefSchema,
   visibleExecutionBrief,
@@ -134,6 +135,31 @@ describe("execution brief compiler", () => {
       progress.workstreams[1],
       progress.workstreams[2],
     ]})).toThrow();
+  });
+
+  it("accepts a persisted customer narrative without worker internals", () => {
+    const narrative = executionBriefNarrativeSchema.parse({
+      briefId: "10000000-0000-4000-8000-000000000001",
+      version: 2,
+      events: [
+        {
+          eventKey: "a".repeat(64),
+          position: 0,
+          label: "Entender a companhia e o contexto",
+          purpose: "Ler as fontes públicas e separar fatos, premissas e lacunas.",
+          output: "Contexto confirmado para as análises seguintes",
+          kind: "completed",
+          occurredAt: "2026-09-06T15:30:00.000Z",
+          carriedForward: false,
+        },
+      ],
+    });
+
+    expect(JSON.stringify(narrative)).not.toMatch(/TaskSpec|taskId|executor|provider|error/);
+    expect(() => executionBriefNarrativeSchema.parse({...narrative, events: [{
+      ...narrative.events[0],
+      taskId: "M01",
+    }]})).toThrow();
   });
 
   it("describes a replan as a bounded visible diff without internal task language", () => {
