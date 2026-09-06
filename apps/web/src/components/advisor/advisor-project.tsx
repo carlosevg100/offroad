@@ -93,7 +93,7 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
-  executionBrief?: {brief: VisibleExecutionBrief; changes: readonly ExecutionBriefChange[]; progress: ExecutionBriefProgress | null; version: number} | null;
+  executionBrief?: {brief: VisibleExecutionBrief; changes: readonly ExecutionBriefChange[]; createdAt: string; progress: ExecutionBriefProgress | null; version: number} | null;
 };
 
 export function AdvisorProject(props: Props) {
@@ -127,6 +127,12 @@ export function AdvisorProject(props: Props) {
       .filter((event) => !["work_failed", "quality_gate_failed"].includes(event.type)
         || !failureWasRecovered(event.createdAt, successfulOutcomeAt))
       .map((event) => ({kind: "activity" as const, id: event.id, createdAt: event.createdAt, event})),
+    ...(props.executionBrief ? [{
+      kind: "execution_brief" as const,
+      id: `execution-brief-${props.executionBrief.version}`,
+      createdAt: props.executionBrief.createdAt,
+      executionBrief: props.executionBrief,
+    }] : []),
   ].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
   const lastActivityId = props.activityEvents.at(-1)?.id;
 
@@ -186,6 +192,15 @@ export function AdvisorProject(props: Props) {
 
         <div aria-live="polite" className="advisor-thread">
           {timeline.map((item) => {
+            if (item.kind === "execution_brief") {
+              return <ExecutionBriefCard
+                brief={item.executionBrief.brief}
+                changes={item.executionBrief.changes}
+                key={item.id}
+                progress={item.executionBrief.progress}
+                version={item.executionBrief.version}
+              />;
+            }
             if (item.kind === "activity") {
               const terminal = ["work_completed", "decision_recorded", "question_answered"].includes(item.event.type);
               const failed = ["work_failed", "quality_gate_failed"].includes(item.event.type);
@@ -208,7 +223,6 @@ export function AdvisorProject(props: Props) {
               </div>
             </article>;
           })}
-          {props.executionBrief ? <ExecutionBriefCard brief={props.executionBrief.brief} changes={props.executionBrief.changes} progress={props.executionBrief.progress} version={props.executionBrief.version} /> : null}
           {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
           {props.pendingRequests?.length ? <article className="advisor-thread__message is-assistant advisor-thread__requests">
             <span className="advisor-thread__avatar"><Bot aria-hidden="true" size={15} /></span>

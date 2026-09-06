@@ -158,6 +158,15 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await expect(executionBrief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(4);
     await expect(executionBrief.locator(".execution-brief-card__progress")).toHaveCount(4);
     await expect(executionBrief.locator(".execution-brief-card__progress").first()).toContainText("Concluída");
+    const firstActivity = page.locator(".advisor-thread__activity-event").first();
+    await expect(firstActivity).toBeVisible();
+    expect(await page.locator('[data-testid="execution-brief"], .advisor-thread__activity-event')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-testid") ?? "activity")))
+      .toEqual(expect.arrayContaining(["execution-brief", "activity"]));
+    expect(await page.locator('[data-testid="execution-brief"], .advisor-thread__activity-event')
+      .first()
+      .getAttribute("data-testid"))
+      .toBe("execution-brief");
     await page.screenshot({path: join(outputDirectory, "03-readout.png"), fullPage: true});
   });
 

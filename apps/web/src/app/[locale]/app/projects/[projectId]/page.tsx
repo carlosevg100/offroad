@@ -238,7 +238,7 @@ async function ConversationalCapitalProject({
     supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
     supabase.from("capital_project_execution_briefs")
-      .select("id, brief_version, visible_snapshot, change_summary")
+      .select("id, brief_version, visible_snapshot, change_summary, created_at")
       .eq("organization_id", organization.id)
       .eq("capital_project_id", project.id)
       .order("brief_version", {ascending: false})
@@ -537,6 +537,7 @@ async function ConversationalCapitalProject({
     executionBrief={parsedExecutionBrief?.success ? {
       brief: parsedExecutionBrief.data,
       changes: parsedExecutionBriefChanges?.success ? parsedExecutionBriefChanges.data : [],
+      createdAt: executionBriefRow!.created_at,
       progress: executionBriefProgress,
       version: executionBriefRow!.brief_version,
     } : null}
