@@ -405,6 +405,13 @@ O Execution Brief é uma projeção do grafo compilado. Não é texto inventado 
 tarefa não existe no grafo, não aparece no plano. Se o usuário altera o plano, o grafo é recompilado
 e o diff fica visível.
 
+Estado de implementação em 06/09/2026: `@offroad/work-plan` possui o compiler determinístico, a
+projeção visível segura, gates fail-closed e receitas específicas para as seis famílias de entrada.
+O fluxo de reunião/originação agora inclui no grafo análise prospectiva e alternativas até S11, em
+vez de terminar em pesquisa preliminar. Isso ainda não está ligado a rota, persistência, card
+editável ou Live Work; portanto permanece `specified/none/implemented` no capability ledger. O
+contrato detalhado está em `docs/product/EXECUTION_BRIEF_CONTRACT.md`.
+
 As mesmas frentes viram a estrutura do Live Work. O usuário acompanha `a iniciar`, `em andamento`,
 `concluída`, `aguardando informação`, `não aplicável` ou `replanejada` sem perder a relação com o que
 foi prometido. Se a execução descobrir uma nova frente material, o sistema mostra o motivo e o diff

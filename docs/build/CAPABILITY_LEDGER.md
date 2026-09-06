@@ -1,8 +1,8 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.06-v1
+Versão: 2026.09.06-v2
 
-Baseline inspecionada: `bff926e`
+Baseline inspecionada: `918dce4`
 
 Status: primeira classificação executável do produto atual
 
@@ -50,7 +50,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Continuidade longitudinal do projeto | specified | none | specified | não conecta análise, estrutura, materiais e capital |
 | Gates de trust e assurance | live | internal | tested | current state e evidence population pendentes |
 | Assurance enterprise externa | absent | none | unsupported | sem pentest, SOC 2 ou ISO emitidos |
-| Execution Brief específico | specified | none | specified | plano atual ainda é case-shaped |
+| Execution Brief específico | specified | none | implemented | compiler e seis receitas existem; falta integrar, persistir e renderizar |
 | Live Work stream | specified | none | specified | sem projeção canônica de eventos para a interface |
 | Premium decision workbench | specified | none | specified | UI atual não é a experiência-alvo |
 | Regressão G1/Caso 01 | live | internal | tested | não é aceite longitudinal do fundador |

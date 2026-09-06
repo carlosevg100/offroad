@@ -46,12 +46,20 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
   Brief específico antes do trabalho substantivo, superfícies, objetos, outputs, evidência,
   perguntas, transições, variantes, adversariais e 14 gates por jornada. Todos permanecem
   `specified`; o contrato não substitui reference work product, binding, E2E ou benchmark.
+- `@offroad/work-plan` ganhou o primeiro compiler universal de `ExecutionBrief`: toda tarefa do
+  grafo precisa aparecer exatamente uma vez em três a sete frentes; tarefa inventada, escondida ou
+  duplicada, fonte não autorizada, premissa sem base, copy genérica e efeito externo sem autoridade
+  bloqueiam o plano. A projeção visível remove IDs e metadados internos.
+- As seis famílias de entrada agora possuem receitas de brief distintas. O fluxo de reunião e
+  originação foi ampliado de pesquisa preliminar até análise prospectiva e alternativa-alvo S11.
+  O compiler está testado, mas continua sem rota, persistência, card editável ou Live Work no web.
 - O template de PR e a Definition of Done agora exigem control IDs, data flow/classes,
   providers/tools, abuse cases, testes negativos, evidência, containment e rollback.
 
 Status: **candidate architecture; Release 0 iniciado**. Nenhuma capacidade analítica foi promovida
-por este trabalho. Capability ledger e Control Register agora são executáveis; o próximo gate é
-completar a baseline SEC-001 a SEC-015 e os work products de referência do Release 0.
+por este trabalho. Capability ledger, Control Register, jornadas e compiler de Execution Brief são
+executáveis; os próximos gates são a baseline SEC-001 a SEC-015, os work products de referência e
+a integração persistida do brief com a interface e o Live Work.
 
 ## Polimento da entrada e correção do menu, 04/09/2026
 

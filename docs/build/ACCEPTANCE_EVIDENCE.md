@@ -20,11 +20,15 @@
 | Contratos G1-G8 | `longitudinalGoldJourneys` | oito jornadas e 63 estágios com plano específico, superfícies, objetos, outputs, evidência, transições, variantes e adversariais |
 | Gate longitudinal | `evaluateLongitudinalJourneyCatalogue` | exige os oito IDs, 14 gates únicos, terminal válido, transições resolvidas e Execution Brief antes de Live Work/Workbench |
 | Planos não genéricos | `longitudinal-journeys.test.ts` | diferencia explicitamente RI/CVM em G1, receivables em G3, clause graph em G5 e mandate/freshness em G8; oito briefs distintos |
+| Compiler de Execution Brief | `@offroad/work-plan/execution-brief` | deriva três a sete frentes do grafo, liga fontes/análises/outputs/dependências, deriva autorização e produz fingerprint e projeção visível segura |
+| Gate do plano visível | `execution-brief.test.ts` | bloqueia tarefa inventada, escondida ou duplicada, copy genérica, fonte disponível sem autorização, premissa não governada e efeito externo sem aprovação |
+| Especialização das entradas | seis receitas + capital job compiler | reunião chega a análise prospectiva e S11; revisão de operação explicita vigência, emendas, cross-references, indexação, covenants, waterfall e ajustes |
 | Testes de trust e capability | Vitest em quatro arquivos | dezesseis cenários específicos: release/assurance fail-closed, catálogo completo, 124 vínculos, frameworks mínimos, falsa validação externa, gaps de implementação e honestidade de capability; suite do pacote 27/27 verde |
 | Processo de mudança | `AGENTS.md` + PR template | toda mudança registra control IDs, data flow/classes, autorização, fornecedores, abuse cases, negative tests, evidência, containment e rollback |
 | Honestidade | revisão da linguagem de status | documento se declara proposta; não promove runtime, packs, arquivos ou expertise |
 | Gate focado de governance | test + typecheck + lint de `@offroad/release-governance` | 4 arquivos/27 testes verdes; typecheck e lint verdes em Node 24.19 |
 | Gate focado de jornadas | test + typecheck + lint de `@offroad/evals` | 11 arquivos/52 testes verdes; quatro testes novos exercitam catálogo, brief, gate map e transições |
+| Gate focado de Execution Brief | test + typecheck + lint de `@offroad/work-plan` | 7 arquivos/43 testes verdes; cinco testes novos cobrem especificidade, segurança da projeção e fail-closed |
 | Gate integral deste incremento | `pnpm check` em Node 24.19, numa worktree limpa contendo somente o diff desta entrega | lint, typecheck, testes e build verdes nos 43 alvos; 185 testes web e 19 testes de release governance verdes |
 
 Status: **candidate architecture; Trust Foundation em implementação**. O aceite comprova o contrato
