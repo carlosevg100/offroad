@@ -209,13 +209,15 @@
     </header>
 
     <section class="diagram-shell" aria-label="Arquitetura-alvo do Offroad Credit OS">
-      <svg viewBox="0 0 1200 660" role="img" aria-labelledby="diagram-title diagram-desc">
-        <title id="diagram-title">Arquitetura do endgame do Offroad Credit OS</title>
-        <desc id="diagram-desc">
+      <svg viewBox="0 0 1200 688" role="img" aria-labelledby="offroad-endgame-architecture-title offroad-endgame-architecture-desc">
+        <title id="offroad-endgame-architecture-title">Arquitetura do endgame do Offroad Credit OS</title>
+        <desc id="offroad-endgame-architecture-desc">
           A experiência de usuário entra no Intent and Work Control, que compila um grafo de trabalho.
           Especialistas executam usando o DCM Cognitive Harness, os motores determinísticos e o Credit
           Object Graph. Work products passam por revisão antes de chegar ao usuário e, quando aplicável,
-          ao Capital Network. Correções retornam como memória governada.
+          ao Capital Network. Correções retornam como memória governada. Um Trust Control Plane aplica
+          identidade, autorização, isolamento, políticas de dados e provedores, auditoria, resposta a
+          incidentes e evidências de controle a todas as camadas.
         </desc>
 
         <defs>
@@ -343,9 +345,10 @@
 
         <!-- Footer strip inside SVG -->
         <line x1="32" y1="584" x2="1168" y2="584" stroke="rgba(21,26,32,.14)" stroke-width="1"></line>
-        <text class="zone-label" x="48" y="614">CONTROLE TRANSVERSAL</text>
-        <text class="node-copy" x="232" y="614">identidade · RLS · autorização · evidence regime · audit trail · custo · observabilidade · evals · promoção por escopo</text>
-        <text class="node-copy" x="48" y="638">O usuário vê progresso útil, decisões, lacunas e entregáveis - nunca a topologia interna de agentes nem raciocínio privado.</text>
+        <text class="zone-label" x="48" y="608">TRUST CONTROL PLANE</text>
+        <text class="node-copy" x="232" y="608">identidade · autorização · isolamento · políticas de dados e provedores · efeitos · auditoria</text>
+        <text class="node-copy" x="232" y="628">retenção · DLP · observabilidade · resposta e recuperação · evidências · promoção por escopo</text>
+        <text class="node-copy" x="48" y="656">O usuário vê progresso útil, decisões, lacunas e entregáveis - nunca a topologia interna de agentes nem raciocínio privado.</text>
       </svg>
     </section>
 

@@ -1,9 +1,10 @@
 # Offroad Endgame Execution Blueprint
 
-Versão: 1.1 · 6 de setembro de 2026
+Versão: 1.2 · 6 de setembro de 2026
 Status: fonte canônica proposta para execução do programa; não é evidência de implementação  
 Subordinado a: `OFFROAD_DCM_OPERATING_CONSTITUTION.md` e `CANONICAL_INTENT_WORKFLOW_ATLAS.md`  
 Substitui, para planejamento futuro: a sequência linear e histórica de `MASTER_PLAN.md`
+Programa de trust subordinado e executável: `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`
 
 ## 0. Decisão executiva
 
@@ -71,7 +72,34 @@ refinance
 Esse escopo pode estar em produção enquanto outro, como risco de construção de um project finance
 offshore, continua `specified` ou `tested`.
 
-### 1.1 Fronteira de atuação
+### 1.1 O que significa qualidade comparável aos peers
+
+“State of the art” não é uma alegação de marketing nem uma soma de features. Para a Offroad, é uma
+barra de homologação mensurável. Uma jornada só pode ser apresentada como comparável às melhores
+plataformas de trabalho profissional quando demonstrar, conjuntamente:
+
+1. **interação:** intenção livre vira entendimento corrigível, Execution Brief específico, atividade
+   real, checkpoints úteis e continuidade sem expor mecanismos internos;
+2. **workflow intelligence:** o grafo nasce do resultado pedido, seleciona procedures e tools
+   homologados, elimina trabalho irrelevante, pergunta somente o que muda a entrega e se recompila
+   sem perder estado válido;
+3. **profundidade:** cobertura, definições, análise, modelagem, julgamento e estrutura passam pelo
+   padrão institucional do escopo composto ativado, com abstenção fora dele;
+4. **document intelligence:** documentos arbitrários são inventariados, lidos na estratégia correta,
+   conciliados e citados até página, célula, cláusula ou trecho, com omissões visíveis;
+5. **work products:** chat, Workbench, Excel, PowerPoint e Word nascem dos mesmos objetos, são
+   editáveis, visualmente institucionais e sobrevivem a revisão de conteúdo e template;
+6. **continuidade:** novo documento, premissa, decisão, retorno de reunião ou feedback reabre apenas
+   dependências afetadas e preserva versões, decisões e artefatos anteriores;
+7. **trust:** isolamento, autorização, confidencialidade, processamento, disponibilidade,
+   observabilidade e evidências de controle acompanham o trabalho do primeiro input ao último efeito.
+
+O benchmark contra Legora, Harvey, Hebbia, Rogo e Model ML avalia a experiência e o resultado que o
+usuário consegue obter, não semelhança visual. A referência externa é revista periodicamente; o
+contrato interno permanece estável e é medido por gold journeys, artifacts de referência, testes
+adversariais, métricas e evidências de operação.
+
+### 1.2 Fronteira de atuação
 
 A Offroad pode:
 
@@ -196,6 +224,9 @@ A figura canônica de arquitetura vive em
    financeira, evidenciária, narrativa e visual.
 8. **Capital Network** - provedores, mandatos, relacionamentos, market evidence, screening,
    shortlist, disclosure e feedback.
+9. **Trust Control Plane** - identidade, autorização, classificação, tenant boundary, provider
+   policy, efeitos, audit trail, retenção, evidência de controle, incidentes, resiliência e kill
+   switches atravessando todas as camadas anteriores.
 
 ### 5.2 Decisões técnicas
 
@@ -210,6 +241,13 @@ A figura canônica de arquitetura vive em
   depender de um provedor.
 - O control plane, não o LLM, possui estado, budgets, dependências, promoção e efeitos.
 - O usuário não escolhe modelos ou agentes para executar trabalho normal.
+- Toda leitura, gravação, recuperação, tool call, export e efeito externo recebe uma decisão de
+  policy server-side; ausência de contexto de autorização falha fechada.
+- A oferta começa em SaaS multi-tenant com isolamento verificável, mas preserva portabilidade para
+  ambientes single-tenant e, quando comercialmente necessário, implantação dedicada ou no perímetro
+  do cliente sem bifurcar a ontologia e os procedures.
+- Controles e evidências são objetos operacionais versionados. Existência de código não prova que um
+  controle opera, e badge ou declaração comercial nunca é inferido de configuração técnica.
 
 ### 5.3 Fluxo lógico
 
@@ -1465,34 +1503,194 @@ A Offroad para na conexão estruturada entre ideia/operação e capital. Pode pr
 shortlist, contexto, outreach draft e registro de feedback. As partes desenvolvem underwriting,
 diligência, aprovação, negociação, distribuição, documentos e closing.
 
-## 18. Trust, security e enterprise
+## 18. Trust, security, privacy e enterprise assurance
 
-Segurança não é release cosmético. A arquitetura deve nascer passável por controles SOC 2 e ISO
-27001, ainda que certificação dependa de operação, auditor e período de observação.
+Segurança não é uma feature enterprise nem um release cosmético. Ela é uma propriedade de cada
+objeto, tarefa, integração, ambiente, pessoa e efeito. A arquitetura nasce preparada para controles
+SOC 2 e para um ISMS conforme ISO/IEC 27001:2022, ainda que exame, certificação e pentest dependam de
+terceiros, escopo congelado, controles em operação e período de evidência.
 
-### 18.1 Controles obrigatórios
+O programa técnico e operacional completo vive em
+`docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`. Este blueprint define quando esse
+programa bloqueia produto e release. Nenhuma diferença entre os documentos pode ser resolvida pelo
+critério mais permissivo.
 
-- tenant isolation em Postgres com RLS e testes de non-interference;
-- private object storage e URLs temporárias;
-- SSO/SAML, MFA e, no enterprise, SCIM;
-- RBAC/ABAC por organização, projeto, objeto e ação;
-- authority e recipient authorization explícitos;
-- encryption in transit/at rest e gestão de chaves;
-- secrets em secret manager, rotação e least privilege;
-- immutable audit trail de acesso, modelo, fonte, alteração, aprovação e download;
-- retenção, legal hold e deleção por política;
-- DLP e classificação de informação;
-- isolamento de execução de arquivo hostil;
-- proteção contra prompt injection em documento e web;
-- provider allowlist, zero training e contracts por data class;
-- secure SDLC, SAST, dependency/container/IaC scanning e SBOM;
-- backup, restore, DR, incident response e exercícios;
-- vendor/subprocessor register e assessment;
-- logs e telemetry sem documento, PII ou valor financeiro;
-- pentest independente e remediação;
-- evidence collection contínua para SOC 2/ISMS.
+### 18.1 Alvos de assurance e regra de verdade
 
-### 18.2 Autonomia por efeitos
+A Offroad prepara, desde o início, controles para:
+
+- SOC 2 nos critérios Security, Availability, Confidentiality e Processing Integrity; Privacy fica
+  mapeada desde o início e sua inclusão formal depende do escopo acordado com o auditor;
+- ISO/IEC 27001:2022, incluindo ISMS, avaliação de riscos, Statement of Applicability, controles
+  aplicáveis, auditoria interna, management review e melhoria contínua;
+- LGPD desde o início e readiness para GDPR/CCPA quando mercado, titular ou fluxo tornarem aplicável;
+- pentest independente de aplicação, API, autorização, multi-tenancy, storage, parsers, cloud,
+  CI/CD, IA e efeitos externos, seguido de correção e reteste.
+
+Declarações permitidas seguem a evidência:
+
+```text
+designed for
+-> implemented
+-> operating
+-> evidenced
+-> independently tested
+-> formally examined/certified dentro do escopo emitido
+```
+
+Não existe “100% seguro”, “SOC 2 compliant”, “GDPR certified” ou “ISO compliant” por autodeclaração.
+SOC 2 Type II e certificação ISO/IEC 27001 só podem aparecer depois da emissão formal correspondente.
+
+### 18.2 Baseline técnico e operacional obrigatório
+
+- tenant isolation em Postgres com organização em todas as chaves privadas, RLS + FORCE RLS,
+  foreign keys compostas e testes de non-interference em CRUD, RPC, view, storage, retrieval,
+  artifacts e exports;
+- Data API opt-in com grants mínimos, schemas privados para helpers privilegiados, views
+  `security_invoker`, inventário de `security definer` e `EXECUTE` revogado de `PUBLIC`;
+- private object storage, object ownership, path isolation, URLs temporárias, no-overwrite indevido
+  e step-up para export/download sensível;
+- MFA obrigatório para acesso privilegiado; SSO SAML/OIDC, SCIM/JIT, session inventory,
+  deprovisioning e RBAC/ABAC para enterprise;
+- autorização server-side por organização, projeto, objeto e ação; autoridade, data class e evidence
+  regime não são inferidos pelo modelo;
+- criptografia em trânsito e repouso, separação de ambientes, key/secret management, rotação,
+  workload identity, least privilege e break-glass auditado;
+- trilha append-only de acesso, policy decision, fonte, modelo, tool call, alteração, review,
+  aprovação, download, disclosure e efeito externo;
+- classificação, finalidade, residência, transferência, retenção, legal hold, export e deleção
+  verificável para cada classe de objeto;
+- telemetria allowlisted sem documento, prompt bruto, PII ou valor financeiro; testes canário e DLP;
+- upload em quarentena, detecção por magic bytes, malware scan fail-closed, parser isolado sem root,
+  limites contra DoS, conteúdo ativo neutralizado e egress deny-by-default;
+- provider registry com DPA, treinamento, retenção/ZDR, subprocessadores, região, finalidade e data
+  class permitida; fallback nunca amplia acesso ou reduz proteção;
+- secure SDLC com branch protection, revisão de áreas sensíveis, SAST, SCA, secret scanning,
+  dependency/container/IaC scan, SBOM, provenance e rollback;
+- logs e alertas de segurança, incident response, forensics, BCP/DR, RPO/RTO, restore drills,
+  tabletop exercises, capacity controls e kill switches;
+- vendor/subprocessor lifecycle, joiner/mover/leaver, recertificação de acesso, treinamento e
+  segurança de endpoints;
+- pentest independente, cloud configuration review, remediação por SLA e reteste.
+
+### 18.3 Control Register e evidência contínua
+
+Cada controle possui um registro único com:
+
+```yaml
+control_id: stable_id
+domain: governance | identity | data | application | documents | ai | sdlc | cloud | operations | vendor | people
+risk_refs: [risk_ids]
+framework_refs: [soc2, iso27001, nist, privacy, contractual]
+owner: accountable_person_or_function
+applicability: applicable | excluded_with_justification
+design: policy_and_implementation_refs
+test: automated_or_manual_procedure
+evidence: immutable_refs_without_customer_content
+cadence: event | continuous | monthly | quarterly | annual
+environment: development | staging | production | governance
+state: not_designed | designed | implemented | operating | evidenced | independently_tested
+findings: open_exceptions_and_remediation
+valid_through: timestamp_or_review_date
+```
+
+Código prova implementação, não operação. Um controle só sobe de estado quando possui owner,
+teste, população de evidências e vigência compatíveis. Evidência sensível, findings e arquitetura
+restrita ficam em evidence store privado; o repositório contém schemas, políticas publicáveis,
+referências opacas e testes sem dados de cliente.
+
+Cadência mínima:
+
+- por evento: PR, check, deploy, alteração de acesso, export, deleção, provider/model change,
+  incident e backup;
+- mensal: vulnerabilidades, SLOs, exceções, fornecedores e evidência operacional;
+- trimestral: access review, restore, risk review, vendor review e exercício de controle;
+- anual: políticas, treinamento, auditoria interna, management review, pentest e BCP/DR completo.
+
+### 18.4 Security Definition of Done de todo ticket
+
+Nenhum BP ticket, TaskSpec, depth pack, surface, integração ou artifact compiler está pronto sem:
+
+1. data flow e classes de informação identificados;
+2. trust boundaries, abuse cases e controles associados;
+3. decisão de autorização server-side e least privilege;
+4. regra de retenção, exclusão, logging e telemetria;
+5. provider/tool policy por classe e finalidade;
+6. testes negativos, cross-tenant e de efeitos aplicáveis;
+7. observabilidade, failure mode, kill switch e rollback;
+8. control IDs afetados, evidências produzidas e owner;
+9. revisão de segurança proporcional ao risco;
+10. inexistência de critical/high aberto ou exceção silenciosa.
+
+Mudança de escopo, modelo, provider, região, subprocessor, informação permitida, tool ou efeito
+externo reabre threat model e controles dependentes. Nenhum release herda aprovação de uma versão
+anterior sem verificar o diff.
+
+### 18.5 Segurança específica de documentos e IA
+
+Documento, página web, planilha, fórmula, comentário, metadata e tool output são dados não
+confiáveis. Eles nunca podem:
+
+- alterar system policy, authority, evidence regime, tool allowlist ou destinatário;
+- requisitar segredo, contexto de outro tenant ou chamada externa não planejada;
+- executar macro, JavaScript, fórmula externa ou arquivo embutido;
+- transformar conteúdo recuperado em instrução de controle.
+
+O control plane delimita fontes, dados e instruções; o modelo propõe somente dentro do envelope.
+Adversariais obrigatórios incluem prompt injection direta e indireta, exfiltração canário,
+cross-tenant retrieval, malicious tool output, poisoned source, archive bomb, polyglot, SSRF,
+formula injection, fallback downgrade, enumeration e resource exhaustion.
+
+Cada provider/model possui registro, avaliação e kill switch. Troca de modelo exige evals,
+shadow/canary, regressão econômica e de segurança e rollback. Indisponibilidade nunca autoriza
+responder com um modelo não homologado, regra de dados mais permissiva ou prosa que mascara falha
+determinística.
+
+### 18.6 Modos de implantação enterprise
+
+A arquitetura suporta uma escada comercial sem criar produtos semanticamente diferentes:
+
+1. **SaaS multi-tenant governado:** Postgres/RLS, storage privado e workers isolados, com suites de
+   non-interference e gestão central de controles;
+2. **single-tenant dedicado:** recursos de dados e execução isolados para clientes com requisitos
+   adicionais de risco, residência ou performance;
+3. **customer-managed ou customer-perimeter:** quando justificado por instituição regulada, com
+   deployment, keys, network e logs sob modelo de responsabilidade compartilhada.
+
+Ontologia, procedures, schemas, artifact IR, evals e experience contract permanecem os mesmos. A
+escolha de implantação altera controles, operação, custos e responsabilidades, não a verdade
+econômica do produto. A decisão entre os modos será tomada por ICP e procurement real, e não pela
+cópia da arquitetura de um peer.
+
+### 18.7 Caminho para avaliação externa
+
+```text
+Foundation ready
+-> Technical ready
+-> Operational ready
+-> Independent readiness
+-> pentest + retest
+-> SOC 2 observation / ISO Stage 1
+-> ISO Stage 2 / SOC 2 examination
+-> surveillance, annual pentest e continuous improvement
+```
+
+Antes do período formal, devem estar congelados: entidade auditada, system boundary, ambientes,
+regiões, subprocessadores, shared-responsibility matrix, políticas de dados/modelos, RPO/RTO,
+retenção e população de controles. O pentest ocorre quando a superfície representativa estiver
+estável, mas testes internos e threat modeling começam no Release 0.
+
+Dependências externas obrigatórias:
+
+- pareceres de privacidade/regulação: advogado competente;
+- pentest e reteste: empresa independente;
+- SOC 2: firma habilitada para o exame;
+- ISO/IEC 27001: organismo certificador acreditado.
+
+Todo o desenho, implementação, operação e produção de evidência permanecem responsabilidade da
+Offroad, mesmo quando GRC, consultoria ou auditor ajudam.
+
+### 18.8 Autonomia por efeitos
 
 | Efeito | Política padrão |
 | --- | --- |
@@ -1507,7 +1705,7 @@ Segurança não é release cosmético. A arquitetura deve nascer passável por c
 | Introduzir partes | autorização específica; registro obrigatório |
 | Executar operação financeira | fora de escopo |
 
-### 18.3 Enterprise readiness
+### 18.9 Enterprise readiness
 
 Para venda enterprise, o produto precisa responder com evidência a:
 
@@ -1521,6 +1719,10 @@ Para venda enterprise, o produto precisa responder com evidência a:
 - como workflow/template institucional é governado;
 - como corrections e feedback são separados por tenant;
 - como mudanças de modelo e procedure são avaliadas e promovidas.
+
+Além da resposta documental, cada afirmação precisa abrir a evidência vigente: configuração
+sanitizada, teste, relatório de exercício, registro de acesso, contrato/assurance de fornecedor ou
+atestação externa. Questionário preenchido sem evidência não satisfaz procurement.
 
 ## 19. Consistência, avaliação e promoção
 
@@ -1640,6 +1842,13 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - criar work products gold manuais: Workbench, modelo, board deck, meeting brief e review;
 - definir contrato de artifact antes de automatizar;
 - converter gaps em tickets com owner, dependency, acceptance e evidence.
+- ratificar o programa de segurança como fonte subordinada e criar o Control Register mestre;
+- congelar escopo preliminar, trust boundaries, classificação e fluxo de dados, ativos, identidades,
+  ambientes, subprocessadores e sistemas de IA;
+- produzir threat model v1 para multi-tenancy, documentos, retrieval, modelos, tools e efeitos;
+- fazer baseline verificável de configurações live, vulnerabilidades, controles e gaps, sem registrar
+  secrets ou dados de cliente no repositório;
+- fazer critical/high novo bloquear merge e vincular cada ticket aos control IDs afetados.
 
 **Gate**
 
@@ -1648,6 +1857,12 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - referências visuais e técnicas são aprováveis sem depender do backend;
 - produto, domínio e engenharia concordam sobre objetos finais;
 - backlog está ordenado por dependência, não por facilidade de demo.
+- nenhum risco crítico conhecido está sem owner; nenhum high está sem triagem, prazo ou exceção
+  formal de risco;
+- Control Register, inventários, threat model, RACI, security DoD e evidence locations existem e
+  podem ser validados automaticamente;
+- segurança não está postergada ao Release 7 e todo ticket novo declara data flow, autorização,
+  testes negativos, observabilidade e rollback.
 
 ### 20.3 Release 1 - Objective-to-Plan universal
 
@@ -1663,6 +1878,9 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - event stream e projeção para Live Work;
 - branching, checkpoint e continuidade;
 - shadow migration do preview fixo.
+- policy decision por task, source, tool, provider, data class e effect, com fail-closed e audit event;
+- suite adversarial do router/compiler contra authority inference, context crossover, tool escalation
+  e fallback downgrade.
 
 **Gate**
 
@@ -1675,6 +1893,9 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - plano não depende de cargo cadastrado;
 - cada intenção mostra fontes, análises e entrega específicas antes do primeiro trabalho substantivo;
 - nenhum Execution Brief inclui tarefa ausente do grafo compilado.
+- paráfrase, prompt injection ou conteúdo de documento não alteram authority, evidence regime,
+  tenant, provider policy ou effect;
+- kill switch por provider, tool, TaskSpec e tenant interrompe execução sem corromper o projeto.
 
 ### 20.4 Release 2 - Vault-to-Truth
 
@@ -1688,6 +1909,9 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - evidence ledger;
 - spreading e reconciliation workbench;
 - conflito, insufficient evidence e solicitações contextuais.
+- quarentena, magic-byte validation, malware scan fail-closed, parser sandbox, limites anti-DoS,
+  conteúdo ativo neutralizado e egress controlado;
+- retenção, deleção, audit trail e classificação propagadas do original a chunks, facts e artifacts.
 
 **Gate**
 
@@ -1697,6 +1921,9 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - documentos conflitantes não são resolvidos silenciosamente;
 - cobertura mostra arquivos, páginas, tabelas e dimensões não lidas;
 - prompt injection em documento não altera policy ou tool scope.
+- corpus adversarial de arquivos hostis passa sem execução, exfiltração, SSRF, formula injection ou
+  vazamento cross-tenant;
+- original, derivados, logs e evidências obedecem a mesma classe, finalidade e política de vida.
 
 ### 20.5 Release 3 - Truth-to-Decision
 
@@ -1711,6 +1938,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - Findings Ledger;
 - Capital Structure e Structure Labs;
 - primeiros packs: board/capital structure, refinance, liquidity/WC e capex.
+- policy-aware model routing e logs sanitizados para todo cálculo, julgamento e explicação;
+- tamper-evident lineage e autorização por objeto para snapshots, premissas, cenários e findings.
 
 **Gate**
 
@@ -1720,6 +1949,9 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - coverage não omite dimensão bloqueadora;
 - alternativas descartadas e no-action case aparecem com motivo;
 - modelo passa revisão linha a linha de analista de crédito/IB top-tier.
+- dados canário e testes de isolamento provam que modelo, retrieval e fallback não cruzam tenants ou
+  classes de informação;
+- mudança de provider/model passa shadow, regressão econômica e de segurança e mantém rollback.
 
 ### 20.6 Release 4 - Decision-to-Deliverable
 
@@ -1733,6 +1965,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - revisão numérica, narrativa e visual;
 - comentários, version diff e aprovação;
 - atualização incremental entre modelo e material.
+- DLP, disclosure policy, export authorization, expiração e watermark quando aplicável;
+- file safety e formula-injection checks nos arquivos editáveis gerados.
 
 **Gate**
 
@@ -1742,6 +1976,9 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - alteração de premissa atualiza células, gráficos, páginas e texto dependente;
 - revisor encontra erros plantados e bloqueia envio;
 - não existe JSON, placeholder ou linguagem interna no artifact.
+- download/export sensível é autorizado, auditado e protegido por política; artifact não contém
+  dado, comentário, hidden sheet, link ou metadata fora do disclosure aprovado;
+- material bloqueado por review ou segurança não pode ser liberado por rota alternativa.
 
 ### 20.7 Release 5 - Generalidade econômica
 
@@ -1753,6 +1990,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - Brasil, EUA e bridge cross-border nos escopos priorizados;
 - sector packs exigidos pelas jornadas;
 - policy de precedence e conflitos entre packs.
+- threat model e data/provider policy de cada novo pack, jurisdição, fonte e ferramenta;
+- abuse cases e negative cases específicos de estruturas, contratos e cálculos ativados.
 
 **Gate**
 
@@ -1762,6 +2001,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - mesma verdade econômica atravessa responsabilidades e idiomas;
 - abstenção ocorre fora dos packs homologados;
 - novo pack entra sem bifurcar interface, objetos ou planner.
+- nenhum pack amplia tools, dados, provider ou efeito por herança silenciosa;
+- variantes BR, EUA e cross-border mantêm residência, transferência e obrigações mapeadas.
 
 ### 20.8 Release 6 - Capital and Continuity
 
@@ -1776,6 +2017,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - feedback ledger;
 - monitors por evento e calendário;
 - update pack e dependency-aware refresh.
+- authority, recipient, disclosure, purpose limitation, revocation e audit trail por ação externa;
+- abuse monitoring, rate limits e kill switch para screening, export, outreach e monitors.
 
 **Gate**
 
@@ -1785,8 +2028,14 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - feedback altera inteligência sem reescrever mandato declarado;
 - atualização trimestral reabre somente branches afetados;
 - G6 e G8 funcionam end-to-end.
+- nenhuma identidade, material ou dado privado entra em discovery, ranking ou mensagem antes da
+  autorização correspondente;
+- destinatário, conteúdo e versão autorizados são exatamente os usados e permanecem auditáveis.
 
-### 20.9 Release 7 - Enterprise readiness
+### 20.9 Release 7 - Enterprise integration e external assurance
+
+Este release não inaugura segurança. Ele empacota controles que já operam desde os releases
+anteriores, fecha capacidades enterprise e atravessa avaliações independentes.
 
 **Construir**
 
@@ -1795,8 +2044,12 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - Office/e-mail/API/MCP onde agregarem valor;
 - data retention, residency e DLP;
 - operational dashboards, SLOs e cost controls;
-- incident response, DR e pen test;
-- evidências SOC 2 e ISMS ISO 27001;
+- admin plane, tenant-visible audit, support JIT e customer security controls;
+- incident response, DR, restore e table-top exercises já operacionais;
+- readiness assessment, pentest independente, remediação e reteste;
+- população de evidências SOC 2 e ISMS ISO/IEC 27001;
+- system description, Statement of Applicability, auditoria interna e management review;
+- início/conclusão dos exames formais somente quando os respectivos gates forem satisfeitos;
 - forward-deployed implementation playbook.
 
 **Gate**
@@ -1807,6 +2060,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - auditoria de ações, modelos, fontes, downloads e approvals é exportável;
 - cliente configura método e template sem bifurcar o produto;
 - pentest independente não possui achado crítico/alto aberto.
+- control population está completa, vigente e reconciliada com configurações live;
+- nenhuma badge ou alegação formal é publicada antes da emissão e do escopo exato do terceiro.
 
 ## 21. Backlog de fundação, em ordem de dependência
 
@@ -1872,7 +2127,7 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - BP-048 - Independent Review.
 - BP-049 - Version diff and selective regeneration.
 
-### Market e enterprise
+### Market
 
 - BP-050 - Provider and mandate schemas.
 - BP-051 - Market source registry and freshness.
@@ -1881,12 +2136,32 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - BP-054 - Disclosure and recipient authorization.
 - BP-055 - Feedback and outcome ledger.
 - BP-056 - Monitoring scheduler.
+
+### Trust, security e enterprise
+
 - BP-057 - Enterprise knowledge/workflow studio.
-- BP-058 - Security control evidence.
+- BP-058 - Control Register, mappings, evidence schema e assurance-state gate.
 - BP-059 - Forward-deployed deployment kit.
+- BP-060 - ISMS charter, scope, RACI, risk methodology e exception lifecycle.
+- BP-061 - Asset, identity, data-flow, AI-system, vendor e subprocessor inventories.
+- BP-062 - Threat model e abuse-case registry para tenant, documentos, IA, tools e efeitos.
+- BP-063 - MFA privilegiado, session security, RBAC/ABAC, support JIT, SSO e SCIM.
+- BP-064 - Data API/grants/RLS/storage non-interference e privileged-function review.
+- BP-065 - Data classification, purpose, retention, legal hold, export e deletion proof.
+- BP-066 - Document quarantine, malware, parser sandbox, egress e adversarial corpus.
+- BP-067 - AI provider assurance, data policy, prompt separation, exfiltration tests e kill switch.
+- BP-068 - Secure SDLC: blocking scans, CODEOWNERS, provenance, SBOM e vulnerability SLA.
+- BP-069 - Cloud hardening e configuration-drift evidence para AWS, Supabase, Vercel e DNS.
+- BP-070 - Security logging, DLP, incident response, forensics, BCP/DR, RPO/RTO e exercises.
+- BP-071 - Continuous evidence collector e private assurance/evidence index.
+- BP-072 - Privacy RoPA, legal basis, DPIA/RIPD, rights e international transfers.
+- BP-073 - Independent readiness, pentest, retest, SOC 2 e ISO/IEC 27001 audit program.
+- BP-074 - SaaS, single-tenant e customer-perimeter deployment contracts.
 
 Cada ticket herda: objective, object contracts, dependencies, UI state, procedure/tool, security,
-tests, observability, rollback e acceptance evidence. Ticket sem isso é pesquisa, não implementação.
+tests, observability, rollback e acceptance evidence. A seção de segurança registra control IDs,
+data flow/classes, authorization, providers/tools, abuse cases, negative tests, evidence gerada e
+reviewer. Ticket sem isso é pesquisa, não implementação.
 
 ## 22. Gold journeys longitudinais
 
@@ -2014,6 +2289,10 @@ Verifica o endpoint real da Offroad e os limites de disclosure.
 
 Cada jornada possui variantes de idioma, responsabilidade, evidence regime, disponibilidade de
 dados e resultado terminal. Personas são usadas para provar cobertura; não roteiam o produto.
+Cada jornada também possui uma variante trust-adversarial: tentativa cross-tenant, documento ou
+fonte com instrução maliciosa, provider indisponível, autorização incompleta, export indevido ou
+efeito externo divergente. O sistema precisa preservar o trabalho válido e falhar somente o branch
+afetado, sem vazamento, escalada ou false victory.
 
 ## 23. Pronto para teste sério do fundador
 
@@ -2035,7 +2314,11 @@ O fundador entra no loop amplo de fine-tuning somente quando:
 - produto se abstém onde não possui evidência ou pack;
 - nenhuma tela expõe linguagem interna do runtime;
 - custo, latência e falhas estão dentro dos envelopes aprovados;
-- segurança e autorização passam os testes aplicáveis.
+- segurança e autorização passam os testes aplicáveis;
+- control IDs e evidências do release estão completos, vigentes e sem critical/high aberto;
+- non-interference abrange banco, storage, retrieval, artifacts, exports e efeitos;
+- restore e kill switch foram exercitados no ambiente aplicável;
+- dados, prompts, arquivos e valores financeiros não aparecem em telemetria ou artifacts de CI.
 
 Antes desse gate, o fundador revisa decisões de produto, work products de referência e questões de
 judgment que realmente precisam dele. A equipe usa rubricas e revisão independente para o restante.
@@ -2050,7 +2333,9 @@ O endgame não é "tudo que é possível em crédito". É:
 4. work products profissionais e vivos;
 5. continuidade real do primeiro pedido à preparação para o mercado;
 6. capital intelligence própria e governada;
-7. confiança demonstrável por evidência, cálculo, review, segurança e comportamento consistente.
+7. confiança demonstrável por evidência, cálculo, review, segurança e comportamento consistente;
+8. controles de trust operando e produzindo evidência desde o primeiro release, com caminho realista
+   para pentest, SOC 2 e ISO/IEC 27001 sem retrofit arquitetural.
 
 O produto está pronto para uso externo somente nos escopos marcados `production`. O restante
 permanece visível internamente como roadmap ou coverage ausente; nunca é improvisado pelo modelo.
@@ -2065,10 +2350,11 @@ Executar Release 0 nesta ordem, mantendo somente correções P0/P1 em paralelo:
 4. desenhar IA e estados de interface sobre o produto atual;
 5. produzir manualmente reference Workbench, model, meeting/board materials e review de G1/G2;
 6. decompor referências em objetos, procedures e artifact blocks;
-7. converter BP-010 a BP-019 em tickets implementáveis e testáveis;
-8. substituir o compiler fixo do Caso 01 por trás de flag;
-9. provar Release 1 com seis intenções estruturalmente diferentes;
-10. avançar os demais releases por vertical slice e gate.
+7. executar BP-058, BP-060, BP-061 e BP-062 para criar a Trust Foundation e a baseline verificável;
+8. converter BP-010 a BP-019 em tickets implementáveis, testáveis e vinculados a controles;
+9. substituir o compiler fixo do Caso 01 por trás de flag;
+10. provar Release 1 com seis intenções estruturalmente diferentes e variantes trust-adversarial;
+11. avançar os demais releases por vertical slice, security gate e acceptance evidence.
 
 Essa sequência evita dois erros: automatizar um output ruim e continuar adicionando infraestrutura
 sem consequência visível para o usuário.

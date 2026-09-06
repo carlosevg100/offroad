@@ -7,14 +7,20 @@
 | Estado real | inspeção do registry de TaskSpecs, depth packs, procedures e preview | 80 TaskSpecs seguem `specified`; preview tem cinco composições e cadeia Case 01; packs/procedures não estão homologados |
 | Cobertura de produto | confronto com Constituição, Atlas, workflow atual e handoff | blueprint preserva limites, autoridade, evidence regimes, continuidade e fronteiras de atuação |
 | Referências externas | fontes oficiais de Legora, Harvey, Hebbia, Rogo, Model ML e OpenAI | padrões absorvidos como princípios; nenhuma interface concorrente foi copiada |
-| Arquitetura | diagrama HTML autocontido e `self_check.py` | oito blocos principais, fluxo intenção→execução→work product→capital, controles transversais e feedback governado; self-check verde |
-| Programa | oito streams, releases 0-7, BP-001 a BP-059 e G1-G8 | cada release tem construção e gate; founder gate impede teste amplo antes da base necessária |
+| Arquitetura | diagrama HTML autocontido e `self_check.py` | oito blocos funcionais mais Trust Control Plane, fluxo intenção→execução→work product→capital, controles transversais e feedback governado; self-check verde |
+| Programa | oito streams, releases 0-7, BP-001 a BP-074 e G1-G8 | cada release tem construção, security gate e acceptance evidence; founder gate impede teste amplo antes da base necessária |
 | Plano antes da execução | contrato `ExecutionBrief`, exemplos por intenção e gate de Release 1 | companhia pública, material e covenant mostram fontes e análises diferentes; o plano deriva do grafo e antecede trabalho substantivo |
+| Programa de trust | blueprint §18 + `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md` | segurança começa no Release 0; SOC 2, ISO/IEC 27001, privacy e pentest possuem fronteira, controles, owners, evidência, cadência, backlog e gates explícitos |
+| Gate de release | `@offroad/release-governance/trust-controls` | bloqueia controle obrigatório/owner/evidência/ambiente ausente, evidência vencida e finding critical/high; warnings médios/baixos permanecem visíveis |
+| Gate de alegação | `evaluateAssuranceClaim` | separa designed/implemented/operating/independently tested e recusa SOC 2 Type II ou ISO/IEC 27001 sem atestação externa vigente e no scope fingerprint exato |
+| Testes de trust | Vitest em `trust-controls.test.ts` | oito cenários novos: caminho aprovado, fail-closed composto, duplicidade, gate vazio, badge recusada, atestação exata, independent state sem prova e claim ambígua; suite do pacote 19/19 verde |
+| Processo de mudança | `AGENTS.md` + PR template | toda mudança registra control IDs, data flow/classes, autorização, fornecedores, abuse cases, negative tests, evidência, containment e rollback |
 | Honestidade | revisão da linguagem de status | documento se declara proposta; não promove runtime, packs, arquivos ou expertise |
-| Gate integral | `pnpm check` em worktree limpa do commit do blueprint | lint, typecheck, testes e build verdes nos 43 alvos; aviso único de Node 25 fora do engine recomendado Node 24 |
+| Gate focado de trust | test + typecheck + lint de `@offroad/release-governance` | 2 arquivos/19 testes verdes; typecheck e lint verdes em Node 24 |
+| Gate integral deste incremento | `pnpm check` em Node 24.19, numa worktree limpa contendo somente o diff desta entrega | lint, typecheck, testes e build verdes nos 43 alvos; 185 testes web e 19 testes de release governance verdes |
 
-Status: **candidate architecture**. O aceite comprova completude documental e coerência interna,
-não implementação do endgame.
+Status: **candidate architecture; Trust Foundation em implementação**. O aceite comprova o contrato
+e o primeiro gate executável, não readiness de auditoria, certificação, pentest ou endgame.
 
 ## Polimento da entrada e correção do menu, 04/09/2026
 

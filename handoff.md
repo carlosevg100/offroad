@@ -17,7 +17,7 @@
 the next phase. It translates the Constitution and Intent Atlas into a buildable operating system:
 one calm Project Workspace, an Intent-to-Plan Compiler, bounded specialist execution, a DCM
 Cognitive Harness, deterministic finance engines, a governed Credit Object Graph, institutional
-work products, Capital Intelligence and enterprise controls.
+work products, Capital Intelligence and a Trust Control Plane.
 
 This is a planning and architecture change, not evidence that the endgame is live. The current
 preview remains a narrow Case 01 route with five compositions and a fixed ten-step chain; the
@@ -27,14 +27,26 @@ quality. Case 01 is now one regression inside eight longitudinal gold journeys, 
 
 The immediate gate is Release 0: freeze the real capability ledger, define G1-G8 end-to-end,
 produce manual reference work products at the target quality, decompose them into governed objects
-and procedures, and only then replace the fixed preview compiler. No broad founder fine-tuning is
-requested before the serious-test gate in section 23 of the blueprint.
+and procedures, and complete the Trust Foundation before replacing the fixed preview compiler.
+The Trust Foundation includes a control register, asset/data/provider inventories, threat model,
+live baseline, owners, current evidence, blocking critical/high policy and security Definition of
+Done. No broad founder fine-tuning is requested before the serious-test gate in section 23 of the
+blueprint.
 
 The interaction contract also requires an `ExecutionBrief` before substantive work begins. It tells
 the user what Offroad understood, which existing materials and external sources it will use, which
 economic dimensions and calculations it will cover, what may still be needed and what it will
 deliver. It is projected from the compiled task graph, not generated as a generic checklist, and can
 be edited without exposing private reasoning or internal agent topology.
+
+Trust is not deferred to enterprise packaging. The canonical program is
+`docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`; every release now has security
+construction and gates. Release 7 is reserved for enterprise integration, independent pentest and
+formal SOC 2/ISO assurance over controls already operating. `@offroad/release-governance` now
+fails a release closed when a required control, owner, current evidence or environment proof is
+missing or a critical/high finding remains, and refuses formal badges without a current external
+attestation for the exact scope. This is the first implemented slice of Release 0, not a claim of
+audit readiness.
 
 ### Canonical identity: universal debt advisor, 2 September 2026
 

@@ -20,9 +20,15 @@ What user or product outcome does this change deliver?
 
 ## Security and privacy
 
+- Control IDs affected:
+- Data classes and flow:
 - Authorization impact:
-- Data classification/telemetry impact:
-- Threats reviewed:
+- Providers/tools/subprocessors affected:
+- Retention, deletion and telemetry impact:
+- Threats/abuse cases reviewed:
+- Negative, cross-tenant or effects tests:
+- Evidence produced and location:
+- Security reviewer or reason proportional review is not required:
 
 ## Data and migrations
 
@@ -34,6 +40,7 @@ What user or product outcome does this change deliver?
 
 - Failure modes:
 - Observability:
+- Kill switch / containment:
 - Rollback procedure:
 
 ## Acceptance criteria
@@ -41,3 +48,4 @@ What user or product outcome does this change deliver?
 - [ ] Criteria in the task/gate are demonstrated
 - [ ] Documentation and ledgers are updated
 - [ ] No secret, sensitive fixture, or silent production mock was added
+- [ ] No critical/high security finding is open or hidden behind an undocumented exception

@@ -14,8 +14,9 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
   institucional, e matching/capital intelligence ainda inicial.
 - A arquitetura-alvo tem Project Workspace, Intent & Work Control, Specialist Runtime, DCM
   Cognitive Harness, deterministic finance engines, Credit Object Graph, Work Products & Review e
-  Capital Network, atravessados por tenancy, autorização, evidência, auditoria, custo e evals.
-- O programa foi reorganizado em oito streams, oito releases com gates, 59 itens de backlog de
+  Capital Network, atravessados por um Trust Control Plane de tenancy, autorização, evidência,
+  auditoria, privacidade, resiliência, custo e evals.
+- O programa foi reorganizado em oito streams, oito releases com gates, 74 itens de backlog de
   fundação e oito jornadas gold longitudinais. Case 01 virou regressão, não centro do roadmap.
 - O contrato de interação agora inclui um `ExecutionBrief` antes do trabalho substantivo: fontes e
   materiais planejados, frentes econômicas, análises/cálculos, dependências, checkpoints e entrega.
@@ -23,9 +24,21 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 - Criado o diagrama autocontido `docs/build/diagrams/offroad-endgame-architecture.html` usando os
   tokens atuais da marca e o símbolo circular como referência de identidade; nenhuma tela do
   produto foi alterada.
+- Trust deixou de ser uma entrega tardia do Release 7. O Release 0 agora exige Control Register,
+  inventários, threat model, baseline live, owners, evidências e bloqueio de critical/high; cada
+  release possui controles específicos. O Release 7 consolida integração enterprise, pentest e
+  avaliações externas sobre controles que já operam.
+- `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md` passa a ser o programa canônico
+  subordinado, com SOC 2, ISO/IEC 27001, privacidade, pentest, 11 domínios de controle e gates A-E.
+- `@offroad/release-governance` ganhou um gate determinístico de trust: requisito ausente, owner
+  ausente, evidência vencida, ambiente não comprovado ou finding critical/high bloqueiam o release.
+  Um segundo gate impede alegação SOC 2/ISO sem atestação externa vigente para o escopo exato.
+- O template de PR e a Definition of Done agora exigem control IDs, data flow/classes,
+  providers/tools, abuse cases, testes negativos, evidência, containment e rollback.
 
-Status: **candidate architecture**. Nenhuma capacidade de runtime foi promovida por este trabalho.
-O próximo gate é ratificar o blueprint e executar o Release 0.
+Status: **candidate architecture; Release 0 iniciado**. Nenhuma capacidade de runtime foi promovida
+por este trabalho. O próximo gate é completar a baseline SEC-001 a SEC-015 e os demais work
+products de referência do Release 0.
 
 ## Polimento da entrada e correção do menu, 04/09/2026
 

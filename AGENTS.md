@@ -10,10 +10,14 @@ The intent ontology and workflow-compilation contract live in
 [`docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md`](docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md).
 The canonical execution architecture, workstreams, gold journeys and promotion gates live in
 [`docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md`](docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md).
+The mandatory trust, security, privacy and external-assurance program lives in
+[`docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`](docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md).
 The current company-led transaction route lives in
-[`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). Read all four before
+[`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). Read all five before
 changing home, onboarding, pipeline order, user-visible progress, materials, matching or
-introduction. Full orientation lives in [`handoff.md`](handoff.md). The historical linear build
+introduction; read the security program before changing identity, authorization, data, storage,
+documents, models, tools, telemetry, cloud, deploy or external effects. Full orientation lives in
+[`handoff.md`](handoff.md). The historical linear build
 record lives in [`docs/build/MASTER_PLAN.md`](docs/build/MASTER_PLAN.md); it is not the current
 execution roadmap. Architecture decisions live in
 [`docs/adr/`](docs/adr/). `docs/product/Offroad_Capital_Product_Blueprint_v3.0_pt-BR.pdf` is a
@@ -178,9 +182,10 @@ silently breaks the match. If you regenerate, update the hashes and the tests to
 
 Product wording correct · UI responsive, accessible, localized · server-side authorization
 enforced · migration + regenerated types · deterministic and tested financial logic ·
-material claims keep evidence · telemetry inside the allowlist · `pnpm check` green ·
-preview and production verified · ledgers and `handoff.md` updated · no hidden TODO,
-fallback, synthetic claim, or unreported limitation.
+material claims keep evidence · telemetry inside the allowlist · affected security control IDs,
+data flow/classes, abuse cases, negative tests, evidence and rollback recorded · no unresolved
+critical/high security finding · `pnpm check` green · preview and production verified · ledgers and
+`handoff.md` updated · no hidden TODO, fallback, synthetic claim, or unreported limitation.
 
 ## Receivables vertical (first training vertical)
 
