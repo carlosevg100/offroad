@@ -63,6 +63,11 @@ create index capital_project_execution_briefs_project_idx
   on public.capital_project_execution_briefs (organization_id, capital_project_id, brief_version desc);
 create index capital_project_execution_briefs_plan_idx
   on public.capital_project_execution_briefs (organization_id, plan_id, created_at desc);
+create index capital_project_execution_briefs_parent_idx
+  on public.capital_project_execution_briefs (organization_id, parent_brief_id)
+  where parent_brief_id is not null;
+create index capital_project_execution_briefs_created_by_idx
+  on public.capital_project_execution_briefs (created_by);
 
 create table public.capital_project_execution_brief_events (
   id uuid primary key default gen_random_uuid(),
@@ -86,6 +91,13 @@ create table public.capital_project_execution_brief_events (
 
 create index capital_project_execution_brief_events_brief_idx
   on public.capital_project_execution_brief_events (organization_id, execution_brief_id, created_at);
+create index capital_project_execution_brief_events_project_idx
+  on public.capital_project_execution_brief_events (
+    organization_id, capital_project_id, created_at, id
+  );
+create index capital_project_execution_brief_events_actor_idx
+  on public.capital_project_execution_brief_events (actor_user_id)
+  where actor_user_id is not null;
 
 alter table public.capital_project_execution_briefs enable row level security;
 alter table public.capital_project_execution_briefs force row level security;
