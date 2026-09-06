@@ -46,6 +46,7 @@ const contextSchema = z.object({
   active_plan: z.record(z.string(), z.unknown()).nullable().optional(),
   latest_execution_brief: z.object({
     id: z.uuid(), version: z.number().int().positive(), fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    visibleSnapshot: z.unknown(),
   }).nullable().optional(),
   company_profile: z.record(z.string(), z.unknown()).default({}),
   professional_context: professionalContextSchema.nullable().optional(),
@@ -511,6 +512,7 @@ function executionBriefContext(context: AgentContext, sourcePackId?: string | nu
     documents: context.documents.map((document) => ({id: document.id, name: document.name})),
     sourcePackId: sourcePackId ?? null,
     activePlan: context.active_plan,
+    previousVisibleBrief: context.latest_execution_brief?.visibleSnapshot,
   };
 }
 

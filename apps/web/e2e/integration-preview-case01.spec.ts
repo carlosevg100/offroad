@@ -190,6 +190,10 @@ test.describe("integration_preview: Case 01 end to end", () => {
     expect(updated).toContain(MARK);
     record("atualização incremental", updated);
     await expect(page.locator('[data-artifact-type="preview_alternatives"] .preview-work__premises')).toContainText("newDebtAnnualRate = 0.155");
+    const briefChanges = page.getByTestId("execution-brief-changes");
+    await expect(briefChanges).toBeVisible();
+    await expect(briefChanges).toContainText("O que mudou nesta versão");
+    await expect(briefChanges).toContainText("Taxa anual da nova dívida");
     await page.screenshot({path: join(outputDirectory, "05-incremental-update.png"), fullPage: true});
     expect(projectUrl).toMatch(/\/pt-BR\/app\/projects\//);
   });

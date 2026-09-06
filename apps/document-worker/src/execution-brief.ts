@@ -2,10 +2,13 @@ import type {WorkspaceJobActivation} from "@offroad/agent-contracts";
 import {
   compileCapitalExecutionBrief,
   compileExecutionBrief,
+  diffVisibleExecutionBrief,
   offroadTaskEffectSchema,
   visibleExecutionBrief,
+  visibleExecutionBriefSchema,
   type CapitalProjectPlanSnapshot,
   type CompiledExecutionBrief,
+  type ExecutionBriefChange,
   type ExecutionBriefSource,
   type VisibleExecutionBrief,
 } from "@offroad/work-plan";
@@ -39,12 +42,13 @@ export type ExecutionBriefContext = {
   documents: Array<{id: string; name: string}>;
   sourcePackId?: string | null;
   activePlan?: unknown;
+  previousVisibleBrief?: unknown;
 };
 
 export type PreparedExecutionBrief = {
   internal: CompiledExecutionBrief;
   visible: VisibleExecutionBrief;
-  changeSummary: Array<{kind: string; detail: string}>;
+  changeSummary: ExecutionBriefChange[];
 };
 
 /**
@@ -60,10 +64,12 @@ export function prepareExecutionBrief(
   const internal = activation.job === "integration_preview"
     ? compilePreviewBrief(context, activation, sources)
     : compileStandardBrief(context, activation, sources);
+  const visible = visibleExecutionBrief(internal);
+  const previous = visibleExecutionBriefSchema.safeParse(context.previousVisibleBrief);
   return {
     internal,
-    visible: visibleExecutionBrief(internal),
-    changeSummary: [{kind: "turn_activation", detail: context.message.slice(0, 500)}],
+    visible,
+    changeSummary: previous.success ? diffVisibleExecutionBrief(previous.data, visible) : [],
   };
 }
 

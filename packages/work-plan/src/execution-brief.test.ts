@@ -4,6 +4,7 @@ import {capitalProjectPlanSnapshot} from "./capital-jobs";
 import {
   compileCapitalExecutionBrief,
   compileExecutionBrief,
+  diffVisibleExecutionBrief,
   evaluateExecutionBriefInput,
   executionBriefProgressSchema,
   visibleExecutionBriefSchema,
@@ -133,6 +134,22 @@ describe("execution brief compiler", () => {
       progress.workstreams[1],
       progress.workstreams[2],
     ]})).toThrow();
+  });
+
+  it("describes a replan as a bounded visible diff without internal task language", () => {
+    const base = visibleExecutionBrief(compileExecutionBrief(minimalInput()));
+    const changed = {
+      ...base,
+      proposedDeliverable: "Memorando e sensibilidade de prazo",
+      assumptions: [{label: "Prazo", value: "72 meses", basis: "Informado pelo usuário", editable: true as const}],
+    };
+    const diff = diffVisibleExecutionBrief(base, changed);
+
+    expect(diff).toEqual([
+      {kind: "deliverable_changed", label: "Produto esperado", from: "Memorando citado", to: "Memorando e sensibilidade de prazo"},
+      {kind: "assumption_added", label: "Prazo", to: "72 meses"},
+    ]);
+    expect(JSON.stringify(diff)).not.toMatch(/TaskSpec|sourceTaskIds|executionAuthority|\bM0[1-3]\b/);
   });
 
   it("blocks generic copy, tasks outside the graph, hidden tasks and unavailable authority", () => {

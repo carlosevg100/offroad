@@ -18,6 +18,12 @@ describe("capability ledger", () => {
     expect(byId.get("workflow.universal-compiler")).toMatchObject({availability: "specified", exposure: "none", qualityMaturity: "specified"});
   });
 
+  it("records the execution brief and safe run-derived progress as live without claiming customer reliance", () => {
+    const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
+    expect(byId.get("experience.execution-brief")).toMatchObject({availability: "live", exposure: "universal", qualityMaturity: "implemented", allowedUses: ["internal_validation"]});
+    expect(byId.get("experience.live-work")).toMatchObject({availability: "live", exposure: "universal", qualityMaturity: "implemented", allowedUses: ["internal_validation"]});
+  });
+
   it("fails closed when a specified capability claims runtime or a fixture is presented as live evidence", () => {
     const weakened: CapabilityLedger = {
       ...currentCapabilityLedger,

@@ -291,6 +291,16 @@
 .execution-brief-card__workstreams details > footer {align-items: baseline; background: #f7f8f6; display: flex; gap: 8px; margin-top: 11px; padding: 9px 11px;}
 .execution-brief-card__workstreams details > footer small {color: #899095; font-size: 8px; font-weight: 680; text-transform: uppercase;}
 .execution-brief-card__workstreams details > footer strong {font-size: 9px; font-weight: 600;}
+.execution-brief-card__changes {background: #f7f8f5; border-top: 1px solid #e2e6dc; padding: 17px 27px;}
+.execution-brief-card__changes > header {align-items: baseline; display: flex; gap: 16px; justify-content: space-between;}
+.execution-brief-card__changes > header strong {font-size: 11px;}
+.execution-brief-card__changes > header small {color: #858d92; font-size: 8px;}
+.execution-brief-card__changes ul {display: grid; gap: 7px; list-style: none; margin: 12px 0 0; padding: 0;}
+.execution-brief-card__changes li {align-items: start; display: grid; gap: 10px; grid-template-columns: 62px 1fr;}
+.execution-brief-card__changes li > span {color: #6d7e4b; font-size: 8px; font-weight: 680; letter-spacing: .04em; text-transform: uppercase;}
+.execution-brief-card__changes li div {min-width: 0;}
+.execution-brief-card__changes li strong {display: block; font-size: 10px; font-weight: 620;}
+.execution-brief-card__changes li small {color: #747d82; display: block; font-size: 8px; line-height: 1.45; margin-top: 2px; overflow-wrap: anywhere;}
 .execution-brief-card__assumptions {border-top: 1px solid #e7e9e6; padding: 19px 27px;}
 .execution-brief-card__assumptions > header {align-items: baseline; display: flex; gap: 16px; justify-content: space-between;}
 .execution-brief-card__assumptions > header strong {font-size: 11px;}
@@ -321,6 +331,8 @@
   .execution-brief-card__workstreams > li > div > header {display: block;}
   .execution-brief-card__workstreams > li > div > header > div {align-items: flex-start; margin-top: 7px;}
   .execution-brief-card__workstreams > li > div > header small {text-align: left;}
+  .execution-brief-card__changes {padding: 15px 20px;}
+  .execution-brief-card__changes > header {align-items: flex-start; flex-direction: column; gap: 4px;}
   .execution-brief-card__assumptions {padding: 17px 20px;}
   .execution-brief-card__assumptions dl {grid-template-columns: 1fr;}
   .execution-brief-card__checkpoint {padding: 14px 20px;}

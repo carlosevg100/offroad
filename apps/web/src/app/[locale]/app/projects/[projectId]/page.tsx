@@ -1,6 +1,6 @@
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
 import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
-import {executionBriefProgressSchema, localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
+import {executionBriefChangeSchema, executionBriefProgressSchema, localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -238,7 +238,7 @@ async function ConversationalCapitalProject({
     supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
     supabase.from("capital_project_execution_briefs")
-      .select("id, brief_version, visible_snapshot")
+      .select("id, brief_version, visible_snapshot, change_summary")
       .eq("organization_id", organization.id)
       .eq("capital_project_id", project.id)
       .order("brief_version", {ascending: false})
@@ -247,6 +247,9 @@ async function ConversationalCapitalProject({
   ]);
   const parsedExecutionBrief = executionBriefRow
     ? visibleExecutionBriefSchema.safeParse(executionBriefRow.visible_snapshot)
+    : null;
+  const parsedExecutionBriefChanges = executionBriefRow
+    ? executionBriefChangeSchema.array().max(20).safeParse(executionBriefRow.change_summary)
     : null;
   const {data: executionBriefProgressRaw} = executionBriefRow
     ? await supabase.rpc("read_capital_project_execution_brief_progress_v1", {p_execution_brief_id: executionBriefRow.id})
@@ -533,6 +536,7 @@ async function ConversationalCapitalProject({
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
     executionBrief={parsedExecutionBrief?.success ? {
       brief: parsedExecutionBrief.data,
+      changes: parsedExecutionBriefChanges?.success ? parsedExecutionBriefChanges.data : [],
       progress: executionBriefProgress,
       version: executionBriefRow!.brief_version,
     } : null}

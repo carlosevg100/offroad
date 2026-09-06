@@ -1,8 +1,8 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.06-v2
+Versão: 2026.09.06-v3
 
-Baseline inspecionada: `918dce4`
+Baseline inspecionada: branch `docs/endgame-blueprint`, PR #466
 
 Status: primeira classificação executável do produto atual
 
@@ -50,8 +50,8 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Continuidade longitudinal do projeto | specified | none | specified | não conecta análise, estrutura, materiais e capital |
 | Gates de trust e assurance | live | internal | tested | current state e evidence population pendentes |
 | Assurance enterprise externa | absent | none | unsupported | sem pentest, SOC 2 ou ISO emitidos |
-| Execution Brief específico | specified | none | implemented | compiler e seis receitas existem; falta integrar, persistir e renderizar |
-| Live Work stream | specified | none | specified | sem projeção canônica de eventos para a interface |
+| Execution Brief específico | live | universal | implemented | compiler, histórico imutável e card estão ligados; somente G1 possui gate E2E |
+| Live Work stream | live | universal | implemented | progresso seguro vem dos runs reais; eventos narrativos por frente ainda são estreitos |
 | Premium decision workbench | specified | none | specified | UI atual não é a experiência-alvo |
 | Regressão G1/Caso 01 | live | internal | tested | não é aceite longitudinal do fundador |
 | Jornadas G2-G8 | specified | none | specified | contratos completos; work products e runtime ainda incompletos |

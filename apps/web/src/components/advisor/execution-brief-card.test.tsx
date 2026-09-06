@@ -5,7 +5,9 @@ import {ExecutionBriefCard} from "./execution-brief-card";
 
 describe("ExecutionBriefCard", () => {
   it("shows the user agreement and never leaks internal graph or authority fields", () => {
-    const html = renderToStaticMarkup(<ExecutionBriefCard version={3} progress={{
+    const html = renderToStaticMarkup(<ExecutionBriefCard version={3} changes={[
+      {kind: "assumption_updated", label: "Prazo", from: "60 meses", to: "72 meses"},
+    ]} progress={{
       briefId: "10000000-0000-4000-8000-000000000001",
       version: 3,
       workstreams: [
@@ -37,6 +39,8 @@ describe("ExecutionBriefCard", () => {
     expect(html).toContain("Concluída · 1/1");
     expect(html).toContain("Em andamento · 2/4");
     expect(html).toContain("Aguardando você · 0/2");
+    expect(html).toContain("O que mudou nesta versão");
+    expect(html).toContain("60 meses → 72 meses");
     expect(html).not.toContain("sourceTaskIds");
     expect(html).not.toContain("executionAuthority");
     expect(html).not.toContain("TaskSpec");

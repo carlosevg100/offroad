@@ -52,14 +52,16 @@ Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
   bloqueiam o plano. A projeção visível remove IDs e metadados internos.
 - As seis famílias de entrada agora possuem receitas de brief distintas. O fluxo de reunião e
   originação foi ampliado de pesquisa preliminar até análise prospectiva e alternativa-alvo S11.
-  O compiler está testado, mas continua sem rota, persistência, card editável ou Live Work no web.
+  O compiler está ligado à ativação real, persistido em versões imutáveis e renderizado no chat.
+  Progresso por frente vem dos runs reais por RPC que não expõe IDs internos. Uma mudança de
+  objetivo, entrega, premissa, fonte ou checkpoint gera um diff visível na versão seguinte.
 - O template de PR e a Definition of Done agora exigem control IDs, data flow/classes,
   providers/tools, abuse cases, testes negativos, evidência, containment e rollback.
 
 Status: **candidate architecture; Release 0 iniciado**. Nenhuma capacidade analítica foi promovida
-por este trabalho. Capability ledger, Control Register, jornadas e compiler de Execution Brief são
-executáveis; os próximos gates são a baseline SEC-001 a SEC-015, os work products de referência e
-a integração persistida do brief com a interface e o Live Work.
+por este trabalho. Capability ledger, Control Register, jornadas, Execution Brief persistido e
+progresso seguro são executáveis; os próximos gates são a baseline SEC-001 a SEC-015, os work
+products de referência, os eventos narrativos por frente e a edição governada do plano.
 
 ## Polimento da entrada e correção do menu, 04/09/2026
 

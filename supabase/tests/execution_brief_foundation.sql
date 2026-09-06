@@ -73,11 +73,16 @@ insert into public.processing_jobs (
 );
 insert into public.capital_project_task_runs (
   organization_id, capital_project_id, plan_id, plan_task_id, attempt_no, status,
-  trigger_event, started_at, completed_at
+  trigger_event, processing_job_id, input_fingerprint, executor_key, executor_version,
+  output_reference, output_fingerprint, quality_results, started_at, completed_at
 )
 select
   task.organization_id, task.capital_project_id, task.plan_id, task.id, 1, 'succeeded',
-  '{"type":"execution_brief_test"}'::jsonb, now(), now()
+  '{"type":"execution_brief_test"}'::jsonb,
+  '70000000-0000-4000-8000-000000000601', repeat('1', 64),
+  'execution-brief-test', 'fixture-v1',
+  '{"type":"fixture","id":"execution-brief-m01"}'::jsonb, repeat('2', 64),
+  '[{"id":"fixture_check","passed":true}]'::jsonb, now(), now()
 from public.capital_project_plan_tasks task
 where task.organization_id = '20000000-0000-4000-8000-000000000601'
   and task.plan_id = '40000000-0000-4000-8000-000000000601'
@@ -200,8 +205,10 @@ begin
   if second_result ->> 'version' <> '2' or (second_result ->> 'replayed')::boolean then
     raise exception 'second brief was not appended: %', second_result;
   end if;
-  if (select count(*) from public.capital_project_execution_brief_events) <> 2 then
-    raise exception 'presented events did not follow immutable brief versions';
+  if (select count(*) from public.capital_project_execution_brief_events) <> 3
+    or (select count(*) from public.capital_project_execution_brief_events where event_type = 'presented') <> 2
+    or (select count(*) from public.capital_project_execution_brief_events where event_type = 'superseded') <> 1 then
+    raise exception 'presented and superseded events did not follow immutable brief versions';
   end if;
   begin
     perform public.worker_record_capital_project_execution_brief_v1(
@@ -225,7 +232,7 @@ declare
   progress jsonb;
 begin
   if (select count(*) from public.capital_project_execution_briefs) <> 2
-    or (select count(*) from public.capital_project_execution_brief_events) <> 2 then
+    or (select count(*) from public.capital_project_execution_brief_events) <> 3 then
     raise exception 'owner could not read its brief history';
   end if;
   begin

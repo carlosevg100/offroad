@@ -145,6 +145,25 @@ export const executionBriefProgressSchema = z.object({
 }).strict();
 export type ExecutionBriefProgress = z.infer<typeof executionBriefProgressSchema>;
 
+export const executionBriefChangeKindSchema = z.enum([
+  "objective_changed",
+  "deliverable_changed",
+  "workstream_added",
+  "workstream_removed",
+  "assumption_added",
+  "assumption_updated",
+  "assumption_removed",
+  "source_status_changed",
+  "checkpoint_changed",
+]);
+export const executionBriefChangeSchema = z.object({
+  kind: executionBriefChangeKindSchema,
+  label: z.string().trim().min(1).max(500),
+  from: z.string().trim().min(1).max(1_000).optional(),
+  to: z.string().trim().min(1).max(1_000).optional(),
+}).strict();
+export type ExecutionBriefChange = z.infer<typeof executionBriefChangeSchema>;
+
 /** Runtime contract for the customer projection read back from durable storage. */
 export const visibleExecutionBriefSchema: z.ZodType<VisibleExecutionBrief> = z.object({
   schemaVersion: z.literal("execution-brief.v1"),
@@ -182,6 +201,81 @@ export const visibleExecutionBriefSchema: z.ZodType<VisibleExecutionBrief> = z.o
   }).strict()).max(10),
   executionMode: executionBriefExecutionModeSchema,
 }).strict();
+
+/**
+ * Produces the small, customer-safe delta between two immutable visible briefs. The comparison
+ * deliberately knows nothing about TaskSpecs, agents or executors; those remain in the internal
+ * projection. A bounded list prevents a large replan from turning into an unreadable changelog.
+ */
+export function diffVisibleExecutionBrief(
+  previous: VisibleExecutionBrief,
+  current: VisibleExecutionBrief,
+): ExecutionBriefChange[] {
+  const changes: ExecutionBriefChange[] = [];
+  if (previous.objective !== current.objective) changes.push({
+    kind: "objective_changed",
+    label: current.locale === "pt-BR" ? "Objetivo do trabalho" : "Work objective",
+    from: previous.objective,
+    to: current.objective,
+  });
+  if (previous.proposedDeliverable !== current.proposedDeliverable) changes.push({
+    kind: "deliverable_changed",
+    label: current.locale === "pt-BR" ? "Produto esperado" : "Expected deliverable",
+    from: previous.proposedDeliverable,
+    to: current.proposedDeliverable,
+  });
+
+  const previousWorkstreams = new Set(previous.workstreams.map((workstream) => workstream.label));
+  const currentWorkstreams = new Set(current.workstreams.map((workstream) => workstream.label));
+  for (const label of currentWorkstreams) if (!previousWorkstreams.has(label)) {
+    changes.push({kind: "workstream_added", label});
+  }
+  for (const label of previousWorkstreams) if (!currentWorkstreams.has(label)) {
+    changes.push({kind: "workstream_removed", label});
+  }
+
+  const previousAssumptions = new Map(previous.assumptions.map((assumption) => [assumption.label, assumption]));
+  const currentAssumptions = new Map(current.assumptions.map((assumption) => [assumption.label, assumption]));
+  for (const [label, assumption] of currentAssumptions) {
+    const prior = previousAssumptions.get(label);
+    if (!prior) changes.push({kind: "assumption_added", label, to: assumption.value});
+    else if (prior.value !== assumption.value || prior.basis !== assumption.basis) changes.push({
+      kind: "assumption_updated", label, from: prior.value, to: assumption.value,
+    });
+  }
+  for (const [label, assumption] of previousAssumptions) if (!currentAssumptions.has(label)) {
+    changes.push({kind: "assumption_removed", label, from: assumption.value});
+  }
+
+  const priorSourceStatus = flattenVisibleSourceStatus(previous);
+  for (const [key, source] of flattenVisibleSourceStatus(current)) {
+    const prior = priorSourceStatus.get(key);
+    if (prior && prior.status !== source.status) changes.push({
+      kind: "source_status_changed",
+      label: source.label,
+      from: prior.status,
+      to: source.status,
+    });
+  }
+
+  const previousCheckpoints = previous.checkpoints.map((checkpoint) => `${checkpoint.label}|${checkpoint.kind}`).join("\n");
+  const currentCheckpoints = current.checkpoints.map((checkpoint) => `${checkpoint.label}|${checkpoint.kind}`).join("\n");
+  if (previousCheckpoints !== currentCheckpoints) changes.push({
+    kind: "checkpoint_changed",
+    label: current.locale === "pt-BR" ? "Próximo ponto de decisão" : "Next decision point",
+    ...(previous.checkpoints[0] ? {from: previous.checkpoints[0].label} : {}),
+    ...(current.checkpoints[0] ? {to: current.checkpoints[0].label} : {}),
+  });
+  return changes.slice(0, 20).map((change) => executionBriefChangeSchema.parse(change));
+}
+
+function flattenVisibleSourceStatus(brief: VisibleExecutionBrief) {
+  const sources = new Map<string, VisibleExecutionBrief["workstreams"][number]["sources"][number]>();
+  for (const workstream of brief.workstreams) for (const source of workstream.sources) {
+    sources.set(`${workstream.label}\u0000${source.label}`, source);
+  }
+  return sources;
+}
 
 export type ExecutionBriefEvaluation = {blockers: string[]; warnings: string[]};
 

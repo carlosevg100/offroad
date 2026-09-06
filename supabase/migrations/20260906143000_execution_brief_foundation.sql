@@ -313,6 +313,14 @@ begin
     plan_row.organization_id, session_row.capital_project_id, inserted_row.id, 'presented', 'system',
     jsonb_build_object('fingerprint', brief_fingerprint, 'version', next_version)
   );
+  if p_parent_brief_id is not null then
+    insert into public.capital_project_execution_brief_events (
+      organization_id, capital_project_id, execution_brief_id, event_type, actor_type, event_payload
+    ) values (
+      plan_row.organization_id, session_row.capital_project_id, p_parent_brief_id, 'superseded', 'system',
+      jsonb_build_object('replaced_by_fingerprint', brief_fingerprint, 'replaced_by_version', next_version)
+    );
+  end if;
   return jsonb_build_object('id', inserted_row.id, 'version', inserted_row.brief_version, 'replayed', false);
 exception
   when invalid_text_representation or numeric_value_out_of_range then
@@ -400,7 +408,8 @@ begin
       select jsonb_build_object(
         'id', brief.id,
         'version', brief.brief_version,
-        'fingerprint', brief.brief_fingerprint
+        'fingerprint', brief.brief_fingerprint,
+        'visibleSnapshot', brief.visible_snapshot
       )
       from public.capital_project_execution_briefs brief
       where brief.organization_id = job_row.organization_id

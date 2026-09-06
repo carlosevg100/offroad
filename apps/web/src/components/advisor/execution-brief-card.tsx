@@ -1,13 +1,14 @@
-import type {ExecutionBriefProgress, ExecutionBriefWorkstreamProgressStatus, VisibleExecutionBrief} from "@offroad/work-plan";
+import type {ExecutionBriefChange, ExecutionBriefProgress, ExecutionBriefWorkstreamProgressStatus, VisibleExecutionBrief} from "@offroad/work-plan";
 import {AlertCircle, ArrowDown, Check, Circle, FileOutput, LoaderCircle, Search, ShieldCheck} from "lucide-react";
 
 type Props = {
   brief: VisibleExecutionBrief;
+  changes?: readonly ExecutionBriefChange[];
   progress?: ExecutionBriefProgress | null;
   version: number;
 };
 
-export function ExecutionBriefCard({brief, progress, version}: Props) {
+export function ExecutionBriefCard({brief, changes = [], progress, version}: Props) {
   const pt = brief.locale === "pt-BR";
   const mode = brief.executionMode === "start_after_display"
     ? (pt ? "Início após exibição" : "Starts after display")
@@ -59,6 +60,14 @@ export function ExecutionBriefCard({brief, progress, version}: Props) {
         })}
       </ol>
 
+      {version > 1 && changes.length ? <section className="execution-brief-card__changes" data-testid="execution-brief-changes">
+        <header><strong>{pt ? "O que mudou nesta versão" : "What changed in this version"}</strong><small>{pt ? "O restante do plano foi preservado" : "The rest of the plan was preserved"}</small></header>
+        <ul>{changes.map((change, index) => <li key={`${change.kind}-${change.label}-${index}`}>
+          <span>{changeKindLabel(change.kind, pt)}</span>
+          <div><strong>{change.label}</strong>{change.from || change.to ? <small>{change.from ? `${change.from} → ` : ""}{change.to ?? (pt ? "removido" : "removed")}</small> : null}</div>
+        </li>)}</ul>
+      </section> : null}
+
       {brief.assumptions.length ? <section className="execution-brief-card__assumptions">
         <header><strong>{pt ? "Premissas que você pode alterar" : "Assumptions you can change"}</strong><small>{pt ? "Toda mudança gera uma nova versão" : "Every change creates a new version"}</small></header>
         <dl>{brief.assumptions.map((assumption) => <div key={assumption.label}><dt>{assumption.label}</dt><dd><strong>{assumption.value}</strong><span>{assumption.basis}</span></dd></div>)}</dl>
@@ -70,6 +79,31 @@ export function ExecutionBriefCard({brief, progress, version}: Props) {
       </footer> : null}
     </article>
   );
+}
+
+function changeKindLabel(kind: ExecutionBriefChange["kind"], pt: boolean) {
+  const labels = pt ? {
+    objective_changed: "Objetivo",
+    deliverable_changed: "Entrega",
+    workstream_added: "Incluído",
+    workstream_removed: "Removido",
+    assumption_added: "Premissa",
+    assumption_updated: "Premissa",
+    assumption_removed: "Premissa",
+    source_status_changed: "Fonte",
+    checkpoint_changed: "Decisão",
+  } : {
+    objective_changed: "Objective",
+    deliverable_changed: "Deliverable",
+    workstream_added: "Added",
+    workstream_removed: "Removed",
+    assumption_added: "Assumption",
+    assumption_updated: "Assumption",
+    assumption_removed: "Assumption",
+    source_status_changed: "Source",
+    checkpoint_changed: "Decision",
+  };
+  return labels[kind];
 }
 
 function progressIcon(status: ExecutionBriefWorkstreamProgressStatus) {
