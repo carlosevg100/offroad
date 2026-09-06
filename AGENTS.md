@@ -8,11 +8,14 @@ The canonical product definition and six entry jobs live in
 [`docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`](docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md).
 The intent ontology and workflow-compilation contract live in
 [`docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md`](docs/product/CANONICAL_INTENT_WORKFLOW_ATLAS.md).
+The canonical execution architecture, workstreams, gold journeys and promotion gates live in
+[`docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md`](docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md).
 The current company-led transaction route lives in
-[`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). Read both before
+[`docs/product/PRODUCT_WORKFLOW.md`](docs/product/PRODUCT_WORKFLOW.md). Read all four before
 changing home, onboarding, pipeline order, user-visible progress, materials, matching or
-introduction. Full orientation lives in [`handoff.md`](handoff.md). Roadmap gates live in
-[`docs/build/MASTER_PLAN.md`](docs/build/MASTER_PLAN.md). Architecture decisions live in
+introduction. Full orientation lives in [`handoff.md`](handoff.md). The historical linear build
+record lives in [`docs/build/MASTER_PLAN.md`](docs/build/MASTER_PLAN.md); it is not the current
+execution roadmap. Architecture decisions live in
 [`docs/adr/`](docs/adr/). `docs/product/Offroad_Capital_Product_Blueprint_v3.0_pt-BR.pdf` is a
 historical product specification: its origination-first positioning is superseded by Constitution
 2.2 and ADR 0019. It may inform implementation history but never current company identity.

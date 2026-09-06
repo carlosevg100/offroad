@@ -1,6 +1,6 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 5 September 2026. The universal advisor foundation, persistent project memory,
+> Current as of 6 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are
 > implemented but not yet homologated as top-tier expertise. The first human gold case remains the
@@ -10,6 +10,25 @@
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Program reset: executable endgame blueprint, 6 September 2026
+
+`docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md` is the proposed canonical execution source for
+the next phase. It translates the Constitution and Intent Atlas into a buildable operating system:
+one calm Project Workspace, an Intent-to-Plan Compiler, bounded specialist execution, a DCM
+Cognitive Harness, deterministic finance engines, a governed Credit Object Graph, institutional
+work products, Capital Intelligence and enterprise controls.
+
+This is a planning and architecture change, not evidence that the endgame is live. The current
+preview remains a narrow Case 01 route with five compositions and a fixed ten-step chain; the
+procedure library and depth packs are not yet homologated, arbitrary-document understanding is not
+production-grade, and the generated Word/Excel files prove transport rather than top-tier banker
+quality. Case 01 is now one regression inside eight longitudinal gold journeys, not the roadmap.
+
+The immediate gate is Release 0: freeze the real capability ledger, define G1-G8 end-to-end,
+produce manual reference work products at the target quality, decompose them into governed objects
+and procedures, and only then replace the fixed preview compiler. No broad founder fine-tuning is
+requested before the serious-test gate in section 23 of the blueprint.
 
 ### Canonical identity: universal debt advisor, 2 September 2026
 

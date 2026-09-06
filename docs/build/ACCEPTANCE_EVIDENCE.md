@@ -1,5 +1,20 @@
 # Acceptance Evidence
 
+## Blueprint executável do endgame, candidate, 06/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Estado real | inspeção do registry de TaskSpecs, depth packs, procedures e preview | 80 TaskSpecs seguem `specified`; preview tem cinco composições e cadeia Case 01; packs/procedures não estão homologados |
+| Cobertura de produto | confronto com Constituição, Atlas, workflow atual e handoff | blueprint preserva limites, autoridade, evidence regimes, continuidade e fronteiras de atuação |
+| Referências externas | fontes oficiais de Legora, Harvey, Hebbia, Rogo, Model ML e OpenAI | padrões absorvidos como princípios; nenhuma interface concorrente foi copiada |
+| Arquitetura | diagrama HTML autocontido e `self_check.py` | oito blocos principais, fluxo intenção→execução→work product→capital, controles transversais e feedback governado; self-check verde |
+| Programa | oito streams, releases 0-7, BP-001 a BP-059 e G1-G8 | cada release tem construção e gate; founder gate impede teste amplo antes da base necessária |
+| Honestidade | revisão da linguagem de status | documento se declara proposta; não promove runtime, packs, arquivos ou expertise |
+| Gate integral | `pnpm check` em worktree limpa do commit do blueprint | lint, typecheck, testes e build verdes nos 43 alvos; aviso único de Node 25 fora do engine recomendado Node 24 |
+
+Status: **candidate architecture**. O aceite comprova completude documental e coerência interna,
+não implementação do endgame.
+
 ## Polimento da entrada e correção do menu, 04/09/2026
 
 | Evidência | Verificação | Resultado |

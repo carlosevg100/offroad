@@ -1,8 +1,28 @@
 # Build State
 
-Atualizado em: 2026-09-04
-Baseline: `main` após PR #401, commit `16a3e07`
+Atualizado em: 2026-09-06
+Baseline: branch `docs/endgame-blueprint`; documentação sobre o estado atual de `main`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Blueprint executável do endgame, candidate, 06/09/2026
+
+- Criado `docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md` como fonte proposta de execução do
+  programa, subordinada à Constituição e ao Atlas. O plano histórico linear permanece preservado,
+  mas não governa o roadmap futuro.
+- O documento separa explicitamente capacidade existente de destino: preview restrito ao Caso 01,
+  procedures e packs ainda não homologados, leitura arbitrária e work products ainda abaixo do gate
+  institucional, e matching/capital intelligence ainda inicial.
+- A arquitetura-alvo tem Project Workspace, Intent & Work Control, Specialist Runtime, DCM
+  Cognitive Harness, deterministic finance engines, Credit Object Graph, Work Products & Review e
+  Capital Network, atravessados por tenancy, autorização, evidência, auditoria, custo e evals.
+- O programa foi reorganizado em oito streams, oito releases com gates, 59 itens de backlog de
+  fundação e oito jornadas gold longitudinais. Case 01 virou regressão, não centro do roadmap.
+- Criado o diagrama autocontido `docs/build/diagrams/offroad-endgame-architecture.html` usando os
+  tokens atuais da marca e o símbolo circular como referência de identidade; nenhuma tela do
+  produto foi alterada.
+
+Status: **candidate architecture**. Nenhuma capacidade de runtime foi promovida por este trabalho.
+O próximo gate é ratificar o blueprint e executar o Release 0.
 
 ## Polimento da entrada e correção do menu, 04/09/2026
 
