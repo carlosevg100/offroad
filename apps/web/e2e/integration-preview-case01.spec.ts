@@ -179,6 +179,29 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.screenshot({path: join(outputDirectory, "03-readout.png"), fullPage: true});
   });
 
+  test("governed context: the workflow asks one useful question and the answer advances the project", async () => {
+    const question = page.locator(".information-request-card");
+    await expect(question).toBeVisible();
+    await expect(question.locator("h2")).toContainText("Leitura de refinanciamento");
+    await expect(question).toContainText("Por que pergunto");
+    await expect(question).toContainText("O que pode mudar");
+    await expect(question).toContainText("2 perguntas depois desta");
+    await question.getByRole("button", {name: "Alternativas de estrutura de capital mais amplas"}).click();
+    await expect(page.locator(".advisor-thread__message.is-user").last()).toContainText("Alternativas de estrutura de capital mais amplas");
+    const acknowledgement = await waitForAssistant(page, /Resposta vinculada à pergunta em aberto/);
+    record("resposta governada", acknowledgement);
+    await expect.poll(async () => {
+      await page.reload();
+      return page.locator(".advisor-project__header > span").innerText();
+    }, {timeout: 240_000}).toContain("Pronto para continuar");
+    // The answered stable key remains closed after the workflow runs again; the next question is
+    // shown instead of silently reopening the first one.
+    await expect(page.locator(".information-request-card h2")).toContainText("Reunião exploratória");
+    await expect(page.locator(".information-request-card h2")).not.toContainText("Leitura de refinanciamento");
+    await expect(page.locator(".advisor-thread__activity-event").filter({hasText: "Resposta incorporada ao contexto"})).toBeVisible();
+    await page.screenshot({path: join(outputDirectory, "03a-governed-question.png"), fullPage: true});
+  });
+
   test("plan control: an adjustment is bound to the displayed version and returns as a visible diff", async () => {
     const brief = page.getByTestId("execution-brief");
     const versionBefore = await brief.locator(":scope > header > small").innerText();

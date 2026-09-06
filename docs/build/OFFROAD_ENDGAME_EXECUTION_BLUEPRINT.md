@@ -137,7 +137,7 @@ Esta tabela é o ponto de partida. Nenhum item pode ser reclassificado por lingu
 | Financial core | várias fórmulas determinísticas implementadas | modelo institucional integrado ainda não está homologado |
 | Word/Excel | transporte e geração básica provados | não equivalem a arquivo top-tier nem fidelidade a template |
 | Matching | schemas e lógica inicial | mandato, freshness, exclusões e feedback ainda não formam capital intelligence |
-| Interface | primeira projeção segura do Execution Brief foi ligada ao projeto; Live Work e edição ainda ausentes | existe um caminho vertical, não a experiência completa |
+| Interface | Execution Brief específico, edição governada, diff e atividade narrativa já operam no projeto; perguntas governadas foram ligadas ao chat e sua projeção pelo workflow está em gate | o primeiro arco interativo existe, mas Workbench, Vault e outputs top-tier continuam incompletos |
 | Gold journeys | G1-G8 especificadas; Caso 01 continua mais exercitado | contratos longitudinais ainda não equivalem a execução provada |
 
 Consequência operacional: **não solicitar testes exploratórios amplos ao fundador até o produto
@@ -145,8 +145,14 @@ atingir os gates definidos neste blueprint**. Até lá, engenharia e revisão in
 contratos e pedem ao fundador apenas decisões de produto e julgamento que realmente dependem dele.
 
 O inventário executável correspondente está em `docs/build/CAPABILITY_LEDGER.md` e
-`@offroad/release-governance/current-capability-ledger`. Ele separa availability, exposure e quality
+`@offroad/release-governance/current-capability-ledger`. Ele separa availability, exposure, quality
 maturity e bloqueia promoção por linguagem. A tabela acima permanece o resumo executivo.
+
+Checkpoint de implementação em 06/09/2026: os PRs #466 a #469 provaram o acordo de execução antes
+do trabalho, eventos seguros derivados de runs reais, ajuste vinculado à versão exibida e resposta
+atômica à pergunta exata. O próximo gate conecta as perguntas selecionadas pelo workflow ao objeto
+visível do projeto, preserva respostas fechadas entre runs e prova no navegador o ciclo pergunta,
+resposta e replanejamento incremental. Isso avança Release 1; não promove os demais releases.
 
 ## 3. Peers e inspirações: princípios, não colagem
 

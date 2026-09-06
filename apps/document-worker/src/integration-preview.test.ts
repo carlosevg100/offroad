@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {case01, executors} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
 
-import {parsePremises, processIntegrationPreviewRunJob, routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
+import {buildPreviewInformationRequestProjection, parsePremises, processIntegrationPreviewRunJob, routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 const ids = {
@@ -50,6 +50,7 @@ function fakeQueue(input: {composition: "prepare_meeting" | "prepare_material" |
   const stages: Array<{stage: string; status: string}> = [];
   let completion: {content: string; artifactId: string; result: unknown} | null = null;
   let failure: unknown = null;
+  let questionProjection: Record<string, unknown> | null = null;
   const runsByTask = new Map<string, string>();
   const queue = {
     writeStage: async (_job: unknown, stage: string, status: string) => { stages.push({stage, status}); },
@@ -77,11 +78,35 @@ function fakeQueue(input: {composition: "prepare_meeting" | "prepare_material" |
       return {id, artifactFingerprint, artifactVersion: 1, replayed: false};
     },
     finishCapitalTask: async () => "finished",
+    syncProjectInformationRequests: async (_job: unknown, projection: unknown) => {
+      questionProjection = projection as Record<string, unknown>;
+      return {openCount: ((questionProjection.requests as unknown[]) ?? []).length, preservedClosedCount: 0, supersededCount: 0};
+    },
     completeIntegrationPreviewRun: async (_job: unknown, value: {content: string; artifactId: string; result: unknown}) => { completion = value; return {replayed: false}; },
     fail: async (_job: unknown, error: unknown) => { failure = error; },
   } as unknown as QueueClient;
-  return {queue, recorded, started, stages, completion: () => completion, failure: () => failure};
+  return {queue, recorded, started, stages, completion: () => completion, failure: () => failure, questionProjection: () => questionProjection};
 }
+
+describe("integration_preview governed questions", () => {
+  it("preserves the planner's stable key and adds useful choices only when the workflow defines them", () => {
+    const projection = buildPreviewInformationRequestProjection({
+      projectId: ids.project,
+      locale: "pt-BR",
+      projectionRef: "preview_meeting_brief:abc",
+      questions: [
+        {id: "q-angle", text: "Refinanciamento ou alternativas mais amplas?", changes_the_work: "define o universo de alternativas"},
+        {id: "q-custom", text: "Qual caixa mínimo deve ser preservado?", changes_the_work: "altera a capacidade de dívida"},
+      ],
+    });
+    expect(projection.requests[0]).toMatchObject({
+      requirementKey: "q-angle",
+      answerKind: "choice",
+      choices: ["Refinanciamento como foco principal", "Alternativas de estrutura de capital mais amplas"],
+    });
+    expect(projection.requests[1]).toMatchObject({requirementKey: "q-custom", answerKind: "text", choices: []});
+  });
+});
 
 describe("integration_preview turn router", () => {
   const base = {locale: "pt-BR" as const, recentMessages: [], runActive: false, priorOutputs: new Map<string, PreviewStepOutput>(), entryJob: "origination_thesis"};
@@ -170,6 +195,11 @@ describe("integration_preview run processor", () => {
     expect(completion.content).toMatch(/^\[Validação interna, integration_preview\]/);
     expect(completion.content).toContain("Primeira devolutiva do Caso 01");
     expect(completion.content).toContain("Para alinhar com o VP");
+    expect(fake.questionProjection()).toMatchObject({
+      schemaVersion: "project-information-request-projection.v1",
+      sourceNamespace: "integration_preview",
+      requests: expect.arrayContaining([expect.objectContaining({requirementKey: "q-angle"})]),
+    });
     expect(fake.stages.filter((stage) => stage.stage.startsWith("integration_preview:") && stage.status === "succeeded")).toHaveLength(10);
   });
   it("replays every unchanged step by fingerprint on a repeated run, and recomputes only the alternatives and the plan when a premise changes", async () => {

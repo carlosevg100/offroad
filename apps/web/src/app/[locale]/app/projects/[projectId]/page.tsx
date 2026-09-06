@@ -350,19 +350,19 @@ async function ConversationalCapitalProject({
     {data: informationRequests},
     {data: requirementCoverage},
     {data: decisionRecords},
-  ] = agentPlan
-    ? await Promise.all([
-        supabase.from("capital_project_agent_work_items")
+  ] = await Promise.all([
+        agentPlan
+          ? supabase.from("capital_project_agent_work_items")
           .select("id, title, status, created_at")
           .eq("organization_id", organization.id)
           .eq("agent_plan_id", agentPlan.id)
           .neq("status", "superseded")
-          .order("created_at"),
+          .order("created_at")
+          : Promise.resolve({data: []}),
         supabase.from("capital_project_agent_events")
           .select("id, event_type, summary_pt, summary_en, detail, created_at")
           .eq("organization_id", organization.id)
           .eq("capital_project_id", project.id)
-          .eq("agent_plan_id", agentPlan.id)
           .order("created_at", {ascending: false})
           .limit(40),
         supabase.from("capital_project_information_requests")
@@ -385,8 +385,7 @@ async function ConversationalCapitalProject({
           .neq("status", "superseded")
           .order("created_at", {ascending: false})
           .limit(5),
-      ])
-    : [{data: []}, {data: []}, {data: []}, {data: []}, {data: []}];
+      ]);
 
   const copy: AdvisorProjectCopy = {
     advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
